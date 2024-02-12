@@ -5,6 +5,8 @@
   --unreachable-shadow-color: rgba(0, 0, 0, 0.1);
   --is-unhealthy-color: #fff0f0;
   --is-unhealthy-hover-color: rgba(255, 200, 200, 0.4);
+  --is-unregistered-color: #fffbe6;
+  --is-unregistered-hover-color: rgba(255, 255, 176, 0.4);
 }
 
 /* Dark mode */
@@ -15,6 +17,8 @@
     --unreachable-shadow-color: rgba(255, 255, 255, 0.1);
     --is-unhealthy-color: #440000;
     --is-unhealthy-hover-color: rgba(255, 50, 50, 0.4);
+    --is-unregistered-color: #665500;
+    --is-unregistered-hover-color: rgba(255, 255, 100, 0.4);
   }
 }
 
@@ -48,4 +52,13 @@
 table tr:hover td.is-unhealthy,
 table tr.is-unhealthy:hover td {
   background: var(--is-unhealthy-hover-color);
+}
+
+.is-unregistered {
+  background: var(--is-unregistered-color);
+}
+
+table tr:hover td.is-unregistered,
+table tr.is-unregistered:hover td {
+  background: var(--is-unregistered-hover-color);
 }

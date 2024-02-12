@@ -1,0 +1,163 @@
+.sourceFilesContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.newModalContainer {
+  max-width: unset;
+  min-width: 600px;
+}
+
+.modalContainer {
+  width: 720px;
+  /* Need to account for the dropdown outside modal */
+  overflow-y: visible !important;
+  overflow-x: visible !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  margin: 0px 16px;
+  padding-bottom: 8px;
+}
+
+.modalTitle {
+  color: var(--neutral-light-4);
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 23px;
+  margin-bottom: 7px;
+}
+
+.modalSubtitle {
+  color: var(--neutral-light-4);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 18px;
+}
+
+.downloadSettings {
+  border-bottom: 1px solid var(--neutral-light-6);
+  margin: 0px 16px;
+  padding: 24px 91px 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.downloadSetting {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.label {
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 20px;
+  margin-right: 16px;
+}
+
+.dropzoneTitle {
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+}
+
+.stemRowContainer {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  margin-bottom: 16px;
+  padding-left: 12px;
+}
+
+.stemRows {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropZone {
+  min-height: 175px;
+  margin-bottom: 8px;
+  box-shadow: none;
+  margin-top: 16px;
+}
+
+.dropzoneMessage {
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+}
+
+.dropzoneIcon {
+  height: 32px;
+  width: 32px;
+}
+
+.dropzoneIcon g path {
+  fill: var(--neutral-light-4);
+}
+
+.deleteButton {
+  margin-left: auto;
+  margin-right: 22px;
+  height: 20px;
+  width: 20px;
+}
+
+.deleteButtonIcon path {
+  fill: var(--neutral-light-6);
+}
+
+.title {
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  color: var(--neutral);
+}
+
+.dropdownContainer {
+  width: 242px;
+  margin-right: 16px;
+}
+
+.dropdownText {
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+}
+
+.dropzoneDisabled {
+  color: var(--neutral-light-4);
+}
+.dropzoneDisabled path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.stemPreview {
+  padding-top: var(--unit-2);
+  padding-bottom: var(--unit-2);
+  border-top: none;
+  border-bottom: 1px solid var(--border-default);
+}
+.stemPreview:last-child {
+  border-bottom: none;
+}
+.stemPreview:hover {
+  background: var(--background-surface-1);
+  border-top: none;
+}
+
+.doneButton {
+  align-self: flex-end;
+  margin: 16px;
+}

@@ -1,33 +1,31 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
 import {
-  Genre,
-  ID,
-  Status,
-  convertGenreLabelToValue,
-  useGetFeaturedArtists,
   useGetTopArtistsInGenre,
-  selectArtstsPageMessages as messages,
-  selectArtistsSchema
-} from '@audius/common'
+  useGetFeaturedArtists
+} from '@audius/common/api'
+import { selectArtistsPageMessages } from '@audius/common/messages'
+import { Status, UserMetadata } from '@audius/common/models'
+import { selectArtistsSchema } from '@audius/common/schemas'
+import { Genre, convertGenreLabelToValue } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { useSpring, animated } from '@react-spring/web'
-import { Form, Formik } from 'formik'
+import { Form, Formik, useFormikContext } from 'formik'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { addFollowArtists } from 'common/store/pages/signon/actions'
+import {
+  addFollowArtists,
+  completeFollowArtists
+} from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { env } from 'services/env'
 import { useSelector } from 'utils/reducer'
-import {
-  SIGN_UP_APP_CTA_PAGE,
-  SIGN_UP_COMPLETED_REDIRECT,
-  SIGN_UP_GENRES_PAGE
-} from 'utils/route'
+import { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import {
@@ -46,12 +44,24 @@ import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPrevi
 const AnimatedFlex = animated(Flex)
 
 type SelectArtistsValues = {
-  selectedArtists: ID[]
+  selectedArtists: string[]
 }
 
 const initialValues: SelectArtistsValues = {
   selectedArtists: []
 }
+
+// This is a workaround for local dev environments that don't have any artists
+// This will ensure any errors set on mount get cleared out
+const DevModeClearErrors = () => {
+  const { setErrors } = useFormikContext()
+  useEffect(() => {
+    setErrors({}) // empty all errors
+  }, [setErrors])
+  return null
+}
+
+const ARTISTS_PER_GENRE_LIMIT = 31
 
 export const SelectArtistsPage = () => {
   const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
@@ -69,7 +79,9 @@ export const SelectArtistsPage = () => {
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
-      dispatch(addFollowArtists([...selectedArtists]))
+      const artistsIDArray = [...selectedArtists].map((a) => Number(a))
+      dispatch(addFollowArtists(artistsIDArray))
+      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
@@ -83,7 +95,7 @@ export const SelectArtistsPage = () => {
 
   const { data: topArtists, status: topArtistsStatus } =
     useGetTopArtistsInGenre(
-      { genre: currentGenre },
+      { genre: currentGenre, limit: ARTISTS_PER_GENRE_LIMIT },
       { disabled: isFeaturedArtists }
     )
 
@@ -93,9 +105,15 @@ export const SelectArtistsPage = () => {
     })
 
   const artists = isFeaturedArtists ? featuredArtists : topArtists
+
   const isLoading =
     (isFeaturedArtists ? featuredArtistsStatus : topArtistsStatus) ===
     Status.LOADING
+
+  // Note: this doesn't catch when running `web:prod`
+  const isDevEnvironment = env.ENVIRONMENT === 'development'
+  // This a workaround flag for local envs that don't have any artists and get stuck at this screen
+  const noArtistsSkipValidation = artists?.length === 0 && isDevEnvironment
 
   const ArtistsList = isMobile ? Flex : Paper
 
@@ -109,22 +127,29 @@ export const SelectArtistsPage = () => {
       transform: 'translateX(0%)'
     }
   })
+  const formikSchema = toFormikValidationSchema(selectArtistsSchema)
 
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(selectArtistsSchema)}
+      // If using no artists + local dev workaround we just remove all validation
+      validationSchema={!noArtistsSkipValidation ? formikSchema : undefined}
+      validateOnMount
     >
-      {({ values, isValid, isSubmitting, isValidating, dirty }) => {
+      {({ values, isValid, isSubmitting, isValidating, setErrors }) => {
         const { selectedArtists } = values
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader
-              backButtonText={messages.backToGenres}
-              backTo={SIGN_UP_GENRES_PAGE}
               mode='viewing'
+              backButtonText={
+                isMobile ? undefined : selectArtistsPageMessages.backToGenres
+              }
             />
+            {noArtistsSkipValidation && !isValid ? (
+              <DevModeClearErrors />
+            ) : undefined}
             <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
@@ -151,8 +176,8 @@ export const SelectArtistsPage = () => {
                 <Heading
                   ref={headerContainerRef}
                   ph={isMobile ? 'l' : undefined}
-                  heading={messages.header}
-                  description={messages.description}
+                  heading={selectArtistsPageMessages.header}
+                  description={selectArtistsPageMessages.description}
                   centered={!isMobile}
                 />
                 <ScrollView
@@ -163,7 +188,7 @@ export const SelectArtistsPage = () => {
                   justifyContent={isMobile ? 'flex-start' : 'center'}
                   role='radiogroup'
                   onChange={handleChangeGenre}
-                  aria-label={messages.genresLabel}
+                  aria-label={selectArtistsPageMessages.genresLabel}
                   disableScroll={!isMobile}
                 >
                   {artistGenres.map((genre) => (
@@ -174,7 +199,7 @@ export const SelectArtistsPage = () => {
                       name='genre'
                       label={convertGenreLabelToValue(genre as Genre)}
                       size={isMobile ? 'small' : 'large'}
-                      value={genre}
+                      value={convertGenreLabelToValue(genre as Genre)}
                       isSelected={currentGenre === genre}
                     />
                   ))}
@@ -193,7 +218,7 @@ export const SelectArtistsPage = () => {
                   direction='column'
                 >
                   <HiddenLegend>
-                    {messages.pickArtists(currentGenre)}
+                    {selectArtistsPageMessages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
                   {isLoading || !isMobile ? null : <PreviewArtistHint />}
@@ -207,7 +232,10 @@ export const SelectArtistsPage = () => {
                           <FollowArtistTileSkeleton key={index} />
                         ))
                       : artists?.map((user) => (
-                          <FollowArtistCard key={user.user_id} user={user} />
+                          <FollowArtistCard
+                            key={user.user_id}
+                            user={user as UserMetadata}
+                          />
                         ))}
                   </Flex>
                 </ArtistsList>
@@ -217,12 +245,13 @@ export const SelectArtistsPage = () => {
               centered
               sticky
               buttonProps={{
-                disabled: !dirty || !isValid || isSubmitting,
+                disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
               postfix={
                 <Text variant='body'>
-                  {messages.selected} {selectedArtists.length || 0}/3
+                  {selectArtistsPageMessages.selected}{' '}
+                  {selectedArtists.length || 0}/3
                 </Text>
               }
             />

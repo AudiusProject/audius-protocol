@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common'
+import { Name } from '@audius/common/models'
+import {
+  IconCaretDown as IconCaretDownLine,
+  IconCaretUp as IconCaretUpLine
+} from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
-import IconCaretDownLine from 'assets/img/iconCaretDownLine.svg'
-import IconCaretUpLine from 'assets/img/iconCaretUpLine.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import { UserGeneratedText } from 'components/user-generated-text'
@@ -238,7 +240,7 @@ export const ProfileBio = ({
             onClick={handleToggleCollapse}
           >
             <span>{messages.seeMore}</span>
-            <IconCaretDownLine />
+            <IconCaretDownLine size='m' color='subdued' />
           </div>
         </div>
       ) : (
@@ -250,7 +252,7 @@ export const ProfileBio = ({
               onClick={handleToggleCollapse}
             >
               <span>{messages.seeLess}</span>
-              <IconCaretUpLine />
+              <IconCaretUpLine size='m' color='subdued' />
             </div>
           ) : null}
         </div>

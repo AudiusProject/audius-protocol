@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import {
-  profilePageSelectors,
   profilePageFeedLineupActions as feedActions,
-  useProxySelector,
-  Status
-} from '@audius/common'
+  profilePageSelectors
+} from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
 
 import { Lineup } from 'app/components/lineup'

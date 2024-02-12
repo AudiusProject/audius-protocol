@@ -23,17 +23,11 @@ docker buildx build \
 ## To deploy to Cloudflare Pages
 
 Ensure you have cloudflare access.
-You will also need node v16.13.0.
-If you don't have it:
-
-```
-nvm install 16.13.0
-nvm use 16.13.0
-```
-
 Deploy with:
 
 ```
+nvm use
+npm i
 npm run deploy
 ```
 

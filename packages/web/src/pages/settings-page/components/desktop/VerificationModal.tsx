@@ -1,22 +1,24 @@
 import { useCallback, useState } from 'react'
 
 import {
-  ID,
   Name,
-  ProfilePictureSizes,
   SquareSizes,
   Status,
-  BooleanKeys,
-  TwitterProfile,
-  InstagramProfile,
+  ID,
+  ProfilePictureSizes
+} from '@audius/common/models'
+import { BooleanKeys } from '@audius/common/services'
+import {
   musicConfettiActions,
+  InstagramProfile,
+  TwitterProfile,
   TikTokProfile
-} from '@audius/common'
-import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
+} from '@audius/common/store'
+import { IconValidationX, IconNote } from '@audius/harmony'
+import { Modal, Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconValidationX from 'assets/img/iconValidationX.svg'
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'

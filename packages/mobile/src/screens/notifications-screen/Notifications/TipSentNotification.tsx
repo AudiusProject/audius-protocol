@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
-import type { TipSendNotification } from '@audius/common'
-import { useUIAudio, notificationsSelectors } from '@audius/common'
+import { useUIAudio } from '@audius/common/hooks'
+import type { TipSendNotification } from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconTip from 'app/assets/images/iconTip.svg'
+import { IconTipping } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 
@@ -15,7 +16,7 @@ import {
   NotificationTile,
   NotificationTitle,
   NotificationTwitterButton,
-  ProfilePicture
+  NotificationProfilePicture
 } from '../Notification'
 import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
@@ -77,7 +78,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconTip}>
+      <NotificationHeader icon={IconTipping}>
         <NotificationTitle>
           {Platform.OS === 'ios' ? messages.titleAlt : messages.title}
         </NotificationTitle>
@@ -88,7 +89,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
           alignItems: 'center'
         }}
       >
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <NotificationText style={{ flexShrink: 1 }}>
           {Platform.OS === 'ios' ? messages.sentAlt : messages.sent}{' '}
           <TipText value={uiAmount} /> {messages.to}{' '}

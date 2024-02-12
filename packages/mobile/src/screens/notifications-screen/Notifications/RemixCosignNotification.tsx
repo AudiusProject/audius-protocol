@@ -1,15 +1,16 @@
 import { useCallback } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
 import type {
-  Nullable,
-  RemixCosignNotification as RemixCosignNotificationType,
-  TrackEntity
-} from '@audius/common'
-import { useProxySelector, notificationsSelectors } from '@audius/common'
+  TrackEntity,
+  RemixCosignNotification as RemixCosignNotificationType
+} from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconRemix from 'app/assets/images/iconRemix.svg'
+import { IconRemix } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
@@ -21,7 +22,7 @@ import {
   NotificationTitle,
   EntityLink,
   UserNameLink,
-  ProfilePicture,
+  NotificationProfilePicture,
   NotificationTwitterButton
 } from '../Notification'
 const { getNotificationEntities, getNotificationUser } = notificationsSelectors
@@ -88,7 +89,7 @@ export const RemixCosignNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ProfilePicture profile={user} />
+        <NotificationProfilePicture profile={user} />
         <View style={{ flex: 1 }}>
           <NotificationText>
             <UserNameLink user={user} /> {messages.cosign}{' '}

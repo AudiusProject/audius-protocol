@@ -1,6 +1,6 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 
-import type { Icon } from '@audius/harmony-native'
+import type { IconComponent } from '@audius/harmony-native'
 import {
   Flex,
   Text,
@@ -11,10 +11,6 @@ import {
 
 import { PANEL_EXPAND_DURATION } from '../constants'
 
-// import IconCloudUpload from './temp-harmony/iconCloudArrowUp.svg'
-// import IconHeadphones from './temp-harmony/iconHeadphones.svg'
-// import IconMessage from './temp-harmony/iconMessages.svg'
-
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 const messages = {
@@ -24,7 +20,7 @@ const messages = {
   adFree: 'Ad-Free, Offline Listening'
 }
 
-type AudiusValueProps = { icon: Icon; text: string }
+type AudiusValueProps = { icon: IconComponent; text: string }
 
 /**
  * Each individual audius value text + icon row

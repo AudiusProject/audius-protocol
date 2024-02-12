@@ -24,6 +24,7 @@ export type ToastAction = PayloadAction<{
   linkText?: string
   type?: ToastType
   timeout?: number
+  key?: string
 }>
 export type AddToastAction = PayloadAction<Toast>
 export type DissmissToastAction = PayloadAction<{ key: string }>

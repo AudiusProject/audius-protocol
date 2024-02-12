@@ -5,7 +5,7 @@ import type {
   ReactNode
 } from 'react'
 
-import type { TextColors } from 'foundations'
+import type { TextColors } from '../../../foundations/color/semantic'
 
 export type BaseTextProps<TextComponentType extends ElementType = 'p'> = {
   tag?: TextComponentType

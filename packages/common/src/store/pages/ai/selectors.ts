@@ -1,5 +1,5 @@
-import { getUser } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
+import { getUser } from '~/store/cache/users/selectors'
+import { CommonState } from '~/store/commonStore'
 
 export const getBaseState = (state: CommonState) => state.pages.ai
 

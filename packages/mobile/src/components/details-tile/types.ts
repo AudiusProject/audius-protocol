@@ -1,11 +1,16 @@
 import type { ReactNode } from 'react'
 
-import type { Track, User, SearchTrack, SearchUser, ID } from '@audius/common'
+import type {
+  ID,
+  SearchUser,
+  SearchTrack,
+  Track,
+  User
+} from '@audius/common/models'
 import type { TextStyle } from 'react-native'
 
+import type { ImageProps } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
-
-import type { ImageProps } from '../image/FastImage'
 
 export type DetailsTileDetail = {
   icon?: ReactNode
@@ -71,8 +76,8 @@ export type DetailsTileProps = {
   /** Is the item loaded and in a playable state */
   isPlayable?: boolean
 
-  /** Is the tile being loaded for a playlist */
-  isPlaylist?: boolean
+  /** Is the tile being loaded for a collection */
+  isCollection?: boolean
 
   /** Is the item loaded published */
   isPublished?: boolean

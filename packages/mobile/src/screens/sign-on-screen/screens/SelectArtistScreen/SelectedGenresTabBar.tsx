@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { Genre } from '@audius/common'
-import { convertGenreLabelToValue } from '@audius/common'
+import type { Genre } from '@audius/common/utils'
+import { convertGenreLabelToValue } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import type { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs'
 import { ScrollView } from 'react-native'
@@ -48,6 +48,7 @@ export const SelectedGenresTabBar = (props: SelectedGenresTabBarProps) => {
           return (
             <SelectablePill
               key={key}
+              type='radio'
               label={convertGenreLabelToValue(name as Genre)}
               isSelected={isFocused}
               accessibilityRole='tablist'

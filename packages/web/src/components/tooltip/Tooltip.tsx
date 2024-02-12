@@ -63,7 +63,8 @@ export const Tooltip = ({
   )
 
   let popupContainer
-  const page = document.getElementById('page')
+  const page =
+    typeof document !== 'undefined' ? document.getElementById('page') : null
   switch (mount) {
     case 'parent':
       popupContainer = (triggerNode: HTMLElement) =>

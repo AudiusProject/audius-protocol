@@ -2,55 +2,59 @@ import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
-import { FavoriteSource, Name } from 'models/Analytics'
-import { ErrorLevel } from 'models/ErrorReporting'
-import { ID } from 'models/Identifiers'
-import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
-import { Track, isContentUSDCPurchaseGated } from 'models/Track'
-import { User } from 'models/User'
-import { BNUSDC } from 'models/Wallet'
+import { FavoriteSource, Name } from '~/models/Analytics'
+import { ErrorLevel } from '~/models/ErrorReporting'
+import { ID } from '~/models/Identifiers'
+import {
+  PurchaseMethod,
+  PurchaseVendor,
+  PurchaseAccess
+} from '~/models/PurchaseContent'
+import { Track, isContentUSDCPurchaseGated } from '~/models/Track'
+import { User } from '~/models/User'
+import { BNUSDC } from '~/models/Wallet'
 import {
   getRecentBlockhash,
   getRootSolanaAccount,
   getTokenAccountInfo,
   purchaseContent,
   purchaseContentWithPaymentRouter
-} from 'services/audius-backend/solana'
-import { FeatureFlags } from 'services/remote-config/feature-flags'
-import { accountSelectors } from 'store/account'
+} from '~/services/audius-backend/solana'
+import { FeatureFlags } from '~/services/remote-config/feature-flags'
+import { accountSelectors } from '~/store/account'
 import {
   buyCryptoCanceled,
   buyCryptoFailed,
   buyCryptoSucceeded,
   buyCryptoViaSol
-} from 'store/buy-crypto/slice'
-import { BuyCryptoError } from 'store/buy-crypto/types'
+} from '~/store/buy-crypto/slice'
+import { BuyCryptoError } from '~/store/buy-crypto/types'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
   onrampOpened,
   onrampCanceled
-} from 'store/buy-usdc/slice'
-import { BuyUSDCError } from 'store/buy-usdc/types'
-import { getBuyUSDCRemoteConfig, getUSDCUserBank } from 'store/buy-usdc/utils'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getUser } from 'store/cache/users/selectors'
-import { getContext } from 'store/effects'
-import { getPreviewing, getTrackId } from 'store/player/selectors'
-import { stop } from 'store/player/slice'
-import { saveTrack } from 'store/social/tracks/actions'
-import { getFeePayer } from 'store/solana/selectors'
-import { OnRampProvider } from 'store/ui/buy-audio/types'
+} from '~/store/buy-usdc/slice'
+import { BuyUSDCError } from '~/store/buy-usdc/types'
+import { getBuyUSDCRemoteConfig, getUSDCUserBank } from '~/store/buy-usdc/utils'
+import { getTrack } from '~/store/cache/tracks/selectors'
+import { getUser } from '~/store/cache/users/selectors'
+import { getContext } from '~/store/effects'
+import { getPreviewing, getTrackId } from '~/store/player/selectors'
+import { stop } from '~/store/player/slice'
+import { saveTrack } from '~/store/social/tracks/actions'
+import { getFeePayer } from '~/store/solana/selectors'
+import { OnRampProvider } from '~/store/ui/buy-audio/types'
 import {
   transactionCanceled,
   transactionFailed,
   transactionSucceeded
-} from 'store/ui/coinflow-modal/slice'
+} from '~/store/ui/coinflow-modal/slice'
 import {
   CoinflowPurchaseMetadata,
   coinflowOnrampModalActions
-} from 'store/ui/modals/coinflow-onramp-modal'
-import { BN_USDC_CENT_WEI } from 'utils/wallet'
+} from '~/store/ui/modals/coinflow-onramp-modal'
+import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { pollGatedTrack } from '../gated-content/sagas'
 import { updateGatedTrackStatus } from '../gated-content/slice'
@@ -92,22 +96,26 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
-    throw new Error('Content is missing stream conditions')
+  const purchaseConditions =
+    trackInfo?.stream_conditions ?? trackInfo?.download_conditions
+  // Stream access is a superset of download access - purchasing a stream-gated
+  // track also gets you download access, but purchasing a download-gated track
+  // only gets you download access (because the track was already free to stream).
+  const purchaseAccess = trackInfo?.is_stream_gated
+    ? PurchaseAccess.STREAM
+    : PurchaseAccess.DOWNLOAD
+  if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
+    throw new Error('Content is missing purchase conditions')
   }
   const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
   if (!artistInfo) {
     throw new Error('Failed to retrieve content owner')
   }
 
-  const {
-    stream_conditions: {
-      usdc_purchase: { price }
-    },
-    title
-  } = trackInfo
+  const title = trackInfo.title
+  const price = purchaseConditions.usdc_purchase.price
 
-  return { price, title, artistInfo, trackInfo }
+  return { price, title, artistInfo, purchaseAccess, trackInfo }
 }
 
 const getUserPurchaseMetadata = ({
@@ -202,8 +210,10 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
   }
 
   const trackInfo = yield* select(getTrack, { id: contentId })
-  if (!trackInfo || !isContentUSDCPurchaseGated(trackInfo?.stream_conditions)) {
-    throw new Error('Content is missing stream conditions')
+  const purchaseConditions =
+    trackInfo?.stream_conditions ?? trackInfo?.download_conditions
+  if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
+    throw new Error('Content is missing purchase conditions')
   }
 
   const user = yield* select(getUser, { id: trackInfo.owner_id })
@@ -215,12 +225,8 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
     throw new Error('Unable to resolve destination wallet')
   }
 
-  const {
-    blocknumber,
-    stream_conditions: {
-      usdc_purchase: { splits }
-    }
-  } = trackInfo
+  const { blocknumber } = trackInfo
+  const splits = purchaseConditions.usdc_purchase.splits
 
   return {
     blocknumber,
@@ -265,6 +271,7 @@ type PurchaseWithCoinflowArgs = {
   purchaserUserId: ID
   /** USDC in dollars */
   price: number
+  purchaseAccess: PurchaseAccess
 }
 
 function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
@@ -274,7 +281,8 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
     splits,
     contentId,
     purchaserUserId,
-    price
+    price,
+    purchaseAccess
   } = args
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayerAddress = yield* select(getFeePayer)
@@ -296,7 +304,8 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
       blocknumber,
       recentBlockhash,
       purchaserUserId,
-      wallet: rootAccount
+      wallet: rootAccount,
+      purchaseAccess
     }
   )
 
@@ -403,10 +412,13 @@ function* doStartPurchaseContentFlow({
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
-  const { price, title, artistInfo } = yield* call(getContentInfo, {
-    contentId,
-    contentType
-  })
+  const { price, title, artistInfo, purchaseAccess } = yield* call(
+    getContentInfo,
+    {
+      contentId,
+      contentType
+    }
+  )
 
   const analyticsInfo = {
     price: price / 100,
@@ -475,7 +487,8 @@ function* doStartPurchaseContentFlow({
         extraAmount: extraAmountBN,
         splits,
         type: 'track',
-        purchaserUserId
+        purchaserUserId,
+        purchaseAccess
       })
     } else {
       // We need to acquire USDC before the purchase can continue
@@ -498,7 +511,8 @@ function* doStartPurchaseContentFlow({
             contentId,
             contentType,
             purchaserUserId,
-            price: purchaseAmount
+            price: purchaseAmount,
+            purchaseAccess
           })
           break
         case PurchaseVendor.STRIPE:
@@ -510,7 +524,8 @@ function* doStartPurchaseContentFlow({
             extraAmount: extraAmountBN,
             splits,
             type: 'track',
-            purchaserUserId
+            purchaserUserId,
+            purchaseAccess
           })
           break
       }

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { ID } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import {
   getFollowIds,
@@ -9,7 +9,7 @@ import {
 import { sampleSize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconWand from 'app/assets/images/iconWand.svg'
+import { IconWand } from '@audius/harmony-native'
 import { TextButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 

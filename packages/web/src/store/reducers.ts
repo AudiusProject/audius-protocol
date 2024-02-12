@@ -1,8 +1,9 @@
+import { SsrPageProps } from '@audius/common/models'
 import {
   queueReducer as queue,
   remoteConfigReducer as remoteConfig,
   reducers as clientStoreReducers
-} from '@audius/common'
+} from '@audius/common/store'
 import { connectRouter } from 'connected-react-router'
 import { History } from 'history'
 import localForage from 'localforage'
@@ -29,10 +30,19 @@ import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
-export const commonStoreReducers = clientStoreReducers(localForage)
+const createRootReducer = (
+  routeHistory: History,
+  ssrPageProps?: SsrPageProps,
+  isServerSide?: boolean
+) => {
+  const commonStoreReducers = clientStoreReducers(
+    localForage,
+    ssrPageProps,
+    isServerSide,
+    routeHistory
+  )
 
-const createRootReducer = (routeHistory: History) =>
-  combineReducers({
+  return combineReducers({
     // Common store
     ...commonStoreReducers,
     // These also belong in common store reducers but are here until we move them to the @audius/common package.
@@ -59,7 +69,7 @@ const createRootReducer = (routeHistory: History) =>
     queue,
 
     // Error Page
-    error,
+    error: error(ssrPageProps),
 
     // Remote config/flags
     remoteConfig,
@@ -82,5 +92,6 @@ const createRootReducer = (routeHistory: History) =>
       })
     })
   })
+}
 
 export default createRootReducer

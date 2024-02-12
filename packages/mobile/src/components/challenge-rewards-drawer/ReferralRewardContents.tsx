@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { accountSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import { ReferralLinkCopyButton } from './ReferralLinkCopyButton'

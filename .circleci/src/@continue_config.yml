@@ -70,7 +70,13 @@ parameters:
   run-healthz-workflow:
     type: boolean
     default: false
-  run-ddex-workflow:
+  run-ddex-webapp-workflow:
+    type: boolean
+    default: false
+  run-ddex-publisher-workflow:
+    type: boolean
+    default: false
+  run-ddex-stage-workflow:
     type: boolean
     default: false
 # Can enable recurring probers against stage at some point

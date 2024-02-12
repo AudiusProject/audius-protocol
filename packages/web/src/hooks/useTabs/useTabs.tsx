@@ -13,7 +13,7 @@ import {
   createRef
 } from 'react'
 
-import { useInstanceVar } from '@audius/common'
+import { useInstanceVar } from '@audius/common/hooks'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 import { throttle } from 'lodash'

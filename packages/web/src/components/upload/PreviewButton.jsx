@@ -1,9 +1,8 @@
 import { Component } from 'react'
 
+import { IconPlay } from '@audius/harmony'
+import { IconStop } from '@audius/stems'
 import PropTypes from 'prop-types'
-
-import IconStop from 'assets/img/iconStop.svg'
-import IconPlay from 'assets/img/pbIconPlay.svg'
 
 import styles from './PreviewButton.module.css'
 
@@ -19,7 +18,7 @@ class PreviewButton extends Component {
           </div>
         ) : (
           <div>
-            <IconPlay className={styles.previewButton} />
+            <IconPlay color='default' className={styles.previewButton} />
           </div>
         )}
         <span>Preview</span>

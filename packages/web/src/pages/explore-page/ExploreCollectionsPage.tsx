@@ -1,23 +1,18 @@
-import { ExploreCollectionsVariant } from '@audius/common'
-import { connect } from 'react-redux'
+import { ExploreCollectionsVariant } from '@audius/common/store'
 
-import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import ExploreCollectionsPageProvider from './ExploreCollectionsPageProvider'
 import DesktopCollectionsPage from './components/desktop/CollectionsPage'
 import MobileCollectionsPage from './components/mobile/CollectionsPage'
 
-type OwnProps = {
+type ExploreCollectionsPageContentProps = {
   variant: ExploreCollectionsVariant
 }
-
-type ExploreCollectionsPageContentProps = ReturnType<typeof mapStateToProps> &
-  OwnProps
 const ExploreCollectionsPage = ({
-  variant,
-  isMobile
+  variant
 }: ExploreCollectionsPageContentProps) => {
+  const isMobile = useIsMobile()
   const content = isMobile ? MobileCollectionsPage : DesktopCollectionsPage
 
   return (
@@ -27,10 +22,4 @@ const ExploreCollectionsPage = ({
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    isMobile: isMobile()
-  }
-}
-
-export default connect(mapStateToProps)(ExploreCollectionsPage)
+export default ExploreCollectionsPage

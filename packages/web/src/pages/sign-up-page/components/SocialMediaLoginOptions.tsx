@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
-import { BooleanKeys, socialMediaMessages } from '@audius/common'
+import { socialMediaMessages } from '@audius/common/messages'
+import { BooleanKeys } from '@audius/common/services'
 import { Box, Flex, SocialButton } from '@audius/harmony'
 
 import { ToastContext } from 'components/toast/ToastContext'
@@ -10,14 +11,16 @@ import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
 
+export type SocialPlatform = 'twitter' | 'instagram' | 'tiktok'
+
 type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter' | 'instagram' | 'tiktok'
+    platform: SocialPlatform
   }) => void
-  onError: () => void
-  onStart: () => void
+  onError: (err: Error, platform: SocialPlatform) => void
+  onStart: (platform: SocialPlatform) => void
 }
 
 export const SocialMediaLoginOptions = ({
@@ -27,8 +30,10 @@ export const SocialMediaLoginOptions = ({
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useContext(ToastContext)
 
-  const handleFailure = () => {
-    onError()
+  const handleStart = (platform: SocialPlatform) => () => onStart(platform)
+
+  const handleFailure = (platform: SocialPlatform) => (err: any) => {
+    onError(err, platform)
     toast(socialMediaMessages.verificationError)
   }
 
@@ -39,7 +44,7 @@ export const SocialMediaLoginOptions = ({
   }: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter' | 'instagram' | 'tiktok'
+    platform: SocialPlatform
   }) => {
     toast(socialMediaMessages.socialMediaLoginSucess(platform))
     onCompleteSocialMediaLogin({
@@ -62,14 +67,14 @@ export const SocialMediaLoginOptions = ({
       {isTwitterEnabled ? (
         <SignupFlowTwitterAuth
           css={{ flex: 1 }}
-          onStart={onStart}
-          onFailure={handleFailure}
+          onStart={handleStart('twitter')}
+          onFailure={handleFailure('twitter')}
           onSuccess={handleSuccess}
         >
           <SocialButton
             type='button'
-            fullWidth
             socialType='twitter'
+            css={{ width: '100%' }}
             aria-label={socialMediaMessages.signUpTwitter}
           />
         </SignupFlowTwitterAuth>
@@ -77,15 +82,14 @@ export const SocialMediaLoginOptions = ({
       {isInstagramEnabled ? (
         <SignupFlowInstagramAuth
           css={{ flex: 1 }}
-          onStart={onStart}
-          onFailure={handleFailure}
+          onStart={handleStart('instagram')}
+          onFailure={handleFailure('instagram')}
           onSuccess={handleSuccess}
         >
           <SocialButton
             type='button'
-            fullWidth
             socialType='instagram'
-            css={{ flex: 1 }}
+            css={{ width: '100%' }}
             aria-label={socialMediaMessages.signUpInstagram}
           />
         </SignupFlowInstagramAuth>
@@ -93,14 +97,14 @@ export const SocialMediaLoginOptions = ({
       {isTikTokEnabled ? (
         <Box css={{ flex: 1 }}>
           <SignupFlowTikTokAuth
-            onStart={onStart}
-            onFailure={handleFailure}
+            onStart={handleStart('tiktok')}
+            onFailure={handleFailure('tiktok')}
             onSuccess={handleSuccess}
           >
             <SocialButton
               type='button'
-              fullWidth
               socialType='tiktok'
+              css={{ width: '100%' }}
               aria-label={socialMediaMessages.signUpTikTok}
             />
           </SignupFlowTikTokAuth>

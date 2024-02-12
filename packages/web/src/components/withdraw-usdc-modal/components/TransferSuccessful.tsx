@@ -1,28 +1,23 @@
 import { useCallback } from 'react'
 
+import { useUSDCBalance } from '@audius/common/hooks'
+import { Name, Status, BNUSDC } from '@audius/common/models'
+import { withdrawUSDCSelectors, WithdrawMethod } from '@audius/common/store'
 import {
-  useUSDCBalance,
-  BNUSDC,
-  formatUSDCWeiToFloorCentsNumber,
-  makeSolanaTransactionLink,
   decimalIntegerToHumanReadable,
-  Status,
-  withdrawUSDCSelectors,
-  Name,
-  WithdrawMethod
-} from '@audius/common'
-import { Button, Flex } from '@audius/harmony'
+  formatUSDCWeiToFloorCentsNumber,
+  makeSolanaTransactionLink
+} from '@audius/common/utils'
+import { Button, Flex, IconExternalLink, IconCheck } from '@audius/harmony'
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
-  HarmonyPlainButtonType,
-  IconCheck
+  HarmonyPlainButtonType
 } from '@audius/stems'
 import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
@@ -60,7 +55,7 @@ export const TransferSuccessful = ({
   priorBalanceCents: number
   onClickDone: () => void
 }) => {
-  const { data: balance, balanceStatus } = useUSDCBalance()
+  const { data: balance, status: balanceStatus } = useUSDCBalance()
   const signature = useSelector(getWithdrawTransaction)
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -104,7 +99,7 @@ export const TransferSuccessful = ({
           balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
         }
       />
-      {methodValue !== WithdrawMethod.MANUAL_TRANSFER ? (
+      {methodValue === WithdrawMethod.MANUAL_TRANSFER && signature ? (
         <>
           <Divider style={{ margin: 0 }} />
           <div className={styles.destination}>

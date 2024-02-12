@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   feedPageLineupActions as feedActions,
   feedPageActions
-} from '@audius/common'
+} from '@audius/common/store'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { Dimensions } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -25,7 +25,7 @@ export const EmptyFeedSuggestedFollows = () => {
   )
   const handleArtistsSelected = useCallback(() => {
     // Set eager users and refetch lineup
-    dispatch(signOnActions.followArtists(selectedUserIds))
+    dispatch(signOnActions.followArtists())
     dispatch(feedActions.fetchLineupMetadatas())
     // Async go follow users
     dispatch(feedPageActions.followUsers(selectedUserIds))

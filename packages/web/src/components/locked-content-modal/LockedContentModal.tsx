@@ -1,19 +1,17 @@
 import { useCallback } from 'react'
 
-import {
-  gatedContentActions,
-  useLockedContent,
-  useGatedContentAccess
-} from '@audius/common'
-import { IconLock, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
+import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
+import { gatedContentActions } from '@audius/common/store'
+import { IconLock } from '@audius/harmony'
+import { ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { GatedTrackSection } from 'components/track/GatedTrackSection'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
+import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
-import { isMobile } from 'utils/clientUtil'
 
 import styles from './LockedContentModal.module.css'
 
@@ -34,7 +32,7 @@ export const LockedContentModal = () => {
     dispatch(resetLockedContentId())
   }, [setIsOpen, dispatch])
 
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   return (
     <ModalDrawer
@@ -46,10 +44,10 @@ export const LockedContentModal = () => {
       useGradientTitle={false}
     >
       <ModalHeader
-        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+        className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
         onClose={handleClose}
         dismissButtonClassName={styles.modalHeaderDismissButton}
-        showDismissButton={!mobile}
+        showDismissButton={!isMobile}
       >
         <ModalTitle
           title={messages.howToUnlock}

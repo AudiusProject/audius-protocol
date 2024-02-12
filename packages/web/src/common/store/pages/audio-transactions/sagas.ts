@@ -1,21 +1,18 @@
+import { StringAudio } from '@audius/common/models'
 import {
   audioTransactionsPageActions,
-  TransactionDetails,
-  TransactionMethod,
-  TransactionType,
-  formatDate,
-  StringAudio,
   transactionDetailsActions,
+  TransactionType,
+  TransactionMethod,
   getContext,
-  Nullable
-} from '@audius/common'
-import type { InAppAudioPurchaseMetadata } from '@audius/common'
+  InAppAudioPurchaseMetadata,
+  TransactionDetails
+} from '@audius/common/store'
+import { formatDate, Nullable, removeNullable } from '@audius/common/utils'
 import { AudiusLibs, full } from '@audius/sdk'
 import { call, takeLatest, put } from 'typed-redux-saga'
 
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 const {
   fetchAudioTransactions,
@@ -105,6 +102,7 @@ function* fetchAudioTransactionsAsync() {
   yield* takeLatest(
     fetchAudioTransactions.type,
     function* (action: ReturnType<typeof fetchAudioTransactions>): any {
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const { data, signature } = yield* call([
         audiusBackendInstance,
         audiusBackendInstance.signDiscoveryNodeRequest
@@ -139,7 +137,7 @@ function* fetchAudioTransactionsAsync() {
         .filter((tx) => tx !== null)
       yield* call(
         fetchUsers,
-        userIds,
+        userIds.filter(removeNullable).map(parseInt),
         undefined, // requiredFields
         false // forceRetrieveFromSource
       )
@@ -155,7 +153,9 @@ function* fetchTransactionMetadata() {
       if (txDetails.transactionType !== TransactionType.PURCHASE) {
         return
       }
-      yield* call(waitForLibsInit)
+      const apiClient = yield* getContext('apiClient')
+      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      yield* call([apiClient, apiClient.waitForLibsInit])
       const libs: AudiusLibs = yield* call(audiusBackendInstance.getAudiusLibs)
       const response = yield* call(
         [
@@ -179,6 +179,7 @@ function* fetchTransactionMetadata() {
 
 function* fetchTransactionsCount() {
   yield* takeLatest(fetchAudioTransactionsCount.type, function* () {
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const { data, signature } = yield* call([
       audiusBackendInstance,
       audiusBackendInstance.signDiscoveryNodeRequest

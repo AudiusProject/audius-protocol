@@ -1,9 +1,8 @@
 import { Component } from 'react'
 
+import { IconCaretDown } from '@audius/harmony'
 import Select from 'antd/lib/select'
 import cn from 'classnames'
-
-import IconCaretDown from 'assets/img/iconCaretDown.svg'
 
 import styles from './DropdownInput.module.css'
 import { HelperText } from './HelperText'
@@ -149,7 +148,7 @@ class DropdownInput extends Component {
               <div className={styles.placeholder}>{placeholder}</div>
             }
             showArrow={true}
-            suffixIcon={<IconCaretDown className={styles.arrow} />}
+            suffixIcon={<IconCaretDown size='xs' className={styles.arrow} />}
             defaultActiveFirstOption={false}
             optionFilterProp='children'
             onSelect={this.onSelect}

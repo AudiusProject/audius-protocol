@@ -1,9 +1,9 @@
 import type { CSSProperties, ComponentPropsWithoutRef } from 'react'
 
-import type { BackgroundColors, BorderColors } from 'foundations/color'
-import type { CornerRadiusOptions } from 'foundations/corner-radius'
-import type { ShadowOptions } from 'foundations/shadows'
-import type { SpacingOptions } from 'foundations/spacing'
+import type { BackgroundColors, BorderColors } from '../../../foundations/color'
+import type { CornerRadiusOptions } from '../../../foundations/corner-radius'
+import type { ShadowOptions } from '../../../foundations/shadows'
+import type { SpacingOptions } from '../../../foundations/spacing'
 
 // Custom box props without HTML <div> properties
 export type BaseBoxProps = {

@@ -1,17 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import {
-  Maybe,
-  Nullable,
-  SquareSizes,
-  UserCollectionMetadata,
-  useAppContext
-} from '@audius/common'
+import { useAppContext } from '@audius/common/context'
+import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
+import { Nullable, Maybe } from '@audius/common/utils'
 import { StorageNodeSelectorService } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import { useAsyncFn } from 'react-use'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import audiusExclusivesPlaylistImg from 'assets/img/publicSite/AudiusExclusivesPlaylistArt.png'
 import audiusWeeklyPlaylistImg from 'assets/img/publicSite/AudiusWeeklyPlaylistArt.png'
 import hotAndNewPlaylistImg from 'assets/img/publicSite/HotAndNewPlaylistArt.jpeg'
@@ -23,6 +20,7 @@ import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { env } from 'services/env'
 import { collectionPage } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
@@ -148,10 +146,11 @@ const getImageUrl = (
 }
 
 const FeaturedContent = (props: FeaturedContentProps) => {
+  const { history } = useHistoryContext()
   const { storageNodeSelector } = useAppContext()
   const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
     useAsyncFn(async () => {
-      const featuredContent = await fetchExploreContent()
+      const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
       const ids = featuredContent.featuredPlaylists
       const playlists = audiusBackendInstance.getPlaylists(
         null,
@@ -195,7 +194,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                 <MobilePlaylistTile
                   key={p.link}
                   {...p}
-                  onClick={handleClickRoute(p.link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    p.link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                 />
               ))
             : trendingPlaylistsResponse.value
@@ -219,7 +222,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                         p.permalink,
                         p.is_album
                       ),
-                      props.setRenderPublicSite
+                      props.setRenderPublicSite,
+                      history
                     )}
                   />
                 ))}
@@ -248,7 +252,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                 <DesktopPlaylistTile
                   key={p.title}
                   {...p}
-                  onClick={handleClickRoute(p.link, props.setRenderPublicSite)}
+                  onClick={handleClickRoute(
+                    p.link,
+                    props.setRenderPublicSite,
+                    history
+                  )}
                 />
               ))
             : trendingPlaylistsResponse.value
@@ -272,7 +280,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                         p.permalink,
                         p.is_album
                       ),
-                      props.setRenderPublicSite
+                      props.setRenderPublicSite,
+                      history
                     )}
                   />
                 ))}

@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  signInPageMessages as messages,
-  signInErrorMessages,
-  signInSchema
-} from '@audius/common'
+import { signInPageMessages } from '@audius/common/messages'
+import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
 import {
   Flex,
   IconAudiusLogoHorizontalColor,
@@ -91,8 +88,8 @@ export const SignInPage = () => {
         <ScrollView
           direction='column'
           justifyContent='space-between'
-          ph={isMobile ? 'l' : '2xl'}
-          pt='unit20'
+          ph={isMobile ? 'm' : '2xl'}
+          pt='unit14'
           pb={isMobile ? '2xl' : 'unit14'}
           gap='l'
         >
@@ -112,7 +109,11 @@ export const SignInPage = () => {
                 />
               )}
             </Box>
-            <Heading heading={messages.title} centered={isMobile} tag='h1' />
+            <Heading
+              heading={signInPageMessages.title}
+              centered={isMobile}
+              tag='h1'
+            />
             <Flex direction='column' gap='l'>
               <EmailField />
               <SignInPasswordField />
@@ -124,7 +125,7 @@ export const SignInPage = () => {
                 isLoading={signInStatus === 'loading'}
                 fullWidth
               >
-                {messages.signIn}
+                {signInPageMessages.signIn}
               </Button>
               {!isMobile ? <SignInWithMetaMaskButton /> : null}
               <TextLink
@@ -135,13 +136,13 @@ export const SignInPage = () => {
                   setShowForgotPassword(true)
                 }}
               >
-                {messages.forgotPassword}
+                {signInPageMessages.forgotPassword}
               </TextLink>
             </Flex>
           </Flex>
           {!isMobile ? (
             <Button variant='secondary' asChild fullWidth>
-              <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+              <Link to={SIGN_UP_PAGE}>{signInPageMessages.createAccount}</Link>
             </Button>
           ) : null}
         </ScrollView>
@@ -166,5 +167,10 @@ const SignInPasswordField = () => {
     }
   }, [setError, signInError])
 
-  return <HarmonyPasswordField name='password' label={messages.passwordLabel} />
+  return (
+    <HarmonyPasswordField
+      name='password'
+      label={signInPageMessages.passwordLabel}
+    />
+  )
 }

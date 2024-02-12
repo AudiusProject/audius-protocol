@@ -1,4 +1,4 @@
-import { OverflowAction, OverflowActionCallbacks } from '@audius/common'
+import { OverflowAction, OverflowActionCallbacks } from '@audius/common/store'
 
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 
@@ -36,7 +36,9 @@ const rowMessageMap = {
   [OverflowAction.ADD_TO_ALBUM]: 'Add To Album',
   [OverflowAction.ADD_TO_PLAYLIST]: 'Add To Playlist',
   [OverflowAction.REMOVE_FROM_PLAYLIST]: 'Remove From This Playlist',
+  [OverflowAction.EDIT_ALBUM]: 'Edit Album',
   [OverflowAction.EDIT_PLAYLIST]: 'Edit Playlist',
+  [OverflowAction.DELETE_ALBUM]: 'Delete Album',
   [OverflowAction.DELETE_PLAYLIST]: 'Delete Playlist',
   [OverflowAction.PUBLISH_PLAYLIST]: 'Publish Playlist',
   [OverflowAction.VIEW_TRACK_PAGE]: 'View Track Page',
@@ -89,7 +91,9 @@ const MobileOverflowModal = ({
     [OverflowAction.SHARE]: onShare,
     [OverflowAction.ADD_TO_ALBUM]: onAddToAlbum,
     [OverflowAction.ADD_TO_PLAYLIST]: onAddToPlaylist,
+    [OverflowAction.EDIT_ALBUM]: onEditPlaylist,
     [OverflowAction.EDIT_PLAYLIST]: onEditPlaylist,
+    [OverflowAction.DELETE_ALBUM]: onDeletePlaylist,
     [OverflowAction.DELETE_PLAYLIST]: onDeletePlaylist,
     [OverflowAction.PUBLISH_PLAYLIST]: onPublishPlaylist,
     [OverflowAction.VIEW_TRACK_PAGE]: onVisitTrackPage,

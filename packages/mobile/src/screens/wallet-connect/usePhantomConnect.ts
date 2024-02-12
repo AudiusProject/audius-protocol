@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { tokenDashboardPageActions } from '@audius/common'
+import { tokenDashboardPageActions } from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 

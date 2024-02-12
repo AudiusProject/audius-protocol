@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 
-import { Client } from '@audius/common'
-import { IconArrowWhite } from '@audius/stems'
+import { Client } from '@audius/common/models'
+import { IconArrowRight } from '@audius/harmony'
 import cn from 'classnames'
 
 import { Banner, BannerProps } from 'components/banner/Banner'
@@ -66,7 +66,7 @@ export const CallToActionBanner = (props: CallToActionBannerProps) => {
             >
               {text}
             </div>
-            <IconArrowWhite
+            <IconArrowRight
               className={cn(styles.arrow, { [styles.small]: size === 'small' })}
             />
           </div>

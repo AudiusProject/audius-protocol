@@ -1,39 +1,44 @@
-import { useCallback, useState } from 'react'
+import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
-  getCanonicalName,
-  formatDate,
-  formatSeconds,
-  Genre,
-  FeatureFlags,
-  Nullable,
-  Remix,
-  CoverArtSizes,
-  ID,
-  AccessConditions,
-  FieldVisibility,
-  getDogEarType,
   isContentUSDCPurchaseGated,
-  publishTrackConfirmationModalUIActions,
-  CommonState,
-  cacheTracksSelectors
-} from '@audius/common'
-import { Box, Flex } from '@audius/harmony'
-import { Mood } from '@audius/sdk'
+  ID,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Button,
-  ButtonType,
-  IconShare,
-  IconRocket,
+  cacheTracksSelectors,
+  publishTrackConfirmationModalUIActions,
+  CommonState
+} from '@audius/common/store'
+import {
+  Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
+import {
+  Box,
+  Flex,
+  IconRobot,
   IconRepost,
   IconHeart,
-  IconKebabHorizontal
-} from '@audius/stems'
+  IconKebabHorizontal,
+  IconShare,
+  IconRocket
+} from '@audius/harmony'
+import { Mood } from '@audius/sdk'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
-import IconRobot from 'assets/img/robot.svg'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { Link, UserLink } from 'components/link'
@@ -49,19 +54,25 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { useSsrContext } from 'ssr/SsrContext'
 import { moodMap } from 'utils/Moods'
 import { trpc } from 'utils/trpcClientWeb'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
-import { DownloadSection } from './DownloadSection'
 import { GatedTrackSection } from './GatedTrackSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+
+const DownloadSection = lazy(() =>
+  import('./DownloadSection').then((module) => ({
+    default: module.DownloadSection
+  }))
+)
 
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
@@ -119,7 +130,17 @@ export type GiantTrackTileProps = {
   mood: string
   onClickFavorites: () => void
   onClickReposts: () => void
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -190,7 +211,8 @@ export const GiantTrackTile = ({
   userId
 }: GiantTrackTileProps) => {
   const dispatch = useDispatch()
-  const [artworkLoading, setArtworkLoading] = useState(true)
+  const { isSsrEnabled } = useSsrContext()
+  const [artworkLoading, setArtworkLoading] = useState(!isSsrEnabled)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
     [setArtworkLoading]
@@ -425,23 +447,18 @@ export const GiantTrackTile = ({
 
   const renderTags = () => {
     const shouldShow = !isUnlisted || fieldVisibility.tags
+    if (!shouldShow || !tags) return null
     return (
-      shouldShow &&
-      tags && (
-        <div className={styles.tagSection}>
-          {tags
-            .split(',')
-            .filter((t) => t)
-            .map((tag) => (
-              <SearchTag
-                className={styles.tagFormatting}
-                tag={tag}
-                key={tag}
-                source='track page'
-              />
-            ))}
-        </div>
-      )
+      <Flex pt='m' wrap='wrap' gap='s'>
+        {tags
+          .split(',')
+          .filter((t) => t)
+          .map((tag) => (
+            <SearchTag key={tag} source='track page'>
+              {tag}
+            </SearchTag>
+          ))}
+      </Flex>
     )
   }
 
@@ -458,7 +475,8 @@ export const GiantTrackTile = ({
             size='small'
             css={({ spacing }) => ({
               // the link is too tall
-              marginTop: spacing.negativeUnit
+              marginTop: spacing.negativeUnit,
+              textTransform: 'none'
             })}
           >
             {albumInfo.playlist_name}
@@ -608,66 +626,73 @@ export const GiantTrackTile = ({
             </div>
           </div>
 
-          <div className={cn(styles.playSection, fadeIn)}>
-            {showPlay ? (
-              <PlayPauseButton
-                disabled={!hasStreamAccess}
-                playing={playing && !previewing}
-                onPlay={onPlay}
-                trackId={trackId}
-              />
-            ) : null}
-            {showPreview ? (
-              <PlayPauseButton
-                playing={playing && previewing}
-                onPlay={onPreview}
-                trackId={trackId}
-                isPreview
-              />
-            ) : null}
-            {isLongFormContent && isNewPodcastControlsEnabled ? (
-              <GiantTrackTileProgressInfo
-                duration={duration}
-                trackId={trackId}
-              />
-            ) : (
-              renderListenCount()
-            )}
-          </div>
+          <ClientOnly>
+            <div className={cn(styles.playSection, fadeIn)}>
+              {showPlay ? (
+                <PlayPauseButton
+                  disabled={!hasStreamAccess}
+                  playing={playing && !previewing}
+                  onPlay={onPlay}
+                  trackId={trackId}
+                />
+              ) : null}
+              {showPreview ? (
+                <PlayPauseButton
+                  playing={playing && previewing}
+                  onPlay={onPreview}
+                  trackId={trackId}
+                  isPreview
+                />
+              ) : null}
+              {isLongFormContent && isNewPodcastControlsEnabled ? (
+                <GiantTrackTileProgressInfo
+                  duration={duration}
+                  trackId={trackId}
+                />
+              ) : (
+                renderListenCount()
+              )}
+            </div>
+          </ClientOnly>
 
           <div className={cn(styles.statsSection, fadeIn)}>
             {renderStatsRow()}
             {renderScheduledReleaseRow()}
           </div>
 
-          <div
-            className={cn(styles.actionButtons, fadeIn)}
-            role='group'
-            aria-label={messages.actionGroupLabel}
-          >
-            {renderShareButton()}
-            {renderMakePublicButton()}
-            {hasStreamAccess && renderRepostButton()}
-            {hasStreamAccess && renderFavoriteButton()}
-            <span>
-              {/* prop types for overflow menu don't work correctly
+          <ClientOnly>
+            <div
+              className={cn(styles.actionButtons, fadeIn)}
+              role='group'
+              aria-label={messages.actionGroupLabel}
+            >
+              {renderShareButton()}
+              {renderMakePublicButton()}
+              {hasStreamAccess && renderRepostButton()}
+              {hasStreamAccess && renderFavoriteButton()}
+              <span>
+                {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
-              <Menu {...(overflowMenu as any)}>
-                {(ref, triggerPopup) => (
-                  <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                    <Button
-                      className={cn(styles.buttonFormatting, styles.moreButton)}
-                      leftIcon={<IconKebabHorizontal />}
-                      onClick={() => triggerPopup()}
-                      text={null}
-                      textClassName={styles.buttonTextFormatting}
-                      type={ButtonType.COMMON}
-                    />
-                  </div>
-                )}
-              </Menu>
-            </span>
-          </div>
+                <Menu {...(overflowMenu as any)}>
+                  {(ref, triggerPopup) => (
+                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                      <Button
+                        className={cn(
+                          styles.buttonFormatting,
+                          styles.moreButton
+                        )}
+                        leftIcon={<IconKebabHorizontal />}
+                        onClick={() => triggerPopup()}
+                        text={null}
+                        textClassName={styles.buttonTextFormatting}
+                        type={ButtonType.COMMON}
+                      />
+                    </div>
+                  )}
+                </Menu>
+              </span>
+            </div>
+          </ClientOnly>
         </div>
         <div className={styles.badges}>
           {aiAttributionUserId ? (
@@ -683,20 +708,24 @@ export const GiantTrackTile = ({
         </div>
       </div>
 
-      {isStreamGated && streamConditions ? (
-        <GatedTrackSection
-          isLoading={isLoading}
-          trackId={trackId}
-          streamConditions={streamConditions}
-          hasStreamAccess={hasStreamAccess}
-          isOwner={isOwner}
-          ownerId={userId}
-        />
-      ) : null}
+      <ClientOnly>
+        {isStreamGated && streamConditions ? (
+          <GatedTrackSection
+            isLoading={isLoading}
+            trackId={trackId}
+            streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
+            isOwner={isOwner}
+            ownerId={userId}
+          />
+        ) : null}
+      </ClientOnly>
 
-      {aiAttributionUserId ? (
-        <AiTrackSection attributedUserId={aiAttributionUserId} />
-      ) : null}
+      <ClientOnly>
+        {aiAttributionUserId ? (
+          <AiTrackSection attributedUserId={aiAttributionUserId} />
+        ) : null}
+      </ClientOnly>
 
       <div className={cn(styles.bottomSection, fadeIn)}>
         <div className={styles.infoLabelsSection}>
@@ -726,13 +755,17 @@ export const GiantTrackTile = ({
             {description}
           </UserGeneratedText>
         ) : null}
-        {renderTags()}
-        {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
-        {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
-          <Box pt='l' w='100%'>
-            <DownloadSection trackId={trackId} onDownload={onDownload} />
-          </Box>
-        ) : null}
+        <ClientOnly>
+          {renderTags()}
+          {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
+          {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+            <Box pt='l' w='100%'>
+              <Suspense>
+                <DownloadSection trackId={trackId} />
+              </Suspense>
+            </Box>
+          ) : null}
+        </ClientOnly>
       </div>
     </Tile>
   )

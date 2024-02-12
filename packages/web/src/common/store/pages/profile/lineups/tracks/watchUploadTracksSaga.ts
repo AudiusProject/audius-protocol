@@ -1,11 +1,11 @@
+import { Kind, Track } from '@audius/common/models'
 import {
   accountSelectors,
-  Kind,
-  makeUid,
   profilePageTracksLineupActions,
   profilePageSelectors,
   uploadActions
-} from '@audius/common'
+} from '@audius/common/store'
+import { makeUid } from '@audius/common/utils'
 import { put, select, takeEvery } from 'typed-redux-saga'
 
 const { UPLOAD_TRACKS_SUCCEEDED, uploadTracksSucceeded } = uploadActions
@@ -36,7 +36,8 @@ function* addUploadedTrackToLineup(action: UploadTracksSucceededAction) {
     kind: Kind.TRACKS,
     id: track_id,
     uid: makeUid(Kind.TRACKS, track_id),
-    source
+    source,
+    ...(uploadedTrack as unknown as Track)
   }
 
   yield* put(

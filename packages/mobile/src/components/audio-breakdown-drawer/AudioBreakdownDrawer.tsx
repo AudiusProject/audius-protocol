@@ -1,15 +1,16 @@
-import type { BNWei, AssociatedWallet } from '@audius/common'
+import type { BNWei } from '@audius/common/models'
+import { Chain } from '@audius/common/models'
+import type { AssociatedWallet } from '@audius/common/store'
 import {
-  Chain,
-  formatWei,
   tokenDashboardPageSelectors,
   walletSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatWei } from '@audius/common/utils'
 import BN from 'bn.js'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconInfo from 'app/assets/images/iconInfo.svg'
+import { IconInfo } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'

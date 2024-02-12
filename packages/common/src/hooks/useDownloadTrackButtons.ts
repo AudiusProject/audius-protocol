@@ -1,8 +1,13 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import type { AudiusSdk } from '@audius/sdk'
+import { isEqual } from 'lodash'
 import { shallowEqual, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 
-import dayjs from 'utils/dayjs'
+import { DownloadQuality } from '~/models'
+import dayjs from '~/utils/dayjs'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { ID } from '../models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from '../models/Stems'
@@ -43,7 +48,17 @@ type LabeledStem = Omit<Stem, 'category'> & { label: string }
 type UseDownloadTrackButtonsArgs = {
   following: boolean
   isOwner: boolean
-  onDownload: (trackID: number, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: number
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   onNotLoggedInClick?: () => void
 }
 
@@ -87,12 +102,78 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
   return { stemTracks, track }
 }
 
-const useUploadingStems = ({ trackId }: { trackId: ID }) => {
+export const useFileSizes = ({
+  audiusSdk,
+  trackIds,
+  downloadQuality
+}: {
+  audiusSdk: () => Promise<AudiusSdk>
+  trackIds: ID[]
+  downloadQuality: DownloadQuality
+}) => {
+  const previousTrackIds = usePrevious(trackIds)
+  const previousDownloadQuality = usePrevious(downloadQuality)
+  const [sizes, setSizes] = useState<{
+    [trackId: ID]: { [k in DownloadQuality]: number }
+  }>({})
+  useEffect(() => {
+    if (
+      !isEqual(previousTrackIds, trackIds) ||
+      previousDownloadQuality !== downloadQuality
+    ) {
+      const asyncFn = async () => {
+        const sdk = await audiusSdk()
+        const sizeResults = await Promise.all(
+          trackIds.map(async (trackId) => {
+            if (sizes[trackId]?.[downloadQuality]) {
+              return { trackId, size: sizes[trackId] }
+            }
+            try {
+              const res = await sdk.tracks.inspectTrack({
+                trackId: encodeHashId(trackId),
+                original: downloadQuality === DownloadQuality.ORIGINAL
+              })
+              const size = res?.data?.size ?? null
+              return {
+                trackId,
+                size: { [downloadQuality]: size, ...(sizes[trackId] ?? {}) }
+              }
+            } catch (e) {
+              console.error(e)
+              return { trackId, size: {} }
+            }
+          })
+        )
+        setSizes((sizes) => ({
+          ...sizes,
+          ...sizeResults.reduce((acc, curr) => {
+            acc[curr.trackId] = { ...(acc[curr.trackId] || {}), ...curr.size }
+            return acc
+          }, {} as { trackId: ID; size: { [k in DownloadQuality]: number } })
+        }))
+      }
+      asyncFn()
+    }
+  }, [
+    trackIds,
+    previousTrackIds,
+    audiusSdk,
+    sizes,
+    setSizes,
+    downloadQuality,
+    previousDownloadQuality
+  ])
+  return sizes
+}
+
+export const useUploadingStems = ({ trackId }: { trackId: ID }) => {
   const currentUploads = useSelector(
     (state: CommonState) => getCurrentUploads(state, trackId),
     shallowEqual
   )
   const uploadingTracks = currentUploads.map((u) => ({
+    name: u.file.name,
+    size: u.file.size,
     category: u.category,
     downloadable: false
   }))
@@ -165,7 +246,7 @@ const getStemButtons = ({
           if (!isLoggedIn) {
             onNotLoggedInClick?.()
           }
-          onDownload(id, u.label, parentTrackId)
+          onDownload({ trackId: id, category: u.label, parentTrackId })
         }
       } else {
         return undefined
@@ -223,7 +304,7 @@ const useMakeDownloadOriginalButton = ({
         if (!isLoggedIn) {
           onNotLoggedInClick?.()
         }
-        onDownload(track.track_id)
+        onDownload({ trackId: track.track_id })
       }
     }
   }, [

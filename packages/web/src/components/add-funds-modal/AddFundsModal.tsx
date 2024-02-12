@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
+import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import {
-  useAddFundsModal,
   buyUSDCActions,
-  PurchaseMethod,
-  DEFAULT_PURCHASE_AMOUNT_CENTS,
-  PurchaseVendor,
   buyUSDCSelectors,
-  BuyUSDCStage
-} from '@audius/common'
+  BuyUSDCStage,
+  useAddFundsModal
+} from '@audius/common/store'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,8 +15,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { AddFunds } from 'components/add-funds/AddFunds'
 import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
+import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
-import { isMobile } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
 
 import styles from './AddFundsModal.module.css'
@@ -35,7 +34,7 @@ export const AddFundsModal = () => {
   const { isOpen, onClose } = useAddFundsModal()
   const dispatch = useDispatch()
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
 
   const [page, setPage] = useState<Page>('add-funds')
 
@@ -87,9 +86,9 @@ export const AddFundsModal = () => {
       isFullscreen={false}
     >
       <ModalHeader
-        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+        className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
         onClose={onClose}
-        showDismissButton={!mobile}
+        showDismissButton={!isMobile}
       >
         <Text
           variant='label'

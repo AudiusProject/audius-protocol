@@ -1,19 +1,19 @@
 // Auto-increment the uid so that items with the
 
-import { ID } from 'models/Identifiers'
+import { ID } from '~/models/Identifiers'
 
 // same kind, id, and source have unique IDs
 let count = 0
 
 export class Uid {
   kind: string
-  id: ID
+  id: ID | string
   source: string | undefined
   count: number | string
 
   constructor(
     kind: string,
-    id: ID,
+    id: ID | string,
     source?: string,
     count: number | string = 0
   ) {
@@ -23,7 +23,7 @@ export class Uid {
     this.count = count
   }
 
-  static build(kind: string, id: ID, source?: string, addedCount = 0) {
+  static build(kind: string, id: ID | string, source?: string, addedCount = 0) {
     const count = Uid._getCount()
     return new Uid(kind, id, source, count + addedCount)
   }
@@ -66,7 +66,11 @@ export class Uid {
   }
 }
 
-export function makeUids(kinds: string[], ids: number[], source: string) {
+export function makeUids(
+  kinds: string[],
+  ids: (number | string)[],
+  source?: string
+) {
   if (Array.isArray(kinds)) {
     // Multiple kinds in the ids array.
     const totals: Record<string, number> = {}

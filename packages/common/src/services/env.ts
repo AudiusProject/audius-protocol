@@ -1,11 +1,9 @@
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from '~/utils/typeUtils'
 
 export type Environment = 'development' | 'staging' | 'production'
 
 export type Env = {
   AAO_ENDPOINT: string
-  ADROLL_AVD_ID: Nullable<string>
-  ADROLL_PIX_ID: Nullable<string>
   AMPLITUDE_API_KEY: Nullable<string>
   AMPLITUDE_PROXY: Nullable<string>
   AMPLITUDE_WRITE_KEY: Nullable<string>
@@ -36,7 +34,7 @@ export type Env = {
   FINGERPRINT_ENDPOINT: Nullable<string>
   FINGERPRINT_PUBLIC_API_KEY: Nullable<string>
   GA_HOSTNAME: string
-  GA_MEASUREMENT_ID: Nullable<string>
+  GA_MEASUREMENT_ID: string
   GENERAL_ADMISSION: string
   HCAPTCHA_BASE_URL: string
   HCAPTCHA_SITE_KEY: string
@@ -50,7 +48,7 @@ export type Env = {
   PAYMENT_ROUTER_PROGRAM_ID: string
   PUBLIC_HOSTNAME: string
   PUBLIC_PROTOCOL: string
-  PUBLIC_URL: string
+  BASENAME: string
   REACHABILITY_URL: string
   STRIPE_CLIENT_PUBLISHABLE_KEY: string
   RECAPTCHA_SITE_KEY: string
@@ -73,7 +71,7 @@ export type Env = {
   TRPC_ENDPOINT: string
   USDC_MINT_ADDRESS: string
   USER_NODE: string
-  USE_HASH_ROUTING: Nullable<boolean>
+  USE_HASH_ROUTING: boolean
   WAUDIO_MINT_ADDRESS: string
   WEB3_NETWORK_ID: string
   WEB3_PROVIDER_URL: string

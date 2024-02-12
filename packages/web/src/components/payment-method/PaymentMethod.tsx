@@ -1,27 +1,26 @@
 import { CSSProperties, ChangeEvent, useCallback } from 'react'
 
+import { PurchaseMethod, PurchaseVendor, BNUSDC } from '@audius/common/models'
 import {
-  BNUSDC,
-  Nullable,
-  PurchaseMethod,
-  PurchaseVendor,
   formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common'
+  formatUSDCWeiToFloorCentsNumber,
+  Nullable
+} from '@audius/common/utils'
 import {
   FilterButton,
   Flex,
   IconCreditCard,
   IconDonate,
-  IconTransaction
+  IconTransaction,
+  Radio,
+  RadioGroup
 } from '@audius/harmony'
-import { RadioButton, RadioButtonGroup } from '@audius/stems'
 import BN from 'bn.js'
 
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Text } from 'components/typography'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
 
 const messages = {
@@ -52,7 +51,7 @@ export const PaymentMethod = ({
   showExistingBalance,
   isCoinflowEnabled
 }: PaymentMethodProps) => {
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
@@ -97,7 +96,7 @@ export const PaymentMethod = ({
       icon: IconCreditCard,
       value:
         vendorOptions.length > 1 ? (
-          mobile ? (
+          isMobile ? (
             <MobileFilterButton
               onSelect={handleSelectVendor}
               selection={selectedVendor?.toString()}
@@ -131,7 +130,7 @@ export const PaymentMethod = ({
 
   const renderBody = () => {
     const getFlexProps = (id: PurchaseMethod) => {
-      if (mobile && id === PurchaseMethod.CARD) {
+      if (isMobile && id === PurchaseMethod.CARD) {
         return {
           direction: 'column' as CSSProperties['flexDirection'],
           justifyContent: 'center',
@@ -147,7 +146,7 @@ export const PaymentMethod = ({
       }
     }
     return (
-      <RadioButtonGroup
+      <RadioGroup
         name={`summaryTable-label-${messages.paymentMethod}`}
         value={selectedMethod}
         onChange={handleRadioChange}
@@ -169,7 +168,7 @@ export const PaymentMethod = ({
               justifyContent='space-between'
               gap='s'
             >
-              <RadioButton value={id} disabled={disabled} />
+              <Radio value={id} disabled={disabled} />
               {Icon ? (
                 <Flex alignItems='center' ml='s'>
                   <Icon color='default' />
@@ -179,14 +178,14 @@ export const PaymentMethod = ({
             </Flex>
             <Text
               css={{
-                width: mobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
+                width: isMobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
               }}
             >
               {value}
             </Text>
           </Flex>
         ))}
-      </RadioButtonGroup>
+      </RadioGroup>
     )
   }
 

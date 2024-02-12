@@ -14,13 +14,13 @@ import {
 } from 'typed-redux-saga'
 import { ulid } from 'ulid'
 
-import { Name } from 'models/Analytics'
-import { ErrorLevel } from 'models/ErrorReporting'
-import { ID } from 'models/Identifiers'
-import { Status } from 'models/Status'
-import * as toastActions from 'src/store/ui/toast/slice'
-import { getAccountUser, getUserId } from 'store/account/selectors'
-import dayjs from 'utils/dayjs'
+import { Name } from '~/models/Analytics'
+import { ErrorLevel } from '~/models/ErrorReporting'
+import { ID } from '~/models/Identifiers'
+import { Status } from '~/models/Status'
+import { getAccountUser, getUserId } from '~/store/account/selectors'
+import * as toastActions from '~/store/ui/toast/slice'
+import dayjs from '~/utils/dayjs'
 
 import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
@@ -31,8 +31,10 @@ import { actions as chatActions } from './slice'
 import { makeChatId } from './utils'
 
 // Attach ulid to window object for debugging DMs
-// @ts-ignore
-window.ulid = ulid
+if (typeof window !== 'undefined') {
+  // @ts-ignore
+  window.ulid = ulid
+}
 
 const {
   createChat,

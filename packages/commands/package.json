@@ -1,6 +1,6 @@
 {
   "name": "@audius/commands",
-  "version": "1.0.18",
+  "version": "1.0.21",
   "private": true,
   "description": "Collection of command useful for debugging audius-protocol",
   "main": "src/index.mjs",
@@ -15,6 +15,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@audius/sdk": "*",
+    "@audius/spl": "*",
     "@solana/spl-token": "0.3.8",
     "@solana/web3.js": "1.78.4",
     "bn.js": "^5.2.1",

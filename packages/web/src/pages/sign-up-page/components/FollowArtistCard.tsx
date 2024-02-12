@@ -1,6 +1,7 @@
 import { HTMLProps, useContext } from 'react'
 
-import { UserMetadata, WidthSizes } from '@audius/common'
+import { Name, WidthSizes, UserMetadata } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import {
   Box,
   Divider,
@@ -18,8 +19,10 @@ import {
 } from '@audius/harmony'
 import { useField } from 'formik'
 import Lottie from 'react-lottie'
+import { useDispatch } from 'react-redux'
 import { useHover } from 'react-use'
 
+import { make } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
@@ -35,6 +38,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
   const {
     user: { name, user_id, is_verified, track_count, follower_count }
   } = props
+  const dispatch = useDispatch()
   const { isMobile } = useMedia()
   const { source: coverPhoto, shouldBlur } = useCoverPhoto(
     user_id,
@@ -83,6 +87,12 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
         variant='strong'
         userId={user_id}
         onClick={() => {
+          dispatch(
+            make(Name.CREATE_ACCOUNT_ARTIST_PREVIEWED, {
+              artistName: name,
+              artistID: user_id
+            })
+          )
           togglePreview(user_id)
         }}
       />
@@ -163,14 +173,14 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
               <Flex direction='row' gap='xs' alignItems='center'>
                 <IconNote width={16} height={16} color='subdued' />
                 <Text variant='body' size='s' strength='strong'>
-                  {track_count}
+                  {formatCount(track_count)}
                 </Text>
               </Flex>
               <Divider orientation='vertical' />
               <Flex direction='row' gap='xs' alignItems='center'>
                 <IconUser width={16} height={16} color='subdued' />
                 <Text variant='body' size='s' strength='strong'>
-                  {follower_count}
+                  {formatCount(follower_count)}
                 </Text>
               </Flex>
             </Flex>
@@ -182,6 +192,16 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
             {...followField}
             isFollowing={followField.value.includes(user_id.toString())}
             value={user_id}
+            onClick={(e) => {
+              if ((e.target as HTMLInputElement).checked) {
+                dispatch(
+                  make(Name.CREATE_ACCOUNT_FOLLOW_ARTIST, {
+                    artistName: name,
+                    artistID: user_id
+                  })
+                )
+              }
+            }}
           />
         </Flex>
       </Flex>

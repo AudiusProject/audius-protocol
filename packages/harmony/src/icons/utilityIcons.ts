@@ -53,6 +53,7 @@ import IconInfoSVG from '../assets/icons/Info.svg'
 import IconKebabHorizontalSVG from '../assets/icons/KebabHorizontal.svg'
 import IconKeySVG from '../assets/icons/Key.svg'
 import IconLibrarySVG from '../assets/icons/Library.svg'
+import IconLifeRingSVG from '../assets/icons/LifeRing.svg'
 import IconLinkSVG from '../assets/icons/Link.svg'
 import IconListeningHistorySVG from '../assets/icons/ListeningHistory.svg'
 import IconListensSVG from '../assets/icons/Listens.svg'
@@ -112,6 +113,7 @@ import IconTippingSVG from '../assets/icons/Tipping.svg'
 import IconTransactionSVG from '../assets/icons/Transaction.svg'
 import IconTrashSVG from '../assets/icons/Trash.svg'
 import IconTrendingSVG from '../assets/icons/Trending.svg'
+import IconTriangleExclamationSVG from '../assets/icons/TriangleExclamation.svg'
 import IconTrophySVG from '../assets/icons/Trophy.svg'
 import IconTurntableSVG from '../assets/icons/Turntable.svg'
 import IconUserSVG from '../assets/icons/User.svg'
@@ -131,6 +133,7 @@ import IconVolumeLevel2SVG from '../assets/icons/VolumeLevel2.svg'
 import IconVolumeLevel3SVG from '../assets/icons/VolumeLevel3.svg'
 import IconWalletSVG from '../assets/icons/Wallet.svg'
 import IconWandSVG from '../assets/icons/Wand.svg'
+import IconWaveformSVG from '../assets/icons/Waveform.svg'
 import IconWithdrawSVG from '../assets/icons/Withdraw.svg'
 import type { IconComponent } from '../components/icon'
 
@@ -207,6 +210,9 @@ export const IconCloudDownloadInactive =
   IconCloudDownloadInactiveSVG as IconComponent
 export const IconNotificationOff = IconNotificationOffSVG as IconComponent
 export const IconTrending = IconTrendingSVG as IconComponent
+export const IconTriangleExclamation =
+  IconTriangleExclamationSVG as IconComponent
+export const IconLifeRing = IconLifeRingSVG as IconComponent
 export const IconCloudDownloadPaused =
   IconCloudDownloadPausedSVG as IconComponent
 export const IconNotificationOn = IconNotificationOnSVG as IconComponent
@@ -271,3 +277,4 @@ export const IconValidationCheck = IconValidationCheckSVG as IconComponent
 export const IconValidationX = IconValidationXSVG as IconComponent
 export const IconSoundwave = IconSoundwaveSVG as IconComponent
 export const IconCreditCard = IconCreditCardSVG as IconComponent
+export const IconWaveForm = IconWaveformSVG as IconComponent

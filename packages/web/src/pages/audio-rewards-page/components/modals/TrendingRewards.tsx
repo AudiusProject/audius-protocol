@@ -1,23 +1,24 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Theme } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  Theme,
-  StringKeys,
+  audioRewardsPageSelectors,
   audioRewardsPageActions,
-  TrendingRewardsModalType,
-  audioRewardsPageSelectors
-} from '@audius/common'
-import { SegmentedControl, ButtonType, Button, IconArrow } from '@audius/stems'
+  TrendingRewardsModalType
+} from '@audius/common/store'
+import { SegmentedControl, IconArrowRight as IconArrow } from '@audius/harmony'
+import { ButtonType, Button } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 import {
   TRENDING_PAGE,
@@ -132,15 +133,15 @@ const TrendingRewardsBody = ({
     window.open(TOS_URL, '_blank')
   }, [])
 
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const tabOptions = [
     {
       key: 'tracks',
-      text: mobile ? messages.tracks : messages.topTracks
+      text: isMobile ? messages.tracks : messages.topTracks
     },
     {
       key: 'playlists',
-      text: mobile ? messages.playlists : messages.topPlaylists
+      text: isMobile ? messages.playlists : messages.topPlaylists
     },
     {
       key: 'underground',
@@ -207,10 +208,10 @@ const TrendingRewardsBody = ({
         </div>
         <Button
           type={ButtonType.PRIMARY_ALT}
-          text={textMap[modalType][mobile ? 'buttonMobile' : 'button']}
+          text={textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
           onClick={onButtonClick}
           className={styles.button}
-          rightIcon={<IconArrow />}
+          rightIcon={<IconArrow size='s' />}
           iconClassName={wm(styles.buttonIcon)}
         />
         <span onClick={onClickToS} className={styles.terms}>

@@ -1,4 +1,4 @@
-import type { ShareType } from '@audius/common'
+import type { ShareType } from '@audius/common/store'
 
 const shareTypeMap: Record<ShareType, string> = {
   track: 'Track',
@@ -14,7 +14,7 @@ export const messages = {
     'Spread the word! Share your playlist with friends and fans! Hidden playlists will be visible to anyone on the internet with the link.',
   directMessage: 'Direct Message',
   twitter: 'Twitter',
-  instagramStory: ' Instagram Story',
+  instagramStory: 'Instagram Story',
   snapchat: 'Snapchat',
   tikTokVideo: 'TikTok',
   tikTokSound: 'Share Sound to TikTok',

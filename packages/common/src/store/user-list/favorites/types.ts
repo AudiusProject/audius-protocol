@@ -1,4 +1,4 @@
-import { UserListStoreState } from 'store/user-list/types'
+import { UserListStoreState } from '~/store/user-list/types'
 
 import { ID, FavoriteType } from '../../../models'
 

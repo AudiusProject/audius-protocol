@@ -7,25 +7,21 @@ import {
   useState
 } from 'react'
 
+import { useProxySelector } from '@audius/common/hooks'
+import { Status, ID, User } from '@audius/common/models'
 import {
   cacheUsersSelectors,
-  searchUsersModalSelectors,
   searchUsersModalActions,
-  useProxySelector,
-  User,
-  ID,
-  Status
-} from '@audius/common'
+  searchUsersModalSelectors
+} from '@audius/common/store'
+import { Scrollbar, IconRemove, IconSearch } from '@audius/harmony'
 import {
-  IconButton,
-  IconRemove,
-  IconSearch,
   Modal,
   ModalHeader,
   ModalProps,
   ModalTitle,
-  ModalTitleProps,
-  Scrollbar
+  IconButton,
+  ModalTitleProps
 } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'

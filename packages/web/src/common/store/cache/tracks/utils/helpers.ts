@@ -1,13 +1,11 @@
+import { Kind, TrackMetadata, User } from '@audius/common/models'
 import {
-  Kind,
-  TrackMetadata,
-  User,
-  makeUid,
   accountSelectors,
   cacheActions,
-  getContext,
-  reformatUser
-} from '@audius/common'
+  reformatUser,
+  getContext
+} from '@audius/common/store'
+import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'
 import { put, select } from 'typed-redux-saga'
 
@@ -20,7 +18,8 @@ const getAccountUser = accountSelectors.getAccountUser
  * @param metadataArray
  */
 export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
-  metadataArray: T[]
+  metadataArray: T[],
+  isInitialFetchAfterSsr?: boolean
 ) {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -44,6 +43,11 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   users = users.filter((user) => !(currentUserId && user.id === currentUserId))
 
   yield put(
-    cacheActions.add(Kind.USERS, users, /* replace */ false, /* persist */ true)
+    cacheActions.add(
+      Kind.USERS,
+      users,
+      /* replace */ isInitialFetchAfterSsr,
+      /* persist */ true
+    )
   )
 }

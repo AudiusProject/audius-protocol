@@ -1,12 +1,23 @@
-import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony'
+import type { PickRename } from '@audius/common/utils'
+import type { AvatarProps as HarmonyAvatarProps } from '@audius/harmony/src/components/avatar/types'
 import { css } from '@emotion/native'
-import { View, type ImageBackgroundProps, ImageBackground } from 'react-native'
+import { View } from 'react-native'
 import type { SetRequired } from 'type-fest'
 
 import { useTheme } from '@audius/harmony-native'
+import type { MarginProps } from 'app/harmony-native/utils/styleProps'
+import { useMargin } from 'app/harmony-native/utils/styleProps'
+
+import type { FastImageProps } from '../FastImage/FastImage'
+import { FastImage } from '../FastImage/FastImage'
+
+type TweakedFastImageProps = Omit<FastImageProps, 'priority'> &
+  // Renamed priority prop to imagePriority
+  Partial<PickRename<FastImageProps, 'priority', 'imagePriority'>>
 
 export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> &
-  SetRequired<ImageBackgroundProps, 'accessibilityLabel'>
+  SetRequired<TweakedFastImageProps, 'accessibilityLabel'> &
+  MarginProps
 
 const sizeMap = {
   auto: '100%' as const,
@@ -38,6 +49,8 @@ export const Avatar = (props: AvatarProps) => {
 
   const { color, shadows } = useTheme()
 
+  const margin = useMargin(other)
+
   const borderRadius = 9999
 
   const rootCss = css({
@@ -60,10 +73,16 @@ export const Avatar = (props: AvatarProps) => {
   })
 
   return (
-    <View style={[rootCss, style]}>
-      <ImageBackground style={imageCss} source={source} {...other}>
-        {children}
-      </ImageBackground>
+    <View style={[rootCss, margin, style]}>
+      {source !== undefined ? (
+        <FastImage style={imageCss} source={source} {...other}>
+          {children}
+        </FastImage>
+      ) : (
+        <View style={imageCss} {...other}>
+          {children}
+        </View>
+      )}
     </View>
   )
 }

@@ -1003,11 +1003,14 @@ USER_HISTORY_TRACKS_ROUTE = "/<string:id>/history/tracks"
 @full_ns.route(USER_HISTORY_TRACKS_ROUTE)
 class TrackHistoryFull(Resource):
     @record_metrics
+    @auth_middleware()
     @cache(ttl_sec=5)
-    def _get(self, id):
+    def _get(self, id, authed_user_id):
         args = track_history_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
+        if not current_user_id and decoded_id == authed_user_id:
+            current_user_id = authed_user_id
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
@@ -1048,8 +1051,9 @@ class TrackHistory(TrackHistoryFull):
     )
     @ns.expect(track_history_parser)
     @ns.marshal_with(history_response)
-    def get(self, id):
-        return super()._get(id)
+    @auth_middleware()
+    def get(self, id, authed_user_id):
+        return super()._get(id, authed_user_id)
 
 
 user_search_result = make_response(
@@ -1413,7 +1417,7 @@ TOP_GENRE_ROUTE = "/genre/top"
 
 @full_ns.route(TOP_GENRE_ROUTE)
 class FullTopGenreUsers(Resource):
-    @cache(ttl_sec=60 * 60 * 24)
+    @cache(ttl_sec=60 * 60 * 1)
     def _get(self):
         args = top_genre_users_route_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
@@ -1427,7 +1431,7 @@ class FullTopGenreUsers(Resource):
         if args["genre"] is not None:
             get_top_genre_users_args["genre"] = args["genre"]
         top_users = get_top_genre_users(get_top_genre_users_args)
-        users = list(map(extend_user, top_users["users"]))
+        users = list(map(extend_user, top_users))
         return success_response(users)
 
     @full_ns.doc(
@@ -1466,7 +1470,7 @@ TOP_ROUTE = "/top"
 
 @full_ns.route(TOP_ROUTE)
 class FullTopUsers(Resource):
-    @cache(ttl_sec=60 * 60 * 24)
+    @cache(ttl_sec=60 * 60 * 1)
     def _get(self):
         args = pagination_with_current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)

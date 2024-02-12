@@ -1,5 +1,5 @@
-import { createApi } from 'audius-query'
-import { ID } from 'models/Identifiers'
+import { createApi } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
 
 const relatedArtistsApi = createApi({
   reducerPath: 'relatedArtistsApi',

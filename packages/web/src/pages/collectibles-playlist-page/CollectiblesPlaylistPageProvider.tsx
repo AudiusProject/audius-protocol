@@ -10,24 +10,25 @@ import {
 import {
   ShareSource,
   Chain,
+  SmartCollectionVariant,
+  Status,
   Collectible,
   Collection,
   SmartCollection,
-  SmartCollectionVariant,
-  Status,
-  User,
-  formatSeconds,
+  User
+} from '@audius/common/models'
+import {
   cacheUsersSelectors,
   profilePageActions,
-  CollectionTrack,
-  CollectionPageTrackRecord,
   queueActions,
   QueueSource,
   collectibleDetailsUIActions,
   shareModalUIActions,
   playerSelectors,
-  getHash
-} from '@audius/common'
+  CollectionTrack,
+  CollectionPageTrackRecord
+} from '@audius/common/store'
+import { getHash, formatSeconds } from '@audius/common/utils'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

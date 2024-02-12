@@ -1,14 +1,15 @@
 import { useCallback } from 'react'
 
-import { cacheUsersSelectors, notificationsSelectors } from '@audius/common'
-import type {
-  Nullable,
-  SupporterDethronedNotification as SupporterDethroned
-} from '@audius/common'
+import type { SupporterDethronedNotification as SupporterDethroned } from '@audius/common/store'
+import {
+  cacheUsersSelectors,
+  notificationsSelectors
+} from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconCrownSource from 'app/assets/images/crown2x.png'
+import { IconCrown } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 
@@ -19,7 +20,7 @@ import {
   NotificationTile,
   NotificationTitle,
   NotificationTwitterButton,
-  ProfilePicture,
+  NotificationProfilePicture,
   UserNameLink
 } from '../Notification'
 
@@ -80,11 +81,11 @@ export const SupporterDethronedNotification = (
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader imageSource={IconCrownSource}>
+      <NotificationHeader icon={IconCrown}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <ProfilePicture profile={supportedUser} />
+        <NotificationProfilePicture profile={supportedUser} />
         <NotificationText>
           <UserNameLink user={usurpingUser} />
           {messages.body1}

@@ -1,4 +1,8 @@
-import { USDCPurchaseConditions, UserTrackMetadata } from 'models/Track'
+import {
+  USDCPurchaseConditions,
+  UserTrackMetadata,
+  ComputedTrackProperties
+} from '~/models/Track'
 
 /** Denotes the 3 preset amounts to show on the form, values are in cents. */
 export type PayExtraAmountPresetValues = {
@@ -15,9 +19,19 @@ export enum PayExtraPreset {
   NONE = 'none'
 }
 
-export type PurchaseableTrackMetadata = UserTrackMetadata & {
-  stream_conditions: USDCPurchaseConditions
-}
+export type PurchaseableTrackStreamMetadata = UserTrackMetadata &
+  ComputedTrackProperties & {
+    stream_conditions: USDCPurchaseConditions
+  }
+
+export type PurchaseableTrackDownloadMetadata = UserTrackMetadata &
+  ComputedTrackProperties & {
+    download_conditions: USDCPurchaseConditions
+  }
+
+export type PurchaseableTrackMetadata =
+  | PurchaseableTrackStreamMetadata
+  | PurchaseableTrackDownloadMetadata
 
 export type USDCPurchaseConfig = {
   minContentPriceCents: number

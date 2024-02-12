@@ -1,9 +1,7 @@
-import { Env } from '@audius/common'
+import { Env } from '@audius/common/services'
 
 export const env: Env = {
   AAO_ENDPOINT: 'http://audius-protocol-anti-abuse-oracle-1',
-  ADROLL_AVD_ID: null,
-  ADROLL_PIX_ID: null,
   AMPLITUDE_API_KEY: null,
   AMPLITUDE_PROXY: null,
   AMPLITUDE_WRITE_KEY: null,
@@ -36,7 +34,7 @@ export const env: Env = {
   FINGERPRINT_ENDPOINT: null,
   FINGERPRINT_PUBLIC_API_KEY: null,
   GA_HOSTNAME: 'staging.audius.co',
-  GA_MEASUREMENT_ID: null,
+  GA_MEASUREMENT_ID: 'G-XXXXX',
   GENERAL_ADMISSION: 'http://audius-protocol-general-admission-1',
   HCAPTCHA_BASE_URL: 'https://staging.audius.co',
   HCAPTCHA_SITE_KEY: '2abe61f1-af6e-4707-be19-a9a4146a9bea',
@@ -44,14 +42,14 @@ export const env: Env = {
   INSTAGRAM_APP_ID: '2875320099414320',
   INSTAGRAM_REDIRECT_URL: 'http://localhost:3000',
   METADATA_PROGRAM_ID: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
-  OPENSEA_API_URL: 'https://rinkeby-api.opensea.io/api/v1',
+  OPENSEA_API_URL: 'https://rinkeby-api.opensea.io',
   OPTIMIZELY_KEY: 'MX4fYBgANQetvmBXGpuxzF',
   ORACLE_ETH_ADDRESSES:
     '0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3,0x325A621DeA613BCFb5B1A69a7aCED0ea4AfBD73A,0x3fD652C93dFA333979ad762Cf581Df89BaBa6795',
   PAYMENT_ROUTER_PROGRAM_ID: 'apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa',
   PUBLIC_HOSTNAME: 'staging.audius.co',
   PUBLIC_PROTOCOL: 'https:',
-  PUBLIC_URL: 'https://staging.audius.co',
+  BASENAME: process.env.VITE_BASENAME || '',
   REACHABILITY_URL: 'https://staging.audius.co/204',
   STRIPE_CLIENT_PUBLISHABLE_KEY:
     'pk_test_51LPsGuCJOWtpH6AEZT3Wf2U2xmLZQrEV56yha7HEVTEyhYYVrWCdknml3t4gkSe9Nagd1o9Royy8zL3XEAmRzeHS00xAKTfgpi',

@@ -1,29 +1,29 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
 import {
-  ID,
-  Name,
-  CoverPhotoSizes,
-  ProfilePictureSizes,
-  WidthSizes,
-  SquareSizes,
-  formatCount,
   imageCoverPhotoBlank,
   imageProfilePicEmpty
-} from '@audius/common'
+} from '@audius/common/assets'
 import {
-  Button,
-  ButtonType,
-  ButtonSize,
-  IconTwitterBird,
+  Name,
+  SquareSizes,
+  WidthSizes,
+  ID,
+  ProfilePictureSizes,
+  CoverPhotoSizes
+} from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
+import {
+  IconArtistBadge as BadgeArtist,
   IconInstagram,
   IconDonate,
   IconLink,
-  IconTikTok
-} from '@audius/stems'
+  IconTikTok,
+  IconTwitter as IconTwitterBird
+} from '@audius/harmony'
+import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 
-import BadgeArtist from 'assets/img/badgeArtist.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'

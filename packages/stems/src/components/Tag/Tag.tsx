@@ -15,6 +15,9 @@ export type TagProps<TagComponentType extends ElementType> =
   TagOwnProps<TagComponentType> &
     Omit<ComponentProps<TagComponentType>, keyof TagOwnProps>
 
+/**
+ * @deprecated use `@audius/harmony` tag instead
+ */
 export const Tag = <TagElementType extends ElementType = typeof defaultElement>(
   props: TagProps<TagElementType>
 ) => {

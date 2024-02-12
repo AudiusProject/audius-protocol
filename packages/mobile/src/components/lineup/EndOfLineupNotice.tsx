@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconAudius from 'app/assets/images/iconAudius.svg'
+import { IconAudiusLogo } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -38,7 +38,7 @@ export const EndOfLineupNotice = (props: EndOfLineupNoticeProps) => {
   const { neutralLight4 } = useThemeColors()
   return (
     <View style={styles.root}>
-      <IconAudius
+      <IconAudiusLogo
         fill={neutralLight4}
         height={50}
         width={50}

@@ -2,7 +2,7 @@ import type {
   OfflineCollectionMetadata,
   ID,
   OfflineTrackMetadata
-} from '@audius/common'
+} from '@audius/common/models'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { NetInfoStateType } from '@react-native-community/netinfo'
 import type { PayloadAction } from '@reduxjs/toolkit'

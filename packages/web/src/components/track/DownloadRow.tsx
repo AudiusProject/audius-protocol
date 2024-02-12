@@ -1,44 +1,73 @@
-import { useCallback } from 'react'
-
+import { useDownloadableContentAccess } from '@audius/common/hooks'
 import {
-  CommonState,
   ID,
-  cacheTracksSelectors,
-  DownloadQuality
-} from '@audius/common'
+  StemCategory,
+  stemCategoryFriendlyNames
+} from '@audius/common/models'
+import { cacheTracksSelectors, CommonState } from '@audius/common/store'
+import { getDownloadFilename, formatBytes } from '@audius/common/utils'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import Tooltip from 'components/tooltip/Tooltip'
+
+import styles from './DownloadRow.module.css'
 
 const { getTrack } = cacheTracksSelectors
 
 const messages = {
-  fullTrack: 'Full Track'
+  fullTrack: 'Full Track',
+  followToDownload: 'Must follow artist to download.'
 }
 
 type DownloadRowProps = {
-  trackId: ID
-  quality: DownloadQuality
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
+  isOriginal: boolean
+  trackId?: ID
+  hideDownload?: boolean
   index: number
+  size?: number
+  category?: StemCategory
+  filename?: string
+  isLoading?: boolean
 }
 
 export const DownloadRow = ({
-  trackId,
   onDownload,
-  index
+  isOriginal,
+  trackId,
+  hideDownload,
+  index,
+  size,
+  category,
+  filename,
+  isLoading
 }: DownloadRowProps) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
+  const downloadableContentAccess = useDownloadableContentAccess({
+    trackId: trackId ?? 0
+  })
+  const { shouldDisplayDownloadFollowGated } = trackId
+    ? downloadableContentAccess
+    : { shouldDisplayDownloadFollowGated: false }
 
-  const handleClick = useCallback(() => {
-    if (track) {
-      onDownload(trackId, track.stem_of?.category, trackId)
-    }
-  }, [onDownload, track, trackId])
+  const downloadButton = () => (
+    <PlainButton
+      onClick={() =>
+        onDownload({
+          trackIds: trackId ? [trackId] : []
+        })
+      }
+      disabled={shouldDisplayDownloadFollowGated}
+    >
+      <Icon icon={IconReceive} size='small' />
+    </PlainButton>
+  )
 
   return (
     <Flex
@@ -49,21 +78,49 @@ export const DownloadRow = ({
       justifyContent='space-between'
     >
       <Flex gap='xl' alignItems='center'>
-        <Text>{index}</Text>
+        <Text variant='body' color='subdued'>
+          {index}
+        </Text>
         <Flex direction='column' gap='xs'>
           <Text variant='body' strength='default'>
-            {track?.stem_of?.category ?? messages.fullTrack}
+            {category
+              ? stemCategoryFriendlyNames[category]
+              : track?.stem_of?.category
+              ? stemCategoryFriendlyNames[track?.stem_of?.category]
+              : messages.fullTrack}
           </Text>
-          <Text color='subdued' size='xs'>
-            {track?.orig_filename}
+          <Text variant='body' color='subdued'>
+            {getDownloadFilename({
+              filename: filename ?? track?.orig_filename,
+              isOriginal
+            })}
           </Text>
         </Flex>
       </Flex>
       <Flex gap='2xl'>
-        <Text>size</Text>
-        <PlainButton onClick={handleClick}>
-          <Icon icon={IconReceive} size='small' />
-        </PlainButton>
+        {hideDownload ? null : (
+          <>
+            {size ? (
+              <Text variant='body' size='s' color='subdued'>
+                {formatBytes(size)}
+              </Text>
+            ) : null}
+            {shouldDisplayDownloadFollowGated ? (
+              <Tooltip
+                text={messages.followToDownload}
+                placement='left'
+                mouseEnterDelay={0}
+              >
+                {/* Need wrapping flex for the tooltip to appear for some reason */}
+                <Flex>{downloadButton()}</Flex>
+              </Tooltip>
+            ) : isLoading ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : (
+              downloadButton()
+            )}
+          </>
+        )}
       </Flex>
     </Flex>
   )

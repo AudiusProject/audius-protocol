@@ -23,6 +23,7 @@ import {
   getEthWallet,
   getBlock,
   getBlockNearTimestamp,
+  isEoa,
   toChecksumAddress,
   onSetup,
   onSetupFinished,
@@ -80,6 +81,7 @@ export class AudiusClient {
   getAverageBlockTime = getAverageBlockTime
   getBlockNearTimestamp = getBlockNearTimestamp
   getBlock = getBlock
+  isEoa = isEoa
   toChecksumAddress = toChecksumAddress
 
   // Static Util Functions

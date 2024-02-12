@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
+import { Name, PlaybackSource, Status } from '@audius/common/models'
+import type { SmartCollectionVariant, ID, UID } from '@audius/common/models'
 import {
-  removeNullable,
-  collectionPageSelectors,
-  playerSelectors,
-  Status,
-  Name,
-  PlaybackSource,
-  formatSecondsAsText,
+  cacheCollectionsSelectors,
   collectionPageLineupActions as tracksActions,
+  collectionPageSelectors,
   reachabilitySelectors,
-  cacheCollectionsSelectors
-} from '@audius/common'
+  playerSelectors
+} from '@audius/common/store'
+import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
+import type { Maybe } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
@@ -92,12 +90,11 @@ const useRefetchLineupOnTrackAdd = (
   }, [previousTrackCount, trackCount, dispatch])
 }
 
-const messages = {
-  empty:
-    'This playlist is empty. Start adding tracks to share it or make it public.',
-  emptyPublic: 'This playlist is empty',
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  empty: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
+  emptyPublic: `This ${collectionType} is empty`,
   detailsPlaceholder: '---'
-}
+})
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   trackListDivider: {
@@ -171,7 +168,7 @@ export const CollectionScreenDetailsTile = ({
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
-
+  const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
 
   const details = useMemo(() => {
@@ -191,7 +188,13 @@ export const CollectionScreenDetailsTile = ({
       },
       ...extraDetails
     ].filter(({ isHidden, value }) => !isHidden && !!value)
-  }, [isLineupLoading, trackCount, collectionDuration, extraDetails])
+  }, [
+    isLineupLoading,
+    trackCount,
+    messages.detailsPlaceholder,
+    collectionDuration,
+    extraDetails
+  ])
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {
@@ -257,7 +260,8 @@ export const CollectionScreenDetailsTile = ({
     styles,
     trackUids,
     trackCount,
-    isOwner
+    isOwner,
+    messages
   ])
 
   const isPlayable = isQueued || (trackCount > 0 && !!firstTrack)
@@ -274,7 +278,7 @@ export const CollectionScreenDetailsTile = ({
       hideRepost={hideRepost || !isReachable}
       isPlaying={isPlaying && isQueued}
       isPublished={!isPrivate || isPublishing}
-      isPlaylist={!isAlbum}
+      isCollection={true}
       renderBottomContent={renderTrackList}
       renderHeader={renderHeader}
       renderImage={renderImage}

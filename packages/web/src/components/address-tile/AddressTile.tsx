@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import { shortenSPLAddress, useUSDCBalance } from '@audius/common'
+import { useUSDCBalance } from '@audius/common/hooks'
+import { shortenSPLAddress } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import {
   Text,
@@ -14,7 +15,7 @@ import {
 import { BN } from 'bn.js'
 
 import { ToastContext } from 'components/toast/ToastContext'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 const messages = {
@@ -35,7 +36,7 @@ export const AddressTile = ({
 }: AddressTileProps) => {
   const { color } = useTheme()
   const { toast } = useContext(ToastContext)
-  const mobile = isMobile()
+  const isMobile = useIsMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
 
   const handleCopyPress = useCallback(() => {
@@ -86,7 +87,7 @@ export const AddressTile = ({
             }}
             variant='body'
           >
-            {mobile ? shortenSPLAddress(address, 12) : address}
+            {isMobile ? shortenSPLAddress(address, 12) : address}
           </Text>
         </Box>
         <Flex alignItems='center' borderLeft='default' pr='l' pl='l'>

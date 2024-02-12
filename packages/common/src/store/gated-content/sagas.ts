@@ -14,24 +14,24 @@ import {
   ID,
   Kind,
   Name,
-  AccessSignature,
   GatedTrackStatus,
   Track,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
-  isContentUSDCPurchaseGated
-} from 'models'
-import { User } from 'models/User'
-import { IntKeys } from 'services/remote-config'
-import { accountSelectors } from 'store/account'
-import { cacheActions, cacheTracksSelectors } from 'store/cache'
-import { collectiblesActions } from 'store/collectibles'
-import { getContext } from 'store/effects'
-import { musicConfettiActions } from 'store/music-confetti'
-import { usersSocialActions } from 'store/social'
-import { tippingActions } from 'store/tipping'
-import { Nullable } from 'utils/typeUtils'
+  isContentUSDCPurchaseGated,
+  NFTAccessSignature
+} from '~/models'
+import { User } from '~/models/User'
+import { IntKeys } from '~/services/remote-config'
+import { accountSelectors } from '~/store/account'
+import { cacheActions, cacheTracksSelectors } from '~/store/cache'
+import { collectiblesActions } from '~/store/collectibles'
+import { getContext } from '~/store/effects'
+import { musicConfettiActions } from '~/store/music-confetti'
+import { usersSocialActions } from '~/store/social'
+import { tippingActions } from '~/store/tipping'
+import { Nullable } from '~/utils/typeUtils'
 
 import * as gatedContentSelectors from './selectors'
 import { actions as gatedContentActions } from './slice'
@@ -132,15 +132,11 @@ function* getTokenIdMap({
 
       // skip this track entry if it is not gated on an nft collection
       const {
-        is_stream_gated: isStreamGated,
-        stream_conditions: streamConditions
+        stream_conditions: streamConditions,
+        download_conditions: downloadConditions
       } = tracks[trackId]
-      if (
-        !isStreamGated ||
-        !streamConditions ||
-        !isContentCollectibleGated(streamConditions)
-      )
-        return
+      const conditions = streamConditions ?? downloadConditions
+      if (!conditions || !isContentCollectibleGated(conditions)) return
 
       // Set the token ids for ERC1155 nfts as the balanceOf contract method
       // which will be used to determine ownership requires the user's
@@ -148,13 +144,10 @@ function* getTokenIdMap({
 
       // todo: fix the string nft_collection to be an object
       // temporarily parse it into object here for now
-      let { nft_collection: nftCollection } = streamConditions
+      let { nft_collection: nftCollection } = conditions
       if (typeof nftCollection === 'string') {
         nftCollection = JSON.parse(
-          (streamConditions.nft_collection as unknown as string).replaceAll(
-            "'",
-            '"'
-          )
+          (nftCollection as unknown as string).replaceAll("'", '"')
         )
       }
 
@@ -197,26 +190,41 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
       track_id: trackId,
       owner_id: ownerId,
       stream_conditions: streamConditions,
-      access,
-      permalink
+      download_conditions: downloadConditions,
+      access
     } = track
 
     // Ignore updates that are nft access signature only,
     // i.e. make sure the above properties exist before proceeding.
-    if (!trackId || !ownerId || !streamConditions || !permalink) {
+    if (!trackId || !ownerId || !(streamConditions || downloadConditions)) {
       return false
     }
 
-    const hasNoStreamAccess = !access?.stream
-    const isFollowGated = isContentFollowGated(streamConditions)
-    const isTipGated = isContentTipGated(streamConditions)
-    const shouldHaveStreamAccess =
-      (isFollowGated && followeeIds.includes(ownerId)) ||
-      (isTipGated && tippedUserIds.includes(ownerId))
+    if (streamConditions) {
+      const hasNoStreamAccess = !access?.stream
+      const isFollowGated = isContentFollowGated(streamConditions)
+      const isTipGated = isContentTipGated(streamConditions)
+      const shouldHaveStreamAccess =
+        (isFollowGated && followeeIds.includes(ownerId)) ||
+        (isTipGated && tippedUserIds.includes(ownerId))
 
-    if (hasNoStreamAccess && shouldHaveStreamAccess) {
-      statusMap[trackId] = 'UNLOCKING'
-      return true
+      if (hasNoStreamAccess && shouldHaveStreamAccess) {
+        statusMap[trackId] = 'UNLOCKING'
+        // TODO: if necessary, update some ui status to show that the track download is unlocking
+        return true
+      }
+    } else if (downloadConditions) {
+      const hasNoDownloadAccess = !access?.download
+      const isFollowGated = isContentFollowGated(downloadConditions)
+      const isTipGated = isContentTipGated(downloadConditions)
+      const shouldHaveDownloadAccess =
+        (isFollowGated && followeeIds.includes(ownerId)) ||
+        (isTipGated && tippedUserIds.includes(ownerId))
+
+      if (hasNoDownloadAccess && shouldHaveDownloadAccess) {
+        // TODO: if necessary, update some ui status to show that the track download is unlocking
+        return true
+      }
     }
     return false
   })
@@ -257,7 +265,7 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
     let numTrackIdsWithSignature = 0
 
     const nftGatedTrackSignatureMap: {
-      [id: ID]: Nullable<AccessSignature>
+      [id: ID]: Nullable<NFTAccessSignature>
     } = { ...nftGatedTrackSignatureResponse }
     // Set null for tracks for which signatures did not get returned
     // to signal that an attempt was made but the user does not have access.
@@ -303,12 +311,12 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
 /**
  * This function runs when new tracks have been added to the cache or when eth or sol nfts are fetched.
  * It does a bunch of things (getting gradually larger and should now be broken up):
- * - Updates the store with new stream signatures.
+ * - Updates the store with new stream and download signatures.
  * - Skips tracks whose signatures have already been previously obtained.
  * - Handles newly loading special access tracks that should have a signature but do not yet.
  * - Builds a map of nft-gated track ids (and potentially their respective nft token ids) to
  *   make a request to DN which confirms that user owns the corresponding nft collections by
- *   returning corresponding stream signatures.
+ *   returning corresponding stream and download signatures.
  */
 function* updateGatedTrackAccess(
   action:
@@ -352,16 +360,10 @@ function* updateGatedTrackAccess(
 
   const allTracks = {
     ...cachedTracks,
-    ...newlyUpdatedTracks.reduce(
-      (
-        acc: { [id: ID]: Track },
-        curr: { id: number; uid: string; metadata: Track }
-      ) => {
-        acc[curr.metadata.track_id] = curr.metadata
-        return acc
-      },
-      []
-    )
+    ...newlyUpdatedTracks.reduce((acc: { [id: ID]: Track }, curr: any) => {
+      acc[curr.metadata.track_id] = curr.metadata
+      return acc
+    }, [])
   }
 
   // Handle newly loading special access tracks that should have a signature but do not yet.
@@ -375,14 +377,20 @@ function* updateGatedTrackAccess(
   })
 
   const updatedNftAccessSignatureMap: {
-    [id: ID]: Nullable<AccessSignature>
+    [id: ID]: Nullable<NFTAccessSignature>
   } = {}
   Object.keys(allTracks).forEach((trackId) => {
     const id = parseInt(trackId)
     if (skipped.has(id)) return
 
-    const { stream_conditions: streamConditions } = allTracks[trackId]
-    if (streamConditions?.nft_collection && !trackMap[id]) {
+    const {
+      stream_conditions: streamConditions,
+      download_conditions: downloadConditions
+    } = allTracks[trackId]
+    const isCollectibleGated =
+      isContentCollectibleGated(streamConditions) ||
+      isContentCollectibleGated(downloadConditions)
+    if (isCollectibleGated && !trackMap[id]) {
       // Set null for collectible gated track signatures as
       // the user does not have nfts for those collections
       // and therefore does not have access.
@@ -416,12 +424,24 @@ export function* pollGatedTrack({
     remoteConfigInstance.getRemoteVar(IntKeys.GATED_TRACK_POLL_INTERVAL_MS) ??
     DEFAULT_GATED_TRACK_POLL_INTERVAL_MS
 
+  // get initial track metadata to determine whether we are polling for stream or download access
+  const cachedTracks = yield* select(getTracks, {
+    ids: [trackId]
+  })
+  const initialTrack = cachedTracks[trackId]
+  const initiallyHadNoStreamAccess = !initialTrack?.access.stream
+  const initiallyHadNoDownloadAccess = !initialTrack?.access.download
+
+  // poll for access until it is granted
   while (true) {
     const track = yield* call([apiClient, 'getTrack'], {
       id: trackId,
       currentUserId
     })
-    if (track?.access?.stream) {
+    const currentlyHasStreamAccess = !!track?.access?.stream
+    const currentlyHasDownloadAccess = !!track?.access?.download
+
+    if (initiallyHadNoStreamAccess && currentlyHasStreamAccess) {
       yield* put(
         cacheActions.update(Kind.TRACKS, [
           {
@@ -433,6 +453,7 @@ export function* pollGatedTrack({
         ])
       )
       yield* put(updateGatedTrackStatus({ trackId, status: 'UNLOCKED' }))
+      // TODO: if necessary, update some ui status to show that the track download is unlocked
       yield* put(removeFolloweeId({ id: track.owner_id }))
       yield* put(removeTippedUserId({ id: track.owner_id }))
 
@@ -459,7 +480,45 @@ export function* pollGatedTrack({
           }
         })
       }
+      break
+    } else if (initiallyHadNoDownloadAccess && currentlyHasDownloadAccess) {
+      yield* put(
+        cacheActions.update(Kind.TRACKS, [
+          {
+            id: trackId,
+            metadata: {
+              access: track.access
+            }
+          }
+        ])
+      )
+      // TODO: if necessary, update some ui status to show that the track download is unlocked
+      yield* put(removeFolloweeId({ id: track.owner_id }))
+      yield* put(removeTippedUserId({ id: track.owner_id }))
 
+      // Show confetti if track is unlocked from the how to unlock section on track page or modal
+      if (isSourceTrack) {
+        yield* put(showConfetti())
+      }
+
+      if (!track.download_conditions) {
+        return
+      }
+      const eventName = isContentUSDCPurchaseGated(track.download_conditions)
+        ? Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+        : isContentFollowGated(track.download_conditions)
+        ? Name.FOLLOW_GATED_TRACK_UNLOCKED
+        : isContentTipGated(track.download_conditions)
+        ? Name.TIP_GATED_TRACK_UNLOCKED
+        : null
+      if (eventName) {
+        analytics.track({
+          eventName,
+          properties: {
+            trackId
+          }
+        })
+      }
       break
     }
     yield* delay(frequency)
@@ -469,8 +528,8 @@ export function* pollGatedTrack({
 /**
  * 1. Get follow or tip gated tracks of user
  * 2. Set those track statuses to 'UNLOCKING'
- * 3. Poll for stream signatures for those tracks
- * 4. When the signatures are returned, set those track statuses as 'UNLOCKED'
+ * 3. Poll for access for those tracks
+ * 4. When access is returned, set those track statuses as 'UNLOCKED'
  */
 function* updateSpecialAccessTracks(
   trackOwnerId: ID,
@@ -494,14 +553,25 @@ function* updateSpecialAccessTracks(
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
-    const { owner_id: ownerId, stream_conditions: streamConditions } =
-      cachedTracks[id]
-    const isGated =
+    const {
+      owner_id: ownerId,
+      stream_conditions: streamConditions,
+      download_conditions: downloadConditions
+    } = cachedTracks[id]
+    const isTrackStreamGated =
       gate === 'follow'
         ? isContentFollowGated(streamConditions)
         : isContentTipGated(streamConditions)
-    if (isGated && ownerId === trackOwnerId) {
+    const isTrackDownloadGated =
+      gate === 'follow'
+        ? isContentFollowGated(downloadConditions)
+        : isContentTipGated(downloadConditions)
+    if (isTrackStreamGated && ownerId === trackOwnerId) {
       statusMap[id] = 'UNLOCKING'
+      // TODO: if necessary, update some ui status to show that the track download is unlocking
+      tracksToPoll.add(id)
+    } else if (isTrackDownloadGated && ownerId === trackOwnerId) {
+      // TODO: if necessary, update some ui status to show that the track download is unlocking
       tracksToPoll.add(id)
     }
   })
@@ -532,22 +602,30 @@ function* handleUnfollowUser(
   yield* put(removeFolloweeId({ id: action.userId }))
 
   const statusMap: { [id: ID]: GatedTrackStatus } = {}
+  const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
   const cachedTracks = yield* select(getTracks, {})
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
-    const { owner_id: ownerId, stream_conditions: streamConditions } =
-      cachedTracks[id]
-    const isFollowGated = isContentFollowGated(streamConditions)
-    if (isFollowGated && ownerId === action.userId) {
+    const {
+      owner_id: ownerId,
+      stream_conditions: streamConditions,
+      download_conditions: downloadConditions
+    } = cachedTracks[id]
+    const isStreamFollowGated = isContentFollowGated(streamConditions)
+    const isDownloadFollowGated = isContentFollowGated(downloadConditions)
+    if (isStreamFollowGated && ownerId === action.userId) {
       statusMap[id] = 'LOCKED'
+      // TODO: if necessary, update some ui status to show that the track download is locked
+      revokeAccessMap[id] = 'stream'
+    } else if (isDownloadFollowGated && ownerId === action.userId) {
+      // TODO: if necessary, update some ui status to show that the track download is locked
+      revokeAccessMap[id] = 'download'
     }
   })
 
   yield* put(updateGatedTrackStatuses(statusMap))
-
-  const trackIds = Object.keys(statusMap).map((trackId) => parseInt(trackId))
-  yield* put(revokeAccess({ trackIds }))
+  yield* put(revokeAccess({ revokeAccessMap }))
 }
 
 function* handleFollowUser(
@@ -577,16 +655,16 @@ function* handleTipGatedTracks(
  * no longer accessible by the user.
  */
 function* handleRevokeAccess(action: ReturnType<typeof revokeAccess>) {
-  const cachedTracks = yield* select(getTracks, {
-    ids: action.payload.trackIds
-  })
-  const metadatas = Object.keys(cachedTracks).map((trackId) => {
+  const { revokeAccessMap } = action.payload
+  const metadatas = Object.keys(revokeAccessMap).map((trackId) => {
+    const access =
+      revokeAccessMap[trackId] === 'stream'
+        ? { stream: false, download: false }
+        : { stream: true, download: false }
     const id = parseInt(trackId)
     return {
       id,
-      metadata: {
-        access: { stream: false, download: false }
-      }
+      metadata: { access }
     }
   })
   yield* put(cacheActions.update(Kind.TRACKS, metadatas))

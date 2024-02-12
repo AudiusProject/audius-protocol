@@ -1,13 +1,8 @@
 import { useCallback, useRef, useState } from 'react'
 
-import {
-  Name,
-  Status,
-  TimeRange,
-  ELECTRONIC_PREFIX,
-  TRENDING_GENRES,
-  trendingPageLineupActions
-} from '@audius/common'
+import { Name, Status, TimeRange } from '@audius/common/models'
+import { trendingPageLineupActions } from '@audius/common/store'
+import { ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/desktop/Header'
@@ -21,7 +16,7 @@ import { TrendingPageContentProps } from 'pages/trending-page/types'
 import RewardsBanner from '../RewardsBanner'
 
 import GenreSelectionModal from './GenreSelectionModal'
-import TrendingGenreFilters from './TrendingGenreFilters'
+import { TrendingGenreFilters } from './TrendingGenreFilters'
 import styles from './TrendingPageContent.module.css'
 const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
   trendingPageLineupActions
@@ -34,13 +29,6 @@ const messages = {
   endOfLineupDescription: "Looks like you've reached the end of this list...",
   disabledTabTooltip: 'Nothing available'
 }
-
-const initialGenres = [
-  messages.allGenres,
-  'Electronic',
-  'Hip-Hop/Rap',
-  'Alternative'
-]
 
 const RANK_ICON_COUNT = 5
 
@@ -344,8 +332,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       bottomBar={tabs}
       rightDecorator={
         <TrendingGenreFilters
-          initialGenres={initialGenres}
-          genre={trendingGenre}
+          currentGenre={trendingGenre}
           didSelectGenre={setGenre}
           didSelectMore={() => setModalIsOpen(true)}
         />

@@ -1,4 +1,10 @@
-import { ID, StemCategory, StemUpload, Track, StemTrack } from '@audius/common'
+import {
+  StemCategory,
+  ID,
+  StemUpload,
+  Track,
+  StemTrack
+} from '@audius/common/models'
 
 export const updateAndFlattenStems = (
   stems: StemUpload[][],
@@ -11,7 +17,7 @@ export const updateAndFlattenStems = (
       const metadata = createStemMetadata({
         parentTrackId,
         track: stem.metadata,
-        stemCategory: stem.category
+        stemCategory: stem.category ?? StemCategory.OTHER
       })
       return {
         metadata,

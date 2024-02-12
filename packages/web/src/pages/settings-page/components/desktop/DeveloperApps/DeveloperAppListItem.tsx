@@ -1,14 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
-import { DeveloperApp } from '@audius/common'
+import { DeveloperApp } from '@audius/common/api'
 import {
-  IconButton,
   IconKebabHorizontal,
   IconTrash,
-  IconVisibilityPublic,
-  PopupMenu,
-  PopupMenuItem
-} from '@audius/stems'
+  IconVisibilityPublic
+} from '@audius/harmony'
+import { IconButton, PopupMenu, PopupMenuItem } from '@audius/stems'
 
 import styles from './DeveloperAppListItem.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'

@@ -1,7 +1,6 @@
+import { Switch } from '@audius/harmony'
 import { Modal } from '@audius/stems'
 import cn from 'classnames'
-
-import Switch from '../switch/Switch'
 
 import styles from './UnlistedTrackModal.module.css'
 
@@ -62,11 +61,11 @@ const TrackMetadataSection = ({
       <span>{title}</span>
       <div className={styles.switchContainer}>
         <Switch
-          isOn={isVisible}
-          handleToggle={() => {
+          checked={isVisible}
+          onChange={() => {
             didSet(!isVisible)
           }}
-          isDisabled={isDisabled}
+          disabled={isDisabled}
         />
       </div>
     </div>

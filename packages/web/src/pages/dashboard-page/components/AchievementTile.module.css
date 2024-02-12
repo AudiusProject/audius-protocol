@@ -43,6 +43,6 @@
   margin-right: 20px;
 }
 
-.achievementTrophy g path {
+.achievementTrophy path {
   fill: var(--secondary);
 }

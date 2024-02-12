@@ -3,7 +3,7 @@ import type { TextStyle } from 'react-native'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconSearch from 'app/assets/images/iconSearch.svg'
+import { IconSearch } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

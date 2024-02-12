@@ -1,165 +1,191 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
-  Status,
-  ChangePasswordPageStep,
-  changePasswordSelectors,
-  changePasswordActions
-} from '@audius/common'
-import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+  ChangePasswordPage,
+  useChangePasswordFormConfiguration
+} from '@audius/common/hooks'
+import type {
+  EventListenerCallback,
+  EventMapCore,
+  NavigationState
+} from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { Formik, useFormikContext } from 'formik'
+import { TouchableOpacity } from 'react-native'
 
-import { Button, Screen, ScreenContent, Text } from 'app/components/core'
-import { EnterPassword } from 'app/components/enter-password'
-import LoadingSpinner from 'app/components/loading-spinner'
+import { IconArrowRight, IconClose, IconLock } from '@audius/harmony-native'
+import { BackButton } from 'app/app/navigation/BackButton'
+import {
+  Button,
+  KeyboardAvoidingView,
+  ModalScreen,
+  Screen,
+  ScreenContent
+} from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 
-import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
+import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
-import { ConfirmCredentials } from './ConfirmCredentials'
-const { changePage, changePassword } = changePasswordActions
-const { getChangePasswordStatus, getCurrentPage } = changePasswordSelectors
+import {
+  ConfirmCredentialsSubScreen,
+  VerifyEmailSubScreen,
+  NewPasswordSubScreen
+} from './SubScreens'
 
 const messages = {
-  changeHeader: 'Change Password',
-  createNewHeader: 'Create A New Password That Is Secure And Easy To Remember!',
-  doneHeader: 'Your Password Has Been Changed',
-  changeText: 'Please enter your email and current password.',
-  submitPasswordButton: 'Continue'
+  change: 'Change Password',
+  continue: 'Continue',
+  success: 'Password updated!'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  contentContainer: {
-    alignItems: 'center',
-    paddingTop: spacing(32),
-    paddingBottom: spacing(8),
-    paddingHorizontal: spacing(6),
-    width: 300,
-    alignSelf: 'center'
+  screen: {
+    justifyContent: 'space-between'
   },
-  header: {
-    color: palette.secondary,
-    marginBottom: spacing(4)
-  },
-  text: {
-    textAlign: 'center'
-  },
-  input: {
-    marginTop: spacing(3),
-    paddingVertical: spacing(3)
-  },
-  button: {
-    marginTop: spacing(4),
-    width: '100%'
+  bottomSection: {
+    overflow: 'hidden',
+    height: 'auto',
+    padding: spacing(4),
+    paddingBottom: spacing(12),
+    backgroundColor: palette.white,
+    borderTopWidth: 1,
+    borderTopColor: palette.neutralLight6
   }
 }))
 
-export const ChangePasswordScreen = () => {
-  const dispatch = useDispatch()
+const Stack = createNativeStackNavigator()
+
+const ChangePasswordHeaderLeft = ({ page }: { page: ChangePasswordPage }) => {
+  const navigation = useNavigation()
+  if (page === ChangePasswordPage.VerifyEmail) {
+    return <BackButton />
+  } else {
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate('AccountSettingsScreen')}
+      >
+        <IconClose size='l' color='subdued' />
+      </TouchableOpacity>
+    )
+  }
+}
+
+const ChangePasswordNavigator = ({
+  page,
+  setPage
+}: {
+  page: ChangePasswordPage
+  setPage: (page: ChangePasswordPage) => void
+}) => {
+  const { handleSubmit, isSubmitting } = useFormikContext()
   const styles = useStyles()
-  const [email, setEmail] = useState('')
-  const [oldPassword, setOldPassword] = useState('')
-  const navigation = useNavigation<ProfileTabScreenParamList>()
+  const navigation = useNavigation()
 
-  const changePasswordStatus = useSelector(getChangePasswordStatus)
-  const currentPage = useSelector(getCurrentPage)
+  // Only show the back button on the OTP page
+  const screenOptions = useAppScreenOptions({
+    headerRight: () => null,
+    headerLeft: () => {
+      return <ChangePasswordHeaderLeft page={page} />
+    }
+  })
 
-  const setCurrentPage = useCallback(
-    (page: ChangePasswordPageStep) => dispatch(changePage(page)),
-    [dispatch]
-  )
-
-  const handleCredentialsConfirmed = ({
-    email,
-    password
-  }: {
-    email: string
-    password: string
-  }) => {
-    setEmail(email)
-    setOldPassword(password)
-    setCurrentPage(ChangePasswordPageStep.NEW_PASSWORD)
-  }
-
-  const handleNewPasswordSubmitted = (password: string) => {
-    dispatch(changePassword({ email, password, oldPassword }))
-  }
-
-  const handlePressDone = useCallback(() => {
-    navigation.goBack()
-    setCurrentPage(ChangePasswordPageStep.CONFIRM_CREDENTIALS)
-  }, [navigation, setCurrentPage])
-
+  // Map hook page state to screen navigations
   useEffect(() => {
-    if (changePasswordStatus === Status.LOADING) {
-      setCurrentPage(ChangePasswordPageStep.LOADING)
-    } else if (
-      currentPage === ChangePasswordPageStep.LOADING &&
-      changePasswordStatus === Status.SUCCESS
-    ) {
-      setCurrentPage(ChangePasswordPageStep.SUCCESS)
-    } else if (
-      currentPage === ChangePasswordPageStep.LOADING &&
-      changePasswordStatus === Status.ERROR
-    ) {
-      setCurrentPage(ChangePasswordPageStep.FAILURE)
-    }
-  }, [currentPage, setCurrentPage, changePasswordStatus])
+    navigation.navigate(ChangePasswordPage[page])
+  }, [page, navigation])
 
-  const credentialsView = (
-    <View style={styles.contentContainer}>
-      <Text style={styles.header} variant='h1'>
-        {messages.changeHeader}
-      </Text>
-      <Text style={styles.text}>{messages.changeText}</Text>
-      <ConfirmCredentials onComplete={handleCredentialsConfirmed} />
-    </View>
+  // Map navigations back to the hook page state
+  const stateListener = useCallback<
+    EventListenerCallback<EventMapCore<NavigationState>, 'state'>
+  >(
+    (e) => {
+      const state = e.data.state
+      const route = state.routes[state.index]
+      const newPage = ChangePasswordPage[route?.name]
+      if (newPage !== page) {
+        setPage(newPage)
+      }
+    },
+    [page, setPage]
   )
-
-  const loadingView = (
-    <LoadingSpinner style={{ alignSelf: 'center', marginVertical: 16 }} />
-  )
-
-  const changePasswordView = (
-    <View style={[styles.contentContainer, { width: 350 }]}>
-      <Text style={styles.header} variant='h1'>
-        {messages.createNewHeader}
-      </Text>
-      <EnterPassword
-        onSubmit={handleNewPasswordSubmitted}
-        submitButtonText={messages.submitPasswordButton}
-      />
-    </View>
-  )
-
-  const doneView = (
-    <View style={[styles.contentContainer, { width: 350 }]}>
-      <Text style={styles.header} variant='h1'>
-        {messages.doneHeader}
-      </Text>
-      <Button title='Done' size='large' onPress={handlePressDone} />
-    </View>
-  )
-
-  const renderContent = () => {
-    switch (currentPage) {
-      case ChangePasswordPageStep.NEW_PASSWORD:
-        return changePasswordView
-      case ChangePasswordPageStep.LOADING:
-        return loadingView
-      case ChangePasswordPageStep.SUCCESS:
-      case ChangePasswordPageStep.FAILURE:
-        return doneView
-      case ChangePasswordPageStep.CONFIRM_CREDENTIALS:
-      default:
-        return credentialsView
-    }
-  }
 
   return (
-    <Screen topbarRight={null} variant='secondary'>
-      <ScreenContent>{renderContent()}</ScreenContent>
+    <Screen variant='secondary' style={styles.screen}>
+      <ScreenContent>
+        <Stack.Navigator
+          screenOptions={screenOptions}
+          screenListeners={{
+            state: stateListener
+          }}
+        >
+          <Stack.Screen
+            name={ChangePasswordPage[ChangePasswordPage.ConfirmCredentials]}
+            component={ConfirmCredentialsSubScreen}
+          />
+          <Stack.Screen
+            name={ChangePasswordPage[ChangePasswordPage.VerifyEmail]}
+            component={VerifyEmailSubScreen}
+          />
+          <Stack.Screen
+            name={ChangePasswordPage[ChangePasswordPage.NewPassword]}
+            component={NewPasswordSubScreen}
+          />
+        </Stack.Navigator>
+        <KeyboardAvoidingView
+          style={styles.bottomSection}
+          keyboardShowingOffset={32}
+        >
+          <Button
+            fullWidth
+            variant='primary'
+            size='large'
+            icon={
+              page === ChangePasswordPage.NewPassword
+                ? IconLock
+                : IconArrowRight
+            }
+            iconPosition='right'
+            title={
+              page === ChangePasswordPage.NewPassword
+                ? messages.change
+                : messages.continue
+            }
+            disabled={isSubmitting}
+            onPress={() => {
+              handleSubmit()
+            }}
+          />
+        </KeyboardAvoidingView>
+      </ScreenContent>
     </Screen>
+  )
+}
+
+const ChangePasswordScreen = () => {
+  const navigation = useNavigation()
+  const { toast } = useToast()
+
+  const onSuccess = useCallback(() => {
+    navigation.navigate('AccountSettingsScreen')
+    toast({ content: messages.success, type: 'info' })
+  }, [navigation, toast])
+
+  const { page, setPage, ...formikConfiguration } =
+    useChangePasswordFormConfiguration(onSuccess)
+
+  return (
+    <Formik {...formikConfiguration}>
+      <ChangePasswordNavigator page={page} setPage={setPage} />
+    </Formik>
+  )
+}
+
+export const ChangePasswordModalScreen = () => {
+  return (
+    <ModalScreen>
+      <ChangePasswordScreen />
+    </ModalScreen>
   )
 }

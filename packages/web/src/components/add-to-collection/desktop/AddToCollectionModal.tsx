@@ -2,21 +2,23 @@ import { useMemo, useState } from 'react'
 
 import {
   CreatePlaylistSource,
-  Collection,
   SquareSizes,
+  Collection
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions,
   toastActions
-} from '@audius/common'
-import { Modal, Scrollbar } from '@audius/stems'
+} from '@audius/common/store'
+import { Scrollbar, IconMultiselectAdd } from '@audius/harmony'
+import { Modal } from '@audius/stems'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconMultiselectAdd from 'assets/img/iconMultiselectAdd.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
@@ -65,6 +67,7 @@ const AddToCollectionModal = () => {
       (collection: Collection) =>
         // Don't allow adding to this collection if already on this collection's page.
         collection.playlist_id !== currentCollectionId &&
+        collection.playlist_owner_id === account?.user_id &&
         (searchValue
           ? collection.playlist_name
               .toLowerCase()
@@ -75,6 +78,7 @@ const AddToCollectionModal = () => {
     isAlbumType,
     account?.albums,
     account?.playlists,
+    account?.user_id,
     currentCollectionId,
     searchValue
   ])

@@ -3,7 +3,7 @@ import { ReactNode, forwardRef, useId } from 'react'
 import cn from 'classnames'
 
 import { Text, TextSize } from 'components/text'
-import type { TextColors } from 'foundations'
+import type { TextColors } from 'foundations/color/semantic'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'
@@ -141,7 +141,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={ariaLabel ?? labelText}
+          aria-label={ariaLabel ?? shouldShowLabel ? labelText : undefined}
           aria-required={required}
           id={id}
           {...other}

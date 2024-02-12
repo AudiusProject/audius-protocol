@@ -1,14 +1,11 @@
 import { useCallback } from 'react'
 
-import type { RepostOfRepostNotification as RepostOfRepostNotificationType } from '@audius/common'
-import {
-  useProxySelector,
-  formatCount,
-  notificationsSelectors,
-  Entity
-} from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import type { RepostOfRepostNotification as RepostOfRepostNotificationType } from '@audius/common/store'
+import { notificationsSelectors, Entity } from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 
-import IconRepost from 'app/assets/images/iconRepost.svg'
+import { IconRepost } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {

@@ -1,9 +1,10 @@
-import { ModalSource } from 'models/Analytics'
+import { Action } from '@reduxjs/toolkit'
+
+import { ModalSource } from '~/models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
-import { CreateChatModalState } from './create-chat-modal'
-import { BaseModalState } from './createModal'
+import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
 import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
@@ -12,7 +13,18 @@ import { PremiumContentPurchaseModalState } from './premium-content-purchase-mod
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
+import { WaitForDownloadModalState } from './wait-for-download-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
+
+export type BaseModalState = {
+  isOpen: boolean | 'closing'
+}
+
+export type CreateChatModalState = {
+  defaultUserList?: 'followers' | 'chats'
+  presetMessage?: string
+  onCancelAction?: Action
+}
 
 export type Modals =
   | 'TiersExplainer'
@@ -49,6 +61,7 @@ export type Modals =
   | 'StripeOnRamp'
   | 'CoinflowOnramp'
   | 'InboxSettings'
+  | 'PrivateKeyExporter'
   | 'LockedContent'
   | 'PlaybackRate'
   | 'ProfileActions'
@@ -67,6 +80,8 @@ export type Modals =
   | 'USDCManualTransferModal'
   | 'AddFundsModal'
   | 'Welcome'
+  | 'CoinflowWithdraw'
+  | 'WaitForDownloadModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -85,6 +100,8 @@ export type StatefulModalsState = {
   USDCManualTransferModal: USDCManualTransferModalState
   AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
+  CoinflowWithdraw: CoinflowWithdrawModalState
+  WaitForDownloadModal: WaitForDownloadModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

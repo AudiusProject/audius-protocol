@@ -1,18 +1,15 @@
-import { remoteConfigSelectors } from '@audius/common'
-import { connect, useSelector } from 'react-redux'
+import { remoteConfigSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
-import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import ExplorePageProvider from './ExplorePageProvider'
 import DesktopExplorePage from './components/desktop/ExplorePage'
 import MobileExplorePage from './components/mobile/ExplorePage'
 const { isRemoteConfigLoaded } = remoteConfigSelectors
 
-type OwnProps = {}
-
-type ExplorePageContentProps = ReturnType<typeof mapStateToProps> & OwnProps
-const ExplorePage = ({ isMobile }: ExplorePageContentProps) => {
+const ExplorePage = () => {
+  const isMobile = useIsMobile()
   const content = isMobile ? MobileExplorePage : DesktopExplorePage
 
   // Do not render content until remote config is loaded so
@@ -24,10 +21,4 @@ const ExplorePage = ({ isMobile }: ExplorePageContentProps) => {
   return <ExplorePageProvider>{content}</ExplorePageProvider>
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    isMobile: isMobile()
-  }
-}
-
-export default connect(mapStateToProps)(ExplorePage)
+export default ExplorePage

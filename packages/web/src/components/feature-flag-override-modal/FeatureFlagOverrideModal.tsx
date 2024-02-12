@@ -1,18 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
-  FeatureFlags,
-  FEATURE_FLAG_OVERRIDE_KEY,
   OverrideSetting,
-  accountSelectors
-} from '@audius/common'
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  SegmentedControl
-} from '@audius/stems'
+  FEATURE_FLAG_OVERRIDE_KEY
+} from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
+import { accountSelectors } from '@audius/common/store'
+import { SegmentedControl } from '@audius/harmony'
+import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -29,10 +24,12 @@ const messages = {
   title: 'Feature Flag Override Settings'
 }
 
-const getOverrideSetting = (flag: string) =>
-  localStorage.getItem(
+const getOverrideSetting = (flag: string) => {
+  if (typeof localStorage === 'undefined') return null
+  return localStorage.getItem(
     `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
   ) as OverrideSetting
+}
 
 const setOverrideSetting = (flag: string, val: OverrideSetting) => {
   const flagKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`

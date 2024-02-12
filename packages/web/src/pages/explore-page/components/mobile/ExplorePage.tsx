@@ -1,5 +1,4 @@
 import React, {
-  Fragment,
   useContext,
   useEffect,
   useMemo,
@@ -8,24 +7,29 @@ import React, {
 } from 'react'
 
 import {
-  UserCollection,
-  SmartCollection,
   Variant as CollectionVariant,
   Status,
+  UserCollection,
+  SmartCollection,
   User,
+  Variant
+} from '@audius/common/models'
+import {
+  explorePageSelectors,
   explorePageActions,
   ExplorePageTabs as ExploreTabs,
-  ExploreCollectionsVariant,
-  explorePageSelectors,
-  removeNullable
-} from '@audius/common'
+  ExploreCollectionsVariant
+} from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
+import {
+  IconStars as IconForYou,
+  IconMood as IconMoods,
+  IconNote,
+  IconUser
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconForYou from 'assets/img/iconExploreMobileForYou.svg'
-import IconMoods from 'assets/img/iconExploreMobileMoods.svg'
-import IconNote from 'assets/img/iconNote.svg'
-import IconUser from 'assets/img/iconUser.svg'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -35,6 +39,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { useMainPageHeader } from 'components/nav/store/context'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
+import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import {
   CHILL_PLAYLISTS,
   UPBEAT_PLAYLISTS,
@@ -148,7 +153,10 @@ const ExplorePage = ({
       if (!isUSDCPurchasesEnabled && isPremiumTracksTile) {
         return null
       }
-      const Icon = t.icon ? t.icon : Fragment
+      const Icon =
+        t.variant === Variant.SMART
+          ? smartCollectionIcons[t.playlist_name]
+          : t.icon
       if (t.variant === CollectionVariant.SMART) {
         return (
           <ColorTile
@@ -158,8 +166,7 @@ const ExplorePage = ({
             description={t.description}
             gradient={t.gradient}
             shadow={t.shadow}
-            // @ts-ignore
-            icon={<Icon />}
+            icon={<Icon height={512} width={512} color='staticWhite' />}
             goToRoute={goToRoute}
           />
         )

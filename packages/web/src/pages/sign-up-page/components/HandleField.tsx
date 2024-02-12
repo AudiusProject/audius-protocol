@@ -1,14 +1,13 @@
 import { Ref, forwardRef, useCallback, useContext } from 'react'
 
+import { useIsWaitingForValidation } from '@audius/common/hooks'
 import {
-  MAX_HANDLE_LENGTH,
   socialMediaMessages,
-  pickHandleErrorMessages,
-  pickHandlePageMessages as messages,
-  useIsWaitingForValidation
-} from '@audius/common'
-import { TextLink } from '@audius/harmony'
-import { IconCheck } from '@audius/stems'
+  pickHandlePageMessages as messages
+} from '@audius/common/messages'
+import { pickHandleErrorMessages } from '@audius/common/schemas'
+import { MAX_HANDLE_LENGTH } from '@audius/common/services'
+import { TextLink, IconCheck } from '@audius/harmony'
 import { useField } from 'formik'
 
 import {
@@ -20,6 +19,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
+import { SocialPlatform } from './SocialMediaLoginOptions'
 
 const handleAuthMap = {
   [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
@@ -33,8 +33,8 @@ type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
-  onStartSocialMediaLogin?: () => void
-  onErrorSocialMediaLogin?: () => void
+  onStartSocialMediaLogin?: (platform: SocialPlatform) => void
+  onErrorSocialMediaLogin?: (error: Error, platform: SocialPlatform) => void
 }
 
 export const HandleField = forwardRef(
@@ -53,10 +53,13 @@ export const HandleField = forwardRef(
 
     const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
 
-    const handleVerifyHandleError = useCallback(() => {
-      toast(socialMediaMessages.verificationError)
-      onErrorSocialMediaLogin?.()
-    }, [onErrorSocialMediaLogin, toast])
+    const handleVerifyHandleError = useCallback(
+      (error: Error, platform: SocialPlatform) => {
+        toast(socialMediaMessages.verificationError)
+        onErrorSocialMediaLogin?.(error, platform)
+      },
+      [onErrorSocialMediaLogin, toast]
+    )
 
     const handleLoginSuccess = useCallback(
       ({
@@ -66,7 +69,7 @@ export const HandleField = forwardRef(
       }: {
         requiresReview: boolean
         handle: string
-        platform: 'twitter' | 'instagram' | 'tiktok'
+        platform: SocialPlatform
       }) => {
         toast(socialMediaMessages.socialMediaLoginSucess(platform))
         onCompleteSocialMediaLogin?.({

@@ -1,28 +1,27 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { CreateChatModalState, User } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import { Status, statusIsNotFinalized } from '@audius/common/models'
+import type { User } from '@audius/common/models'
 import {
-  FOLLOWERS_USER_LIST_TAG,
-  Status,
   accountSelectors,
   cacheUsersSelectors,
   chatActions,
-  followersUserListActions,
-  followersUserListSelectors,
+  chatSelectors,
   searchUsersModalActions,
   searchUsersModalSelectors,
-  statusIsNotFinalized,
-  chatSelectors,
-  useProxySelector,
-  userListActions
-} from '@audius/common'
+  userListActions,
+  followersUserListActions,
+  followersUserListSelectors,
+  FOLLOWERS_USER_LIST_TAG
+} from '@audius/common/store'
+import type { CreateChatModalState } from '@audius/common/store'
 import { View, Image } from 'react-native'
 import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
-import IconCompose from 'app/assets/images/iconCompose.svg'
-import IconSearch from 'app/assets/images/iconSearch.svg'
+import { IconCompose, IconSearch } from '@audius/harmony-native'
 import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
 import { Screen, ScreenContent, Text, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'

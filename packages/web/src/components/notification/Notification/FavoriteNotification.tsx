@@ -2,18 +2,18 @@ import { MouseEventHandler, useCallback } from 'react'
 
 import {
   notificationsSelectors,
-  FavoriteNotification as FavoriteNotificationType,
-  Entity
-} from '@audius/common'
+  Entity,
+  FavoriteNotification as FavoriteNotificationType
+} from '@audius/common/store'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   setUsers as setUserListUsers,
   setVisibility as openUserListModal
 } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
-import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'
@@ -55,6 +55,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
       : entityType
 
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
 
   const handleGoToEntity = useGoToEntity(entity, entityType)
 
@@ -68,7 +69,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
             id: id as unknown as number
           })
         )
-        if (isMobile()) {
+        if (isMobile) {
           dispatch(push(`notification/${id}/users`))
         } else {
           dispatch(openUserListModal(true))
@@ -77,7 +78,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
         handleGoToEntity(event)
       }
     },
-    [isMultiUser, dispatch, entityType, id, handleGoToEntity]
+    [isMultiUser, dispatch, entityType, id, handleGoToEntity, isMobile]
   )
 
   if (!users || !firstUser || !entity) return null

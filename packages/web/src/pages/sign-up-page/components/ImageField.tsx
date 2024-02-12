@@ -1,6 +1,8 @@
 import { ReactNode, useCallback } from 'react'
 
-import { Nullable, finishProfilePageMessages as messages } from '@audius/common'
+import { finishProfilePageMessages as messages } from '@audius/common/messages'
+import { Image } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 import { useField } from 'formik'
 import ReactDropzone, { DropFilesEventHandler } from 'react-dropzone'
@@ -15,21 +17,20 @@ import styles from './ImageField.module.css'
 
 const allowedImages = ALLOWED_IMAGE_FILE_TYPES.join(', ')
 
-export type ImageFieldValue = Nullable<{
-  file: File
-  url: string
-}>
+export type ImageFieldValue = Nullable<Image>
 
 type ImageFieldProps = {
   name: string
   className?: string
   children: (urlValue: ImageFieldValue | null) => ReactNode | ReactNode[]
   onChange?: (image: ImageFieldValue) => void
+  onError?: (e: Error) => void
   imageResizeOptions?: Partial<ResizeImageOptions>
 }
 
 export const ImageField = (props: ImageFieldProps) => {
-  const { name, className, children, onChange, imageResizeOptions } = props
+  const { name, className, children, onChange, onError, imageResizeOptions } =
+    props
 
   const [field, , { setValue, setError }] = useField<ImageFieldValue>(name)
   const { value } = field
@@ -50,10 +51,19 @@ export const ImageField = (props: ImageFieldProps) => {
           onChange(image)
         }
       } catch (e) {
+        onError?.(e as Error)
         setError(messages[`${name}UploadError` as keyof typeof messages])
       }
     },
-    [setValue, onChange, setError, name, imageResizeOptions]
+    [
+      imageResizeOptions?.maxWidth,
+      imageResizeOptions?.square,
+      setValue,
+      onChange,
+      onError,
+      setError,
+      name
+    ]
   )
 
   return (

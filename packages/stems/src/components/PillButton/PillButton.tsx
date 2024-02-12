@@ -9,6 +9,9 @@ const VARIANT_STYLE_MAP = {
   [PillButtonVariant.PRIMARY]: styles.primary,
   [PillButtonVariant.SECONDARY]: styles.secondary
 }
+/**
+ * @deprecated Used in feed-tip-tile
+ */
 export const PillButton = (props: PillButtonProps) => {
   const {
     text,

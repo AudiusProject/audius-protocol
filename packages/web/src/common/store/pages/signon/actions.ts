@@ -1,11 +1,11 @@
+import { ID, User } from '@audius/common/models'
 import {
-  ID,
-  User,
   InstagramProfile,
   TwitterProfile,
   TikTokProfile,
   Image
-} from '@audius/common'
+} from '@audius/common/store'
+import { createCustomAction } from 'typesafe-actions'
 
 import { UiErrorCode } from 'store/errors/actions'
 
@@ -24,6 +24,7 @@ export const VALIDATE_HANDLE = 'SIGN_ON/VALIDATE_HANDLE'
 export const VALIDATE_HANDLE_SUCCEEDED = 'SIGN_ON/VALIDATE_HANDLE_SUCCEEDED'
 export const VALIDATE_HANDLE_FAILED = 'SIGN_ON/VALIDATE_HANDLE_FAILED'
 
+export const HIDE_PREVIEW_HINT = 'SIGN_ON/HIDE_PREVIEW_HINT'
 export const FOLLOW_ARTISTS = 'SIGN_ON/FOLLOW_ARTISTS'
 export const SET_ACCOUNT_READY = 'SIGN_ON/SET_ACCOUNT_READY'
 
@@ -77,6 +78,7 @@ export const FETCH_FOLLOW_ARTISTS_FAILED = 'SIGN_ON/FETCH_FOLLOW_ARTISTS_FAILED'
 export const SET_FOLLOW_ARTIST_CATEGORY = 'SIGN_ON/SET_FOLLOW_ARTIST_CATEGORY'
 export const ADD_FOLLOW_ARTISTS = 'SIGN_ON/ADD_FOLLOW_ARTISTS'
 export const REMOVE_FOLLOW_ARTISTS = 'SIGN_ON/REMOVE_FOLLOW_ARTISTS'
+export const COMPLETE_FOLLOW_ARTISTS = 'SIGN_ON/COMPLETE_FOLLOW_ARTISTS'
 
 export const SEND_WELCOME_EMAIL = 'SIGN_ON/SEND_WELCOME_EMAIL'
 
@@ -196,10 +198,10 @@ export function signUpSucceededWithId(userId: ID) {
   return { type: SIGN_UP_SUCCEEDED_WITH_ID, userId }
 }
 
-type SignUpFailedParams = {
+export type SignUpFailedParams = {
   error: string
   phase: string
-  redirectRoute: string
+  redirectRoute?: string
   shouldReport: boolean
   shouldToast: boolean
   message?: string
@@ -238,7 +240,7 @@ export function signIn(email: string, password: string, otp?: string) {
 export const signInSucceeded = () => ({ type: SIGN_IN_SUCCEEDED })
 export const signInFailed = (
   error: string,
-  phase: string,
+  phase?: string,
   shouldReport = true,
   uiErrorCode?: UiErrorCode
 ) => ({
@@ -266,7 +268,7 @@ export function getUsersToFollow() {
 /**
  * Requests all the users from which to pick suggested followed artists
  */
-export function setUsersToFollow(users: User[]) {
+export function setUsersToFollow(users: Record<ID, User>) {
   return { type: SET_USERS_TO_FOLLOW, users }
 }
 
@@ -371,12 +373,16 @@ export function setTikTokProfileError(error: string) {
   return { type: SET_TIKTOK_PROFILE_ERROR, error }
 }
 
+export function setHidePreviewHint() {
+  return { type: HIDE_PREVIEW_HINT }
+}
+
 /**
  * Follows users in signup flow after user is created
  * @param userIds array of userIds to follow
  */
-export function followArtists(userIds: ID[]) {
-  return { type: FOLLOW_ARTISTS, userIds }
+export function followArtists(skipDefaultFollows: boolean = false) {
+  return { type: FOLLOW_ARTISTS, skipDefaultFollows }
 }
 
 /**
@@ -484,3 +490,9 @@ export const setReferrer = (userId: ID) => ({
   type: SET_REFERRER,
   userId
 })
+
+/*
+ * Triggers completeFollowArtists saga that determines the best way to follow artists based on
+ * the potentially ongoing account creation logic
+ */
+export const completeFollowArtists = createCustomAction(COMPLETE_FOLLOW_ARTISTS)

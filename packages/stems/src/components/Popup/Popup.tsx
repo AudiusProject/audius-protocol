@@ -229,10 +229,7 @@ const defaultTransformOrigin: Origin = {
 }
 
 /**
- * A popup is an in-place container that shows on top of the UI. A popup does
- * not impact the rest of the UI (e.g. graying it out). It differs
- * from modals, which do take over the whole UI and are usually
- * center-screened.
+ * @deprecated use `@audius/harmony` Popup instead
  */
 export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   props,
@@ -259,6 +256,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     zIndex,
     containerRef
   } = props
+  const [isClientSide, setIsClientSide] = useState(false)
+
   const handleClose = useCallback(() => {
     onClose()
     setTimeout(() => {
@@ -416,52 +415,59 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     }
   }, [dismissOnMouseLeave, onClose])
 
+  // useEffect only runs on the client
+  useEffect(() => {
+    setIsClientSide(true)
+  }, [])
+
+  // Portal the popup out of the dom structure so that it has a separate stacking context
   return (
     <>
-      {/* Portal the popup out of the dom structure so that it has a separate stacking context */}
-      {ReactDOM.createPortal(
-        <div
-          ref={wrapperRef}
-          className={cn(styles.wrapper, wrapperClassName)}
-          style={wrapperStyle}
-          onMouseLeave={handleMouseLeave}
-        >
-          {transitions.map(({ item, key, props }) =>
-            item ? (
-              <animated.div
-                className={cn(styles.popup, className)}
-                ref={popupRef}
-                key={key}
-                style={{
-                  ...props,
-                  transformOrigin: `${computedTransformOrigin.horizontal} ${computedTransformOrigin.vertical}`
-                }}
-              >
-                {showHeader && (
-                  <div
-                    className={cn(styles.header, {
-                      [styles.noAfter]: hideCloseButton
-                    })}
+      {isClientSide
+        ? ReactDOM.createPortal(
+            <div
+              ref={wrapperRef}
+              className={cn(styles.wrapper, wrapperClassName)}
+              style={wrapperStyle}
+              onMouseLeave={handleMouseLeave}
+            >
+              {transitions.map(({ item, key, props }) =>
+                item ? (
+                  <animated.div
+                    className={cn(styles.popup, className)}
+                    ref={popupRef}
+                    key={key}
+                    style={{
+                      ...props,
+                      transformOrigin: `${computedTransformOrigin.horizontal} ${computedTransformOrigin.vertical}`
+                    }}
                   >
-                    {hideCloseButton ? null : (
-                      <IconButton
-                        aria-label={messages.close}
-                        onClick={handleClose}
-                        icon={<IconRemove className={styles.iconRemove} />}
-                      />
+                    {showHeader && (
+                      <div
+                        className={cn(styles.header, {
+                          [styles.noAfter]: hideCloseButton
+                        })}
+                      >
+                        {hideCloseButton ? null : (
+                          <IconButton
+                            aria-label={messages.close}
+                            onClick={handleClose}
+                            icon={<IconRemove className={styles.iconRemove} />}
+                          />
+                        )}
+                        <div className={cn(styles.title, titleClassName)}>
+                          {title}
+                        </div>
+                      </div>
                     )}
-                    <div className={cn(styles.title, titleClassName)}>
-                      {title}
-                    </div>
-                  </div>
-                )}
-                {children}
-              </animated.div>
-            ) : null
-          )}
-        </div>,
-        document.body
-      )}
+                    {children}
+                  </animated.div>
+                ) : null
+              )}
+            </div>,
+            document.body
+          )
+        : null}
     </>
   )
 })

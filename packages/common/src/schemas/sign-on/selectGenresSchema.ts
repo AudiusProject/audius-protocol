@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { GENRES, Genre, convertGenreLabelToValue } from 'utils/genres'
+import { GENRES, Genre, convertGenreLabelToValue } from '~/utils/genres'
 
 const excludedGenres = new Set<string>([
   Genre.COMEDY,

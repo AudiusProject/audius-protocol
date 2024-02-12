@@ -12,7 +12,7 @@
   left: 0;
   right: 0;
   bottom: 420px;
-  height: 420px;
+  height: 560px;
   z-index: -1;
   background: url(../../assets/img/headerImg@2x.jpg);
   background-position: center;
@@ -20,11 +20,12 @@
 }
 
 .appBarContainer {
+  max-width: 992px;
   display: inline-flex;
   width: 100%;
   justify-content: center;
   align-items: center;
-  padding: 28px 48px;
+  padding: 60px 0px 48px;
   margin: 0px auto;
   box-sizing: border-box;
 }

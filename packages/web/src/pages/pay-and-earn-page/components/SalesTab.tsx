@@ -1,26 +1,26 @@
 import { useCallback, useContext, useState } from 'react'
 
+import { useGetSales, useGetSalesCount, Id } from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import {
-  Id,
   Status,
-  USDCPurchaseDetails,
-  accountSelectors,
-  combineStatuses,
   statusIsNotFinalized,
-  useAllPaginatedQuery,
-  useGetSales,
-  useGetSalesCount,
+  combineStatuses,
+  USDCPurchaseDetails
+} from '@audius/common/models'
+import {
+  accountSelectors,
   useUSDCPurchaseDetailsModal
-} from '@audius/common'
+} from '@audius/common/store'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { MainContentContext } from 'pages/MainContentContext'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
-import { isMobile } from 'utils/clientUtil'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { UPLOAD_PAGE } from 'utils/route'
@@ -105,7 +105,7 @@ export const useSales = () => {
 
   const { status: countStatus, data: count } = useGetSalesCount(
     { userId },
-    { force: true }
+    { disabled: !userId, force: true }
   )
 
   const status = combineStatuses([dataStatus, countStatus])
@@ -178,9 +178,10 @@ export const SalesTab = ({
   isEmpty,
   isLoading
 }: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
+  const isMobile = useIsMobile()
   const { mainContentRef } = useContext(MainContentContext)
 
-  const columns = isMobile()
+  const columns = isMobile
     ? (['contentName', 'date', 'value'] as SalesTableColumn[])
     : undefined
 

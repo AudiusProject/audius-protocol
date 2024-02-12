@@ -1,8 +1,13 @@
-import { Cache } from 'models/Cache'
-import { ID } from 'models/Identifiers'
-import { Kind } from 'models/Kind'
-import { Track } from 'models/Track'
-import { initialCacheState } from 'store/cache/reducer'
+import snakecaseKeys from 'snakecase-keys'
+
+import { Cache } from '~/models/Cache'
+import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { SsrPageProps } from '~/models/SsrPageProps'
+import { Track } from '~/models/Track'
+import { makeTrack } from '~/services/audius-api-client/ResponseAdapter'
+import { initialCacheState } from '~/store/cache/reducer'
+import { makeUid } from '~/utils/uid'
 
 import {
   AddEntriesAction,
@@ -72,10 +77,47 @@ const actionsMap = {
   }
 }
 
-const reducer = (state = initialState, action: AddSuccededAction<Track>) => {
-  const matchingReduceFunction = actionsMap[action.type]
-  if (!matchingReduceFunction) return state
-  return matchingReduceFunction(state, action)
+const buildInitialState = (ssrPageProps?: SsrPageProps) => {
+  // If we have preloaded data from the server, populate the initial
+  // cache state with it
+  if (ssrPageProps?.track) {
+    // @ts-ignore
+    const track = makeTrack(snakecaseKeys(ssrPageProps.track))
+    if (!track) return initialState
+
+    const id = track.track_id
+    const uid = makeUid(Kind.TRACKS, id)
+
+    return {
+      ...initialState,
+      entries: {
+        [id]: {
+          metadata: track,
+          _timestamp: Date.now()
+        }
+      },
+      uids: {
+        [uid]: track.track_id
+      },
+      statuses: {
+        [id]: 'SUCCESS'
+      }
+    }
+  }
+  return initialState
 }
+
+const reducer =
+  (ssrPageProps: SsrPageProps) =>
+  (state: TracksCacheState, action: AddSuccededAction<Track>) => {
+    if (!state) {
+      // @ts-ignore
+      state = buildInitialState(ssrPageProps)
+    }
+
+    const matchingReduceFunction = actionsMap[action.type]
+    if (!matchingReduceFunction) return state
+    return matchingReduceFunction(state, action)
+  }
 
 export default reducer

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { trimToAlphaNumeric } from '@audius/common'
+import { trimToAlphaNumeric } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import type {
   NativeSyntheticEvent,
@@ -9,7 +9,7 @@ import type {
 } from 'react-native'
 import { View } from 'react-native'
 
-import IconSave from 'app/assets/images/iconSave.svg'
+import { IconSave } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

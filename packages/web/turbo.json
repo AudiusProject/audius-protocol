@@ -3,12 +3,13 @@
   "pipeline": {
     "build": {
       "outputs": [
-        "build-development/**",
-        "build-staging/**",
-        "build-production/**"
+        "build/**",
+        "build-ssr/**",
+        "../../node_modules/@brillout/vite-plugin-import-build/dist/autoImporter.js"
       ],
       "dependsOn": ["^build"],
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "env": ["VITE_ENVIRONMENT", "VITE_SSR"]
     },
     "dist": {
       "outputs": ["dist/**"],

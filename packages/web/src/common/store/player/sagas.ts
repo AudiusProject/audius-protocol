@@ -1,26 +1,27 @@
+import { Kind } from '@audius/common/models'
+import { FeatureFlags, QueryParams } from '@audius/common/services'
 import {
-  Kind,
-  encodeHashId,
   accountSelectors,
   cacheTracksSelectors,
   cacheActions,
   queueActions,
+  reachabilitySelectors,
   tracksSocialActions,
   getContext,
-  actionChannelDispatcher,
   playerActions,
   playerSelectors,
   playbackPositionActions,
   playbackPositionSelectors,
-  reachabilitySelectors,
-  Nullable,
-  FeatureFlags,
-  gatedContentSelectors,
-  QueryParams,
+  gatedContentSelectors
+} from '@audius/common/store'
+import {
   Genre,
+  encodeHashId,
+  actionChannelDispatcher,
   getQueryParams,
-  getTrackPreviewDuration
-} from '@audius/common'
+  getTrackPreviewDuration,
+  Nullable
+} from '@audius/common/utils'
 import { eventChannel } from 'redux-saga'
 import {
   select,
@@ -70,7 +71,7 @@ const RECORD_LISTEN_INTERVAL = 1000
 export function* watchPlay() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, isPreview, onEnd } = action.payload ?? {}
+    const { uid, trackId, isPreview, startTime, onEnd } = action.payload ?? {}
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
@@ -101,7 +102,8 @@ export function* watchPlay() {
 
       let queryParams: QueryParams = {}
       const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-      const nftAccessSignature = nftAccessSignatureMap[track.track_id]
+      const nftAccessSignature =
+        nftAccessSignatureMap[track.track_id]?.mp3 ?? null
       queryParams = (yield* call(getQueryParams, {
         audiusBackendInstance,
         nftAccessSignature
@@ -197,8 +199,12 @@ export function* watchPlay() {
 
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
-    const doesUserHaveStreamAccess = !!track?.access?.stream
+    const doesUserHaveStreamAccess =
+      !track?.is_stream_gated || !!track?.access?.stream
     if (!trackId || doesUserHaveStreamAccess || isPreview) {
+      if (startTime) {
+        audioPlayer.seek(startTime)
+      }
       audioPlayer.play()
       yield* put(playSucceeded({ uid, trackId, isPreview }))
     } else {
@@ -272,11 +278,13 @@ export function* watchReset() {
 export function* watchStop() {
   yield* takeLatest(stop.type, function* (action: ReturnType<typeof stop>) {
     const id = yield* select(getTrackId)
-    yield* put(
-      cacheActions.unsubscribe(Kind.TRACKS, [
-        { uid: PLAYER_SUBSCRIBER_NAME, id }
-      ])
-    )
+    if (id) {
+      yield* put(
+        cacheActions.unsubscribe(Kind.TRACKS, [
+          { uid: PLAYER_SUBSCRIBER_NAME, id }
+        ])
+      )
+    }
     const audioPlayer = yield* getContext('audioPlayer')
     audioPlayer.stop()
   })

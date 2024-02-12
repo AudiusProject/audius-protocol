@@ -1,17 +1,17 @@
 import React, { useCallback } from 'react'
 
-import type { BNUSDC } from '@audius/common'
+import { useUSDCBalance } from '@audius/common/hooks'
+import type { BNUSDC } from '@audius/common/models'
+import { useAddFundsModal } from '@audius/common/store'
 import {
   formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  useAddFundsModal,
-  useUSDCBalance
-} from '@audius/common'
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import BN from 'bn.js'
 import { TouchableOpacity, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
+import { IconQuestionCircle } from '@audius/harmony-native'
 import LogoUSDCInverted from 'app/assets/images/logoUSDCInverted.svg'
 import { Button, Text, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'

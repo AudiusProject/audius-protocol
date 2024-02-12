@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
-import { ID, BadgeTier, modalsActions, useSelectTierInfo } from '@audius/common'
+import { useSelectTierInfo } from '@audius/common/hooks'
+import { BadgeTier, ID } from '@audius/common/models'
+import { modalsActions } from '@audius/common/store'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMapSVG } from 'components/user-badges/UserBadges'
 
 import styles from './ProfilePageBadge.module.css'
 const { setVisibility } = modalsActions
@@ -81,7 +83,7 @@ const ProfilePageBadge = ({
 
   if (tier === 'none') return null
 
-  const badge = audioTierMapPng[tier as BadgeTier]
+  const badge = audioTierMapSVG[tier as BadgeTier]
 
   return (
     <div

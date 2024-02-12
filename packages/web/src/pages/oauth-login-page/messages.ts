@@ -49,5 +49,7 @@ export const messages = {
     'Whoops, this is an invalid link (response mode invalid - if set, must be "fragment" or "query").',
   signedInAs: `You’re signed in as`,
   missingApiKeyError: 'Whoops, this is an invalid link (app API Key missing)',
-  invalidApiKeyError: 'Whoops, this is an invalid link (app API Key invalid)'
+  invalidApiKeyError: 'Whoops, this is an invalid link (app API Key invalid)',
+  approveTxToConnectProfile:
+    'Approve the pending MetaMask transaction to finish connecting your Audius profile.'
 }

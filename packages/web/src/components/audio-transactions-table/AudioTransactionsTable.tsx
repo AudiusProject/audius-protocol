@@ -1,12 +1,12 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
+import { Kind } from '@audius/common/models'
 import {
-  formatAudio,
-  TransactionMethod,
   TransactionType,
-  Kind,
+  TransactionMethod,
   TransactionDetails
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatAudio } from '@audius/common/utils'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'

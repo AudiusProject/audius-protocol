@@ -1,34 +1,34 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
 import {
-  fillString,
-  formatNumberCommas,
   accountSelectors,
   challengesSelectors,
-  audioRewardsPageActions,
-  ChallengeRewardsModalType,
-  ClaimStatus,
   audioRewardsPageSelectors,
-  getAAOErrorEmojis,
+  audioRewardsPageActions,
+  ClaimStatus,
   musicConfettiActions,
+  ChallengeRewardsModalType
+} from '@audius/common/store'
+import {
+  fillString,
+  formatNumberCommas,
+  getAAOErrorEmojis,
   challengeRewardsConfig,
   isAudioMatchingChallenge,
   getClaimableChallengeSpecifiers
-} from '@audius/common'
+} from '@audius/common/utils'
 import {
-  Button,
-  ButtonType,
-  ProgressBar,
+  IconCopy,
+  IconValidationCheck,
   IconCheck,
   IconVerified,
-  IconTwitterBird
-} from '@audius/stems'
+  IconTwitter as IconTwitterBird
+} from '@audius/harmony'
+import { Button, ButtonType, ProgressBar, ModalContent } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCopy from 'assets/img/iconCopy.svg'
-import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -36,9 +36,9 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
-import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { openTwitterLink } from 'utils/tweet'
@@ -226,7 +226,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const userHandle = useSelector(getUserHandle)
   const dispatch = useDispatch()
   const wm = useWithMobileStyle(styles.mobile)
-  const displayMobileContent = isMobile()
+  const isMobile = useIsMobile()
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
@@ -388,7 +388,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     />
   ) : (
     <div className={wm(styles.container)}>
-      {displayMobileContent ? (
+      {isMobile ? (
         <>
           {progressDescription}
           <div className={wm(styles.progressCard)}>
@@ -524,7 +524,9 @@ export const ChallengeRewardsModal = () => {
       showDismissButton={!isHCaptchaModalOpen}
       dismissOnClickOutside={!isHCaptchaModalOpen}
     >
-      <ChallengeRewardsBody dismissModal={onClose} />
+      <ModalContent>
+        <ChallengeRewardsBody dismissModal={onClose} />
+      </ModalContent>
     </ModalDrawer>
   )
 }

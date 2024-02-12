@@ -1,23 +1,27 @@
 import { useContext, useEffect, FC } from 'react'
 
 import {
-  ID,
   SquareSizes,
-  ProfilePictureSizes,
   Theme,
-  InstagramProfile,
-  TwitterProfile,
-  Notifications,
-  EmailFrequency,
+  ID,
+  ProfilePictureSizes
+} from '@audius/common/models'
+import {
   BrowserNotificationSetting,
   PushNotificationSetting,
-  PushNotifications,
-  TikTokProfile
-} from '@audius/common'
-import { SegmentedControl } from '@audius/stems'
+  EmailFrequency,
+  InstagramProfile,
+  TwitterProfile,
+  TikTokProfile,
+  Notifications,
+  PushNotifications
+} from '@audius/common/store'
+import {
+  SegmentedControl,
+  IconAudiusLogoHorizontalColor
+} from '@audius/harmony'
 import cn from 'classnames'
 
-import horizontalLogo from 'assets/img/settingsPageLogo.png'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
@@ -36,7 +40,8 @@ import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
 import AccountSettingsPage from './AccountSettingsPage'
-import { ChangePasswordPage } from './ChangePasswordPage'
+import { ChangeEmailMobilePage } from './ChangeEmailPage'
+import { ChangePasswordMobilePage } from './ChangePasswordPage'
 import NotificationsSettingsPage from './NotificationsSettingsPage'
 import styles from './SettingsPage.module.css'
 import VerificationPage from './VerificationPage'
@@ -46,7 +51,8 @@ export enum SubPage {
   NOTIFICATIONS = 'notifications',
   ABOUT = 'about',
   VERIFICATION = 'verification',
-  CHANGE_PASSWORD = 'change-password'
+  CHANGE_PASSWORD = 'change password',
+  CHANGE_EMAIL = 'change email'
 }
 
 const messages = {
@@ -104,7 +110,8 @@ const SubPages = {
   [SubPage.ABOUT]: AboutSettingsPage as FC<SettingsPageProps>,
   [SubPage.NOTIFICATIONS]: NotificationsSettingsPage as FC<SettingsPageProps>,
   [SubPage.VERIFICATION]: VerificationPage as FC<SettingsPageProps>,
-  [SubPage.CHANGE_PASSWORD]: ChangePasswordPage as FC<SettingsPageProps>
+  [SubPage.CHANGE_PASSWORD]: ChangePasswordMobilePage as FC<SettingsPageProps>,
+  [SubPage.CHANGE_EMAIL]: ChangeEmailMobilePage as FC<SettingsPageProps>
 }
 
 const SettingsPage = (props: SettingsPageProps) => {
@@ -190,9 +197,7 @@ const SettingsPage = (props: SettingsPageProps) => {
     >
       <div className={styles.bodyContainer}>
         <div className={styles.logo}>
-          <img
-            src={horizontalLogo}
-            alt='Audius Logo'
+          <IconAudiusLogoHorizontalColor
             className={cn({
               [styles.whiteTint]: isDarkMode() || theme === Theme.MATRIX
             })}

@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import { Client, Name, accountSelectors } from '@audius/common'
+import { Name } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { make } from 'common/store/analytics/actions'
-import { getClient } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { CHATS_PAGE } from 'utils/route'
 
 import { CallToActionBanner } from './CallToActionBanner'
@@ -27,7 +28,7 @@ const DIRECT_MESSAGES_BANNER_LOCAL_STORAGE_KEY = 'dismissDirectMessagesBanner'
 export const DirectMessagesBanner = () => {
   const dispatch = useDispatch()
   const signedIn = useSelector(getHasAccount)
-  const isMobile = getClient() === Client.MOBILE
+  const isMobile = useIsMobile()
   const hasDismissed = window.localStorage.getItem(
     DIRECT_MESSAGES_BANNER_LOCAL_STORAGE_KEY
   )

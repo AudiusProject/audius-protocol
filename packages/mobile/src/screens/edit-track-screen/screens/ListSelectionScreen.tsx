@@ -1,7 +1,7 @@
 import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 
-import type { Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
 import type { ListRenderItem, ViewStyle } from 'react-native'
 import { FlatList, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'

@@ -201,6 +201,31 @@ user_track as (
   group by
     owner_id
 ),
+genre_counts as (
+  select
+    owner_id as user_id,
+    genre,
+    count(*) as count
+  from
+    tracks t
+  where
+    t.is_current is true
+    and t.is_delete is false
+    and t.is_unlisted is false
+    and t.is_available is true
+    and t.stem_of is null
+  group by
+    genre, owner_id
+),
+ranked_genres as (
+  select
+    user_id,
+    genre,
+    count,
+    rank() over (partition by user_id order by count desc) as genre_rank
+  from
+    genre_counts
+),
 new_aggregate_user as (
   select
     ap.user_id,
@@ -210,7 +235,9 @@ new_aggregate_user as (
     coalesce(ufollower.follower_count, 0) as follower_count,
     coalesce(ufollowing.following_count, 0) as following_count,
     coalesce(ur.repost_count, 0) as repost_count,
-    coalesce(us.track_save_count, 0) as track_save_count
+    coalesce(us.track_save_count, 0) as track_save_count,
+    rg.genre as dominant_genre,
+    rg.count as dominant_genre_count
   from
     aggregate_user ap
     left join user_track ut on ap.user_id = ut.user_id
@@ -220,6 +247,9 @@ new_aggregate_user as (
     left join user_following ufollowing on ap.user_id = ufollowing.user_id
     left join user_save us on ap.user_id = us.user_id
     left join user_repost ur on ap.user_id = ur.user_id
+    left join ranked_genres rg on ap.user_id = rg.user_id
+  where
+    rg.genre_rank = 1
 )
 update
   aggregate_user au
@@ -230,7 +260,9 @@ set
   follower_count = nau.follower_count,
   following_count = nau.following_count,
   repost_count = nau.repost_count,
-  track_save_count = nau.track_save_count
+  track_save_count = nau.track_save_count,
+  dominant_genre = nau.dominant_genre,
+  dominant_genre_count = nau.dominant_genre_count
 from
   new_aggregate_user nau
 where
@@ -243,6 +275,8 @@ where
     or au.following_count != nau.following_count
     or au.repost_count != nau.repost_count
     or au.track_save_count != nau.track_save_count
+    or au.dominant_genre != nau.dominant_genre
+    or au.dominant_genre_count != nau.dominant_genre_count
   )
 returning au.user_id;
 """

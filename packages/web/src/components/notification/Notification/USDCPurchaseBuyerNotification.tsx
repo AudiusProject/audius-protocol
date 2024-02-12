@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common/models'
 import {
-  Nullable,
-  Name,
-  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
-  TrackEntity,
+  notificationsSelectors,
   Entity,
-  notificationsSelectors
-} from '@audius/common'
+  TrackEntity,
+  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -33,7 +33,7 @@ const messages = {
   from: ' from ',
   exclamation: '!',
   twitterShare: (trackTitle: string, sellerUsername: string) =>
-    `I bought the track ${trackTitle} by ${sellerUsername} on Audius! #AudiusPremium`
+    `I bought the track ${trackTitle} by ${sellerUsername} on @Audius! #AudiusPremium`
 }
 
 type USDCPurchaseBuyerNotificationProps = {

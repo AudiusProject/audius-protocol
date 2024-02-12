@@ -1,28 +1,26 @@
 import {
-  BN_USDC_CENT_WEI,
-  FeatureFlags,
   Name,
-  accountSelectors,
-  getContext,
-  getUSDCUserBank,
   isContentCollectibleGated,
   isContentFollowGated,
-  isContentUSDCPurchaseGated,
   isContentTipGated,
+  isContentUSDCPurchaseGated,
   TrackMetadata
-} from '@audius/common'
-import { PublicKey } from '@solana/web3.js'
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  getUSDCUserBank,
+  getContext
+} from '@audius/common/store'
+import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import BN from 'bn.js'
 import { range } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { TrackForUpload } from 'pages/upload-page/types'
-import { env } from 'services/env'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
-
-const ENVIRONMENT = env.ENVIRONMENT
 
 export function* reportResultEvents({
   numSuccess,
@@ -117,15 +115,11 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
 
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-
-  // TODO: Figure out how to support USDC properly in dev.
-  let ownerUserbank: PublicKey
-  if (ENVIRONMENT !== 'development') {
-    ownerUserbank = yield* getUSDCUserBank(wallet)
-  }
+  const ownerUserbank = yield* getUSDCUserBank(wallet)
 
   tracks.forEach((track) => {
     const streamConditions = track.metadata.stream_conditions
+    const downloadConditions = track.metadata.download_conditions
     if (isContentUSDCPurchaseGated(streamConditions)) {
       const priceCents = streamConditions.usdc_purchase.price
       const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
@@ -133,6 +127,16 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
         price: priceCents,
         splits: {
           [ownerUserbank?.toString() ?? '']: priceWei
+        }
+      }
+    }
+    if (isContentUSDCPurchaseGated(downloadConditions)) {
+      const priceCents = downloadConditions.usdc_purchase.price
+      const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+      downloadConditions.usdc_purchase = {
+        price: priceCents,
+        splits: {
+          [ownerUserbank.toString()]: priceWei
         }
       }
     }

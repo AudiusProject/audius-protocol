@@ -6,6 +6,7 @@
   margin: 0 auto;
   justify-content: center;
   width: 375px;
+  display: flex;
 }
 
 .centeredContent {
@@ -14,7 +15,7 @@
 }
 
 .titleContainer {
-  margin-top: var(--unit-4);
+  margin-top: var(--unit-3);
   text-align: center;
 }
 
@@ -72,11 +73,6 @@
   display: block;
 }
 
-.logo {
-  width: 194px;
-  height: 51px;
-}
-
 .tile {
   background-color: var(--neutral-light-10);
   border: 1px solid var(--neutral-light-8);
@@ -86,10 +82,6 @@
 
 .permissionContainer {
   display: flex;
-}
-
-.permissionIcon {
-  color: var(--neutral);
 }
 
 .visibilityIconWrapper {
@@ -142,7 +134,7 @@
 
 .userInfoContainer,
 .signInFormContainer {
-  padding-bottom: var(--unit-8);
+  padding-bottom: var(--unit-4);
   margin-top: var(--unit-8);
 }
 
@@ -253,7 +245,6 @@
 
 .generalErrorContainer {
   text-align: center;
-  margin-top: var(--unit-8);
 }
 
 .errorText {
@@ -261,4 +252,8 @@
   color: var(--accent-red);
   font-size: var(--font-m);
   line-height: 120%;
+}
+
+.formArea {
+  padding-bottom: var(--unit-8);
 }

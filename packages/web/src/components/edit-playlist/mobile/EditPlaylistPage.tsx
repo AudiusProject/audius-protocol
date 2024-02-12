@@ -1,25 +1,24 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
+import { SquareSizes, Collection, ID } from '@audius/common/models'
+import { newCollectionMetadata } from '@audius/common/schemas'
+import { RandomImage } from '@audius/common/services'
 import {
-  ID,
-  Collection,
-  SquareSizes,
-  Nullable,
-  RandomImage,
   accountSelectors,
   cacheCollectionsActions,
-  collectionPageLineupActions as tracksActions,
-  imageBlank as placeholderCoverArt,
-  newCollectionMetadata,
-  useGatedContentAccessMap,
-  EditPlaylistValues,
   cacheCollectionsSelectors,
-  useEditPlaylistModal
-} from '@audius/common'
+  collectionPageLineupActions as tracksActions,
+  useEditPlaylistModal,
+  EditPlaylistValues
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { IconCamera } from '@audius/harmony'
+import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconCamera from 'assets/img/iconCamera.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'
@@ -43,12 +42,12 @@ const { getCollection, getCollectionTracksWithUsers } =
   cacheCollectionsSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
-const messages = {
-  editPlaylist: 'Edit Playlist',
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  editPlaylist: `Edit ${capitalize(collectionType)}`,
   randomPhoto: 'Get Random Artwork',
-  placeholderName: 'My Playlist',
-  placeholderDescription: 'Give your playlist a description'
-}
+  placeholderName: `My ${collectionType}`,
+  placeholderDescription: `Give your ${collectionType} a description`
+})
 
 const initialFormFields = {
   artwork: {},
@@ -74,6 +73,7 @@ const EditPlaylistPage = g(
     const tracks = useSelector((state) =>
       getCollectionTracksWithUsers(state, { id: collectionId ?? undefined })
     )
+    const messages = getMessages(metadata?.is_album ? 'album' : 'playlist')
 
     // Close the page if the route was changed
     useHasChangedRoute(onClose)
@@ -324,7 +324,7 @@ const EditPlaylistPage = g(
           />
         )
       }),
-      [formFields, onSave]
+      [formFields.playlist_name, messages.editPlaylist, onSave]
     )
 
     useTemporaryNavContext(setters)

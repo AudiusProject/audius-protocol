@@ -1,19 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
-  ID,
   StemCategory,
+  ID,
   StemUploadWithFile,
-  Track,
-  removeNullable,
-  uuid,
+  Track
+} from '@audius/common/models'
+import {
   cacheTracksActions as cacheTrackActions,
-  stemsUploadSelectors,
   stemsUploadActions,
+  stemsUploadSelectors,
+  publishTrackConfirmationModalUIActions,
   editTrackModalSelectors,
-  useEditTrackModal,
-  publishTrackConfirmationModalUIActions
-} from '@audius/common'
+  useEditTrackModal
+} from '@audius/common/store'
+import { Nullable, removeNullable, uuid } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { matchPath } from 'react-router'
@@ -21,11 +22,11 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import { dropdownRows } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname } from 'utils/route'
+import { stemDropdownRows } from 'utils/stems'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getMetadata, getStems } = editTrackModalSelectors
@@ -85,7 +86,13 @@ const EditTrackModal = ({
       }
       onEdit(metadata.track_id, formFieldsToUpdate)
       if (pendingUploads.length) {
-        uploadStems(metadata.track_id, pendingUploads)
+        uploadStems(
+          metadata.track_id,
+          pendingUploads.map((stem) => ({
+            ...stem,
+            category: stem.category ?? StemCategory.OTHER
+          }))
+        )
         setPendingUploads([])
       }
       if (pendingDeletes.length) {
@@ -153,18 +160,37 @@ const EditTrackModal = ({
     })
   }
 
-  const onAddStems = async (selectedStems: File[]) => {
-    const processed = (await Promise.all(processFiles(selectedStems, () => {})))
-      .filter(removeNullable)
-      .map((p) => ({
-        ...p,
-        allowDelete: true,
-        allowCategorySwitch: true,
-        category: dropdownRows[0]
-      }))
+  const detectCategory = useCallback(
+    (filename: string): Nullable<StemCategory> => {
+      const lowerCaseFilename = filename.toLowerCase()
+      return (
+        stemDropdownRows.find((category) =>
+          lowerCaseFilename.includes(category.toString().toLowerCase())
+        ) ?? null
+      )
+    },
+    []
+  )
 
-    setPendingUploads((s) => [...s, ...processed])
-  }
+  const onAddStems = useCallback(
+    async (selectedStems: File[]) => {
+      const processedFiles = processFiles(selectedStems, () => {})
+      const newStems = (await Promise.all(processedFiles))
+        .filter(removeNullable)
+        .map((processedFile) => {
+          const category = detectCategory(processedFile.file.name)
+          return {
+            ...processedFile,
+            category,
+            allowDelete: true,
+            allowCategorySwitch: true
+          }
+        })
+
+      setPendingUploads((s) => [...s, ...newStems])
+    },
+    [detectCategory]
+  )
 
   const { combinedStems, onDeleteStem } = (() => {
     // Filter out pending deletes from the existing stems

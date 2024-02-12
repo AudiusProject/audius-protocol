@@ -1,24 +1,26 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
 import {
-  ID,
-  FollowSource,
   Name,
-  ProfilePictureSizes,
+  FollowSource,
   SquareSizes,
-  User,
+  ID,
+  ProfilePictureSizes,
+  User
+} from '@audius/common/models'
+import {
+  cacheUsersSelectors,
+  usersSocialActions as socialActions,
   relatedArtistsUISelectors,
   relatedArtistsUIActions,
-  usersSocialActions as socialActions,
-  cacheUsersSelectors,
   CommonState
-} from '@audius/common'
+} from '@audius/common/store'
+import { IconClose } from '@audius/harmony'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconClose from 'assets/img/iconRemove.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -26,8 +28,8 @@ import { FollowButton } from 'components/follow-button/FollowButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { useIsMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistRecommendations.module.css'
@@ -67,14 +69,17 @@ const ArtistProfilePictureWrapper = ({
   const isMobile = useIsMobile()
   if (isMobile) {
     return (
-      <DynamicImage className={styles.profilePicture} image={profilePicture} />
+      <DynamicImage
+        wrapperClassName={styles.profilePicture}
+        image={profilePicture}
+      />
     )
   }
   return (
     <ArtistPopover mount={MountPlacement.PARENT} handle={handle}>
       <div>
         <DynamicImage
-          className={styles.profilePicture}
+          wrapperClassName={styles.profilePicture}
           image={profilePicture}
         />
       </div>
@@ -257,7 +262,10 @@ export const ArtistRecommendations = forwardRef<
           className={styles.closeButton}
           onClick={onClose}
         >
-          <IconClose className={cn(styles.icon, styles.remove)} />
+          <IconClose
+            color='subdued'
+            className={cn(styles.icon, styles.remove)}
+          />
         </div>
         {renderHeader()}
       </div>

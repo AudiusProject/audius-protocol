@@ -1,20 +1,21 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Collection } from '@audius/common'
+import type { Collection } from '@audius/common/models'
+import { CreatePlaylistSource, SquareSizes } from '@audius/common/models'
 import {
-  duplicateAddConfirmationModalUIActions,
-  SquareSizes,
-  CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
-  addToCollectionUISelectors
-} from '@audius/common'
+  collectionPageSelectors,
+  addToCollectionUISelectors,
+  duplicateAddConfirmationModalUIActions
+} from '@audius/common/store'
 import { fetchAccountCollections } from 'common/store/saved-collections/actions'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { Card } from 'app/components/card'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
@@ -23,7 +24,7 @@ import { makeStyles, shadow } from 'app/styles'
 
 import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
-import type { ImageProps } from '../image/FastImage'
+const { getCollectionId } = collectionPageSelectors
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
@@ -66,6 +67,7 @@ export const AddToCollectionDrawer = () => {
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
+  const currentCollectionId = useSelector(getCollectionId)
 
   const messages = getMessages(collectionType)
 
@@ -85,8 +87,20 @@ export const AddToCollectionDrawer = () => {
     []
   )
 
-  const filteredCollections =
-    (isAlbumType ? account?.albums : account?.playlists) ?? []
+  const filteredCollections = useMemo(() => {
+    return ((isAlbumType ? account?.albums : account?.playlists) ?? []).filter(
+      (collection: Collection) =>
+        // Don't allow adding to this collection if already on this collection's page.
+        collection.playlist_id !== currentCollectionId &&
+        collection.playlist_owner_id === account?.user_id
+    )
+  }, [
+    isAlbumType,
+    account?.albums,
+    account?.playlists,
+    account?.user_id,
+    currentCollectionId
+  ])
 
   const collectionTrackIdMap = useMemo(() => {
     const collections =

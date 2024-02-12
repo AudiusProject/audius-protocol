@@ -1,13 +1,14 @@
 import { useCallback } from 'react'
 
-import { deletePlaylistConfirmationModalUIActions } from '@audius/common'
-import type { EditPlaylistValues } from '@audius/common'
+import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
+import type { EditPlaylistValues } from '@audius/common/store'
+import { deletePlaylistConfirmationModalUIActions } from '@audius/common/store'
 import type { FormikProps } from 'formik'
+import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconClose from 'app/assets/images/iconRemove.svg'
-import IconTrash from 'app/assets/images/iconTrash.svg'
+import { IconClose, IconTrash } from '@audius/harmony-native'
 import {
   Divider,
   TextButton,
@@ -28,12 +29,12 @@ import { TrackListFieldArray } from './TrackListFieldArray'
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
 
-const messages = {
-  screenTitle: 'Edit Playlist',
-  deletePlaylist: 'Delete Playlist',
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  screenTitle: `Edit ${capitalize(collectionType)}`,
+  deletePlaylist: `Delete ${capitalize(collectionType)}`,
   cancel: 'Cancel',
   save: 'Save'
-}
+})
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   titleContainer: {
@@ -77,6 +78,11 @@ export const EditPlaylistForm = (
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({ playlistId, currentUserId })
+  const collectionType = collection?.is_album ? 'album' : 'playlist'
+  const messages = getMessages(collectionType)
 
   const openDeleteDrawer = useCallback(() => {
     dispatch(openDeletePlaylist({ playlistId }))

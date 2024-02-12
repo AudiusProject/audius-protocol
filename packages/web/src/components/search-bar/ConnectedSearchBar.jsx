@@ -1,18 +1,18 @@
 import { Component } from 'react'
 
 import {
-  Name,
-  SquareSizes,
-  getTierForUser,
   imageBlank as placeholderArt,
   imageProfilePicEmpty as profilePicEmpty
-} from '@audius/common'
+} from '@audius/common/assets'
+import { Name, SquareSizes } from '@audius/common/models'
+import { getTierForUser } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { has } from 'lodash'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
+import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import {
   fetchSearch,
@@ -26,6 +26,7 @@ import { collectionPage, profilePage, getPathname } from 'utils/route'
 import styles from './ConnectedSearchBar.module.css'
 
 class ConnectedSearchBar extends Component {
+  static contextType = HistoryContext
   state = {
     value: ''
   }
@@ -35,7 +36,7 @@ class ConnectedSearchBar extends Component {
 
     // Clear search when navigating away from the search results page.
     history.listen((location, action) => {
-      const match = matchPath(getPathname(), {
+      const match = matchPath(getPathname(this.context.history.location), {
         path: '/search/:query'
       })
       if (!match) {
@@ -44,7 +45,7 @@ class ConnectedSearchBar extends Component {
     })
 
     // Set the initial search bar value if we loaded into a search page.
-    const match = matchPath(getPathname(), {
+    const match = matchPath(getPathname(this.context.history.location), {
       path: '/search/:query'
     })
     if (has(match, 'params.query')) {
@@ -78,14 +79,21 @@ class ConnectedSearchBar extends Component {
 
   onSubmit = (value) => {
     // Encode everything besides tag searches
-    if (!value.startsWith('#')) {
+    const pathname = '/search'
+    if (value.startsWith('#')) {
+      // perform tag search
+      this.props.history.push({
+        hash: value.split('#')[1],
+        pathname,
+        state: {}
+      })
+    } else {
       value = encodeURIComponent(value)
+      this.props.history.push({
+        pathname: pathname + '/' + value,
+        state: {}
+      })
     }
-    const pathname = `/search/${value}`
-    this.props.history.push({
-      pathname,
-      state: {}
-    })
   }
 
   onSelect = (value) => {

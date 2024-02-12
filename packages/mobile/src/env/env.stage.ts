@@ -1,10 +1,8 @@
-import type { Env } from '@audius/common'
+import type { Env } from '@audius/common/services'
 import Config from 'react-native-config'
 
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.staging.audius.co',
-  ADROLL_AVD_ID: null,
-  ADROLL_PIX_ID: null,
   AMPLITUDE_API_KEY: '72a58ce4ad1f9bafcba0b92bedb6c33d',
   AMPLITUDE_PROXY: 'https://gain.audius.co',
   AMPLITUDE_WRITE_KEY: Config.AMPLITUDE_WRITE_KEY as string,
@@ -39,7 +37,7 @@ export const env: Env = {
   FINGERPRINT_ENDPOINT: 'https://fp.staging.audius.co',
   FINGERPRINT_PUBLIC_API_KEY: 'Rz2A3Y5YGSg9K80VgKPi',
   GA_HOSTNAME: 'staging.audius.co',
-  GA_MEASUREMENT_ID: null,
+  GA_MEASUREMENT_ID: 'G-CH6BY2X2WL',
   GENERAL_ADMISSION: 'https://general-admission.staging.audius.co',
   HCAPTCHA_BASE_URL: 'https://staging.audius.co',
   HCAPTCHA_SITE_KEY: '2abe61f1-af6e-4707-be19-a9a4146a9bea',
@@ -47,13 +45,13 @@ export const env: Env = {
   INSTAGRAM_APP_ID: '2875320099414320',
   INSTAGRAM_REDIRECT_URL: 'https://staging.audius.co/',
   METADATA_PROGRAM_ID: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
-  OPENSEA_API_URL: 'https://rinkeby-api.opensea.io/api/v1',
+  OPENSEA_API_URL: 'https://rinkeby-api.opensea.io',
   OPTIMIZELY_KEY: 'MX4fYBgANQetvmBXGpuxzF',
   ORACLE_ETH_ADDRESSES: '0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf',
   PAYMENT_ROUTER_PROGRAM_ID: 'sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry',
   PUBLIC_HOSTNAME: 'staging.audius.co',
   PUBLIC_PROTOCOL: 'https:',
-  PUBLIC_URL: 'https://staging.audius.co',
+  BASENAME: '/',
   REACHABILITY_URL: 'https://staging.audius.co/204',
   STRIPE_CLIENT_PUBLISHABLE_KEY:
     'pk_test_51LPsGuCJOWtpH6AEZT3Wf2U2xmLZQrEV56yha7HEVTEyhYYVrWCdknml3t4gkSe9Nagd1o9Royy8zL3XEAmRzeHS00xAKTfgpi',
@@ -74,7 +72,7 @@ export const env: Env = {
   SOLANA_WEB3_CLUSTER: 'mainnet-beta',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
-  TIKTOK_APP_ID: 'awlrj83t4nx6qc5a',
+  TIKTOK_APP_ID: Config.TIKTOK_APP_ID!,
   TRPC_ENDPOINT: 'https://discoveryprovider3.staging.audius.co/trpc/trpc',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USER_NODE: 'https://usermetadata.staging.audius.co',

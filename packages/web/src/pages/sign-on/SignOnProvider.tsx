@@ -1,16 +1,14 @@
 import { Component, ComponentType } from 'react'
 
+import { Name, ID, User } from '@audius/common/models'
 import {
-  ID,
-  Name,
-  User,
+  accountActions,
   accountSelectors,
   InstagramProfile,
-  Image,
   TwitterProfile,
-  accountActions,
-  TikTokProfile
-} from '@audius/common'
+  TikTokProfile,
+  Image
+} from '@audius/common/store'
 import {
   push as pushRoute,
   replace as replaceRoute,
@@ -213,16 +211,21 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     }
     if (page === Pages.FOLLOW) {
       const {
-        followArtists: { selectedUserIds },
-        email,
-        handle
-      } = this.props.fields
+        fields: {
+          followArtists: { selectedUserIds },
+          email,
+          handle
+        },
+        completeFollowArtists
+      } = this.props
+
       this.props.recordCompleteFollow(
         selectedUserIds.join('|'),
         selectedUserIds.length,
         email.value,
         handle.value
       )
+      completeFollowArtists()
     }
     if (page === Pages.LOADING) {
       const { email, handle } = this.props.fields
@@ -567,6 +570,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     goToPage: (page: Pages) => dispatch(signOnAction.goToPage(page)),
     addFollows: (userIds: ID[]) =>
       dispatch(signOnAction.addFollowArtists(userIds)),
+    completeFollowArtists: () => dispatch(signOnAction.completeFollowArtists()),
     removeFollows: (userIds: ID[]) =>
       dispatch(signOnAction.removeFollowArtists(userIds)),
     onSetupMetaMask: () => dispatch(signOnAction.configureMetaMask()),

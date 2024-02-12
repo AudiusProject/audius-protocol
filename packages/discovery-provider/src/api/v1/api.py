@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask.helpers import url_for
 from flask_restx import Api
 
+from src.api.v1.challenges import full_ns as full_challenges_ns
 from src.api.v1.challenges import ns as challenges_ns
 from src.api.v1.cid_data import full_ns as cid_data_full_ns
 from src.api.v1.dashboard_wallet_users import ns as dashboard_wallet_users_ns
@@ -60,3 +61,4 @@ api_v1_full.add_namespace(reactions_ns)
 api_v1_full.add_namespace(full_transactions_ns)
 api_v1_full.add_namespace(cid_data_full_ns)
 api_v1_full.add_namespace(notifications_full_ns)
+api_v1_full.add_namespace(full_challenges_ns)

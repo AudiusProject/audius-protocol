@@ -21,7 +21,7 @@ from src.queries.query_helpers import (
 )
 from src.queries.reactions import ReactionResponse
 from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
-from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
+from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
 from src.utils.rendezvous import RendezvousHash
@@ -34,6 +34,12 @@ logger = logging.getLogger(__name__)
 PROFILE_PICTURE_SIZES = ["150x150", "480x480", "1000x1000"]
 PROFILE_COVER_PHOTO_SIZES = ["640x", "2000x"]
 COVER_ART_SIZES = ["150x150", "480x480", "1000x1000"]
+
+
+def camel_to_snake(name):
+    """Convert CamelCase to snake_case"""
+    name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
 
 
 def make_image(endpoint, cid, width="", height=""):
@@ -322,6 +328,10 @@ def extend_remix_of(remix_of):
     return remix_of
 
 
+def extend_blob_info(blob_info):
+    return {camel_to_snake(k): v for k, v in blob_info.items()}
+
+
 def parse_bool_param(param):
     if not isinstance(param, str):
         return None
@@ -400,12 +410,14 @@ def stem_from_track(track):
     track_id = encode_int_id(track["track_id"])
     parent_id = encode_int_id(track["stem_of"]["parent_track_id"])
     category = track["stem_of"]["category"]
+    orig_filename = track["orig_filename"]
     return {
         "id": track_id,
         "parent_id": parent_id,
         "category": category,
         "cid": track["download"]["cid"],
         "user_id": encode_int_id(track["owner_id"]),
+        "orig_filename": orig_filename,
         "blocknumber": track["blocknumber"],
     }
 
@@ -532,6 +544,7 @@ def extend_purchase(purchase):
     new_purchase["buyer_user_id"] = encode_int_id(purchase["buyer_user_id"])
     new_purchase["seller_user_id"] = encode_int_id(purchase["seller_user_id"])
     new_purchase["content_id"] = encode_int_id(purchase["content_id"])
+    new_purchase["access"] = purchase["access"]
     return new_purchase
 
 

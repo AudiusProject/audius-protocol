@@ -25,7 +25,7 @@ export * as trackPageLineupActions from './track/lineup/actions'
 export { default as trackPageReducer } from './track/reducer'
 export * as trackPageActions from './track/actions'
 export * as trackPageSelectors from './track/selectors'
-export { default as TrackPageState } from './track/types'
+export type { TrackPageState } from './track/types'
 
 export * as tokenDashboardPageSelectors from './token-dashboard/selectors'
 export * from './token-dashboard/types'
@@ -80,11 +80,8 @@ export {
   initialState as aiPageLineupInitialState
 } from './ai/lineup/reducer'
 export { tracksActions as aiPageLineupActions } from './ai/lineup/actions'
-export {
-  default as aiPageReducer,
-  actions as aiPageActions,
-  FetchAiUserAction
-} from './ai/slice'
+export { default as aiPageReducer, actions as aiPageActions } from './ai/slice'
+export type { FetchAiUserAction } from './ai/slice'
 export * as aiPageSelectors from './ai/selectors'
 
 export { default as profilePageFeedLineupReducer } from './profile/lineups/feed/reducer'

@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react'
 
-import type { SpacingOptions } from 'foundations/spacing'
-
+import type { SpacingOptions } from '../../../foundations/spacing'
 import type { BoxProps } from '../Box'
 
 export type BaseFlexProps = {
@@ -12,6 +11,7 @@ export type BaseFlexProps = {
   columnGap?: SpacingOptions
   justifyContent?: CSSProperties['justifyContent']
   wrap?: CSSProperties['flexWrap']
+  inline?: boolean
 }
 
 export type FlexProps = BaseFlexProps & BoxProps

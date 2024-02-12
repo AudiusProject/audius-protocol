@@ -1,21 +1,19 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  PurchaseContentStage,
-  usePayExtraPresets,
+  useFeatureFlag,
+  useRemoteVar,
   useUSDCBalance,
+  usePayExtraPresets,
   PURCHASE_METHOD,
-  PurchaseVendor,
   PURCHASE_VENDOR,
   usePurchaseMethod,
-  PurchaseMethod,
-  useFeatureFlag,
-  FeatureFlags,
-  useRemoteVar,
-  IntKeys
-} from '@audius/common'
-import { Flex } from '@audius/harmony'
-import { IconCheck } from '@audius/stems'
+  PurchaseableTrackMetadata
+} from '@audius/common/hooks'
+import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
+import { PurchaseContentStage } from '@audius/common/store'
+import { Flex, IconCheck } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'
@@ -37,13 +35,17 @@ const messages = {
 type PurchaseContentFormFieldsProps = Pick<
   PurchaseContentFormState,
   'purchaseSummaryValues' | 'stage' | 'isUnlocking'
-> & { price: number }
+> & {
+  price: number
+  track: PurchaseableTrackMetadata
+}
 
 export const PurchaseContentFormFields = ({
   price,
   purchaseSummaryValues,
   stage,
-  isUnlocking
+  isUnlocking,
+  track
 }: PurchaseContentFormFieldsProps) => {
   const payExtraAmountPresetValues = usePayExtraPresets()
   const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
@@ -104,6 +106,13 @@ export const PurchaseContentFormFields = ({
     )
   }
 
+  const stemsPurchaseCount = track.is_download_gated
+    ? track._stems?.length ?? 0
+    : 0
+  const downloadPurchaseCount =
+    track.is_download_gated && track.download?.is_downloadable ? 1 : 0
+  const streamPurchaseCount = track.is_stream_gated ? 1 : 0
+
   return (
     <>
       {isUnlocking || isPurchased ? null : (
@@ -114,6 +123,9 @@ export const PurchaseContentFormFields = ({
       )}
       <PurchaseSummaryTable
         {...purchaseSummaryValues}
+        stemsPurchaseCount={stemsPurchaseCount}
+        downloadPurchaseCount={downloadPurchaseCount}
+        streamPurchaseCount={streamPurchaseCount}
         totalPriceInCents={totalPriceInCents}
       />
       {isUnlocking || isPurchased ? null : (

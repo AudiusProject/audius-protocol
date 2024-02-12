@@ -1,20 +1,22 @@
 import { useCallback, useRef } from 'react'
 
+import { Name, Theme } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Theme,
-  FeatureFlags,
-  formatCount,
   accountSelectors,
   notificationsSelectors,
-  Name,
   themeSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
+import {
+  IconAudiusLogoHorizontal,
+  useTheme,
+  IconNotificationOn as IconNotification
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
-import AudiusLogoHorizontal from 'assets/img/audiusLogoHorizontal.svg'
-import IconNotification from 'assets/img/iconNotification.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import NavPopupMenu from 'components/nav/desktop/NavPopupMenu'
 import { NotificationPanel } from 'components/notification'
@@ -41,6 +43,7 @@ const messages = {
 export const NavHeader = () => {
   const dispatch = useDispatch()
   const record = useRecord()
+  const { spacing } = useTheme()
   const account = useSelector(getAccountUser)
   const notificationCount = useSelector(getNotificationUnviewedCount)
 
@@ -63,7 +66,15 @@ export const NavHeader = () => {
   return (
     <div className={styles.header}>
       <Link to={HOME_PAGE} aria-label={messages.homeLink}>
-        <AudiusLogoHorizontal
+        <IconAudiusLogoHorizontal
+          color='subdued'
+          sizeH='l'
+          width='auto'
+          css={{
+            display: 'block',
+            marginTop: spacing.l,
+            marginBottom: spacing.l
+          }}
           className={cn(styles.logo, { [styles.matrixLogo]: isMatrix })}
         />
       </Link>

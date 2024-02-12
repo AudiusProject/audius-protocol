@@ -1,5 +1,8 @@
-import { createApi } from 'audius-query'
-import { ID } from 'models/Identifiers'
+import { uniq } from 'lodash'
+
+import { createApi } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
 
 import { userApiFetch } from './user'
 
@@ -23,7 +26,7 @@ const topArtistsApi = createApi({
           offset
         })
       },
-      options: { idArgKey: 'genre' }
+      options: { idArgKey: 'genre', kind: Kind.USERS, schemaKey: 'users' }
     },
     getFeaturedArtists: {
       async fetch(_, context) {
@@ -31,8 +34,11 @@ const topArtistsApi = createApi({
 
         const response = await fetch(env.SUGGESTED_FOLLOW_HANDLES!)
         const featuredArtists: ID[] = await response.json()
+        // dedupe the artists just in case the team accidentally adds the same artist twice
+        const dedupedArtists = uniq(featuredArtists)
+
         return await userApiFetch.getUsersByIds(
-          { ids: featuredArtists },
+          { ids: dedupedArtists },
           context
         )
       },

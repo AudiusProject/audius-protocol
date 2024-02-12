@@ -1,13 +1,8 @@
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
-import {
-  Status,
-  Track,
-  formatCount,
-  themeSelectors,
-  combineStatuses,
-  useUSDCBalance
-} from '@audius/common'
+import { Status, Track } from '@audius/common/models'
+import { themeSelectors } from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { each } from 'lodash'
 import moment, { Moment } from 'moment'
@@ -77,12 +72,6 @@ export const DashboardPage = () => {
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const theme = useSelector(getTheme)
-  const { data: balance, balanceStatus } = useUSDCBalance()
-  const statuses = [dashboardStatus]
-  if (balance === null) {
-    statuses.push(balanceStatus)
-  }
-  const status = combineStatuses(statuses)
 
   const header = <Header primary={messages.title} />
 
@@ -187,10 +176,7 @@ export const DashboardPage = () => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {!account ||
-      balance === null ||
-      !listenData ||
-      status === Status.LOADING ? (
+      {!account || !listenData || dashboardStatus === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>

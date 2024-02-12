@@ -1,19 +1,21 @@
 import type {
   ID,
-  QueryParams,
-  Track,
   TrackMetadata,
+  Track,
   UserTrackMetadata
-} from '@audius/common'
+} from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
+import type { QueryParams } from '@audius/common/services'
 import {
-  getQueryParams,
-  removeNullable,
-  SquareSizes,
-  encodeHashId,
   accountSelectors,
   getContext,
   gatedContentSelectors
-} from '@audius/common'
+} from '@audius/common/store'
+import {
+  encodeHashId,
+  removeNullable,
+  getQueryParams
+} from '@audius/common/utils'
 import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
@@ -170,7 +172,7 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-  const nftAccessSignature = nftAccessSignatureMap[track_id]
+  const nftAccessSignature = nftAccessSignatureMap[track_id]?.mp3 ?? null
   let queryParams: QueryParams = {}
   queryParams = yield* call(getQueryParams, {
     audiusBackendInstance,

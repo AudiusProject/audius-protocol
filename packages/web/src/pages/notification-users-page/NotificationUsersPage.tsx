@@ -4,7 +4,7 @@ import {
   userListActions,
   notificationsUserListSelectors,
   NOTIFICATIONS_USER_LIST_TAG as USER_LIST_TAG
-} from '@audius/common'
+} from '@audius/common/store'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'

@@ -1,52 +1,55 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { OS, Theme, ID, ProfilePictureSizes, Name } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  ID,
-  ProfilePictureSizes,
-  OS,
-  Theme,
-  InstagramProfile,
-  TwitterProfile,
-  Notifications,
+  settingsPageSelectors,
   BrowserNotificationSetting,
   EmailFrequency,
+  InstagramProfile,
+  TwitterProfile,
   TikTokProfile,
-  FeatureFlags,
-  removeNullable,
-  settingsPageSelectors
-} from '@audius/common'
-import { IconAppearance } from '@audius/harmony'
+  Notifications
+} from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
 import {
-  Modal,
-  Button,
-  ButtonType,
-  IconMail,
-  IconNotification,
-  IconSignOut,
-  IconVerified,
-  IconSettings,
-  IconMessage,
+  IconAppearance,
   SegmentedControl,
   IconDesktop,
-  IconRobot
-} from '@audius/stems'
+  IconRobot,
+  IconRecoveryEmail as IconMail,
+  IconNotificationOn as IconNotification,
+  IconSignOut,
+  IconVerified,
+  IconEmailAddress,
+  IconKey,
+  IconMessage
+} from '@audius/harmony'
+import { Modal, Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { make, useRecord } from 'common/store/analytics/actions'
+import { ChangeEmailModal } from 'components/change-email/ChangeEmailModal'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import DownloadApp from 'services/download-app/DownloadApp'
-import { isMobile, isElectron, getOS } from 'utils/clientUtil'
+import { isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
+import {
+  PRIVACY_POLICY,
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  TERMS_OF_SERVICE
+} from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
@@ -78,7 +81,6 @@ const messages = {
   darkModeOff: 'Light',
   darkModeAuto: 'Auto',
   matrixMode: '🕳 🐇 Matrix',
-  changePassword: 'Change Password',
   signOut: 'Sign Out',
 
   aiGeneratedCardTitle: 'AI Generated music',
@@ -86,6 +88,7 @@ const messages = {
   inboxSettingsCardTitle: 'Inbox Settings',
   notificationsCardTitle: 'Configure Notifications',
   accountRecoveryCardTitle: 'Resend Recovery Email',
+  changeEmailCardTitle: 'Change Email',
   changePasswordCardTitle: 'Change Password',
   verificationCardTitle: 'Verification',
   desktopAppCardTitle: 'Download the Desktop App',
@@ -99,6 +102,8 @@ const messages = {
   notificationsCardDescription: 'Review your notification preferences.',
   accountRecoveryCardDescription:
     'Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.',
+  changeEmailCardDescription:
+    'Change the email you use to sign in and receive emails.',
   changePasswordCardDescription: 'Change the password to your Audius account.',
   verificationCardDescription:
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
@@ -110,8 +115,10 @@ const messages = {
   inboxSettingsButtonText: 'Inbox Settings',
   notificationsButtonText: 'Configure Notifications',
   accountRecoveryButtonText: 'Resend Email',
+  changeEmailButtonText: 'Change Email',
   changePasswordButtonText: 'Change Password',
-  desktopAppButtonText: 'Get The App'
+  desktopAppButtonText: 'Get The App',
+  showPrivateKey: 'Show Private Key (Advanced)'
 }
 
 export type SettingsPageProps = {
@@ -183,6 +190,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const [isEmailToastVisible, setIsEmailToastVisible] = useState(false)
   const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] =
     useState(false)
+  const [isChangeEmailModalVisible, setIsChangeEmailModalVisible] =
+    useState(false)
   const [emailToastText, setEmailToastText] = useState(messages.emailSent)
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
@@ -245,6 +254,14 @@ export const SettingsPage = (props: SettingsPageProps) => {
     setIsChangePasswordModalVisible(false)
   }, [setIsChangePasswordModalVisible])
 
+  const openChangeEmailModal = useCallback(() => {
+    setIsChangeEmailModalVisible(true)
+  }, [setIsChangeEmailModalVisible])
+
+  const closeChangeEmailModal = useCallback(() => {
+    setIsChangeEmailModalVisible(false)
+  }, [setIsChangeEmailModalVisible])
+
   const openInboxSettingsModal = useCallback(() => {
     setIsInboxSettingsModalVisible(true)
   }, [setIsInboxSettingsModalVisible])
@@ -252,6 +269,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const openAiAttributionSettingsModal = useCallback(() => {
     setIsAIAttributionSettingsModalVisible(true)
   }, [setIsAIAttributionSettingsModalVisible])
+
+  const record = useRecord()
+  const recordExportPrivateKeyLinkClicked = useCallback(() => {
+    record(make(Name.EXPORT_PRIVATE_KEY_LINK_CLICKED, { handle, userId }))
+  }, [record, handle, userId])
 
   const appearanceOptions = useMemo(() => {
     const options = [
@@ -283,7 +305,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
     FeatureFlags.DEVELOPER_APPS_PAGE
   )
 
-  const isDownloadDesktopEnabled = !isMobile() && !isElectron()
+  const isMobile = useIsMobile()
+  const isDownloadDesktopEnabled = !isMobile && !isElectron()
 
   const hasOddCardCount = Boolean(
     [isChatEnabled, isAiAttributionEnabled, areDeveloperAppsEnabled].filter(
@@ -367,8 +390,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
           </Toast>
         </SettingsCard>
         <SettingsCard
-          icon={<IconSettings />}
-          title={messages.changePassword}
+          icon={<IconEmailAddress />}
+          title={messages.changeEmailCardTitle}
+          description={messages.changeEmailCardDescription}
+        >
+          <Button
+            onClick={openChangeEmailModal}
+            className={cn(styles.cardButton, styles.changePasswordButton)}
+            textClassName={styles.settingButtonText}
+            type={ButtonType.COMMON_ALT}
+            text={messages.changeEmailButtonText}
+          />
+        </SettingsCard>
+        <SettingsCard
+          icon={<IconKey />}
+          title={messages.changePasswordCardTitle}
           description={messages.changePasswordCardDescription}
         >
           <Button
@@ -400,7 +436,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
           </SettingsCard>
         ) : null}
         <SettingsCard
-          icon={<IconVerified className={styles.iconVerified} />}
+          icon={<IconVerified className={styles.iconVerified} size='l' />}
           title={messages.verificationCardTitle}
           description={messages.verificationCardDescription}
         >
@@ -465,6 +501,13 @@ export const SettingsPage = (props: SettingsPageProps) => {
             {messages.privacy}
           </Link>
         </span>
+        <Link
+          className={cn(styles.link, styles.showPrivateKey)}
+          to={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
+          onClick={recordExportPrivateKeyLinkClicked}
+        >
+          {messages.showPrivateKey}
+        </Link>
       </div>
       <Modal
         title={
@@ -490,8 +533,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
         />
       </Modal>
       <ChangePasswordModal
-        showModal={isChangePasswordModalVisible}
+        isOpen={isChangePasswordModalVisible}
         onClose={closeChangePasswordModal}
+      />
+      <ChangeEmailModal
+        isOpen={isChangeEmailModalVisible}
+        onClose={closeChangeEmailModal}
       />
       <NotificationSettings
         isOpen={isNotificationSettingsModalVisible}

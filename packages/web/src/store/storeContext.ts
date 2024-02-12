@@ -1,9 +1,9 @@
 import {
-  SolanaClient,
-  CommonStoreContext,
+  FeatureFlags,
   OpenSeaClient,
-  FeatureFlags
-} from '@audius/common'
+  SolanaClient
+} from '@audius/common/services'
+import { CommonStoreContext } from '@audius/common/store'
 import { setTag, configureScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
@@ -21,12 +21,16 @@ import { trackDownload } from 'services/track-download'
 import { walletClient } from 'services/wallet-client'
 import { isElectron } from 'utils/clientUtil'
 import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
-import { share } from 'utils/share'
+import { getShare } from 'utils/share'
 
 import { reportToSentry } from './errors/reportToSentry'
 import { getLineupSelectorForRoute } from './lineup/lineupForRoute'
 
-export const storeContext: CommonStoreContext = {
+export const buildStoreContext = ({
+  isMobile
+}: {
+  isMobile: boolean
+}): CommonStoreContext => ({
   getLocalStorageItem: async (key: string) =>
     window?.localStorage?.getItem(key),
   setLocalStorageItem: async (key: string, value: string) =>
@@ -51,7 +55,7 @@ export const storeContext: CommonStoreContext = {
   explore,
   // @ts-ignore js file
   getLineupSelectorForRoute,
-  audioPlayer,
+  audioPlayer: audioPlayer!,
   solanaClient: new SolanaClient({
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: env.METADATA_PROGRAM_ID
@@ -61,10 +65,11 @@ export const storeContext: CommonStoreContext = {
   trackDownload,
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
-  share,
+  share: getShare(isMobile),
   openSeaClient: new OpenSeaClient(env.OPENSEA_API_URL as string),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork
-  }
-}
+  },
+  isMobile
+})

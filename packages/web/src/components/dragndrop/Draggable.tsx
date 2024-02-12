@@ -1,6 +1,6 @@
 import { DragEvent, ReactNode, useCallback } from 'react'
 
-import { ID } from '@audius/common'
+import { ID } from '@audius/common/models'
 import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'

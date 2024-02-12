@@ -6,8 +6,8 @@ import {
   SmartCollectionVariant,
   Status,
   LineupTrack
-} from 'models'
-import type { Dayjs } from 'utils/dayjs'
+} from '~/models'
+import type { Dayjs } from '~/utils/dayjs'
 
 export type CollectionTrack = LineupTrack & { dateAdded: Dayjs } & {
   collectible?: Collectible

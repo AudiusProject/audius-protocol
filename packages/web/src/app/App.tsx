@@ -1,32 +1,51 @@
 // @refresh reset
 
-import { Suspense, lazy } from 'react'
+import { useEffect, Suspense, lazy } from 'react'
 
-import { FeatureFlags, useFeatureFlag } from '@audius/common'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
+import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { env } from 'services/env'
-import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
+import { initWebVitals } from 'services/webVitals'
+import {
+  PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
+  SIGN_IN_PAGE,
+  SIGN_ON_ALIASES,
+  SIGN_UP_PAGE
+} from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
+import { useHistoryContext } from './HistoryProvider'
 import WebPlayer from './web-player/WebPlayer'
-
-import '../services/webVitals'
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
 const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
+const PrivateKeyExporterPage = lazy(
+  () => import('pages/private-key-exporter-page/PrivateKeyExporterPage')
+)
+const PrivateKeyExporterModal = lazy(
+  () => import('pages/private-key-exporter-page/PrivateKeyExporterModal')
+)
 
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const AppInner = () => {
+  const { history } = useHistoryContext()
+
+  useEffect(() => {
+    initWebVitals(history.location)
+  }, [history])
+
   const { isEnabled: isSignInRedesignEnabled, isLoaded } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )
@@ -58,6 +77,14 @@ export const AppInner = () => {
           </Route>
           <Route path='/demo/trpc'>
             <DemoTrpcPage />
+          </Route>
+          <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
+            <PrivateKeyExporterPage />
+            <AppModal
+              key='PrivateKeyExporter'
+              name='PrivateKeyExporter'
+              modal={PrivateKeyExporterModal}
+            />
           </Route>
           <Route path='/'>
             <AppErrorBoundary>

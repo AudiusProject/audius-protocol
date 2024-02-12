@@ -1,8 +1,8 @@
 import { memo, useState, useRef, useEffect } from 'react'
 
+import { IconPencil } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconPencil from 'assets/img/iconPencil.svg'
 import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './EditableName.module.css'
@@ -39,7 +39,7 @@ const EditableName = (props) => {
                 className={styles.iconPencil}
                 onClick={() => setEditing(true)}
               >
-                <IconPencil />
+                <IconPencil color='staticWhite' />
               </span>
             }
           </div>

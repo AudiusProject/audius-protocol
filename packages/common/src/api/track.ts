@@ -1,7 +1,7 @@
-import { createApi } from 'audius-query'
-import { ID, Kind } from 'models'
-import { parseTrackRouteFromPermalink } from 'utils/stringUtils'
-import { Nullable } from 'utils/typeUtils'
+import { createApi } from '~/audius-query'
+import { ID, Kind } from '~/models'
+import { parseTrackRouteFromPermalink } from '~/utils/stringUtils'
+import { Nullable } from '~/utils/typeUtils'
 
 const trackApi = createApi({
   reducerPath: 'trackApi',
@@ -58,14 +58,16 @@ const trackApi = createApi({
       fetch: async (
         {
           handle,
-          currentUserId
-        }: { handle: string; currentUserId: Nullable<ID> },
+          currentUserId,
+          limit
+        }: { handle: string; currentUserId: Nullable<ID>; limit?: number },
         { apiClient }
       ) => {
         return await apiClient.getUserTracksByHandle({
           handle,
           currentUserId,
-          getUnlisted: false
+          getUnlisted: false,
+          limit
         })
       },
       options: {

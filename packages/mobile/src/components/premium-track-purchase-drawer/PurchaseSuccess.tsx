@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import type { UserTrackMetadata } from '@audius/common'
+import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
 import { View } from 'react-native'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
-import IconVerified from 'app/assets/images/iconVerified.svg'
+import { IconCaretRight, IconVerified } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -16,8 +15,10 @@ import { TwitterButton } from '../twitter-button'
 
 const messages = {
   success: 'Your purchase was successful!',
-  shareTwitterText: (trackTitle: string, handle: string) =>
-    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`,
+  shareTwitterTextTrack: (trackTitle: string, handle: string) =>
+    `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
+  shareTwitterTextStems: (trackTitle: string, handle: string) =>
+    `I bought the stems for ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
   viewTrack: 'View Track'
 }
 
@@ -45,17 +46,22 @@ export const PurchaseSuccess = ({
   track
 }: {
   onPressViewTrack: () => void
-  track: UserTrackMetadata
+  track: PurchaseableTrackMetadata
 }) => {
   const styles = useStyles()
   const { specialGreen, staticWhite, neutralLight4 } = useThemeColors()
   const { handle } = track.user
-  const { title } = track
+  const { title, is_download_gated, _stems } = track
   const link = getTrackRoute(track, true)
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
-      const shareText = messages.shareTwitterText(title, handle)
+      let shareText: string
+      if (is_download_gated && _stems?.length) {
+        shareText = messages.shareTwitterTextStems(title, handle)
+      } else {
+        shareText = messages.shareTwitterTextTrack(title, handle)
+      }
       return {
         shareText,
         analytics: {
@@ -64,7 +70,7 @@ export const PurchaseSuccess = ({
         } as const
       }
     },
-    [title]
+    [title, is_download_gated, _stems]
   )
 
   return (

@@ -6,44 +6,41 @@ import {
   useState
 } from 'react'
 
+import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
+import { BadgeTier, StringWei, StringAudio, BNWei } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
-  BadgeTier,
-  BNWei,
-  StringAudio,
-  StringWei,
-  formatWei,
-  stringWeiToBN,
-  weiToString,
   accountSelectors,
   tippingSelectors,
   tippingActions,
   walletSelectors,
   getTierAndNumberForBalance,
-  useGetFirstOrTopSupporter,
-  OnRampProvider,
   buyAudioActions,
-  FeatureFlags,
-  StringKeys,
-  isNullOrUndefined
-} from '@audius/common'
+  OnRampProvider
+} from '@audius/common/store'
 import {
+  isNullOrUndefined,
+  stringWeiToBN,
+  weiToString,
+  formatWei
+} from '@audius/common/utils'
+import {
+  IconQuestionCircle,
+  IconTokenNoTier,
+  IconArrowRight as IconArrow,
   IconTrophy,
   TokenAmountInput,
-  TokenAmountInputChangeHandler,
-  ButtonType,
-  Button,
-  IconArrow
-} from '@audius/stems'
+  TokenAmountInputChangeHandler
+} from '@audius/harmony'
+import { ButtonType, Button } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconQuestionCircle from 'assets/img/iconQuestionCircle.svg'
-import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMapSVG } from 'components/user-badges/UserBadges'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -66,7 +63,7 @@ const messages = {
   becomeTopSupporterPrefix: 'Send ',
   becomeTopSupporterSuffix: ' $AUDIO To Become Top Supporter',
   becomeFirstSupporter: 'Send A Tip To Become Their First Supporter',
-  inputLabel: 'Amount of audio to tip',
+  inputLabel: 'Amount to tip',
   inputPlaceholder: 'Enter an amount',
   inputTokenLabel: '$AUDIO',
   buyAudioPrefix: 'Buy $AUDIO using '
@@ -92,7 +89,7 @@ export const SendTip = () => {
   const { tier } = getTierAndNumberForBalance(
     weiToString(accountBalance ?? (new BN('0') as BNWei))
   )
-  const audioBadge = audioTierMapPng[tier as BadgeTier]
+  const audioBadge = audioTierMapSVG[tier as BadgeTier]
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -179,7 +176,7 @@ export const SendTip = () => {
             width: 16
           })
         ) : (
-          <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
+          <IconTokenNoTier size='s' />
         )}
         <span className={styles.amountAvailable}>
           {isNullOrUndefined(accountBalance) ? (
@@ -239,11 +236,11 @@ export const SendTip = () => {
       <ProfileInfo user={receiver} />
       <div className={styles.amountToSend}>
         <TokenAmountInput
-          aria-label={messages.inputLabel}
+          label={messages.inputLabel}
           placeholder={messages.inputPlaceholder}
           tokenLabel={messages.inputTokenLabel}
           value={tipAmount}
-          isWhole={true}
+          isWhole
           onChange={handleTipAmountChange}
         />
       </div>

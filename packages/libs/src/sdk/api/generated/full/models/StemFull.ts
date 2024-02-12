@@ -56,6 +56,12 @@ export interface StemFull {
      * @memberof StemFull
      */
     blocknumber: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof StemFull
+     */
+    origFilename: string;
 }
 
 /**
@@ -69,6 +75,7 @@ export function instanceOfStemFull(value: object): boolean {
     isInstance = isInstance && "cid" in value;
     isInstance = isInstance && "userId" in value;
     isInstance = isInstance && "blocknumber" in value;
+    isInstance = isInstance && "origFilename" in value;
 
     return isInstance;
 }
@@ -89,6 +96,7 @@ export function StemFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'cid': json['cid'],
         'userId': json['user_id'],
         'blocknumber': json['blocknumber'],
+        'origFilename': json['orig_filename'],
     };
 }
 
@@ -107,6 +115,7 @@ export function StemFullToJSON(value?: StemFull | null): any {
         'cid': value.cid,
         'user_id': value.userId,
         'blocknumber': value.blocknumber,
+        'orig_filename': value.origFilename,
     };
 }
 

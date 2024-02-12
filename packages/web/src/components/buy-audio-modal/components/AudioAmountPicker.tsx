@@ -8,14 +8,13 @@ import {
 } from 'react'
 
 import {
-  RadioPillButton,
-  RadioButtonGroup,
+  IconLogoCircle,
   TokenAmountInput,
-  TokenAmountInputChangeHandler
-} from '@audius/stems'
-import { debounce, uniqueId } from 'lodash'
-
-import IconAUDIOSrc from 'assets/img/iconAUDIO.png'
+  TokenAmountInputChangeHandler,
+  RadioGroup,
+  SelectablePill
+} from '@audius/harmony'
+import { debounce } from 'lodash'
 
 import styles from './AudioAmountPicker.module.css'
 
@@ -31,9 +30,7 @@ const messages = {
 const INPUT_DEBOUNCE_MS = 200
 
 const IconAUDIO = () => {
-  return (
-    <img src={IconAUDIOSrc} alt={'AUDIO Token Icon'} width={32} height={32} />
-  )
+  return <IconLogoCircle aria-label='AUDIO Token Icon' size='2xl' />
 }
 
 const AmountPreview = ({ amount }: { amount?: string }) => {
@@ -112,50 +109,48 @@ export const AudioAmountPicker = ({
     }
   }, [isCustomAmountInputVisible, customAmountRef])
 
-  const id = useMemo(() => uniqueId(), [])
-
   return (
     <>
       {!isCustomAmountInputVisible ? (
         <AmountPreview amount={presetAmount} />
       ) : null}
-      <RadioButtonGroup
-        aria-labelledby={`audioAmountPicker-label-${id}`}
-        className={styles.presetAmountButtons}
-        name='AmountPicker'
+      <RadioGroup
+        direction='row'
+        wrap='wrap'
+        gap='s'
+        aria-labelledby={'audioAmountPicker-label'}
+        name='amount'
         value={value}
         onChange={handleChange}
       >
-        <div id={`audioAmountPicker-label-${id}`} className={styles.label}>
+        <div id={'audioAmountPicker-label'} className={styles.label}>
           {messages.amountOfAudio}
         </div>
         {presetAmounts.map((amount) => (
-          <RadioPillButton
+          <SelectablePill
             key={amount}
-            name={'amount'}
-            className={styles.presetAmountButton}
+            size='oversized'
+            type='radio'
+            css={{ flex: '1 30%' }}
             label={amount}
             aria-label={`${amount} audio`}
             value={amount}
           />
         ))}
         {hideCustomAmount ? null : (
-          <RadioPillButton
-            className={styles.customAmountButton}
-            name={'amount'}
-            label={
-              <span className={styles.customAmountButtonText}>
-                Custom Amount
-              </span>
-            }
-            value={'custom'}
+          <SelectablePill
+            size='oversized'
+            css={{ flexBasis: '100%' }}
+            type='radio'
+            value='custom'
+            label={messages.customAmount}
           />
         )}
-      </RadioButtonGroup>
+      </RadioGroup>
       {isCustomAmountInputVisible ? (
         <TokenAmountInput
-          inputRef={customAmountRef}
-          aria-label={messages.customAmount}
+          ref={customAmountRef}
+          label={messages.customAmount}
           placeholder={messages.placeholder}
           tokenLabel={messages.tokenLabel}
           value={customAmount}

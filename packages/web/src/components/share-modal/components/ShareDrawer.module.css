@@ -45,7 +45,7 @@
   border-top: none;
 }
 
-.shareToTwitterAction g path {
+.shareToTwitterAction path {
   fill: var(--static-twitter-blue);
 }
 

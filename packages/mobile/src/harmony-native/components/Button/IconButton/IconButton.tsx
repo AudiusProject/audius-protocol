@@ -6,13 +6,13 @@ import {
 } from 'react-native-reanimated'
 
 import { useTheme } from 'app/harmony-native/foundations/theme'
-import type { Icon, IconProps } from 'app/harmony-native/icons'
+import type { IconComponent, IconProps } from 'app/harmony-native/icons'
 
 import { BaseButton } from '../BaseButton/BaseButton'
 import type { BaseButtonProps } from '../BaseButton/types'
 
 export type IconButtonProps = {
-  icon: Icon
+  icon: IconComponent
   ripple?: boolean
   style?: StyleProp<ViewStyle>
 } & Pick<IconProps, 'color' | 'size' | 'shadow'> &

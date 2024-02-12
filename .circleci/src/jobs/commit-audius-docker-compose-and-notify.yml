@@ -117,6 +117,7 @@ steps:
           sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" creator-node/docker-compose*.yml
           sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" discovery-provider/docker-compose*.yml
           sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" identity-service/docker-compose*.yml
+          sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" ddex/docker-compose*.yml
           git add */docker-compose*.yml
           git commit -m "$CIRCLE_BRANCH auto-deploy"
           git push origin stage

@@ -1,39 +1,37 @@
 import { useCallback } from 'react'
 
 import {
-  cacheUsersSelectors,
-  Chain,
   FollowSource,
-  formatPrice,
-  ID,
+  ModalSource,
+  Chain,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  Nullable,
+  ID,
   AccessConditions,
-  gatedContentSelectors,
-  removeNullable,
-  tippingActions,
-  User,
-  usersSocialActions as socialActions,
-  usePremiumContentPurchaseModal,
-  ModalSource
-} from '@audius/common'
+  User
+} from '@audius/common/models'
 import {
-  Button,
-  ButtonType,
+  cacheUsersSelectors,
+  usersSocialActions as socialActions,
+  tippingActions,
+  usePremiumContentPurchaseModal,
+  gatedContentSelectors
+} from '@audius/common/store'
+import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
+import {
+  IconExternalLink,
   IconCart,
   IconCollectible,
   IconSpecialAccess,
-  LogoEth,
-  LogoSol
-} from '@audius/stems'
+  IconSolana as LogoSol
+} from '@audius/harmony'
+import { Button, ButtonType, LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { FollowButton } from 'components/follow-button/FollowButton'

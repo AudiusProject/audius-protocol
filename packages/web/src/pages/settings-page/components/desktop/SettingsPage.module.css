@@ -99,3 +99,7 @@
   font-size: var(--font-s);
   font-weight: var(--font-medium);
 }
+
+.showPrivateKey {
+  line-height: var(--unit-5);
+}

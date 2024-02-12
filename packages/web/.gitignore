@@ -8,7 +8,7 @@
 !/public/scripts/sw.js
 
 # env
-.env/.env.dev.local
+env/.env.dev.local
 
 # testing
 /coverage
@@ -23,6 +23,10 @@
 /build-ci
 /build-production
 /build-mobile-production
+/build-ssr
+/build-ssr-development
+/build-ssr-staging
+/build-ssr-production
 /storybook-static
 /build-ipfs-staging
 /build-ipfs-staging.zip

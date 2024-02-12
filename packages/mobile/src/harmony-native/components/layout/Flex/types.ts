@@ -1,4 +1,4 @@
-import type { BaseFlexProps } from '@audius/harmony'
+import type { BaseFlexProps } from '@audius/harmony/src/components/layout/Flex/types'
 import type { ViewStyle } from 'react-native'
 
 import type { BoxProps } from '../Box/types'

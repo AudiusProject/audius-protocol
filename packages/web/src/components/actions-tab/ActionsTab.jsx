@@ -1,20 +1,17 @@
 import { PureComponent } from 'react'
 
+import { ShareSource, RepostSource } from '@audius/common/models'
 import {
-  ShareSource,
-  RepostSource,
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   shareModalUIActions
-} from '@audius/common'
+} from '@audius/common/store'
+import { IconKebabHorizontal, IconRepost, IconShare } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
-import IconRepost from 'assets/img/iconRepost.svg'
-import IconShare from 'assets/img/iconShare.svg'
 import Menu from 'components/menu/Menu'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -93,6 +90,7 @@ const ExpandedActionsTab = (props) => {
             placement={direction === 'horizontal' ? 'top' : 'right'}
           >
             <IconRepost
+              size='m'
               className={cn(styles.iconRepost, {
                 [styles.reposted]: currentUserReposted
               })}
@@ -111,14 +109,17 @@ const ExpandedActionsTab = (props) => {
           onClick={isDisabled ? () => {} : onShare}
         >
           <div className={styles.actionIconContainer}>
-            <IconShare className={styles.iconShare} />
+            <IconShare size='m' className={styles.iconShare} />
           </div>
         </div>
       </Tooltip>
       <div className={cn(styles.actionButton, styles.menuKebabContainer)}>
         {isDisabled || isHidden ? (
           <div className={styles.iconKebabHorizontalWrapper}>
-            <IconKebabHorizontal className={styles.iconKebabHorizontal} />
+            <IconKebabHorizontal
+              size='m'
+              className={styles.iconKebabHorizontal}
+            />
           </div>
         ) : (
           <Menu {...overflowMenu}>
@@ -128,7 +129,10 @@ const ExpandedActionsTab = (props) => {
                 onClick={triggerPopup}
               >
                 <div ref={ref} className={styles.iconKebabHorizontalRef}>
-                  <IconKebabHorizontal className={styles.iconKebabHorizontal} />
+                  <IconKebabHorizontal
+                    size='m'
+                    className={styles.iconKebabHorizontal}
+                  />
                 </div>
               </div>
             )}

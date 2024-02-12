@@ -1,34 +1,39 @@
 import {
   Kind,
   ID,
-  UID,
   Name,
   PlaybackSource,
   LineupState,
   User,
-  Nullable,
-  makeUid,
-  Uid,
+  Collectible,
+  Track,
+  Collection,
+  UserTrackMetadata,
+  LineupEntry
+} from '@audius/common/models'
+import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   cacheActions,
   cacheSelectors,
+  cacheUsersSelectors,
+  lineupRegistry,
   queueActions,
+  queueSelectors,
   RepeatMode,
   QueueSource,
-  waitForAccount,
+  getContext,
   playerActions,
-  playerSelectors,
-  queueSelectors,
-  getContext
-} from '@audius/common'
+  playerSelectors
+} from '@audius/common/store'
+import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
 import { isPreview } from 'common/utils/isPreview'
+import { getLocation } from 'store/routing/selectors'
 
 const {
   getCollectible,
@@ -36,12 +41,12 @@ const {
   getIndex,
   getLength,
   getOvershot,
-  getQueueAutoplay,
   getRepeat,
   getShuffle,
   getSource,
   getUid,
-  getUndershot
+  getUndershot,
+  getCurrentArtist
 } = queueSelectors
 
 const {
@@ -60,7 +65,10 @@ const getUserId = accountSelectors.getUserId
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
-export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
+export function* getToQueue(
+  prefix: string,
+  entry: LineupEntry<Track | Collection>
+) {
   if (entry.kind === Kind.COLLECTIONS) {
     const collection = yield* select(getCollection, { uid: entry.uid })
     if (!collection) return
@@ -88,7 +96,8 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     const track = yield* select(getTrack, { uid: entry.uid })
     const currentUserId = yield* select(getUserId)
     if (!track) return {}
-    const doesUserHaveStreamAccess = !!track.access.stream
+    const doesUserHaveStreamAccess =
+      !track.is_stream_gated || !!track.access.stream
     return {
       id: track.track_id,
       uid: entry.uid,
@@ -110,9 +119,8 @@ function* handleQueueAutoplay({
   ignoreSkip: boolean
   track: any
 }) {
-  const isQueueAutoplayEnabled = yield* select(getQueueAutoplay)
   const index = yield* select(getIndex)
-  if (!isQueueAutoplayEnabled || index < 0) {
+  if (index < 0) {
     return
   }
 
@@ -123,7 +131,7 @@ function* handleQueueAutoplay({
   const length = yield* select(getLength)
   const shuffle = yield* select(getShuffle)
   const repeatMode = yield* select(getRepeat)
-  const isCloseToEndOfQueue = index + 9 >= length
+  const isCloseToEndOfQueue = index + 2 >= length
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
@@ -165,6 +173,14 @@ export function* watchPlay() {
       )
 
       if (!playActionTrack) return
+
+      const length = yield* select(getLength)
+      const index = yield* select(getIndex)
+      const isNearEndOfQueue = index + 3 >= length
+
+      if (isNearEndOfQueue) {
+        yield* call(fetchLineupTracks)
+      }
 
       yield* call(handleQueueAutoplay, {
         skip: false,
@@ -220,17 +236,17 @@ export function* watchPlay() {
           'getLineupSelectorForRoute'
         )
         if (!getLineupSelectorForRoute) return
-        // @ts-ignore todo
-        const lineup: LineupState<{ id: number }> = yield* select(
-          getLineupSelectorForRoute()
+
+        const location = yield* select(getLocation)
+
+        const lineup: LineupState<Track> = yield* select(
+          getLineupSelectorForRoute(location)
         )
         if (!lineup) return
         if (lineup.entries.length > 0) {
           yield* put(clear({}))
           const toQueue = yield* all(
-            lineup.entries.map((e: { kind: Kind; uid: UID }) =>
-              call(getToQueue, lineup.prefix, e)
-            )
+            lineup.entries.map((e) => call(getToQueue, lineup.prefix, e))
           )
           const flattenedQueue = flatten(toQueue)
           yield* put(add({ entries: flattenedQueue }))
@@ -263,6 +279,32 @@ export function* watchPlay() {
       }
     }
   })
+}
+
+// Fetches more lineup tracks if available. This is needed for cases
+// where the user hasn't scrolled through the lineup.
+function* fetchLineupTracks() {
+  const source = yield* select(getSource)
+  if (!source) return
+
+  const lineupEntry = lineupRegistry[source]
+  if (!lineupEntry) return
+
+  const currentArtist = yield* select(getCurrentArtist)
+  const lineup = yield* select(lineupEntry.selector, currentArtist?.handle)
+
+  if (lineup.hasMore) {
+    const offset = lineup.entries.length + lineup.deleted + lineup.nullCount
+    yield* put(
+      lineupEntry.actions.fetchLineupMetadatas(
+        offset,
+        5,
+        false,
+        lineup.payload,
+        { handle: lineup.handle }
+      )
+    )
+  }
 }
 
 export function* watchPause() {
@@ -302,7 +344,8 @@ export function* watchNext() {
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
     const currentUserId = yield* select(getUserId)
-    const doesUserHaveStreamAccess = !!track?.access?.stream
+    const doesUserHaveStreamAccess =
+      !track?.is_stream_gated || !!track?.access?.stream
 
     // Skip deleted, owner deactivated, or locked gated track
     if (
@@ -364,7 +407,7 @@ export function* watchQueueAutoplay() {
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
       const { genre, exclusionList, currentUserId } = action.payload
-      const tracks = yield* call(
+      const tracks: UserTrackMetadata[] = yield* call(
         getRecommendedTracks,
         genre,
         exclusionList,
@@ -392,7 +435,7 @@ export function* watchPrevious() {
       }
 
       // For the audio nft playlist flow
-      const collectible = yield* select(getCollectible)
+      const collectible: Collectible | null = yield* select(getCollectible)
       if (collectible) {
         const event = make(Name.PLAYBACK_PLAY, {
           id: `${collectible.id}`,
@@ -413,7 +456,8 @@ export function* watchPrevious() {
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
       const currentUserId = yield* select(getUserId)
-      const doesUserHaveStreamAccess = !!track?.access?.stream
+      const doesUserHaveStreamAccess =
+        !track?.is_stream_gated || !!track?.access?.stream
 
       // If we move to a previous song that's been
       // deleted or to which the user does not have access, skip over it.

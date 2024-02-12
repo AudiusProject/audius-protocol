@@ -1,4 +1,4 @@
-import { License } from 'utils/creativeCommons'
+import { License } from '~/utils/creativeCommons'
 
 import { Nullable } from '../utils/typeUtils'
 
@@ -146,6 +146,11 @@ export type AccessSignature = {
   signature: string
 }
 
+export type NFTAccessSignature = {
+  mp3: AccessSignature
+  original: AccessSignature
+}
+
 export type EthCollectionMap = {
   [slug: string]: {
     name: string
@@ -248,6 +253,7 @@ export type OfflineTrackMetadata = {
 export type Stem = {
   track_id: ID
   category: StemCategory
+  orig_filename: string
 }
 
 export type ComputedTrackProperties = {

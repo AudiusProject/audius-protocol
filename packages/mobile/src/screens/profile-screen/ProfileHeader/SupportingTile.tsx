@@ -1,17 +1,18 @@
 import { useCallback } from 'react'
 
-import type { Supporting } from '@audius/common'
-import { cacheUsersSelectors } from '@audius/common'
+import type { Supporting } from '@audius/common/models'
+import { cacheUsersSelectors } from '@audius/common/store'
+import { css } from '@emotion/native'
+import { useTheme } from '@emotion/react'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useSelector } from 'react-redux'
 
-import IconTrophy from 'app/assets/images/iconTrophy.svg'
-import { Text, Tile } from 'app/components/core'
+import { IconTrophy } from '@audius/harmony-native'
+import { Text, Tile, ProfilePicture } from 'app/components/core'
 import { useCoverPhoto } from 'app/components/image/CoverPhoto'
-import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -42,13 +43,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     alignItems: 'center',
     alignSelf: 'flex-start',
     margin: spacing(1)
-  },
-  profilePicture: {
-    height: spacing(8),
-    width: spacing(8),
-    marginEnd: spacing(1),
-    borderWidth: 1,
-    borderColor: palette.staticWhite
   },
   rank: {
     flexDirection: 'row',
@@ -93,6 +87,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
   const { user_id, handle, name } = user || {}
   const isTopRank =
     supporting.rank >= 1 && supporting.rank <= TIPPING_TOP_RANK_THRESHOLD
+  const { spacing: harmonySpacing } = useTheme()
 
   const { source: coverPhotoSource, handleError: handleCoverPhotoError } =
     useCoverPhoto(user_id)
@@ -144,7 +139,15 @@ export const SupportingTile = (props: SupportingTileProps) => {
             </View>
           ) : null}
           <View style={styles.supportingInfo}>
-            <ProfilePicture style={styles.profilePicture} profile={user} />
+            <ProfilePicture
+              style={css({
+                width: harmonySpacing.unit8,
+                height: harmonySpacing.unit8
+              })}
+              mr='s'
+              strokeWidth='thin'
+              userId={user.user_id}
+            />
             <Text
               style={styles.nameText}
               variant='h3'

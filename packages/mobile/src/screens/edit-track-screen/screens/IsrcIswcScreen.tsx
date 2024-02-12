@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 
-import IconInfo from 'app/assets/images/iconInfo.svg'
+import { IconInfo } from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 

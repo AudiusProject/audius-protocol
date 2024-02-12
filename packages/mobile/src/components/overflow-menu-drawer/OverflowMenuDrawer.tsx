@@ -1,8 +1,8 @@
 import {
+  mobileOverflowMenuUISelectors,
   OverflowAction,
-  OverflowSource,
-  mobileOverflowMenuUISelectors
-} from '@audius/common'
+  OverflowSource
+} from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'
@@ -26,7 +26,12 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
     text: 'Remove From This Playlist',
     isDestructive: true
   },
+  [OverflowAction.EDIT_ALBUM]: { text: 'Edit Album' },
   [OverflowAction.EDIT_PLAYLIST]: { text: 'Edit Playlist' },
+  [OverflowAction.DELETE_ALBUM]: {
+    text: 'Delete Album',
+    isDestructive: true
+  },
   [OverflowAction.DELETE_PLAYLIST]: {
     text: 'Delete Playlist',
     isDestructive: true

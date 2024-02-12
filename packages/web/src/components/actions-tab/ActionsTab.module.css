@@ -70,7 +70,7 @@
   border-color: var(--neutral-light-7);
   background: var(--neutral-light-8);
 }
-.show.actionsSection .actionButton:active g path {
+.show.actionsSection .actionButton:active path {
   fill: var(--neutral);
 }
 
@@ -118,17 +118,13 @@
   transform: scale(0.95);
 }
 
-.iconRepost,
-.iconShare .iconKebabHorizontal svg {
-  width: 18px;
-}
-.iconRepost g path,
-.iconShare g path,
-.iconKebabHorizontal g path,
-.iconListens g path {
+.iconRepost path,
+.iconShare path,
+.iconKebabHorizontal path,
+.iconListens path {
   fill: var(--neutral-light-4);
 }
-.iconRepost.reposted g path {
+.iconRepost.reposted path {
   fill: var(--primary);
 }
 
@@ -148,9 +144,9 @@
   box-shadow: none;
 }
 
-.disabled .iconRepost g path,
-.disabled .iconKebabHorizontal g path,
-.disabled .iconShare g path {
+.disabled .iconRepost path,
+.disabled .iconKebabHorizontal path,
+.disabled .iconShare path {
   fill: var(--neutral-light-8) !important;
 }
 

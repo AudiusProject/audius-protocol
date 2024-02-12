@@ -1,23 +1,11 @@
 import useSWR from 'swr'
+import { getRegisteredNodes } from './utils/contracts'
 
 const prodEndpoint =
   'https://api.audius.co'
 
 const stagingEndpoint =
   'https://api.staging.audius.co'
-
-const gql = `
-query ServiceProviders($type: String) {
-  serviceNodes(where: {isRegistered: true, type: $type}) {
-    delegateOwnerWallet
-    endpoint
-    isRegistered
-    type {
-      id
-    }
-  }
-}
-`
 
 export type SP = {
   delegateOwnerWallet: string
@@ -36,10 +24,14 @@ export function apiGatewayFetcher(
   env: string,
   type: 'content' | 'discovery'
 ) {
-  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose?all=true`)
+  // abort initial ga request in 5 seconds
+  const controller = new AbortController()
+  const reqTimeout = setTimeout(() => controller.abort(), 5000)
+  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose?all=true`, { signal: controller.signal })
     .then(async (resp) => {
       const data = await resp.json()
       const sps = data.data as SP[]
+      clearTimeout(reqTimeout)
 
       const hostSortKey = (sp: SP) =>
         new URL(sp.endpoint).hostname.split('.').reverse().join('.')
@@ -51,21 +43,23 @@ export function apiGatewayFetcher(
       // console.log(sps)
       return sps
     })
+    .catch(async (e) => {
+      // fallback to chain if GA is down
+      console.warn("falling back to chain rpc to gather SPs", e)
+      const sps = getRegisteredNodes(env, type)
+      return sps
+    })
 }
 
 export function useServiceProviders(
   env: string,
-  type: 'content' | 'discovery'
+  type: 'content' | 'discovery',
+  excludeUnregistered = false
 ) {
-  const { data: sps, error } = useSWR<SP[]>([env, type], async () => {
+  const { data: sps, error } = useSWR<SP[]>([env, type, excludeUnregistered], async () => {
     const sps = await apiGatewayFetcher(env, type)
-    const shouldIncludeUnregistered =
-      env !== 'prod' && type === 'discovery'
-    if (shouldIncludeUnregistered) {
-      sps.push(...unregisteredStageNodes())
-      hostSort(sps)
-    }
-    return sps
+    hostSort(sps)
+    return excludeUnregistered || type === 'content' ? sps : [...sps, ...unregisteredNodes(env === 'prod')]
   })
   return { data: sps, error }
 }
@@ -84,13 +78,36 @@ export function hostSort(sps: SP[]) {
   sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
 }
 
-function unregisteredStageNodes() {
-  return [
-    {
-      delegateOwnerWallet: '0xb1C931A9ac123866372CEbb6bbAF50FfD18dd5DF',
-      endpoint: 'https://discoveryprovider4.staging.audius.co',
-      isRegistered: false,
-      type: { id: 'discovery-node' },
-    },
-  ]
+function unregisteredNodes(prod: boolean) {
+  if (prod) {
+    return [
+      {
+        delegateOwnerWallet: '0x32bF5092890bb03A45bd03AaeFAd11d4afC9a851',
+        endpoint: 'https://discoveryprovider4.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+      {
+        delegateOwnerWallet: 'Metabase (no wallet)',
+        endpoint: 'https://insights.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+    ]
+  } else {
+    return [
+      {
+        delegateOwnerWallet: '0xb1C931A9ac123866372CEbb6bbAF50FfD18dd5DF',
+        endpoint: 'https://discoveryprovider4.staging.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+      {
+        delegateOwnerWallet: 'DDEX (no wallet)',
+        endpoint: 'https://audius-stage.ddex.audius.co',
+        isRegistered: false,
+        type: { id: 'discovery-node' },
+      },
+    ]
+  }
 }

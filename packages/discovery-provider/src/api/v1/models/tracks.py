@@ -119,6 +119,14 @@ track = ns.model(
     },
 )
 
+blob_info = ns.model(
+    "blob_info",
+    {
+        "size": fields.Integer(required=True),
+        "content_type": fields.String(required=True),
+    },
+)
+
 cover_art = ns.model(
     "cover_art",
     {"150x150": fields.String, "480x480": fields.String, "1000x1000": fields.String},
@@ -183,6 +191,7 @@ stem_full = ns.model(
         "cid": fields.String(required=True),
         "user_id": fields.String(required=True),
         "blocknumber": fields.Integer(required=True),
+        "orig_filename": fields.String(required=True),
     },
 )
 

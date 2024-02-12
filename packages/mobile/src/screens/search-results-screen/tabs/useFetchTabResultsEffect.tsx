@@ -1,10 +1,10 @@
 import { useCallback, useContext } from 'react'
 
 import {
-  SearchKind,
   searchResultsPageActions,
-  searchResultsPageSelectors
-} from '@audius/common'
+  searchResultsPageSelectors,
+  SearchKind
+} from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 

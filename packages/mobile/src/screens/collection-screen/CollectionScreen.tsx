@@ -1,38 +1,39 @@
 import { useCallback, useMemo } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
-  SquareSizes,
-  encodeUrlName,
-  removeNullable,
-  FavoriteSource,
-  RepostSource,
   ShareSource,
+  RepostSource,
+  FavoriteSource,
   FavoriteType,
-  collectionPageActions,
-  formatDate,
-  accountSelectors,
-  collectionPageSelectors,
-  collectionsSocialActions,
-  OverflowAction,
-  OverflowSource,
-  publishPlaylistConfirmationModalUIActions,
-  mobileOverflowMenuUIActions,
-  shareModalUIActions,
-  RepostType,
-  repostsUserListActions,
-  favoritesUserListActions,
-  useFeatureFlag,
-  FeatureFlags
-} from '@audius/common'
+  SquareSizes
+} from '@audius/common/models'
 import type {
   Collection,
-  Nullable,
-  User,
+  SearchUser,
   SearchPlaylist,
-  SearchUser
-} from '@audius/common'
+  User
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  accountSelectors,
+  collectionPageSelectors,
+  collectionPageActions,
+  collectionsSocialActions,
+  mobileOverflowMenuUIActions,
+  publishPlaylistConfirmationModalUIActions,
+  shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  repostsUserListActions,
+  favoritesUserListActions,
+  RepostType
+} from '@audius/common/store'
+import { encodeUrlName, formatDate, removeNullable } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
+import type { ImageProps } from '@audius/harmony-native'
 import {
   ScreenContent,
   Screen,
@@ -40,7 +41,6 @@ import {
   Divider
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
-import type { ImageProps } from 'app/components/image/FastImage'
 import { SuggestedCollectionTracks } from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -189,11 +189,19 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
-      !is_album && isOwner ? OverflowAction.EDIT_PLAYLIST : null,
-      isOwner && !is_album && is_private
+      (!is_album || isEditAlbumsEnabled) && isOwner
+        ? is_album
+          ? OverflowAction.EDIT_ALBUM
+          : OverflowAction.EDIT_PLAYLIST
+        : null,
+      isOwner && (!is_album || isEditAlbumsEnabled) && is_private
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && !is_album ? OverflowAction.DELETE_PLAYLIST : null,
+      isOwner && (!is_album || isEditAlbumsEnabled)
+        ? is_album
+          ? OverflowAction.DELETE_ALBUM
+          : OverflowAction.DELETE_PLAYLIST
+        : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(removeNullable)
 
@@ -204,7 +212,14 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
         overflowActions
       })
     )
-  }, [dispatch, playlist_id, isOwner, is_album, is_private])
+  }, [
+    is_album,
+    isEditAlbumsEnabled,
+    isOwner,
+    is_private,
+    dispatch,
+    playlist_id
+  ])
 
   const handlePressEdit = useCallback(() => {
     navigation?.push('EditPlaylist', { id: playlist_id })

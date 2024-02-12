@@ -11,6 +11,7 @@ from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import GetTransactionResp
+from solders.token.associated import get_associated_token_address
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
@@ -24,7 +25,11 @@ from src.models.users.audio_transactions_history import (
     TransactionMethod,
     TransactionType,
 )
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -42,6 +47,7 @@ from src.solana.constants import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import (
+    JUPITER_PROGRAM_ID,
     SPL_TOKEN_ID_PK,
     get_address_pair,
     get_base_address,
@@ -61,6 +67,7 @@ from src.utils.helpers import (
     BalanceChange,
     decode_all_solana_memos,
     get_account_index,
+    get_account_owner_from_balance_change,
     get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
@@ -78,20 +85,45 @@ logger = StructuredLogger(__name__)
 
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
+PAYMENT_ROUTER_ADDRESS = shared_config["solana"]["payment_router_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
+
 USER_BANK_KEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
 USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
+
+PAYMENT_ROUTER_PUBKEY = (
+    Pubkey.from_string(PAYMENT_ROUTER_ADDRESS) if PAYMENT_ROUTER_ADDRESS else None
+)
+
+JUPITER_PROGRAM_ID_PUBKEY = Pubkey.from_string(JUPITER_PROGRAM_ID)
 
 # Transfer instructions don't have a mint acc arg but do have userbank authority.
 # So re-derive the claimable token PDAs for each mint here to help us determine mint later.
 WAUDIO_PDA, _ = get_base_address(WAUDIO_MINT_PUBKEY, USER_BANK_KEY)
 USDC_PDA, _ = get_base_address(USDC_MINT_PUBKEY, USER_BANK_KEY)
 
+PAYMENT_ROUTER_PDA_PUBKEY, _ = get_base_address(
+    "payment_router".encode("UTF-8"), PAYMENT_ROUTER_PUBKEY
+)
+PAYMENT_ROUTER_USDC_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, USDC_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and USDC_MINT_PUBKEY
+    else None
+)
+PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, WAUDIO_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and WAUDIO_MINT_PUBKEY
+    else None
+)
+
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 INITIAL_FETCH_SIZE = 10
+
+PREPARE_WITHDRAWAL_MEMO_STRING = "Prepare Withdrawal"
+WITHDRAWAL_MEMO_STRING = "Withdrawal"
 
 # Used to find the correct accounts for sender/receiver in the transaction and the ClaimableTokensPDA
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
@@ -237,12 +269,23 @@ def process_create_userbank_instruction(
         logger.error(e)
 
 
+def get_transfer_type_from_memo(memos: List[str]) -> USDCTransactionType:
+    """Checks the list of memos for one matching containing a transaction type and returns it if found. Defaults to USDCTransactionType.transfer if no matching memo is found"""
+    for memo in memos:
+        if memo == PREPARE_WITHDRAWAL_MEMO_STRING:
+            return USDCTransactionType.prepare_withdrawal
+        elif memo == WITHDRAWAL_MEMO_STRING:
+            return USDCTransactionType.withdrawal
+    return USDCTransactionType.transfer
+
+
 class PurchaseMetadataDict(TypedDict):
     price: int
     splits: dict[str, int]
     type: PurchaseType
     id: int
     purchaser_user_id: Optional[int]
+    access: PurchaseAccessType
 
 
 def get_purchase_metadata_from_memo(
@@ -255,12 +298,22 @@ def get_purchase_metadata_from_memo(
             if len(content_metadata) == 3:
                 type_str, id_str, blocknumber_str = content_metadata
                 purchaser_user_id_str = None
+                access_str = "stream"  # default to stream access
             elif len(content_metadata) == 4:
                 (
                     type_str,
                     id_str,
                     blocknumber_str,
                     purchaser_user_id_str,
+                ) = content_metadata
+                access_str = "stream"  # default to stream access
+            elif len(content_metadata) == 5:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                    access_str,
                 ) = content_metadata
             else:
                 logger.debug(
@@ -274,10 +327,11 @@ def get_purchase_metadata_from_memo(
             purchaser_user_id = (
                 int(purchaser_user_id_str) if purchaser_user_id_str else None
             )
+            access = PurchaseAccessType[access_str.lower()]
 
             # TODO: Wait for blocknumber to be indexed by ACDC
             logger.debug(
-                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}"
+                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}, access={access}"
             )
 
             price = None
@@ -295,6 +349,7 @@ def get_purchase_metadata_from_memo(
                 result = (
                     query.filter(
                         TrackPriceHistory.track_id == id,
+                        TrackPriceHistory.access == access,
                     )
                     .order_by(desc(TrackPriceHistory.block_timestamp))
                     .first()
@@ -313,8 +368,9 @@ def get_purchase_metadata_from_memo(
                     "price": price * USDC_PER_USD_CENT,
                     "splits": splits,
                     "purchaser_user_id": purchaser_user_id,
+                    "access": access,
                 }
-                logger.error(
+                logger.info(
                     f"index_user_bank.py | Got purchase metadata {content_metadata}"
                 )
                 return purchase_metadata
@@ -377,6 +433,7 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
+        access=purchase_metadata["access"],
     )
     logger.debug(
         f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"
@@ -530,7 +587,6 @@ def index_user_tip(
 
 
 def process_transfer_instruction(
-    solana_client_manager: SolanaClientManager,
     session: Session,
     redis: Redis,
     instruction: CompiledInstruction,
@@ -556,6 +612,13 @@ def process_transfer_instruction(
         logger.error(
             f"index_user_bank.py | Unknown claimableTokenPDA in transaction. Expected {str(WAUDIO_PDA)} or {str(USDC_PDA)} but got {userbank_authority_pda}"
         )
+        return
+
+    if (
+        receiver_account == PAYMENT_ROUTER_USDC_ATA_ADDRESS
+        or receiver_account == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS
+    ):
+        logger.info(f"index_user_bank.py | Skipping payment router tx {tx_sig}")
         return
 
     user_id_accounts = []
@@ -618,29 +681,40 @@ def process_transfer_instruction(
     # Cannot index receive external transfers this way as those use the spl-token program,
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
-        receiver_account_pubkey = Pubkey.from_string(receiver_account)
-        receiver_account_info = solana_client_manager.get_account_info_json_parsed(
-            receiver_account_pubkey
+        transaction_type = get_transfer_type_from_memo(memos=memos)
+        if JUPITER_PROGRAM_ID_PUBKEY in account_keys:
+            transaction_type = USDCTransactionType.prepare_withdrawal
+
+        # Attempt to look up account owner, fallback to recipient address
+        receiver_account_owner = (
+            get_account_owner_from_balance_change(
+                account=receiver_account, balance_changes=balance_changes
+            )
+            or receiver_account
         )
-        if receiver_account_info:
-            receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
-        else:
-            receiver_account_owner = receiver_account
         TransactionHistoryModel = (
             AudioTransactionsHistory if is_audio else USDCTransactionsHistory
         )
+        change_amount = Decimal(balance_changes[sender_account]["change"])
+        # For withdrawals, the user bank balance change will be zero, since the
+        # user bank is only used as an intermediate step. So we will index the change
+        # amount as how much was actually sent to the destination
+        if transaction_type == USDCTransactionType.withdrawal:
+            change_amount = -Decimal(balance_changes[receiver_account]["change"])
         transfer_sent = TransactionHistoryModel(
             user_bank=sender_account,
             slot=slot,
             signature=tx_sig,
-            transaction_type=TransactionType.transfer,
+            transaction_type=transaction_type,
             method=TransactionMethod.send,
             transaction_created_at=timestamp,
-            change=Decimal(balance_changes[sender_account]["change"]),
+            change=change_amount,
             balance=Decimal(balance_changes[sender_account]["post_balance"]),
             tx_metadata=str(receiver_account_owner),
         )
-        logger.debug(f"index_user_bank.py | Creating transfer sent {transfer_sent}")
+        logger.debug(
+            f"index_user_bank.py | Creating {transaction_type} sent {transfer_sent}"
+        )
         session.add(transfer_sent)
     # If there are two userbanks to update, it was a transfer from user to user
     else:
@@ -773,7 +847,6 @@ def process_user_bank_tx_details(
 
     elif has_transfer_instruction:
         process_transfer_instruction(
-            solana_client_manager=solana_client_manager,
             session=session,
             redis=redis,
             instruction=instruction,

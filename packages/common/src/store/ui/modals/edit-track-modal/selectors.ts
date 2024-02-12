@@ -1,6 +1,6 @@
-import { StemTrack } from 'models/Track'
-import { cacheTracksSelectors } from 'store/cache'
-import { CommonState } from 'store/commonStore'
+import { StemTrack } from '~/models/Track'
+import { cacheTracksSelectors } from '~/store/cache'
+import { CommonState } from '~/store/commonStore'
 
 const { getTrack, getTracks } = cacheTracksSelectors
 

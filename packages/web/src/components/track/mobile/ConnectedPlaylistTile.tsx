@@ -1,34 +1,38 @@
 import { memo, useCallback, useMemo, MouseEvent } from 'react'
 
 import {
-  ID,
-  FavoriteSource,
-  RepostSource,
   Name,
-  PlaybackSource,
   ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
   FavoriteType,
-  Track,
+  ID,
+  Track
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
-  OverflowAction,
-  OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   themeSelectors,
-  RepostType,
-  favoritesUserListActions,
+  OverflowAction,
+  OverflowSource,
   repostsUserListActions,
+  favoritesUserListActions,
+  RepostType,
   playerSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { PlaylistTileProps } from 'components/track/types'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import {
   collectionPage,
@@ -129,6 +133,8 @@ const ConnectedPlaylistTile = ({
     return tracks.some((track) => track.uid === playingUid)
   }, [tracks, playingUid])
 
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+
   const isOwner = collection.playlist_owner_id === currentUserId
 
   const toggleSave = useCallback(() => {
@@ -181,8 +187,14 @@ const ConnectedPlaylistTile = ({
       collection.is_album
         ? OverflowAction.VIEW_ALBUM_PAGE
         : OverflowAction.VIEW_PLAYLIST_PAGE,
-      isOwner && !collection.is_album ? OverflowAction.PUBLISH_PLAYLIST : null,
-      isOwner && !collection.is_album ? OverflowAction.DELETE_PLAYLIST : null,
+      isOwner && (!collection.is_album || isEditAlbumsEnabled)
+        ? OverflowAction.PUBLISH_PLAYLIST
+        : null,
+      isOwner && (!collection.is_album || isEditAlbumsEnabled)
+        ? collection.is_album
+          ? OverflowAction.DELETE_ALBUM
+          : OverflowAction.DELETE_PLAYLIST
+        : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean)
 
@@ -191,7 +203,7 @@ const ConnectedPlaylistTile = ({
       // @ts-ignore
       overflowActions
     )
-  }, [collection, isOwner, clickOverflow])
+  }, [collection, isOwner, clickOverflow, isEditAlbumsEnabled])
 
   const togglePlay = useCallback(() => {
     if (uploading) return

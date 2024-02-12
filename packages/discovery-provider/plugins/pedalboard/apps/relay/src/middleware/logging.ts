@@ -13,7 +13,10 @@ export const incomingRequestLogger = (
   response.locals.ctx = { ...oldCtx, startTime, requestId };
 
   const { route, method } = request;
-  logger.info({ requestId, route, method }, "incoming request");
+  const path: string = route.path
+  if (!path.includes("health")) {
+    logger.info({ requestId, route, method }, "incoming request");
+  }
   next();
 };
 
@@ -24,10 +27,13 @@ export const outgoingLog = (request: Request, response: Response) => {
   const { route, method } = request;
   const { locals: ctx } = response;
   const statusCode = response.statusCode;
-  logger.info(
-    { route, method, ctx, responseTime, statusCode },
-    "request completed"
-  );
+  const path: string = route.path
+  if (!path.includes("health")) {
+    logger.info(
+      { route, method, ctx, responseTime, statusCode },
+      "request completed"
+    );
+  }
 };
 
 export const outgoingRequestLogger = (

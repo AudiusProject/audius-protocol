@@ -1,7 +1,7 @@
 import { Storage, persistReducer } from 'redux-persist'
 
-import { ID } from 'models/Identifiers'
-import { asLineup } from 'store/lineup/reducer'
+import { ID } from '~/models/Identifiers'
+import { asLineup } from '~/store/lineup/reducer'
 import {
   ADD_LOCAL_COLLECTION,
   ADD_LOCAL_TRACK,
@@ -16,12 +16,12 @@ import {
   REMOVE_LOCAL_COLLECTION,
   REMOVE_LOCAL_TRACK,
   SET_SELECTED_CATEGORY
-} from 'store/pages/saved-page/actions'
+} from '~/store/pages/saved-page/actions'
 import tracksReducer, {
   initialState as initialLineupState
-} from 'store/pages/saved-page/lineups/tracks/reducer'
-import { signOut } from 'store/sign-out/slice'
-import { ActionsMap } from 'utils/reducer'
+} from '~/store/pages/saved-page/lineups/tracks/reducer'
+import { signOut } from '~/store/sign-out/slice'
+import { ActionsMap } from '~/utils/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 import { LibraryCategory, LibraryCategoryType, SavedPageState } from './types'
@@ -208,7 +208,7 @@ const actionsMap: ActionsMap<SavedPageState> = {
 
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-const reducer = (state = initialState, action: any) => {
+export const savePageReducer = (state = initialState, action: any) => {
   const tracks = tracksLineupReducer(state.tracks as any, action)
   if (tracks !== state.tracks) return { ...state, tracks }
 
@@ -224,5 +224,5 @@ export const savedPagePersistConfig = (storage: Storage) => ({
 })
 
 export const persistedSavePageReducer = (storage: Storage) => {
-  return persistReducer(savedPagePersistConfig(storage), reducer)
+  return persistReducer(savedPagePersistConfig(storage), savePageReducer)
 }

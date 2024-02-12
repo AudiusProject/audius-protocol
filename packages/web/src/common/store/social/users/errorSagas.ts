@@ -1,4 +1,4 @@
-import { usersSocialActions as socialUserActions } from '@audius/common'
+import { usersSocialActions as socialUserActions } from '@audius/common/store'
 
 import { createErrorSagas } from 'utils/errorSagas'
 

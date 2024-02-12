@@ -1,8 +1,9 @@
 import concurrent.futures
+import enum
 import time
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional, Tuple, TypedDict, Union, cast
+from typing import List, Optional, Tuple, TypedDict, cast
 
 from redis import Redis
 from solders.instruction import CompiledInstruction
@@ -20,7 +21,11 @@ from src.exceptions import SolanaTransactionFetchError
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.payment_router import PaymentRouterTx
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -46,6 +51,7 @@ from src.utils.helpers import (
     BalanceChange,
     decode_all_solana_memos,
     get_account_index,
+    get_account_owner_from_balance_change,
     get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
@@ -92,6 +98,8 @@ PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
 # The amount of USDC that represents one USD cent
 USDC_PER_USD_CENT = 10000
 
+RECOVERY_MEMO_STRING = "Recover Withdrawal"
+
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
 INITIAL_FETCH_SIZE = 10
@@ -109,7 +117,7 @@ ROUTE_INSTRUCTION_SPL_TOKEN_PROGRAM_INDEX = 2
 ROUTE_INSTRUCTION_RECEIVER_ACCOUNTS_START_INDEX = 3
 
 
-class ReceiverUserAccount(TypedDict):
+class UserIdBankAccount(TypedDict):
     user_id: int
     user_bank_account: str
 
@@ -121,6 +129,18 @@ class PurchaseMetadataDict(TypedDict):
     id: int
     purchaser_user_id: int
     content_owner_id: int
+    access: PurchaseAccessType
+
+
+class RouteTransactionMemoType(str, enum.Enum):
+    purchase = "purchase"
+    recovery = "recovery"
+    unknown = "unknown"
+
+
+class RouteTransactionMemo(TypedDict):
+    type: RouteTransactionMemoType
+    metadata: PurchaseMetadataDict | None
 
 
 def check_config():
@@ -182,11 +202,17 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
-def get_purchase_metadata_from_memo(
+def parse_route_transaction_memo(
     session: Session, memos: List[str], timestamp: datetime
-) -> Union[PurchaseMetadataDict, None]:
-    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
+) -> RouteTransactionMemo | None:
+    """Checks the list of memos for one matching a format of a purchase's content_metadata, and then uses that content_metadata to find the stream_conditions associated with that content to get the price"""
+    if len(memos) == 0:
+        return None
     for memo in memos:
+        if memo == RECOVERY_MEMO_STRING:
+            return RouteTransactionMemo(
+                type=RouteTransactionMemoType.recovery, metadata=None
+            )
         try:
             content_metadata = memo.split(":")
             if len(content_metadata) == 4:
@@ -196,76 +222,90 @@ def get_purchase_metadata_from_memo(
                     blocknumber_str,
                     purchaser_user_id_str,
                 ) = content_metadata
-                type = PurchaseType[type_str.lower()]
-                id = int(id_str)
-                purchaser_user_id = int(purchaser_user_id_str)
-                blocknumber = int(blocknumber_str)
-
-                # TODO: Wait for blocknumber to be indexed by ACDC
-                logger.debug(
-                    f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id}"
+                access_str = "stream"  # Default to stream access
+            elif len(content_metadata) == 5:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                    access_str,
+                ) = content_metadata
+            else:
+                logger.info(
+                    f"index_payment_router.py | Ignoring memo, no content metadata found: {memo}"
                 )
-                price = None
-                splits = None
-                content_owner_id = None
-                if type == PurchaseType.track:
-                    env = shared_config["discprov"]["env"]
-                    content_owner_id = get_track_owner_id(session, id)
-                    if content_owner_id is None:
-                        logger.error(
-                            f"index_payment_router.py | Couldn't find content owner for track_id={id}"
-                        )
-                        continue
-                    query = session.query(TrackPriceHistory)
-                    if env != "dev":
-                        # In local stack, the blocktime of solana-test-validator is offset.
-                        # The start time of the validator is baked into the prebuilt container.
-                        # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
-                        # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
-                        # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
-                        query.filter(TrackPriceHistory.block_timestamp < timestamp)
-                    result = (
-                        query.filter(
-                            TrackPriceHistory.track_id == id,
-                        )
-                        .order_by(desc(TrackPriceHistory.block_timestamp))
-                        .first()
-                    )
-                    if result is not None:
-                        price = result.total_price_cents
-                        splits = result.splits
-                else:
+
+            type = PurchaseType[type_str.lower()]
+            id = int(id_str)
+            purchaser_user_id = int(purchaser_user_id_str)
+            blocknumber = int(blocknumber_str)
+            access = PurchaseAccessType[access_str.lower()]
+
+            # TODO: Wait for blocknumber to be indexed by ACDC
+            logger.debug(
+                f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id}"
+            )
+            price = None
+            splits = None
+            content_owner_id = None
+            if type == PurchaseType.track:
+                env = shared_config["discprov"]["env"]
+                content_owner_id = get_track_owner_id(session, id)
+                if content_owner_id is None:
                     logger.error(
-                        f"index_payment_router.py | Unknown content type {type}"
+                        f"index_payment_router.py | Couldn't find content owner for track_id={id}"
                     )
-                if (
-                    price is not None
-                    and splits is not None
-                    and isinstance(splits, dict)
-                    and content_owner_id is not None
-                ):
-                    return {
+                    continue
+                query = session.query(TrackPriceHistory)
+                if env != "dev":
+                    # In local stack, the blocktime of solana-test-validator is offset.
+                    # The start time of the validator is baked into the prebuilt container.
+                    # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
+                    # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
+                    # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
+                    query.filter(TrackPriceHistory.block_timestamp < timestamp)
+                result = (
+                    query.filter(
+                        TrackPriceHistory.track_id == id,
+                        TrackPriceHistory.access == access,
+                    )
+                    .order_by(desc(TrackPriceHistory.block_timestamp))
+                    .first()
+                )
+                if result is not None:
+                    price = result.total_price_cents
+                    splits = result.splits
+            else:
+                logger.error(f"index_payment_router.py | Unknown content type {type}")
+            if (
+                price is not None
+                and splits is not None
+                and isinstance(splits, dict)
+                and content_owner_id is not None
+            ):
+                return RouteTransactionMemo(
+                    type=RouteTransactionMemoType.purchase,
+                    metadata={
                         "type": type,
                         "id": id,
                         "price": price * USDC_PER_USD_CENT,
                         "splits": splits,
                         "purchaser_user_id": purchaser_user_id,
                         "content_owner_id": content_owner_id,
-                    }
-                else:
-                    logger.error(
-                        f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
-                    )
+                        "access": access,
+                    },
+                )
             else:
-                logger.debug(
-                    f"index_payment_router.py | Ignoring memo, no content metadata found: {memo}"
+                logger.error(
+                    f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
                 )
         except (ValueError, KeyError) as e:
-            logger.debug(
+            logger.info(
                 f"index_payment_router.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
             )
-    logger.error("index_payment_router.py | Failed to find any content metadata")
-    return None
+    logger.info("index_payment_router.py | Failed to find known memo format")
+    return RouteTransactionMemo(type=RouteTransactionMemoType.unknown, metadata=None)
 
 
 def validate_purchase(
@@ -289,7 +329,8 @@ def validate_purchase(
 
 def index_purchase(
     session: Session,
-    receiver_user_accounts: List[ReceiverUserAccount],
+    sender_user_account: UserIdBankAccount | None,
+    receiver_user_accounts: List[UserIdBankAccount],
     receiver_accounts: List[str],
     balance_changes: dict[str, BalanceChange],
     purchase_metadata: PurchaseMetadataDict,
@@ -312,9 +353,10 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
+        access=purchase_metadata["access"],
     )
     logger.debug(
-        f"index_payment_router.py | Creating usdc_purchase for purchase {usdc_purchase}"
+        f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"
     )
     session.add(usdc_purchase)
 
@@ -333,60 +375,152 @@ def index_purchase(
         )
         session.add(usdc_tx_received)
         logger.debug(
-            f"index_payment_router.py | Creating usdc_tx_history received tx for purchase {usdc_tx_received}"
+            f"index_payment_router.py | tx: {tx_sig} | Created usdc_tx_history received tx for purchase {usdc_tx_received}"
+        )
+    # If the sender for this transaction was a user bank, index the transaction for that
+    # user bank as well
+    if sender_user_account is not None:
+        balance_change = balance_changes[sender_user_account["user_bank_account"]]
+        usdc_tx_sent = USDCTransactionsHistory(
+            user_bank=sender_user_account["user_bank_account"],
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=USDCTransactionType.purchase_content,
+            method=USDCTransactionMethod.send,
+            transaction_created_at=timestamp,
+            change=Decimal(balance_change["change"]),
+            balance=Decimal(balance_change["post_balance"]),
+            tx_metadata=str(purchase_metadata["content_owner_id"]),
+        )
+        session.add(usdc_tx_sent)
+        logger.debug(
+            f"index_payment_router.py | tx: {tx_sig} | Created usdc_tx_history sent tx for purchase {usdc_tx_sent}"
+        )
+
+
+def index_transfer(
+    session: Session,
+    sender_account: str,
+    sender_user_account: UserIdBankAccount | None,
+    receiver_user_accounts: List[UserIdBankAccount],
+    receiver_accounts: List[str],
+    transaction_type: USDCTransactionType,
+    balance_changes: dict[str, BalanceChange],
+    slot: int,
+    timestamp: datetime,
+    tx_sig: str,
+):
+    sender_metadata_address = sender_account
+    # If sending account was a user bank, leave that as the address
+    # Otherwise, map it to an owning solana wallet
+    if sender_user_account is None:
+        sender_metadata_address = (
+            get_account_owner_from_balance_change(
+                account=sender_account, balance_changes=balance_changes
+            )
+            or sender_account
+        )
+    for user_account in receiver_user_accounts:
+        balance_change = balance_changes[user_account["user_bank_account"]]
+        usdc_tx_received = USDCTransactionsHistory(
+            user_bank=user_account["user_bank_account"],
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=transaction_type,
+            method=USDCTransactionMethod.receive,
+            transaction_created_at=timestamp,
+            change=Decimal(balance_change["change"]),
+            balance=Decimal(balance_change["post_balance"]),
+            tx_metadata=sender_metadata_address,
+        )
+        session.add(usdc_tx_received)
+
+        logger.debug(
+            f"index_payment_router.py | tx: {tx_sig} | Creating {transaction_type} received tx {usdc_tx_received}"
+        )
+    # If sender was a user bank, index a single transfer with a list of recipients
+    if sender_user_account is not None:
+        balance_change = balance_changes[sender_user_account["user_bank_account"]]
+        usdc_tx_received = USDCTransactionsHistory(
+            user_bank=sender_user_account["user_bank_account"],
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=transaction_type,
+            method=USDCTransactionMethod.send,
+            transaction_created_at=timestamp,
+            change=Decimal(balance_change["change"]),
+            balance=Decimal(balance_change["post_balance"]),
+            tx_metadata=",".join(receiver_accounts),
+        )
+        session.add(usdc_tx_received)
+        logger.debug(
+            f"index_payment_router.py | tx: {tx_sig} | Creating {transaction_type} sent tx {usdc_tx_received}"
         )
 
 
 def validate_and_index_usdc_transfers(
     session: Session,
     sender_account: str,
-    receiver_user_accounts: List[ReceiverUserAccount],
+    sender_user_account: UserIdBankAccount | None,
+    receiver_user_accounts: List[UserIdBankAccount],
     receiver_accounts: List[str],
     balance_changes: dict[str, BalanceChange],
-    purchase_metadata: Union[PurchaseMetadataDict, None],
+    memo: RouteTransactionMemo | None,
     slot: int,
     timestamp: datetime,
     tx_sig: str,
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
-    if purchase_metadata is not None and validate_purchase(
-        purchase_metadata=purchase_metadata, balance_changes=balance_changes
+    if (
+        memo is not None
+        and memo["type"] is RouteTransactionMemoType.purchase
+        and memo["metadata"] is not None
+        and validate_purchase(
+            purchase_metadata=memo["metadata"], balance_changes=balance_changes
+        )
     ):
         index_purchase(
             session=session,
+            sender_user_account=sender_user_account,
             receiver_user_accounts=receiver_user_accounts,
             receiver_accounts=receiver_accounts,
             balance_changes=balance_changes,
-            purchase_metadata=purchase_metadata,
+            purchase_metadata=memo["metadata"],
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
         )
     # For invalid purchases or transfers not related to a purchase, we'll index
-    # it as a regular transfer, though it will always show as being sent from
-    # the payment router PDA
-    # TODO: We _could_ receive the actual sender from the first tranfer instruction here
-    # and use that instead.
+    # it as a regular transfer from the sender_account.
     else:
-        # TODO: Detect transfers _out_ of user banks to payment router and index them
-        # here as "sent" transactions
-        for user_account in receiver_user_accounts:
-            balance_change = balance_changes[user_account["user_bank_account"]]
-            usdc_tx_received = USDCTransactionsHistory(
-                user_bank=user_account["user_bank_account"],
-                slot=slot,
-                signature=tx_sig,
-                transaction_type=USDCTransactionType.transfer,
-                method=USDCTransactionMethod.receive,
-                transaction_created_at=timestamp,
-                change=Decimal(balance_change["change"]),
-                balance=Decimal(balance_change["post_balance"]),
-                tx_metadata=sender_account,
-            )
-            session.add(usdc_tx_received)
-            logger.debug(
-                f"index_payment_router.py | Creating transfer received tx {usdc_tx_received}"
-            )
+        transaction_type = (
+            USDCTransactionType.recover_withdrawal
+            if memo is not None and memo["type"] is RouteTransactionMemoType.recovery
+            else USDCTransactionType.transfer
+        )
+        index_transfer(
+            session=session,
+            sender_account=sender_account,
+            sender_user_account=sender_user_account,
+            receiver_user_accounts=receiver_user_accounts,
+            receiver_accounts=receiver_accounts,
+            balance_changes=balance_changes,
+            transaction_type=transaction_type,
+            slot=slot,
+            timestamp=timestamp,
+            tx_sig=tx_sig,
+        )
+
+
+def find_sender_account_from_balance_changes(balance_changes: dict[str, BalanceChange]):
+    """Finds the sender account from the balance changes and receiver accounts"""
+    min_change = 0
+    sender = None
+    for account, balance_change in balance_changes.items():
+        if balance_change["change"] < min_change:
+            sender = account
+            min_change = balance_change["change"]
+    return sender
 
 
 def process_route_instruction(
@@ -411,26 +545,42 @@ def process_route_instruction(
         get_account_index(instruction, ROUTE_INSTRUCTION_PAYMENT_ROUTER_PDA_INDEX)
     ]
 
-    sender_address = account_keys[
+    route_source_address = account_keys[
         get_account_index(instruction, ROUTE_INSTRUCTION_SENDER_INDEX)
     ]
 
-    is_audio = sender_address == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS
-    is_usdc = sender_address == PAYMENT_ROUTER_USDC_ATA_ADDRESS
+    is_audio = route_source_address == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS
+    is_usdc = route_source_address == PAYMENT_ROUTER_USDC_ATA_ADDRESS
+
+    balance_changes = get_solana_tx_token_balance_changes(
+        account_keys=account_keys, meta=meta
+    )
+
+    # Detect the account which sent tokens _into_ payment router, as that's
+    # our real source account
+    sender_account = (
+        find_sender_account_from_balance_changes(balance_changes=balance_changes)
+        or sender_pda_account
+    )
 
     user_id_accounts = []
 
     if is_audio:
-        logger.info(
-            "index_payment_router.py | $AUDIO payment router transactions are not yet indexed. Skipping balance refresh"
+        logger.warn(
+            f"index_payment_router.py | tx: {tx_sig} | $AUDIO payment router transactions are not yet indexed. Skipping balance refresh"
         )
     elif is_usdc:
+        search_accounts = (
+            receiver_accounts + [sender_account]
+            if sender_account is not None
+            else receiver_accounts
+        )
         user_id_accounts = (
             session.query(User.user_id, USDCUserBankAccount.bank_account)
             .join(
                 USDCUserBankAccount,
                 and_(
-                    USDCUserBankAccount.bank_account.in_(receiver_accounts),
+                    USDCUserBankAccount.bank_account.in_(search_accounts),
                     USDCUserBankAccount.ethereum_address == User.wallet,
                 ),
             )
@@ -438,80 +588,80 @@ def process_route_instruction(
         )
         # Payment Router recipients may not be Audius user banks
         if not user_id_accounts:
-            logger.info(
-                f"index_payment_router.py | No receiver accounts are user banks | {str(receiver_accounts)}"
+            logger.warn(
+                f"index_payment_router.py | tx: {tx_sig} | No sender or receiver accounts are user banks | {str(search_accounts)}"
             )
     else:
         logger.error(
-            f"index_payment_router.py | Unrecognized source ATA {sender_address}. Expected AUDIO={PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS} or USDC={PAYMENT_ROUTER_USDC_ATA_ADDRESS}"
+            f"index_payment_router.py | tx: {tx_sig} | Unrecognized source ATA {route_source_address}. Expected AUDIO={PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS} or USDC={PAYMENT_ROUTER_USDC_ATA_ADDRESS}"
         )
         return
 
-    receiver_user_accounts: List[ReceiverUserAccount] = []
-    for user_id_account in user_id_accounts:
-        if user_id_account[1] in receiver_accounts:
+    receiver_user_accounts: List[UserIdBankAccount] = []
+    sender_user_account: UserIdBankAccount | None = None
+    for user_id, bank_account in user_id_accounts:
+        if bank_account in receiver_accounts:
             receiver_user_accounts.append(
                 {
-                    "user_id": user_id_account[0],
-                    "user_bank_account": user_id_account[1],
+                    "user_id": user_id,
+                    "user_bank_account": bank_account,
                 }
             )
-
-    balance_changes = get_solana_tx_token_balance_changes(
-        account_keys=account_keys, meta=meta
-    )
-
-    # TODO: Adapt this to detecting external transfers via payment router. It would require that
-    # we have already parsed the sender of the TransferChecked instruction _before_ the Route
-    # instruction and have passed that into this function. Then we could create a
-    # TranscationType.Transfer w/ the external addresess listed.
+        elif bank_account == sender_account:
+            sender_user_account = {
+                "user_id": user_id,
+                "user_bank_account": bank_account,
+            }
 
     if is_audio:
         logger.warning(
-            "index_payment_router.py | $AUDIO payment router transactions are not yet indexed. Skipping instruction indexing."
+            f"index_payment_router.py | tx: {tx_sig} | $AUDIO payment router transactions are not yet indexed. Skipping instruction indexing."
         )
     elif is_usdc:
-        # Index as a purchase of some content
-        purchase_metadata = get_purchase_metadata_from_memo(
+        memo = parse_route_transaction_memo(
             session=session, memos=memos, timestamp=timestamp
         )
         validate_and_index_usdc_transfers(
             session=session,
-            sender_account=sender_pda_account,
+            sender_account=sender_account,
+            sender_user_account=sender_user_account,
             receiver_user_accounts=receiver_user_accounts,
             receiver_accounts=receiver_accounts,
             balance_changes=balance_changes,
-            purchase_metadata=purchase_metadata,
+            memo=memo,
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
         )
 
-        # We can have a USDC payment router transfer with no purchase attached
-        if purchase_metadata is None:
+        # If the memo had purchase information, dispatch challenge events
+        if (
+            memo is not None
+            and memo["type"] is RouteTransactionMemoType.purchase
+            and memo["metadata"] is not None
+        ):
             logger.info(
-                f"index_payment_router.py | No purchase metadata found on {tx_sig}"
+                f"index_payment_router.py | tx: {tx_sig} | Purchase memo found. Dispatching challenge events"
             )
-            return
-
-        sender_user_id = purchase_metadata["purchaser_user_id"]
-        amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
-        challenge_event_bus.dispatch(
-            ChallengeEvent.audio_matching_buyer,
-            slot,
-            sender_user_id,
-            {"track_id": purchase_metadata["id"], "amount": amount},
-        )
-        challenge_event_bus.dispatch(
-            ChallengeEvent.audio_matching_seller,
-            slot,
-            purchase_metadata["content_owner_id"],
-            {
-                "track_id": purchase_metadata["id"],
-                "sender_user_id": sender_user_id,
-                "amount": amount,
-            },
-        )
+            purchase_metadata = memo["metadata"]
+            sender_user_id = purchase_metadata["purchaser_user_id"]
+            amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
+            challenge_event_bus.dispatch(
+                ChallengeEvent.audio_matching_buyer,
+                slot,
+                sender_user_id,
+                {"track_id": purchase_metadata["id"], "amount": amount},
+            )
+            challenge_event_bus.dispatch(
+                ChallengeEvent.audio_matching_seller,
+                slot,
+                purchase_metadata["content_owner_id"],
+                {
+                    "track_id": purchase_metadata["id"],
+                    "sender_user_id": sender_user_id,
+                    "amount": amount,
+                },
+            )
 
 
 def process_payment_router_tx_details(
@@ -524,22 +674,22 @@ def process_payment_router_tx_details(
     logger.debug(f"index_payment_router.py | Processing tx={tx_info.to_json()}")
     result = tx_info.value
     if not result:
-        logger.error("index_payment_router.py | No result")
+        logger.error("index_payment_router.py | tx: {tx_sig} | No result")
         return
     meta = result.transaction.meta
     if not meta:
-        logger.error("index_payment_router.py | No result meta")
+        logger.error("index_payment_router.py | tx: {tx_sig} | No result meta")
         return
     error = meta.err
     if error:
         logger.error(
-            f"index_payment_router.py | Skipping error transaction from chain {tx_info}"
+            f"index_payment_router.py | tx: {tx_sig} | Skipping error transaction from chain {tx_info}"
         )
         return
     transaction = result.transaction.transaction
     if not hasattr(transaction, "message"):
         logger.error(
-            f"index_payment_router.py | No transaction message found {transaction}"
+            f"index_payment_router.py | tx: {tx_sig} | No transaction message found {transaction}"
         )
         return
 
@@ -551,12 +701,10 @@ def process_payment_router_tx_details(
 
     instruction = get_valid_instruction(tx_message, meta, PAYMENT_ROUTER_ADDRESS)
     if instruction is None:
-        logger.error(f"index_payment_router.py | {tx_sig} No Valid instruction found")
+        logger.error(
+            f"index_payment_router.py | tx: {tx_sig} |  No Valid instruction found"
+        )
         return
-
-    # TODO: Parse existing TransferChecked instruction first to get the address which sent
-    # money _into_ the payment router. This will be necessary to correctly index
-    # external transfers via Payment Router from a userbank.
 
     if has_route_instruction:
         process_route_instruction(

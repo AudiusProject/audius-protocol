@@ -1,4 +1,4 @@
-import { removeNullable } from '@audius/common'
+import { removeNullable } from '@audius/common/utils'
 import { useField } from 'formik'
 
 import type { ContextualMenuProps } from 'app/components/core'

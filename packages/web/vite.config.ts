@@ -4,9 +4,15 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 import react from '@vitejs/plugin-react'
 import process from 'process/browser'
 import { visualizer } from 'rollup-plugin-visualizer'
+import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
+
+import { env as APP_ENV } from './src/services/env'
+import path from 'path'
+
+const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
 const fixAcceptHeader404 = () => ({
   // Fix issue with vite dev server and `wait-on`
@@ -27,16 +33,23 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
-  env.VITE_PUBLIC_URL = env.VITE_PUBLIC_URL ?? ''
+  const ssr = env.VITE_SSR === 'true'
+  env.VITE_BASENAME = env.VITE_BASENAME ?? ''
 
   return {
-    base: env.VITE_PUBLIC_URL || '/',
+    base: env.VITE_BASENAME || '/',
     build: {
-      outDir: 'build',
+      outDir: ssr ? 'build-ssr' : 'build',
       sourcemap: true,
       commonjsOptions: {
         include: [/node_modules/],
         transformMixedEsModules: true
+      },
+      rollupOptions: {
+        output: {
+          sourcemapBaseUrl:
+            env.VITE_ENV === 'production' ? SOURCEMAP_URL : undefined
+        }
       }
     },
     define: {
@@ -57,11 +70,6 @@ export default defineConfig(({ mode }) => {
       }
     },
     plugins: [
-      // TODO: Enable once https://github.com/aleclarson/vite-tsconfig-paths/issues/110
-      // is resolved
-      // tsconfigPaths({
-      //   root: './packages'
-      // }),
       glslify(),
       svgr({
         include: '**/*.svg'
@@ -79,12 +87,28 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
+      {
+        transformIndexHtml(html) {
+          // Replace HTML env vars with values from the system env
+          return html.replace(/%(\S+?)%/g, (text: string, key) => {
+            if (key in APP_ENV) {
+              const value = APP_ENV[key as keyof typeof APP_ENV]
+              if (value !== null) {
+                return value as string
+              }
+            }
+            console.warn(`Missing environment variable: ${key}`)
+            return text
+          })
+        }
+      },
       react({
         jsxImportSource: '@emotion/react',
         babel: {
           plugins: ['@emotion/babel-plugin']
         }
       }),
+      ...(ssr ? [vike()] : []),
       ...((analyze
         ? [
             visualizer({
@@ -99,7 +123,7 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        // Should be able to use vite-tsconfig-paths instead
+        // Can't use vite-tsconfig-paths because of vike
         app: '/src/app',
         assets: '/src/assets',
         common: '/src/common',
@@ -111,6 +135,8 @@ export default defineConfig(({ mode }) => {
         store: '/src/store',
         workers: '/src/workers',
         utils: '/src/utils',
+        ssr: '/src/ssr',
+        '~': path.resolve(__dirname, '../../packages/common/src'),
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),

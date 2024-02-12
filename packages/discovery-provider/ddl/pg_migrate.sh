@@ -13,6 +13,8 @@ POSTGRES_HOST=${POSTGRES_HOST:-127.0.0.1}
 POSTGRES_PORT=${POSTGRES_PORT:-5432}
 export PGPASSWORD="$POSTGRES_PASSWORD"
 
+is_test=$1
+
 # setting DB_URL will override any individual settings from above
 DB_URL=${DB_URL:-postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB}
 
@@ -34,12 +36,12 @@ create_migrations_table() {
 
 
 migrate_dir() {
-    migration_files=$(ls $1/*.sql | sort -V)
+    migration_files=$(ls "$1"/*.sql | sort -V)
 
     md5s=$(psql -c "select md5 from $MIGRATIONS_TABLE")
 
     for file in $migration_files; do
-        md5=$(cat $file | tr -d "[:space:]" | md5sum | awk '{print $1}')
+        md5=$(cat "$file" | tr -d "[:space:]" | md5sum | awk '{print $1}')
 
         if [[ $md5s =~ $md5 ]]; then
           # echo "... skipping $file $md5"
@@ -56,15 +58,22 @@ migrate_dir() {
             fi
             set -e
         else
-            # echo "Applying $file"
+            echo "Applying $file"
             psql < "$file"
+
+            # if test mode, run migration again to ensure idempotent
+            if [[ $is_test == "test" ]]; then
+              echo "RE-Applying $file"
+              psql < "$file"
+            fi
         fi
+
         psql -c "INSERT INTO $MIGRATIONS_TABLE (file_name, md5) VALUES ('$file', '$md5') on conflict(file_name) do update set md5='$md5', applied_at=now();"
     done
 }
 
 test_dir() {
-  migration_files=$(ls $1/*.sql | sort -V)
+  migration_files=$(ls "$1"/*.sql | sort -V)
 
     for file in $migration_files; do
         echo "TEST $file"
@@ -89,8 +98,6 @@ migrate() {
 run_tests() {
     # test idempotency
     echo "-- test idempotency --"
-    migrate
-    psql -c "TRUNCATE TABLE $MIGRATIONS_TABLE CASCADE;"
     migrate
 
     # run tests dir

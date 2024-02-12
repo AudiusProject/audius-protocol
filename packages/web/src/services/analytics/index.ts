@@ -1,4 +1,5 @@
-import { AnalyticsEvent, Nullable, AllTrackingEvents } from '@audius/common'
+import { AnalyticsEvent, AllTrackingEvents } from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 
 import { env } from 'services/env'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -17,10 +18,10 @@ const didInit = new Promise((resolve, reject) => {
   rejectCallback = reject
 })
 
-export const init = async () => {
+export const init = async (isMobile: boolean) => {
   try {
     await remoteConfigInstance.waitForRemoteConfig()
-    await amplitude.init()
+    await amplitude.init(isMobile)
     if (resolveCallback) {
       resolveCallback()
     }
@@ -69,7 +70,7 @@ export const identify = async (
 ) => {
   try {
     if (!IS_PRODUCTION_BUILD) {
-      console.info(`Amplitude | identify`, handle, traits, options)
+      console.info('Amplitude | identify', handle, traits, options)
     }
 
     await didInit

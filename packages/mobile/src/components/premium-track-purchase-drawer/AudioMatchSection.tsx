@@ -18,7 +18,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 const messages = {
-  earn: (amount: number) => `Earn ${amount} $AUDIO when you buy this track!`
+  earn: (amount: number) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
 type AudioMatchSectionProps = {

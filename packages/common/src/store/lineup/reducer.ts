@@ -1,6 +1,6 @@
 import { Reducer } from 'redux'
 
-import { Status } from 'models/Status'
+import { Status } from '~/models/Status'
 import {
   FETCH_LINEUP_METADATAS_REQUESTED,
   FETCH_LINEUP_METADATAS_SUCCEEDED,
@@ -12,10 +12,10 @@ import {
   UPDATE_LINEUP_ORDER,
   SET_PAGE,
   stripPrefix
-} from 'store/lineup/actions'
+} from '~/store/lineup/actions'
 
 import { UID } from '../../models/Identifiers'
-import { LineupState, LineupStateTrack, Order } from '../../models/Lineup'
+import { LineupState, LineupEntry, Order } from '../../models/Lineup'
 
 export const initialLineupState = {
   prefix: '',
@@ -40,7 +40,11 @@ export const initialLineupState = {
   // e.g. This should be true if we request 10 tracks but only get 9 back because
   // one is deleted
   // Whether the lineup is limited to a certain length
-  maxEntries: null
+  maxEntries: null,
+  // We save the payload of the last fetch call to re-use if not provided
+  payload: undefined,
+  // We save the handle of the last fetch call to re-use if not provided
+  handle: undefined
 }
 
 type SetInViewAction = {
@@ -53,11 +57,12 @@ type FetchLineupMetadatasRequestedAction = {
   limit: number
   offset: number
   handle: string
+  payload: unknown
 }
 
 type FetchLineupMetadatasSucceededAction<T> = {
   type: typeof FETCH_LINEUP_METADATAS_SUCCEEDED
-  entries: LineupStateTrack<T>[]
+  entries: LineupEntry<T>[]
   deleted: number
   nullCount: number
   limit: number
@@ -75,7 +80,7 @@ type UpdateLineupOrderAction = {
 
 type AddAction<T> = {
   type: typeof ADD
-  entry: LineupStateTrack<T>
+  entry: LineupEntry<T>
   shouldPrepend?: boolean
 }
 
@@ -93,7 +98,7 @@ type SetPageAction = {
   page: number
 }
 
-type LineupActions<T> =
+export type LineupActions<T> =
   | SetInViewAction
   | FetchLineupMetadatasRequestedAction
   | FetchLineupMetadatasSucceededAction<T>
@@ -120,6 +125,12 @@ export const actionsMap = {
     newState.total = action.limit + action.offset
     newState.status = Status.LOADING
     newState.isMetadataLoading = true
+    if (action.payload) {
+      newState.payload = action.payload
+    }
+    if (action.handle) {
+      newState.handle = action.handle
+    }
     return newState
   },
   [FETCH_LINEUP_METADATAS_SUCCEEDED]<T>(

@@ -1,17 +1,16 @@
 import { PureComponent } from 'react'
 
+import { Name, TimeRange } from '@audius/common/models'
 import {
-  Name,
-  TimeRange,
-  GENRES,
   accountSelectors,
   lineupSelectors,
   trendingPageLineupActions,
-  trendingPageSelectors,
   trendingPageActions,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  trendingPageSelectors,
+  queueSelectors,
+  playerSelectors
+} from '@audius/common/store'
+import { GENRES } from '@audius/common/utils'
 import {
   push as pushRoute,
   replace as replaceRoute
@@ -19,9 +18,10 @@ import {
 import { connect } from 'react-redux'
 import { matchPath, withRouter } from 'react-router-dom'
 
+import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { getPathname, TRENDING_GENRES } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 const { makeGetCurrent } = queueSelectors
@@ -68,6 +68,7 @@ const callLineupAction = (timeRange, action, ...args) => {
  *  children as `TrendingPageContentProps`.
  */
 class TrendingPageProvider extends PureComponent {
+  static contextType = HistoryContext
   goToSignUp = () => {
     this.props.openSignOn(false)
   }
@@ -77,7 +78,7 @@ class TrendingPageProvider extends PureComponent {
   }
 
   matchesRoute = (route) => {
-    return matchPath(getPathname(), {
+    return matchPath(getPathname(this.context.history.location), {
       path: route
     })
   }
@@ -239,8 +240,7 @@ const makeMapStateToProps = () => {
     buffering: getBuffering(state),
     trendingTimeRange: getTrendingTimeRange(state),
     trendingGenre: getTrendingGenre(state),
-    lastFetchedTrendingGenre: getLastFetchedTrendingGenre(state),
-    isMobile: isMobile()
+    lastFetchedTrendingGenre: getLastFetchedTrendingGenre(state)
   })
   return mapStateToProps
 }
@@ -305,6 +305,11 @@ const mapDispatchToProps = (dispatch) => ({
   }
 })
 
+const TrendingPageProviderWrapper = (props) => {
+  const isMobile = useIsMobile()
+  return <TrendingPageProvider isMobile={isMobile} {...props} />
+}
+
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(TrendingPageProvider)
+  connect(makeMapStateToProps, mapDispatchToProps)(TrendingPageProviderWrapper)
 )

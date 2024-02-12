@@ -1,16 +1,16 @@
 import { useMemo } from 'react'
 
+import { LineupState } from '@audius/common/models'
 import {
-  LineupState,
   lineupSelectors,
-  playerSelectors,
-  queueSelectors
-} from '@audius/common'
+  queueSelectors,
+  playerSelectors
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { LineupVariant } from 'components/lineup/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
 const { makeGetCurrent } = queueSelectors
@@ -46,6 +46,7 @@ export const useLineupProps = ({
   isOrdered
 }: useLineupPropsProps) => {
   const dispatch = useDispatch()
+  const isMobile = useIsMobile()
 
   // Create memoized selectors
   const getLineup = useMemo(
@@ -83,7 +84,7 @@ export const useLineupProps = ({
     loadMore,
     numPlaylistSkeletonRows,
     scrollParent,
-    isMobile: isMobile(),
+    isMobile,
     rankIconCount,
     isTrending,
     ordered: isOrdered

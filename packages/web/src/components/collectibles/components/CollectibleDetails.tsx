@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import {
-  Chain,
-  Collectible,
-  CollectibleMediaType,
   profilePageSelectors,
-  collectibleDetailsUIActions,
-  getHash
-} from '@audius/common'
-import { LogoEth, LogoSol } from '@audius/stems'
+  collectibleDetailsUIActions
+} from '@audius/common/store'
+import { getHash } from '@audius/common/utils'
+import {
+  IconPlaybackPlay as IconPlay,
+  IconSolana as LogoSol
+} from '@audius/harmony'
+import { LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconPlay from 'assets/img/pbIconPlay.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'

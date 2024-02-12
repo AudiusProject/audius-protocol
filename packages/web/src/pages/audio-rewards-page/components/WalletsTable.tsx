@@ -1,25 +1,22 @@
 import { useCallback, useContext, useEffect, MouseEvent } from 'react'
 
+import { Chain, BNWei } from '@audius/common/models'
 import {
-  Chain,
-  BNWei,
-  shortenEthAddress,
-  shortenSPLAddress,
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors
-} from '@audius/common'
-import { LogoEth, LogoSol } from '@audius/stems'
+  tokenDashboardPageSelectors,
+  tokenDashboardPageActions
+} from '@audius/common/store'
+import { shortenSPLAddress, shortenEthAddress } from '@audius/common/utils'
+import { IconCopy, IconRemove, IconSolana as LogoSol } from '@audius/harmony'
+import { LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import IconCopy from 'assets/img/iconCopy.svg'
-import IconRemove from 'assets/img/iconRemoveTrack.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'

@@ -1,23 +1,22 @@
 import { useCallback, useMemo } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { Name } from '@audius/common/models'
 import {
   accountSelectors,
-  CommonState,
-  imageBlank as placeholderArt,
-  Name,
-  ProgressState,
-  ProgressStatus,
   uploadSelectors,
-  UploadType
-} from '@audius/common'
+  UploadType,
+  ProgressStatus,
+  CommonState,
+  ProgressState
+} from '@audius/common/store'
 import {
-  HarmonyPlainButton,
-  IconArrow,
+  IconArrowRight as IconArrow,
   IconError,
-  IconUpload,
-  IconValidationCheck,
-  ProgressBar
-} from '@audius/stems'
+  IconCloudUpload as IconUpload,
+  IconValidationCheck
+} from '@audius/harmony'
+import { HarmonyPlainButton, ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'

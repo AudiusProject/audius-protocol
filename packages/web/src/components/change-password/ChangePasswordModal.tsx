@@ -1,61 +1,145 @@
-import { useEffect } from 'react'
+import { useCallback, useContext } from 'react'
 
 import {
-  Name,
-  ChangePasswordPageStep,
-  changePasswordSelectors,
-  changePasswordActions
-} from '@audius/common'
-import { Modal } from '@audius/stems'
-import { useDispatch, useSelector } from 'react-redux'
+  ChangePasswordFormValues,
+  ChangePasswordPage,
+  useChangePasswordFormConfiguration
+} from '@audius/common/hooks'
+import { Button, Flex, IconArrowRight, IconLock, Text } from '@audius/harmony'
+import {
+  Modal,
+  ModalContentPages,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle
+} from '@audius/stems'
+import { Formik, useFormikContext } from 'formik'
 
-import { make, TrackEvent } from 'common/store/analytics/actions'
+import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import { ModalForm } from 'components/modal-form/ModalForm'
+import { ToastContext } from 'components/toast/ToastContext'
+import { PasswordCompletionChecklist } from 'pages/sign-up-page/components/PasswordCompletionChecklist'
 
-import { ChangePassword } from './ChangePassword'
-const { changePage } = changePasswordActions
-const { getCurrentPage } = changePasswordSelectors
+import styles from './ChangePasswordModal.module.css'
 
 const messages = {
-  title: (
-    <>
-      <i className='emoji lock'></i>&nbsp;Change Password
-    </>
+  continue: 'Continue',
+  changePassword: 'Change Password',
+  confirmPasswordHelp: 'Please enter your current email and password.',
+  email: 'Email',
+  currentPassword: 'Current Password',
+  passwordCompletionHelp:
+    'Create a new password that’s secure and easy to remember!',
+  invalidCredentials: 'Invalid credentials.',
+  success: 'Password updated!',
+  password: 'Password',
+  confirmPassword: 'Confirm Password'
+}
+
+export const ConfirmCredentialsPage = () => {
+  return (
+    <Flex direction='column' gap='xl'>
+      <Text variant='body'>{messages.confirmPasswordHelp}</Text>
+      <HarmonyTextField
+        name='email'
+        autoComplete='email'
+        label={messages.email}
+        autoFocus
+      />
+      <HarmonyPasswordField name='password' label={messages.currentPassword} />
+    </Flex>
   )
 }
 
-export const ChangePasswordModal = (props: any) => {
-  const { showModal, onClose } = props
+export const NewPasswordPage = () => {
+  return (
+    <Flex direction='column' gap='xl'>
+      <Text variant='body'>{messages.passwordCompletionHelp}</Text>
+      <Flex direction='column' gap='l'>
+        <HarmonyPasswordField
+          name='password'
+          label={messages.password}
+          helperText={undefined}
+        />
+        <HarmonyPasswordField
+          name='confirmPassword'
+          label={messages.confirmPassword}
+          helperText={undefined}
+        />
+        <PasswordCompletionChecklist />
+      </Flex>
+    </Flex>
+  )
+}
 
-  const dispatch = useDispatch()
+export const ChangePasswordModalForm = ({
+  page
+}: {
+  page: ChangePasswordPage
+}) => {
+  const { isSubmitting } = useFormikContext<ChangePasswordFormValues>()
+  return (
+    <ModalForm>
+      <ModalContentPages currentPage={page}>
+        <ConfirmCredentialsPage />
+        <VerifyEmailPage />
+        <NewPasswordPage />
+      </ModalContentPages>
+      <ModalFooter className={styles.footer}>
+        <Button
+          fullWidth
+          variant='primary'
+          iconRight={
+            page === ChangePasswordPage.NewPassword ? IconLock : IconArrowRight
+          }
+          type='submit'
+          isLoading={isSubmitting}
+        >
+          {page === ChangePasswordPage.NewPassword
+            ? messages.changePassword
+            : messages.continue}
+        </Button>
+      </ModalFooter>
+    </ModalForm>
+  )
+}
 
-  const currentPage = useSelector(getCurrentPage)
-  const allowClose = [
-    ChangePasswordPageStep.CONFIRM_CREDENTIALS,
-    ChangePasswordPageStep.FAILURE,
-    ChangePasswordPageStep.SUCCESS
-  ].includes(currentPage)
+type ChangePasswordModalProps = {
+  isOpen: boolean
+  onClose: () => void
+}
 
-  useEffect(() => {
-    if (showModal) {
-      dispatch(changePage(ChangePasswordPageStep.CONFIRM_CREDENTIALS))
-      const trackEvent: TrackEvent = make(
-        Name.SETTINGS_START_CHANGE_PASSWORD,
-        {}
-      )
-      dispatch(trackEvent)
-    }
-  }, [dispatch, showModal])
+export const ChangePasswordModal = (props: ChangePasswordModalProps) => {
+  const { isOpen, onClose } = props
+  const { toast } = useContext(ToastContext)
+
+  const onComplete = useCallback(() => {
+    onClose()
+    toast(messages.success)
+  }, [toast, onClose])
+
+  const { page, setPage, ...formConfiguration } =
+    useChangePasswordFormConfiguration(onComplete)
+
+  const handleClosed = useCallback(() => {
+    setPage(ChangePasswordPage.ConfirmCredentials)
+  }, [setPage])
 
   return (
     <Modal
-      title={messages.title}
-      showTitleHeader
-      showDismissButton={allowClose}
-      dismissOnClickOutside={allowClose}
-      isOpen={showModal}
+      isOpen={isOpen}
       onClose={onClose}
+      onClosed={handleClosed}
+      size='small'
     >
-      <ChangePassword isMobile={false} onComplete={onClose} />
+      <ModalHeader onClose={onClose}>
+        <ModalTitle title={messages.changePassword} icon={<IconLock />} />
+      </ModalHeader>
+      <Formik {...formConfiguration}>
+        <ChangePasswordModalForm page={page} />
+      </Formik>
     </Modal>
   )
 }

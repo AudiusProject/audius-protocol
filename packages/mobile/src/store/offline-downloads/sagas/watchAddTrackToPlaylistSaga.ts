@@ -1,4 +1,4 @@
-import { cacheCollectionsActions } from '@audius/common'
+import { cacheCollectionsActions } from '@audius/common/store'
 import { put, select, takeEvery } from 'typed-redux-saga'
 
 import { getCollectionDownloadStatus } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'

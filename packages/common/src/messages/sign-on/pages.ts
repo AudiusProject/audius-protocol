@@ -111,7 +111,7 @@ export const createLoginDetailsPageMessages = {
   signIn: 'Sign In'
 }
 
-export const selectArtstsPageMessages = {
+export const selectArtistsPageMessages = {
   header: 'Follow At Least 3 Artists',
   description:
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
@@ -122,9 +122,9 @@ export const selectArtstsPageMessages = {
 }
 
 export const welcomeModalMessages = {
-  welcome: 'Welcome to Audius! 🎉',
+  welcome: 'Welcome to Audius%0! 🎉',
   startListening: 'Start Listening',
   upload: 'Upload',
   youreIn:
-    'You’re in! Discover music from our talented DJs, producers, and artists.'
+    "You're in! Discover music from our talented DJs, producers, and artists."
 }

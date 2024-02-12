@@ -6,11 +6,12 @@ import {
   KeyboardEvent
 } from 'react'
 
-import { useInstanceVar } from '@audius/common'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+import { useInstanceVar } from '@audius/common/hooks'
+import { IconArrowRight } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Spring } from 'react-spring/renderprops'
+import { Spring } from 'react-spring/renderprops.cjs'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import Input from 'components/data-entry/Input'
@@ -210,7 +211,7 @@ export const SignInPage = ({
             loading ? (
               <LoadingSpinner className={styles.spinner} />
             ) : (
-              <IconArrow />
+              <IconArrowRight />
             )
           }
           type={ButtonType.PRIMARY_ALT}

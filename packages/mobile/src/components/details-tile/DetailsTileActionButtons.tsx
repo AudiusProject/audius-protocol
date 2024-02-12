@@ -1,12 +1,18 @@
-import type { CommonState, ID } from '@audius/common'
-import { cacheCollectionsSelectors } from '@audius/common'
+import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import type { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { cacheCollectionsSelectors } from '@audius/common/store'
+import type { CommonState } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconPencil from 'app/assets/images/iconPencil.svg'
-import IconRocket from 'app/assets/images/iconRocket.svg'
-import IconShare from 'app/assets/images/iconShare.svg'
+import {
+  IconKebabHorizontal,
+  IconPencil,
+  IconRocket,
+  IconShare
+} from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
@@ -17,19 +23,18 @@ import { useThemeColors } from 'app/utils/theme'
 const { getCollecitonHasHiddenTracks, getIsCollectionEmpty } =
   cacheCollectionsSelectors
 
-const messages = {
+const getMessages = (collectionType: 'album' | 'playlist') => ({
   publishButtonEmptyDisabledContent: 'You must add at least 1 track.',
-  publishButtonHiddenDisabledContent:
-    'You cannot make a playlist with hidden tracks public.',
-  shareButtonDisabledContent: 'You can’t share an empty playlist.'
-}
+  publishButtonHiddenDisabledContent: `You cannot make a ${collectionType} with hidden tracks public.`,
+  shareButtonDisabledContent: `You can’t share an empty ${collectionType}.`
+})
 
 type DetailsTileActionButtonsProps = {
   collectionId?: ID
   hasReposted: boolean
   hasSaved: boolean
   isOwner: boolean
-  isPlaylist?: boolean
+  isCollection?: boolean
   isPublished?: boolean
   hideFavorite?: boolean
   hideOverflow?: boolean
@@ -65,7 +70,7 @@ export const DetailsTileActionButtons = ({
   collectionId,
   hasReposted,
   hasSaved,
-  isPlaylist,
+  isCollection,
   isOwner,
   isPublished,
   hideFavorite,
@@ -84,8 +89,20 @@ export const DetailsTileActionButtons = ({
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
   )
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: collectionId!,
+      currentUserId
+    },
+    { disabled: !collectionId || !isCollection }
+  )
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollecitonHasHiddenTracks(state, { id: collectionId })
+  )
+  const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
+  const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.EDIT_ALBUMS
   )
 
   const repostButton = (
@@ -150,14 +167,23 @@ export const DetailsTileActionButtons = ({
     />
   )
 
-  const isPlaylistOwner = isPlaylist && isOwner
+  const isAlbum = isCollection && collection?.is_album
+  const isCollectionOwner = isCollection && isOwner
 
   return (
     <View style={styles.root}>
-      {isPlaylistOwner ? editButton : hideRepost ? null : repostButton}
-      {isPlaylistOwner || hideFavorite ? null : favoriteButton}
+      {isCollectionOwner
+        ? !isAlbum || isEditAlbumsEnabled
+          ? editButton
+          : null
+        : hideRepost
+        ? null
+        : repostButton}
+      {isCollectionOwner || hideFavorite ? null : favoriteButton}
       {hideShare ? null : shareButton}
-      {isPlaylistOwner && !isPublished ? publishButton : null}
+      {isCollectionOwner && !isPublished && (!isAlbum || isEditAlbumsEnabled)
+        ? publishButton
+        : null}
       {hideOverflow ? null : overflowMenu}
     </View>
   )

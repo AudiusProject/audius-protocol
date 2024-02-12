@@ -1,10 +1,13 @@
 import { useCallback } from 'react'
 
-import { notificationsActions, notificationsSelectors } from '@audius/common'
+import {
+  notificationsActions,
+  notificationsSelectors
+} from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNotification from 'app/assets/images/iconNotification.svg'
+import { IconNotificationOn } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
@@ -35,7 +38,7 @@ export const NotificationsScreen = () => {
     <Screen>
       <ScreenHeader
         text={messages.header}
-        icon={IconNotification}
+        icon={IconNotificationOn}
         iconProps={{ height: 28, width: 28 }}
       />
       <ScreenContent>

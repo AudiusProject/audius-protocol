@@ -1,16 +1,12 @@
-// @ts-nocheck
-// TODO(nkang) - convert to TS
-
-import { asLineup } from 'store/lineup/reducer'
+import { LineupActions, asLineup } from '~/store/lineup/reducer'
 import feedReducer, {
   initialState as initialFeedLineupState
-} from 'store/pages/profile/lineups/feed/reducer'
+} from '~/store/pages/profile/lineups/feed/reducer'
 import tracksReducer, {
   initialState as initialTracksLineupState
-} from 'store/pages/profile/lineups/tracks/reducer'
-import { FollowType, CollectionSortMode } from 'store/pages/profile/types'
+} from '~/store/pages/profile/lineups/tracks/reducer'
 
-import { Status } from '../../../models'
+import { Collection, Status, Track } from '../../../models'
 
 import {
   FETCH_PROFILE,
@@ -32,10 +28,37 @@ import {
   FETCH_COLLECTIONS_FAILED,
   FETCH_TOP_TAGS,
   FETCH_TOP_TAGS_SUCCEEDED,
-  FETCH_TOP_TAGS_FAILED
+  FETCH_TOP_TAGS_FAILED,
+  FetchProfileAction,
+  FetchProfileSucceededAction,
+  SetCurrentUserAction,
+  FetchFollowUsersAction,
+  FetchFollowUsersSucceededAction,
+  FetchFollowUsersFailedAction,
+  SetProfileFieldAction,
+  FetchProfileFailedAction,
+  UpdateProfileAction,
+  UpdateProfileSucceededAction,
+  UpdateProfileFailedAction,
+  FetchCollectionsAction,
+  FetchCollectionsSucceededAction,
+  FetchCollectionsFailedAction,
+  UpdateCollectionSortModeAction,
+  DismissProfileMeterAction,
+  SetNotificationSubscriptionAction,
+  FetchTopTagsAction,
+  FetchTopTagsFailedAction,
+  FetchTopTagsSucceededAction,
+  ProfilePageAction
 } from './actions'
 import { PREFIX as feedPrefix } from './lineups/feed/actions'
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
+import {
+  FollowType,
+  CollectionSortMode,
+  ProfilePageState,
+  ProfileState
+} from './types'
 
 const initialProfileState = {
   handle: null,
@@ -62,33 +85,40 @@ const initialProfileState = {
   tracks: initialTracksLineupState
 }
 
-const updateProfile = (state, action, data) => {
+const updateProfile = (
+  state: ProfilePageState,
+  action: ProfilePageAction,
+  data: Partial<ProfileState>
+) => {
   const { currentUser, entries } = state
-  const { handle } = action
-  const profileHandle = handle?.toLowerCase() ?? currentUser
-  const newEntry = entries[profileHandle]
+  const profileHandle =
+    ('handle' in action && action.handle?.toLowerCase()) || currentUser
+  const newEntry = profileHandle ? entries[profileHandle] : {}
+
+  const newEntryData = profileHandle
+    ? {
+        [profileHandle]: {
+          ...newEntry,
+          ...data
+        }
+      }
+    : {}
 
   return {
     ...state,
-    entries: {
-      ...entries,
-      [profileHandle]: {
-        ...newEntry,
-        ...data
-      }
-    }
+    entries: { ...entries, ...newEntryData }
   }
 }
 
 const initialState = { currentUser: null, entries: {} }
 
 const actionsMap = {
-  [FETCH_PROFILE](state, action) {
+  [FETCH_PROFILE](state: ProfilePageState, action: FetchProfileAction) {
     const { fetchOnly, shouldSetLoading, handle, userId } = action
     if (fetchOnly) return state
-    const lowerHandle = handle.toLowerCase()
+    const lowerHandle = handle?.toLowerCase()
 
-    const newState = {}
+    const newState: Partial<ProfileState> = {}
 
     if (shouldSetLoading) {
       newState.status = Status.LOADING
@@ -104,7 +134,10 @@ const actionsMap = {
       currentUser: lowerHandle
     }
   },
-  [FETCH_PROFILE_SUCCEEDED](state, action) {
+  [FETCH_PROFILE_SUCCEEDED](
+    state: ProfilePageState,
+    action: FetchProfileSucceededAction
+  ) {
     const { currentUser } = state
     const { fetchOnly, userId, handle } = action
     const profileHandle = handle?.toLowerCase() ?? currentUser
@@ -116,7 +149,13 @@ const actionsMap = {
       handle: profileHandle
     })
   },
-  [SET_CURRENT_USER](state, action) {
+  [FETCH_PROFILE_FAILED](
+    state: ProfilePageState,
+    action: FetchProfileFailedAction
+  ) {
+    return updateProfile(state, action, { status: Status.ERROR })
+  },
+  [SET_CURRENT_USER](state: ProfilePageState, action: SetCurrentUserAction) {
     const { handle } = action
     const lowerHandle = handle.toLowerCase()
 
@@ -125,7 +164,10 @@ const actionsMap = {
       currentUser: lowerHandle
     }
   },
-  [FETCH_FOLLOW_USERS](state, action) {
+  [FETCH_FOLLOW_USERS](
+    state: ProfilePageState,
+    action: FetchFollowUsersAction
+  ) {
     const { currentUser, entries } = state
     const { followerGroup, handle } = action
     const profileHandle = handle?.toLowerCase() ?? currentUser
@@ -145,7 +187,10 @@ const actionsMap = {
       }
     }
   },
-  [FETCH_FOLLOW_USERS_SUCCEEDED](state, action) {
+  [FETCH_FOLLOW_USERS_SUCCEEDED](
+    state: ProfilePageState,
+    action: FetchFollowUsersSucceededAction
+  ) {
     const { currentUser, entries } = state
     const { userIds, followerGroup, handle } = action
     const profileHandle = handle?.toLowerCase() ?? currentUser
@@ -169,7 +214,10 @@ const actionsMap = {
       }
     }
   },
-  [FETCH_FOLLOW_USERS_FAILED](state, action) {
+  [FETCH_FOLLOW_USERS_FAILED](
+    state: ProfilePageState,
+    action: FetchFollowUsersFailedAction
+  ) {
     const { currentUser, entries } = state
     const { followerGroup, handle } = action
     const profileHandle = handle?.toLowerCase() ?? currentUser
@@ -188,66 +236,90 @@ const actionsMap = {
       }
     }
   },
-  [SET_PROFILE_FIELD](state, action) {
+  [SET_PROFILE_FIELD](state: ProfilePageState, action: SetProfileFieldAction) {
     const { field, value } = action
     return updateProfile(state, action, { [field]: value })
   },
-  [FETCH_PROFILE_FAILED](state, action) {
-    return updateProfile(state, action, { status: Status.ERROR })
-  },
-  [UPDATE_PROFILE](state, action) {
+  [UPDATE_PROFILE](state: ProfilePageState, action: UpdateProfileAction) {
     return updateProfile(state, action, {
       updating: true,
       updateSuccess: false,
       updateError: false
     })
   },
-  [UPDATE_PROFILE_SUCCEEDED](state, action) {
+  [UPDATE_PROFILE_SUCCEEDED](
+    state: ProfilePageState,
+    action: UpdateProfileSucceededAction
+  ) {
     return updateProfile(state, action, {
       updating: false,
       updateSuccess: true
     })
   },
-  [UPDATE_PROFILE_FAILED](state, action) {
+  [UPDATE_PROFILE_FAILED](
+    state: ProfilePageState,
+    action: UpdateProfileFailedAction
+  ) {
     return updateProfile(state, action, {
       updating: false,
       updateError: true
     })
   },
-  [UPDATE_COLLECTION_SORT_MODE](state, action) {
+  [UPDATE_COLLECTION_SORT_MODE](
+    state: ProfilePageState,
+    action: UpdateCollectionSortModeAction
+  ) {
     const { mode } = action
     return updateProfile(state, action, { collectionSortMode: mode })
   },
-  [DISMISS_PROFILE_METER](state, action) {
+  [DISMISS_PROFILE_METER](
+    state: ProfilePageState,
+    action: DismissProfileMeterAction
+  ) {
     return updateProfile(state, action, { profileMeterDismissed: true })
   },
-  [SET_NOTIFICATION_SUBSCRIPTION](state, action) {
+  [SET_NOTIFICATION_SUBSCRIPTION](
+    state: ProfilePageState,
+    action: SetNotificationSubscriptionAction
+  ) {
     const { isSubscribed } = action
 
     return updateProfile(state, action, {
       isNotificationSubscribed: isSubscribed
     })
   },
-  [FETCH_COLLECTIONS](state, action) {
+  [FETCH_COLLECTIONS](state: ProfilePageState, action: FetchCollectionsAction) {
     return updateProfile(state, action, { collectionStatus: Status.LOADING })
   },
-  [FETCH_COLLECTIONS_SUCCEEDED](state, action) {
+  [FETCH_COLLECTIONS_SUCCEEDED](
+    state: ProfilePageState,
+    action: FetchCollectionsSucceededAction
+  ) {
     return updateProfile(state, action, { collectionStatus: Status.SUCCESS })
   },
-  [FETCH_COLLECTIONS_FAILED](state, action) {
+  [FETCH_COLLECTIONS_FAILED](
+    state: ProfilePageState,
+    action: FetchCollectionsFailedAction
+  ) {
     return updateProfile(state, action, { collectionStatus: Status.ERROR })
   },
-  [FETCH_TOP_TAGS](state, action) {
+  [FETCH_TOP_TAGS](state: ProfilePageState, action: FetchTopTagsAction) {
     return updateProfile(state, action, { topTagsStatus: Status.LOADING })
   },
-  [FETCH_TOP_TAGS_SUCCEEDED](state, action) {
+  [FETCH_TOP_TAGS_SUCCEEDED](
+    state: ProfilePageState,
+    action: FetchTopTagsSucceededAction
+  ) {
     const { topTags } = action
     return updateProfile(state, action, {
       topTagsStatus: Status.SUCCESS,
       topTags
     })
   },
-  [FETCH_TOP_TAGS_FAILED](state, action) {
+  [FETCH_TOP_TAGS_FAILED](
+    state: ProfilePageState,
+    action: FetchTopTagsFailedAction
+  ) {
     return updateProfile(state, action, { topTagsStatus: Status.ERROR })
   }
 }
@@ -255,21 +327,33 @@ const actionsMap = {
 const feedLineupReducer = asLineup(feedPrefix, feedReducer)
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-const reducer = (state = initialState, action) => {
+const reducer = (
+  state = initialState,
+  action:
+    | ProfilePageAction
+    | LineupActions<Track>
+    | LineupActions<Track | Collection>
+) => {
   const { currentUser, entries } = state
-  const { handle } = action
 
-  const profileHandle = handle?.toLowerCase() ?? currentUser
+  const profileHandle =
+    ('handle' in action && action.handle?.toLowerCase()) ?? currentUser
   if (!profileHandle) return state
 
   let newEntry = entries[profileHandle] ?? initialProfileState
 
-  const feed = feedLineupReducer(newEntry.feed, action)
+  const feed = feedLineupReducer(
+    newEntry.feed,
+    action as LineupActions<Track | Collection>
+  )
   if (feed !== newEntry.feed) {
     newEntry = { ...newEntry, feed }
   }
 
-  const tracks = tracksLineupReducer(newEntry.tracks, action)
+  const tracks = tracksLineupReducer(
+    newEntry.tracks,
+    action as LineupActions<Track>
+  )
   if (tracks !== newEntry.tracks) {
     newEntry = { ...newEntry, tracks }
   }
@@ -281,7 +365,7 @@ const reducer = (state = initialState, action) => {
 
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return newState
-  return matchingReduceFunction(newState, action)
+  return matchingReduceFunction(newState, action as ProfilePageAction)
 }
 
 export default reducer

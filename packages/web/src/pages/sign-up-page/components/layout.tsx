@@ -8,7 +8,7 @@ import {
   RefObject
 } from 'react'
 
-import { Maybe } from '@audius/common'
+import { Maybe } from '@audius/common/utils'
 import {
   Box,
   BoxProps,
@@ -193,10 +193,10 @@ type PageFooterProps = {
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
-  // On the MobileCTAPage we use this footer outside a formik context
-  const { isSubmitting, dirty, isValid } = useFormikContext() ?? {
+  // On the MobileCTAPage we use this footer outside a formik context, hence the default values
+  const { isSubmitting, touched, isValid } = useFormikContext() ?? {
     isSubmitting: false,
-    dirty: true,
+    touched: true,
     isValid: true
   }
 
@@ -227,7 +227,7 @@ export const PageFooter = (props: PageFooterProps) => {
         fullWidth
         isLoading={isSubmitting}
         css={!isMobile && centered && { width: 343 }}
-        disabled={!dirty || !isValid}
+        disabled={!touched || !isValid}
         {...buttonProps}
       >
         {messages.continue}

@@ -1,7 +1,7 @@
 import type { Auth, StorageNodeSelectorService } from '@audius/sdk'
 import { StorageNodeSelector } from '@audius/sdk'
 
-import { Maybe } from 'utils/typeUtils'
+import { Maybe } from '~/utils/typeUtils'
 
 import { Env } from '../env'
 
