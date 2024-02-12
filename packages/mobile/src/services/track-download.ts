@@ -200,7 +200,6 @@ const download = async ({
           addAndroidDownloads: {
             description: filename,
             mediaScannable: true,
-            mime: 'audio/mpeg',
             notification: true,
             path: filePath,
             title: filename,
