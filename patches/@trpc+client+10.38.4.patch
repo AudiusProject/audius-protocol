@@ -1,0 +1,39 @@
+diff --git a/node_modules/@trpc/client/dist/httpBatchLink-78d2f90a.js b/node_modules/@trpc/client/dist/httpBatchLink-78d2f90a.js
+index b83ca37..98b3945 100644
+--- a/node_modules/@trpc/client/dist/httpBatchLink-78d2f90a.js
++++ b/node_modules/@trpc/client/dist/httpBatchLink-78d2f90a.js
+@@ -115,7 +115,7 @@ var httpUtils = require('./httpUtils-b0a649f7.js');
+             pendingItems.push(item);
+         });
+         if (!dispatchTimer) {
+-            dispatchTimer = setTimeout(dispatch);
++            dispatchTimer = setTimeout(dispatch, 200);
+         }
+         const cancel = ()=>{
+             item.aborted = true;
+diff --git a/node_modules/@trpc/client/dist/httpBatchLink-abfe4d66.js b/node_modules/@trpc/client/dist/httpBatchLink-abfe4d66.js
+index ac88ce5..195fa42 100644
+--- a/node_modules/@trpc/client/dist/httpBatchLink-abfe4d66.js
++++ b/node_modules/@trpc/client/dist/httpBatchLink-abfe4d66.js
+@@ -117,7 +117,7 @@ function dataLoader(batchLoader) {
+             pendingItems.push(item);
+         });
+         if (!dispatchTimer) {
+-            dispatchTimer = setTimeout(dispatch);
++            dispatchTimer = setTimeout(dispatch, 200);
+         }
+         const cancel = () => {
+             item.aborted = true;
+diff --git a/node_modules/@trpc/client/dist/httpBatchLink-cee1f56c.mjs b/node_modules/@trpc/client/dist/httpBatchLink-cee1f56c.mjs
+index cf9a88a..74083eb 100644
+--- a/node_modules/@trpc/client/dist/httpBatchLink-cee1f56c.mjs
++++ b/node_modules/@trpc/client/dist/httpBatchLink-cee1f56c.mjs
+@@ -113,7 +113,7 @@ import { r as resolveHTTPLinkOptions, g as getUrl, j as jsonHttpRequester } from
+             pendingItems.push(item);
+         });
+         if (!dispatchTimer) {
+-            dispatchTimer = setTimeout(dispatch);
++            dispatchTimer = setTimeout(dispatch, 200);
+         }
+         const cancel = ()=>{
+             item.aborted = true;
