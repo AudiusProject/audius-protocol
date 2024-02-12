@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { Track } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
-import { Flex, IconCalendarMonth } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Button, Flex, IconCalendarMonth } from '@audius/harmony'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -126,13 +125,14 @@ export const ReleaseDateTriggerLegacy = (
       previewOverride={(toggleMenu) => (
         <Button
           className={styles.releaseDateButton}
-          type={ButtonType.COMMON_ALT}
+          variant='secondary'
           name='releaseDateModal'
-          text={formatCalendarTime(trackReleaseDate, 'Scheduled for')}
-          size={ButtonSize.SMALL}
+          size='small'
           onClick={toggleMenu}
-          leftIcon={<IconCalendarMonth />}
-        />
+          iconLeft={IconCalendarMonth}
+        >
+          {formatCalendarTime(trackReleaseDate, 'Scheduled for')}
+        </Button>
       )}
     />
   )

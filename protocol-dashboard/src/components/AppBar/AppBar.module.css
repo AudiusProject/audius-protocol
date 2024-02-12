@@ -77,10 +77,6 @@
 
 /* Right Nav */
 
-.userAccountSnippetContainer {
-  cursor: pointer;
-}
-
 /* User Account Snippet */
 .snippetContainer {
   display: inline-flex;
@@ -197,11 +193,10 @@
   display: inline-flex;
   align-items: center;
   padding: 12px 0px;
-  cursor: pointer;
 }
 
-.misconfigured {
-  cursor: default;
+.cursorPointer {
+  cursor: pointer;
 }
 
 .connectMetaMaskDot {
@@ -209,8 +204,17 @@
   height: 14px;
   border-radius: 50%;
   margin-right: 8px;
-  background: #f15064;
+  background-color: #f15064;
   border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: background-color 500ms linear;
+}
+
+.connectMetaMaskDot.yellow {
+  background-color: var(--accent-orange-light-1);
+}
+
+.connectMetaMaskDot.green {
+  background-color: var(--accent-green-dark-1);
 }
 
 .connectMetaMask {
@@ -221,4 +225,8 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--static-white);
+}
+
+.loadingText {
+  opacity: 0.7;
 }

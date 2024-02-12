@@ -227,7 +227,6 @@ const OnRampTooltipButton = ({
           provider={provider}
           className={styles.onRampButton}
           disabled={isDisabled}
-          isDisabled={isDisabled}
           onClick={onClick}
         />
       </div>

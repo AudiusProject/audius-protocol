@@ -28,6 +28,14 @@ const cancelDownloadTask = () => {
   })
 }
 
+const removePathIfExists = async (path: string) => {
+  try {
+    const exists = await RNFetchBlob.fs.exists(path)
+    if (!exists) return
+    await RNFetchBlob.fs.unlink(path)
+  } catch {}
+}
+
 /**
  * Download a file via RNFetchBlob
  */
@@ -36,16 +44,13 @@ const downloadOne = async ({
   filename,
   directory,
   getFetchConfig,
-  onFetchComplete,
-  flushOnComplete = false
+  onFetchComplete
 }: {
   fileUrl: string
   filename: string
   directory: string
   getFetchConfig: (filePath: string) => RNFetchBlobConfig
   onFetchComplete?: (path: string) => Promise<void>
-  /** Automatically remove cached download after onFetchComplete. Should be `true` if the cached response is not used directly (i.e. iOS share flow) */
-  flushOnComplete?: boolean
 }) => {
   const filePath = directory + '/' + filename
 
@@ -67,18 +72,10 @@ const downloadOne = async ({
     dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
 
     await onFetchComplete?.(fetchRes.path())
-    if (flushOnComplete) {
-      fetchRes.flush()
-    }
   } catch (err) {
     console.error(err)
-
     // On failure attempt to delete the file
-    try {
-      const exists = await RNFetchBlob.fs.exists(filePath)
-      if (!exists) return
-      await RNFetchBlob.fs.unlink(filePath)
-    } catch {}
+    removePathIfExists(filePath)
   }
 }
 
@@ -114,13 +111,9 @@ const downloadMany = async ({
     responses.forEach((response) => response.flush())
   } catch (err) {
     console.error(err)
-
-    // On failure attempt to delete the files
-    try {
-      const exists = await RNFetchBlob.fs.exists(directory)
-      if (!exists) return
-      await RNFetchBlob.fs.unlink(directory)
-    } catch {}
+  } finally {
+    // Remove source directory at the end of the process regardless of what happens
+    removePathIfExists(directory)
   }
 }
 
@@ -153,10 +146,16 @@ const download = async ({
 
   if (Platform.OS === 'ios') {
     const onFetchComplete = async (path: string) => {
-      dispatch(downloadFinished())
-      await Share.share({
-        url: path
-      })
+      try {
+        dispatch(downloadFinished())
+        await Share.share({
+          url: path
+        })
+      } finally {
+        // The fetched file is temporary on iOS and we always want to be sure to
+        // remove it.
+        removePathIfExists(path)
+      }
     }
     if (files.length === 1) {
       const { url, filename } = files[0]
@@ -171,7 +170,6 @@ const download = async ({
           fileCache: true,
           path: filePath
         }),
-        flushOnComplete: true,
         onFetchComplete
       })
     } else {
@@ -202,7 +200,6 @@ const download = async ({
           addAndroidDownloads: {
             description: filename,
             mediaScannable: true,
-            mime: 'audio/mpeg',
             notification: true,
             path: filePath,
             title: filename,
