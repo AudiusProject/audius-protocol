@@ -26,16 +26,16 @@ import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
 import {
+  IconButton,
   IconDrag,
   IconKebabHorizontal,
   IconLock,
   IconRemove
 } from '@audius/harmony-native'
-import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
-import { useColor, useThemeColors } from 'app/utils/theme'
+import { useColor } from 'app/utils/theme'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'
 
@@ -151,7 +151,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 const getMessages = ({ isDeleted = false }: { isDeleted?: boolean } = {}) => ({
   deleted: isDeleted ? ' [Deleted By Artist]' : '',
-  locked: 'Locked'
+  locked: 'Locked',
+  reorderLabel: 'Reorder Track',
+  overflowLabel: 'More Options',
+  deleteLabel: 'Delete Track'
 })
 
 export type TrackListItemProps = {
@@ -264,7 +267,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
   const dispatch = useDispatch()
-  const themeColors = useThemeColors()
   const white = useColor('white')
   const [titleWidth, setTitleWidth] = useState(0)
 
@@ -420,10 +422,11 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           {isReorderable ? (
             <IconButton
               icon={IconDrag}
-              fill={themeColors.neutralLight4}
+              color='subdued'
               style={styles.dragIcon}
               onLongPress={onDrag}
               delayLongPress={100}
+              aria-label={messages.reorderLabel}
             />
           ) : null}
           <View
@@ -468,21 +471,18 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           {trackItemAction === 'overflow' ? (
             <IconButton
               icon={IconKebabHorizontal}
-              fill={themeColors.neutralLight4}
-              styles={{
-                root: styles.iconContainer,
-                icon: styles.icon
-              }}
+              color='subdued'
+              style={styles.iconContainer}
               onPress={handlePressOverflow}
+              aria-label={messages.overflowLabel}
             />
           ) : null}
           {trackItemAction === 'remove' ? (
             <IconButton
               icon={IconRemove}
-              styles={{
-                root: styles.iconContainer,
-                icon: styles.removeIcon
-              }}
+              color='danger'
+              style={styles.iconContainer}
+              aria-label={messages.deleteLabel}
               onPress={handlePressRemove}
             />
           ) : null}

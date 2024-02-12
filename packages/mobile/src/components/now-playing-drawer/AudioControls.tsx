@@ -14,9 +14,9 @@ import {
   IconSkipNext,
   IconPodcastBack,
   IconPodcastForward,
-  IconSkipPrevious
+  IconSkipPrevious,
+  IconButton
 } from '@audius/harmony-native'
-import { IconButton } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
@@ -29,6 +29,11 @@ import { ShuffleButton } from './ShuffleButton'
 const { setVisibility } = modalsActions
 const { getRepeat, getShuffle } = queueSelectors
 const { shuffle, repeat } = queueActions
+
+const messages = {
+  nextLabel: 'Next Track',
+  previousLabel: 'Previous Track'
+}
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
@@ -58,10 +63,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   playIcon: {
     width: 80,
     height: 80
-  },
-  nextPrevIcons: {
-    width: 30,
-    height: 30
   },
   shuffleRepeatIcons: {
     width: 24,
@@ -146,7 +147,9 @@ export const AudioControls = ({
       <IconButton
         onPress={onPrevious}
         icon={isLongFormContent ? IconPodcastBack : IconSkipPrevious}
-        styles={{ root: styles.button, icon: styles.nextPrevIcons }}
+        style={styles.button}
+        size='xl'
+        aria-label={messages.previousLabel}
       />
     )
   }
@@ -167,7 +170,9 @@ export const AudioControls = ({
       <IconButton
         onPress={onNext}
         icon={isLongFormContent ? IconPodcastForward : IconSkipNext}
-        styles={{ root: styles.button, icon: styles.nextPrevIcons }}
+        style={styles.button}
+        size='xl'
+        aria-label={messages.nextLabel}
       />
     )
   }
