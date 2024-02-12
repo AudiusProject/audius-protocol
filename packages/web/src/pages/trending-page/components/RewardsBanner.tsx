@@ -7,7 +7,6 @@ import {
 import {
   IconArrowRight as IconArrow,
   IconCrown,
-  spacing,
   useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
