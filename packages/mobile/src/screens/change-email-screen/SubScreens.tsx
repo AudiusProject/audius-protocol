@@ -13,7 +13,7 @@ import { SubScreenHeader } from '../change-password-screen/SubScreenHeader'
 
 const messages = {
   changeYourEmail: 'Change Your Email',
-  confirmPasswordHelp: 'Please enter your current email and password.',
+  confirmPasswordHelp: 'Please enter your current password.',
   currentEmail: 'Current Email',
   currentPassword: 'Current Password',
   newEmailHelp: 'Enter the new email you would like to use on Audius.',
@@ -75,6 +75,12 @@ export const NewEmailSubScreen = () => {
         title={messages.changeYourEmail}
         description={messages.newEmailHelp}
       />
+      <Box>
+        <Text variant='label' size={'xs'}>
+          {messages.currentEmail}
+        </Text>
+        <CurrentEmail />
+      </Box>
       <HarmonyTextField
         name='email'
         label={messages.newEmail}
