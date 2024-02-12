@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { css } from '@emotion/native'
 import { useFormikContext } from 'formik'
-import { Dimensions } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type {
@@ -11,7 +11,8 @@ import type {
   PaperProps,
   ButtonProps
 } from '@audius/harmony-native'
-import { Button, Flex, Paper, Text } from '@audius/harmony-native'
+import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony-native'
+import { KeyboardAvoidingView } from 'app/components/core'
 
 const messages = {
   continue: 'Continue'
@@ -62,12 +63,15 @@ type PageFooterProps = {
   postfix?: ReactNode
   buttonProps?: Partial<ButtonProps>
   centered?: boolean
+  avoidKeyboard?: boolean
 } & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps, ...other } = props
+  const { prefix, postfix, buttonProps, avoidKeyboard, ...other } = props
   const insets = useSafeAreaInsets()
+  const { spacing } = useTheme()
   const { handleSubmit, dirty, isValid } = useFormikContext() ?? {}
+  const KeyboardAvoidContainer = avoidKeyboard ? KeyboardAvoidingView : View
 
   return (
     <Flex
@@ -82,30 +86,32 @@ export const PageFooter = (props: PageFooterProps) => {
     >
       {/* Prefixes float above the shadowed paper container  */}
       {prefix ? <Flex ph={gutterSize}>{prefix}</Flex> : null}
-      <Paper
-        p='l'
-        justifyContent='center'
-        gap='l'
-        alignItems='center'
-        direction='column'
-        shadow='midInverted'
-        style={css({
-          borderRadius: 0,
-          paddingBottom: insets.bottom
-        })}
-        {...other}
-      >
-        <Button
-          fullWidth
-          disabled={!dirty || !isValid}
-          onPress={() => handleSubmit?.()}
-          {...buttonProps}
+      <KeyboardAvoidContainer style={{}} keyboardShowingOffset={spacing.unit5}>
+        <Paper
+          p='l'
+          justifyContent='center'
+          gap='l'
+          alignItems='center'
+          direction='column'
+          shadow='midInverted'
+          style={css({
+            borderRadius: 0,
+            paddingBottom: insets.bottom
+          })}
+          {...other}
         >
-          {messages.continue}
-        </Button>
-        {/* postfixes live insde the paper */}
-        {postfix}
-      </Paper>
+          <Button
+            fullWidth
+            disabled={!dirty || !isValid}
+            onPress={() => handleSubmit?.()}
+            {...buttonProps}
+          >
+            {messages.continue}
+          </Button>
+          {/* postfixes live insde the paper */}
+          {postfix}
+        </Paper>
+      </KeyboardAvoidContainer>
     </Flex>
   )
 }

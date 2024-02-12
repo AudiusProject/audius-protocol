@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Text, TextLink } from '@audius/harmony-native'
+import { KeyboardAvoidingView } from 'app/components/core'
 import { HarmonyTextField } from 'app/components/fields'
 import { useToast } from 'app/hooks/useToast'
 
@@ -64,7 +65,11 @@ export const ConfirmEmailScreen = () => {
         <Text variant='body'>
           {confirmEmailMessages.noEmailNotice} <ResendCodeLink />
         </Text>
-        <PageFooter shadow='flat' buttonProps={{ isLoading: isSubmitting }} />
+        <PageFooter
+          shadow='flat'
+          buttonProps={{ isLoading: isSubmitting }}
+          avoidKeyboard
+        />
       </Page>
     </Formik>
   )
