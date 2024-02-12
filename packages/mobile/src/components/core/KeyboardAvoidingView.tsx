@@ -14,7 +14,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 type KeyboardAvoidingViewProps = {
-  style: StyleProp<ViewStyle>
+  style?: StyleProp<ViewStyle>
   keyboardShowingDuration?: number
   keyboardHidingDuration?: number
   // Offset is subtracted from the desired height when the keyboard is showing.
