@@ -8,8 +8,8 @@ import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
-import { IconCopy, IconRemove } from '@audius/harmony-native'
-import { ChainLogo, IconButton, Text } from 'app/components/core'
+import { IconButton, IconCopy, IconRemove } from '@audius/harmony-native'
+import { ChainLogo, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useToast } from 'app/hooks/useToast'
@@ -22,7 +22,8 @@ import { useCanConnectNewWallet } from '../useCanConnectNewWallet'
 const { requestRemoveWallet } = tokenDashboardPageActions
 
 const messages = {
-  copied: 'Copied To Clipboard!'
+  copied: 'Copied To Clipboard!',
+  removeLabel: 'Remove Wallet'
 }
 
 type WalletProps = {
@@ -81,10 +82,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     borderColor: palette.neutralLight8,
     borderWidth: 1,
     borderRadius: 6
-  },
-  removeIcon: {
-    height: spacing(6),
-    width: spacing(6)
   },
   loading: {
     marginLeft: -1,
@@ -147,13 +144,12 @@ export const LinkedWallet = ({
           <LoadingSpinner style={styles.loading} />
         ) : (
           <IconButton
-            isDisabled={!canConnectNewWallet}
+            disabled={!canConnectNewWallet}
+            color='danger'
             icon={IconRemove}
-            styles={{
-              root: styles.removeButton,
-              icon: styles.removeIcon
-            }}
+            style={styles.removeButton}
             onPress={onRequestRemoveWallet}
+            aria-label={messages.removeLabel}
           />
         )}
       </View>

@@ -9,14 +9,16 @@ import type {
 import { CardStyleInterpolators } from '@react-navigation/stack'
 import { Text, View } from 'react-native'
 
-import { IconCaretLeft, IconSearch } from '@audius/harmony-native'
-import AudiusLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
+import {
+  IconAudiusLogoHorizontal,
+  IconCaretLeft,
+  IconSearch
+} from '@audius/harmony-native'
 import { IconButton } from 'app/components/core'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
 
 import { AppDrawerContext } from '../app-drawer-screen'
 
@@ -33,18 +35,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     color: palette.neutralLight5,
     textTransform: 'uppercase'
   },
-  iconArrowBack: {
-    height: 28,
-    width: 28
-  },
   audiusLogo: {
     height: 24,
     width: 93,
     marginRight: 10
-  },
-  iconSearch: {
-    height: 18,
-    width: 18
   },
   earlyAccess: {
     fontSize: 10,
@@ -73,17 +67,12 @@ export const useAppScreenOptions = (
   overrides?: Partial<NativeStackNavigationOptions>
 ) => {
   const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
 
   const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
   }, [drawerHelpers])
-
-  const handlePressHome = useCallback(() => {
-    navigation.navigate('trending')
-  }, [navigation])
 
   const handlePressSearch = useCallback(() => {
     navigation.navigate('Search')
@@ -115,8 +104,8 @@ export const useAppScreenOptions = (
                 <View style={styles.headerLeft}>
                   <IconButton
                     icon={IconCaretLeft}
-                    fill={neutralLight4}
-                    styles={{ icon: styles.iconArrowBack }}
+                    color='subdued'
+                    size='l'
                     {...other}
                     onPress={navigation.goBack}
                   />
@@ -141,11 +130,10 @@ export const useAppScreenOptions = (
             }
             return (
               <View>
-                <IconButton
-                  icon={AudiusLogo}
-                  fill={neutralLight4}
-                  styles={{ icon: styles.audiusLogo }}
-                  onPress={handlePressHome}
+                <IconAudiusLogoHorizontal
+                  height={24}
+                  width={100}
+                  color='subdued'
                 />
                 {isEarlyAccess ? (
                   <Text style={styles.earlyAccess}>{messages.earlyAccess}</Text>
@@ -159,9 +147,9 @@ export const useAppScreenOptions = (
               <View style={styles.headerRight}>
                 <IconButton
                   icon={IconSearch}
-                  fill={neutralLight4}
-                  styles={{ icon: styles.iconSearch }}
                   onPress={handlePressSearch}
+                  color='subdued'
+                  size='m'
                 />
               </View>
             )
@@ -171,10 +159,8 @@ export const useAppScreenOptions = (
       },
       [
         handleOpenLeftNavDrawer,
-        handlePressHome,
         handlePressSearch,
         styles,
-        neutralLight4,
         overrides,
         isEarlyAccess
       ]

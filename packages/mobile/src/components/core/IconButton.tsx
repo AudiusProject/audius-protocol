@@ -4,39 +4,24 @@ import type {
   TouchableOpacityProps,
   ViewStyle
 } from 'react-native'
-import { Animated, TouchableOpacity, View } from 'react-native'
-import type { SvgProps } from 'react-native-svg'
+import { Animated, TouchableOpacity } from 'react-native'
 
+import type { IconComponent, IconProps } from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useToast } from 'app/hooks/useToast'
 import type { StylesProps } from 'app/styles'
-import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
-import { useThemeColors } from 'app/utils/theme'
 
 export type IconButtonProps = {
-  fill?: string
-  icon: React.FC<
-    SvgProps & {
-      fillSecondary?: string
-    }
-  >
+  color?: IconProps['color']
+  icon: IconComponent
   isDisabled?: boolean
   disabledPressToastContent?: string | JSX.Element
   onPress?: GestureResponderHandler
-  fullWidth?: boolean
   hitSlop?: Insets
+  size?: IconProps['size']
 } & StylesProps<{ root?: StyleProp<ViewStyle>; icon?: StyleProp<ViewStyle> }> &
   Omit<TouchableOpacityProps, 'hitSlop'>
-
-const useStyles = makeStyles(() => ({
-  icon: {
-    height: 18,
-    width: 18,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
-}))
 
 const defaultHitSlop = { top: 12, right: 12, bottom: 12, left: 12 }
 
@@ -48,8 +33,7 @@ const defaultHitSlop = { top: 12, right: 12, bottom: 12, left: 12 }
  * The default size is 18x18 but this can be overridden via styles.icon
  */
 export const IconButton = ({
-  fill: inputFill,
-  fullWidth = true,
+  color = 'default',
   icon: Icon,
   isDisabled,
   disabledPressToastContent,
@@ -57,11 +41,10 @@ export const IconButton = ({
   style,
   styles: stylesProp,
   hitSlop,
+  size = 'l',
   ...other
 }: IconButtonProps) => {
-  const styles = useStyles()
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
-  const { neutral } = useThemeColors()
   const { toast } = useToast()
 
   const onDisabledPress = () => {
@@ -69,8 +52,6 @@ export const IconButton = ({
       toast({ content: disabledPressToastContent })
     }
   }
-
-  const fill = inputFill ?? neutral
 
   return (
     <Animated.View
@@ -85,19 +66,14 @@ export const IconButton = ({
         hitSlop={{ ...defaultHitSlop, ...hitSlop }}
         {...other}
       >
-        <View
+        <Icon
           style={[
-            styles.icon,
             stylesProp?.icon,
-            isDisabled && { opacity: 0.5 }
+            isDisabled && { opacity: 0.5, width: '100%' }
           ]}
-        >
-          <Icon
-            fill={fill}
-            height='100%'
-            {...(fullWidth ? { width: '100%' } : {})}
-          />
-        </View>
+          color={color}
+          size={size}
+        />
       </TouchableOpacity>
     </Animated.View>
   )

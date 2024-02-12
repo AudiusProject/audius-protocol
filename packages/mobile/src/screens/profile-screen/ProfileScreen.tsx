@@ -22,7 +22,6 @@ import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
 
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
@@ -60,7 +59,6 @@ export const ProfileScreen = () => {
   const dispatch = useDispatch()
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const { neutralLight4 } = useThemeColors()
   const isNotReachable = useSelector(getIsReachable) === false
   const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
@@ -119,7 +117,7 @@ export const ProfileScreen = () => {
 
   const topbarRight = (
     <IconButton
-      fill={neutralLight4}
+      color='subdued'
       icon={isChatEnabled && !isOwner ? IconKebabHorizontal : IconShare}
       onPress={handlePressTopRight}
     />
