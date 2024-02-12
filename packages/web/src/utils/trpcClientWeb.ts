@@ -7,7 +7,7 @@ import { env } from 'services/env'
 export const trpc = createTRPCReact<AppRouter>()
 
 export function createAudiusTrpcClient(
-  selectedEndpoint: string,
+  selectedEndpoint: string | null,
   currentUserId: number | null
 ) {
   return trpc.createClient({

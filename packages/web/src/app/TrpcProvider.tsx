@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import { createAudiusTrpcClient, trpc } from '../utils/trpcClientWeb'
+import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
 
 type TrpcProviderProps = {
   children: ReactNode
@@ -17,13 +18,22 @@ export const TrpcProvider = (props: TrpcProviderProps) => {
   const currentUserId = useSelector(accountSelectors.getUserId)
   const [selectedNode, setSelectedNode] = useState('')
 
+  function updateSelectedNode(dn: string | null) {
+    if (!dn) return
+    const trpcEndpoint = new URL('/trpc/trpc', dn).toString()
+    setSelectedNode(trpcEndpoint)
+  }
+
   useEffect(() => {
-    audiusBackendInstance.addDiscoveryProviderSelectionListener((dn) => {
-      if (!dn) return
-      const trpcEndpoint = new URL('/trpc/trpc', dn).toString()
-      setSelectedNode(trpcEndpoint)
+    discoveryNodeSelectorService.getInstance().then((dns) => {
+      dns.addEventListener('change', updateSelectedNode)
+      dns.getSelectedEndpoint().then((dn) => {
+        updateSelectedNode(dn)
+      })
+      return () => {
+        dns.removeEventListener('change', updateSelectedNode)
+      }
     })
-    // todo: should be able to return function to unsubscribe our addDiscoveryProviderSelectionListener
   }, [])
 
   const [queryClient] = useState(
