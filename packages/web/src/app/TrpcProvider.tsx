@@ -18,12 +18,12 @@ export const TrpcProvider = (props: TrpcProviderProps) => {
   const [selectedNode, setSelectedNode] = useState('')
 
   useEffect(() => {
-    audiusBackendInstance.getAudiusLibs().then(async (libs) => {
-      const selected =
-        await libs.discoveryProvider?.discoveryNodeSelector?.getSelectedEndpoint()
-      const trpcEndpoint = new URL('/trpc/trpc', selected).toString()
+    audiusBackendInstance.addDiscoveryProviderSelectionListener((dn) => {
+      if (!dn) return
+      const trpcEndpoint = new URL('/trpc/trpc', dn).toString()
       setSelectedNode(trpcEndpoint)
     })
+    // todo: should be able to return function to unsubscribe our addDiscoveryProviderSelectionListener
   }, [])
 
   const [queryClient] = useState(
@@ -38,10 +38,10 @@ export const TrpcProvider = (props: TrpcProviderProps) => {
       })
   )
 
-  const trpcClient = useMemo(
-    () => createAudiusTrpcClient(selectedNode, currentUserId),
-    [selectedNode, currentUserId]
-  )
+  const trpcClient = useMemo(() => {
+    return createAudiusTrpcClient(selectedNode, currentUserId)
+  }, [selectedNode, currentUserId])
+
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
