@@ -100,7 +100,8 @@
   },
   "dependencies": {
     "@escape.tech/mookme": "2.4.1",
-    "pg": "8.8.0"
+    "pg": "8.8.0",
+    "rive-react-native": "6.2.1"
   },
   "overrides": {
     "@types/prop-types": "15.7.5",
