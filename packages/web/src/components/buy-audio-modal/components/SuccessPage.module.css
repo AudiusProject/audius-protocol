@@ -19,9 +19,6 @@
 .review {
   color: var(--neutral-light-4);
 }
-.review .reviewButtonIcon svg path {
-  fill: var(--neutral-light-4);
-}
 
 .results {
   display: flex;

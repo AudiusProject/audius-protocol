@@ -6,12 +6,3 @@
   margin: 0 -150px;
   transition: height var(--quick);
 }
-
-.toggleCollapsedButton {
-  color: var(--neutral-light-4);
-  margin: 0 auto;
-}
-
-.toggleCollapsedButton .toggleCollapsedButtonIcon path {
-  fill: var(--neutral-light-4);
-}

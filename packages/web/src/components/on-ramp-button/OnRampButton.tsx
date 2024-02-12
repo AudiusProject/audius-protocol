@@ -1,6 +1,9 @@
 import { OnRampProvider } from '@audius/common/store'
-import { IconLogoLinkByStripe as LogoStripeLink } from '@audius/harmony'
-import { Button, ButtonProps, ButtonType } from '@audius/stems'
+import {
+  Button,
+  ButtonProps,
+  IconLogoLinkByStripe as LogoStripeLink
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import CoinbasePayLogo from 'assets/img/coinbase-pay/LogoCoinbasePay.svg'
@@ -16,6 +19,7 @@ export const OnRampButton = (
   props: Omit<ButtonProps, 'text'> & {
     provider: OnRampProvider
     buttonPrefix?: string
+    textClassName?: string
   }
 ) => {
   const {
@@ -33,34 +37,30 @@ export const OnRampButton = (
   return (
     <Button
       aria-label={`${buttonPrefix} ${provider}`}
-      text={
-        <>
-          <span>{buttonPrefix}</span>
-          {isStripe ? (
-            <LogoStripeLink
-              className={styles.logo}
-              width={'6em'}
-              height={'1.33em'}
-            />
-          ) : (
-            <CoinbasePayLogo
-              className={styles.logo}
-              width={'5.75em'}
-              height={'0.75em'}
-            />
-          )}
-        </>
-      }
-      includeHoverAnimations
-      type={ButtonType.GLASS}
       className={cn(
         styles.button,
         { [styles.stripeButton]: isStripe },
         { [styles.coinbaseButton]: isCoinbase },
         className
       )}
-      textClassName={cn(styles.textClassName, textClassName)}
       {...otherProps}
-    />
+    >
+      <div className={cn(styles.textClassName, textClassName)}>
+        <span>{buttonPrefix}</span>
+        {isStripe ? (
+          <LogoStripeLink
+            className={styles.logo}
+            width={'6em'}
+            height={'1.33em'}
+          />
+        ) : (
+          <CoinbasePayLogo
+            className={styles.logo}
+            width={'5.75em'}
+            height={'0.75em'}
+          />
+        )}
+      </div>
+    </Button>
   )
 }
