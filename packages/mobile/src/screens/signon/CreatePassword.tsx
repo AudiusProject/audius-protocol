@@ -425,7 +425,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                     placeholderTextColor='#C2C0CC'
                     underlineColorAndroid='transparent'
                     placeholder='Password'
-                    autoComplete='off'
+                    autoComplete='new-password'
                     autoCorrect={false}
                     autoCapitalize='none'
                     enablesReturnKeyAutomatically={true}
@@ -466,7 +466,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                     placeholderTextColor='#C2C0CC'
                     underlineColorAndroid='transparent'
                     placeholder='Confirm Password'
-                    autoComplete='off'
+                    autoComplete='new-password'
                     autoCorrect={false}
                     autoCapitalize='none'
                     enablesReturnKeyAutomatically={true}
