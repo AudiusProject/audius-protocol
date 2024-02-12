@@ -3,7 +3,8 @@ import type { FunctionComponent } from 'react'
 import { type IconProps as HarmonyIconProps } from '@audius/harmony'
 import type { SvgProps } from 'react-native-svg'
 
-export type IconProps = SvgProps & HarmonyIconProps & { fillSecondary?: string }
+export type IconProps = Omit<SvgProps, 'color'> &
+  HarmonyIconProps & { fillSecondary?: string }
 export type Icon = FunctionComponent<IconProps>
 
 export { default as IconAlbum } from '@audius/harmony/src/assets/icons/Album.svg'

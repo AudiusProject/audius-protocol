@@ -2,6 +2,8 @@ import type { PlaybackRate } from '@audius/common/store'
 import { playerSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
+import type { IconButtonProps } from '@audius/harmony-native'
+import { IconButton } from '@audius/harmony-native'
 import Icon0_5x from 'app/assets/images/iconPlaybackRate0_5x.svg'
 import Icon0_8x from 'app/assets/images/iconPlaybackRate0_8x.svg'
 import Icon1_1x from 'app/assets/images/iconPlaybackRate1_1x.svg'
@@ -11,10 +13,12 @@ import Icon1x from 'app/assets/images/iconPlaybackRate1x.svg'
 import Icon2_5x from 'app/assets/images/iconPlaybackRate2_5x.svg'
 import Icon2x from 'app/assets/images/iconPlaybackRate2x.svg'
 import Icon3x from 'app/assets/images/iconPlaybackRate3x.svg'
-import type { IconButtonProps } from 'app/components/core'
-import { IconButton } from 'app/components/core'
 
 const { getPlaybackRate } = playerSelectors
+
+const messages = {
+  playbackLabel: 'Change Playback Rate'
+}
 
 type PlaybackRateButtonProps = Omit<IconButtonProps, 'icon'>
 
@@ -35,8 +39,9 @@ export const PlaybackRateButton = (props: PlaybackRateButtonProps) => {
   return (
     <IconButton
       icon={playbackRateIconMap[playbackRate]}
+      size='xl'
+      aria-label={messages.playbackLabel}
       {...props}
-      fullWidth={false}
     />
   )
 }
