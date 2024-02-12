@@ -86,7 +86,7 @@ export const PageFooter = (props: PageFooterProps) => {
     >
       {/* Prefixes float above the shadowed paper container  */}
       {prefix ? <Flex ph={gutterSize}>{prefix}</Flex> : null}
-      <KeyboardAvoidContainer style={{}} keyboardShowingOffset={spacing.unit5}>
+      <KeyboardAvoidContainer keyboardShowingOffset={spacing.unit5}>
         <Paper
           p='l'
           justifyContent='center'
