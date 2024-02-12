@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
+
 import { createAudiusTrpcClient, trpc } from '../utils/trpcClientWeb'
 
 type TrpcProviderProps = {
