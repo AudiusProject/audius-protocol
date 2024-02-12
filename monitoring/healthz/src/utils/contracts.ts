@@ -40,7 +40,7 @@ const ProdProvider = new WebSocketProvider(
   'wss://eth-mainnet.alchemyapi.io/v2/hELYSivAlDc8LV29Mw_LumSdCZ4HQEge'
 )
 const StageProvider = new WebSocketProvider(
-  'wss://eth-goerli.g.alchemy.com/v2/P_3blSvCiVoh6e563dEWbpyAsRdIYLd3'
+  'wss://eth-sepolia.g.alchemy.com/v2/J1Pj86H-g87FqUZVMUbLGgnyoaQTHP1P'
 )
 
 // `${env}-${type}` => SPs
