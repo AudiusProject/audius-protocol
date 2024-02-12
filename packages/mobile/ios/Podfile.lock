@@ -1220,7 +1220,7 @@ PODS:
     - React-jsi (= 0.73.1)
     - React-logger (= 0.73.1)
     - React-perflogger (= 0.73.1)
-  - rive-react-native (6.2.1):
+  - rive-react-native (6.2.3):
     - React-Core
     - RiveRuntime (= 5.5.1)
   - RiveRuntime (5.5.1)
@@ -1418,7 +1418,7 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - rive-react-native (from `../node_modules/rive-react-native`)
+  - rive-react-native (from `../../../node_modules/rive-react-native`)
   - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
@@ -1633,7 +1633,7 @@ EXTERNAL SOURCES:
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
   rive-react-native:
-    :path: "../node_modules/rive-react-native"
+    :path: "../../../node_modules/rive-react-native"
   rn-fetch-blob:
     :path: "../../../node_modules/rn-fetch-blob"
   RNBootSplash:
@@ -1703,7 +1703,7 @@ SPEC CHECKSUMS:
   Flipper-PeerTalk: 116d8f857dc6ef55c7a5a75ea3ceaafe878aadc9
   FlipperKit: 9f6df8cb028c2acd537ce24c1993aba142eceaf0
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 035f1e36e53b355cf70f6434d161b36e7d21fecd
+  glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
   google-cast-sdk-dynamic-xcframework-no-bluetooth: 09d47191ef8821d82e813e754bcf98bc61a3dbc9
   hermes-engine: 34df9d5034e90bd9bf1505e1ca198760373935af
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
@@ -1778,7 +1778,7 @@ SPEC CHECKSUMS:
   React-runtimescheduler: 93a4c84e46a85c3fc9678abd4f6923b785226ea7
   React-utils: debda2c206770ee2785bdebb7f16d8db9f18838a
   ReactCommon: ddb128564dcbfa0287d3d1a2d10f8c7457c971f6
-  rive-react-native: 8d6918f6cf63e10d915c3bbc1d73871f4cdac1a1
+  rive-react-native: 79777686cb29eaba6a28a0534fe82c8b8da41b4a
   RiveRuntime: b57830ff73f406f3b4022f457b16690535ca4d05
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBootSplash: f7fd5a7d4f1c13be3d0f5f31d27af7bcc1b1acef
