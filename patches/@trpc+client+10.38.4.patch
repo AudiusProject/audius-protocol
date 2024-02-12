@@ -7,7 +7,7 @@ index b83ca37..98b3945 100644
          });
          if (!dispatchTimer) {
 -            dispatchTimer = setTimeout(dispatch);
-+            dispatchTimer = setTimeout(dispatch, 200);
++            dispatchTimer = setTimeout(dispatch, 500);
          }
          const cancel = ()=>{
              item.aborted = true;
@@ -20,7 +20,7 @@ index ac88ce5..195fa42 100644
          });
          if (!dispatchTimer) {
 -            dispatchTimer = setTimeout(dispatch);
-+            dispatchTimer = setTimeout(dispatch, 200);
++            dispatchTimer = setTimeout(dispatch, 500);
          }
          const cancel = () => {
              item.aborted = true;
@@ -33,7 +33,7 @@ index cf9a88a..74083eb 100644
          });
          if (!dispatchTimer) {
 -            dispatchTimer = setTimeout(dispatch);
-+            dispatchTimer = setTimeout(dispatch, 200);
++            dispatchTimer = setTimeout(dispatch, 500);
          }
          const cancel = ()=>{
              item.aborted = true;
