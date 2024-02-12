@@ -87,13 +87,17 @@ export const MetaTags = (props: MetaTagsProps) => {
         </Helmet>
       ) : null}
 
-      <meta property='og:type' content='website' />
-      <meta name='twitter:card' content='summary' />
+      <Helmet encodeSpecialCharacters={false}>
+        <meta property='og:type' content='website' />
+        <meta name='twitter:card' content='summary' />
+      </Helmet>
 
       {structuredData ? (
-        <script type='application/ld+json'>
-          {JSON.stringify(structuredData)}
-        </script>
+        <Helmet encodeSpecialCharacters={false}>
+          <script type='application/ld+json'>
+            {JSON.stringify(structuredData)}
+          </script>
+        </Helmet>
       ) : null}
     </>
   )
