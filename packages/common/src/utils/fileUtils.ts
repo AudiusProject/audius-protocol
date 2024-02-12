@@ -41,7 +41,10 @@ export const dedupFilenames = (files: DownloadFile[]) => {
   const filenameCounts = new Map<string, number>()
   for (const file of files) {
     const count = filenameCounts.get(file.filename) ?? 0
-    file.filename = count === 0 ? file.filename : `${file.filename}-${count}`
     filenameCounts.set(file.filename, count + 1)
+    const split = file.filename.split('.')
+    const extension = split.pop()
+    file.filename =
+      count === 0 ? file.filename : split.join('.') + `-${count}.${extension}`
   }
 }
