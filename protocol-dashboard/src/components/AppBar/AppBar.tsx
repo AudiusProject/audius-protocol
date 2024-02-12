@@ -8,7 +8,13 @@ import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
 import UserImage from 'components/UserImage'
 import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
-import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAccount } from 'store/account/hooks'
 import { useEthBlockNumber } from 'store/cache/protocol/hooks'
@@ -155,6 +161,7 @@ type AppBarProps = {}
 const AppBar: React.FC<AppBarProps> = () => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
+  const timeoutIdRef = useRef<NodeJS.Timeout>(null)
   const [isAudiusClientSetup, setIsAudiusClientSetup] = useState(false)
   const [isMisconfigured, setIsMisconfigured] = useState(false)
   const [
@@ -172,7 +179,7 @@ const AppBar: React.FC<AppBarProps> = () => {
   const showBlock = isCryptoPage(pathname) && ethBlock
 
   const waitForSetup = async () => {
-    setTimeout(() => {
+    timeoutIdRef.current = setTimeout(() => {
       if (!isAudiusClientSetup) {
         setIsRetrievingAccountTimingOut(true)
       }
@@ -189,6 +196,11 @@ const AppBar: React.FC<AppBarProps> = () => {
 
   useEffect(() => {
     waitForSetup()
+    return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current)
+      }
+    }
   }, [])
 
   let accountSnippetContent: ReactNode
