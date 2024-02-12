@@ -3,7 +3,3 @@
   width: var(--unit-6);
   margin-top: 2px;
 }
-
-.titleIcon path {
-  fill: var(--neutral);
-}

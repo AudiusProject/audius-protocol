@@ -37,7 +37,3 @@
 .listItemActions {
   flex-grow: 0;
 }
-
-.listItemActionsIcon svg {
-  color: var(--neutral-light-4) !important;
-}
