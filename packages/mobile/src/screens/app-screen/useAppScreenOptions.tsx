@@ -11,10 +11,10 @@ import { Text, View } from 'react-native'
 
 import {
   IconAudiusLogoHorizontal,
+  IconButton,
   IconCaretLeft,
   IconSearch
 } from '@audius/harmony-native'
-import { IconButton } from 'app/components/core'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'

@@ -13,9 +13,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { useTimeoutFn } from 'react-use'
 
-import { IconClose } from '@audius/harmony-native'
+import { IconButton, IconClose } from '@audius/harmony-native'
 import type { TextInputProps, TextInputRef } from 'app/components/core'
-import { IconButton, TextInput } from 'app/components/core'
+import { TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'

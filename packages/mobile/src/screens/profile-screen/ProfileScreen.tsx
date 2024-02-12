@@ -16,8 +16,12 @@ import { useFocusEffect } from '@react-navigation/native'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconKebabHorizontal, IconShare } from '@audius/harmony-native'
-import { IconButton, Screen, ScreenContent } from 'app/components/core'
+import {
+  IconButton,
+  IconKebabHorizontal,
+  IconShare
+} from '@audius/harmony-native'
+import { Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
