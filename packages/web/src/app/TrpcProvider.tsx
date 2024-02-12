@@ -4,10 +4,8 @@ import { accountSelectors } from '@audius/common/store'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-
-import { createAudiusTrpcClient, trpc } from '../utils/trpcClientWeb'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
+import { createAudiusTrpcClient, trpc } from '../utils/trpcClientWeb'
 
 type TrpcProviderProps = {
   children: ReactNode
@@ -27,9 +25,7 @@ export const TrpcProvider = (props: TrpcProviderProps) => {
   useEffect(() => {
     discoveryNodeSelectorService.getInstance().then((dns) => {
       dns.addEventListener('change', updateSelectedNode)
-      dns.getSelectedEndpoint().then((dn) => {
-        updateSelectedNode(dn)
-      })
+      dns.getSelectedEndpoint().then(updateSelectedNode)
       return () => {
         dns.removeEventListener('change', updateSelectedNode)
       }
