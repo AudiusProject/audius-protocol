@@ -30,13 +30,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
 import {
+  IconButton,
   IconCastAirplay,
   IconCastChromecast,
   IconKebabHorizontal,
   IconShare
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
-import { Button, IconButton } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
@@ -60,7 +61,10 @@ const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   repostProhibited: "You can't Repost your own Track!",
-  favoriteProhibited: "You can't Favorite your own Track!"
+  favoriteProhibited: "You can't Favorite your own Track!",
+  castLabel: 'Cast to Device',
+  shareLabel: 'Share Content',
+  optionsLabel: 'More Options'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -254,8 +258,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         <IconButton
           onPress={openAirplayDialog}
           icon={IconCastAirplay}
-          fill={isCasting ? primary : neutral}
-          styles={{ icon: styles.icon, root: styles.button }}
+          color={isCasting ? 'active' : 'default'}
+          size='l'
+          aria-label={messages.castLabel}
+          style={styles.button}
         />
       )
     }
@@ -308,8 +314,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     return (
       <IconButton
         icon={IconShare}
-        styles={{ icon: styles.icon, root: styles.button }}
         onPress={handleShare}
+        size='l'
+        aria-label={messages.shareLabel}
+        style={styles.button}
       />
     )
   }
@@ -318,9 +326,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     return (
       <IconButton
         icon={IconKebabHorizontal}
-        styles={{ icon: styles.icon, root: styles.button }}
         onPress={onPressOverflow}
-        isDisabled={!isReachable}
+        size='l'
+        disabled={!isReachable}
+        aria-label={messages.optionsLabel}
+        style={styles.button}
       />
     )
   }

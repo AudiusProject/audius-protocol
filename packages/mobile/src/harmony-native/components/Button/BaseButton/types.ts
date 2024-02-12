@@ -79,4 +79,8 @@ export type BaseButtonProps = {
   sharedValue?: SharedValue<number>
 
   children?: ReactNode
+  /**
+   * The percentage to scale the button when pressed
+   */
+  pressScale?: number
 } & PressableProps
