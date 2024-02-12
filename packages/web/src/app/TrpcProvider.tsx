@@ -13,7 +13,17 @@ type TrpcProviderProps = {
 export const TrpcProvider = (props: TrpcProviderProps) => {
   const { children } = props
   const currentUserId = useSelector(accountSelectors.getUserId)
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            staleTime: 1000 * 20
+          }
+        }
+      })
+  )
   const trpcClient = useMemo(
     () => createAudiusTrpcClient(currentUserId),
     [currentUserId]
