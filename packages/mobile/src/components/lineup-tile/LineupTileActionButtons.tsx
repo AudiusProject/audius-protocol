@@ -53,14 +53,16 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   button: {
     height: spacing(6),
-    width: spacing(6)
+    width: spacing(6),
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   buttonMargin: {
     marginRight: spacing(6)
   },
   leftButtons: {
     ...flexRowCentered(),
-    marginVertical: spacing(2)
+    marginVertical: spacing(1)
   }
 }))
 

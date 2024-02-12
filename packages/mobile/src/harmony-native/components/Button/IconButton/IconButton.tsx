@@ -23,9 +23,10 @@ export type IconButtonProps = {
   Omit<BaseButtonProps, 'fill' | 'styles'> &
   (
     | {
-        accessibilityLabel: string
+        accessibilityLabel?: string
       }
-    | { 'aria-label': string }
+    // TODO: make arial-label or accessibilityLabel required
+    | { 'aria-label'?: string }
   )
 
 export const IconButton = (props: IconButtonProps) => {
