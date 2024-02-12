@@ -98,13 +98,13 @@ export const DownloadRow = ({
         </Flex>
       </Flex>
       <Flex gap='2xl'>
+        {size ? (
+          <Text variant='body' size='s' color='subdued'>
+            {formatBytes(size)}
+          </Text>
+        ) : null}
         {hideDownload ? null : (
           <>
-            {size ? (
-              <Text variant='body' size='s' color='subdued'>
-                {formatBytes(size)}
-              </Text>
-            ) : null}
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip
                 text={messages.followToDownload}
