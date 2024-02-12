@@ -335,6 +335,7 @@ export const TextInput = forwardRef(
                       underlineColorAndroid='transparent'
                       aria-label={ariaLabel ?? labelText}
                       style={css({
+                        flex: 1,
                         // Need absolute height to ensure consistency across platforms
                         height: !isSmall ? 23 : undefined,
                         // Android has a default padding that needs to be removed
