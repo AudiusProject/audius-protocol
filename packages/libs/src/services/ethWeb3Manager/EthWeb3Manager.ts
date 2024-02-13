@@ -98,14 +98,16 @@ export class EthWeb3Manager {
     txRetries = 5,
     txGasLimit: number | null = null
   ): Promise<TransactionReceipt> {
+    const internalWallet = contractAddress && privateKey
     const gasLimit =
       txGasLimit ??
       (await estimateGas({
         method: contractMethod,
         from: this.ownerWallet,
-        gasLimitMaximum: MAX_GAS_LIMIT
+        gasLimitMaximum: MAX_GAS_LIMIT,
+        shouldThrow: !internalWallet
       }))
-    if (contractAddress && privateKey) {
+    if (internalWallet) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
       if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
         gasPrice = DEFAULT_GAS_PRICE
@@ -160,7 +162,6 @@ export class EthWeb3Manager {
     const gasPrice = parseInt(await this.web3.eth.getGasPrice())
     return await contractMethod.send({
       from: this.ownerWallet,
-      gas: gasLimit,
       gasPrice
     })
   }
