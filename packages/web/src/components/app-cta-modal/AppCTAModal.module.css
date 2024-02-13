@@ -52,8 +52,3 @@
 .buttonContainer {
   margin-bottom: 30px;
 }
-
-.downloadButton .downloadButtonText {
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
-}

@@ -32,6 +32,7 @@ export const BaseButton = (props: BaseButtonProps) => {
     sharedValue: sharedValueProp,
     minWidth,
     fullWidth,
+    pressScale = 0.97,
     ...other
   } = props
   const pressedInternal = useSharedValue(0)
@@ -79,7 +80,9 @@ export const BaseButton = (props: BaseButtonProps) => {
 
   const animatedStyles = useAnimatedStyle(() => ({
     ...(!fullWidth && {
-      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+      transform: [
+        { scale: interpolate(pressed.value, [0, 1], [1, pressScale]) }
+      ]
     })
   }))
 

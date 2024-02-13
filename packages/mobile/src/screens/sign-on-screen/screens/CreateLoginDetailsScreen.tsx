@@ -128,10 +128,12 @@ export const CreateLoginDetailsScreen = () => {
               <EmailField onChangeScreen={navigateToLogin} />
               <PasswordField
                 name='password'
+                autoComplete='new-password'
                 label={createLoginDetailsPageMessages.passwordLabel}
               />
               <PasswordField
                 name='confirmPassword'
+                autoComplete='new-password'
                 label={createLoginDetailsPageMessages.confirmPasswordLabel}
               />
               <PasswordCompletionChecklist />

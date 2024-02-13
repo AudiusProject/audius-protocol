@@ -19,9 +19,10 @@ import {
   IconUserFollow,
   IconUserFollowing,
   IconClose,
-  useTheme
+  useTheme,
+  IconButton
 } from '@audius/harmony-native'
-import { Button, IconButton, Text, ProfilePicture } from 'app/components/core'
+import { Button, Text, ProfilePicture } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { track, make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -38,7 +39,8 @@ const { followUser, unfollowUser } = usersSocialActions
 const messages = {
   description: 'Here are some accounts that vibe well with',
   followAll: 'Follow All',
-  followingAll: 'Following All'
+  followingAll: 'Following All',
+  closeLabel: 'Close'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -59,11 +61,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   dismissButton: {
     marginRight: spacing(2)
-  },
-  dismissIcon: {
-    height: 24,
-    width: 24,
-    fill: palette.neutralLight4
   },
   suggestedArtistsPhotos: {
     flexDirection: 'row',
@@ -157,8 +154,9 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
       <View style={styles.header} pointerEvents='box-none'>
         <IconButton
           icon={IconClose}
-          styles={{ root: styles.dismissButton, icon: styles.dismissIcon }}
-          fill={styles.dismissIcon.fill}
+          style={styles.dismissButton}
+          color='subdued'
+          aria-label={messages.closeLabel}
           onPress={onClose}
         />
         <View pointerEvents='none' style={styles.description}>

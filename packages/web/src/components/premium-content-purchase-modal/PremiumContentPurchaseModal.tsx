@@ -7,9 +7,11 @@ import {
   usePayExtraPresets,
   isTrackStreamPurchaseable,
   isTrackDownloadPurchaseable,
-  PurchaseableTrackMetadata
+  PurchaseableTrackMetadata,
+  PURCHASE_METHOD
 } from '@audius/common/hooks'
 import {
+  PurchaseMethod,
   PurchaseVendor,
   Track,
   USDCPurchaseConditions
@@ -28,7 +30,7 @@ import { USDC } from '@audius/fixed-decimal'
 import { Flex, IconCart } from '@audius/harmony'
 import { ModalContentPages, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
-import { Formik, useFormikContext } from 'formik'
+import { Formik, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -89,9 +91,10 @@ const RenderForm = ({
   } = purchaseConditions
   const { error, isUnlocking, purchaseSummaryValues, stage, page } =
     usePurchaseContentFormState({ price })
+  const [, , { setValue: setPurchaseMethod }] = useField(PURCHASE_METHOD)
   const currentPageIndex = pageToPageIndex(page)
 
-  const { resetForm } = useFormikContext()
+  const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
 
   // Reset form on track change
@@ -104,9 +107,14 @@ const RenderForm = ({
     }
   }, [stage, permalink, dispatch, history])
 
-  const handleClose = useCallback(() => {
+  const handleUSDCManualTransferClose = useCallback(() => {
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
+
+  const handleUSDCManualTransferPurchase = useCallback(() => {
+    setPurchaseMethod(PurchaseMethod.BALANCE)
+    submitForm()
+  }, [submitForm, setPurchaseMethod])
 
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
@@ -156,7 +164,11 @@ const RenderForm = ({
             </Flex>
           </Flex>
         </>
-        <USDCManualTransfer onClose={handleClose} amountInCents={price} />
+        <USDCManualTransfer
+          onClose={handleUSDCManualTransferClose}
+          amountInCents={price}
+          onPurchase={handleUSDCManualTransferPurchase}
+        />
       </ModalContentPages>
       <ModalFooter className={styles.footer}>
         {page === PurchaseContentPage.PURCHASE ? (

@@ -19,10 +19,28 @@ export function onSetup(this: AudiusClient) {
   this.isSetupPromise = new Promise(resolve => {
     this._setupPromiseResolve = resolve
   })
+  this.metaMaskAccountLoadedPromise = new Promise(resolve => {
+    this._metaMaskAccountLoadedResolve = resolve
+  })
+}
+
+export function onMetaMaskAccountLoaded(
+  this: AudiusClient,
+  account: string | null
+) {
+  this.isMetaMaskAccountLoaded = true
+  if (this._metaMaskAccountLoadedResolve) {
+    this._metaMaskAccountLoadedResolve(account)
+  }
 }
 
 export function onSetupFinished(this: AudiusClient) {
-  if (this._setupPromiseResolve) this._setupPromiseResolve()
+  if (this._setupPromiseResolve) {
+    this._setupPromiseResolve()
+  }
+  if (!this.isMetaMaskAccountLoaded) {
+    this.onMetaMaskAccountLoaded(null)
+  }
 }
 
 export async function awaitSetup(this: AudiusClient): Promise<void> {
@@ -37,6 +55,12 @@ export async function getEthBlockNumber(this: AudiusClient) {
 export async function getEthWallet(this: AudiusClient) {
   await this.hasPermissions()
   return this.libs.ethWeb3Manager.ownerWallet
+}
+
+export async function isEoa(this: AudiusClient, wallet: string) {
+  const web3 = this.libs.ethWeb3Manager.web3
+  const code = await web3.eth.getCode(wallet)
+  return code === '0x'
 }
 
 export async function getAverageBlockTime(this: AudiusClient) {

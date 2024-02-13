@@ -1,7 +1,7 @@
 import type { full } from '@audius/sdk'
 
 import { createApi } from '~/audius-query'
-import { ID } from '~/models'
+import { ID, PurchaseAccess } from '~/models'
 import {
   USDCContentPurchaseType,
   USDCPurchaseDetails
@@ -28,6 +28,7 @@ const parsePurchase = (purchase: full.Purchase): USDCPurchaseDetails => {
     amount,
     buyerUserId,
     sellerUserId,
+    access,
     ...rest
   } = purchase
   return {
@@ -37,7 +38,8 @@ const parsePurchase = (purchase: full.Purchase): USDCPurchaseDetails => {
     amount: amount as StringUSDC,
     extraAmount: extraAmount as StringUSDC,
     buyerUserId: HashId.parse(buyerUserId),
-    sellerUserId: HashId.parse(sellerUserId)
+    sellerUserId: HashId.parse(sellerUserId),
+    access: access as PurchaseAccess
   }
 }
 

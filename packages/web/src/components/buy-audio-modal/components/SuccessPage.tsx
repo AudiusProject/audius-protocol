@@ -8,8 +8,7 @@ import {
   modalsActions
 } from '@audius/common/store'
 import { formatAudio, isNullOrUndefined } from '@audius/common/utils'
-import { IconInfo } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { IconInfo, Button, PlainButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -82,20 +81,18 @@ export const SuccessPage = () => {
           </div>
         )}
       </div>
-      <Button
-        text={onSuccess?.message ?? messages.done}
-        type={ButtonType.PRIMARY_ALT}
-        onClick={handleDoneClicked}
-      />
+      <Button onClick={handleDoneClicked}>
+        {onSuccess?.message ?? messages.done}
+      </Button>
       <div className={styles.review}>
-        <Button
-          iconClassName={styles.reviewButtonIcon}
-          type={ButtonType.TEXT}
-          size={ButtonSize.SMALL}
-          text={messages.review}
-          leftIcon={<IconInfo />}
+        <PlainButton
+          size='default'
+          iconLeft={IconInfo}
+          variant='subdued'
           onClick={handleReviewTransactionClicked}
-        />
+        >
+          {messages.review}
+        </PlainButton>
       </div>
     </div>
   )

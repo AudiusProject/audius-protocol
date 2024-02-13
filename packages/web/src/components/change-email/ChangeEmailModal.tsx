@@ -36,7 +36,7 @@ import styles from './ChangeEmailModal.module.css'
 
 const messages = {
   changeEmail: 'Change Email',
-  confirmPasswordHelp: 'Please enter your current email and password.',
+  confirmPasswordHelp: 'Please enter your current password.',
   currentEmail: 'Current Email',
   currentPassword: 'Current Password',
   newEmailHelp: 'Enter the new email you would like to use on Audius.',

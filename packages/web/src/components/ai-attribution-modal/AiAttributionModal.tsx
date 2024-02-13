@@ -2,11 +2,8 @@ import { useCallback, useState } from 'react'
 
 import { ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { Switch, IconRobot } from '@audius/harmony'
+import { Button, Switch, IconRobot } from '@audius/harmony'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
   Modal,
   ModalContent,
   ModalHeader,
@@ -71,13 +68,14 @@ export const AiAttributionModal = (props: AiAttributionModalProps) => {
           />
         ) : null}
         <Button
-          text={messages.done}
-          type={ButtonType.PRIMARY}
-          size={ButtonSize.MEDIUM}
+          variant='primary'
+          size='default'
           className={styles.doneButton}
           onClick={handleChange}
           disabled={isAttributable && !aiAttributedUserId}
-        />
+        >
+          {messages.done}
+        </Button>
       </ModalContent>
     </Modal>
   )
