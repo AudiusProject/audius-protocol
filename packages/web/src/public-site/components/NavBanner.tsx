@@ -4,16 +4,11 @@ import {
   IconAudiusLogoHorizontalColor,
   IconKebabHorizontal,
   IconCloudDownload as IconDownloadQueued,
-  IconCaretDown
-} from '@audius/harmony'
-import {
-  IconBlog,
-  IconFoundation,
-  IconMerch,
-  IconSupport,
+  IconCaretDown,
   PopupMenu,
   PopupMenuItem
-} from '@audius/stems'
+} from '@audius/harmony'
+import { IconBlog, IconFoundation, IconMerch, IconSupport } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
@@ -157,6 +152,7 @@ const NavBanner = (props: NavBannerProps) => {
         </div>
         <div className={styles.linkContainer}>
           <PopupMenu
+            fixed
             renderMenu={(menuItems: PopupMenuItem[]) => {
               return (
                 <div className={styles.resourcesMenu}>
@@ -195,7 +191,6 @@ const NavBanner = (props: NavBannerProps) => {
               )
             }}
             zIndex={zIndex.NAV_BANNER_POPUP}
-            wrapperClassName={styles.popupWrapper}
             className={styles.popup}
             dismissOnMouseLeave
           />

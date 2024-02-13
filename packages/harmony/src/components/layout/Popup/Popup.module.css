@@ -13,7 +13,7 @@
 
 .header {
   border: none;
-  margin-bottom: var(--harmony-unit-1);
+  margin-bottom: var(--harmony-spacing-m);
   padding-bottom: 0;
   display: flex;
   align-items: center;

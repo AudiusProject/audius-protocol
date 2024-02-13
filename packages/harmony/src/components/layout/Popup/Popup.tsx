@@ -206,7 +206,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     zIndex,
     containerRef,
     portalLocation = document.body,
-    shadow = 'mid'
+    shadow = 'mid',
+    fixed
   } = props
   const { spring, shadows } = useTheme()
 
@@ -360,7 +361,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     unique: true
   })
 
-  const rootStyle = zIndex ? { zIndex } : {}
+  const rootStyle = { zIndex, position: fixed ? ('fixed' as const) : undefined }
 
   const handleMouseLeave = useCallback(() => {
     if (dismissOnMouseLeave) {

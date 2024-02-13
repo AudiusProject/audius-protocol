@@ -5,7 +5,7 @@ import {
   playerSelectors,
   PlaybackRate
 } from '@audius/common/store'
-import { PopupMenu, PopupMenuItem, PopupPosition } from '@audius/stems'
+import { PopupMenu, PopupMenuItem } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -27,6 +27,10 @@ const { getPlaybackRate } = playerSelectors
 
 export type PlaybackRateButtonProps = {
   isMobile: boolean
+}
+
+const messages = {
+  title: 'Playback'
 }
 
 const rates: PlaybackRate[] = [
@@ -88,11 +92,10 @@ export const PlaybackRateButton = ({ isMobile }: PlaybackRateButtonProps) => {
 
   return (
     <PopupMenu
-      title='Playback Speed'
-      titleClassName={styles.popupTitle}
+      title={messages.title}
       items={items}
       hideCloseButton
-      position={PopupPosition.TOP_CENTER}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       zIndex={zIndex.PLAY_BAR_POPUP_MENU}
       renderTrigger={renderButton}
     />

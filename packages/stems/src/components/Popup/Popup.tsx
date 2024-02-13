@@ -243,7 +243,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     isVisible,
     onAfterClose,
     onClose,
-    position,
+    posrition,
     anchorOrigin: anchorOriginProp = defaultAnchorOrigin,
     transformOrigin: transformOriginProp = defaultTransformOrigin,
     dismissOnMouseLeave,

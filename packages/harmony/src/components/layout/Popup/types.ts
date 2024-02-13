@@ -93,4 +93,5 @@ export type PopupProps = {
    */
   portalLocation?: HTMLElement
   shadow?: ShadowOptions
+  fixed?: boolean
 }
