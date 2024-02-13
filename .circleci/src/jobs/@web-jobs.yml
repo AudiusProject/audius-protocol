@@ -279,7 +279,7 @@ web-dist-mac-staging:
   # run on macos so dmg can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   steps:
     - run:
         name: Set Ruby Version
@@ -315,7 +315,7 @@ web-dist-mac-production:
   # run on macos so dmg can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   steps:
     - run:
         name: Set Ruby Version
