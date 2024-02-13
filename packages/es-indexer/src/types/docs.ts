@@ -37,6 +37,7 @@ export type UserDoc = UserRow & {
   following_ids: number[]
   following_count: number
   subscribed_ids: number[]
+  dominant_genre: string
 }
 
 export type TrackDoc = TrackRow & {

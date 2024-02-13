@@ -8,7 +8,7 @@
     "dev": "DEBUG=audius:* tsx watch src/server.ts",
     "db:gen": "tsx ./tools/db-gen.ts",
     "start": "tsx src/server.ts",
-    "test": "vitest"
+    "test": "bash test.sh"
   },
   "dependencies": {
     "@elastic/elasticsearch": "8.11.0",

@@ -1,5 +1,17 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
-import { groupBy, keyBy, merge } from 'lodash'
+import {
+  compact,
+  countBy,
+  entries,
+  flow,
+  groupBy,
+  head,
+  keyBy,
+  last,
+  maxBy,
+  merge,
+  partialRight,
+} from 'lodash'
 import { dialPg } from '../conn'
 import { splitTags } from '../helpers/splitTags'
 import { indexNames } from '../indexNames'
@@ -54,6 +66,8 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
 
         // followers
         follower_count: { type: 'integer' },
+
+        dominant_genre: lowerKeyword,
 
         track_count: { type: 'integer' },
         tracks: {
@@ -124,6 +138,15 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
       user.track_count = user.tracks.length
       user.following_ids = followMap[user.user_id] || []
       user.subscribed_ids = subscriptionsMap[user.user_id] || []
+
+      // determine most common genre
+      user.dominant_genre = flow(
+        compact,
+        countBy,
+        entries,
+        partialRight(maxBy, last),
+        head
+      )(user.tracks.map((t) => t.genre)) as string
     }
   }
 
