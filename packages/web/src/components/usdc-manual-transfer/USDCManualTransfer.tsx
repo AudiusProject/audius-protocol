@@ -46,10 +46,12 @@ const messages = {
 
 export const USDCManualTransfer = ({
   onClose,
-  amountInCents
+  amountInCents,
+  onPurchase
 }: {
   onClose: () => void
   amountInCents?: number
+  onPurchase?: () => void
 }) => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
@@ -130,6 +132,7 @@ export const USDCManualTransfer = ({
               color='lightGreen'
               disabled={isBuyButtonDisabled}
               type='submit'
+              onClick={onPurchase}
             >
               {messages.buy(
                 USDC(amount).toLocaleString('en-us', {
