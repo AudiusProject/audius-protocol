@@ -94,7 +94,7 @@ export const AddressTile = ({
       </View>
       <View style={styles.bottomContainer}>
         <View style={styles.address}>
-          <Text numberOfLines={1} ellipsizeMode='middle'>
+          <Text variant='body' numberOfLines={1} ellipsizeMode='middle'>
             {address}
           </Text>
         </View>
