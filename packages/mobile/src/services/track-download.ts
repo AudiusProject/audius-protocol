@@ -15,6 +15,7 @@ import { setFetchCancel, setFileInfo } from 'app/store/download/slice'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { audiusBackendInstance } from './audius-backend-instance'
+import { dedupFilenames } from '~/utils'
 
 const { downloadFinished } = tracksSocialActions
 
@@ -93,6 +94,7 @@ const downloadMany = async ({
   getFetchConfig: (filePath: string) => RNFetchBlobConfig
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
+  dedupFilenames(files)
   try {
     const responsePromises = files.map(({ url, filename }) =>
       RNFetchBlob.config(getFetchConfig(directory + '/' + filename)).fetch(

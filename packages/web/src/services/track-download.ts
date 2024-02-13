@@ -7,6 +7,7 @@ import { tracksSocialActions } from '@audius/common/store'
 import { downloadZip } from 'client-zip'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
+import { dedupFilenames } from '@audius/common/utils'
 
 const { downloadFinished } = tracksSocialActions
 
@@ -41,6 +42,7 @@ class TrackDownload extends TrackDownloadBase {
     rootDirectoryName,
     abortSignal
   }: DownloadTrackArgs) {
+    dedupFilenames(files)
     const responsePromises = files.map(
       async ({ url }) => await window.fetch(url, { signal: abortSignal })
     )
