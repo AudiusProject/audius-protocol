@@ -5,6 +5,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
+from src.models.playlists.playlists_tracks_relations import PlaylistsTracksRelations
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
@@ -107,6 +108,43 @@ def update_playlist_routes_table(
 
     params.logger.info(
         f"index.py | playlists.py | Updated playlist routes for {playlist_record.playlist_id} with slug {new_playlist_slug} and owner_id {new_playlist_route.owner_id}"
+    )
+
+
+def update_playlist_tracks_relations(
+    params: ManageEntityParameters, playlist_record: Playlist
+):
+    # Update the playlist_tracks_relations table
+    session = params.session
+    params.logger.info("REED params: ", playlist_record)
+    existing_playlist_tracks_relations = (
+        session.query(PlaylistsTracksRelations)
+        .filter(
+            PlaylistsTracksRelations.playlist_id == params.entity_id,
+            PlaylistsTracksRelations.is_current == True,
+        )
+        .all()
+    )
+    params.logger.info("REED query results: ", existing_playlist_tracks_relations)
+
+    for track_id in playlist_record.playlist_contents["track_ids"]:
+        params.logger.info(
+            "REED adding",
+            track_id["track"],
+            playlist_record.playlist_id,
+            params.block_datetime,
+        )
+        new_playlist_track_relation = PlaylistsTracksRelations(
+            playlist_id=playlist_record.playlist_id,
+            track_id=track_id["track"],
+            is_current=True,
+            created_at=params.block_datetime,
+        )
+        # TODO check if relation already exists
+        session.add(new_playlist_track_relation)
+
+    params.logger.info(
+        f"index.py | playlists.py | Updated playlist tracks relations for {playlist_record.playlist_id}"
     )
 
 
@@ -239,6 +277,8 @@ def create_playlist(params: ManageEntityParameters):
 
     params.add_record(playlist_id, playlist_record)
 
+    update_playlist_tracks_relations(params, playlist_record)
+
     if tracks:
         dispatch_challenge_playlist_upload(
             params.challenge_bus, params.block_number, playlist_record
@@ -275,6 +315,8 @@ def update_playlist(params: ManageEntityParameters):
     process_playlist_data_event(params, playlist_record)
 
     update_playlist_routes_table(params, playlist_record, False)
+
+    # update_playlist_tracks_relations(params, playlist_record)
 
     params.add_record(playlist_id, playlist_record)
 
