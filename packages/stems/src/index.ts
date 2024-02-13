@@ -45,11 +45,7 @@ export {
   ModalFooterProps
 } from './components/Modal'
 
-export {
-  Popup,
-  Position as PopupPosition,
-  PopupProps
-} from './components/Popup'
+export { Position as PopupPosition } from './components/Popup'
 export {
   PopupMenu,
   PopupMenuItem,

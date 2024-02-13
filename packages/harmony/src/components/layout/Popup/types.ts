@@ -1,11 +1,14 @@
 import type { MutableRefObject, ReactChild } from 'react'
 
+import { ShadowOptions } from 'foundations'
+
 export type Origin = {
   vertical: 'top' | 'center' | 'bottom'
   horizontal: 'left' | 'center' | 'right'
 }
 
 export type PopupProps = {
+  className?: string
   /**
    * A ref to the element whose position will be used to anchor the Popup
    */
@@ -89,4 +92,5 @@ export type PopupProps = {
    * @default document.body
    */
   portalLocation?: HTMLElement
+  shadow?: ShadowOptions
 }
