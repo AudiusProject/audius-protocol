@@ -15,7 +15,7 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner } = res.locals.ctx
+  const { validatedRelayRequest, recoveredSigner, isApp } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
   const signer = recoveredSigner.wallet
@@ -43,7 +43,8 @@ export const rateLimiterMiddleware = async (
   const limit = await determineLimit(
     recoveredSigner,
     config.rateLimitAllowList,
-    signer
+    signer,
+    isApp
   )
   logger.info({ limit })
 
@@ -88,11 +89,12 @@ const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
 const determineLimit = async (
   user: Users,
   allowList: string[],
-  signer: string
+  signer: string,
+  isApp: boolean
 ): Promise<ValidLimits> => {
+  if (isApp) return 'app'
   const isAllowed = allowList.includes(signer)
   if (isAllowed) return 'allowlist'
-  logger.info({ user, signer })
   if (user !== undefined) return 'owner'
   return 'app'
 }

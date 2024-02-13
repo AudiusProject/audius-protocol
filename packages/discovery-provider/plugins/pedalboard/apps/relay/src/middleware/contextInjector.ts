@@ -5,6 +5,7 @@ import { ValidatedRelayRequest } from '../types/relay'
 export interface RequestContext {
   startTime: Date
   recoveredSigner: Users
+  isApp: boolean
   ip: string
   requestId: string
   validatedRelayRequest: ValidatedRelayRequest

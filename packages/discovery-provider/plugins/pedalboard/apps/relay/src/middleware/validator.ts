@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { RelayRequest } from '../types/relay'
 import { validationError } from '../error'
-import { Table, Users } from '@pedalboard/storage'
+import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
 import { logger } from '../logger'
@@ -12,8 +12,6 @@ export const validator = async (
   next: NextFunction
 ) => {
   const body = request.body as RelayRequest
-
-  logger.info({ body }, 'validating request')
 
   // Validation of input fields
   const contractAddress =
@@ -54,18 +52,33 @@ export const validator = async (
     wallet: senderAddress || null,
     handle: handle || null
   }
+  let isApp = false
   try {
-    user = await retrieveUser(
+    const retrievedUser = await retrieveUser(
       contractRegistryKey,
       contractAddress,
       encodedABI,
       senderAddress,
       handle
     )
+
+    if (retrievedUser !== undefined) {
+      user = retrievedUser
+    } else {
+      const retrievedApp = await retrieveDeveloperApp({
+        encodedABI, contractAddress
+      })
+      if (retrievedApp !== undefined) {
+        isApp = true
+      } else {
+        throw new Error(`call for ${encodedABI} ${senderAddress} could not be found`)
+      }
+    }
+
   } catch (e) {
     logger.error(
       { e },
-      'could not gather user from db, continuing with senderAddress and handle'
+      'could not gather user or app from db, continuing with senderAddress and handle'
     )
   }
 
@@ -77,7 +90,8 @@ export const validator = async (
     ...oldCtx,
     validatedRelayRequest,
     recoveredSigner: user,
-    ip
+    ip,
+    isApp
   }
   next()
 }
@@ -89,7 +103,7 @@ export const retrieveUser = async (
   encodedABI: string,
   senderAddress?: string,
   handle?: string
-): Promise<Users> => {
+): Promise<Users | undefined> => {
   let query = discoveryDb<Users>(Table.Users)
   let addedWalletClause = false
   let addedHandleClause = false
@@ -122,10 +136,20 @@ export const retrieveUser = async (
   }
 
   const user = await query.andWhere('is_current', '=', true).first()
-
-  if (!user) {
-    throw new Error('user could not be found with provided information')
-  }
-
   return user
+}
+
+export const retrieveDeveloperApp = async(params: {
+  encodedABI: string,
+  contractAddress: string,
+}): Promise<DeveloperApps | undefined> => {
+  const { encodedABI, contractAddress } = params
+  const recoveredAddress = AudiusABIDecoder.recoverSigner({
+    encodedAbi: encodedABI,
+    entityManagerAddress: contractAddress,
+    chainId: config.acdcChainId!
+  })
+  return await discoveryDb<DeveloperApps>(Table.DeveloperApps)
+    .where('address', '=', recoveredAddress)
+    .first()
 }

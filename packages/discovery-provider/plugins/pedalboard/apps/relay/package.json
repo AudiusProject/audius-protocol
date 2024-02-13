@@ -20,7 +20,7 @@
     "@audius/sdk": "*",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
-    "@pedalboard/storage": "*",
+    "@pedalboard/storage": "^0.0.20",
     "@types/compute-lcm": "^1.1.0",
     "axios": "^0.19.2",
     "body-parser": "^1.20.2",
