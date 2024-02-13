@@ -108,6 +108,8 @@ type AccessAndSaleTriggerLegacyProps = {
   metadataState: TrackMetadataState
   trackLength: number
   didUpdateState: (newState: TrackMetadataState) => void
+  forceOpen?: boolean
+  setForceOpen?: (value: boolean) => void
 }
 
 export const AccessAndSaleTriggerLegacy = (
@@ -119,7 +121,9 @@ export const AccessAndSaleTriggerLegacy = (
     initialForm,
     metadataState,
     trackLength,
-    didUpdateState
+    didUpdateState,
+    forceOpen,
+    setForceOpen
   } = props
   const initialStreamConditions = initialForm[STREAM_CONDITIONS]
   const {
@@ -327,6 +331,8 @@ export const AccessAndSaleTriggerLegacy = (
           isScheduledRelease={isScheduledRelease}
         />
       }
+      forceOpen={forceOpen}
+      setForceOpen={setForceOpen}
       renderValue={() => null}
       previewOverride={(toggleMenu) => (
         <Button

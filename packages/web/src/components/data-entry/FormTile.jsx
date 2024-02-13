@@ -18,6 +18,7 @@ import {
   AiAttributionModal,
   AiAttributionButton
 } from 'components/ai-attribution-modal'
+import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Input from 'components/data-entry/Input'
 import LabeledInput from 'components/data-entry/LabeledInput'
@@ -289,6 +290,11 @@ const BasicForm = (props) => {
         onChangeField={props.onChangeField}
         isUpload={props.isUpload}
         initialForm={props.initialForm}
+        closeMenuCallback={(data) => {
+          if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
+            props.setForceOpenAccessAndSale(true)
+          }
+        }}
       />
     )
   }
@@ -541,6 +547,8 @@ const AdvancedForm = (props) => {
               isRemix={!!props.defaultFields.remix_of?.tracks?.length}
               isUpload={props.isUpload}
               initialForm={props.initialForm}
+              forceOpen={props.forceOpenAccessAndSale}
+              setForceOpen={props.setForceOpenAccessAndSale}
             />
           )}
           {props.type === 'track' && (
@@ -680,7 +688,8 @@ class FormTile extends Component {
 
     remixSettingsModalVisible: false,
     aiAttributionModalVisible: false,
-    isRemix: !!this.props.defaultFields.remix_of
+    isRemix: !!this.props.defaultFields.remix_of,
+    forceOpenAccessAndSale: false
   }
 
   componentDidMount() {
@@ -800,6 +809,10 @@ class FormTile extends Component {
     this.setState({ isRemix })
   }
 
+  setForceOpenAccessAndSale = (forceOpen) => {
+    this.setState({ forceOpenAccessAndSale: forceOpen })
+  }
+
   render() {
     const {
       advancedShow,
@@ -829,6 +842,8 @@ class FormTile extends Component {
           setAiAttributionModalVisible={this.setAiAttributionModalVisible}
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
+          forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
+          setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
         />
         <AdvancedForm
           {...this.props}
@@ -849,6 +864,8 @@ class FormTile extends Component {
           setAiAttributionModalVisible={this.setAiAttributionModalVisible}
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
+          forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
+          setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
         />
         {this.props.children.length > 0 ? (
           <DragDropContext onDragEnd={this.onDragEnd}>

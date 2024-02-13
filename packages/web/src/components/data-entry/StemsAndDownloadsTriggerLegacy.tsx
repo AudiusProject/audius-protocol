@@ -16,6 +16,7 @@ import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { IconCloudDownload, IconReceive } from '@audius/harmony'
 import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -59,6 +60,7 @@ type StemsAndDownloadsTriggerLegacyProps = {
   onChangeField: (field: string, value: any) => void
   isUpload: boolean
   initialForm: Track
+  closeMenuCallback?: (data?: any) => void
 }
 
 export const StemsAndDownloadsTriggerLegacy = (
@@ -70,9 +72,10 @@ export const StemsAndDownloadsTriggerLegacy = (
     onSelectCategory,
     onDeleteStem,
     fields,
-    onChangeField
+    onChangeField,
     // isUpload,
-    // initialForm
+    // initialForm,
+    closeMenuCallback
   } = props
 
   const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
@@ -258,6 +261,12 @@ export const StemsAndDownloadsTriggerLegacy = (
           onDeleteStem={onDeleteStem}
         />
       }
+      closeMenuCallback={closeMenuCallback}
+      displayMenuErrorMessage={(
+        errors: FormikErrors<StemsAndDownloadsFormValues>
+      ) => {
+        return errors[IS_DOWNLOAD_GATED] ?? null
+      }}
       renderValue={() => null}
       previewOverride={(toggleMenu) => (
         <Button
