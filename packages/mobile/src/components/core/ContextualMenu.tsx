@@ -84,8 +84,8 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
 
     return (
       <View style={styles.optionPills}>
-        {values.map((value) => (
-          <Pill key={value} style={styles.pill}>
+        {values.map((value, i) => (
+          <Pill key={`${value}-${i}`} style={styles.pill}>
             <Text
               fontSize='small'
               weight='demiBold'
