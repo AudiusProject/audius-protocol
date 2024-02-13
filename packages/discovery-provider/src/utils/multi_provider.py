@@ -14,12 +14,14 @@ class MultiProvider(BaseProvider):
         self.providers = [HTTPProvider(provider) for provider in providers.split(",")]
 
     def make_request(self, method, params):
+        last_exception = None
         for provider in random.sample(self.providers, k=len(self.providers)):
             try:
                 return provider.make_request(method, params)
-            except Exception:
+            except Exception as e:
+                last_exception = e
                 continue
-        raise Exception("All requests failed")
+        raise last_exception if last_exception else Exception()
 
     def isConnected(self):
         return any(provider.isConnected() for provider in self.providers)

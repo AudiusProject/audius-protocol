@@ -60,16 +60,18 @@ export class MultiProvider extends Web3.providers.HttpProvider {
    * @param {Object} payload
    */
   async _send(payload: JsonRpcPayload) {
+    let lastError: Error | null = null
+
     for (const provider of shuffle(this.providers)) {
       try {
         const send = promisify(getSendMethod(provider).bind(provider))
         const result = await send(payload)
         return result
       } catch (e) {
-        console.info(e)
+        lastError = e as Error
       }
     }
 
-    throw new Error('All requests failed')
+    throw lastError || new Error()
   }
 }

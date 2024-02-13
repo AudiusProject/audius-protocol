@@ -57,8 +57,9 @@ export const estimateGas = async ({
     return safeEstimatedGas
   } catch (e) {
     console.error(
-      `Unable to estimate gas for transaction ${method._method.name}, using ${gasLimitMaximum}`
+      `Unable to estimate gas for transaction ${method._method.name}`
     )
-    return gasLimitMaximum
+    console.error({ e })
+    throw e
   }
 }
