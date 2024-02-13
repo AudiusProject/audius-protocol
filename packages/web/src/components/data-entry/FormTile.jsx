@@ -380,7 +380,10 @@ const AdvancedForm = (props) => {
   let availabilityState = {
     is_stream_gated: props.defaultFields.is_stream_gated,
     stream_conditions: props.defaultFields.stream_conditions,
-    preview_start_seconds: props.defaultFields.preview_start_seconds
+    preview_start_seconds: props.defaultFields.preview_start_seconds,
+    is_download_gated: props.defaultFields.is_download_gated,
+    download_conditions: props.defaultFields.download_conditions,
+    is_downloadable: props.defaultFields.is_downloadable
   }
 
   const releaseDateState = {

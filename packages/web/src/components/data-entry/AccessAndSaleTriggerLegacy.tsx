@@ -34,9 +34,14 @@ import { AccessAndSaleMenuFields } from 'pages/upload-page/fields/AccessAndSaleM
 import { getCombinedDefaultGatedConditionValues } from 'pages/upload-page/fields/helpers'
 import {
   AccessAndSaleFormValues,
+  DOWNLOAD_CONDITIONS,
+  // DOWNLOAD_REQUIRES_FOLLOW,
   FIELD_VISIBILITY,
+  IS_DOWNLOADABLE,
+  IS_DOWNLOAD_GATED,
   IS_STREAM_GATED,
   IS_UNLISTED,
+  // LAST_GATE_KEEPER,
   PREVIEW,
   PRICE_HUMANIZED,
   SPECIAL_ACCESS_TYPE,
@@ -64,7 +69,10 @@ const messages = {
 enum GatedTrackMetadataField {
   IS_STREAM_GATED = 'is_stream_gated',
   STREAM_CONDITIONS = 'stream_conditions',
-  PREVIEW = 'preview_start_seconds'
+  PREVIEW = 'preview_start_seconds',
+  IS_DOWNLOAD_GATED = 'is_download_gated',
+  DOWNLOAD_CONDITIONS = 'download_conditions',
+  IS_DOWNLOADABLE = 'is_downloadable'
 }
 
 enum UnlistedTrackMetadataField {
@@ -81,6 +89,9 @@ type TrackMetadataState = {
   [GatedTrackMetadataField.IS_STREAM_GATED]: boolean
   [GatedTrackMetadataField.STREAM_CONDITIONS]: Nullable<AccessConditions>
   [GatedTrackMetadataField.PREVIEW]: Nullable<number>
+  [GatedTrackMetadataField.IS_DOWNLOAD_GATED]: boolean
+  [GatedTrackMetadataField.DOWNLOAD_CONDITIONS]: Nullable<AccessConditions>
+  [GatedTrackMetadataField.IS_DOWNLOADABLE]: boolean
   [UnlistedTrackMetadataField.SCHEDULED_RELEASE]: boolean
   [UnlistedTrackMetadataField.UNLISTED]: boolean
   [UnlistedTrackMetadataField.GENRE]: boolean
@@ -117,8 +128,12 @@ export const AccessAndSaleTriggerLegacy = (
     scheduled_release: isScheduledRelease,
     is_stream_gated: isStreamGated,
     preview_start_seconds: preview,
+    is_download_gated: isDownloadGated,
+    download_conditions: downloadConditions,
+    is_downloadable: isDownloadable,
     ...fieldVisibility
   } = metadataState
+
   /**
    * Stream conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
@@ -145,6 +160,11 @@ export const AccessAndSaleTriggerLegacy = (
     set(initialValues, IS_UNLISTED, isUnlisted)
     set(initialValues, IS_STREAM_GATED, isStreamGated)
     set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
+    set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
+    set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
+    set(initialValues, IS_DOWNLOADABLE, isDownloadable)
+    // set(initialValues, DOWNLOAD_REQUIRES_FOLLOW, downloadRequiresFollow)
+    // set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -179,14 +199,17 @@ export const AccessAndSaleTriggerLegacy = (
     )
     return initialValues as AccessAndSaleFormValues
   }, [
-    fieldVisibility,
-    isStreamGated,
-    isUnlisted,
     savedStreamConditions,
+    isUnlisted,
+    isStreamGated,
     tempStreamConditions,
-    initialStreamConditions,
+    isDownloadGated,
+    downloadConditions,
+    isDownloadable,
+    isScheduledRelease,
+    fieldVisibility,
     preview,
-    isScheduledRelease
+    initialStreamConditions
   ])
 
   const onSubmit = (values: AccessAndSaleFormValues) => {
@@ -195,6 +218,7 @@ export const AccessAndSaleTriggerLegacy = (
     const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
     const fieldVisibility = get(values, FIELD_VISIBILITY)
     const streamConditions = get(values, STREAM_CONDITIONS)
+    // const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
     let newState = {
       ...metadataState,
@@ -209,33 +233,43 @@ export const AccessAndSaleTriggerLegacy = (
     // For gated options, extract the correct stream conditions based on the selected availability type
     switch (availabilityType) {
       case StreamTrackAvailabilityType.USDC_PURCHASE: {
-        newState.preview_start_seconds = preview ?? 0
-        const {
-          usdc_purchase: { price }
-        } = streamConditions as USDCPurchaseConditions
-        newState.stream_conditions = {
+        const conditions = {
           // @ts-ignore splits get added in saga
-          usdc_purchase: { price: Math.round(price) }
-        }
+          usdc_purchase: {
+            price: Math.round(
+              (streamConditions as USDCPurchaseConditions).usdc_purchase.price
+            )
+          }
+        } as USDCPurchaseConditions
         newState.is_stream_gated = true
+        newState.stream_conditions = conditions
+        newState.preview_start_seconds = preview ?? 0
+        newState.is_download_gated = true
+        newState.download_conditions = conditions
+        newState.is_downloadable = true
         break
       }
       case StreamTrackAvailabilityType.SPECIAL_ACCESS: {
         if (specialAccessType === SpecialAccessType.FOLLOW) {
           const { follow_user_id } = streamConditions as FollowGatedConditions
           newState.stream_conditions = { follow_user_id }
+          newState.download_conditions = { follow_user_id }
         } else {
           const { tip_user_id } = streamConditions as TipGatedConditions
           newState.stream_conditions = { tip_user_id }
+          newState.download_conditions = { tip_user_id }
         }
         newState.is_stream_gated = true
+        newState.is_download_gated = true
         break
       }
       case StreamTrackAvailabilityType.COLLECTIBLE_GATED: {
         const { nft_collection } =
           streamConditions as CollectibleGatedConditions
-        newState.stream_conditions = { nft_collection }
         newState.is_stream_gated = true
+        newState.stream_conditions = { nft_collection }
+        newState.is_download_gated = true
+        newState.download_conditions = { nft_collection }
         break
       }
       case StreamTrackAvailabilityType.HIDDEN: {
