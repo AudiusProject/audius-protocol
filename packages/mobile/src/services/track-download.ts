@@ -11,11 +11,16 @@ import type {
 import RNFetchBlob from 'rn-fetch-blob'
 
 import { dispatch } from 'app/store'
-import { setFetchCancel, setFileInfo } from 'app/store/download/slice'
+import {
+  beginDownload,
+  setDownloadError,
+  setFetchCancel,
+  setFileInfo
+} from 'app/store/download/slice'
 import { setVisibility } from 'app/store/drawers/slice'
 
-import { audiusBackendInstance } from './audius-backend-instance'
 import { dedupFilenames } from '~/utils'
+import { audiusBackendInstance } from './audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
 
@@ -75,6 +80,11 @@ const downloadOne = async ({
     await onFetchComplete?.(fetchRes.path())
   } catch (err) {
     console.error(err)
+    dispatch(
+      setDownloadError(
+        err instanceof Error ? err : new Error(`Download failed: ${err}`)
+      )
+    )
     // On failure attempt to delete the file
     removePathIfExists(filePath)
   }
@@ -125,6 +135,8 @@ const download = async ({
   abortSignal
 }: DownloadTrackArgs) => {
   if (files.length === 0) return
+
+  dispatch(beginDownload())
 
   dispatch(
     setFileInfo({

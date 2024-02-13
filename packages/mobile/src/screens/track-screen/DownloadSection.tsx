@@ -5,26 +5,25 @@ import {
   useDownloadableContentAccess,
   useGatedContentAccess
 } from '@audius/common/hooks'
-import { ModalSource, DownloadQuality } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
+import { DownloadQuality, ModalSource } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import {
   cacheTracksSelectors,
   usePremiumContentPurchaseModal,
-  useWaitForDownloadModal,
-  tracksSocialActions as socialTracksActions
+  useWaitForDownloadModal
 } from '@audius/common/store'
-import type { CommonState } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
+  Button,
   Flex,
+  IconLockUnlocked,
   IconReceive,
   Text,
-  Button,
-  IconLockUnlocked,
   useTheme
 } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
@@ -111,13 +110,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
           trackIds,
           quality
         })
-        dispatch(
-          socialTracksActions.downloadTrack({
-            trackIds,
-            parentTrackId,
-            original: quality === DownloadQuality.ORIGINAL
-          })
-        )
       }
     },
     [

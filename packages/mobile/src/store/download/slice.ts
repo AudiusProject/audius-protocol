@@ -9,6 +9,7 @@ type State = {
   fetchCancel: Nullable<() => void>
   trackName: Nullable<string>
   fileName: Nullable<string>
+  error?: Error
 }
 
 const initialState: State = {
@@ -22,6 +23,9 @@ const slice = createSlice({
   name: 'downloadTrack',
   initialState,
   reducers: {
+    beginDownload: (state) => {
+      state.error = undefined
+    },
     setDownloadedPercentage: (state, action: PayloadAction<number>) => {
       state.downloadedPercentage = action.payload
     },
@@ -37,11 +41,19 @@ const slice = createSlice({
     },
     setFetchCancel: (state, action: PayloadAction<() => void>) => {
       state.fetchCancel = action.payload
+    },
+    setDownloadError: (state, action: PayloadAction<Error>) => {
+      state.error = action.payload
     }
   }
 })
 
-export const { setDownloadedPercentage, setFileInfo, setFetchCancel } =
-  slice.actions
+export const {
+  beginDownload,
+  setDownloadedPercentage,
+  setFileInfo,
+  setFetchCancel,
+  setDownloadError
+} = slice.actions
 
 export default slice.reducer
