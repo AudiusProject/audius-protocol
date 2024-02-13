@@ -7,6 +7,7 @@ declare
   owner_user_id int;
   track_remix_of json;
   is_remix_cosign boolean;
+  is_album boolean;
   delta int;
   entity_type text;
 begin
@@ -24,7 +25,9 @@ begin
     and p.is_current
     on conflict do nothing;
     
-    entity_type := 'playlist';
+    select ap.is_album into is_album
+    from aggregate_playlist ap
+    where ap.playlist_id = new.save_item_id;
   end if;
 
   -- increment or decrement?
@@ -96,7 +99,9 @@ begin
     values
       (new.save_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
     on conflict do nothing;
-    insert into notification
+
+    if entity_type = 'track' then
+      insert into notification
       (user_ids, type, specifier, group_id, blocknumber, timestamp, data)
       values
       (
@@ -106,9 +111,24 @@ begin
         'milestone:' || milestone_name  || ':id:' || new.save_item_id || ':threshold:' || milestone,
         new.blocknumber,
         new.created_at,
-        json_build_object('type', milestone_name, entity_type || '_id', new.save_item_id, 'threshold', milestone)
+        json_build_object('type', milestone_name, 'track_id', new.save_item_id, 'threshold', milestone)
       )
       on conflict do nothing;
+    else
+      insert into notification
+        (user_ids, type, specifier, group_id, blocknumber, timestamp, data)
+        values
+        (
+          ARRAY [owner_user_id],
+          'milestone',
+          owner_user_id,
+          'milestone:' || milestone_name  || ':id:' || new.save_item_id || ':threshold:' || milestone,
+          new.blocknumber,
+          new.created_at,
+          json_build_object('type', milestone_name, 'playlist_id', new.save_item_id, 'threshold', milestone, 'is_album', is_album)
+        )
+        on conflict do nothing;
+    end if;
   end if;
 
   begin
