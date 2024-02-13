@@ -9,7 +9,7 @@ class PlaylistsTracksRelations(Base, RepresentableMixin):
 
     playlist_id = Column(String, nullable=False, primary_key=True, index=True)
     track_id = Column(Integer, nullable=False, primary_key=True, index=True)
-    is_current = Column(Boolean, nullable=False)
+    is_delete = Column(Boolean, nullable=False)
     created_at = Column(
         DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")
     )
