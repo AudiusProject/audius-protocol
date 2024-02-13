@@ -134,6 +134,8 @@ export const DetailsTileActionButtons = ({
       onPress={onPressShare}
       aria-label={messages.shareButtonLabel}
       size='2xl'
+      // TODO: Remove after AnimatedButton uses IconButton
+      style={{ padding: 0 }}
     />
   )
 
@@ -144,6 +146,8 @@ export const DetailsTileActionButtons = ({
       onPress={onPressOverflow}
       aria-label={messages.overflowButtonLabel}
       size='2xl'
+      // TODO: Remove after AnimatedButton uses IconButton
+      style={{ padding: 0 }}
     />
   )
 
