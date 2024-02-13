@@ -247,9 +247,7 @@ new_aggregate_user as (
     left join user_following ufollowing on ap.user_id = ufollowing.user_id
     left join user_save us on ap.user_id = us.user_id
     left join user_repost ur on ap.user_id = ur.user_id
-    left join ranked_genres rg on ap.user_id = rg.user_id
-  where
-    rg.genre_rank = 1
+    left join ranked_genres rg on ap.user_id = rg.user_id AND rg.genre_rank = 1
 )
 update
   aggregate_user au
