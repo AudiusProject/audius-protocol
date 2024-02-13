@@ -15,7 +15,7 @@
 .tab {
   z-index: 3;
   flex: 1 1 auto;
-  padding: var(--harmony-unit-2) var(--harmony-unit-4);
+  padding: var(--harmony-unit-2);
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
