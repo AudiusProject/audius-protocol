@@ -7,7 +7,7 @@ import {
   useField as useFormikField
 } from 'formik'
 import { useDebouncedCallback } from './useDebouncedCallback'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 export type UseHarmonyFieldProps<Value> = FieldHookConfig<Value> & {
   /** Function to transform the input value on change, eg. a function to trim whitespace */
@@ -15,16 +15,19 @@ export type UseHarmonyFieldProps<Value> = FieldHookConfig<Value> & {
   /** Function to transform the input value on blur, eg. a function to trim whitespace */
   transformValueOnBlur?: (value: string) => string
   /**
-   * Debounces onChange validation.
+   * Delays onChange validation errors from showing. Useful for improving the
+   * UX by not showing users the errors as they're typing into the form input.
+   *
+   * Note: This won't globally debounce validation for the form, just for this
+   * field. Do not use this for eg. debouncing validation API requests unless y
+   * you use it for _every_ field of the form (or other fields don't validate
+   * on change). Otherwise changes to other fields will trigger non-debounced
+   * validation requests anyway.
+   *
    * Requires validateOnChange to be true (either for the form or this field).
-   * @default 0
-   */
-  debouncedValidationMs?: number
-  /**
-   * Delays onChange validation errors from showing.
-   * Requires validateOnChange to be true (either for the form or this field).
-   * Note: This doesn't delay the actual validation from running,
-   * just how long after the user stops typing that the error will appear.
+   *
+   * The default of 0 means errors will be hidden until the user unfocuses.
+   *
    * @default 0
    */
   debouncedIdleMs?: number
@@ -35,7 +38,7 @@ export type UseHarmonyFieldProps<Value> = FieldHookConfig<Value> & {
   showErrorBeforeSubmit?: boolean
   /**
    * Whether to validate this particular field on change or not.
-   * If present, overrides the form's validateFieldOnChange
+   * If present, overrides the form's validateFieldOnChange.
    * @default undefined
    */
   validateFieldOnChange?: boolean
@@ -47,13 +50,21 @@ export type UseHarmonyFieldProps<Value> = FieldHookConfig<Value> & {
  * configurable behaviors:
  * - Only show errors after a submission has been attempted
  * - Apply transformations to the value on blur or change
- * - Debounce validations and/or error displays to prevent error spam
+ * - Debounce validations and error displays to lighten the validation
+ *   workload or hide the errors while the user is still typing.
  * - Allow overriding the Formik context's "validateOnChange"
+ *
+ * Most of the extra functionality is reserved for fields that users type into,
+ * eg. text, email, password inputs.
+ * Unlike the useField hook from Formik, this implementation relies much less
+ * on the event target in onChange and onBlur, instead using the passed in
+ * field name path. This makes usage with ReactNative more straightforward.
+ *
  * @param propsOrFieldName the field's name, or the full props for the hook.
  * @example
  * const MyComponent = () => {
- *    const [emailField] = useHarmonyField({ name: 'email', label: 'Email' })
- *    return <TextInput {...field} />
+ *    const [emailField, { error }] = useHarmonyField({ name: 'email', label: 'Email' })
+ *    return <TextInput {...field} error={!!error} helperText={error} />
  * }
  */
 export const useHarmonyField = <Value = any>(
@@ -69,18 +80,19 @@ export const useHarmonyField = <Value = any>(
       : propsOrFieldName
   const {
     name,
-    debouncedValidationMs = 0,
+    type = 'text',
     debouncedIdleMs = 0,
     transformValueOnChange,
     transformValueOnBlur,
     showErrorBeforeSubmit = false,
     validateFieldOnChange
   } = props
-  const [field, meta, helpers] = useFormikField(name)
+  const [field, meta, helpers] = useFormikField(props)
   const { touched, error } = meta
   const { setValue, setTouched } = helpers
   const {
     validateField,
+    validateOnBlur,
     validateOnChange: validateFormOnChange,
     submitCount
   } = useFormikContext()
@@ -106,91 +118,137 @@ export const useHarmonyField = <Value = any>(
       !isChanging
   )
 
-  // Debounced version of validate field
-  const debouncedValidateField = useDebouncedCallback(
-    () => validateField(name),
-    [validateField, name],
-    debouncedValidationMs
-  )
-
-  // Debounced function that mimics onBlur if the user stops typing for a bit
-  const debouncedSetIdle = useDebouncedCallback(
-    () => {
+  /**
+   * Sets the field to touched, validates it, and then sets isChanging to false.
+   * Essentially mimicking onBlur but ensuring validation finishes before
+   * allowing errors to show.
+   */
+  const validateAndSetIdle = useCallback(() => {
+    // We'll validate ourselves - pass false for validation
+    setTouched(true, false)
+    // Cast back to promise (the types are wrong)
+    const maybePromise = validateField(name) as Promise<any> | void
+    // Wait for validation before confirming we're not editing
+    if (maybePromise) {
+      maybePromise.then(() => {
+        setIsChanging(false)
+      })
+    } else {
       setIsChanging(false)
-      setTouched(true)
-    },
-    [setIsChanging, setTouched],
+    }
+  }, [name, validateField, setIsChanging, setTouched])
+
+  // Debounced validateAndSetIdle for when the user stops typing for a bit
+  const debouncedValidateAndSetIdle = useDebouncedCallback(
+    validateAndSetIdle,
+    [validateAndSetIdle],
     debouncedIdleMs
   )
 
-  const onChange = useCallback(
-    (e: React.ChangeEvent<any>) => {
-      // Add isChanging state so that errors don't show while typing
+  const onChangeText = useCallback(
+    async (e: React.ChangeEvent<any>) => {
+      // Add isChanging state so that errors don't show while typing.
       setIsChanging(true)
-      // Stop editing if the user stops typing for a while, so that any
-      // errors can show through even if the input doesn't leave focus
-      if (validateOnChange) {
-        debouncedSetIdle()
-      }
 
       // Apply value transformations
       if (transformValueOnChange) {
         e.target.value = transformValueOnChange(e.target.value)
       }
 
-      // Formik's onChange is just setValue. Calling setValue explicitly
-      // instead of onChange for more control and so Formik doesn't have to
-      // infer the field name from the event target.
-      if (validateOnChange && debouncedValidationMs) {
-        // Explicitly skipping validating onChange here so the debouncing
-        // effect can take care of it.
-        setValue(e.target.value, false)
-        debouncedValidateField()
-      } else {
-        // onChange in Formik respects validateOnChange by leaving the second
-        // param undefined. Since this hook takes in an override, pass the
-        // prop in explicitly to force validations or non-validations at will.
-        setValue(e.target.value, validateOnChange)
+      // All Formik's onChange handler does for text fields is call setValue.
+      // Calling setValue explicitly here instead of onChange for more control
+      // of the validation and so Formik doesn't have to infer the field name.
+      // Explicitly don't validate by setting the second param to false.
+      // Await the resulting promise to ensure the value is set before validating.
+      const maybePromise = setValue(
+        e.target.value,
+        false
+      ) as Promise<any> | void
+      if (maybePromise) {
+        await maybePromise
+      }
+
+      // Manually handle validation
+      if (validateOnChange) {
+        if (debouncedIdleMs) {
+          // If debouncing, set the field to touched, validate, and set
+          // isChanging to false after validating.
+          debouncedValidateAndSetIdle()
+        } else {
+          // Don't set isChanging to false if not debouncing - let the
+          // onBlur handler do that. But do validate the field.
+          validateField(name)
+        }
       }
     },
     [
       transformValueOnChange,
       validateOnChange,
-      debouncedValidationMs,
-      debouncedValidateField,
+      debouncedIdleMs,
+      validateField,
       setValue,
-      setIsChanging
+      setIsChanging,
+      debouncedValidateAndSetIdle
     ]
   )
 
+  /**
+   * Overrides the default Formik onBlur event in order to apply
+   * transformations and toggle isChanging appropriately.
+   */
   const onBlur = useCallback(
     (e: React.FocusEvent<any>) => {
-      // Remove isChanging state which will allow errors to show
-      setIsChanging(false)
-
       // Apply value transformations
       if (transformValueOnBlur) {
         e.target.value = transformValueOnBlur(e.target.value)
       }
 
-      // Formik's onBlur is just setTouched
-      setTouched(true)
+      // Formik's onBlur is just setTouched, but we want to clear our
+      // isChanging state once the validation finishes.
+      if (validateOnBlur) {
+        validateAndSetIdle()
+      } else {
+        setTouched(true, false)
+        setIsChanging(false)
+      }
     },
-    [transformValueOnBlur, setTouched, setIsChanging]
+    [transformValueOnBlur, validateAndSetIdle]
   )
 
-  // When the submit count increases, the user must have submitted.
-  // Mark the field as not being edited so that any submission errors appear.
-  useEffect(() => {
-    setIsChanging(false)
-  }, [submitCount])
+  /**
+   * Overrides the default Formik onChange event for text-like inputs.
+   *
+   * Used to apply value transformations, validation debouncing, and ensure
+   * the field name is associated properly.
+   *
+   * Since type is in scope here, avoiding the regex checks used in Formik's {@link https://github.com/jaredpalmer/formik/blob/0f960aaeeb0bdbef8312b5107cd3374884a0e62b/packages/formik/src/Formik.tsx#L639C9-L645C19 executeChange}
+   * and comparing directly for text-like input types.
+   */
+  const onChange = useCallback(
+    (e: React.ChangeEvent<any>) => {
+      if (
+        type === 'text' ||
+        type === 'email' ||
+        type === 'password' ||
+        type === 'search' ||
+        type === 'url'
+      ) {
+        onChangeText(e)
+      } else {
+        field.onChange(e)
+      }
+    },
+    [onChangeText, field.onChange, type]
+  )
 
-  const harmonyField = {
-    ...field,
-    error: hasError ? error : undefined,
-    onChange,
-    onBlur
-  }
-
-  return [harmonyField, meta, helpers]
+  // Override onChange, onBlur, and error
+  return [
+    {
+      ...field,
+      onChange,
+      onBlur
+    },
+    { ...meta, error: hasError ? error : undefined },
+    helpers
+  ]
 }
