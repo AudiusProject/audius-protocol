@@ -13,6 +13,7 @@ export interface RequestContext {
   recoveredSigner: Users | DeveloperApps
   signerIsApp: boolean
   signerIsUser: boolean
+  createOrDeactivate: boolean
 }
 
 declare global {

@@ -5,6 +5,7 @@ import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
 import { logger } from '../logger'
+import { isUserCreate, isUserDeactivate } from '../utils'
 
 export const validator = async (
   request: Request,
@@ -55,25 +56,35 @@ export const validator = async (
 
   let signerIsApp = false
   let signerIsUser = false
+  let createOrDeactivate = false
 
-  try {
-    recoveredSigner = await retrieveUser(
-      contractRegistryKey,
-      contractAddress,
-      encodedABI,
-      senderAddress,
-      handle
-    )
+  const user = await retrieveUser(
+    contractRegistryKey,
+    contractAddress,
+    encodedABI,
+    senderAddress,
+    handle
+  )
+  if (user !== undefined) {
+    recoveredSigner = user
     signerIsUser = true
-  } catch (e) {
-    logger.error(
-      { e },
-      'could not gather user from db, continuing with senderAddress and handle'
-    )
   }
 
-  // could not find user
-  if (!signerIsUser) {
+  if (signerIsUser) {
+    const isDeactivated = (recoveredSigner as Users).is_deactivated
+    if (isUserDeactivate(isDeactivated, encodedABI)) {
+      logger.info({ requestId: response.locals.ctx.requestId, encodedABI }, "user deactivation")
+      createOrDeactivate = true
+    }
+  }
+
+  if (isUserCreate(encodedABI)) {
+    logger.info({ requestId: response.locals.ctx.requestId, encodedABI }, "user create")
+    createOrDeactivate = true
+  }
+
+  // could not find user and is not create, find app
+  if (!signerIsUser && !createOrDeactivate) {
     const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
     if (developerApp === undefined) {
       logger.error({ encodedABI }, "neither user nor developer app could be found for address")
@@ -91,7 +102,8 @@ export const validator = async (
   response.locals.ctx = {
     ...oldCtx,
     validatedRelayRequest,
-    recoveredSigner: recoveredSigner,
+    recoveredSigner,
+    createOrDeactivate,
     ip,
     signerIsApp,
     signerIsUser
@@ -106,7 +118,7 @@ export const retrieveUser = async (
   encodedABI: string,
   senderAddress?: string,
   handle?: string
-): Promise<Users> => {
+): Promise<Users | undefined> => {
   let query = discoveryDb<Users>(Table.Users)
   let addedWalletClause = false
   let addedHandleClause = false
@@ -139,11 +151,6 @@ export const retrieveUser = async (
   }
 
   const user = await query.andWhere('is_current', '=', true).first()
-
-  if (!user) {
-    throw new Error('user could not be found with provided information')
-  }
-
   return user
 }
 
