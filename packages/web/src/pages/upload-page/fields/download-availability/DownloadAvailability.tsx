@@ -50,11 +50,13 @@ const messages = {
 }
 
 type DownloadAvailabilityProps = {
+  initialDownloadConditions: Nullable<AccessConditions>
   value: DownloadTrackAvailabilityType
   setValue: (value: DownloadTrackAvailabilityType) => void
 }
 
 export const DownloadAvailability = ({
+  initialDownloadConditions,
   value,
   setValue
 }: DownloadAvailabilityProps) => {
@@ -97,12 +99,14 @@ export const DownloadAvailability = ({
     {
       key: DownloadTrackAvailabilityType.FOLLOWERS,
       text: messages.followers,
-      icon: <IconUserFollowing size='s' fill={color.neutral.neutral} />
+      icon: <IconUserFollowing size='s' fill={color.neutral.neutral} />,
+      disabled: !isContentFollowGated(initialDownloadConditions)
     },
     {
       key: DownloadTrackAvailabilityType.USDC_PURCHASE,
       text: messages.premium,
-      icon: <IconCart size='s' fill={color.neutral.neutral} />
+      icon: <IconCart size='s' fill={color.neutral.neutral} />,
+      disabled: !isContentUSDCPurchaseGated(initialDownloadConditions)
     }
   ]
 

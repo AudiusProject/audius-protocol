@@ -290,7 +290,6 @@ const BasicForm = (props) => {
         onChangeField={props.onChangeField}
         lastGateKeeper={props.lastGateKeeper}
         setLastGateKeeper={props.setLastGateKeeper}
-        isUpload={props.isUpload}
         initialForm={props.initialForm}
         closeMenuCallback={(data) => {
           if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {

@@ -159,6 +159,7 @@ export const stemsAndDownloadsSchema = ({
 // the selection, addition, and deletion of stems.
 // May do another pass later to refactor.
 type StemsAndDownloadsMenuFieldsProps = {
+  initialDownloadConditions?: Nullable<AccessConditions>
   stems?: StemUploadWithFile[]
   onAddStems?: (stems: any) => void
   onSelectCategory?: (category: StemCategory, index: number) => void
@@ -330,6 +331,7 @@ export const StemsAndDownloadsMenuFields = (
       <Divider />
       {isLosslessDownloadsEnabled ? (
         <DownloadAvailability
+          initialDownloadConditions={props.initialDownloadConditions}
           value={availabilityType}
           setValue={setAvailabilityType}
         />

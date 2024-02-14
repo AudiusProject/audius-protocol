@@ -61,7 +61,6 @@ type StemsAndDownloadsTriggerLegacyProps = {
   onChangeField: (field: string, value: any) => void
   lastGateKeeper: GateKeeper
   setLastGateKeeper: (value: GateKeeper) => void
-  isUpload: boolean
   initialForm: Track
   closeMenuCallback?: (data?: any) => void
 }
@@ -78,8 +77,7 @@ export const StemsAndDownloadsTriggerLegacy = (
     onChangeField,
     lastGateKeeper,
     setLastGateKeeper,
-    // isUpload,
-    // initialForm,
+    initialForm,
     closeMenuCallback
   } = props
 
@@ -262,6 +260,7 @@ export const StemsAndDownloadsTriggerLegacy = (
       )}
       menuFields={
         <StemsAndDownloadsMenuFields
+          initialDownloadConditions={initialForm.download_conditions}
           onAddStems={onAddStems}
           onSelectCategory={onSelectCategory}
           onDeleteStem={onDeleteStem}

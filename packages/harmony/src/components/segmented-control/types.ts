@@ -2,6 +2,7 @@ export type Option<T> = {
   key: T
   text: string
   icon?: React.ReactNode
+  disabled?: boolean
 }
 
 export type SegmentedControlProps<T extends string> = {
