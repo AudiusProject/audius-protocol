@@ -20,13 +20,17 @@ import type {
 import createS3 from './s3Service'
 
 const getUserId = async (audiusSdk: AudiusSdkType, artistName: string) => {
-  const { data: users } = await audiusSdk.users.searchUsers({
-    query: artistName,
-  })
-  if (!users || users.length === 0) {
-    throw new Error(`Could not find user ${artistName}`)
-  }
-  return users[0].id
+  // TODO: We previously did it like this, but the results are too random and don't return the user with an exact match as users[0].
+  // In the future, we could check all OAuthed usernames for an exact match and cross-reference SDK's search results to find a rough match if no exact match was found
+  // const { data: users } = await audiusSdk.users.searchUsers({
+  //   query: artistName,
+  // })
+  // if (!users || users.length === 0) {
+  //   throw new Error(`Could not find user ${artistName}`)
+  // }
+  // return users[0].id
+
+  return 'E32yWR'
 }
 
 const formatTrackMetadata = (
@@ -42,16 +46,7 @@ const formatTrackMetadata = (
     license: metadata.license,
     releaseDate: new Date(metadata.release_date),
     previewStartSeconds: metadata.preview_start_seconds ?? undefined,
-    // TODO: visibility
-    fieldVisibility: {
-      mood: true,
-      tags: true,
-      genre: true,
-      share: true,
-      playCount: true,
-      remixes: true,
-    },
-    // isUnlisted: // TODO
+    // isUnlisted: // TODO: set visibility
     // iswc:
     // origFilename:
     // isOriginalAvailable:
@@ -86,6 +81,9 @@ const uploadTrack = async (
 ) => {
   const userId = await getUserId(audiusSdk, pendingTrack.metadata.artist_name)
   const metadata = formatTrackMetadata(pendingTrack.metadata)
+
+  pendingTrack.metadata.cover_art_url =
+    's3://ddex-dev-audius-indexed/65cc6ff94bc8f81560c8749e/resources/A10301A0005108088N_T-1027024165547_Image.jpg' // TODO: Remove after ensuring tracks always have cover art
 
   const coverArtDownload = await s3Service.downloadFromS3Indexed(
     pendingTrack.metadata.cover_art_url
@@ -150,8 +148,11 @@ const uploadAlbum = async (
     (trackMetadata: TrackMetadata) => formatTrackMetadata(trackMetadata)
   )
 
-  // TODO: Should be pendingAlbum.metadata.playlist_owner_id, but how can the golang parser know this?
-  const userId = await getUserId(audiusSdk, 'theo...again')
+  // TODO: How can the parser know playlist_owner_id? Maybe we make the parser check OAuthed usernames for an exact match and hit Discovery's /v1/users/search endpoint to find a rough match if no exact match was found
+  const userId = await getUserId(
+    audiusSdk,
+    /* pendingAlbum.metadata.playlist_owner_id */ ''
+  )
 
   const uploadAlbumRequest: UploadAlbumRequest = {
     coverArtFile,
