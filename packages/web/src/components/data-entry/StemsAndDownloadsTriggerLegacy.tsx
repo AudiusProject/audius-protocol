@@ -86,13 +86,13 @@ export const StemsAndDownloadsTriggerLegacy = (
   )
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
-  // const initialDownloadConditions = initialForm[DOWNLOAD_CONDITIONS]
   const {
     stream_conditions: streamConditions,
     is_download_gated: isDownloadGated,
     download_conditions: savedDownloadConditions,
     is_downloadable: isDownloadable,
-    is_original_available: isOriginalAvailable
+    is_original_available: isOriginalAvailable,
+    download
   } = fields
 
   /**
@@ -184,7 +184,7 @@ export const StemsAndDownloadsTriggerLegacy = (
         if (!streamConditions) {
           onChangeField(IS_DOWNLOAD_GATED, false)
           onChangeField(DOWNLOAD_CONDITIONS, null)
-          // setDownloadRequiresFollow(false)
+          onChangeField('download', { ...download, requires_follow: false })
           switch (availabilityType) {
             case DownloadTrackAvailabilityType.USDC_PURCHASE: {
               onChangeField(IS_DOWNLOAD_GATED, true)
@@ -206,7 +206,7 @@ export const StemsAndDownloadsTriggerLegacy = (
               const { follow_user_id } =
                 downloadConditions as FollowGatedConditions
               onChangeField(DOWNLOAD_CONDITIONS, { follow_user_id })
-              // setDownloadRequiresFollow(true)
+              onChangeField('download', { ...download, requires_follow: true })
               setLastGateKeeper({
                 ...lastGateKeeper,
                 access: 'stemsAndDownloads'
@@ -231,7 +231,10 @@ export const StemsAndDownloadsTriggerLegacy = (
                 } as FollowGatedConditions)
               : null
           )
-          // setDownloadRequiresFollow(downloadRequiresFollow)
+          onChangeField('download', {
+            ...download,
+            requires_follow: downloadRequiresFollow
+          })
           setLastGateKeeper({
             ...lastGateKeeper,
             access: 'stemsAndDownloads'
@@ -241,6 +244,7 @@ export const StemsAndDownloadsTriggerLegacy = (
     },
     [
       accountUserId,
+      download,
       isLosslessDownloadsEnabled,
       onChangeField,
       setLastGateKeeper,

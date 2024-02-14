@@ -390,7 +390,8 @@ const AdvancedForm = (props) => {
     preview_start_seconds: props.defaultFields.preview_start_seconds,
     is_download_gated: props.defaultFields.is_download_gated,
     download_conditions: props.defaultFields.download_conditions,
-    is_downloadable: props.defaultFields.is_downloadable
+    is_downloadable: props.defaultFields.is_downloadable,
+    download: props.defaultFields.download
   }
 
   const releaseDateState = {
