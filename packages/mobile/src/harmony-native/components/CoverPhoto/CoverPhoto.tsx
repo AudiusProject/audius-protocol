@@ -51,12 +51,18 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
   const fullHeightStyle = css({ height: '100%' })
 
   const getSource = () => {
-    // Having .url means its a useable image source
-    if (coverPhoto && !isEmpty(coverPhoto)) {
-      return { source: coverPhoto }
+    if (coverPhoto && (coverPhoto as Image).file && !isEmpty(coverPhoto)) {
+      return { source: (coverPhoto as Image).file }
     }
-    if (profilePicture && !isEmpty(profilePicture)) {
-      return { source: profilePicture, usingProfilePicture: true }
+    if (
+      profilePicture &&
+      (profilePicture as Image).file &&
+      !isEmpty(profilePicture)
+    ) {
+      return {
+        source: (profilePicture as Image).file,
+        usingProfilePicture: true
+      }
     }
     return { source: { uri: undefined } }
   }
@@ -64,7 +70,11 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
   const { source, usingProfilePicture } = getSource()
 
   return (
-    <ImageBackground source={source} style={[rootStyle, style]} {...other}>
+    <ImageBackground
+      source={source as ImageSourcePropType}
+      style={[rootStyle, style]}
+      {...other}
+    >
       {!profilePicture && !coverPhoto ? (
         <LinearGradient
           colors={['rgba(0, 0, 0, 0.20)', 'rgba(0, 0, 0, 0.00)']}
