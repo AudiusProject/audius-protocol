@@ -104,7 +104,7 @@ function* getDefautFollowUserIds() {
 export function* fetchSuggestedFollowUserIds() {
   const env = yield* getContext('env')
   const res = yield* call(fetch, env.SUGGESTED_FOLLOW_HANDLES)
-  const json = yield* call(res.json)
+  const json = yield* call([res, res.json])
   return json
 }
 
