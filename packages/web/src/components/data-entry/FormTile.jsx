@@ -288,6 +288,8 @@ const BasicForm = (props) => {
         onDeleteStem={props.onDeleteStem}
         fields={props.defaultFields}
         onChangeField={props.onChangeField}
+        lastGateKeeper={props.lastGateKeeper}
+        setLastGateKeeper={props.setLastGateKeeper}
         isUpload={props.isUpload}
         initialForm={props.initialForm}
         closeMenuCallback={(data) => {
@@ -549,6 +551,8 @@ const AdvancedForm = (props) => {
               initialForm={props.initialForm}
               forceOpen={props.forceOpenAccessAndSale}
               setForceOpen={props.setForceOpenAccessAndSale}
+              lastGateKeeper={props.lastGateKeeper}
+              setLastGateKeeper={props.setLastGateKeeper}
             />
           )}
           {props.type === 'track' && (
@@ -689,7 +693,8 @@ class FormTile extends Component {
     remixSettingsModalVisible: false,
     aiAttributionModalVisible: false,
     isRemix: !!this.props.defaultFields.remix_of,
-    forceOpenAccessAndSale: false
+    forceOpenAccessAndSale: false,
+    lastGateKeeper: {}
   }
 
   componentDidMount() {
@@ -813,6 +818,10 @@ class FormTile extends Component {
     this.setState({ forceOpenAccessAndSale: forceOpen })
   }
 
+  setLastGateKeeper = (lastGateKeeper) => {
+    this.setState({ lastGateKeeper })
+  }
+
   render() {
     const {
       advancedShow,
@@ -844,6 +853,8 @@ class FormTile extends Component {
           setIsRemix={this.setIsRemix}
           forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
           setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
+          lastGateKeeper={this.state.lastGateKeeper}
+          setLastGateKeeper={this.setLastGateKeeper}
         />
         <AdvancedForm
           {...this.props}
@@ -866,6 +877,8 @@ class FormTile extends Component {
           setIsRemix={this.setIsRemix}
           forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
           setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
+          lastGateKeeper={this.state.lastGateKeeper}
+          setLastGateKeeper={this.setLastGateKeeper}
         />
         {this.props.children.length > 0 ? (
           <DragDropContext onDragEnd={this.onDragEnd}>

@@ -37,11 +37,12 @@ import {
   DOWNLOAD_CONDITIONS,
   // DOWNLOAD_REQUIRES_FOLLOW,
   FIELD_VISIBILITY,
+  GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
   IS_STREAM_GATED,
   IS_UNLISTED,
-  // LAST_GATE_KEEPER,
+  LAST_GATE_KEEPER,
   PREVIEW,
   PRICE_HUMANIZED,
   SPECIAL_ACCESS_TYPE,
@@ -108,6 +109,8 @@ type AccessAndSaleTriggerLegacyProps = {
   metadataState: TrackMetadataState
   trackLength: number
   didUpdateState: (newState: TrackMetadataState) => void
+  lastGateKeeper: GateKeeper
+  setLastGateKeeper: (value: GateKeeper) => void
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
 }
@@ -122,6 +125,8 @@ export const AccessAndSaleTriggerLegacy = (
     metadataState,
     trackLength,
     didUpdateState,
+    lastGateKeeper,
+    setLastGateKeeper,
     forceOpen,
     setForceOpen
   } = props
@@ -168,7 +173,7 @@ export const AccessAndSaleTriggerLegacy = (
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     // set(initialValues, DOWNLOAD_REQUIRES_FOLLOW, downloadRequiresFollow)
-    // set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
+    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -210,6 +215,7 @@ export const AccessAndSaleTriggerLegacy = (
     isDownloadGated,
     downloadConditions,
     isDownloadable,
+    lastGateKeeper,
     isScheduledRelease,
     fieldVisibility,
     preview,
@@ -222,7 +228,7 @@ export const AccessAndSaleTriggerLegacy = (
     const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
     const fieldVisibility = get(values, FIELD_VISIBILITY)
     const streamConditions = get(values, STREAM_CONDITIONS)
-    // const lastGateKeeper = get(values, LAST_GATE_KEEPER)
+    const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
     let newState = {
       ...metadataState,
@@ -251,6 +257,15 @@ export const AccessAndSaleTriggerLegacy = (
         newState.is_download_gated = true
         newState.download_conditions = conditions
         newState.is_downloadable = true
+        const downloadableGateKeeper =
+          isDownloadable && lastGateKeeper.downloadable === 'stemsAndDownloads'
+            ? 'stemsAndDownloads'
+            : 'accessAndSale'
+        setLastGateKeeper({
+          ...lastGateKeeper,
+          access: 'accessAndSale',
+          downloadable: downloadableGateKeeper
+        })
         break
       }
       case StreamTrackAvailabilityType.SPECIAL_ACCESS: {
@@ -265,6 +280,10 @@ export const AccessAndSaleTriggerLegacy = (
         }
         newState.is_stream_gated = true
         newState.is_download_gated = true
+        setLastGateKeeper({
+          ...lastGateKeeper,
+          access: 'accessAndSale'
+        })
         break
       }
       case StreamTrackAvailabilityType.COLLECTIBLE_GATED: {
@@ -274,6 +293,10 @@ export const AccessAndSaleTriggerLegacy = (
         newState.stream_conditions = { nft_collection }
         newState.is_download_gated = true
         newState.download_conditions = { nft_collection }
+        setLastGateKeeper({
+          ...lastGateKeeper,
+          access: 'accessAndSale'
+        })
         break
       }
       case StreamTrackAvailabilityType.HIDDEN: {
@@ -283,9 +306,23 @@ export const AccessAndSaleTriggerLegacy = (
           remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes,
           unlisted: true
         }
+        if (lastGateKeeper.access === 'accessAndSale') {
+          newState.is_download_gated = false
+          newState.download_conditions = null
+        }
+        if (lastGateKeeper.downloadable === 'accessAndSale') {
+          newState.is_downloadable = false
+        }
         break
       }
       case StreamTrackAvailabilityType.PUBLIC: {
+        if (lastGateKeeper.access === 'accessAndSale') {
+          newState.is_download_gated = false
+          newState.download_conditions = null
+        }
+        if (lastGateKeeper.downloadable === 'accessAndSale') {
+          newState.is_downloadable = false
+        }
         break
       }
     }

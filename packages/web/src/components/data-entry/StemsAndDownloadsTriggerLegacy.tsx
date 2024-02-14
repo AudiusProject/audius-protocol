@@ -31,10 +31,11 @@ import {
   DOWNLOAD_CONDITIONS,
   DOWNLOAD_PRICE_HUMANIZED,
   DOWNLOAD_REQUIRES_FOLLOW,
+  GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
   IS_ORIGINAL_AVAILABLE,
-  // LAST_GATE_KEEPER,
+  LAST_GATE_KEEPER,
   STEMS,
   STREAM_CONDITIONS,
   StemsAndDownloadsFormValues
@@ -58,6 +59,8 @@ type StemsAndDownloadsTriggerLegacyProps = {
   onDeleteStem: (index: number) => void
   fields: TrackMetadata
   onChangeField: (field: string, value: any) => void
+  lastGateKeeper: GateKeeper
+  setLastGateKeeper: (value: GateKeeper) => void
   isUpload: boolean
   initialForm: Track
   closeMenuCallback?: (data?: any) => void
@@ -73,6 +76,8 @@ export const StemsAndDownloadsTriggerLegacy = (
     onDeleteStem,
     fields,
     onChangeField,
+    lastGateKeeper,
+    setLastGateKeeper,
     // isUpload,
     // initialForm,
     closeMenuCallback
@@ -119,7 +124,7 @@ export const StemsAndDownloadsTriggerLegacy = (
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
     set(initialValues, STREAM_CONDITIONS, streamConditions)
-    // set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
+    set(initialValues, LAST_GATE_KEEPER, lastGateKeeper)
 
     let availabilityType = DownloadTrackAvailabilityType.PUBLIC
     const isUsdcGated = isContentUSDCPurchaseGated(savedDownloadConditions)
@@ -150,8 +155,8 @@ export const StemsAndDownloadsTriggerLegacy = (
     isDownloadGated,
     tempDownloadConditions,
     savedDownloadConditions,
-    streamConditions
-    // lastGateKeeper
+    streamConditions,
+    lastGateKeeper
   ])
 
   const onSubmit = useCallback(
@@ -161,7 +166,7 @@ export const StemsAndDownloadsTriggerLegacy = (
       const isDownloadable = get(values, IS_DOWNLOADABLE)
       const downloadRequiresFollow = get(values, DOWNLOAD_REQUIRES_FOLLOW)
       // const stems = get(values, STEMS)
-      // const lastGateKeeper = get(values, LAST_GATE_KEEPER)
+      const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
       onChangeField(IS_DOWNLOADABLE, isDownloadable)
       onChangeField(IS_ORIGINAL_AVAILABLE, get(values, IS_ORIGINAL_AVAILABLE))
@@ -173,10 +178,10 @@ export const StemsAndDownloadsTriggerLegacy = (
       // )
 
       if (isDownloadable) {
-        // setLastGateKeeper({
-        //   ...lastGateKeeper,
-        //   downloadable: 'stemsAndDownloads'
-        // })
+        setLastGateKeeper({
+          ...lastGateKeeper,
+          downloadable: 'stemsAndDownloads'
+        })
       }
       // Note that there is some redundancy with the download fields
       // this will go away once we remove the download object from track
@@ -199,10 +204,10 @@ export const StemsAndDownloadsTriggerLegacy = (
                 // @ts-ignore fully formed in saga (validated + added splits)
                 usdc_purchase: { price: Math.round(price) }
               })
-              // setLastGateKeeper({
-              //   ...lastGateKeeper,
-              //   access: 'stemsAndDownloads'
-              // })
+              setLastGateKeeper({
+                ...lastGateKeeper,
+                access: 'stemsAndDownloads'
+              })
               break
             }
             case DownloadTrackAvailabilityType.FOLLOWERS: {
@@ -211,10 +216,10 @@ export const StemsAndDownloadsTriggerLegacy = (
                 downloadConditions as FollowGatedConditions
               onChangeField(DOWNLOAD_CONDITIONS, { follow_user_id })
               // setDownloadRequiresFollow(true)
-              // setLastGateKeeper({
-              //   ...lastGateKeeper,
-              //   access: 'stemsAndDownloads'
-              // })
+              setLastGateKeeper({
+                ...lastGateKeeper,
+                access: 'stemsAndDownloads'
+              })
               break
             }
             case DownloadTrackAvailabilityType.PUBLIC: {
@@ -236,14 +241,20 @@ export const StemsAndDownloadsTriggerLegacy = (
               : null
           )
           // setDownloadRequiresFollow(downloadRequiresFollow)
-          // setLastGateKeeper({
-          //   ...lastGateKeeper,
-          //   access: 'stemsAndDownloads'
-          // })
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'stemsAndDownloads'
+          })
         }
       }
     },
-    [accountUserId, isLosslessDownloadsEnabled, onChangeField, streamConditions]
+    [
+      accountUserId,
+      isLosslessDownloadsEnabled,
+      onChangeField,
+      setLastGateKeeper,
+      streamConditions
+    ]
   )
 
   return (
