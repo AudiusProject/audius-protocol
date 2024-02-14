@@ -37,6 +37,9 @@ export type HealthCheckResponseData = DeepPartial<{
   auto_upgrade_enabled: boolean
   block_difference: number
   challenge_last_event_age_sec: number
+  chain_health: {
+    status: string
+  } | null
   database_connections: number
   database_is_localhost: boolean
   database_size: number

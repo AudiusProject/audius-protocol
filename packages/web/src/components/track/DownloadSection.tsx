@@ -299,6 +299,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             {track?.is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
+                parentTrackId={trackId}
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
@@ -309,6 +310,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             {stemTracks.map((s, i) => (
               <DownloadRow
                 trackId={s.id}
+                parentTrackId={trackId}
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}

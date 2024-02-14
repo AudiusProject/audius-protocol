@@ -57,6 +57,14 @@ module.exports = {
       ],
       collapsed: true,
     },
+    {
+      type: 'category',
+      label: 'How To Guides',
+      items: [
+        'protocol/link-audius-account-to-protocol-dashboard',
+      ],
+      collapsed: true,
+    },
   ],
 
   token: [
@@ -79,6 +87,7 @@ module.exports = {
             'token/running-a-node/setup/wallet-management',
             'token/running-a-node/setup/installation',
             'token/running-a-node/setup/registration',
+            'token/running-a-node/setup/multi-sig-registration',
             'token/running-a-node/setup/claiming',
             'token/running-a-node/setup/advanced',
           ],

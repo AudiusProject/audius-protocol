@@ -126,7 +126,10 @@ const Table = ({
               <th>Upload E-tag</th>
               <th>Delivery ID</th>
               <th>Entity</th>
+              <th>Entity ID</th>
               <th>Publish Date</th>
+              <th>Blockhash</th>
+              <th>Blocknumber</th>
               <th>Created At</th>
             </tr>
           </thead>
@@ -143,6 +146,9 @@ const Table = ({
                       ? 'album'
                       : 'unknown'}
                 </td>
+                <td>{item.entity_id}</td>
+                <td>{item.blockhash}</td>
+                <td>{item.blocknumber}</td>
                 <td>{item.publish_date}</td>
                 <td>{item.created_at}</td>
               </tr>

@@ -161,7 +161,8 @@ const StemFilesView = ({
               onRemove={() => onDeleteStem(i)}
               stemCategory={stem.category}
               onEditStemCategory={(category) => onSelectCategory(category, i)}
-              isDisabled={!stem.allowCategorySwitch}
+              allowCategorySwitch={stem.allowCategorySwitch}
+              allowDelete={stem.allowDelete}
               isStem
               isEdit
             />
@@ -330,6 +331,7 @@ const DownloadSection = ({
           </>
         )}
       </div>
+      <Divider />
     </Flex>
   )
 }

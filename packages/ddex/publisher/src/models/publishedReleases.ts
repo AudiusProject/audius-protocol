@@ -1,13 +1,20 @@
 import mongoose from 'mongoose'
+import {
+  createTrackReleaseSchema,
+  createAlbumReleaseSchema,
+} from './pendingReleases'
 
 // DDEX releases that have been published
 const publishedReleasesSchema = new mongoose.Schema({
-  id: mongoose.Schema.Types.ObjectId,
+  _id: mongoose.Schema.Types.ObjectId,
   upload_etag: String,
   delivery_id: mongoose.Schema.Types.ObjectId,
-  entity: String,
   publish_date: Date,
   entity_id: String,
+  blockhash: String,
+  blocknumber: Number,
+  track: createTrackReleaseSchema,
+  album: createAlbumReleaseSchema,
   created_at: Date,
 })
 

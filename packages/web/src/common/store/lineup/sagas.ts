@@ -100,8 +100,7 @@ function* filterDeletes<T extends Track | Collection>(
         return null
       }
 
-      // Only allow a whitelist of artists to be featured on premium tracks explore page. TODO:
-      // https://linear.app/audius/issue/PAY-2085/update-whitelist-of-artists-to-feature-on-explore-premium-tracks-page
+      // Filter out known test accounts from premium explore page.
       if (
         lineupPrefix === premiumTracksPageLineupActions.prefix &&
         'track_id' in metadata &&

@@ -1,6 +1,6 @@
 import type { DownloadTrackArgs } from '@audius/common/services'
 import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
-import { tracksSocialActions } from '@audius/common/store'
+import { tracksSocialActions, downloadsActions } from '@audius/common/store'
 import { Platform, Share } from 'react-native'
 import { zip } from 'react-native-zip-archive'
 import type {
@@ -9,14 +9,16 @@ import type {
   StatefulPromise
 } from 'rn-fetch-blob'
 import RNFetchBlob from 'rn-fetch-blob'
+import { dedupFilenames } from '~/utils'
 
 import { dispatch } from 'app/store'
-import { setFetchCancel, setFileInfo } from 'app/store/download/slice'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { audiusBackendInstance } from './audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
+const { beginDownload, setDownloadError, setFetchCancel, setFileInfo } =
+  downloadsActions
 
 let fetchTasks: StatefulPromise<FetchBlobResponse>[] = []
 
@@ -74,6 +76,11 @@ const downloadOne = async ({
     await onFetchComplete?.(fetchRes.path())
   } catch (err) {
     console.error(err)
+    dispatch(
+      setDownloadError(
+        err instanceof Error ? err : new Error(`Download failed: ${err}`)
+      )
+    )
     // On failure attempt to delete the file
     removePathIfExists(filePath)
   }
@@ -93,6 +100,7 @@ const downloadMany = async ({
   getFetchConfig: (filePath: string) => RNFetchBlobConfig
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
+  dedupFilenames(files)
   try {
     const responsePromises = files.map(({ url, filename }) =>
       RNFetchBlob.config(getFetchConfig(directory + '/' + filename)).fetch(
@@ -111,6 +119,11 @@ const downloadMany = async ({
     responses.forEach((response) => response.flush())
   } catch (err) {
     console.error(err)
+    dispatch(
+      setDownloadError(
+        err instanceof Error ? err : new Error(`Download failed: ${err}`)
+      )
+    )
   } finally {
     // Remove source directory at the end of the process regardless of what happens
     removePathIfExists(directory)
@@ -123,6 +136,8 @@ const download = async ({
   abortSignal
 }: DownloadTrackArgs) => {
   if (files.length === 0) return
+
+  dispatch(beginDownload())
 
   dispatch(
     setFileInfo({
@@ -137,8 +152,7 @@ const download = async ({
   }
   // TODO: Remove this method of canceling after the lossless
   // feature set launches. The abort signal should be the way to do
-  // this task cancellation going forward. The corresponding slice
-  // may also be deleted.
+  // this task cancellation going forward.
   dispatch(setFetchCancel(cancelDownloadTask))
 
   const audiusDirectory =

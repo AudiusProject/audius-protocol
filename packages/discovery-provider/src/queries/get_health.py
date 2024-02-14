@@ -195,6 +195,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
 
+    bypass_errors = args.get("bypass_errors")
     verbose = args.get("verbose")
     enforce_block_diff = args.get("enforce_block_diff")
     qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
@@ -475,7 +476,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if not api_healthy:
             errors.append(f"api unhealthy: {reason}")
 
-    is_unhealthy = (
+    is_unhealthy = not bypass_errors and (
         unhealthy_blocks
         or unhealthy_challenges
         or play_health_info["is_unhealthy"]
