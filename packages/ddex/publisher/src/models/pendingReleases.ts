@@ -79,34 +79,10 @@ const moods = [
   'Other',
 ]
 
-interface Artist {
-  name: string
-  roles: string[]
-}
-
 const artistSchema = new mongoose.Schema({
   name: { type: String, required: true },
   roles: [{ type: String }],
 })
-
-export interface TrackMetadata {
-  title: string
-  release_date: string // Assuming ISO date format as string
-  genre: string // This could be further refined to a union of the specific genre strings
-  duration: number
-  preview_start_seconds?: number
-  isrc?: string
-  license?: string
-  description?: string
-  mood?: string // This could be further refined to a union of the specific mood strings
-  tags?: string
-  artists: Artist[]
-  artist_name: string
-  copyright: string
-  preview_audio_file_url: string
-  audio_file_url: string
-  cover_art_url: string
-}
 
 const trackMetadataSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -123,24 +99,17 @@ const trackMetadataSchema = new mongoose.Schema({
   artist_name: { type: String, required: true },
   copyright: { type: String, required: true },
   preview_audio_file_url: { type: String, required: true },
+  preview_audio_file_url_hash: { type: String, required: true },
+  preview_audio_file_url_hash_algo: { type: String, required: true },
   audio_file_url: { type: String, required: true },
+  audio_file_url_hash: { type: String, required: true },
+  audio_file_url_hash_algo: { type: String, required: true },
   cover_art_url: { type: String, required: true },
+  cover_art_url_hash: { type: String, required: true },
+  cover_art_url_hash_algo: { type: String, required: true },
 })
 
-export interface CollectionMetadata {
-  playlist_name: string
-  playlist_owner_id: string
-  description?: string
-  is_album: boolean
-  is_private: boolean
-  tags?: string
-  genre: string // Again, could be a specific union type
-  mood: string // Specific union type for moods
-  release_date: string
-  license?: string
-  upc?: string
-  cover_art_url: string
-}
+export type TrackMetadata = mongoose.InferSchemaType<typeof trackMetadataSchema>
 
 const collectionMetadataSchema = new mongoose.Schema({
   playlist_name: { type: String, required: true },
@@ -155,31 +124,34 @@ const collectionMetadataSchema = new mongoose.Schema({
   license: { type: String },
   upc: { type: String },
   cover_art_url: { type: String, required: true },
+  cover_art_url_hash: { type: String, required: true },
+  cover_art_url_hash_algo: { type: String, required: true },
 })
 
-export interface CreateTrackRelease {
-  ddex_release_ref: string
-  metadata: TrackMetadata
-}
+export type CollectionMetadata = mongoose.InferSchemaType<
+  typeof collectionMetadataSchema
+>
 
-const createTrackReleaseSchema = new mongoose.Schema({
+export const createTrackReleaseSchema = new mongoose.Schema({
   ddex_release_ref: { type: String, required: true },
   metadata: { type: trackMetadataSchema, required: true },
 })
 
-export interface CreateAlbumRelease {
-  ddex_release_ref: string
-  tracks: TrackMetadata[]
-  metadata: CollectionMetadata
-}
+export type CreateTrackRelease = mongoose.InferSchemaType<
+  typeof createTrackReleaseSchema
+>
 
-const createAlbumReleaseSchema = new mongoose.Schema({
+export const createAlbumReleaseSchema = new mongoose.Schema({
   ddex_release_ref: { type: String, required: true },
   tracks: [trackMetadataSchema],
   metadata: { type: collectionMetadataSchema, required: true },
 })
 
-const pendingReleasesSchema = new mongoose.Schema({
+export type CreateAlbumRelease = mongoose.InferSchemaType<
+  typeof createAlbumReleaseSchema
+>
+
+export const pendingReleasesSchema = new mongoose.Schema({
   _id: { type: mongoose.Schema.Types.ObjectId, required: true },
   upload_etag: { type: String, required: true },
   delivery_id: { type: mongoose.Schema.Types.ObjectId, required: true },
