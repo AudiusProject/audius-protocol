@@ -1,0 +1,5 @@
+.modalContentContainer {
+  padding: var(--unit-6);
+  overflow-y: auto;
+  flex: 1 1 auto;
+}

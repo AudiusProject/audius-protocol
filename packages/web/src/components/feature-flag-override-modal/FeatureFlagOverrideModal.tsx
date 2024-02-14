@@ -11,7 +11,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useDevModeHotkey } from 'hooks/useHotkey'
+import { useDevModeHotkey } from 'hooks/useDevModeHotkey'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'

@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 
 import { confirmerSelectors } from '@audius/common/store'
+import { setupHotkeys, removeHotkeys, ModifierKeys } from '@audius/harmony'
 import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import { isElectron } from 'utils/clientUtil'
-import { setupHotkeys, removeHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 
 import styles from './UnloadDialog.module.css'
 

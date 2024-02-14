@@ -1,0 +1,27 @@
+.transitionContainer {
+  position: relative;
+  height: 100%;
+  flex-grow: 1;
+}
+
+.transitionContainer > * {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.modalContent {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.nestedModalContent {
+  padding-top: var(--unit-6);
+  padding-bottom: var(--unit-6);
+}
