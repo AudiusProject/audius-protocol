@@ -170,22 +170,22 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 		if myRank == 2 {
 			// no recent update?
 			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute
+				time.Since(upload.TranscodedAt) > time.Minute*3
 
 			// never started?
 			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*2
+				time.Since(upload.CreatedAt) > time.Minute*6
 		}
 
 		// for #3 rank worker:
 		if myRank == 3 {
 			// no recent update?
 			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute*5
+				time.Since(upload.TranscodedAt) > time.Minute*7
 
 			// never started?
 			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*5
+				time.Since(upload.CreatedAt) > time.Minute*14
 		}
 
 		if timedOut {

@@ -4,7 +4,8 @@ import {
   StemCategory,
   ID,
   StemUploadWithFile,
-  Track
+  Track,
+  isContentFollowGated
 } from '@audius/common/models'
 import {
   cacheTracksActions as cacheTrackActions,
@@ -75,16 +76,15 @@ const EditTrackModal = ({
     if (!metadata) return
 
     const confirmEdit = (metadata: Track, formFields: Track) => {
-      const isDownloadable = !!formFields.download?.is_downloadable
-      const isDownloadGated = formFields.is_stream_gated
-      const downloadConditions = formFields.stream_conditions
-      const formFieldsToUpdate = {
-        ...formFields,
-        is_downloadable: isDownloadable,
-        is_download_gated: isDownloadGated,
-        download_conditions: downloadConditions
+      // Update the download json field based on the is_downloadable flag and the download conditions.
+      // Note that this only needs to be done temporarily until the backend is updated to remove the download fields redundancy.
+      // TODO: Remove this once the backend is updated to remove the download fields redundancy.
+      const download = {
+        is_downloadable: formFields.is_downloadable,
+        requires_follow: isContentFollowGated(formFields.download_conditions),
+        cid: formFields.download?.cid ?? null
       }
-      onEdit(metadata.track_id, formFieldsToUpdate)
+      onEdit(metadata.track_id, { ...formFields, download })
       if (pendingUploads.length) {
         uploadStems(
           metadata.track_id,
