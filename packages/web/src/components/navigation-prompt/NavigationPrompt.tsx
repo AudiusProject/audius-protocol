@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Button } from '@audius/harmony'
-import { Modal, ModalContent, ModalHeader } from '@audius/stems'
+import { Modal, ModalContent, ModalHeader, Button } from '@audius/harmony'
 import cn from 'classnames'
 import { Location } from 'history'
 import { Prompt } from 'react-router-dom'

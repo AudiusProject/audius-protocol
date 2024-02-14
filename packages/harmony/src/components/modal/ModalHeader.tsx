@@ -2,7 +2,7 @@ import { useContext, forwardRef, useCallback } from 'react'
 
 import cn from 'classnames'
 
-import { IconRemove } from '../../icons'
+import { IconClose } from '../../icons'
 import { IconButton } from '../button'
 
 import { ModalContext } from './ModalContext'
@@ -45,7 +45,7 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
           <IconButton
             aria-label='dismiss dialog'
             className={cn(styles.dismissButton, dismissButtonClassName)}
-            icon={IconRemove}
+            icon={IconClose}
             onClick={handleClose}
           />
         ) : null}

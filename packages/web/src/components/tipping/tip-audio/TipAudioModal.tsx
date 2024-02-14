@@ -9,8 +9,13 @@ import {
   TippingSendStatus
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconVerified as IconSuccess, IconTokenGold } from '@audius/harmony'
-import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
+import {
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  IconVerified as IconSuccess,
+  IconTokenGold
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web

@@ -1,0 +1,7 @@
+:root,
+root {
+  --harmony-layer: 0;
+  --harmony-layer-modal: 10000;
+  --harmony-layer-popup: 20000;
+  --harmony-layer-tooltip: 30000;
+}

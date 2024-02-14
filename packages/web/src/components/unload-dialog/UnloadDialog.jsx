@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 
 import { confirmerSelectors } from '@audius/common/store'
-import { setupHotkeys, removeHotkeys, ModifierKeys } from '@audius/harmony'
-import { Modal } from '@audius/stems'
+import {
+  Modal,
+  setupHotkeys,
+  removeHotkeys,
+  ModifierKeys
+} from '@audius/harmony'
 import { connect } from 'react-redux'
 
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'

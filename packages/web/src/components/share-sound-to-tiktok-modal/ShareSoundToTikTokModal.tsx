@@ -6,8 +6,8 @@ import {
   ShareSoundToTiktokModalStatus
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconTikTok } from '@audius/harmony'
-import { Button, Modal, ButtonType } from '@audius/stems'
+import { Modal, IconTikTok } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

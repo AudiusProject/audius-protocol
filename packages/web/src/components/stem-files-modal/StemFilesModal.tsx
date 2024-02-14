@@ -8,19 +8,14 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
+  Modal,
   Flex,
   Box,
   Text as HarmonyText,
   Switch,
   IconRemove
 } from '@audius/harmony'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  Modal,
-  IconButton
-} from '@audius/stems'
+import { Button, ButtonSize, ButtonType, IconButton } from '@audius/stems'
 import cn from 'classnames'
 
 import { Divider } from 'components/divider'

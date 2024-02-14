@@ -20,7 +20,7 @@ import { useEffectOnce } from 'react-use'
 import { useClickOutside } from 'hooks/useClickOutside'
 
 import { useHotkeys, useScrollLock } from '../../hooks'
-import { IconRemove } from '../../icons'
+import { IconClose } from '../../icons'
 
 import styles from './Modal.module.css'
 import { ModalContext } from './ModalContext'
@@ -348,7 +348,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                                 className={styles.dismissButton}
                                 onClick={onClose}
                               >
-                                <IconRemove />
+                                <IconClose />
                               </div>
                             )}
                             <div

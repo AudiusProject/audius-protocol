@@ -1,17 +1,16 @@
 import { useCallback } from 'react'
 
 import { publishTrackConfirmationModalUISelectors } from '@audius/common/store'
-import { IconRocket } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
   Modal,
   ModalContent,
   ModalContentText,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  IconRocket
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'

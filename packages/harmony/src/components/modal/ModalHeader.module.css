@@ -1,20 +1,20 @@
 .modalContentContainer {
-  padding: var(--unit-6);
+  padding: var(--harmony-unit-6);
 }
 
 .headerContainer {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid var(--neutral-light-8);
-  padding: var(--unit-6) 0;
-  margin: 0 var(--unit-6);
+  border-bottom: 1px solid var(--harmony-n-100);
+  padding: var(--harmony-unit-6) 0;
+  margin: 0 var(--harmony-unit-6);
 }
 
 .dismissButton {
   z-index: 1;
   position: absolute;
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 
 .titleContainer {
@@ -22,21 +22,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: var(--unit-7);
-  margin-right: var(--unit-7);
-  color: var(--neutral-light-2);
+  margin-left: var(--harmony-unit-7);
+  margin-right: var(--harmony-unit-7);
+  color: var(--harmony-n-600);
 }
 
 .titleContainer.noDismissButton {
-  margin-right: var(--unit-4);
+  margin-right: var(--harmony-unit-4);
 }
 
 .title {
   margin: 0;
   display: inline;
-  font-size: var(--font-xl);
-  font-weight: var(--font-heavy);
-  color: var(--neutral-light-2);
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-heavy);
+  color: var(--harmony-n-600);
   text-transform: uppercase;
 }
 
@@ -48,9 +48,9 @@
 .subtitle {
   margin: 0;
   display: inline;
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  color: var(--neutral-light-2);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-n-600);
 }
 
 .icon {
@@ -59,5 +59,5 @@
 }
 
 .icon path {
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }

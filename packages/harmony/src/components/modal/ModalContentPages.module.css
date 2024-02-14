@@ -22,6 +22,6 @@
 }
 
 .nestedModalContent {
-  padding-top: var(--unit-6);
-  padding-bottom: var(--unit-6);
+  padding-top: var(--harmony-unit-6);
+  padding-bottom: var(--harmony-unit-6);
 }

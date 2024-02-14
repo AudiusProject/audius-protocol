@@ -8,8 +8,7 @@ import {
   tracksSocialActions
 } from '@audius/common/store'
 import { getDownloadFilename } from '@audius/common/utils'
-import { Flex, IconReceive, Text } from '@audius/harmony'
-import { ModalHeader } from '@audius/stems'
+import { ModalHeader, Flex, IconReceive, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 

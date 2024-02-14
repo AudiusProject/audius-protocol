@@ -20,8 +20,12 @@ import {
   WithdrawMethod
 } from '@audius/common/store'
 import { formatUSDCWeiToFloorCentsNumber, Nullable } from '@audius/common/utils'
-import { IconTransaction } from '@audius/harmony'
-import { Modal, ModalContent, ModalHeader } from '@audius/stems'
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  IconTransaction
+} from '@audius/harmony'
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
