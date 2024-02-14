@@ -5,28 +5,28 @@ import type { CommonState } from '@audius/common/store'
 import {
   cacheTracksSelectors,
   tracksSocialActions,
-  useWaitForDownloadModal
+  useWaitForDownloadModal,
+  downloadsSelectors
 } from '@audius/common/store'
 import { getDownloadFilename } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
-  Box,
   Divider,
   Flex,
+  Hint,
   IconError,
   IconReceive,
-  Paper,
   Text,
   TextLink,
   useTheme
 } from '@audius/harmony-native'
 import Drawer from 'app/components/drawer'
 
-import { getDownloadError } from 'app/store/download/selectors'
 import LoadingSpinner from '../loading-spinner'
 const { getTrack } = cacheTracksSelectors
+const { getDownloadError } = downloadsSelectors
 
 const messages = {
   title: 'Downloading...',
@@ -34,35 +34,6 @@ const messages = {
     'Something went wrong. Please check your connection and storage and try again.',
   tryAgain: 'Try again.'
 }
-
-/** This is very similar in implementation to `Hint`, but that component wraps children
- * in a `Text` component which doesn't allow us to get the layout we need.
- */
-const DownloadError = ({ onRetry }: { onRetry: () => void }) => (
-  <Paper
-    role='alert'
-    direction='column'
-    gap='s'
-    ph='l'
-    pv='m'
-    justifyContent='flex-start'
-    backgroundColor='surface2'
-    shadow='flat'
-    border='strong'
-  >
-    <Flex direction='row' alignItems='center' gap='l'>
-      <IconError size='l' color='default' />
-      <Text variant='body' color='default' style={{ flexShrink: 1 }}>
-        {messages.somethingWrong}
-      </Text>
-    </Flex>
-    <Box pl='unit10'>
-      <TextLink variant='visible' textVariant='body' onPress={onRetry}>
-        {messages.tryAgain}
-      </TextLink>
-    </Box>
-  </Paper>
-)
 
 export const WaitForDownloadDrawer = () => {
   const dispatch = useDispatch()
@@ -100,10 +71,11 @@ export const WaitForDownloadDrawer = () => {
         original: quality === DownloadQuality.ORIGINAL
       })
     )
-  }, [])
+  }, [parentTrackId, trackIds, quality, dispatch])
+
   useEffect(() => {
     performDownload()
-  }, [])
+  }, [performDownload])
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} onClosed={handleClosed}>
@@ -128,9 +100,22 @@ export const WaitForDownloadDrawer = () => {
             {trackName}
           </Text>
         </Flex>
-        <Flex>
+        <Flex ph='l'>
           {downloadError ? (
-            <DownloadError onRetry={performDownload} />
+            <Hint icon={IconError}>
+              <Flex direction='column' gap='m'>
+                <Text variant='body' color='default'>
+                  {messages.somethingWrong}
+                </Text>
+                <TextLink
+                  variant='visible'
+                  textVariant='body'
+                  onPress={performDownload}
+                >
+                  {messages.tryAgain}
+                </TextLink>
+              </Flex>
+            </Hint>
           ) : (
             <LoadingSpinner
               style={{ width: spacing.unit7, height: spacing.unit7 }}

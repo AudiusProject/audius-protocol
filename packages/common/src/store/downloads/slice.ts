@@ -1,6 +1,7 @@
-import type { Nullable } from '@audius/common/utils'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
+
+import { Nullable } from '~/utils'
 
 export type DownloadState = typeof initialState
 
@@ -26,9 +27,14 @@ const slice = createSlice({
     beginDownload: (state) => {
       state.error = undefined
     },
+    setDownloadError: (state, action: PayloadAction<Error>) => {
+      state.error = action.payload
+    },
+    // Mobile only
     setDownloadedPercentage: (state, action: PayloadAction<number>) => {
       state.downloadedPercentage = action.payload
     },
+    // Mobile only
     setFileInfo: (
       state,
       action: PayloadAction<{
@@ -39,11 +45,9 @@ const slice = createSlice({
       state.trackName = action.payload.trackName
       state.fileName = action.payload.fileName
     },
+    // Mobile only
     setFetchCancel: (state, action: PayloadAction<() => void>) => {
       state.fetchCancel = action.payload
-    },
-    setDownloadError: (state, action: PayloadAction<Error>) => {
-      state.error = action.payload
     }
   }
 })
@@ -55,5 +59,6 @@ export const {
   setFetchCancel,
   setDownloadError
 } = slice.actions
+export const actions = slice.actions
 
 export default slice.reducer

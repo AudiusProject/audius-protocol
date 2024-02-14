@@ -24,7 +24,7 @@ export const Hint = (props: HintProps) => {
       {...other}
     >
       <Icon size='l' color='default' />
-      <Text variant='body' color='default'>
+      <Text variant='body' color='default' style={{ flexShrink: 1 }}>
         {children}
       </Text>
     </Paper>

@@ -1,7 +1,8 @@
 import { Buffer } from 'buffer'
 
-import { Nullable } from './typeUtils'
 import { DownloadFile } from '~/services'
+
+import { Nullable } from './typeUtils'
 
 /** Convert a base64 string to a file object */
 export const dataURLtoFile = async (

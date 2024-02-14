@@ -16,7 +16,7 @@ import {
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import {
   Button,
@@ -52,7 +52,6 @@ const messages = {
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
-  const dispatch = useDispatch()
   const { color } = useTheme()
   const { toast } = useToast()
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -113,7 +112,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
       }
     },
     [
-      dispatch,
       openWaitForDownloadModal,
       quality,
       shouldDisplayDownloadFollowGated,
