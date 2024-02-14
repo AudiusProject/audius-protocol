@@ -1,6 +1,5 @@
 import type { IconComponent } from 'app/harmony-native/icons'
 
-import { Text } from '../Text/Text'
 import type { PaperProps } from '../layout'
 import { Paper } from '../layout'
 
@@ -21,12 +20,13 @@ export const Hint = (props: HintProps) => {
       backgroundColor='surface2'
       shadow='flat'
       border='strong'
+      // Width 100% is necessary to allow for text wrapping inside
+      // the flex container that wraps children
+      style={{ width: '100%' }}
       {...other}
     >
       <Icon size='l' color='default' />
-      <Text variant='body' color='default' style={{ flexShrink: 1 }}>
-        {children}
-      </Text>
+      {children}
     </Paper>
   )
 }
