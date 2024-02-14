@@ -75,16 +75,7 @@ const EditTrackModal = ({
     if (!metadata) return
 
     const confirmEdit = (metadata: Track, formFields: Track) => {
-      const isDownloadable = !!formFields.download?.is_downloadable
-      const isDownloadGated = formFields.is_stream_gated
-      const downloadConditions = formFields.stream_conditions
-      const formFieldsToUpdate = {
-        ...formFields,
-        is_downloadable: isDownloadable,
-        is_download_gated: isDownloadGated,
-        download_conditions: downloadConditions
-      }
-      onEdit(metadata.track_id, formFieldsToUpdate)
+      onEdit(metadata.track_id, formFields)
       if (pendingUploads.length) {
         uploadStems(
           metadata.track_id,

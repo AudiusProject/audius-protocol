@@ -21,9 +21,9 @@ import {
   confirmTransaction
 } from '@audius/common/store'
 import {
+  formatUrlName,
   makeKindId,
   squashNewLines,
-  formatUrlName,
   waitForAccount,
   waitForValue
 } from '@audius/common/utils'
