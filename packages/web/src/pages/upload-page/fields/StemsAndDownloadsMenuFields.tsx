@@ -10,6 +10,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { removeNullable, formatPrice, Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
+import { usePrevious } from 'react-use'
 import { z } from 'zod'
 
 import { Divider } from 'components/divider'
@@ -180,8 +181,9 @@ export const StemsAndDownloadsMenuFields = (
     ,
     { setValue: setDownloadRequiresFollow }
   ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
-  const [{ value: stemsValue }, , { setValue: setStems }] =
+  const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useField<StemUploadWithFile[]>(STEMS)
+  const previousStemsValue = usePrevious(stemsValue)
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const [{ value: availabilityType }, , { setValue: setAvailabilityType }] =
@@ -189,6 +191,7 @@ export const StemsAndDownloadsMenuFields = (
   const [isAvailabilityTouched, setIsAvailabilityTouched] = useState(
     availabilityType !== DownloadTrackAvailabilityType.PUBLIC
   )
+  const [firstTimeStemsUploaded, setFirstTimeStemsUploaded] = useState(true)
 
   // If the track is download gated for the first time,
   // set the track to be downloadable and allow lossless files
@@ -240,6 +243,29 @@ export const StemsAndDownloadsMenuFields = (
     }
   }, [downloadRequiresFollow, setIsDownloadable])
 
+  // Allow full track download and provide lossless files if additional are uploaded for the first time.
+  useEffect(() => {
+    if (
+      firstTimeStemsUploaded &&
+      stemsValue.length > 0 &&
+      previousStemsValue &&
+      previousStemsValue.length < stemsValue.length
+    ) {
+      setFirstTimeStemsUploaded(false)
+      setIsDownloadable(true)
+      if (isLosslessDownloadsEnabled) {
+        setIsOriginalAvailable(true)
+      }
+    }
+  }, [
+    firstTimeStemsUploaded,
+    stemsValue,
+    previousStemsValue,
+    isLosslessDownloadsEnabled,
+    setIsDownloadable,
+    setIsOriginalAvailable
+  ])
+
   const invalidAudioFile = (
     name: string,
     reason: 'corrupted' | 'size' | 'type'
@@ -274,25 +300,28 @@ export const StemsAndDownloadsMenuFields = (
             allowCategorySwitch: true
           }
         })
-      setStems([...stemsValue, ...newStems])
+      setStemsValue([...stemsValue, ...newStems])
+      props.onAddStems?.(selectedStems)
     },
-    [detectCategory, setStems, stemsValue]
+    [detectCategory, props, setStemsValue, stemsValue]
   )
 
   const handleSelectCategory = useCallback(
     (category: StemCategory, index: number) => {
       stemsValue[index].category = category
-      setStems(stemsValue)
+      setStemsValue(stemsValue)
+      props.onSelectCategory?.(category, index)
     },
-    [setStems, stemsValue]
+    [props, setStemsValue, stemsValue]
   )
 
   const handleDeleteStem = useCallback(
     (index: number) => {
       stemsValue.splice(index, 1)
-      setStems(stemsValue)
+      setStemsValue(stemsValue)
+      props.onDeleteStem?.(index)
     },
-    [setStems, stemsValue]
+    [props, setStemsValue, stemsValue]
   )
 
   return (
@@ -328,9 +357,9 @@ export const StemsAndDownloadsMenuFields = (
       <Divider />
       <StemFilesView
         stems={stemsValue}
-        onAddStems={props.onAddStems ?? handleAddStems}
-        onSelectCategory={props.onSelectCategory ?? handleSelectCategory}
-        onDeleteStem={props.onDeleteStem ?? handleDeleteStem}
+        onAddStems={handleAddStems}
+        onSelectCategory={handleSelectCategory}
+        onDeleteStem={handleDeleteStem}
       />
     </div>
   )

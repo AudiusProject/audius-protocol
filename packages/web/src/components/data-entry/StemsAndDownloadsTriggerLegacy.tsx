@@ -141,10 +141,12 @@ export const StemsAndDownloadsTriggerLegacy = (
     }
     set(initialValues, DOWNLOAD_AVAILABILITY_TYPE, availabilityType)
     return initialValues as StemsAndDownloadsFormValues
+    // note that stems is not included in the dependency array
+    // because it should not change initialValues after the initial render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isDownloadable,
     isOriginalAvailable,
-    stems,
     isDownloadGated,
     tempDownloadConditions,
     savedDownloadConditions,
