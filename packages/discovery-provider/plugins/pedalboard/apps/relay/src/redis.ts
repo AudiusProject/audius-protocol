@@ -43,3 +43,30 @@ export const readAAOState = async (
   if (cacheValue === null) return null
   return JSON.parse(cacheValue)
 }
+
+export const scanWithPrefix = async <T>(
+  prefix: string
+): Promise<T[]> => {
+  const processedRecords: T[] = [];
+  let cursor = 0;
+
+  do {
+    // Use SCAN to fetch keys in batches without blocking the server
+    const reply = await redisClient.scan(cursor, {
+      MATCH: `${prefix}*`,
+      COUNT: 100,
+    });
+    
+    // redis will return 0 when scan is complete
+    cursor = reply.cursor;
+    const keys = reply.keys;
+    
+    for (const key of keys) {
+      const value = await redisClient.get(key);
+      if (value !== null) {
+        processedRecords.push(JSON.parse(value));
+      }
+    }
+  } while (cursor !== 0);
+  return processedRecords;
+};

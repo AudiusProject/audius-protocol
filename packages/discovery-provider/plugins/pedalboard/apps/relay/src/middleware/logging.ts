@@ -8,7 +8,8 @@ export const incomingRequestLogger = (
   next: NextFunction
 ) => {
   const startTime = new Date(new Date().getTime());
-  const requestId = uuidv4();
+  const incomingRequestId = request.headers['X-Request-Id']
+  const requestId = typeof incomingRequestId === "string" ? incomingRequestId : uuidv4();
   const oldCtx = response.locals.ctx;
   response.locals.ctx = { ...oldCtx, startTime, requestId };
 

@@ -11,6 +11,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { antiAbuseMiddleware } from "./middleware/antiAbuse";
 import { rateLimiterMiddleware } from "./middleware/rateLimiter";
+import { statsHandler } from "./routes/stats";
 
 export const app = express();
 
@@ -30,6 +31,11 @@ app.get(
   healthCheck,
   outgoingRequestLogger
 );
+
+app.get(
+  "/relay/stats",
+  statsHandler
+)
 
 /** Writes */
 app.post(
