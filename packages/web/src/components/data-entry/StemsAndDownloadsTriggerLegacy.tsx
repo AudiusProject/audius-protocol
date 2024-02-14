@@ -165,17 +165,10 @@ export const StemsAndDownloadsTriggerLegacy = (
       const downloadConditions = get(values, DOWNLOAD_CONDITIONS)
       const isDownloadable = get(values, IS_DOWNLOADABLE)
       const downloadRequiresFollow = get(values, DOWNLOAD_REQUIRES_FOLLOW)
-      // const stems = get(values, STEMS)
       const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
       onChangeField(IS_DOWNLOADABLE, isDownloadable)
       onChangeField(IS_ORIGINAL_AVAILABLE, get(values, IS_ORIGINAL_AVAILABLE))
-      // setStemsValue(
-      //   stems.map((stem) => ({
-      //     ...stem,
-      //     category: stem.category ?? StemCategory.OTHER
-      //   }))
-      // )
 
       if (isDownloadable) {
         setLastGateKeeper({
