@@ -7,8 +7,12 @@ import {
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common/store'
-import { IconFolder, IconPlaylists } from '@audius/harmony'
-import { PopupMenu, PopupMenuItem } from '@audius/stems'
+import {
+  IconFolder,
+  IconPlaylists,
+  PopupMenu,
+  PopupMenuItem
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -90,6 +94,7 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
   return (
     <PopupMenu
       items={items}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       renderTrigger={(anchorRef, onClick, triggerProps) => (
         <Tooltip
           text={messages.newPlaylistOrFolderTooltip}

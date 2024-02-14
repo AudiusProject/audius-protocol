@@ -5,9 +5,10 @@ import {
   IconButton,
   IconKebabHorizontal,
   IconTrash,
-  IconVisibilityPublic
+  IconVisibilityPublic,
+  PopupMenu,
+  PopupMenuItem
 } from '@audius/harmony'
-import { PopupMenu, PopupMenuItem } from '@audius/stems'
 
 import styles from './DeveloperAppListItem.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'

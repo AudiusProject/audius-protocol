@@ -15,16 +15,14 @@ import {
   ProfileUser
 } from '@audius/common/store'
 import { getHash } from '@audius/common/utils'
-import { IconKebabHorizontal, IconPencil, IconShare } from '@audius/harmony'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  Modal,
+  IconKebabHorizontal,
+  IconPencil,
+  IconShare,
   PopupMenu,
-  PopupMenuItem,
-  PopupPosition
-} from '@audius/stems'
+  PopupMenuItem
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
 import cn from 'classnames'
 import {
   DragDropContext,
@@ -604,7 +602,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
           ) : (
             <PopupMenu
               items={overflowMenuItems}
-              position={PopupPosition.BOTTOM_CENTER}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
               renderTrigger={(anchorRef, triggerPopup) => (
                 <Button
                   leftIcon={<IconKebabHorizontal />}

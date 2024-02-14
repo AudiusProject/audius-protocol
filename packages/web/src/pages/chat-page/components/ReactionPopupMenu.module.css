@@ -7,6 +7,5 @@
 }
 
 .popup {
-  padding: 0;
-  border-radius: 56px;
+  border-radius: '50%';
 }

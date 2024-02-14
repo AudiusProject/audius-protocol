@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useRef, useState, MouseEvent } from 'react'
 
 import cn from 'classnames'
 
-import { Popup } from 'components/Popup'
+import { Popup } from '../layout/Popup'
 
 import styles from './PopupMenu.module.css'
 import { PopupMenuItem, PopupMenuProps } from './types'
@@ -16,19 +16,17 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       items,
       onClose,
       renderMenu,
-      position,
       renderTrigger,
       dismissOnMouseLeave,
       hideCloseButton,
       title,
-      titleClassName,
-      wrapperClassName,
       className,
       zIndex,
       containerRef,
       anchorOrigin,
       transformOrigin,
-      id
+      id,
+      fixed
     } = props
     const clickInsideRef = useRef<any>()
     const anchorRef = useRef<HTMLElement>(null)
@@ -81,17 +79,15 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           showHeader={Boolean(title)}
           hideCloseButton={hideCloseButton}
           onClose={handlePopupClose}
-          position={position}
           ref={ref}
           title={title || ''}
-          titleClassName={titleClassName}
           zIndex={zIndex}
           containerRef={containerRef}
           transformOrigin={transformOrigin}
           anchorOrigin={anchorOrigin}
-          wrapperClassName={cn(styles.popup, wrapperClassName)}
-          className={className}
+          className={cn(styles.popup, className)}
           dismissOnMouseLeave={dismissOnMouseLeave}
+          fixed={fixed}
         >
           {renderMenu ? (
             renderMenu(items)
