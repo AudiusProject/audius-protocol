@@ -27,9 +27,9 @@ type PendingRelease struct {
 	UploadETag  string             `bson:"upload_etag"`
 	DeliveryID  primitive.ObjectID `bson:"delivery_id"`
 	PublishDate time.Time          `bson:"publish_date"`
-	CreatedAt   time.Time          `bson:"created_at"`
 	Track       CreateTrackRelease `bson:"create_track_release"`
 	Album       CreateAlbumRelease `bson:"create_album_release"`
+	CreatedAt   time.Time          `bson:"created_at"`
 }
 
 type PublishedRelease struct {
@@ -37,6 +37,11 @@ type PublishedRelease struct {
 	UploadETag  string             `bson:"upload_etag"`
 	DeliveryID  primitive.ObjectID `bson:"delivery_id"`
 	PublishDate time.Time          `bson:"publish_date"`
+	EntityID    string             `bson:"entity_id"`
+	Blockhash   string             `bson:"blockhash"`
+	Blocknumber int64              `bson:"blocknumber"`
+	Track       CreateTrackRelease `bson:"create_track_release"`
+	Album       CreateAlbumRelease `bson:"create_album_release"`
 	CreatedAt   time.Time          `bson:"created_at"`
 }
 

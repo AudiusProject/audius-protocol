@@ -9,14 +9,17 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Parser struct {
+	s3Downloader        *s3manager.Downloader
 	mongoClient         *mongo.Client
 	rawBucket           string
+	indexedBucket       string
 	deliveriesColl      *mongo.Collection
 	pendingReleasesColl *mongo.Collection
 	ctx                 context.Context
@@ -26,12 +29,15 @@ type Parser struct {
 // RunNewParser starts the parser service, which listens for new delivery documents in the Mongo "deliveries" collection and turns them into Audius format track format.
 func RunNewParser(ctx context.Context) {
 	logger := slog.With("service", "parser")
+	_, s3Session := common.InitS3Client(logger)
 	mongoClient := common.InitMongoClient(ctx, logger)
 	defer mongoClient.Disconnect(ctx)
 
 	p := &Parser{
+		s3Downloader:        s3manager.NewDownloader(s3Session),
 		mongoClient:         mongoClient,
 		rawBucket:           common.MustGetenv("AWS_BUCKET_RAW"),
+		indexedBucket:       common.MustGetenv("AWS_BUCKET_INDEXED"),
 		deliveriesColl:      mongoClient.Database("ddex").Collection("deliveries"),
 		pendingReleasesColl: mongoClient.Database("ddex").Collection("pending_releases"),
 		ctx:                 ctx,
@@ -67,7 +73,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 	p.logger.Info("Processing new delivery", "_id", delivery.ID)
 
 	xmlData := delivery.XmlContent.Data
-	createTrackRelease, createAlbumRelease, errs := parseSonyXML(xmlData)
+	createTrackRelease, createAlbumRelease, errs := parseSonyXML(xmlData, p.indexedBucket, delivery.ID.Hex())
 	if len(errs) != 0 {
 		p.logger.Error("Failed to parse delivery. Printing errors...")
 		for _, err := range errs {
