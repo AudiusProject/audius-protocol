@@ -105,7 +105,7 @@ export class EthWeb3Manager {
         method: contractMethod,
         from: this.ownerWallet,
         gasLimitMaximum: MAX_GAS_LIMIT,
-        shouldThrow: !internalWallet
+        shouldThrowIfGasEstimationFails: !internalWallet
       }))
     if (internalWallet) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())

@@ -21,7 +21,9 @@ class MultiProvider(BaseProvider):
             except Exception as e:
                 last_exception = e
                 continue
-        raise last_exception if last_exception else Exception()
+        raise (
+            last_exception if last_exception else Exception("No RPC providers found")
+        )
 
     def isConnected(self):
         return any(provider.isConnected() for provider in self.providers)

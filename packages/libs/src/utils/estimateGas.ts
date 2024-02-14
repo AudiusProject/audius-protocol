@@ -33,7 +33,7 @@ interface EstimateGasConfig {
   multiplier?: number
   // Whether or not to throw if gas estimation fails. Usually this signals that a
   // contract call's simulation failed and likely the actual contract call will fail.
-  shouldThrow?: boolean
+  shouldThrowIfGasEstimationFails?: boolean
 }
 
 /**
@@ -44,7 +44,7 @@ export const estimateGas = async ({
   from,
   gasLimitMaximum,
   multiplier = GAS_LIMIT_MULTIPLIER,
-  shouldThrow = false
+  shouldThrowIfGasEstimationFails = false
 }: EstimateGasConfig) => {
   try {
     const estimatedGas = await method.estimateGas({
@@ -62,7 +62,7 @@ export const estimateGas = async ({
       `Unable to estimate gas for transaction ${method._method.name}`,
       e
     )
-    if (shouldThrow) {
+    if (shouldThrowIfGasEstimationFails) {
       throw e
     }
     return gasLimitMaximum

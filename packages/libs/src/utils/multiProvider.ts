@@ -72,6 +72,6 @@ export class MultiProvider extends Web3.providers.HttpProvider {
       }
     }
 
-    throw lastError || new Error()
+    throw lastError || new Error('No RPC providers found')
   }
 }
