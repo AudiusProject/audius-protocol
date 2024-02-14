@@ -28,8 +28,6 @@ export const relayTransaction = async (
   // gather some transaction params
   const nonce = await web3.getTransactionCount(address);
 
-  const balance = await web3.getBalance(address);
-  logger.info({ balance, address }, "submitter balance");
   const to = contractAddress;
   const value = "0x00";
   const data = encodedABI;
@@ -38,6 +36,8 @@ export const relayTransaction = async (
   const transaction = { nonce, gasLimit, to, value, data };
   await senderWallet.signTransaction(transaction);
   const submit = await senderWallet.sendTransaction(transaction);
+
+  logger.info({ validatedRelayRequest }, "HEREEEEE")
 
   // query chain until tx is mined
   try {
