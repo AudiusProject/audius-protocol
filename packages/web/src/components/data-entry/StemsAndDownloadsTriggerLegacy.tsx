@@ -264,6 +264,7 @@ export const StemsAndDownloadsTriggerLegacy = (
       )}
       menuFields={
         <StemsAndDownloadsMenuFields
+          isUpload={false}
           initialDownloadConditions={initialForm.download_conditions}
           onAddStems={onAddStems}
           onSelectCategory={onSelectCategory}

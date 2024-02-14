@@ -329,7 +329,12 @@ export const StemsAndDownloadsField = ({
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema(usdcPurchaseConfig)
       )}
-      menuFields={<StemsAndDownloadsMenuFields />}
+      menuFields={
+        <StemsAndDownloadsMenuFields
+          isUpload
+          initialDownloadConditions={savedDownloadConditions}
+        />
+      }
       closeMenuCallback={closeMenuCallback}
       displayMenuErrorMessage={(
         errors: FormikErrors<StemsAndDownloadsFormValues>
