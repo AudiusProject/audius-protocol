@@ -179,10 +179,6 @@
   height: 16px;
 }
 
-.iconKebabHorizontal g path {
-  fill: var(--neutral-light-4);
-}
-
 .iconKebabHorizontal:hover {
   transform: scale3d(1.1, 1.1, 1.1);
 }
