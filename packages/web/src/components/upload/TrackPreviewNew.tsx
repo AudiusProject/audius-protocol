@@ -32,6 +32,26 @@ const messages = {
   selectType: 'Select Type'
 }
 
+const fileTypeFromName = (name: string) => {
+  const extension = name.split('.').pop()
+  switch (extension) {
+    case 'mp3':
+      return 'audio/mp3'
+    case 'm4a':
+      return 'audio/x-m4a'
+    case 'aiff':
+      return 'audio/aiff'
+    case 'flac':
+      return 'audio/flac'
+    case 'ogg':
+      return 'audio/ogg'
+    case 'wav':
+      return 'audio/wav'
+    default:
+      return ''
+  }
+}
+
 const fileTypeIcon = (type: string) => {
   switch (type) {
     case 'audio/mpeg':
@@ -93,7 +113,8 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     className
   } = props
 
-  const Icon = isEdit ? iconFileUnknown : fileTypeIcon(fileType)
+  const typeFromName = fileTypeFromName(trackTitle)
+  const Icon = fileTypeIcon(isEdit ? typeFromName : fileType)
   const iconStyle = isStem ? { width: 24, height: 24 } : undefined
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)

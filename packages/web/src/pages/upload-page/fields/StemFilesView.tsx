@@ -74,7 +74,7 @@ export const StemFilesView = ({
               displayIndex={stems.length > 1}
               key={`stem-${i}`}
               trackTitle={stem.file?.name ?? stem.metadata.orig_filename ?? ''}
-              fileType={stem.file?.type ?? 'audio/mp3'} // TODO: Get correct file type for pre-existing stems
+              fileType={stem.file?.type ?? ''} // TODO: Get correct file type for pre-existing stems
               fileSize={stem.file?.size ?? 0} // TODO: Get correct file size for pre-existing stems
               onRemove={() => onDeleteStem(i)}
               stemCategory={stem.category}
