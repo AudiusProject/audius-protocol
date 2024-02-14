@@ -916,7 +916,7 @@ def process_payment_router_txs() -> None:
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="index_payment_router", time_limit=60, bind=True)
+@celery.task(name="index_payment_router", time_limit=300, bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_payment_router(self):
     # Cache custom task class properties
