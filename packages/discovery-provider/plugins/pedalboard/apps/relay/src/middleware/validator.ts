@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { RelayRequest } from '../types/relay'
 import { validationError } from '../error'
-import { Table, Users } from '@pedalboard/storage'
+import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
 import { logger } from '../logger'
@@ -12,8 +12,6 @@ export const validator = async (
   next: NextFunction
 ) => {
   const body = request.body as RelayRequest
-
-  logger.info({ body }, 'validating request')
 
   // Validation of input fields
   const contractAddress =
@@ -50,23 +48,40 @@ export const validator = async (
 
   // Gather user from input data
   // @ts-ignore, partially populate for now
-  let user: Users = {
+  let recoveredSigner: Users | DeveloperApps = {
     wallet: senderAddress || null,
     handle: handle || null
   }
+
+  let signerIsApp = false
+  let signerIsUser = false
+
   try {
-    user = await retrieveUser(
+    recoveredSigner = await retrieveUser(
       contractRegistryKey,
       contractAddress,
       encodedABI,
       senderAddress,
       handle
     )
+    signerIsUser = true
   } catch (e) {
     logger.error(
       { e },
       'could not gather user from db, continuing with senderAddress and handle'
     )
+  }
+
+  // could not find user
+  if (!signerIsUser) {
+    const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
+    if (developerApp === undefined) {
+      logger.error({ encodedABI }, "neither user nor developer app could be found for address")
+      validationError(next, 'recoveredSigner not valid')
+      return
+    }
+    recoveredSigner = developerApp
+    signerIsApp = true
   }
 
   // inject remaining fields into ctx for downstream middleware
@@ -76,8 +91,10 @@ export const validator = async (
   response.locals.ctx = {
     ...oldCtx,
     validatedRelayRequest,
-    recoveredSigner: user,
-    ip
+    recoveredSigner: recoveredSigner,
+    ip,
+    signerIsApp,
+    signerIsUser
   }
   next()
 }
@@ -128,4 +145,14 @@ export const retrieveUser = async (
   }
 
   return user
+}
+
+export const retrieveDeveloperApp = async (params: { encodedABI: string, contractAddress: string }): Promise<DeveloperApps | undefined> => {
+  const { encodedABI, contractAddress } = params
+  const recoveredAddress = AudiusABIDecoder.recoverSigner({
+    encodedAbi: encodedABI,
+    entityManagerAddress: contractAddress,
+    chainId: config.acdcChainId!
+  })
+  return await discoveryDb<DeveloperApps>(Table.DeveloperApps).where('address', '=', recoveredAddress).first()
 }

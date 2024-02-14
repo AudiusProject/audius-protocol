@@ -29,7 +29,6 @@ export const relayTransaction = async (
   const nonce = await web3.getTransactionCount(address);
 
   const balance = await web3.getBalance(address);
-  logger.info({ balance, address }, "submitter balance");
   const to = contractAddress;
   const value = "0x00";
   const data = encodedABI;

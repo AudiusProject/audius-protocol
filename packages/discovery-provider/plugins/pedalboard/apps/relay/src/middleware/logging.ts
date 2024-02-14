@@ -30,7 +30,7 @@ export const outgoingLog = (request: Request, response: Response) => {
   const path: string = route.path
   if (!path.includes("health")) {
     logger.info(
-      { route, method, ctx, responseTime, statusCode },
+      { route, method, abi: ctx.ctx.validatedRelayRequest.encodedABI, responseTime, statusCode },
       "request completed"
     );
   }

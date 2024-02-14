@@ -28,7 +28,13 @@ export const antiAbuseMiddleware = async (
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
-  const { ip, recoveredSigner: user } = response.locals.ctx
+  const { ip, recoveredSigner, signerIsApp } = response.locals.ctx
+
+  // no AAO to check
+  if (signerIsApp) return
+  const user = recoveredSigner as Users
+
+
   const decodedAbi = decodeAbi(
     response.locals.ctx.validatedRelayRequest.encodedABI
   )
