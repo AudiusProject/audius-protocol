@@ -1,5 +1,9 @@
 import { Buffer } from 'buffer'
 
+import { DownloadFile } from '~/services'
+
+import { Nullable } from './typeUtils'
+
 /** Convert a base64 string to a file object */
 export const dataURLtoFile = async (
   dataUrl: string,
@@ -16,4 +20,32 @@ export const dataURLtoFile = async (
   const mime = mimeArr[1]
   const buff = Buffer.from(arr[1], 'base64')
   return new File([buff], fileName, { type: mime })
+}
+
+export const getDownloadFilename = ({
+  filename,
+  isOriginal
+}: {
+  filename?: Nullable<string>
+  isOriginal: boolean
+}) => {
+  if (!filename) return ''
+  if (isOriginal) return filename
+  else {
+    const split = filename.split('.')
+    split.pop()
+    return `${split.join('.')}.mp3`
+  }
+}
+
+export const dedupFilenames = (files: DownloadFile[]) => {
+  const filenameCounts = new Map<string, number>()
+  for (const file of files) {
+    const count = filenameCounts.get(file.filename) ?? 0
+    filenameCounts.set(file.filename, count + 1)
+    const split = file.filename.split('.')
+    const extension = split.pop()
+    file.filename =
+      count === 0 ? file.filename : split.join('.') + `-${count}.${extension}`
+  }
 }

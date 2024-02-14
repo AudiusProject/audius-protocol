@@ -6,62 +6,114 @@ from integration_tests.tasks.payment_router_mock_transactions import (
 )
 from integration_tests.tasks.user_bank_mock_transactions import (
     EXTERNAL_ACCOUNT_ADDRESS,
-    RECIPIENT_ACCOUNT_ADDRESS,
-    SENDER_ACCOUNT_ADDRESS,
+    RECEIVER_ACCOUNT_WAUDIO_ADDRESS,
+    RECIPIENT_USDC_USER_BANK_ADDRESS,
+    SENDER_ACCOUNT_WAUDIO_ADDRESS,
+    SENDER_ROOT_WALLET_USDC_ACCOUNT_OWNER,
+    SENDER_USDC_USER_BANK_ADDRESS,
     mock_failed_track_purchase_tx,
     mock_invalid_track_purchase_bad_splits_tx,
     mock_invalid_track_purchase_missing_splits_tx,
     mock_invalid_track_purchase_unknown_pda_tx,
     mock_unknown_instruction_tx,
-    mock_valid_create_token_account_tx,
+    mock_valid_create_audio_token_account_tx,
+    mock_valid_create_usdc_token_account_tx,
     mock_valid_track_purchase_pay_extra_tx,
     mock_valid_track_purchase_tx,
+    mock_valid_track_purchase_tx_download_access,
+    mock_valid_track_purchase_tx_stream_access,
+    mock_valid_transfer_prepare_withdrawal_tx,
+    mock_valid_transfer_withdrawal_tx,
     mock_valid_transfer_without_purchase_tx,
+    mock_valid_waudio_transfer_between_user_banks,
+    mock_valid_waudio_transfer_from_user_bank_to_external_address,
 )
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.audio_transactions_history import (
+    AudioTransactionsHistory,
+    TransactionMethod,
+    TransactionType,
+)
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
     USDCTransactionType,
 )
-from src.models.users.user_bank import USDCUserBankAccount
+from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount
+from src.models.users.user_tip import UserTip
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.index_user_bank import process_user_bank_tx_details
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 
-trackOwnerId = 1
-trackOwnerUserBank = RECIPIENT_ACCOUNT_ADDRESS
-trackOwnerEthAddress = "0xe66402f9a6714a874a539fb1689b870dd271dfb2"
-trackBuyerId = 2
-trackBuyerUserBank = SENDER_ACCOUNT_ADDRESS
+track_owner_id = 1
+track_owner_usdc_user_bank = RECIPIENT_USDC_USER_BANK_ADDRESS
+track_owner_eth_address = "0xe66402f9a6714a874a539fb1689b870dd271dfb2"
+track_buyer_id = 2
+track_buyer_user_bank = SENDER_USDC_USER_BANK_ADDRESS
+
+sender_user_id = 3
+sender_eth_address = "0x7d273271690538cf855e5b3002a0dd8c154bb060"
+sender_waudio_user_bank = SENDER_ACCOUNT_WAUDIO_ADDRESS
+receiver_user_id = 4
+receiver_eth_address = "0x627D8D6D0f06C5663809d29905db7A88317C6240"
+receiver_waudio_user_bank = RECEIVER_ACCOUNT_WAUDIO_ADDRESS
+
+# Used as the source wallet for all the mock transactions
+transactionSenderOwnerAccount = SENDER_ROOT_WALLET_USDC_ACCOUNT_OWNER
 
 test_entries = {
     "users": [
         {
-            "user_id": trackOwnerId,
+            "user_id": track_owner_id,
             "handle": "trackOwner",
-            "wallet": trackOwnerEthAddress,
+            "wallet": track_owner_eth_address,
         },
         {
-            "user_id": trackBuyerId,
+            "user_id": track_buyer_id,
             "handle": "trackBuyer",
             "wallet": "0xe769dcccbfd4df3eb3758e6f4bf6043132906df8",
+        },
+        {
+            "user_id": sender_user_id,
+            "handle": "waudio_sender",
+            "wallet": sender_eth_address,
+        },
+        {
+            "user_id": receiver_user_id,
+            "handle": "waudio_receiver",
+            "wallet": receiver_eth_address,
         },
     ],
     "usdc_user_bank_accounts": [
         {  # trackOwner
             "signature": "unused1",
-            "ethereum_address": trackOwnerEthAddress,
-            "bank_account": trackOwnerUserBank,
+            "ethereum_address": track_owner_eth_address,
+            "bank_account": track_owner_usdc_user_bank,
         },
         {  # trackBuyer
             "signature": "unused2",
             "ethereum_address": "0xe769dcccbfd4df3eb3758e6f4bf6043132906df8",
-            "bank_account": trackBuyerUserBank,
+            "bank_account": track_buyer_user_bank,
+        },
+    ],
+    "user_bank_accounts": [
+        {  # Sender
+            "signature": "unused1",
+            "ethereum_address": sender_eth_address,
+            "bank_account": sender_waudio_user_bank,
+        },
+        {  # Receiver
+            "signature": "unused2",
+            "ethereum_address": receiver_eth_address,
+            "bank_account": receiver_waudio_user_bank,
         },
     ],
     "tracks": [
@@ -71,16 +123,22 @@ test_entries = {
     "track_price_history": [
         {  # pay full price to trackOwner
             "track_id": 1,
-            "splits": {RECIPIENT_ACCOUNT_ADDRESS: 1000000},
+            "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
             "total_price_cents": 100,
         },
         {  # pay $1 each to track owner and third party
             "track_id": 2,
             "splits": {
-                RECIPIENT_ACCOUNT_ADDRESS: 1000000,
+                RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000,
                 EXTERNAL_ACCOUNT_ADDRESS: 1000000,
             },
             "total_price_cents": 200,
+        },
+        {  # download access type
+            "track_id": 3,
+            "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
+            "total_price_cents": 100,
+            "access": PurchaseAccessType.download,
         },
     ],
 }
@@ -125,11 +183,12 @@ def test_process_user_bank_tx_details_valid_purchase(app):
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
         assert purchase.content_id == 1
+        assert purchase.access == PurchaseAccessType.stream
 
         owner_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_owner_usdc_user_bank)
             .first()
         )
         assert owner_transaction_record is not None
@@ -139,12 +198,12 @@ def test_process_user_bank_tx_details_valid_purchase(app):
         )
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 1000000
-        assert owner_transaction_record.tx_metadata == str(trackBuyerId)
+        assert owner_transaction_record.tx_metadata == str(track_buyer_id)
 
         buyer_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
             .first()
         )
         assert buyer_transaction_record is not None
@@ -154,7 +213,7 @@ def test_process_user_bank_tx_details_valid_purchase(app):
         )
         assert buyer_transaction_record.method == USDCTransactionMethod.send
         assert buyer_transaction_record.change == -1000000
-        assert buyer_transaction_record.tx_metadata == str(trackOwnerId)
+        assert buyer_transaction_record.tx_metadata == str(track_owner_id)
 
 
 def test_process_user_bank_tx_details_transfer_without_purchase(
@@ -197,26 +256,26 @@ def test_process_user_bank_tx_details_transfer_without_purchase(
         owner_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_owner_usdc_user_bank)
             .first()
         )
         assert owner_transaction_record is not None
         assert owner_transaction_record.transaction_type == USDCTransactionType.transfer
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 1000000
-        assert owner_transaction_record.tx_metadata == trackBuyerUserBank
+        assert owner_transaction_record.tx_metadata == track_buyer_user_bank
 
         buyer_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
             .first()
         )
         assert buyer_transaction_record is not None
         assert buyer_transaction_record.transaction_type == USDCTransactionType.transfer
         assert buyer_transaction_record.method == USDCTransactionMethod.send
         assert buyer_transaction_record.change == -1000000
-        assert buyer_transaction_record.tx_metadata == trackOwnerUserBank
+        assert buyer_transaction_record.tx_metadata == track_owner_usdc_user_bank
 
 
 def test_process_user_bank_tx_details_valid_purchase_with_pay_extra(app):
@@ -261,7 +320,7 @@ def test_process_user_bank_tx_details_valid_purchase_with_pay_extra(app):
         owner_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_owner_usdc_user_bank)
             .first()
         )
         assert owner_transaction_record is not None
@@ -271,12 +330,12 @@ def test_process_user_bank_tx_details_valid_purchase_with_pay_extra(app):
         )
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 2000000
-        assert owner_transaction_record.tx_metadata == str(trackBuyerId)
+        assert owner_transaction_record.tx_metadata == str(track_buyer_id)
 
         buyer_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
             .first()
         )
         assert buyer_transaction_record is not None
@@ -286,7 +345,7 @@ def test_process_user_bank_tx_details_valid_purchase_with_pay_extra(app):
         )
         assert buyer_transaction_record.method == USDCTransactionMethod.send
         assert buyer_transaction_record.change == -2000000
-        assert buyer_transaction_record.tx_metadata == str(trackOwnerId)
+        assert buyer_transaction_record.tx_metadata == str(track_owner_id)
 
 
 # Simulates buying a track for the correct price ($2) and allocating all of the
@@ -330,7 +389,7 @@ def test_process_user_bank_tx_details_invalid_purchase_missing_splits(app):
         owner_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_owner_usdc_user_bank)
             .first()
         )
         assert owner_transaction_record is not None
@@ -339,7 +398,7 @@ def test_process_user_bank_tx_details_invalid_purchase_missing_splits(app):
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 2000000
         # For transfers, the metadata is the source address
-        assert owner_transaction_record.tx_metadata == trackBuyerUserBank
+        assert owner_transaction_record.tx_metadata == track_buyer_user_bank
 
 
 # Simulates buying a track for the correct price ($2) but giving one of the recipients
@@ -384,7 +443,7 @@ def test_process_user_bank_tx_details_invalid_purchase_bad_splits(app):
         owner_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_owner_usdc_user_bank)
             .first()
         )
         assert owner_transaction_record is not None
@@ -393,12 +452,12 @@ def test_process_user_bank_tx_details_invalid_purchase_bad_splits(app):
         assert owner_transaction_record.method == USDCTransactionMethod.receive
         assert owner_transaction_record.change == 1500000
         # For transfers, the metadata is the source address
-        assert owner_transaction_record.tx_metadata == trackBuyerUserBank
+        assert owner_transaction_record.tx_metadata == track_buyer_user_bank
 
         buyer_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
             .first()
         )
         assert buyer_transaction_record is not None
@@ -411,7 +470,7 @@ def test_process_user_bank_tx_details_invalid_purchase_bad_splits(app):
         assert buyer_transaction_record.method == USDCTransactionMethod.send
         assert buyer_transaction_record.change == -2000000
         # For transfers, the metadata is the dest address
-        assert buyer_transaction_record.tx_metadata == trackOwnerUserBank
+        assert buyer_transaction_record.tx_metadata == track_owner_usdc_user_bank
 
 
 def test_process_user_bank_txs_details_create_challenge_events_for_purchase(app):
@@ -444,14 +503,14 @@ def test_process_user_bank_txs_details_create_challenge_events_for_purchase(app)
         call(
             ChallengeEvent.audio_matching_buyer,
             tx_response.value.slot,
-            trackBuyerId,
+            track_buyer_id,
             {"track_id": 1, "amount": 1},
         ),
         call(
             ChallengeEvent.audio_matching_seller,
             tx_response.value.slot,
-            trackOwnerId,
-            {"track_id": 1, "sender_user_id": trackBuyerId, "amount": 1},
+            track_owner_id,
+            {"track_id": 1, "sender_user_id": track_buyer_id, "amount": 1},
         ),
     ]
     challenge_event_bus.dispatch.assert_has_calls(
@@ -461,7 +520,7 @@ def test_process_user_bank_txs_details_create_challenge_events_for_purchase(app)
 
 
 def test_process_user_bank_txs_details_create_usdc_user_bank(app):
-    tx_response = mock_valid_create_token_account_tx
+    tx_response = mock_valid_create_usdc_token_account_tx
     with app.app_context():
         db = get_db()
         redis = get_redis()
@@ -474,10 +533,10 @@ def test_process_user_bank_txs_details_create_usdc_user_bank(app):
 
     challenge_event_bus = create_autospec(ChallengeEventBus)
 
-    test_entires_without_userbanks = test_entries.copy()
-    test_entires_without_userbanks.pop("usdc_user_bank_accounts")
+    test_entries_without_userbanks = test_entries.copy()
+    test_entries_without_userbanks.pop("usdc_user_bank_accounts")
 
-    populate_mock_db(db, test_entires_without_userbanks)
+    populate_mock_db(db, test_entries_without_userbanks)
 
     with db.scoped_session() as session:
         process_user_bank_tx_details(
@@ -497,8 +556,8 @@ def test_process_user_bank_txs_details_create_usdc_user_bank(app):
         )
 
         assert user_bank is not None
-        assert user_bank.bank_account == RECIPIENT_ACCOUNT_ADDRESS
-        assert user_bank.ethereum_address == trackOwnerEthAddress
+        assert user_bank.bank_account == RECIPIENT_USDC_USER_BANK_ADDRESS
+        assert user_bank.ethereum_address == track_owner_eth_address
 
 
 def test_process_user_bank_tx_details_skip_errors(app):
@@ -634,6 +693,90 @@ def test_process_user_bank_txs_details_skip_unknown_instructions(app):
         assert transaction_record is None
 
 
+def test_process_user_bank_tx_details_prepare_withdrawal(
+    app,
+):
+    tx_response = mock_valid_transfer_prepare_withdrawal_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            redis=redis,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
+            .first()
+        )
+        assert transaction_record is not None
+        assert (
+            transaction_record.transaction_type
+            == USDCTransactionType.prepare_withdrawal
+        )
+        assert transaction_record.method == USDCTransactionMethod.send
+        assert transaction_record.change == -1000000
+        assert transaction_record.tx_metadata == transactionSenderOwnerAccount
+
+
+def test_process_user_bank_tx_details_withdrawal(
+    app,
+):
+    tx_response = mock_valid_transfer_withdrawal_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            redis=redis,
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
+            .first()
+        )
+        assert transaction_record is not None
+        assert transaction_record.transaction_type == USDCTransactionType.withdrawal
+        assert transaction_record.method == USDCTransactionMethod.send
+        assert transaction_record.change == -1000000
+
+
 def test_process_user_bank_txs_details_ignore_payment_router_transfers(app):
     # Payment router transaction, should be ignored by user bank indexer
     tx_response = (
@@ -667,7 +810,7 @@ def test_process_user_bank_txs_details_ignore_payment_router_transfers(app):
         receiver_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_owner_usdc_user_bank)
             .first()
         )
         assert receiver_transaction_record is None
@@ -675,34 +818,255 @@ def test_process_user_bank_txs_details_ignore_payment_router_transfers(app):
         sender_transaction_record = (
             session.query(USDCTransactionsHistory)
             .filter(USDCTransactionsHistory.signature == tx_sig_str)
-            .filter(USDCTransactionsHistory.user_bank == trackBuyerUserBank)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
             .first()
         )
         assert sender_transaction_record is None
 
 
-# TODO: https://linear.app/audius/issue/PAY-2314/add-user-bank-indexer-tests-for-audio-operations
-
-
 # Creation WAUDIO user bank
 def test_process_user_bank_txs_details_create_audio_token_acct_tx(app):
-    # TODO
-    return
+    tx_response = mock_valid_create_audio_token_account_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    test_entries_without_userbanks = test_entries.copy()
+    test_entries_without_userbanks.pop("user_bank_accounts")
+
+    populate_mock_db(db, test_entries_without_userbanks)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        user_bank = (
+            session.query(UserBankAccount)
+            .filter(UserBankAccount.signature == tx_sig_str)
+            .first()
+        )
+
+        assert user_bank is not None
+        assert user_bank.bank_account == SENDER_ACCOUNT_WAUDIO_ADDRESS
+        assert user_bank.ethereum_address == sender_eth_address
 
 
 # Transfer of WAUDIO between two user banks (tipping)
 def test_process_user_bank_txs_details_transfer_audio_tip_tx(app):
-    # TODO
-    return
+    tx_response = mock_valid_waudio_transfer_between_user_banks
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        tip = session.query(UserTip).filter(UserTip.signature == tx_sig_str).first()
+        assert tip is not None
+        assert tip.sender_user_id == 3
+        assert tip.receiver_user_id == 4
+        assert tip.amount == 10000000000
+
+        sender_transaction_record = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.signature == tx_sig_str)
+            .filter(AudioTransactionsHistory.user_bank == sender_waudio_user_bank)
+            .first()
+        )
+        assert sender_transaction_record is not None
+        assert sender_transaction_record.transaction_type == TransactionType.tip
+        assert sender_transaction_record.method == TransactionMethod.send
+        assert sender_transaction_record.change == -10000000000
+
+        receiver_transaction_record = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.signature == tx_sig_str)
+            .filter(AudioTransactionsHistory.user_bank == receiver_waudio_user_bank)
+            .first()
+        )
+        assert receiver_transaction_record is not None
+        assert receiver_transaction_record.transaction_type == TransactionType.tip
+        assert receiver_transaction_record.method == TransactionMethod.receive
+        assert receiver_transaction_record.change == 10000000000
 
 
 # Transfer of WAUDIO to a non-userbank (external transfer)
 def test_process_user_bank_txs_details_transfer_audio_external_tx(app):
-    # TODO
-    return
+    tx_response = mock_valid_waudio_transfer_from_user_bank_to_external_address
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        tip = session.query(UserTip).filter(UserTip.signature == tx_sig_str).first()
+        assert tip is None
+
+        sender_transaction_record = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.signature == tx_sig_str)
+            .filter(AudioTransactionsHistory.user_bank == sender_waudio_user_bank)
+            .first()
+        )
+        assert sender_transaction_record is not None
+        assert sender_transaction_record.transaction_type == TransactionType.transfer
+        assert sender_transaction_record.method == TransactionMethod.send
+        assert sender_transaction_record.change == -10000000000
+
+        receiver_transaction_record = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.signature == tx_sig_str)
+            .filter(AudioTransactionsHistory.user_bank == receiver_waudio_user_bank)
+            .first()
+        )
+        assert receiver_transaction_record is None
 
 
 # Creation of challenge event for tipping
 def test_process_user_bank_txs_details_transfer_audio_tip_challenge_event(app):
-    # TODO
-    return
+    tx_response = mock_valid_waudio_transfer_between_user_banks
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        calls = [call(ChallengeEvent.send_tip, tx_response.value.slot, sender_user_id)]
+        challenge_event_bus.dispatch.assert_has_calls(calls)
+
+
+# Index tx with stream access in memo correctly
+def test_process_user_bank_txs_details_stream_access(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+    populate_mock_db(db, test_entries)
+
+    tx_response = mock_valid_track_purchase_tx_stream_access
+    transaction = tx_response.value.transaction.transaction
+    tx_sig_str = str(transaction.signatures[0])
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.access == PurchaseAccessType.stream
+
+
+# Index tx with download access in memo correctly
+def test_process_user_bank_txs_details_download_access(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+    populate_mock_db(db, test_entries)
+
+    tx_response = mock_valid_track_purchase_tx_download_access
+    transaction = tx_response.value.transaction.transaction
+    tx_sig_str = str(transaction.signatures[0])
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.access == PurchaseAccessType.download

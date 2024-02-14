@@ -1,9 +1,9 @@
 import { type AudiusSdk, ChatEvents } from '@audius/sdk'
 import { Middleware } from 'redux'
 
-import { Status } from 'models/Status'
-import { getUserId } from 'store/account/selectors'
-import { encodeHashId } from 'utils/hashIds'
+import { Status } from '~/models/Status'
+import { getUserId } from '~/store/account/selectors'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { actions as chatActions } from './slice'
 import { ChatWebsocketError } from './types'

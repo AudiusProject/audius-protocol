@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import {
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions
-} from '@audius/common'
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import DesktopHeader from 'components/header/desktop/Header'

@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
 import {
-  premiumTracksPageLineupActions,
-  premiumTracksPageLineupSelectors
-} from '@audius/common'
+  premiumTracksPageLineupSelectors,
+  premiumTracksPageLineupActions
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import EndOfLineup from 'components/lineup/EndOfLineup'

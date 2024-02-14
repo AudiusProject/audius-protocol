@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { isAllowedExternalLink, useLeavingAudiusModal } from '@audius/common'
+import { useLeavingAudiusModal } from '@audius/common/store'
+import { isAllowedExternalLink } from '@audius/common/utils'
 import type {
   GestureResponderEvent,
   TouchableWithoutFeedbackProps

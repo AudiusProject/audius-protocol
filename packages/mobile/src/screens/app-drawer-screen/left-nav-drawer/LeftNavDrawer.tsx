@@ -1,30 +1,27 @@
-import type { User } from '@audius/common'
-import {
-  FeatureFlags,
-  StringKeys,
-  accountSelectors,
-  useAccountHasClaimableRewards,
-  chatSelectors,
-  Name
-} from '@audius/common'
+import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import type { User } from '@audius/common/models'
+import { Name } from '@audius/common/models'
+import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'
 
-import IconCrown from 'app/assets/images/iconCrown.svg'
-import IconDonate from 'app/assets/images/iconDonate.svg'
-import IconEmbed from 'app/assets/images/iconEmbed.svg'
-import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
-import IconMessage from 'app/assets/images/iconMessage.svg'
-import IconSettings from 'app/assets/images/iconSettings.svg'
-import IconUpload from 'app/assets/images/iconUpload.svg'
-import IconUser from 'app/assets/images/iconUser.svg'
+import {
+  IconCrown,
+  IconDonate,
+  IconEmbed,
+  IconListeningHistory,
+  IconMessage,
+  IconSettings,
+  IconCloudUpload,
+  IconUser
+} from '@audius/harmony-native'
 import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
 import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePill'
 import { env } from 'app/env'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
-import { spacing } from 'app/styles/spacing'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
 
@@ -107,12 +104,7 @@ const WrappedLeftNavDrawer = () => {
         <AudioBalancePill />
       </LeftNavLink>
       <LeftNavLink
-        icon={IconUpload}
-        iconProps={{
-          height: spacing(8),
-          width: spacing(8),
-          style: { marginLeft: -2 }
-        }}
+        icon={IconCloudUpload}
         label={messages.upload}
         to='Upload'
         params={{ fromAppDrawer: false }}
@@ -134,11 +126,6 @@ const WrappedLeftNavDrawer = () => {
         label={messages.settings}
         to='SettingsScreen'
         params={null}
-        iconProps={{
-          height: spacing(9),
-          width: spacing(9),
-          style: { marginLeft: spacing(-1) }
-        }}
       />
       {isStaging || isFeatureFlagAccessEnabled ? (
         <LeftNavLink

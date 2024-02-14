@@ -1,20 +1,25 @@
 import { useCallback, useState } from 'react'
 
+import { useUSDCBalance } from '@audius/common/hooks'
+import { BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
-  decimalIntegerToHumanReadable,
   useWithdrawUSDCModal,
-  useUSDCBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  BNUSDC,
   WithdrawMethod
-} from '@audius/common'
-import { Button, IconQuestionCircle } from '@audius/harmony'
-import { Switch } from '@audius/stems'
+} from '@audius/common/store'
+import {
+  decimalIntegerToHumanReadable,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
+import {
+  Button,
+  IconQuestionCircle,
+  Switch,
+  IconCaretLeft
+} from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
@@ -39,6 +44,7 @@ const messages = {
     'I have carefully reviewed the accuracy of this information and I understand transfers are final and cannot be reversed.',
   goBack: 'Go Back',
   confirm: 'Confirm Transfer',
+  continue: 'Continue Transfer',
   notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
   cashTransferDescription:
     'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
@@ -51,7 +57,10 @@ export const ConfirmTransferDetails = () => {
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
   const [{ value: methodValue }] = useField(METHOD)
-  const [confirmField, { error: confirmError }] = useField(CONFIRM)
+  const [confirmField, { error: confirmError }] = useField({
+    name: CONFIRM,
+    type: 'checkbox'
+  })
 
   const { data: balance } = useUSDCBalance()
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
@@ -136,7 +145,9 @@ export const ConfirmTransferDetails = () => {
           {messages.goBack}
         </Button>
         <Button variant='secondary' onClick={handleContinue}>
-          {messages.confirm}
+          {methodValue === WithdrawMethod.COINFLOW
+            ? messages.continue
+            : messages.confirm}
         </Button>
       </div>
     </div>

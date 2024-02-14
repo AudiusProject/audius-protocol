@@ -3,14 +3,12 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EventEmitter from 'events'
 import path from 'path'
 
-import type { Color, Nullable, ShareContent } from '@audius/common'
-import {
-  encodeHashId,
-  ErrorLevel,
-  modalsActions,
-  SquareSizes,
-  uuid
-} from '@audius/common'
+import { ErrorLevel, SquareSizes } from '@audius/common/models'
+import type { Color } from '@audius/common/models'
+import { modalsActions } from '@audius/common/store'
+import type { ShareContent } from '@audius/common/store'
+import { encodeHashId, uuid } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import {
   activateKeepAwake,
   deactivateKeepAwake
@@ -30,7 +28,7 @@ import {
 import type ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconWavform from 'app/assets/images/iconWavform.svg'
+import { IconWaveform } from '@audius/harmony-native'
 import { Button, LinearProgress, Text } from 'app/components/core'
 import { env } from 'app/env'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
@@ -588,7 +586,7 @@ export const ShareToStoryProgressDrawer = () => {
     >
       <View style={styles.container}>
         <HarmonyModalHeader
-          icon={IconWavform}
+          icon={IconWaveform}
           title={messages.loadingStoryModalTitle}
         />
         <View style={styles.progress}>

@@ -1,5 +1,5 @@
-import { AccountCollection } from 'store/account'
-import { EnhancedCollection } from 'store/cache/collections/selectors'
+import { AccountCollection } from '~/store/account'
+import { EnhancedCollection } from '~/store/cache/collections/selectors'
 
 type FilterCollectionsOptions = {
   filterText?: string

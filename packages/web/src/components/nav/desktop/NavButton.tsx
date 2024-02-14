@@ -1,19 +1,16 @@
 import { useCallback } from 'react'
 
+import { Name, Status } from '@audius/common/models'
 import {
-  Name,
-  Status,
   accountSelectors,
   uploadActions,
   uploadSelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import {
-  Button,
-  ButtonType,
-  ButtonSize,
-  IconFollow,
-  IconUpload
-} from '@audius/stems'
+  IconCloudUpload as IconUpload,
+  IconUserFollow as IconFollow
+} from '@audius/harmony'
+import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'

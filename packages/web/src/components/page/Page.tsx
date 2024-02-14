@@ -8,23 +8,18 @@ import {
   MutableRefObject
 } from 'react'
 
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
-import { Helmet } from 'react-helmet'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
 // @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
+import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
 
 import styles from './Page.module.css'
-
-const messages = {
-  dotAudius: '• Audius',
-  audius: 'Audius'
-}
 
 const HEADER_MARGIN_PX = 32
 // Pixels on the right side of the header to account for potential scrollbars
@@ -105,12 +100,6 @@ const HeaderContainer = (props: HeaderContainerProps) => {
 }
 
 type PageProps = {
-  title?: string
-  description?: string
-  ogDescription?: string
-  image?: string
-  canonicalUrl?: string
-  structuredData?: object
   variant?: 'insert' | 'flush'
   size?: 'medium' | 'large'
   containerRef?: MutableRefObject<any>
@@ -126,27 +115,28 @@ type PageProps = {
   scrollableSearch?: boolean
   children?: ReactNode
   showSearch?: boolean
-}
+} & MetaTagsProps
 
 export const Page = (props: PageProps) => {
   const {
-    title,
-    description,
-    ogDescription,
-    image,
     canonicalUrl,
-    structuredData,
-    variant = 'inset',
-    size = 'medium',
+    children,
+    containerClassName,
     containerRef,
     contentClassName,
-    containerClassName,
-    fromOpacity = 0.2,
+    description,
     fadeDuration = 200,
+    fromOpacity = 0.2,
     header,
+    image,
+    noIndex = false,
+    ogDescription,
     scrollableSearch = false,
-    children,
-    showSearch = true
+    showSearch = true,
+    size = 'medium',
+    structuredData,
+    title,
+    variant = 'inset'
   } = props
 
   const [headerHeight, setHeaderHeight] = useState(0)
@@ -157,58 +147,19 @@ export const Page = (props: PageProps) => {
     }
   }
 
-  const formattedTitle = title
-    ? `${title} ${messages.dotAudius}`
-    : messages.audius
+  const metaTagsProps = {
+    title,
+    description,
+    ogDescription,
+    image,
+    canonicalUrl,
+    structuredData,
+    noIndex
+  }
 
   return (
     <>
-      {/* Title */}
-      <Helmet>
-        <title>{formattedTitle}</title>
-        <meta property='og:title' content={formattedTitle} />
-        <meta name='twitter:title' content={formattedTitle} />
-      </Helmet>
-
-      {/* Description */}
-      {description ? (
-        <Helmet encodeSpecialCharacters={false}>
-          <meta name='description' content={description} />
-        </Helmet>
-      ) : null}
-
-      {/* OG Description - This is the actual description of the content, for example a Track description */}
-      {ogDescription ? (
-        <Helmet encodeSpecialCharacters={false}>
-          <meta property='og:description' content={ogDescription} />
-          <meta name='twitter:description' content={ogDescription} />
-        </Helmet>
-      ) : null}
-
-      {/* Canonical URL */}
-      {canonicalUrl ? (
-        <Helmet encodeSpecialCharacters={false}>
-          <link rel='canonical' href={canonicalUrl} />
-          <meta property='og:url' content={canonicalUrl} />
-        </Helmet>
-      ) : null}
-
-      {/* Image */}
-      {image ? (
-        <Helmet encodeSpecialCharacters={false}>
-          <meta property='og:image' content={image} />
-          <meta name='twitter:image' content={image} />
-        </Helmet>
-      ) : null}
-
-      <meta property='og:type' content='website' />
-      <meta name='twitter:card' content='summary' />
-
-      {structuredData && (
-        <script type='application/ld+json'>
-          {JSON.stringify(structuredData)}
-        </script>
-      )}
+      <MetaTags {...metaTagsProps} />
       <Spring
         from={{ opacity: fromOpacity }}
         to={{ opacity: 1 }}

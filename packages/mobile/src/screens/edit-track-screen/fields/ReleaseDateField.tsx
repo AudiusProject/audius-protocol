@@ -1,4 +1,5 @@
-import { dayjs, type Nullable } from '@audius/common'
+import type { Nullable } from '@audius/common/utils'
+import { dayjs } from '@audius/common/utils'
 import { useField } from 'formik'
 import moment from 'moment'
 

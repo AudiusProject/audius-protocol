@@ -117,7 +117,7 @@
   width: 20px;
 }
 
-.pickForMe:active .iconWand g path {
+.pickForMe:active .iconWand path {
   fill: var(--neutral-light-2);
 }
 

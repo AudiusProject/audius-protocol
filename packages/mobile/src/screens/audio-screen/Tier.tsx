@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { View } from 'react-native'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrowRight } from '@audius/harmony-native'
 import { GradientText, Shadow, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -117,7 +117,7 @@ export const Tier = ({
     <View style={styles.root}>
       <View style={styles.currentIndicator}>
         <Text style={styles.currentText}>{messages.current}</Text>
-        <IconArrow
+        <IconArrowRight
           height={20}
           width={20}
           style={styles.currentPointer}

@@ -1,39 +1,36 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import type {
-  CommonState,
-  ID,
-  Nullable,
-  QueryParams,
-  Queueable,
-  Track
-} from '@audius/common'
+import { useAppContext } from '@audius/common/context'
+import { SquareSizes } from '@audius/common/models'
+import type { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  getQueryParams,
-  removeNullable,
-  playbackRateValueMap,
   accountSelectors,
-  cacheUsersSelectors,
   cacheTracksSelectors,
-  playerSelectors,
-  playerActions,
-  playbackPositionActions,
-  playbackPositionSelectors,
+  cacheUsersSelectors,
+  savedPageTracksLineupActions,
   queueActions,
   queueSelectors,
-  reachabilitySelectors,
-  gatedContentSelectors,
   RepeatMode,
-  FeatureFlags,
-  encodeHashId,
-  Genre,
+  reachabilitySelectors,
   tracksSocialActions,
-  SquareSizes,
+  playerActions,
+  playerSelectors,
+  playbackRateValueMap,
+  playbackPositionActions,
+  playbackPositionSelectors,
+  gatedContentSelectors
+} from '@audius/common/store'
+import type { Queueable, CommonState } from '@audius/common/store'
+import {
+  Genre,
+  encodeHashId,
   shallowCompare,
-  savedPageTracksLineupActions,
-  useAppContext,
+  removeNullable,
+  getQueryParams,
   getTrackPreviewDuration
-} from '@audius/common'
+} from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
@@ -292,38 +289,6 @@ export const AudioPlayer = () => {
     }
   }, [reset])
 
-  // Map of user signature for gated tracks
-  const [gatedQueryParamsMap, setGatedQueryParamsMap] = useState<{
-    [trackId: ID]: QueryParams
-  }>({})
-
-  const handleGatedQueryParams = useCallback(
-    async (tracks: QueueableTrack[]) => {
-      const queryParamsMap: { [trackId: ID]: QueryParams } = {}
-
-      for (const { track } of tracks) {
-        if (!track) {
-          continue
-        }
-        const trackId = track.track_id
-
-        if (gatedQueryParamsMap[trackId]) {
-          queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
-        } else {
-          const nftAccessSignature = nftAccessSignatureMap[trackId]
-          queryParamsMap[trackId] = await getQueryParams({
-            audiusBackendInstance,
-            nftAccessSignature
-          })
-        }
-      }
-
-      setGatedQueryParamsMap(queryParamsMap)
-      return queryParamsMap
-    },
-    [nftAccessSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
-  )
-
   useTrackPlayerEvents(playerEvents, async (event) => {
     const duration = (await TrackPlayer.getProgress()).duration
     const position = (await TrackPlayer.getProgress()).position
@@ -526,8 +491,13 @@ export const AudioPlayer = () => {
 
   // Ref to keep track of the queue in the track player vs the queue in state
   const queueListRef = useRef<string[]>([])
-  // Ref to ensure that we do not try to update while we are already updating
-  const updatingQueueRef = useRef<boolean>(false)
+
+  // A ref to the enqueue task to await before either requeing or appending to queue
+  const enqueueTracksJobRef = useRef<Promise<void>>()
+  // A way to abort the enqeue tracks job if a new lineup is played
+  const abortEnqueueControllerRef = useRef(new AbortController())
+  // The ref of trackQueryParams to avoid re-generating query params for the same track
+  const trackQueryParams = useRef({})
 
   const handleQueueChange = useCallback(async () => {
     const refUids = queueListRef.current
@@ -538,7 +508,6 @@ export const AudioPlayer = () => {
       return
     }
 
-    updatingQueueRef.current = true
     queueListRef.current = queueTrackUids
 
     // Checks to allow for continuous playback while making queue updates
@@ -546,6 +515,18 @@ export const AudioPlayer = () => {
     const isQueueAppend =
       refUids.length > 0 &&
       isEqual(queueTrackUids.slice(0, refUids.length), refUids)
+
+    // If not an append, cancel the enqueue task first
+    if (!isQueueAppend) {
+      abortEnqueueControllerRef.current.abort()
+    }
+    // wait for enqueue task to either shut down or finish
+    if (enqueueTracksJobRef.current) {
+      await enqueueTracksJobRef.current
+    }
+
+    // Re-init the abort controller now that the enqueue job is done
+    abortEnqueueControllerRef.current = new AbortController()
 
     // TODO: Queue removal logic was firing too often previously and causing playback issues when at the end of queues. Need to fix
     // Check if we are removing from the end of the queue
@@ -570,11 +551,7 @@ export const AudioPlayer = () => {
       ? queueTracks.slice(refUids.length)
       : queueTracks
 
-    const queryParamsMap = isReachable
-      ? await handleGatedQueryParams(newQueueTracks)
-      : null
-
-    const newTrackData = newQueueTracks.map(({ track, isPreview }) => {
+    const makeTrackData = async ({ track, isPreview }: QueueableTrack) => {
       if (!track) {
         return unlistedTrackFallbackTrackData
       }
@@ -589,10 +566,19 @@ export const AudioPlayer = () => {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
       } else {
-        const queryParams = {
-          ...queryParamsMap?.[track.track_id],
-          preview: isPreview
+        let queryParams = trackQueryParams.current[trackId]
+
+        if (!queryParams) {
+          const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
+          queryParams = await getQueryParams({
+            audiusBackendInstance,
+            nftAccessSignature
+          })
+          trackQueryParams.current[trackId] = queryParams
         }
+
+        queryParams = { ...queryParams, preview: isPreview }
+
         url = apiClient.makeUrl(
           `/tracks/${encodeHashId(track.track_id)}/stream`,
           queryParams
@@ -626,44 +612,76 @@ export const AudioPlayer = () => {
         artwork: imageUrl,
         duration: isPreview ? getTrackPreviewDuration(track) : track.duration
       }
-    })
+    }
 
-    if (isQueueAppend) {
-      await TrackPlayer.add(newTrackData)
-    } else {
-      // New queue, reset before adding new tracks
-      // NOTE: Should only happen when the user selects a new lineup so reset should never be called in the background and cause an error
-      await TrackPlayer.reset()
-      await TrackPlayer.add(newTrackData)
-      if (queueIndex < newQueueTracks.length) {
-        await TrackPlayer.skip(queueIndex)
+    // Enqueue tracks using 'middle-out' to ensure user can ready skip forward or backwards
+    const enqueueTracks = async (
+      queuableTracks: QueueableTrack[],
+      queueIndex = 0
+    ) => {
+      let currentPivot = 1
+      while (
+        queueIndex - currentPivot > 0 ||
+        queueIndex + currentPivot < queueTracks.length
+      ) {
+        if (abortEnqueueControllerRef.current.signal.aborted) {
+          return
+        }
+
+        const nextTrack = queuableTracks[queueIndex + currentPivot]
+        if (nextTrack) {
+          await TrackPlayer.add(await makeTrackData(nextTrack))
+        }
+
+        const previousTrack = queuableTracks[queueIndex - currentPivot]
+        if (previousTrack) {
+          await TrackPlayer.add(await makeTrackData(previousTrack), 0)
+        }
+        currentPivot++
       }
     }
 
-    if (playing) await TrackPlayer.play()
-    updatingQueueRef.current = false
+    if (isQueueAppend) {
+      enqueueTracksJobRef.current = enqueueTracks(newQueueTracks)
+      await enqueueTracksJobRef.current
+      enqueueTracksJobRef.current = undefined
+    } else {
+      await TrackPlayer.reset()
+
+      const firstTrack = newQueueTracks[queueIndex]
+      if (!firstTrack) return
+      await TrackPlayer.add(await makeTrackData(firstTrack))
+
+      if (playing) {
+        await TrackPlayer.play()
+      }
+
+      enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
+      await enqueueTracksJobRef.current
+      enqueueTracksJobRef.current = undefined
+    }
   }, [
-    isNotReachable,
+    queueIndex,
+    queueTrackUids,
+    didOfflineToggleChange,
+    queueTracks,
+    queueTrackOwnersMap,
     isOfflineModeEnabled,
     offlineAvailabilityByTrackId,
-    playing,
-    queueIndex,
-    queueTrackOwnersMap,
-    queueTrackUids,
-    queueTracks,
-    didOfflineToggleChange,
     isCollectionMarkedForDownload,
-    handleGatedQueryParams,
-    isReachable,
-    storageNodeSelector
+    isNotReachable,
+    storageNodeSelector,
+    nftAccessSignatureMap,
+    playing
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
     const playerIdx = await TrackPlayer.getActiveTrackIndex()
     const queue = await TrackPlayer.getQueue()
 
+    await enqueueTracksJobRef.current
+
     if (
-      !updatingQueueRef.current &&
       queueIndex !== -1 &&
       queueIndex !== playerIdx &&
       queueIndex < queue.length

@@ -11,7 +11,7 @@ import {
 import AsyncRetry from 'async-retry'
 import { Dispatch } from 'redux'
 
-import { Kind, Status } from 'models'
+import { Kind, Status } from '~/models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 
@@ -26,15 +26,10 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
     [Property in keyof EndpointDefinitions as `use${Capitalize<
       string & Property
     >}`]: EndpointDefinitions[Property]['options']['type'] extends 'mutation'
-      ? () => [
-          (
-            fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
-            options?: QueryHookOptions
-          ) => void,
-          QueryHookResults<
-            Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
-          >
-        ]
+      ? () => MutationHookResults<
+          Parameters<EndpointDefinitions[Property]['fetch']>[0],
+          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+        >
       : (
           fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
           options?: QueryHookOptions
@@ -51,6 +46,9 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
           Awaited<ReturnType<EndpointDefinitions[EndpointName]['fetch']>>
         >
       ) => void
+    ) => ThunkAction<any, any, any, any>
+    reset: <EndpointName extends keyof EndpointDefinitions>(
+      endpointName: EndpointName
     ) => ThunkAction<any, any, any, any>
   }
   /**
@@ -140,4 +138,14 @@ export type QueryHookResults<Data> = {
   data: Data
   status: Status
   errorMessage?: string
+  forceRefresh: () => void
 }
+
+export type MutationHookResults<Args, Data> = [
+  (fetchArgs: Args, options?: QueryHookOptions) => void,
+  {
+    data: Data
+    status: Status
+    errorMessage?: string
+  }
+]

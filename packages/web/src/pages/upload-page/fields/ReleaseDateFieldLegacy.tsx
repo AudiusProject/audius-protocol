@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { IconCalendar } from '@audius/stems'
+import { IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
@@ -53,7 +53,7 @@ export const ReleaseDateFieldLegacy = () => {
             .calendar()
             .split(' at')[0]
         }
-        icon={IconCalendar}
+        icon={IconCalendarMonth}
       >
         <input
           className={styles.input}
@@ -70,7 +70,7 @@ export const ReleaseDateFieldLegacy = () => {
     <ContextualMenu
       label={messages.title}
       description={messages.description}
-      icon={<IconCalendar className={styles.titleIcon} />}
+      icon={<IconCalendarMonth className={styles.titleIcon} />}
       initialValues={initialValues}
       onSubmit={onSubmit}
       menuFields={

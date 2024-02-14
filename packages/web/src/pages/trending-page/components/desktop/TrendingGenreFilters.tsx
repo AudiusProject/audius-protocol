@@ -1,15 +1,17 @@
-import { useState } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 
-import { getCanonicalName } from '@audius/common'
+import { getCanonicalName } from '@audius/common/utils'
+import { Flex, IconKebabHorizontal, SelectablePill } from '@audius/harmony'
 
-import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
-import SelectablePills from 'components/selectable-pill/SelectablePills'
+const messages = {
+  all: 'All Genres',
+  more: 'More genres'
+}
 
-import styles from './TrendingGenreFilters.module.css'
+const initialGenres = ['Electronic', 'Hip-Hop/Rap', 'Alternative']
 
 type TrendingGenreFiltersProps = {
-  genre: string | null
-  initialGenres: string[]
+  currentGenre: string | null
   didSelectGenre: (genre: string | null) => void
   didSelectMore: () => void
 }
@@ -17,12 +19,8 @@ type TrendingGenreFiltersProps = {
 /**
  * TrendingGenreFilters maintains a row of toggleable buttons for filtering the trending lineups by genre.
  */
-const TrendingGenreFilters = ({
-  genre,
-  initialGenres,
-  didSelectGenre,
-  didSelectMore
-}: TrendingGenreFiltersProps) => {
+export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
+  const { currentGenre, didSelectGenre, didSelectMore } = props
   // type guard for whether this is a genre specified by the user via the modal
   const isSelectedFromModal = (genre: string | null): genre is string => {
     return genre !== null && initialGenres.indexOf(genre) === -1
@@ -36,48 +34,60 @@ const TrendingGenreFilters = ({
   >(null)
 
   // Avoid mutating initialGenres
-  const content = [...initialGenres]
+  const genres = [...initialGenres]
 
   // Set the last seen modal selected genre, and make sure we render it
   // even if it's not selected.
-  if (isSelectedFromModal(genre) && genre !== lastModalSelectedGenre) {
-    setLastModalSelectedGenre(genre)
-    content.push(genre)
+  if (
+    isSelectedFromModal(currentGenre) &&
+    currentGenre !== lastModalSelectedGenre
+  ) {
+    setLastModalSelectedGenre(currentGenre)
+    genres.push(currentGenre)
   } else if (lastModalSelectedGenre !== null) {
-    content.push(lastModalSelectedGenre)
+    genres.push(lastModalSelectedGenre)
   }
 
-  const didClickPill = (index: number) => {
-    // Check if we hit all
-    if (index === 0) {
-      didSelectGenre(null)
-      return
-    }
-
-    // Check if we hit overflow
-    if (index === content.length) {
-      didSelectMore()
-      return
-    }
-
-    // Select a new genre
-    didSelectGenre(content[index])
-  }
-
-  const selectedIndex = genre === null ? 0 : content.indexOf(genre)
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const selectedGenre = e.target.value
+      if (selectedGenre === messages.all) {
+        didSelectGenre(null)
+      } else {
+        didSelectGenre(selectedGenre)
+      }
+    },
+    [didSelectGenre]
+  )
 
   return (
-    <SelectablePills
-      content={[
-        ...content.map(getCanonicalName),
-        <div key='horizontal' className={styles.overflow}>
-          <IconKebabHorizontal />
-        </div>
-      ]}
-      onClickIndex={didClickPill}
-      selectedIndex={selectedIndex}
-    />
+    <Flex gap='s' role='radiogroup' onChange={handleChange}>
+      <SelectablePill
+        type='radio'
+        name='trending-genre-filter'
+        label={messages.all}
+        value={messages.all}
+        size='large'
+        isSelected={currentGenre === null}
+      />
+      {genres.map((genre) => (
+        <SelectablePill
+          key={genre}
+          name='trending-genre-filter'
+          type='radio'
+          label={getCanonicalName(genre)}
+          value={genre}
+          size='large'
+          isSelected={genre === currentGenre}
+        />
+      ))}
+      <SelectablePill
+        type='button'
+        icon={IconKebabHorizontal}
+        aria-label={messages.more}
+        size='large'
+        onClick={didSelectMore}
+      />
+    </Flex>
   )
 }
-
-export default TrendingGenreFilters

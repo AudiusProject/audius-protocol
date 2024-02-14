@@ -1,16 +1,19 @@
 import { useCallback } from 'react'
 
 import {
-  accountSelectors,
+  FavoriteSource,
   Collection,
-  collectionPageSelectors,
-  CommonState,
-  ID,
   SmartCollection,
+  ID
+} from '@audius/common/models'
+import {
+  accountSelectors,
+  collectionPageSelectors,
   collectionsSocialActions,
-  FavoriteSource
-} from '@audius/common'
-import { ButtonProps, ButtonType, IconHeart } from '@audius/stems'
+  CommonState
+} from '@audius/common/store'
+import { IconHeart } from '@audius/harmony'
+import { ButtonProps, ButtonType } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'

@@ -1,4 +1,21 @@
-FROM node:18.17-slim as builder
+FROM node:18.17-slim as base
+
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
+# First stage: Set up a minimal monorepo
+FROM base AS turbo-builder
+WORKDIR /app
+RUN npm install turbo --global
+COPY . .
+RUN turbo prune --scope=audius-protocol-dashboard --docker
+
+# Second stage: Install and build dist
+FROM base AS app-builder
+WORKDIR /app
 RUN apt update && \
     apt install -y \
     python3 \
@@ -10,21 +27,23 @@ RUN apt update && \
     libsecret-1-dev \
     pkg-config && \
     rm -rf /var/lib/apt/lists/*
-WORKDIR /app
-COPY package*.json ./
 ENV DASHBOARD_BASE_URL="/dashboard/"
-RUN npm install --legacy-peer-deps
-COPY .env* index.html tsconfig.json tsconfig.node.json vite.config.ts ./
-COPY src ./src
-COPY scripts ./scripts
-COPY public ./public
-COPY types ./types
-RUN npm run build:stage
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=turbo-builder /app/out/json/ .
+COPY --from=turbo-builder /app/out/package-lock.json ./package-lock.json
+COPY --from=turbo-builder /app/scripts ./scripts
+RUN CI=true npm i
+# Build the app and its dependencies
+COPY --from=turbo-builder /app/out/full/ .
+COPY svgr-template.js svgr-template.js
+COPY turbo.json turbo.json
+RUN npm run build:stage -w audius-protocol-dashboard
 
 FROM alpine:latest
 WORKDIR /app
 RUN apk add --no-cache findutils coreutils
-COPY --from=builder /app/dist /tmp/dist
-COPY ./scripts/docker-entrypoint.sh /usr/local/bin/
+COPY --from=app-builder /app/protocol-dashboard/dist /tmp/dist
+COPY ./protocol-dashboard/scripts/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

@@ -35,9 +35,10 @@ web-init:
           - packages/harmony/node_modules
           - packages/harmony/dist
           - packages/common/node_modules
-          - packages/common/dist
           - packages/libs/node_modules
           - packages/libs/dist
+          - packages/trpc-server/node_modules
+          - packages/trpc-server/dist
 
 web-build-demo:
   working_directory: ~/audius-protocol
@@ -86,6 +87,11 @@ web-build-ssr-staging:
         build-type: ssr:stage
         build-directory: packages/web/build-ssr-staging
         build-name: build-ssr-staging
+    # Need to persist vike auto importer so the CF worker finds the build
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules/@brillout/vite-plugin-import-build/dist
 
 web-test-staging:
   working_directory: ~/audius-protocol
@@ -129,6 +135,11 @@ web-build-ssr-production:
         build-type: ssr:prod
         build-directory: packages/web/build-ssr-production
         build-name: build-ssr-production
+    # Need to persist vike auto importer so the CF worker finds the build
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules/@brillout/vite-plugin-import-build/dist
 
 web-deploy-demo:
   working_directory: ~/audius-protocol
@@ -167,35 +178,35 @@ web-deploy-staging-s3:
 web-deploy-staging-cloudflare:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/python:3.7.12-node
+    - image: cimg/node:18.17
   steps:
     - web-deploy-cloudflare:
         build-type: staging
         environment: staging
         copy-robots: false
-    # - web-deploy-sourcemaps-s3
+    - web-deploy-sourcemaps-s3
 
 web-deploy-release-candidate:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/python:3.7.12-node
+    - image: cimg/node:18.17
   steps:
     - web-deploy-cloudflare:
         build-type: production
         environment: release
         copy-robots: true
-    # - web-deploy-sourcemaps-s3
+    - web-deploy-sourcemaps-s3
 
 web-deploy-staging-release-candidate:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/python:3.7.12-node
+    - image: cimg/node:18.17
   steps:
     - web-deploy-cloudflare:
         build-type: staging
         environment: staging-release
         copy-robots: true
-    # - web-deploy-sourcemaps-s3
+    - web-deploy-sourcemaps-s3
 
 web-deploy-production-s3:
   working_directory: ~/audius-protocol
@@ -226,7 +237,7 @@ web-deploy-production-s3:
 web-deploy-production-cloudflare:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/python:3.7.12-node
+    - image: cimg/node:18.17
   steps:
     - web-deploy-cloudflare:
         build-type: production

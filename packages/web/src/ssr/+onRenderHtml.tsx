@@ -1,4 +1,4 @@
-import { SsrPageProps } from '@audius/common'
+import { SsrPageProps } from '@audius/common/models'
 import { createMemoryHistory } from 'history'
 import ReactDOMServer from 'react-dom/server'
 import { Helmet } from 'react-helmet'

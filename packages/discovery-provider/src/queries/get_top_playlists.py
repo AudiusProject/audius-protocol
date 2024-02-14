@@ -138,7 +138,8 @@ def get_top_playlists_sql(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
             for result in playlist_results:
                 # The playlist is the portion of the query result before repost_count and score
                 playlist = result[0:-2]
-                score = result[-1]
+                # Convert decimal to float for serialization
+                score = float(result[-1])
 
                 # Convert the playlist row tuple into a dictionary keyed by column name
                 playlist = helpers.tuple_to_model_dictionary(playlist, Playlist)

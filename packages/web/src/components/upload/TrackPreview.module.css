@@ -92,8 +92,6 @@
 
 .trackPreviewNew:hover {
   background: var(--neutral-light-9);
-  border-top: 1px solid var(--border-strong);
-  border-bottom: 1px solid var(--border-strong);
 }
 
 .trackPreviewNew:hover .fileSizeText {
@@ -101,7 +99,7 @@
 }
 
 .trackPreviewNew:hover .iconsContainer {
-  width: 80px;
+  width: 60px;
 }
 
 .trackPreviewNew:hover .removeButton,
@@ -127,7 +125,7 @@
 .fileSizeText {
   display: flex;
   transition: var(--hover);
-  width: 80px;
+  width: 60px;
   justify-content: flex-end;
 }
 

@@ -2,7 +2,7 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
-import { SsrPageProps } from 'models/SsrPageProps'
+import { SsrPageProps } from '~/models/SsrPageProps'
 
 import apiReducer from '../api/reducer'
 import { Kind } from '../models'
@@ -24,6 +24,7 @@ import { ChangePasswordState } from './change-password/types'
 import collectibles from './collectibles/slice'
 import confirmer from './confirmer/reducer'
 import { ConfirmerState } from './confirmer/types'
+import downloads, { DownloadState } from './downloads/slice'
 import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
@@ -60,11 +61,11 @@ import { SettingsPageState } from './pages/settings/types'
 import smartCollection from './pages/smart-collection/slice'
 import tokenDashboardSlice from './pages/token-dashboard/slice'
 import track from './pages/track/reducer'
-import TrackPageState from './pages/track/types'
-import trendingPlaylists from './pages/trending-playlists/slice'
-import trendingUnderground from './pages/trending-underground/slice'
+import { TrackPageState } from './pages/track/types'
 import trending from './pages/trending/reducer'
 import { TrendingPageState } from './pages/trending/types'
+import trendingPlaylists from './pages/trending-playlists/slice'
+import trendingUnderground from './pages/trending-underground/slice'
 import { PlaybackPositionState } from './playback-position'
 import playbackPosition from './playback-position/slice'
 import player, { PlayerState } from './player/slice'
@@ -282,7 +283,8 @@ export const reducers = (
   collectibles,
 
   upload,
-  confirmer
+  confirmer,
+  downloads
 })
 
 export type CommonState = {
@@ -410,4 +412,5 @@ export type CommonState = {
 
   upload: UploadState
   confirmer: ConfirmerState
+  downloads: DownloadState
 }

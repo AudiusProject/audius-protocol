@@ -1,9 +1,9 @@
-import type { TikTokProfileData } from '@audius/common'
-import { formatTikTokProfile } from '@audius/common'
+import type { TikTokProfileData } from '@audius/common/services'
+import { formatTikTokProfile } from '@audius/common/services'
 import type { GestureResponderEvent } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
+import { IconTikTok } from '@audius/harmony-native'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 import * as oauthActions from 'app/store/oauth/actions'
 

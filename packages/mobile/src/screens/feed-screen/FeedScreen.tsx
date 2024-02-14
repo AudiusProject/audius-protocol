@@ -1,16 +1,16 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Name,
   lineupSelectors,
   feedPageLineupActions as feedActions,
-  feedPageSelectors,
-  FeatureFlags,
-  useFeatureFlag
-} from '@audius/common'
+  feedPageSelectors
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import IconFeed from 'app/assets/images/iconFeed.svg'
+import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { FeedTipTile } from 'app/components/feed-tip-tile'
 import { Lineup } from 'app/components/lineup'

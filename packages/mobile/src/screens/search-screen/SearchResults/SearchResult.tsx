@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrowRight } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemePalette } from 'app/utils/theme'
@@ -33,7 +33,11 @@ export const SearchResultItem = (props: SearchResultProps) => {
   return (
     <TouchableOpacity style={styles.root} onPress={onPress}>
       {children}
-      <IconArrow fill={neutralLight4} height={spacing(4)} width={spacing(4)} />
+      <IconArrowRight
+        fill={neutralLight4}
+        height={spacing(4)}
+        width={spacing(4)}
+      />
     </TouchableOpacity>
   )
 }

@@ -1,36 +1,43 @@
-import { useCallback } from 'react'
+import { Suspense, useCallback } from 'react'
 
+import { imageBlank as placeholderArt } from '@audius/common/assets'
 import {
-  ID,
   SquareSizes,
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated,
+  ID,
   CoverArtSizes,
   FieldVisibility,
   Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  CommonState,
+  OverflowAction,
+  cacheTracksSelectors
+} from '@audius/common/store'
+import {
   getCanonicalName,
   formatSeconds,
   formatDate,
-  OverflowAction,
-  imageBlank as placeholderArt,
-  AccessConditions,
-  Nullable,
   getDogEarType,
-  FeatureFlags,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common'
+  Nullable
+} from '@audius/common/utils'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCart,
+  Flex,
+  IconRobot,
   IconCollectible,
   IconPause,
   IconPlay,
-  IconSpecialAccess
-} from '@audius/stems'
+  IconSpecialAccess,
+  IconCart,
+  Box
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
+import { shallowEqual, useSelector } from 'react-redux'
 
-import IconRobot from 'assets/img/robot.svg'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
@@ -41,6 +48,7 @@ import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
+import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedTrackSection } from 'components/track/GatedTrackSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -139,7 +147,15 @@ type TrackHeaderProps = {
   onShare: () => void
   onSave: () => void
   onRepost: () => void
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    parentTrackId?: ID
+  }) => void
   goToFavoritesPage: (trackId: ID) => void
   goToRepostsPage: (trackId: ID) => void
 }
@@ -185,7 +201,17 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
+  const isLosslessDownloadsEnabled = useFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const { getTrack } = cacheTracksSelectors
+  const track = useSelector(
+    (state: CommonState) => getTrack(state, { id: trackId }),
+    shallowEqual
+  )
+  const hasDownloadableAssets =
+    track?.is_downloadable || (track?._stems?.length ?? 0) > 0
 
   const showSocials = !isUnlisted && hasStreamAccess
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
@@ -256,22 +282,23 @@ const TrackHeader = ({
   }
 
   const renderTags = () => {
-    if (isUnlisted && !fieldVisibility.tags) return null
+    if ((isUnlisted && !fieldVisibility.tags) || filteredTags.length === 0) {
+      return null
+    }
+
     return (
-      <>
-        {filteredTags.length > 0 ? (
-          <div className={cn(styles.tags, styles.withSectionDivider)}>
-            {filteredTags.map((tag) => (
-              <SearchTag
-                key={tag}
-                tag={tag}
-                className={styles.tag}
-                source='track page'
-              />
-            ))}
-          </div>
-        ) : null}
-      </>
+      <Flex
+        gap='s'
+        wrap='wrap'
+        justifyContent='center'
+        className={styles.withSectionDivider}
+      >
+        {filteredTags.map((tag) => (
+          <SearchTag key={tag} source='track page'>
+            {tag}
+          </SearchTag>
+        ))}
+      </Flex>
     )
   }
 
@@ -476,8 +503,15 @@ const TrackHeader = ({
       <div className={cn(styles.infoSection, styles.withSectionDivider)}>
         {renderTrackLabels()}
       </div>
-      {renderDownloadButtons()}
       {renderTags()}
+      {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
+      {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+        <Box pt='l' w='100%'>
+          <Suspense>
+            <DownloadSection trackId={trackId} />
+          </Suspense>
+        </Box>
+      ) : null}
     </div>
   )
 }

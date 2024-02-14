@@ -1,11 +1,11 @@
 import { useCallback, useContext } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   buyAudioActions,
   buyAudioSelectors,
-  OnRampProvider,
-  Status
-} from '@audius/common'
+  OnRampProvider
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -91,7 +91,6 @@ export const CoinbaseBuyAudioButton = () => {
           provider={OnRampProvider.COINBASE}
           className={styles.coinbasePayButton}
           disabled={isDisabled}
-          isDisabled={isDisabled}
           onClick={handleClick}
         />
       </div>

@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
-import {
-  MAX_DISPLAY_NAME_LENGTH,
-  finishProfileSchema,
-  finishProfilePageMessages as messages
-} from '@audius/common'
-import type { Image } from '@audius/common'
+import { finishProfilePageMessages } from '@audius/common/messages'
+import { finishProfileSchema } from '@audius/common/schemas'
+import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'
+import type { Image } from '@audius/common/store'
 import { css } from '@emotion/native'
 import {
+  getCoverPhotoField,
   getHandleField,
-  getIsVerified
+  getIsVerified,
+  getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import {
   setField,
@@ -35,12 +35,6 @@ const AnimatedText = Animated.createAnimatedComponent(Text)
 
 const finishProfileFormikSchema = toFormikValidationSchema(finishProfileSchema)
 
-const initialValues = {
-  profileImage: {} as Image,
-  coverPhoto: {} as Image,
-  displayName: ''
-}
-
 type FinishProfileValues = {
   displayName: string
   profileImage: Image
@@ -51,20 +45,24 @@ export const FinishProfileScreen = () => {
   const navigation = useNavigation<SignUpScreenParamList>()
   const dispatch = useDispatch()
   const { spacing } = useTheme()
+  const savedProfileImage = useSelector(getProfileImageField)
+  const savedCoverPhoto = useSelector(getCoverPhotoField)
 
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
-      const { displayName, profileImage, coverPhoto } = values
+      const { displayName } = values
       dispatch(setValueField('name', displayName))
-      dispatch(setField('profileImage', profileImage))
-      if (coverPhoto) {
-        dispatch(setField('coverPhoto', coverPhoto))
-      }
       dispatch(signUp())
       navigation.navigate('SelectGenre')
     },
     [dispatch, navigation]
   )
+
+  const initialValues = {
+    profileImage: savedProfileImage || ({} as Image),
+    coverPhoto: savedCoverPhoto || ({} as Image),
+    displayName: ''
+  }
 
   return (
     <Formik
@@ -73,13 +71,16 @@ export const FinishProfileScreen = () => {
       validationSchema={finishProfileFormikSchema}
     >
       <Page>
-        <Heading heading={messages.header} description={messages.description} />
+        <Heading
+          heading={finishProfilePageMessages.header}
+          description={finishProfilePageMessages.description}
+        />
         <Paper>
           <AccountHeaderField />
           <HarmonyTextField
             name='displayName'
-            label={messages.displayName}
-            placeholder={messages.inputPlaceholder}
+            label={finishProfilePageMessages.displayName}
+            placeholder={finishProfilePageMessages.inputPlaceholder}
             maxLength={MAX_DISPLAY_NAME_LENGTH}
             autoComplete='off'
             style={css({
@@ -97,9 +98,11 @@ export const FinishProfileScreen = () => {
 const AccountHeaderField = () => {
   const [{ value: profileImage }, , { setValue: setProfileImage }] =
     useField<Image>('profileImage')
+  const dispatch = useDispatch()
 
   const handleSelectProfilePicture = useCallback(() => {
     const handleImageSelected = (image: Image) => {
+      dispatch(setField('profileImage', image))
       setProfileImage(image)
     }
 
@@ -108,7 +111,7 @@ const AccountHeaderField = () => {
       { height: 1000, width: 1000, cropperCircleOverlay: true },
       'profilePicture'
     )
-  }, [setProfileImage])
+  }, [dispatch, setProfileImage])
 
   const [{ value: coverPhoto }, , { setValue: setCoverPhoto }] =
     useField<Image>('coverPhoto')
@@ -116,13 +119,14 @@ const AccountHeaderField = () => {
   const handleSelectCoverPhoto = useCallback(() => {
     const handleImageSelected = (image: Image) => {
       setCoverPhoto(image)
+      dispatch(setField('coverPhoto', image))
     }
     launchSelectImageActionSheet(
       handleImageSelected,
       { height: 1000, width: 2000, freeStyleCropEnabled: true },
       'coverPhoto'
     )
-  }, [setCoverPhoto])
+  }, [dispatch, setCoverPhoto])
 
   const [{ value: displayName }] = useField('displayName')
   const { value: handle } = useSelector(getHandleField)
@@ -156,7 +160,7 @@ const UploadProfilePhotoHelperText = () => {
       entering={FadeIn.duration(motion.calm.duration)}
       exiting={FadeOut.duration(motion.calm.duration)}
     >
-      {messages.uploadProfilePhoto}
+      {finishProfilePageMessages.uploadProfilePhoto}
     </AnimatedText>
   )
 }

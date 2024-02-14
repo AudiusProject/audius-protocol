@@ -3,8 +3,8 @@ import { createContext, useContext } from 'react'
 import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
 
-import type { AudiusAPIClient } from 'services/audius-api-client'
-import { AudiusBackend, Env, RemoteConfigInstance } from 'services/index'
+import type { AudiusAPIClient } from '~/services/audius-api-client'
+import { AudiusBackend, Env, RemoteConfigInstance } from '~/services/index'
 
 import { ReportToSentryArgs } from '../models'
 

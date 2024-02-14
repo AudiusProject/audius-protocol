@@ -1,4 +1,4 @@
-import type { Env } from '@audius/common'
+import type { Env } from '@audius/common/services'
 import Config from 'react-native-config'
 
 export const env: Env = {
@@ -45,7 +45,7 @@ export const env: Env = {
   INSTAGRAM_APP_ID: '2875320099414320',
   INSTAGRAM_REDIRECT_URL: 'https://staging.audius.co/',
   METADATA_PROGRAM_ID: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
-  OPENSEA_API_URL: 'https://rinkeby-api.opensea.io/api/v1',
+  OPENSEA_API_URL: 'https://rinkeby-api.opensea.io',
   OPTIMIZELY_KEY: 'MX4fYBgANQetvmBXGpuxzF',
   ORACLE_ETH_ADDRESSES: '0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf',
   PAYMENT_ROUTER_PROGRAM_ID: 'sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry',

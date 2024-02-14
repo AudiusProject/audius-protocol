@@ -1,10 +1,12 @@
 import { View } from 'react-native'
 
+import { IconButton, IconCaretLeft } from '@audius/harmony-native'
 import HeaderLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
-import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
-import { IconButton } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+
+const messages = {
+  backLabel: 'Back'
+}
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   container: {
@@ -25,10 +27,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     height: spacing(6),
     marginLeft: spacing(4)
   },
-  backButtonIcon: {
-    width: spacing(6),
-    height: spacing(6)
-  },
   audiusLogoHeader: {
     position: 'absolute',
     alignSelf: 'center',
@@ -47,19 +45,16 @@ type SignupHeaderProps = {
 const SignupHeader = (props: SignupHeaderProps) => {
   const { showBackButton, onPressBack } = props
   const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         {showBackButton ? (
           <IconButton
-            styles={{
-              root: styles.backButton,
-              icon: styles.backButtonIcon
-            }}
-            fill={neutralLight4}
+            style={styles.backButton}
+            color='subdued'
             icon={IconCaretLeft}
             onPress={onPressBack}
+            aria-label={messages.backLabel}
           />
         ) : null}
         <HeaderLogo style={styles.audiusLogoHeader} fill={'#C2C0CC'} />

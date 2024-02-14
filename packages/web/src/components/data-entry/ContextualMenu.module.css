@@ -33,6 +33,7 @@
   display: inline-flex;
   flex-shrink: 1;
   gap: var(--unit-2);
+  flex-wrap: wrap;
 }
 
 .selectedValue {
@@ -44,4 +45,10 @@
   border-radius: 2px;
   border: 1px solid var(---border-strong);
   background: var(--neutral-light-8);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

@@ -43,3 +43,16 @@ export function isNullOrUndefined(obj: any): obj is null | undefined {
 export type Prettify<T> = {
   [K in keyof T]: T[K]
 } & {}
+
+/**
+ * Same concept as `Pick` but adds a 3rd argument to rename the key you're picking.
+ * Only works for a single key.
+ * https://stackoverflow.com/questions/59071058/how-to-pick-and-rename-certain-keys-using-typescript
+ */
+export type PickRename<
+  Type,
+  Key extends keyof Type,
+  RenamedKey extends PropertyKey
+> = Omit<Type, Key> & {
+  [k in RenamedKey]: Type[Key]
+}

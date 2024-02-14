@@ -1,10 +1,10 @@
 import { forwardRef, useMemo, MouseEvent } from 'react'
 
 import {
-  getPathFromAudiusUrl,
+  squashNewLines,
   isAudiusUrl,
-  squashNewLines
-} from '@audius/common'
+  getPathFromAudiusUrl
+} from '@audius/common/utils'
 import cn from 'classnames'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'

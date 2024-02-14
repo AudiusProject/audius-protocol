@@ -1,20 +1,19 @@
-import { useCallback } from 'react'
-
+import { useDownloadableContentAccess } from '@audius/common/hooks'
 import {
-  CommonState,
   ID,
-  cacheTracksSelectors,
-  DownloadQuality,
-  useDownloadableContentAccess,
-  toastActions
-} from '@audius/common'
+  StemCategory,
+  stemCategoryFriendlyNames
+} from '@audius/common/models'
+import { cacheTracksSelectors, CommonState } from '@audius/common/store'
+import { getDownloadFilename, formatBytes } from '@audius/common/utils'
 import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
-import { useDispatch, shallowEqual, useSelector } from 'react-redux'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useIsMobile } from 'hooks/useIsMobile'
-const { toast } = toastActions
+
+import styles from './DownloadRow.module.css'
 
 const { getTrack } = cacheTracksSelectors
 
@@ -24,48 +23,48 @@ const messages = {
 }
 
 type DownloadRowProps = {
-  trackId: ID
-  quality: DownloadQuality
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
+  isOriginal: boolean
+  trackId?: ID
+  parentTrackId?: ID
   hideDownload?: boolean
   index: number
+  size?: number
+  category?: StemCategory
+  filename?: string
+  isLoading?: boolean
 }
 
 export const DownloadRow = ({
-  trackId,
   onDownload,
+  isOriginal,
+  trackId,
+  parentTrackId,
   hideDownload,
-  index
+  index,
+  size,
+  category,
+  filename,
+  isLoading
 }: DownloadRowProps) => {
-  const isMobile = useIsMobile()
-  const dispatch = useDispatch()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
-  const { shouldDisplayDownloadFollowGated } = useDownloadableContentAccess({
-    trackId
+  const downloadableContentAccess = useDownloadableContentAccess({
+    trackId: parentTrackId ?? trackId ?? 0
   })
-
-  const handleClick = useCallback(() => {
-    if (isMobile && shouldDisplayDownloadFollowGated) {
-      // On mobile, show a toast instead of a tooltip
-      dispatch(toast({ content: messages.followToDownload }))
-    } else if (track && track.access.download) {
-      onDownload(trackId, track.stem_of?.category, trackId)
-    }
-  }, [
-    dispatch,
-    isMobile,
-    onDownload,
-    shouldDisplayDownloadFollowGated,
-    track,
-    trackId
-  ])
+  const { shouldDisplayDownloadFollowGated } = parentTrackId
+    ? downloadableContentAccess
+    : { shouldDisplayDownloadFollowGated: false }
 
   const downloadButton = () => (
     <PlainButton
-      onClick={handleClick}
+      onClick={() =>
+        onDownload({
+          trackIds: trackId ? [trackId] : []
+        })
+      }
       disabled={shouldDisplayDownloadFollowGated}
     >
       <Icon icon={IconReceive} size='small' />
@@ -81,20 +80,33 @@ export const DownloadRow = ({
       justifyContent='space-between'
     >
       <Flex gap='xl' alignItems='center'>
-        <Text>{index}</Text>
+        <Text variant='body' color='subdued'>
+          {index}
+        </Text>
         <Flex direction='column' gap='xs'>
           <Text variant='body' strength='default'>
-            {track?.stem_of?.category ?? messages.fullTrack}
+            {category
+              ? stemCategoryFriendlyNames[category]
+              : track?.stem_of?.category
+              ? stemCategoryFriendlyNames[track?.stem_of?.category]
+              : messages.fullTrack}
           </Text>
           <Text variant='body' color='subdued'>
-            {track?.orig_filename}
+            {getDownloadFilename({
+              filename: filename ?? track?.orig_filename,
+              isOriginal
+            })}
           </Text>
         </Flex>
       </Flex>
       <Flex gap='2xl'>
+        {size ? (
+          <Text variant='body' size='s' color='subdued'>
+            {formatBytes(size)}
+          </Text>
+        ) : null}
         {hideDownload ? null : (
           <>
-            <Text>size</Text>
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip
                 text={messages.followToDownload}
@@ -104,6 +116,8 @@ export const DownloadRow = ({
                 {/* Need wrapping flex for the tooltip to appear for some reason */}
                 <Flex>{downloadButton()}</Flex>
               </Tooltip>
+            ) : isLoading ? (
+              <LoadingSpinner className={styles.spinner} />
             ) : (
               downloadButton()
             )}

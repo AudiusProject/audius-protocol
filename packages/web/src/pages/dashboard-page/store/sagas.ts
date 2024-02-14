@@ -1,14 +1,11 @@
+import { Collection, ID, Track } from '@audius/common/models'
+import { IntKeys } from '@audius/common/services'
 import {
-  IntKeys,
   accountSelectors,
   walletActions,
-  doEvery,
-  waitForValue,
-  ID,
-  getContext,
-  Collection,
-  Track
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
+import { waitForValue, doEvery } from '@audius/common/utils'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'
@@ -25,7 +22,7 @@ const { getBalance } = walletActions
 const getAccountUser = accountSelectors.getAccountUser
 
 const formatMonth = (date: moment.Moment | string) =>
-  moment(date).format('MMM').toUpperCase()
+  moment.utc(date).format('MMM').toUpperCase()
 
 function* fetchDashboardTracksAsync(
   action: ReturnType<typeof dashboardActions.fetchTracks>

@@ -1,22 +1,21 @@
 import type { ReactNode } from 'react'
 
 import type {
+  PlaybackSource,
+  FavoriteType,
+  Collection,
   ID,
   UID,
-  PlaybackSource,
-  Collection,
-  FavoriteType,
   Track,
-  User,
-  RepostType,
-  EnhancedCollectionTrack
-} from '@audius/common'
+  User
+} from '@audius/common/models'
+import type { RepostType, EnhancedCollectionTrack } from '@audius/common/store'
 import type { StyleProp, ViewStyle } from 'react-native'
 
+import type { ImageProps } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import type { TileProps } from '../core'
-import type { ImageProps } from '../image/FastImage'
 
 /**
  * Optional variant to modify the lineup item features and styles

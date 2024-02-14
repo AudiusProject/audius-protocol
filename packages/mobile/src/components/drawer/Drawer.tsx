@@ -18,8 +18,8 @@ import {
 import type { Edge } from 'react-native-safe-area-context'
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 
+import type { IconComponent } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
-import type { SvgProps } from 'app/types/svg'
 import { attachToDy } from 'app/utils/animation'
 
 import { DrawerHeader } from './DrawerHeader'
@@ -120,7 +120,7 @@ export type DrawerProps = {
   /**
    * Icon to display in the header next to the title (must also include title)
    */
-  titleIcon?: ComponentType<SvgProps>
+  titleIcon?: IconComponent
   /**
    * Icon (as image source) to display in the header next to the title (must also include title)
    */
@@ -368,6 +368,7 @@ export const Drawer: DrawerComponent = ({
         value: position,
         drawerHeight,
         animationStyle,
+        overshootClamping: true,
         finished: ({ finished }) => {
           if (finished) {
             onFinished?.()
@@ -381,7 +382,8 @@ export const Drawer: DrawerComponent = ({
           animation: borderRadiusAnim.current,
           value: BORDER_RADIUS,
           drawerHeight,
-          animationStyle
+          animationStyle,
+          overshootClamping: true
         })
       }
       if (shouldBackgroundDim) {

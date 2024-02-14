@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import type { Image } from '@audius/common'
+import type { Image } from '@audius/common/store'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
@@ -25,8 +25,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import { IconArrowRight, IconMultiselectRemove } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { make, track } from 'app/services/analytics'
@@ -155,8 +154,6 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   errorIcon: {
     flex: 1,
-    width: 12,
-    height: 12,
     marginRight: 10,
     alignSelf: 'center'
   },
@@ -230,7 +227,7 @@ const ContinueButton = ({
         isWorking ? (
           <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
         ) : (
-          <IconArrow style={styles.arrowIcon} fill='white' />
+          <IconArrowRight style={styles.arrowIcon} fill='white' />
         )
       }
     />
@@ -321,7 +318,7 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
     if (!handleIsValid && handleError !== '') {
       return (
         <View style={styles.errorContainer}>
-          <ValidationIconX style={styles.errorIcon} />
+          <IconMultiselectRemove style={styles.errorIcon} size='m' />
           <Text style={styles.errorText}>
             &nbsp;
             {messages.errors[messages.errorTypes.indexOf(handleError)]}
@@ -332,7 +329,10 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
     } else {
       return (
         <View style={styles.errorContainer}>
-          <ValidationIconX style={[styles.errorIcon, { opacity: 0 }]} />
+          <IconMultiselectRemove
+            style={[styles.errorIcon, { opacity: 0 }]}
+            size='m'
+          />
           <Text style={styles.errorText}>&nbsp;</Text>
         </View>
       )

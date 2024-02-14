@@ -3,9 +3,11 @@ const {
   handleResponse,
   successResponse,
   errorResponseBadRequest,
-  errorResponseForbidden
+  errorResponseForbidden,
+  errorResponseUnauthorized
 } = require('../apiHelpers')
 const { validateOtp, sendOtp, bypassOtp } = require('../utils/otp')
+const authMiddleware = require('../authMiddleware')
 
 module.exports = function (app) {
   /**
@@ -72,10 +74,35 @@ module.exports = function (app) {
     })
   )
 
+  /**
+   * Checks to see if a given lookup key exists in the authentications table.
+   * Does not log a user in. Does not return credential information. Does not
+   * send OTP emails. Requires a signed in user.
+   */
+  app.get(
+    '/authentication/check',
+    authMiddleware,
+    handleResponse(async (req, _res, _next) => {
+      const { lookupKey } = req.query
+      if (!lookupKey) {
+        return errorResponseBadRequest('Missing lookupKey')
+      }
+
+      const existingUser = await models.Authentication.findOne({
+        where: { lookupKey }
+      })
+      if (!existingUser) {
+        return errorResponseUnauthorized('Invalid credentials')
+      }
+      return successResponse()
+    })
+  )
+
   app.get(
     '/authentication',
     handleResponse(async (req, res, next) => {
-      const { lookupKey, username: email, otp } = req.query
+      const { lookupKey, email: emailParam, username, otp } = req.query
+      const email = emailParam ?? username
       if (!lookupKey) {
         return errorResponseBadRequest('Missing lookupKey')
       }

@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 discovery_node_service_type = bytes("discovery-node", "utf-8")
 
 
-def get_metrics(endpoint, start_time):
+def get_metrics(endpoint: str, start_time: int):
     try:
         route_metrics_endpoint = (
             f"{endpoint}/v1/metrics/routes/cached?start_time={start_time}"
@@ -138,7 +138,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         )
         start_time_obj = datetime.strptime(start_time_str, datetime_format_secondary)
         start_time = int(start_time_obj.timestamp())
-        new_route_metrics, new_app_metrics = get_metrics(node, start_time)
+        new_route_metrics, new_app_metrics = get_metrics(node["endpoint"], start_time)
 
         logger.debug(
             f"did attempt to receive route and app metrics from {node} at {start_time_obj} ({start_time})"
@@ -158,7 +158,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         merge_app_metrics(new_app_metrics or {}, end_time, db)
 
         if new_route_metrics is not None and new_app_metrics is not None:
-            visited_node_timestamps[node] = end_time
+            visited_node_timestamps[node["endpoint"]] = end_time
             redis.set(metrics_visited_nodes, json.dumps(visited_node_timestamps))
 
     # persist updated summed unique counts
@@ -169,7 +169,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     logger.debug(f"visited node timestamps: {visited_node_timestamps}")
 
 
-def get_historical_metrics(node):
+def get_historical_metrics(node: str):
     try:
         endpoint = f"{node}/v1/metrics/aggregates/historical"
         logger.debug(f"historical metrics request to: {endpoint}")

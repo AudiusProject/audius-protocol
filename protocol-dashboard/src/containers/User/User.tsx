@@ -51,7 +51,7 @@ const UserPage = () => {
   const location = useLocation()
 
   const { pathname } = location
-  const { status, user: userAccount } = useUser({ wallet })
+  const { status, user: userAccount, audiusProfile } = useUser({ wallet })
   const { status: userDelegatesStatus, delegates } = useUserDelegates({
     wallet
   })
@@ -111,6 +111,7 @@ const UserPage = () => {
       <div className={styles.userInfoRow}>
         <UserInfo
           user={user}
+          audiusProfile={audiusProfile}
           status={status}
           delegates={delegates}
           delegatesStatus={userDelegatesStatus}

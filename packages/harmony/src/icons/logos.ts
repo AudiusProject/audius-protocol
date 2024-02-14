@@ -15,6 +15,8 @@ import IconLogoCircleSOLSVG from '../assets/icons/LogoCircleSOL.svg'
 import IconLogoCircleSTRSVG from '../assets/icons/LogoCircleSTR.svg'
 import IconLogoCircleUSDSVG from '../assets/icons/LogoCircleUSD.svg'
 import IconLogoCircleUSDCSVG from '../assets/icons/LogoCircleUSDC.svg'
+import IconPhantomSVG from '../assets/icons/LogoPhantom.svg'
+import IconSolanaSVG from '../assets/icons/LogoSolana.svg'
 import IconMetamaskSVG from '../assets/icons/Metamask.svg'
 import IconSnapChatSVG from '../assets/icons/SnapChat.svg'
 import IconTelegramSVG from '../assets/icons/Telegram.svg'
@@ -46,3 +48,5 @@ export const IconLogoCircleSOL = IconLogoCircleSOLSVG as IconComponent
 export const IconLogoCircleSTR = IconLogoCircleSTRSVG as IconComponent
 export const IconLogoCircleUSD = IconLogoCircleUSDSVG as IconComponent
 export const IconLogoCircleUSDC = IconLogoCircleUSDCSVG as IconComponent
+export const IconPhantom = IconPhantomSVG as IconComponent
+export const IconSolana = IconSolanaSVG as IconComponent

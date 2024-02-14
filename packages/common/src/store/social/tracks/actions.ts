@@ -24,6 +24,8 @@ export const UNSET_ARTIST_PICK = 'SOCIAL/UNSET_ARTIST_PICK'
 
 export const RECORD_LISTEN = 'SOCIAL/RECORD_LISTEN'
 export const DOWNLOAD_TRACK = 'SOCIAL/DOWNLOAD_TRACK'
+export const CANCEL_DOWNLOAD = 'SOCIAL/CANCEL_DOWNLOAD'
+export const DOWNLOAD_FINISHED = 'SOCIAL/DOWNLOAD_FINISHED'
 
 export const SHARE_TRACK = 'SOCIAL/SHARE_TRACK'
 
@@ -94,11 +96,27 @@ export const recordListen = createCustomAction(
 
 export const downloadTrack = createCustomAction(
   DOWNLOAD_TRACK,
-  (trackId: ID, stemName?: string) => ({
-    trackId,
+  ({
+    trackIds,
+    parentTrackId,
+    original,
+    stemName
+  }: {
+    trackIds: ID[]
+    parentTrackId?: ID
+    original?: boolean
+    stemName?: string
+  }) => ({
+    trackIds,
+    parentTrackId,
+    original,
     stemName
   })
 )
+
+export const cancelDownloads = createCustomAction(CANCEL_DOWNLOAD, () => {})
+
+export const downloadFinished = createCustomAction(DOWNLOAD_FINISHED, () => {})
 
 export const shareTrack = createCustomAction(
   SHARE_TRACK,

@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { ServiceType } from 'types'
 
 export type TimeSeriesRecord = {
   timestamp: string
@@ -84,6 +85,7 @@ type SetTrailingTopGenres = {
 }
 type SetTrailingApiCalls = { metric: CountRecord | MetricError; bucket: Bucket }
 type SetIndividualNodeUptime = {
+  nodeType: ServiceType
   node: string
   metric: UptimeRecord | MetricError
   bucket: Bucket

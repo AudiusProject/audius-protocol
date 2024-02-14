@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { TouchableHighlight } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
+import { IconArrowRight } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -22,10 +22,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   itemTextContainer: {
     flex: 1
-  },
-  arrow: {
-    height: spacing(3),
-    width: spacing(3)
   }
 }))
 
@@ -37,7 +33,7 @@ export const SearchHistoryListItem = (props: SearchHistoryListItemProps) => {
   const { text } = props
   const styles = useStyles()
   const navigation = useNavigation()
-  const { neutralLight4, neutralLight8 } = useThemeColors()
+  const { neutralLight8 } = useThemeColors()
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
@@ -60,7 +56,7 @@ export const SearchHistoryListItem = (props: SearchHistoryListItemProps) => {
             {text}
           </Text>
         </View>
-        <IconArrow style={styles.arrow} fill={neutralLight4} />
+        <IconArrowRight size='s' color='subdued' />
       </View>
     </TouchableHighlight>
   )

@@ -169,8 +169,15 @@ web-deploy-cloudflare:
     - attach_workspace:
         at: ./
     - run:
+        name: Move sourcemaps
+        command: |
+          cd packages/web
+          mkdir -p sourcemaps/assets
+          mv build-<< parameters.build-type >>/assets/*.map sourcemaps/assets
+    - run:
         name: Move build
         command: |
+          cd packages/web
           mv build-<< parameters.build-type >> build
           mv build-ssr-<< parameters.build-type >> build-ssr
     - run:

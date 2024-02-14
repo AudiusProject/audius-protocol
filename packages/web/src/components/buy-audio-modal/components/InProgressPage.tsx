@@ -2,11 +2,11 @@ import { ReactNode } from 'react'
 
 import {
   buyAudioSelectors,
-  BuyAudioStage,
-  formatNumberString,
-  OnRampProvider
-} from '@audius/common'
-import { IconCaretDown, IconMultiselectRemove } from '@audius/stems'
+  OnRampProvider,
+  BuyAudioStage
+} from '@audius/common/store'
+import { formatNumberString } from '@audius/common/utils'
+import { IconCaretDown, IconMultiselectRemove } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { CollapsibleContent } from 'components/collapsible-content'

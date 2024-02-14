@@ -1,31 +1,35 @@
-import { useCallback, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 
 import {
   Chain,
-  BNAudio,
-  BNWei,
-  SolanaWalletAddress,
-  StringAudio,
   StringWei,
+  StringAudio,
+  BNWei,
+  BNAudio,
   WalletAddress,
-  Nullable,
-  FeatureFlags,
-  IntKeys,
-  parseAudioInputToWei,
-  stringAudioToBN,
-  stringWeiToBN,
-  weiToAudio,
-  MIN_TRANSFERRABLE_WEI
-} from '@audius/common'
+  SolanaWalletAddress
+} from '@audius/common/models'
 import {
-  Button,
-  TokenValueInput,
-  Format,
+  IntKeys,
+  FeatureFlags,
+  MIN_TRANSFERRABLE_WEI
+} from '@audius/common/services'
+import {
+  weiToAudio,
+  stringWeiToBN,
+  stringAudioToBN,
+  parseAudioInputToWei,
+  Nullable
+} from '@audius/common/utils'
+import {
+  Flex,
+  IconTokenGold as IconGoldBadgeSVG,
   IconValidationX,
-  ButtonType
-} from '@audius/stems'
+  TextInput,
+  TokenAmountInput
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
-import IconGoldBadgeSVG from 'assets/img/IconGoldBadge.svg'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
@@ -52,7 +56,7 @@ const messages = {
   addressRequired: 'Address is required',
   addressIsSelf: 'You cannot send $AUDIO to your own wallet!',
   validSPLAddress: 'Please enter a valid Solana (SPL) wallet address',
-  sendAmountLabel: 'Amount to SEND',
+  sendAmountLabel: 'Amount to send',
   destination: 'Destination Address',
   destinationSPL: 'Destination Address (Solana SPL)'
 }
@@ -194,7 +198,7 @@ const SendInputBody = ({
   const [addressError, setAddressError] = useState<Nullable<AddressError>>(null)
   const hasError = balanceError || addressError
 
-  const onChangeAmount = useCallback(
+  const handleChangeAmount = useCallback(
     (value: string) => {
       setAmountToSend(value as StringAudio)
       if (balanceError) setBalanceError(null)
@@ -202,9 +206,9 @@ const SendInputBody = ({
     [balanceError, setBalanceError, setAmountToSend]
   )
 
-  const onChangeAddress = useCallback(
-    (value: string) => {
-      setDestinationAddress(value)
+  const handleChangeAddress = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setDestinationAddress(e.target.value)
       if (addressError) setAddressError(null)
     },
     [addressError, setAddressError, setDestinationAddress]
@@ -266,52 +270,42 @@ const SendInputBody = ({
 
   return (
     <ModalBodyWrapper>
-      <div className={styles.titleContainer}>
-        <ModalBodyTitle text={messages.warningTitle} />
-        <div className={styles.subtitle}>{messages.warningSubtitle}</div>
-        <div className={styles.subtitle2}>
-          {messages.warningSubtitle2} <IconGoldBadgeSVG />
+      <Flex direction='column' gap='xl' pv='xl'>
+        <div>
+          <ModalBodyTitle text={messages.warningTitle} />
+          <div className={styles.subtitle}>{messages.warningSubtitle}</div>
+          <div className={styles.subtitle2}>
+            {messages.warningSubtitle2} <IconGoldBadgeSVG />
+          </div>
         </div>
-      </div>
-      <DashboardTokenValueSlider
-        min={min}
-        max={max}
-        value={weiToAudio(amountToSendBNWei)}
-      />
-      <TokenValueInput
-        className={styles.inputContainer}
-        labelClassName={styles.label}
-        rightLabelClassName={styles.label}
-        inputClassName={styles.input}
-        label={messages.sendAmountLabel}
-        format={Format.INPUT}
-        placeholder={'0'}
-        rightLabel={'$AUDIO'}
-        value={amountToSend}
-        isNumeric={true}
-        onChange={onChangeAmount}
-      />
-      {renderBalanceError()}
-      <TokenValueInput
-        className={styles.inputContainer}
-        labelClassName={styles.label}
-        rightLabelClassName={styles.label}
-        inputClassName={styles.input}
-        label={destinationText}
-        format={Format.INPUT}
-        placeholder={placeholderAddress}
-        value={destinationAddress}
-        isNumeric={false}
-        onChange={onChangeAddress}
-      />
-      {renderAddressError()}
-      <Button
-        className={styles.sendBtn}
-        text={messages.sendAudio}
-        textClassName={styles.sendBtnText}
-        onClick={onClickSend}
-        type={hasError ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
-      />
+        <DashboardTokenValueSlider
+          min={min}
+          max={max}
+          value={weiToAudio(amountToSendBNWei)}
+        />
+        <TokenAmountInput
+          label={messages.sendAmountLabel}
+          placeholder='0'
+          value={amountToSend}
+          onChange={handleChangeAmount}
+          tokenLabel='$AUDIO'
+        />
+        {renderBalanceError()}
+        <TextInput
+          label={destinationText}
+          placeholder={placeholderAddress}
+          value={destinationAddress}
+          onChange={handleChangeAddress}
+        />
+        {renderAddressError()}
+        <Button
+          className={styles.sendBtn}
+          text={messages.sendAudio}
+          textClassName={styles.sendBtnText}
+          onClick={onClickSend}
+          type={hasError ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
+        />
+      </Flex>
     </ModalBodyWrapper>
   )
 }

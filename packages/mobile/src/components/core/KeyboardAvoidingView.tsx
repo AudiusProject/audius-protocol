@@ -14,7 +14,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 type KeyboardAvoidingViewProps = {
-  style: StyleProp<ViewStyle>
+  style?: StyleProp<ViewStyle>
   keyboardShowingDuration?: number
   keyboardHidingDuration?: number
   // Offset is subtracted from the desired height when the keyboard is showing.
@@ -87,8 +87,8 @@ export const KeyboardAvoidingView = ({
   return (
     <Animated.View
       style={[
-        style,
         styles.rootContainer,
+        style,
         {
           transform: [{ translateY: keyboardHeight.current }]
         }

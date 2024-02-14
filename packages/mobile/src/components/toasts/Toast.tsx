@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react'
 
-import { toastActions } from '@audius/common'
-import type { Toast as ToastType } from '@audius/common'
+import type { Toast as ToastType } from '@audius/common/store'
+import { toastActions } from '@audius/common/store'
 import { Link } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import { Animated, View } from 'react-native'

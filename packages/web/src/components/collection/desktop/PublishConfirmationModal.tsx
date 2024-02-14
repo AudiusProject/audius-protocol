@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
+import { Collection } from '@audius/common/models'
 import {
-  Collection,
-  CommonState,
   cacheCollectionsActions,
-  collectionPageSelectors
-} from '@audius/common'
+  collectionPageSelectors,
+  CommonState
+} from '@audius/common/store'
+import { IconRocket } from '@audius/harmony'
 import {
   Button,
   ButtonType,
-  IconRocket,
   Modal,
   ModalContent,
   ModalContentText,

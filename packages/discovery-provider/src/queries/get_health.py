@@ -51,7 +51,6 @@ from src.utils.redis_constants import (
 from src.utils.web3_provider import get_web3
 
 LOCAL_RPC = "http://chain:8545"
-RELAY_PLUGIN = "http://relay:6001/relay"
 
 
 logger = logging.getLogger(__name__)
@@ -116,7 +115,11 @@ def _get_query_insights():
 
 
 def _get_relay_health():
-    relay_health = requests.get(RELAY_PLUGIN + "/health")
+    relay_plugin = os.getenv(
+        "audius_relay_host",
+        "http://relay:6001/relay",
+    )
+    relay_health = requests.get(relay_plugin + "/health")
     relay_res = relay_health.json()
     return relay_res
 
@@ -192,6 +195,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
 
+    bypass_errors = args.get("bypass_errors")
     verbose = args.get("verbose")
     enforce_block_diff = args.get("enforce_block_diff")
     qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
@@ -361,13 +365,15 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "final_poa_block": final_poa_block,
         "network": {
             "discovery_nodes_with_owner": discovery_nodes,
-            "discovery_nodes": [d["endpoint"] for d in discovery_nodes]
-            if discovery_nodes
-            else None,
+            "discovery_nodes": (
+                [d["endpoint"] for d in discovery_nodes] if discovery_nodes else None
+            ),
             "content_nodes": content_nodes,
         },
     }
 
+    if os.getenv("AUDIUS_D_GENERATED"):
+        health_results["audius_d_managed"] = True
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
         health_results["audius-docker-compose"] = os.getenv(
             "AUDIUS_DOCKER_COMPOSE_GIT_SHA"
@@ -470,7 +476,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if not api_healthy:
             errors.append(f"api unhealthy: {reason}")
 
-    is_unhealthy = (
+    is_unhealthy = not bypass_errors and (
         unhealthy_blocks
         or unhealthy_challenges
         or play_health_info["is_unhealthy"]

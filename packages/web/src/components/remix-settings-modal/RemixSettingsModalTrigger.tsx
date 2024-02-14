@@ -1,4 +1,4 @@
-import { Button, ButtonSize, ButtonType, IconRemix } from '@audius/stems'
+import { IconRemix, Button } from '@audius/harmony'
 
 const messages = {
   remixSettings: 'Remix Settings',
@@ -18,12 +18,13 @@ export const RemixSettingsModalTrigger = (
   return (
     <Button
       className={props.className}
-      type={ButtonType.COMMON_ALT}
+      variant='secondary'
       name='remixSettings'
-      text={messages.remixSettings}
-      size={ButtonSize.SMALL}
+      size='small'
       onClick={props.onClick}
-      leftIcon={<IconRemix />}
-    />
+      iconLeft={IconRemix}
+    >
+      {messages.remixSettings}
+    </Button>
   )
 }

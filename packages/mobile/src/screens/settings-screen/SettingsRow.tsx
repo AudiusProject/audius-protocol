@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View, TouchableOpacity } from 'react-native'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import { IconCaretRight } from '@audius/harmony-native'
 import { Link } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

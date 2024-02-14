@@ -24,9 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconCheck from 'app/assets/images/iconValidationCheck.svg'
-import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import { CompletionCheck, IconArrowRight } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { track, make } from 'app/services/analytics'
@@ -105,27 +103,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignContent: 'flex-start',
     marginTop: 16,
+    gap: 8,
     width: '100%'
-  },
-  unchecked: {
-    width: 16,
-    height: 16,
-    borderWidth: 2,
-    borderColor: '#858199',
-    borderRadius: 12,
-    marginRight: 13
-  },
-  iconCheck: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    zIndex: 2
-  },
-  errorIcon: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    zIndex: 2
   },
   uncheckedDescription: {
     color: '#858199',
@@ -217,38 +196,17 @@ const Checkbox = ({
     }).start(() => {})
   }
 
-  const animatedStyles = [
-    styles.iconCheck,
-    {
-      opacity,
-      transform: [
-        {
-          scale: opacity.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 1]
-          })
-        }
-      ]
-    }
-  ]
-
   if (met) {
     return (
       <View style={styles.checkboxContainer}>
-        <Animated.View style={animatedStyles}>
-          <IconCheck style={styles.iconCheck} />
-        </Animated.View>
-        <View style={styles.unchecked} />
+        <CompletionCheck value='complete' />
         <Text style={styles.uncheckedDescription}>{messages.checks[i]}</Text>
       </View>
     )
   } else if (error) {
     return (
       <View style={styles.checkboxContainer}>
-        <Animated.View style={animatedStyles}>
-          <ValidationIconX style={styles.iconCheck} />
-        </Animated.View>
-        <View style={styles.unchecked} />
+        <CompletionCheck value='error' />
         <Text
           style={[styles.uncheckedDescription, { color: errorBorderColor }]}
         >
@@ -259,7 +217,7 @@ const Checkbox = ({
   } else {
     return (
       <View style={styles.checkboxContainer}>
-        <View style={styles.unchecked} />
+        <CompletionCheck value='incomplete' />
         <Text style={styles.uncheckedDescription}>{messages.checks[i]}</Text>
       </View>
     )
@@ -436,7 +394,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
           isWorking ? (
             <LoadingSpinner style={styles.loadingIcon} color={staticWhite} />
           ) : (
-            <IconArrow style={styles.arrowIcon} fill='white' />
+            <IconArrowRight style={styles.arrowIcon} fill='white' />
           )
         }
       />
@@ -467,7 +425,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                     placeholderTextColor='#C2C0CC'
                     underlineColorAndroid='transparent'
                     placeholder='Password'
-                    autoComplete='off'
+                    autoComplete='new-password'
                     autoCorrect={false}
                     autoCapitalize='none'
                     enablesReturnKeyAutomatically={true}
@@ -508,7 +466,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                     placeholderTextColor='#C2C0CC'
                     underlineColorAndroid='transparent'
                     placeholder='Confirm Password'
-                    autoComplete='off'
+                    autoComplete='new-password'
                     autoCorrect={false}
                     autoCapitalize='none'
                     enablesReturnKeyAutomatically={true}

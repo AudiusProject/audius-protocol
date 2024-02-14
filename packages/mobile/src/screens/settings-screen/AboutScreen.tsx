@@ -13,12 +13,14 @@ import { View, Image } from 'react-native'
 import codePush from 'react-native-code-push'
 import { useAsync } from 'react-use'
 
+import {
+  IconMessage,
+  IconDiscord,
+  IconInstagram,
+  IconTwitter,
+  IconUserGroup
+} from '@audius/harmony-native'
 import appIcon from 'app/assets/images/appIcon.png'
-import IconCareers from 'app/assets/images/iconCareers.svg'
-import IconContact from 'app/assets/images/iconContact.svg'
-import IconDiscord from 'app/assets/images/iconDiscord.svg'
-import IconInstagram from 'app/assets/images/iconInstagram.svg'
-import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
 import { Screen, ScreenContent, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
@@ -91,10 +93,10 @@ export const AboutScreen = () => {
           <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />
         </SettingsRow>
         <SettingsRow url={AUDIUS_CONTACT_EMAIL_LINK}>
-          <SettingsRowLabel label={messages.contact} icon={IconContact} />
+          <SettingsRowLabel label={messages.contact} icon={IconMessage} />
         </SettingsRow>
         <SettingsRow url={AUDIUS_CAREERS_LINK}>
-          <SettingsRowLabel label={messages.careers} icon={IconCareers} />
+          <SettingsRowLabel label={messages.careers} icon={IconUserGroup} />
         </SettingsRow>
         <Divider />
         <SettingsRow url={AUDIUS_HELP_LINK}>

@@ -73,11 +73,6 @@
   display: block;
 }
 
-.logo {
-  width: 194px;
-  height: 51px;
-}
-
 .tile {
   background-color: var(--neutral-light-10);
   border: 1px solid var(--neutral-light-8);
@@ -87,10 +82,6 @@
 
 .permissionContainer {
   display: flex;
-}
-
-.permissionIcon {
-  color: var(--neutral);
 }
 
 .visibilityIconWrapper {

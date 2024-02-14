@@ -1,39 +1,43 @@
-import { useCallback, useState } from 'react'
+import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
-  getCanonicalName,
-  formatDate,
-  formatSeconds,
-  Genre,
-  FeatureFlags,
-  Nullable,
-  Remix,
-  CoverArtSizes,
-  ID,
-  AccessConditions,
-  FieldVisibility,
-  getDogEarType,
   isContentUSDCPurchaseGated,
-  publishTrackConfirmationModalUIActions,
-  CommonState,
-  cacheTracksSelectors
-} from '@audius/common'
-import { Box, Flex } from '@audius/harmony'
-import { Mood } from '@audius/sdk'
+  ID,
+  CoverArtSizes,
+  FieldVisibility,
+  Remix,
+  AccessConditions
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Button,
-  ButtonType,
-  IconShare,
-  IconRocket,
+  cacheTracksSelectors,
+  publishTrackConfirmationModalUIActions,
+  CommonState
+} from '@audius/common/store'
+import {
+  Genre,
+  getCanonicalName,
+  formatSeconds,
+  formatDate,
+  getDogEarType,
+  Nullable
+} from '@audius/common/utils'
+import {
+  Box,
+  Flex,
+  IconRobot,
   IconRepost,
   IconHeart,
-  IconKebabHorizontal
-} from '@audius/stems'
+  IconKebabHorizontal,
+  IconShare,
+  IconRocket
+} from '@audius/harmony'
+import { Mood } from '@audius/sdk'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
-import IconRobot from 'assets/img/robot.svg'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
@@ -57,13 +61,18 @@ import { trpc } from 'utils/trpcClientWeb'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
-import { DownloadSection } from './DownloadSection'
 import { GatedTrackSection } from './GatedTrackSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
+
+const DownloadSection = lazy(() =>
+  import('./DownloadSection').then((module) => ({
+    default: module.DownloadSection
+  }))
+)
 
 const { requestOpen: openPublishTrackConfirmationModal } =
   publishTrackConfirmationModalUIActions
@@ -121,7 +130,17 @@ export type GiantTrackTileProps = {
   mood: string
   onClickFavorites: () => void
   onClickReposts: () => void
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -428,23 +447,18 @@ export const GiantTrackTile = ({
 
   const renderTags = () => {
     const shouldShow = !isUnlisted || fieldVisibility.tags
+    if (!shouldShow || !tags) return null
     return (
-      shouldShow &&
-      tags && (
-        <div className={styles.tagSection}>
-          {tags
-            .split(',')
-            .filter((t) => t)
-            .map((tag) => (
-              <SearchTag
-                className={styles.tagFormatting}
-                tag={tag}
-                key={tag}
-                source='track page'
-              />
-            ))}
-        </div>
-      )
+      <Flex pt='m' wrap='wrap' gap='s'>
+        {tags
+          .split(',')
+          .filter((t) => t)
+          .map((tag) => (
+            <SearchTag key={tag} source='track page'>
+              {tag}
+            </SearchTag>
+          ))}
+      </Flex>
     )
   }
 
@@ -461,7 +475,8 @@ export const GiantTrackTile = ({
             size='small'
             css={({ spacing }) => ({
               // the link is too tall
-              marginTop: spacing.negativeUnit
+              marginTop: spacing.negativeUnit,
+              textTransform: 'none'
             })}
           >
             {albumInfo.playlist_name}
@@ -745,7 +760,9 @@ export const GiantTrackTile = ({
           {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
           {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
             <Box pt='l' w='100%'>
-              <DownloadSection trackId={trackId} onDownload={onDownload} />
+              <Suspense>
+                <DownloadSection trackId={trackId} />
+              </Suspense>
             </Box>
           ) : null}
         </ClientOnly>

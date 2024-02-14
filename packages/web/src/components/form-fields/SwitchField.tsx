@@ -1,4 +1,4 @@
-import { Switch, SwitchProps } from '@audius/stems'
+import { Switch, SwitchProps } from '@audius/harmony'
 import { useField } from 'formik'
 
 type SwitchFieldProps = SwitchProps & {

@@ -1,10 +1,12 @@
-import type { Track } from '@audius/common'
-import { SquareSizes } from '@audius/common'
+import type { Track } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 import { View } from 'react-native'
 
-import IconHidden from 'app/assets/images/iconHidden.svg'
-import IconPause from 'app/assets/images/pbIconPauseAlt.svg'
-import IconPlay from 'app/assets/images/pbIconPlayAlt.svg'
+import {
+  IconVisibilityHidden,
+  IconPause,
+  IconPlay
+} from '@audius/harmony-native'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -48,7 +50,7 @@ export const TrackArtwork = (props: TrackArtworkProps) => {
     >
       {isUnlisted && !isActive ? (
         <View style={styles.artworkIcon}>
-          <IconHidden fill={staticWhite} />
+          <IconVisibilityHidden fill={staticWhite} />
         </View>
       ) : null}
       {isActive ? (

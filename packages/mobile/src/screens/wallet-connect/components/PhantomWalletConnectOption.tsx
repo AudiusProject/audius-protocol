@@ -5,7 +5,7 @@ import { Linking } from 'react-native'
 import { useDispatch } from 'react-redux'
 import nacl from 'tweetnacl'
 
-import IconPhantom from 'app/assets/images/iconPhantom.svg'
+import { IconPhantom } from '@audius/harmony-native'
 import {
   setConnectionType,
   setDappKeyPair

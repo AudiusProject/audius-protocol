@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 import { ID, UID } from '../../../models'
 import { getCollection } from '../collections/selectors'

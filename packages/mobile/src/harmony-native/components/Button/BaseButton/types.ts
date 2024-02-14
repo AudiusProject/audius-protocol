@@ -9,7 +9,7 @@ import type {
 import type { SharedValue } from 'react-native-reanimated'
 
 import type { LoadingSpinnerProps } from 'app/components/loading-spinner/LoadingSpinner'
-import type { Icon, IconProps } from 'app/harmony-native/icons'
+import type { IconComponent, IconProps } from 'app/harmony-native/icons'
 
 import type { TextProps } from '../../Text/Text'
 
@@ -29,12 +29,12 @@ export type BaseButtonProps = {
   /**
    * Optional icon element to include on the left side of the button
    */
-  iconLeft?: Icon
+  iconLeft?: IconComponent
 
   /**
    * Optional icon element to include on the right side of the button
    */
-  iconRight?: Icon
+  iconRight?: IconComponent
 
   /**
    * When true, do not override icon's fill colors
@@ -79,4 +79,8 @@ export type BaseButtonProps = {
   sharedValue?: SharedValue<number>
 
   children?: ReactNode
+  /**
+   * The percentage to scale the button when pressed
+   */
+  pressScale?: number
 } & PressableProps

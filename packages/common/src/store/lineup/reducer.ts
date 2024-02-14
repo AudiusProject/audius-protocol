@@ -1,6 +1,6 @@
 import { Reducer } from 'redux'
 
-import { Status } from 'models/Status'
+import { Status } from '~/models/Status'
 import {
   FETCH_LINEUP_METADATAS_REQUESTED,
   FETCH_LINEUP_METADATAS_SUCCEEDED,
@@ -12,10 +12,10 @@ import {
   UPDATE_LINEUP_ORDER,
   SET_PAGE,
   stripPrefix
-} from 'store/lineup/actions'
+} from '~/store/lineup/actions'
 
 import { UID } from '../../models/Identifiers'
-import { LineupState, LineupStateTrack, Order } from '../../models/Lineup'
+import { LineupState, LineupEntry, Order } from '../../models/Lineup'
 
 export const initialLineupState = {
   prefix: '',
@@ -62,7 +62,7 @@ type FetchLineupMetadatasRequestedAction = {
 
 type FetchLineupMetadatasSucceededAction<T> = {
   type: typeof FETCH_LINEUP_METADATAS_SUCCEEDED
-  entries: LineupStateTrack<T>[]
+  entries: LineupEntry<T>[]
   deleted: number
   nullCount: number
   limit: number
@@ -80,7 +80,7 @@ type UpdateLineupOrderAction = {
 
 type AddAction<T> = {
   type: typeof ADD
-  entry: LineupStateTrack<T>
+  entry: LineupEntry<T>
   shouldPrepend?: boolean
 }
 
@@ -98,7 +98,7 @@ type SetPageAction = {
   page: number
 }
 
-type LineupActions<T> =
+export type LineupActions<T> =
   | SetInViewAction
   | FetchLineupMetadatasRequestedAction
   | FetchLineupMetadatasSucceededAction<T>

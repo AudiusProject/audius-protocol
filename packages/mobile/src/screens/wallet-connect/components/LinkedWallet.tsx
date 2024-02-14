@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 
-import type { BNWei, Chain } from '@audius/common'
-import { formatWei, tokenDashboardPageActions } from '@audius/common'
+import type { Chain, BNWei } from '@audius/common/models'
+import { tokenDashboardPageActions } from '@audius/common/store'
+import { formatWei } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
-import IconCopy from 'app/assets/images/iconCopy.svg'
-import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
-import { ChainLogo, IconButton, Text } from 'app/components/core'
+import { IconButton, IconCopy, IconRemove } from '@audius/harmony-native'
+import { ChainLogo, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useToast } from 'app/hooks/useToast'
@@ -22,7 +22,8 @@ import { useCanConnectNewWallet } from '../useCanConnectNewWallet'
 const { requestRemoveWallet } = tokenDashboardPageActions
 
 const messages = {
-  copied: 'Copied To Clipboard!'
+  copied: 'Copied To Clipboard!',
+  removeLabel: 'Remove Wallet'
 }
 
 type WalletProps = {
@@ -81,10 +82,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     borderColor: palette.neutralLight8,
     borderWidth: 1,
     borderRadius: 6
-  },
-  removeIcon: {
-    height: spacing(6),
-    width: spacing(6)
   },
   loading: {
     marginLeft: -1,
@@ -147,13 +144,12 @@ export const LinkedWallet = ({
           <LoadingSpinner style={styles.loading} />
         ) : (
           <IconButton
-            isDisabled={!canConnectNewWallet}
-            icon={IconRemoveTrack}
-            styles={{
-              root: styles.removeButton,
-              icon: styles.removeIcon
-            }}
+            disabled={!canConnectNewWallet}
+            color='danger'
+            icon={IconRemove}
+            style={styles.removeButton}
             onPress={onRequestRemoveWallet}
+            aria-label={messages.removeLabel}
           />
         )}
       </View>

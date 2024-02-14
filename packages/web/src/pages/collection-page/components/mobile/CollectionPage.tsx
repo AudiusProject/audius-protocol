@@ -1,18 +1,20 @@
 import { memo, useEffect, useContext } from 'react'
 
+import { useGatedContentAccessMap } from '@audius/common/hooks'
 import {
-  ID,
-  Collection,
-  SmartCollection,
   Variant,
   SmartCollectionVariant,
   Status,
-  User,
-  CollectionsPageType,
-  CollectionTrack,
+  Collection,
+  SmartCollection,
+  ID,
+  User
+} from '@audius/common/models'
+import {
   OverflowAction,
-  useGatedContentAccessMap
-} from '@audius/common'
+  CollectionTrack,
+  CollectionsPageType
+} from '@audius/common/store'
 
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -24,22 +26,29 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import TrackList from 'components/track/mobile/TrackList'
+import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
 
 const messages = {
-  emptyPlaylist: 'This playlist is empty.'
+  emptyPlaylist: (collectionType: 'album' | 'playlist') =>
+    `This ${collectionType} is empty.`
 }
 
 const EmptyTrackList = ({
+  isAlbum,
   customEmptyText
 }: {
+  isAlbum: boolean
   customEmptyText?: string | null
 }) => {
   return (
     <div className={styles.emptyListContainer}>
-      <div>{customEmptyText || messages.emptyPlaylist}</div>
+      <div>
+        {customEmptyText ||
+          messages.emptyPlaylist(isAlbum ? 'album' : 'playlist')}
+      </div>
     </div>
   )
 }
@@ -156,7 +165,9 @@ const CollectionPage = ({
   const imageOverride =
     metadata && metadata.variant === Variant.SMART ? metadata.imageOverride : ''
   const icon =
-    metadata && metadata.variant === Variant.SMART ? metadata.icon : null
+    metadata && metadata.variant === Variant.SMART
+      ? smartCollectionIcons[metadata.playlist_name]
+      : null
   const typeTitle =
     metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
   const customEmptyText =
@@ -273,7 +284,10 @@ const CollectionPage = ({
             isEmpty ? (
               <>
                 <div className={styles.divider}></div>
-                <EmptyTrackList customEmptyText={customEmptyText} />
+                <EmptyTrackList
+                  isAlbum={isAlbum}
+                  customEmptyText={customEmptyText}
+                />
               </>
             ) : (
               <TrackList

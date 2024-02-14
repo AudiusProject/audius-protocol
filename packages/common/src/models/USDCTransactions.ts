@@ -1,11 +1,13 @@
 import { Nullable } from '../utils/typeUtils'
 
+import { PurchaseAccess } from './PurchaseContent'
 import { StringUSDC } from './Wallet'
 
 export enum USDCTransactionType {
   PURCHASE_STRIPE = 'purchase_stripe',
   PURCHASE_CONTENT = 'purchase_content',
-  TRANSFER = 'transfer'
+  TRANSFER = 'transfer',
+  WITHDRAWAL = 'withdrawal'
 }
 
 export enum USDCTransactionMethod {
@@ -26,6 +28,7 @@ export type USDCPurchaseDetails = {
   contentType: USDCContentPurchaseType
   contentId: number
   createdAt: string
+  access: PurchaseAccess
 }
 
 export type USDCTransactionDetails = {

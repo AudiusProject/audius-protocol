@@ -1,20 +1,22 @@
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import {
-  FeatureFlags,
-  modalsActions,
   queueActions,
   queueSelectors,
-  RepeatMode
-} from '@audius/common'
+  RepeatMode,
+  modalsActions
+} from '@audius/common/store'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNext from 'app/assets/images/iconNext.svg'
-import IconPodcastBack from 'app/assets/images/iconPodcastBack.svg'
-import IconPodcastForward from 'app/assets/images/iconPodcastForward.svg'
-import IconPrev from 'app/assets/images/iconPrev.svg'
-import { IconButton } from 'app/components/core'
+import {
+  IconSkipNext,
+  IconPodcastBack,
+  IconPodcastForward,
+  IconSkipPrevious,
+  IconButton
+} from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
@@ -27,6 +29,11 @@ import { ShuffleButton } from './ShuffleButton'
 const { setVisibility } = modalsActions
 const { getRepeat, getShuffle } = queueSelectors
 const { shuffle, repeat } = queueActions
+
+const messages = {
+  nextLabel: 'Next Track',
+  previousLabel: 'Previous Track'
+}
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
@@ -56,10 +63,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   playIcon: {
     width: 80,
     height: 80
-  },
-  nextPrevIcons: {
-    width: 30,
-    height: 30
   },
   shuffleRepeatIcons: {
     width: 24,
@@ -143,8 +146,10 @@ export const AudioControls = ({
     return (
       <IconButton
         onPress={onPrevious}
-        icon={isLongFormContent ? IconPodcastBack : IconPrev}
-        styles={{ root: styles.button, icon: styles.nextPrevIcons }}
+        icon={isLongFormContent ? IconPodcastBack : IconSkipPrevious}
+        style={styles.button}
+        size='xl'
+        aria-label={messages.previousLabel}
       />
     )
   }
@@ -164,8 +169,10 @@ export const AudioControls = ({
     return (
       <IconButton
         onPress={onNext}
-        icon={isLongFormContent ? IconPodcastForward : IconNext}
-        styles={{ root: styles.button, icon: styles.nextPrevIcons }}
+        icon={isLongFormContent ? IconPodcastForward : IconSkipNext}
+        style={styles.button}
+        size='xl'
+        aria-label={messages.nextLabel}
       />
     )
   }

@@ -1,22 +1,26 @@
-// @ts-nocheck
-// TODO(nkang) - convert to TS
-import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
-import { initialLineupState } from 'store/lineup/reducer'
-import { PREFIX } from 'store/pages/saved-page/lineups/tracks/actions'
+import { LineupState } from '~/models/Lineup'
+import { Track } from '~/models/Track'
+import { RESET_SUCCEEDED, stripPrefix } from '~/store/lineup/actions'
+import { initialLineupState } from '~/store/lineup/reducer'
+import { PREFIX } from '~/store/pages/saved-page/lineups/tracks/actions'
 
 export const initialState = {
   ...initialLineupState,
   prefix: PREFIX
 }
 
+type ResetSucceededAction = {
+  type: typeof RESET_SUCCEEDED
+}
+
 const actionsMap = {
-  [RESET_SUCCEEDED](state, action) {
+  [RESET_SUCCEEDED](_state: LineupState<Track>, _action: ResetSucceededAction) {
     const newState = initialState
     return newState
   }
 }
 
-const tracks = (state = initialState, action) => {
+const tracks = (state = initialState, action: ResetSucceededAction) => {
   const baseActionType = stripPrefix(PREFIX, action.type)
   const matchingReduceFunction = actionsMap[baseActionType]
   if (!matchingReduceFunction) return state

@@ -1,15 +1,17 @@
 import { useCallback, useContext, useEffect } from 'react'
 
 import type {
-  ID,
   FavoriteType,
   TipSource,
+  ID,
+  SearchTrack,
+  SearchPlaylist
+} from '@audius/common/models'
+import type {
   NotificationType,
   RepostType,
-  SearchPlaylist,
-  SearchTrack,
   CreateChatModalState
-} from '@audius/common'
+} from '@audius/common/store'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
@@ -40,7 +42,6 @@ import {
 import { AiGeneratedTracksScreen } from '../ai-generated-tracks-screen'
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
-import { ChangePasswordScreen } from '../change-password-screen'
 import { EditProfileScreen } from '../edit-profile-screen'
 import { PayAndEarnScreen } from '../pay-and-earn-screen'
 import {
@@ -98,7 +99,8 @@ export type AppTabScreenParamList = {
   ListeningHistoryScreen: undefined
   AccountSettingsScreen: undefined
   AccountVerificationScreen: undefined
-  ChangePasswordScreen: undefined
+  ChangeEmail: undefined
+  ChangePassword: undefined
   InboxSettingsScreen: undefined
   DownloadSettingsScreen: undefined
   NotificationSettingsScreen: undefined
@@ -315,10 +317,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         <Stack.Screen
           name='AccountVerificationScreen'
           component={AccountVerificationScreen}
-        />
-        <Stack.Screen
-          name='ChangePasswordScreen'
-          component={ChangePasswordScreen}
         />
       </Stack.Group>
       <Stack.Group>

@@ -1,4 +1,4 @@
-import { uuid } from '@audius/common'
+import { uuid } from '@audius/common/utils'
 import Jimp from 'jimp'
 import RNFetchBlob from 'rn-fetch-blob'
 

@@ -1,23 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { Nullable, AccessConditions } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  createRemixOfMetadata,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated,
-  remixSettingsActions,
-  remixSettingsSelectors,
   Status,
-  useGatedContentAccess
-} from '@audius/common'
+  isContentCollectibleGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import type { AccessConditions } from '@audius/common/models'
+import { createRemixOfMetadata } from '@audius/common/schemas'
+import {
+  remixSettingsSelectors,
+  remixSettingsActions
+} from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'
 import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
-import IconRemix from 'app/assets/images/iconRemix.svg'
+import { IconCaretLeft, IconRemix } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
 import { TextInput, Divider, Button, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'

@@ -1,18 +1,20 @@
 import { ChangeEvent, useMemo } from 'react'
 
 import {
-  ID,
+  Variant,
+  DogEarType,
+  Status,
   Collection,
   SmartCollection,
-  Variant,
-  Status,
-  User,
+  ID,
+  User
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   CollectionTrack,
-  CollectionPageTrackRecord,
   CollectionsPageType,
-  DogEarType,
-  FeatureFlags
-} from '@audius/common'
+  CollectionPageTrackRecord
+} from '@audius/common/store'
 
 import {
   CollectiblesPlaylistTableColumn,
@@ -25,24 +27,29 @@ import { SuggestedCollectionTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
 
-const messages = {
+const getMessages = (collectionType: 'album' | 'playlist') => ({
   emptyPage: {
-    owner:
-      'This playlist is empty. Start adding tracks to share it or make it public.',
-    visitor: 'This Playlist is Empty...'
+    owner: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
+    visitor: `This ${collectionType} is empty...`
   },
   type: {
     playlist: 'Playlist',
     album: 'Album'
   },
   remove: 'Remove from this'
-}
+})
 
-const EmptyPage = (props: { text?: string | null; isOwner: boolean }) => {
+const EmptyPage = (props: {
+  text?: string | null
+  isOwner: boolean
+  isAlbum: boolean
+}) => {
+  const messages = getMessages(props.isAlbum ? 'album' : 'playlist')
   const text =
     props.text ||
     (props.isOwner ? messages.emptyPage.owner : messages.emptyPage.visitor)
@@ -150,7 +157,10 @@ const CollectionPage = ({
   const variant = metadata?.variant ?? null
   const gradient =
     (metadata?.variant === Variant.SMART && metadata.gradient) ?? ''
-  const icon = (metadata?.variant === Variant.SMART && metadata.icon) ?? null
+  const icon =
+    metadata?.variant === Variant.SMART
+      ? smartCollectionIcons[metadata.playlist_name]
+      : null
   const imageOverride =
     (metadata?.variant === Variant.SMART && metadata.imageOverride) ?? ''
   const typeTitle =
@@ -227,6 +237,7 @@ const CollectionPage = ({
     [isAlbum, isNftPlaylist]
   )
 
+  const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (
     <Page
       title={title}
@@ -245,7 +256,11 @@ const CollectionPage = ({
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
-          <EmptyPage isOwner={isOwner} text={customEmptyText} />
+          <EmptyPage
+            isOwner={isOwner}
+            isAlbum={isAlbum}
+            text={customEmptyText}
+          />
         ) : (
           <div className={styles.tableWrapper}>
             <TableComponent

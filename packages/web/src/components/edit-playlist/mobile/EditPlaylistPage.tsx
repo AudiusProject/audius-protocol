@@ -1,26 +1,24 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
+import { SquareSizes, Collection, ID } from '@audius/common/models'
+import { newCollectionMetadata } from '@audius/common/schemas'
+import { RandomImage } from '@audius/common/services'
 import {
-  ID,
-  Collection,
-  SquareSizes,
-  Nullable,
-  RandomImage,
   accountSelectors,
   cacheCollectionsActions,
-  collectionPageLineupActions as tracksActions,
-  imageBlank as placeholderCoverArt,
-  newCollectionMetadata,
-  useGatedContentAccessMap,
-  EditPlaylistValues,
   cacheCollectionsSelectors,
-  useEditPlaylistModal
-} from '@audius/common'
+  collectionPageLineupActions as tracksActions,
+  useEditPlaylistModal,
+  EditPlaylistValues
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { IconCamera } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import IconCamera from 'assets/img/iconCamera.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'

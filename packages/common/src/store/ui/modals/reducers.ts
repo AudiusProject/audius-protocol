@@ -2,18 +2,19 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
 import { addFundsModalReducer } from './add-funds-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
+import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
-import { BaseModalState } from './createModal'
 import { editPlaylistModalReducer } from './edit-playlist-modal'
 import { editTrackModalReducer } from './edit-track-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
-import { Modals, ModalsState } from './types'
+import { BaseModalState, Modals, ModalsState } from './types'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
 import { usdcTransactionDetailsModalReducer } from './usdc-transaction-details-modal'
+import { waitForDownloadModalReducer } from './wait-for-download-modal'
 import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
 
 /**
@@ -42,7 +43,9 @@ const combinedReducers = combineReducers({
   AddFundsModal: addFundsModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
-  CoinflowOnramp: coinflowOnrampModalReducer
+  CoinflowOnramp: coinflowOnrampModalReducer,
+  CoinflowWithdraw: coinflowWithdrawModalReducer,
+  WaitForDownloadModal: waitForDownloadModalReducer
 })
 
 /**

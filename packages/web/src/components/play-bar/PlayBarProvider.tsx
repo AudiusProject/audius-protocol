@@ -1,4 +1,4 @@
-import { modalsSelectors, playerSelectors } from '@audius/common'
+import { modalsSelectors, playerSelectors } from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'

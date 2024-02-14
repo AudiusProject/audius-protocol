@@ -15,6 +15,7 @@ export type State = {
     transactions?: Array<DelayedPendingTransaction>
   }
   error?: string
+  isAudiusProfileRefetchDisabled?: boolean
 }
 
 export const initialState: State = {
@@ -67,6 +68,9 @@ const slice = createSlice({
     ) => {
       state.pendingTransactions.status = Status.Success
       state.pendingTransactions.transactions = action.payload
+    },
+    disableAudiusProfileRefetch: state => {
+      state.isAudiusProfileRefetchDisabled = true
     }
   }
 })
@@ -77,7 +81,8 @@ export const {
   setPendingTransactionsLoading,
   setPendingTransactions,
   setPendingClaimLoading,
-  setPendingClaim
+  setPendingClaim,
+  disableAudiusProfileRefetch
 } = slice.actions
 
 export default slice.reducer

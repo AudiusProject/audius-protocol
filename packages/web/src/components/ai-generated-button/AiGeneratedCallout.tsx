@@ -1,10 +1,14 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonType, IconRobot } from '@audius/stems'
+import {
+  IconArrowRight as IconArrow,
+  IconRobot,
+  PlainButton,
+  Box
+} from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import IconArrow from 'assets/img/iconArrow.svg'
 import { profilePageAiAttributedTracks } from 'utils/route'
 
 import styles from './AiGeneratedCallout.module.css'
@@ -30,13 +34,15 @@ export const AiGeneratedCallout = ({ handle }: { handle: string }) => {
       </div>
       <div className={styles.body}>
         <div className={styles.description}>{messages.description}</div>
-        <Button
-          className={styles.button}
-          type={ButtonType.TEXT}
-          rightIcon={<IconArrow className={styles.iconArrow} />}
-          text={<div className={styles.buttonText}>{messages.listenNow}</div>}
-          onClick={handleClick}
-        />
+        <Box pl='xs' mt='m'>
+          <PlainButton
+            variant='subdued'
+            iconRight={IconArrow}
+            onClick={handleClick}
+          >
+            {messages.listenNow}
+          </PlainButton>
+        </Box>
       </div>
     </div>
   )

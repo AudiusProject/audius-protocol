@@ -1,4 +1,4 @@
-import { CommonState } from 'store/commonStore'
+import { CommonState } from '~/store/commonStore'
 
 export const getId = (state: CommonState) =>
   state.ui.userList.mutuals.mutualsPage.id

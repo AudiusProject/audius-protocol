@@ -1,13 +1,13 @@
 import type { full } from '@audius/sdk'
 
-import { createApi } from 'audius-query'
-import { ID } from 'models'
+import { createApi } from '~/audius-query'
+import { ID, PurchaseAccess } from '~/models'
 import {
   USDCContentPurchaseType,
   USDCPurchaseDetails
-} from 'models/USDCTransactions'
-import { StringUSDC } from 'models/Wallet'
-import { Nullable } from 'utils/typeUtils'
+} from '~/models/USDCTransactions'
+import { StringUSDC } from '~/models/Wallet'
+import { Nullable } from '~/utils/typeUtils'
 
 import { trackApiFetch } from './track'
 import { HashId, Id } from './utils'
@@ -28,6 +28,7 @@ const parsePurchase = (purchase: full.Purchase): USDCPurchaseDetails => {
     amount,
     buyerUserId,
     sellerUserId,
+    access,
     ...rest
   } = purchase
   return {
@@ -37,7 +38,8 @@ const parsePurchase = (purchase: full.Purchase): USDCPurchaseDetails => {
     amount: amount as StringUSDC,
     extraAmount: extraAmount as StringUSDC,
     buyerUserId: HashId.parse(buyerUserId),
-    sellerUserId: HashId.parse(sellerUserId)
+    sellerUserId: HashId.parse(sellerUserId),
+    access: access as PurchaseAccess
   }
 }
 
@@ -76,10 +78,12 @@ const purchasesApi = createApi({
             ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
           )
           .map(({ contentId }) => contentId)
-        await trackApiFetch.getTracksByIds(
-          { ids: trackIdsToFetch, currentUserId: userId },
-          context
-        )
+        if (trackIdsToFetch.length > 0) {
+          await trackApiFetch.getTracksByIds(
+            { ids: trackIdsToFetch, currentUserId: userId },
+            context
+          )
+        }
         return purchases
       },
       options: { retry: true }
@@ -135,10 +139,12 @@ const purchasesApi = createApi({
             ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
           )
           .map(({ contentId }) => contentId)
-        await trackApiFetch.getTracksByIds(
-          { ids: trackIdsToFetch, currentUserId: userId },
-          context
-        )
+        if (trackIdsToFetch.length > 0) {
+          await trackApiFetch.getTracksByIds(
+            { ids: trackIdsToFetch, currentUserId: userId },
+            context
+          )
+        }
         return purchases
       },
       options: { retry: true }

@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import {
-  IconBlog,
-  IconCaretDown2,
-  IconDownloadQueued,
-  IconFoundation,
+  IconAudiusLogoHorizontalColor,
   IconKebabHorizontal,
+  IconCloudDownload as IconDownloadQueued,
+  IconCaretDown
+} from '@audius/harmony'
+import {
+  IconBlog,
+  IconFoundation,
   IconMerch,
   IconSupport,
   PopupMenu,
@@ -14,7 +17,6 @@ import {
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
-import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import { UnstyledButton } from 'components/unstyled-button/UnstyledButton'
 import {
   AUDIUS_BLOG_LINK,
@@ -127,11 +129,7 @@ const NavBanner = (props: NavBannerProps) => {
         })}
       >
         <div className={styles.leftLogo}>
-          <img
-            src={HorizontalLogo}
-            className={styles.horizontalLogo}
-            alt='Audius Logo'
-          />
+          <IconAudiusLogoHorizontalColor className={styles.horizontalLogo} />
         </div>
         <UnstyledButton
           onClick={props.openNavScreen}
@@ -154,11 +152,7 @@ const NavBanner = (props: NavBannerProps) => {
       <div className={styles.contentContainer}>
         <div className={styles.leftLogo}>
           <Link to={TRENDING_PAGE}>
-            <img
-              alt='Audius Logo'
-              src={HorizontalLogo}
-              className={styles.horizontalLogo}
-            />
+            <IconAudiusLogoHorizontalColor className={styles.horizontalLogo} />
           </Link>
         </div>
         <div className={styles.linkContainer}>
@@ -196,7 +190,7 @@ const NavBanner = (props: NavBannerProps) => {
                   onMouseEnter={() => triggerPopup(true)}
                 >
                   {messages.resources}
-                  <IconCaretDown2 className={styles.resourcesIcon} />
+                  <IconCaretDown className={styles.resourcesIcon} />
                 </div>
               )
             }}

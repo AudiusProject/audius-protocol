@@ -5,7 +5,7 @@ import type {
   OnrampSessionStatus
 } from '@stripe/crypto'
 
-import { DeepNullable, Nullable } from 'utils/typeUtils'
+import { DeepNullable, Nullable } from '~/utils/typeUtils'
 
 export type StripeSessionStatus = OnrampSessionStatus
 

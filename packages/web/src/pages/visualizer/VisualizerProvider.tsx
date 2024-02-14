@@ -1,3 +1,11 @@
+import {
+  averageColorSelectors,
+  queueSelectors,
+  themeSelectors,
+  playerSelectors
+} from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
+import { Name, SquareSizes, Track } from '@audius/common/models'
 import { useEffect, useState, useCallback } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { AppState } from 'store/types'
@@ -10,25 +18,18 @@ import Toast from 'components/toast/Toast'
 
 import styles from './VisualizerProvider.module.css'
 import { MountPlacement, ComponentPlacement } from 'components/types'
-import {
-  Nullable,
-  playerSelectors,
-  queueSelectors,
-  themeSelectors
-} from '@audius/common'
 
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { Name } from '@audius/common'
-import { Track } from '@audius/common'
-import { SquareSizes } from '@audius/common'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
 import { webglSupported } from './utils'
-import { averageColorSelectors } from '@audius/common'
-import IconRemove from 'assets/img/iconRemove.svg'
-import AudiusLogoHorizontal from 'assets/img/audiusLogoHorizontal.svg'
+import {
+  IconAudiusLogoHorizontal,
+  useTheme,
+  IconClose as IconRemove
+} from '@audius/harmony'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 
@@ -71,6 +72,7 @@ const Visualizer = ({
   goToRoute
 }: VisualizerProps) => {
   const [toastText, setToastText] = useState('')
+  const { spacing } = useTheme()
   // Used to fadeIn/Out the visualizer (opacity 0 -> 1) through a css class
   const [fadeVisualizer, setFadeVisualizer] = useState<Nullable<Boolean>>(null)
   // Used to show/hide the visualizer (display: block/none) through a css class
@@ -207,9 +209,23 @@ const Visualizer = ({
     >
       <div className='visualizer' />
       <div className={styles.logoWrapper}>
-        <AudiusLogoHorizontal className={styles.logo} />
+        <IconAudiusLogoHorizontal
+          width='auto'
+          sizeH='l'
+          color='default'
+          css={{
+            display: 'block',
+            marginTop: spacing.l,
+            marginBottom: spacing.l,
+            opacity: 0.4
+          }}
+        />
       </div>
-      <IconRemove className={styles.closeButtonIcon} onClick={onClose} />
+      <IconRemove
+        color='staticWhite'
+        className={styles.closeButtonIcon}
+        onClick={onClose}
+      />
       <div className={styles.infoOverlayTileShadow}></div>
       <div className={styles.infoOverlayTile}>
         <div

@@ -1,9 +1,9 @@
 import {
+  accountActions,
   reachabilityActions,
   reachabilitySelectors,
-  getContext,
-  accountActions
-} from '@audius/common'
+  getContext
+} from '@audius/common/store'
 import {
   put,
   all,

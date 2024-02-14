@@ -4,9 +4,6 @@ import * as sendEmailFns from '../../email/notifications/sendEmail'
 
 import {
   createUsers,
-  insertMobileDevices,
-  insertMobileSettings,
-  createTracks,
   setupTest,
   resetTests,
   setUserEmailAndSettings,
@@ -30,7 +27,7 @@ describe('USDC Withdrawal', () => {
     await resetTests(processor)
   })
 
-  test('Process push notification for usdc withdrawal', async () => {
+  test('Process push notification for USDC withdrawal', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }])
     await createUSDCUserBank(processor.discoveryDB, [
       {
@@ -41,7 +38,7 @@ describe('USDC Withdrawal', () => {
     ])
     await CreateUSDCTransaction(processor.discoveryDB, [
       {
-        transaction_type: 'transfer',
+        transaction_type: 'withdrawal',
         method: 'send',
         user_bank: '0x123',
         slot: 5,
@@ -59,7 +56,7 @@ describe('USDC Withdrawal', () => {
     expect(sendTransactionalEmailSpy).toHaveBeenCalledWith({
       email: 'user_1@gmail.com',
       html: expect.anything(),
-      subject: 'Your Transfer Has Been Started'
+      subject: 'Your Withdrawal Has Been Started'
     })
   })
 })

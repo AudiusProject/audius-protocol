@@ -1,4 +1,6 @@
-import { ID, decodeHashId, ProfilePageTabRoute } from '@audius/common'
+import { ID } from '@audius/common/models'
+import { ProfilePageTabRoute } from '@audius/common/store'
+import { decodeHashId } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 
 import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'

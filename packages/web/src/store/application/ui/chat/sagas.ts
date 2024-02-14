@@ -1,4 +1,4 @@
-import { chatActions } from '@audius/common'
+import { chatActions } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { takeLatest } from 'redux-saga/effects'
 import { put } from 'typed-redux-saga'

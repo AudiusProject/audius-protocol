@@ -16,9 +16,9 @@ import {
   Supporting,
   UserTip,
   AccessConditions,
-  AccessSignature,
   ID,
-  AccessPermissions
+  AccessPermissions,
+  NFTAccessSignature
 } from '../../models'
 import { License, Nullable } from '../../utils'
 
@@ -173,6 +173,7 @@ export type APIStem = {
   category: StemCategory
   cid: CID
   blocknumber: number
+  orig_filename: string
 }
 
 export type APIPlaylistAddedTimestamp = {
@@ -288,5 +289,5 @@ export type GetTipsResponse = Omit<UserTip, UserTipOmitIds> & {
 }
 
 export type GetNFTGatedTrackSignaturesResponse = {
-  [id: ID]: AccessSignature
+  [id: ID]: NFTAccessSignature
 }

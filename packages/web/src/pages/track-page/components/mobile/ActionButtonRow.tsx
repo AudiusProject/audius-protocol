@@ -1,4 +1,5 @@
-import { IconShare, IconKebabHorizontal, IconButton } from '@audius/stems'
+import { IconShare, IconKebabHorizontal } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -84,7 +85,7 @@ const ActionButtonRow = ({
     return (
       <IconButton
         aria-label='share'
-        className={cn(styles.actionButton, {
+        className={cn(styles.actionButton, styles.shareButton, {
           [styles.disabledButton]: !isPublished
         })}
         icon={<IconShare />}

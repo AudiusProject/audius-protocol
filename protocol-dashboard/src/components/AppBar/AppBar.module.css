@@ -49,6 +49,7 @@
 }
 
 .right {
+  gap: var(--unit-8);
   display: inline-flex;
   align-items: center;
 }
@@ -74,29 +75,27 @@
   text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
 }
 
-
 /* Right Nav */
-
-.userAccountSnippetContainer {
-  cursor: pointer;
-  margin-right: 32px;
-}
 
 /* User Account Snippet */
 .snippetContainer {
   display: inline-flex;
+  gap: var(--unit-2);
+}
+
+.userNameContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-1);
 }
 
 .user {
+  gap: var(--unit-2);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  width: 72px;
-  margin-right: 56px;
 }
 
 .snippetImg {
-  margin-bottom: 8px;
   height: 40px;
   width: 40px;
   border-radius: 50%;
@@ -131,24 +130,32 @@
   margin: 1px 0px;
 }
 
-.walletText {
-  font-size: 12px;
+.userNameText {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--unit-1);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
   color: var(--static-white);
-  font-weight: var(--font-bold);
+}
+
+.walletText {
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  color: var(--static-white);
 }
 
 .tokenText {
   font-size: 16px;
 }
 
-
 .appBar .launchAppBtn {
   height: 41px !important;
-  width: 167px !important;
-  padding: 0px !important;
   justify-content: center !important;
   align-items: center !important;
   background: var(--static-white) !important;
+  padding-right: var(--unit-3);
+  padding-left: var(--unit-3);
   box-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
   border-radius: 8px;
   transform: perspective(1px) scale3d(1, 1, 1) !important;
@@ -170,23 +177,26 @@
   font-weight: var(--font-bold) !important;
   font-size: var(--font-s) !important;
   text-align: center;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-
-  color: #9147CC !important;
+  color: var(--secondary) !important;
 }
 
+.launchAppBtnIcon {
+  margin-right: var(--unit-1) !important;
+}
+
+.launchAppBtnIcon path {
+  fill: var(--secondary) !important;
+}
 
 /* MetaMask */
 .connectMetaMaskContainer {
   display: inline-flex;
   align-items: center;
   padding: 12px 0px;
-  cursor: pointer;
 }
 
-.misconfigured {
-  cursor: default;
+.cursorPointer {
+  cursor: pointer;
 }
 
 .connectMetaMaskDot {
@@ -194,8 +204,17 @@
   height: 14px;
   border-radius: 50%;
   margin-right: 8px;
-  background: #F15064;
+  background-color: #f15064;
   border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: background-color 500ms linear;
+}
+
+.connectMetaMaskDot.yellow {
+  background-color: var(--accent-orange-light-1);
+}
+
+.connectMetaMaskDot.green {
+  background-color: var(--accent-green-dark-1);
 }
 
 .connectMetaMask {
@@ -206,4 +225,8 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--static-white);
+}
+
+.loadingText {
+  opacity: 0.7;
 }

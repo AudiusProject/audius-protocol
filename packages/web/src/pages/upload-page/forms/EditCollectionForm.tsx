@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { UploadType } from '@audius/common'
+import { UploadType } from '@audius/common/store'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -50,7 +50,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     artwork: null,
     playlist_name: '',
     description: '',
-    release_date: moment().startOf('day').toString(),
+    release_date: moment().toString(),
     trackDetails: {
       genre: null,
       mood: null,

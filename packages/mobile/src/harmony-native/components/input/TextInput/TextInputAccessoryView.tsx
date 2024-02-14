@@ -1,7 +1,7 @@
 import { css } from '@emotion/native'
 import { BlurView } from '@react-native-community/blur'
 import type { InputAccessoryViewProps } from 'react-native'
-import { InputAccessoryView, Keyboard } from 'react-native'
+import { InputAccessoryView, Keyboard, Platform } from 'react-native'
 
 import { useTheme } from '@audius/harmony-native'
 import { TextButton } from 'app/components/core'
@@ -12,6 +12,11 @@ const messages = {
 
 export const TextInputAccessoryView = (props: InputAccessoryViewProps) => {
   const { type, spacing } = useTheme()
+
+  if (Platform.OS !== 'ios') {
+    // InputAccessoryView is only available on iOS
+    return null
+  }
 
   return (
     <InputAccessoryView {...props}>

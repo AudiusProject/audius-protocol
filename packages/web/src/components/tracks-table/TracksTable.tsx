@@ -1,13 +1,9 @@
 import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
-import {
-  formatCount,
-  formatSeconds,
-  UID,
-  useGatedContentAccessMap,
-  UserTrack
-} from '@audius/common'
-import { IconHidden, IconLock } from '@audius/stems'
+import { useGatedContentAccessMap } from '@audius/common/hooks'
+import { UID, UserTrack } from '@audius/common/models'
+import { formatCount, formatSeconds } from '@audius/common/utils'
+import { IconVisibilityHidden, IconLock } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -167,7 +163,7 @@ export const TracksTable = ({
             hideDefault={false}
           />
           {isTrackUnlisted ? (
-            <IconHidden
+            <IconVisibilityHidden
               className={cn(styles.hiddenIcon, { [styles.hidden]: active })}
             />
           ) : null}
@@ -384,7 +380,7 @@ export const TracksTable = ({
             isDeleted={deleted}
             includeEdit={!disabledTrackEdit}
             includeAlbumPage={!isAlbumPage}
-            includeAddToPlaylist={!isLocked}
+            includeAddToPlaylist={!isLocked && !track.is_stream_gated}
             includeFavorite={!isLocked}
             onRemove={onClickRemove}
             removeText={removeText}

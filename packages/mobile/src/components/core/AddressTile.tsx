@@ -3,8 +3,7 @@ import { useCallback, type ReactNode } from 'react'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View, TouchableOpacity } from 'react-native'
 
-import { Text } from '@audius/harmony-native'
-import IconCopy2 from 'app/assets/images/iconCopy2.svg'
+import { Text, IconCopy } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -95,14 +94,14 @@ export const AddressTile = ({
       </View>
       <View style={styles.bottomContainer}>
         <View style={styles.address}>
-          <Text numberOfLines={1} ellipsizeMode='middle'>
+          <Text variant='body' numberOfLines={1} ellipsizeMode='middle'>
             {address}
           </Text>
         </View>
         <View style={styles.rightIcon}>
           {right ?? (
             <TouchableOpacity onPress={handleCopyPress} hitSlop={spacing(6)}>
-              <IconCopy2
+              <IconCopy
                 fill={textSubdued}
                 width={spacing(4)}
                 height={spacing(4)}

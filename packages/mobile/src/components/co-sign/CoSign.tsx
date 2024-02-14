@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
 
+import { css } from '@emotion/native'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 
-import IconCoSign from 'app/assets/images/iconCoSign.svg'
+import { IconCosign } from '@audius/harmony-native'
 import { useThemeColors } from 'app/utils/theme'
 
 import { Size } from './types'
@@ -79,10 +80,10 @@ const CoSign = ({ size, children, style }: CoSignProps) => {
   const { size: iconSize, position } = layoutBySize[size]
 
   return (
-    <View style={[{ flex: 1 }, style]}>
+    <View style={[css({ flex: 1, alignSelf: 'center' }), style]}>
       <View>{children}</View>
       <View style={[styles.check, position]}>
-        <IconCoSign fill={primary} fillSecondary={staticWhite} {...iconSize} />
+        <IconCosign fill={primary} fillSecondary={staticWhite} {...iconSize} />
       </View>
     </View>
   )

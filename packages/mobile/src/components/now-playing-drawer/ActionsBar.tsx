@@ -1,39 +1,43 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import type { Nullable, Track } from '@audius/common'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  FeatureFlags,
-  playbackPositionSelectors,
-  Genre,
-  removeNullable,
-  FavoriteSource,
-  reachabilitySelectors,
-  RepostSource,
   ShareSource,
+  RepostSource,
+  FavoriteSource,
+  ModalSource
+} from '@audius/common/models'
+import type { Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   castSelectors,
   castActions,
+  reachabilitySelectors,
   tracksSocialActions,
-  OverflowAction,
-  OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
-  useGatedContentAccess,
-  formatPrice,
+  OverflowAction,
+  OverflowSource,
   usePremiumContentPurchaseModal,
-  ModalSource
-} from '@audius/common'
+  playbackPositionSelectors
+} from '@audius/common/store'
+import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import IconAirplay from 'app/assets/images/iconAirplay.svg'
-import IconChromecast from 'app/assets/images/iconChromecast.svg'
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
-import IconShare from 'app/assets/images/iconShare.svg'
+import {
+  IconButton,
+  IconCastAirplay,
+  IconCastChromecast,
+  IconKebabHorizontal,
+  IconShare
+} from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
-import { Button, IconButton } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
@@ -57,7 +61,10 @@ const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   repostProhibited: "You can't Repost your own Track!",
-  favoriteProhibited: "You can't Favorite your own Track!"
+  favoriteProhibited: "You can't Favorite your own Track!",
+  castLabel: 'Cast to Device',
+  shareLabel: 'Share Content',
+  optionsLabel: 'More Options'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -250,15 +257,17 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       return (
         <IconButton
           onPress={openAirplayDialog}
-          icon={IconAirplay}
-          fill={isCasting ? primary : neutral}
-          styles={{ icon: styles.icon, root: styles.button }}
+          icon={IconCastAirplay}
+          color={isCasting ? 'active' : 'default'}
+          size='l'
+          aria-label={messages.castLabel}
+          style={styles.button}
         />
       )
     }
     return isOfflineModeEnabled && !isReachable ? (
       <View style={{ ...styles.button, width: 24 }}>
-        <IconChromecast
+        <IconCastChromecast
           fill={neutralLight6}
           height={30}
           width={30}
@@ -305,8 +314,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     return (
       <IconButton
         icon={IconShare}
-        styles={{ icon: styles.icon, root: styles.button }}
         onPress={handleShare}
+        size='l'
+        aria-label={messages.shareLabel}
+        style={styles.button}
       />
     )
   }
@@ -315,9 +326,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     return (
       <IconButton
         icon={IconKebabHorizontal}
-        styles={{ icon: styles.icon, root: styles.button }}
         onPress={onPressOverflow}
-        isDisabled={!isReachable}
+        size='l'
+        disabled={!isReachable}
+        aria-label={messages.optionsLabel}
+        style={styles.button}
       />
     )
   }

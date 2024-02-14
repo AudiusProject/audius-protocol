@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { confirmEmailMessages } from '@audius/common/messages'
 import {
-  confirmEmailErrorMessages,
   confirmEmailSchema,
   formatOtp,
-  confirmEmailMessages as messages
-} from '@audius/common'
+  confirmEmailErrorMessages
+} from '@audius/common/schemas'
 import { setValueField, signIn } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -56,12 +56,19 @@ export const ConfirmEmailScreen = () => {
       validationSchema={ConfirmEmailSchema}
     >
       <Page>
-        <Heading heading={messages.title} description={messages.description} />
+        <Heading
+          heading={confirmEmailMessages.title}
+          description={confirmEmailMessages.description}
+        />
         <VerificationCodeField />
         <Text variant='body'>
-          {messages.noEmailNotice} <ResendCodeLink />
+          {confirmEmailMessages.noEmailNotice} <ResendCodeLink />
         </Text>
-        <PageFooter shadow='flat' buttonProps={{ isLoading: isSubmitting }} />
+        <PageFooter
+          shadow='flat'
+          buttonProps={{ isLoading: isSubmitting }}
+          avoidKeyboard
+        />
       </Page>
     </Formik>
   )
@@ -85,8 +92,8 @@ const VerificationCodeField = () => {
     <HarmonyTextField
       name='otp'
       keyboardType='number-pad'
-      label={messages.otpLabel}
-      placeholder={messages.otpPlaceholder}
+      label={confirmEmailMessages.otpLabel}
+      placeholder={confirmEmailMessages.otpPlaceholder}
       transformValueOnChange={formatOtp}
     />
   )
@@ -101,13 +108,13 @@ const ResendCodeLink = () => {
 
   const handleClick = useCallback(() => {
     dispatch(signIn(email, password))
-    toast({ content: messages.resentToast })
+    toast({ content: confirmEmailMessages.resentToast })
     setHasResendCode(true)
   }, [dispatch, email, password, toast])
 
   return (
     <TextLink variant='visible' onPress={handleClick} disabled={hasResentCode}>
-      {messages.resendCode}
+      {confirmEmailMessages.resendCode}
     </TextLink>
   )
 }

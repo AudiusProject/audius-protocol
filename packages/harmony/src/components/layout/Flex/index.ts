@@ -1,2 +1,2 @@
 export { Flex } from './Flex'
-export { FlexProps, BaseFlexProps } from './types'
+export type { FlexProps, BaseFlexProps } from './types'

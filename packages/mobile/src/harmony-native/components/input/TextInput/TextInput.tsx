@@ -20,12 +20,13 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
+import type { TextColors } from '@audius/harmony-native'
 import { useTheme } from '@audius/harmony-native'
 
 import { useControlled } from '../../../hooks/useControlled'
 import { useFocusState } from '../../../hooks/useFocusState'
 import { mergeRefs } from '../../../utils/mergeRefs'
-import type { TextColors, TextSize } from '../../Text/Text'
+import type { TextSize } from '../../Text/Text'
 import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
 
@@ -247,6 +248,7 @@ export const TextInput = forwardRef(
               shadowOpacity={0.05}
               shadowColor='#000000'
               shadowRadius={4}
+              elevation={2}
             >
               <AnimatedFlex
                 h='100%'
@@ -334,6 +336,10 @@ export const TextInput = forwardRef(
                       aria-label={ariaLabel ?? labelText}
                       style={css({
                         flex: 1,
+                        // Need absolute height to ensure consistency across platforms
+                        height: !isSmall ? 23 : undefined,
+                        // Android has a default padding that needs to be removed
+                        paddingVertical: 0,
                         fontSize: typography.size[isSmall ? 's' : 'l'],
                         fontFamily: typography.fontByWeight.medium,
                         color: color.text[disabled ? 'subdued' : 'default']

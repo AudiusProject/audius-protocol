@@ -1,10 +1,12 @@
 import type { FunctionComponent } from 'react'
 
-import type { IconProps as HarmonyIconProps } from '@audius/harmony'
+import { type IconProps as HarmonyIconProps } from '@audius/harmony/src/components/icon'
 import type { SvgProps } from 'react-native-svg'
 
-export type IconProps = SvgProps & HarmonyIconProps & { fillSecondary?: string }
-export type Icon = FunctionComponent<IconProps>
+export type IconProps = Omit<SvgProps, 'color'> &
+  HarmonyIconProps & { fillSecondary?: string }
+
+export type IconComponent = FunctionComponent<IconProps>
 
 export { default as IconAlbum } from '@audius/harmony/src/assets/icons/Album.svg'
 export { default as IconFilter } from '@audius/harmony/src/assets/icons/Filter.svg'
@@ -140,6 +142,7 @@ export { default as IconValidationCheck } from '@audius/harmony/src/assets/icons
 export { default as IconValidationX } from '@audius/harmony/src/assets/icons/ValidationX.svg'
 export { default as IconSoundwave } from '@audius/harmony/src/assets/icons/Soundwave.svg'
 export { default as IconCreditCard } from '@audius/harmony/src/assets/icons/CreditCard.svg'
+export { default as IconWaveform } from '@audius/harmony/src/assets/icons/Waveform.svg'
 
 // Two Tone / Special Styling
 
@@ -156,6 +159,8 @@ export { default as IconTokenBronze } from '@audius/harmony/src/assets/icons/Tok
 export { default as IconTokenGold } from '@audius/harmony/src/assets/icons/TokenGold.svg'
 export { default as IconTokenPlatinum } from '@audius/harmony/src/assets/icons/TokenPlatinum.svg'
 export { default as IconTokenSilver } from '@audius/harmony/src/assets/icons/TokenSilver.svg'
+// The TokenNoTier svg doesnt work on mobile, so we use a png component instead
+export { IconTokenNoTier } from './components/IconTokenNoTier'
 
 // File Types
 export { default as IconFile3GA } from '@audius/harmony/src/assets/icons/file3GA.svg'
@@ -230,6 +235,8 @@ export { default as IconLogoCircleSOL } from '@audius/harmony/src/assets/icons/L
 export { default as IconLogoCircleSTR } from '@audius/harmony/src/assets/icons/LogoCircleSTR.svg'
 export { default as IconLogoCircleUSD } from '@audius/harmony/src/assets/icons/LogoCircleUSD.svg'
 export { default as IconLogoCircleUSDC } from '@audius/harmony/src/assets/icons/LogoCircleUSDC.svg'
+export { default as IconSolana } from '@audius/harmony/src/assets/icons/LogoSolana.svg'
+export { default as IconPhantom } from '@audius/harmony/src/assets/icons/LogoPhantom.svg'
 
 export { default as Soundwave } from '@audius/harmony/src/assets/animations/Soundwave.json'
 export { default as SoundwaveCircle } from '@audius/harmony/src/assets/animations/SoundwaveCircle.json'

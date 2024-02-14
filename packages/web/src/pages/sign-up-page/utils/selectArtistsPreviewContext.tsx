@@ -1,12 +1,8 @@
 import { createContext, useCallback, useEffect, useState } from 'react'
 
-import {
-  ID,
-  UserTrackMetadata,
-  playerActions,
-  useGetUserById,
-  useGetUserTracksByHandle
-} from '@audius/common'
+import { useGetUserTracksByHandle, useGetUserById } from '@audius/common/api'
+import { ID, UserTrackMetadata } from '@audius/common/models'
+import { playerActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { useUnmount } from 'react-use'
 
@@ -115,13 +111,26 @@ export const SelectArtistsPreviewContextProvider = (props: {
       return
     }
     if (!track) return
+
     const { track_id, preview_cid, duration } = track
+    // Sometimes we rerender before the next track starts playing, so we need to double check the track matches the artist
+    if (track.user.user_id !== nowPlayingArtistId) return
     const isPreview = !!preview_cid
     const startTime = isPreview
       ? undefined
       : Math.min(30, Math.max(0, duration - 30))
 
     dispatch(playerActions.play({ trackId: track_id, startTime, isPreview }))
+    dispatch(
+      playerActions.play({
+        trackId: track_id,
+        startTime,
+        isPreview,
+        onEnd: () => {
+          stopPreview()
+        }
+      })
+    )
 
     setIsPlaying(true)
   }, [nowPlayingArtistId, stopPreview, track, dispatch])

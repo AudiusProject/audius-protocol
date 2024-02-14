@@ -7,15 +7,29 @@
  */
 
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler'
+import { Toucan } from 'toucan-js'
 import { renderPage } from 'vike/server'
+
+/* globals SENTRY_DSN */
 
 const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 addEventListener('fetch', (event) => {
+  const sentry =
+    typeof SENTRY_DSN !== 'undefined'
+      ? new Toucan({
+          dsn: SENTRY_DSN,
+          context: event,
+          request: event.request
+        })
+      : null
   try {
     event.respondWith(handleEvent(event))
   } catch (e) {
+    if (sentry) {
+      sentry.captureException(e)
+    }
     if (DEBUG) {
       return event.respondWith(
         new Response(e.message || e.toString(), {

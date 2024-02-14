@@ -21,7 +21,11 @@ from src.exceptions import SolanaTransactionFetchError
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.payment_router import PaymentRouterTx
-from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_purchase import (
+    PurchaseAccessType,
+    PurchaseType,
+    USDCPurchase,
+)
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
     USDCTransactionsHistory,
@@ -47,6 +51,7 @@ from src.utils.helpers import (
     BalanceChange,
     decode_all_solana_memos,
     get_account_index,
+    get_account_owner_from_balance_change,
     get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
@@ -93,7 +98,7 @@ PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
 # The amount of USDC that represents one USD cent
 USDC_PER_USD_CENT = 10000
 
-RECOVERY_MEMO_STRING = "recovery"
+RECOVERY_MEMO_STRING = "Recover Withdrawal"
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
@@ -124,6 +129,7 @@ class PurchaseMetadataDict(TypedDict):
     id: int
     purchaser_user_id: int
     content_owner_id: int
+    access: PurchaseAccessType
 
 
 class RouteTransactionMemoType(str, enum.Enum):
@@ -180,16 +186,6 @@ def get_highest_payment_router_tx_slot(session: Session):
     return slot
 
 
-def get_account_owner_from_balance_change(
-    sender_account: str, balance_changes: dict[str, BalanceChange]
-):
-    """Finds the owner of the sender account by looking at the balance changes"""
-    if sender_account in balance_changes:
-        return balance_changes[sender_account]["owner"]
-    else:
-        return None
-
-
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
 def cache_latest_sol_payment_router_db_tx(redis: Redis, tx):
@@ -226,72 +222,83 @@ def parse_route_transaction_memo(
                     blocknumber_str,
                     purchaser_user_id_str,
                 ) = content_metadata
-                type = PurchaseType[type_str.lower()]
-                id = int(id_str)
-                purchaser_user_id = int(purchaser_user_id_str)
-                blocknumber = int(blocknumber_str)
-
-                # TODO: Wait for blocknumber to be indexed by ACDC
-                logger.debug(
-                    f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id}"
-                )
-                price = None
-                splits = None
-                content_owner_id = None
-                if type == PurchaseType.track:
-                    env = shared_config["discprov"]["env"]
-                    content_owner_id = get_track_owner_id(session, id)
-                    if content_owner_id is None:
-                        logger.error(
-                            f"index_payment_router.py | Couldn't find content owner for track_id={id}"
-                        )
-                        continue
-                    query = session.query(TrackPriceHistory)
-                    if env != "dev":
-                        # In local stack, the blocktime of solana-test-validator is offset.
-                        # The start time of the validator is baked into the prebuilt container.
-                        # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
-                        # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
-                        # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
-                        query.filter(TrackPriceHistory.block_timestamp < timestamp)
-                    result = (
-                        query.filter(
-                            TrackPriceHistory.track_id == id,
-                        )
-                        .order_by(desc(TrackPriceHistory.block_timestamp))
-                        .first()
-                    )
-                    if result is not None:
-                        price = result.total_price_cents
-                        splits = result.splits
-                else:
-                    logger.error(
-                        f"index_payment_router.py | Unknown content type {type}"
-                    )
-                if (
-                    price is not None
-                    and splits is not None
-                    and isinstance(splits, dict)
-                    and content_owner_id is not None
-                ):
-                    return RouteTransactionMemo(
-                        type=RouteTransactionMemoType.purchase,
-                        metadata={
-                            "type": type,
-                            "id": id,
-                            "price": price * USDC_PER_USD_CENT,
-                            "splits": splits,
-                            "purchaser_user_id": purchaser_user_id,
-                            "content_owner_id": content_owner_id,
-                        },
-                    )
-                else:
-                    logger.error(
-                        f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
-                    )
+                access_str = "stream"  # Default to stream access
+            elif len(content_metadata) == 5:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                    access_str,
+                ) = content_metadata
             else:
                 logger.info(
                     f"index_payment_router.py | Ignoring memo, no content metadata found: {memo}"
+                )
+
+            type = PurchaseType[type_str.lower()]
+            id = int(id_str)
+            purchaser_user_id = int(purchaser_user_id_str)
+            blocknumber = int(blocknumber_str)
+            access = PurchaseAccessType[access_str.lower()]
+
+            # TODO: Wait for blocknumber to be indexed by ACDC
+            logger.debug(
+                f"index_payment_router.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber} user_id={purchaser_user_id}"
+            )
+            price = None
+            splits = None
+            content_owner_id = None
+            if type == PurchaseType.track:
+                env = shared_config["discprov"]["env"]
+                content_owner_id = get_track_owner_id(session, id)
+                if content_owner_id is None:
+                    logger.error(
+                        f"index_payment_router.py | Couldn't find content owner for track_id={id}"
+                    )
+                    continue
+                query = session.query(TrackPriceHistory)
+                if env != "dev":
+                    # In local stack, the blocktime of solana-test-validator is offset.
+                    # The start time of the validator is baked into the prebuilt container.
+                    # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
+                    # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
+                    # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
+                    query.filter(TrackPriceHistory.block_timestamp < timestamp)
+                result = (
+                    query.filter(
+                        TrackPriceHistory.track_id == id,
+                        TrackPriceHistory.access == access,
+                    )
+                    .order_by(desc(TrackPriceHistory.block_timestamp))
+                    .first()
+                )
+                if result is not None:
+                    price = result.total_price_cents
+                    splits = result.splits
+            else:
+                logger.error(f"index_payment_router.py | Unknown content type {type}")
+            if (
+                price is not None
+                and splits is not None
+                and isinstance(splits, dict)
+                and content_owner_id is not None
+            ):
+                return RouteTransactionMemo(
+                    type=RouteTransactionMemoType.purchase,
+                    metadata={
+                        "type": type,
+                        "id": id,
+                        "price": price * USDC_PER_USD_CENT,
+                        "splits": splits,
+                        "purchaser_user_id": purchaser_user_id,
+                        "content_owner_id": content_owner_id,
+                        "access": access,
+                    },
+                )
+            else:
+                logger.error(
+                    f"index_payment_router.py | Couldn't find relevant price for {content_metadata}"
                 )
         except (ValueError, KeyError) as e:
             logger.info(
@@ -346,6 +353,7 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
+        access=purchase_metadata["access"],
     )
     logger.debug(
         f"index_payment_router.py | tx: {tx_sig} | Creating usdc_purchase for purchase {usdc_purchase}"
@@ -390,88 +398,13 @@ def index_purchase(
         )
 
 
-def attempt_index_recovery_transfer(
-    session: Session,
-    sender_account: str,
-    sender_user_account: UserIdBankAccount | None,
-    receiver_user_accounts: List[UserIdBankAccount],
-    balance_changes: dict[str, BalanceChange],
-    tx_sig: str,
-):
-    if sender_user_account is not None:
-        raise Exception(
-            f"Sender account for recovery cannot be a user bank: {sender_user_account}"
-        )
-    if len(receiver_user_accounts) != 1:
-        raise Exception(
-            f"Recovery transfer must have exactly one receiver account. Received: {','.join([a['user_bank_account'] for a in receiver_user_accounts])}"
-        )
-
-    sender_account_owner = get_account_owner_from_balance_change(
-        sender_account=sender_account, balance_changes=balance_changes
-    )
-    if sender_account_owner is None:
-        raise Exception(
-            f"Unexpectedly found no owner account for sender account {sender_account}"
-        )
-
-    receiver_user_account = receiver_user_accounts[0]
-    receiver_bank_account = receiver_user_account["user_bank_account"]
-    receiver_balance_change = balance_changes[receiver_bank_account]
-    receiver_balance_change_amount = receiver_balance_change["change"]
-
-    # Find the previous transaction in the other direction (receiver -> sender)
-    # So that we can modify it
-    previous_transaction = (
-        session.query(USDCTransactionsHistory)
-        .filter(
-            and_(
-                USDCTransactionsHistory.user_bank == receiver_bank_account,
-                USDCTransactionsHistory.method == USDCTransactionMethod.send,
-                # The original transaction will be indexed with the owner account
-                # of the original recipient
-                USDCTransactionsHistory.tx_metadata == sender_account_owner,
-            )
-        )
-        .order_by(desc(USDCTransactionsHistory.transaction_created_at))
-        .first()
-    )
-    if previous_transaction is None:
-        raise Exception(
-            f"Failed to find matching previous transcation from {receiver_bank_account} to {sender_account}"
-        )
-
-    difference = previous_transaction.change + receiver_balance_change_amount
-
-    # Previous transaction is undone by this recovery
-    if difference == 0:
-        logger.info(
-            f"index_payment_router.py | tx: {tx_sig} | Removing previous transaction {previous_transaction.signature}."
-        )
-        session.delete(previous_transaction)
-    elif difference < 0:
-        # Previous transaction is partially undone by this recovery
-        # Modifying the object returned by the query will update the DB
-        # when the session is flushed
-        previous_transaction.change = (
-            previous_transaction.change + receiver_balance_change_amount
-        )
-        previous_transaction.balance = Decimal(receiver_balance_change["post_balance"])
-        logger.info(
-            f"index_payment_router.py | tx: {tx_sig} | Found partial recovery for  {previous_transaction.signature}. New change value is {previous_transaction.change}."
-        )
-    else:
-        raise Exception(
-            f"Recovery transaction is for greater amount than original transaction ({receiver_balance_change_amount} > {-previous_transaction.change})"
-        )
-
-
 def index_transfer(
     session: Session,
     sender_account: str,
     sender_user_account: UserIdBankAccount | None,
     receiver_user_accounts: List[UserIdBankAccount],
     receiver_accounts: List[str],
+    transaction_type: USDCTransactionType,
     balance_changes: dict[str, BalanceChange],
     slot: int,
     timestamp: datetime,
@@ -483,7 +416,7 @@ def index_transfer(
     if sender_user_account is None:
         sender_metadata_address = (
             get_account_owner_from_balance_change(
-                sender_account=sender_account, balance_changes=balance_changes
+                account=sender_account, balance_changes=balance_changes
             )
             or sender_account
         )
@@ -493,7 +426,7 @@ def index_transfer(
             user_bank=user_account["user_bank_account"],
             slot=slot,
             signature=tx_sig,
-            transaction_type=USDCTransactionType.transfer,
+            transaction_type=transaction_type,
             method=USDCTransactionMethod.receive,
             transaction_created_at=timestamp,
             change=Decimal(balance_change["change"]),
@@ -501,8 +434,9 @@ def index_transfer(
             tx_metadata=sender_metadata_address,
         )
         session.add(usdc_tx_received)
+
         logger.debug(
-            f"index_payment_router.py | tx: {tx_sig} | Creating transfer received tx {usdc_tx_received}"
+            f"index_payment_router.py | tx: {tx_sig} | Creating {transaction_type} received tx {usdc_tx_received}"
         )
     # If sender was a user bank, index a single transfer with a list of recipients
     if sender_user_account is not None:
@@ -511,7 +445,7 @@ def index_transfer(
             user_bank=sender_user_account["user_bank_account"],
             slot=slot,
             signature=tx_sig,
-            transaction_type=USDCTransactionType.transfer,
+            transaction_type=transaction_type,
             method=USDCTransactionMethod.send,
             transaction_created_at=timestamp,
             change=Decimal(balance_change["change"]),
@@ -520,7 +454,7 @@ def index_transfer(
         )
         session.add(usdc_tx_received)
         logger.debug(
-            f"index_payment_router.py | tx: {tx_sig} | Creating transfer received tx {usdc_tx_received}"
+            f"index_payment_router.py | tx: {tx_sig} | Creating {transaction_type} sent tx {usdc_tx_received}"
         )
 
 
@@ -558,32 +492,12 @@ def validate_and_index_usdc_transfers(
         )
     # For invalid purchases or transfers not related to a purchase, we'll index
     # it as a regular transfer from the sender_account.
-    elif memo is not None and memo["type"] is RouteTransactionMemoType.recovery:
-        try:
-            attempt_index_recovery_transfer(
-                session=session,
-                sender_account=sender_account,
-                sender_user_account=sender_user_account,
-                receiver_user_accounts=receiver_user_accounts,
-                balance_changes=balance_changes,
-                tx_sig=tx_sig,
-            )
-        except Exception as e:
-            logger.warn(
-                f"index_payment_router.py | tx: {tx_sig} | Failed to index recovery transfer. Will index as plain transfer. Exception received was: {e}."
-            )
-            index_transfer(
-                session=session,
-                sender_account=sender_account,
-                sender_user_account=sender_user_account,
-                receiver_user_accounts=receiver_user_accounts,
-                receiver_accounts=receiver_accounts,
-                balance_changes=balance_changes,
-                slot=slot,
-                timestamp=timestamp,
-                tx_sig=tx_sig,
-            )
     else:
+        transaction_type = (
+            USDCTransactionType.recover_withdrawal
+            if memo is not None and memo["type"] is RouteTransactionMemoType.recovery
+            else USDCTransactionType.transfer
+        )
         index_transfer(
             session=session,
             sender_account=sender_account,
@@ -591,6 +505,7 @@ def validate_and_index_usdc_transfers(
             receiver_user_accounts=receiver_user_accounts,
             receiver_accounts=receiver_accounts,
             balance_changes=balance_changes,
+            transaction_type=transaction_type,
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
@@ -1001,7 +916,7 @@ def process_payment_router_txs() -> None:
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="index_payment_router", bind=True)
+@celery.task(name="index_payment_router", time_limit=300, bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_payment_router(self):
     # Cache custom task class properties

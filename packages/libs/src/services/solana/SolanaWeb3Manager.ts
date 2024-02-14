@@ -69,6 +69,7 @@ type CreateSenderParams = Omit<
 
 export type MintName = 'usdc' | 'audio'
 export const DEFAULT_MINT: MintName = 'audio'
+export type PurchaseAccess = 'stream' | 'download'
 
 const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -521,7 +522,8 @@ export class SolanaWeb3Manager {
     blocknumber,
     extraAmount = 0,
     splits,
-    purchaserUserId
+    purchaserUserId,
+    purchaseAccess
   }: {
     id: number
     type: 'track'
@@ -529,6 +531,7 @@ export class SolanaWeb3Manager {
     extraAmount?: number | BN
     blocknumber: number
     purchaserUserId: number
+    purchaseAccess: PurchaseAccess
   }) {
     if (!this.web3Manager) {
       throw new Error(
@@ -568,7 +571,7 @@ export class SolanaWeb3Manager {
       mintKey: this.mints.usdc
     })
 
-    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
+    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}:${purchaseAccess}`
 
     const memoInstruction = new TransactionInstruction({
       keys: [
@@ -606,7 +609,8 @@ export class SolanaWeb3Manager {
     extraAmount = 0,
     splits,
     purchaserUserId,
-    senderAccount
+    senderAccount,
+    purchaseAccess
   }: {
     id: number
     type: 'track'
@@ -615,6 +619,7 @@ export class SolanaWeb3Manager {
     blocknumber: number
     purchaserUserId: number
     senderAccount: PublicKey
+    purchaseAccess: PurchaseAccess
   }) {
     if (!this.web3Manager) {
       throw new Error(
@@ -688,7 +693,7 @@ export class SolanaWeb3Manager {
       this.paymentRouterProgramId
     )
 
-    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
+    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}:${purchaseAccess}`
 
     const memoInstruction = new TransactionInstruction({
       keys: [
@@ -718,7 +723,8 @@ export class SolanaWeb3Manager {
     splits,
     purchaserUserId,
     senderKeypair,
-    skipSendAndReturnTransaction
+    skipSendAndReturnTransaction,
+    purchaseAccess
   }: {
     id: number
     type: 'track'
@@ -728,6 +734,7 @@ export class SolanaWeb3Manager {
     purchaserUserId: number
     senderKeypair: Keypair
     skipSendAndReturnTransaction?: boolean
+    purchaseAccess: PurchaseAccess
   }) {
     const instructions =
       await this.getPurchaseContentWithPaymentRouterInstructions({
@@ -737,7 +744,8 @@ export class SolanaWeb3Manager {
         extraAmount,
         splits,
         purchaserUserId,
-        senderAccount: senderKeypair.publicKey
+        senderAccount: senderKeypair.publicKey,
+        purchaseAccess
       })
     const recentBlockhash = (await this.connection.getLatestBlockhash())
       .blockhash

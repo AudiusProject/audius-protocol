@@ -326,12 +326,12 @@ mobile-release-saga-dapp-store:
         name: Validate release
         command: |
           cd packages/mobile/dapp-store
-          npx dapp-store validate release -k app-keypair.json -b $ANDROID_HOME/build-tools/33.0.0
+          npx dapp-store validate release -k app-keypair.json -b $ANDROID_HOME/build-tools/34.0.0-rc3
     - run:
         name: Publish APK
         command: |
           cd packages/mobile/dapp-store
-          npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/33.0.0 -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l
+          npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/34.0.0-rc3 -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l
     - run:
         name: Issue update to dapp store
         command: |

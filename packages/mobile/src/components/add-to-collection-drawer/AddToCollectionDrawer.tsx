@@ -1,21 +1,21 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Collection } from '@audius/common'
+import type { Collection } from '@audius/common/models'
+import { CreatePlaylistSource, SquareSizes } from '@audius/common/models'
 import {
-  duplicateAddConfirmationModalUIActions,
-  SquareSizes,
-  CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
+  collectionPageSelectors,
   addToCollectionUISelectors,
-  collectionPageSelectors
-} from '@audius/common'
+  duplicateAddConfirmationModalUIActions
+} from '@audius/common/store'
 import { fetchAccountCollections } from 'common/store/saved-collections/actions'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
+import type { ImageProps } from '@audius/harmony-native'
 import { Card } from 'app/components/card'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
@@ -24,7 +24,6 @@ import { makeStyles, shadow } from 'app/styles'
 
 import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
-import type { ImageProps } from '../image/FastImage'
 const { getCollectionId } = collectionPageSelectors
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =

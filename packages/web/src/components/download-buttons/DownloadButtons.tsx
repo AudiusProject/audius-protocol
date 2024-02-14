@@ -1,13 +1,13 @@
 import { memo, useCallback } from 'react'
 
 import {
-  ID,
   ButtonState,
   ButtonType,
-  useDownloadTrackButtons,
-  toastActions
-} from '@audius/common'
-import { IconDownload, IconButton } from '@audius/stems'
+  useDownloadTrackButtons
+} from '@audius/common/hooks'
+import { ID } from '@audius/common/models'
+import { toastActions } from '@audius/common/store'
+import { IconButton, IconCloudDownload } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -91,7 +91,7 @@ const DownloadButton = ({
 
     return (
       <div className={styles.iconDownload}>
-        <IconButton aria-label='Download' icon={<IconDownload />} />
+        <IconButton aria-label='Download' icon={IconCloudDownload} />
       </div>
     )
   }
@@ -136,7 +136,17 @@ const DownloadButton = ({
 
 type DownloadButtonsProps = {
   trackId: ID
-  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownload: ({
+    trackId,
+    category,
+    original,
+    parentTrackId
+  }: {
+    trackId: ID
+    category?: string
+    original?: boolean
+    parentTrackId?: ID
+  }) => void
   isOwner: boolean
   following: boolean
   hasDownloadAccess: boolean

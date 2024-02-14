@@ -1,42 +1,44 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  ID,
-  FavoriteSource,
-  RepostSource,
-  PlaybackSource,
   Name,
   ShareSource,
+  RepostSource,
+  FavoriteSource,
+  PlaybackSource,
+  ModalSource,
+  DogEarType,
   SquareSizes,
-  Genre,
+  ID
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import {
   accountSelectors,
   averageColorSelectors,
   queueActions,
+  queueSelectors,
   RepeatMode,
   tracksSocialActions,
-  OverflowAction,
-  OverflowActionCallbacks,
-  OverflowSource,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
+  OverflowAction,
+  OverflowSource,
+  usePremiumContentPurchaseModal,
   playerActions,
   playerSelectors,
-  queueSelectors,
   playbackRateValueMap,
-  useGatedContentAccess,
-  DogEarType,
   gatedContentSelectors,
-  usePremiumContentPurchaseModal,
-  ModalSource,
-  FeatureFlags
-} from '@audius/common'
+  OverflowActionCallbacks
+} from '@audius/common/store'
+import { Genre } from '@audius/common/utils'
+import { IconCaretRight as IconCaret } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import IconCaret from 'assets/img/iconCaretRight.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import { DogEar } from 'components/dog-ear'

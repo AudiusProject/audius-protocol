@@ -3,8 +3,12 @@ import { useCallback } from 'react'
 import {
   audioRewardsPageActions,
   TrendingRewardsModalType
-} from '@audius/common'
-import { IconArrow, IconCrown } from '@audius/stems'
+} from '@audius/common/store'
+import {
+  IconArrowRight as IconArrow,
+  IconCrown,
+  useTheme
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -55,6 +59,7 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
   const isMobile = useIsMobile()
   const mobileStyle = { [styles.mobile]: isMobile }
   const onClick = useHandleBannerClick()
+  const { spacing } = useTheme()
 
   return (
     <div
@@ -73,7 +78,7 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
       {!isMobile && (
         <div className={styles.learnMore}>
           {messages.learnMore}
-          <IconArrow />
+          <IconArrow size='s' css={{ marginLeft: spacing.xs }} />
         </div>
       )}
     </div>

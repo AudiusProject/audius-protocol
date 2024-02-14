@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { ViewStyle } from 'react-native'
 import { TouchableOpacity, View } from 'react-native'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import { IconCaretRight } from '@audius/harmony-native'
 import { Divider, Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'
@@ -84,8 +84,8 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
 
     return (
       <View style={styles.optionPills}>
-        {values.map((value) => (
-          <Pill key={value} style={styles.pill}>
+        {values.map((value, i) => (
+          <Pill key={`${value}-${i}`} style={styles.pill}>
             <Text
               fontSize='small'
               weight='demiBold'

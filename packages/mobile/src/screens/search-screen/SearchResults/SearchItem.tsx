@@ -1,14 +1,17 @@
 import { useCallback } from 'react'
 
-import { SquareSizes } from '@audius/common'
-import type { SearchPlaylist, SearchTrack, SearchUser } from '@audius/common'
+import type {
+  SearchUser,
+  SearchTrack,
+  SearchPlaylist
+} from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Text } from 'app/components/core'
+import { Text, ProfilePicture } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { TrackImage } from 'app/components/image/TrackImage'
-import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { addItem } from 'app/store/search/searchSlice'
@@ -32,11 +35,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   nameContainer: {
     flex: 1
   },
-  userImage: {
-    borderRadius: spacing(5),
-    height: spacing(10),
-    width: spacing(10)
-  },
   squareImage: {
     borderRadius: spacing(1),
     height: spacing(10),
@@ -59,7 +57,7 @@ const UserSearchResult = (props: UserSearchResultProps) => {
 
   return (
     <SearchResultItem onPress={handlePress}>
-      <ProfilePicture profile={user} style={styles.userImage} />
+      <ProfilePicture userId={user.user_id} size='medium' strokeWidth='thin' />
       <UserBadges
         style={styles.badgeContainer}
         nameStyle={styles.name}

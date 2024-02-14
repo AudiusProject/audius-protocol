@@ -1,23 +1,31 @@
 import { useCallback, useEffect } from 'react'
 
+import { Status } from '@audius/common/models'
 import {
   accountSelectors,
   recoveryEmailActions,
   recoveryEmailSelectors,
-  modalsActions,
-  Status
-} from '@audius/common'
+  modalsActions
+} from '@audius/common/store'
+import { css } from '@emotion/native'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconKey from 'app/assets/images/iconKey.svg'
-import IconRecoveryEmail from 'app/assets/images/iconRecoveryEmail.svg'
-import IconSignOut from 'app/assets/images/iconSignOut.svg'
-import IconSkull from 'app/assets/images/iconSkull.svg'
-import IconUser from 'app/assets/images/iconUser.svg'
-import IconVerified from 'app/assets/images/iconVerified.svg'
-import { ScrollView, Screen, ScreenContent } from 'app/components/core'
-import { ProfilePicture } from 'app/components/user'
+import {
+  IconEmailAddress,
+  IconKey,
+  IconRecoveryEmail,
+  IconSignOut,
+  IconSkull,
+  IconUser,
+  IconVerified
+} from '@audius/harmony-native'
+import {
+  ScrollView,
+  Screen,
+  ScreenContent,
+  ProfilePicture
+} from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -42,6 +50,9 @@ const messages = {
   verifyDescription:
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
   verifyButtonTitle: 'Get Verified!',
+  emailTitle: 'Change Email',
+  emailDescription: 'Change the email you use to sign in and receive emails.',
+  emailButtonTitle: 'Change Email',
   passwordTitle: 'Change Password',
   passwordDescription: 'Change the password to your Audius account.',
   passwordButtonTitle: 'Change Password',
@@ -57,10 +68,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   header: {
     alignItems: 'center',
     paddingVertical: spacing(8)
-  },
-  profilePhoto: {
-    height: 128,
-    width: 128
   },
   name: { ...typography.h2, color: palette.neutral, marginTop: spacing(1) },
   handle: {
@@ -95,8 +102,12 @@ export const AccountSettingsScreen = () => {
     navigation.push('AccountVerificationScreen')
   }, [navigation])
 
+  const handlePressChangeEmail = useCallback(() => {
+    navigation.push('ChangeEmail')
+  }, [navigation])
+
   const handlePressChangePassword = useCallback(() => {
-    navigation.push('ChangePasswordScreen')
+    navigation.push('ChangePassword')
   }, [navigation])
 
   const openSignOutDrawer = useCallback(() => {
@@ -123,7 +134,10 @@ export const AccountSettingsScreen = () => {
       <ScreenContent>
         <ScrollView>
           <View style={styles.header}>
-            <ProfilePicture profile={accountUser} style={styles.profilePhoto} />
+            <ProfilePicture
+              userId={accountUser.user_id}
+              style={css({ width: 128, height: 128 })}
+            />
             <Text style={styles.name}>{name}</Text>
             <Text style={styles.handle}>@{handle}</Text>
           </View>
@@ -140,6 +154,13 @@ export const AccountSettingsScreen = () => {
             description={messages.verifyDescription}
             buttonTitle={messages.verifyButtonTitle}
             onPress={handlePressVerification}
+          />
+          <AccountSettingsItem
+            title={messages.emailTitle}
+            titleIcon={IconEmailAddress}
+            description={messages.emailDescription}
+            buttonTitle={messages.emailButtonTitle}
+            onPress={handlePressChangeEmail}
           />
           <AccountSettingsItem
             title={messages.passwordTitle}

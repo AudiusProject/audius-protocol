@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useRef } from 'react'
 
-import type { Collectible } from '@audius/common'
-import { accountSelectors, useProxySelector } from '@audius/common'
+import { useProxySelector } from '@audius/common/hooks'
+import type { Collectible } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import IconShare from 'app/assets/images/iconShare.svg'
+import { IconShare } from '@audius/harmony-native'
 import { Tile, GradientText, FlatList, Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'

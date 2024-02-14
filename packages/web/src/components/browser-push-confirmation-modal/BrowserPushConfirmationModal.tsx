@@ -4,10 +4,11 @@ import {
   accountActions,
   settingsPageSelectors,
   settingsPageActions as settingPageActions,
-  modalsActions,
-  modalsSelectors
-} from '@audius/common'
-import { Modal, Anchor, Button, ButtonType, ButtonSize } from '@audius/stems'
+  modalsSelectors,
+  modalsActions
+} from '@audius/common/store'
+import { Button } from '@audius/harmony'
+import { Modal, Anchor } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -141,18 +142,22 @@ const ConnectedBrowserPushConfirmationModal = ({
         <div className={styles.buttons}>
           <Button
             className={styles.closeButton}
-            text={messages.close.toUpperCase()}
-            size={ButtonSize.MEDIUM}
-            type={ButtonType.COMMON}
+            variant='secondary'
+            size='default'
             onClick={onClose}
-          />
+            css={{ fontSize: 16 }}
+          >
+            {messages.close.toUpperCase()}
+          </Button>
           <Button
             className={styles.enableButton}
-            text={messages.confirm.toUpperCase()}
-            size={ButtonSize.MEDIUM}
-            type={ButtonType.PRIMARY_ALT}
+            variant='primary'
+            size='default'
             onClick={onEnabled}
-          />
+            css={{ fontSize: 16 }}
+          >
+            {messages.confirm.toUpperCase()}
+          </Button>
         </div>
       </div>
     </Modal>

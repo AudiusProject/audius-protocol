@@ -1,10 +1,4 @@
-import {
-  Button,
-  ButtonProps,
-  ButtonSize,
-  ButtonType,
-  IconRobot
-} from '@audius/stems'
+import { IconRobot, Button, ButtonProps } from '@audius/harmony'
 
 const messages = {
   aiAttribution: 'AI Attribution',
@@ -17,11 +11,12 @@ export const AiAttributionButton = (props: AiAttributionButtonProps) => {
   return (
     <Button
       {...props}
-      type={ButtonType.COMMON_ALT}
       name='aiAttribution'
-      size={ButtonSize.SMALL}
-      text={messages.aiAttribution}
-      leftIcon={<IconRobot />}
-    />
+      size='small'
+      variant='secondary'
+      iconLeft={IconRobot}
+    >
+      {messages.aiAttribution}
+    </Button>
   )
 }

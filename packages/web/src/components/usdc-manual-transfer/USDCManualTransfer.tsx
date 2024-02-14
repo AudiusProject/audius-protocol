@@ -1,15 +1,13 @@
 import { useCallback, useContext } from 'react'
 
+import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import {
-  Name,
-  isContentPurchaseInProgress,
   purchaseContentSelectors,
-  useCreateUserbankIfNeeded,
-  useUSDCBalance
-} from '@audius/common'
+  isContentPurchaseInProgress
+} from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import { Button, Flex, IconLogoCircleUSDC } from '@audius/harmony'
-import { IconError } from '@audius/stems'
+import { Button, Flex, IconLogoCircleUSDC, IconError } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
@@ -48,10 +46,12 @@ const messages = {
 
 export const USDCManualTransfer = ({
   onClose,
-  amountInCents
+  amountInCents,
+  onPurchase
 }: {
   onClose: () => void
   amountInCents?: number
+  onPurchase?: () => void
 }) => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
@@ -132,6 +132,7 @@ export const USDCManualTransfer = ({
               color='lightGreen'
               disabled={isBuyButtonDisabled}
               type='submit'
+              onClick={onPurchase}
             >
               {messages.buy(
                 USDC(amount).toLocaleString('en-us', {

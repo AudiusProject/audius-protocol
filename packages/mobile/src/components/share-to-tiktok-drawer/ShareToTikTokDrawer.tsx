@@ -1,16 +1,15 @@
 import { useMemo } from 'react'
 
-import type { Nullable } from '@audius/common'
 import {
   shareSoundToTiktokModalActions,
-  ShareSoundToTiktokModalStatus,
-  shareSoundToTiktokModalSelectors
-} from '@audius/common'
+  shareSoundToTiktokModalSelectors,
+  ShareSoundToTiktokModalStatus
+} from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
-import IconTikTok from 'app/assets/images/iconTikTok.svg'
-import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
+import { IconTikTok } from '@audius/harmony-native'
 import Button from 'app/components/button'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -171,7 +170,7 @@ export const ShareToTikTokDrawer = () => {
             style={styles.button}
             disabled={isButtonDisabled}
             onPress={handleShareButtonClick}
-            icon={<IconTikTokInverted />}
+            icon={<IconTikTok />}
             title={messages.shareButton}
           />
         </View>

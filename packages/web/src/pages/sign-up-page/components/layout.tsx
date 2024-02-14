@@ -8,7 +8,7 @@ import {
   RefObject
 } from 'react'
 
-import { Maybe } from '@audius/common'
+import { Maybe } from '@audius/common/utils'
 import {
   Box,
   BoxProps,

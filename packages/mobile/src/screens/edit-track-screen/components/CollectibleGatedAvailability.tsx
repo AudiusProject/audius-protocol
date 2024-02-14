@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { Nullable, AccessConditions } from '@audius/common'
-import {
-  collectiblesSelectors,
-  isContentCollectibleGated
-} from '@audius/common'
+import { isContentCollectibleGated } from '@audius/common/models'
+import type { AccessConditions } from '@audius/common/models'
+import { collectiblesSelectors } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
+import {
+  IconCaretRight,
+  IconCollectible,
+  IconExternalLink
+} from '@audius/harmony-native'
 import { Text, useLink } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'

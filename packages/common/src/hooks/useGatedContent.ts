@@ -2,8 +2,10 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { Chain } from 'models/Chain'
-import { ID } from 'models/Identifiers'
+import { useGetCurrentUserId } from '~/api'
+import { statusIsNotFinalized } from '~/models'
+import { Chain } from '~/models/Chain'
+import { ID } from '~/models/Identifiers'
 import {
   AccessConditions,
   Track,
@@ -11,13 +13,12 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated
-} from 'models/Track'
-import { useGetCurrentUserId } from 'src/api'
-import { getAccountUser } from 'store/account/selectors'
-import { cacheTracksSelectors, cacheUsersSelectors } from 'store/cache'
-import { gatedContentSelectors } from 'store/gated-content'
-import { CommonState } from 'store/reducers'
-import { Nullable, removeNullable } from 'utils'
+} from '~/models/Track'
+import { getAccountUser } from '~/store/account/selectors'
+import { cacheTracksSelectors, cacheUsersSelectors } from '~/store/cache'
+import { gatedContentSelectors } from '~/store/gated-content'
+import { CommonState } from '~/store/reducers'
+import { Nullable, removeNullable } from '~/utils'
 
 const { getTrack } = cacheTracksSelectors
 const { getUser, getUsers } = cacheUsersSelectors
@@ -169,12 +170,28 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId, status: currentUserStatus } =
+    useGetCurrentUserId({})
   const isOwner = track?.owner_id === currentUserId
+
+  const price = isContentUSDCPurchaseGated(track?.download_conditions)
+    ? track?.download_conditions.usdc_purchase.price
+    : undefined
+
+  if (statusIsNotFinalized(currentUserStatus)) {
+    return {
+      price,
+      shouldDisplayPremiumDownloadLocked: false,
+      shouldDisplayPremiumDownloadUnlocked: false,
+      shouldDisplayOwnerPremiumDownloads: false,
+      shouldDisplayDownloadFollowGated: false
+    }
+  }
+
   // Only display downloadable-content-specific gated UI if the track is not
   // stream-gated
   const isDownloadGatedOnly =
-    !track?.is_stream_gated && track?.is_download_gated
+    !track?.is_stream_gated && !!track?.is_download_gated
   const shouldDisplayDownloadFollowGated =
     isDownloadGatedOnly &&
     isContentFollowGated(track?.download_conditions) &&
@@ -183,9 +200,6 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
   const isOnlyDownloadableContentPurchaseGated =
     isDownloadGatedOnly &&
     isContentUSDCPurchaseGated(track?.download_conditions)
-  const price = isContentUSDCPurchaseGated(track?.download_conditions)
-    ? track?.download_conditions.usdc_purchase.price
-    : undefined
 
   return {
     price,
@@ -197,6 +211,10 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
       isOnlyDownloadableContentPurchaseGated &&
       track?.access?.download === true &&
       !isOwner,
+    shouldDisplayOwnerPremiumDownloads:
+      isOnlyDownloadableContentPurchaseGated &&
+      track?.access?.download === true &&
+      isOwner,
     shouldDisplayDownloadFollowGated
   }
 }

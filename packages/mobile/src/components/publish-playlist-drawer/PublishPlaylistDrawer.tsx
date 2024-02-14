@@ -3,11 +3,11 @@ import { useCallback } from 'react'
 import {
   cacheCollectionsActions,
   publishPlaylistConfirmationModalUISelectors
-} from '@audius/common'
+} from '@audius/common/store'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconRocket from 'app/assets/images/iconRocket.svg'
+import { IconRocket } from '@audius/harmony-native'
 import { Text, Button } from 'app/components/core'
 import { useManualToast } from 'app/hooks/useManualToast'
 import { makeStyles } from 'app/styles'

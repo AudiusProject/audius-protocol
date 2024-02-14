@@ -1,0 +1,8 @@
+.footer {
+  padding: 0 var(--unit-6) var(--unit-6) var(--unit-6);
+}
+
+.inlineSpinner {
+  width: 1em;
+  height: 1em;
+}

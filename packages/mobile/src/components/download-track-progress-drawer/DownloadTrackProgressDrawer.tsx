@@ -1,14 +1,16 @@
 import { useCallback } from 'react'
 
+import { downloadsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
-import { getFileName, getFetchCancel } from 'app/store/download/selectors'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
+
+const { getFileName, getFetchCancel } = downloadsSelectors
 
 const useStyles = makeStyles(({ palette }) => ({
   view: {

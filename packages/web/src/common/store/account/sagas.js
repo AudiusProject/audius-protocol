@@ -1,17 +1,19 @@
+import { ErrorLevel, Kind } from '@audius/common/models'
 import {
-  Kind,
+  FeatureFlags,
+  recordIP,
+  createUserBankIfNeeded,
+  getRootSolanaAccount
+} from '@audius/common/services'
+import {
+  accountActions,
   accountSelectors,
   cacheActions,
   profilePageActions,
-  accountActions,
-  recordIP,
-  solanaSelectors,
-  createUserBankIfNeeded,
-  getContext,
-  FeatureFlags,
   chatActions,
-  ErrorLevel
-} from '@audius/common'
+  solanaSelectors,
+  getContext
+} from '@audius/common/store'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'
@@ -95,10 +97,20 @@ function* onSignedIn({ payload: { account } }) {
   const sentry = yield getContext('sentry')
   const analytics = yield getContext('analytics')
   if (account && account.handle) {
+    let solanaWallet = ''
+    try {
+      solanaWallet = (yield call(
+        getRootSolanaAccount,
+        audiusBackendInstance
+      )).publicKey.toBase58()
+    } catch (e) {
+      console.error('Failed to fetch Solana root wallet during identify()', e)
+    }
     // Set analytics user context
     const traits = {
       isVerified: account.is_verified,
-      trackCount: account.track_count
+      trackCount: account.track_count,
+      solanaWallet
     }
     yield put(identify(account.handle, traits))
     setSentryUser(sentry, account, traits)

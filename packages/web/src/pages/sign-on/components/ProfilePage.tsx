@@ -1,17 +1,19 @@
 import { useState, useCallback, KeyboardEvent, useContext } from 'react'
 
 import {
-  Image,
+  formatTwitterProfile,
+  formatInstagramProfile,
+  formatTikTokProfile
+} from '@audius/common/services'
+import {
   InstagramProfile,
   TwitterProfile,
-  formatInstagramProfile,
-  formatTwitterProfile,
-  formatTikTokProfile,
-  TikTokProfile
-} from '@audius/common'
+  TikTokProfile,
+  Image
+} from '@audius/common/store'
+import { IconCaretLeft } from '@audius/harmony'
 import cn from 'classnames'
 
-import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'

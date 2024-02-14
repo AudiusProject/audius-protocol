@@ -14,21 +14,22 @@ export type PasswordFieldProps = PasswordInputProps & {
 
 export const PasswordField = (props: PasswordFieldProps) => {
   const { name, clearErrorOnChange = true, ...other } = props
-  const [{ value, onChange }, { touched, error }, { setError }] = useField(name)
+  const [field, { touched, error }, { setError }] = useField(name)
 
   const hasError = Boolean(touched && error)
 
   return (
     <PasswordInput
-      value={value}
+      {...field}
       error={hasError}
       helperText={hasError ? error : undefined}
       onChangeText={(e) => {
         if (clearErrorOnChange) {
           setError(undefined)
         }
-        onChange(name)(e)
+        field.onChange(name)(e)
       }}
+      onBlur={field.onBlur(name)}
       {...other}
     />
   )

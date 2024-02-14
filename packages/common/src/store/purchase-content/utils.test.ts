@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 
-import { BNUSDC } from 'models/Wallet'
-import { BN_USDC_CENT_WEI } from 'utils/wallet'
+import { BNUSDC } from '~/models/Wallet'
+import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { getBalanceNeeded, getPurchaseSummaryValues } from './utils'
 

@@ -1,13 +1,12 @@
 import { ReactNode, useCallback } from 'react'
 
+import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
+import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
+import { challengesSelectors } from '@audius/common/store'
 import {
-  ChallengeName,
-  OptimisticUserChallenge,
-  challengeRewardsConfig,
   formatNumberCommas,
-  useAudioMatchingChallengeCooldownSchedule,
-  challengesSelectors
-} from '@audius/common'
+  challengeRewardsConfig
+} from '@audius/common/utils'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
   HarmonyButton,
@@ -165,8 +164,8 @@ export const AudioMatchingRewardsModalContent = ({
               items={cooldownChallenges}
               summaryItem={cooldownChallengesSummary}
               secondaryTitle={messages.audio}
-              summaryLabelColor='secondary'
-              summaryValueColor='neutral'
+              summaryLabelColor='accent'
+              summaryValueColor='default'
             />
           ) : null}
         </>

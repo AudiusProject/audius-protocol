@@ -3,8 +3,8 @@ import { useState } from 'react'
 import commonPasswordList from 'fxa-common-password-list'
 import { View } from 'react-native'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
-import { Button, TextInput } from 'app/components/core'
+import { IconArrowRight, PasswordInput } from '@audius/harmony-native'
+import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
 import { makeStyles } from 'app/styles'
@@ -61,8 +61,7 @@ const messages = {
 
 const useStyles = makeStyles(({ spacing }) => ({
   input: {
-    marginTop: spacing(3),
-    paddingVertical: spacing(3)
+    marginTop: spacing(3)
   },
   button: {
     width: '100%',
@@ -191,23 +190,19 @@ export const EnterPassword = (props: EnterPasswordProps) => {
 
   return (
     <View style={{ width: '100%' }}>
-      <TextInput
+      <PasswordInput
         style={styles.input}
-        placeholder={messages.passwordPlaceholder}
+        label={messages.passwordPlaceholder}
         value={password}
         onChangeText={handlePasswordChange}
         onBlur={handlePasswordBlur}
-        textContentType='password'
-        secureTextEntry
       />
-      <TextInput
+      <PasswordInput
         style={styles.input}
-        placeholder={messages.confirmationPlaceholder}
+        label={messages.confirmationPlaceholder}
         value={passwordConfirmation}
         onChangeText={handlePasswordConfirmationChange}
         onBlur={handleConfirmationBlur}
-        textContentType='password'
-        secureTextEntry
       />
       <View style={styles.checkContainer}>
         {pwdChecks.map((check, i) => (
@@ -228,7 +223,7 @@ export const EnterPassword = (props: EnterPasswordProps) => {
         fullWidth
         disabled={!isValid || isLoading}
         onPress={handleSubmit}
-        icon={isLoading ? LoadingSpinner : IconArrow}
+        icon={isLoading ? LoadingSpinner : IconArrowRight}
         iconPosition='right'
         title={submitButtonText}
       />

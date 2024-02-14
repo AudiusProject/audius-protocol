@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Theme } from '@audius/common/models'
+import { StringKeys } from '@audius/common/services'
 import {
-  Theme,
-  StringKeys,
+  audioRewardsPageSelectors,
   audioRewardsPageActions,
-  TrendingRewardsModalType,
-  audioRewardsPageSelectors
-} from '@audius/common'
-import { SegmentedControl, ButtonType, Button, IconArrow } from '@audius/stems'
+  TrendingRewardsModalType
+} from '@audius/common/store'
+import { SegmentedControl, IconArrowRight as IconArrow } from '@audius/harmony'
+import { ButtonType, Button } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
@@ -210,7 +211,7 @@ const TrendingRewardsBody = ({
           text={textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
           onClick={onButtonClick}
           className={styles.button}
-          rightIcon={<IconArrow />}
+          rightIcon={<IconArrow size='s' />}
           iconClassName={wm(styles.buttonIcon)}
         />
         <span onClick={onClickToS} className={styles.terms}>

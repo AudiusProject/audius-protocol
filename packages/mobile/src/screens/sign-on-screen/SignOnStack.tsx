@@ -43,7 +43,11 @@ export const SignOnStack = (props: SignOnStackProps) => {
           component={CreateLoginDetailsScreen}
         />
         <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
-        <Stack.Screen name='SelectGenre' component={SelectGenresScreen} />
+        <Stack.Screen
+          name='SelectGenre'
+          component={SelectGenresScreen}
+          options={{ headerLeft: () => null, gestureEnabled: false }}
+        />
         <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
         <Stack.Screen
           name='AccountLoading'

@@ -45,7 +45,7 @@
   width: 12px;
   height: 12px;
 }
-.historyPageWrapper :global(.ant-input-prefix) > svg g path {
+.historyPageWrapper :global(.ant-input-prefix) > svg path {
   fill: var(--neutral-light-4);
 }
 

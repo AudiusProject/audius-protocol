@@ -5,14 +5,9 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   useEditPlaylistModal
-} from '@audius/common'
-import {
-  IconPlaylists,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+} from '@audius/common/store'
+import { IconPlaylists } from '@audius/harmony'
+import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
