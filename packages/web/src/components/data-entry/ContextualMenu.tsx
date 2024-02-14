@@ -73,6 +73,7 @@ const MenuForm = (props: MenuFormProps) => {
   }, [displayMenuErrorMessage, errors])
 
   useEffect(() => {
+    // If the menu is closed, trigger callback if exists and reset the status
     if (!isOpen) {
       closeMenuCallback?.(status)
       setStatus(initialStatus)
@@ -171,6 +172,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
   const [isMenuOpen, toggleMenu] = useToggle(false)
 
   useEffect(() => {
+    // If forceOpen is true, open the menu and reset the forceOpen flag
     if (forceOpen && setForceOpen) {
       setForceOpen(false)
       toggleMenu()

@@ -4,10 +4,10 @@ import {
   type DownloadTrackArgs
 } from '@audius/common/services'
 import { tracksSocialActions } from '@audius/common/store'
+import { dedupFilenames } from '@audius/common/utils'
 import { downloadZip } from 'client-zip'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
-import { dedupFilenames } from '@audius/common/utils'
 
 const { downloadFinished } = tracksSocialActions
 

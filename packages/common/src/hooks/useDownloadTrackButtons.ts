@@ -172,8 +172,8 @@ export const useUploadingStems = ({ trackId }: { trackId: ID }) => {
     shallowEqual
   )
   const uploadingTracks = currentUploads.map((u) => ({
-    name: u.file.name,
-    size: u.file.size,
+    name: u.file?.name ?? '', // the file should always exist here
+    size: u.file?.size ?? 0, // the file should always exist here
     category: u.category,
     downloadable: false
   }))
