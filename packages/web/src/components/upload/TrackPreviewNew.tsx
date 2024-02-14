@@ -32,6 +32,26 @@ const messages = {
   selectType: 'Select Type'
 }
 
+const fileTypeFromName = (name: string) => {
+  const extension = name.split('.').pop()
+  switch (extension) {
+    case 'mp3':
+      return 'audio/mp3'
+    case 'm4a':
+      return 'audio/x-m4a'
+    case 'aiff':
+      return 'audio/aiff'
+    case 'flac':
+      return 'audio/flac'
+    case 'ogg':
+      return 'audio/ogg'
+    case 'wav':
+      return 'audio/wav'
+    default:
+      return ''
+  }
+}
+
 const fileTypeIcon = (type: string) => {
   switch (type) {
     case 'audio/mpeg':
@@ -65,7 +85,8 @@ type TrackPreviewProps = {
   stemCategory?: Nullable<StemCategory>
   onEditStemCategory?: (stemCategory: StemCategory) => void
   isEdit?: boolean
-  isDisabled?: boolean
+  allowCategorySwitch?: boolean
+  allowDelete?: boolean
   className?: string
 }
 
@@ -87,11 +108,13 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     stemCategory,
     onEditStemCategory,
     isEdit,
-    isDisabled,
+    allowCategorySwitch = true,
+    allowDelete = true,
     className
   } = props
 
-  const Icon = isEdit ? iconFileUnknown : fileTypeIcon(fileType)
+  const typeFromName = fileTypeFromName(trackTitle)
+  const Icon = fileTypeIcon(isEdit ? typeFromName : fileType)
   const iconStyle = isStem ? { width: 24, height: 24 } : undefined
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -137,7 +160,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString() ?? null}
               popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
-              isDisabled={isDisabled}
+              isDisabled={!allowCategorySwitch}
             />
           </Box>
         ) : null}
@@ -160,6 +183,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
             <HarmonyPlainButton
               iconRight={IconTrash}
               onClick={onRemove}
+              disabled={!allowDelete}
               className={styles.removeButton}
             />
           </Flex>

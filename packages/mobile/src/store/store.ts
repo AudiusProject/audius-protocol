@@ -26,8 +26,6 @@ import thunk from 'redux-thunk'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
-import type { DownloadState } from './download/slice'
-import downloads from './download/slice'
 import type { DrawersState } from './drawers/slice'
 import drawers from './drawers/slice'
 import type { KeyboardState } from './keyboard/slice'
@@ -58,7 +56,6 @@ export type AppState = CommonState & {
   searchBar: SearchBarState
 
   drawers: DrawersState
-  downloads: DownloadState
   keyboard: KeyboardState
   oauth: OAuthState
   offlineDownloads: OfflineDownloadsState
@@ -119,7 +116,6 @@ const rootReducer = combineReducers({
   searchBar,
 
   drawers,
-  downloads,
   keyboard,
   oauth,
   offlineDownloads,

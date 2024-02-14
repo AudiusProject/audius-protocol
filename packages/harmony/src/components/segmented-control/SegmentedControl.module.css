@@ -45,6 +45,10 @@
   bottom: 0;
 }
 
+.tab > input:disabled {
+  cursor: auto;
+}
+
 .separator {
   opacity: 1;
   width: 1px;

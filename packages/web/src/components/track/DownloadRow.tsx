@@ -26,6 +26,7 @@ type DownloadRowProps = {
   onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
   isOriginal: boolean
   trackId?: ID
+  parentTrackId?: ID
   hideDownload?: boolean
   index: number
   size?: number
@@ -38,6 +39,7 @@ export const DownloadRow = ({
   onDownload,
   isOriginal,
   trackId,
+  parentTrackId,
   hideDownload,
   index,
   size,
@@ -50,9 +52,9 @@ export const DownloadRow = ({
     shallowEqual
   )
   const downloadableContentAccess = useDownloadableContentAccess({
-    trackId: trackId ?? 0
+    trackId: parentTrackId ?? trackId ?? 0
   })
-  const { shouldDisplayDownloadFollowGated } = trackId
+  const { shouldDisplayDownloadFollowGated } = parentTrackId
     ? downloadableContentAccess
     : { shouldDisplayDownloadFollowGated: false }
 
