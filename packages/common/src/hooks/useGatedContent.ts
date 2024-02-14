@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
 import { useGetCurrentUserId } from '~/api'
+import { statusIsNotFinalized } from '~/models'
 import { Chain } from '~/models/Chain'
 import { ID } from '~/models/Identifiers'
 import {
@@ -169,15 +170,15 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const isCurrentUserLoaded = !!currentUserId
+  const { data: currentUserId, status: currentUserStatus } =
+    useGetCurrentUserId({})
   const isOwner = track?.owner_id === currentUserId
 
   const price = isContentUSDCPurchaseGated(track?.download_conditions)
     ? track?.download_conditions.usdc_purchase.price
     : undefined
 
-  if (!isCurrentUserLoaded) {
+  if (statusIsNotFinalized(currentUserStatus)) {
     return {
       price,
       shouldDisplayPremiumDownloadLocked: false,
@@ -195,8 +196,7 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
     isDownloadGatedOnly &&
     isContentFollowGated(track?.download_conditions) &&
     track?.access?.download === false &&
-    !isOwner &&
-    isCurrentUserLoaded
+    !isOwner
   const isOnlyDownloadableContentPurchaseGated =
     isDownloadGatedOnly &&
     isContentUSDCPurchaseGated(track?.download_conditions)
