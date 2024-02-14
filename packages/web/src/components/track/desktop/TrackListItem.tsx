@@ -181,6 +181,7 @@ const TrackListItem = ({
               {!disableActions && !deleted ? (
                 <div ref={ref}>
                   <IconKebabHorizontal
+                    color='subdued'
                     className={styles.iconKebabHorizontal}
                     onClick={onMoreClick(triggerPopup)}
                   />
