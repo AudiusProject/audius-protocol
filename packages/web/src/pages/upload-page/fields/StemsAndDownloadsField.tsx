@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   stemCategoryFriendlyNames,
   isContentFollowGated,
@@ -27,7 +27,6 @@ import {
   SelectedValue,
   SelectedValues
 } from 'components/data-entry/ContextualMenu'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { useTrackField } from '../hooks'
 
@@ -74,8 +73,11 @@ type StemsAndDownloadsFieldProps = {
 export const StemsAndDownloadsField = ({
   closeMenuCallback
 }: StemsAndDownloadsFieldProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
   )
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
@@ -327,7 +329,10 @@ export const StemsAndDownloadsField = ({
       onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        stemsAndDownloadsSchema(usdcPurchaseConfig)
+        stemsAndDownloadsSchema({
+          isUsdcUploadEnabled: !!isUsdcUploadEnabled,
+          ...usdcPurchaseConfig
+        })
       )}
       menuFields={
         <StemsAndDownloadsMenuFields

@@ -9,9 +9,10 @@ import {
   IconDashboard,
   IconMessage,
   IconSettings,
-  IconDonate
+  IconDonate,
+  PopupMenu,
+  PopupMenuItem
 } from '@audius/harmony'
-import { PopupMenu, PopupMenuItem, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -144,7 +145,8 @@ const NavPopupMenu = () => {
     <div className={styles.headerIconWrapper}>
       <PopupMenu
         items={menuItems}
-        position={PopupPosition.BOTTOM_RIGHT}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         className={styles.popupMenu}
         renderTrigger={(anchorRef, triggerPopup) => {
           return (

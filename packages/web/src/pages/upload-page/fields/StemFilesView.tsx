@@ -36,13 +36,15 @@ type StemFilesViewProps = {
   stems: StemUploadWithFile[]
   onSelectCategory: (category: StemCategory, index: number) => void
   onDeleteStem: (index: number) => void
+  isUpload: boolean
 }
 
 export const StemFilesView = ({
   onAddStems,
   stems,
   onSelectCategory,
-  onDeleteStem
+  onDeleteStem,
+  isUpload
 }: StemFilesViewProps) => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
@@ -81,8 +83,8 @@ export const StemFilesView = ({
               onEditStemCategory={(category) => onSelectCategory(category, i)}
               allowCategorySwitch={stem.allowCategorySwitch}
               allowDelete={stem.allowDelete}
+              isUpload={isUpload}
               isStem
-              isEdit
             />
           ))}
         </Flex>

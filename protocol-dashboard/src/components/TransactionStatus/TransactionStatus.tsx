@@ -78,7 +78,7 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
     setError,
     setStatus,
     cancelTransaction
-  } = useCancelTransaction(props.name)
+  } = useCancelTransaction(props.name, !isOpen)
 
   const onCloseModal = useCallback(() => {
     setStatus(undefined)
@@ -170,12 +170,12 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
     status: cancelStatus,
     error: cancelError,
     cancelTransaction
-  } = useCancelTransaction(props.name)
+  } = useCancelTransaction(props.name, !isCancelOpen)
   const {
     status: submitStatus,
     error: submitError,
     submitTransaction
-  } = useSubmitTransaction(props.name)
+  } = useSubmitTransaction(props.name, !isSubmitOpen)
 
   useEffect(() => {
     if (cancelStatus === Status.Success || submitStatus === Status.Success) {

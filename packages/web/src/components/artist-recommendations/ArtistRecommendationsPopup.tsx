@@ -2,7 +2,7 @@ import { RefObject, useContext } from 'react'
 
 import { ID, User } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { Popup, PopupPosition } from '@audius/stems'
+import { Popup } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { MainContentContext } from 'pages/MainContentContext'
@@ -13,32 +13,29 @@ import { ArtistRecommendations } from './ArtistRecommendations'
 import styles from './ArtistRecommendationsPopup.module.css'
 const { getUser } = cacheUsersSelectors
 
-type ArtistRecommendationsPopupProps = {
+type Props = {
   anchorRef: RefObject<HTMLElement>
   artistId: ID
   isVisible: boolean
   onClose: () => void
 }
 
-export const ArtistRecommendationsPopup = ({
-  anchorRef,
-  artistId,
-  isVisible,
-  onClose
-}: ArtistRecommendationsPopupProps) => {
+export const ArtistRecommendationsPopup = (props: Props) => {
+  const { anchorRef, artistId, isVisible, onClose } = props
   const { mainContentRef } = useContext(MainContentContext)
 
   // Get the artist
   const user = useSelector<AppState, User | null>((state) =>
     getUser(state, { id: artistId })
   )
+
   if (!user) return null
   const { name } = user
 
   return (
     <Popup
-      position={PopupPosition.BOTTOM_LEFT}
       anchorRef={anchorRef}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       isVisible={isVisible}
       zIndex={zIndex.FOLLOW_RECOMMENDATIONS_POPUP}
       onClose={onClose}

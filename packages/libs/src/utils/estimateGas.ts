@@ -17,32 +17,34 @@ export interface ContractMethod {
   encodeABI: () => string
   send: <Tx>(config: {
     from: Wallet | string | undefined
-    gas: number
+    gas?: number
     gasPrice?: number
   }) => Tx
 }
 
 interface EstimateGasConfig {
+  // The contract method
   method: ContractMethod
+  // Address the method will be sent from (required if the contract requires a certain sender, e.g. guardian)
   from?: Wallet | string
+  // The maximum amount of gas we will allow (likely will return a number much smaller than this)
   gasLimitMaximum: number
+  // The multiplier to safe-guard against estimates that are too low
   multiplier?: number
+  // Whether or not to throw if gas estimation fails. Usually this signals that a
+  // contract call's simulation failed and likely the actual contract call will fail.
+  shouldThrowIfGasEstimationFails?: boolean
 }
 
 /**
  * Returns estimated gas use for a txn for a contract method
- * @param options
- * @param options.method the contract method
- * @param options.from address the method will be sent from (required if the contract requires a certain sender, e.g. guardian)
- * @param options.gasLimitMaximum the maximum amount of gas we will allow
- * (likely will return a number much smaller than this)
- * @param options.multipler the multiplier to safe-guard against estimates that are too low
  */
 export const estimateGas = async ({
   method,
   from,
   gasLimitMaximum,
-  multiplier = GAS_LIMIT_MULTIPLIER
+  multiplier = GAS_LIMIT_MULTIPLIER,
+  shouldThrowIfGasEstimationFails = false
 }: EstimateGasConfig) => {
   try {
     const estimatedGas = await method.estimateGas({
@@ -57,8 +59,12 @@ export const estimateGas = async ({
     return safeEstimatedGas
   } catch (e) {
     console.error(
-      `Unable to estimate gas for transaction ${method._method.name}, using ${gasLimitMaximum}`
+      `Unable to estimate gas for transaction ${method._method.name}`,
+      e
     )
+    if (shouldThrowIfGasEstimationFails) {
+      throw e
+    }
     return gasLimitMaximum
   }
 }

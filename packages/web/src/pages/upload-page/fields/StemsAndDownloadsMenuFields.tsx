@@ -62,13 +62,19 @@ const messages = {
   losslessNoDownloadableAssets:
     'You must enable full track download or upload a stem file to provide lossless files.',
   gatedNoDownloadableAssets:
-    'You must enable full track download or upload a stem file before setting download availability.'
+    'You must enable full track download or upload a stem file before setting download availability.',
+  noUsdcUploadAccess:
+    'You don’t have access to sell your downloads. Please change your availability settings.'
 }
 
+type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
+  isUsdcUploadEnabled: boolean
+}
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
-  maxContentPriceCents
-}: USDCPurchaseRemoteConfig) =>
+  maxContentPriceCents,
+  isUsdcUploadEnabled
+}: StemsAndDownloadsSchemaProps) =>
   z
     .object({
       [IS_DOWNLOADABLE]: z.boolean(),
@@ -150,6 +156,20 @@ export const stemsAndDownloadsSchema = ({
       },
       {
         message: messages.gatedNoDownloadableAssets,
+        path: [IS_DOWNLOAD_GATED]
+      }
+    )
+    .refine(
+      // cannot be download gated if usdc upload disabled
+      (values) => {
+        const formValues = values as StemsAndDownloadsFormValues
+        const availabilityType = formValues[DOWNLOAD_AVAILABILITY_TYPE]
+        const isUsdcGated =
+          availabilityType === DownloadTrackAvailabilityType.USDC_PURCHASE
+        return !isUsdcGated || isUsdcUploadEnabled
+      },
+      {
+        message: messages.noUsdcUploadAccess,
         path: [IS_DOWNLOAD_GATED]
       }
     )
@@ -364,6 +384,7 @@ export const StemsAndDownloadsMenuFields = (
         onAddStems={handleAddStems}
         onSelectCategory={handleSelectCategory}
         onDeleteStem={handleDeleteStem}
+        isUpload={props.isUpload}
       />
     </div>
   )
