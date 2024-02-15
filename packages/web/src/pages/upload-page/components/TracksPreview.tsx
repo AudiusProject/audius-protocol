@@ -86,6 +86,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
             fileType={track.file.type}
             fileSize={track.file.size}
             onRemove={() => onRemove(i)}
+            isUpload
           />
         ))}
       </Scrollbar>

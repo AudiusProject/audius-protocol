@@ -168,8 +168,8 @@ const StemFilesView = ({
               onEditStemCategory={(category) => onSelectCategory(category, i)}
               allowCategorySwitch={stem.allowCategorySwitch}
               allowDelete={stem.allowDelete}
+              isUpload={false}
               isStem
-              isEdit
             />
           ))}
         </Flex>

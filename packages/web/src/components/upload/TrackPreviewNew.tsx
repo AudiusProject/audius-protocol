@@ -84,7 +84,7 @@ type TrackPreviewProps = {
   isStem?: boolean
   stemCategory?: Nullable<StemCategory>
   onEditStemCategory?: (stemCategory: StemCategory) => void
-  isEdit?: boolean
+  isUpload?: boolean
   allowCategorySwitch?: boolean
   allowDelete?: boolean
   className?: string
@@ -107,14 +107,14 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     isStem,
     stemCategory,
     onEditStemCategory,
-    isEdit,
+    isUpload = true,
     allowCategorySwitch = true,
     allowDelete = true,
     className
   } = props
 
   const typeFromName = fileTypeFromName(trackTitle)
-  const Icon = fileTypeIcon(isEdit ? typeFromName : fileType)
+  const Icon = fileTypeIcon(isUpload ? fileType : typeFromName)
   const iconStyle = isStem ? { width: 24, height: 24 } : undefined
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -169,7 +169,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           size='small'
           color='neutralLight2'
         >
-          {isEdit ? '' : numeral(fileSize).format('0.0 b')}
+          {isUpload ? numeral(fileSize).format('0.0 b') : ''}
         </Text>
         {isLosslessDownloadsEnabled ? (
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
