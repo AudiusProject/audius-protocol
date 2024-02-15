@@ -514,7 +514,6 @@ function* signUp() {
           FeatureFlags.SIGN_UP_REDESIGN
         )
 
-
         if (isNativeMobile) {
           if (!isSignUpRedesignEnabled) {
             yield* put(requestPushNotificationPermissions())
