@@ -1,6 +1,5 @@
 import { config, wallets, web3 } from ".";
 import { internalError } from "./error";
-import { logger } from "./logger";
 import { confirm } from "./web3";
 import {
   TransactionReceipt,
@@ -36,8 +35,6 @@ export const relayTransaction = async (
   const transaction = { nonce, gasLimit, to, value, data };
   await senderWallet.signTransaction(transaction);
   const submit = await senderWallet.sendTransaction(transaction);
-
-  logger.info({ validatedRelayRequest }, "HEREEEEE")
 
   // query chain until tx is mined
   try {
