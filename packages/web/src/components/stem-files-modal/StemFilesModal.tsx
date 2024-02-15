@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   StemCategory,
   stemCategoryFriendlyNames,
@@ -23,7 +24,6 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesModal.module.css'
@@ -131,7 +131,7 @@ const StemFilesView = ({
   onSelectCategory,
   onDeleteStem
 }: StemFilesViewProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 
@@ -244,7 +244,7 @@ const DownloadSection = ({
   downloadSettings,
   onUpdateDownloadSettings
 }: DownloadSectionProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 
@@ -357,7 +357,7 @@ export const StemFilesModal = ({
   onSelectCategory,
   onDeleteStem
 }: StemFilesModalProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 

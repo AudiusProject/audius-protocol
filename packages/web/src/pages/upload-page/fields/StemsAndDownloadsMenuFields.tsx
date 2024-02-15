@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
@@ -15,7 +16,6 @@ import { z } from 'zod'
 
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import { processFiles } from '../store/utils/processFiles'
@@ -190,7 +190,7 @@ type StemsAndDownloadsMenuFieldsProps = {
 export const StemsAndDownloadsMenuFields = (
   props: StemsAndDownloadsMenuFieldsProps
 ) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =

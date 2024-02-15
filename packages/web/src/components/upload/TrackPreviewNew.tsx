@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
@@ -22,7 +23,6 @@ import cn from 'classnames'
 import numeral from 'numeral'
 
 import { Text } from 'components/typography'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'
@@ -91,7 +91,7 @@ type TrackPreviewProps = {
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 

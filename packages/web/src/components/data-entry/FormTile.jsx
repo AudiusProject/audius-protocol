@@ -1,5 +1,6 @@
 import { Component, useState, useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { createRemixOfMetadata } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -72,7 +73,7 @@ const Divider = (props) => {
 }
 
 const BasicForm = (props) => {
-  const isLosslessDownloadsEnabled = useFlag(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const { isEnabled: isGatedContentEnabled } = useFlag(

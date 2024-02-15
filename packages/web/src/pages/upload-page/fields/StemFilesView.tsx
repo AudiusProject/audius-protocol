@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   StemCategory,
   stemCategoryFriendlyNames,
@@ -16,7 +17,6 @@ import Dropdown from 'components/navigation/Dropdown'
 import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesView.module.css'
@@ -46,7 +46,7 @@ export const StemFilesView = ({
   onDeleteStem,
   isUpload
 }: StemFilesViewProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 
