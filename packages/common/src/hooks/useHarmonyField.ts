@@ -9,6 +9,11 @@ import {
 import { useDebouncedCallback } from './useDebouncedCallback'
 import { useCallback, useState } from 'react'
 
+/** Extracts the event target's value from the event for both React and ReactNative. */
+const getEventTargetValue = (
+  e: React.ChangeEvent<any> | React.FocusEvent<any>
+) => e.target?.value ?? e.currentTarget?.value ?? (e as any).nativeEvent?.text
+
 export type UseHarmonyFieldProps<Value> = FieldHookConfig<Value> & {
   /** Function to transform the input value on change, eg. a function to trim whitespace */
   transformValueOnChange?: (value: string) => string
@@ -150,9 +155,13 @@ export const useHarmonyField = <Value = any>(
       // Add isChanging state so that errors don't show while typing.
       setIsChanging(true)
 
+      // Extract value from event, taking care to get the nativeEvent.text
+      // for ReactNative.
+      let value = getEventTargetValue(e)
+
       // Apply value transformations
       if (transformValueOnChange) {
-        e.target.value = transformValueOnChange(e.target.value)
+        value = transformValueOnChange(value)
       }
 
       // All Formik's onChange handler does for text fields is call setValue.
@@ -160,10 +169,7 @@ export const useHarmonyField = <Value = any>(
       // of the validation and so Formik doesn't have to infer the field name.
       // Explicitly don't validate by setting the second param to false.
       // Await the resulting promise to ensure the value is set before validating.
-      const maybePromise = setValue(
-        e.target.value,
-        false
-      ) as Promise<any> | void
+      const maybePromise = setValue(value, false) as Promise<any> | void
       if (maybePromise) {
         await maybePromise
       }
@@ -200,7 +206,9 @@ export const useHarmonyField = <Value = any>(
     (e: React.FocusEvent<any>) => {
       // Apply value transformations
       if (transformValueOnBlur) {
-        e.target.value = transformValueOnBlur(e.target.value)
+        let value = getEventTargetValue(e)
+        value = transformValueOnBlur(e.target.value)
+        setValue(value, false)
       }
 
       // Formik's onBlur is just setTouched, but we want to clear our
