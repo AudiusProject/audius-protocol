@@ -6,6 +6,8 @@ import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
 import useMeasure from 'react-use-measure'
 
+import { Text } from 'components/text/Text'
+
 import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'
 
@@ -122,7 +124,7 @@ export const SegmentedControl = <T extends string>(
                 }}
                 disabled={props.disabled || option.disabled}
               />
-              {option.text}
+              <Text color={option.variant ?? 'default'}>{option.text}</Text>
             </label>
             {idx !== props.options.length - 1 ? (
               <div
