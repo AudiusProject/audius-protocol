@@ -85,9 +85,8 @@ const SOL_PER_LAMPORT = 0.000000001
 // Generous default connection confirmation timeout to better cope with RPC congestion
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
 
-const PRIORITY_RATE = 100000 // MICRO_LAMPORTS
 const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice({
-  microLamports: PRIORITY_RATE
+  microLamports: 100000 // micro lamports
 })
 
 export type SolanaWeb3Config = {
