@@ -522,6 +522,7 @@ workflows:
             .* run-ddex-stage-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
+            .circleci/.* run-protocol-dashboard-workflow true
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
