@@ -29,21 +29,6 @@ export {
   PillButtonProps,
   Variant as PillButtonVariant
 } from './components/PillButton'
-export {
-  Modal,
-  ModalContent,
-  ModalContentPages,
-  ModalContentText,
-  ModalHeader,
-  ModalTitle,
-  ModalProps,
-  ModalContentProps,
-  ModalHeaderProps,
-  ModalTitleProps,
-  Anchor,
-  ModalFooter,
-  ModalFooterProps
-} from './components/Modal'
 
 export { ProgressBar, ProgressBarProps } from './components/ProgressBar'
 export { Scrubber } from './components/Scrubber'
