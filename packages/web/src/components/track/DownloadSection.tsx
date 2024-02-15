@@ -19,7 +19,6 @@ import {
   usePremiumContentPurchaseModal,
   CommonState,
   useWaitForDownloadModal,
-  tracksSocialActions as socialTracksActions,
   toastActions
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
