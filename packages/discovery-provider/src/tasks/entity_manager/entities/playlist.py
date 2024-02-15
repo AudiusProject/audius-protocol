@@ -162,11 +162,10 @@ def update_playlist_tracks_relations(
                     is_delete=False,
                     created_at=params.block_datetime,
                 )
-                session.add(new_playlist_track_relation)
+                session.merge(new_playlist_track_relation)
             elif existing_tracks[track_id].is_delete:
                 params.logger.info(f"REED undeleting relation {track_id}")
                 existing_tracks[track_id].is_delete = False
-                # session.merge(new_playlist_track_relation)
 
         params.logger.info(
             f"playlists.py | Updated playlist tracks relations for {playlist_record.playlist_id}"
