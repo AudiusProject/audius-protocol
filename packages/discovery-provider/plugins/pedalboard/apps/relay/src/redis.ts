@@ -1,12 +1,11 @@
 import { createClient, RedisClientType } from 'redis'
-import { readConfig } from './config/config'
 import { AbuseStatus } from './middleware/antiAbuse'
+import { config } from '.'
 
 let redisClient: RedisClientType
 let isReady: boolean
 
 const getRedisConnection = async () => {
-  const config = readConfig()
   if (!isReady) {
     redisClient = createClient({ url: config.redisUrl })
     redisClient.on('ready', () => {

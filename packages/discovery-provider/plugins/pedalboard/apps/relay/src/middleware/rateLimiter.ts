@@ -1,13 +1,10 @@
-import { logger } from '../logger'
 import { RelayRateLimiter, ValidLimits } from '../config/rateLimitConfig'
-import { Knex } from 'knex'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { RateLimiterRes } from 'rate-limiter-flexible'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { config } from '..'
 import { NextFunction, Request, Response, response } from 'express'
 import { rateLimitError } from '../error'
-import { isUserCreate } from '../utils'
 
 const globalRateLimiter = new RelayRateLimiter()
 
@@ -18,8 +15,6 @@ export const rateLimiterMiddleware = async (
 ) => {
   const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
-
-  logger.info("in rate limiter!")
 
   let signer: string | null
   if (signerIsUser) {
