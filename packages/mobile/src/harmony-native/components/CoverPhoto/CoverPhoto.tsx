@@ -17,9 +17,14 @@ import type { CornerRadiusOptions } from '@audius/harmony-native'
 
 import { useTheme } from '../../foundations/theme'
 
+type CoverPhotoImage = Exclude<
+  Image | ImageSourcePropType | null | undefined,
+  number
+>
+
 export type CoverPhotoProps = {
-  profilePicture?: Image | ImageSourcePropType | null | undefined
-  coverPhoto?: Image | ImageSourcePropType | null | undefined
+  profilePicture?: CoverPhotoImage
+  coverPhoto?: CoverPhotoImage
   style?: StyleProp<ImageStyle>
   children?: ReactNode
   topCornerRadius?: CornerRadiusOptions
@@ -51,20 +56,25 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
   const fullHeightStyle = css({ height: '100%' })
 
   const getSource = () => {
-    if (coverPhoto && (coverPhoto as Image).file && !isEmpty(coverPhoto)) {
-      return { source: (coverPhoto as Image).file }
+    let source: CoverPhotoImage = {
+      uri: undefined
     }
-    if (
-      profilePicture &&
-      (profilePicture as Image).file &&
-      !isEmpty(profilePicture)
-    ) {
-      return {
-        source: (profilePicture as Image).file,
-        usingProfilePicture: true
-      }
+    let usingProfilePicture = false
+    if (profilePicture && !isEmpty(profilePicture)) {
+      source = profilePicture
+      usingProfilePicture = true
     }
-    return { source: { uri: undefined } }
+    if (coverPhoto && !isEmpty(coverPhoto)) {
+      source = coverPhoto
+      usingProfilePicture = false
+    }
+
+    // Android upload format does not quite match the expected format, so we have to drill into 'file' to workaround for android
+    if ('file' in source && !('uri' in source)) {
+      return { source: source.file, usingProfilePicture }
+    } else {
+      return { source, usingProfilePicture }
+    }
   }
 
   const { source, usingProfilePicture } = getSource()
