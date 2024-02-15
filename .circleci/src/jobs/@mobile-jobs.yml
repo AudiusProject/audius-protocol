@@ -54,9 +54,9 @@ mobile-comment-native-code-change:
 mobile-build-staging-ios:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -64,7 +64,7 @@ mobile-build-staging-ios:
     - mobile-halt-if-no-native-changes # Don't need to test building if there's no native changes
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - mobile-prepare-ios:
         build-directory: 'build-mobile-staging'
         bundle-id: 'co.audius.audiusmusic.staging'
@@ -77,9 +77,9 @@ mobile-build-staging-ios:
 mobile-build-upload-staging-ios:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -96,16 +96,16 @@ mobile-build-upload-staging-ios:
 mobile-build-production-ios:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - mobile-prepare-ios:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
@@ -118,16 +118,16 @@ mobile-build-production-ios:
 mobile-build-upload-production-ios-if-full-release:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - mobile-prepare-ios:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
@@ -142,16 +142,16 @@ mobile-build-upload-production-ios-if-full-release:
 mobile-deploy-codepush-production-ios-if-ota-release:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - mobile-prepare-ios:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
@@ -164,16 +164,16 @@ mobile-deploy-codepush-production-ios-if-ota-release:
 mobile-build-upload-releasecandidate-ios:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - mobile-prepare-ios:
         build-directory: 'build-mobile-releasecandidate'
         bundle-id: 'co.audius.audiusmusic.releasecandidate'
@@ -186,16 +186,16 @@ mobile-build-upload-releasecandidate-ios:
 mobile-build-upload-staging-releasecandidate-ios:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - mobile-prepare-ios:
         build-directory: 'build-mobile-staging-releasecandidate'
         bundle-id: 'co.audius.audiusmusic.staging.releasecandidate'
