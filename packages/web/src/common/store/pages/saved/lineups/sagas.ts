@@ -62,7 +62,7 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
   const localLibraryAdditions = yield* select(getSelectedCategoryLocalTrackAdds)
   const localLibraryAdditionsTrackIds = Object.keys(localLibraryAdditions)
     .filter((savedTrackId) => !savedTrackTimestamps[savedTrackId])
-    .map((trackId) => parseInt(trackId, 10))
+    .map((trackId) => Number(trackId))
 
   const localLibraryAdditionsTimestamps = localLibraryAdditionsTrackIds.reduce(
     (map, saveId) => {
