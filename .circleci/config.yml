@@ -574,6 +574,7 @@ workflows:
             .* run-stems-workflow true
             .* run-harmony-workflow true
             .* run-probers-workflow false
+            .* run-protocol-dashboard-workflow true
           requires:
             - generate-config
             - init
@@ -613,7 +614,7 @@ workflows:
         - equal: ['release-client-create-branch', << pipeline.schedule.name >>]
     jobs:
       - generate-client-release
-  
+
   notify-stuck-stage-nodes:
     when:
       and:
