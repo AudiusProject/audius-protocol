@@ -60,9 +60,10 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
   }, {})
 
   const localLibraryAdditions = yield* select(getSelectedCategoryLocalTrackAdds)
-  const localLibraryAdditionsTrackIds = Object.keys(
-    localLibraryAdditions
-  ).filter((savedTrackId) => !savedTrackTimestamps[savedTrackId])
+  const localLibraryAdditionsTrackIds = Object.keys(localLibraryAdditions)
+    .filter((savedTrackId) => !savedTrackTimestamps[savedTrackId])
+    .map((trackId) => parseInt(trackId, 10))
+
   const localLibraryAdditionsTimestamps = localLibraryAdditionsTrackIds.reduce(
     (map, saveId) => {
       map[saveId] = Date.now()
@@ -75,7 +76,7 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
 
   if (isNativeMobile && offset !== 0) {
     allSavedTrackIds = savedTrackIds.filter(
-      (s) => !localLibraryAdditionsTrackIds.includes(String(s))
+      (s) => !localLibraryAdditionsTrackIds.includes(s)
     )
   } else {
     allSavedTrackIds = uniq([

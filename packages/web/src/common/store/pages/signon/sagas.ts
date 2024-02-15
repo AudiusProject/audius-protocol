@@ -516,7 +516,7 @@ function* signUp() {
 
         if (isNativeMobile && !isSignUpRedesignEnabled) {
           yield* put(requestPushNotificationPermissions())
-        } else if (!isNativeMobile) {
+        } else {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
         }
