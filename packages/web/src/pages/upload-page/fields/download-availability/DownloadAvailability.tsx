@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
@@ -8,6 +9,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
 import {
   Box,
@@ -19,7 +21,9 @@ import {
   TextLink,
   IconError,
   useTheme,
-  SegmentedControl
+  SegmentedControl,
+  Option,
+  IconStars
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
@@ -31,6 +35,8 @@ import { useTrackField } from 'pages/upload-page/hooks'
 import { STREAM_CONDITIONS } from '../types'
 
 import { DownloadPriceField } from './DownloadPriceField'
+
+const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const messages = {
   downloadAvailability: 'Download Availability',
@@ -46,7 +52,10 @@ const messages = {
     collectibleGated:
       "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
     accessAndSale: 'Access & Sale Settings'
-  }
+  },
+  waitlist:
+    'Start selling your music on Audius today! Limited access beta now available.',
+  join: 'Join the Waitlist'
 }
 
 type DownloadAvailabilityProps = {
@@ -62,7 +71,15 @@ export const DownloadAvailability = ({
   value,
   setValue
 }: DownloadAvailabilityProps) => {
-  const { color } = useTheme()
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
+  )
+  const {
+    color: {
+      primary,
+      neutral: { neutral, n400: subdued }
+    }
+  } = useTheme()
   const { submitForm, setStatus } = useFormikContext()
   const [{ value: streamConditions }] =
     useTrackField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
@@ -92,24 +109,27 @@ export const DownloadAvailability = ({
     submitForm()
   }, [setStatus, submitForm])
 
-  const options = [
+  const options: Option<DownloadTrackAvailabilityType>[] = [
     {
       key: DownloadTrackAvailabilityType.PUBLIC,
       text: messages.public,
-      icon: <IconVisibilityPublic size='s' fill={color.neutral.neutral} />
+      icon: <IconVisibilityPublic size='s' fill={neutral} />
     },
     {
       key: DownloadTrackAvailabilityType.FOLLOWERS,
       text: messages.followers,
-      icon: <IconUserFollowing size='s' fill={color.neutral.neutral} />,
+      icon: <IconUserFollowing size='s' fill={neutral} />,
       disabled: !isUpload && !isContentFollowGated(initialDownloadConditions)
     },
     {
       key: DownloadTrackAvailabilityType.USDC_PURCHASE,
       text: messages.premium,
-      icon: <IconCart size='s' fill={color.neutral.neutral} />,
+      icon: (
+        <IconCart size='s' fill={isUsdcUploadEnabled ? neutral : subdued} />
+      ),
       disabled:
-        !isUpload && !isContentUSDCPurchaseGated(initialDownloadConditions)
+        !isUpload && !isContentUSDCPurchaseGated(initialDownloadConditions),
+      variant: isUsdcUploadEnabled ? 'default' : 'subdued'
     }
   ]
 
@@ -125,6 +145,29 @@ export const DownloadAvailability = ({
         opacity: 0.5
       }
     : {}
+
+  const renderPremiumDownloadsContent = () => {
+    return isUsdcUploadEnabled ? (
+      <DownloadPriceField disabled={false} />
+    ) : (
+      <HelpCallout
+        icon={<IconStars />}
+        content={
+          <Flex direction='column' gap='m'>
+            <Text>{messages.waitlist}</Text>
+            <TextLink
+              href={WAITLIST_TYPEFORM}
+              css={{ color: primary.p500 }}
+              showUnderline
+              isExternal
+            >
+              {messages.join}
+            </TextLink>
+          </Flex>
+        }
+      />
+    )
+  }
 
   return (
     <>
@@ -147,7 +190,7 @@ export const DownloadAvailability = ({
               &nbsp;
               <TextLink
                 onClick={handleCalloutClick}
-                css={{ color: color.primary.p500 }}
+                css={{ color: primary.p500 }}
               >
                 {messages.callout.accessAndSale}
               </TextLink>
@@ -164,9 +207,9 @@ export const DownloadAvailability = ({
             // Matches 0.18s entry animation
             forceRefreshAfterMs={180}
           />
-          {value === DownloadTrackAvailabilityType.USDC_PURCHASE ? (
-            <DownloadPriceField disabled={false} />
-          ) : null}
+          {value === DownloadTrackAvailabilityType.USDC_PURCHASE
+            ? renderPremiumDownloadsContent()
+            : null}
         </>
       )}
       <Divider />
