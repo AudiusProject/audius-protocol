@@ -110,7 +110,7 @@ class SolanaClientManager:
                             before,
                             until,
                             limit,
-                            Commitment("finalized"),
+                            Commitment("confirmed"),
                         )
                     )
                     return transactions
@@ -141,7 +141,7 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
-                    response = client.get_slot(Commitment("finalized"))
+                    response = client.get_slot(Commitment("confirmed"))
                     return response.value
                 except Exception as e:
                     logger.error(
