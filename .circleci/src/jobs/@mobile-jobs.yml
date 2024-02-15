@@ -64,7 +64,7 @@ mobile-build-staging-ios:
     - mobile-halt-if-no-native-changes # Don't need to test building if there's no native changes
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - mobile-prepare-ios:
         build-directory: 'build-mobile-staging'
         bundle-id: 'co.audius.audiusmusic.staging'
