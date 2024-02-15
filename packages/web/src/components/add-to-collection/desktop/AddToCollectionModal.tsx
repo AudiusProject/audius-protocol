@@ -13,8 +13,7 @@ import {
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common/store'
-import { Scrollbar, IconMultiselectAdd } from '@audius/harmony'
-import { Modal } from '@audius/stems'
+import { Modal, Scrollbar, IconMultiselectAdd } from '@audius/harmony'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'

@@ -1,6 +1,6 @@
 import { HTMLAttributes, ReactNode } from 'react'
 
-import { ScrollbarProps } from 'components/Scrollbar'
+import { ScrollbarProps } from '../scrollbar'
 
 export enum Anchor {
   CENTER = 'CENTER',

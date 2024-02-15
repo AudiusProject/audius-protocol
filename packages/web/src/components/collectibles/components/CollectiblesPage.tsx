@@ -16,13 +16,14 @@ import {
 } from '@audius/common/store'
 import { getHash } from '@audius/common/utils'
 import {
+  Modal,
   IconKebabHorizontal,
   IconPencil,
   IconShare,
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import {
   DragDropContext,

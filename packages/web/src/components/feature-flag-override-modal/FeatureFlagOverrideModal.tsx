@@ -6,12 +6,17 @@ import {
 } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { SegmentedControl } from '@audius/harmony'
-import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  SegmentedControl
+} from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useDevModeHotkey } from 'hooks/useHotkey'
+import { useDevModeHotkey } from 'hooks/useDevModeHotkey'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'

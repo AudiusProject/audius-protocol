@@ -8,6 +8,7 @@ import {
   useRef
 } from 'react'
 
+import { useTheme } from '@emotion/react'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
 import uniqueId from 'lodash/uniqueId'
@@ -16,15 +17,14 @@ import ReactDOM from 'react-dom'
 import { animated, useTransition } from 'react-spring'
 import { useEffectOnce } from 'react-use'
 
-import { IconRemove } from 'components/Icons'
 import { useClickOutside } from 'hooks/useClickOutside'
-import { useHotkeys } from 'hooks/useHotKeys'
-import { useScrollLock } from 'hooks/useScrollLock'
-import { findAncestor } from 'utils/findAncestor'
-import { standard } from 'utils/transitions'
+
+import { useHotkeys, useScrollLock } from '../../hooks'
+import { IconClose } from '../../icons'
 
 import styles from './Modal.module.css'
 import { ModalContext } from './ModalContext'
+import { findAncestor } from './findAncestor'
 import { useModalScrollCount } from './hooks'
 import { ModalProps, Anchor } from './types'
 
@@ -149,6 +149,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     }
   })
 
+  const { spring } = useTheme()
   const id = useMemo(() => modalKey || uniqueId('modal-'), [modalKey])
   const titleId = ariaLabelledbyProp || `${id}-title`
   const subtitleId = ariaDescribedbyProp || `${id}-subtitle`
@@ -207,7 +208,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
       },
     leave: { transform: 'scale(0)', opacity: 0 },
     unique: true,
-    config: standard,
+    config: spring.standard,
     onDestroyed: () => {
       if (!isOpen) {
         setIsDestroyed(false)
@@ -347,7 +348,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                                 className={styles.dismissButton}
                                 onClick={onClose}
                               >
-                                <IconRemove />
+                                <IconClose />
                               </div>
                             )}
                             <div

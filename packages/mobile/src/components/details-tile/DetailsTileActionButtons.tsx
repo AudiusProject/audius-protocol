@@ -128,6 +128,7 @@ export const DetailsTileActionButtons = ({
   const shareButton = (
     <IconButton
       color='subdued'
+      // TODO: Remove after AnimatedButton uses IconButton
       icon={IconShare}
       disabled={isCollectionEmpty}
       disabledHint={messages.shareButtonDisabledHint}

@@ -6,18 +6,17 @@ import {
   collectionPageSelectors,
   CommonState
 } from '@audius/common/store'
-import { IconRocket } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
   Modal,
   ModalContent,
   ModalContentText,
-  ModalFooter,
   ModalHeader,
+  ModalTitle,
   ModalProps,
-  ModalTitle
-} from '@audius/stems'
+  ModalFooter,
+  IconRocket
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import styles from './PublishConfirmationModal.module.css'

@@ -2,7 +2,7 @@ import { useContext } from 'react'
 
 import cn from 'classnames'
 
-import { Scrollbar } from 'components/Scrollbar'
+import { Scrollbar } from '../scrollbar'
 
 import styles from './ModalContent.module.css'
 import { ModalContext } from './ModalContext'

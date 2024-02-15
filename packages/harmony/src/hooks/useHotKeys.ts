@@ -1,4 +1,24 @@
+import { useEffect } from 'react'
+
 import { size, throttle } from 'lodash'
+
+export enum ModifierKeys {
+  CMD = 0,
+  CTRL = 1,
+  SHIFT = 2,
+  ALT = 3
+}
+
+type ModifierHandler = {
+  cb: (e?: KeyboardEvent) => void
+  or?: ModifierKeys[]
+  and?: ModifierKeys[]
+}
+
+type Handler = (e?: KeyboardEvent) => void
+export type Mapping = {
+  [key: number]: Handler | ModifierHandler
+}
 
 /**
  * Checks whether the DOM is in a state where a global hotkey press is allowed.
@@ -8,14 +28,15 @@ import { size, throttle } from 'lodash'
  */
 function allowGlobalHotkeyPress() {
   return (
-    document.activeElement === document.body ||
-    document.activeElement.nodeName === 'A' /* <a> */ ||
-    document.activeElement.nodeName === 'BUTTON' /* <button> */ ||
-    document.activeElement.getAttribute('role') === 'button'
+    document.activeElement &&
+    (document.activeElement === document.body ||
+      document.activeElement.nodeName === 'A' /* <a> */ ||
+      document.activeElement.nodeName === 'BUTTON' /* <button> */ ||
+      document.activeElement.getAttribute('role') === 'button')
   ) /* Lottie button */
 }
 
-function isModifierPressed(modifier, e) {
+function isModifierPressed(modifier: ModifierKeys, e: KeyboardEvent) {
   if (modifier === ModifierKeys.CMD) return e.metaKey
   if (modifier === ModifierKeys.CTRL) return e.ctrlKey
   if (modifier === ModifierKeys.SHIFT) return e.shiftKey
@@ -23,18 +44,22 @@ function isModifierPressed(modifier, e) {
   return false
 }
 
-function fireHotkey(e, mapping, preventDefault) {
+function fireHotkey(
+  e: KeyboardEvent,
+  mapping: Mapping,
+  preventDefault: boolean
+) {
   if (allowGlobalHotkeyPress() && e.keyCode in mapping) {
     if (size(mapping[e.keyCode]) > 1) {
-      const cb = mapping[e.keyCode].cb
-      const or = mapping[e.keyCode].or
-      const and = mapping[e.keyCode].and
+      const cb = (mapping[e.keyCode] as ModifierHandler).cb
+      const or = (mapping[e.keyCode] as ModifierHandler).or
+      const and = (mapping[e.keyCode] as ModifierHandler).and
 
       let satisfiedOr = true
       if (or) {
         satisfiedOr = false
         or.forEach((modifier) => {
-          if (isModifierPressed(modifier, e)) satisfiedOr = true
+          if (isModifierPressed(modifier as ModifierKeys, e)) satisfiedOr = true
         })
       }
 
@@ -50,20 +75,12 @@ function fireHotkey(e, mapping, preventDefault) {
         cb(e)
       }
     } else {
-      if (e.metaKey || e.ctrlKey || e.altKey) return
       // If no modifier keys are required, fire the callback.
       if (preventDefault) e.preventDefault()
-      mapping[e.keyCode](e)
+      ;(mapping[e.keyCode] as Handler)(e)
     }
   }
 }
-
-export const ModifierKeys = Object.freeze({
-  CMD: 0,
-  CTRL: 1,
-  SHIFT: 2,
-  ALT: 3
-})
 
 /**
  * Sets up hotkeys for a component. Should generally be called in componentDidMount.
@@ -86,11 +103,15 @@ export const ModifierKeys = Object.freeze({
  *    // fires on 'cmd+shift+alt+space' or 'cmd+shift+ctrl+space'\
  * @returns {function} the event listener function
  */
-export function setupHotkeys(mapping, throttleMs = 100, preventDefault = true) {
-  const hotkeyHook = (e) => {
+export function setupHotkeys(
+  mapping: Mapping,
+  throttleMs = 100,
+  preventDefault = true
+) {
+  const hotkeyHook = (e: KeyboardEvent) => {
     fireHotkey(e, mapping, preventDefault)
   }
-  const throttledHook = (e) =>
+  const throttledHook = (e: KeyboardEvent) =>
     throttle(hotkeyHook, throttleMs, { leading: true })(e)
   document.addEventListener('keydown', throttledHook, false)
   return throttledHook
@@ -100,6 +121,15 @@ export function setupHotkeys(mapping, throttleMs = 100, preventDefault = true) {
  * Removes a hotkey event listener.
  * @param {function} hook the function hook returned by setupHotkeys.
  */
-export function removeHotkeys(hook) {
+export function removeHotkeys(hook: (e: KeyboardEvent) => void) {
   document.removeEventListener('keydown', hook, false)
+}
+
+export const useHotkeys = (mapping: Mapping) => {
+  useEffect(() => {
+    const hook = setupHotkeys(mapping)
+    return () => {
+      removeHotkeys(hook)
+    }
+  }, [mapping])
 }

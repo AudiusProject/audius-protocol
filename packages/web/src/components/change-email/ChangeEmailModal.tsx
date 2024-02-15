@@ -7,6 +7,11 @@ import {
 } from '@audius/common/hooks'
 import { formatOtp } from '@audius/common/schemas'
 import {
+  Modal,
+  ModalContentPages,
+  ModalHeader,
+  ModalTitle,
+  ModalFooter,
   Box,
   Button,
   Flex,
@@ -15,13 +20,6 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import {
-  Modal,
-  ModalContentPages,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
 import { Formik, useField, useFormikContext } from 'formik'
 import { useAsync } from 'react-use'
 

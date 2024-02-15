@@ -270,6 +270,12 @@ const TrackMenu = (props: TrackMenuProps) => {
       onClick: () => openEmbedModal(trackId)
     }
 
+    // export { Position as PopupPosition } from './components/Popup'
+    // export {
+    //   PopupMenu,
+    //   PopupMenuItem,
+    //   PopupMenuProps
+    // } from './components/PopupMenu'
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
     if (includeShare && !isDeleted) {
