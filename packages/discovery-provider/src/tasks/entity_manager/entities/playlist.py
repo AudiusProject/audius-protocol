@@ -112,60 +112,56 @@ def update_playlist_routes_table(
 
 
 def update_playlist_tracks_relations(
-    params: ManageEntityParameters, playlist_record: Playlist
+    params: ManageEntityParameters, playlist_record: Playlist, existing_playlist: Playlist | None = None
 ):
-    # Update the playlist_tracks_relations table
-    session = params.session
-    params.logger.info("REED params: ", playlist_record)
-    existing_playlist_tracks_relations = (
-        session.query(PlaylistsTracksRelations)
-        .filter(
-            PlaylistsTracksRelations.playlist_id == params.entity_id,
-            PlaylistsTracksRelations.is_delete == False,
-        )
-        .all()
-    )
-    params.logger.info("REED existing relations: ", existing_playlist_tracks_relations)
-    params.logger.info(
-        f"REED playlist_record.playlist_contents {playlist_record.playlist_contents}"
-    )
-
-    for relation in existing_playlist_tracks_relations:
-        if relation.track_id not in playlist_record.playlist_contents["track_ids"]:
-            params.logger.info("REED marking relation as deleted: ", relation.track_id)
-            relation.is_delete = True
-            session.add(relation)
-
-    existing_track_ids = [
-        track.track_id for track in existing_playlist_tracks_relations
-    ]
-    for track in playlist_record.playlist_contents["track_ids"]:
-        track_id = track["track"]
-        params.logger.info(
-            "REED adding",
-            track_id,
-            playlist_record.playlist_id,
-            params.block_datetime,
-        )
-        new_playlist_track_relation = PlaylistsTracksRelations(
-            playlist_id=playlist_record.playlist_id,
-            track_id=track_id,
-            is_delete=False,
-            created_at=params.block_datetime,
-        )
-        params.logger.info(
-            f"REED checking new relation {new_playlist_track_relation} against existing: {existing_playlist_tracks_relations}"
-        )
-        if track_id not in existing_track_ids:
-            params.logger.info(
-                f"REED attempting to add new relation {track_id} with existing {existing_track_ids}"
+    # debug
+    try:
+        # Update the playlist_tracks_relations table
+        session = params.session
+        existing_playlist_tracks_relations = (
+            session.query(PlaylistsTracksRelations)
+            .filter(
+                PlaylistsTracksRelations.playlist_id == params.entity_id,
+                PlaylistsTracksRelations.is_delete == False,
             )
-            session.add(new_playlist_track_relation)
+            .all()
+        )
+        existing_track_ids = [
+            track.track_id for track in existing_playlist_tracks_relations
+        ]
+        params.logger.info(
+            f"index.py | playlists.py | andrew | track_ids {playlist_record.playlist_contents["track_ids"]}"
+        )
+        updated_track_ids = [contents_item for contents_item in playlist_record.playlist_contents["track_ids"]]
+        params.logger.info(
+            f"index.py | playlists.py | Updating playlist tracks relations for {playlist_record.playlist_id}"
+        )
 
-    params.logger.info(
-        f"index.py | playlists.py | Updated playlist tracks relations for {playlist_record.playlist_id}"
-    )
+        for relation in existing_playlist_tracks_relations:
+            if relation.track_id not in updated_track_ids:
+                params.logger.info("REED marking relation as deleted: ", relation.track_id)
+                # setting values on the relation will update the record in the database
+                relation.is_delete = True
 
+        # add row for each track that is not already in the table
+        for track_id in updated_track_ids:
+            if track_id not in existing_track_ids:
+                params.logger.info(
+                    f"REED attempting to add new relation {track_id} with existing {existing_track_ids}"
+                )
+                new_playlist_track_relation = PlaylistsTracksRelations(
+                    playlist_id=playlist_record.playlist_id,
+                    track_id=track_id,
+                    is_delete=False,
+                    created_at=params.block_datetime,
+                )
+                session.merge(new_playlist_track_relation)
+
+        params.logger.info(
+            f"index.py | playlists.py | Updated playlist tracks relations for {playlist_record.playlist_id}"
+        )
+    except Exception as e:
+        params.logger.error(f"index.py | playlists.py | andrew | error {e}")
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
     return getattr(update_task.playlist_contract.events, event_type)().process_receipt(
@@ -336,7 +332,7 @@ def update_playlist(params: ManageEntityParameters):
     update_playlist_routes_table(params, playlist_record, False)
 
     params.logger.info("REED before update: ")
-    update_playlist_tracks_relations(params, playlist_record)
+    update_playlist_tracks_relations(params, playlist_record, existing_playlist)
 
     params.add_record(playlist_id, playlist_record)
 
