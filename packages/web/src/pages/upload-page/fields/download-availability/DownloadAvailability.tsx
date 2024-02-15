@@ -109,6 +109,10 @@ export const DownloadAvailability = ({
     submitForm()
   }, [setStatus, submitForm])
 
+  const isFollowersOptionDisabled =
+    !isUpload && !isContentFollowGated(initialDownloadConditions)
+  const isPremiumOptionDisabled =
+    !isUpload && !isContentUSDCPurchaseGated(initialDownloadConditions)
   const options: Option<DownloadTrackAvailabilityType>[] = [
     {
       key: DownloadTrackAvailabilityType.PUBLIC,
@@ -118,17 +122,26 @@ export const DownloadAvailability = ({
     {
       key: DownloadTrackAvailabilityType.FOLLOWERS,
       text: messages.followers,
-      icon: <IconUserFollowing size='s' fill={neutral} />,
-      disabled: !isUpload && !isContentFollowGated(initialDownloadConditions)
+      icon: (
+        <IconUserFollowing
+          size='s'
+          fill={isFollowersOptionDisabled ? subdued : neutral}
+        />
+      ),
+      disabled: isFollowersOptionDisabled
     },
     {
       key: DownloadTrackAvailabilityType.USDC_PURCHASE,
       text: messages.premium,
       icon: (
-        <IconCart size='s' fill={isUsdcUploadEnabled ? neutral : subdued} />
+        <IconCart
+          size='s'
+          fill={
+            isPremiumOptionDisabled || !isUsdcUploadEnabled ? subdued : neutral
+          }
+        />
       ),
-      disabled:
-        !isUpload && !isContentUSDCPurchaseGated(initialDownloadConditions),
+      disabled: isPremiumOptionDisabled,
       variant: isUsdcUploadEnabled ? 'default' : 'subdued'
     }
   ]

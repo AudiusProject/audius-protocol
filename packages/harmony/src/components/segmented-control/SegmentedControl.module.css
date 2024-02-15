@@ -45,7 +45,8 @@
   bottom: 0;
 }
 
-.tab > input:disabled {
+.tab > input:disabled,
+.tab > p:disabled {
   cursor: auto;
 }
 

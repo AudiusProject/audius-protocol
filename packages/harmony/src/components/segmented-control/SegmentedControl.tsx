@@ -97,6 +97,7 @@ export const SegmentedControl = <T extends string>(
     >
       <animated.div className={styles.tabBackground} style={tabProps} />
       {props.options.map((option, idx) => {
+        const isOptionDisabled = props.disabled || option.disabled
         return (
           <Fragment key={option.key}>
             <label
@@ -122,9 +123,18 @@ export const SegmentedControl = <T extends string>(
                 onChange={() => {
                   onSetSelected(option.key)
                 }}
-                disabled={props.disabled || option.disabled}
+                disabled={isOptionDisabled}
               />
-              <Text color={option.variant ?? 'default'}>{option.text}</Text>
+              <Text
+                color={
+                  option.variant ?? (isOptionDisabled ? 'subdued' : 'default')
+                }
+                css={{
+                  cursor: isOptionDisabled ? 'auto' : 'pointer'
+                }}
+              >
+                {option.text}
+              </Text>
             </label>
             {idx !== props.options.length - 1 ? (
               <div
