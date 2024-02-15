@@ -283,7 +283,7 @@ web-dist-mac-staging:
   steps:
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - web-distribute:
         build-type: mac-publish
         install-license: true
@@ -319,7 +319,7 @@ web-dist-mac-production:
   steps:
     - run:
         name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
+        command: rbenv install 2.7.7 && rbenv global 2.7.7 && rbenv rehash
     - web-distribute:
         build-type: mac-publish-production
         install-license: true
