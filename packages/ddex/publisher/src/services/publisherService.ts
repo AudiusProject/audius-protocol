@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import aws from 'aws-sdk'
 import mongoose from 'mongoose'
 import Deliveries from '../models/deliveries'
 import PendingReleases from '../models/pendingReleases'
@@ -19,6 +17,7 @@ import type {
 } from '@audius/sdk/dist/sdk/index.d.ts'
 import createS3 from './s3Service'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getUserId = async (audiusSdk: AudiusSdkType, artistName: string) => {
   // TODO: We previously did it like this, but the results are too random and don't return the user with an exact match as users[0].
   // In the future, we could check all OAuthed usernames for an exact match and cross-reference SDK's search results to find a rough match if no exact match was found
