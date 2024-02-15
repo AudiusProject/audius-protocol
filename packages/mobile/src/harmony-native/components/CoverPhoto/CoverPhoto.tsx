@@ -17,10 +17,7 @@ import type { CornerRadiusOptions } from '@audius/harmony-native'
 
 import { useTheme } from '../../foundations/theme'
 
-type CoverPhotoImage = Exclude<
-  Image | ImageSourcePropType | null | undefined,
-  number
->
+type CoverPhotoImage = Image | ImageSourcePropType | null | undefined
 
 export type CoverPhotoProps = {
   profilePicture?: CoverPhotoImage
@@ -56,21 +53,24 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
   const fullHeightStyle = css({ height: '100%' })
 
   const getSource = () => {
-    let source: CoverPhotoImage = {
+    let source: Exclude<CoverPhotoImage, number> = {
       uri: undefined
     }
     let usingProfilePicture = false
+    if (typeof source === 'number') {
+      return { source, usingProfilePicture }
+    }
     if (profilePicture && !isEmpty(profilePicture)) {
-      source = profilePicture
+      source = profilePicture as Exclude<CoverPhotoImage, number>
       usingProfilePicture = true
     }
     if (coverPhoto && !isEmpty(coverPhoto)) {
-      source = coverPhoto
+      source = coverPhoto as Exclude<CoverPhotoImage, number>
       usingProfilePicture = false
     }
 
     // Android upload format does not quite match the expected format, so we have to drill into 'file' to workaround for android
-    if ('file' in source && !('uri' in source)) {
+    if (source && 'file' in source && !('uri' in source)) {
       return { source: source.file, usingProfilePicture }
     } else {
       return { source, usingProfilePicture }
