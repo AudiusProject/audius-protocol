@@ -5,9 +5,8 @@ import { Keyboard, Animated, Easing } from 'react-native'
 
 import { makeStyles } from 'app/styles'
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(() => ({
   rootContainer: {
-    display: 'flex',
     flexDirection: 'column',
     height: '100%'
   }
