@@ -63,6 +63,15 @@ else
         # start other workers with remaining CPUs
         audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel "$audius_discprov_loglevel" --concurrency=$(($(nproc) - 5)) 2>&1 | tee >(logger -t worker) &
 
+        while [[ "$audius_discprov_env" == "stage" ]]; do
+            # log active tasks and mem to find mem leaks
+            sleep 60
+            active_tasks=$(celery -A src.worker.celery inspect active --timeout 60)
+            mem_usage=$(top -b -n 1)
+            echo "$active_tasks"
+            echo "$mem_usage"
+        done &
+
     fi
 fi
 
