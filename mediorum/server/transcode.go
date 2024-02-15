@@ -318,9 +318,12 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 				fmt.Sscanf(line, "out_time_us=%f", &u)
 				if u > 0 && durationUs > 0 {
 					percent := u / durationUs
-					upload.TranscodeProgress = percent
-					upload.TranscodedAt = time.Now().UTC()
-					ss.crud.Patch(upload)
+
+					if percent-upload.TranscodeProgress > 0.1 {
+						upload.TranscodeProgress = percent
+						upload.TranscodedAt = time.Now().UTC()
+						ss.crud.Patch(upload)
+					}
 				}
 			}
 		}
@@ -377,7 +380,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	upload.TranscodedMirrors, err = ss.repliacteFileParallel(resultHash, destPath)
+	upload.TranscodedMirrors, err = ss.replicateFileParallel(resultHash, destPath)
 	if err != nil {
 		return onError(err, upload.Status, "replicateFile")
 	}
@@ -445,7 +448,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	mirrors, err := ss.repliacteFileParallel(resultHash, destPath)
+	mirrors, err := ss.replicateFileParallel(resultHash, destPath)
 	if err != nil {
 		return onError(err, upload.Status, "replicating file")
 	}

@@ -20,7 +20,7 @@ import (
 	"gocloud.dev/blob"
 )
 
-func (ss *MediorumServer) repliacteFileParallel(cid string, filePath string) ([]string, error) {
+func (ss *MediorumServer) replicateFileParallel(cid string, filePath string) ([]string, error) {
 	preferred, _ := ss.rendezvousHealthyHosts(cid)
 	queue := make(chan string, len(preferred))
 	for _, p := range preferred {
