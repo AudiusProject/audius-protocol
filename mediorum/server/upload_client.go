@@ -59,7 +59,7 @@ func (ss *MediorumServer) startUploadScroller() {
 				uploadCursor.After = upload.CreatedAt
 			}
 
-			if len(uploads) == 0 {
+			if len(overwrites) == 0 {
 				continue
 			}
 
