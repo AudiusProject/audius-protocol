@@ -157,7 +157,7 @@ export const DownloadAvailability = ({
             <Text>{messages.waitlist}</Text>
             <TextLink
               href={WAITLIST_TYPEFORM}
-              css={{ color: primary.p500 }}
+              css={{ color: primary.p500, width: 'fit-content' }}
               showUnderline
               isExternal
             >
