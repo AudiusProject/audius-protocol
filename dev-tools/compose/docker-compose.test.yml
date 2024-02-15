@@ -363,7 +363,7 @@ services:
       context: ${PROJECT_ROOT}/mediorum
       dockerfile: Dockerfile.unittests
     logging: *default-logging
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./... -count 1 -timeout 120s "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./... -count 1 -timeout 60s "$$@")' -
     environment:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       dbUrl: 'postgres://postgres:example@mediorum-db:5432/mediorum_test'

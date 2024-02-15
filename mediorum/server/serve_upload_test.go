@@ -26,10 +26,10 @@ func TestUploadFile(t *testing.T) {
 		fw.Write([]byte("audio"))
 	}
 
-	fw, err := w.CreateFormFile(filesFormFieldName, "hit.ogg")
+	fw, err := w.CreateFormFile(filesFormFieldName, "beep.wav")
 	assert.NoError(t, err)
 
-	hit, err := os.Open("testdata/hit.ogg")
+	hit, err := os.Open("testdata/beep.wav")
 	assert.NoError(t, err)
 
 	io.Copy(fw, hit)
@@ -53,7 +53,7 @@ func TestUploadFile(t *testing.T) {
 
 	// poll for complete
 	var u2 *Upload
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 3; i++ {
 		resp, err := s2.reqClient.R().SetSuccessResult(&u2).Get(s2.Config.Self.Host + "/uploads/" + uploadId)
 		assert.NoError(t, err)
 		assert.Equal(t, resp.StatusCode, 200)
