@@ -71,10 +71,19 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
     {}
   )
 
-  const allSavedTrackIds = uniq([
-    ...localLibraryAdditionsTrackIds,
-    ...savedTrackIds
-  ])
+  let allSavedTrackIds: (number | string)[] = []
+
+  if (isNativeMobile && offset !== 0) {
+    allSavedTrackIds = savedTrackIds.filter(
+      (s) => !localLibraryAdditionsTrackIds.includes(String(s))
+    )
+  } else {
+    allSavedTrackIds = uniq([
+      ...localLibraryAdditionsTrackIds,
+      ...savedTrackIds
+    ])
+  }
+
   const allSavedTrackTimestamps = {
     ...localLibraryAdditionsTimestamps,
     ...savedTrackTimestamps
