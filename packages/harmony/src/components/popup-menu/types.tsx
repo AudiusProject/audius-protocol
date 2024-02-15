@@ -1,19 +1,17 @@
 import { ComponentProps, MouseEvent } from 'react'
 
-import { PopupProps } from '../Popup'
+import { PopupProps } from '../layout/Popup'
 
 type ApplicablePopupProps = Pick<
   PopupProps,
-  | 'position'
   | 'title'
-  | 'titleClassName'
-  | 'wrapperClassName'
   | 'className'
   | 'hideCloseButton'
   | 'zIndex'
   | 'containerRef'
   | 'transformOrigin'
   | 'anchorOrigin'
+  | 'fixed'
 >
 
 export type PopupMenuProps = {

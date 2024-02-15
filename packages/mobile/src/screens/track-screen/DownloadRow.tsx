@@ -12,8 +12,7 @@ import { PlainButton } from 'app/harmony-native/components/Button/PlainButton/Pl
 const { getTrack } = cacheTracksSelectors
 
 const messages = {
-  fullTrack: 'Full Track',
-  followToDownload: 'Must follow artist to download.'
+  fullTrack: 'Full Track'
 }
 
 type DownloadRowProps = {

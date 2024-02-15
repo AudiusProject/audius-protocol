@@ -15,7 +15,7 @@ import {
   shareModalUIActions,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { PopupMenuItem } from '@audius/stems'
+import { PopupMenuItem } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useRouteMatch } from 'react-router-dom'

@@ -57,7 +57,7 @@ const { getUserId } = accountSelectors
 const messages = {
   title: 'Stems & Downloads',
   description:
-    'Upload your track’s source files and customize how fans download your files.',
+    "Upload your track's source files and customize how fans download your files.",
   values: {
     allowDownload: 'Full Track Available',
     allowOriginal: 'Lossless Files Available',
@@ -106,9 +106,9 @@ export const StemsAndDownloadsField = ({
     useTrackField<GateKeeper>(LAST_GATE_KEEPER)
 
   /**
-   * Stream conditions from inside the modal.
+   * Download conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
-   * determine the final stream conditions that get saved to the track.
+   * determine the final download conditions that get saved to the track.
    */
   const accountUserId = useSelector(getUserId)
   const tempDownloadConditions = useMemo(
@@ -307,10 +307,12 @@ export const StemsAndDownloadsField = ({
 
     return (
       <SelectedValues>
-        {values.map((value) => {
+        {values.map((value, i) => {
           const valueProps =
             typeof value === 'string' ? { label: value } : value
-          return <SelectedValue key={valueProps.label} {...valueProps} />
+          return (
+            <SelectedValue key={`${valueProps.label}-${i}`} {...valueProps} />
+          )
         })}
       </SelectedValues>
     )
@@ -327,7 +329,12 @@ export const StemsAndDownloadsField = ({
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema(usdcPurchaseConfig)
       )}
-      menuFields={<StemsAndDownloadsMenuFields />}
+      menuFields={
+        <StemsAndDownloadsMenuFields
+          isUpload
+          initialDownloadConditions={savedDownloadConditions}
+        />
+      }
       closeMenuCallback={closeMenuCallback}
       displayMenuErrorMessage={(
         errors: FormikErrors<StemsAndDownloadsFormValues>

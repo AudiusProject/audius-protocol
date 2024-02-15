@@ -166,10 +166,6 @@
   stroke: var(--secondary);
 }
 
-.popupWrapper {
-  position: fixed;
-}
-
 .popup {
   border-radius: 12px !important;
   border: 1px solid var(--neutral-light-7) !important;

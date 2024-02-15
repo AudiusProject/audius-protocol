@@ -120,7 +120,7 @@ export const SegmentedControl = <T extends string>(
                 onChange={() => {
                   onSetSelected(option.key)
                 }}
-                disabled={props.disabled}
+                disabled={props.disabled || option.disabled}
               />
               {option.text}
             </label>

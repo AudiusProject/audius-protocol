@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 // DDEX deliveries indexed from DDEX uploads
 const deliveriesSchema = new mongoose.Schema({
-  id: mongoose.Schema.Types.ObjectId,
+  _id: mongoose.Schema.Types.ObjectId,
   upload_etag: String,
   delivery_status: String,
   xml_file_path: String,

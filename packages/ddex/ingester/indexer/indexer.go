@@ -3,6 +3,7 @@ package indexer
 import (
 	"archive/zip"
 	"context"
+	"errors"
 	"fmt"
 	"ingester/common"
 	"ingester/constants"
@@ -118,14 +119,15 @@ func (i *Indexer) processZIPContents(rootDir, uploadETag string) error {
 		if err != nil {
 			return err
 		}
-		if strings.Contains(path, "__MACOSX") {
+		if strings.Contains(path, "__MACOSX") || strings.Contains(path, ".DS_Store") {
 			return nil
 		}
+
 		if info.IsDir() {
-			if path == rootDir {
-				return nil
+			if i.processDelivery(rootDir, path, uploadETag) == nil {
+				// If XML found, don't recurse into subdirectories
+				return filepath.SkipDir
 			}
-			return i.processDelivery(rootDir, path, uploadETag)
 		}
 		return nil
 	})
@@ -161,14 +163,22 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 
 	if deliveryID == primitive.NilObjectID {
 		i.logger.Info("No XML file found in directory. Skipping", "dir", dir)
-		return nil
+		return errors.New("no XML file found in directory")
 	}
 
 	// Upload the delivery's audio and images to S3
 	for _, file := range files {
-		if !file.IsDir() && !strings.HasSuffix(file.Name(), ".xml") {
+		if !strings.HasSuffix(file.Name(), ".xml") && !strings.HasSuffix(file.Name(), ".DS_Store") {
 			filePath := filepath.Join(dir, file.Name())
-			i.uploadToS3Indexed(filePath, fmt.Sprintf("%s/%s", deliveryID.Hex(), file.Name()))
+			relativePath, err := filepath.Rel(dir, filePath) // Calculate relative path from the XML directory
+			if err != nil {
+				return fmt.Errorf("failed to compute relative path for %s: %w", filePath, err)
+			}
+			if file.IsDir() {
+				i.uploadDirToS3Indexed(filePath, fmt.Sprintf("%s/%s", deliveryID.Hex(), relativePath))
+			} else {
+				i.uploadFileToS3Indexed(filePath, fmt.Sprintf("%s/%s", deliveryID.Hex(), relativePath))
+			}
 		}
 	}
 
@@ -215,8 +225,30 @@ func (i *Indexer) downloadFromS3Raw(remotePath string) (string, func()) {
 	return file.Name(), func() { os.Remove(file.Name()) }
 }
 
-// uploadToIndexed uploads a file to the S3 "indexed" bucket.
-func (i *Indexer) uploadToS3Indexed(filePath, fileKey string) {
+// uploadDirToS3Indexed uploads all contents of the dir, including nested subdirs, to the S3 "indexed" bucket.
+func (i *Indexer) uploadDirToS3Indexed(dirPath, keyPrefix string) {
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && !strings.HasSuffix(info.Name(), ".DS_Store") {
+			relativePath, err := filepath.Rel(dirPath, path)
+			if err != nil {
+				return err
+			}
+			fileKey := fmt.Sprintf("%s/%s", keyPrefix, strings.ReplaceAll(relativePath, string(filepath.Separator), "/"))
+			i.uploadFileToS3Indexed(path, fileKey)
+		}
+		return nil
+	})
+
+	if err != nil {
+		i.logger.Warn("Error walking through the directory", "err", err)
+	}
+}
+
+// uploadFileToIndexed uploads a file to the S3 "indexed" bucket.
+func (i *Indexer) uploadFileToS3Indexed(filePath, fileKey string) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		i.logger.Error("Error opening file", "error", err)

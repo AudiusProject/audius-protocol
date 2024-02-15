@@ -34,7 +34,7 @@ const NavBanner = (props) => {
                 <PopupMenuIconButton
                   icon={<SortIcon />}
                   items={menuItems}
-                  position='bottomLeft'
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 />
               )}
             </div>

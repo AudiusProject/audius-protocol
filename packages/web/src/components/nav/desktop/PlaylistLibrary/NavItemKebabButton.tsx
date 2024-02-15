@@ -1,12 +1,7 @@
 import { MouseEvent } from 'react'
 
-import { IconKebabHorizontal } from '@audius/harmony'
-import {
-  IconButton,
-  IconButtonButtonProps,
-  PopupMenu,
-  PopupMenuProps
-} from '@audius/stems'
+import { IconKebabHorizontal, PopupMenu, PopupMenuProps } from '@audius/harmony'
+import { IconButton, IconButtonButtonProps } from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './NavItemKebabButton.module.css'
@@ -22,6 +17,7 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
   return (
     <PopupMenu
       items={items}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       renderTrigger={(ref, onClick, triggerProps) => {
         const handleClick = (e: MouseEvent) => {
           e.preventDefault()

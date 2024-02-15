@@ -45,16 +45,6 @@ export {
   ModalFooterProps
 } from './components/Modal'
 
-export {
-  Popup,
-  Position as PopupPosition,
-  PopupProps
-} from './components/Popup'
-export {
-  PopupMenu,
-  PopupMenuItem,
-  PopupMenuProps
-} from './components/PopupMenu'
 export { ProgressBar, ProgressBarProps } from './components/ProgressBar'
 export { Scrubber } from './components/Scrubber'
 
