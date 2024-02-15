@@ -4,7 +4,7 @@ import { variantStylesMap } from '@audius/harmony/src/components/text'
 import type { BaseTextProps } from '@audius/harmony/src/components/text'
 import { css } from '@emotion/native'
 import type { TextProps as NativeTextProps, TextStyle } from 'react-native'
-import { Text as TextBase } from 'react-native'
+import { Platform, Text as TextBase } from 'react-native'
 
 import { useTheme } from '../../foundations/theme'
 
@@ -34,6 +34,8 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const variantStyles = variant && variantStylesMap[variant]
   const t = theme.typography
 
+  const fontWeight = variantStyles?.fontWeight[strength]
+
   const textStyles: TextStyle = css({
     ...(variantStyles && {
       fontSize: t.size[variantStyles.fontSize[size]],
@@ -43,7 +45,11 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     }),
     ...(color && { color }),
     ...(shadow && t.shadow[shadow]),
-    textAlign
+    textAlign,
+    // Fixes demiBold text misalignment on iOS
+    ...(fontWeight === 'demiBold' && Platform.OS === 'ios'
+      ? { marginTop: 2 }
+      : {})
   })
 
   const isHeading = variant === 'display' || variant === 'heading'
