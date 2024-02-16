@@ -108,6 +108,7 @@ export const SegmentedControl = <T extends string>(
               }
               className={cn(styles.tab, {
                 [styles.tabFullWidth]: !!props.fullWidth,
+                [styles.disabled]: !props.disabled && option.disabled,
                 [styles.isMobile]: props.isMobile
               })}
               style={

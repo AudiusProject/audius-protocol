@@ -46,11 +46,11 @@ const messages = {
   premium: 'Premium',
   callout: {
     premium:
-      "You're uploading a Premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Premium track. By default, purchasers will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
     specialAccess:
-      "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
     collectibleGated:
-      "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
     accessAndSale: 'Access & Sale Settings'
   },
   waitlist:
@@ -142,7 +142,8 @@ export const DownloadAvailability = ({
         />
       ),
       disabled: isPremiumOptionDisabled,
-      variant: isUsdcUploadEnabled ? 'default' : 'subdued'
+      variant:
+        isPremiumOptionDisabled || !isUsdcUploadEnabled ? 'subdued' : 'default'
     }
   ]
 
