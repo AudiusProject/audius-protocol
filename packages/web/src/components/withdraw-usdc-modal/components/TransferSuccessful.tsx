@@ -8,12 +8,13 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   makeSolanaTransactionLink
 } from '@audius/common/utils'
-import { Button, Flex, IconExternalLink, IconCheck } from '@audius/harmony'
 import {
-  HarmonyPlainButton,
-  HarmonyPlainButtonSize,
-  HarmonyPlainButtonType
-} from '@audius/stems'
+  Button,
+  Flex,
+  IconExternalLink,
+  IconCheck,
+  PlainButton
+} from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
@@ -107,14 +108,15 @@ export const TransferSuccessful = ({
             <Text variant='body' size='medium' strength='default'>
               {addressValue}
             </Text>
-            <HarmonyPlainButton
-              style={{ padding: 0 }}
+            <PlainButton
+              css={{ padding: 0 }}
               onClick={handleClickTransactionLink}
               iconRight={IconExternalLink}
-              variant={HarmonyPlainButtonType.SUBDUED}
-              size={HarmonyPlainButtonSize.DEFAULT}
-              text={messages.viewOn}
-            />
+              variant='subdued'
+              size='default'
+            >
+              {messages.viewOn}
+            </PlainButton>
           </div>
         </>
       ) : null}

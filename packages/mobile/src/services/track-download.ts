@@ -2,13 +2,13 @@ import type { DownloadTrackArgs } from '@audius/common/services'
 import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
 import { tracksSocialActions, downloadsActions } from '@audius/common/store'
 import { Platform, Share } from 'react-native'
-import { zip } from 'react-native-zip-archive'
 import type {
   FetchBlobResponse,
   ReactNativeBlobUtilConfig,
   StatefulPromise
 } from 'react-native-blob-util'
 import ReactNativeBlobUtil from 'react-native-blob-util'
+import { zip } from 'react-native-zip-archive'
 import { dedupFilenames } from '~/utils'
 
 import { dispatch } from 'app/store'
@@ -57,10 +57,9 @@ const downloadOne = async ({
   const filePath = directory + '/' + filename
 
   try {
-    const fetchTask = ReactNativeBlobUtil.config(getFetchConfig(filePath)).fetch(
-      'GET',
-      fileUrl
-    )
+    const fetchTask = ReactNativeBlobUtil.config(
+      getFetchConfig(filePath)
+    ).fetch('GET', fileUrl)
     fetchTasks = [fetchTask]
 
     // TODO: The ReactNativeBlobUtil library is currently broken for download progress events on both platforms.
@@ -103,10 +102,9 @@ const downloadMany = async ({
   dedupFilenames(files)
   try {
     const responsePromises = files.map(({ url, filename }) =>
-      ReactNativeBlobUtil.config(getFetchConfig(directory + '/' + filename)).fetch(
-        'GET',
-        url
-      )
+      ReactNativeBlobUtil.config(
+        getFetchConfig(directory + '/' + filename)
+      ).fetch('GET', url)
     )
     fetchTasks = responsePromises
     const responses = await Promise.all(responsePromises)
@@ -236,7 +234,8 @@ const download = async ({
          * the initial downloads to avoid showing notifications, then manually add a
          * notification for the zip file.
          */
-        directory: ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + rootDirectoryName,
+        directory:
+          ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + rootDirectoryName,
         getFetchConfig: (filePath) => ({
           fileCache: true,
           path: filePath
