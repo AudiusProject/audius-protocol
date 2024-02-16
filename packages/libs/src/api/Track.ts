@@ -371,7 +371,8 @@ export class Track extends Base {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: () => void
+    onProgress: () => void,
+    trackId?: number
   ) {
     const updatedMetadata = await this.uploadTrackV2(
       trackFile,
@@ -379,11 +380,12 @@ export class Track extends Base {
       metadata,
       onProgress
     )
-    const { trackId, metadataCid, txReceipt } = await this.writeTrackToChain(
-      updatedMetadata,
-      Action.CREATE
-    )
-    return { trackId, metadataCid, updatedMetadata, txReceipt }
+    const {
+      trackId: updatedTrackId,
+      metadataCid,
+      txReceipt
+    } = await this.writeTrackToChain(updatedMetadata, Action.CREATE, trackId)
+    return { trackId: updatedTrackId, metadataCid, updatedMetadata, txReceipt }
   }
 
   /**

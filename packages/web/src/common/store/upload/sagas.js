@@ -188,7 +188,8 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     artwork,
     index,
     id,
-    updateProgress
+    updateProgress,
+    generatedTrackId
   ) => {
     return function* () {
       const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -200,7 +201,8 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (progress) => {}
+        updateProgress ? makeOnProgress(index) : (progress) => { },
+        generatedTrackId
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -358,7 +360,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           ? makeConfirmerSuccessForCollection
           : makeConfirmerSuccess)(id, index, updateProgress),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
-        () => {},
+        () => { },
         UPLOAD_TIMEOUT_MILLIS
       )
     )
@@ -913,6 +915,13 @@ function* uploadSingleTrack(track) {
   // which is then used to upload stems if they exist.
   const responseChan = yield call(channel)
 
+  // Cheating here - getting the track ID early so we can parallelize stems
+  const audiusLibs = yield call([audiusBackendInstance, audiusBackendInstance.getAudiusLibs])
+  // Technically _generateTrackId() is "private". Abusing JS here to get it
+  // before the upload succeeds, and instead pass it through the upload process.
+  const generatedTrackId = yield call([audiusLibs.Track, audiusLibs.Track._generateTrackId])
+  console.log('Generated track id:', generatedTrackId)
+
   const dispatcher = yield fork(actionChannelDispatcher, progressChan)
   const recordEvent = make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
     artworkSource: track.metadata.artwork.source,
@@ -953,12 +962,14 @@ function* uploadSingleTrack(track) {
     confirmerActions.requestConfirmation(
       `${track.metadata.title}`,
       function* () {
+        console.log('Uploading track...', generatedTrackId)
         const { blockHash, blockNumber, trackId, error, phase } = yield call(
           audiusBackendInstance.uploadTrack,
           track.file,
           track.metadata.artwork.file,
           track.metadata,
-          onProgress
+          onProgress,
+          generatedTrackId
         )
 
         if (error) {
@@ -995,6 +1006,7 @@ function* uploadSingleTrack(track) {
         throw new Error(`Exhausted retries querying for track ${trackId}`)
       },
       function* onSuccess(confirmedTrack) {
+        console.log('Uploading track success...')
         yield call(responseChan.put, { confirmedTrack })
       },
       function* ({ timeout, message }) {
@@ -1014,12 +1026,22 @@ function* uploadSingleTrack(track) {
         yield cancel(dispatcher)
         yield call(responseChan.put, { error: message })
       },
-      () => {},
+      () => { },
       UPLOAD_TIMEOUT_MILLIS
     )
   )
 
-  const { confirmedTrack, error } = yield take(responseChan)
+  const [{ confirmedTrack, error }] = yield all([take(responseChan), call(function* () {
+    console.log('Uploading stems...')
+    const stems = yield select(getStems)
+    if (stems.length) {
+      yield call(uploadStems, {
+        parentTrackIds: [generatedTrackId],
+        stems
+      })
+    }
+  })])
+
   const isRejected = error === 'Request failed with status code 403'
 
   yield reportResultEvents({
@@ -1041,14 +1063,6 @@ function* uploadSingleTrack(track) {
       yield call(recordGatedTracks, [track.metadata])
     }
     return
-  }
-
-  const stems = yield select(getStems)
-  if (stems.length) {
-    yield call(uploadStems, {
-      parentTrackIds: [confirmedTrack.track_id],
-      stems
-    })
   }
 
   // Finish up the upload
@@ -1140,11 +1154,12 @@ function* uploadMultipleTracks(tracks) {
     track,
     metadata: track.metadata
   }))
-
+  console.log('Starting upload of tracks...')
   const { trackIds } = yield call(handleUploads, {
     tracks: tracksWithMetadata,
     isCollection: false
   })
+  console.log('Tracks uploaded, uploading stems...')
   const stems = yield select(getStems)
   if (stems.length) {
     yield call(uploadStems, {
@@ -1152,6 +1167,7 @@ function* uploadMultipleTracks(tracks) {
       stems
     })
   }
+  console.log('Stems uploaded.')
 
   yield put(uploadActions.uploadTracksSucceeded())
   yield put(
