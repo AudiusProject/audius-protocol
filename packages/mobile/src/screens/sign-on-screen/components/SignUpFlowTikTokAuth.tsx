@@ -89,20 +89,21 @@ export const SignUpFlowTikTokAuth = ({
     dispatch(oauthActions.setTikTokError(null))
     withTikTokAuth(async (accessToken: string) => {
       try {
-        // Using TikTok v1 api because v2 does not have CORS headers set
+        const fields = [
+          'open_id',
+          'username',
+          'display_name',
+          'avatar_large_url',
+          'is_verified'
+        ]
         const result = await fetch(
-          `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
+          `https://open.tiktokapis.com/v2/user/info/?fields=${fields.join(
+            ','
+          )}`,
           {
-            method: 'POST',
-            body: JSON.stringify({
-              fields: [
-                'open_id',
-                'username',
-                'display_name',
-                'avatar_large_url',
-                'is_verified'
-              ]
-            })
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
           }
         )
 
