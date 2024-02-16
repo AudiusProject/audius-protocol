@@ -3,7 +3,6 @@ package cidutil
 import (
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -25,15 +24,6 @@ func UnescapeCidParam(next echo.HandlerFunc) echo.HandlerFunc {
 
 		return next(c)
 	}
-}
-
-func ComputeFileHeaderCID(fh *multipart.FileHeader) (string, error) {
-	f, err := fh.Open()
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-	return ComputeFileCID(f)
 }
 
 func ComputeFileCID(f io.ReadSeeker) (string, error) {
