@@ -1,7 +1,4 @@
-import type {
-  AudiusSdk as AudiusSdkType,
-  ServicesConfig,
-} from '@audius/sdk/dist/sdk/index.d.ts'
+import type { AudiusSdk as AudiusSdkType, ServicesConfig } from '@audius/sdk'
 import {
   AppAuth,
   DiscoveryNodeSelector,
