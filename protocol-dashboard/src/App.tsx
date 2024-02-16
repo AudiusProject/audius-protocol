@@ -4,6 +4,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useEffect, useState } from 'react'
 import { Provider, useSelector } from 'react-redux'
 import { Routes, Route, HashRouter } from 'react-router-dom'
+import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 import Header from 'components/Header'
 import Home from 'containers/Home'
@@ -57,65 +58,73 @@ const App = () => {
   }, [didClientError])
   return (
     <ApolloProvider client={apolloClient}>
-      <HashRouter>
-        <RouteHistoryProvider>
-          <div className={styles.appContainer}>
-            <Header />
-            <div className={styles.appContent}>
-              <Routes>
-                <Route path={routes.HOME} element={<Home />} />
-                <Route path={routes.SERVICES} element={<Services />} />
-                <Route
-                  path={routes.SERVICES_UNREGISTERED_DISCOVERY_NODE}
-                  element={<UnregisteredNode />}
-                />
-                <Route
-                  path={routes.SERVICES_DISCOVERY_PROVIDER}
-                  element={<DiscoveryProviders />}
-                />
-                <Route
-                  path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
-                  element={<Node />}
-                />
-                <Route
-                  path={routes.SERVICES_UNREGISTERED_CONTENT_NODE}
-                  element={<UnregisteredNode />}
-                />
-                <Route
-                  path={routes.SERVICES_CONTENT}
-                  element={<ContentNodes />}
-                />
-                <Route path={routes.SERVICES_CONTENT_NODE} element={<Node />} />
-                <Route
-                  path={routes.SERVICES_SERVICE_PROVIDERS}
-                  element={<ServiceOperators />}
-                />
-                <Route
-                  path={routes.SERVICES_USERS}
-                  element={<ServiceUsers />}
-                />
-                <Route path={routes.SERVICES_ACCOUNT_USER} element={<User />} />
-                <Route
-                  path={routes.SERVICES_ACCOUNT_OPERATOR}
-                  element={<User />}
-                />
-                <Route path={routes.GOVERNANCE} element={<Governance />} />
-                <Route
-                  path={routes.GOVERNANCE_PROPOSAL}
-                  element={<Proposal />}
-                />
-                <Route path={routes.ANALYTICS} element={<Analytics />} />
-                <Route path={routes.API} element={<API />} />
-                <Route
-                  path={routes.API_LEADERBOARD}
-                  element={<APILeaderboard />}
-                />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+      <HarmonyThemeProvider theme="dark">
+        <HashRouter>
+          <RouteHistoryProvider>
+            <div className={styles.appContainer}>
+              <Header />
+              <div className={styles.appContent}>
+                <Routes>
+                  <Route path={routes.HOME} element={<Home />} />
+                  <Route path={routes.SERVICES} element={<Services />} />
+                  <Route
+                    path={routes.SERVICES_UNREGISTERED_DISCOVERY_NODE}
+                    element={<UnregisteredNode />}
+                  />
+                  <Route
+                    path={routes.SERVICES_DISCOVERY_PROVIDER}
+                    element={<DiscoveryProviders />}
+                  />
+                  <Route
+                    path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
+                    element={<Node />}
+                  />
+                  <Route
+                    path={routes.SERVICES_UNREGISTERED_CONTENT_NODE}
+                    element={<UnregisteredNode />}
+                  />
+                  <Route
+                    path={routes.SERVICES_CONTENT}
+                    element={<ContentNodes />}
+                  />
+                  <Route
+                    path={routes.SERVICES_CONTENT_NODE}
+                    element={<Node />}
+                  />
+                  <Route
+                    path={routes.SERVICES_SERVICE_PROVIDERS}
+                    element={<ServiceOperators />}
+                  />
+                  <Route
+                    path={routes.SERVICES_USERS}
+                    element={<ServiceUsers />}
+                  />
+                  <Route
+                    path={routes.SERVICES_ACCOUNT_USER}
+                    element={<User />}
+                  />
+                  <Route
+                    path={routes.SERVICES_ACCOUNT_OPERATOR}
+                    element={<User />}
+                  />
+                  <Route path={routes.GOVERNANCE} element={<Governance />} />
+                  <Route
+                    path={routes.GOVERNANCE_PROPOSAL}
+                    element={<Proposal />}
+                  />
+                  <Route path={routes.ANALYTICS} element={<Analytics />} />
+                  <Route path={routes.API} element={<API />} />
+                  <Route
+                    path={routes.API_LEADERBOARD}
+                    element={<APILeaderboard />}
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
             </div>
-          </div>
-        </RouteHistoryProvider>
-      </HashRouter>
+          </RouteHistoryProvider>
+        </HashRouter>
+      </HarmonyThemeProvider>
     </ApolloProvider>
   )
 }
