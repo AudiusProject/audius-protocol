@@ -414,7 +414,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               <TablePlayButton
                 playing
                 paused={!isPlaying}
-                hideDefault={false}
                 onPress={onPressTrack}
               />
             </View>
