@@ -88,9 +88,6 @@ class Track(Base, RepresentableMixin):
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Track.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"
     )

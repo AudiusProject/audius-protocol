@@ -52,9 +52,6 @@ class Playlist(Base, RepresentableMixin):
     slot = Column(Integer)
     metadata_multihash = Column(String)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Playlist.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Playlist.blocknumber == Block.number"
     )

@@ -44,9 +44,6 @@ class Follow(Base, RepresentableMixin):
     )
     slot = Column(Integer)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Follow.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Follow.blocknumber == Block.number"
     )

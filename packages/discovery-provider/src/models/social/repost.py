@@ -58,9 +58,6 @@ class Repost(Base, RepresentableMixin):
     )
     slot = Column(Integer)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Repost.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Repost.blocknumber == Block.number"
     )
