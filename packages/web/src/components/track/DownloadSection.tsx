@@ -19,7 +19,6 @@ import {
   usePremiumContentPurchaseModal,
   CommonState,
   useWaitForDownloadModal,
-  tracksSocialActions as socialTracksActions,
   toastActions
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
@@ -139,13 +138,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
           trackIds,
           quality
         })
-        dispatch(
-          socialTracksActions.downloadTrack({
-            trackIds,
-            parentTrackId,
-            original: quality === DownloadQuality.ORIGINAL
-          })
-        )
         const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
           id: parentTrackId ?? trackIds[0],
           parent_track_id: parentTrackId
@@ -299,6 +291,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             {track?.is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
+                parentTrackId={trackId}
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
@@ -309,6 +302,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             {stemTracks.map((s, i) => (
               <DownloadRow
                 trackId={s.id}
+                parentTrackId={trackId}
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}

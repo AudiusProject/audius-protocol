@@ -1,0 +1,6 @@
+.root {
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-medium);
+  line-height: 1.5;
+  color: var(--harmony-neutral);
+}

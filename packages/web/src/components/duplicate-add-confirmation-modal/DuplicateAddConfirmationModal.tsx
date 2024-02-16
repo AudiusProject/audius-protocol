@@ -8,15 +8,14 @@ import {
 } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
 import {
-  Button,
-  ButtonType,
   Modal,
   ModalContent,
   ModalContentText,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 

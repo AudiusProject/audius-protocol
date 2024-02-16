@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
@@ -25,7 +25,7 @@ function cancelDecreaseStake(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      setError(error.message)
       setStatus(Status.Failure)
     }
   }
@@ -47,7 +47,7 @@ function cancelUpdateOperatorCut(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      setError(error.message)
       setStatus(Status.Failure)
     }
   }
@@ -68,7 +68,7 @@ function cancelUndelegate(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      setError(error.message)
       setStatus(Status.Failure)
     }
   }
@@ -92,16 +92,25 @@ function cancelRemoveDelegator(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      setError(error.message)
       setStatus(Status.Failure)
     }
   }
 }
 
-export const useCancelTransaction = (name: PendingTransactionName) => {
+export const useCancelTransaction = (
+  name: PendingTransactionName,
+  shouldReset: boolean
+) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
+  useEffect(() => {
+    if (shouldReset) {
+      setStatus(undefined)
+      setError('')
+    }
+  }, [shouldReset, setStatus, setError])
 
   const cancelTransaction = useCallback(
     (wallet?: Address) => {

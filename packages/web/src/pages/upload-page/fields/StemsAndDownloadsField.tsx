@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   stemCategoryFriendlyNames,
   isContentFollowGated,
@@ -27,7 +27,6 @@ import {
   SelectedValue,
   SelectedValues
 } from 'components/data-entry/ContextualMenu'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { useTrackField } from '../hooks'
 
@@ -74,8 +73,11 @@ type StemsAndDownloadsFieldProps = {
 export const StemsAndDownloadsField = ({
   closeMenuCallback
 }: StemsAndDownloadsFieldProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
   )
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
@@ -106,9 +108,9 @@ export const StemsAndDownloadsField = ({
     useTrackField<GateKeeper>(LAST_GATE_KEEPER)
 
   /**
-   * Stream conditions from inside the modal.
+   * Download conditions from inside the modal.
    * Upon submit, these values along with the selected access option will
-   * determine the final stream conditions that get saved to the track.
+   * determine the final download conditions that get saved to the track.
    */
   const accountUserId = useSelector(getUserId)
   const tempDownloadConditions = useMemo(
@@ -327,9 +329,17 @@ export const StemsAndDownloadsField = ({
       onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        stemsAndDownloadsSchema(usdcPurchaseConfig)
+        stemsAndDownloadsSchema({
+          isUsdcUploadEnabled: !!isUsdcUploadEnabled,
+          ...usdcPurchaseConfig
+        })
       )}
-      menuFields={<StemsAndDownloadsMenuFields />}
+      menuFields={
+        <StemsAndDownloadsMenuFields
+          isUpload
+          initialDownloadConditions={savedDownloadConditions}
+        />
+      }
       closeMenuCallback={closeMenuCallback}
       displayMenuErrorMessage={(
         errors: FormikErrors<StemsAndDownloadsFormValues>

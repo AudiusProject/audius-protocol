@@ -5,7 +5,6 @@ import { logger } from '../logger'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '..'
 import { antiAbuseError, internalError } from '../error'
-import { decodeAbi } from '../abi'
 import { readAAOState, storeAAOState } from '../redis'
 import { StatusCodes } from 'http-status-codes'
 
@@ -28,23 +27,14 @@ export const antiAbuseMiddleware = async (
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
-  const { ip, recoveredSigner: user } = response.locals.ctx
-  const decodedAbi = decodeAbi(
-    response.locals.ctx.validatedRelayRequest.encodedABI
-  )
-  const isUserCreate =
-    decodedAbi.action === 'Create' && decodedAbi.entityType === 'User'
-  const isUserDeactivate =
-    user.is_deactivated === false &&
-    decodedAbi.action === 'Update' &&
-    decodedAbi.entityType === 'User' &&
-    JSON.parse(decodedAbi.metadata).data.is_deactivated === true
-  // User creations must be allowed as AAO won't have the user yet,
-  // and deactivations must be allowed even for abuse.
-  if (isUserCreate || isUserDeactivate) {
+  const { ip, recoveredSigner, signerIsApp, createOrDeactivate} = response.locals.ctx
+
+  // no AAO to check and creates / deactivates should always be allowed
+  if (signerIsApp || createOrDeactivate) {
     next()
     return
   }
+  const user = recoveredSigner as Users
 
   // fire and async update aao cache
   detectAbuse(aaoConfig, user, ip).catch((e) => {

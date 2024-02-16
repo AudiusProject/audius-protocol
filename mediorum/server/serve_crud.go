@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
@@ -57,6 +59,10 @@ func (ss *MediorumServer) serveCrudPush(c echo.Context) error {
 	op := new(crudr.Op)
 	if err := c.Bind(op); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	if v, _ := strconv.ParseBool(os.Getenv("LOG_CRUD_PUSH")); v {
+		ss.logger.Info("CRUD_PUSH", "op", op)
 	}
 
 	known := ss.crud.KnownType(op)

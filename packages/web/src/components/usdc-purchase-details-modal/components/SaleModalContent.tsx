@@ -8,6 +8,10 @@ import {
 } from '@audius/common/store'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalFooter,
   Button,
   Flex,
   IconCart,
@@ -15,12 +19,6 @@ import {
   IconMessage,
   TextLink
 } from '@audius/harmony'
-import {
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 

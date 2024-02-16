@@ -1,17 +1,17 @@
 import { ReactNode, ReactElement, useCallback, useMemo, useEffect } from 'react'
 
 import { Nullable } from '@audius/common/utils'
-import { Box, Text as HarmonyText, IconCaretRight } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
-  IconComponent,
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  Box,
+  Text as HarmonyText,
+  IconCaretRight
+} from '@audius/harmony'
+import { Button, ButtonType, IconComponent } from '@audius/stems'
 import {
   Form,
   Formik,
@@ -73,6 +73,7 @@ const MenuForm = (props: MenuFormProps) => {
   }, [displayMenuErrorMessage, errors])
 
   useEffect(() => {
+    // If the menu is closed, trigger callback if exists and reset the status
     if (!isOpen) {
       closeMenuCallback?.(status)
       setStatus(initialStatus)
@@ -171,6 +172,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
   const [isMenuOpen, toggleMenu] = useToggle(false)
 
   useEffect(() => {
+    // If forceOpen is true, open the menu and reset the forceOpen flag
     if (forceOpen && setForceOpen) {
       setForceOpen(false)
       toggleMenu()

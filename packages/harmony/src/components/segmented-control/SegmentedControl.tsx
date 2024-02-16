@@ -6,6 +6,8 @@ import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
 import useMeasure from 'react-use-measure'
 
+import { Text } from 'components/text/Text'
+
 import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'
 
@@ -95,6 +97,7 @@ export const SegmentedControl = <T extends string>(
     >
       <animated.div className={styles.tabBackground} style={tabProps} />
       {props.options.map((option, idx) => {
+        const isOptionDisabled = props.disabled || option.disabled
         return (
           <Fragment key={option.key}>
             <label
@@ -120,9 +123,18 @@ export const SegmentedControl = <T extends string>(
                 onChange={() => {
                   onSetSelected(option.key)
                 }}
-                disabled={props.disabled}
+                disabled={isOptionDisabled}
               />
-              {option.text}
+              <Text
+                color={
+                  option.variant ?? (isOptionDisabled ? 'subdued' : 'default')
+                }
+                css={{
+                  cursor: isOptionDisabled ? 'auto' : 'pointer'
+                }}
+              >
+                {option.text}
+              </Text>
             </label>
             {idx !== props.options.length - 1 ? (
               <div

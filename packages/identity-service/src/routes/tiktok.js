@@ -3,6 +3,7 @@ const cors = require('cors')
 const models = require('../models')
 const config = require('../config.js')
 const txRelay = require('../relay/txRelay')
+const querystring = require('querystring')
 
 const {
   handleResponse,
@@ -19,16 +20,15 @@ module.exports = function (app) {
   app.get(
     '/tiktok',
     handleResponse(async (req, res, next) => {
-      const { redirectUrl } = req.query
       const csrfState = Math.random().toString(36).substring(7)
       res.cookie('csrfState', csrfState, { maxAge: 600000 })
 
-      let url = 'https://open-api.tiktok.com/platform/oauth/connect/'
+      let url = 'https://www.tiktok.com/v2/auth/authorize/'
 
       url += `?client_key=${config.get('tikTokAPIKey')}`
       url += '&scope=user.info.basic'
       url += '&response_type=code'
-      url += `&redirect_uri=${redirectUrl || config.get('tikTokAuthOrigin')}`
+      url += `&redirect_uri=${config.get('tikTokAuthOrigin')}`
       url += '&state=' + csrfState
 
       res.redirect(url)
@@ -52,21 +52,28 @@ module.exports = function (app) {
         return errorResponseBadRequest('Invalid state')
       }
 
-      let urlAccessToken = 'https://open-api.tiktok.com/oauth/access_token/'
-      urlAccessToken += '?client_key=' + config.get('tikTokAPIKey')
-      urlAccessToken += '&client_secret=' + config.get('tikTokAPISecret')
-      urlAccessToken += '&code=' + code
-      urlAccessToken += '&grant_type=authorization_code'
-
       try {
         // Fetch user's accessToken
-        const accessTokenResponse = await axios.post(urlAccessToken)
-        const {
-          data: {
-            access_token: accessToken,
-            error_code: errorCode,
-            description: errorMessage
+        const accessTokenResponse = await axios.post(
+          'https://open.tiktokapis.com/v2/oauth/token/',
+          querystring.stringify({
+            client_key: config.get('tikTokAPIKey'),
+            client_secret: config.get('tikTokAPISecret'),
+            code,
+            grant_type: 'authorization_code',
+            redirect_uri: config.get('tikTokAuthOrigin')
+          }),
+          {
+            headers: {
+              'content-type': 'application/x-www-form-urlencoded'
+            }
           }
+        )
+
+        const {
+          access_token: accessToken,
+          error: errorCode,
+          error_description: errorMessage
         } = accessTokenResponse.data
 
         if (errorCode) {
@@ -119,7 +126,7 @@ module.exports = function (app) {
           })
         }
 
-        return successResponse(accessTokenResponse.data)
+        return successResponse({ data: accessTokenResponse.data })
       } catch (err) {
         return errorResponseBadRequest(err)
       }

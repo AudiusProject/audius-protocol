@@ -2,6 +2,7 @@ import { useState, useContext, useCallback } from 'react'
 
 import { Name, SquareSizes } from '@audius/common/models'
 import {
+  Modal,
   Button,
   IconVerified,
   IconRecoveryEmail,
@@ -13,7 +14,6 @@ import {
   IconComponent,
   useTheme
 } from '@audius/harmony'
-import { Modal } from '@audius/stems'
 import { debounce } from 'lodash'
 
 import { make, useRecord } from 'common/store/analytics/actions'

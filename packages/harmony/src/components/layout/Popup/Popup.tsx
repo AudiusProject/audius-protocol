@@ -193,6 +193,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     anchorRef,
     checkIfClickInside,
     children,
+    className,
     isVisible,
     onAfterClose,
     onClose,
@@ -204,9 +205,11 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     title,
     zIndex,
     containerRef,
-    portalLocation = document.body
+    portalLocation = document.body,
+    shadow = 'mid',
+    fixed
   } = props
-  const theme = useTheme()
+  const { spring, shadows } = useTheme()
 
   const handleClose = useCallback(() => {
     onClose?.()
@@ -354,11 +357,11 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       transform: `scale(0)`,
       opacity: 0
     },
-    config: theme.spring.standard,
+    config: spring.standard,
     unique: true
   })
 
-  const rootStyle = zIndex ? { zIndex } : {}
+  const rootStyle = { zIndex, position: fixed ? ('fixed' as const) : undefined }
 
   const handleMouseLeave = useCallback(() => {
     if (dismissOnMouseLeave) {
@@ -379,7 +382,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
           {transitions.map(({ item, key, props }) =>
             item ? (
               <animated.div
-                className={styles.popup}
+                className={cn(styles.popup, className)}
+                css={{ boxShadow: shadows[shadow] }}
                 ref={popupRef}
                 key={key}
                 style={{

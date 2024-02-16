@@ -160,7 +160,7 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
         </Pressable>
       </Flex>
       <Flex pt='unit12' ph='s' pb='l' alignItems='center' gap='l'>
-        <Flex gap='s'>
+        <Flex gap='s' alignItems='center'>
           <UserDisplayName userId={user_id} />
           <Flex direction='row' gap='s' alignItems='center'>
             <Flex direction='row' gap='xs' alignItems='center'>

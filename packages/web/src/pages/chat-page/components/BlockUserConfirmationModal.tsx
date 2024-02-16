@@ -2,16 +2,16 @@ import { useCallback } from 'react'
 
 import { Name, User } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
-import { IconMessageBlock, IconInfo } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  IconMessageBlock,
+  IconInfo
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'

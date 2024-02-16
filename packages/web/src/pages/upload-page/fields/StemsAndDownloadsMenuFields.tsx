@@ -10,6 +10,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { removeNullable, formatPrice, Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
+import { usePrevious } from 'react-use'
 import { z } from 'zod'
 
 import { Divider } from 'components/divider'
@@ -61,13 +62,19 @@ const messages = {
   losslessNoDownloadableAssets:
     'You must enable full track download or upload a stem file to provide lossless files.',
   gatedNoDownloadableAssets:
-    'You must enable full track download or upload a stem file before setting download availability.'
+    'You must enable full track download or upload a stem file before setting download availability.',
+  noUsdcUploadAccess:
+    'You don’t have access to sell your downloads. Please change your availability settings.'
 }
 
+type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
+  isUsdcUploadEnabled: boolean
+}
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
-  maxContentPriceCents
-}: USDCPurchaseRemoteConfig) =>
+  maxContentPriceCents,
+  isUsdcUploadEnabled
+}: StemsAndDownloadsSchemaProps) =>
   z
     .object({
       [IS_DOWNLOADABLE]: z.boolean(),
@@ -152,8 +159,37 @@ export const stemsAndDownloadsSchema = ({
         path: [IS_DOWNLOAD_GATED]
       }
     )
+    .refine(
+      // cannot be download gated if usdc upload disabled
+      (values) => {
+        const formValues = values as StemsAndDownloadsFormValues
+        const availabilityType = formValues[DOWNLOAD_AVAILABILITY_TYPE]
+        const isUsdcGated =
+          availabilityType === DownloadTrackAvailabilityType.USDC_PURCHASE
+        return !isUsdcGated || isUsdcUploadEnabled
+      },
+      {
+        message: messages.noUsdcUploadAccess,
+        path: [IS_DOWNLOAD_GATED]
+      }
+    )
 
-export const StemsAndDownloadsMenuFields = () => {
+// Because the upload and edit forms share the same menu fields,
+// we pass in the stems handlers in the edit flow to properly handle
+// the selection, addition, and deletion of stems.
+// May do another pass later to refactor.
+type StemsAndDownloadsMenuFieldsProps = {
+  isUpload: boolean
+  initialDownloadConditions: Nullable<AccessConditions>
+  stems?: StemUploadWithFile[]
+  onAddStems?: (stems: any) => void
+  onSelectCategory?: (category: StemCategory, index: number) => void
+  onDeleteStem?: (index: number) => void
+}
+
+export const StemsAndDownloadsMenuFields = (
+  props: StemsAndDownloadsMenuFieldsProps
+) => {
   const isLosslessDownloadsEnabled = getFeatureEnabled(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
@@ -167,8 +203,9 @@ export const StemsAndDownloadsMenuFields = () => {
     ,
     { setValue: setDownloadRequiresFollow }
   ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
-  const [{ value: stemsValue }, , { setValue: setStems }] =
+  const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useField<StemUploadWithFile[]>(STEMS)
+  const previousStemsValue = usePrevious(stemsValue)
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const [{ value: availabilityType }, , { setValue: setAvailabilityType }] =
@@ -176,6 +213,7 @@ export const StemsAndDownloadsMenuFields = () => {
   const [isAvailabilityTouched, setIsAvailabilityTouched] = useState(
     availabilityType !== DownloadTrackAvailabilityType.PUBLIC
   )
+  const [firstTimeStemsUploaded, setFirstTimeStemsUploaded] = useState(true)
 
   // If the track is download gated for the first time,
   // set the track to be downloadable and allow lossless files
@@ -227,6 +265,29 @@ export const StemsAndDownloadsMenuFields = () => {
     }
   }, [downloadRequiresFollow, setIsDownloadable])
 
+  // Allow full track download and provide lossless files if additional are uploaded for the first time.
+  useEffect(() => {
+    if (
+      firstTimeStemsUploaded &&
+      stemsValue.length > 0 &&
+      previousStemsValue &&
+      previousStemsValue.length < stemsValue.length
+    ) {
+      setFirstTimeStemsUploaded(false)
+      setIsDownloadable(true)
+      if (isLosslessDownloadsEnabled) {
+        setIsOriginalAvailable(true)
+      }
+    }
+  }, [
+    firstTimeStemsUploaded,
+    stemsValue,
+    previousStemsValue,
+    isLosslessDownloadsEnabled,
+    setIsDownloadable,
+    setIsOriginalAvailable
+  ])
+
   const invalidAudioFile = (
     name: string,
     reason: 'corrupted' | 'size' | 'type'
@@ -247,7 +308,7 @@ export const StemsAndDownloadsMenuFields = () => {
     []
   )
 
-  const onAddStemsToTrack = useCallback(
+  const handleAddStems = useCallback(
     async (selectedStems: File[]) => {
       const processedFiles = processFiles(selectedStems, invalidAudioFile)
       const newStems = (await Promise.all(processedFiles))
@@ -261,9 +322,28 @@ export const StemsAndDownloadsMenuFields = () => {
             allowCategorySwitch: true
           }
         })
-      setStems([...stemsValue, ...newStems])
+      setStemsValue([...stemsValue, ...newStems])
+      props.onAddStems?.(selectedStems)
     },
-    [detectCategory, setStems, stemsValue]
+    [detectCategory, props, setStemsValue, stemsValue]
+  )
+
+  const handleSelectCategory = useCallback(
+    (category: StemCategory, index: number) => {
+      stemsValue[index].category = category
+      setStemsValue(stemsValue)
+      props.onSelectCategory?.(category, index)
+    },
+    [props, setStemsValue, stemsValue]
+  )
+
+  const handleDeleteStem = useCallback(
+    (index: number) => {
+      stemsValue.splice(index, 1)
+      setStemsValue(stemsValue)
+      props.onDeleteStem?.(index)
+    },
+    [props, setStemsValue, stemsValue]
   )
 
   return (
@@ -272,6 +352,8 @@ export const StemsAndDownloadsMenuFields = () => {
       <Divider />
       {isLosslessDownloadsEnabled ? (
         <DownloadAvailability
+          isUpload={props.isUpload}
+          initialDownloadConditions={props.initialDownloadConditions}
           value={availabilityType}
           setValue={setAvailabilityType}
         />
@@ -298,16 +380,11 @@ export const StemsAndDownloadsMenuFields = () => {
       )}
       <Divider />
       <StemFilesView
-        onAddStems={onAddStemsToTrack}
         stems={stemsValue}
-        onSelectCategory={(category: StemCategory, index: number) => {
-          stemsValue[index].category = category
-          setStems(stemsValue)
-        }}
-        onDeleteStem={(index) => {
-          stemsValue.splice(index, 1)
-          setStems(stemsValue)
-        }}
+        onAddStems={handleAddStems}
+        onSelectCategory={handleSelectCategory}
+        onDeleteStem={handleDeleteStem}
+        isUpload={props.isUpload}
       />
     </div>
   )

@@ -93,7 +93,7 @@ protocol-dashboard-deploy-staging:
         command: |
           cd protocol-dashboard
           source tmp.env
-          npx armada-cli project publish 0x3ad8aa4f87544323a9d1e5dd902f40c356527a7955687113db5f9a85ad579dc1 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
+          npx armada-cli project publish 0x8d1108e10bcb7c27dddfc02ed9d693a074039d026cf4ea4240b40f7d581ac802 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
 
 protocol-dashboard-build-prod:
   working_directory: ~/audius-protocol

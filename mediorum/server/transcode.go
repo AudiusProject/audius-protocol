@@ -170,22 +170,22 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 		if myRank == 2 {
 			// no recent update?
 			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute
+				time.Since(upload.TranscodedAt) > time.Minute*3
 
 			// never started?
 			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*2
+				time.Since(upload.CreatedAt) > time.Minute*6
 		}
 
 		// for #3 rank worker:
 		if myRank == 3 {
 			// no recent update?
 			timedOut = upload.Status == busyStatus &&
-				time.Since(upload.TranscodedAt) > time.Minute*5
+				time.Since(upload.TranscodedAt) > time.Minute*7
 
 			// never started?
 			neverStarted = upload.Status == newStatus &&
-				time.Since(upload.CreatedAt) > time.Minute*5
+				time.Since(upload.CreatedAt) > time.Minute*14
 		}
 
 		if timedOut {
@@ -318,10 +318,12 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 				fmt.Sscanf(line, "out_time_us=%f", &u)
 				if u > 0 && durationUs > 0 {
 					percent := u / durationUs
-					// logger.Debug("transcode", "file", fileHash, "progress", percent)
-					upload.TranscodeProgress = percent
-					upload.TranscodedAt = time.Now().UTC()
-					ss.crud.Patch(upload)
+
+					if percent-upload.TranscodeProgress > 0.1 {
+						upload.TranscodeProgress = percent
+						upload.TranscodedAt = time.Now().UTC()
+						ss.crud.Patch(upload)
+					}
 				}
 			}
 		}
@@ -378,7 +380,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	upload.TranscodedMirrors, err = ss.replicateFile(resultHash, dest)
+	upload.TranscodedMirrors, err = ss.replicateFileParallel(resultHash, destPath)
 	if err != nil {
 		return onError(err, upload.Status, "replicateFile")
 	}
@@ -446,7 +448,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	mirrors, err := ss.replicateFile(resultHash, dest)
+	mirrors, err := ss.replicateFileParallel(resultHash, destPath)
 	if err != nil {
 		return onError(err, upload.Status, "replicating file")
 	}

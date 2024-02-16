@@ -1,5 +1,7 @@
 package common
 
+import "time"
+
 type Genre string
 
 const (
@@ -154,59 +156,9 @@ type NullableBool = *bool
 type NullableString = *string
 type NullableInt = *int
 
-type TrackSegment struct {
-	Duration  string `bson:"duration"`
-	Multihash CID    `bson:"multihash"`
-}
-
-type Download struct {
-	IsDownloadable NullableBool   `bson:"is_downloadable"`
-	RequiresFollow NullableBool   `bson:"requires_follow"`
-	CID            NullableString `bson:"cid"`
-}
-
-type TokenStandard string
-
-const (
-	ERC721  TokenStandard = "ERC721"
-	ERC1155 TokenStandard = "ERC1155"
-)
-
-type EthCollectibleGatedConditions struct {
-	Chain        string         `bson:"chain"`
-	Standard     TokenStandard  `bson:"standard"`
-	Address      string         `bson:"address"`
-	Name         string         `bson:"name"`
-	Slug         string         `bson:"slug"`
-	ImageUrl     NullableString `bson:"imageUrl"`
-	ExternalLink NullableString `bson:"externalLink"`
-}
-
-type SolCollectibleGatedConditions struct {
-	Chain        string         `bson:"chain"`
-	Address      string         `bson:"address"`
-	Name         string         `bson:"name"`
-	ImageUrl     NullableString `bson:"imageUrl"`
-	ExternalLink NullableString `bson:"externalLink"`
-}
-
-type USDCPurchaseConditions struct {
-	USDCPurchase *struct {
-		Price  float64            `bson:"price"`
-		Splits map[string]float64 `bson:"splits"`
-	} `bson:"usdc_purchase,omitempty"`
-}
-
-type GatedConditions struct {
-	NFTCollection *interface{} `bson:"nft_collection,omitempty"`
-	FollowUserID  NullableInt  `bson:"follow_user_id,omitempty"`
-	TipUserID     NullableInt  `bson:"tip_user_id,omitempty"`
-	USDCPurchaseConditions
-}
-
 type TrackMetadata struct {
 	Title               string         `bson:"title"`
-	ReleaseDate         string         `bson:"release_date"`
+	ReleaseDate         time.Time      `bson:"release_date"`
 	Genre               Genre          `bson:"genre"`
 	Duration            int            `bson:"duration"`
 	PreviewStartSeconds NullableInt    `bson:"preview_start_seconds,omitempty"`
@@ -221,12 +173,18 @@ type TrackMetadata struct {
 	Tags        NullableString `bson:"tags,omitempty"`
 
 	// Extra fields (not in SDK)
-	Artists             []Artist `bson:"artists"`
-	ArtistName          string   `bson:"artist_name"`
-	Copyright           string   `bson:"copyright"`
-	PreviewAudioFileURL string   `bson:"preview_audio_file_url"`
-	AudioFileURL        string   `bson:"audio_file_url"`
-	CoverArtURL         string   `bson:"cover_art_url"`
+	Artists                     []Artist `bson:"artists"`
+	ArtistName                  string   `bson:"artist_name"`
+	Copyright                   string   `bson:"copyright"`
+	PreviewAudioFileURL         string   `bson:"preview_audio_file_url"`
+	PreviewAudioFileURLHash     string   `bson:"preview_audio_file_url_hash"`
+	PreviewAudioFileURLHashAlgo string   `bson:"preview_audio_file_url_hash_algo"`
+	AudioFileURL                string   `bson:"audio_file_url"`
+	AudioFileURLHash            string   `bson:"audio_file_url_hash"`
+	AudioFileURLHashAlgo        string   `bson:"audio_file_url_hash_algo"`
+	CoverArtURL                 string   `bson:"cover_art_url"`
+	CoverArtURLHash             string   `bson:"cover_art_url_hash"`
+	CoverArtURLHashAlgo         string   `bson:"cover_art_url_hash_algo"`
 }
 
 // Not part of SDK
@@ -244,12 +202,14 @@ type CollectionMetadata struct {
 	Tags            NullableString `bson:"tags,omitempty"`
 	Genre           Genre          `bson:"genre"`
 	Mood            Mood           `bson:"mood"`
-	ReleaseDate     string         `bson:"release_date"`
+	ReleaseDate     time.Time      `bson:"release_date"`
 
 	// TODO: Handle these fields
 	License NullableString `bson:"license,omitempty"`
 	UPC     NullableString `bson:"upc,omitempty"`
 
 	// Extra fields (not in SDK)
-	CoverArtURL string `bson:"cover_art_url"`
+	CoverArtURL         string `bson:"cover_art_url"`
+	CoverArtURLHash     string `bson:"cover_art_url_hash"`
+	CoverArtURLHashAlgo string `bson:"cover_art_url_hash_algo"`
 }

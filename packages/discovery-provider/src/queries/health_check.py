@@ -42,6 +42,7 @@ def version():
 @bp.route("/health_check", methods=["GET"])
 def health_check():
     args = {
+        "bypass_errors": parse_bool_param(request.args.get("bypass_errors")),
         "verbose": parse_bool_param(request.args.get("verbose")),
         "healthy_block_diff": request.args.get("healthy_block_diff", type=int),
         "enforce_block_diff": parse_bool_param(request.args.get("enforce_block_diff")),

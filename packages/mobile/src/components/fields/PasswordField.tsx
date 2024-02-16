@@ -22,7 +22,6 @@ export const PasswordField = (props: PasswordFieldProps) => {
     <PasswordInput
       {...field}
       error={hasError}
-      helperText={hasError ? error : undefined}
       onChangeText={(e) => {
         if (clearErrorOnChange) {
           setError(undefined)

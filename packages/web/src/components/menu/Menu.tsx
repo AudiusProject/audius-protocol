@@ -1,11 +1,6 @@
 import { forwardRef, useContext } from 'react'
 
-import {
-  PopupMenu,
-  PopupMenuItem,
-  PopupMenuProps,
-  PopupPosition
-} from '@audius/stems'
+import { PopupMenu, PopupMenuItem, PopupMenuProps } from '@audius/harmony'
 
 import { MainContentContext } from 'pages/MainContentContext'
 
@@ -38,7 +33,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
     <PopupMenu
       items={items}
       onClose={onClose}
-      position={PopupPosition.BOTTOM_RIGHT}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       ref={ref}
       renderTrigger={props.children}
       zIndex={zIndex}
