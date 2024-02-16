@@ -113,8 +113,7 @@ def update_playlist_routes_table(
 
 def update_playlist_tracks_relations(
     params: ManageEntityParameters,
-    playlist_record: Playlist,
-    existing_playlist: Playlist | None = None,
+    playlist_record: Playlist
 ):
     # debug
     try:
@@ -162,8 +161,10 @@ def update_playlist_tracks_relations(
                     is_delete=False,
                     created_at=params.block_datetime,
                 )
+                # upsert to handle duplicates
                 session.merge(new_playlist_track_relation)
             elif existing_tracks[track_id].is_delete:
+                # recover deleted relation
                 params.logger.info(f"REED undeleting relation {track_id}")
                 existing_tracks[track_id].is_delete = False
 
@@ -343,7 +344,7 @@ def update_playlist(params: ManageEntityParameters):
     update_playlist_routes_table(params, playlist_record, False)
 
     params.logger.info("REED before update: ")
-    update_playlist_tracks_relations(params, playlist_record, existing_playlist)
+    update_playlist_tracks_relations(params, playlist_record)
 
     params.add_record(playlist_id, playlist_record)
 
