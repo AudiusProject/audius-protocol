@@ -21,7 +21,7 @@ import type {
   AudiusSdk as AudiusSdkType,
   ServicesConfig,
   DecodedUserToken
-} from '@audius/sdk/dist/sdk/index.d.ts'
+} from '@audius/sdk'
 import Hashids from 'hashids'
 
 import { FeatureFlags } from '../utils/constants'

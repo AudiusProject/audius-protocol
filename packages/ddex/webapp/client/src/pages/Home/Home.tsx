@@ -9,7 +9,7 @@ export const Home = () => {
   const { audiusSdk, currentUser, oauthError } = useAudiusSdk()
 
   const handleOauth = () => {
-    audiusSdk!.oauth!.login({ scope: 'read' })
+    audiusSdk!.oauth!.login({ scope: 'write' })
   }
 
   if (!audiusSdk) {
