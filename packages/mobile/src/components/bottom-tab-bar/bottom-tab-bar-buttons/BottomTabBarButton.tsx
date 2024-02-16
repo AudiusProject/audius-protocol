@@ -74,7 +74,7 @@ const BottomTabBarRiveButton = (props: BottomTabBarRiveButtonProps) => {
 
   useEffect(() => {
     if (previousActive && !isActive) {
-      riveRef.current?.stop()
+      riveRef.current?.reset()
     }
   }, [isActive, previousActive])
 
