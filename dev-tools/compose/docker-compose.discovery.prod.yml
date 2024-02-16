@@ -153,7 +153,7 @@ services:
     healthcheck:
       test: [
           "CMD-SHELL",
-          "pgrep pg_migrate || curl -f http://localhost:5000/health_check?bypass_errors=true || exit 1"
+          "pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1"
         ]
     depends_on:
       db:
