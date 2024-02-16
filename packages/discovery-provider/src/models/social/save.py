@@ -31,7 +31,7 @@ class Save(Base, RepresentableMixin):
         Index("save_user_id_idx", "user_id", "save_type"),
     )
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
@@ -56,9 +56,6 @@ class Save(Base, RepresentableMixin):
     )
     slot = Column(Integer)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Save.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Save.blocknumber == Block.number"
     )

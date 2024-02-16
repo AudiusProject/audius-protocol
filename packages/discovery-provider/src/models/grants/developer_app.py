@@ -16,7 +16,7 @@ from src.models.model_utils import RepresentableMixin
 class DeveloperApp(Base, RepresentableMixin):
     __tablename__ = "developer_apps"
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     address = Column(String, primary_key=True, nullable=False, index=True)
     user_id = Column(Integer, nullable=True)
