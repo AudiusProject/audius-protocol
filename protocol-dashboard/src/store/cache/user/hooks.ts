@@ -345,12 +345,12 @@ type UseUserProps = { wallet: Address }
 type UseUserResponse =
   | {
       user: User | Operator
-      audiusProfile?: DashboardWalletUser | null
+      audiusProfile?: DashboardWalletUser['user'] | null
       status: Status.Success | Status.Loading
     }
   | {
       user: undefined
-      audiusProfile?: DashboardWalletUser | null
+      audiusProfile?: DashboardWalletUser['user'] | null
       status: Status.Failure | Status.Loading
     }
 export const useUser = ({ wallet }: UseUserProps): UseUserResponse => {

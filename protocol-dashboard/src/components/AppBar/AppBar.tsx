@@ -1,5 +1,6 @@
+import { Box, Text, useTheme, HarmonyTheme } from '@audius/harmony'
 import { IconLink } from '@audius/stems'
-import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import BN from 'bn.js'
 import clsx from 'clsx'
 import Button from 'components/Button'
@@ -15,9 +16,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useAccount } from 'store/account/hooks'
-import { useEthBlockNumber } from 'store/cache/protocol/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, Status } from 'types'
 import getActiveStake from 'utils/activeStake'
@@ -25,7 +24,7 @@ import { usePushRoute } from 'utils/effects'
 import { formatShortWallet } from 'utils/format'
 import { useIsMobile, useModalControls } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
-import { accountPage, isCryptoPage } from 'utils/routes'
+import { accountPage } from 'utils/routes'
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
 
@@ -34,7 +33,7 @@ const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
   title: 'AUDIUS',
-  name: 'PROTOCOL DASHBOARD',
+  name: 'Protocol Dashboard',
   launchApp: 'LAUNCH THE APP',
   connectMetaMask: 'Connect Metamask',
   metaMaskMisconfigured: 'Metamask Misconfigured',
@@ -162,6 +161,7 @@ const AppBar: React.FC<AppBarProps> = () => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
   const timeoutIdRef = useRef<NodeJS.Timeout>(null)
+  const { spacing, color } = useTheme() as HarmonyTheme
   const [isAudiusClientSetup, setIsAudiusClientSetup] = useState(false)
   const [isMisconfigured, setIsMisconfigured] = useState(false)
   const [
@@ -174,9 +174,6 @@ const AppBar: React.FC<AppBarProps> = () => {
     status: audiusProfileDataStatus
   } = useDashboardWalletUser(wallet)
   const hasConnectedAudiusAccount = audiusProfileData != null
-  const ethBlock = useEthBlockNumber()
-  const { pathname } = useLocation()
-  const showBlock = isCryptoPage(pathname) && ethBlock
 
   const waitForSetup = async () => {
     timeoutIdRef.current = setTimeout(() => {
@@ -225,15 +222,23 @@ const AppBar: React.FC<AppBarProps> = () => {
   return (
     <div className={styles.appBar}>
       <div className={styles.left}>
-        <Logo className={styles.logo} />
-        <div className={styles.name}>{messages.name}</div>
-        <div
-          className={clsx(styles.currentBlock, {
-            [styles.show]: showBlock
-          })}
-        >
-          <div className={styles.block}>{ethBlock}</div>
-          <div className={styles.title}>{messages.block}</div>
+        <IconAudiusLogoHorizontal color="staticWhite" className={styles.logo} />
+        <Box
+          h={spacing['2xl']}
+          css={{
+            borderRight: `solid 1px ${color.static.white}`,
+            opacity: '80%'
+          }}
+        />
+        <div className={styles.name}>
+          <Text
+            variant="heading"
+            size="s"
+            strength="default"
+            color="staticWhite"
+          >
+            {messages.name}
+          </Text>
         </div>
       </div>
       {!isMobile && (

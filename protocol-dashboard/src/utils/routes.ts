@@ -62,6 +62,8 @@ export const NOT_FOUND = '/404'
 
 // External Routes
 export const AUDIUS_API_URL = 'https://audius.org/api'
+export const OAF_URL = 'https://audius.org'
+export const WHITEPAPER_URL = 'https://whitepaper.audius.co'
 export const AUDIUS_DAPP_URL =
   import.meta.env.VITE_AUDIUS_URL || 'https://audius.co'
 
