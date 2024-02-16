@@ -130,7 +130,7 @@ export const useTikTokAuth = (args: UseTikTokAuthArguments) => {
   )
 
   return createUseTikTokAuthHook({
-    authenticate: createAuthenticate(isTikTokNativeAuthEnabled),
+    authenticate: createAuthenticate(!!isTikTokNativeAuthEnabled),
     handleError: (e: Error) => {
       track(
         make({
