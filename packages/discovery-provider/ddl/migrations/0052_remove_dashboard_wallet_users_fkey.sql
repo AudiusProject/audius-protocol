@@ -1,2 +1,2 @@
 ALTER TABLE dashboard_wallet_users
-DROP CONSTRAINT dashboard_wallet_users_blockhash_fkey;
+DROP CONSTRAINT IF EXISTS dashboard_wallet_users_blockhash_fkey;
