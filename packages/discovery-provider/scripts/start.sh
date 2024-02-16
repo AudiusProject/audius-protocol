@@ -70,6 +70,10 @@ else
             mem_usage=$(top -b -n 1)
             echo "$active_tasks"
             echo "$mem_usage"
+            timestamp=$(date '+%Y-%m-%d %H:%M:%S') # Generate timestamp
+            echo "[$timestamp] $active_tasks" >> /var/log/active_task.log
+            echo "[$timestamp] $mem_usage" >>  /var/log/active_task.log
+
         done &
 
     fi
