@@ -12,7 +12,6 @@ import (
 	"image/png"
 	"io"
 	"log"
-	"mime/multipart"
 	"os"
 	"os/exec"
 	"strings"
@@ -617,35 +616,6 @@ type FFProbeResult struct {
 		ProbeScore     int               `json:"probe_score"`
 		Tags           map[string]string `json:"tags,omitempty"`
 	} `json:"format"`
-}
-
-func ffprobeUpload(file *multipart.FileHeader) (*FFProbeResult, error) {
-	temp, err := os.CreateTemp("", "mediorumProbe")
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := file.Open()
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-
-	_, err = io.Copy(temp, r)
-	if err != nil {
-		return nil, err
-	}
-	temp.Close()
-	defer os.Remove(temp.Name())
-
-	probe, err := ffprobe(temp.Name())
-	if err != nil {
-		return nil, err
-	}
-
-	// restore orig filename
-	probe.Format.Filename = file.Filename
-	return probe, nil
 }
 
 func ffprobe(sourcePath string) (*FFProbeResult, error) {
