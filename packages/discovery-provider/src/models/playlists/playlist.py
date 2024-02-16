@@ -21,7 +21,7 @@ from src.models.users.user import User
 class Playlist(Base, RepresentableMixin):
     __tablename__ = "playlists"
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
