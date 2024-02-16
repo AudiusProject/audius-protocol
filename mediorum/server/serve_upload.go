@@ -180,6 +180,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.Error = err.Error()
 				return err
 			}
+			defer os.Remove(tmpFile.Name())
 
 			formFileCID, err := cidutil.ComputeFileCID(tmpFile)
 			if err != nil {
