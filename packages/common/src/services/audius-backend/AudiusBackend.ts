@@ -1021,7 +1021,6 @@ export const audiusBackend = ({
     onProgress: (loaded: number, total: number) => void,
     trackId?: number
   ) {
-    console.log('audiusBackend', trackId)
     try {
       const {
         trackId: updatedTrackId,

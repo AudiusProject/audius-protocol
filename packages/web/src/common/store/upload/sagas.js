@@ -188,8 +188,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     artwork,
     index,
     id,
-    updateProgress,
-    generatedTrackId
+    updateProgress
   ) => {
     return function* () {
       const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -202,7 +201,8 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         artwork,
         metadata,
         updateProgress ? makeOnProgress(index) : (progress) => { },
-        generatedTrackId
+        // If the track id isn't a temporary string, but a real id, use it
+        isNaN(metadata.id) ? undefined : metadata.id
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -221,7 +221,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         throw new Error('')
       }
 
-      console.debug(`Got new ID ${trackId} for track ${metadata.title}}`)
+      console.debug(`Got new ID ${trackId} for track ${metadata.title}`)
 
       const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
       if (!confirmed) {
@@ -385,7 +385,7 @@ export function* handleUploads({
 
   // Map of shape {[trackId]: { track: track, metadata: object, artwork?: file, index: number }}
   const idToTrackMap = tracks.reduce((prev, cur, idx) => {
-    const newId = `${cur.metadata.title}_${idx}`
+    const newId = cur.metadata.id ? cur.metadata.id : `${cur.metadata.title}_${idx}`
     prev[newId] = {
       track: cur.track,
       metadata: cur.metadata,
@@ -920,7 +920,6 @@ function* uploadSingleTrack(track) {
   // Technically _generateTrackId() is "private". Abusing JS here to get it
   // before the upload succeeds, and instead pass it through the upload process.
   const generatedTrackId = yield call([audiusLibs.Track, audiusLibs.Track._generateTrackId])
-  console.log('Generated track id:', generatedTrackId)
 
   const dispatcher = yield fork(actionChannelDispatcher, progressChan)
   const recordEvent = make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
@@ -962,7 +961,6 @@ function* uploadSingleTrack(track) {
     confirmerActions.requestConfirmation(
       `${track.metadata.title}`,
       function* () {
-        console.log('Uploading track...', generatedTrackId)
         const { blockHash, blockNumber, trackId, error, phase } = yield call(
           audiusBackendInstance.uploadTrack,
           track.file,
@@ -1006,7 +1004,6 @@ function* uploadSingleTrack(track) {
         throw new Error(`Exhausted retries querying for track ${trackId}`)
       },
       function* onSuccess(confirmedTrack) {
-        console.log('Uploading track success...')
         yield call(responseChan.put, { confirmedTrack })
       },
       function* ({ timeout, message }) {
@@ -1032,7 +1029,6 @@ function* uploadSingleTrack(track) {
   )
 
   const [{ confirmedTrack, error }] = yield all([take(responseChan), call(function* () {
-    console.log('Uploading stems...')
     const stems = yield select(getStems)
     if (stems.length) {
       yield call(uploadStems, {
@@ -1150,24 +1146,34 @@ export function* uploadStems({ parentTrackIds, stems }) {
 }
 
 function* uploadMultipleTracks(tracks) {
-  const tracksWithMetadata = tracks.map((track) => ({
-    track,
-    metadata: track.metadata
-  }))
-  console.log('Starting upload of tracks...')
-  const { trackIds } = yield call(handleUploads, {
+  // Cheating here - getting the track ID early so we can parallelize stems
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const audiusLibs = yield call([audiusBackendInstance, audiusBackendInstance.getAudiusLibs])
+  const tracksWithMetadata = yield all(tracks.map((track) => call(function* () {
+    // Technically _generateTrackId() is "private". Abusing JS here to get it
+    // before the upload succeeds, and instead pass it through the upload process.
+    const id = yield call([audiusLibs.Track, audiusLibs.Track._generateTrackId])
+    return {
+      track,
+      metadata: {
+        ...track.metadata,
+        id
+      }
+    }
+  })))
+  const [{ trackIds }] = yield all([call(handleUploads, {
     tracks: tracksWithMetadata,
     isCollection: false
-  })
-  console.log('Tracks uploaded, uploading stems...')
-  const stems = yield select(getStems)
-  if (stems.length) {
-    yield call(uploadStems, {
-      parentTrackIds: trackIds,
-      stems
-    })
-  }
-  console.log('Stems uploaded.')
+  }), call(function* () {
+    const stems = yield select(getStems)
+    if (stems.length) {
+      yield call(uploadStems, {
+        // Use generated track IDs from above
+        parentTrackIds: tracksWithMetadata.map(t => t.metadata.id),
+        stems
+      })
+    }
+  })])
 
   yield put(uploadActions.uploadTracksSucceeded())
   yield put(
