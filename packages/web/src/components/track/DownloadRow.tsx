@@ -1,5 +1,4 @@
 import { useDownloadableContentAccess } from '@audius/common/hooks'
-import { useIsMobile } from 'hooks/useIsMobile'
 import {
   ID,
   StemCategory,
@@ -13,6 +12,7 @@ import { shallowEqual, useSelector } from 'react-redux'
 import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './DownloadRow.module.css'
 
@@ -80,24 +80,14 @@ export const DownloadRow = ({
       direction='row'
       alignItems='center'
       justifyContent='space-between'
-      width='100%'
+      w='100%'
       gap='xs'
     >
-      <Flex
-        gap='xl'
-        alignItems='center'
-        width='100%'
-        css={{ overflow: 'hidden' }}
-      >
+      <Flex gap='xl' alignItems='center' w='100%' css={{ overflow: 'hidden' }}>
         <Text variant='body' color='subdued'>
           {index}
         </Text>
-        <Flex
-          direction='column'
-          gap='xs'
-          css={{ overflow: 'hidden' }}
-          width='100%'
-        >
+        <Flex direction='column' gap='xs' css={{ overflow: 'hidden' }} w='100%'>
           <Text variant='body' strength='default'>
             {category
               ? stemCategoryFriendlyNames[category]
