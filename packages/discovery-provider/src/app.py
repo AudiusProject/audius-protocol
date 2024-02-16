@@ -369,7 +369,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_user_bank": {
                 "task": "index_user_bank",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=1),
             },
             "index_payment_router": {
                 "task": "index_payment_router",
