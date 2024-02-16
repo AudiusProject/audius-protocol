@@ -93,7 +93,6 @@ export const createSession = async (config: Config): Promise<any> => {
         }
       }
     }
-    console.log('phanton', phantomIconPurpleSvg)
     if (config.isPhantomEnabled && window?.solana?.isPhantom) {
       providerOptions['custom-phantom'] = {
         display: {
