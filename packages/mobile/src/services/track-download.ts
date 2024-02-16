@@ -5,10 +5,10 @@ import { Platform, Share } from 'react-native'
 import { zip } from 'react-native-zip-archive'
 import type {
   FetchBlobResponse,
-  RNFetchBlobConfig,
+  ReactNativeBlobUtilConfig,
   StatefulPromise
-} from 'rn-fetch-blob'
-import RNFetchBlob from 'rn-fetch-blob'
+} from 'react-native-blob-util'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 import { dedupFilenames } from '~/utils'
 
 import { dispatch } from 'app/store'
@@ -32,14 +32,14 @@ const cancelDownloadTask = () => {
 
 const removePathIfExists = async (path: string) => {
   try {
-    const exists = await RNFetchBlob.fs.exists(path)
+    const exists = await ReactNativeBlobUtil.fs.exists(path)
     if (!exists) return
-    await RNFetchBlob.fs.unlink(path)
+    await ReactNativeBlobUtil.fs.unlink(path)
   } catch {}
 }
 
 /**
- * Download a file via RNFetchBlob
+ * Download a file via ReactNativeBlobUtil
  */
 const downloadOne = async ({
   fileUrl,
@@ -51,19 +51,19 @@ const downloadOne = async ({
   fileUrl: string
   filename: string
   directory: string
-  getFetchConfig: (filePath: string) => RNFetchBlobConfig
+  getFetchConfig: (filePath: string) => ReactNativeBlobUtilConfig
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
   const filePath = directory + '/' + filename
 
   try {
-    const fetchTask = RNFetchBlob.config(getFetchConfig(filePath)).fetch(
+    const fetchTask = ReactNativeBlobUtil.config(getFetchConfig(filePath)).fetch(
       'GET',
       fileUrl
     )
     fetchTasks = [fetchTask]
 
-    // TODO: The RNFetchBlob library is currently broken for download progress events on both platforms.
+    // TODO: The ReactNativeBlobUtil library is currently broken for download progress events on both platforms.
     // fetchTask.progress({ interval: 250 }, (received, total) => {
     //   dispatch(setDownloadedPercentage((received / total) * 100))
     // })
@@ -87,7 +87,7 @@ const downloadOne = async ({
 }
 
 /**
- * Download multiple files via RNFetchBlob
+ * Download multiple files via ReactNativeBlobUtil
  */
 const downloadMany = async ({
   files,
@@ -97,13 +97,13 @@ const downloadMany = async ({
 }: {
   files: { url: string; filename: string }[]
   directory: string
-  getFetchConfig: (filePath: string) => RNFetchBlobConfig
+  getFetchConfig: (filePath: string) => ReactNativeBlobUtilConfig
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
   dedupFilenames(files)
   try {
     const responsePromises = files.map(({ url, filename }) =>
-      RNFetchBlob.config(getFetchConfig(directory + '/' + filename)).fetch(
+      ReactNativeBlobUtil.config(getFetchConfig(directory + '/' + filename)).fetch(
         'GET',
         url
       )
@@ -156,7 +156,7 @@ const download = async ({
   dispatch(setFetchCancel(cancelDownloadTask))
 
   const audiusDirectory =
-    RNFetchBlob.fs.dirs.DocumentDir + '/' + audiusDownloadsDirectory
+    ReactNativeBlobUtil.fs.dirs.DocumentDir + '/' + audiusDownloadsDirectory
 
   if (Platform.OS === 'ios') {
     const onFetchComplete = async (path: string) => {
@@ -209,7 +209,7 @@ const download = async ({
         /* Single file download on Android will use the Download Manager and go
          * straight to the Downloads directory.
          */
-        directory: RNFetchBlob.fs.dirs.DownloadDir,
+        directory: ReactNativeBlobUtil.fs.dirs.DownloadDir,
         getFetchConfig: (filePath) => ({
           addAndroidDownloads: {
             description: filename,
@@ -236,13 +236,13 @@ const download = async ({
          * the initial downloads to avoid showing notifications, then manually add a
          * notification for the zip file.
          */
-        directory: RNFetchBlob.fs.dirs.DownloadDir + '/' + rootDirectoryName,
+        directory: ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + rootDirectoryName,
         getFetchConfig: (filePath) => ({
           fileCache: true,
           path: filePath
         }),
         onFetchComplete: async (path: string) => {
-          RNFetchBlob.android.addCompleteDownload({
+          ReactNativeBlobUtil.android.addCompleteDownload({
             title: rootDirectoryName,
             description: rootDirectoryName,
             mime: 'application/zip',

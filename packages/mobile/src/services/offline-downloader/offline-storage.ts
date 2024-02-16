@@ -10,11 +10,11 @@ import type {
 } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import { allSettled } from '@audius/common/utils'
-import RNFetchBlob from 'rn-fetch-blob'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 
 const {
   fs: { dirs, exists, ls, mkdir, readFile, unlink, writeFile }
-} = RNFetchBlob
+} = ReactNativeBlobUtil
 
 export type OfflineCollection = Collection & { user: UserMetadata }
 

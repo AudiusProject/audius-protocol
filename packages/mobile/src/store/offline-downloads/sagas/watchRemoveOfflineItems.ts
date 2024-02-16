@@ -1,4 +1,4 @@
-import RNFetchBlob from 'rn-fetch-blob'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 import { takeEvery, select, call, all } from 'typed-redux-saga'
 
 import {
@@ -44,15 +44,15 @@ function* removeItemFromDisk(
       getLocalCollectionDir,
       item.id.toString()
     )
-    const exists = yield* call(RNFetchBlob.fs.exists, collectionDirectory)
+    const exists = yield* call(ReactNativeBlobUtil.fs.exists, collectionDirectory)
     if (exists) {
-      yield* call(RNFetchBlob.fs.unlink, collectionDirectory)
+      yield* call(ReactNativeBlobUtil.fs.unlink, collectionDirectory)
     }
   } else if (item.type === 'track' && !trackStatus[item.id]) {
     const trackDirectory = yield* call(getLocalTrackDir, item.id.toString())
-    const exists = yield* call(RNFetchBlob.fs.exists, trackDirectory)
+    const exists = yield* call(ReactNativeBlobUtil.fs.exists, trackDirectory)
     if (exists) {
-      yield* call(RNFetchBlob.fs.unlink, trackDirectory)
+      yield* call(ReactNativeBlobUtil.fs.unlink, trackDirectory)
     }
   }
 }
