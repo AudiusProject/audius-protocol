@@ -479,56 +479,58 @@ function* doStartPurchaseContentFlow({
       usdcConfig.minUSDCPurchaseAmountCents
     )
 
-    if (purchaseMethod === PurchaseMethod.BALANCE && balanceNeeded.lten(0)) {
-      // No balance needed, perform the purchase right away
-      yield* call(purchaseContent, audiusBackendInstance, {
-        id: contentId,
-        blocknumber,
-        extraAmount: extraAmountBN,
-        splits,
-        type: 'track',
-        purchaserUserId,
-        purchaseAccess
-      })
-    } else {
-      // We need to acquire USDC before the purchase can continue
-      // Invariant: The user must be checking out with a card
-      if (purchaseMethod !== PurchaseMethod.CARD) {
-        throw new PurchaseContentError(
-          PurchaseErrorCode.InsufficientBalance,
-          'Unexpected insufficient balance to complete purchase'
-        )
-      }
-
-      const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
-      switch (purchaseVendor) {
-        case PurchaseVendor.COINFLOW:
-          // Purchase with coinflow, funding and completing the purchase in one step.
-          yield* call(purchaseWithCoinflow, {
-            blocknumber,
-            extraAmount,
-            splits,
-            contentId,
-            contentType,
-            purchaserUserId,
-            price: purchaseAmount,
-            purchaseAccess
-          })
-          break
-        case PurchaseVendor.STRIPE:
-          // Buy USDC with Stripe. Once funded, continue with purchase.
-          yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
-          yield* call(purchaseContent, audiusBackendInstance, {
-            id: contentId,
-            blocknumber,
-            extraAmount: extraAmountBN,
-            splits,
-            type: 'track',
-            purchaserUserId,
-            purchaseAccess
-          })
-          break
-      }
+    switch (purchaseMethod) {
+      case PurchaseMethod.BALANCE:
+      case PurchaseMethod.CRYPTO:
+        // Invariant: The user must have enough funds
+        if (balanceNeeded.gtn(0)) {
+          throw new PurchaseContentError(
+            PurchaseErrorCode.InsufficientBalance,
+            'Unexpected insufficient balance to complete purchase'
+          )
+        }
+        // No balance needed, perform the purchase right away
+        yield* call(purchaseContent, audiusBackendInstance, {
+          id: contentId,
+          blocknumber,
+          extraAmount: extraAmountBN,
+          splits,
+          type: 'track',
+          purchaserUserId,
+          purchaseAccess
+        })
+        break
+      case PurchaseMethod.CARD:
+        const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
+        switch (purchaseVendor) {
+          case PurchaseVendor.COINFLOW:
+            // Purchase with coinflow, funding and completing the purchase in one step.
+            yield* call(purchaseWithCoinflow, {
+              blocknumber,
+              extraAmount,
+              splits,
+              contentId,
+              contentType,
+              purchaserUserId,
+              price: purchaseAmount,
+              purchaseAccess
+            })
+            break
+          case PurchaseVendor.STRIPE:
+            // Buy USDC with Stripe. Once funded, continue with purchase.
+            yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
+            yield* call(purchaseContent, audiusBackendInstance, {
+              id: contentId,
+              blocknumber,
+              extraAmount: extraAmountBN,
+              splits,
+              type: 'track',
+              purchaserUserId,
+              purchaseAccess
+            })
+            break
+        }
+        break
     }
 
     // Mark the purchase as successful
