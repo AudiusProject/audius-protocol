@@ -585,6 +585,7 @@ export class Track extends Base {
     this.creatorNode.validateTrackSchema(metadata)
   }
 
+  // WARNING: CLIENT USES DIRECTLY IN upload/sagas.js !!!
   async _generateTrackId(): Promise<number> {
     const encodedId = await this.discoveryProvider.getUnclaimedId('tracks')
     if (!encodedId) {
