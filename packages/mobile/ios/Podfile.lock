@@ -1224,7 +1224,7 @@ PODS:
     - React-Core
     - RiveRuntime (= 5.5.1)
   - RiveRuntime (5.5.1)
-  - rn-fetch-blob (0.12.0):
+  - rn-fetch-blob (0.13.0-beta.1):
     - React-Core
   - RNBootSplash (5.2.1):
     - React-Core
@@ -1419,7 +1419,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - rive-react-native (from `../../../node_modules/rive-react-native`)
-  - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
+  - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
@@ -1635,7 +1635,7 @@ EXTERNAL SOURCES:
   rive-react-native:
     :path: "../../../node_modules/rive-react-native"
   rn-fetch-blob:
-    :path: "../../../node_modules/rn-fetch-blob"
+    :path: "../node_modules/rn-fetch-blob"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
@@ -1780,7 +1780,7 @@ SPEC CHECKSUMS:
   ReactCommon: ddb128564dcbfa0287d3d1a2d10f8c7457c971f6
   rive-react-native: 79777686cb29eaba6a28a0534fe82c8b8da41b4a
   RiveRuntime: b57830ff73f406f3b4022f457b16690535ca4d05
-  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
+  rn-fetch-blob: a55789391d32d9c951b5b9eb7e3c3635ec67e324
   RNBootSplash: f7fd5a7d4f1c13be3d0f5f31d27af7bcc1b1acef
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
