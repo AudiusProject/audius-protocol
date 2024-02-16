@@ -129,8 +129,10 @@ export const FinishPage = (props: FinishPageProps) => {
     return upload.uploadProgress.reduce((acc, progress) => {
       return (
         acc &&
-        progress.art.status === ProgressStatus.COMPLETE &&
-        progress.audio.status === ProgressStatus.COMPLETE
+        (progress.art.status === ProgressStatus.COMPLETE ||
+          progress.art.status === ProgressStatus.ERROR) &&
+        (progress.audio.status === ProgressStatus.COMPLETE ||
+          progress.audio.status === ProgressStatus.ERROR)
       )
     }, true)
   }, [upload])

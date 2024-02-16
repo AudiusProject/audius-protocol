@@ -513,7 +513,21 @@ export function* handleUploads({
         yield put(uploadActions.uploadSingleTrackFailed(index))
       }
 
-      if (message.includes('403')) {
+      // Set progress to errored for this track
+      yield put(
+        progressChan,
+        uploadActions.updateProgress(index, 'art', {
+          status: ProgressStatus.ERROR
+        })
+      )
+      yield put(
+        progressChan,
+        uploadActions.updateProgress(index, 'audio', {
+          status: ProgressStatus.ERROR
+        })
+      )
+
+      if (typeof message?.includes === 'function' && message.includes('403')) {
         // This is a rejection not a failure, record it as so
         rejectedRequests.push({ originalId, timeout, message, phase })
       } else {
@@ -1211,6 +1225,11 @@ function* uploadMultipleTracks(tracks) {
     yield put(recordEvent)
   }
 
+  // If EVERYTHING failed, don't mark this as a success!
+  if (trackIds.length === 0 || trackIds.every(t => t === undefined)) {
+    yield put(uploadActions.UPLOAD_TRACKS_FAILED)
+    return
+  }
 
   yield put(uploadActions.uploadTracksSucceeded())
   yield put(
