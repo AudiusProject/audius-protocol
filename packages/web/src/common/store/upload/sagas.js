@@ -200,7 +200,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (progress) => { },
+        updateProgress ? makeOnProgress(index) : (progress) => {},
         // If the track id isn't a temporary string, but a real id, use it
         typeof metadata.id !== 'number' ? undefined : metadata.id
       )
@@ -360,7 +360,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           ? makeConfirmerSuccessForCollection
           : makeConfirmerSuccess)(id, index, updateProgress),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
-        () => { },
+        () => {},
         UPLOAD_TIMEOUT_MILLIS
       )
     )
@@ -385,7 +385,9 @@ export function* handleUploads({
 
   // Map of shape {[trackId]: { track: track, metadata: object, artwork?: file, index: number }}
   const idToTrackMap = tracks.reduce((prev, cur, idx) => {
-    const newId = cur.metadata.id ? cur.metadata.id : `${cur.metadata.title}_${idx}`
+    const newId = cur.metadata.id
+      ? cur.metadata.id
+      : `${cur.metadata.title}_${idx}`
     prev[newId] = {
       track: cur.track,
       metadata: cur.metadata,
@@ -701,22 +703,26 @@ export function* handleUploads({
       }
       returnVal = { error: true }
     }
-  } else if (!isCollection &&
+  } else if (
+    !isCollection &&
     (failedRequests.length > 0 || rejectedRequests.length > 0)
   ) {
     // If any track didn't upload was a stem parent, delete associated stems
-    const failedTrackIds =
-      failedRequests.concat(rejectedRequests).map((r) => r.originalId)
-    const stemsToDelete = tracks.map((t, i) =>
-      failedTrackIds.includes(t.metadata?.stem_of?.parent_track_id)
-        ? trackIds[i]
-        : undefined
-    ).filter((t) => t !== undefined)
+    const failedTrackIds = failedRequests
+      .concat(rejectedRequests)
+      .map((r) => r.originalId)
+    const stemsToDelete = tracks
+      .map((t, i) =>
+        failedTrackIds.includes(t.metadata?.stem_of?.parent_track_id)
+          ? trackIds[i]
+          : undefined
+      )
+      .filter((t) => t !== undefined)
 
     if (stemsToDelete.length > 0) {
       console.debug(`Deleting ${stemsToDelete.length} orphaned stems...`)
-      yield all(stemsToDelete.map((id) =>
-        audiusBackendInstance.deleteTrack(id))
+      yield all(
+        stemsToDelete.map((id) => audiusBackendInstance.deleteTrack(id))
       )
     }
 
@@ -948,10 +954,16 @@ function* uploadSingleTrack(track) {
   const responseChan = yield call(channel)
 
   // Cheating here - getting the track ID early so we can parallelize stems
-  const audiusLibs = yield call([audiusBackendInstance, audiusBackendInstance.getAudiusLibs])
+  const audiusLibs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
   // Technically _generateTrackId() is "private". Abusing JS here to get it
   // before the upload succeeds, and instead pass it through the upload process.
-  const generatedTrackId = yield call([audiusLibs.Track, audiusLibs.Track._generateTrackId])
+  const generatedTrackId = yield call([
+    audiusLibs.Track,
+    audiusLibs.Track._generateTrackId
+  ])
 
   const dispatcher = yield fork(actionChannelDispatcher, progressChan)
   const recordEvent = make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
@@ -1055,20 +1067,23 @@ function* uploadSingleTrack(track) {
         yield cancel(dispatcher)
         yield call(responseChan.put, { error: message })
       },
-      () => { },
+      () => {},
       UPLOAD_TIMEOUT_MILLIS
     )
   )
 
-  const [{ confirmedTrack, error }] = yield all([take(responseChan), call(function* () {
-    const stems = yield select(getStems)
-    if (stems.length) {
-      yield call(uploadStems, {
-        parentTrackIds: [generatedTrackId],
-        stems
-      })
-    }
-  })])
+  const [{ confirmedTrack, error }] = yield all([
+    take(responseChan),
+    call(function* () {
+      const stems = yield select(getStems)
+      if (stems.length) {
+        yield call(uploadStems, {
+          parentTrackIds: [generatedTrackId],
+          stems
+        })
+      }
+    })
+  ])
 
   const isRejected = error === 'Request failed with status code 403'
 
@@ -1180,25 +1195,35 @@ export function* uploadStems({ parentTrackIds, stems }) {
 function* uploadMultipleTracks(tracks) {
   // Cheating here - getting the track ID early so we can parallelize stems
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const audiusLibs = yield call([audiusBackendInstance, audiusBackendInstance.getAudiusLibs])
-  const tracksWithMetadata = yield all(tracks.map((track) => call(function* () {
-    // Technically _generateTrackId() is "private". Abusing JS here to get it
-    // before the upload succeeds, and instead pass it through the upload process.
-    const id = yield call([audiusLibs.Track, audiusLibs.Track._generateTrackId])
-    return {
-      track,
-      metadata: {
-        ...track.metadata,
-        id
-      }
-    }
-  })))
+  const audiusLibs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  const tracksWithMetadata = yield all(
+    tracks.map((track) =>
+      call(function* () {
+        // Technically _generateTrackId() is "private". Abusing JS here to get it
+        // before the upload succeeds, and instead pass it through the upload process.
+        const id = yield call([
+          audiusLibs.Track,
+          audiusLibs.Track._generateTrackId
+        ])
+        return {
+          track,
+          metadata: {
+            ...track.metadata,
+            id
+          }
+        }
+      })
+    )
+  )
 
   // Get stem metadatas
   const stems = yield select(getStems)
   const updatedStems = updateAndFlattenStems(
     stems,
-    tracksWithMetadata.map(t => t.metadata.id)
+    tracksWithMetadata.map((t) => t.metadata.id)
   )
   const allUploads = tracksWithMetadata.concat(updatedStems)
 
@@ -1214,7 +1239,9 @@ function* uploadMultipleTracks(tracks) {
     const parentTrackId = allUploads[i]?.metadata?.stem_of?.parent_track_id
     const category = allUploads[i]?.metadata?.stem_of?.category
     if (!trackIds.includes(parentTrackId)) {
-      console.debug(`Stem ${trackId} (${allUploads[i].metadata.title}) was not successful as its parent wasn't uploaded`)
+      console.debug(
+        `Stem ${trackId} (${allUploads[i].metadata.title}) was not successful as its parent wasn't uploaded`
+      )
       continue
     }
     const recordEvent = make(Name.STEM_COMPLETE_UPLOAD, {
@@ -1226,7 +1253,7 @@ function* uploadMultipleTracks(tracks) {
   }
 
   // If EVERYTHING failed, don't mark this as a success!
-  if (trackIds.length === 0 || trackIds.every(t => t === undefined)) {
+  if (trackIds.length === 0 || trackIds.every((t) => t === undefined)) {
     yield put(uploadActions.UPLOAD_TRACKS_FAILED)
     return
   }
