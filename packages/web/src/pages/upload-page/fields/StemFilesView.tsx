@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -8,6 +8,7 @@ import {
   StemUploadWithFile
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { encodeHashId } from '@audius/common/utils'
 import { IconRemove, Box, Flex, Text as HarmonyText } from '@audius/harmony'
 import { IconButton } from '@audius/stems'
 import cn from 'classnames'
@@ -17,6 +18,7 @@ import Dropdown from 'components/navigation/Dropdown'
 import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
+import { audiusSdk } from 'services/audius-sdk'
 import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesView.module.css'
@@ -29,6 +31,64 @@ const messages = {
   maxCapacity: 'Reached upload limit of 10 files.',
   stemTypeHeader: 'Select Stem Type',
   stemTypeDescription: 'Please select a stem type for each of your files.'
+}
+
+const useStemFileInfos = (stems: StemUploadWithFile[]) => {
+  const [fileInfos, setFileInfos] = useState<{ [index: number]: File }>({})
+
+  useEffect(() => {
+    const indexToTrackIdsMap = stems.reduce((acc, stem, i) => {
+      if (!stem.file) acc[i] = stem.metadata.track_id
+      return acc
+    }, {})
+    const indexToTrackTitlesMap = stems.reduce((acc, stem, i) => {
+      if (!stem.file) acc[i] = stem.metadata.orig_filename ?? ''
+      return acc
+    }, {})
+
+    const fetchInfos = async (indexToTrackIdsMap: {
+      [index: number]: number
+    }) => {
+      try {
+        const sdk = await audiusSdk()
+        const indices = Object.keys(indexToTrackIdsMap) as unknown as number[]
+        const responses = await Promise.all(
+          indices.map(async (i: number) => {
+            const trackId = indexToTrackIdsMap[i]
+            return {
+              i,
+              res: await sdk.tracks.inspectTrack({
+                trackId: encodeHashId(trackId),
+                original: true
+              })
+            }
+          })
+        )
+        const datas = responses.reduce((acc, { i, res }) => {
+          acc[i] = res
+          return acc
+        }, {})
+        const infos = stems.reduce((acc, stem, i) => {
+          if (!stem.file) {
+            const name = indexToTrackTitlesMap[i]
+            const type = datas[i]?.data?.contentType ?? ''
+            const size = datas[i]?.data?.size ?? 0
+            acc[i] = { name, type, size }
+          } else {
+            acc[i] = stem.file
+          }
+          return acc
+        }, {})
+        setFileInfos(infos)
+      } catch (e) {
+        console.error(`Error inspecting stem tracks: ${e}`)
+      }
+    }
+
+    fetchInfos(indexToTrackIdsMap)
+  }, [stems])
+
+  return fileInfos
 }
 
 type StemFilesViewProps = {
@@ -49,6 +109,8 @@ export const StemFilesView = ({
   const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
+
+  const fileInfos = useStemFileInfos(stems)
 
   const renderStemFiles = () => {
     return stems.length > 0 ? (
@@ -75,15 +137,12 @@ export const StemFilesView = ({
               index={i}
               displayIndex={stems.length > 1}
               key={`stem-${i}`}
-              trackTitle={stem.file?.name ?? stem.metadata.orig_filename ?? ''}
-              fileType={stem.file?.type ?? ''} // TODO: Get correct file type for pre-existing stems
-              fileSize={stem.file?.size ?? 0} // TODO: Get correct file size for pre-existing stems
+              file={fileInfos[i] ?? stem.file}
               onRemove={() => onDeleteStem(i)}
               stemCategory={stem.category}
               onEditStemCategory={(category) => onSelectCategory(category, i)}
               allowCategorySwitch={stem.allowCategorySwitch}
               allowDelete={stem.allowDelete}
-              isUpload={isUpload}
               isStem
             />
           ))}
