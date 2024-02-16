@@ -56,9 +56,6 @@ class Save(Base, RepresentableMixin):
     )
     slot = Column(Integer)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Save.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Save.blocknumber == Block.number"
     )
