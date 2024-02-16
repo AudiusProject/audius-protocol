@@ -51,7 +51,7 @@ const useStemFileInfos = (stems: StemUploadWithFile[]) => {
     }) => {
       try {
         const sdk = await audiusSdk()
-        const indices = Object.keys(indexToTrackIdsMap) as unknown as number[]
+        const indices = Object.keys(indexToTrackIdsMap).map(Number)
         const responses = await Promise.all(
           indices.map(async (i: number) => {
             const trackId = indexToTrackIdsMap[i]
