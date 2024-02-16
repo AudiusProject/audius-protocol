@@ -5,7 +5,7 @@ import type {
 import { SquareSizes } from '@audius/common/models'
 import { accountSelectors, getContext } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import RNFetchBlob from 'rn-fetch-blob'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
 
 import { createAllImageSources } from 'app/hooks/useContentNodeImage'
@@ -183,7 +183,7 @@ async function writeCollectionMetadata(collection: UserCollectionMetadata) {
   const collectionMetadataPath = getLocalCollectionJsonPath(
     playlist_id.toString()
   )
-  return await RNFetchBlob.fs.writeFile(
+  return await ReactNativeBlobUtil.fs.writeFile(
     collectionMetadataPath,
     JSON.stringify(collection)
   )
@@ -191,7 +191,7 @@ async function writeCollectionMetadata(collection: UserCollectionMetadata) {
 
 async function removeDownloadedCollection(collectionId: CollectionId) {
   const collectionDir = getLocalCollectionDir(collectionId.toString())
-  const exists = await RNFetchBlob.fs.exists(collectionDir)
+  const exists = await ReactNativeBlobUtil.fs.exists(collectionDir)
   if (!exists) return
-  return await RNFetchBlob.fs.unlink(collectionDir)
+  return await ReactNativeBlobUtil.fs.unlink(collectionDir)
 }
