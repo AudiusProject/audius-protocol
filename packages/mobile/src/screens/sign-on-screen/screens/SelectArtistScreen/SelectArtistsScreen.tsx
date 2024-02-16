@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
 import { selectArtistsPageMessages } from '@audius/common/messages'
-import { finishSignUp } from 'audius-client/src/common/store/pages/signon/actions'
+import {
+  addFollowArtists,
+  finishSignUp,
+  completeFollowArtists
+} from 'audius-client/src/common/store/pages/signon/actions'
 import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
 import {
   getFollowIds,
@@ -55,12 +59,15 @@ export const SelectArtistsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
+    // Follow selected artists
+    dispatch(addFollowArtists(selectedArtists))
+    dispatch(completeFollowArtists())
     // This call is what eventually triggers the RootScreen to redirect to the home page (via conditional rendering)
     dispatch(finishSignUp())
     if (accountCreationStatus === EditingStatus.LOADING) {
       navigation.navigate('AccountLoading')
     }
-  }, [accountCreationStatus, dispatch, navigation])
+  }, [accountCreationStatus, dispatch, navigation, selectedArtists])
 
   return (
     <SelectArtistsPreviewContextProvider>

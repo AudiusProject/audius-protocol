@@ -47,6 +47,8 @@ export const Page = (props: PageProps) => {
       style={[
         css({
           zIndex: 1,
+          minHeight:
+            Dimensions.get('window').height - insets.top - insets.bottom,
           paddingBottom: insets.bottom
         }),
         style

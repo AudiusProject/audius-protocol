@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
@@ -66,6 +67,7 @@ export const RootScreen = () => {
   const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )
+  const { navigate } = useNavigation()
 
   const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
 
@@ -107,6 +109,10 @@ export const RootScreen = () => {
       if (showHomeStack && startedSignUp && !welcomeModalShown) {
         openWelcomeDrawer()
         setWelcomeModalShown(true)
+        // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
+        if (navigate) {
+          navigate('HomeStack')
+        }
       }
     }
   }, [
@@ -114,7 +120,8 @@ export const RootScreen = () => {
     openWelcomeDrawer,
     showHomeStack,
     startedSignUp,
-    welcomeModalShown
+    welcomeModalShown,
+    navigate
   ])
 
   return (
