@@ -242,19 +242,21 @@ const download = async ({
           path: filePath
         }),
         onFetchComplete: async (path: string) => {
+          let mediaStoragePath
           // On android 13+, we need to manually copy to media storage
           try {
-            await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
-              {
-                // The name of the file that should show up in Downloads as a .zip
-                name: rootDirectoryName,
-                // Can be left empty as we're putting the file into downloads
-                parentFolder: '',
-                mimeType: 'application/zip'
-              },
-              'Download',
-              path
-            )
+            mediaStoragePath =
+              await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
+                {
+                  // The name of the file that should show up in Downloads as a .zip
+                  name: rootDirectoryName,
+                  // Can be left empty as we're putting the file into downloads
+                  parentFolder: '',
+                  mimeType: 'application/zip'
+                },
+                'Download',
+                path
+              )
           } catch (e) {
             console.error(e)
             // Continue on because on android <13+ the media storage copy will
@@ -267,7 +269,7 @@ const download = async ({
             title: rootDirectoryName,
             description: rootDirectoryName,
             mime: 'application/zip',
-            path,
+            path: mediaStoragePath ?? path,
             showNotification: true
           })
           dispatch(downloadFinished())
