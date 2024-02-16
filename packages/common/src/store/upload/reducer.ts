@@ -70,9 +70,13 @@ const actionsMap = {
     const newState = { ...state }
     newState.uploading = true
     newState.tracks = action.tracks
-    newState.uploadProgress = action.tracks.map(() =>
-      cloneDeep(initialUploadState)
-    )
+    newState.uploadProgress = action.tracks
+      .map(() => cloneDeep(initialUploadState))
+      .concat(
+        action.stems
+          ?.map((t) => t.map(() => cloneDeep(initialUploadState)))
+          .flat(1) ?? []
+      )
     newState.metadata = action.metadata ?? null
     newState.uploadType = action.uploadType ?? null
     newState.stems = action.stems ?? newState.stems

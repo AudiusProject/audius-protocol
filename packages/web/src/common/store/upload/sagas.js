@@ -202,7 +202,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         metadata,
         updateProgress ? makeOnProgress(index) : (progress) => { },
         // If the track id isn't a temporary string, but a real id, use it
-        isNaN(metadata.id) ? undefined : metadata.id
+        typeof metadata.id !== 'number' ? undefined : metadata.id
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -420,7 +420,7 @@ export function* handleUploads({
   // Give our workers jobs to do
   const ids = Object.keys(idToTrackMap)
   for (let i = 0; i < ids.length; i++) {
-    const id = ids[i]
+    const id = isNaN(ids[i]) ? ids[i] : Number(ids[i])
     const value = idToTrackMap[id]
     const request = {
       id,
@@ -687,7 +687,25 @@ export function* handleUploads({
       }
       returnVal = { error: true }
     }
-  } else if (!isCollection && failedRequests.length > 0) {
+  } else if (!isCollection &&
+    (failedRequests.length > 0 || rejectedRequests.length > 0)
+  ) {
+    // If any track didn't upload was a stem parent, delete associated stems
+    const failedTrackIds =
+      failedRequests.concat(rejectedRequests).map((r) => r.originalId)
+    const stemsToDelete = tracks.map((t, i) =>
+      failedTrackIds.includes(t.metadata?.stem_of?.parent_track_id)
+        ? trackIds[i]
+        : undefined
+    ).filter((t) => t !== undefined)
+
+    if (stemsToDelete.length > 0) {
+      console.debug(`Deleting ${stemsToDelete.length} orphaned stems...`)
+      yield all(stemsToDelete.map((id) =>
+        audiusBackendInstance.deleteTrack(id))
+      )
+    }
+
     // If some requests failed for multitrack, log em
     yield all(
       failedRequests.map((r) => {
@@ -1161,19 +1179,38 @@ function* uploadMultipleTracks(tracks) {
       }
     }
   })))
-  const [{ trackIds }] = yield all([call(handleUploads, {
-    tracks: tracksWithMetadata,
+
+  // Get stem metadatas
+  const stems = yield select(getStems)
+  const updatedStems = updateAndFlattenStems(
+    stems,
+    tracksWithMetadata.map(t => t.metadata.id)
+  )
+  const allUploads = tracksWithMetadata.concat(updatedStems)
+
+  // Upload tracks and stems parallel together
+  const { trackIds } = yield call(handleUploads, {
+    tracks: allUploads,
     isCollection: false
-  }), call(function* () {
-    const stems = yield select(getStems)
-    if (stems.length) {
-      yield call(uploadStems, {
-        // Use generated track IDs from above
-        parentTrackIds: tracksWithMetadata.map(t => t.metadata.id),
-        stems
-      })
+  })
+
+  // Record stem upload events
+  for (let i = tracksWithMetadata.length; i < trackIds.length; i += 1) {
+    const trackId = trackIds[i]
+    const parentTrackId = allUploads[i]?.metadata?.stem_of?.parent_track_id
+    const category = allUploads[i]?.metadata?.stem_of?.category
+    if (!trackIds.includes(parentTrackId)) {
+      console.debug(`Stem ${trackId} (${allUploads[i].metadata.title}) was not successful as its parent wasn't uploaded`)
+      continue
     }
-  })])
+    const recordEvent = make(Name.STEM_COMPLETE_UPLOAD, {
+      id: trackId,
+      parent_track_id: parentTrackId,
+      category
+    })
+    yield put(recordEvent)
+  }
+
 
   yield put(uploadActions.uploadTracksSucceeded())
   yield put(
