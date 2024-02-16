@@ -96,15 +96,13 @@ type StemFilesViewProps = {
   stems: StemUploadWithFile[]
   onSelectCategory: (category: StemCategory, index: number) => void
   onDeleteStem: (index: number) => void
-  isUpload: boolean
 }
 
 export const StemFilesView = ({
   onAddStems,
   stems,
   onSelectCategory,
-  onDeleteStem,
-  isUpload
+  onDeleteStem
 }: StemFilesViewProps) => {
   const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED

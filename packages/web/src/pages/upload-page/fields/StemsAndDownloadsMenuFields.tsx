@@ -390,7 +390,6 @@ export const StemsAndDownloadsMenuFields = (
         onAddStems={handleAddStems}
         onSelectCategory={handleSelectCategory}
         onDeleteStem={handleDeleteStem}
-        isUpload={props.isUpload}
       />
     </div>
   )
