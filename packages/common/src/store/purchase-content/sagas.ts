@@ -481,7 +481,7 @@ function* doStartPurchaseContentFlow({
 
     switch (purchaseMethod) {
       case PurchaseMethod.BALANCE:
-      case PurchaseMethod.CRYPTO:
+      case PurchaseMethod.CRYPTO: {
         // Invariant: The user must have enough funds
         if (balanceNeeded.gtn(0)) {
           throw new PurchaseContentError(
@@ -500,7 +500,8 @@ function* doStartPurchaseContentFlow({
           purchaseAccess
         })
         break
-      case PurchaseMethod.CARD:
+      }
+      case PurchaseMethod.CARD: {
         const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
         switch (purchaseVendor) {
           case PurchaseVendor.COINFLOW:
@@ -531,6 +532,7 @@ function* doStartPurchaseContentFlow({
             break
         }
         break
+      }
     }
 
     // Mark the purchase as successful
