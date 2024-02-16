@@ -201,7 +201,7 @@ type CollectionMetadata struct {
 	IsPrivate       bool           `bson:"is_private"`
 	Tags            NullableString `bson:"tags,omitempty"`
 	Genre           Genre          `bson:"genre"`
-	Mood            Mood           `bson:"mood"`
+	Mood            Mood           `bson:"mood,omitempty"`
 	ReleaseDate     time.Time      `bson:"release_date"`
 
 	// TODO: Handle these fields

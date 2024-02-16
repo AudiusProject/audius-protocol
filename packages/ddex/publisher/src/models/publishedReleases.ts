@@ -6,7 +6,6 @@ import {
 
 // DDEX releases that have been published
 const publishedReleasesSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
   upload_etag: String,
   delivery_id: mongoose.Schema.Types.ObjectId,
   publish_date: Date,
@@ -23,5 +22,9 @@ const PublishedReleases = mongoose.model(
   publishedReleasesSchema,
   'published_releases'
 )
+
+export type PublishedRelease = mongoose.InferSchemaType<
+  typeof publishedReleasesSchema
+>
 
 export default PublishedReleases

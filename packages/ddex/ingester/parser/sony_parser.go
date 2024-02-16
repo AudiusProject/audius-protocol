@@ -326,7 +326,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 						continue
 					}
 					if coverArtURL != "" {
-						fmt.Printf("Skipping duplicate audio file for Image %s\n", ci.Reference)
+						fmt.Printf("Skipping duplicate cover art file for Image %s\n", ci.Reference)
 					}
 					coverArtURL = fmt.Sprintf("s3://%s/%s/%s%s", indexedBucket, deliveryIDHex, d.FileDetails.FilePath, d.FileDetails.FileName)
 					coverArtURLHash = d.FileDetails.HashSum
