@@ -10,7 +10,8 @@ import {
   PublicKey,
   LAMPORTS_PER_SOL,
   TransactionInstruction,
-  Transaction
+  Transaction,
+  ComputeBudgetProgram
 } from '@solana/web3.js'
 import * as solanaWeb3 from '@solana/web3.js'
 import BN from 'bn.js'
@@ -83,6 +84,10 @@ const SOL_PER_LAMPORT = 0.000000001
 
 // Generous default connection confirmation timeout to better cope with RPC congestion
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
+
+const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice({
+  microLamports: 100000 // micro lamports
+})
 
 export type SolanaWeb3Config = {
   //  the RPC endpoint to make requests against
@@ -584,8 +589,9 @@ export class SolanaWeb3Manager {
       programId: MEMO_PROGRAM_ID,
       data: Buffer.from(data)
     })
+
     return await this.transactionHandler.handleTransaction({
-      instructions: [...instructions, memoInstruction],
+      instructions: [...instructions, memoInstruction, priorityFeeInstruction],
       skipPreflight: true,
       feePayerOverride: this.feePayerKey
     })
@@ -710,7 +716,8 @@ export class SolanaWeb3Manager {
     const instructions = [
       transferInstruction,
       paymentRouterInstruction,
-      memoInstruction
+      memoInstruction,
+      priorityFeeInstruction
     ]
     return instructions
   }

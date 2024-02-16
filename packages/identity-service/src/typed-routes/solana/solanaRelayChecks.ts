@@ -39,6 +39,7 @@ const PAYMENT_ROUTER_PROGRAM_ID: string = config.get(
 )
 const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+const COMPUTE_BUDGET_PROGRAM_ID = 'ComputeBudget111111111111111111111111111111'
 
 const audioMintAddress: string = config.get('solanaMintAddress')
 const usdcMintAddress: string = config.get('solanaUSDCMintAddress')
@@ -440,6 +441,7 @@ export const assertRelayAllowedInstructions = async (
       case PAYMENT_ROUTER_PROGRAM_ID:
       case MEMO_PROGRAM_ID:
       case MEMO_V2_PROGRAM_ID:
+      case COMPUTE_BUDGET_PROGRAM_ID:
         // All instructions of these programs are allowed
         break
       default:
