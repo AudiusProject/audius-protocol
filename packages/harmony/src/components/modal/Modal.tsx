@@ -17,9 +17,7 @@ import ReactDOM from 'react-dom'
 import { animated, useTransition } from 'react-spring'
 import { useEffectOnce } from 'react-use'
 
-import { useClickOutside } from 'hooks/useClickOutside'
-
-import { useHotkeys, useScrollLock } from '../../hooks'
+import { useHotkeys, useScrollLock, useClickOutside } from '../../hooks'
 import { IconClose } from '../../icons'
 
 import styles from './Modal.module.css'
@@ -348,7 +346,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                                 className={styles.dismissButton}
                                 onClick={onClose}
                               >
-                                <IconClose />
+                                <IconClose color='subdued' size='s' />
                               </div>
                             )}
                             <div

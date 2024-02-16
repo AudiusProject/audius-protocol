@@ -46,6 +46,8 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
             aria-label='dismiss dialog'
             className={cn(styles.dismissButton, dismissButtonClassName)}
             icon={IconClose}
+            color='subdued'
+            size='s'
             onClick={handleClose}
           />
         ) : null}
