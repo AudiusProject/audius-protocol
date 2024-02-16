@@ -142,7 +142,8 @@ export const DownloadAvailability = ({
         />
       ),
       disabled: isPremiumOptionDisabled,
-      variant: isUsdcUploadEnabled ? 'default' : 'subdued'
+      variant:
+        isPremiumOptionDisabled || !isUsdcUploadEnabled ? 'subdued' : 'default'
     }
   ]
 
