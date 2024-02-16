@@ -150,6 +150,11 @@ services:
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
+    healthcheck:
+      test: [
+          "CMD-SHELL",
+          "pgrep pg_migrate || curl -f http://localhost:5000/health_check?bypass_errors=true || exit 1"
+        ]
     depends_on:
       db:
         condition: service_healthy
