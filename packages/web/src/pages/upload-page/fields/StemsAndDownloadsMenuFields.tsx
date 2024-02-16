@@ -68,11 +68,13 @@ const messages = {
 }
 
 type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
+  isLosslessDownloadsEnabled: boolean
   isUsdcUploadEnabled: boolean
 }
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
   maxContentPriceCents,
+  isLosslessDownloadsEnabled,
   isUsdcUploadEnabled
 }: StemsAndDownloadsSchemaProps) =>
   z
@@ -131,7 +133,11 @@ export const stemsAndDownloadsSchema = ({
         const stems = formValues[STEMS]
         const hasStems = stems.length > 0
         const hasDownloadableAssets = isDownloadable || hasStems
-        return !isOriginalAvailable || hasDownloadableAssets
+        return (
+          !isLosslessDownloadsEnabled ||
+          !isOriginalAvailable ||
+          hasDownloadableAssets
+        )
       },
       {
         message: messages.losslessNoDownloadableAssets,

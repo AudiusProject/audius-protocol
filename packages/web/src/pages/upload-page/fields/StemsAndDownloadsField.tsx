@@ -330,6 +330,7 @@ export const StemsAndDownloadsField = ({
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema({
+          isLosslessDownloadsEnabled: !!isLosslessDownloadsEnabled,
           isUsdcUploadEnabled: !!isUsdcUploadEnabled,
           ...usdcPurchaseConfig
         })

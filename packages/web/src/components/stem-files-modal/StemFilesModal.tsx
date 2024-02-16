@@ -1,17 +1,14 @@
 import { useCallback } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   StemCategory,
   stemCategoryFriendlyNames,
   StemUpload,
   Download
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   Modal,
   Flex,
-  Box,
   Text as HarmonyText,
   Switch,
   IconRemove
@@ -23,7 +20,6 @@ import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Dropzone } from 'components/upload/Dropzone'
-import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
 import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesModal.module.css'
@@ -39,9 +35,6 @@ const messages = {
   allowDownloadsDescription:
     'Allow your fans to download a copy of your full track.',
   requireFollowToDownload: 'Require Follow to Download',
-  provideLosslessFiles: 'Provide Lossless Files',
-  provideLosslessFilesDescription:
-    'Provide your fans with the Lossless files you upload in addition to an mp3.',
   done: 'DONE',
   maxCapacity: 'Reached upload limit of 10 files.',
   stemTypeHeader: 'Select Stem Type',
@@ -131,47 +124,6 @@ const StemFilesView = ({
   onSelectCategory,
   onDeleteStem
 }: StemFilesViewProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
-  const renderStemFiles = () => {
-    return stems.length > 0 ? (
-      <Box p='xl'>
-        <Flex direction='column'>
-          <HarmonyText variant='title' size='l'>
-            {messages.stemTypeHeader}
-          </HarmonyText>
-          <Box mt='s'>
-            <HarmonyText variant='body'>
-              {messages.stemTypeDescription}
-            </HarmonyText>
-          </Box>
-        </Flex>
-        <Flex direction='column' mt='xl' borderRadius='m' border='default'>
-          {stems.map((stem, i) => (
-            <TrackPreviewNew
-              className={styles.stemPreview}
-              index={i}
-              displayIndex={stems.length > 1}
-              key={`stem-${i}`}
-              trackTitle={stem.metadata.title}
-              fileType=''
-              fileSize={0}
-              onRemove={() => onDeleteStem(i)}
-              stemCategory={stem.category}
-              onEditStemCategory={(category) => onSelectCategory(category, i)}
-              allowCategorySwitch={stem.allowCategorySwitch}
-              allowDelete={stem.allowDelete}
-              isUpload={false}
-              isStem
-            />
-          ))}
-        </Flex>
-      </Box>
-    ) : null
-  }
-
   const renderCurrentStems = () => {
     return (
       <div className={styles.stemRows}>
@@ -224,30 +176,21 @@ const StemFilesView = ({
 
   return (
     <div className={styles.sourceFilesContainer}>
-      {isLosslessDownloadsEnabled ? renderStemFiles() : null}
       {useRenderDropzone()}
-      {!isLosslessDownloadsEnabled ? renderCurrentStems() : null}
+      {renderCurrentStems()}
     </div>
   )
 }
 
 type DownloadSectionProps = {
-  isOriginalAvailable: boolean
-  onUpdateIsOriginalAvailable: (isOriginalAvailable: boolean) => void
   downloadSettings: Download
   onUpdateDownloadSettings: (downloadSettings: Download) => void
 }
 
 const DownloadSection = ({
-  isOriginalAvailable,
-  onUpdateIsOriginalAvailable,
   downloadSettings,
   onUpdateDownloadSettings
 }: DownloadSectionProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
   const toggleIsDownloadable = useCallback(() => {
     const newSettings = downloadSettings
       ? { ...downloadSettings }
@@ -261,14 +204,9 @@ const DownloadSection = ({
       // Enabling
       newSettings.is_downloadable = true
       newSettings.requires_follow = false
-      onUpdateIsOriginalAvailable(true)
     }
     onUpdateDownloadSettings(newSettings)
-  }, [downloadSettings, onUpdateDownloadSettings, onUpdateIsOriginalAvailable])
-
-  const toggleIsOriginalAvailable = useCallback(() => {
-    onUpdateIsOriginalAvailable(!isOriginalAvailable)
-  }, [onUpdateIsOriginalAvailable, isOriginalAvailable])
+  }, [downloadSettings, onUpdateDownloadSettings])
 
   const toggleRequiresFollow = useCallback(() => {
     const newSettings = downloadSettings
@@ -304,32 +242,15 @@ const DownloadSection = ({
       </Flex>
       <Divider />
       <div className={styles.downloadSetting}>
-        {isLosslessDownloadsEnabled ? (
-          <Flex direction='column' gap='l' w='100%'>
-            <Flex justifyContent='space-between'>
-              <HarmonyText variant='title' size='l'>
-                {messages.provideLosslessFiles}
-              </HarmonyText>
-              <Switch
-                checked={isOriginalAvailable}
-                onChange={toggleIsOriginalAvailable}
-              />
-            </Flex>
-            <HarmonyText variant='body'>
-              {messages.allowDownloadsDescription}
-            </HarmonyText>
-          </Flex>
-        ) : (
-          <>
-            <HarmonyText variant='title' size='l'>
-              {messages.requireFollowToDownload}
-            </HarmonyText>
-            <Switch
-              checked={downloadSettings?.requires_follow ?? false}
-              onChange={toggleRequiresFollow}
-            />
-          </>
-        )}
+        <>
+          <HarmonyText variant='title' size='l'>
+            {messages.requireFollowToDownload}
+          </HarmonyText>
+          <Switch
+            checked={downloadSettings?.requires_follow ?? false}
+            onChange={toggleRequiresFollow}
+          />
+        </>
       </div>
       <Divider />
     </Flex>
@@ -337,8 +258,6 @@ const DownloadSection = ({
 }
 
 type StemFilesModalProps = StemFilesViewProps & {
-  isOriginalAvailable: boolean
-  onUpdateIsOriginalAvailable: (isOriginalAvailable: boolean) => void
   downloadSettings: Download
   onUpdateDownloadSettings: (downloadSettings: Download) => void
   isOpen: boolean
@@ -346,8 +265,6 @@ type StemFilesModalProps = StemFilesViewProps & {
 }
 
 export const StemFilesModal = ({
-  isOriginalAvailable,
-  onUpdateIsOriginalAvailable,
   downloadSettings,
   onUpdateDownloadSettings,
   isOpen,
@@ -357,10 +274,6 @@ export const StemFilesModal = ({
   onSelectCategory,
   onDeleteStem
 }: StemFilesModalProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
   return (
     <Modal
       isOpen={isOpen}
@@ -372,16 +285,12 @@ export const StemFilesModal = ({
       // Since this can be nested in the edit track modal
       // Appear on top of it
       zIndex={1002}
-      bodyClassName={cn(styles.modalContainer, {
-        [styles.newModalContainer]: isLosslessDownloadsEnabled
-      })}
+      bodyClassName={styles.modalContainer}
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
       subtitleClassName={styles.modalSubtitle}
     >
       <DownloadSection
-        isOriginalAvailable={isOriginalAvailable}
-        onUpdateIsOriginalAvailable={onUpdateIsOriginalAvailable}
         downloadSettings={downloadSettings}
         onUpdateDownloadSettings={onUpdateDownloadSettings}
       />

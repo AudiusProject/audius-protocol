@@ -262,10 +262,6 @@ const BasicForm = (props) => {
   const renderSourceFilesModal = () => {
     return (
       <StemFilesModal
-        isOriginalAvailable={props.defaultFields.is_original_available}
-        onUpdateIsOriginalAvailable={(value) =>
-          props.onChangeField('is_original_available', value)
-        }
         downloadSettings={props.defaultFields.download}
         onUpdateDownloadSettings={(settings) =>
           props.onChangeField('download', settings)
