@@ -1,4 +1,4 @@
-import { round, clamp } from 'lodash'
+import { floor, clamp } from 'lodash'
 
 import { CommonState } from '../commonStore'
 
@@ -53,7 +53,7 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
 export const getCombinedUploadPercentage = (state: CommonState) => {
   const artProgress = getKeyUploadProgress(state, 'art')
   const audioProgress = getKeyUploadProgress(state, 'audio')
-  const percent = round(
+  const percent = floor(
     100 * (ART_WEIGHT * artProgress + AUDIO_WEIGHT * audioProgress)
   )
   return clamp(percent, 0, 100)

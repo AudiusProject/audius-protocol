@@ -458,21 +458,15 @@ export function* handleUploads({
   // Set some sensible progress values
   if (!isStem) {
     for (let i = 0; i < ids.length; i++) {
-      const trackFile = tracks[i].track.file
       yield put(
         progressChan,
         uploadActions.updateProgress(i, 'art', {
-          loaded: 0,
-          total: trackFile.size,
           status: ProgressStatus.UPLOADING
         })
       )
       yield put(
         progressChan,
-
         uploadActions.updateProgress(i, 'audio', {
-          loaded: 0,
-          total: trackFile.size,
           status: ProgressStatus.UPLOADING
         })
       )
