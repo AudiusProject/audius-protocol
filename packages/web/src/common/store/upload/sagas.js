@@ -48,7 +48,7 @@ import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { processAndCacheTracks } from '../cache/tracks/utils'
+import { processAndCacheTracks, retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
 
 import { watchUploadErrors } from './errorSagas'
@@ -938,260 +938,6 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
   )
 }
 
-function* uploadSingleTrack(track) {
-  yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const apiClient = yield getContext('apiClient')
-  // Need an object to hold phase error info that
-  // can get captured by confirmer closure
-  // while remaining mutable.
-  const phaseContainer = { phase: null }
-  const progressChan = yield call(channel)
-
-  // When the upload finishes, it should return
-  // either a { track_id } or { error } object,
-  // which is then used to upload stems if they exist.
-  const responseChan = yield call(channel)
-
-  // Cheating here - getting the track ID early so we can parallelize stems
-  const audiusLibs = yield call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibs
-  ])
-  // Technically _generateTrackId() is "private". Abusing JS here to get it
-  // before the upload succeeds, and instead pass it through the upload process.
-  const generatedTrackId = yield call([
-    audiusLibs.Track,
-    audiusLibs.Track._generateTrackId
-  ])
-
-  const dispatcher = yield fork(actionChannelDispatcher, progressChan)
-  const recordEvent = make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
-    artworkSource: track.metadata.artwork.source,
-    genre: track.metadata.genre,
-    mood: track.metadata.mood,
-    size: track.file.size,
-    type: track.file.type,
-    name: track.file.name,
-    downloadable:
-      track.metadata.download && track.metadata.download.is_downloadable
-        ? track.metadata.download.requires_follow
-          ? 'follow'
-          : 'yes'
-        : 'no'
-  })
-  yield put(recordEvent)
-
-  const onProgress = (progress) => {
-    const key = 'audio' in progress ? 'audio' : 'art' in progress ? 'art' : null
-    if (!key) return
-    const { upload, transcode } = progress[key]
-    const loaded = upload?.loaded
-    const total = upload?.total
-    progressChan.put(
-      uploadActions.updateProgress(0, key, {
-        loaded,
-        total,
-        transcode: transcode?.decimal,
-        status:
-          loaded !== total
-            ? ProgressStatus.UPLOADING
-            : ProgressStatus.PROCESSING
-      })
-    )
-  }
-
-  yield put(
-    confirmerActions.requestConfirmation(
-      `${track.metadata.title}`,
-      function* () {
-        const { blockHash, blockNumber, trackId, error, phase } = yield call(
-          audiusBackendInstance.uploadTrack,
-          track.file,
-          track.metadata.artwork.file,
-          track.metadata,
-          onProgress,
-          generatedTrackId
-        )
-
-        if (error) {
-          phaseContainer.phase = phase
-          throw new Error(error)
-        }
-
-        yield waitForWrite()
-        const userId = yield select(getUserId)
-        const handle = yield select(getUserHandle)
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
-        if (!confirmed) {
-          throw new Error(`Could not confirm upload single track ${trackId}`)
-        }
-
-        let retries = 30
-        while (retries !== 0) {
-          const maybeTrackRes = yield apiClient.getTrack({
-            id: trackId,
-            currentUserId: userId,
-            unlistedArgs: {
-              urlTitle: formatUrlName(track.metadata.title),
-              handle
-            }
-          })
-          if (maybeTrackRes !== undefined && maybeTrackRes !== null) {
-            return maybeTrackRes
-          }
-          // lil bit of delay for retries
-          yield delay(1500)
-          retries -= 1
-        }
-
-        throw new Error(`Exhausted retries querying for track ${trackId}`)
-      },
-      function* onSuccess(confirmedTrack) {
-        yield call(responseChan.put, { confirmedTrack })
-      },
-      function* ({ timeout, message }) {
-        yield put(uploadActions.uploadTrackFailed())
-
-        if (timeout) {
-          yield put(uploadActions.singleTrackTimeoutError())
-        } else {
-          yield put(
-            uploadActions.singleTrackUploadError(
-              message,
-              phaseContainer.phase,
-              track.file.size
-            )
-          )
-        }
-        yield cancel(dispatcher)
-        yield call(responseChan.put, { error: message })
-      },
-      () => {},
-      UPLOAD_TIMEOUT_MILLIS
-    )
-  )
-
-  const [{ confirmedTrack, error }] = yield all([
-    take(responseChan),
-    call(function* () {
-      const stems = yield select(getStems)
-      if (stems.length) {
-        yield call(uploadStems, {
-          parentTrackIds: [generatedTrackId],
-          stems
-        })
-      }
-    })
-  ])
-
-  const isRejected = error === 'Request failed with status code 403'
-
-  yield reportResultEvents({
-    numSuccess: error ? 0 : 1,
-    numFailure: error && !isRejected ? 1 : 0,
-    numRejected: isRejected ? 1 : 0,
-    uploadType: 'single_track',
-    errors: error ? [error] : []
-  })
-
-  if (error) {
-    if (isRejected) {
-      yield put(
-        make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
-          count: 1,
-          kind: 'tracks'
-        })
-      )
-      yield call(recordGatedTracks, [track.metadata])
-    }
-    return
-  }
-
-  // Finish up the upload
-  progressChan.put(
-    uploadActions.updateProgress(0, 'art', {
-      status: ProgressStatus.COMPLETE
-    })
-  )
-  progressChan.put(
-    uploadActions.updateProgress(0, 'audio', {
-      status: ProgressStatus.COMPLETE
-    })
-  )
-
-  yield put(
-    uploadActions.uploadTracksSucceeded(confirmedTrack.track_id, [
-      confirmedTrack
-    ])
-  )
-  yield put(
-    make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
-      count: 1,
-      kind: 'tracks'
-    })
-  )
-  yield call(recordGatedTracks, [confirmedTrack])
-
-  yield waitForAccount()
-  const account = yield select(getAccountUser)
-  yield put(cacheActions.setExpired(Kind.USERS, account.user_id))
-
-  yield call(processAndCacheTracks, [confirmedTrack])
-
-  yield call(adjustUserField, {
-    user: account,
-    fieldName: 'track_count',
-    delta: 1
-  })
-
-  // If the hide remixes is turned on, send analytics event
-  if (
-    confirmedTrack.field_visibility &&
-    !confirmedTrack.field_visibility.remixes
-  ) {
-    yield put(
-      make(Name.REMIX_HIDE, {
-        id: confirmedTrack.track_id,
-        handle: account.handle
-      })
-    )
-  }
-
-  if (
-    confirmedTrack.remix_of &&
-    Array.isArray(confirmedTrack.remix_of.tracks) &&
-    confirmedTrack.remix_of.tracks.length > 0
-  ) {
-    yield call(trackNewRemixEvent, confirmedTrack)
-  }
-
-  yield cancel(dispatcher)
-}
-
-export function* uploadStems({ parentTrackIds, stems }) {
-  const updatedStems = updateAndFlattenStems(stems, parentTrackIds)
-
-  const uploadedTracks = yield call(handleUploads, {
-    tracks: updatedStems,
-    isCollection: false,
-    isStem: true
-  })
-  if (uploadedTracks.trackIds) {
-    for (let i = 0; i < uploadedTracks.trackIds.length; i += 1) {
-      const trackId = uploadedTracks.trackIds[i]
-      const parentTrackId = updatedStems[i].metadata.stem_of.parent_track_id
-      const category = updatedStems[i].metadata.stem_of.category
-      const recordEvent = make(Name.STEM_COMPLETE_UPLOAD, {
-        id: trackId,
-        parent_track_id: parentTrackId,
-        category
-      })
-      yield put(recordEvent)
-    }
-  }
-}
-
 function* uploadMultipleTracks(tracks) {
   // Cheating here - getting the track ID early so we can parallelize stems
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -1258,7 +1004,23 @@ function* uploadMultipleTracks(tracks) {
     return
   }
 
-  yield put(uploadActions.uploadTracksSucceeded())
+  yield waitForAccount()
+  const account = yield select(getAccountUser)
+  const tracksToFetch = trackIds.filter((id) => !!id)
+
+  const newTracks = yield call(retrieveTracks, {
+    trackIds: tracksToFetch,
+    forceRetrieveFromSource: true
+  })
+
+  yield call(adjustUserField, {
+    user: account,
+    fieldName: 'track_count',
+    delta: newTracks.length
+  })
+
+  yield put(uploadActions.uploadTracksSucceeded(trackIds[0], newTracks))
+
   yield put(
     make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
       count: tracksWithMetadata.length,
@@ -1269,9 +1031,6 @@ function* uploadMultipleTracks(tracks) {
     recordGatedTracks,
     tracksWithMetadata.map((track) => track.metadata)
   )
-
-  yield waitForAccount()
-  const account = yield select(getAccountUser)
 
   // If the hide remixes is turned on, send analytics event
   for (let i = 0; i < tracks.length; i += 1) {
@@ -1340,11 +1099,8 @@ function* uploadTracksAsync(action) {
   // Upload content.
   const isPlaylist = action.uploadType === UploadType.PLAYLIST
   const isAlbum = action.uploadType === UploadType.ALBUM
-  const isSingleTrack = tracks.length === 1
   if (isPlaylist || isAlbum) {
     yield call(uploadCollection, tracks, user.user_id, action.metadata, isAlbum)
-  } else if (isSingleTrack) {
-    yield call(uploadSingleTrack, tracks[0])
   } else {
     yield call(uploadMultipleTracks, tracks)
   }
