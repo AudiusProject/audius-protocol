@@ -21,7 +21,7 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
 
 **Params**
 
-- successCallback `(profile: UserProfile) => void` - function to be called when the user successfully authorizes or authenticates with Audius. This function will be called with the user's profile information, which is an object with the following shape:
+- successCallback `(profile: UserProfile, encodedJwt: string) => void` - function to be called when the user successfully authorizes or authenticates with Audius. This function will be called with the user's profile information, which is an object with the following shape:
 
   ```typescript
   // `UserProfile` type:
@@ -41,6 +41,7 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
     iat: string; // timestamp for when auth was performed
   }
   ```
+  The second argument (`encodedJwt`) is for advanced use cases that want to pass the JWT to a backend for server-side verification.
 
 - errorCallback _optional_ `(errorMessage: string) => void` - function to be called when an error occurs during the authentication flow. This function will be called with a string describing the error.
 

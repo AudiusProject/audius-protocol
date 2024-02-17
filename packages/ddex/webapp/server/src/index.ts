@@ -12,6 +12,7 @@ import * as trpcExpress from '@trpc/server/adapters/express'
 import collectionRouters from './routers/collectionRouters'
 import makeUploadRouter from './routers/uploadRouter'
 import createAppRouter from './routers'
+import createSdkService from './services/sdkService'
 
 // TODO: Use superjson
 
@@ -25,8 +26,9 @@ const port = process.env.DDEX_PORT || 9000
       process.env.DDEX_MONGODB_URL ||
       'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0'
     await dialDb(dbUrl)
+    const sdkService = createSdkService()
 
-    const app = createApp()
+    const { app, isAuthenticated } = createApp(dbUrl, sdkService)
 
     const s3 = createS3()
     const appRouter = router({
@@ -39,6 +41,7 @@ const port = process.env.DDEX_PORT || 9000
 
     app.use(
       '/api/trpc',
+      isAuthenticated,
       trpcExpress.createExpressMiddleware({
         router: appRouter,
         createContext: (opts) => createContext(opts, {}),
