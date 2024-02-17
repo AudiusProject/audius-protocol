@@ -115,7 +115,6 @@ const getNumWorkers = (trackFiles) => {
 //   index: ...
 //   artwork?: ...,
 //   isCollection: boolean
-//   updateProgress: boolean
 // }
 //
 // or to signal to the worker that it should shut down:
@@ -182,14 +181,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
 
   // If it's not a collection (e.g. we're just uploading multiple tracks)
   // we can call uploadTrack, which uploads to creator node and then writes to chain.
-  const makeConfirmerCall = (
-    track,
-    metadata,
-    artwork,
-    index,
-    id,
-    updateProgress
-  ) => {
+  const makeConfirmerCall = (track, metadata, artwork, index, id) => {
     return function* () {
       const audiusBackendInstance = yield getContext('audiusBackendInstance')
       console.debug(
@@ -200,7 +192,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (progress) => {},
+        makeOnProgress(index),
         // If the track id isn't a temporary string, but a real id, use it
         typeof metadata.id !== 'number' ? undefined : metadata.id
       )
@@ -248,22 +240,20 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     }
   }
 
-  const makeConfirmerSuccess = (id, index, updateProgress) => {
+  const makeConfirmerSuccess = (id, index) => {
     return function* (newTrackId) {
-      if (updateProgress) {
-        yield put(
-          progressChan,
-          uploadActions.updateProgress(index, 'art', {
-            status: ProgressStatus.COMPLETE
-          })
-        )
-        yield put(
-          progressChan,
-          uploadActions.updateProgress(index, 'audio', {
-            status: ProgressStatus.COMPLETE
-          })
-        )
-      }
+      yield put(
+        progressChan,
+        uploadActions.updateProgress(index, 'art', {
+          status: ProgressStatus.COMPLETE
+        })
+      )
+      yield put(
+        progressChan,
+        uploadActions.updateProgress(index, 'audio', {
+          status: ProgressStatus.COMPLETE
+        })
+      )
 
       // Now we need to tell the response channel that we finished
       const resp = { originalId: id, newId: newTrackId }
@@ -335,15 +325,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
   // worker runloop
   while (true) {
     const request = yield take(requestChan)
-    const {
-      track,
-      metadata,
-      id,
-      index,
-      artwork,
-      isCollection,
-      updateProgress
-    } = request
+    const { track, metadata, id, index, artwork, isCollection } = request
 
     yield put(
       confirmerActions.requestConfirmation(
@@ -353,12 +335,11 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           metadata,
           artwork,
           index,
-          id,
-          updateProgress
+          id
         ),
         (isCollection
           ? makeConfirmerSuccessForCollection
-          : makeConfirmerSuccess)(id, index, updateProgress),
+          : makeConfirmerSuccess)(id, index),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
         () => {},
         UPLOAD_TIMEOUT_MILLIS
@@ -374,12 +355,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
  *
  * tracks is of type [{ track: ..., metadata: ... }]
  */
-export function* handleUploads({
-  tracks,
-  isCollection,
-  isStem = false,
-  isAlbum = false
-}) {
+export function* handleUploads({ tracks, isCollection, isAlbum = false }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const numWorkers = getNumWorkers(tracks.map((t) => t.track.file))
 
@@ -433,8 +409,7 @@ export function* handleUploads({
       },
       index: value.index,
       artwork: isCollection ? null : value.artwork,
-      isCollection,
-      updateProgress: !isStem
+      isCollection
     }
     yield put(requestChan, request)
     yield put(
@@ -456,21 +431,19 @@ export function* handleUploads({
   }
 
   // Set some sensible progress values
-  if (!isStem) {
-    for (let i = 0; i < ids.length; i++) {
-      yield put(
-        progressChan,
-        uploadActions.updateProgress(i, 'art', {
-          status: ProgressStatus.UPLOADING
-        })
-      )
-      yield put(
-        progressChan,
-        uploadActions.updateProgress(i, 'audio', {
-          status: ProgressStatus.UPLOADING
-        })
-      )
-    }
+  for (let i = 0; i < ids.length; i++) {
+    yield put(
+      progressChan,
+      uploadActions.updateProgress(i, 'art', {
+        status: ProgressStatus.UPLOADING
+      })
+    )
+    yield put(
+      progressChan,
+      uploadActions.updateProgress(i, 'audio', {
+        status: ProgressStatus.UPLOADING
+      })
+    )
   }
 
   // Now wait for our workers to finish or error
@@ -505,7 +478,7 @@ export function* handleUploads({
       console.error(`Worker errored: ${error}`)
       const index = idToTrackMap[originalId].index
 
-      if (!isStem) {
+      if (!metadata?.stem_of?.parent_track_id) {
         yield put(uploadActions.uploadSingleTrackFailed(index))
       }
 
@@ -664,26 +637,25 @@ export function* handleUploads({
       } else {
         console.debug('Tracks registered successfully')
         // Update all the progress
-        if (!isStem) {
-          yield all(
-            range(tracks.length).flatMap((i) => {
-              return [
-                put(
-                  progressChan,
-                  uploadActions.updateProgress(i, 'art', {
-                    status: ProgressStatus.COMPLETE
-                  })
-                ),
-                put(
-                  progressChan,
-                  uploadActions.updateProgress(i, 'audio', {
-                    status: ProgressStatus.COMPLETE
-                  })
-                )
-              ]
-            })
-          )
-        }
+        yield all(
+          range(tracks.length).flatMap((i) => {
+            return [
+              put(
+                progressChan,
+                uploadActions.updateProgress(i, 'art', {
+                  status: ProgressStatus.COMPLETE
+                })
+              ),
+              put(
+                progressChan,
+                uploadActions.updateProgress(i, 'audio', {
+                  status: ProgressStatus.COMPLETE
+                })
+              )
+            ]
+          })
+        )
+
         returnVal = { trackIds }
       }
     } else {
@@ -730,8 +702,7 @@ export function* handleUploads({
             uploadActions.multiTrackUploadError(
               r.message,
               r.phase,
-              tracks.length,
-              isStem
+              tracks.length
             )
           )
         }
