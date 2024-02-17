@@ -208,12 +208,11 @@ const download = async ({
          * straight to the Downloads directory.
          */
         directory: ReactNativeBlobUtil.fs.dirs.DownloadDir,
-        getFetchConfig: (filePath) => ({
+        getFetchConfig: () => ({
           addAndroidDownloads: {
             description: filename,
             mediaScannable: true,
             notification: true,
-            path: filePath,
             storeInDownloads: true,
             title: filename,
             useDownloadManager: true
