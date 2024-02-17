@@ -6,6 +6,7 @@ import { useAuth } from 'providers/AuthProvider'
 import AdminNavSidebar from './AdminNavSidebar'
 import { Banner } from './Banner/Banner'
 
+// Layout for routes that require authentication
 const AuthedLayout = ({
   userType
 }: {
@@ -14,20 +15,22 @@ const AuthedLayout = ({
   const { user } = useAuth()
   const outlet = useOutlet()
 
+  // If the user is authed but not allowlisted
   if (
     userType === 'not-allowlisted' &&
     user &&
     (user.isAdmin || user.isArtist)
   ) {
-    return <Navigate to='/' />
+    return <Navigate to='/not-allowlisted' replace />
   }
 
+  // If the user is not authed, redirect to the login page
   if (
     !user ||
     (userType === 'admin' && !user.isAdmin) ||
     (userType === 'artist' && !user.isArtist)
   ) {
-    return <Navigate to='/' />
+    return <Navigate to='/login' replace />
   }
 
   return (

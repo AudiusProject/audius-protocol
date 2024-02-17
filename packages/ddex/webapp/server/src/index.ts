@@ -28,7 +28,7 @@ const port = process.env.DDEX_PORT || 9000
     await dialDb(dbUrl)
     const sdkService = createSdkService()
 
-    const { app, isAuthenticated } = createApp(dbUrl, sdkService)
+    const { app, isAuthedAsAdmin } = createApp(dbUrl, sdkService)
 
     const s3 = createS3()
     const appRouter = router({
@@ -41,7 +41,7 @@ const port = process.env.DDEX_PORT || 9000
 
     app.use(
       '/api/trpc',
-      isAuthenticated,
+      isAuthedAsAdmin,
       trpcExpress.createExpressMiddleware({
         router: appRouter,
         createContext: (opts) => createContext(opts, {}),

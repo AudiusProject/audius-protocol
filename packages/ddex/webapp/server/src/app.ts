@@ -4,20 +4,19 @@ import session from 'express-session'
 import connectMongoDBSession from 'connect-mongodb-session'
 import User from './userSchema'
 import createSdkService from './services/sdkService'
+import { ProfilePicture } from '@audius/sdk'
 
 declare module 'express-session' {
   interface SessionData {
+    // This is the user in `authSessions`, which is different from the user in the `users` collection.
+    // This one is just for session management and to pass to the frontend.
     user?: {
       userId: string
       decodedUserId: number
       handle: string
       name: string
       verified: boolean
-      profilePicture: {
-        '150x150'?: string | null | undefined
-        '480x480'?: string | null | undefined
-        '1000x1000'?: string | null | undefined
-      } | null
+      profilePicture: ProfilePicture | null
       isAdmin: boolean
       isArtist: boolean
     }
@@ -91,17 +90,25 @@ export default function createApp(
         verified,
         profilePicture,
       })
+
       req.session.user = {
-        userId: user._id!,
-        decodedUserId: user.decodedUserId!,
-        handle: user.handle!,
-        name: user.name!,
-        verified: user.verified!,
+        userId: user._id,
+        decodedUserId: user.decodedUserId,
+        handle: user.handle,
+        name: user.name,
+        verified: user.verified,
         profilePicture: user.profilePicture,
-        isAdmin: user.isAdmin!,
-        isArtist: user.isArtist!,
+        isAdmin: user.isAdmin,
+        isArtist: user.isArtist,
       }
-      res.json({ message: 'Login successful', user: req.session.user })
+
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err)
+          return res.status(500).json({ error: 'Failed to update session' })
+        }
+        res.json({ loggedIn: true, user: req.session.user })
+      })
     } else {
       res.status(401).send('Invalid token')
     }
@@ -110,21 +117,18 @@ export default function createApp(
   // Checks if the user is authenticated with DDEX (ie, they OAuthed with Audius and sent this DDEX backend a JWT via /auth/login)
   app.get('/auth/session', async (req, res) => {
     if (req.session.user) {
-      const user = await User.findById(req.session.user.userId)
+      const user = await User.findOne({ _id: req.session.user.userId })
       if (!user) {
         return res.status(404).json({ error: 'User not found' })
       }
 
       // Update the user's isAdmin and isArtist in case the allowlists changed
-      await User.updateRoles(user._id)
-      const updatedUser = await User.findById(user._id)
+      const updatedUser = await user.updateRoles()
       if (!updatedUser?._id) {
         return res.status(404).json({ error: 'User not found after updating' })
       }
 
-      req.session.touch()
-
-      const userForClient = {
+      req.session.user = {
         userId: updatedUser._id,
         decodedUserId: updatedUser.decodedUserId,
         handle: updatedUser.handle,
@@ -134,7 +138,13 @@ export default function createApp(
         isAdmin: updatedUser.isAdmin,
         isArtist: updatedUser.isArtist,
       }
-      res.json({ loggedIn: true, user: userForClient })
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err)
+          return res.status(500).json({ error: 'Failed to update session' })
+        }
+        res.json({ loggedIn: true, user: req.session.user })
+      })
     } else {
       res.status(401).json({ loggedIn: false })
     }
@@ -199,12 +209,12 @@ export default function createApp(
     res.sendFile(path.join(buildPath, 'index.html'))
   })
 
-  const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-    if (req.session && req.session.user) {
+  const isAuthedAsAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (req.session && req.session.user?.isAdmin) {
       return next()
     }
-    res.status(401).send('Not authenticated')
+    res.status(401).send('Not authenticated as an admin')
   }
 
-  return { app, isAuthenticated }
+  return { app, isAuthedAsAdmin }
 }

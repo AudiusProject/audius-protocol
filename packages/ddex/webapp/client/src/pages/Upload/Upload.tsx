@@ -112,12 +112,9 @@ const ZipImporter = () => {
     try {
       // Generate a signed URL for the file
       const fileName = selectedFile.name
-      // TODO: This route should be authenticated
-      // eslint-disable-next-line no-console
-      console.log(
+      console.info(
         `Generating signed URL for ${fileName} for user ${user?.userId}`
       )
-      // TODO: Signed URL should authenticate the user
       const signedUrlResult = await generateSignedUrl.mutateAsync({ fileName })
 
       if (!signedUrlResult) {
