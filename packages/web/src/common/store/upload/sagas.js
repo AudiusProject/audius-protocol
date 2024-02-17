@@ -15,7 +15,6 @@ import {
   confirmTransaction
 } from '@audius/common/store'
 import {
-  formatUrlName,
   makeUid,
   actionChannelDispatcher,
   waitForAccount
@@ -31,8 +30,7 @@ import {
   fork,
   cancel,
   all,
-  getContext,
-  delay
+  getContext
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -48,14 +46,14 @@ import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { processAndCacheTracks, retrieveTracks } from '../cache/tracks/utils'
+import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
 
 import { watchUploadErrors } from './errorSagas'
 
 const { getUser } = cacheUsersSelectors
 const { addLocalCollection } = savedPageActions
-const { getAccountUser, getUserHandle, getUserId } = accountSelectors
+const { getAccountUser } = accountSelectors
 const { getStems } = uploadSelectors
 
 const MAX_CONCURRENT_UPLOADS = 4
