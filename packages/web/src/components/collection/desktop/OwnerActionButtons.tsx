@@ -18,7 +18,6 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
-  console.info({ COLLECTION: collection })
   const { is_private, is_album, playlist_contents } = collection ?? {}
   const track_count = playlist_contents.track_ids.length
 
