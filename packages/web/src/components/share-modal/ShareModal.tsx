@@ -20,6 +20,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useModalState } from 'pages/modals/useModalState'
+import { openWarpcastLink } from 'utils/cast'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
 import { openTwitterLink } from 'utils/tweet'
@@ -28,7 +29,7 @@ import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
 import { getTwitterShareText } from './utils'
-import { openWarpcastLink } from 'utils/cast'
+
 const { getShareState } = shareModalUISelectors
 const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
 const { shareUser } = usersSocialActions
@@ -86,11 +87,12 @@ export const ShareModal = () => {
     const isPlaylistOwner =
       content.type === 'audioNftPlaylist' &&
       account?.user_id === content.user.user_id
-      // use twitter for testing
-      const { twitterText: farcasterText, link, analyticsEvent } = await getTwitterShareText(
-        content,
-        isPlaylistOwner
-      )
+    // use twitter for testing
+    const {
+      twitterText: farcasterText,
+      link,
+      analyticsEvent
+    } = await getTwitterShareText(content, isPlaylistOwner)
     openWarpcastLink(link, farcasterText)
     record(make(Name.SHARE_TO_WARPCAST, { source, ...analyticsEvent }))
     onClose()

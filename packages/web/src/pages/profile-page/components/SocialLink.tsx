@@ -35,7 +35,12 @@ const SITE_URL_MAP = {
 
 type HandleType = keyof typeof SITE_URL_MAP
 
-export const handleTypes = [Type.TWITTER, Type.INSTAGRAM, Type.TIKTOK, Type.WARPCAST]
+export const handleTypes = [
+  Type.TWITTER,
+  Type.INSTAGRAM,
+  Type.TIKTOK,
+  Type.WARPCAST
+]
 
 const singleLinkTypes = [
   Type.TWITTER,

@@ -511,7 +511,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedMetadata.tiktok_handle = updatedTikTokHandle
     }
     if (updatedWarpcastHandle !== null) {
-      console.warn("save for warpcast handle not implemented")
+      updatedMetadata.warpcast_handle = updatedWarpcastHandle
     }
     if (updatedWebsite !== null) {
       updatedMetadata.website = updatedWebsite
@@ -859,7 +859,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         ? profile.handle
         : profile.tiktok_handle || ''
       : ''
-    const warpcastHandle = profile 
+    const warpcastHandle = profile
       ? updatedWarpcastHandle != null
         ? updatedWarpcastHandle
         : profile.warpcastVerified
