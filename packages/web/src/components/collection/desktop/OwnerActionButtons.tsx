@@ -18,7 +18,9 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
-  const { track_count, is_private, is_album } = collection ?? {}
+  console.info({ COLLECTION: collection })
+  const { is_private, is_album, playlist_contents } = collection ?? {}
+  const track_count = playlist_contents.track_ids.length
 
   const isDisabled = !track_count || track_count === 0
 
