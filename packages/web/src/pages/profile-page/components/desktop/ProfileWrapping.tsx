@@ -29,9 +29,11 @@ type ProfileWrappingProps = {
   twitterHandle: string
   instagramHandle: string
   tikTokHandle: string
+  warpcastHandle: string
   twitterVerified: boolean
   instagramVerified: boolean
   tikTokVerified: boolean
+  warpcastVerified: boolean
   website: string
   donation: string
   created: string
@@ -45,6 +47,7 @@ type ProfileWrappingProps = {
   onUpdateTwitterHandle: (handle: string) => void
   onUpdateInstagramHandle: (handle: string) => void
   onUpdateTikTokHandle: (handle: string) => void
+  onUpdateWarpcastHandle: (handle: string) => void
   onUpdateWebsite: (website: string) => void
   onUpdateDonation: (donation: string) => void
 }
@@ -69,9 +72,11 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     twitterHandle,
     instagramHandle,
     tikTokHandle,
+    warpcastHandle,
     twitterVerified,
     instagramVerified,
     tikTokVerified,
+    warpcastVerified,
     website,
     donation,
     created,
@@ -82,6 +87,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     onUpdateTwitterHandle,
     onUpdateInstagramHandle,
     onUpdateTikTokHandle,
+    onUpdateWarpcastHandle,
     onUpdateWebsite,
     onUpdateDonation
   } = props
@@ -141,9 +147,11 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             twitterHandle={twitterHandle}
             instagramHandle={instagramHandle}
             tikTokHandle={tikTokHandle}
+            warpcastHandle={warpcastHandle}
             twitterVerified={twitterVerified}
             instagramVerified={instagramVerified}
             tikTokVerified={tikTokVerified}
+            warpcastVerified={warpcastVerified}
             website={website}
             donation={donation}
             created={created}
@@ -152,6 +160,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             onUpdateTwitterHandle={onUpdateTwitterHandle}
             onUpdateInstagramHandle={onUpdateInstagramHandle}
             onUpdateTikTokHandle={onUpdateTikTokHandle}
+            onUpdateWarpcastHandle={onUpdateWarpcastHandle}
             onUpdateWebsite={onUpdateWebsite}
             onUpdateDonation={onUpdateDonation}
           />

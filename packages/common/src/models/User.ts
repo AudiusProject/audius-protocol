@@ -53,12 +53,14 @@ export type UserMetadata = {
   twitter_handle?: string
   instagram_handle?: string
   tiktok_handle?: string
+  warpcast_handle?: string
   website?: string
   wallet?: string
   donation?: string
   twitterVerified?: boolean
   instagramVerified?: boolean
   tikTokVerified?: boolean
+  warpcastVerified?: boolean
   balance?: Nullable<StringWei>
   total_balance?: Nullable<StringWei>
   associated_wallets?: Nullable<string[]>

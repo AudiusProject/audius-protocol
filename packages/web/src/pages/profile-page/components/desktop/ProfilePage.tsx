@@ -72,9 +72,11 @@ export type ProfilePageProps = {
   twitterHandle: string
   instagramHandle: string
   tikTokHandle: string
+  warpcastHandle: string
   twitterVerified?: boolean
   instagramVerified?: boolean
   tikTokVerified?: boolean
+  warpcastVerified?: boolean
   website: string
   donation: string
   coverPhotoSizes: CoverPhotoSizes | null
@@ -115,6 +117,7 @@ export type ProfilePageProps = {
   updateTwitterHandle: (handle: string) => void
   updateInstagramHandle: (handle: string) => void
   updateTikTokHandle: (handle: string) => void
+  updateWarpcastHandle: (handle: string) => void
   updateWebsite: (website: string) => void
   updateDonation: (donation: string) => void
   changeTab: (tab: ProfilePageTabs) => void
@@ -184,6 +187,7 @@ const ProfilePage = ({
   updateTwitterHandle,
   updateInstagramHandle,
   updateTikTokHandle,
+  updateWarpcastHandle,
   updateWebsite,
   updateDonation,
   updateProfilePicture,
@@ -227,9 +231,11 @@ const ProfilePage = ({
   twitterHandle,
   instagramHandle,
   tikTokHandle,
+  warpcastHandle,
   twitterVerified,
   instagramVerified,
   tikTokVerified,
+  warpcastVerified,
   website,
   donation,
   coverPhotoSizes,
@@ -720,9 +726,11 @@ const ProfilePage = ({
           twitterHandle={twitterHandle}
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
+          warpcastHandle={warpcastHandle}
           twitterVerified={!!twitterVerified}
           instagramVerified={!!instagramVerified}
           tikTokVerified={!!tikTokVerified}
+          warpcastVerified={!!warpcastVerified}
           website={website}
           donation={donation}
           created={created}
@@ -733,6 +741,7 @@ const ProfilePage = ({
           onUpdateTwitterHandle={updateTwitterHandle}
           onUpdateInstagramHandle={updateInstagramHandle}
           onUpdateTikTokHandle={updateTikTokHandle}
+          onUpdateWarpcastHandle={updateWarpcastHandle}
           onUpdateWebsite={updateWebsite}
           onUpdateDonation={updateDonation}
         />

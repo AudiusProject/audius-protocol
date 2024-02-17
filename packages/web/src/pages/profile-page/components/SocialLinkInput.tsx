@@ -1,6 +1,6 @@
 import { useState, useRef, ReactNode, useMemo } from 'react'
 
-import { IconLink, IconTikTok } from '@audius/harmony'
+import { IconLink, IconTikTok, IconWarpcast } from '@audius/harmony'
 import { IconTwitterBird, IconInstagram, IconDonate } from '@audius/stems'
 import cn from 'classnames'
 
@@ -113,6 +113,9 @@ const SocialLinkInput = ({
     case Type.DONATION:
       icon = <IconDonate className={styles.icon} />
       break
+    case Type.WARPCAST:
+      icon = <IconWarpcast className={styles.icon} />
+      break
   }
 
   let placeholder = ''
@@ -131,6 +134,9 @@ const SocialLinkInput = ({
       break
     case Type.DONATION:
       placeholder = 'Donate'
+      break
+    case Type.WARPCAST:
+      placeholder = 'Warpcast Handle'
       break
   }
 

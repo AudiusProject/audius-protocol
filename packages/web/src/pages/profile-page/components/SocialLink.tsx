@@ -5,7 +5,8 @@ import {
   IconTikTok,
   IconTwitter as IconTwitterBird,
   IconInstagram,
-  IconDonate
+  IconDonate,
+  IconWarpcast
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -22,7 +23,8 @@ export enum Type {
   INSTAGRAM,
   TIKTOK,
   WEBSITE,
-  DONATION
+  DONATION,
+  WARPCAST
 }
 
 const SITE_URL_MAP = {
@@ -33,13 +35,14 @@ const SITE_URL_MAP = {
 
 type HandleType = keyof typeof SITE_URL_MAP
 
-export const handleTypes = [Type.TWITTER, Type.INSTAGRAM, Type.TIKTOK]
+export const handleTypes = [Type.TWITTER, Type.INSTAGRAM, Type.TIKTOK, Type.WARPCAST]
 
 const singleLinkTypes = [
   Type.TWITTER,
   Type.INSTAGRAM,
   Type.TIKTOK,
-  Type.WEBSITE
+  Type.WEBSITE,
+  Type.WARPCAST
 ]
 
 const socialIcons = {
@@ -47,7 +50,8 @@ const socialIcons = {
   [Type.INSTAGRAM]: IconInstagram,
   [Type.TIKTOK]: IconTikTok,
   [Type.WEBSITE]: IconLink,
-  [Type.DONATION]: IconDonate
+  [Type.DONATION]: IconDonate,
+  [Type.WARPCAST]: IconWarpcast
 }
 
 const isHandleType = (type: Type): type is HandleType =>

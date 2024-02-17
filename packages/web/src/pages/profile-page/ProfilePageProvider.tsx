@@ -94,6 +94,7 @@ const INITIAL_UPDATE_FIELDS = {
   updatedTwitterHandle: null,
   updatedInstagramHandle: null,
   updatedTikTokHandle: null,
+  updatedWarpcastHandle: null,
   updatedWebsite: null,
   updatedDonation: null
 }
@@ -122,6 +123,7 @@ type ProfilePageState = {
   updatedTwitterHandle: string | null
   updatedInstagramHandle: string | null
   updatedTikTokHandle: string | null
+  updatedWarpcastHandle: string | null
   updatedWebsite: string | null
   updatedDonation: string | null
   tracksLineupOrder: TracksSortMode
@@ -394,6 +396,12 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     })
   }
 
+  updateWarpcastHandle = (handle: string) => {
+    this.setState({
+      updatedWarpcastHandle: handle
+    })
+  }
+
   updateWebsite = (website: string) => {
     this.setState({
       updatedWebsite: website
@@ -470,6 +478,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedTwitterHandle,
       updatedInstagramHandle,
       updatedTikTokHandle,
+      updatedWarpcastHandle,
       updatedWebsite,
       updatedDonation
     } = this.state
@@ -500,6 +509,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
     if (updatedTikTokHandle !== null) {
       updatedMetadata.tiktok_handle = updatedTikTokHandle
+    }
+    if (updatedWarpcastHandle !== null) {
+      console.warn("save for warpcast handle not implemented")
     }
     if (updatedWebsite !== null) {
       updatedMetadata.website = updatedWebsite
@@ -792,6 +804,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedTwitterHandle,
       updatedInstagramHandle,
       updatedTikTokHandle,
+      updatedWarpcastHandle,
       updatedWebsite,
       updatedDonation
     } = this.state
@@ -808,6 +821,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const twitterVerified = profile ? profile.twitterVerified : false
     const instagramVerified = profile ? profile.instagramVerified : false
     const tikTokVerified = profile ? profile.tikTokVerified : false
+    // warpcast doesn't have verification but build in support in case it does
+    const warpcastVerified = false
     const created = profile
       ? moment(profile.created_at).format('YYYY')
       : moment().format('YYYY')
@@ -843,6 +858,13 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         : profile.tikTokVerified
         ? profile.handle
         : profile.tiktok_handle || ''
+      : ''
+    const warpcastHandle = profile 
+      ? updatedWarpcastHandle != null
+        ? updatedWarpcastHandle
+        : profile.warpcastVerified
+        ? profile.handle
+        : profile.warpcast_handle || ''
       : ''
     const website = profile
       ? updatedWebsite !== null
@@ -888,6 +910,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       twitterHandle,
       instagramHandle,
       tikTokHandle,
+      warpcastHandle,
       website,
       donation,
       coverPhotoSizes,
@@ -902,6 +925,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       twitterVerified,
       instagramVerified,
       tikTokVerified,
+      warpcastVerified,
 
       profile,
       status: profileLoadingStatus,
@@ -938,6 +962,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updateTwitterHandle: this.updateTwitterHandle,
       updateInstagramHandle: this.updateInstagramHandle,
       updateTikTokHandle: this.updateTikTokHandle,
+      updateWarpcastHandle: this.updateWarpcastHandle,
       updateWebsite: this.updateWebsite,
       updateDonation: this.updateDonation,
       updateCoverPhoto: this.updateCoverPhoto,

@@ -48,6 +48,8 @@ type ProfileLeftNavProps = {
   onUpdateInstagramHandle: (handle: string) => void
   tikTokHandle: string
   onUpdateTikTokHandle: (handle: string) => void
+  warpcastHandle: string
+  onUpdateWarpcastHandle: (handle: string) => void
   website: string
   onUpdateWebsite: (website: string) => void
   location: string
@@ -59,6 +61,7 @@ type ProfileLeftNavProps = {
   twitterVerified: boolean
   instagramVerified: boolean
   tikTokVerified: boolean
+  warpcastVerified: boolean
   isOwner: boolean
 }
 
@@ -78,6 +81,8 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     onUpdateInstagramHandle,
     tikTokHandle,
     onUpdateTikTokHandle,
+    warpcastHandle,
+    onUpdateWarpcastHandle,
     website,
     onUpdateWebsite,
     location,
@@ -89,6 +94,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     twitterVerified,
     instagramVerified,
     tikTokVerified,
+    warpcastVerified,
     isOwner
   } = props
 
@@ -152,6 +158,15 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
             isDisabled={!!tikTokVerified}
             type={Type.TIKTOK}
             onChange={onUpdateTikTokHandle}
+          />
+        </div>
+        <div className={styles.editField}>
+          <SocialLinkInput
+            defaultValue={warpcastHandle}
+            className={styles.warpcastInput}
+            isDisabled={!!warpcastVerified}
+            type={Type.WARPCAST}
+            onChange={onUpdateWarpcastHandle}
           />
         </div>
         <div className={cn(styles.editLabel, styles.section)}>
