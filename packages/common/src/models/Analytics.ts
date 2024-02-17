@@ -149,6 +149,7 @@ export enum Name {
   // Social actions
   SHARE = 'Share',
   SHARE_TO_TWITTER = 'Share to Twitter',
+  SHARE_TO_WARPCAST = 'Share to Warpcast',
   REPOST = 'Repost',
   UNDO_REPOST = 'Undo Repost',
   FAVORITE = 'Favorite',
@@ -842,6 +843,14 @@ type Share = {
 
 export type ShareToTwitter = {
   eventName: Name.SHARE_TO_TWITTER
+  kind: 'profile' | 'album' | 'playlist' | 'track' | 'audioNftPlaylist'
+  source: ShareSource
+  id: number
+  url: string
+}
+
+export type ShareToWarpcast = {
+  eventName: Name.SHARE_TO_WARPCAST
   kind: 'profile' | 'album' | 'playlist' | 'track' | 'audioNftPlaylist'
   source: ShareSource
   id: number
@@ -2298,6 +2307,7 @@ export type AllTrackingEvents =
   | AccountHealthCTABanner
   | Share
   | ShareToTwitter
+  | ShareToWarpcast
   | Repost
   | UndoRepost
   | Favorite

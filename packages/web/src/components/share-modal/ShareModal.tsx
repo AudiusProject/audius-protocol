@@ -28,6 +28,7 @@ import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
 import { getTwitterShareText } from './utils'
+import { openWarpcastLink } from 'utils/cast'
 const { getShareState } = shareModalUISelectors
 const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
 const { shareUser } = usersSocialActions
@@ -77,6 +78,21 @@ export const ShareModal = () => {
     )
     openTwitterLink(link, twitterText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
+    onClose()
+  }, [source, content, account, record, onClose])
+
+  const handleShareToWarpcast = useCallback(async () => {
+    if (!source || !content) return
+    const isPlaylistOwner =
+      content.type === 'audioNftPlaylist' &&
+      account?.user_id === content.user.user_id
+      // use twitter for testing
+      const { twitterText: farcasterText, link, analyticsEvent } = await getTwitterShareText(
+        content,
+        isPlaylistOwner
+      )
+    openWarpcastLink(link, farcasterText)
+    record(make(Name.SHARE_TO_WARPCAST, { source, ...analyticsEvent }))
     onClose()
   }, [source, content, account, record, onClose])
 
@@ -140,6 +156,7 @@ export const ShareModal = () => {
     onShareToDirectMessage: handleShareToDirectMessage,
     onShareToTwitter: handleShareToTwitter,
     onShareToTikTok: handleShareToTikTok,
+    onShareToWarpcast: handleShareToWarpcast,
     onCopyLink: handleCopyLink,
     onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
       ? handleEmbed

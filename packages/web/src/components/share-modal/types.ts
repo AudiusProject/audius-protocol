@@ -4,6 +4,7 @@ export type ShareProps = {
   onShareToDirectMessage: () => void
   onShareToTwitter: () => void
   onShareToTikTok: () => void
+  onShareToWarpcast: () => void
   onCopyLink: () => void
   onEmbed?: () => void
   isOpen: boolean

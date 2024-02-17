@@ -7,7 +7,8 @@ import {
   IconLink,
   IconMessage,
   IconShare,
-  IconTwitter as IconTwitterBird
+  IconTwitter as IconTwitterBird,
+  IconWarpcast
 } from '@audius/harmony'
 import { Button, ButtonProps, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -44,6 +45,7 @@ export const ShareDialog = ({
   onShareToDirectMessage,
   onShareToTwitter,
   onShareToTikTok,
+  onShareToWarpcast,
   onCopyLink,
   onEmbed,
   isOpen,
@@ -99,6 +101,13 @@ export const ShareDialog = ({
                 onClick={onShareToTikTok}
               />
             ) : null}
+            <ShareActionListItem
+              leftIcon={<IconWarpcast {...iconProps} />}
+              text={messages.warpcast}
+              onClick={onShareToWarpcast}
+              iconClassName={styles.shareIcon}
+              textClassName={styles.shareActionLabel}
+            />
             <ShareActionListItem
               leftIcon={<IconLink {...iconProps} />}
               iconClassName={styles.shareIcon}

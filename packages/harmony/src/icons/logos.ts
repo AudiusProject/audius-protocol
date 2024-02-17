@@ -22,6 +22,7 @@ import IconSnapChatSVG from '../assets/icons/SnapChat.svg'
 import IconTelegramSVG from '../assets/icons/Telegram.svg'
 import IconTikTokSVG from '../assets/icons/TikTok.svg'
 import IconTwitterSVG from '../assets/icons/Twitter.svg'
+import IconWarpcastSVG from '../assets/icons/Warpcast.svg'
 import type { IconComponent } from '../components/icon'
 
 export const IconAudiusLogo = IconAudiusLogoSVG as IconComponent
@@ -39,6 +40,7 @@ export const IconMetamask = IconMetamaskSVG as IconComponent
 export const IconSnapChat = IconSnapChatSVG as IconComponent
 export const IconTelegram = IconTelegramSVG as IconComponent
 export const IconTwitter = IconTwitterSVG as IconComponent
+export const IconWarpcast = IconWarpcastSVG as IconComponent
 export const IconTikTok = IconTikTokSVG as IconComponent
 export const IconInstagram = IconInstagramSVG as IconComponent
 export const IconLogoCircle = IconLogoCircleSVG as IconComponent

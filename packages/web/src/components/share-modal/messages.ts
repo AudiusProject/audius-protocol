@@ -12,6 +12,7 @@ export const messages = {
   modalTitle: (asset: ShareType) => `Share ${shareTypeMap[asset]}`,
   directMessage: 'Direct Message',
   twitter: 'Twitter',
+  warpcast: 'Warpcast',
   tikTok: 'TikTok',
   copyLink: 'Copy Link',
   embed: 'Embed',
