@@ -84,6 +84,7 @@ const actionsMap = {
     newState.metadata = action.metadata ?? null
     newState.uploadType = action.uploadType ?? null
     newState.stems = action.stems ?? newState.stems
+    newState.error = false
     return newState
   },
   [UPLOAD_TRACKS_SUCCEEDED](
@@ -115,6 +116,7 @@ const actionsMap = {
     newState.tracks = null
     newState.metadata = null
     newState.stems = []
+    newState.error = true
     return newState
   },
   [UPDATE_PROGRESS](

@@ -1,6 +1,7 @@
 import { floor, clamp } from 'lodash'
 
 import { CommonState } from '../commonStore'
+import { ProgressStatus } from './types'
 
 export const getStems = (state: CommonState) => state.upload.stems
 export const getUploadProgress = (state: CommonState) =>
@@ -22,7 +23,10 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const uploadProgress = getUploadProgress(state)
   if (uploadProgress == null) return 0
 
-  const filteredProgress = uploadProgress.filter((progress) => key in progress)
+  const filteredProgress = uploadProgress.filter(
+    (progress) =>
+      key in progress && progress[key].status !== ProgressStatus.ERROR
+  )
   if (filteredProgress.length === 0) return 0
 
   const loaded = filteredProgress.reduce(

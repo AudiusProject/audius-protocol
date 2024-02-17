@@ -123,7 +123,12 @@ export const FinishPage = (props: FinishPageProps) => {
   const dispatch = useDispatch()
 
   const uploadComplete = useMemo(() => {
-    if (!upload.uploadProgress || upload.uploading || !upload.success)
+    if (
+      !upload.uploadProgress ||
+      upload.uploading ||
+      !upload.success ||
+      upload.error
+    )
       return false
 
     return upload.uploadProgress.reduce((acc, progress) => {

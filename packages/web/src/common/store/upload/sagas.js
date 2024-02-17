@@ -12,7 +12,8 @@ import {
   UploadType,
   ProgressStatus,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  toastActions
 } from '@audius/common/store'
 import {
   makeUid,
@@ -963,7 +964,10 @@ function* uploadMultipleTracks(tracks) {
 
   // If EVERYTHING failed, don't mark this as a success!
   if (trackIds.length === 0 || trackIds.every((t) => t === undefined)) {
-    yield put(uploadActions.UPLOAD_TRACKS_FAILED)
+    yield put(uploadActions.uploadTrackFailed())
+    yield put(
+      toastActions.toast({ content: 'Something went wrong.', type: 'error' })
+    )
     return
   }
 
