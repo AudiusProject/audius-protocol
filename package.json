@@ -94,13 +94,25 @@
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
-    "vike": "^0.4.150",
     "typescript": "5.0.4",
+    "vike": "^0.4.150",
     "wait-on": "7.2.0"
   },
   "dependencies": {
+    "@audius/harmony": "^0.0.23",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
     "@escape.tech/mookme": "2.4.1",
-    "pg": "8.8.0"
+    "@radix-ui/react-slot": "^1.0.2",
+    "@react-spring/web": "^9.7.3",
+    "classnames": "^2.5.1",
+    "lodash": "^4.17.21",
+    "pg": "8.8.0",
+    "react-lottie": "^1.2.4",
+    "react-merge-refs": "^2.1.1",
+    "react-perfect-scrollbar": "^1.5.8",
+    "react-use": "^17.5.0",
+    "react-use-measure": "^2.1.1"
   },
   "overrides": {
     "@types/prop-types": "15.7.5",

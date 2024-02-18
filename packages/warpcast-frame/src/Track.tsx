@@ -1,6 +1,7 @@
 import { useParams, useSearchParams } from 'react-router-dom'
 import { ENVIRONMENT_QUERY_PARAM } from './constants'
 import { getTrack } from './sdk'
+import { Button } from '@audius/harmony'
 
 const Track = () => {
   //v1/full/tracks?handle=kissinginlove&slug=entrance&user_id=1PqKz
@@ -18,6 +19,7 @@ const Track = () => {
           <div>
             track page for '{track?.data?.title}' on env '{environment}'
           </div>
+          <Button>Sup!!</Button>
         </>
       )}
     </>
