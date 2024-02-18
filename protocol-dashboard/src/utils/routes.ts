@@ -13,7 +13,7 @@ export const API_TITLE = 'API Leaderboard'
 export const API_LEADERBOARD = '/api/leaderboard'
 export const API_LEADERBOARD_TITLE = 'API Leaderboard'
 
-export const ANALYTICS = '/analytics/*'
+export const ANALYTICS = '/analytics'
 export const ANALYTICS_TITLE = 'Analytics'
 
 // Services Pages

@@ -70,8 +70,6 @@ const getMetamaskIsOnEthMainnet = async () => {
   let chainId = await getMetamaskChainId()
   if (chainId === ethNetworkId) return true
 
-  console.log({ chainId, ethNetworkId })
-
   // Try a second time just in case metamask was being slow to understand itself
   chainId = await new Promise(resolve => {
     console.debug('Metamask network not matching, trying again')
@@ -119,7 +117,6 @@ export async function setup(this: AudiusClient): Promise<void> {
         }, 2000)
       }
       const isOnMainnetEth = await getMetamaskIsOnEthMainnet()
-      console.log({ isOnMainnetEth })
       if (!isOnMainnetEth) {
         this.isMisconfigured = true
         this.onMetaMaskAccountLoaded(null)
