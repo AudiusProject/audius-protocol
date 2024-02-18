@@ -57,7 +57,6 @@ export const getTrack = (
   useEffect(() => {
     const sdkRequest = async () => {
       const url = `${getBaseUrl(env)}/tracks?handle=${handle}&slug=${trackSlug}`
-      console.log({ url })
       try {
         const user = await axios.get(url)
         setData(user.data)
