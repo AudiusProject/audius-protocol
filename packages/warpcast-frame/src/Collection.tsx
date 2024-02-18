@@ -1,8 +1,15 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { ENVIRONMENT_QUERY_PARAM } from './constants'
 
 const Collection = () => {
   const { collectionName } = useParams()
-  return <div>collection page for collection '{collectionName}'</div>
+  let [searchParams, _] = useSearchParams()
+  const environment = searchParams.get(ENVIRONMENT_QUERY_PARAM) || 'prod'
+  return (
+    <div>
+      collection page for collection '{collectionName}' on env '{environment}'
+    </div>
+  )
 }
 
 export default Collection
