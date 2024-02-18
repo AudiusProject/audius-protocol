@@ -59,6 +59,10 @@ func (ss *MediorumServer) startUploadScroller() {
 				uploadCursor.After = upload.CreatedAt
 			}
 
+			if len(overwrites) == 0 {
+				continue
+			}
+
 			// write overwrites
 			err = ss.crud.DB.Clauses(clause.OnConflict{UpdateAll: true}).Create(overwrites).Error
 			if err != nil {

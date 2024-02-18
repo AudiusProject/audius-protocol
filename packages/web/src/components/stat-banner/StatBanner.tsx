@@ -9,9 +9,10 @@ import {
   IconShare,
   IconPencil,
   IconKebabHorizontal,
-  IconMessage
+  IconMessage,
+  PopupMenu
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, PopupMenu } from '@audius/stems'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'

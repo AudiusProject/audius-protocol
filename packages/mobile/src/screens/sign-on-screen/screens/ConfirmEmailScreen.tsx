@@ -64,7 +64,11 @@ export const ConfirmEmailScreen = () => {
         <Text variant='body'>
           {confirmEmailMessages.noEmailNotice} <ResendCodeLink />
         </Text>
-        <PageFooter shadow='flat' buttonProps={{ isLoading: isSubmitting }} />
+        <PageFooter
+          shadow='flat'
+          buttonProps={{ isLoading: isSubmitting }}
+          avoidKeyboard
+        />
       </Page>
     </Formik>
   )

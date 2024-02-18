@@ -1,5 +1,4 @@
-import { Switch } from '@audius/harmony'
-import { Modal } from '@audius/stems'
+import { Modal, Switch } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './UnlistedTrackModal.module.css'

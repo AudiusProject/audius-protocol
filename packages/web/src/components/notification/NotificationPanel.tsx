@@ -9,9 +9,9 @@ import {
 import { Nullable } from '@audius/common/utils'
 import {
   Scrollbar,
-  IconNotificationOn as IconNotification
+  IconNotificationOn as IconNotification,
+  Popup
 } from '@audius/harmony'
-import { Popup, PopupPosition } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'
@@ -127,12 +127,11 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
     <>
       <Popup
         anchorRef={anchorRef}
-        className={styles.popup}
         isVisible={panelIsOpen}
         checkIfClickInside={handleCheckClickInside}
         onClose={handleCloseNotificationPanel}
-        position={PopupPosition.BOTTOM_RIGHT}
-        wrapperClassName={styles.popupWrapper}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        shadow='emphasis'
         zIndex={zIndex.NAVIGATOR_POPUP}
       >
         <div className={styles.panelContainer} ref={panelRef}>

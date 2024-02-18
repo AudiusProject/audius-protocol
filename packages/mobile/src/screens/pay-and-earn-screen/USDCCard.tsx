@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useUSDCBalance } from '@audius/common/hooks'
 import type { BNUSDC } from '@audius/common/models'
@@ -7,15 +7,22 @@ import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
+import { css } from '@emotion/native'
 import BN from 'bn.js'
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import { IconQuestionCircle } from '@audius/harmony-native'
+import {
+  Text,
+  IconQuestionCircle,
+  Flex,
+  Button,
+  Paper
+} from '@audius/harmony-native'
 import LogoUSDCInverted from 'app/assets/images/logoUSDCInverted.svg'
-import { Button, Text, useLink } from 'app/components/core'
+import { useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { flexRowCentered, makeStyles } from 'app/styles'
+import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
@@ -25,14 +32,11 @@ const LEARN_MORE_LINK =
 const messages = {
   buyAndSell: 'Buy and sell music with USDC.',
   learnMore: 'Learn More',
-  addFunds: 'Add Funds'
+  addFunds: 'Add Funds',
+  usdc: 'USDC'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: {
-    paddingVertical: spacing(8),
-    paddingHorizontal: spacing(3)
-  },
+const useStyles = makeStyles(({ spacing }) => ({
   spinner: {
     alignSelf: 'center',
     width: spacing(8),
@@ -40,45 +44,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   cardHeader: {
     padding: spacing(6),
-    borderTopLeftRadius: spacing(3),
-    borderTopRightRadius: spacing(3),
-    backgroundColor: palette.accentOrange
-  },
-  logoContainer: {
-    ...flexRowCentered(),
-    gap: spacing(1)
-  },
-  usdc: {
-    fontSize: spacing(5),
-    fontWeight: '900',
-    color: palette.staticWhite,
-    opacity: 0.8
-  },
-  balance: {
-    fontSize: spacing(10.5),
-    fontWeight: '900',
-    color: palette.staticWhite,
-    lineHeight: spacing(13)
-  },
-  buyAndSell: {
-    fontSize: spacing(4),
-    fontWeight: '500',
-    color: palette.staticWhite,
-    marginTop: spacing(2)
-  },
-  learnMore: {
-    ...flexRowCentered(),
-    gap: spacing(1),
-    marginTop: spacing(2)
-  },
-  cardButtons: {
-    padding: spacing(6),
-    borderBottomLeftRadius: spacing(3),
-    borderBottomRightRadius: spacing(3),
-    backgroundColor: palette.white
-  },
-  addFundsButton: {
-    marginHorizontal: spacing(6)
+    gap: spacing(2),
+    borderTopLeftRadius: spacing(2),
+    borderTopRightRadius: spacing(2)
   }
 }))
 
@@ -104,40 +72,61 @@ export const USDCCard = () => {
   }
 
   return (
-    <View>
+    <Paper>
       <LinearGradient
         style={styles.cardHeader}
         colors={['#2775CAdd', '#2775CA']}
         useAngle
         angle={90}
       >
-        <View style={styles.logoContainer}>
-          <LogoUSDCInverted height={spacing(5)} width={spacing(5)} />
-          <Text style={styles.usdc}>USDC</Text>
-        </View>
-        <Text style={styles.balance}>${usdcBalanceFormatted}</Text>
-        <Text style={styles.buyAndSell}>{messages.buyAndSell}</Text>
-        <TouchableOpacity style={styles.learnMore} onPress={onLearnMorePress}>
-          <IconQuestionCircle
-            height={spacing(4)}
-            width={spacing(4)}
-            fill={white}
-          />
-          <Text fontSize='small' weight='bold' color='staticWhite'>
-            {messages.learnMore}
+        <Flex>
+          <Flex direction='row' alignItems='center' gap='xs'>
+            <LogoUSDCInverted height={spacing(5)} width={spacing(5)} />
+            <Text
+              variant='heading'
+              size='s'
+              strength='strong'
+              color='staticWhite'
+              style={css({ opacity: 0.8 })}
+            >
+              {messages.usdc}
+            </Text>
+          </Flex>
+          <Text
+            variant='display'
+            size='s'
+            strength='strong'
+            color='staticWhite'
+          >
+            ${usdcBalanceFormatted}
           </Text>
+        </Flex>
+        <Text variant='body' color='staticWhite'>
+          {messages.buyAndSell}
+        </Text>
+        <TouchableOpacity onPress={onLearnMorePress}>
+          <Flex direction='row' alignItems='center' gap='xs'>
+            <IconQuestionCircle
+              height={spacing(4)}
+              width={spacing(4)}
+              fill={white}
+            />
+            <Text variant='body' size='s' strength='strong' color='staticWhite'>
+              {messages.learnMore}
+            </Text>
+          </Flex>
         </TouchableOpacity>
       </LinearGradient>
-      <View style={styles.cardButtons}>
-        <Button
-          style={styles.addFundsButton}
-          title={messages.addFunds}
-          onPress={onAddFundsPress}
-          variant='common'
-          size='large'
-          fullWidth
-        />
-      </View>
-    </View>
+      <Flex
+        p='xl'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+        backgroundColor='white'
+      >
+        <Button onPress={onAddFundsPress} variant='secondary' fullWidth>
+          {messages.addFunds}
+        </Button>
+      </Flex>
+    </Paper>
   )
 }

@@ -22,6 +22,7 @@
     0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
   transform: scale3d(1.005, 1.005, 1.005);
 }
+
 .container.standalone:not(.loading):not(.isDisabled):active {
   box-shadow: 0 0 1px 0 var(--tile-shadow-1),
     0 2px 3px -2px var(--tile-shadow-3);
@@ -279,6 +280,7 @@
   height: var(--unit-4);
   width: var(--unit-4);
 }
+
 .artistPickIcon path {
   fill: var(--neutral-light-4);
 }
@@ -318,6 +320,7 @@
 
   color: var(--neutral-light-4);
 }
+
 .large .topRight {
   /* Matches header row height for large tile variant */
   line-height: var(--unit-3);
@@ -349,6 +352,7 @@
   height: var(--unit-3);
   width: var(--unit-3);
 }
+
 .completeIcon path {
   fill: var(--secondary);
 }

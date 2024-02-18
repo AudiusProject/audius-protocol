@@ -13,7 +13,7 @@ import {
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE
 } from 'utils/route'
-import useHotkeys from 'hooks/useHotkey'
+import { useHotkeys } from '@audius/harmony'
 
 export const NO_VISUALIZER_ROUTES = new Set([
   UPLOAD_PAGE,

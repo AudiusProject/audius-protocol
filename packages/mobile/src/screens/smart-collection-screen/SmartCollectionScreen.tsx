@@ -97,7 +97,7 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
         >
           {Icon ? (
             <View style={styles.imageIcon}>
-              <Icon width='100%' height='100%' />
+              <Icon width='100%' height='100%' color='staticWhite' />
             </View>
           ) : null}
         </LinearGradient>

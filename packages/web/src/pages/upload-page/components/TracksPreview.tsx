@@ -82,10 +82,8 @@ export const TracksPreview = (props: TracksPreviewProps) => {
             index={i}
             displayIndex={tracks.length > 1}
             key={`track-preview-${i}`}
-            trackTitle={track.file.name}
-            fileType={track.file.type}
-            fileSize={track.file.size}
             onRemove={() => onRemove(i)}
+            file={track.file}
           />
         ))}
       </Scrollbar>

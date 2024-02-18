@@ -27,7 +27,7 @@ from src.models.users.user import User
 class Track(Base, RepresentableMixin):
     __tablename__ = "tracks"
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
@@ -88,9 +88,6 @@ class Track(Base, RepresentableMixin):
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Track.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"
     )

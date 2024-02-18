@@ -67,7 +67,8 @@ def get_remixable_tracks(args):
         tracks = []
         for result in results:
             track = result[0]
-            score = result[-1]
+            # Convert decimal to float for serialization
+            score = float(result[-1])
             track = helpers.model_to_dictionary(track)
             track["score"] = score
             tracks.append(track)

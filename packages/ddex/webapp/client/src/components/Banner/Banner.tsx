@@ -1,5 +1,5 @@
 import { Text, Button, Box, Flex } from '@audius/harmony'
-import type { DecodedUserToken } from '@audius/sdk/dist/sdk/index.d.ts'
+import type { DecodedUserToken } from '@audius/sdk'
 
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 

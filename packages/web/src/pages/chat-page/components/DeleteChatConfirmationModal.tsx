@@ -1,16 +1,15 @@
 import { useCallback } from 'react'
 
 import { chatActions } from '@audius/common/store'
-import { IconTrash } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  IconTrash
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import styles from './DeleteChatConfirmationModal.module.css'

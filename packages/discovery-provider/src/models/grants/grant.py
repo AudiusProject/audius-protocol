@@ -16,7 +16,7 @@ from src.models.model_utils import RepresentableMixin
 class Grant(Base, RepresentableMixin):
     __tablename__ = "grants"
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     grantee_address = Column(String, primary_key=True, nullable=False)
     user_id = Column(Integer, primary_key=True, nullable=False)

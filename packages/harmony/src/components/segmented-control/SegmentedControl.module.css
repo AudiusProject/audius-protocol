@@ -15,7 +15,7 @@
 .tab {
   z-index: 3;
   flex: 1 1 auto;
-  padding: var(--harmony-unit-2) var(--harmony-unit-4);
+  padding: var(--harmony-unit-2);
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
@@ -43,6 +43,11 @@
   right: 0;
   top: 0;
   bottom: 0;
+}
+
+.tab > input:disabled,
+.tab > p:disabled {
+  cursor: auto;
 }
 
 .separator {

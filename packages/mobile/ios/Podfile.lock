@@ -986,6 +986,8 @@ PODS:
   - React-Mapbuffer (0.73.1):
     - glog
     - React-debug
+  - react-native-blob-util (0.19.4):
+    - React-Core
   - react-native-blur (4.3.2):
     - React-Core
   - react-native-config (1.5.1):
@@ -1224,8 +1226,6 @@ PODS:
     - React-Core
     - RiveRuntime (= 5.5.1)
   - RiveRuntime (5.5.1)
-  - rn-fetch-blob (0.12.0):
-    - React-Core
   - RNBootSplash (5.2.1):
     - React-Core
   - RNCAsyncStorage (1.21.0):
@@ -1375,6 +1375,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
+  - react-native-blob-util (from `../node_modules/react-native-blob-util`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - "react-native-cookies (from `../../../node_modules/@react-native-cookies/cookies`)"
@@ -1419,7 +1420,6 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - rive-react-native (from `../../../node_modules/rive-react-native`)
-  - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
@@ -1546,6 +1546,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
+  react-native-blob-util:
+    :path: "../node_modules/react-native-blob-util"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
   react-native-config:
@@ -1634,8 +1636,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   rive-react-native:
     :path: "../../../node_modules/rive-react-native"
-  rn-fetch-blob:
-    :path: "../../../node_modules/rn-fetch-blob"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
@@ -1735,6 +1735,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 369048694e39942063c5d08e9580b43e2edd379a
   React-logger: e0c1e918d9588a9f39c9bc62d9d6bfe9ca238d9d
   React-Mapbuffer: 9731a0a63ebaf8976014623c4d637744d7353a7c
+  react-native-blob-util: 30a6c9fd067aadf9177e61a998f2c7efb670598d
   react-native-blur: cfdad7b3c01d725ab62a8a729f42ea463998afa2
   react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
@@ -1780,7 +1781,6 @@ SPEC CHECKSUMS:
   ReactCommon: ddb128564dcbfa0287d3d1a2d10f8c7457c971f6
   rive-react-native: 79777686cb29eaba6a28a0534fe82c8b8da41b4a
   RiveRuntime: b57830ff73f406f3b4022f457b16690535ca4d05
-  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBootSplash: f7fd5a7d4f1c13be3d0f5f31d27af7bcc1b1acef
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
@@ -1811,7 +1811,7 @@ SPEC CHECKSUMS:
   SwiftAudioEx: 6f511018b7a0fdfd14ed1bb4081f953588245cc0
   TikTokOpenSDK: a63564ea4dc1fabc56352bf7aa9ddc386cdb63b6
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
-  Yoga: 2b33a7ac96c58cdaa7b810948fc6a2a76ed2d108
+  Yoga: 4f53dc50008d626fa679c7a1cb4bed898f8c0bde
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
 PODFILE CHECKSUM: ab62f00b76ec92f97506cd7b0a75c5c470923f11

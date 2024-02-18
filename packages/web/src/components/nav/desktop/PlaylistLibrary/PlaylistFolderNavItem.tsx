@@ -11,8 +11,8 @@ import {
   modalsActions,
   playlistUpdatesSelectors
 } from '@audius/common/store'
-import { IconFolder, IconCaretRight } from '@audius/harmony'
-import { PopupMenuItem, IconFolderOutline } from '@audius/stems'
+import { IconFolder, IconCaretRight, PopupMenuItem } from '@audius/harmony'
+import { IconFolderOutline } from '@audius/stems'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'

@@ -106,7 +106,7 @@ type ResourceGroupContentItem struct {
 
 // parseSonyXML parses the given XML data and returns structured data including releases, sound recordings, and images.
 // NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
-func parseSonyXML(xmlData []byte) (tracks []common.CreateTrackRelease, albums []common.CreateAlbumRelease, errs []error) {
+func parseSonyXML(xmlData []byte, indexedBucket, deliveryIDHex string) (tracks []common.CreateTrackRelease, albums []common.CreateAlbumRelease, errs []error) {
 	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
 		errs = append(errs, err)
@@ -148,7 +148,7 @@ func parseSonyXML(xmlData []byte) (tracks []common.CreateTrackRelease, albums []
 	// Parse <Release>s from <ReleaseList>
 	releaseNodes := xmlquery.Find(doc, "//ReleaseList/Release")
 	for _, rNode := range releaseNodes {
-		track, album, err := processReleaseNode(rNode, &soundRecordings, &images)
+		track, album, err := processReleaseNode(rNode, &soundRecordings, &images, indexedBucket, deliveryIDHex)
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -164,12 +164,23 @@ func parseSonyXML(xmlData []byte) (tracks []common.CreateTrackRelease, albums []
 }
 
 // processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
-func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image) (track *common.CreateTrackRelease, album *common.CreateAlbumRelease, err error) {
+func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image, indexedBucket, deliveryIDHex string) (track *common.CreateTrackRelease, album *common.CreateAlbumRelease, err error) {
 	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
-	releaseDate := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // TODO: This is deprecated. Need to use DealList
+	releaseDateStr := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // TODO: This is deprecated. Need to use DealList
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))
 	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
 	releaseType := safeInnerText(rNode.SelectElement("ReleaseType"))
+
+	// Convert releaseDate from string of format YYYY-MM-DD to time.Time
+	if releaseDateStr == "" {
+		err = fmt.Errorf("missing release date for <ReleaseReference>%s</ReleaseReference>", releaseRef)
+		return
+	}
+	releaseDate, releaseDateErr := time.Parse("2006-01-02", releaseDateStr)
+	if releaseDateErr != nil {
+		err = fmt.Errorf("failed to parse release date for <ReleaseReference>%s</ReleaseReference>: %s", releaseRef, releaseDateErr)
+		return
+	}
 
 	// Only use release info from the "Worldwide" territory
 	var releaseDetails *xmlquery.Node
@@ -242,11 +253,11 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		}
 
 		var tracks []common.TrackMetadata
-		var coverArtURL string
+		var coverArtURL, coverArtURLHash, coverArtURLHashAlgo string
 		for _, ci := range contentItems {
 			if ci.ResourceType == ResourceTypeSoundRecording {
 				var trackMetadata *common.TrackMetadata
-				trackMetadata, err = parseTrackMetadata(ci)
+				trackMetadata, err = parseTrackMetadata(ci, indexedBucket, deliveryIDHex)
 				if err != nil {
 					return
 				}
@@ -264,7 +275,9 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 					if coverArtURL != "" {
 						fmt.Printf("Skipping duplicate audio file for Image %s\n", ci.Reference)
 					}
-					coverArtURL = d.FileDetails.FilePath + d.FileDetails.FileName
+					coverArtURL = fmt.Sprintf("s3://%s/%s/%s%s", indexedBucket, deliveryIDHex, d.FileDetails.FilePath, d.FileDetails.FileName)
+					coverArtURLHash = d.FileDetails.HashSum
+					coverArtURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 				}
 			}
 		}
@@ -273,13 +286,15 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			DDEXReleaseRef: releaseRef,
 			Tracks:         tracks,
 			Metadata: common.CollectionMetadata{
-				PlaylistName:    title,
-				PlaylistOwnerID: artistName, // TODO: We don't have an ID here
-				ReleaseDate:     releaseDate,
-				Genre:           genre,
-				IsAlbum:         true,
-				IsPrivate:       false, // TODO: Use DealList to determine this. Same with releaseDate because I think the XML element it's reading is deprecated
-				CoverArtURL:     coverArtURL,
+				PlaylistName:        title,
+				PlaylistOwnerID:     artistName, // TODO: We don't have an ID here
+				ReleaseDate:         releaseDate,
+				Genre:               genre,
+				IsAlbum:             true,
+				IsPrivate:           false, // TODO: Use DealList to determine this. Same with releaseDate because I think the XML element it's reading is deprecated
+				CoverArtURL:         coverArtURL,
+				CoverArtURLHash:     coverArtURLHash,
+				CoverArtURLHashAlgo: coverArtURLHashAlgo,
 			},
 		}
 		return
@@ -293,10 +308,10 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 
 		// Extract file links and other details from the audio and image resources
 		var trackMetadata *common.TrackMetadata
-		var coverArtURL string
+		var coverArtURL, coverArtURLHash, coverArtURLHashAlgo string
 		for _, ci := range contentItems {
 			if ci.ResourceType == ResourceTypeSoundRecording {
-				trackMetadata, err = parseTrackMetadata(ci)
+				trackMetadata, err = parseTrackMetadata(ci, indexedBucket, deliveryIDHex)
 				if err != nil {
 					return
 				}
@@ -311,9 +326,11 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 						continue
 					}
 					if coverArtURL != "" {
-						fmt.Printf("Skipping duplicate audio file for Image %s\n", ci.Reference)
+						fmt.Printf("Skipping duplicate cover art file for Image %s\n", ci.Reference)
 					}
-					coverArtURL = d.FileDetails.FilePath + d.FileDetails.FileName
+					coverArtURL = fmt.Sprintf("s3://%s/%s/%s%s", indexedBucket, deliveryIDHex, d.FileDetails.FilePath, d.FileDetails.FileName)
+					coverArtURLHash = d.FileDetails.HashSum
+					coverArtURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 				}
 			}
 		}
@@ -356,6 +373,8 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		trackMetadata.ReleaseDate = releaseDate
 		trackMetadata.Copyright = copyright
 		trackMetadata.CoverArtURL = coverArtURL
+		trackMetadata.CoverArtURLHash = coverArtURLHash
+		trackMetadata.CoverArtURLHashAlgo = coverArtURLHashAlgo
 
 		track = &common.CreateTrackRelease{
 			DDEXReleaseRef: releaseRef,
@@ -368,7 +387,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 }
 
 // parseTrackMetadata parses the metadata for a sound recording from a ResourceGroupContentItem.
-func parseTrackMetadata(ci ResourceGroupContentItem) (metadata *common.TrackMetadata, err error) {
+func parseTrackMetadata(ci ResourceGroupContentItem, indexedBucket, deliveryIDHex string) (metadata *common.TrackMetadata, err error) {
 	if ci.SoundRecording == nil {
 		err = fmt.Errorf("no <SoundRecording> found for <ResourceReference>%s</ResourceReference>", ci.Reference)
 		return
@@ -378,20 +397,24 @@ func parseTrackMetadata(ci ResourceGroupContentItem) (metadata *common.TrackMeta
 		return
 	}
 
-	var audioFileURL, previewAudioFileURL string
+	var audioFileURL, audioFileURLHash, audioFileURLHashAlgo, previewAudioFileURL, previewAudioFileURLHash, previewAudioFileURLHashAlgo string
 	var previewStartSec int
 
 	for _, d := range ci.SoundRecording.TechnicalDetails {
 		if d.IsPreview {
 			if previewAudioFileURL == "" {
-				previewAudioFileURL = d.FileDetails.FilePath + d.FileDetails.FileName
+				previewAudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", indexedBucket, deliveryIDHex, d.FileDetails.FilePath, d.FileDetails.FileName)
+				previewAudioFileURLHash = d.FileDetails.HashSum
+				previewAudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 				previewStartSec = d.PreviewDetails.StartPoint
 			} else {
 				fmt.Printf("Skipping duplicate audio preview for SoundRecording %s\n", ci.Reference)
 			}
 		} else {
 			if audioFileURL == "" {
-				audioFileURL = d.FileDetails.FilePath + d.FileDetails.FileName
+				audioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", indexedBucket, deliveryIDHex, d.FileDetails.FilePath, d.FileDetails.FileName)
+				audioFileURLHash = d.FileDetails.HashSum
+				audioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 			} else {
 				fmt.Printf("Skipping duplicate audio file for SoundRecording %s\n", ci.Reference)
 			}
@@ -400,13 +423,17 @@ func parseTrackMetadata(ci ResourceGroupContentItem) (metadata *common.TrackMeta
 
 	duration, _ := parseISODuration(ci.SoundRecording.Duration)
 	metadata = &common.TrackMetadata{
-		Title:               ci.SoundRecording.Title,
-		Duration:            int(duration.Seconds()),
-		PreviewStartSeconds: &previewStartSec,
-		ISRC:                &ci.SoundRecording.ISRC,
-		Artists:             ci.SoundRecording.Artists,
-		PreviewAudioFileURL: previewAudioFileURL,
-		AudioFileURL:        audioFileURL,
+		Title:                       ci.SoundRecording.Title,
+		Duration:                    int(duration.Seconds()),
+		PreviewStartSeconds:         &previewStartSec,
+		ISRC:                        &ci.SoundRecording.ISRC,
+		Artists:                     ci.SoundRecording.Artists,
+		PreviewAudioFileURL:         previewAudioFileURL,
+		PreviewAudioFileURLHash:     previewAudioFileURLHash,
+		PreviewAudioFileURLHashAlgo: previewAudioFileURLHashAlgo,
+		AudioFileURL:                audioFileURL,
+		AudioFileURLHash:            audioFileURLHash,
+		AudioFileURLHashAlgo:        audioFileURLHashAlgo,
 	}
 	if genre, ok := common.ToGenre(ci.SoundRecording.Genre); ok {
 		metadata.Genre = genre

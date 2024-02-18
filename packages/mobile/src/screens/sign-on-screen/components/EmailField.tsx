@@ -22,7 +22,7 @@ export const EmailField = (props: EmailFieldProps) => {
   return (
     <HarmonyTextField
       keyboardType='email-address'
-      autoComplete='off'
+      autoComplete='email'
       autoCorrect={false}
       autoCapitalize='none'
       {...props}

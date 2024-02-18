@@ -17,6 +17,7 @@ import {
 } from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
+  Modal,
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,
   IconEmbed,
@@ -25,7 +26,7 @@ import {
   IconShare,
   IconSolana as LogoSol
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, LogoEth, Modal } from '@audius/stems'
+import { Button, ButtonSize, ButtonType, LogoEth } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

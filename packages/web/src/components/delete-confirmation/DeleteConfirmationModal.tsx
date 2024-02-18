@@ -1,6 +1,11 @@
 import { Nullable } from '@audius/common/utils'
-import { Button } from '@audius/harmony'
-import { Modal, ModalHeader, ModalTitle, ModalContent } from '@audius/stems'
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  Button
+} from '@audius/harmony'
 
 import styles from './DeleteConfirmationModal.module.css'
 

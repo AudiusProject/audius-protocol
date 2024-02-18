@@ -5,11 +5,6 @@
   overflow: auto;
 }
 
-.newModalContainer {
-  max-width: unset;
-  min-width: 600px;
-}
-
 .modalContainer {
   width: 720px;
   /* Need to account for the dropdown outside modal */

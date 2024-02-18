@@ -19,7 +19,6 @@ import {
   usePremiumContentPurchaseModal,
   CommonState,
   useWaitForDownloadModal,
-  tracksSocialActions as socialTracksActions,
   toastActions
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
@@ -139,13 +138,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
           trackIds,
           quality
         })
-        dispatch(
-          socialTracksActions.downloadTrack({
-            trackIds,
-            parentTrackId,
-            original: quality === DownloadQuality.ORIGINAL
-          })
-        )
         const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
           id: parentTrackId ?? trackIds[0],
           parent_track_id: parentTrackId
@@ -282,7 +274,11 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 alignItems='center'
                 borderTop='default'
               >
-                <Flex direction='row' alignItems='center' gap='l'>
+                <Flex
+                  direction={isMobile ? 'column' : 'row'}
+                  alignItems='center'
+                  gap='l'
+                >
                   <Text variant='title'>{messages.choose}</Text>
                   <SegmentedControl
                     options={options}
@@ -293,12 +289,15 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     equalWidth
                   />
                 </Flex>
-                {shouldDisplayDownloadAll ? downloadAllButton() : null}
+                {shouldDisplayDownloadAll && !isMobile
+                  ? downloadAllButton()
+                  : null}
               </Flex>
             ) : null}
             {track?.is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
+                parentTrackId={trackId}
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
@@ -309,6 +308,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             {stemTracks.map((s, i) => (
               <DownloadRow
                 trackId={s.id}
+                parentTrackId={trackId}
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
@@ -343,7 +343,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             ))}
             {/* Only display this row if original quality is not available,
             because the download all button will not be displayed at the top right. */}
-            {!track?.is_original_available && shouldDisplayDownloadAll ? (
+            {(!track?.is_original_available && shouldDisplayDownloadAll) ||
+            isMobile ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
                 {downloadAllButton()}
               </Flex>

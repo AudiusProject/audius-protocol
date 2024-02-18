@@ -23,13 +23,16 @@ type Delivery struct {
 }
 
 type PendingRelease struct {
-	ID          primitive.ObjectID `bson:"_id"`
-	UploadETag  string             `bson:"upload_etag"`
-	DeliveryID  primitive.ObjectID `bson:"delivery_id"`
-	PublishDate time.Time          `bson:"publish_date"`
-	CreatedAt   time.Time          `bson:"created_at"`
-	Track       CreateTrackRelease `bson:"create_track_release"`
-	Album       CreateAlbumRelease `bson:"create_album_release"`
+	ID                primitive.ObjectID `bson:"_id"`
+	UploadETag        string             `bson:"upload_etag"`
+	DeliveryID        primitive.ObjectID `bson:"delivery_id"`
+	PublishDate       time.Time          `bson:"publish_date"`
+	Track             CreateTrackRelease `bson:"create_track_release"`
+	Album             CreateAlbumRelease `bson:"create_album_release"`
+	CreatedAt         time.Time          `bson:"created_at"`
+	Errors            []string           `bson:"errors"`
+	FailureCount      int                `bson:"failure_count"`
+	FailedAfterUpload bool               `bson:"failed_after_upload"`
 }
 
 type PublishedRelease struct {
@@ -37,6 +40,11 @@ type PublishedRelease struct {
 	UploadETag  string             `bson:"upload_etag"`
 	DeliveryID  primitive.ObjectID `bson:"delivery_id"`
 	PublishDate time.Time          `bson:"publish_date"`
+	EntityID    string             `bson:"entity_id"`
+	Blockhash   string             `bson:"blockhash"`
+	Blocknumber int64              `bson:"blocknumber"`
+	Track       CreateTrackRelease `bson:"create_track_release"`
+	Album       CreateAlbumRelease `bson:"create_album_release"`
 	CreatedAt   time.Time          `bson:"created_at"`
 }
 

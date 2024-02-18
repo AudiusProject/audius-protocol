@@ -12,6 +12,7 @@ import { shallowEqual, useSelector } from 'react-redux'
 import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './DownloadRow.module.css'
 
@@ -26,6 +27,7 @@ type DownloadRowProps = {
   onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
   isOriginal: boolean
   trackId?: ID
+  parentTrackId?: ID
   hideDownload?: boolean
   index: number
   size?: number
@@ -38,6 +40,7 @@ export const DownloadRow = ({
   onDownload,
   isOriginal,
   trackId,
+  parentTrackId,
   hideDownload,
   index,
   size,
@@ -45,14 +48,15 @@ export const DownloadRow = ({
   filename,
   isLoading
 }: DownloadRowProps) => {
+  const isMobile = useIsMobile()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
   const downloadableContentAccess = useDownloadableContentAccess({
-    trackId: trackId ?? 0
+    trackId: parentTrackId ?? trackId ?? 0
   })
-  const { shouldDisplayDownloadFollowGated } = trackId
+  const { shouldDisplayDownloadFollowGated } = parentTrackId
     ? downloadableContentAccess
     : { shouldDisplayDownloadFollowGated: false }
 
@@ -76,12 +80,14 @@ export const DownloadRow = ({
       direction='row'
       alignItems='center'
       justifyContent='space-between'
+      w='100%'
+      gap='xs'
     >
-      <Flex gap='xl' alignItems='center'>
+      <Flex gap='xl' alignItems='center' w='100%' css={{ overflow: 'hidden' }}>
         <Text variant='body' color='subdued'>
           {index}
         </Text>
-        <Flex direction='column' gap='xs'>
+        <Flex direction='column' gap='xs' css={{ overflow: 'hidden' }} w='100%'>
           <Text variant='body' strength='default'>
             {category
               ? stemCategoryFriendlyNames[category]
@@ -89,7 +95,15 @@ export const DownloadRow = ({
               ? stemCategoryFriendlyNames[track?.stem_of?.category]
               : messages.fullTrack}
           </Text>
-          <Text variant='body' color='subdued'>
+          <Text
+            variant='body'
+            color='subdued'
+            css={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              'white-space': 'nowrap'
+            }}
+          >
             {getDownloadFilename({
               filename: filename ?? track?.orig_filename,
               isOriginal
@@ -98,7 +112,7 @@ export const DownloadRow = ({
         </Flex>
       </Flex>
       <Flex gap='2xl'>
-        {size ? (
+        {size && !isMobile ? (
           <Text variant='body' size='s' color='subdued'>
             {formatBytes(size)}
           </Text>

@@ -3,12 +3,15 @@ import {
   TrackDownload as TrackDownloadBase,
   type DownloadTrackArgs
 } from '@audius/common/services'
-import { tracksSocialActions } from '@audius/common/store'
+import { tracksSocialActions, downloadsActions } from '@audius/common/store'
+import { dedupFilenames } from '@audius/common/utils'
 import { downloadZip } from 'client-zip'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
+
+const { beginDownload, setDownloadError } = downloadsActions
 
 function isMobileSafari() {
   if (!navigator) return false
@@ -41,6 +44,13 @@ class TrackDownload extends TrackDownloadBase {
     rootDirectoryName,
     abortSignal
   }: DownloadTrackArgs) {
+    if (files.length === 0) return
+
+    const dispatch = window.store.dispatch
+
+    dispatch(beginDownload())
+
+    dedupFilenames(files)
     const responsePromises = files.map(
       async ({ url }) => await window.fetch(url, { signal: abortSignal })
     )
@@ -69,11 +79,16 @@ class TrackDownload extends TrackDownloadBase {
         url = URL.createObjectURL(blob)
       }
       browserDownload({ url, filename })
-      window.store.dispatch(downloadFinished())
+      dispatch(downloadFinished())
     } catch (e) {
       if ((e as Error).name === 'AbortError') {
         console.info('Download aborted by the user')
       } else {
+        dispatch(
+          setDownloadError(
+            e instanceof Error ? e : new Error(`Download failed: ${e}`)
+          )
+        )
         throw e
       }
     }

@@ -55,7 +55,7 @@ export const TrackArtwork = (props: TrackArtworkProps) => {
       ) : null}
       {isActive ? (
         <View style={styles.artworkIcon}>
-          <ActiveIcon />
+          <ActiveIcon color='staticWhite' />
         </View>
       ) : null}
     </TrackImage>

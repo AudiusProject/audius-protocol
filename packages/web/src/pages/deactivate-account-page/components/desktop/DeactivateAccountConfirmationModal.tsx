@@ -1,4 +1,5 @@
-import { Button, ButtonType, Modal } from '@audius/stems'
+import { Modal } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'

@@ -10,7 +10,7 @@ import {
   collectionsSocialActions as socialActions,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { PopupMenuItem } from '@audius/stems'
+import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

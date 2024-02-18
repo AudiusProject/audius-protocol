@@ -10,15 +10,15 @@ import {
   User
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { Switch, IconRemix } from '@audius/harmony'
 import {
   Modal,
-  Button,
-  ButtonType,
   ModalContent,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  Switch,
+  IconRemix
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { debounce } from 'lodash'
 

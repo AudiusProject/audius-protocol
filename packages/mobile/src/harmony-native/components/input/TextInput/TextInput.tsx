@@ -306,15 +306,9 @@ export const TextInput = forwardRef(
                     direction='row'
                     alignItems='center'
                     justifyContent='space-between'
-                    gap='2xs'
                   >
                     {startAdornmentText && shouldShowAdornments ? (
-                      <Text
-                        variant='label'
-                        size='l'
-                        color='subdued'
-                        style={css({ lineHeight: 0 })}
-                      >
+                      <Text variant='title' size='l' color='subdued'>
                         {startAdornmentText}
                       </Text>
                     ) : null}
@@ -335,6 +329,7 @@ export const TextInput = forwardRef(
                       underlineColorAndroid='transparent'
                       aria-label={ariaLabel ?? labelText}
                       style={css({
+                        flex: 1,
                         // Need absolute height to ensure consistency across platforms
                         height: !isSmall ? 23 : undefined,
                         // Android has a default padding that needs to be removed
@@ -351,12 +346,7 @@ export const TextInput = forwardRef(
                       {...other}
                     />
                     {endAdornmentText && shouldShowAdornments ? (
-                      <Text
-                        variant='label'
-                        size='l'
-                        color='subdued'
-                        style={css({ lineHeight: 0 })}
-                      >
+                      <Text variant='label' size='l' color='subdued'>
                         {endAdornmentText}
                       </Text>
                     ) : null}

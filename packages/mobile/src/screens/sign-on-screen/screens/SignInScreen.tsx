@@ -114,6 +114,10 @@ const SignInPasswordField = () => {
   }, [setError, signInError])
 
   return (
-    <PasswordField name='password' label={signInPageMessages.passwordLabel} />
+    <PasswordField
+      name='password'
+      label={signInPageMessages.passwordLabel}
+      autoComplete='current-password'
+    />
   )
 }
