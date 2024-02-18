@@ -1,5 +1,8 @@
+import { useParams } from 'react-router-dom'
+
 const Collection = () => {
-  return <div>collection page</div>
+  const { collectionName } = useParams()
+  return <div>collection page for collection '{collectionName}'</div>
 }
 
 export default Collection

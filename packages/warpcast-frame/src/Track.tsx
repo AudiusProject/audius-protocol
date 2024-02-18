@@ -1,5 +1,8 @@
+import { useParams } from 'react-router-dom'
+
 const Track = () => {
-  return <div>track page</div>
+  const { trackName } = useParams()
+  return <div>track page for track '{trackName}'</div>
 }
 
 export default Track
