@@ -9,8 +9,13 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { encodeHashId } from '@audius/common/utils'
-import { IconRemove, Box, Flex, Text as HarmonyText } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import {
+  IconRemove,
+  Box,
+  Flex,
+  Text as HarmonyText,
+  IconButton
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -239,12 +244,12 @@ const StemListItem = ({
         {allowDelete ? (
           <IconButton
             aria-label='delete'
-            className={styles.deleteButtonIcon}
+            color='danger'
             onClick={() => {
               if (!allowDelete) return
               onDelete()
             }}
-            icon={<IconRemove />}
+            icon={IconRemove}
           />
         ) : (
           <LoadingSpinner />

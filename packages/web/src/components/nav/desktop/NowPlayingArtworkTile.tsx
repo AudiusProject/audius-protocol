@@ -9,8 +9,11 @@ import {
   playerSelectors,
   CommonState
 } from '@audius/common/store'
-import { IconWaveForm as IconVisualizer } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import {
+  IconWaveForm as IconVisualizer,
+  IconButton,
+  useTheme
+} from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
@@ -62,6 +65,7 @@ export const NowPlayingArtworkTile = () => {
   const dispatch = useDispatch()
   const { location } = useHistory()
   const { pathname } = location
+  const { color, spacing } = useTheme()
 
   const trackId = useSelector(getTrackId)
   const track = useSelector((state: CommonState) =>
@@ -145,15 +149,19 @@ export const NowPlayingArtworkTile = () => {
             image={collectibleImage ?? trackCoverArtImage}
           >
             <IconButton
-              className={styles.visualizerIconButton}
+              css={{
+                position: 'absolute',
+                bottom: spacing.unit2,
+                right: spacing.unit2,
+                backgroundColor: color.background.white,
+                '&:hover path': {
+                  fill: color.primary.primary
+                }
+              }}
               aria-label={messages.showVisualizer}
               onClick={handleShowVisualizer}
-              icon={
-                <IconVisualizer
-                  color='default'
-                  className={styles.visualizerIcon}
-                />
-              }
+              icon={IconVisualizer}
+              color='default'
             />
           </DynamicImage>
         </Link>

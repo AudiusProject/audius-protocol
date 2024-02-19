@@ -6,8 +6,15 @@ import {
   StemUpload,
   Download
 } from '@audius/common/models'
-import { Modal, Flex, Text, Switch, IconRemove } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, IconButton } from '@audius/stems'
+import {
+  Modal,
+  Flex,
+  Text,
+  Switch,
+  IconRemove,
+  IconButton
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { Divider } from 'components/divider'
@@ -69,12 +76,12 @@ const StemRow = ({
         {allowDelete ? (
           <IconButton
             aria-label='delete'
-            className={styles.deleteButtonIcon}
+            color='danger'
             onClick={() => {
               if (!allowDelete) return
               onDelete()
             }}
-            icon={<IconRemove />}
+            icon={IconRemove}
           />
         ) : (
           <LoadingSpinner />
