@@ -4,19 +4,6 @@
   line-height: normal;
 }
 
-.iconFolder {
-  flex-shrink: 0;
-  margin-right: 8px;
-}
-
-.iconFolder path {
-  fill: var(--harmony-n-950);
-}
-
-.iconFolderUpdated path {
-  fill: var(--harmony-secondary);
-}
-
 .folderName {
   white-space: nowrap;
   overflow: hidden;

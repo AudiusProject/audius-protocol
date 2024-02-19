@@ -8,9 +8,11 @@ import {
 import { getHash } from '@audius/common/utils'
 import {
   IconPlaybackPlay as IconPlay,
-  IconSolana as LogoSol
+  IconLogoCircleSOL,
+  IconLogoCircleETH,
+  useTheme
 } from '@audius/harmony'
-import { LogoEth } from '@audius/stems'
+import { CSSObject } from '@emotion/styled'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -84,15 +86,20 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
     onClick()
   }, [collectible, handle, dispatch, setIsModalOpen, onClick])
 
-  const collectibleChainElement = (
-    <div className={styles.chain}>
-      {collectible.chain === Chain.Eth ? (
-        <LogoEth height={18} />
-      ) : (
-        <LogoSol height={16} />
-      )}
-    </div>
-  )
+  const { spacing } = useTheme()
+
+  const chainCss: CSSObject = {
+    position: 'absolute',
+    bottom: spacing.unit3,
+    left: spacing.unit3
+  }
+
+  const collectibleChainElement =
+    collectible.chain === Chain.Eth ? (
+      <IconLogoCircleETH css={chainCss} shadow='drop' />
+    ) : (
+      <IconLogoCircleSOL css={chainCss} shadow='drop' />
+    )
 
   return (
     <div className={styles.detailsContainer}>

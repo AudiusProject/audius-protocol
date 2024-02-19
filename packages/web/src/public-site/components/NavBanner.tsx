@@ -3,12 +3,15 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   IconAudiusLogoHorizontalColor,
   IconKebabHorizontal,
-  IconCloudDownload as IconDownloadQueued,
+  IconCloudDownload,
   IconCaretDown,
   PopupMenu,
-  PopupMenuItem
+  PopupMenuItem,
+  IconBlog,
+  IconFoundation,
+  IconMerch,
+  IconSupport
 } from '@audius/harmony'
-import { IconBlog, IconFoundation, IconMerch, IconSupport } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
@@ -87,7 +90,7 @@ const NavBanner = (props: NavBannerProps) => {
       subtext: messages.downloadDescription,
       onClick: () =>
         window.open(DOWNLOAD_LINK, '_blank', 'noreferrer,noopener'),
-      icon: <IconDownloadQueued />,
+      icon: <IconCloudDownload />,
       iconClassName: styles.menuItemIcon
     },
     {
