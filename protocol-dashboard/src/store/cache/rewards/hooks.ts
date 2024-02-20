@@ -34,9 +34,7 @@ export function fetchRewards({
   wallet,
   fundsPerRound,
   users,
-  lastFundedBlock,
-  currentBlockNumber,
-  hasClaim
+  currentBlockNumber
 }: {
   wallet: Address
   currentBlockNumber: number
@@ -51,14 +49,23 @@ export function fetchRewards({
     try {
       // NOTE: If blocknumber is set to lastFundedBlock, then the reward will represent the pending claim amount
       const blockNumber = currentBlockNumber
-      const reward = await getRewardForClaimBlock({
+      const {
+        totalRewards,
+        delegateToUserRewards
+      } = await getRewardForClaimBlock({
         wallet,
         users,
         fundsPerRound,
         blockNumber,
         aud
       })
-      dispatch(setWeeklyRewards({ wallet, reward }))
+      dispatch(
+        setWeeklyRewards({
+          wallet,
+          reward: totalRewards,
+          delegateToUserRewards
+        })
+      )
     } catch (error) {
       // TODO: Handle error case
       console.log(error)
@@ -121,7 +128,17 @@ export const useUserAnnualRewardRate = ({ wallet }: { wallet: Address }) => {
   const weeklyRewards = useUserWeeklyRewards({ wallet })
   if (weeklyRewards.status === Status.Success && 'reward' in weeklyRewards) {
     const amount = weeklyRewards.reward.mul(new BN('52'))
-    return { status: Status.Success, reward: amount }
+    const amountByDelegate = Object.keys(
+      weeklyRewards.delegateToUserRewards
+    ).reduce((acc, d) => {
+      acc[d] = weeklyRewards.delegateToUserRewards[d].mul(new BN('52'))
+      return acc
+    }, {})
+    return {
+      status: Status.Success,
+      reward: amount,
+      delegateToUserRewards: amountByDelegate
+    }
   }
   return { status: Status.Loading }
 }
