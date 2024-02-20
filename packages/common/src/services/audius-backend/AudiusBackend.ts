@@ -1091,7 +1091,7 @@ export const audiusBackend = ({
   }
 
   async function uploadImage(file: File) {
-    return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => { })
+    return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
   }
 
   async function updateTrack(
@@ -1103,7 +1103,7 @@ export const audiusBackend = ({
     if (metadata.artwork) {
       const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
         metadata.artwork.file,
-        () => { }
+        () => {}
       )
       cleanedMetadata.cover_art_sizes = resp.id
     }
@@ -1989,10 +1989,10 @@ export const audiusBackend = ({
       const userId =
         entityType === Entity.Track
           ? // track create notifs store track owner id in the group id
-          parseInt(notification.group_id.split(':')[3])
+            parseInt(notification.group_id.split(':')[3])
           : // album/playlist create notifications store album owner
-          // id as the specifier
-          (decodeHashId(notification.actions[0].specifier) as number)
+            // id as the specifier
+            (decodeHashId(notification.actions[0].specifier) as number)
       return {
         type: NotificationType.UserSubscription,
         userId,
