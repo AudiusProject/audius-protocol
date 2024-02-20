@@ -12,19 +12,6 @@
   -webkit-text-fill-color: transparent;
 }
 
-.label,
-.description {
-  font-family: var(--font-family);
-  font-weight: var(--font-bold);
-  font-size: var(--font-l);
-  line-height: 22px;
-  text-align: center;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #bec5e0;
-  user-select: none;
-}
-
 .loading {
   height: var(--unit-3);
   width: var(--unit-3);

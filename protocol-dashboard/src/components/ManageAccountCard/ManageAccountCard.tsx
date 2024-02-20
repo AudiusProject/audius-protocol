@@ -63,7 +63,7 @@ const DelegateInfo = ({ wallet }: DelegateInfoProps) => {
         <Flex direction="column" gap="xs">
           <Flex gap="xs" alignItems="center">
             <Text variant="heading" size="s" strength="default" tag="span">
-              {audiusProfile.name}{' '}
+              {audiusProfile.name}
             </Text>
             <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
           </Flex>

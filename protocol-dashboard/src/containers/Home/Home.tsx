@@ -52,7 +52,8 @@ const messages = {
   noProposals: 'No Recent Proposals',
   viewAllProposals: 'View All Proposals',
   wtfIsAudius: 'What is Audius?',
-  wtf1: `Audius is not just a digital streaming platform; it's a revolution that connects fans and artists, bringing exclusive new music to your fingertips.`,
+  wtf1:
+    "Audius is not just a digital streaming platform; it's a revolution that connects fans and artists, bringing exclusive new music to your fingertips.",
   launchAudius: 'Launch Audius',
   trustedNameTitle: 'Trusted Name in Music Innovation',
   trustedNameDescription:
@@ -72,7 +73,7 @@ const Home = () => {
   const { isLoggedIn } = useAccount()
   const { recentProposals } = useProposals()
   const pushRoute = usePushRoute()
-  const { typography } = useTheme() as HarmonyTheme
+  const { typography } = useTheme() as HarmonyTheme // Need to cast because the type from import is incorrect
 
   return (
     <Page icon={IconDrag} title={messages.title} hidePreviousPage>

@@ -5,7 +5,7 @@ import { useAnnualRewardRate } from 'hooks/useRewardRate'
 import { Status } from 'types'
 
 const messages = {
-  label: `Annual`
+  label: 'Annual'
 }
 
 interface EstimatedAnnualStatProps {
