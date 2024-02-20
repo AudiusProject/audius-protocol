@@ -561,10 +561,15 @@ type CreateAccountInstagramError = {
   page?: 'create-email' | 'pick-handle'
 }
 
+// TikTok account creation
 type CreateAccountStartTikTok = {
   eventName: Name.CREATE_ACCOUNT_START_TIKTOK
   emailAddress?: string
   page?: string
+}
+type CreateAccountClosedTikTok = {
+  eventName: Name.CREATE_ACCOUNT_CLOSED_TIKTOK
+  page?: 'create-email' | 'pick-handle'
 }
 type CreateAccountCompleteTikTok =
   | {
@@ -578,10 +583,16 @@ type CreateAccountCompleteTikTok =
       handle: string
       page?: string
     }
+type CreateAccountTikTokError = {
+  eventName: Name.CREATE_ACCOUNT_TIKTOK_ERROR
+  error?: string
+  page?: 'create-email' | 'pick-handle'
+}
+
 type CreateAccountUploadProfilePhoto = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
 }
 type CreateAccountUploadProfilePhotoError = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR
@@ -589,8 +600,8 @@ type CreateAccountUploadProfilePhotoError = {
 }
 type CreateAccountUploadProfileCover = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
 }
 type CreateAccountUploadProfileCoverError = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR
@@ -603,8 +614,8 @@ type CreateAccountCompleteProfile = {
 }
 type CreateAccountSelectGenre = {
   eventName: Name.CREATE_ACCOUNT_SELECT_GENRE
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
   genre: Genre
   selectedGenres: Genre[]
 }
@@ -2251,6 +2262,7 @@ export type AllTrackingEvents =
   | CreateAccountStartInstagram
   | CreateAccountCompleteInstagram
   | CreateAccountStartTikTok
+  | CreateAccountClosedTikTok
   | CreateAccountCompleteTikTok
   | CreateAccountCompleteProfile
   | CreateAccountCompleteFollow

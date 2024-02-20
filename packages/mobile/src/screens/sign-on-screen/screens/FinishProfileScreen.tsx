@@ -25,6 +25,8 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { Paper, useTheme, Text } from '@audius/harmony-native'
 import { HarmonyTextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 
 import { AccountHeader } from '../components/AccountHeader'
@@ -104,6 +106,11 @@ const AccountHeaderField = () => {
     const handleImageSelected = (image: Image) => {
       dispatch(setField('profileImage', image))
       setProfileImage(image)
+      track(
+        make({
+          eventName: EventNames.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO
+        })
+      )
     }
 
     launchSelectImageActionSheet(
@@ -120,6 +127,11 @@ const AccountHeaderField = () => {
     const handleImageSelected = (image: Image) => {
       setCoverPhoto(image)
       dispatch(setField('coverPhoto', image))
+      track(
+        make({
+          eventName: EventNames.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO
+        })
+      )
     }
     launchSelectImageActionSheet(
       handleImageSelected,

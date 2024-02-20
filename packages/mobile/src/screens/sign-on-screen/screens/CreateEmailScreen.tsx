@@ -128,6 +128,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               onStart={handleStartSocialMediaLogin}
               onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
               onClose={handleCloseSocialMediaLogin}
+              page='create-email'
             />
           </Flex>
           <Flex direction='column' gap='l'>

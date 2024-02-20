@@ -74,6 +74,7 @@ const SocialMediaSection = ({
         onError={onError}
         onClose={onClose}
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
+        page='pick-handle'
       />
       <Text variant='body' size='m'>
         {pickHandlePageMessages.claimHandleHeadsUp}
