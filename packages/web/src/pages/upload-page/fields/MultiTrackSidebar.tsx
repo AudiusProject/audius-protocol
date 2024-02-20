@@ -1,12 +1,17 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { Button, IconTrash, IconError, IconCloudUpload } from '@audius/harmony'
+import {
+  Button,
+  IconTrash,
+  IconError,
+  IconCloudUpload,
+  useTheme
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
-import { Icon } from 'components/Icon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
@@ -22,12 +27,15 @@ const messages = {
   title: 'UPLOADED TRACKS',
   complete: 'Complete Upload',
   fixErrors: 'Fix errors to complete your upload.',
-  titleRequired: 'Track name required'
+  titleRequired: 'Track name required',
+  removeTrack: 'Remove track'
 }
 
 export const MultiTrackSidebar = () => {
   const scrollToTop = useContext(UploadFormScrollContext)
   const { errors, submitCount } = useFormikContext<TrackEditFormValues>()
+  const { spacing } = useTheme()
+
   return (
     <div className={styles.root}>
       <div className={cn(layoutStyles.col)}>
@@ -51,10 +59,10 @@ export const MultiTrackSidebar = () => {
           </div>
           {!isEmpty(errors) && submitCount > 0 ? (
             <div className={cn(layoutStyles.row, layoutStyles.gap1)}>
-              <Icon
-                className={styles.iconError}
-                icon={IconError}
-                size='xSmall'
+              <IconError
+                size='xs'
+                color='danger'
+                css={{ margin: spacing.unit1 }}
               />
               <Text size='xSmall' color='accentRed'>
                 {messages.fixErrors}
@@ -86,6 +94,7 @@ type TrackRowProps = {
 const TrackRow = (props: TrackRowProps) => {
   const { index } = props
   const scrollToTop = useContext(UploadFormScrollContext)
+  const { spacing } = useTheme()
   const { values, setValues, errors, submitCount } =
     useFormikContext<TrackEditFormValues>()
   const { playingPreviewIndex, stopPreview } = useContext(UploadPreviewContext)
@@ -156,11 +165,10 @@ const TrackRow = (props: TrackRowProps) => {
         >
           <div className={layoutStyles.row}>
             {hasError ? (
-              <Icon
-                className={styles.iconError}
-                icon={IconError}
-                size='xSmall'
-                color='accentRed'
+              <IconError
+                size='xs'
+                color='danger'
+                css={{ margin: spacing.unit1 }}
               />
             ) : (
               <Text
@@ -196,7 +204,7 @@ const TrackRow = (props: TrackRowProps) => {
               className={styles.iconRemove}
               onClick={(e) => handleRemoveTrack(e, index)}
             >
-              <IconTrash fill='--default' />
+              <IconTrash color='default' />
             </div>
           ) : null}
         </div>

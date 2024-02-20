@@ -157,19 +157,21 @@ export const TrackPreview = (props: TrackPreviewProps) => {
         </Text>
         {isLosslessDownloadsEnabled ? (
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
-            {!isTitleEditable ? (
+            {isTitleEditable ? (
               <IconButton
                 icon={IconCompose}
                 color='subdued'
+                size='s'
                 aria-label={messages.edit}
-                onClick={() => setIsEditingTitle(true)}
                 className={styles.editTitleButton}
+                onClick={() => setIsEditingTitle(true)}
               />
             ) : null}
             <IconButton
               icon={IconTrash}
               aria-label={messages.remove}
-              color='danger'
+              color='subdued'
+              size='s'
               onClick={onRemove}
               disabled={!allowDelete}
               className={styles.removeButton}
@@ -181,6 +183,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
             icon={IconTrash}
             aria-label={messages.remove}
             onClick={onRemove}
+            size='s'
             className={styles.removeButton}
           />
         ) : null}

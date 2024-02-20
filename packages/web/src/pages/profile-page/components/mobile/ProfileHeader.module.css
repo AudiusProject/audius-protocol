@@ -176,10 +176,6 @@
   margin-right: 32px;
 }
 
-.socialIcon {
-  margin-right: 16px;
-}
-
 .socialIcon svg {
   height: 20px;
   width: 20px;
@@ -279,6 +275,7 @@
   font-weight: var(--font-medium);
   letter-spacing: 0.5px;
   line-height: 19px;
+  gap: var(--unit-3);
 }
 
 .website {

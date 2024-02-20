@@ -36,7 +36,6 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
 import {
   useAuthenticatedCallback,
@@ -206,7 +205,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             css={{ flexGrow: 1 }}
           >
             <Flex direction='row' alignItems='center' gap='s'>
-              <Icon icon={IconReceive} size='large' />
+              <IconReceive size='l' color='default' />
               <Text variant='label' size='l' strength='strong'>
                 {messages.title}
               </Text>

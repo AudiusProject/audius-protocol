@@ -9,13 +9,14 @@ import type { Typography } from '../typography'
 
 import type { Theme } from './types'
 
-const iconSizes = {
+export const iconSizes = {
   xs: 14,
   s: 16,
   m: 20,
   l: 24,
   xl: 30,
-  '2xl': 32
+  '2xl': 32,
+  '3xl': 40
 }
 
 const commonFoundations = {

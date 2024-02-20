@@ -12,14 +12,13 @@ import {
   Button,
   Flex,
   IconExternalLink,
-  IconCheck,
-  PlainButton
+  PlainButton,
+  IconValidationCheck
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
@@ -121,9 +120,7 @@ export const TransferSuccessful = ({
         </>
       ) : null}
       <div className={styles.success}>
-        <div className={styles.completionCheck}>
-          <Icon icon={IconCheck} size='xxSmall' color='white' />
-        </div>
+        <IconValidationCheck size='m' />
         <Text variant={'heading'} size='small' strength='default'>
           {messages.success}
         </Text>
