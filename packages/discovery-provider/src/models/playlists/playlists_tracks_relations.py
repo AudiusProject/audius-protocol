@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, text
+from sqlalchemy import Boolean, Column, DateTime, Integer, text
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
