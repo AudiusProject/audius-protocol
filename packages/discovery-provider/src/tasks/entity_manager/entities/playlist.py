@@ -112,8 +112,7 @@ def update_playlist_routes_table(
 
 
 def update_playlist_tracks_relations(
-    params: ManageEntityParameters,
-    playlist_record: Playlist
+    params: ManageEntityParameters, playlist_record: Playlist
 ):
     # debug
     try:
