@@ -30,6 +30,7 @@ import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 const initialValues = {
   handle: ''
@@ -97,6 +98,8 @@ export const PickHandleScreen = () => {
     resetAction: unsetSocialProfile,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
+
+  useTrackScreen('PickHandle')
 
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(

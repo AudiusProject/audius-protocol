@@ -18,6 +18,7 @@ import { EventNames } from 'app/types/analytics'
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, gutterSize } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 type Genre = (typeof GENRES)[number]
 type SelectGenresValue = { genres: typeof GENRES }
@@ -35,6 +36,8 @@ const SelectGenresFieldArray = () => {
     initialValues.genres
   )
   const [, , { setValue }] = useField('genres')
+
+  useTrackScreen('SelectGenre')
 
   // Update formik state to match our React state
   useEffect(() => {

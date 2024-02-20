@@ -33,6 +33,7 @@ import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons
 import { Heading } from '../components/layout'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 import type { SignOnScreenProps } from './types'
 
@@ -53,6 +54,8 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const EmailSchema = useMemo(() => {
     return toFormikValidationSchema(emailSchema(queryContext))
   }, [queryContext])
+
+  useTrackScreen('CreateEmail')
 
   const handleSubmit = useCallback(
     (values: SignUpEmailValues) => {
