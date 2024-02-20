@@ -4,6 +4,7 @@ from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
+# TODO: should this be singular?
 class PlaylistsTracksRelations(Base, RepresentableMixin):
     __tablename__ = "playlists_tracks_relations"
 
