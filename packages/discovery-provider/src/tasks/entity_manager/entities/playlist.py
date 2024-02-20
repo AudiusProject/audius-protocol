@@ -133,7 +133,7 @@ def update_playlist_tracks_relations(
             f"playlists.py | REED playlist_record.playlist_contents['track_ids']: {playlist_record.playlist_contents['track_ids']}"
         )
         updated_track_ids = [
-            track["track"] for track in playlist_record.playlist_contents["track_ids"]
+            track.track for track in playlist_record.playlist_contents["track_ids"]
         ]
         params.logger.info(
             f"playlists.py | REED existing_tracks: {existing_tracks} updated_track_ids: {updated_track_ids}"
