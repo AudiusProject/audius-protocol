@@ -30,6 +30,11 @@ export const sharedIndexSettings: IndicesIndexSettings = {
         tokenizer: 'standard',
         filter: ['asciifolding', 'lowercase'],
       },
+      lower_keyword: {
+        type: 'custom',
+        tokenizer: 'keyword',
+        filter: ['lowercase'],
+      },
     },
   },
 
@@ -57,6 +62,12 @@ export const standardText: MappingProperty = {
 export const lowerKeyword: MappingProperty = {
   type: 'keyword',
   normalizer: 'lower_asciifolding',
+}
+
+export const lowerKeywordTermVector: MappingProperty = {
+  type: 'text',
+  analyzer: 'lower_keyword',
+  term_vector: 'yes',
 }
 
 export const noWhitespaceLowerKeyword: MappingProperty = {

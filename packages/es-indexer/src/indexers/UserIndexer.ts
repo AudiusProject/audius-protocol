@@ -8,6 +8,7 @@ import { UserDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 import {
   lowerKeyword,
+  lowerKeywordTermVector,
   noWhitespaceLowerKeyword,
   sharedIndexSettings,
   standardSuggest,
@@ -49,7 +50,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         subscribed_ids: { type: 'keyword' },
 
         // following
-        following_ids: { type: 'keyword' },
+        following_ids: lowerKeywordTermVector,
         following_count: { type: 'integer' },
 
         // followers
@@ -58,9 +59,9 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         track_count: { type: 'integer' },
         tracks: {
           properties: {
-            mood: lowerKeyword,
-            genre: lowerKeyword,
-            tags: lowerKeyword,
+            mood: lowerKeywordTermVector,
+            genre: lowerKeywordTermVector,
+            tags: lowerKeywordTermVector,
           },
         },
         allow_ai_attribution: { type: 'boolean' },

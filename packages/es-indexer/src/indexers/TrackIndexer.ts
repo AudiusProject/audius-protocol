@@ -7,6 +7,7 @@ import { TrackDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 import {
   lowerKeyword,
+  lowerKeywordTermVector,
   noWhitespaceLowerKeyword,
   sharedIndexSettings,
   standardSuggest,
@@ -50,7 +51,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         saved_by: { type: 'keyword' },
         save_count: { type: 'integer' },
         // reposts
-        reposted_by: { type: 'keyword' },
+        reposted_by: lowerKeywordTermVector,
         repost_count: { type: 'integer' },
 
         suggest: standardSuggest,
