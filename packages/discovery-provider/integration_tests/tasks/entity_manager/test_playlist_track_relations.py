@@ -37,15 +37,16 @@ entities = {
     ],
 }
 
+
 def test_add_playlist(app):
     with app.app_context():
         db = get_db()
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        relations: List[PlaylistsTracksRelations] = (
-            session.query(PlaylistsTracksRelations).all()
-        )
+        relations: List[PlaylistsTracksRelations] = session.query(
+            PlaylistsTracksRelations
+        ).all()
         assert len(relations) == 4
         for id in [20, 10, 30, 40]:
             assert any([relation.track_id == id for relation in relations])
