@@ -2,6 +2,7 @@ import React, { useCallback, useEffect } from 'react'
 import clsx from 'clsx'
 import { Spring } from 'react-spring/renderprops'
 import { IconArrowWhite } from '@audius/stems'
+import { IconComponent } from '@audius/harmony'
 import { usePushRoute } from 'utils/effects'
 
 import desktopStyles from './Page.module.css'
@@ -20,6 +21,7 @@ interface PageProps {
   className?: string
   children: React.ReactNode
   title: string
+  icon?: IconComponent
   previousPage?: string
   previousPageRoute?: string
   defaultPreviousPage?: string
@@ -35,13 +37,15 @@ const Page = ({
   defaultPreviousPage,
   defaultPreviousPageRoute,
   previousPage,
-  previousPageRoute
+  previousPageRoute,
+  icon
 }: PageProps) => {
   const pushRoute = usePushRoute()
   const prevRoute = usePreviousRoute()
   const prevTitle = getPageTitle(prevRoute)
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const IconComponent = icon
 
   useEffect(() => {
     // Scroll to top on component mount if mobile
@@ -77,7 +81,12 @@ const Page = ({
       {animProps => (
         <div style={animProps}>
           <div className={styles.titleContainer}>
-            <h1 className={styles.title}>{title}</h1>
+            <h1 className={styles.title}>
+              {IconComponent == null ? null : (
+                <IconComponent color="staticWhite" />
+              )}
+              {title}
+            </h1>
             {!hidePreviousPage && previousText && (
               <div
                 className={styles.previousPageContainer}

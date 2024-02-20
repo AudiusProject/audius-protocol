@@ -12,6 +12,7 @@ export type State = {
       | {
           status: Status.Success
           reward: BN
+          delegateToUserRewards: { [key: string]: BN }
         }
   }
 }
@@ -21,7 +22,11 @@ export const initialState: State = {
 }
 
 type FetchWeeklyRewards = { wallet: Address }
-type SetWeeklyRewards = { wallet: Address; reward: BN }
+type SetWeeklyRewards = {
+  wallet: Address
+  reward: BN
+  delegateToUserRewards: { [key: string]: BN }
+}
 
 const slice = createSlice({
   name: 'rewards',
@@ -35,7 +40,8 @@ const slice = createSlice({
     setWeeklyRewards: (state, action: PayloadAction<SetWeeklyRewards>) => {
       state.users[action.payload.wallet] = {
         status: Status.Success,
-        reward: action.payload.reward
+        reward: action.payload.reward,
+        delegateToUserRewards: action.payload.delegateToUserRewards
       }
     }
   }

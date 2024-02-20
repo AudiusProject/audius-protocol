@@ -14,10 +14,12 @@
 
 .title {
   font-family: var(--font-family);
-  font-weight: var(--font-bold);;
+  font-weight: var(--font-bold);
   font-size: var(--font-3xl);
   color: var(--static-white);
-  text-transform: uppercase;
+  gap: var(--unit-2);
+  display: inline-flex;
+  align-items: center;
   margin: 0px;
   cursor: default;
 }
@@ -43,7 +45,7 @@
 
 .prevPageText {
   font-family: var(--font-family);
-  font-weight: var(--font-bold);;
+  font-weight: var(--font-bold);
   font-size: var(--font-xl);
   line-height: 25px;
   color: var(--static-white);

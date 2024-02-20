@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 import clsx from 'clsx'
 import Paper from 'components/Paper'
 import Loading from 'components/Loading'
+import { Text } from '@audius/harmony'
 
 import styles from './Table.module.css'
 import Error from 'components/Error'
@@ -84,7 +85,9 @@ const Table: React.FC<TableProps> = ({
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       {title && (
         <div className={styles.titleContainer}>
-          <h3 className={styles.title}>{title}</h3>
+          <Text variant="heading" size="s" strength="default" tag="span">
+            {title}
+          </Text>
           {label && <p className={styles.label}>{label}</p>}
         </div>
       )}
