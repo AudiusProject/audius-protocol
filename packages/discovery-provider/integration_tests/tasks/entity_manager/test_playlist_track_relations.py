@@ -3,17 +3,13 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 
-import pytest
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
-from src.models.playlists.playlist import Playlist
-from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlists_tracks_relations import PlaylistsTracksRelations
-from src.models.tracks.track import Track
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
 from src.utils.db_session import get_db
@@ -83,6 +79,7 @@ tx_receipts = {
     ]
 }
 
+
 def test_add_playlist(app, mocker):
     with app.app_context():
         db = get_db()
@@ -103,7 +100,7 @@ def test_add_playlist(app, mocker):
         AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
-        
+
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
@@ -115,9 +112,9 @@ def test_add_playlist(app, mocker):
             block_timestamp=1585336422,
             block_hash=hex(0),
         )
-        relations: List[PlaylistsTracksRelations] = (
-            session.query(PlaylistsTracksRelations).all()
-        )
+        relations: List[PlaylistsTracksRelations] = session.query(
+            PlaylistsTracksRelations
+        ).all()
         print(relations)
         assert len(relations) == 2
         for id in [10, 20]:
