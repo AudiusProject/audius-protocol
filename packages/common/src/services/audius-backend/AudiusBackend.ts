@@ -1091,7 +1091,7 @@ export const audiusBackend = ({
   }
 
   async function uploadImage(file: File) {
-    return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
+    return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => { })
   }
 
   async function updateTrack(

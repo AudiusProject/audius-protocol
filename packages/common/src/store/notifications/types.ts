@@ -451,9 +451,9 @@ export type RepostPushNotification = {
   initiator: ID
   timestamp: string
   type:
-  | PushNotificationType.RepostAlbum
-  | PushNotificationType.RepostPlaylist
-  | PushNotificationType.RepostTrack
+    | PushNotificationType.RepostAlbum
+    | PushNotificationType.RepostPlaylist
+    | PushNotificationType.RepostTrack
   actions: [
     {
       blocknumber: number
@@ -481,9 +481,9 @@ export type RepostOfRepostPushNotification = {
   initiator: ID
   timestamp: string
   type:
-  | PushNotificationType.RepostOfRepostAlbum
-  | PushNotificationType.RepostOfRepostPlaylist
-  | PushNotificationType.RepostOfRepostTrack
+    | PushNotificationType.RepostOfRepostAlbum
+    | PushNotificationType.RepostOfRepostPlaylist
+    | PushNotificationType.RepostOfRepostTrack
   actions: [
     {
       blocknumber: number
@@ -511,9 +511,9 @@ export type FavoriteOfRepostPushNotification = {
   initiator: ID
   timestamp: string
   type:
-  | PushNotificationType.FavoriteOfRepostAlbum
-  | PushNotificationType.FavoriteOfRepostPlaylist
-  | PushNotificationType.FavoriteOfRepostTrack
+    | PushNotificationType.FavoriteOfRepostAlbum
+    | PushNotificationType.FavoriteOfRepostPlaylist
+    | PushNotificationType.FavoriteOfRepostTrack
   actions: [
     {
       blocknumber: number
@@ -541,9 +541,9 @@ export type FavoritePushNotification = {
   initiator: ID
   timestamp: string
   type:
-  | PushNotificationType.FavoriteAlbum
-  | PushNotificationType.FavoritePlaylist
-  | PushNotificationType.FavoriteTrack
+    | PushNotificationType.FavoriteAlbum
+    | PushNotificationType.FavoritePlaylist
+    | PushNotificationType.FavoriteTrack
   actions: [
     {
       blocknumber: number
@@ -569,18 +569,18 @@ export enum Achievement {
 export type MilestoneNotification = BaseNotification &
   (
     | {
-      type: NotificationType.Milestone
-      entityType: Entity
-      entityId: ID
-      achievement: Exclude<Achievement, Achievement.Followers>
-      value: number
-    }
+        type: NotificationType.Milestone
+        entityType: Entity
+        entityId: ID
+        achievement: Exclude<Achievement, Achievement.Followers>
+        value: number
+      }
     | {
-      type: NotificationType.Milestone
-      entityId: ID
-      achievement: Achievement.Followers
-      value: number
-    }
+        type: NotificationType.Milestone
+        entityId: ID
+        achievement: Achievement.Followers
+        value: number
+      }
   )
 
 export type MilestoneFollowPushNotification = {
@@ -956,8 +956,8 @@ export type UpdateNotificationsAction = PayloadAction<{
 export type FetchNotificationsAction = PayloadAction<
   | undefined
   | {
-    pageSize?: number
-  }
+      pageSize?: number
+    }
 >
 
 export type FetchNotificationsFailedAction = PayloadAction<{

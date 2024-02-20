@@ -350,7 +350,7 @@ def extend_milestone(action: NotificationAction):
             "type": playlist_data["type"].lower(),
             "threshold": playlist_data["threshold"],
             "playlist_id": encode_int_id(id),
-            "is_album": playlist_data["is_album"],
+            "is_album": playlist_data.get("is_album", False),
         }
     elif action["group_id"].startswith("milestone:TRACK_SAVE_COUNT") or action[
         "group_id"

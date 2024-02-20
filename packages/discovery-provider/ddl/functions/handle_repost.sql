@@ -191,7 +191,10 @@ begin
 				'user_id',
 				new.user_id,
 				'type',
-				new.repost_type
+        case 
+          when is_album then 'album'
+          else new.repost_type
+        end
 			) AS data_val
 		) sub
 		WHERE user_ids_val IS NOT NULL AND array_length(user_ids_val, 1) > 0
