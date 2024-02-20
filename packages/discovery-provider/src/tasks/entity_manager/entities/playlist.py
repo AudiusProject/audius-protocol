@@ -129,15 +129,15 @@ def update_playlist_tracks_relations(
         existing_tracks = {
             track.track_id: track for track in existing_playlist_tracks_relations
         }
+        playlist = helpers.model_to_dictionary(playlist_record)
         updated_track_ids = [
-            track["track"]
-            for track in playlist_record["playlist_contents"]["track_ids"]
+            track["track"] for track in playlist["playlist_contents"]["track_ids"]
         ]
         params.logger.info(
             f"playlists.py | REED existing_tracks: {existing_tracks} updated_track_ids: {updated_track_ids}"
         )
         params.logger.info(
-            f"playlists.py | Updating playlist tracks relations for {playlist_record.playlist_id}"
+            f"playlists.py | Updating playlist tracks relations for {playlist['playlist_id']}"
         )
 
         for relation in existing_playlist_tracks_relations:
@@ -153,7 +153,7 @@ def update_playlist_tracks_relations(
             if track_id not in existing_tracks:
                 params.logger.info(f"REED adding new relation {track_id}")
                 new_playlist_track_relation = PlaylistsTracksRelations(
-                    playlist_id=playlist_record.playlist_id,
+                    playlist_id=playlist["playlist_id"],
                     track_id=track_id,
                     is_delete=False,
                     created_at=params.block_datetime,
@@ -166,7 +166,7 @@ def update_playlist_tracks_relations(
                 existing_tracks[track_id].is_delete = False
 
         params.logger.info(
-            f"playlists.py | Updated playlist tracks relations for {playlist_record.playlist_id}"
+            f"playlists.py | Updated playlist tracks relations for {playlist['playlist_id']}"
         )
     except Exception as e:
         params.logger.error(f"playlists.py | REED | error {e}")
