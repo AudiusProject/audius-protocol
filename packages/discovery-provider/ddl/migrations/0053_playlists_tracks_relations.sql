@@ -20,7 +20,7 @@ FROM (
         CAST(jsonb_array_elements(playlist_contents->'track_ids')->>'track' AS INTEGER) AS track_id
     FROM playlists
 ) AS subquery
-WHERE track_id IS NOT NULL;
+WHERE track_id IS NOT NULL ON CONFLICT DO NOTHING;
 
 
 -- SELECT playlist_id, CAST(jsonb_array_elements(playlist_contents->'track_ids')->>'track' as INTEGER), FALSE FROM playlists ON CONFLICT DO NOTHING;
