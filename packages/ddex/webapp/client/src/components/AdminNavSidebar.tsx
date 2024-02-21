@@ -1,9 +1,7 @@
-import React from 'react'
-
 import { PlainButton, Flex, Box } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
-export const Sidebar: React.FC = () => {
+const AdminNavSidebar = () => {
   return (
     <aside
       style={{
@@ -16,22 +14,22 @@ export const Sidebar: React.FC = () => {
           <ul>
             <Flex direction='column' gap='xl'>
               <li>
-                <Link to='/'>
+                <Link to='/admin'>
                   <PlainButton size='large'>Uploads</PlainButton>
                 </Link>
               </li>
               <li>
-                <Link to='/deliveries'>
+                <Link to='/admin/deliveries'>
                   <PlainButton size='large'>Indexed Deliveries</PlainButton>
                 </Link>
               </li>
               <li>
-                <Link to='/pending-releases'>
+                <Link to='/admin/pending-releases'>
                   <PlainButton size='large'>Pending Releases</PlainButton>
                 </Link>
               </li>
               <li>
-                <Link to='/published-releases'>
+                <Link to='/admin/published-releases'>
                   <PlainButton size='large'>Published Releases</PlainButton>
                 </Link>
               </li>
@@ -42,3 +40,5 @@ export const Sidebar: React.FC = () => {
     </aside>
   )
 }
+
+export default AdminNavSidebar

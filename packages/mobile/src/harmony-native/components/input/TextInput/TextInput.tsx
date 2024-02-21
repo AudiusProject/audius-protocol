@@ -333,7 +333,7 @@ export const TextInput = forwardRef(
                         // Need absolute height to ensure consistency across platforms
                         height: !isSmall ? 23 : undefined,
                         // Android has a default padding that needs to be removed
-                        paddingVertical: 0,
+                        padding: 0,
                         fontSize: typography.size[isSmall ? 's' : 'l'],
                         fontFamily: typography.fontByWeight.medium,
                         color: color.text[disabled ? 'subdued' : 'default']

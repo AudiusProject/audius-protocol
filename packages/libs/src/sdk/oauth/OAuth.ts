@@ -12,7 +12,10 @@ import {
   OAUTH_URL
 } from './types'
 
-export type LoginSuccessCallback = (profile: DecodedUserToken) => void
+export type LoginSuccessCallback = (
+  profile: DecodedUserToken,
+  encodedJwt: string
+) => void
 export type LoginErrorCallback = (errorMessage: string) => void
 export type ButtonOptions = {
   size: 'small' | 'medium' | 'large'
@@ -353,7 +356,7 @@ export class OAuth {
     const decodedJwt = await this.verifyToken(event.data.token)
     if (decodedJwt?.data) {
       if (this.loginSuccessCallback) {
-        this.loginSuccessCallback(decodedJwt.data)
+        this.loginSuccessCallback(decodedJwt.data, event.data.token)
       }
     } else {
       this._surfaceError('The token was invalid.')

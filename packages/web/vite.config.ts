@@ -73,7 +73,11 @@ export default defineConfig(({ mode }) => {
     plugins: [
       glslify(),
       svgr({
-        include: '**/*.svg'
+        include: '**/*.svg',
+        exclude: [
+          'src/assets/img/wallet-link.svg',
+          'src/assets/img/phantom-icon-purple.svg'
+        ]
       }),
       // Import workerscript as raw string
       // Could use ?raw suffix but it breaks on mobile
