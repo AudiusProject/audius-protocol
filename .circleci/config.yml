@@ -426,6 +426,8 @@ workflows:
     when:
       and:
         - equal: ['main', << pipeline.parameters.workflow >>]
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - generate-config
       - init:
