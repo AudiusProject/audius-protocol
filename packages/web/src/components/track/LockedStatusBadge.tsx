@@ -40,12 +40,7 @@ export const LockedStatusBadge = ({
         )}
       />
       {text ? (
-        <Text
-          className={styles.text}
-          size='xSmall'
-          variant='label'
-          color='white'
-        >
+        <Text className={styles.text} size='xs' variant='label' color='white'>
           {text}
         </Text>
       ) : null}

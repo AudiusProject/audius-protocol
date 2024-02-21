@@ -148,7 +148,7 @@ const RewardPanel = ({
             <span className={styles.pillMessage}>{messages.readyToClaim}</span>
           ) : showNewChallengePill ? (
             <Text
-              as='span'
+              tag='span'
               className={styles.newChallengePill}
               variant='body'
               strength='strong'

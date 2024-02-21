@@ -24,7 +24,7 @@ export const Hint = ({
         <Text
           className={styles.text}
           variant='body'
-          size='medium'
+          size='m'
           strength='default'
         >
           {text}

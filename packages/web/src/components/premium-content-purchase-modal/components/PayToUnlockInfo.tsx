@@ -26,7 +26,7 @@ export const PayToUnlockInfo = () => {
     <div className={styles.container}>
       <Text
         variant='label'
-        size='large'
+        size='l'
         strength='strong'
         className={styles.header}
       >

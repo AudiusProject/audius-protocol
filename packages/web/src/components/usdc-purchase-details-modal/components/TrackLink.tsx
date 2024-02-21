@@ -15,7 +15,7 @@ export const TrackLink = ({
   if (!track) return null
   return (
     <Link onClick={onClick} className={styles.link} to={track.permalink}>
-      <Text size='large' color='secondary'>
+      <Text size='l' color='secondary'>
         {track.title}
       </Text>
     </Link>

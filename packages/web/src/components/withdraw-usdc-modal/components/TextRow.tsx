@@ -10,19 +10,14 @@ type TextRowProps = {
 export const TextRow = ({ left, right }: TextRowProps) => {
   return (
     <div className={styles.root}>
-      <Text
-        className={styles.left}
-        variant='title'
-        size='large'
-        strength='default'
-      >
+      <Text className={styles.left} variant='title' size='l' strength='default'>
         {left}
       </Text>
       {right ? (
         <Text
           className={styles.right}
           variant='title'
-          size='large'
+          size='l'
           strength='default'
         >
           {right}

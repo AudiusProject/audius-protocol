@@ -77,7 +77,7 @@ export const ReleaseDateFieldLegacy = () => {
           <Text
             className={cn(styles.title, styles.modalHeading)}
             variant='title'
-            size='large'
+            size='l'
           >
             {messages.title}
           </Text>

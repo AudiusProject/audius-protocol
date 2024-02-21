@@ -85,7 +85,7 @@ export const USDCCard = () => {
             <div className={styles.usdc}>
               <Text
                 variant='heading'
-                size='xxLarge'
+                size='xl'
                 color='staticWhite'
                 strength='strong'
               >
@@ -102,7 +102,7 @@ export const USDCCard = () => {
                 variant='heading'
                 color='staticWhite'
                 strength='strong'
-                size='xxLarge'
+                size='xl'
               >
                 ${balanceFormatted}
               </Text>

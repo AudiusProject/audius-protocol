@@ -42,7 +42,7 @@ export const AccountDetails = () => {
             </>
           ) : (
             <>
-              <Text variant='body' size='small' strength='strong'>
+              <Text variant='body' size='s' strength='strong'>
                 {messages.haveAccount}
               </Text>
               <Link

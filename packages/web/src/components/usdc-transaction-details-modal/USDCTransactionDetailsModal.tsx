@@ -39,10 +39,10 @@ const DetailSection = ({
   label: React.ReactNode
 }) => (
   <div className={styles.detailSection}>
-    <Text variant='label' size='large' color='neutralLight4'>
+    <Text variant='label' size='l' color='neutralLight4'>
       {label}
     </Text>
-    <Text className={styles.detailValue} size='large'>
+    <Text className={styles.detailValue} size='l'>
       {value}
     </Text>
   </div>

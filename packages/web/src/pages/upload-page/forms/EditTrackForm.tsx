@@ -202,7 +202,7 @@ const MultiTrackHeader = () => {
 
   return (
     <div className={styles.multiTrackHeader}>
-      <Text variant='title' size='xSmall'>
+      <Text variant='title' size='xs'>
         {messages.multiTrackCount(index + 1, trackMetadatas.length)}
       </Text>
     </div>

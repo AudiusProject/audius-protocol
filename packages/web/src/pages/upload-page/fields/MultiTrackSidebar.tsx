@@ -37,7 +37,7 @@ export const MultiTrackSidebar = () => {
     <div className={styles.root}>
       <div className={cn(layoutStyles.col)}>
         <div className={styles.title}>
-          <Text variant='label' size='small'>
+          <Text variant='label' size='s'>
             {messages.title}
           </Text>
         </div>
@@ -61,7 +61,7 @@ export const MultiTrackSidebar = () => {
                 icon={IconError}
                 size='xSmall'
               />
-              <Text size='xSmall' color='accentRed'>
+              <Text size='xs' color='accentRed'>
                 {messages.fixErrors}
               </Text>
             </div>
@@ -183,7 +183,7 @@ const TrackRow = (props: TrackRowProps) => {
           </div>
           <div className={styles.trackTitleContainer}>
             <Text
-              size='small'
+              size='s'
               // @ts-ignore TODO: support for accent-red in other themes
               color={
                 hasError

@@ -40,12 +40,12 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
         />
         <div className={styles.info}>
           <div className={styles.name}>
-            <Text size='large' strength='default' variant='title'>
+            <Text size='l' strength='default' variant='title'>
               {name}
             </Text>
             <UserBadges userId={userId} badgeSize={14} useSVGTiers />
           </div>
-          <Text size='large' strength='default' variant='body'>
+          <Text size='l' strength='default' variant='body'>
             {`@${handle}`}
           </Text>
         </div>

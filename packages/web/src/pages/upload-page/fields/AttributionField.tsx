@@ -324,7 +324,7 @@ const AttributionModalFields = () => {
       </SwitchRowField>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-        <Text variant='title' size='large' as='h3'>
+        <Text variant='title' size='l' tag='h3'>
           {`${messages.isrc.header} / ${messages.iswc.header}`}
         </Text>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
@@ -346,7 +346,7 @@ const AttributionModalFields = () => {
       </div>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
-        <Text variant='title' size='large' as='h3'>
+        <Text variant='title' size='l' tag='h3'>
           {messages.licenseType}
         </Text>
         <div className={styles.attributionCommercialRow}>
@@ -357,12 +357,7 @@ const AttributionModalFields = () => {
               layoutStyles.gap2
             )}
           >
-            <Text
-              variant='title'
-              size='medium'
-              as='label'
-              id='allow-attribution'
-            >
+            <Text variant='title' size='m' tag='label' id='allow-attribution'>
               {messages.allowAttribution.header}
             </Text>
             <SegmentedControlField
@@ -383,7 +378,7 @@ const AttributionModalFields = () => {
               }
             )}
           >
-            <Text variant='title' size='medium' as='label' id='commercial'>
+            <Text variant='title' size='m' tag='label' id='commercial'>
               {messages.commercialUse.header}
             </Text>
             <SegmentedControlField
@@ -399,8 +394,8 @@ const AttributionModalFields = () => {
           <Text
             className={cn({ [styles.disabled]: !allowAttribution })}
             variant='title'
-            size='medium'
-            as='label'
+            size='m'
+            tag='label'
             id='derivative-works'
           >
             {messages.derivativeWorks.header}
@@ -423,13 +418,11 @@ const AttributionModalFields = () => {
               ))}
             </div>
           ) : null}
-          <Text variant='title' size='medium' as='h4'>
+          <Text variant='title' size='m' tag='h4'>
             {licenseType}
           </Text>
         </div>
-        {licenseDescription ? (
-          <Text size='small'>{licenseDescription}</Text>
-        ) : null}
+        {licenseDescription ? <Text size='s'>{licenseDescription}</Text> : null}
       </div>
     </div>
   )

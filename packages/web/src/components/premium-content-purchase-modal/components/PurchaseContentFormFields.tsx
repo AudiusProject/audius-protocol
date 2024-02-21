@@ -98,7 +98,7 @@ export const PurchaseContentFormFields = ({
         <div className={styles.completionCheck}>
           <Icon icon={IconCheck} size='xxSmall' color='white' />
         </div>
-        <Text variant='heading' size='small'>
+        <Text variant='heading' size='s'>
           {messages.purchaseSuccessful}
         </Text>
       </Flex>

@@ -97,14 +97,14 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
             : trackProgress?.audio?.status
         }
       />
-      {displayIndex ? <Text size='small'>{index + 1}</Text> : null}
+      {displayIndex ? <Text size='s'>{index + 1}</Text> : null}
       {displayArtwork ? (
         <DynamicImage
           wrapperClassName={styles.trackItemArtwork}
           image={artworkUrl || placeholderArt}
         />
       ) : null}
-      <Text size='small'>{track.metadata.title}</Text>
+      <Text size='s'>{track.metadata.title}</Text>
     </div>
   )
 }
@@ -205,13 +205,13 @@ export const FinishPage = (props: FinishPageProps) => {
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
-            <Text id='upload-progress' variant='label' size='small'>
+            <Text id='upload-progress' variant='label' size='s'>
               {uploadComplete
                 ? messages.uploadComplete
                 : messages.uploadInProgress}
             </Text>
             <div className={styles.headerProgressInfo}>
-              <Text variant='label' as='p' size='small'>
+              <Text variant='label' tag='p' size='s'>
                 {uploadComplete
                   ? '100%'
                   : fullUploadPercent === 100 && !uploadComplete

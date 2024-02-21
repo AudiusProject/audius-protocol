@@ -111,7 +111,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
   return (
     <div className={cn(styles.trackPreviewNew, className)}>
       {displayIndex ? (
-        <Text className={styles.indexText} size='small'>
+        <Text className={styles.indexText} size='s'>
           {index + 1}
         </Text>
       ) : null}
@@ -124,7 +124,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           setValue={onEditTitle}
         />
       ) : (
-        <Text className={styles.titleText} size='small'>
+        <Text className={styles.titleText} size='s'>
           {trackTitle}
         </Text>
       )}
@@ -146,11 +146,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
             />
           </Box>
         ) : null}
-        <Text
-          className={styles.fileSizeText}
-          size='small'
-          color='neutralLight2'
-        >
+        <Text className={styles.fileSizeText} size='s' color='neutralLight2'>
           {numeral(fileSize).format('0.0 b')}
         </Text>
         {isLosslessDownloadsEnabled ? (

@@ -58,18 +58,18 @@ export const ErrorPage = () => {
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>
         <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='medium' strength='default'>
+        <Text variant='body' size='m' strength='default'>
           {addressValue}
         </Text>
       </div>
       <div className={styles.error}>
-        <Text size='xSmall' strength='default' color='accentRed'>
+        <Text size='xs' strength='default' color='accentRed'>
           {messages.error}
         </Text>
         <Text
-          as='a'
+          tag='a'
           className={styles.tryAgain}
-          size='xSmall'
+          size='xs'
           strength='default'
           color='secondary'
           onClick={handleTryAgain}

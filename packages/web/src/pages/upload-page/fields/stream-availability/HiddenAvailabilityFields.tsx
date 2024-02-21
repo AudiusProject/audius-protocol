@@ -45,7 +45,7 @@ export const HiddenAvailabilityFields = () => {
   return (
     <div className={styles.root}>
       <fieldset>
-        <Text variant='title' as='legend' className={styles.legend}>
+        <Text variant='title' tag='legend' className={styles.legend}>
           {messages.title}
         </Text>
         <div className={styles.switchContainer}>

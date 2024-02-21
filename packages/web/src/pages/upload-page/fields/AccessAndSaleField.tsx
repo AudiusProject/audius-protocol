@@ -477,7 +477,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             icon={IconCollectible}
           />
           <div className={styles.nftOwner}>
-            <Text variant='label' size='small'>
+            <Text variant='label' size='s'>
               {messages.ownersOf}:
             </Text>
             <SelectedValue>

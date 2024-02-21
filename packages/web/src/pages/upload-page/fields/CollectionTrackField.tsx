@@ -65,7 +65,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         <span className={styles.iconDrag}>
           <Icon icon={IconDrag} size='large' />
         </span>
-        <Text size='small'>{index + 1}</Text>
+        <Text size='s'>{index + 1}</Text>
         <TrackNameField name={`tracks.${index}.metadata.title`} />
       </div>
       {override ? (

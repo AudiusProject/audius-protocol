@@ -30,7 +30,7 @@ const InvalidFileType = (props) => {
         >
           <Text
             className={styles.message}
-            size='large'
+            size='l'
             strength='strong'
             color='staticWhite'
           >

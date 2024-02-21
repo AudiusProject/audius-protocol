@@ -109,7 +109,7 @@ export const TransferSuccessful = ({
           <Divider style={{ margin: 0 }} />
           <div className={styles.destination}>
             <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='medium' strength='default'>
+            <Text variant='body' size='m' strength='default'>
               {addressValue}
             </Text>
             <HarmonyPlainButton
@@ -127,7 +127,7 @@ export const TransferSuccessful = ({
         <div className={styles.completionCheck}>
           <Icon icon={IconCheck} size='xxSmall' color='white' />
         </div>
-        <Text variant={'heading'} size='small' strength='default'>
+        <Text variant={'heading'} size='s' strength='default'>
           {messages.success}
         </Text>
       </div>

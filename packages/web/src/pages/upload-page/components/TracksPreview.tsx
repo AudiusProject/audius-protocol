@@ -55,7 +55,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
   return (
     <div className={styles.root}>
       <div className={cn(styles.info, styles.header)}>
-        <Text variant='label' size='small'>
+        <Text variant='label' size='s'>
           {messages.releaseType}
         </Text>
         <SegmentedControl
@@ -88,7 +88,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
         ))}
       </Scrollbar>
       <div className={cn(styles.info, styles.footer)}>
-        <Text size='small'>
+        <Text size='s'>
           {`${tracks.length} ${
             tracks.length === 1 ? messages.trackAdded : messages.tracksAdded
           }`}

@@ -139,7 +139,7 @@ export const EnterTransferDetails = () => {
       <div className={styles.amount}>
         <div className={styles.amountText}>
           <TextRow left={messages.amountToWithdraw} />
-          <Text variant='body' size='medium' strength='default'>
+          <Text variant='body' size='m' strength='default'>
             {messages.specify}
           </Text>
         </div>
@@ -166,14 +166,14 @@ export const EnterTransferDetails = () => {
         />
       ) : null}
       {methodValue === WithdrawMethod.COINFLOW ? (
-        <Text variant='body' size='medium'>
+        <Text variant='body' size='m'>
           {messages.cashTransferDescription}
         </Text>
       ) : (
         <div className={styles.destination}>
           <div className={styles.destinationText}>
             <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='medium' strength='default'>
+            <Text variant='body' size='m' strength='default'>
               {messages.destinationDetails}
             </Text>
           </div>

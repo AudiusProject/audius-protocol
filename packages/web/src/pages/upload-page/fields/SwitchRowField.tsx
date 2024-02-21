@@ -34,7 +34,7 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.content}>
-        <Text as='label' htmlFor={inputId} variant='title' size='large'>
+        <Text tag='label' htmlFor={inputId} variant='title' size='l'>
           {header}
         </Text>
         <Text id={descriptionId}>{description}</Text>

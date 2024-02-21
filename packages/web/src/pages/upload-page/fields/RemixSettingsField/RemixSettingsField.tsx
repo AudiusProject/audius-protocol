@@ -130,7 +130,7 @@ export const RemixSettingsField = () => {
         {!showRemixes ? <SelectedValue label={messages.remixesHidden} /> : null}
         {parentTrackId ? (
           <div className={styles.remixOfValue}>
-            <Text variant='label' size='small'>
+            <Text variant='label' size='s'>
               {messages.remixOf}:
             </Text>
             <TrackInfo trackId={parentTrackId} />

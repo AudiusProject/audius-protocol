@@ -106,27 +106,27 @@ export const ConfirmTransferDetails = () => {
       </div>
       <Divider style={{ margin: 0 }} />
       {methodValue === WithdrawMethod.COINFLOW ? (
-        <Text variant='body' size='medium'>
+        <Text variant='body' size='m'>
           {messages.cashTransferDescription}
         </Text>
       ) : (
         <>
           <div className={styles.destination}>
             <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='medium' strength='default'>
+            <Text variant='body' size='m' strength='default'>
               {addressValue}
             </Text>
           </div>
           <div className={styles.details}>
-            <Text variant='title' size='medium' strength='default'>
+            <Text variant='title' size='m' strength='default'>
               {messages.review}
             </Text>
-            <Text variant='body' size='small' strength='default'>
+            <Text variant='body' size='s' strength='default'>
               {messages.byProceeding}
             </Text>
             <div className={styles.acknowledge}>
               <Switch {...confirmField} />
-              <Text variant='body' size='small' strength='default'>
+              <Text variant='body' size='s' strength='default'>
                 {messages.haveCarefully}
               </Text>
             </div>

@@ -66,7 +66,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           disabled={disabled}
           inputClassName={styles.input}
         />
-        <Text className={styles.optionTitle} variant='title' size='large'>
+        <Text className={styles.optionTitle} variant='title' size='l'>
           {icon}
           <span>{title ?? label}</span>
         </Text>
