@@ -424,8 +424,11 @@ jobs:
 workflows:
   setup:
     when:
-      not:
-        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+      and:
+        - not:
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - not:
+            equal: ['', << pipeline.parameters.workflow >>]
     jobs:
       - generate-config
       - init:
