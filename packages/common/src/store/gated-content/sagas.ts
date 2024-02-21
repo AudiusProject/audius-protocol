@@ -210,7 +210,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
 
       if (hasNoStreamAccess && shouldHaveStreamAccess) {
         statusMap[trackId] = 'UNLOCKING'
-        // TODO: if necessary, update some ui status to show that the track download is unlocking
+        // note: if necessary, update some ui status to show that the track download is unlocking
         return true
       }
     } else if (downloadConditions) {
@@ -220,7 +220,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
         isFollowGated && followeeIds.includes(ownerId)
 
       if (hasNoDownloadAccess && shouldHaveDownloadAccess) {
-        // TODO: if necessary, update some ui status to show that the track download is unlocking
+        // note: if necessary, update some ui status to show that the track download is unlocking
         return true
       }
     }
@@ -451,7 +451,7 @@ export function* pollGatedTrack({
         ])
       )
       yield* put(updateGatedTrackStatus({ trackId, status: 'UNLOCKED' }))
-      // TODO: if necessary, update some ui status to show that the track download is unlocked
+      // note: if necessary, update some ui status to show that the track download is unlocked
       yield* put(removeFolloweeId({ id: track.owner_id }))
       yield* put(removeTippedUserId({ id: track.owner_id }))
 
@@ -490,7 +490,7 @@ export function* pollGatedTrack({
           }
         ])
       )
-      // TODO: if necessary, update some ui status to show that the track download is unlocked
+      // note: if necessary, update some ui status to show that the track download is unlocked
       yield* put(removeFolloweeId({ id: track.owner_id }))
 
       // Show confetti if track is unlocked from the how to unlock section on track page or modal
@@ -563,10 +563,10 @@ function* updateSpecialAccessTracks(
         : isContentTipGated(downloadConditions)
     if (isTrackStreamGated && ownerId === trackOwnerId) {
       statusMap[id] = 'UNLOCKING'
-      // TODO: if necessary, update some ui status to show that the track download is unlocking
+      // note: if necessary, update some ui status to show that the track download is unlocking
       tracksToPoll.add(id)
     } else if (isTrackDownloadGated && ownerId === trackOwnerId) {
-      // TODO: if necessary, update some ui status to show that the track download is unlocking
+      // note: if necessary, update some ui status to show that the track download is unlocking
       tracksToPoll.add(id)
     }
   })
@@ -611,10 +611,10 @@ function* handleUnfollowUser(
     const isDownloadFollowGated = isContentFollowGated(downloadConditions)
     if (isStreamFollowGated && ownerId === action.userId) {
       statusMap[id] = 'LOCKED'
-      // TODO: if necessary, update some ui status to show that the track download is locked
+      // note: if necessary, update some ui status to show that the track download is locked
       revokeAccessMap[id] = 'stream'
     } else if (isDownloadFollowGated && ownerId === action.userId) {
-      // TODO: if necessary, update some ui status to show that the track download is locked
+      // note: if necessary, update some ui status to show that the track download is locked
       revokeAccessMap[id] = 'download'
     }
   })
