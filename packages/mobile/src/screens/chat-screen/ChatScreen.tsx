@@ -579,6 +579,7 @@ export const ChatScreen = () => {
                   userId={otherUser.user_id}
                   size='small'
                   mr='s'
+                  strokeWidth='thin'
                 />
                 <UserBadges
                   user={otherUser}

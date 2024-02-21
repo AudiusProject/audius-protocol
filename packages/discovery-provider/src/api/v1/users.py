@@ -1003,11 +1003,14 @@ USER_HISTORY_TRACKS_ROUTE = "/<string:id>/history/tracks"
 @full_ns.route(USER_HISTORY_TRACKS_ROUTE)
 class TrackHistoryFull(Resource):
     @record_metrics
+    @auth_middleware()
     @cache(ttl_sec=5)
-    def _get(self, id):
+    def _get(self, id, authed_user_id):
         args = track_history_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
+        if not current_user_id and decoded_id == authed_user_id:
+            current_user_id = authed_user_id
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
@@ -1048,8 +1051,9 @@ class TrackHistory(TrackHistoryFull):
     )
     @ns.expect(track_history_parser)
     @ns.marshal_with(history_response)
-    def get(self, id):
-        return super()._get(id)
+    @auth_middleware()
+    def get(self, id, authed_user_id):
+        return super()._get(id, authed_user_id)
 
 
 user_search_result = make_response(

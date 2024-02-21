@@ -30,7 +30,7 @@ describe('Sign In', () => {
     assertOnSignInPage()
   })
 
-  it.only('can navigate to sign-in after entering email in sign-up', () => {
+  it('can navigate to sign-in after entering email in sign-up', () => {
     cy.visit('signup')
     cy.findByRole('textbox', { name: /email/i }).type(email)
     cy.findByRole('button', { name: /sign up free/i }).click()
@@ -40,7 +40,8 @@ describe('Sign In', () => {
     assertOnSignInPage()
   })
 
-  it('can sign in', () => {
+  // We need to integrate a hard-coded otp for this user
+  it.skip('can sign in', () => {
     cy.visit('signin')
     assertOnSignInPage()
     cy.findByRole('textbox', { name: /email/i }).type(email)

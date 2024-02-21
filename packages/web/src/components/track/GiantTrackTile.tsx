@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -225,7 +226,7 @@ export const GiantTrackTile = ({
   )
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const track = useSelector(
@@ -475,7 +476,8 @@ export const GiantTrackTile = ({
             size='small'
             css={({ spacing }) => ({
               // the link is too tall
-              marginTop: spacing.negativeUnit
+              marginTop: spacing.negativeUnit,
+              textTransform: 'none'
             })}
           >
             {albumInfo.playlist_name}

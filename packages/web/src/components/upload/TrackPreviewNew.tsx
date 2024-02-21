@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
@@ -22,7 +23,6 @@ import cn from 'classnames'
 import numeral from 'numeral'
 
 import { Text } from 'components/typography'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'
@@ -53,45 +53,50 @@ const fileTypeIcon = (type: string) => {
 }
 
 type TrackPreviewProps = {
-  fileType: string
-  trackTitle: string
-  fileSize: number
   index: number
   displayIndex: boolean
   onRemove: () => void
+  file?: File
   isTitleEditable?: boolean
   onEditTitle?: (title: string) => void
   isStem?: boolean
   stemCategory?: Nullable<StemCategory>
   onEditStemCategory?: (stemCategory: StemCategory) => void
-  isEdit?: boolean
-  isDisabled?: boolean
+  allowCategorySwitch?: boolean
+  allowDelete?: boolean
   className?: string
 }
 
 export const TrackPreviewNew = (props: TrackPreviewProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 
   const {
     displayIndex = false,
     index,
-    fileType = 'audio/mp3',
-    trackTitle = 'Untitled',
-    fileSize,
+    file,
     onRemove,
     isTitleEditable,
     onEditTitle,
     isStem,
     stemCategory,
     onEditStemCategory,
-    isEdit,
-    isDisabled,
+    allowCategorySwitch = true,
+    allowDelete = true,
     className
   } = props
+  const {
+    name: trackTitle,
+    type: fileType,
+    size: fileSize
+  } = file ?? {
+    name: 'Untitled',
+    type: 'audio/mp3',
+    size: 0
+  }
 
-  const Icon = isEdit ? iconFileUnknown : fileTypeIcon(fileType)
+  const Icon = fileTypeIcon(fileType)
   const iconStyle = isStem ? { width: 24, height: 24 } : undefined
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -137,7 +142,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString() ?? null}
               popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
-              isDisabled={isDisabled}
+              isDisabled={!allowCategorySwitch}
             />
           </Box>
         ) : null}
@@ -146,7 +151,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           size='small'
           color='neutralLight2'
         >
-          {isEdit ? '' : numeral(fileSize).format('0.0 b')}
+          {numeral(fileSize).format('0.0 b')}
         </Text>
         {isLosslessDownloadsEnabled ? (
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
@@ -160,6 +165,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
             <HarmonyPlainButton
               iconRight={IconTrash}
               onClick={onRemove}
+              disabled={!allowDelete}
               className={styles.removeButton}
             />
           </Flex>

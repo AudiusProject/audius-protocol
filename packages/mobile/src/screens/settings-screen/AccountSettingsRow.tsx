@@ -48,6 +48,7 @@ export const AccountSettingsRow = () => {
         <ProfilePicture
           userId={accountUser.user_id}
           style={css({ width: spacing.unit13, height: spacing.unit13 })}
+          strokeWidth='thin'
         />
         <View style={styles.info}>
           <Text style={styles.name}>{name}</Text>

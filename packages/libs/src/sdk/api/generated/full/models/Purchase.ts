@@ -83,6 +83,12 @@ export interface Purchase {
      * @memberof Purchase
      */
     updatedAt: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Purchase
+     */
+    access: string;
 }
 
 /**
@@ -100,6 +106,7 @@ export function instanceOfPurchase(value: object): boolean {
     isInstance = isInstance && "contentId" in value;
     isInstance = isInstance && "createdAt" in value;
     isInstance = isInstance && "updatedAt" in value;
+    isInstance = isInstance && "access" in value;
 
     return isInstance;
 }
@@ -126,6 +133,7 @@ export function PurchaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'contentId': json['content_id'],
         'createdAt': json['created_at'],
         'updatedAt': json['updated_at'],
+        'access': json['access'],
     };
 }
 
@@ -148,6 +156,7 @@ export function PurchaseToJSON(value?: Purchase | null): any {
         'content_id': value.contentId,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
+        'access': value.access,
     };
 }
 

@@ -1,12 +1,12 @@
 {
   "name": "@pedalboard/relay",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "private": true,
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
-    "dev": "nodemon ./dist/index.js",
+    "dev": "concurrently \"npm:build:watch\" \"nodemon ./dist/index.js\"",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "sandbox": "npx ts-node ./src/scripts/sandbox.ts",
@@ -48,6 +48,7 @@
     "@types/node": "^15.12.2",
     "@types/supertest": "^2.0.11",
     "@types/uuid": "^9.0.2",
+    "concurrently": "^8.2.2",
     "esbuild": "^0.14.38",
     "esbuild-register": "^3.3.2",
     "eslint": "^7.32.0",

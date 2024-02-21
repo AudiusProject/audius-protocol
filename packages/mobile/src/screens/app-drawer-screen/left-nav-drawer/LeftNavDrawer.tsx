@@ -22,7 +22,6 @@ import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePil
 import { env } from 'app/env'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
-import { spacing } from 'app/styles/spacing'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
 
@@ -106,11 +105,6 @@ const WrappedLeftNavDrawer = () => {
       </LeftNavLink>
       <LeftNavLink
         icon={IconCloudUpload}
-        iconProps={{
-          height: spacing(8),
-          width: spacing(8),
-          style: { marginLeft: -2 }
-        }}
         label={messages.upload}
         to='Upload'
         params={{ fromAppDrawer: false }}
@@ -132,11 +126,6 @@ const WrappedLeftNavDrawer = () => {
         label={messages.settings}
         to='SettingsScreen'
         params={null}
-        iconProps={{
-          height: spacing(9),
-          width: spacing(9),
-          style: { marginLeft: spacing(-1) }
-        }}
       />
       {isStaging || isFeatureFlagAccessEnabled ? (
         <LeftNavLink

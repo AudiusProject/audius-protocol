@@ -339,7 +339,7 @@ const TrackTile = ({
                   {title}
                 </Text>
                 {isPlaying ? (
-                  <IconVolume className={styles.volumeIcon} />
+                  <IconVolume size='m' className={styles.volumeIcon} />
                 ) : null}
               </Link>
             )}

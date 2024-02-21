@@ -7,6 +7,11 @@ import {
 } from '@audius/common/hooks'
 import { formatOtp } from '@audius/common/schemas'
 import {
+  Modal,
+  ModalContentPages,
+  ModalHeader,
+  ModalTitle,
+  ModalFooter,
   Box,
   Button,
   Flex,
@@ -15,13 +20,6 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import {
-  Modal,
-  ModalContentPages,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
 import { Formik, useField, useFormikContext } from 'formik'
 import { useAsync } from 'react-use'
 
@@ -36,7 +34,7 @@ import styles from './ChangeEmailModal.module.css'
 
 const messages = {
   changeEmail: 'Change Email',
-  confirmPasswordHelp: 'Please enter your current email and password.',
+  confirmPasswordHelp: 'Please enter your current password.',
   currentEmail: 'Current Email',
   currentPassword: 'Current Password',
   newEmailHelp: 'Enter the new email you would like to use on Audius.',

@@ -4,17 +4,14 @@ import {
   settingsPageSelectors,
   settingsPageActions
 } from '@audius/common/store'
-import { IconRobot } from '@audius/harmony'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
   Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
-  MarkdownViewer
-} from '@audius/stems'
+  IconRobot
+} from '@audius/harmony'
+import { Button, ButtonSize, ButtonType, MarkdownViewer } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

@@ -10,14 +10,7 @@ import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { IconCaretDown, IconRefresh } from '@audius/harmony-native'
-import {
-  Button,
-  Divider,
-  IconButton,
-  Text,
-  TextButton,
-  Tile
-} from 'app/components/core'
+import { Button, Divider, Text, TextButton, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { TrackImage } from '../../image/TrackImage'
@@ -189,7 +182,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
             </Text>
           </View>
           <Animated.View style={expandIconStyle}>
-            <IconButton icon={IconCaretDown} />
+            <IconCaretDown size='l' color='default' />
           </Animated.View>
         </View>
       </TouchableOpacity>

@@ -104,7 +104,7 @@ function* getDefautFollowUserIds() {
 export function* fetchSuggestedFollowUserIds() {
   const env = yield* getContext('env')
   const res = yield* call(fetch, env.SUGGESTED_FOLLOW_HANDLES)
-  const json = yield* call(res.json)
+  const json = yield* call([res, res.json])
   return json
 }
 
@@ -514,8 +514,10 @@ function* signUp() {
           FeatureFlags.SIGN_UP_REDESIGN
         )
 
-        if (isNativeMobile && !isSignUpRedesignEnabled) {
-          yield* put(requestPushNotificationPermissions())
+        if (isNativeMobile) {
+          if (!isSignUpRedesignEnabled) {
+            yield* put(requestPushNotificationPermissions())
+          }
         } else {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()

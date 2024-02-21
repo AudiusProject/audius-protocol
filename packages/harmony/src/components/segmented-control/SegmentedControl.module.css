@@ -7,6 +7,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 3px;
+  /* This gives us a gap of --harmony-spacing-s (8px) between tabs, accounting
+  for the separators being siblings of the tabs and occupying 1px of width */
+  gap: 3.5px;
 }
 
 .tab {
@@ -40,6 +43,11 @@
   right: 0;
   top: 0;
   bottom: 0;
+}
+
+.tab > input:disabled,
+.tab > p:disabled {
+  cursor: auto;
 }
 
 .separator {

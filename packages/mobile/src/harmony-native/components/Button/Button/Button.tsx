@@ -35,7 +35,6 @@ export const Button = (props: ButtonProps) => {
     type,
     color: themeColors,
     cornerRadius,
-    shadows,
     spacing,
     typography
   } = useTheme()
@@ -46,10 +45,10 @@ export const Button = (props: ButtonProps) => {
     height: spacing.unit8,
     paddingHorizontal: spacing.m
   }
+  // title-s-default
   const smallTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.s,
-    fontWeight: `${typography.weight.bold}` as TextStyle['fontWeight'],
     lineHeight: typography.lineHeight.s,
     textTransform: 'capitalize'
   }
@@ -59,10 +58,11 @@ export const Button = (props: ButtonProps) => {
     height: spacing.unit12,
     paddingHorizontal: spacing.xl
   }
+
+  // title-l-default
   const defaultTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.l,
-    fontWeight: `${typography.weight.bold}` as TextStyle['fontWeight'],
     lineHeight: typography.lineHeight.l,
     textTransform: 'capitalize'
   }
@@ -72,10 +72,10 @@ export const Button = (props: ButtonProps) => {
     height: spacing.unit16,
     paddingHorizontal: spacing.xl
   }
+
   const largeTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.xl,
-    fontWeight: `${typography.weight.bold}` as TextStyle['fontWeight'],
     lineHeight: typography.lineHeight.l,
     letterSpacing: 0.25,
     textTransform: 'uppercase'
@@ -204,7 +204,8 @@ export const Button = (props: ButtonProps) => {
     borderRadius: cornerRadius.s,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.near,
+    // TODO bring this back properly
+    // ...shadows.near,
     ...(variant === 'secondary'
       ? secondaryStyles
       : variant === 'tertiary'

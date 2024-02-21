@@ -32,17 +32,23 @@ import { computeCollectionMetadataProps } from 'pages/collection-page/store/util
 import styles from './CollectionPage.module.css'
 
 const messages = {
-  emptyPlaylist: 'This playlist is empty.'
+  emptyPlaylist: (collectionType: 'album' | 'playlist') =>
+    `This ${collectionType} is empty.`
 }
 
 const EmptyTrackList = ({
+  isAlbum,
   customEmptyText
 }: {
+  isAlbum: boolean
   customEmptyText?: string | null
 }) => {
   return (
     <div className={styles.emptyListContainer}>
-      <div>{customEmptyText || messages.emptyPlaylist}</div>
+      <div>
+        {customEmptyText ||
+          messages.emptyPlaylist(isAlbum ? 'album' : 'playlist')}
+      </div>
     </div>
   )
 }
@@ -278,7 +284,10 @@ const CollectionPage = ({
             isEmpty ? (
               <>
                 <div className={styles.divider}></div>
-                <EmptyTrackList customEmptyText={customEmptyText} />
+                <EmptyTrackList
+                  isAlbum={isAlbum}
+                  customEmptyText={customEmptyText}
+                />
               </>
             ) : (
               <TrackList

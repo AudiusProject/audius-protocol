@@ -35,35 +35,35 @@ jobs:
         - protocol-dashboard-build-prod
       filters:
         branches:
-          only: /^main$/
+          only: /(^main|^release.*)$/
   - protocol-dashboard-deploy-prod:
       context: Audius Client
       requires:
         - protocol-dashboard-hold-deploy-prod
       filters:
         branches:
-          only: /^main$/
+          only: /(^main|^release.*)$/
   - protocol-dashboard-update-prod-build:
       context: Pinata
       requires:
         - protocol-dashboard-deploy-prod
       filters:
         branches:
-          only: /^main$/
+          only: /(^main|^release.*)$/
   - protocol-dashboard-publish-prod-build-cids:
       context: Audius Client
       requires:
         - protocol-dashboard-update-prod-build
       filters:
         branches:
-          only: /^main$/
+          only: /(^main|^release.*)$/
   - protocol-dashboard-hold-update-prod-records:
       type: approval
       requires:
         - protocol-dashboard-update-prod-build
       filters:
         branches:
-          only: /^main$/
+          only: /(^main|^release.*)$/
   - protocol-dashboard-update-prod-records:
       context:
         - Audius Client
@@ -72,4 +72,4 @@ jobs:
         - protocol-dashboard-hold-update-prod-records
       filters:
         branches:
-          only: /^main$/
+          only: /(^main|^release.*)$/

@@ -8,27 +8,29 @@ import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
+  IconButton,
   IconKebabHorizontal,
   IconPencil,
   IconRocket,
   IconShare
 } from '@audius/harmony-native'
-import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
-import { useThemeColors } from 'app/utils/theme'
 
 const { getCollecitonHasHiddenTracks, getIsCollectionEmpty } =
   cacheCollectionsSelectors
 
-const messages = {
+const getMessages = (collectionType: 'album' | 'playlist') => ({
   publishButtonEmptyDisabledContent: 'You must add at least 1 track.',
-  publishButtonHiddenDisabledContent:
-    'You cannot make a playlist with hidden tracks public.',
-  shareButtonDisabledContent: 'You can’t share an empty playlist.'
-}
+  publishButtonHiddenDisabledContent: `You cannot make a ${collectionType} with hidden tracks public.`,
+  shareButtonDisabledHint: `You can’t share an empty ${collectionType}.`,
+  shareButtonLabel: 'Share Content',
+  overflowButtonLabel: 'More Options',
+  editButtonLabel: 'Edit Content',
+  publishButtonLabel: 'Publish Content'
+})
 
 type DetailsTileActionButtonsProps = {
   collectionId?: ID
@@ -86,7 +88,6 @@ export const DetailsTileActionButtons = ({
   onPressShare
 }: DetailsTileActionButtonsProps) => {
   const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
   )
@@ -101,6 +102,7 @@ export const DetailsTileActionButtons = ({
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollecitonHasHiddenTracks(state, { id: collectionId })
   )
+  const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
   )
@@ -125,45 +127,54 @@ export const DetailsTileActionButtons = ({
 
   const shareButton = (
     <IconButton
-      fill={neutralLight4}
+      color='subdued'
+      // TODO: Remove after AnimatedButton uses IconButton
       icon={IconShare}
-      isDisabled={isCollectionEmpty}
-      disabledPressToastContent={messages.shareButtonDisabledContent}
+      disabled={isCollectionEmpty}
+      disabledHint={messages.shareButtonDisabledHint}
       onPress={onPressShare}
-      styles={{ icon: [styles.actionButton] }}
+      aria-label={messages.shareButtonLabel}
+      size='2xl'
+      // TODO: Remove after AnimatedButton uses IconButton
+      style={{ padding: 0 }}
     />
   )
 
   const overflowMenu = (
     <IconButton
-      fill={neutralLight4}
+      color='subdued'
       icon={IconKebabHorizontal}
       onPress={onPressOverflow}
-      styles={{ icon: styles.actionButton }}
+      aria-label={messages.overflowButtonLabel}
+      size='2xl'
+      // TODO: Remove after AnimatedButton uses IconButton
+      style={{ padding: 0 }}
     />
   )
 
   const editButton = (
     <IconButton
-      fill={neutralLight4}
+      color='subdued'
       icon={IconPencil}
       onPress={onPressEdit}
-      styles={{ icon: styles.actionButton }}
+      aria-label={messages.editButtonLabel}
+      size='2xl'
     />
   )
 
   const publishButton = (
     <IconButton
-      fill={neutralLight4}
+      color='subdued'
       icon={IconRocket}
-      isDisabled={isCollectionEmpty || collectionHasHiddenTracks}
-      disabledPressToastContent={
+      disabled={isCollectionEmpty || collectionHasHiddenTracks}
+      disabledHint={
         collectionHasHiddenTracks
           ? messages.publishButtonHiddenDisabledContent
           : messages.publishButtonEmptyDisabledContent
       }
+      aria-label={messages.publishButtonLabel}
       onPress={onPressPublish}
-      styles={{ icon: styles.actionButton }}
+      size='2xl'
     />
   )
 

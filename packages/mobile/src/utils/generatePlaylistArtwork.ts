@@ -1,10 +1,10 @@
 import { uuid } from '@audius/common/utils'
 import Jimp from 'jimp'
-import RNFetchBlob from 'rn-fetch-blob'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 
 const {
   fs: { dirs, writeFile }
-} = RNFetchBlob
+} = ReactNativeBlobUtil
 
 const canvasWidth = 1000 // Adjust the width and height as per your requirements
 const canvasHeight = 1000

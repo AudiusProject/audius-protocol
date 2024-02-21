@@ -2,11 +2,13 @@ import { useCallback, useMemo } from 'react'
 
 import { DeveloperApp } from '@audius/common/api'
 import {
+  IconButton,
   IconKebabHorizontal,
   IconTrash,
-  IconVisibilityPublic
+  IconVisibilityPublic,
+  PopupMenu,
+  PopupMenuItem
 } from '@audius/harmony'
-import { IconButton, PopupMenu, PopupMenuItem } from '@audius/stems'
 
 import styles from './DeveloperAppListItem.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
@@ -67,9 +69,8 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
             {...triggerProps}
             className={styles.listItemActions}
             aria-label={messages.appActionsLabel}
-            icon={
-              <IconKebabHorizontal className={styles.listItemActionsIcon} />
-            }
+            color='default'
+            icon={IconKebabHorizontal}
             onClick={() => onClick()}
           />
         )}

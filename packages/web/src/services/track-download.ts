@@ -3,12 +3,15 @@ import {
   TrackDownload as TrackDownloadBase,
   type DownloadTrackArgs
 } from '@audius/common/services'
-import { tracksSocialActions } from '@audius/common/store'
+import { tracksSocialActions, downloadsActions } from '@audius/common/store'
+import { dedupFilenames } from '@audius/common/utils'
 import { downloadZip } from 'client-zip'
 
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
+
+const { beginDownload, setDownloadError } = downloadsActions
 
 function isMobileSafari() {
   if (!navigator) return false
@@ -36,35 +39,59 @@ function browserDownload({ url, filename }: DownloadFile) {
 }
 
 class TrackDownload extends TrackDownloadBase {
-  async downloadTracks({ files, rootDirectoryName }: DownloadTrackArgs) {
+  async downloadTracks({
+    files,
+    rootDirectoryName,
+    abortSignal
+  }: DownloadTrackArgs) {
+    if (files.length === 0) return
+
+    const dispatch = window.store.dispatch
+
+    dispatch(beginDownload())
+
+    dedupFilenames(files)
     const responsePromises = files.map(
-      async ({ url }) => await window.fetch(url)
+      async ({ url }) => await window.fetch(url, { signal: abortSignal })
     )
-    const responses = await Promise.all(responsePromises)
-    if (!responses.every((response) => response.ok)) {
-      throw new Error('Download unsuccessful')
-    }
-    const filename = rootDirectoryName ?? files[0].filename
-    let url
-    if (files.length === 1) {
-      url = responses[0].url
-    } else {
-      if (!rootDirectoryName)
-        throw new Error(
-          'rootDirectory must be supplied when downloading multiple files'
+    try {
+      const responses = await Promise.all(responsePromises)
+      if (!responses.every((response) => response.ok)) {
+        throw new Error('Download unsuccessful')
+      }
+      const filename = rootDirectoryName ?? files[0].filename
+      let url
+      if (files.length === 1) {
+        url = responses[0].url
+      } else {
+        if (!rootDirectoryName)
+          throw new Error(
+            'rootDirectory must be supplied when downloading multiple files'
+          )
+        const blob = await downloadZip(
+          responses.map((r, i) => {
+            return {
+              name: rootDirectoryName + '/' + files[i].filename,
+              input: r
+            }
+          })
+        ).blob()
+        url = URL.createObjectURL(blob)
+      }
+      browserDownload({ url, filename })
+      dispatch(downloadFinished())
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') {
+        console.info('Download aborted by the user')
+      } else {
+        dispatch(
+          setDownloadError(
+            e instanceof Error ? e : new Error(`Download failed: ${e}`)
+          )
         )
-      const blob = await downloadZip(
-        responses.map((r, i) => {
-          return {
-            name: rootDirectoryName + '/' + files[i].filename,
-            input: r
-          }
-        })
-      ).blob()
-      url = URL.createObjectURL(blob)
+        throw e
+      }
     }
-    browserDownload({ url, filename })
-    window.store.dispatch(downloadFinished())
   }
 }
 

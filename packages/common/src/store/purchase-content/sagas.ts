@@ -5,7 +5,11 @@ import { call, put, race, select, take } from 'typed-redux-saga'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
+import {
+  PurchaseMethod,
+  PurchaseVendor,
+  PurchaseAccess
+} from '~/models/PurchaseContent'
 import { Track, isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
@@ -94,6 +98,12 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   const trackInfo = yield* select(getTrack, { id: contentId })
   const purchaseConditions =
     trackInfo?.stream_conditions ?? trackInfo?.download_conditions
+  // Stream access is a superset of download access - purchasing a stream-gated
+  // track also gets you download access, but purchasing a download-gated track
+  // only gets you download access (because the track was already free to stream).
+  const purchaseAccess = trackInfo?.is_stream_gated
+    ? PurchaseAccess.STREAM
+    : PurchaseAccess.DOWNLOAD
   if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
     throw new Error('Content is missing purchase conditions')
   }
@@ -105,7 +115,7 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   const title = trackInfo.title
   const price = purchaseConditions.usdc_purchase.price
 
-  return { price, title, artistInfo, trackInfo }
+  return { price, title, artistInfo, purchaseAccess, trackInfo }
 }
 
 const getUserPurchaseMetadata = ({
@@ -261,6 +271,7 @@ type PurchaseWithCoinflowArgs = {
   purchaserUserId: ID
   /** USDC in dollars */
   price: number
+  purchaseAccess: PurchaseAccess
 }
 
 function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
@@ -270,7 +281,8 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
     splits,
     contentId,
     purchaserUserId,
-    price
+    price,
+    purchaseAccess
   } = args
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayerAddress = yield* select(getFeePayer)
@@ -292,7 +304,8 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
       blocknumber,
       recentBlockhash,
       purchaserUserId,
-      wallet: rootAccount
+      wallet: rootAccount,
+      purchaseAccess
     }
   )
 
@@ -399,10 +412,13 @@ function* doStartPurchaseContentFlow({
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
-  const { price, title, artistInfo } = yield* call(getContentInfo, {
-    contentId,
-    contentType
-  })
+  const { price, title, artistInfo, purchaseAccess } = yield* call(
+    getContentInfo,
+    {
+      contentId,
+      contentType
+    }
+  )
 
   const analyticsInfo = {
     price: price / 100,
@@ -463,52 +479,59 @@ function* doStartPurchaseContentFlow({
       usdcConfig.minUSDCPurchaseAmountCents
     )
 
-    if (purchaseMethod === PurchaseMethod.BALANCE && balanceNeeded.lten(0)) {
-      // No balance needed, perform the purchase right away
-      yield* call(purchaseContent, audiusBackendInstance, {
-        id: contentId,
-        blocknumber,
-        extraAmount: extraAmountBN,
-        splits,
-        type: 'track',
-        purchaserUserId
-      })
-    } else {
-      // We need to acquire USDC before the purchase can continue
-      // Invariant: The user must be checking out with a card
-      if (purchaseMethod !== PurchaseMethod.CARD) {
-        throw new PurchaseContentError(
-          PurchaseErrorCode.InsufficientBalance,
-          'Unexpected insufficient balance to complete purchase'
-        )
+    switch (purchaseMethod) {
+      case PurchaseMethod.BALANCE:
+      case PurchaseMethod.CRYPTO: {
+        // Invariant: The user must have enough funds
+        if (balanceNeeded.gtn(0)) {
+          throw new PurchaseContentError(
+            PurchaseErrorCode.InsufficientBalance,
+            'Unexpected insufficient balance to complete purchase'
+          )
+        }
+        // No balance needed, perform the purchase right away
+        yield* call(purchaseContent, audiusBackendInstance, {
+          id: contentId,
+          blocknumber,
+          extraAmount: extraAmountBN,
+          splits,
+          type: 'track',
+          purchaserUserId,
+          purchaseAccess
+        })
+        break
       }
-
-      const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
-      switch (purchaseVendor) {
-        case PurchaseVendor.COINFLOW:
-          // Purchase with coinflow, funding and completing the purchase in one step.
-          yield* call(purchaseWithCoinflow, {
-            blocknumber,
-            extraAmount,
-            splits,
-            contentId,
-            contentType,
-            purchaserUserId,
-            price: purchaseAmount
-          })
-          break
-        case PurchaseVendor.STRIPE:
-          // Buy USDC with Stripe. Once funded, continue with purchase.
-          yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
-          yield* call(purchaseContent, audiusBackendInstance, {
-            id: contentId,
-            blocknumber,
-            extraAmount: extraAmountBN,
-            splits,
-            type: 'track',
-            purchaserUserId
-          })
-          break
+      case PurchaseMethod.CARD: {
+        const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
+        switch (purchaseVendor) {
+          case PurchaseVendor.COINFLOW:
+            // Purchase with coinflow, funding and completing the purchase in one step.
+            yield* call(purchaseWithCoinflow, {
+              blocknumber,
+              extraAmount,
+              splits,
+              contentId,
+              contentType,
+              purchaserUserId,
+              price: purchaseAmount,
+              purchaseAccess
+            })
+            break
+          case PurchaseVendor.STRIPE:
+            // Buy USDC with Stripe. Once funded, continue with purchase.
+            yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
+            yield* call(purchaseContent, audiusBackendInstance, {
+              id: contentId,
+              blocknumber,
+              extraAmount: extraAmountBN,
+              splits,
+              type: 'track',
+              purchaserUserId,
+              purchaseAccess
+            })
+            break
+        }
+        break
       }
     }
 

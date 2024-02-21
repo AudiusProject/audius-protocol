@@ -123,6 +123,7 @@ export const TracksTab = () => {
     // Need to fetch saves when the filterValue or selectedCategory (by way of fetchSaves) changes
     if (isReachable) {
       fetchSaves()
+      setFetchPage((fetchPage) => fetchPage + 1)
     }
   }, [isReachable, fetchSaves])
 

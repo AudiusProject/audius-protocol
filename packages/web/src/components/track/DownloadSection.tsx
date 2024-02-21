@@ -4,15 +4,21 @@ import {
   useCurrentStems,
   useFileSizes,
   useDownloadableContentAccess,
-  useGatedContentAccess
+  useGatedContentAccess,
+  useUploadingStems
 } from '@audius/common/hooks'
-import { Name, ModalSource, DownloadQuality, ID } from '@audius/common/models'
+import {
+  Name,
+  ModalSource,
+  DownloadQuality,
+  ID,
+  StemCategory
+} from '@audius/common/models'
 import {
   cacheTracksSelectors,
   usePremiumContentPurchaseModal,
   CommonState,
   useWaitForDownloadModal,
-  tracksSocialActions as socialTracksActions,
   toastActions
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
@@ -52,7 +58,7 @@ const messages = {
   title: 'Stems & Downloads',
   choose: 'Choose File Quality',
   mp3: 'MP3',
-  original: 'Original',
+  lossless: 'Lossless',
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
@@ -74,6 +80,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   )
   const { stemTracks } = useCurrentStems({ trackId })
   const { hasDownloadAccess } = useGatedContentAccess(track)
+  const { uploadingTracks: uploadingStems } = useUploadingStems({ trackId })
   const {
     price,
     shouldDisplayPremiumDownloadLocked,
@@ -103,7 +110,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     usePremiumContentPurchaseModal()
   const fileSizes = useFileSizes({
     audiusSdk,
-    trackIds: [trackId, ...stemTracks.map((s) => s.id)]
+    trackIds: [trackId, ...stemTracks.map((s) => s.id)],
+    downloadQuality: quality
   })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
@@ -125,14 +133,11 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         // On mobile, show a toast instead of a tooltip
         dispatch(toast({ content: messages.followToDownload }))
       } else if (track && track.access.download) {
-        openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
-        dispatch(
-          socialTracksActions.downloadTrack({
-            trackIds,
-            parentTrackId,
-            original: quality === DownloadQuality.ORIGINAL
-          })
-        )
+        openWaitForDownloadModal({
+          parentTrackId,
+          trackIds,
+          quality
+        })
         const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
           id: parentTrackId ?? trackIds[0],
           parent_track_id: parentTrackId
@@ -157,7 +162,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     },
     {
       key: DownloadQuality.ORIGINAL,
-      text: messages.original
+      text: messages.lossless
     }
   ]
 
@@ -269,7 +274,11 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 alignItems='center'
                 borderTop='default'
               >
-                <Flex direction='row' alignItems='center' gap='l'>
+                <Flex
+                  direction={isMobile ? 'column' : 'row'}
+                  alignItems='center'
+                  gap='l'
+                >
                   <Text variant='title'>{messages.choose}</Text>
                   <SegmentedControl
                     options={options}
@@ -277,28 +286,33 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     onSelectOption={(quality: DownloadQuality) =>
                       setQuality(quality)
                     }
+                    equalWidth
                   />
                 </Flex>
-                {shouldDisplayDownloadAll ? downloadAllButton() : null}
+                {shouldDisplayDownloadAll && !isMobile
+                  ? downloadAllButton()
+                  : null}
               </Flex>
             ) : null}
             {track?.is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
+                parentTrackId={trackId}
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[trackId]}
+                size={fileSizes[trackId]?.[quality]}
                 isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ) : null}
             {stemTracks.map((s, i) => (
               <DownloadRow
                 trackId={s.id}
+                parentTrackId={trackId}
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[s.id]}
+                size={fileSizes[s.id]?.[quality]}
                 index={
                   i +
                   (track?.is_downloadable
@@ -308,9 +322,29 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ))}
+            {uploadingStems.map((s, i) => (
+              <DownloadRow
+                key={`uploading-stem-${i}`}
+                onDownload={() => {}}
+                hideDownload={shouldHideDownload}
+                size={s.size}
+                index={
+                  i +
+                  stemTracks.length +
+                  (track?.is_downloadable
+                    ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
+                    : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
+                }
+                isOriginal={quality === DownloadQuality.ORIGINAL}
+                category={s.category ?? StemCategory.OTHER}
+                filename={s.name}
+                isLoading
+              />
+            ))}
             {/* Only display this row if original quality is not available,
             because the download all button will not be displayed at the top right. */}
-            {!track?.is_original_available && shouldDisplayDownloadAll ? (
+            {(!track?.is_original_available && shouldDisplayDownloadAll) ||
+            isMobile ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
                 {downloadAllButton()}
               </Flex>

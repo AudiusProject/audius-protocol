@@ -8,7 +8,7 @@ export const incomingRequestLogger = (
   next: NextFunction
 ) => {
   const startTime = new Date(new Date().getTime());
-  const requestId = uuidv4();
+  const requestId = typeof request.headers["X-Request-Id"] === "string" ? request.headers["X-Request-ID"] as string : uuidv4();
   const oldCtx = response.locals.ctx;
   response.locals.ctx = { ...oldCtx, startTime, requestId };
 
@@ -30,7 +30,7 @@ export const outgoingLog = (request: Request, response: Response) => {
   const path: string = route.path
   if (!path.includes("health")) {
     logger.info(
-      { route, method, ctx, responseTime, statusCode },
+      { route, method, abi: ctx.ctx.validatedRelayRequest.encodedABI, responseTime, statusCode },
       "request completed"
     );
   }

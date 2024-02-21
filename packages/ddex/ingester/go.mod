@@ -3,9 +3,15 @@ module ingester
 go 1.21.5
 
 require (
+	github.com/antchfx/xmlquery v1.3.18
 	github.com/aws/aws-sdk-go v1.50.11
 	github.com/joho/godotenv v1.5.1
 	go.mongodb.org/mongo-driver v1.13.1
+)
+
+require (
+	github.com/antchfx/xpath v1.2.4 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 )
 
 require (

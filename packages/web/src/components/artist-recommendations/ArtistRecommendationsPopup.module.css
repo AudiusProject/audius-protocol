@@ -1,5 +1,6 @@
 .popup {
   width: 352px;
+  padding: var(--harmony-spacing-s);
 }
 
 .headerTitle {

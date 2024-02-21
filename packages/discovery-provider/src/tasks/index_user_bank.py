@@ -47,6 +47,7 @@ from src.solana.constants import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import (
+    JUPITER_PROGRAM_ID,
     SPL_TOKEN_ID_PK,
     get_address_pair,
     get_base_address,
@@ -95,6 +96,8 @@ USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
 PAYMENT_ROUTER_PUBKEY = (
     Pubkey.from_string(PAYMENT_ROUTER_ADDRESS) if PAYMENT_ROUTER_ADDRESS else None
 )
+
+JUPITER_PROGRAM_ID_PUBKEY = Pubkey.from_string(JUPITER_PROGRAM_ID)
 
 # Transfer instructions don't have a mint acc arg but do have userbank authority.
 # So re-derive the claimable token PDAs for each mint here to help us determine mint later.
@@ -282,6 +285,7 @@ class PurchaseMetadataDict(TypedDict):
     type: PurchaseType
     id: int
     purchaser_user_id: Optional[int]
+    access: PurchaseAccessType
 
 
 def get_purchase_metadata_from_memo(
@@ -294,12 +298,22 @@ def get_purchase_metadata_from_memo(
             if len(content_metadata) == 3:
                 type_str, id_str, blocknumber_str = content_metadata
                 purchaser_user_id_str = None
+                access_str = "stream"  # default to stream access
             elif len(content_metadata) == 4:
                 (
                     type_str,
                     id_str,
                     blocknumber_str,
                     purchaser_user_id_str,
+                ) = content_metadata
+                access_str = "stream"  # default to stream access
+            elif len(content_metadata) == 5:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                    access_str,
                 ) = content_metadata
             else:
                 logger.debug(
@@ -313,10 +327,11 @@ def get_purchase_metadata_from_memo(
             purchaser_user_id = (
                 int(purchaser_user_id_str) if purchaser_user_id_str else None
             )
+            access = PurchaseAccessType[access_str.lower()]
 
             # TODO: Wait for blocknumber to be indexed by ACDC
             logger.debug(
-                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}"
+                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}, access={access}"
             )
 
             price = None
@@ -334,6 +349,7 @@ def get_purchase_metadata_from_memo(
                 result = (
                     query.filter(
                         TrackPriceHistory.track_id == id,
+                        TrackPriceHistory.access == access,
                     )
                     .order_by(desc(TrackPriceHistory.block_timestamp))
                     .first()
@@ -352,6 +368,7 @@ def get_purchase_metadata_from_memo(
                     "price": price * USDC_PER_USD_CENT,
                     "splits": splits,
                     "purchaser_user_id": purchaser_user_id,
+                    "access": access,
                 }
                 logger.info(
                     f"index_user_bank.py | Got purchase metadata {content_metadata}"
@@ -416,7 +433,7 @@ def index_purchase(
         extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
-        access=PurchaseAccessType.stream,
+        access=purchase_metadata["access"],
     )
     logger.debug(
         f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"
@@ -665,6 +682,8 @@ def process_transfer_instruction(
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
         transaction_type = get_transfer_type_from_memo(memos=memos)
+        if JUPITER_PROGRAM_ID_PUBKEY in account_keys:
+            transaction_type = USDCTransactionType.prepare_withdrawal
 
         # Attempt to look up account owner, fallback to recipient address
         receiver_account_owner = (

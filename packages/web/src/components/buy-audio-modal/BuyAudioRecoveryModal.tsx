@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/stems'
+import { Modal, ModalContent, ModalHeader, ModalTitle } from '@audius/harmony'
 
 import IconRaisedHand from 'assets/img/iconRaisedHand.svg'
 import { useModalState } from 'common/hooks/useModalState'

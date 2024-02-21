@@ -67,6 +67,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
           userId={accountId}
           style={styles.root}
           imagePriority='high'
+          strokeWidth='thin'
         />
         {showNotificationBubble ? (
           <View style={styles.notificationBubbleRoot}>

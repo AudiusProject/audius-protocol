@@ -6,6 +6,14 @@ tl;dr
 - Transactions are up to you... you SHOULD wrap your statements in a transaction: `begin;  commit;`
 - If you cannot make your `.sql` file idempotent or safe, you can add `failable` to the file name and errors will be printed and ignored.
 
+## TEST
+
+After making a change, verify it in 12 seconds with:
+
+```
+bash local-test.sh
+```
+
 ## Example usage
 
 ```

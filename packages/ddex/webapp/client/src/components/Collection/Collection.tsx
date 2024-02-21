@@ -1,73 +1,240 @@
 import { useState } from 'react'
 
 import { Text, Button, Box, Flex } from '@audius/harmony'
+import { UseQueryResult } from '@tanstack/react-query'
 
 import { trpc } from 'utils/trpc'
 
 import styles from './Collection.module.css'
 
-type CollectionT = 'uploads' | 'indexed' | 'parsed' | 'published'
+type CollectionT =
+  | 'uploads'
+  | 'deliveries'
+  | 'pending_releases'
+  | 'published_releases'
 
-const Table = ({ data }: { data: any }) => {
-  return (
-    <table className={styles.styledTable}>
-      <thead>
-        <tr>
-          <th>Items</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.items.map((item: any) => (
-          <tr key={item._id}>
-            <td>{JSON.stringify(item)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+const Table = ({
+  collection,
+  data
+}: {
+  collection: CollectionT
+  data: any
+}) => {
+  const statusStyle = (deliveryStatus: string) => {
+    if (deliveryStatus === 'published') {
+      return styles.statusSuccess
+    } else if (
+      deliveryStatus === 'validating' ||
+      deliveryStatus === 'awaiting_publishing'
+    ) {
+      return styles.statusPending
+    } else if (deliveryStatus === 'error' || deliveryStatus === 'rejected') {
+      return styles.statusFailed
+    }
+  }
+
+  switch (collection) {
+    case 'uploads':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Path</th>
+              <th>E-tag</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item._id}>
+                <td>{item._id}</td>
+                <td>{item.path}</td>
+                <td>{item.upload_etag}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    case 'deliveries':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Upload E-tag</th>
+              <th>Delivery Status</th>
+              <th>XML Filepath</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item._id}>
+                <td>{item._id}</td>
+                <td>{item.upload_etag}</td>
+                <td className={statusStyle(item.delivery_status)}>
+                  {item.delivery_status}
+                </td>
+                <td>{item.xml_file_path}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    case 'pending_releases':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Upload E-tag</th>
+              <th>Delivery ID</th>
+              <th>Entity</th>
+              <th>Publish Date</th>
+              <th>Created At</th>
+              <th>Errors</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item._id}>
+                <td>{item._id}</td>
+                <td>{item.upload_etag}</td>
+                <td>{item.delivery_id}</td>
+                <td>
+                  {item.create_track_release
+                    ? 'track'
+                    : item.create_album_release
+                      ? 'album'
+                      : 'unknown'}
+                </td>
+                <td>{item.publish_date}</td>
+                <td>{item.created_at}</td>
+                <td className={item.failure_count ? styles.statusFailed : ''}>
+                  {item.failure_count
+                    ? (item.failed_after_upload ? '(after uploading) ' : '') +
+                      item.failure_count +
+                      ': ' +
+                      (item.upload_errors || ['unknown']).join(', ')
+                    : 'None'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    case 'published_releases':
+      return (
+        <table className={styles.styledTable}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Upload E-tag</th>
+              <th>Delivery ID</th>
+              <th>Entity</th>
+              <th>Entity ID</th>
+              <th>Blockhash</th>
+              <th>Blocknumber</th>
+              <th>Publish Date</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.items.map((item: any) => (
+              <tr key={item.id}>
+                <td>{item._id}</td>
+                <td>{item.upload_etag}</td>
+                <td>{item.delivery_id}</td>
+                <td>
+                  {item.track ? 'track' : item.album ? 'album' : 'unknown'}
+                </td>
+                <td>{item.entity_id}</td>
+                <td>{item.blockhash}</td>
+                <td>{item.blocknumber}</td>
+                <td>{item.publish_date}</td>
+                <td>{item.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+  }
+}
+
+type CollectionData = {
+  items: Record<string, any>
+  hasMoreNext: boolean
+  hasMorePrev: boolean
+}
+
+interface QueryParams {
+  nextId?: string
+  prevId?: string
+}
+
+type QueryFunction = (
+  params: QueryParams,
+  options: { refetchInterval: number }
+) => UseQueryResult<CollectionData, unknown>
+
+const useCollectionQuery = ({
+  collection,
+  nextId,
+  prevId
+}: {
+  collection: string
+  nextId: string | undefined
+  prevId: string | undefined
+}) => {
+  // Determine which collection to query
+  let queryFunction: QueryFunction
+  switch (collection) {
+    case 'uploads':
+      queryFunction = trpc.uploads.listCollection.useQuery
+      break
+    case 'deliveries':
+      queryFunction = trpc.deliveries.listCollection.useQuery
+      break
+    case 'pending_releases':
+      queryFunction = trpc.pendingReleases.listCollection.useQuery
+      break
+    case 'published_releases':
+      queryFunction = trpc.publishedReleases.listCollection.useQuery
+      break
+    default:
+      throw new Error('Invalid collection')
+  }
+
+  const { data, error, isLoading } = queryFunction(
+    { nextId, prevId },
+    { refetchInterval: 10000 }
   )
+
+  return { data, error: error as Error | null, isLoading }
 }
 
 export const Collection = ({ collection }: { collection: CollectionT }) => {
-  const [nextId, setNextId] = useState<number | undefined>(undefined)
-  const [prevId, setPrevId] = useState<number | undefined>(undefined)
-  let data: any, error, isLoading
-  switch (collection) {
-    case 'uploads':
-      ;({ data, error, isLoading } = trpc.uploads.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
-      break
-    case 'indexed':
-      ;({ data, error, isLoading } = trpc.indexed.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
-      break
-    case 'parsed':
-      ;({ data, error, isLoading } = trpc.parsed.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
-      break
-    case 'published':
-      ;({ data, error, isLoading } = trpc.published.listCollection.useQuery({
-        nextId,
-        prevId
-      }))
-      break
-  }
+  const [nextId, setNextId] = useState<string | undefined>(undefined)
+  const [prevId, setPrevId] = useState<string | undefined>(undefined)
+  const { data, error, isLoading } = useCollectionQuery({
+    collection,
+    nextId,
+    prevId
+  })
 
   const handleNext = () => {
     if (data?.hasMoreNext) {
-      setNextId(data.items[0].id)
+      setNextId(data.items[data.items.length - 1]._id)
       setPrevId(undefined)
     }
   }
 
   const handlePrev = () => {
     if (data?.hasMorePrev) {
-      setPrevId(data.items[data.items.length - 1].id)
+      setPrevId(data.items[0]._id)
       setNextId(undefined)
     }
   }
@@ -76,14 +243,17 @@ export const Collection = ({ collection }: { collection: CollectionT }) => {
     <Box borderRadius='s' shadow='near' p='xl' backgroundColor='white'>
       <Flex direction='column' gap='l'>
         <Text variant='heading' color='heading'>
-          {collection.charAt(0).toUpperCase() + collection.slice(1)}
+          {collection
+            .split('_')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')}
         </Text>
         {/* TODO resolve "div cannot appear as a descendent of p" error by removing this
           Text div after harmony fixes font styling */}
         <Text variant='body' color='default'>
           {isLoading && <div>Loading...</div>}
           {error && <div>Error: {error.message}</div>}
-          {data && <Table data={data} />}
+          {data && <Table collection={collection} data={data} />}
 
           <Flex justifyContent='space-between'>
             <Button

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
@@ -109,10 +109,19 @@ function removeDelegator(
   }
 }
 
-export const useSubmitTransaction = (name: PendingTransactionName) => {
+export const useSubmitTransaction = (
+  name: PendingTransactionName,
+  shouldReset: boolean
+) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
+  useEffect(() => {
+    if (shouldReset) {
+      setStatus(undefined)
+      setError('')
+    }
+  }, [shouldReset, setStatus, setError])
 
   const submitTransaction = useCallback(
     (wallet?: Address) => {

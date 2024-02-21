@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
-import { Modal } from '@audius/stems'
+import { Modal, Flex, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import EnterPassword from 'components/sign-on/EnterPassword'

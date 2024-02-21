@@ -113,7 +113,7 @@
   margin-top: 2px;
 }
 
-.topBannerIcon svg g path {
+.topBannerIcon svg path {
   fill: var(--white);
 }
 

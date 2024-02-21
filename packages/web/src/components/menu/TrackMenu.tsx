@@ -20,7 +20,7 @@ import {
   CommonState
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
-import { PopupMenuItem } from '@audius/stems'
+import { PopupMenuItem } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -270,6 +270,12 @@ const TrackMenu = (props: TrackMenuProps) => {
       onClick: () => openEmbedModal(trackId)
     }
 
+    // export { Position as PopupPosition } from './components/Popup'
+    // export {
+    //   PopupMenu,
+    //   PopupMenuItem,
+    //   PopupMenuProps
+    // } from './components/PopupMenu'
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
     if (includeShare && !isDeleted) {

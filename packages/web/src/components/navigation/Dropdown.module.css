@@ -53,6 +53,7 @@
 .dropdown.disabled:hover {
   border-color: var(--neutral-light-8);
 }
+.dropdown.disabled path,
 .dropdown.disabled g path {
   fill: var(--neutral-light-4);
 }

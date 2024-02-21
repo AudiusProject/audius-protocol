@@ -191,7 +191,6 @@ immutable_track_fields = immutable_fields | {
     "track_cid",
     "orig_file_cid",
     "orig_filename",
-    "is_original_available",
     "duration",
     "is_available",
 }

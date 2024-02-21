@@ -5,14 +5,18 @@ import {
   ChangePasswordPage,
   useChangePasswordFormConfiguration
 } from '@audius/common/hooks'
-import { Button, Flex, IconArrowRight, IconLock, Text } from '@audius/harmony'
 import {
   Modal,
   ModalContentPages,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  Button,
+  Flex,
+  IconArrowRight,
+  IconLock,
+  Text
+} from '@audius/harmony'
 import { Formik, useFormikContext } from 'formik'
 
 import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'

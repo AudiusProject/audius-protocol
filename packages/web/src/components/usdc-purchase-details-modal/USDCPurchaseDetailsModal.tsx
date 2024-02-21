@@ -1,5 +1,5 @@
 import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
-import { Modal } from '@audius/stems'
+import { Modal } from '@audius/harmony'
 
 import { PurchaseModalContent } from './components/PurchaseModalContent'
 import { SaleModalContent } from './components/SaleModalContent'

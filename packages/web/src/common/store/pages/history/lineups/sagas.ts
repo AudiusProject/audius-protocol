@@ -22,7 +22,7 @@ function* getHistoryTracks() {
     const currentUserId = yield* select(getUserId)
     if (!currentUserId) return []
 
-    const activity = yield* call(apiClient.getUserTrackHistory, {
+    const activity = yield* call([apiClient, apiClient.getUserTrackHistory], {
       currentUserId,
       userId: currentUserId,
       limit: 100

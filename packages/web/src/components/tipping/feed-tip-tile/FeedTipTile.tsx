@@ -180,7 +180,7 @@ const DismissTipButton = () => {
       aria-label={messages.dismissButton}
       className={styles.dismissButton}
       onClick={handleClick}
-      icon={<IconRemove className={styles.dismissIcon} />}
+      icon={<IconRemove className={styles.dismissIcon} size='s' />}
     />
   )
 }

@@ -1,10 +1,7 @@
 import { useState, DragEvent } from 'react'
 
 import { Text, Button, Box, Flex } from '@audius/harmony'
-import type {
-  DecodedUserToken,
-  AudiusSdk
-} from '@audius/sdk/dist/sdk/index.d.ts'
+import type { DecodedUserToken, AudiusSdk } from '@audius/sdk'
 import cn from 'classnames'
 
 import { Collection } from 'components/Collection/Collection'
@@ -217,7 +214,8 @@ const ZipImporter = ({
               )}
               {uploadSucceeded && (
                 <Text variant='body' className={styles.successText}>
-                  Upload success!
+                  Your files have been uploaded to S3 and will be processed
+                  soon.
                 </Text>
               )}
             </>

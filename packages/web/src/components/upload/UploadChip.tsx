@@ -4,15 +4,16 @@ import { Name, CreatePlaylistSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { cacheCollectionsActions } from '@audius/common/store'
 import {
+  PopupMenu,
   Box,
   HTMLButtonProps,
   IconCloudUpload,
   IconPlaylists,
   IconPlus,
   Text,
-  IconCloudUpload as IconUpload
+  IconCloudUpload as IconUpload,
+  PopupMenuItem
 } from '@audius/harmony'
-import { PopupMenu, PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { capitalize } from 'lodash'

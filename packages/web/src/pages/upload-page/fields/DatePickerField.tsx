@@ -3,9 +3,7 @@ import 'react-dates/lib/css/_datepicker.css'
 
 import { useEffect, useRef, useState } from 'react'
 
-import { IconCalendarMonth } from '@audius/harmony'
-import { Popup } from '@audius/stems'
-import { Origin } from '@audius/stems/dist/components/Popup/types'
+import { IconCalendarMonth, Popup } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'
@@ -32,8 +30,6 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
 
   useEffect(() => setIsFocused(shouldFocus ?? false), [shouldFocus])
 
-  const anchorOrigin: Origin = { vertical: 'top', horizontal: 'center' }
-
   return (
     <>
       <div
@@ -44,7 +40,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
         className={styles.datePickerField}
         onClick={() => setIsFocused(true)}
       >
-        <IconCalendarMonth className={styles.iconCalendar} />
+        <IconCalendarMonth color='subdued' className={styles.iconCalendar} />
         <div>
           <div className={styles.label}>{label}</div>
           <input
@@ -63,7 +59,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
         anchorRef={anchorRef}
         isVisible={isFocused}
         onClose={() => setIsFocused(false)}
-        anchorOrigin={anchorOrigin}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <div className={cn(styles.datePicker, style)}>
           <DayPickerSingleDateController

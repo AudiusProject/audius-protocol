@@ -150,11 +150,6 @@
   transform: scale3d(0.95, 0.95, 0.95);
 }
 
-.dismissIcon {
-  width: var(--unit-8);
-  height: var(--unit-8);
-}
-
 .dismissIcon path {
   fill: var(--neutral-light-4);
 }

@@ -6,28 +6,20 @@ import {
   StemUpload,
   Download
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
+  Modal,
   Flex,
-  Box,
   Text as HarmonyText,
   Switch,
   IconRemove
 } from '@audius/harmony'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  Modal,
-  IconButton
-} from '@audius/stems'
+import { Button, ButtonSize, ButtonType, IconButton } from '@audius/stems'
 import cn from 'classnames'
 
+import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Dropzone } from 'components/upload/Dropzone'
-import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesModal.module.css'
@@ -36,11 +28,13 @@ const MAX_ROWS = 10
 
 const messages = {
   title: 'STEMS & DOWNLOADS',
-  subtitle: 'Allow Users to download MP3 copies of your track',
   additionalFiles: 'UPLOAD ADDITIONAL FILES',
-  allowDownloads: 'Allow Downloads',
+  description:
+    'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
+  allowDownloads: 'Allow Full Track Download',
+  allowDownloadsDescription:
+    'Allow your fans to download a copy of your full track.',
   requireFollowToDownload: 'Require Follow to Download',
-  provideLosslessFiles: 'Provide Lossless Files',
   done: 'DONE',
   maxCapacity: 'Reached upload limit of 10 files.',
   stemTypeHeader: 'Select Stem Type',
@@ -130,46 +124,6 @@ const StemFilesView = ({
   onSelectCategory,
   onDeleteStem
 }: StemFilesViewProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
-  const renderStemFiles = () => {
-    return stems.length > 0 ? (
-      <Box p='xl'>
-        <Flex direction='column'>
-          <HarmonyText variant='title' size='l'>
-            {messages.stemTypeHeader}
-          </HarmonyText>
-          <Box mt='s'>
-            <HarmonyText variant='body'>
-              {messages.stemTypeDescription}
-            </HarmonyText>
-          </Box>
-        </Flex>
-        <Flex direction='column' mt='xl' borderRadius='m' border='default'>
-          {stems.map((stem, i) => (
-            <TrackPreviewNew
-              className={styles.stemPreview}
-              index={i}
-              displayIndex={stems.length > 1}
-              key={`stem-${i}`}
-              trackTitle={stem.metadata.title}
-              fileType=''
-              fileSize={0}
-              onRemove={() => onDeleteStem(i)}
-              stemCategory={stem.category}
-              onEditStemCategory={(category) => onSelectCategory(category, i)}
-              isDisabled={!stem.allowCategorySwitch}
-              isStem
-              isEdit
-            />
-          ))}
-        </Flex>
-      </Box>
-    ) : null
-  }
-
   const renderCurrentStems = () => {
     return (
       <div className={styles.stemRows}>
@@ -222,30 +176,21 @@ const StemFilesView = ({
 
   return (
     <div className={styles.sourceFilesContainer}>
-      {isLosslessDownloadsEnabled ? renderStemFiles() : null}
       {useRenderDropzone()}
-      {!isLosslessDownloadsEnabled ? renderCurrentStems() : null}
+      {renderCurrentStems()}
     </div>
   )
 }
 
 type DownloadSectionProps = {
-  isOriginalAvailable: boolean
-  onUpdateIsOriginalAvailable: (isOriginalAvailable: boolean) => void
   downloadSettings: Download
   onUpdateDownloadSettings: (downloadSettings: Download) => void
 }
 
 const DownloadSection = ({
-  isOriginalAvailable,
-  onUpdateIsOriginalAvailable,
   downloadSettings,
   onUpdateDownloadSettings
 }: DownloadSectionProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
   const toggleIsDownloadable = useCallback(() => {
     const newSettings = downloadSettings
       ? { ...downloadSettings }
@@ -259,14 +204,9 @@ const DownloadSection = ({
       // Enabling
       newSettings.is_downloadable = true
       newSettings.requires_follow = false
-      onUpdateIsOriginalAvailable(true)
     }
     onUpdateDownloadSettings(newSettings)
-  }, [downloadSettings, onUpdateDownloadSettings, onUpdateIsOriginalAvailable])
-
-  const toggleIsOriginalAvailable = useCallback(() => {
-    onUpdateIsOriginalAvailable(!isOriginalAvailable)
-  }, [onUpdateIsOriginalAvailable, isOriginalAvailable])
+  }, [downloadSettings, onUpdateDownloadSettings])
 
   const toggleRequiresFollow = useCallback(() => {
     const newSettings = downloadSettings
@@ -285,42 +225,39 @@ const DownloadSection = ({
   }, [onUpdateDownloadSettings, downloadSettings])
 
   return (
-    <div className={styles.downloadSettings}>
+    <Flex direction='column' ph='xl' pt='xl' gap='l'>
+      <Flex direction='column' gap='l' w='100%'>
+        <Flex justifyContent='space-between'>
+          <HarmonyText variant='title' size='l'>
+            {messages.allowDownloads}
+          </HarmonyText>
+          <Switch
+            checked={downloadSettings?.is_downloadable ?? false}
+            onChange={toggleIsDownloadable}
+          />
+        </Flex>
+        <HarmonyText variant='body'>
+          {messages.allowDownloadsDescription}
+        </HarmonyText>
+      </Flex>
+      <Divider />
       <div className={styles.downloadSetting}>
-        <div className={styles.label}>{messages.allowDownloads}</div>
-        <Switch
-          checked={downloadSettings?.is_downloadable ?? false}
-          onChange={toggleIsDownloadable}
-        />
+        <>
+          <HarmonyText variant='title' size='l'>
+            {messages.requireFollowToDownload}
+          </HarmonyText>
+          <Switch
+            checked={downloadSettings?.requires_follow ?? false}
+            onChange={toggleRequiresFollow}
+          />
+        </>
       </div>
-      <div className={styles.downloadSetting}>
-        {isLosslessDownloadsEnabled ? (
-          <>
-            <div className={styles.label}>{messages.provideLosslessFiles}</div>
-            <Switch
-              checked={isOriginalAvailable}
-              onChange={toggleIsOriginalAvailable}
-            />
-          </>
-        ) : (
-          <>
-            <div className={styles.label}>
-              {messages.requireFollowToDownload}
-            </div>
-            <Switch
-              checked={downloadSettings?.requires_follow ?? false}
-              onChange={toggleRequiresFollow}
-            />
-          </>
-        )}
-      </div>
-    </div>
+      <Divider />
+    </Flex>
   )
 }
 
 type StemFilesModalProps = StemFilesViewProps & {
-  isOriginalAvailable: boolean
-  onUpdateIsOriginalAvailable: (isOriginalAvailable: boolean) => void
   downloadSettings: Download
   onUpdateDownloadSettings: (downloadSettings: Download) => void
   isOpen: boolean
@@ -328,8 +265,6 @@ type StemFilesModalProps = StemFilesViewProps & {
 }
 
 export const StemFilesModal = ({
-  isOriginalAvailable,
-  onUpdateIsOriginalAvailable,
   downloadSettings,
   onUpdateDownloadSettings,
   isOpen,
@@ -339,32 +274,23 @@ export const StemFilesModal = ({
   onSelectCategory,
   onDeleteStem
 }: StemFilesModalProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       showTitleHeader
       title={messages.title}
-      subtitle={messages.subtitle}
       dismissOnClickOutside
       showDismissButton
       // Since this can be nested in the edit track modal
       // Appear on top of it
       zIndex={1002}
-      bodyClassName={cn(styles.modalContainer, {
-        [styles.newModalContainer]: isLosslessDownloadsEnabled
-      })}
+      bodyClassName={styles.modalContainer}
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
       subtitleClassName={styles.modalSubtitle}
     >
       <DownloadSection
-        isOriginalAvailable={isOriginalAvailable}
-        onUpdateIsOriginalAvailable={onUpdateIsOriginalAvailable}
         downloadSettings={downloadSettings}
         onUpdateDownloadSettings={onUpdateDownloadSettings}
       />

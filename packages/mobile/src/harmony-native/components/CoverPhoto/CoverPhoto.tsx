@@ -17,9 +17,11 @@ import type { CornerRadiusOptions } from '@audius/harmony-native'
 
 import { useTheme } from '../../foundations/theme'
 
+type CoverPhotoImage = Image | ImageSourcePropType | null | undefined
+
 export type CoverPhotoProps = {
-  profilePicture?: Image | ImageSourcePropType | null | undefined
-  coverPhoto?: Image | ImageSourcePropType | null | undefined
+  profilePicture?: CoverPhotoImage
+  coverPhoto?: CoverPhotoImage
   style?: StyleProp<ImageStyle>
   children?: ReactNode
   topCornerRadius?: CornerRadiusOptions
@@ -51,20 +53,38 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
   const fullHeightStyle = css({ height: '100%' })
 
   const getSource = () => {
-    // Having .url means its a useable image source
-    if (coverPhoto && !isEmpty(coverPhoto)) {
-      return { source: coverPhoto }
+    let source: Exclude<CoverPhotoImage, number> = {
+      uri: undefined
+    }
+    let usingProfilePicture = false
+    if (typeof source === 'number') {
+      return { source, usingProfilePicture }
     }
     if (profilePicture && !isEmpty(profilePicture)) {
-      return { source: profilePicture, usingProfilePicture: true }
+      source = profilePicture as Exclude<CoverPhotoImage, number>
+      usingProfilePicture = true
     }
-    return { source: { uri: undefined } }
+    if (coverPhoto && !isEmpty(coverPhoto)) {
+      source = coverPhoto as Exclude<CoverPhotoImage, number>
+      usingProfilePicture = false
+    }
+
+    // Android upload format does not quite match the expected format, so we have to drill into 'file' to workaround for android
+    if (source && 'file' in source && !('uri' in source)) {
+      return { source: source.file, usingProfilePicture }
+    } else {
+      return { source, usingProfilePicture }
+    }
   }
 
   const { source, usingProfilePicture } = getSource()
 
   return (
-    <ImageBackground source={source} style={[rootStyle, style]} {...other}>
+    <ImageBackground
+      source={source as ImageSourcePropType}
+      style={[rootStyle, style]}
+      {...other}
+    >
       {!profilePicture && !coverPhoto ? (
         <LinearGradient
           colors={['rgba(0, 0, 0, 0.20)', 'rgba(0, 0, 0, 0.00)']}

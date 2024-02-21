@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.65",
+  "version": "1.5.66",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -20,7 +20,7 @@
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
-    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
+    "patch-package": "patch-package && patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
     "turbo-link": "turbo login && turbo link",
@@ -30,6 +30,7 @@
     "web:dev": "npm run start:dev -w audius-client",
     "web:prod": "npm run start:prod -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
+    "web:e2e": "concurrently -k 'npm run start:stage -w audius-client' 'npm run cypress:open -w probers' ",
     "DESKTOP====================================": "",
     "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://0.0.0.0:3000 && npm run electron:localhost -w audius-client -- 3000'",
     "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://0.0.0.0:3002 && npm run electron:localhost -w audius-client -- 3002'",

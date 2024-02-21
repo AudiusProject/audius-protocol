@@ -248,6 +248,7 @@ export const TextInput = forwardRef(
               shadowOpacity={0.05}
               shadowColor='#000000'
               shadowRadius={4}
+              elevation={2}
             >
               <AnimatedFlex
                 h='100%'
@@ -305,15 +306,9 @@ export const TextInput = forwardRef(
                     direction='row'
                     alignItems='center'
                     justifyContent='space-between'
-                    gap='2xs'
                   >
                     {startAdornmentText && shouldShowAdornments ? (
-                      <Text
-                        variant='label'
-                        size='l'
-                        color='subdued'
-                        style={css({ lineHeight: 0 })}
-                      >
+                      <Text variant='title' size='l' color='subdued'>
                         {startAdornmentText}
                       </Text>
                     ) : null}
@@ -335,6 +330,10 @@ export const TextInput = forwardRef(
                       aria-label={ariaLabel ?? labelText}
                       style={css({
                         flex: 1,
+                        // Need absolute height to ensure consistency across platforms
+                        height: !isSmall ? 23 : undefined,
+                        // Android has a default padding that needs to be removed
+                        paddingVertical: 0,
                         fontSize: typography.size[isSmall ? 's' : 'l'],
                         fontFamily: typography.fontByWeight.medium,
                         color: color.text[disabled ? 'subdued' : 'default']
@@ -347,12 +346,7 @@ export const TextInput = forwardRef(
                       {...other}
                     />
                     {endAdornmentText && shouldShowAdornments ? (
-                      <Text
-                        variant='label'
-                        size='l'
-                        color='subdued'
-                        style={css({ lineHeight: 0 })}
-                      >
+                      <Text variant='label' size='l' color='subdued'>
                         {endAdornmentText}
                       </Text>
                     ) : null}

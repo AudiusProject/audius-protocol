@@ -368,6 +368,7 @@ export const Drawer: DrawerComponent = ({
         value: position,
         drawerHeight,
         animationStyle,
+        overshootClamping: true,
         finished: ({ finished }) => {
           if (finished) {
             onFinished?.()
@@ -381,7 +382,8 @@ export const Drawer: DrawerComponent = ({
           animation: borderRadiusAnim.current,
           value: BORDER_RADIUS,
           drawerHeight,
-          animationStyle
+          animationStyle,
+          overshootClamping: true
         })
       }
       if (shouldBackgroundDim) {

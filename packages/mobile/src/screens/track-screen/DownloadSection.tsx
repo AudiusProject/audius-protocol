@@ -5,26 +5,25 @@ import {
   useDownloadableContentAccess,
   useGatedContentAccess
 } from '@audius/common/hooks'
-import { ModalSource, DownloadQuality } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
+import { DownloadQuality, ModalSource } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import {
   cacheTracksSelectors,
   usePremiumContentPurchaseModal,
-  useWaitForDownloadModal,
-  tracksSocialActions as socialTracksActions
+  useWaitForDownloadModal
 } from '@audius/common/store'
-import type { CommonState } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import {
+  Button,
   Flex,
+  IconLockUnlocked,
   IconReceive,
   Text,
-  Button,
-  IconLockUnlocked,
   useTheme
 } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
@@ -43,7 +42,7 @@ const messages = {
   title: 'Stems & Downloads',
   choose: 'Choose File Quality',
   mp3: 'MP3',
-  original: 'Original',
+  lossless: 'Lossless',
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
@@ -53,7 +52,6 @@ const messages = {
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
-  const dispatch = useDispatch()
   const { color } = useTheme()
   const { toast } = useToast()
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -106,18 +104,14 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
         // On mobile, show a toast instead of a tooltip
         toast({ content: messages.followToDownload })
       } else if (track && track.access.download) {
-        openWaitForDownloadModal({ contentId: parentTrackId ?? trackIds[0] })
-        dispatch(
-          socialTracksActions.downloadTrack({
-            trackIds,
-            parentTrackId,
-            original: quality === DownloadQuality.ORIGINAL
-          })
-        )
+        openWaitForDownloadModal({
+          parentTrackId,
+          trackIds,
+          quality
+        })
       }
     },
     [
-      dispatch,
       openWaitForDownloadModal,
       quality,
       shouldDisplayDownloadFollowGated,
@@ -155,14 +149,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
             ) : null}
             {shouldDisplayPremiumDownloadUnlocked ? (
               <>
-                <Flex
-                  gap='s'
-                  direction='row'
-                  alignItems='center'
-                  style={css({
-                    backgroundColor: color.special.blue
-                  })}
-                >
+                <Flex gap='s' direction='row' alignItems='center'>
                   <Flex
                     borderRadius='3xl'
                     ph='s'
@@ -207,7 +194,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     },
     {
       key: DownloadQuality.ORIGINAL,
-      text: messages.original
+      text: messages.lossless
     }
   ]
 
@@ -225,6 +212,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
               options={options}
               selected={quality}
               onSelectOption={(quality) => setQuality(quality)}
+              equalWidth
             />
           </Flex>
         ) : null}

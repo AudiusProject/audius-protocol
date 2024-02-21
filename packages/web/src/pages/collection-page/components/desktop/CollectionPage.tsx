@@ -32,20 +32,24 @@ import { computeCollectionMetadataProps } from 'pages/collection-page/store/util
 
 import styles from './CollectionPage.module.css'
 
-const messages = {
+const getMessages = (collectionType: 'album' | 'playlist') => ({
   emptyPage: {
-    owner:
-      'This playlist is empty. Start adding tracks to share it or make it public.',
-    visitor: 'This Playlist is Empty...'
+    owner: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
+    visitor: `This ${collectionType} is empty...`
   },
   type: {
     playlist: 'Playlist',
     album: 'Album'
   },
   remove: 'Remove from this'
-}
+})
 
-const EmptyPage = (props: { text?: string | null; isOwner: boolean }) => {
+const EmptyPage = (props: {
+  text?: string | null
+  isOwner: boolean
+  isAlbum: boolean
+}) => {
+  const messages = getMessages(props.isAlbum ? 'album' : 'playlist')
   const text =
     props.text ||
     (props.isOwner ? messages.emptyPage.owner : messages.emptyPage.visitor)
@@ -233,6 +237,7 @@ const CollectionPage = ({
     [isAlbum, isNftPlaylist]
   )
 
+  const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (
     <Page
       title={title}
@@ -251,7 +256,11 @@ const CollectionPage = ({
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
-          <EmptyPage isOwner={isOwner} text={customEmptyText} />
+          <EmptyPage
+            isOwner={isOwner}
+            isAlbum={isAlbum}
+            text={customEmptyText}
+          />
         ) : (
           <div className={styles.tableWrapper}>
             <TableComponent

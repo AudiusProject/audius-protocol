@@ -1,7 +1,7 @@
 import { CommonState } from '@audius/common/store'
 import { connect } from 'react-redux'
 
-import { useDevModeHotkey } from 'hooks/useHotkey'
+import { useDevModeHotkey } from 'hooks/useDevModeHotkey'
 
 import styles from './ConfirmerPreview.module.css'
 

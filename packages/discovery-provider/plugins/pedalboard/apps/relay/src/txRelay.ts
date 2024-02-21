@@ -1,6 +1,5 @@
 import { config, wallets, web3 } from ".";
 import { internalError } from "./error";
-import { logger } from "./logger";
 import { confirm } from "./web3";
 import {
   TransactionReceipt,
@@ -28,8 +27,6 @@ export const relayTransaction = async (
   // gather some transaction params
   const nonce = await web3.getTransactionCount(address);
 
-  const balance = await web3.getBalance(address);
-  logger.info({ balance, address }, "submitter balance");
   const to = contractAddress;
   const value = "0x00";
   const data = encodedABI;

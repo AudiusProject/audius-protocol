@@ -1,10 +1,10 @@
 import {
+  Modal,
   Flex,
   Text,
   useTheme,
   IconQuestionCircle as IconQuestionMark
 } from '@audius/harmony'
-import { Modal } from '@audius/stems'
 import { CSSObject } from '@emotion/styled'
 
 import Toast from 'components/toast/Toast'

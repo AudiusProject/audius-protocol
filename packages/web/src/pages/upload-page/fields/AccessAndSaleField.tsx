@@ -349,6 +349,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsStreamGated(false)
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
+
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
         case StreamTrackAvailabilityType.USDC_PURCHASE: {

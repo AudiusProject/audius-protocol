@@ -6,6 +6,8 @@ import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
 import useMeasure from 'react-use-measure'
 
+import { Text } from 'components/text/Text'
+
 import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'
 
@@ -20,6 +22,7 @@ export const SegmentedControl = <T extends string>(
     props.options.map((_) => createRef<HTMLLabelElement>())
   )
   const [selected, setSelected] = useState(props.options[0].key)
+  const [maxOptionWidth, setMaxOptionWidth] = useState(0)
 
   const selectedOption = props.selected || selected
 
@@ -32,6 +35,15 @@ export const SegmentedControl = <T extends string>(
   const [tabProps, tabApi] = useSpring(() => ({
     to: { left: '0px', width: '0px' }
   }))
+
+  useEffect(() => {
+    setMaxOptionWidth(
+      optionRefs.current.reduce((currentMax, ref) => {
+        const rect = ref.current?.getBoundingClientRect()
+        return Math.max(rect?.width ?? 0, currentMax)
+      }, 0)
+    )
+  }, [])
 
   // Watch for resizes and repositions so that we move and resize the slider appropriately
   const [selectedRef, bounds] = useMeasure({
@@ -62,6 +74,7 @@ export const SegmentedControl = <T extends string>(
     })
   }, [
     props.options,
+    props.equalWidth,
     selectedOption,
     props.selected,
     tabApi,
@@ -84,6 +97,7 @@ export const SegmentedControl = <T extends string>(
     >
       <animated.div className={styles.tabBackground} style={tabProps} />
       {props.options.map((option, idx) => {
+        const isOptionDisabled = props.disabled || option.disabled
         return (
           <Fragment key={option.key}>
             <label
@@ -94,8 +108,14 @@ export const SegmentedControl = <T extends string>(
               }
               className={cn(styles.tab, {
                 [styles.tabFullWidth]: !!props.fullWidth,
+                [styles.disabled]: !props.disabled && option.disabled,
                 [styles.isMobile]: props.isMobile
               })}
+              style={
+                props.equalWidth && maxOptionWidth
+                  ? { width: `${maxOptionWidth}px` }
+                  : undefined
+              }
             >
               {option.icon}
               <input
@@ -104,21 +124,32 @@ export const SegmentedControl = <T extends string>(
                 onChange={() => {
                   onSetSelected(option.key)
                 }}
-                disabled={props.disabled}
+                disabled={isOptionDisabled}
               />
-              {option.text}
+              <Text
+                color={
+                  option.variant ?? (isOptionDisabled ? 'subdued' : 'default')
+                }
+                css={{
+                  cursor: isOptionDisabled ? 'auto' : 'pointer'
+                }}
+              >
+                {option.text}
+              </Text>
             </label>
-            <div
-              className={cn(styles.separator, {
-                [styles.invisible]:
-                  // Hide separator right of the selected option
-                  selectedOption === option.key ||
-                  // Hide separator right of the last option
-                  idx === props.options.length - 1 ||
-                  // Hide separator right of an option if the next one is selected
-                  selectedOption === props.options[idx + 1].key
-              })}
-            />
+            {idx !== props.options.length - 1 ? (
+              <div
+                className={cn(styles.separator, {
+                  [styles.invisible]:
+                    // Hide separator right of the selected option
+                    selectedOption === option.key ||
+                    // Hide separator right of the last option
+                    idx === props.options.length - 1 ||
+                    // Hide separator right of an option if the next one is selected
+                    selectedOption === props.options[idx + 1].key
+                })}
+              />
+            ) : null}
           </Fragment>
         )
       })}

@@ -1,7 +1,12 @@
 import { createRef, Component } from 'react'
 
 import { Kind, Status } from '@audius/common/models'
-import { IconArrowRight as IconArrow, IconSearch } from '@audius/harmony'
+import {
+  IconArrowRight as IconArrow,
+  IconSearch,
+  setupHotkeys,
+  removeHotkeys
+} from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
 import cn from 'classnames'
@@ -13,7 +18,6 @@ import { Transition } from 'react-spring/renderprops.cjs'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import SearchBarResult from 'components/search/SearchBarResult'
-import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 
 import styles from './SearchBar.module.css'
 
@@ -309,8 +313,9 @@ class SearchBar extends Component {
               <div>
                 <span>View More Results</span>
                 <IconArrow
-                  height={'7px'}
-                  width={'7px'}
+                  color='default'
+                  height={8}
+                  width={8}
                   className={styles.iconArrow}
                 />
               </div>

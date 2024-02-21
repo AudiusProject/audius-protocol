@@ -5,16 +5,25 @@ import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 
-import { IconKebabHorizontal, IconShare } from '@audius/harmony-native'
-import { IconButton } from 'app/components/core'
+import {
+  IconButton,
+  IconKebabHorizontal,
+  IconShare
+} from '@audius/harmony-native'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
-import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileAccessStatus } from './LineupTileAccessStatus'
+
+const messages = {
+  shareButtonLabel: 'Share Content',
+  overflowButtonLabel: 'More Options',
+  editButtonLabel: 'Edit Content',
+  publishButtonLabel: 'Publish Content'
+}
 
 type Props = {
   disabled?: boolean
@@ -43,15 +52,17 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     minHeight: spacing(8)
   },
   button: {
-    height: spacing(5.5),
-    width: spacing(5.5)
+    height: spacing(6),
+    width: spacing(6),
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   buttonMargin: {
-    marginRight: spacing(8)
+    marginRight: spacing(6)
   },
   leftButtons: {
     ...flexRowCentered(),
-    marginVertical: spacing(2)
+    marginVertical: spacing(1)
   }
 }))
 
@@ -71,7 +82,6 @@ export const LineupTileActionButtons = ({
   onPressSave,
   onPressShare
 }: Props) => {
-  const { neutralLight4 } = useThemeColors()
   const styles = useStyles()
   const isUSDCEnabled = useIsUSDCEnabled()
   const isUSDCPurchase =
@@ -99,21 +109,23 @@ export const LineupTileActionButtons = ({
 
   const shareButton = (
     <IconButton
-      fill={neutralLight4}
+      color='subdued'
       icon={IconShare}
-      isDisabled={disabled}
+      disabled={disabled}
       onPress={onPressShare}
-      styles={{ icon: styles.button }}
+      aria-label={messages.shareButtonLabel}
+      size='l'
     />
   )
 
   const moreButton = (
     <IconButton
-      fill={neutralLight4}
+      color='subdued'
       icon={IconKebabHorizontal}
-      isDisabled={disabled}
+      disabled={disabled}
       onPress={onPressOverflow}
-      styles={{ icon: styles.button }}
+      aria-label={messages.overflowButtonLabel}
+      size='l'
     />
   )
 

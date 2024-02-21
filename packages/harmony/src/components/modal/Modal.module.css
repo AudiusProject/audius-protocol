@@ -1,0 +1,153 @@
+@value xl-min: 1440px;
+
+:global(.bgModal) {
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: calc(var(--harmony-layer-modal) - 1);
+  position: fixed;
+  opacity: 0;
+  top: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+  width: 100vw;
+  height: 100vh;
+}
+
+:global(.bgModal):global(.bgModalVisible) {
+  overflow: hidden;
+  pointer-events: all;
+  opacity: 1;
+  position: fixed;
+}
+
+:global(.scrollLock) {
+  overflow: hidden;
+  position: fixed;
+}
+
+:global(.scrollLock.isMobile) {
+  /* This causes a scroll-top like effect on desktop
+   * Do we need this on mobile even?
+   */
+  height: auto !important;
+}
+
+:global(.modalRootContainer) {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+  z-index: var(--harmony-layer-modal);
+  overflow: hidden;
+  top: 0;
+}
+
+:global(#modalRoot) {
+  /* This needs to position `relative` so that multiple modals can overlay each other */
+  position: relative;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+  z-index: var(--harmony-layer-modal);
+  overflow: hidden;
+  top: 0;
+}
+
+.wrapper {
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  min-height: 100vh;
+  z-index: var(--harmony-layer-modal);
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.body {
+  border-radius: 6px;
+  background-color: var(--harmony-white);
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 85vh;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  max-width: calc(90vw - 50px);
+}
+
+@media (min-width: lg-min) {
+  .body {
+    max-width: 1080px;
+  }
+}
+
+/** @deprecated */
+.body.noScroll {
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.top {
+  align-items: flex-start;
+}
+
+.bottom {
+  align-items: flex-end;
+}
+
+.center {
+  align-items: center;
+}
+
+/** @deprecated */
+.headerContainer {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--harmony-n-200);
+  padding: 20px 0px;
+}
+
+/** @deprecated */
+.header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-neutral);
+  margin: 0px 16px 0px;
+  white-space: nowrap;
+}
+
+/** @deprecated */
+.subtitle {
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-n-400);
+  text-align: center;
+  line-height: 18px;
+}
+
+/** @deprecated */
+.dismissButton {
+  z-index: 1;
+  position: absolute;
+  cursor: pointer;
+  left: 16px;
+  top: 16px;
+}
+
+/** @deprecated */
+.dismissButton path {
+  fill: var(--harmony-n-400);
+}
+
+.sizeSmall {
+  width: 488px;
+}
+
+.sizeMedium {
+  width: 720px;
+}

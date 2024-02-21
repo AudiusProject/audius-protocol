@@ -15,9 +15,10 @@ import {
   IconKebabHorizontal,
   IconMessage,
   IconMessageUnblock as IconUnblockMessages,
-  IconUser
+  IconUser,
+  PopupMenu
 } from '@audius/harmony'
-import { IconButton, PopupMenu } from '@audius/stems'
+import { IconButton } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

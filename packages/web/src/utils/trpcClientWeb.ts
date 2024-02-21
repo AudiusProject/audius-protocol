@@ -6,11 +6,14 @@ import { env } from 'services/env'
 
 export const trpc = createTRPCReact<AppRouter>()
 
-export function createAudiusTrpcClient(currentUserId: number | null) {
+export function createAudiusTrpcClient(
+  selectedEndpoint: string | null,
+  currentUserId: number | null
+) {
   return trpc.createClient({
     links: [
       httpBatchLink({
-        url: getTrpcEndpoint(),
+        url: selectedEndpoint || getTrpcEndpoint(),
         maxURLLength: 2083,
         headers() {
           if (!currentUserId) return {}

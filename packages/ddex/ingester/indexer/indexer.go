@@ -3,51 +3,54 @@ package indexer
 import (
 	"archive/zip"
 	"context"
+	"errors"
 	"fmt"
 	"ingester/common"
+	"ingester/constants"
 	"io"
 	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/oklog/ulid/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Indexer struct {
-	s3Downloader  *s3manager.Downloader
-	s3Uploader    *s3manager.Uploader
-	mongoClient   *mongo.Client
-	rawBucket     string
-	indexedBucket string
-	indexedColl   *mongo.Collection
-	ctx           context.Context
-	logger        *slog.Logger
+	s3Downloader   *s3manager.Downloader
+	s3Uploader     *s3manager.Uploader
+	mongoClient    *mongo.Client
+	rawBucket      string
+	indexedBucket  string
+	deliveriesColl *mongo.Collection
+	ctx            context.Context
+	logger         *slog.Logger
 }
 
 // RunNewIndexer starts the indexer service, which listens for new uploads in the Mongo "uploads" collection and processes them.
 func RunNewIndexer(ctx context.Context) {
-	_, s3Session := common.InitS3Client()
-	mongoClient := common.InitMongoClient(ctx)
+	logger := slog.With("service", "indexer")
+	_, s3Session := common.InitS3Client(logger)
+	mongoClient := common.InitMongoClient(ctx, logger)
 	defer mongoClient.Disconnect(ctx)
-	indexedColl := mongoClient.Database("ddex").Collection("indexed")
+	deliveriesColl := mongoClient.Database("ddex").Collection("deliveries")
 
 	i := &Indexer{
-		s3Downloader:  s3manager.NewDownloader(s3Session),
-		s3Uploader:    s3manager.NewUploader(s3Session),
-		mongoClient:   mongoClient,
-		rawBucket:     common.MustGetenv("AWS_BUCKET_RAW"),
-		indexedBucket: common.MustGetenv("AWS_BUCKET_INDEXED"),
-		indexedColl:   indexedColl,
-		ctx:           ctx,
-		logger:        slog.With("service", "indexer"),
+		s3Downloader:   s3manager.NewDownloader(s3Session),
+		s3Uploader:     s3manager.NewUploader(s3Session),
+		mongoClient:    mongoClient,
+		rawBucket:      common.MustGetenv("AWS_BUCKET_RAW"),
+		indexedBucket:  common.MustGetenv("AWS_BUCKET_INDEXED"),
+		deliveriesColl: deliveriesColl,
+		ctx:            ctx,
+		logger:         logger,
 	}
 
 	uploadsColl := mongoClient.Database("ddex").Collection("uploads")
@@ -56,7 +59,7 @@ func RunNewIndexer(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	i.logger.Info("Indexer: Watching collection 'uploads'")
+	i.logger.Info("Watching collection 'uploads'")
 	defer changeStream.Close(ctx)
 
 	for changeStream.Next(ctx) {
@@ -71,16 +74,18 @@ func RunNewIndexer(ctx context.Context) {
 // processZIP unzips an "upload" into a "delivery" (or multiple deliveries if the ZIP file contains multiple folders with XML files).
 func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 	// Decode the "upload" from Mongo
-	var changeDoc bson.M
+	var changeDoc struct {
+		FullDocument common.Upload `bson:"fullDocument"`
+	}
 	if err := changeStream.Decode(&changeDoc); err != nil {
 		log.Fatal(err)
 	}
-	fullDocument, _ := changeDoc["fullDocument"].(bson.M)
-	i.logger.Info("Indexer: Processing new upload", "upload", fullDocument)
+	upload := changeDoc.FullDocument
+	i.logger.Info("Processing new upload", "_id", upload.ID)
 
 	// Download ZIP file from S3
-	uploadETag := fullDocument["upload_etag"].(string)
-	remotePath := fullDocument["path"].(string)
+	uploadETag := upload.UploadETag
+	remotePath := upload.Path
 	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath)
 	defer cleanup()
 	if zipFilePath == "" {
@@ -104,7 +109,7 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 	i.processZIPContents(extractDir, uploadETag)
 }
 
-// processZIPContents finds deliveries in rootDir (and its subdirectories), uploads their contents to S3, and inserts them into the MongoDB "indexed" collection.
+// processZIPContents finds deliveries in rootDir (and its subdirectories), uploads their contents to S3, and inserts them into the MongoDB "deliveries" collection.
 func (i *Indexer) processZIPContents(rootDir, uploadETag string) error {
 	// The root directory could be the single delivery
 	i.processDelivery(rootDir, rootDir, uploadETag)
@@ -114,14 +119,15 @@ func (i *Indexer) processZIPContents(rootDir, uploadETag string) error {
 		if err != nil {
 			return err
 		}
-		if strings.Contains(path, "__MACOSX") {
+		if strings.Contains(path, "__MACOSX") || strings.Contains(path, ".DS_Store") {
 			return nil
 		}
+
 		if info.IsDir() {
-			if path == rootDir {
-				return nil
+			if i.processDelivery(rootDir, path, uploadETag) == nil {
+				// If XML found, don't recurse into subdirectories
+				return filepath.SkipDir
 			}
-			return i.processDelivery(rootDir, path, uploadETag)
 		}
 		return nil
 	})
@@ -129,7 +135,8 @@ func (i *Indexer) processZIPContents(rootDir, uploadETag string) error {
 
 // processDelivery parses a "delivery" from dir if dir contains an XML file.
 func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
-	var deliveryID, xmlRelativePath string
+	var deliveryID primitive.ObjectID
+	var xmlRelativePath string
 	var xmlBytes []byte
 	files, err := os.ReadDir(dir)
 	if err != nil {
@@ -139,7 +146,7 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 	// Look for the XML first and make a new deliveryID for it
 	for _, file := range files {
 		if !file.IsDir() && strings.HasSuffix(file.Name(), ".xml") {
-			deliveryID = ulid.Make().String()
+			deliveryID = primitive.NewObjectID()
 			xmlPath := filepath.Join(dir, file.Name())
 			xmlBytes, err = os.ReadFile(xmlPath)
 			if err != nil {
@@ -154,27 +161,37 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 		}
 	}
 
-	if deliveryID == "" {
+	if deliveryID == primitive.NilObjectID {
 		i.logger.Info("No XML file found in directory. Skipping", "dir", dir)
-		return nil
+		return errors.New("no XML file found in directory")
 	}
 
 	// Upload the delivery's audio and images to S3
 	for _, file := range files {
-		if !file.IsDir() && !strings.HasSuffix(file.Name(), ".xml") {
+		if !strings.HasSuffix(file.Name(), ".xml") && !strings.HasSuffix(file.Name(), ".DS_Store") {
 			filePath := filepath.Join(dir, file.Name())
-			i.uploadToS3Indexed(filePath, fmt.Sprintf("%s/%s", deliveryID, file.Name()))
+			relativePath, err := filepath.Rel(dir, filePath) // Calculate relative path from the XML directory
+			if err != nil {
+				return fmt.Errorf("failed to compute relative path for %s: %w", filePath, err)
+			}
+			if file.IsDir() {
+				i.uploadDirToS3Indexed(filePath, fmt.Sprintf("%s/%s", deliveryID.Hex(), relativePath))
+			} else {
+				i.uploadFileToS3Indexed(filePath, fmt.Sprintf("%s/%s", deliveryID.Hex(), relativePath))
+			}
 		}
 	}
 
-	// Insert the delivery into the Mongo "indexed" collection
+	// Insert the delivery into the Mongo "deliveries" collection
 	deliveryDoc := bson.M{
-		"delivery_id":   deliveryID,
-		"upload_etag":   uploadETag,
-		"xml_file_path": xmlRelativePath,
-		"xml_content":   primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
+		"_id":             deliveryID,
+		"upload_etag":     uploadETag,
+		"delivery_status": constants.DeliveryStatusValidating,
+		"xml_file_path":   xmlRelativePath,
+		"xml_content":     primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
+		"created_at":      time.Now(),
 	}
-	if _, err := i.indexedColl.InsertOne(i.ctx, deliveryDoc); err != nil {
+	if _, err := i.deliveriesColl.InsertOne(i.ctx, deliveryDoc); err != nil {
 		return fmt.Errorf("failed to insert XML data into Mongo: %w", err)
 	}
 
@@ -208,8 +225,30 @@ func (i *Indexer) downloadFromS3Raw(remotePath string) (string, func()) {
 	return file.Name(), func() { os.Remove(file.Name()) }
 }
 
-// uploadToIndexed uploads a file to the S3 "indexed" bucket.
-func (i *Indexer) uploadToS3Indexed(filePath, fileKey string) {
+// uploadDirToS3Indexed uploads all contents of the dir, including nested subdirs, to the S3 "indexed" bucket.
+func (i *Indexer) uploadDirToS3Indexed(dirPath, keyPrefix string) {
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && !strings.HasSuffix(info.Name(), ".DS_Store") {
+			relativePath, err := filepath.Rel(dirPath, path)
+			if err != nil {
+				return err
+			}
+			fileKey := fmt.Sprintf("%s/%s", keyPrefix, strings.ReplaceAll(relativePath, string(filepath.Separator), "/"))
+			i.uploadFileToS3Indexed(path, fileKey)
+		}
+		return nil
+	})
+
+	if err != nil {
+		i.logger.Warn("Error walking through the directory", "err", err)
+	}
+}
+
+// uploadFileToIndexed uploads a file to the S3 "indexed" bucket.
+func (i *Indexer) uploadFileToS3Indexed(filePath, fileKey string) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		i.logger.Error("Error opening file", "error", err)

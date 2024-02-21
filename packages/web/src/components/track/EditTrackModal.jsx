@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
 import { newTrackMetadata } from '@audius/common/schemas'
-import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Modal } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { mapValues } from 'lodash'
 import PropTypes from 'prop-types'
 

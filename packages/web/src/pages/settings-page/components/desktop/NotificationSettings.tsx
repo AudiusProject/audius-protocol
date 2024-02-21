@@ -7,11 +7,11 @@ import {
   Notifications
 } from '@audius/common/store'
 import {
+  Modal,
   Switch,
   SegmentedControl,
   IconClose as IconRemove
 } from '@audius/harmony'
-import { Modal } from '@audius/stems'
 import cn from 'classnames'
 
 import { useFlag } from 'hooks/useRemoteConfig'

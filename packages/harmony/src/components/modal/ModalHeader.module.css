@@ -1,0 +1,63 @@
+.modalContentContainer {
+  padding: var(--harmony-unit-6);
+}
+
+.headerContainer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--harmony-n-100);
+  padding: var(--harmony-unit-6) 0;
+  margin: 0 var(--harmony-unit-6);
+}
+
+.dismissButton {
+  z-index: 1;
+  position: absolute;
+  color: var(--harmony-n-600);
+}
+
+.titleContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: var(--harmony-unit-7);
+  margin-right: var(--harmony-unit-7);
+  color: var(--harmony-n-600);
+}
+
+.titleContainer.noDismissButton {
+  margin-right: var(--harmony-unit-4);
+}
+
+.title {
+  margin: 0;
+  display: inline;
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-heavy);
+  color: var(--harmony-n-600);
+  text-transform: uppercase;
+}
+
+.subtitleContainer {
+  text-align: center;
+  line-height: 18px;
+}
+
+.subtitle {
+  margin: 0;
+  display: inline;
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-n-600);
+}
+
+.icon {
+  display: inline;
+  margin-right: 10px;
+}
+
+.icon path {
+  fill: var(--harmony-n-600);
+}

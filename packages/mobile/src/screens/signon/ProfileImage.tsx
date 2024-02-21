@@ -74,6 +74,13 @@ const ProfileImage = ({
     }
   }, [firstRender, opacity, isPhotoLoading, setIsPhotoLoading])
 
+  const imgSrc =
+    profileImage?.file &&
+    typeof profileImage.file !== 'string' &&
+    'uri' in profileImage.file
+      ? profileImage.file
+      : profileImage
+
   return (
     <View>
       {hasSelectedImage ? (
@@ -85,7 +92,7 @@ const ProfileImage = ({
               setPhotoBtnIsHidden(!photoBtnIsHidden)
             }}
           >
-            <Image source={profileImage} style={styles.profilePic} />
+            <Image source={imgSrc} style={styles.profilePic} />
           </TouchableOpacity>
         </Animated.View>
       ) : (

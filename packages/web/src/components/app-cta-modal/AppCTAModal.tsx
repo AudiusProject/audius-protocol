@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
-import { IconCloudDownload } from '@audius/harmony'
-import { Modal, Button, ButtonType } from '@audius/stems'
+import { Modal, Button, IconCloudDownload } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
@@ -79,13 +78,12 @@ const AppCTAModal = () => {
         <div className={styles.desktop}>{messages.desktop}</div>
         <div className={styles.buttonContainer}>
           <Button
-            text={messages.buttonLabel}
-            rightIcon={<IconCloudDownload />}
-            type={ButtonType.PRIMARY_ALT}
+            iconRight={IconCloudDownload}
+            variant='primary'
             onClick={downloadDesktopApp}
-            textClassName={styles.downloadButtonText}
-            className={styles.downloadButton}
-          />
+          >
+            {messages.buttonLabel}
+          </Button>
         </div>
       </div>
     </Modal>

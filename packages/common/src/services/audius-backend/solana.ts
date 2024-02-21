@@ -20,7 +20,13 @@ import BN from 'bn.js'
 
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
+import {
+  AnalyticsEvent,
+  ID,
+  Name,
+  SolanaWalletAddress,
+  PurchaseAccess
+} from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
@@ -378,6 +384,7 @@ export type PurchaseContentArgs = {
   type: 'track'
   splits: Record<string, number | BN>
   purchaserUserId: ID
+  purchaseAccess: PurchaseAccess
 }
 export const purchaseContent = async (
   audiusBackendInstance: AudiusBackend,
@@ -397,6 +404,7 @@ export type PurchaseContentWithPaymentRouterArgs = {
   recentBlockhash?: string
   purchaserUserId: ID
   wallet: Keypair
+  purchaseAccess: PurchaseAccess
 }
 
 export const purchaseContentWithPaymentRouter = async (
@@ -408,7 +416,8 @@ export const purchaseContentWithPaymentRouter = async (
     extraAmount = 0,
     purchaserUserId,
     splits,
-    wallet
+    wallet,
+    purchaseAccess
   }: PurchaseContentWithPaymentRouterArgs
 ) => {
   const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
@@ -421,7 +430,8 @@ export const purchaseContentWithPaymentRouter = async (
     splits,
     purchaserUserId,
     senderKeypair: wallet,
-    skipSendAndReturnTransaction: true
+    skipSendAndReturnTransaction: true,
+    purchaseAccess
   })
   return tx
 }
@@ -474,7 +484,8 @@ export const createRootWalletRecoveryTransaction = async (
       blocknumber: 0, // ignored
       splits: { [userBank.toString()]: new BN(amount.toString()) },
       purchaserUserId: 0, // ignored
-      senderAccount: wallet.publicKey
+      senderAccount: wallet.publicKey,
+      purchaseAccess: PurchaseAccess.STREAM // ignored
     })
 
   const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
@@ -660,7 +671,8 @@ export const createPaymentRouterRouteTransaction = async (
       blocknumber: 0, // ignored
       splits,
       purchaserUserId: 0, // ignored
-      senderAccount: sender
+      senderAccount: sender,
+      purchaseAccess: PurchaseAccess.STREAM // ignored
     })
   return new Transaction({
     recentBlockhash: blockhash,

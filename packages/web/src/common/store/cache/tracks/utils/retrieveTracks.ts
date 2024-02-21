@@ -247,10 +247,10 @@ export function* retrieveTracks({
   const trackId = ids[0]
   const track = tracks.entries[trackId]
 
-  if (canBeUnlisted && withStems) {
+  if (withStems) {
     yield* spawn(function* () {
       if (ids.length > 1 && track) {
-        console.warn('Stems endpoint only supports fetching single tracks')
+        console.error('Stems endpoint only supports fetching single tracks')
         return
       }
       yield* call(fetchAndProcessStems, trackId)
@@ -260,7 +260,7 @@ export function* retrieveTracks({
   if (withRemixes) {
     yield* spawn(function* () {
       if (ids.length > 1 && track) {
-        console.warn('Remixes endpoint only supports fetching single tracks')
+        console.error('Remixes endpoint only supports fetching single tracks')
         return
       }
       yield* call(fetchAndProcessRemixes, trackId)
@@ -270,7 +270,7 @@ export function* retrieveTracks({
   if (withRemixParents) {
     yield* spawn(function* () {
       if (ids.length > 1 && track) {
-        console.warn(
+        console.error(
           'Remix parents endpoint only supports fetching single tracks'
         )
         return
