@@ -22,13 +22,11 @@ export const HandleField = (props: Partial<HarmonyTextFieldProps>) => {
     return undefined
   }
 
-  const helperText = getHelperText()
-
   return (
     <HarmonyTextField
       name={name}
       label={pickHandlePageMessages.handle}
-      helperText={helperText}
+      helperText={getHelperText()}
       maxLength={MAX_HANDLE_LENGTH}
       startAdornmentText='@'
       placeholder={pickHandlePageMessages.handle}
