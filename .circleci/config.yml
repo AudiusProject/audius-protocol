@@ -320,7 +320,7 @@ jobs:
             git config --global user.email "audius-infra@audius.co"
             git config --global user.name "audius-infra"
             PREV_VERSION=$(jq -r .version ./package.json)
-            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short release-client-v${PREV_VERSION}..HEAD)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${PREV_VERSION}..HEAD)
             npm i --ignore-scripts
             npm version patch -ws --include-workspace-root --no-git-tag-version
             git add .
