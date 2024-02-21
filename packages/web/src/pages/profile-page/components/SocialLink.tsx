@@ -102,7 +102,7 @@ const SocialLink = (props: SocialLinkProps) => {
   const Root = href ? ExternalLink : Text
 
   return (
-    <Root to={href} onClick={onClick} size='small' className={styles.root}>
+    <Root to={href} onClick={onClick} size='s' className={styles.root}>
       {icon}
       {iconOnly ? null : (
         <Text

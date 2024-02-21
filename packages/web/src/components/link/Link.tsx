@@ -1,10 +1,8 @@
 import { useCallback, MouseEvent, ElementType } from 'react'
 
-import { Text } from '@audius/harmony'
+import { Text, TextProps } from '@audius/harmony'
 import cn from 'classnames'
 import { Link as LinkBase, LinkProps as LinkBaseProps } from 'react-router-dom'
-
-import { TextProps } from 'components/typography/Text'
 
 import styles from './Link.module.css'
 

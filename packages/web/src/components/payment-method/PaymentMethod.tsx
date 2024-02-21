@@ -77,12 +77,10 @@ export const PaymentMethod = ({
           disabled: isExistingBalanceDisabled,
           value: (
             <Text
-              as='span' // Needed to avoid <p> inside <p> warning
+              tag='span' // Needed to avoid <p> inside <p> warning
               variant='title'
               color={
-                selectedMethod === PurchaseMethod.BALANCE
-                  ? 'secondary'
-                  : undefined
+                selectedMethod === PurchaseMethod.BALANCE ? 'accent' : undefined
               }
             >
               ${balanceFormatted}

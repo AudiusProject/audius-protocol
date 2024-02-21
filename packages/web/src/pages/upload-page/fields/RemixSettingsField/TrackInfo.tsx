@@ -34,7 +34,7 @@ export const TrackInfo = (props: TrackInfoProps) => {
         <Text variant='inherit' tag='span'>
           {track.title}
         </Text>{' '}
-        <Text variant='inherit' tag='span' color='neutralLight2'>
+        <Text variant='inherit' tag='span' color='subdued'>
           {messages.by}
         </Text>{' '}
         <Text variant='inherit' tag='span'>

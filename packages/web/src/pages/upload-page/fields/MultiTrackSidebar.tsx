@@ -61,7 +61,7 @@ export const MultiTrackSidebar = () => {
                 icon={IconError}
                 size='xSmall'
               />
-              <Text size='xs' color='accentRed'>
+              <Text size='xs' color='danger'>
                 {messages.fixErrors}
               </Text>
             </div>
@@ -170,7 +170,7 @@ const TrackRow = (props: TrackRowProps) => {
             ) : (
               <Text
                 className={styles.trackIndex}
-                color={isSelected ? 'secondary' : 'neutral'}
+                color={isSelected ? 'accent' : 'default'}
               >
                 {index + 1}
               </Text>
@@ -184,14 +184,7 @@ const TrackRow = (props: TrackRowProps) => {
           <div className={styles.trackTitleContainer}>
             <Text
               size='s'
-              // @ts-ignore TODO: support for accent-red in other themes
-              color={
-                hasError
-                  ? '--accent-red'
-                  : isSelected
-                  ? '--secondary'
-                  : '--neutral'
-              }
+              color={hasError ? 'danger' : isSelected ? 'accent' : 'default'}
             >
               {isTitleMissing ? messages.titleRequired : title}
             </Text>

@@ -88,7 +88,7 @@ export const SaleModalContent = ({
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>
         <DetailSection label={messages.purchasedBy}>
-          <Text size='l' color='secondary'>
+          <Text size='l' color='accent'>
             <UserNameAndBadges
               onNavigateAway={onClose}
               userId={purchaseDetails.buyerUserId}

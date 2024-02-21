@@ -250,7 +250,7 @@ export const WithdrawUSDCModal = () => {
       >
         <Text
           variant='label'
-          color='neutralLight2'
+          color='subdued'
           size='xl'
           strength='strong'
           className={styles.title}

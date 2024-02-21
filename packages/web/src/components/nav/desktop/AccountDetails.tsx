@@ -29,14 +29,14 @@ export const AccountDetails = () => {
             <>
               <UserLink
                 variant='title'
-                size='small'
+                size='s'
                 strength='weak'
                 userId={account.user_id}
                 badgeSize={12}
               />
               <Link
                 variant='body'
-                size='xSmall'
+                size='xs'
                 to={profileLink}
               >{`@${account.handle}`}</Link>
             </>
@@ -48,9 +48,9 @@ export const AccountDetails = () => {
               <Link
                 to={SIGN_IN_PAGE}
                 variant='body'
-                size='xSmall'
+                size='xs'
                 strength='weak'
-                color='secondary'
+                color='accent'
               >
                 {messages.signIn}
               </Link>

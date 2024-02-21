@@ -63,7 +63,7 @@ export const ErrorPage = () => {
         </Text>
       </div>
       <div className={styles.error}>
-        <Text size='xs' strength='default' color='accentRed'>
+        <Text size='xs' strength='default' color='danger'>
           {messages.error}
         </Text>
         <Text
@@ -71,7 +71,7 @@ export const ErrorPage = () => {
           className={styles.tryAgain}
           size='xs'
           strength='default'
-          color='secondary'
+          color='accent'
           onClick={handleTryAgain}
         >
           {messages.tryAgain}

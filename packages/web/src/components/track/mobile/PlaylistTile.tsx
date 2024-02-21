@@ -179,7 +179,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               to={permalink ?? ''}
               className={styles.title}
               variant='title'
-              color={props.isActive ? 'primary' : 'neutral'}
+              color={props.isActive ? 'active' : 'default'}
             >
               <Text variant='inherit' className={cn(fadeIn)}>
                 {props.playlistTitle}
@@ -197,7 +197,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               variant='body'
               className={styles.artist}
               to={profilePage(artistHandle)}
-              color={props.isActive ? 'primary' : 'neutral'}
+              color={props.isActive ? 'active' : 'default'}
             >
               <Text variant='inherit' className={cn(styles.userName, fadeIn)}>
                 {props.artistName}

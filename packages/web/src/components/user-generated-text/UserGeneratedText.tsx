@@ -38,7 +38,7 @@ const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const LinkComponent = isExternalLink ? ExternalLink : Link
 
   return (
-    <LinkComponent to={to} variant='inherit' color='primary' {...props}>
+    <LinkComponent to={to} variant='inherit' color='active' {...props}>
       {content}
     </LinkComponent>
   )

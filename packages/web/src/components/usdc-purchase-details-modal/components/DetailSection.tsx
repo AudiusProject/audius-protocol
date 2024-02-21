@@ -10,7 +10,7 @@ export const DetailSection = ({
   label: string | React.ReactNode
 }) => (
   <div className={styles.detailSection}>
-    <Text variant='label' size='l' color='neutralLight4'>
+    <Text variant='label' size='l' color='subdued'>
       {label}
     </Text>
     {children}

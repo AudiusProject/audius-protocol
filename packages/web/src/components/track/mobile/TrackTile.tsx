@@ -362,7 +362,7 @@ const TrackTile = (props: CombinedProps) => {
           >
             <Link
               variant='title'
-              color={isActive ? 'primary' : 'neutral'}
+              color={isActive ? 'active' : 'default'}
               className={cn(fadeIn, styles.title)}
               to={permalink}
             >
@@ -377,7 +377,7 @@ const TrackTile = (props: CombinedProps) => {
             <Link
               to={profilePage(artistHandle)}
               className={cn(fadeIn, styles.artist)}
-              color={isActive ? 'primary' : 'neutral'}
+              color={isActive ? 'active' : 'default'}
             >
               <ArtistPopover
                 handle={artistHandle}

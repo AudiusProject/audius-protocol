@@ -146,7 +146,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
             />
           </Box>
         ) : null}
-        <Text className={styles.fileSizeText} size='s' color='neutralLight2'>
+        <Text className={styles.fileSizeText} size='s' color='subdued'>
           {numeral(fileSize).format('0.0 b')}
         </Text>
         {isLosslessDownloadsEnabled ? (
