@@ -85,6 +85,7 @@ function* sendLibraryRequest({
     }
   )) as any
   const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]
+  console.log({savedTracksResponseData})
   const tracks = savedTracksResponse.data
     ?.map(responseAdapter.makeActivity)
     .filter(removeNullable) as UserTrackMetadata[]

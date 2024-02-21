@@ -11,7 +11,7 @@ import {
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import { encodeHashId, removeNullable } from '@audius/common/utils'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -29,6 +29,7 @@ import {
   UNDER_THE_RADAR,
   REMIXABLES
 } from './smartCollections'
+import { APIActivityV2, responseAdapter } from '@audius/common/services'
 const { setSmartCollection } = collectionPageActions
 const { fetchSmartCollection, fetchSmartCollectionSucceeded } =
   smartCollectionPageActions
@@ -39,21 +40,28 @@ const COLLECTIONS_LIMIT = 25
 
 function* fetchHeavyRotation() {
   const currentUserId = yield* select(getUserId)
-  const apiClient = yield* getContext('apiClient')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* call(audiusSdk)
+    
+  const { data, signature } = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.signDiscoveryNodeRequest
+  ])
+
   const userListeningHistoryMostListenedByUser = yield* call(
-    [apiClient, apiClient.getUserTrackHistory],
+    [sdk.full.users, sdk.full.users.getUsersTrackHistory],
     {
-      userId: currentUserId!,
-      currentUserId,
-      limit: 20,
-      offset: 0,
-      sortMethod: 'most_listens_by_user'
+      id: encodeHashId(currentUserId),
+      encodedDataMessage: data,
+      encodedDataSignature: signature,
+      sortMethod: 'most_listens_by_user',
+      limit: 20
     }
   )
-
-  const mostListenedTracks = userListeningHistoryMostListenedByUser
-    .map((listeningHistoryWithTrack) => listeningHistoryWithTrack.track)
-    .filter(removeNullable)
+  const activityData = userListeningHistoryMostListenedByUser.data as APIActivityV2[]
+  const mostListenedTracks = activityData.map(responseAdapter.makeActivity)
+    .filter(removeNullable) as UserTrackMetadata[]
 
   const users = yield* call(
     retrieveUsers,

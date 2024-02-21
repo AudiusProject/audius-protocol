@@ -1,3 +1,4 @@
+import { AudiusSdk } from '@audius/sdk'
 import {
   Collection,
   FeedFilter,
@@ -8,6 +9,7 @@ import {
 } from '../../models'
 import { encodeHashId, removeNullable } from '../../utils'
 import {
+  APIActivityV2,
   APIPlaylist,
   APITrack,
   AudiusAPIClient,
@@ -28,15 +30,18 @@ type TopUserListen = {
 type ExploreConfig = {
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient
+  audiusSdk: AudiusSdk
 }
 
 export class Explore {
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient
+  audiusSdk: AudiusSdk
 
   constructor(config: ExploreConfig) {
     this.audiusBackendInstance = config.audiusBackendInstance
     this.apiClient = config.apiClient
+    this.audiusSdk = config.audiusSdk
   }
 
   /** TRACKS ENDPOINTS */
@@ -83,6 +88,7 @@ export class Explore {
   }
 
   async getFeedNotListenedTo(currentUserId: ID, limit = 25) {
+    const sdk = await this.audiusSdk()
     try {
       const lineupItems = (await this.apiClient.getSocialFeed({
         offset: 0,
@@ -97,18 +103,23 @@ export class Explore {
       const tracks = lineupItems.filter(
         (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
       )
+      const { data, signature } = await this.audiusBackendInstance.signDiscoveryNodeRequest()
+      const history = await sdk.full.users.getUsersTrackHistory({
+        id: encodeHashId(currentUserId),
+        encodedDataMessage: data,
+        encodedDataSignature: signature,
+        limit: 100
+      })
+      const activityData = history.data as APIActivityV2[]
+      const listenedToTracks = activityData.map(responseAdapter.makeActivity)
+        .filter(removeNullable) as UserTrackMetadata[]
 
       // Imperfect solution. Ideally we use an endpoint that gives us true/false
       // if a user has listened to a passed in array of tracks.
-      const history = await this.apiClient.getUserTrackHistory({
-        currentUserId,
-        userId: currentUserId,
-        limit: 50
-      })
-      const listens = history.map((item) => item.track?.track_id)
+      const listenendToTrackIds = listenedToTracks.map((track) => track.track_id)
 
       const notListenedToTracks = tracks.filter(
-        (track) => !listens[track.track_id]
+        (track) => !listenendToTrackIds[track.track_id]
       )
       return notListenedToTracks.slice(0, limit)
     } catch (e) {
