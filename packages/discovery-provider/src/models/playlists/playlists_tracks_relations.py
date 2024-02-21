@@ -12,5 +12,8 @@ class PlaylistsTracksRelations(Base, RepresentableMixin):
     track_id = Column(Integer, nullable=False, primary_key=True, index=True)
     is_delete = Column(Boolean, nullable=False)
     created_at = Column(
-        DateTime, nullable=False, index=True, server_default=text("CURRENT_TIMESTAMP")
+        DateTime, nullable=False, index=False, server_default=text("CURRENT_TIMESTAMP")
+    )
+    updated_at = Column(
+        DateTime, nullable=False, index=False, server_default=text("CURRENT_TIMESTAMP")
     )

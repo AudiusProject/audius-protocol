@@ -147,6 +147,7 @@ def update_playlist_tracks_relations(
                 )
                 # setting values on the relation will update the record in the database
                 relation.is_delete = True
+                relation.updated_at = params.block_datetime
 
         # add row for each track that is not already in the table
         for track_id in updated_track_ids:
@@ -157,6 +158,7 @@ def update_playlist_tracks_relations(
                     track_id=track_id,
                     is_delete=False,
                     created_at=params.block_datetime,
+                    updated_at=params.block_datetime,
                 )
                 # upsert to handle duplicates
                 session.merge(new_playlist_track_relation)
@@ -164,6 +166,7 @@ def update_playlist_tracks_relations(
                 # recover deleted relation
                 params.logger.info(f"REED undeleting relation {track_id}")
                 existing_tracks[track_id].is_delete = False
+                existing_tracks[track_id].updated_at = params.block_datetime
 
         params.logger.info(
             f"playlists.py | Updated playlist tracks relations for {playlist['playlist_id']}"
