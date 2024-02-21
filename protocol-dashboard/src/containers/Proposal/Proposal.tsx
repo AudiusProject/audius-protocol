@@ -37,7 +37,7 @@ const getContractLink = (address: string) => {
   if (IS_PRODUCTION) {
     return `https://etherscan.io/address/${address}`
   }
-  return `https://sepolia.etherscan.io/address/${address}`
+  return `https://goerli.etherscan.io/address/${address}`
 }
 
 const Proposal = () => {

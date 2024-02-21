@@ -44,10 +44,9 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
     CLAIM_DISTRIBUTION_CONTRACT_ADDRESS:
       '0x74b89B916c97d50557E8F944F32662fE52Ce378d',
     ETH_OWNER_WALLET: '',
-    ETH_PROVIDER_URL:
-      'https://eth-sepolia.g.alchemy.com/v2/J1Pj86H-g87FqUZVMUbLGgnyoaQTHP1P',
-    ETH_REGISTRY_ADDRESS: '0xc682C2166E11690B64338e11633Cb8Bb60B0D9c0',
-    ETH_TOKEN_ADDRESS: '0x1376180Ee935AA64A27780F4BE97726Df7B0e2B2',
+    ETH_PROVIDER_URL: 'https://eth.staging.audius.co',
+    ETH_REGISTRY_ADDRESS: '0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3',
+    ETH_TOKEN_ADDRESS: '0x5375BE4c52fA29b26077B0F15ee5254D779676A6',
     IDENTITY_SERVICE_URL: 'https://identityservice.staging.audius.co',
     WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
     WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
