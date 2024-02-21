@@ -9,8 +9,7 @@ import {
 } from 'react'
 
 import { chatActions } from '@audius/common/store'
-import { IconSend } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import { IconSend, IconButton } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -43,8 +42,11 @@ export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
       className={styles.sendButton}
       disabled={disabled}
       aria-label={messages.sendMessage}
-      type={'submit'}
-      icon={<IconSend className={styles.icon} />}
+      type='submit'
+      size='m'
+      icon={IconSend}
+      color='staticWhite'
+      iconCss={{ position: 'relative', left: -1 }}
     />
   )
 }

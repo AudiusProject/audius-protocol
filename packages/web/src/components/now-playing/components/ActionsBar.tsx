@@ -1,7 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
-import { IconShare, IconKebabHorizontal } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import { IconShare, IconKebabHorizontal, IconButton } from '@audius/harmony'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -65,15 +64,17 @@ const ActionsBar = ({
       ) : null}
       <IconButton
         aria-label='share'
+        size='xl'
+        color='default'
         disabled={isCollectible}
-        icon={<IconShare />}
+        icon={IconShare}
         onClick={onShare}
-        className={styles.icon}
       />
       <IconButton
         aria-label='more actions'
-        icon={<IconKebabHorizontal />}
-        className={styles.icon}
+        size='xl'
+        color='default'
+        icon={IconKebabHorizontal}
         onClick={(event: MouseEvent) => {
           event.stopPropagation()
           onClickOverflow()

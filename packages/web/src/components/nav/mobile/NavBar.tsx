@@ -7,11 +7,11 @@ import {
   IconAudiusLogoHorizontal,
   IconSettings,
   IconCrown,
-  IconCaretRight,
+  IconCaretLeft,
   IconRemove,
-  IconNotificationOn
+  IconNotificationOn,
+  IconButton
 } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
 import { Link } from 'react-router-dom'
@@ -129,8 +129,8 @@ const NavBar = ({
     left = (
       <IconButton
         aria-label='go back'
-        className={cn(styles.leftIconButton, styles.caretRight)}
-        icon={<IconCaretRight />}
+        icon={IconCaretLeft}
+        color='subdued'
         onClick={goBack}
       />
     )
@@ -138,8 +138,8 @@ const NavBar = ({
     left = (
       <IconButton
         aria-label='close'
-        className={styles.leftIconButton}
-        icon={<IconRemove />}
+        color='subdued'
+        icon={IconRemove}
         onClick={getIsIOS() ? goBackAndResetSlide : goBackAndDoNotAnimate}
       />
     )
@@ -147,8 +147,8 @@ const NavBar = ({
     left = (
       <IconButton
         aria-label='close'
-        className={styles.leftIconButton}
-        icon={<IconRemove />}
+        color='subdued'
+        icon={IconRemove}
         onClick={goBackAndDoNotAnimate}
       />
     )
@@ -163,10 +163,8 @@ const NavBar = ({
       <>
         <IconButton
           aria-label='notifications'
-          className={cn(styles.leftIconButton, styles.notificationIcon, {
-            [styles.hasUnread]: notificationCount > 0
-          })}
-          icon={<IconNotificationOn />}
+          color={notificationCount > 0 ? 'warning' : 'subdued'}
+          icon={IconNotificationOn}
           onClick={goToNotificationPage}
         />
         {notificationCount > 0 && (
@@ -179,14 +177,14 @@ const NavBar = ({
       <>
         <IconButton
           aria-label='settings'
-          className={styles.leftIconButton}
-          icon={<IconSettings />}
+          color='subdued'
+          icon={IconSettings}
           onClick={goToSettingsPage}
         />
         <IconButton
           aria-label='audio rewards'
-          icon={<IconCrown />}
-          className={styles.crownButton}
+          color='warning'
+          icon={IconCrown}
           onClick={goToAudioPage}
         />
       </>
@@ -216,7 +214,11 @@ const NavBar = ({
           {logoTransitions.map(({ item, props, key }) =>
             item ? (
               <animated.div style={props} key={key}>
-                <IconAudiusLogoHorizontal sizeH='l' width='auto' />
+                <IconAudiusLogoHorizontal
+                  sizeH='l'
+                  color='subdued'
+                  width='auto'
+                />
                 {isEarlyAccess ? (
                   <div className={styles.earlyAccess}>
                     {messages.earlyAccess}

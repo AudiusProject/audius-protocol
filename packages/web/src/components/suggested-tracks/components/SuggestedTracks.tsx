@@ -3,10 +3,9 @@ import { useCallback } from 'react'
 import { SuggestedTrack } from '@audius/common/api'
 import { SquareSizes, ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { IconCaretDown, IconRefresh } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, IconButton } from '@audius/stems'
+import { IconCaretDown, IconRefresh, useTheme } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
-import cn from 'classnames'
 import { useToggle } from 'react-use'
 
 import { Divider } from 'components/divider'
@@ -97,6 +96,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const { collectionId, suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
     props
   const [isExpanded, toggleIsExpanded] = useToggle(false)
+  const { motion } = useTheme()
 
   const divider = <Divider className={styles.trackDivider} />
 
@@ -107,21 +107,22 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
 
   return (
     <Tile className={styles.root} elevation='mid'>
-      <div className={styles.heading} onClick={toggleIsExpanded}>
+      <div
+        className={styles.heading}
+        role='button'
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? messages.collapseLabel : messages.expandLabel}
+        onClick={toggleIsExpanded}
+      >
         <div className={styles.headingText}>
           <h4 className={styles.title}>{messages.title}</h4>
         </div>
-        <IconButton
-          aria-label={
-            isExpanded ? messages.collapseLabel : messages.expandLabel
-          }
-          icon={
-            <IconCaretDown
-              className={cn(styles.caret, {
-                [styles.caretExpanded]: isExpanded
-              })}
-            />
-          }
+        <IconCaretDown
+          color='subdued'
+          css={{
+            transition: `transform ${motion.expressive}`,
+            transform: isExpanded ? `rotate(180deg)` : undefined
+          }}
         />
       </div>
       <animated.div className={styles.content} style={contentStyles}>

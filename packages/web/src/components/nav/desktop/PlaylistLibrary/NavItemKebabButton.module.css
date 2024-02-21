@@ -1,6 +1,6 @@
 .root {
   flex-shrink: 0;
-  margin-left: 10px;
+  margin-left: var(--harmony-spacing-xs);
   visibility: hidden;
   pointer-events: none;
 }

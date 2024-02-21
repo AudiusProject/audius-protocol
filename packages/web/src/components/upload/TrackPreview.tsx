@@ -182,6 +182,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
             {isTitleEditable ? (
               <IconButton
                 icon={IconCompose}
+                color='subdued'
                 aria-label={messages.edit}
                 onClick={() => setIsEditingTitle(true)}
                 className={styles.editTitleButton}
@@ -190,6 +191,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
             <IconButton
               icon={IconTrash}
               aria-label={messages.remove}
+              color='subdued'
               onClick={onRemove}
               disabled={!allowDelete}
               className={styles.removeButton}
@@ -200,6 +202,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
           <IconButton
             icon={IconTrash}
             aria-label={messages.remove}
+            color='subdued'
             onClick={onRemove}
             className={styles.removeButton}
           />
