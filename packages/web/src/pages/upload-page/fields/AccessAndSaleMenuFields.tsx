@@ -53,7 +53,7 @@ export type AccesAndSaleMenuFieldsProps = {
   isUpload?: boolean
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
-  initialStreamConditions?: AccessConditions
+  initialStreamConditions?: AccessConditions | undefined
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {

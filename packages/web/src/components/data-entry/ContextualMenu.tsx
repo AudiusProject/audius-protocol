@@ -9,9 +9,10 @@ import {
   ModalFooter,
   Box,
   Text as HarmonyText,
-  IconCaretRight
+  IconCaretRight,
+  IconComponent
 } from '@audius/harmony'
-import { Button, ButtonType, IconComponent } from '@audius/stems'
+import { Button, ButtonType } from '@audius/stems'
 import {
   Form,
   Formik,

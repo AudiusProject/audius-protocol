@@ -96,7 +96,6 @@
     "@trpc/react-query": "10.38.4",
     "@types/react-dates": "21.8.3",
     "@types/react-twitter-auth": "0.0.4",
-    "@types/webpack": "5.28.1",
     "@walletconnect/web3-provider": "1.4.1",
     "ajv": "7.2.4",
     "amplitude-js": "8.10.0",
@@ -194,7 +193,6 @@
     "web-vitals": "0.2.2",
     "web3modal": "1.9.3",
     "webgl-context": "2.2.0",
-    "webpack-bundle-analyzer": "4.9.0",
     "zod-formik-adapter": "1.2.0",
     "zustand": "4.4.3"
   },
