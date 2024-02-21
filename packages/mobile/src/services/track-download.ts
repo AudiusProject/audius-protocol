@@ -35,7 +35,9 @@ const removePathIfExists = async (path: string) => {
     const exists = await ReactNativeBlobUtil.fs.exists(path)
     if (!exists) return
     await ReactNativeBlobUtil.fs.unlink(path)
-  } catch {}
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 /**
@@ -100,21 +102,22 @@ const downloadMany = async ({
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
   dedupFilenames(files)
+  let responses
+  const tempDir = ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + 'AudiusTemp'
   try {
     const responsePromises = files.map(({ url, filename }) =>
       ReactNativeBlobUtil.config(
-        getFetchConfig(directory + '/' + filename)
+        getFetchConfig(tempDir + '/' + filename)
       ).fetch('GET', url)
     )
     fetchTasks = responsePromises
-    const responses = await Promise.all(responsePromises)
+    responses = await Promise.all(responsePromises)
     if (!responses.every((response) => response.info().status === 200)) {
       throw new Error('Download unsuccessful')
     }
 
-    await zip(directory, directory + '.zip')
+    await zip(tempDir, directory + '.zip')
     await onFetchComplete?.(directory + '.zip')
-    responses.forEach((response) => response.flush())
   } catch (err) {
     console.error(err)
     dispatch(
@@ -124,7 +127,12 @@ const downloadMany = async ({
     )
   } finally {
     // Remove source directory at the end of the process regardless of what happens
-    removePathIfExists(directory)
+    removePathIfExists(tempDir)
+    try {
+      responses.forEach((response) => response.flush())
+    } catch (err) {
+      console.error(err)
+    }
   }
 }
 
