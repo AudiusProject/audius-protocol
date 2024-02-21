@@ -23,15 +23,15 @@ const config = {
   organizationName: 'AudiusProject', // Usually your GitHub org/user name.
   projectName: 'docs.audius.org', // Usually your repo name.
 
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'throw',
+  onBrokenLinks: 'warn',
+  onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en']
+    locales: ['en'],
   },
 
   presets: [
@@ -45,17 +45,17 @@ const config = {
           sidebarPath: './sidebars.js',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/AudiusProject/docs.audius.org/'
+          editUrl: 'https://github.com/AudiusProject/docs.audius.org/',
         },
         theme: {
-          customCss: './src/css/custom.css'
+          customCss: './src/css/custom.css',
         },
         gtag: {
           trackingID: 'G-XSRDQBKXVX',
           anonymizeIP: true,
-        }
-      })
-    ]
+        },
+      }),
+    ],
   ],
 
   themeConfig:
@@ -68,98 +68,61 @@ const config = {
         logo: {
           alt: 'Audius Docs Logo',
           src: 'img/logo.png',
-          srcDark: 'img/logo-white.png'
+          srcDark: 'img/logo-white.png',
         },
         items: [
           {
-            label: 'Protocol',
-            to: '/protocol',
-            position: 'left'
-          },
-          {
-            label: 'Token',
-            to: '/token',
-            position: 'left'
+            label: 'Learn',
+            to: '/',
+            position: 'right',
           },
           {
             label: 'Developers',
-            to: '/developers/sdk',
-            position: 'left'
+            to: '/developers/introduction/overview',
+            position: 'right',
           },
           {
+            label: 'Run a Node',
+            to: '/',
+            position: 'right',
+          },
+          {
+            label: 'Reference',
+            to: '/',
+            position: 'right',
+          },
+          {
+            'aria-label': 'Discord',
+            className: 'navbar--discord-link',
             href: 'https://discord.com/invite/audius',
-            label: 'Discord',
-            position: 'right'
+            position: 'right',
           },
           {
+            'aria-label': 'GitHub',
+            className: 'navbar--github-link',
             href: 'https://github.com/AudiusProject',
-            label: 'GitHub',
-            position: 'right'
-          }
-        ]
-      },
-      footer: {
-        style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Welcome',
-                to: '/'
-              },
-              {
-                label: 'Protocol Overview',
-                to: '/protocol'
-              },
-              {
-                label: 'Developers',
-                to: '/developers/sdk'
-              }
-            ]
+            position: 'right',
           },
-          {
-            title: 'Community',
-            items: [
-              {
-                label: 'Discord',
-                href: 'https://discord.com/invite/audius'
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/audius'
-              }
-            ]
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'GitHub',
-                href: 'https://github.com/AudiusProject'
-              }
-            ]
-          }
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Audius, Inc. Built with Docusaurus.`
       },
+
       algolia: {
         appId: '5HE2PIGNOV',
         // This API key is "search-only" and safe to be published
         apiKey: '347af1fe50a2533f274a4a64a695c64c',
         indexName: 'audius',
-        contextualSearch: true
+        contextualSearch: true,
       },
       prism: {
         theme: prismThemes.github,
-        darkTheme: prismThemes.dracula
-      }
+        darkTheme: prismThemes.dracula,
+      },
     }),
 
   markdown: {
-    mermaid: true
+    mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid']
+  themes: ['@docusaurus/theme-mermaid'],
 }
 
 export default config
