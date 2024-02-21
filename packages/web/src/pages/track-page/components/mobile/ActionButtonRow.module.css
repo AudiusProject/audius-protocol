@@ -4,9 +4,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  bottom: 1px;
-  margin: 0px 12px;
 }
 
 .animatedActionButton svg,
@@ -41,15 +38,6 @@
   stroke: var(--neutral-light-4);
 }
 
-.buttonsRow {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  height: var(--unit-8);
-  margin-top: var(--unit-4);
-}
-
 .animatedIconWrapper {
   width: 40px;
   height: 100%;
@@ -57,5 +45,4 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0px 12px;
 }

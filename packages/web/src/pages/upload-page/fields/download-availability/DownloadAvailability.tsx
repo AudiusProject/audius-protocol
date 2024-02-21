@@ -4,6 +4,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
+  Name,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
@@ -31,6 +32,7 @@ import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import { Divider } from 'components/divider'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { useTrackField } from 'pages/upload-page/hooks'
+import { make, track } from 'services/analytics'
 
 import { STREAM_CONDITIONS } from '../types'
 
@@ -154,6 +156,12 @@ export const DownloadAvailability = ({
     [setValue]
   )
 
+  const handleClickWaitListLink = useCallback(() => {
+    track(
+      make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK })
+    )
+  }, [])
+
   const textCss = shouldRenderCallout
     ? {
         opacity: 0.5
@@ -170,6 +178,7 @@ export const DownloadAvailability = ({
           <Flex direction='column' gap='m'>
             <Text>{messages.waitlist}</Text>
             <TextLink
+              onClick={handleClickWaitListLink}
               href={WAITLIST_TYPEFORM}
               css={{ color: primary.p500, width: 'fit-content' }}
               showUnderline

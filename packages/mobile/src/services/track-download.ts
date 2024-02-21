@@ -11,8 +11,10 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import { zip } from 'react-native-zip-archive'
 import { dedupFilenames } from '~/utils'
 
+import { make, track as trackEvent } from 'app/services/analytics'
 import { dispatch } from 'app/store'
 import { setVisibility } from 'app/store/drawers/slice'
+import { EventNames } from 'app/types/analytics'
 
 import { audiusBackendInstance } from './audius-backend-instance'
 
@@ -75,6 +77,14 @@ const downloadOne = async ({
     dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
 
     await onFetchComplete?.(fetchRes.path())
+
+    // Track download success event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE,
+        device: 'native'
+      })
+    )
   } catch (err) {
     console.error(err)
     dispatch(
@@ -84,6 +94,14 @@ const downloadOne = async ({
     )
     // On failure attempt to delete the file
     removePathIfExists(filePath)
+
+    // Track download failure event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE,
+        device: 'native'
+      })
+    )
   }
 }
 
@@ -118,12 +136,28 @@ const downloadMany = async ({
 
     await zip(tempDir, directory + '.zip')
     await onFetchComplete?.(directory + '.zip')
+
+    // Track download success event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL,
+        device: 'native'
+      })
+    )
   } catch (err) {
     console.error(err)
     dispatch(
       setDownloadError(
         err instanceof Error ? err : new Error(`Download failed: ${err}`)
       )
+    )
+
+    // Track download failure event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL,
+        device: 'native'
+      })
     )
   } finally {
     // Remove source directory at the end of the process regardless of what happens
