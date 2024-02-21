@@ -1,4 +1,35 @@
 module.exports = {
+  learn: [
+    {
+      type: 'category',
+      label: 'Introduction',
+      items: ['learn/introduction/getting-started'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Core Concepts',
+      items: ['learn/concepts/protocol', 'learn/concepts/token', 'learn/concepts/nodes'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Architecture',
+      items: [
+        'learn/architecture/overview',
+        'learn/architecture/content-node',
+        'learn/architecture/discovery-node',
+      ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Contributing',
+      items: ['learn/contributing/overview', 'learn/contributing/governance'],
+      collapsed: false,
+    },
+  ],
+
   developers: [
     {
       type: 'category',
@@ -38,31 +69,6 @@ module.exports = {
         'developers/subgraph/overview',
         'developers/subgraph/entities',
         'developers/subgraph/queries',
-      ],
-      collapsed: false,
-    },
-  ],
-
-  learn: [
-    {
-      type: 'category',
-      label: 'Introduction',
-      items: ['learn/introduction/getting-started'],
-      collapsed: false,
-    },
-    {
-      type: 'category',
-      label: 'Core Concepts',
-      items: ['learn/concepts/protocol', 'learn/concepts/token', 'learn/concepts/nodes'],
-      collapsed: false,
-    },
-    {
-      type: 'category',
-      label: 'Architecture',
-      items: [
-        'learn/architecture/overview',
-        'learn/architecture/content-node',
-        'learn/architecture/discovery-node',
       ],
       collapsed: false,
     },
