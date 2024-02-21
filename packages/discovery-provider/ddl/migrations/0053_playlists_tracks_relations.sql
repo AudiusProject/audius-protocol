@@ -13,6 +13,16 @@ CREATE INDEX IF NOT EXISTS idx_playlists_tracks_relations_playlist_ids ON playli
 CREATE INDEX IF NOT EXISTS idx_playlists_tracks_relations_track_ids ON playlists_tracks_relations USING btree (track_id, created_at);
 
 INSERT INTO playlists_tracks_relations (playlist_id, track_id, is_delete) 
-SELECT playlist_id, CAST(jsonb_array_elements(playlist_contents->'track_ids')->>'track' as INTEGER), FALSE FROM playlists ON CONFLICT DO NOTHING;
+SELECT playlist_id, track_id, FALSE
+FROM (
+    SELECT
+        playlist_id,
+        CAST(jsonb_array_elements(playlist_contents->'track_ids')->>'track' AS INTEGER) AS track_id
+    FROM playlists
+) AS subquery
+WHERE track_id IS NOT NULL;
+
+
+-- SELECT playlist_id, CAST(jsonb_array_elements(playlist_contents->'track_ids')->>'track' as INTEGER), FALSE FROM playlists ON CONFLICT DO NOTHING;
 
 COMMIT;
