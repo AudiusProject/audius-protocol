@@ -585,7 +585,16 @@ workflows:
 
   release-client-create-branch:
     when:
-      equal:
-        ['release-client-create-branch', << pipeline.parameters.workflow >>]
+      condition:
+        or:
+          - and:
+              - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+              - equal:
+                  ['release-client-create-branch', << pipeline.schedule.name >>]
+          - equal:
+              [
+                'release-client-create-branch',
+                << pipeline.parameters.workflow >>
+              ]
     jobs:
       - generate-client-release
