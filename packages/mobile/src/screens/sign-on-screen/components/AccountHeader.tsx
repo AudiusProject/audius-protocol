@@ -228,7 +228,13 @@ const AccountDetails = (props: AccountDetailsProps) => {
         {displayName || ' '}
       </Text>
       <Flex h={50}>
-        <Text variant='title' size='s' color='staticWhite' shadow={shadow}>
+        <Text
+          variant='title'
+          size='s'
+          color='staticWhite'
+          shadow={shadow}
+          numberOfLines={1}
+        >
           {' '}
           @{handle}{' '}
         </Text>
