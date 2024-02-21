@@ -220,6 +220,9 @@ export enum Name {
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
+  // Unlocked Download-Only Gated Tracks
+  USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED = 'USDC Gated: Download Track Unlocked',
+  FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED = 'Follow Gated: Download Track Unlocked',
 
   // Trending
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
@@ -1112,6 +1115,16 @@ type FollowGatedTrackUnlocked = {
 
 type TipGatedTrackUnlocked = {
   eventName: Name.TIP_GATED_TRACK_UNLOCKED
+  trackId: number
+}
+
+type USDCGatedDownloadTrackUnlocked = {
+  eventName: Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
+  count: number
+}
+
+type FollowGatedDownloadTrackUnlocked = {
+  eventName: Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
   trackId: number
 }
 
@@ -2355,6 +2368,8 @@ export type AllTrackingEvents =
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked
+  | USDCGatedDownloadTrackUnlocked
+  | FollowGatedDownloadTrackUnlocked
   | TrendingChangeView
   | TrendingPaginate
   | FeedChangeView

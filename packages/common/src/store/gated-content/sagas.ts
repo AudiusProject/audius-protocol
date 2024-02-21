@@ -216,10 +216,8 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
     } else if (downloadConditions) {
       const hasNoDownloadAccess = !access?.download
       const isFollowGated = isContentFollowGated(downloadConditions)
-      const isTipGated = isContentTipGated(downloadConditions)
       const shouldHaveDownloadAccess =
-        (isFollowGated && followeeIds.includes(ownerId)) ||
-        (isTipGated && tippedUserIds.includes(ownerId))
+        isFollowGated && followeeIds.includes(ownerId)
 
       if (hasNoDownloadAccess && shouldHaveDownloadAccess) {
         // TODO: if necessary, update some ui status to show that the track download is unlocking
@@ -494,7 +492,6 @@ export function* pollGatedTrack({
       )
       // TODO: if necessary, update some ui status to show that the track download is unlocked
       yield* put(removeFolloweeId({ id: track.owner_id }))
-      yield* put(removeTippedUserId({ id: track.owner_id }))
 
       // Show confetti if track is unlocked from the how to unlock section on track page or modal
       if (isSourceTrack) {
@@ -505,18 +502,15 @@ export function* pollGatedTrack({
         return
       }
       const eventName = isContentUSDCPurchaseGated(track.download_conditions)
-        ? Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+        ? Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
         : isContentFollowGated(track.download_conditions)
-        ? Name.FOLLOW_GATED_TRACK_UNLOCKED
-        : isContentTipGated(track.download_conditions)
-        ? Name.TIP_GATED_TRACK_UNLOCKED
+        ? Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
         : null
       if (eventName) {
         analytics.track({
           eventName,
           properties: {
-            trackId,
-            access: 'download'
+            trackId
           }
         })
       }
