@@ -62,7 +62,7 @@ test_metadata = {
         },
         "playlist_name": "created_playlist",
     },
-    "AlbumTracklistUpdate": {
+    "PlaylistTracklistUpdate": {
         "playlist_contents": {
             "track_ids": [
                 {"time": 1660927554, "track": 20},
@@ -70,7 +70,7 @@ test_metadata = {
             ]
         }
     },
-    "RemoveFromAlbumTracklistUpdate": {
+    "RemoveFromPlaylistTracklistUpdate": {
         "playlist_contents": {
             "track_ids": [
                 {"time": 1660927554, "track": 30},
@@ -79,116 +79,6 @@ test_metadata = {
     },
 }
 
-create_playlist_tx_receipts = {
-    "CreatePlaylist": [
-        {
-            "args": AttributeDict(
-                {
-                    "_entityId": PLAYLIST_ID_OFFSET + 1,
-                    "_entityType": "Playlist",
-                    "_userId": 1,
-                    "_action": "Create",
-                    "_metadata": f'{{"cid": "QmCreatePlaylist1", "data": {json.dumps(test_metadata["PlaylistToCreate"])}}}',
-                    "_signer": "user1wallet",
-                }
-            )
-        },
-    ]
-}
-
-update_album_tx_receipts = {
-    "UpdateAlbumTracklistUpdate": [
-        {
-            "args": AttributeDict(
-                {
-                    "_entityId": PLAYLIST_ID_OFFSET,
-                    "_entityType": "Playlist",
-                    "_userId": 1,
-                    "_action": "Update",
-                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["AlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
-                    "_signer": "user1wallet",
-                }
-            )
-        }
-    ]
-}
-
-remove_track_from_album_tx_receipts = {
-        "UpdateAlbumTracklistUpdate": [
-        {
-            "args": AttributeDict(
-                {
-                    "_entityId": PLAYLIST_ID_OFFSET,
-                    "_entityType": "Playlist",
-                    "_userId": 1,
-                    "_action": "Update",
-                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["AlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
-                    "_signer": "user1wallet",
-                }
-            )
-        }
-    ],
-    "RemoveTrackFromAlbumUpdate": [
-        {
-            "args": AttributeDict(
-                {
-                    "_entityId": PLAYLIST_ID_OFFSET,
-                    "_entityType": "Playlist",
-                    "_userId": 1,
-                    "_action": "Update",
-                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromAlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
-                    "_signer": "user1wallet",
-                }
-            )
-        }
-    ]
-}
-
-
-restore_removed_track_to_album_tx_receipts = {
-    "UpdateAlbumTracklistUpdate": [
-        {
-            "args": AttributeDict(
-                {
-                    "_entityId": PLAYLIST_ID_OFFSET,
-                    "_entityType": "Playlist",
-                    "_userId": 1,
-                    "_action": "Update",
-                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["AlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
-                    "_signer": "user1wallet",
-                }
-            )
-        }
-    ],
-    "RemoveTrackFromAlbumUpdate": [
-        {
-            "args": AttributeDict(
-                {
-                    "_entityId": PLAYLIST_ID_OFFSET,
-                    "_entityType": "Playlist",
-                    "_userId": 1,
-                    "_action": "Update",
-                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromAlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
-                    "_signer": "user1wallet",
-                }
-            )
-        }
-    ],
-    "RestoreTrackToAlbum": [
-        {
-            "args": AttributeDict(
-                {
-                    "_entityId": PLAYLIST_ID_OFFSET,
-                    "_entityType": "Playlist",
-                    "_userId": 1,
-                    "_action": "Update",
-                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["AlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
-                    "_signer": "user1wallet",
-                }
-            )
-        }
-    ]
-}
 
 def setup_db(app, mocker, entities, tx_receipts):
     with app.app_context():
@@ -216,6 +106,23 @@ def setup_db(app, mocker, entities, tx_receipts):
     return db, update_task, entity_manager_txs
 
 
+# Create a playlist
+create_playlist_tx_receipts = {
+    "CreatePlaylist": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET + 1,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "QmCreatePlaylist1", "data": {json.dumps(test_metadata["PlaylistToCreate"])}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        },
+    ]
+}
 
 def test_create_playlist(app, mocker):
     db, update_task, entity_manager_txs = setup_db(app, mocker, entities, create_playlist_tx_receipts)
@@ -239,9 +146,26 @@ def test_create_playlist(app, mocker):
             assert not any([relation.track_id == id for relation in relations])
 
 
+# Add tracks to a playlist
+add_tracks_to_playlist_tx_receipts = {
+    "UpdatePlaylistTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ]
+}
 
 def test_add_tracks_to_playlist(app, mocker):
-    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, update_album_tx_receipts)
+    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, add_tracks_to_playlist_tx_receipts)
 
     with db.scoped_session() as session:
         entity_manager_update(
@@ -262,8 +186,40 @@ def test_add_tracks_to_playlist(app, mocker):
             assert not any([relation.track_id == id for relation in relations])
 
 
-def test_remove_track_from_album(app, mocker):
-    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, remove_track_from_album_tx_receipts)
+# Remove a track from an playlist
+remove_track_from_playlist_tx_receipts = {
+        "UpdatePlaylistTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RemoveTrackFromPlaylistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromPlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ]
+}
+
+def test_remove_track_from_playlist(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, remove_track_from_playlist_tx_receipts)
 
     with db.scoped_session() as session:
         entity_manager_update(
@@ -286,8 +242,54 @@ def test_remove_track_from_album(app, mocker):
             assert not any([relation.track_id == id for relation in relations])
 
 
-def test_restore_removed_track_to_album(app, mocker):
-    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, restore_removed_track_to_album_tx_receipts)
+# Remove a track from an playlist and then restore it
+restore_removed_track_to_playlist_tx_receipts = {
+    "UpdatePlaylistTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RemoveTrackFromPlaylistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromPlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RestoreTrackToPlaylist": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ]
+}
+
+def test_restore_removed_track_to_playlist(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, restore_removed_track_to_playlist_tx_receipts)
 
     with db.scoped_session() as session:
         entity_manager_update(
