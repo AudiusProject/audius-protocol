@@ -1,3 +1,4 @@
+import { Name } from '@audius/common/models'
 import {
   DownloadFile,
   TrackDownload as TrackDownloadBase,
@@ -7,6 +8,7 @@ import { tracksSocialActions, downloadsActions } from '@audius/common/store'
 import { dedupFilenames } from '@audius/common/utils'
 import { downloadZip } from 'client-zip'
 
+import { track as trackEvent } from './analytics/amplitude'
 import { audiusBackendInstance } from './audius-backend/audius-backend-instance'
 
 const { downloadFinished } = tracksSocialActions
@@ -80,6 +82,13 @@ class TrackDownload extends TrackDownloadBase {
       }
       browserDownload({ url, filename })
       dispatch(downloadFinished())
+
+      // Track download success event
+      const eventName =
+        files.length === 1
+          ? Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE
+          : Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL
+      trackEvent(eventName, { device: 'web' })
     } catch (e) {
       if ((e as Error).name === 'AbortError') {
         console.info('Download aborted by the user')
@@ -89,6 +98,14 @@ class TrackDownload extends TrackDownloadBase {
             e instanceof Error ? e : new Error(`Download failed: ${e}`)
           )
         )
+
+        // Track download failure event
+        const eventName =
+          files.length === 1
+            ? Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE
+            : Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL
+        trackEvent(eventName, { device: 'web' })
+
         throw e
       }
     }

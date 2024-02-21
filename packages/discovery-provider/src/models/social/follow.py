@@ -27,7 +27,7 @@ class Follow(Base, RepresentableMixin):
         ),
     )
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
@@ -44,9 +44,6 @@ class Follow(Base, RepresentableMixin):
     )
     slot = Column(Integer)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Follow.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Follow.blocknumber == Block.number"
     )

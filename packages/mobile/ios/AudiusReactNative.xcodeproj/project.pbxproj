@@ -638,11 +638,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -696,11 +692,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -755,11 +747,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -852,11 +840,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -898,7 +882,7 @@
 				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TIKTOK_APP_ID = awlrj83t4nx6qc5a;
+				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Staging.ReleaseCandidate;
@@ -958,11 +942,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -1001,7 +981,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TIKTOK_APP_ID = awlrj83t4nx6qc5a;
+				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Staging.Debug;
@@ -1053,11 +1033,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl",
-					"-ld_classic",
-				);
+				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -1096,7 +1072,7 @@
 				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TIKTOK_APP_ID = awlrj83t4nx6qc5a;
+				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Staging.Release;

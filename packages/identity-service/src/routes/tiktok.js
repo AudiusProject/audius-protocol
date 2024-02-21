@@ -83,22 +83,28 @@ module.exports = function (app) {
         }
 
         // Fetch TikTok user from the TikTok API
-        const userResponse = await axios.post(
-          `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
+        const fields = [
+          'open_id',
+          'username',
+          'display_name',
+          'profile_deep_link',
+          'is_verified'
+        ]
+
+        const userResponse = await axios.get(
+          `https://open.tiktokapis.com/v2/user/info/?fields=${fields.join(
+            ','
+          )}`,
           {
-            fields: [
-              'open_id',
-              'username',
-              'display_name',
-              'profile_deep_link',
-              'is_verified'
-            ]
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
           }
         )
 
         const { data, error } = userResponse.data
 
-        if (error.code) {
+        if (error.message) {
           return errorResponseBadRequest(error.message)
         }
 
