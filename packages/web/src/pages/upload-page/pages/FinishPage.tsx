@@ -14,9 +14,10 @@ import {
   IconArrowRight as IconArrow,
   IconError,
   IconCloudUpload as IconUpload,
-  IconValidationCheck
+  IconValidationCheck,
+  PlainButton
 } from '@audius/harmony'
-import { HarmonyPlainButton, ProgressBar } from '@audius/stems'
+import { ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -261,20 +262,15 @@ export const FinishPage = (props: FinishPageProps) => {
         </div>
         {uploadComplete && visitButtonPath ? (
           <div className={styles.uploadFooter}>
-            <HarmonyPlainButton
-              onClick={handleUploadMoreClick}
-              text={messages.uploadMore}
-              iconLeft={IconUpload}
-            />
+            <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
+              {messages.uploadMore}
+            </PlainButton>
             <Link
               to={visitButtonPath}
               onClick={dispatchVisitEvent}
               className={styles.visitLink}
             >
-              <HarmonyPlainButton
-                text={visitButtonText}
-                iconRight={IconArrow}
-              />
+              <PlainButton iconRight={IconArrow}>{visitButtonText}</PlainButton>
             </Link>
           </div>
         ) : null}

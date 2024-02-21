@@ -2,8 +2,7 @@ import { useCallback, useContext, useMemo, useState } from 'react'
 
 import { isContentFollowGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { IconCaretLeft, IconCaretRight } from '@audius/harmony'
-import { HarmonyPlainButton } from '@audius/stems'
+import { IconCaretLeft, IconCaretRight, PlainButton } from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
 import moment from 'moment'
@@ -230,20 +229,22 @@ const MultiTrackFooter = () => {
   const nextDisabled = index === trackMetadatas.length - 1
   return (
     <div className={cn(styles.multiTrackFooter, layoutStyles.row)}>
-      <HarmonyPlainButton
-        text={messages.prev}
+      <PlainButton
         iconLeft={IconCaretLeft}
         onClick={goPrev}
         disabled={prevDisabled}
         type='button'
-      />
-      <HarmonyPlainButton
-        text={messages.next}
+      >
+        {messages.prev}
+      </PlainButton>
+      <PlainButton
         iconRight={IconCaretRight}
         onClick={goNext}
         disabled={nextDisabled}
         type='button'
-      />
+      >
+        {messages.next}
+      </PlainButton>
     </div>
   )
 }

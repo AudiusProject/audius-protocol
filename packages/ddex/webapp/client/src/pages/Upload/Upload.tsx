@@ -1,12 +1,11 @@
 import { useState, DragEvent } from 'react'
 
 import { Text, Button, Box, Flex } from '@audius/harmony'
-import type { DecodedUserToken, AudiusSdk } from '@audius/sdk'
 import cn from 'classnames'
 
 import { Collection } from 'components/Collection/Collection'
-import { Page } from 'pages/Page'
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
+import { useAuth } from 'providers/AuthProvider'
 import { trpc } from 'utils/trpc'
 
 import styles from './Upload.module.css'
@@ -29,18 +28,14 @@ const validZipFile = (file: File) => {
   return true
 }
 
-const ZipImporter = ({
-  audiusSdk,
-  uploader
-}: {
-  audiusSdk: AudiusSdk | undefined | null
-  uploader: DecodedUserToken | null
-}) => {
+const ZipImporter = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSucceeded, setUploadSucceeded] = useState(false)
+  const { audiusSdk } = useAudiusSdk()
+  const { user } = useAuth()
   const generateSignedUrl = trpc.upload.generateSignedUrl.useMutation()
 
   const handleDragIn = (e: DragEvent) => {
@@ -117,11 +112,9 @@ const ZipImporter = ({
     try {
       // Generate a signed URL for the file
       const fileName = selectedFile.name
-      // eslint-disable-next-line no-console
-      console.log(
-        `Generating signed URL for ${fileName} for user ${uploader?.userId}`
+      console.info(
+        `Generating signed URL for ${fileName} for user ${user?.userId}`
       )
-      // TODO: Signed URL should authenticate the user
       const signedUrlResult = await generateSignedUrl.mutateAsync({ fileName })
 
       if (!signedUrlResult) {
@@ -227,15 +220,11 @@ const ZipImporter = ({
 }
 
 const Upload = () => {
-  const { audiusSdk, currentUser } = useAudiusSdk()
-
   return (
-    <Page>
-      <Flex gap='xl' direction='column'>
-        <ZipImporter audiusSdk={audiusSdk} uploader={currentUser} />
-        <Collection collection='uploads' />
-      </Flex>
-    </Page>
+    <Flex gap='xl' direction='column'>
+      <ZipImporter />
+      <Collection collection='uploads' />
+    </Flex>
   )
 }
 
