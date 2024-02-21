@@ -204,6 +204,10 @@ export enum Name {
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
   TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
   TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
+  // Download-Only Gated Track Uploads
+  TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD = 'Track Upload: Follow Gated Download',
+  TRACK_UPLOAD_USDC_GATED_DOWNLOAD = 'Track Upload: USDC Gated Download',
+  TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK = 'Track Upload: Clicked USDC Download Waitlist Link',
 
   // Track Edits
   TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
@@ -1065,6 +1069,21 @@ type TrackUploadUSDCGated = {
 
 type TrackUploadClickUSDCWaitListLink = {
   eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
+}
+
+type TrackUploadFollowGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD
+  kind: 'tracks'
+}
+
+type TrackUploadUSDCGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_USDC_GATED_DOWNLOAD
+  price: number
+  kind: 'tracks'
+}
+
+type TrackUploadClickUSDCDownloadWaitListLink = {
+  eventName: Name.TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK
 }
 
 // Track Edits
@@ -2321,6 +2340,9 @@ export type AllTrackingEvents =
   | TrackUploadTipGated
   | TrackUploadUSDCGated
   | TrackUploadClickUSDCWaitListLink
+  | TrackUploadFollowGatedDownload
+  | TrackUploadUSDCGatedDownload
+  | TrackUploadClickUSDCDownloadWaitListLink
   | TrackEditAccessChanged
   | TrackUploadSuccess
   | TrackUploadFailure

@@ -515,7 +515,8 @@ export function* pollGatedTrack({
         analytics.track({
           eventName,
           properties: {
-            trackId
+            trackId,
+            access: 'download'
           }
         })
       }

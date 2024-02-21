@@ -74,11 +74,12 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
     (out, trackOrMetadata) => {
       const {
         is_stream_gated: isStreamGated,
-        stream_conditions: streamConditions
-      } =
-        'metadata' in trackOrMetadata
-          ? trackOrMetadata.metadata
-          : trackOrMetadata
+        stream_conditions: streamConditions,
+        is_download_gated: isDownloadGated,
+        download_conditions: dowloadConditions
+      } = 'metadata' in trackOrMetadata
+        ? trackOrMetadata.metadata
+        : trackOrMetadata
       if (isStreamGated && streamConditions) {
         if (isContentCollectibleGated(streamConditions)) {
           out.push(
@@ -93,6 +94,19 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
             make(Name.TRACK_UPLOAD_USDC_GATED, {
               kind: 'tracks',
               price: streamConditions.usdc_purchase.price / 100
+            })
+          )
+        }
+      } else if (isDownloadGated && dowloadConditions) {
+        if (isContentFollowGated(dowloadConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD, { kind: 'tracks' })
+          )
+        } else if (isContentUSDCPurchaseGated(dowloadConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_USDC_GATED_DOWNLOAD, {
+              kind: 'tracks',
+              price: dowloadConditions.usdc_purchase.price / 100
             })
           )
         }
