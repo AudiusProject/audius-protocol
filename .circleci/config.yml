@@ -607,3 +607,12 @@ workflows:
         ['release-client-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-client-release
+
+  notify-stuck-stage-nodes:
+    when:
+      and:
+        - equal:
+            ['notify-stuck-stage-nodes', << pipeline.parameters.workflow >>]
+    jobs:
+      - notify-stuck-stage-nodes-job:
+          context: [slack-secrets]
