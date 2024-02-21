@@ -83,12 +83,12 @@ const config = {
           },
           {
             label: 'Run a Node',
-            to: '/',
+            to: '/node-operator/overview',
             position: 'right',
           },
           {
             label: 'Reference',
-            to: '/',
+            to: '/reference/overview',
             position: 'right',
           },
           {

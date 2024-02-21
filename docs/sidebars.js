@@ -49,7 +49,7 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'SDK',
+      label: 'Javscript SDK',
       items: [
         'developers/sdk/overview',
         'developers/sdk/tracks',
@@ -70,6 +70,60 @@ module.exports = {
         'developers/subgraph/entities',
         'developers/subgraph/queries',
       ],
+      collapsed: false,
+    },
+  ],
+
+  node_operators: [
+    {
+      type: 'category',
+      label: 'Introduction',
+      items: ['node-operator/overview', 'node-operator/sla'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Staking',
+      items: [
+        'node-operator/staking/overview',
+        'node-operator/staking/delegate',
+        'node-operator/staking/claim',
+      ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Setup a Node',
+      items: [
+        'node-operator/setup/overview',
+        'node-operator/setup/wallet-management',
+        'node-operator/setup/hardware-requirements',
+        'node-operator/setup/installation',
+        {
+          type: 'category',
+          label: 'Register a Node',
+          items: [
+            'node-operator/setup/registration/registration',
+            'node-operator/setup/registration/multi-sig-wallet',
+          ],
+          collapsed: true,
+        },
+      ],
+      collapsed: false,
+    },
+  ],
+
+  reference: [
+    {
+      type: 'category',
+      label: 'Introduction',
+      items: ['reference/overview'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Protocol Dashboard',
+      items: ['reference/protocol-dashboard/link-profile'],
       collapsed: false,
     },
   ],

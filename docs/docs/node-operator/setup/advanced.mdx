@@ -4,7 +4,6 @@ title: Advanced
 pagination_label: Advanced
 sidebar_label: Advanced
 description: Audius Protocol Documentation
-
 ---
 
 # Advanced Setup
@@ -26,15 +25,19 @@ audius-cli set-config --required discovery-provider
 
 #### Creator Node
 
-There are four required creator node environment variables, available in the creator node section [here](/token/running-a-node/setup/installation#creator-node).
+There are four required creator node environment variables, available in the creator node section
+[here](/token/running-a-node/setup/installation#creator-node).
 
-The full list of variables and explanations can be found [here](https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/config.js). Generally node operators will not need to modify any other environment variables.
+The full list of variables and explanations can be found
+[here](https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/config.js).
+Generally node operators will not need to modify any other environment variables.
 
 ##### External Creator Node Postgres
 
 If you set an external Postgres url during setup you can skip this section.
 
-If you did not set an external Postgres url during setup and you want to add one now, replace the db url by running:
+If you did not set an external Postgres url during setup and you want to add one now, replace the db
+url by running:
 
 ```sh
 audius-cli set-config creator-node
@@ -44,9 +47,12 @@ value : <db url>
 
 #### Discovery Provider
 
-There are two required discovery provider environment variables, available in the discovery provider section [here](/token/running-a-node/setup/installation#discovery-provider).
+There are two required discovery provider environment variables, available in the discovery provider
+section [here](/token/running-a-node/setup/installation#discovery-provider).
 
-The full list of variables and explanations can be found [here](https://github.com/AudiusProject/audius-protocol/blob/main/packages/discovery-provider/default_config.ini). Generally node operators will not need to modify any other environment variables.
+The full list of variables and explanations can be found
+[here](https://github.com/AudiusProject/audius-protocol/blob/main/packages/discovery-provider/default_config.ini).
+Generally node operators will not need to modify any other environment variables.
 
 ##### External Discovery Provider Postgres Instance
 
@@ -65,7 +71,8 @@ key   : audius_db_url_read_replica
 value : <audius_db_url_read_replica>
 ```
 
-In the managed postgres database and set the `temp_file_limit` flag to `2147483647` and run the following SQL command on the destination db.
+In the managed postgres database and set the `temp_file_limit` flag to `2147483647` and run the
+following SQL command on the destination db.
 
 ```
 CREATE EXTENSION pg_trgm;
