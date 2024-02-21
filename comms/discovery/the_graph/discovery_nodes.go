@@ -19,7 +19,7 @@ func Query(isStaging, isContent bool) ([]Peer, error) {
 
 	endpoint := `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-mainnet`
 	if isStaging {
-		endpoint = `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-sepolia`
+		endpoint = `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-goerli`
 	}
 
 	nodeType := "discovery-node"
