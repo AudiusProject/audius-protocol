@@ -424,8 +424,7 @@ jobs:
 workflows:
   setup:
     when:
-      not:
-        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+      equal: ['main', << pipeline.parameters.workflow >>]
     jobs:
       - generate-config
       - init:
@@ -583,44 +582,37 @@ workflows:
 
   release-create-branch:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['release-create-branch', << pipeline.schedule.name >>]
+      equal: ['release-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-release-branch
 
   auto-approve-foundation-deploy:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal:
-            ['auto-approve-foundation-deploy', << pipeline.schedule.name >>]
+      equal:
+        ['auto-approve-foundation-deploy', << pipeline.parameters.workflow >>]
     jobs:
       - approve-deployment-holds:
           context: [slack-secrets, circle-daily-deploy-secrets]
 
   notify-sp-release:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['notify-sp-release', << pipeline.schedule.name >>]
+      equal: ['notify-sp-release', << pipeline.parameters.workflow >>]
     jobs:
       - notify-sp-release-job:
           context: [slack-secrets, circle-daily-deploy-secrets]
 
   release-client-create-branch:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['release-client-create-branch', << pipeline.schedule.name >>]
+      equal:
+        ['release-client-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-client-release
 
   notify-stuck-stage-nodes:
     when:
       and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['notify-stuck-stage-nodes', << pipeline.schedule.name >>]
+        - equal:
+            ['notify-stuck-stage-nodes', << pipeline.parameters.workflow >>]
     jobs:
       - notify-stuck-stage-nodes-job:
           context: [slack-secrets]
