@@ -32,7 +32,7 @@ export const pickHandleSchema = ({
 }) => {
   return z.object({
     handle: z
-      .string({ required_error: 'Handle is required.' })
+      .string({ required_error: '' })
       .max(MAX_HANDLE_LENGTH, pickHandleErrorMessages.handleTooLong)
       .regex(/^[a-zA-Z0-9_.]*$/, pickHandleErrorMessages.badCharacterError)
       .refine(
