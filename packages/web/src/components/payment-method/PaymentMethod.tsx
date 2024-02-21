@@ -175,6 +175,7 @@ export const PaymentMethod = ({
               <Text>{label}</Text>
             </Flex>
             <Text
+              variant='body'
               css={{
                 width: isMobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
               }}

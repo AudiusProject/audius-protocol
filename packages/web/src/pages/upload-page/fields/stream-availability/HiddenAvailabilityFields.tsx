@@ -82,7 +82,7 @@ const AvailabilityToggleField = (props: AvailabilityToggleFieldProps) => {
   return (
     <label className={styles.switchRow}>
       <Switch {...field} />
-      <Text className={styles.switchLabel}>
+      <Text variant='body' className={styles.switchLabel}>
         {messageByFieldName[fieldName]}
       </Text>
     </label>

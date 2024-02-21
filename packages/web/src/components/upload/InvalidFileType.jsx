@@ -29,6 +29,7 @@ const InvalidFileType = (props) => {
           })}
         >
           <Text
+            variant='body'
             className={styles.message}
             size='l'
             strength='strong'

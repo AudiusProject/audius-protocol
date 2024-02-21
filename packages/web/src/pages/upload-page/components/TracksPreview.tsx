@@ -88,7 +88,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
         ))}
       </Scrollbar>
       <div className={cn(styles.info, styles.footer)}>
-        <Text size='s'>
+        <Text variant='body' size='s'>
           {`${tracks.length} ${
             tracks.length === 1 ? messages.trackAdded : messages.tracksAdded
           }`}

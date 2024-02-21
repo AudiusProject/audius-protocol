@@ -30,6 +30,7 @@ export const Link = <Element extends ElementType = 'a'>(
   return (
     // @ts-expect-error
     <Text
+      variant='body'
       as={as ?? LinkBase}
       className={cn(styles.root, className)}
       onClick={handleClick}

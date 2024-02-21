@@ -42,7 +42,7 @@ const DetailSection = ({
     <Text variant='label' size='l' color='subdued'>
       {label}
     </Text>
-    <Text className={styles.detailValue} size='l'>
+    <Text variant='body' className={styles.detailValue} size='l'>
       {value}
     </Text>
   </div>

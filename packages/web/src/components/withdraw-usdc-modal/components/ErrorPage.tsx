@@ -63,11 +63,12 @@ export const ErrorPage = () => {
         </Text>
       </div>
       <div className={styles.error}>
-        <Text size='xs' strength='default' color='danger'>
+        <Text variant='body' size='xs' strength='default' color='danger'>
           {messages.error}
         </Text>
         <Text
           tag='a'
+          variant='body'
           className={styles.tryAgain}
           size='xs'
           strength='default'

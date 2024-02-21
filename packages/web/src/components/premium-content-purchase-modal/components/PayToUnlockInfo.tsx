@@ -33,7 +33,7 @@ export const PayToUnlockInfo = () => {
         <span>{messages.payToUnlock}</span>
         <LockedStatusBadge locked />
       </Text>
-      <Text className={styles.copy}>
+      <Text className={styles.copy} variant='body'>
         <span>{messages.copyPart1}</span>
         <Link
           onClick={handleClickTOSLink}

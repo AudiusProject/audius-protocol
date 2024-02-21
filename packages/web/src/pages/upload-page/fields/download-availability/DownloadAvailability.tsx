@@ -199,7 +199,7 @@ export const DownloadAvailability = ({
         <HelpCallout
           icon={<IconError css={{ alignSelf: 'center' }} />}
           content={
-            <Text>
+            <Text variant='body'>
               {getCalloutMessage()}
               &nbsp;
               <TextLink

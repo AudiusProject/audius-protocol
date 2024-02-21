@@ -67,7 +67,7 @@ export const PurchaseModalContent = ({
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>
         <DetailSection label={messages.by}>
-          <Text size='l' color='accent'>
+          <Text variant='body' size='l' color='accent'>
             <UserNameAndBadges
               onNavigateAway={onClose}
               userId={purchaseDetails.sellerUserId}
@@ -75,7 +75,7 @@ export const PurchaseModalContent = ({
           </Text>
         </DetailSection>
         <DetailSection label={messages.date}>
-          <Text size='l'>
+          <Text variant='body' size='l'>
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>

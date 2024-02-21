@@ -61,7 +61,7 @@ export const MultiTrackSidebar = () => {
                 icon={IconError}
                 size='xSmall'
               />
-              <Text size='xs' color='danger'>
+              <Text variant='body' size='xs' color='danger'>
                 {messages.fixErrors}
               </Text>
             </div>
@@ -169,6 +169,7 @@ const TrackRow = (props: TrackRowProps) => {
               />
             ) : (
               <Text
+                variant='body'
                 className={styles.trackIndex}
                 color={isSelected ? 'accent' : 'default'}
               >
@@ -183,6 +184,7 @@ const TrackRow = (props: TrackRowProps) => {
           </div>
           <div className={styles.trackTitleContainer}>
             <Text
+              variant='body'
               size='s'
               color={hasError ? 'danger' : isSelected ? 'accent' : 'default'}
             >

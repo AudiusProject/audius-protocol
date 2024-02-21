@@ -42,7 +42,7 @@ const ContentPurchaseError = ({
   error: PurchaseContentError
 }) => {
   return (
-    <Text className={styles.errorContainer} color='danger'>
+    <Text variant='body' className={styles.errorContainer} color='danger'>
       <Icon icon={IconError} size='medium' />
       {usePurchaseContentErrorMessage(code)}
     </Text>
