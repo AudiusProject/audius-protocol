@@ -912,11 +912,9 @@ function* uploadMultipleTracks(tracks) {
   const tracksWithMetadata = yield all(
     tracks.map((track) =>
       call(function* () {
-        // Technically _generateTrackId() is "private". Abusing JS here to get it
-        // before the upload succeeds, and instead pass it through the upload process.
         const id = yield call([
           audiusLibs.Track,
-          audiusLibs.Track._generateTrackId
+          audiusLibs.Track.generateTrackId
         ])
         return {
           track,

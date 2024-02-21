@@ -476,7 +476,7 @@ export class Track extends Base {
       throw new Error('No users loaded for this wallet')
     }
 
-    if (!trackId) trackId = await this._generateTrackId()
+    if (!trackId) trackId = await this.generateTrackId()
     const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
       trackMetadata
     )
@@ -577,20 +577,19 @@ export class Track extends Base {
     )
   }
 
+  async generateTrackId(): Promise<number> {
+    const encodedId = await this.discoveryProvider.getUnclaimedId('tracks')
+    if (!encodedId) {
+      throw new Error('No unclaimed track IDs')
+    }
+    return decodeHashId(encodedId)!
+  }
+
   /* ------- PRIVATE  ------- */
 
   // Throws an error upon validation failure
   _validateTrackMetadata(metadata: TrackMetadata) {
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
     this.creatorNode.validateTrackSchema(metadata)
-  }
-
-  // WARNING: CLIENT USES DIRECTLY IN upload/sagas.js !!!
-  async _generateTrackId(): Promise<number> {
-    const encodedId = await this.discoveryProvider.getUnclaimedId('tracks')
-    if (!encodedId) {
-      throw new Error('No unclaimed track IDs')
-    }
-    return decodeHashId(encodedId)!
   }
 }
