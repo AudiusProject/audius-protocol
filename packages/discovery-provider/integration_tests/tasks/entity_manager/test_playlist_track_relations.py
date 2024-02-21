@@ -144,6 +144,52 @@ remove_track_from_album_tx_receipts = {
     ]
 }
 
+
+restore_removed_track_to_album_tx_receipts = {
+    "UpdateAlbumTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["AlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RemoveTrackFromAlbumUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromAlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RestoreTrackToAlbum": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["AlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ]
+}
+
 def setup_db(app, mocker, entities, tx_receipts):
     with app.app_context():
         db = get_db()
@@ -186,8 +232,6 @@ def test_create_playlist(app, mocker):
         relations: List[PlaylistsTracksRelations] = session.query(
             PlaylistsTracksRelations
         ).all()
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(relations)
         assert len(relations) == 2
         for id in [10, 20]:
             assert any([relation.track_id == id for relation in relations])
@@ -211,8 +255,6 @@ def test_add_tracks_to_playlist(app, mocker):
         relations: List[PlaylistsTracksRelations] = session.query(
             PlaylistsTracksRelations
         ).all()
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(relations)
         assert len(relations) == 2
         for id in [20, 30]:
             assert any([relation.track_id == id for relation in relations])
@@ -235,8 +277,6 @@ def test_remove_track_from_album(app, mocker):
         relations: List[PlaylistsTracksRelations] = session.query(
             PlaylistsTracksRelations
         ).all()
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(relations)
         assert len(relations) == 2
         assert any([relation.is_delete and relation.track_id == 20 for relation in relations])
         assert any([not relation.is_delete and relation.track_id == 30 for relation in relations])
@@ -244,3 +284,25 @@ def test_remove_track_from_album(app, mocker):
         assert len([relation for relation in relations if relation.track_id == 30]) == 1
         for id in [10, 40]:
             assert not any([relation.track_id == id for relation in relations])
+
+
+def test_restore_removed_track_to_album(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, restore_removed_track_to_album_tx_receipts)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        relations: List[PlaylistsTracksRelations] = session.query(
+            PlaylistsTracksRelations
+        ).all()
+        assert len(relations) == 2
+        for id in [20, 30]:
+            assert any([relation.track_id == id and not relation.is_delete for relation in relations])
+        for id in [10, 40]:
+            assert not any([relation.track_id == id and relation.is_delete for relation in relations])
