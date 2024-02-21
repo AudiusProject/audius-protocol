@@ -48,7 +48,6 @@ func TestUploadPlacement(t *testing.T) {
 	s1 := testNetwork[0]
 	s2 := testNetwork[1]
 	s3 := testNetwork[2]
-	// s4 := testNetwork[3]
 	s5 := testNetwork[4]
 
 	examplePlacement := []string{
@@ -95,4 +94,29 @@ func TestUploadPlacement(t *testing.T) {
 
 	assert.ElementsMatch(t, u2.Mirrors, examplePlacement)
 	assert.ElementsMatch(t, u2.TranscodedMirrors, examplePlacement)
+
+	// verify correct blob locations
+	{
+		locations := testNetworkLocateBlob(u2.OrigFileCID)
+		assert.ElementsMatch(t, locations, examplePlacement)
+
+		locations = testNetworkLocateBlob(u2.TranscodeResults["320"])
+		assert.ElementsMatch(t, locations, examplePlacement)
+	}
+
+	// drop from s5
+	s5.dropFromMyBucket(u2.OrigFileCID)
+
+	// run repair
+	testNetworkRunRepair(true)
+
+	// verify correct blob locations
+	{
+		locations := testNetworkLocateBlob(u2.OrigFileCID)
+		assert.ElementsMatch(t, locations, examplePlacement)
+
+		locations = testNetworkLocateBlob(u2.TranscodeResults["320"])
+		assert.ElementsMatch(t, locations, examplePlacement)
+	}
+
 }
