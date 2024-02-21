@@ -17,7 +17,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
-import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
+import { TrackPreview } from 'components/upload/TrackPreview'
 import { audiusSdk } from 'services/audius-sdk'
 import { stemDropdownRows } from 'utils/stems'
 
@@ -130,7 +130,7 @@ export const StemFilesView = ({
           css={{ overflow: 'hidden' }}
         >
           {stems.map((stem, i) => (
-            <TrackPreviewNew
+            <TrackPreview
               className={styles.stemPreview}
               index={i}
               displayIndex={stems.length > 1}

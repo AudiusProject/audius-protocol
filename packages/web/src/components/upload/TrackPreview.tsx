@@ -8,6 +8,7 @@ import {
   Box,
   FilterButton,
   Flex,
+  IconButton,
   IconCompose,
   IconFileAIFF as iconFileAiff,
   IconFileFLAC as iconFileFlac,
@@ -18,7 +19,6 @@ import {
   IconFileWAV as iconFileWav,
   IconTrash
 } from '@audius/harmony'
-import { HarmonyPlainButton } from '@audius/stems'
 import cn from 'classnames'
 import numeral from 'numeral'
 
@@ -29,7 +29,9 @@ import { EditableLabel } from './EditableLabel'
 import styles from './TrackPreview.module.css'
 
 const messages = {
-  selectType: 'Select Type'
+  selectType: 'Select Type',
+  edit: 'Edit Track',
+  remove: 'Remove Track'
 }
 
 const fileTypeIcon = (type: string) => {
@@ -67,7 +69,7 @@ type TrackPreviewProps = {
   className?: string
 }
 
-export const TrackPreviewNew = (props: TrackPreviewProps) => {
+export const TrackPreview = (props: TrackPreviewProps) => {
   const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
@@ -156,14 +158,16 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
         {isLosslessDownloadsEnabled ? (
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
             {isTitleEditable ? (
-              <HarmonyPlainButton
-                iconRight={IconCompose}
+              <IconButton
+                icon={IconCompose}
+                aria-label={messages.edit}
                 onClick={() => setIsEditingTitle(true)}
                 className={styles.editTitleButton}
               />
             ) : null}
-            <HarmonyPlainButton
-              iconRight={IconTrash}
+            <IconButton
+              icon={IconTrash}
+              aria-label={messages.remove}
               onClick={onRemove}
               disabled={!allowDelete}
               className={styles.removeButton}
@@ -171,8 +175,9 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           </Flex>
         ) : null}
         {!isLosslessDownloadsEnabled ? (
-          <HarmonyPlainButton
-            iconRight={IconTrash}
+          <IconButton
+            icon={IconTrash}
+            aria-label={messages.remove}
             onClick={onRemove}
             className={styles.removeButton}
           />
