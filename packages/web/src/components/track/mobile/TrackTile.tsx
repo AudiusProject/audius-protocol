@@ -366,9 +366,7 @@ const TrackTile = (props: CombinedProps) => {
               className={cn(fadeIn, styles.title)}
               to={permalink}
             >
-              <Text variant='inherit' className={styles.text}>
-                {props.title}
-              </Text>
+              <Text className={styles.text}>{props.title}</Text>
               {isPlaying ? <IconVolume className={styles.playIcon} /> : null}
             </Link>
             {(!artworkLoaded || showSkeleton) && (
@@ -383,9 +381,7 @@ const TrackTile = (props: CombinedProps) => {
                 handle={artistHandle}
                 containerClassName={styles.artistPopover}
               >
-                <Text variant='inherit' className={styles.text}>
-                  {props.artistName}
-                </Text>
+                <Text className={styles.text}>{props.artistName}</Text>
               </ArtistPopover>
               <UserBadges
                 userId={userId}

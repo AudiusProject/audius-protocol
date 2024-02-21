@@ -42,7 +42,7 @@ export const UserLink = (props: UserLinkProps) => {
 
   const linkElement = (
     <Link to={url} className={cn(styles.root, className)} {...other}>
-      <Text as={textAs} variant='inherit' className={styles.name}>
+      <Text tag={textAs} className={styles.name}>
         {userName}
       </Text>
       <UserBadges

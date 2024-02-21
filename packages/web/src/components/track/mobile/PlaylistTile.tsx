@@ -181,9 +181,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               variant='title'
               color={props.isActive ? 'active' : 'default'}
             >
-              <Text variant='inherit' className={cn(fadeIn)}>
-                {props.playlistTitle}
-              </Text>
+              <Text className={cn(fadeIn)}>{props.playlistTitle}</Text>
               {props.isPlaying && <IconVolume className={styles.playIcon} />}
               {!shouldShow && (
                 <Skeleton
@@ -199,7 +197,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               to={profilePage(artistHandle)}
               color={props.isActive ? 'active' : 'default'}
             >
-              <Text variant='inherit' className={cn(styles.userName, fadeIn)}>
+              <Text className={cn(styles.userName, fadeIn)}>
                 {props.artistName}
               </Text>
               <UserBadges

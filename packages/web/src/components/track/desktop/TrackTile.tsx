@@ -335,9 +335,7 @@ const TrackTile = ({
                 className={styles.title}
                 onClick={onClickTitle}
               >
-                <Text variant='inherit' className={styles.text}>
-                  {title}
-                </Text>
+                <Text className={styles.text}>{title}</Text>
                 {isPlaying ? (
                   <IconVolume size='m' className={styles.volumeIcon} />
                 ) : null}

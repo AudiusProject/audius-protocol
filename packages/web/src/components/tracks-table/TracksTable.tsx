@@ -198,7 +198,7 @@ export const TracksTable = ({
         <div className={styles.textContainer}>
           <Link
             variant='inherit'
-            as={isLocked || deleted ? 'span' : undefined}
+            tag={isLocked || deleted ? 'span' : undefined}
             to={isLocked || deleted ? '' : track.permalink}
             color={active ? 'active' : 'default'}
             className={styles.trackCell}

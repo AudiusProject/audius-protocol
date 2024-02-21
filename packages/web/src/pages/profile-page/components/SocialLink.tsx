@@ -105,11 +105,7 @@ const SocialLink = (props: SocialLinkProps) => {
     <Root to={href} onClick={onClick} size='s' className={styles.root}>
       {icon}
       {iconOnly ? null : (
-        <Text
-          variant='inherit'
-          id='hello'
-          className={cn(styles.text, isSingleLink && styles.singleLink)}
-        >
+        <Text className={cn(styles.text, isSingleLink && styles.singleLink)}>
           {text}
         </Text>
       )}

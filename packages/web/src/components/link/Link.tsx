@@ -8,14 +8,22 @@ import styles from './Link.module.css'
 
 export type LinkProps<Element extends ElementType = LinkBase> =
   LinkBaseProps<Element> &
-    TextProps<Element> & {
+    Omit<TextProps<Element>, 'variant'> & {
+      variant?: TextProps<Element>['variant'] | 'inherit'
       stopPropagation?: boolean
     }
 
 export const Link = <Element extends ElementType = 'a'>(
   props: LinkProps<Element>
 ) => {
-  const { className, onClick, stopPropagation = true, as, ...other } = props
+  const {
+    className,
+    onClick,
+    stopPropagation = true,
+    as,
+    variant,
+    ...other
+  } = props
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
@@ -30,7 +38,7 @@ export const Link = <Element extends ElementType = 'a'>(
   return (
     // @ts-expect-error
     <Text
-      variant='body'
+      variant={variant === 'inherit' ? undefined : variant ?? 'body'}
       as={as ?? LinkBase}
       className={cn(styles.root, className)}
       onClick={handleClick}
