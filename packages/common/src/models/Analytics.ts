@@ -1051,23 +1051,31 @@ type TrackUploadViewTrackPage = {
 // Gated Track Uploads
 type TrackUploadCollectibleGated = {
   eventName: Name.TRACK_UPLOAD_COLLECTIBLE_GATED
-  kind: 'tracks'
+  kind: 'tracks',
+  downloadable: boolean,
+  lossless: boolean
 }
 
 type TrackUploadFollowGated = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED
-  kind: 'tracks'
+  kind: 'tracks',
+  downloadable: boolean,
+  lossless: boolean
 }
 
 type TrackUploadTipGated = {
   eventName: Name.TRACK_UPLOAD_TIP_GATED
-  kind: 'tracks'
+  kind: 'tracks',
+  downloadable: boolean,
+  lossless: boolean
 }
 
 type TrackUploadUSDCGated = {
   eventName: Name.TRACK_UPLOAD_USDC_GATED
   price: number
-  kind: 'tracks'
+  kind: 'tracks',
+  downloadable: boolean,
+  lossless: boolean
 }
 
 type TrackUploadClickUSDCWaitListLink = {
@@ -1076,13 +1084,17 @@ type TrackUploadClickUSDCWaitListLink = {
 
 type TrackUploadFollowGatedDownload = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD
-  kind: 'tracks'
+  kind: 'tracks',
+  downloadable: boolean,
+  lossless: boolean
 }
 
 type TrackUploadUSDCGatedDownload = {
   eventName: Name.TRACK_UPLOAD_USDC_GATED_DOWNLOAD
   price: number
-  kind: 'tracks'
+  kind: 'tracks',
+  downloadable: boolean,
+  lossless: boolean
 }
 
 type TrackUploadClickUSDCDownloadWaitListLink = {
