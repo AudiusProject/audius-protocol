@@ -1,7 +1,7 @@
 import { formatPrice } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
-import { Text } from 'components/typography'
 
 const messages = {
   summary: 'Transaction Summary',

@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
+import { Text } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
-import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import { make, track } from 'services/analytics'
 import { TERMS_OF_SERVICE } from 'utils/route'

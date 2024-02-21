@@ -1,9 +1,7 @@
 import { ChangeEvent, ComponentProps, PropsWithChildren } from 'react'
 
-import { Switch } from '@audius/harmony'
+import { Switch, Text } from '@audius/harmony'
 import { useField } from 'formik'
-
-import { Text } from 'components/typography'
 
 import styles from './SwitchRowField.module.css'
 

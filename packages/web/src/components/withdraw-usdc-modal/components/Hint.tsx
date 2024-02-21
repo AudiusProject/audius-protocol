@@ -1,6 +1,4 @@
-import { IconComponent } from '@audius/harmony'
-
-import { Text } from 'components/typography'
+import { IconComponent, Text } from '@audius/harmony'
 
 import styles from './Hint.module.css'
 

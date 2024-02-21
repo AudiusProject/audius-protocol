@@ -19,7 +19,8 @@ import {
   IconStar,
   IconCheck,
   IconCrown,
-  IconVisibilityHidden
+  IconVisibilityHidden,
+  Text
 } from '@audius/harmony'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
@@ -30,7 +31,6 @@ import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
-import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'

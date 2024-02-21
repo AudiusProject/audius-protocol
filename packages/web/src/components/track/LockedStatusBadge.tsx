@@ -1,7 +1,5 @@
-import { IconLock, IconLockUnlocked } from '@audius/harmony'
+import { IconLock, IconLockUnlocked, Text } from '@audius/harmony'
 import cn from 'classnames'
-
-import { Text } from 'components/typography'
 
 import styles from './LockedStatusBadge.module.css'
 

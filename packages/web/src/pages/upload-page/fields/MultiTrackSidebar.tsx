@@ -1,7 +1,13 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { Button, IconTrash, IconError, IconCloudUpload } from '@audius/harmony'
+import {
+  Button,
+  IconTrash,
+  IconError,
+  IconCloudUpload,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
@@ -9,7 +15,6 @@ import { isEmpty } from 'lodash'
 import { Icon } from 'components/Icon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 
 import { UploadFormScrollContext } from '../UploadPage'
 import { useIndexedField } from '../hooks'

@@ -32,7 +32,8 @@ import {
   ModalHeader,
   ModalFooter,
   Flex,
-  IconCart
+  IconCart,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Formik, useField, useFormikContext } from 'formik'
@@ -43,7 +44,6 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
-import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'

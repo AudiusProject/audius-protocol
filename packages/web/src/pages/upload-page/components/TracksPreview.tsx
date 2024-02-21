@@ -5,11 +5,11 @@ import {
   Button,
   SegmentedControl,
   Scrollbar,
-  IconCaretRight
+  IconCaretRight,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { Text } from 'components/typography'
 import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
 
 import { TrackForUpload } from '../types'

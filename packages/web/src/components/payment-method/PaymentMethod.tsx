@@ -13,13 +13,13 @@ import {
   IconDonate,
   IconTransaction,
   Radio,
-  RadioGroup
+  RadioGroup,
+  Text
 } from '@audius/harmony'
 import BN from 'bn.js'
 
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
-import { Text } from 'components/typography'
 import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
 

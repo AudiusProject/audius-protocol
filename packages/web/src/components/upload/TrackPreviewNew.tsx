@@ -16,13 +16,13 @@ import {
   IconFileOGG as iconFileOgg,
   IconFileUnknown as iconFileUnknown,
   IconFileWAV as iconFileWav,
-  IconTrash
+  IconTrash,
+  Text
 } from '@audius/harmony'
 import { HarmonyPlainButton } from '@audius/stems'
 import cn from 'classnames'
 import numeral from 'numeral'
 
-import { Text } from 'components/typography'
 import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'

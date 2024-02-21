@@ -5,12 +5,12 @@ import {
   isAudiusUrl,
   getPathFromAudiusUrl
 } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 import cn from 'classnames'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
 import { ExternalLink, Link } from 'components/link'
-import { Text } from 'components/typography'
 import { TextProps } from 'components/typography/Text'
 
 import styles from './UserGeneratedText.module.css'

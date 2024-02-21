@@ -9,11 +9,11 @@ import {
   ModalFooter,
   Button,
   IconExternalLink,
-  IconInfo
+  IconInfo,
+  Text
 } from '@audius/harmony'
 
 import { Icon } from 'components/Icon'
-import { Text } from 'components/typography'
 
 import { HelpCallout } from '../help-callout/HelpCallout'
 

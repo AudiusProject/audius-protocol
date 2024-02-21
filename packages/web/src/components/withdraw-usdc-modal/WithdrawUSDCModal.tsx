@@ -24,7 +24,8 @@ import {
   Modal,
   ModalContent,
   ModalHeader,
-  IconTransaction
+  IconTransaction,
+  Text
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'
@@ -33,7 +34,6 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Icon } from 'components/Icon'
-import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 import { isValidSolAddress } from 'services/solana/solana'
 

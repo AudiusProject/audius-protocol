@@ -1,8 +1,8 @@
 import { useGetTrackById } from '@audius/common/api'
 import { SquareSizes, statusIsNotFinalized } from '@audius/common/models'
+import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { Text } from 'components/typography'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 import styles from './TrackNameWithArtwork.module.css'

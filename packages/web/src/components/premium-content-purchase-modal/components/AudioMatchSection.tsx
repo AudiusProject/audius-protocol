@@ -1,6 +1,5 @@
-import { Flex, useTheme } from '@audius/harmony'
+import { Flex, useTheme, Text } from '@audius/harmony'
 
-import { Text } from 'components/typography'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 const messages = {

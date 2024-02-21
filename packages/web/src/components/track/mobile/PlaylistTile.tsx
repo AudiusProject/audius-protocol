@@ -2,7 +2,7 @@ import { useState, useEffect, MouseEvent } from 'react'
 
 import { ID, UID, LineupTrack } from '@audius/common/models'
 import { formatCount, formatLineupTileDuration } from '@audius/common/utils'
-import { IconVolumeLevel2 as IconVolume } from '@audius/harmony'
+import { IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
 
@@ -11,7 +11,6 @@ import RepostButton from 'components/alt-button/RepostButton'
 import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
-import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { profilePage } from 'utils/route'
 

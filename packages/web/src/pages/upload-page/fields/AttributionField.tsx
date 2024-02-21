@@ -1,7 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
 import { creativeCommons } from '@audius/common/utils'
-import { IconCcBy as IconCreativeCommons, IconRobot } from '@audius/harmony'
+import {
+  IconCcBy as IconCreativeCommons,
+  IconRobot,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
@@ -19,7 +23,6 @@ import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 import { useTrackField } from 'pages/upload-page/hooks'
 import { SingleTrackEditValues } from 'pages/upload-page/types'
 import { computeLicenseIcons } from 'pages/upload-page/utils/computeLicenseIcons'

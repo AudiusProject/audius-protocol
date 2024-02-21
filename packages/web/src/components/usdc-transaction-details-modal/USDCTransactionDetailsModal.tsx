@@ -11,13 +11,13 @@ import {
   ModalTitle,
   ModalFooter,
   Button,
-  IconExternalLink
+  IconExternalLink,
+  Text
 } from '@audius/harmony'
 import moment from 'moment'
 
 import { Icon } from 'components/Icon'
 import { ExternalLink } from 'components/link'
-import { Text } from 'components/typography'
 
 import styles from './USDCTransactionDetailsModal.module.css'
 

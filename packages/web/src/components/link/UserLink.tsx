@@ -1,9 +1,9 @@
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
+import { Text } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useSsrContext } from 'ssr/SsrContext'
 import { useSelector } from 'utils/reducer'

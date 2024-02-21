@@ -8,7 +8,13 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   makeSolanaTransactionLink
 } from '@audius/common/utils'
-import { Button, Flex, IconExternalLink, IconCheck } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  IconExternalLink,
+  IconCheck,
+  Text
+} from '@audius/harmony'
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
@@ -20,7 +26,6 @@ import { useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
-import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 
 import { ADDRESS, AMOUNT, METHOD } from '../types'

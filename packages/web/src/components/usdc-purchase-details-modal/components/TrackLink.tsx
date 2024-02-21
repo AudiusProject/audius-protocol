@@ -1,7 +1,6 @@
 import { useGetTrackById } from '@audius/common/api'
+import { Text } from '@audius/harmony'
 import { Link } from 'react-router-dom'
-
-import { Text } from 'components/typography'
 
 import styles from './styles.module.css'
 

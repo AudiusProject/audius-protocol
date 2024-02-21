@@ -9,13 +9,18 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { encodeHashId } from '@audius/common/utils'
-import { IconRemove, Box, Flex, Text as HarmonyText } from '@audius/harmony'
+import {
+  IconRemove,
+  Box,
+  Flex,
+  Text as HarmonyText,
+  Text
+} from '@audius/harmony'
 import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
-import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
 import { audiusSdk } from 'services/audius-sdk'

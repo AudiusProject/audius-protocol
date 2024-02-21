@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { IconCalendarMonth } from '@audius/harmony'
+import { IconCalendarMonth, Text } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
@@ -8,7 +8,6 @@ import {
   ContextualMenu,
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
-import { Text } from 'components/typography'
 
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'

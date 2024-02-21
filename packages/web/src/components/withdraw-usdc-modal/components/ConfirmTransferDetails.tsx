@@ -15,14 +15,14 @@ import {
   Button,
   IconQuestionCircle,
   Switch,
-  IconCaretLeft
+  IconCaretLeft,
+  Text
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
-import { Text } from 'components/typography'
 
 import { ADDRESS, AMOUNT, CONFIRM, METHOD } from '../types'
 

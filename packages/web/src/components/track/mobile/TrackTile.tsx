@@ -23,7 +23,8 @@ import {
   IconStar,
   IconCrown,
   IconVisibilityHidden,
-  IconTrending
+  IconTrending,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,7 +38,6 @@ import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
-import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'

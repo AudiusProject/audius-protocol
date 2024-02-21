@@ -8,7 +8,7 @@ import {
   Remix
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { IconRemix } from '@audius/harmony'
+import { IconRemix, Text } from '@audius/harmony'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -16,7 +16,6 @@ import {
   ContextualMenu,
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
-import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
 
 import { useTrackField } from '../../hooks'

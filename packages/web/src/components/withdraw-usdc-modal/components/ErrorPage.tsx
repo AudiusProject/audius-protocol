@@ -11,11 +11,11 @@ import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorDollarNumber
 } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 
 import { Divider } from 'components/divider'
-import { Text } from 'components/typography'
 
 import { ADDRESS, AMOUNT } from '../types'
 

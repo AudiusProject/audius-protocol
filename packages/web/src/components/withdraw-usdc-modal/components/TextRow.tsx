@@ -1,4 +1,4 @@
-import { Text } from 'components/typography'
+import { Text } from '@audius/harmony'
 
 import styles from './TextRow.module.css'
 

@@ -14,7 +14,8 @@ import {
   IconArrowRight as IconArrow,
   IconError,
   IconCloudUpload as IconUpload,
-  IconValidationCheck
+  IconValidationCheck,
+  Text
 } from '@audius/harmony'
 import { HarmonyPlainButton, ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
@@ -24,7 +25,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Link } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
-import { Text } from 'components/typography'
 import { collectionPage, profilePage } from 'utils/route'
 
 import { ShareBanner } from '../components/ShareBanner'

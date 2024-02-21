@@ -13,12 +13,11 @@ import {
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { PurchaseContentStage } from '@audius/common/store'
-import { Flex, IconCheck } from '@audius/harmony'
+import { Flex, IconCheck, Text } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
-import { Text } from 'components/typography'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 import { usePurchaseSummaryValues } from '../hooks/usePurchaseSummaryValues'

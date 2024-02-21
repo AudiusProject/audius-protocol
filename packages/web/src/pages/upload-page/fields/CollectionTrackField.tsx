@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { IconDrag, IconTrash } from '@audius/harmony'
+import { IconDrag, IconTrash, Text } from '@audius/harmony'
 import { HarmonyPlainButton, HarmonyPlainButtonType } from '@audius/stems'
 import { useField } from 'formik'
 
@@ -8,7 +8,6 @@ import { Icon } from 'components/Icon'
 import { TagField } from 'components/form-fields'
 import { SwitchField } from 'components/form-fields/SwitchField'
 import { Tile } from 'components/tile'
-import { Text } from 'components/typography'
 
 import { PreviewButton } from '../components/PreviewButton'
 import { SelectGenreField } from '../fields/SelectGenreField'

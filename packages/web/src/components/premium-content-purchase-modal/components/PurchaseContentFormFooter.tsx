@@ -10,7 +10,7 @@ import {
   PurchaseContentError
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
-import { Button, IconCaretRight, IconError } from '@audius/harmony'
+import { Button, IconCaretRight, IconError, Text } from '@audius/harmony'
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
@@ -20,7 +20,6 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
-import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'

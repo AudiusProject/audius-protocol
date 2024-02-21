@@ -1,7 +1,5 @@
-import { Switch } from '@audius/harmony'
+import { Switch, Text } from '@audius/harmony'
 import { useField } from 'formik'
-
-import { Text } from 'components/typography'
 
 import { FIELD_VISIBILITY } from '../types'
 

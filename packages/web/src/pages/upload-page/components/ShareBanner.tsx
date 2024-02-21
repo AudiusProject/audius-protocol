@@ -14,7 +14,7 @@ import {
   UploadType,
   ShareContent
 } from '@audius/common/store'
-import { IconLink, IconTwitter as IconTwitterBird } from '@audius/harmony'
+import { IconLink, IconTwitter as IconTwitterBird, Text } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
@@ -25,7 +25,6 @@ import {
   getTwitterShareText
 } from 'components/share-modal/utils'
 import { ToastContext } from 'components/toast/ToastContext'
-import { Text } from 'components/typography'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'

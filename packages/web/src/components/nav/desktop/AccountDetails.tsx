@@ -1,8 +1,8 @@
 import { accountSelectors } from '@audius/common/store'
+import { Text } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { Link, UserLink } from 'components/link'
-import { Text } from 'components/typography'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 

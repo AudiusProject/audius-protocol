@@ -5,14 +5,14 @@ import {
   IconTikTok,
   IconTwitter as IconTwitterBird,
   IconInstagram,
-  IconDonate
+  IconDonate,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import { Icon } from 'components/Icon'
 import { ExternalLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
-import { Text } from 'components/typography'
 import { UserGeneratedText } from 'components/user-generated-text'
 
 import styles from './SocialLink.module.css'

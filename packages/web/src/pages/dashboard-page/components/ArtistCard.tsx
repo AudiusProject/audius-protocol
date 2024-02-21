@@ -1,7 +1,7 @@
 import { SquareSizes, WidthSizes, ID } from '@audius/common/models'
+import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
