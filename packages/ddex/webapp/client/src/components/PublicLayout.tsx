@@ -16,10 +16,8 @@ const PublicLayout = () => {
   if (user) {
     if (user.isAdmin) {
       return <Navigate to='/admin' replace />
-    } else if (user.isArtist) {
-      return <Navigate to='/artist' replace />
     } else {
-      return <Navigate to='/not-allowlisted' replace />
+      return <Navigate to='/artist' replace />
     }
   }
 
