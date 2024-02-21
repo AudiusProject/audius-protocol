@@ -353,6 +353,8 @@ export interface GetUsersTrackHistoryRequest {
     query?: string;
     sortMethod?: GetUsersTrackHistorySortMethodEnum;
     sortDirection?: GetUsersTrackHistorySortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 /**
@@ -2026,6 +2028,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/history/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
