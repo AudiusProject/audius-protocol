@@ -396,7 +396,7 @@ def get_stream_url_from_content_node(content_node: str, path: str):
 
     try:
         response = requests.get(stream_url, headers=headers, timeout=5)
-        if response.status_code == 206 or response.status_code == 204:
+        if response.status_code == 206 or response.status_code == 204 or response.status_code == 200:
             return parsed_url.geturl()
     except:
         pass
@@ -738,7 +738,7 @@ class TrackDownload(Resource):
         healthy_nodes = get_all_healthy_content_nodes_cached(redis)
         if not healthy_nodes:
             logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
+                f"tracks.py | download | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
             )
             abort_not_found(track_id, ns)
 

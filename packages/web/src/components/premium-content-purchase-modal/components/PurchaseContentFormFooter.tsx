@@ -10,12 +10,7 @@ import {
   PurchaseContentError
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
-import { Button, IconCaretRight, IconError } from '@audius/harmony'
-import {
-  HarmonyPlainButton,
-  HarmonyPlainButtonSize,
-  HarmonyPlainButtonType
-} from '@audius/stems'
+import { Button, IconCaretRight, IconError, PlainButton } from '@audius/harmony'
 
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
@@ -102,13 +97,14 @@ export const PurchaseContentFormFooter = ({
           shareData={handleTwitterShare}
           handle={handle}
         />
-        <HarmonyPlainButton
+        <PlainButton
           onClick={onViewTrackClicked}
           iconRight={IconCaretRight}
-          variant={HarmonyPlainButtonType.SUBDUED}
-          size={HarmonyPlainButtonSize.LARGE}
-          text={messages.viewTrack}
-        />
+          variant='subdued'
+          size='large'
+        >
+          {messages.viewTrack}
+        </PlainButton>
       </>
     )
   }

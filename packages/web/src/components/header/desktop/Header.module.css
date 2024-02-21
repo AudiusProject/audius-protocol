@@ -86,10 +86,6 @@
   background-image: var(--page-header-gradient);
 }
 
-.backButton {
-  margin: auto 24px auto 0;
-}
-
 .middleRow {
   display: flex;
   width: 100%;

@@ -174,18 +174,6 @@
   background-color: var(--neutral-light-9);
 }
 
-.kebabContainer svg path {
-  fill: var(--neutral-light-4);
-}
-
-.removeTrackContainer {
-  transition: transform 0.12s ease-in-out;
-}
-
-.removeTrackContainer.isRemoveActive {
-  transform: rotate(-90deg);
-}
-
 .locked {
   display: flex;
   align-items: center;

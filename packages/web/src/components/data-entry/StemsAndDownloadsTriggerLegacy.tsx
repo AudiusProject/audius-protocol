@@ -264,6 +264,7 @@ export const StemsAndDownloadsTriggerLegacy = (
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema({
+          isLosslessDownloadsEnabled: !!isLosslessDownloadsEnabled,
           isUsdcUploadEnabled: !!isUsdcUploadEnabled,
           ...usdcPurchaseConfig
         })

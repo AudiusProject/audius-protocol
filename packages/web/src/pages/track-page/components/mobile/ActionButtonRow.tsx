@@ -1,5 +1,9 @@
-import { IconShare, IconKebabHorizontal } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import {
+  IconShare,
+  IconKebabHorizontal,
+  IconButton,
+  Flex
+} from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -85,10 +89,10 @@ const ActionButtonRow = ({
     return (
       <IconButton
         aria-label='share'
-        className={cn(styles.actionButton, styles.shareButton, {
-          [styles.disabledButton]: !isPublished
-        })}
-        icon={<IconShare />}
+        size='2xl'
+        disabled={!isPublished}
+        color='subdued'
+        icon={IconShare}
         onClick={isPublished ? onShare : () => {}}
       />
     )
@@ -112,22 +116,23 @@ const ActionButtonRow = ({
     return (
       <IconButton
         aria-label='more actions'
-        className={cn(styles.actionButton)}
-        icon={<IconKebabHorizontal />}
+        size='2xl'
+        color='subdued'
+        icon={IconKebabHorizontal}
         onClick={onClickOverflow}
       />
     )
   }
 
   return (
-    <div className={styles.buttonsRow}>
+    <Flex direction='row' alignItems='center' gap='xl' mt='m'>
       <ClientOnly>
         {showRepost && renderRepostButton()}
         {showFavorite && renderFavoriteButton()}
         {showShare && (isPublishing ? renderSpinner() : renderShareButton())}
         {showOverflow && renderOverflowMenu()}
       </ClientOnly>
-    </div>
+    </Flex>
   )
 }
 

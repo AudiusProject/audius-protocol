@@ -2,17 +2,19 @@ import type { DownloadTrackArgs } from '@audius/common/services'
 import { TrackDownload as TrackDownloadBase } from '@audius/common/services'
 import { tracksSocialActions, downloadsActions } from '@audius/common/store'
 import { Platform, Share } from 'react-native'
-import { zip } from 'react-native-zip-archive'
 import type {
   FetchBlobResponse,
-  RNFetchBlobConfig,
+  ReactNativeBlobUtilConfig,
   StatefulPromise
-} from 'rn-fetch-blob'
-import RNFetchBlob from 'rn-fetch-blob'
+} from 'react-native-blob-util'
+import ReactNativeBlobUtil from 'react-native-blob-util'
+import { zip } from 'react-native-zip-archive'
 import { dedupFilenames } from '~/utils'
 
+import { make, track as trackEvent } from 'app/services/analytics'
 import { dispatch } from 'app/store'
 import { setVisibility } from 'app/store/drawers/slice'
+import { EventNames } from 'app/types/analytics'
 
 import { audiusBackendInstance } from './audius-backend-instance'
 
@@ -32,14 +34,14 @@ const cancelDownloadTask = () => {
 
 const removePathIfExists = async (path: string) => {
   try {
-    const exists = await RNFetchBlob.fs.exists(path)
+    const exists = await ReactNativeBlobUtil.fs.exists(path)
     if (!exists) return
-    await RNFetchBlob.fs.unlink(path)
+    await ReactNativeBlobUtil.fs.unlink(path)
   } catch {}
 }
 
 /**
- * Download a file via RNFetchBlob
+ * Download a file via ReactNativeBlobUtil
  */
 const downloadOne = async ({
   fileUrl,
@@ -51,19 +53,18 @@ const downloadOne = async ({
   fileUrl: string
   filename: string
   directory: string
-  getFetchConfig: (filePath: string) => RNFetchBlobConfig
+  getFetchConfig: (filePath: string) => ReactNativeBlobUtilConfig
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
   const filePath = directory + '/' + filename
 
   try {
-    const fetchTask = RNFetchBlob.config(getFetchConfig(filePath)).fetch(
-      'GET',
-      fileUrl
-    )
+    const fetchTask = ReactNativeBlobUtil.config(
+      getFetchConfig(filePath)
+    ).fetch('GET', fileUrl)
     fetchTasks = [fetchTask]
 
-    // TODO: The RNFetchBlob library is currently broken for download progress events on both platforms.
+    // TODO: The ReactNativeBlobUtil library is currently broken for download progress events on both platforms.
     // fetchTask.progress({ interval: 250 }, (received, total) => {
     //   dispatch(setDownloadedPercentage((received / total) * 100))
     // })
@@ -74,6 +75,14 @@ const downloadOne = async ({
     dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
 
     await onFetchComplete?.(fetchRes.path())
+
+    // Track download success event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE,
+        device: 'native'
+      })
+    )
   } catch (err) {
     console.error(err)
     dispatch(
@@ -83,11 +92,19 @@ const downloadOne = async ({
     )
     // On failure attempt to delete the file
     removePathIfExists(filePath)
+
+    // Track download failure event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE,
+        device: 'native'
+      })
+    )
   }
 }
 
 /**
- * Download multiple files via RNFetchBlob
+ * Download multiple files via ReactNativeBlobUtil
  */
 const downloadMany = async ({
   files,
@@ -97,16 +114,15 @@ const downloadMany = async ({
 }: {
   files: { url: string; filename: string }[]
   directory: string
-  getFetchConfig: (filePath: string) => RNFetchBlobConfig
+  getFetchConfig: (filePath: string) => ReactNativeBlobUtilConfig
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
   dedupFilenames(files)
   try {
     const responsePromises = files.map(({ url, filename }) =>
-      RNFetchBlob.config(getFetchConfig(directory + '/' + filename)).fetch(
-        'GET',
-        url
-      )
+      ReactNativeBlobUtil.config(
+        getFetchConfig(directory + '/' + filename)
+      ).fetch('GET', url)
     )
     fetchTasks = responsePromises
     const responses = await Promise.all(responsePromises)
@@ -117,12 +133,28 @@ const downloadMany = async ({
     await zip(directory, directory + '.zip')
     await onFetchComplete?.(directory + '.zip')
     responses.forEach((response) => response.flush())
+
+    // Track download success event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL,
+        device: 'native'
+      })
+    )
   } catch (err) {
     console.error(err)
     dispatch(
       setDownloadError(
         err instanceof Error ? err : new Error(`Download failed: ${err}`)
       )
+    )
+
+    // Track download failure event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL,
+        device: 'native'
+      })
     )
   } finally {
     // Remove source directory at the end of the process regardless of what happens
@@ -156,7 +188,7 @@ const download = async ({
   dispatch(setFetchCancel(cancelDownloadTask))
 
   const audiusDirectory =
-    RNFetchBlob.fs.dirs.DocumentDir + '/' + audiusDownloadsDirectory
+    ReactNativeBlobUtil.fs.dirs.DocumentDir + '/' + audiusDownloadsDirectory
 
   if (Platform.OS === 'ios') {
     const onFetchComplete = async (path: string) => {
@@ -209,13 +241,13 @@ const download = async ({
         /* Single file download on Android will use the Download Manager and go
          * straight to the Downloads directory.
          */
-        directory: RNFetchBlob.fs.dirs.DownloadDir,
-        getFetchConfig: (filePath) => ({
+        directory: ReactNativeBlobUtil.fs.dirs.DownloadDir,
+        getFetchConfig: () => ({
           addAndroidDownloads: {
             description: filename,
             mediaScannable: true,
             notification: true,
-            path: filePath,
+            storeInDownloads: true,
             title: filename,
             useDownloadManager: true
           }
@@ -236,17 +268,41 @@ const download = async ({
          * the initial downloads to avoid showing notifications, then manually add a
          * notification for the zip file.
          */
-        directory: RNFetchBlob.fs.dirs.DownloadDir + '/' + rootDirectoryName,
+        directory:
+          ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + rootDirectoryName,
         getFetchConfig: (filePath) => ({
           fileCache: true,
           path: filePath
         }),
         onFetchComplete: async (path: string) => {
-          RNFetchBlob.android.addCompleteDownload({
+          let mediaStoragePath
+          // On android 13+, we need to manually copy to media storage
+          try {
+            mediaStoragePath =
+              await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
+                {
+                  // The name of the file that should show up in Downloads as a .zip
+                  name: rootDirectoryName,
+                  // Can be left empty as we're putting the file into downloads
+                  parentFolder: '',
+                  mimeType: 'application/zip'
+                },
+                'Download',
+                path
+              )
+          } catch (e) {
+            console.error(e)
+            // Continue on because on android <13+ the media storage copy will
+            // not work, but we can deliver the file to the old download system
+            // by calling android.addCompleteDownload.
+          }
+          // We still need to add the complete download notification here anyway
+          // even if on android 13+
+          ReactNativeBlobUtil.android.addCompleteDownload({
             title: rootDirectoryName,
             description: rootDirectoryName,
             mime: 'application/zip',
-            path,
+            path: mediaStoragePath ?? path,
             showNotification: true
           })
           dispatch(downloadFinished())

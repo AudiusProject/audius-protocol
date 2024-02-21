@@ -10,7 +10,7 @@ import {
 import cn from 'classnames'
 
 import { Text } from 'components/typography'
-import { TrackPreviewNew } from 'components/upload/TrackPreviewNew'
+import { TrackPreview } from 'components/upload/TrackPreview'
 
 import { TrackForUpload } from '../types'
 
@@ -78,15 +78,12 @@ export const TracksPreview = (props: TracksPreviewProps) => {
         })}
       >
         {tracks.map((track, i) => (
-          <TrackPreviewNew
+          <TrackPreview
             index={i}
             displayIndex={tracks.length > 1}
             key={`track-preview-${i}`}
-            trackTitle={track.file.name}
-            fileType={track.file.type}
-            fileSize={track.file.size}
             onRemove={() => onRemove(i)}
-            isUpload
+            file={track.file}
           />
         ))}
       </Scrollbar>

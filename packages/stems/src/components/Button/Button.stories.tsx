@@ -1,7 +1,5 @@
 import { Story } from '@storybook/react'
 
-import * as Icons from 'components/Icons'
-
 import { Button } from './Button'
 import { ButtonProps, Type } from './types'
 
@@ -14,7 +12,6 @@ export default {
 }
 
 const baseProps: ButtonProps = {
-  leftIcon: <Icons.IconPlay />,
   text: 'Click Me'
 }
 

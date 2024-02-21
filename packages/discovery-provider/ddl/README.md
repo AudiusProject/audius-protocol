@@ -8,10 +8,16 @@ tl;dr
 
 ## TEST
 
-After making a change, verify it in 12 seconds with:
+After making a change, verify it with:
 
 ```
 bash local-test.sh
+```
+
+To get a `psql` prompt after tests (to explore schema, or experiment) add `psql` at end:
+
+```
+bash local-test.sh psql
 ```
 
 ## Example usage

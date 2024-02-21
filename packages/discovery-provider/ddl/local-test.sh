@@ -1,4 +1,11 @@
-docker-compose up -d
+#! /bin/sh
+
+docker compose up -d
 sleep 2
 POSTGRES_PASSWORD=postgres POSTGRES_PORT=35746 ./pg_migrate.sh test
-docker-compose down --volumes
+
+if [ -n "$1" ]; then
+  docker compose exec -it db psql -U postgres;
+fi
+
+docker compose down --volumes

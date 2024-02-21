@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
@@ -15,7 +16,6 @@ import { z } from 'zod'
 
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import { processFiles } from '../store/utils/processFiles'
@@ -68,11 +68,13 @@ const messages = {
 }
 
 type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
+  isLosslessDownloadsEnabled: boolean
   isUsdcUploadEnabled: boolean
 }
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
   maxContentPriceCents,
+  isLosslessDownloadsEnabled,
   isUsdcUploadEnabled
 }: StemsAndDownloadsSchemaProps) =>
   z
@@ -131,7 +133,11 @@ export const stemsAndDownloadsSchema = ({
         const stems = formValues[STEMS]
         const hasStems = stems.length > 0
         const hasDownloadableAssets = isDownloadable || hasStems
-        return !isOriginalAvailable || hasDownloadableAssets
+        return (
+          !isLosslessDownloadsEnabled ||
+          !isOriginalAvailable ||
+          hasDownloadableAssets
+        )
       },
       {
         message: messages.losslessNoDownloadableAssets,
@@ -190,7 +196,7 @@ type StemsAndDownloadsMenuFieldsProps = {
 export const StemsAndDownloadsMenuFields = (
   props: StemsAndDownloadsMenuFieldsProps
 ) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
@@ -384,7 +390,6 @@ export const StemsAndDownloadsMenuFields = (
         onAddStems={handleAddStems}
         onSelectCategory={handleSelectCategory}
         onDeleteStem={handleDeleteStem}
-        isUpload={props.isUpload}
       />
     </div>
   )

@@ -4,6 +4,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
+  Name,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
@@ -31,6 +32,7 @@ import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import { Divider } from 'components/divider'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { useTrackField } from 'pages/upload-page/hooks'
+import { make, track } from 'services/analytics'
 
 import { STREAM_CONDITIONS } from '../types'
 
@@ -46,11 +48,11 @@ const messages = {
   premium: 'Premium',
   callout: {
     premium:
-      "You're uploading a Premium track. By default, purchasers will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Premium track. By default, purchasers will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
     specialAccess:
-      "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Special Access track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
     collectibleGated:
-      "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to sell your files, set your track to Public or Hidden in the",
+      "You're uploading a Collectible Gated track. By default, users who unlock your track will be able to download your available files. If you'd like to only sell your files, set your track to Public or Hidden in the",
     accessAndSale: 'Access & Sale Settings'
   },
   waitlist:
@@ -142,7 +144,8 @@ export const DownloadAvailability = ({
         />
       ),
       disabled: isPremiumOptionDisabled,
-      variant: isUsdcUploadEnabled ? 'default' : 'subdued'
+      variant:
+        isPremiumOptionDisabled || !isUsdcUploadEnabled ? 'subdued' : 'default'
     }
   ]
 
@@ -152,6 +155,12 @@ export const DownloadAvailability = ({
     },
     [setValue]
   )
+
+  const handleClickWaitListLink = useCallback(() => {
+    track(
+      make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK })
+    )
+  }, [])
 
   const textCss = shouldRenderCallout
     ? {
@@ -169,6 +178,7 @@ export const DownloadAvailability = ({
           <Flex direction='column' gap='m'>
             <Text>{messages.waitlist}</Text>
             <TextLink
+              onClick={handleClickWaitListLink}
               href={WAITLIST_TYPEFORM}
               css={{ color: primary.p500, width: 'fit-content' }}
               showUnderline
