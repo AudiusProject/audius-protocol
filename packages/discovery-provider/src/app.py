@@ -312,7 +312,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
-            "src.tasks.index_related_artists",
+            # "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
             "src.tasks.backfill_cid_data",
             "src.tasks.user_listening_history.index_user_listening_history",
@@ -391,10 +391,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_rewards_manager",
                 "schedule": timedelta(seconds=5),
             },
-            "index_related_artists": {
-                "task": "index_related_artists",
-                "schedule": timedelta(hours=12),
-            },
+            # "index_related_artists": {
+            #     "task": "index_related_artists",
+            #     "schedule": timedelta(hours=12),
+            # },
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
                 "schedule": timedelta(seconds=5),

@@ -274,7 +274,11 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 alignItems='center'
                 borderTop='default'
               >
-                <Flex direction='row' alignItems='center' gap='l'>
+                <Flex
+                  direction={isMobile ? 'column' : 'row'}
+                  alignItems='center'
+                  gap='l'
+                >
                   <Text variant='title'>{messages.choose}</Text>
                   <SegmentedControl
                     options={options}
@@ -285,7 +289,9 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     equalWidth
                   />
                 </Flex>
-                {shouldDisplayDownloadAll ? downloadAllButton() : null}
+                {shouldDisplayDownloadAll && !isMobile
+                  ? downloadAllButton()
+                  : null}
               </Flex>
             ) : null}
             {track?.is_downloadable ? (
@@ -337,7 +343,8 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             ))}
             {/* Only display this row if original quality is not available,
             because the download all button will not be displayed at the top right. */}
-            {!track?.is_original_available && shouldDisplayDownloadAll ? (
+            {(!track?.is_original_available && shouldDisplayDownloadAll) ||
+            isMobile ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
                 {downloadAllButton()}
               </Flex>

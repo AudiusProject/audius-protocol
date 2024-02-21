@@ -31,7 +31,7 @@ class Repost(Base, RepresentableMixin):
         Index("repost_user_id_idx", "user_id", "repost_type"),
     )
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
@@ -58,9 +58,6 @@ class Repost(Base, RepresentableMixin):
     )
     slot = Column(Integer)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Repost.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Repost.blocknumber == Block.number"
     )

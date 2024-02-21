@@ -10,13 +10,17 @@ import {
   Flex,
   IconButton,
   IconCompose,
+  IconFileAAC,
   IconFileAIFF as iconFileAiff,
   IconFileFLAC as iconFileFlac,
   IconFileM4A as iconFileM4a,
   IconFileMP3 as iconFileMp3,
+  IconFileMP4,
   IconFileOGG as iconFileOgg,
+  IconFileOPUS,
   IconFileUnknown as iconFileUnknown,
   IconFileWAV as iconFileWav,
+  IconFileWEBM,
   IconTrash
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -34,21 +38,39 @@ const messages = {
   remove: 'Remove Track'
 }
 
+// Used https://mimetype.io to see the list of related mime types to have a more comprehensive list.
 const fileTypeIcon = (type: string) => {
   switch (type) {
     case 'audio/mpeg':
     case 'audio/mp3':
       return iconFileMp3
+    case 'audio/mp4':
+    case 'audio/mpeg4-generic':
+      return IconFileMP4
+    case 'audio/m4a':
     case 'audio/x-m4a':
       return iconFileM4a
     case 'audio/aiff':
+    case 'audio/x-aiff':
       return iconFileAiff
     case 'audio/flac':
+    case 'audio/x-flac':
       return iconFileFlac
     case 'audio/ogg':
       return iconFileOgg
     case 'audio/wav':
+    case 'audio/x-wav':
+    case 'audio/x-pn-wav':
+    case 'audio/vnd.wav':
+    case 'audio/wave':
+    case 'audio/vnd.wave':
       return iconFileWav
+    case 'audio/aac':
+      return IconFileAAC
+    case 'audio/opus':
+      return IconFileOPUS
+    case 'audio/webm':
+      return IconFileWEBM
     default:
       return iconFileUnknown
   }
@@ -157,7 +179,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
         </Text>
         {isLosslessDownloadsEnabled ? (
           <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
-            {!isTitleEditable ? (
+            {isTitleEditable ? (
               <IconButton
                 icon={IconCompose}
                 color='subdued'
@@ -169,7 +191,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
             <IconButton
               icon={IconTrash}
               aria-label={messages.remove}
-              color='danger'
+              color='subdued'
               onClick={onRemove}
               disabled={!allowDelete}
               className={styles.removeButton}
@@ -180,6 +202,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
           <IconButton
             icon={IconTrash}
             aria-label={messages.remove}
+            color='subdued'
             onClick={onRemove}
             className={styles.removeButton}
           />
