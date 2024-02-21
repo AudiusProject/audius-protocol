@@ -424,10 +424,7 @@ jobs:
 workflows:
   setup:
     when:
-      and:
-        - equal: ['main', << pipeline.parameters.workflow >>]
-        - not:
-            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+      equal: ['main', << pipeline.parameters.workflow >>]
     jobs:
       - generate-config
       - init:
@@ -583,14 +580,30 @@ workflows:
             - init
           workspace_path: ../workspace
 
+  release-create-branch:
+    when:
+      equal: ['release-create-branch', << pipeline.parameters.workflow >>]
+    jobs:
+      - generate-release-branch
+
+  auto-approve-foundation-deploy:
+    when:
+      equal:
+        ['auto-approve-foundation-deploy', << pipeline.parameters.workflow >>]
+    jobs:
+      - approve-deployment-holds:
+          context: [slack-secrets, circle-daily-deploy-secrets]
+
+  notify-sp-release:
+    when:
+      equal: ['notify-sp-release', << pipeline.parameters.workflow >>]
+    jobs:
+      - notify-sp-release-job:
+          context: [slack-secrets, circle-daily-deploy-secrets]
+
   release-client-create-branch:
     when:
-      or:
-        - and:
-            - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-            - equal:
-                ['release-client-create-branch', << pipeline.schedule.name >>]
-        - equal:
-            ['release-client-create-branch', << pipeline.parameters.workflow >>]
+      equal:
+        ['release-client-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-client-release
