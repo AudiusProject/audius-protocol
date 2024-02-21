@@ -1,5 +1,6 @@
 import json
 import logging
+import pprint
 from datetime import datetime, timedelta
 from typing import List
 
@@ -43,7 +44,7 @@ entities = {
                     {"time": datetime.timestamp(now), "track": 10},
                     {
                         "time": datetime.timestamp(now - timedelta(minutes=1)),
-                        "track": 40,
+                        "track": 40
                     },
                 ]
             },
@@ -52,17 +53,50 @@ entities = {
 }
 
 test_metadata = {
-    "AlbumTracklistUpdate": {
+    "PlaylistToCreate": {
         "playlist_contents": {
             "track_ids": [
                 {"time": 1660927554, "track": 10},
                 {"time": 1660927554, "track": 20},
             ]
+        },
+        "playlist_name": "created_playlist",
+    },
+    "AlbumTracklistUpdate": {
+        "playlist_contents": {
+            "track_ids": [
+                {"time": 1660927554, "track": 20},
+                {"time": 1660927554, "track": 30},
+            ]
+        }
+    },
+    "RemoveFromAlbumTracklistUpdate": {
+        "playlist_contents": {
+            "track_ids": [
+                {"time": 1660927554, "track": 30},
+            ]
         }
     },
 }
 
-tx_receipts = {
+create_playlist_tx_receipts = {
+    "CreatePlaylist": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET + 1,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "QmCreatePlaylist1", "data": {json.dumps(test_metadata["PlaylistToCreate"])}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        },
+    ]
+}
+
+update_album_tx_receipts = {
     "UpdateAlbumTracklistUpdate": [
         {
             "args": AttributeDict(
@@ -79,8 +113,38 @@ tx_receipts = {
     ]
 }
 
+remove_track_from_album_tx_receipts = {
+        "UpdateAlbumTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["AlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RemoveTrackFromAlbumUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromAlbumTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ]
+}
 
-def test_add_playlist(app, mocker):
+def setup_db(app, mocker, entities, tx_receipts):
     with app.app_context():
         db = get_db()
         web3 = Web3()
@@ -103,6 +167,13 @@ def test_add_playlist(app, mocker):
 
     populate_mock_db(db, entities)
 
+    return db, update_task, entity_manager_txs
+
+
+
+def test_create_playlist(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, create_playlist_tx_receipts)
+
     with db.scoped_session() as session:
         entity_manager_update(
             update_task,
@@ -115,9 +186,61 @@ def test_add_playlist(app, mocker):
         relations: List[PlaylistsTracksRelations] = session.query(
             PlaylistsTracksRelations
         ).all()
-        print(relations)
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(relations)
         assert len(relations) == 2
         for id in [10, 20]:
             assert any([relation.track_id == id for relation in relations])
         for id in [30, 40]:
+            assert not any([relation.track_id == id for relation in relations])
+
+
+
+def test_add_tracks_to_playlist(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, update_album_tx_receipts)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        relations: List[PlaylistsTracksRelations] = session.query(
+            PlaylistsTracksRelations
+        ).all()
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(relations)
+        assert len(relations) == 2
+        for id in [20, 30]:
+            assert any([relation.track_id == id for relation in relations])
+        for id in [10, 40]:
+            assert not any([relation.track_id == id for relation in relations])
+
+
+def test_remove_track_from_album(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(app, mocker, entities, remove_track_from_album_tx_receipts)
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        relations: List[PlaylistsTracksRelations] = session.query(
+            PlaylistsTracksRelations
+        ).all()
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(relations)
+        assert len(relations) == 2
+        assert any([relation.is_delete and relation.track_id == 20 for relation in relations])
+        assert any([not relation.is_delete and relation.track_id == 30 for relation in relations])
+        # Check for duplicate add
+        assert len([relation for relation in relations if relation.track_id == 30]) == 1
+        for id in [10, 40]:
             assert not any([relation.track_id == id for relation in relations])

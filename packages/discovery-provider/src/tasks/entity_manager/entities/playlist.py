@@ -142,9 +142,6 @@ def update_playlist_tracks_relations(
 
         for relation in existing_playlist_tracks_relations:
             if relation.track_id not in updated_track_ids:
-                params.logger.info(
-                    "REED marking relation as deleted: ", relation.track_id
-                )
                 # setting values on the relation will update the record in the database
                 relation.is_delete = True
                 relation.updated_at = params.block_datetime
