@@ -10,7 +10,7 @@ import {
 
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
-import { animated, useSpring } from 'react-spring'
+import { animated, useSpring } from 'react-spring/web'
 // @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
