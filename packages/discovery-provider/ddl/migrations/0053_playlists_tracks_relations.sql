@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS collection_track_relations (
   PRIMARY KEY (collection_id, track_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_collection_track_relations_collection_ids ON collection_track_relations USING btree (collection_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_collection_track_relations_track_ids ON collection_track_relations USING btree (track_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_collection_track_relations_collection_id ON collection_track_relations USING btree (collection_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_collection_track_relations_track_id ON collection_track_relations USING btree (track_id, created_at);
 
 INSERT INTO collection_track_relations (collection_id, track_id, is_delete) 
 SELECT playlist_id, track_id, FALSE

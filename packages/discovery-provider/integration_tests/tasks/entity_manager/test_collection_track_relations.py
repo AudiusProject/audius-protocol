@@ -76,6 +76,14 @@ test_metadata = {
             ]
         }
     },
+    "PlaylistTracklistReorder": {
+        "playlist_contents": {
+            "track_ids": [
+                {"time": 1660927554, "track": 30},
+                {"time": 1660927554, "track": 20},
+            ]
+        }
+    },
 }
 
 
@@ -257,7 +265,7 @@ def test_remove_track_from_playlist(app, mocker):
             assert not any([relation.track_id == id for relation in relations])
 
 
-# Remove a track from an playlist and then restore it
+# Remove a track from a playlist and then restore it
 restore_removed_track_to_playlist_tx_receipts = {
     "UpdatePlaylistTracklistUpdate": [
         {
@@ -336,3 +344,60 @@ def test_restore_removed_track_to_playlist(app, mocker):
                     for relation in relations
                 ]
             )
+
+
+# Create a playlist then reorder the tracks
+reorder_playlist_tracks_tx_receipts = {
+    "UpdatePlaylistTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RemoveTrackFromPlaylistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistReorder"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+}
+
+
+def test_reorder_playlist_tracks(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(
+        app, mocker, entities, reorder_playlist_tracks_tx_receipts
+    )
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        relations: List[CollectionTrackRelation] = session.query(
+            CollectionTrackRelation
+        ).all()
+        assert len(relations) == 2
+        for id in [20, 30]:
+            assert any([relation.track_id == id for relation in relations])
+        for id in [10, 40]:
+            assert not any([relation.track_id == id for relation in relations])
