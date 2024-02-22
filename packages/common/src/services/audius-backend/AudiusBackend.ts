@@ -1787,9 +1787,11 @@ export const audiusBackend = ({
     }
   }
 
-  function getDiscoveryEntityType(type: string) {
+  function getDiscoveryEntityType({ type, is_album }: { type: string, is_album?: boolean}) {
     if (type === 'track') {
       return Entity.Track
+    } else if (is_album === true) {
+      return Entity.Album
     }
     return Entity.Playlist
   }
@@ -1836,7 +1838,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.repost_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)
@@ -1854,7 +1856,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.save_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)
@@ -2149,7 +2151,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.repost_of_repost_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)
@@ -2167,7 +2169,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.save_of_repost_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)
