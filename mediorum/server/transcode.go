@@ -385,7 +385,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	upload.TranscodedMirrors, err = ss.replicateFileParallel(resultHash, destPath)
+	upload.TranscodedMirrors, err = ss.replicateFileParallel(resultHash, destPath, upload.PlacementHosts)
 	if err != nil {
 		return onError(err, upload.Status, "replicateFile")
 	}
@@ -453,7 +453,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	mirrors, err := ss.replicateFileParallel(resultHash, destPath)
+	mirrors, err := ss.replicateFileParallel(resultHash, destPath, upload.PlacementHosts)
 	if err != nil {
 		return onError(err, upload.Status, "replicating file")
 	}
