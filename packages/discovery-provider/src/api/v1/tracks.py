@@ -396,7 +396,11 @@ def get_stream_url_from_content_node(content_node: str, path: str):
 
     try:
         response = requests.get(stream_url, headers=headers, timeout=5)
-        if response.status_code == 206 or response.status_code == 204 or response.status_code == 200:
+        if (
+            response.status_code == 206
+            or response.status_code == 204
+            or response.status_code == 200
+        ):
             return parsed_url.geturl()
     except:
         pass

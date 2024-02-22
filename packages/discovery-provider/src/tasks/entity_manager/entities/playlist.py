@@ -6,6 +6,7 @@ from src.exceptions import IndexingValidationError
 from src.models.playlists.collection_track_relation import CollectionTrackRelation
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
+from src.models.tracks.track import Track
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
@@ -139,6 +140,16 @@ def update_playlist_tracks_relations(
         if relation.track_id not in updated_track_ids:
             relation.is_removed = True
             relation.updated_at = params.block_datetime
+            track = (
+                session.query(Track).filter(Track.track_id == relation.track_id).first()
+            )
+            if track:
+                track.updated_at = params.block_datetime
+                track.collections_containing_track = [
+                    collection_id
+                    for collection_id in track.collections_containing_track
+                    if collection_id != playlist["playlist_id"]
+                ]
 
     for track_id in updated_track_ids:
         # add row for each track that is not already in the table
@@ -152,10 +163,20 @@ def update_playlist_tracks_relations(
             )
             # upsert to handle duplicates
             session.merge(new_collection_track_relation)
+            track = session.query(Track).filter(Track.track_id == track_id).first()
+            if track:
+                track.updated_at = params.block_datetime
+                track.collections_containing_track = set(
+                    track.collections_containing_track.append(playlist["playlist_id"])
+                )
         elif existing_tracks[track_id].is_removed:
             # recover deleted relation (track was previously removed then re-added)
             existing_tracks[track_id].is_removed = False
             existing_tracks[track_id].updated_at = params.block_datetime
+            track = session.query(Track).filter(Track.track_id == track_id).first()
+            if track:
+                track.updated_at = params.block_datetime
+                track.collections_containing_track.append(playlist["playlist_id"])
 
     params.logger.info(
         f"playlists.py | Updated playlist tracks relations for {playlist['playlist_id']}"

@@ -86,6 +86,7 @@ class Track(Base, RepresentableMixin):
     is_download_gated = Column(Boolean, nullable=False, server_default=text("false"))
     download_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
+    collections_containing_track = Column(JSONB())
     ai_attribution_user_id = Column(Integer, nullable=True)
 
     block1 = relationship(  # type: ignore
