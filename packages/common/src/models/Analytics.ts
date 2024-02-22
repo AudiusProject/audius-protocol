@@ -2269,6 +2269,7 @@ export type AllTrackingEvents =
   | CreateAccountCompleteCreating
   | CreateAccountOpenFinish
   | CreateAccountClosedTwitter
+  | CreateAccountTikTokError
   | CreateAccountTwitterError
   | CreateAccountClosedInstagram
   | CreateAccountInstagramError
