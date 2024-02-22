@@ -18,7 +18,7 @@ def get_aggregate_route_metrics_trailing(time_range):
     """
     Returns trailing count and unique count for all routes in the last trailing month or year
 
-    Accepts: time_range = 'month' or 'year'
+    Accepts: time_range = 'month' or 'year' or 'week'
     Returns:
         { unique_count, total_count }
     """
@@ -31,6 +31,8 @@ def _get_aggregate_route_metrics_trailing(session, time_range):
     today = date.today()
     if time_range == "year":
         days_ago = today - timedelta(days=365)
+    elif time_range == "week":
+        days_ago = today - timedelta(days=7)
     else:
         days_ago = today - timedelta(days=30)
 

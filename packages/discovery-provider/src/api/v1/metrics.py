@@ -69,9 +69,7 @@ valid_bucket_sizes = {
     "all_time": ["month", "week"],
 }
 valid_bucket_sizes_with_year = {
-    "week": ["day"],
-    "month": ["day", "week"],
-    "year": ["month"],
+    **valid_bucket_sizes,
     "all_time": ["month", "week"],
 }
 
@@ -168,8 +166,8 @@ class AggregateHistoricalMetrics(Resource):
 class AggregateRouteMetricsTrailingMonth(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self, time_range):
-        """Gets aggregated route metrics for the last trailing month or year"""
-        if time_range != "month" and time_range != "year":
+        """Gets aggregated route metrics for the last trailing week, month, or year"""
+        if time_range != "month" and time_range != "year" and time_range != "week":
             abort_bad_path_param("time_range", ns)
         metrics = get_aggregate_route_metrics_trailing(time_range)
         response = success_response(metrics)
