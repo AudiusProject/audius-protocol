@@ -69,13 +69,11 @@ type UploadTrackItemProps = {
   displayArtwork?: boolean
   track: TrackForUpload
   trackProgress?: ProgressState
-  hasError: boolean
 }
 
 const UploadTrackItem = (props: UploadTrackItemProps) => {
   const {
     index,
-    hasError,
     track,
     trackProgress,
     displayIndex = false,
@@ -87,17 +85,7 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
 
   return (
     <div className={styles.uploadTrackItem} {...otherProps}>
-      <ProgressIndicator
-        status={
-          hasError
-            ? ProgressStatus.ERROR
-            : trackProgress?.audio?.loaded &&
-              trackProgress?.audio?.total &&
-              trackProgress.audio.loaded >= trackProgress.audio.total
-            ? ProgressStatus.COMPLETE
-            : trackProgress?.audio?.status
-        }
-      />
+      <ProgressIndicator status={trackProgress?.audio?.status} />
       {displayIndex ? <Text size='small'>{index + 1}</Text> : null}
       {displayArtwork ? (
         <DynamicImage
@@ -248,9 +236,6 @@ export const FinishPage = (props: FinishPageProps) => {
         <div className={styles.uploadTrackList}>
           {tracks.map((track, idx) => {
             const trackProgress = upload.uploadProgress?.[idx]
-            const trackError = upload.failedTrackIndices.find(
-              (index) => index === idx
-            )
             return (
               <UploadTrackItem
                 key={track.metadata.track_id}
@@ -262,7 +247,6 @@ export const FinishPage = (props: FinishPageProps) => {
                   uploadType === UploadType.INDIVIDUAL_TRACK ||
                   uploadType === UploadType.INDIVIDUAL_TRACKS
                 }
-                hasError={trackError !== undefined}
               />
             )
           })}
