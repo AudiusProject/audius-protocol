@@ -136,7 +136,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	previewStart := c.FormValue("previewStartSeconds")
 
 	var placementHosts []string = nil
-	if v := c.FormValue("placementHosts"); v != "" {
+	if v := c.FormValue("placement_hosts"); v != "" {
 		placementHosts = strings.Split(v, ",")
 	}
 

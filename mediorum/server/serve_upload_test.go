@@ -60,8 +60,8 @@ func TestUploadPlacement(t *testing.T) {
 	resp := s1.reqClient.R().
 		SetFile("files", "testdata/tom.wav").
 		SetFormData(map[string]string{
-			"template":       "audio",
-			"placementHosts": strings.Join(examplePlacement, ","),
+			"template":        "audio",
+			"placement_hosts": strings.Join(examplePlacement, ","),
 		}).
 		SetSuccessResult(&uploads).
 		MustPost(s1.Config.Self.Host + "/uploads")
