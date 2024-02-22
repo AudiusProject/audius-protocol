@@ -1,8 +1,8 @@
 import path from 'path'
 
 import { difference } from 'lodash'
-import RNFS from 'react-native-fs'
 import ReactNativeBlobUtil from 'react-native-blob-util'
+import RNFS from 'react-native-fs'
 import { call, put, select } from 'typed-redux-saga'
 
 import { make, track } from 'app/services/analytics'

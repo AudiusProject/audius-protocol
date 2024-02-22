@@ -83,7 +83,7 @@ const SocialLink = (props: SocialLinkProps) => {
   } else {
     text = link.replace(/((?:https?):\/\/)|www./g, '')
     if (type === Type.DONATION) {
-      text = <UserGeneratedText size='small'>{text}</UserGeneratedText>
+      text = <UserGeneratedText size='s'>{text}</UserGeneratedText>
     }
   }
 

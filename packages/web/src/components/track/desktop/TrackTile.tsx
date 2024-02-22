@@ -31,7 +31,6 @@ import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
-import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -315,15 +314,14 @@ const TrackTile = ({
       >
         <div className={cn(styles.topSection)}>
           {size === TrackTileSize.LARGE ? (
-            <div
-              className={cn(
-                typeStyles.labelXSmall,
-                typeStyles.labelWeak,
-                styles.headerRow
-              )}
+            <Text
+              variant='label'
+              size='xs'
+              strength='weak'
+              className={styles.headerRow}
             >
               {!isLoading && header && <div>{header}</div>}
-            </div>
+            </Text>
           ) : null}
           <div className={styles.titleRow}>
             {isLoading ? (
@@ -342,27 +340,15 @@ const TrackTile = ({
               </Link>
             )}
           </div>
-          <div
-            className={cn(
-              typeStyles.titleMedium,
-              typeStyles.titleWeak,
-              styles.creatorRow
-            )}
-          >
+          <Text variant='title' strength='weak' className={styles.creatorRow}>
             {isLoading ? (
               <Skeleton width='50%' className={styles.skeleton} />
             ) : (
               userName
             )}
-          </div>
+          </Text>
 
-          <div
-            className={cn(
-              typeStyles.body,
-              typeStyles.bodyXSmall,
-              styles.socialsRow
-            )}
-          >
+          <Text variant='body' size='xs' className={styles.socialsRow}>
             {isLoading ? (
               <Skeleton width='30%' className={styles.skeleton} />
             ) : (
@@ -372,14 +358,8 @@ const TrackTile = ({
                 {isUnlisted ? null : stats}
               </>
             )}
-          </div>
-          <div
-            className={cn(
-              typeStyles.body,
-              typeStyles.bodyXSmall,
-              styles.topRight
-            )}
-          >
+          </Text>
+          <Text variant='body' size='xs' className={styles.topRight}>
             {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
                 <IconVisibilityHidden className={styles.topRightIcon} />
@@ -389,14 +369,8 @@ const TrackTile = ({
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
-          </div>
-          <div
-            className={cn(
-              typeStyles.body,
-              typeStyles.bodyXSmall,
-              styles.bottomRight
-            )}
-          >
+          </Text>
+          <Text variant='body' size='xs' className={styles.bottomRight}>
             {!isLoading
               ? renderLockedOrPlaysContent({
                   hasStreamAccess,
@@ -407,7 +381,7 @@ const TrackTile = ({
                   variant: isPurchase ? 'premium' : 'gated'
                 })
               : null}
-          </div>
+          </Text>
         </div>
         <div className={styles.divider} />
         <BottomRow

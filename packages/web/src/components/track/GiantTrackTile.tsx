@@ -612,7 +612,6 @@ export const GiantTrackTile = ({
               <Flex className={cn(fadeIn)} gap='xs' alignItems='center'>
                 <span>By </span>
                 <UserLink
-                  color='accent'
                   variant='body'
                   size='l'
                   textAs='h2'
@@ -748,11 +747,7 @@ export const GiantTrackTile = ({
           {renderAlbum()}
         </div>
         {description ? (
-          <UserGeneratedText
-            component='h3'
-            size='small'
-            className={styles.description}
-          >
+          <UserGeneratedText tag='h3' size='s' className={styles.description}>
             {description}
           </UserGeneratedText>
         ) : null}

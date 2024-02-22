@@ -1,4 +1,4 @@
-import { useCallback, MouseEvent, ElementType } from 'react'
+import { useCallback, MouseEvent, ElementType, ComponentType } from 'react'
 
 import { Text, TextProps } from '@audius/harmony'
 import cn from 'classnames'
@@ -11,6 +11,7 @@ export type LinkProps<Element extends ElementType = LinkBase> =
     Omit<TextProps<Element>, 'variant'> & {
       variant?: TextProps<Element>['variant'] | 'inherit'
       stopPropagation?: boolean
+      as?: ComponentType
     }
 
 export const Link = <Element extends ElementType = 'a'>(
@@ -35,14 +36,19 @@ export const Link = <Element extends ElementType = 'a'>(
     [onClick, stopPropagation]
   )
 
+  const Child = as ?? LinkBase
+
   return (
-    // @ts-expect-error
     <Text
       variant={variant === 'inherit' ? undefined : variant ?? 'body'}
-      as={as ?? LinkBase}
-      className={cn(styles.root, className)}
-      onClick={handleClick}
-      {...other}
-    />
+      asChild
+      color='default'
+    >
+      <Child
+        className={cn(styles.root, className)}
+        {...other}
+        onClick={handleClick}
+      />
+    </Text>
   )
 }

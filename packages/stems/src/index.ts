@@ -8,7 +8,6 @@ import './assets/styles/layers.css'
 
 export * from './components/Icons'
 export * from './styles/colors'
-export * from './styles/types'
 export * from './utils/styles'
 
 export {
