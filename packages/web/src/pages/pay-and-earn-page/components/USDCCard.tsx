@@ -20,7 +20,6 @@ import {
 } from '@audius/harmony'
 import BN from 'bn.js'
 
-import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
@@ -81,7 +80,7 @@ export const USDCCard = () => {
       <div className={styles.backgroundBlueGradient}>
         <div className={styles.usdcTitleContainer}>
           <div className={styles.usdcTitle}>
-            <Icon icon={LogoUSDC} size='xxxLarge' color='staticWhite' />
+            <LogoUSDC size='3xl' color='staticWhite' />
             <div className={styles.usdc}>
               <Text
                 variant='heading'

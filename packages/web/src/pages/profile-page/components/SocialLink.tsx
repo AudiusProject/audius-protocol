@@ -9,7 +9,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { Icon } from 'components/Icon'
 import { ExternalLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
 import { Text } from 'components/typography'
@@ -67,9 +66,9 @@ const SocialLink = (props: SocialLinkProps) => {
   const SocialIcon = socialIcons[type]
 
   let icon = (
-    <Icon
-      icon={SocialIcon}
-      size={iconOnly ? 'large' : 'medium'}
+    <SocialIcon
+      color='default'
+      size={iconOnly ? 'l' : 'm'}
       className={isSingleLink ? styles.icon : undefined}
     />
   )
