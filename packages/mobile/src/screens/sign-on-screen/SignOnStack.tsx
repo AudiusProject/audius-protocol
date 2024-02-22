@@ -52,7 +52,8 @@ export const SignOnStack = (props: SignOnStackProps) => {
         <Stack.Screen
           name='AccountLoading'
           component={AccountLoadingScreen}
-          options={{ headerShown: false }}
+          // animation: none here is a workaround to prevent "white screen of death" on Android
+          options={{ headerShown: false, animation: 'none' }}
         />
       </Stack.Group>
     </Stack.Navigator>
