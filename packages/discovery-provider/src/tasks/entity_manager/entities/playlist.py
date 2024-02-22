@@ -3,6 +3,7 @@ from datetime import datetime
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.models.playlists.collection_track_relation import CollectionTrackRelation
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
@@ -107,6 +108,57 @@ def update_playlist_routes_table(
 
     params.logger.info(
         f"index.py | playlists.py | Updated playlist routes for {playlist_record.playlist_id} with slug {new_playlist_slug} and owner_id {new_playlist_route.owner_id}"
+    )
+
+
+def update_playlist_tracks_relations(
+    params: ManageEntityParameters, playlist_record: Playlist
+):
+    # Update the playlist_tracks_relations table
+    session = params.session
+    existing_playlist_tracks_relations = (
+        session.query(CollectionTrackRelation)
+        .filter(
+            CollectionTrackRelation.collection_id == params.entity_id,
+        )
+        .all()
+    )
+    existing_tracks = {
+        track.track_id: track for track in existing_playlist_tracks_relations
+    }
+    playlist = helpers.model_to_dictionary(playlist_record)
+    updated_track_ids = [
+        track["track"] for track in playlist["playlist_contents"]["track_ids"]
+    ]
+    params.logger.info(
+        f"playlists.py | Updating playlist tracks relations for {playlist['playlist_id']}"
+    )
+
+    # delete relations that previously existed but are not in the updated list
+    for relation in existing_playlist_tracks_relations:
+        if relation.track_id not in updated_track_ids:
+            relation.is_delete = True
+            relation.updated_at = params.block_datetime
+
+    # add row for each track that is not already in the table
+    for track_id in updated_track_ids:
+        if track_id not in existing_tracks:
+            new_collection_track_relation = CollectionTrackRelation(
+                collection_id=playlist["playlist_id"],
+                track_id=track_id,
+                is_delete=False,
+                created_at=params.block_datetime,
+                updated_at=params.block_datetime,
+            )
+            # upsert to handle duplicates
+            session.merge(new_collection_track_relation)
+        elif existing_tracks[track_id].is_delete:
+            # recover deleted relation
+            existing_tracks[track_id].is_delete = False
+            existing_tracks[track_id].updated_at = params.block_datetime
+
+    params.logger.info(
+        f"playlists.py | Updated playlist tracks relations for {playlist['playlist_id']}"
     )
 
 
@@ -239,6 +291,8 @@ def create_playlist(params: ManageEntityParameters):
 
     params.add_record(playlist_id, playlist_record)
 
+    update_playlist_tracks_relations(params, playlist_record)
+
     if tracks:
         dispatch_challenge_playlist_upload(
             params.challenge_bus, params.block_number, playlist_record
@@ -275,6 +329,8 @@ def update_playlist(params: ManageEntityParameters):
     process_playlist_data_event(params, playlist_record)
 
     update_playlist_routes_table(params, playlist_record, False)
+
+    update_playlist_tracks_relations(params, playlist_record)
 
     params.add_record(playlist_id, playlist_record)
 
