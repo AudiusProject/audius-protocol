@@ -113,7 +113,14 @@ export const DownloadRow = ({
       </Flex>
       <Flex gap='2xl'>
         {size && !isMobile ? (
-          <Text variant='body' size='s' color='subdued'>
+          <Text
+            variant='body'
+            size='s'
+            color='subdued'
+            css={{
+              'white-space': 'nowrap'
+            }}
+          >
             {formatBytes(size)}
           </Text>
         ) : null}
