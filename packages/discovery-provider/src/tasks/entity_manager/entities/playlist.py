@@ -166,8 +166,12 @@ def update_playlist_tracks_relations(
             track = session.query(Track).filter(Track.track_id == track_id).first()
             if track:
                 track.updated_at = params.block_datetime
-                track.collections_containing_track = set(
-                    track.collections_containing_track.append(playlist["playlist_id"])
+                track.collections_containing_track = list(
+                    set(
+                        track.collections_containing_track.append(
+                            playlist["playlist_id"]
+                        )
+                    )
                 )
         elif existing_tracks[track_id].is_removed:
             # recover deleted relation (track was previously removed then re-added)
@@ -176,7 +180,13 @@ def update_playlist_tracks_relations(
             track = session.query(Track).filter(Track.track_id == track_id).first()
             if track:
                 track.updated_at = params.block_datetime
-                track.collections_containing_track.append(playlist["playlist_id"])
+                track.collections_containing_track = list(
+                    set(
+                        track.collections_containing_track.append(
+                            playlist["playlist_id"]
+                        )
+                    )
+                )
 
     params.logger.info(
         f"playlists.py | Updated playlist tracks relations for {playlist['playlist_id']}"
