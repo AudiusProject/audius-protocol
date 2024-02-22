@@ -147,7 +147,7 @@ def update_playlist_tracks_relations(
                 track.updated_at = params.block_datetime
                 track.collections_containing_track = [
                     collection_id
-                    for collection_id in track.collections_containing_track
+                    for collection_id in (track.collections_containing_track or [])
                     if collection_id != playlist["playlist_id"]
                 ]
 
@@ -168,9 +168,8 @@ def update_playlist_tracks_relations(
                 track.updated_at = params.block_datetime
                 track.collections_containing_track = list(
                     set(
-                        track.collections_containing_track.append(
-                            playlist["playlist_id"]
-                        )
+                        (track.collections_containing_track or [])
+                        + [playlist["playlist_id"]]
                     )
                 )
         elif existing_tracks[track_id].is_removed:
@@ -182,9 +181,8 @@ def update_playlist_tracks_relations(
                 track.updated_at = params.block_datetime
                 track.collections_containing_track = list(
                     set(
-                        track.collections_containing_track.append(
-                            playlist["playlist_id"]
-                        )
+                        (track.collections_containing_track or [])
+                        + [playlist["playlist_id"]]
                     )
                 )
 
