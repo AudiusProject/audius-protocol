@@ -9,8 +9,10 @@ import { useAsync } from 'react-use'
 import { SocialButton } from '@audius/harmony-native'
 import { env } from 'app/env'
 import { restrictedHandles } from 'app/screens/sign-on-screen/utils/restrictedHandles'
+import { make, track } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
+import { EventNames } from 'app/types/analytics'
 
 import OAuthWebView from '../../../components/oauth/OAuthWebView'
 import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
@@ -24,6 +26,7 @@ type SignUpFlowTwitterAuthProps = Partial<SocialButtonProps> & {
   onError: (e: unknown) => void
   onStart?: () => void
   onClose?: () => void
+  page: 'create-email' | 'pick-handle'
 }
 
 const twitterApi = {
@@ -113,7 +116,11 @@ const useSetProfileFromTwitter = () => {
       requiresReview
     )
 
-    return { requiresReview, handle: profile.screen_name }
+    return {
+      requiresReview,
+      handle: profile.screen_name,
+      isVerified: twitterProfile.verified
+    }
   }
 }
 
@@ -141,7 +148,8 @@ export const SignUpFlowTwitterAuth = ({
   onSuccess,
   onError,
   onStart,
-  onClose
+  onClose,
+  page
 }: SignUpFlowTwitterAuthProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const setProfileFromTwitter = useSetProfileFromTwitter()
@@ -150,12 +158,35 @@ export const SignUpFlowTwitterAuth = ({
 
   const handlePress = async () => {
     onStart?.()
+    track(
+      make({
+        eventName: EventNames.CREATE_ACCOUNT_START_TWITTER,
+        page
+      })
+    )
     setIsModalOpen(true)
   }
 
   const handleClose = () => {
     onClose?.()
+    track(
+      make({
+        eventName: EventNames.CREATE_ACCOUNT_CLOSED_TWITTER,
+        page
+      })
+    )
     setIsModalOpen(false)
+  }
+
+  const handleError = (e: Error) => {
+    onError?.(e)
+    track(
+      make({
+        eventName: EventNames.CREATE_ACCOUNT_TWITTER_ERROR,
+        page,
+        error: e?.message
+      })
+    )
   }
 
   const handleResponse = async (payload: any) => {
@@ -164,19 +195,28 @@ export const SignUpFlowTwitterAuth = ({
       const { oauthVerifier, oauthToken } = payload
       if (oauthVerifier && oauthToken) {
         try {
-          const { handle, requiresReview } = await setProfileFromTwitter({
-            oauthVerifier,
-            oauthToken
-          })
+          const { handle, requiresReview, isVerified } =
+            await setProfileFromTwitter({
+              oauthVerifier,
+              oauthToken
+            })
+          track(
+            make({
+              eventName: EventNames.CREATE_ACCOUNT_COMPLETE_TWITTER,
+              page,
+              isVerified,
+              handle: handle || 'unknown'
+            })
+          )
           onSuccess?.({ handle, requiresReview, platform: 'twitter' })
         } catch (e) {
-          onError(e)
+          handleError(e)
         }
       } else {
-        onError(new Error('Failed oauth'))
+        handleError(new Error('Failed oauth'))
       }
     } else {
-      onError(new Error(payload.error).message)
+      handleError(new Error(payload.error))
     }
   }
 
