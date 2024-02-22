@@ -14,35 +14,39 @@ from src.utils import db_session
 logger = logging.getLogger(__name__)
 
 
-def get_aggregate_route_metrics_trailing_month():
+def get_aggregate_route_metrics_trailing(time_range):
     """
-    Returns trailing count and unique count for all routes in the last trailing 30 days
+    Returns trailing count and unique count for all routes in the last trailing month or year
 
+    Accepts: time_range = 'month' or 'year'
     Returns:
         { unique_count, total_count }
     """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        return _get_aggregate_route_metrics_trailing_month(session)
+        return _get_aggregate_route_metrics_trailing(session, time_range or "month")
 
 
-def _get_aggregate_route_metrics_trailing_month(session):
+def _get_aggregate_route_metrics_trailing(session, time_range):
     today = date.today()
-    thirty_days_ago = today - timedelta(days=30)
+    if time_range == "year":
+        days_ago = today - timedelta(days=365)
+    else:
+        days_ago = today - timedelta(days=30)
 
     counts = (
         session.query(
             func.sum(AggregateDailyUniqueUsersMetrics.count),
             func.sum(AggregateDailyUniqueUsersMetrics.summed_count),
         )
-        .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
+        .filter(days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
         .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
         .first()
     )
 
     total_count = (
         session.query(func.sum(AggregateDailyTotalUsersMetrics.count))
-        .filter(thirty_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
+        .filter(days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
         .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
         .first()
     )
