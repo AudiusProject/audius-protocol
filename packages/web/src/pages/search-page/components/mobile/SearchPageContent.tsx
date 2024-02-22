@@ -179,9 +179,7 @@ const TracksSearchPage = ({
                 })
               )
             }
-            playTrack={(uid: UID) =>
-              dispatch(tracksActions.play(uid))
-            }
+            playTrack={(uid: UID) => dispatch(tracksActions.play(uid))}
             pauseTrack={() => dispatch(tracksActions.pause())}
             actions={tracksActions}
           />
@@ -242,7 +240,7 @@ const CardSearchPage = ({
               id: user.user_id,
               userId: user.user_id,
               route: profilePage(user.handle),
-              primaryText: 'hi',
+              primaryText: user.name,
               secondaryText: followers,
               imageSize: user._profile_picture_sizes
             }
@@ -277,9 +275,7 @@ const CardSearchPage = ({
         imageSize={imageSize}
         primaryText={primaryText}
         secondaryText={secondaryText}
-        onClick={() => {
-          goToRoute(route)
-        }}
+        onClick={() => goToRoute(route)}
         className=''
       />
     )
@@ -299,7 +295,7 @@ const CardSearchPage = ({
 }
 
 const messages = {
-  title: 'More Resultsss',
+  title: 'More Results',
   tagSearchTitle: 'Tag Search',
   tracksTitle: 'Tracks',
   albumsTitle: 'Albums',
@@ -348,71 +344,71 @@ const SearchPageContent = (props: SearchPageContentProps) => {
   const computedTabs = useMemo(() => {
     return isTagSearch
       ? {
-        didChangeTabsFrom,
-        tabs: [
-          {
-            icon: <IconNote />,
-            text: messages.tracksTitle,
-            label: Tabs.TRACKS
-          },
-          {
-            icon: <IconUser />,
-            text: messages.peopleTitle,
-            label: Tabs.PEOPLE
-          }
-        ],
-        elements: [
-          <TracksSearchPage key='tagTrackSearch' {...props} />,
-          <CardSearchPage
-            key='tagUserSearch'
-            {...props}
-            cardType={CardType.USER}
-          />
-        ]
-      }
+          didChangeTabsFrom,
+          tabs: [
+            {
+              icon: <IconNote />,
+              text: messages.tracksTitle,
+              label: Tabs.TRACKS
+            },
+            {
+              icon: <IconUser />,
+              text: messages.peopleTitle,
+              label: Tabs.PEOPLE
+            }
+          ],
+          elements: [
+            <TracksSearchPage key='tagTrackSearch' {...props} />,
+            <CardSearchPage
+              key='tagUserSearch'
+              {...props}
+              cardType={CardType.USER}
+            />
+          ]
+        }
       : {
-        didChangeTabsFrom,
-        tabs: [
-          {
-            icon: <IconUser />,
-            text: messages.peopleTitle,
-            label: Tabs.PEOPLE
-          },
-          {
-            icon: <IconNote />,
-            text: messages.tracksTitle,
-            label: Tabs.TRACKS
-          },
-          {
-            icon: <IconAlbum />,
-            text: messages.albumsTitle,
-            label: Tabs.ALBUMS
-          },
-          {
-            icon: <IconPlaylists />,
-            text: messages.playlistsTitle,
-            label: Tabs.PLAYLISTS
-          }
-        ],
-        elements: [
-          <CardSearchPage
-            key='userSearch'
-            {...props}
-            cardType={CardType.USER}
-          />,
-          <TracksSearchPage key='trackSearch' {...props} />,
-          <CardSearchPage
-            key='albumSearch'
-            {...props}
-            cardType={CardType.ALBUM}
-          />,
-          <CardSearchPage
-            key='playlistSearch'
-            {...props}
-            cardType={CardType.PLAYLIST}
-          />
-        ]
-      }
+          didChangeTabsFrom,
+          tabs: [
+            {
+              icon: <IconUser />,
+              text: messages.peopleTitle,
+              label: Tabs.PEOPLE
+            },
+            {
+              icon: <IconNote />,
+              text: messages.tracksTitle,
+              label: Tabs.TRACKS
+            },
+            {
+              icon: <IconAlbum />,
+              text: messages.albumsTitle,
+              label: Tabs.ALBUMS
+            },
+            {
+              icon: <IconPlaylists />,
+              text: messages.playlistsTitle,
+              label: Tabs.PLAYLISTS
+            }
+          ],
+          elements: [
+            <CardSearchPage
+              key='userSearch'
+              {...props}
+              cardType={CardType.USER}
+            />,
+            <TracksSearchPage key='trackSearch' {...props} />,
+            <CardSearchPage
+              key='albumSearch'
+              {...props}
+              cardType={CardType.ALBUM}
+            />,
+            <CardSearchPage
+              key='playlistSearch'
+              {...props}
+              cardType={CardType.PLAYLIST}
+            />
+          ]
+        }
   }, [isTagSearch, props, didChangeTabsFrom])
 
   const { tabs, body } = useTabs(computedTabs)
