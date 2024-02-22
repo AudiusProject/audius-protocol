@@ -63,7 +63,6 @@ export const useFetchTabResultsEffect = (searchKind: SearchKind) => {
           })
         )
       } else {
-        console.log('asdf non tag search')
         if (shouldFetch) {
           dispatch(
             searchResultsPageActions.fetchSearchPageResults(
@@ -74,8 +73,6 @@ export const useFetchTabResultsEffect = (searchKind: SearchKind) => {
             )
           )
         }
-        console.log('asdf report search')
-
         track(
           make({
             eventName: EventNames.SEARCH_SEARCH,

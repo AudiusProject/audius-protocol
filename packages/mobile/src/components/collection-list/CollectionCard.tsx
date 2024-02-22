@@ -51,7 +51,6 @@ const FullCollectionCard = ({
 }: FullCollectionCardProps) => {
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
-    console.log('asdf collection press: ', trackSearchResultSelect)
     navigation.push('Collection', { id: collection.playlist_id })
     trackSearchResultSelect?.(collection.playlist_id)
   }, [navigation, collection.playlist_id, trackSearchResultSelect])
@@ -111,7 +110,6 @@ const CollectionCardWithId = ({
   style,
   trackSearchResultSelect
 }: CollectionCardWithIdProps) => {
-  console.log('asdf CollectionCardWithId: ', trackSearchResultSelect)
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   )

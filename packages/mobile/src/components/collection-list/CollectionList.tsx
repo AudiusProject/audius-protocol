@@ -43,7 +43,6 @@ type CollectionIdListProps = {
 type CollectionListProps = FullCollectionListProps | CollectionIdListProps
 
 const FullCollectionList = (props: FullCollectionListProps) => {
-  console.log('asdf FullCollectionList: ', props)
   const {
     collection,
     collectionIdsToNumTracks,
@@ -110,6 +109,7 @@ const CollectionIDList = (props: CollectionIdListProps) => {
     createPlaylistCallback,
     ...other
   } = props
+
   const renderCard: ListRenderItem<IDCardListItem | CreateCard> = useCallback(
     ({ item }) =>
       '_create' in item ? (
@@ -148,7 +148,6 @@ const CollectionIDList = (props: CollectionIdListProps) => {
 // Helper to switch between legacy version and newer version of CollectionList.
 // The latter just takes IDs and allows the child components to fetch their data
 export const CollectionList = (props: CollectionListProps) => {
-  console.log('asdf CollectionList: ', props)
   return isIdListProps(props)
     ? createElement(CollectionIDList, props)
     : createElement(FullCollectionList, props)

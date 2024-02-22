@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import type { ID } from '@audius/common'
+import type { ID } from '@audius/common/models'
 import { useIsFocused } from '@react-navigation/native'
 import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
 import { useSelector } from 'react-redux'

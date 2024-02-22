@@ -216,8 +216,9 @@ class SearchPageContent extends Component {
             id={playlist.playlist_id}
             imageSize={playlist._cover_art_sizes}
             primaryText={playlist.playlist_name}
-            secondaryText={`${playlist.user.name} • ${playlist.trackCount
-              } Track${playlist.trackCount > 1 ? 's' : ''}`}
+            secondaryText={`${playlist.user.name} • ${
+              playlist.trackCount
+            } Track${playlist.trackCount > 1 ? 's' : ''}`}
             onClick={onClick}
             menu={{
               type: 'playlist',

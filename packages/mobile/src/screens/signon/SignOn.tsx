@@ -331,7 +331,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const accountUser = useSelector(getAccountUser)
 
   const signedIn = signOnStatus === 'success'
-  console.log('asdf passwordField: ', passwordField)
   const signInError = passwordField.error
   const requiresOtp = signInError.includes('403')
   const emailIsValid = emailField.error !== 'characters'
@@ -445,7 +444,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     () => {
       processReferrerFromClipboard()
     },
-    () => { }
+    () => {}
   )
 
   const { staticWhite } = useThemeColors()
@@ -461,8 +460,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
         </Animated.View>
       )
     } else if (isSignin && signInError) {
-      console.log('asdf signInError: ', signInError)
-
       return (
         <Animated.View
           style={[styles.errorContainer, { opacity: errorOpacity }]}

@@ -1,4 +1,4 @@
-import type { User } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 
 import type { CardListProps } from 'app/components/core'
 import { CardList } from 'app/components/core'
@@ -10,6 +10,7 @@ type ListProps = Omit<CardListProps<User>, 'data'>
 
 export type ProfileListProps = {
   profiles: User[] | undefined
+  onCardPress: (user_id: ID) => void
 } & Partial<ListProps>
 
 export const ProfileList = (props: ProfileListProps) => {

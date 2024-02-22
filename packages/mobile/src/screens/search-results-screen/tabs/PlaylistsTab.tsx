@@ -28,7 +28,6 @@ const selectSearchPlaylists = (state: CommonState) => {
 
 export const PlaylistsTab = ({ route }) => {
   const { trackSearchResultSelect } = route.params
-
   const playlists = useProxySelector(selectSearchPlaylists, [])
   useFetchTabResultsEffect(SearchKind.PLAYLISTS)
 

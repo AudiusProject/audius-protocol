@@ -48,8 +48,6 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
 
   const handleSelectArtist = useCallback(
     (userId: number) => {
-      console.log('asdf handle selected artist')
-
       const isSelected = selectedArtistIds.includes(userId)
       if (isSelected) {
         dispatch(removeFollowArtists([userId]))
@@ -73,9 +71,9 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
 
         const textStyles = isSelected
           ? {
-              primaryText: styles.activeText,
-              secondaryText: styles.activeText
-            }
+            primaryText: styles.activeText,
+            secondaryText: styles.activeText
+          }
           : undefined
 
         return (

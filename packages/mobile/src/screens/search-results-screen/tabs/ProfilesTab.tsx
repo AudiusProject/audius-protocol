@@ -23,7 +23,6 @@ const selectSearchUsers = (state: CommonState) => {
 
 export const ProfilesTab = ({ route }) => {
   const { onCardPress } = route.params
-  console.log('asdf profile tab on press: ', route.params)
   const users = useProxySelector(selectSearchUsers, [])
 
   useFetchTabResultsEffect(SearchKind.USERS)

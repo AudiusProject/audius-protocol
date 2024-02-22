@@ -108,7 +108,6 @@ function* fetchSearchAsync(action: searchActions.FetchSearchAction) {
     const results = yield* call(getSearchResults, action.searchText)
     if (results) {
       yield* put(searchActions.fetchSearchSucceeded(results, action.searchText))
-      console.log('asdf got results, making autocomplete')
       yield* put(
         make(Name.SEARCH_SEARCH, {
           term: action.searchText,

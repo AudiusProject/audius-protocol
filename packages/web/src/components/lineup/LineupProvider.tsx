@@ -211,6 +211,7 @@ export interface LineupProviderProps {
   /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
   rankIconCount?: number
 
+  /** Track search result click metrics */
   trackSearchResultClick?: (trackId: ID) => void;
 }
 

@@ -19,7 +19,6 @@ const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 
 export const init = async () => {
   try {
-    console.log('asdf AmplitudeWriteKey: ', AmplitudeWriteKey, AmplitudeProxy)
     if (AmplitudeWriteKey && AmplitudeProxy) {
       await amplitudeInstance.setServerUrl(AmplitudeProxy)
       await amplitudeInstance.init(AmplitudeWriteKey)
@@ -76,7 +75,6 @@ export const identify = async (
 // Track Event
 // Docs: https://segment.com/docs/connections/spec/track/
 export const track = async ({ eventName, properties }: Track) => {
-  console.log('asdf track: ', { eventName, properties })
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
   const version = VersionNumber.appVersion
