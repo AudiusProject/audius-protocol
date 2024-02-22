@@ -10,9 +10,10 @@ import {
   Box,
   Text as HarmonyText,
   IconCaretRight,
-  Text
+  Text,
+  IconComponent
 } from '@audius/harmony'
-import { Button, ButtonType, IconComponent } from '@audius/stems'
+import { Button, ButtonType } from '@audius/stems'
 import {
   Form,
   Formik,

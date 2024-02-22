@@ -3,6 +3,7 @@ import IconAllTimeSVG from '../assets/icons/AllTime.svg'
 import IconAppearanceSVG from '../assets/icons/Appearance.svg'
 import IconArrowLeftSVG from '../assets/icons/ArrowLeft.svg'
 import IconArrowRightSVG from '../assets/icons/ArrowRight.svg'
+import IconBlogSVG from '../assets/icons/Blog.svg'
 import IconBoxHeartSVG from '../assets/icons/BoxHeart.svg'
 import IconCalendarDaySVG from '../assets/icons/CalendarDay.svg'
 import IconCalendarMonthSVG from '../assets/icons/CalendarMonth.svg'
@@ -44,6 +45,7 @@ import IconExternalLinkSVG from '../assets/icons/ExternalLink.svg'
 import IconFeedSVG from '../assets/icons/Feed.svg'
 import IconFilterSVG from '../assets/icons/Filter.svg'
 import IconFolderSVG from '../assets/icons/Folder.svg'
+import IconFoundationSVG from '../assets/icons/Foundation.svg'
 import IconGiftSVG from '../assets/icons/Gift.svg'
 import IconHeadphonesSVG from '../assets/icons/Headphones.svg'
 import IconHeartSVG from '../assets/icons/Heart.svg'
@@ -59,6 +61,7 @@ import IconListeningHistorySVG from '../assets/icons/ListeningHistory.svg'
 import IconListensSVG from '../assets/icons/Listens.svg'
 import IconLockSVG from '../assets/icons/Lock.svg'
 import IconLockUnlockedSVG from '../assets/icons/LockUnlocked.svg'
+import IconMerchSVG from '../assets/icons/Merch.svg'
 import IconMessageSVG from '../assets/icons/Message.svg'
 import IconMessageBlockSVG from '../assets/icons/MessageBlock.svg'
 import IconMessageLockedSVG from '../assets/icons/MessageLocked.svg'
@@ -106,6 +109,7 @@ import IconSpeakerSVG from '../assets/icons/Speaker.svg'
 import IconSpecialAccessSVG from '../assets/icons/SpecialAccess.svg'
 import IconStarSVG from '../assets/icons/Star.svg'
 import IconStarsSVG from '../assets/icons/Stars.svg'
+import IconSupportSVG from '../assets/icons/Support.svg'
 import IconTastemakerSVG from '../assets/icons/Tastemaker.svg'
 import IconThumbsDownSVG from '../assets/icons/ThumbsDown.svg'
 import IconThumbsUpSVG from '../assets/icons/ThumbsUp.svg'
@@ -141,6 +145,7 @@ export const IconFilter = IconFilterSVG as IconComponent
 export const IconSearch = IconSearchSVG as IconComponent
 export const IconAlbum = IconAlbumSVG as IconComponent
 export const IconAllTime = IconAllTimeSVG as IconComponent
+export const IconBlog = IconBlogSVG as IconComponent
 export const IconFolder = IconFolderSVG as IconComponent
 export const IconSend = IconSendSVG as IconComponent
 export const IconAppearance = IconAppearanceSVG as IconComponent
@@ -278,3 +283,6 @@ export const IconValidationX = IconValidationXSVG as IconComponent
 export const IconSoundwave = IconSoundwaveSVG as IconComponent
 export const IconCreditCard = IconCreditCardSVG as IconComponent
 export const IconWaveForm = IconWaveformSVG as IconComponent
+export const IconFoundation = IconFoundationSVG as IconComponent
+export const IconMerch = IconMerchSVG as IconComponent
+export const IconSupport = IconSupportSVG as IconComponent

@@ -204,6 +204,18 @@ export enum Name {
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
   TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
   TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
+  // Download-Only Gated Track Uploads
+  TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD = 'Track Upload: Follow Gated Download',
+  TRACK_UPLOAD_USDC_GATED_DOWNLOAD = 'Track Upload: USDC Gated Download',
+  TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK = 'Track Upload: Clicked USDC Download Waitlist Link',
+
+  // Track Downloads
+  TRACK_DOWNLOAD_CLICKED_DOWNLOAD_ALL = 'Track Download: Clicked Download All',
+  TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL = 'Track Download: Successfull Download All',
+  TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL = 'Track Download: Failed Download All',
+  TRACK_DOWNLOAD_CLICKED_DOWNLOAD_SINGLE = 'Track Download: Clicked Download Single',
+  TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE = 'Track Download: Successfull Download Single',
+  TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE = 'Track Download: Failed Download Single',
 
   // Track Edits
   TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
@@ -216,6 +228,9 @@ export enum Name {
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
+  // Unlocked Download-Only Gated Tracks
+  USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED = 'USDC Gated: Download Track Unlocked',
+  FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED = 'Follow Gated: Download Track Unlocked',
 
   // Trending
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
@@ -1045,26 +1060,87 @@ type TrackUploadViewTrackPage = {
 type TrackUploadCollectibleGated = {
   eventName: Name.TRACK_UPLOAD_COLLECTIBLE_GATED
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadFollowGated = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadTipGated = {
   eventName: Name.TRACK_UPLOAD_TIP_GATED
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadUSDCGated = {
   eventName: Name.TRACK_UPLOAD_USDC_GATED
   price: number
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadClickUSDCWaitListLink = {
   eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
+}
+
+type TrackUploadFollowGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
+type TrackUploadUSDCGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_USDC_GATED_DOWNLOAD
+  price: number
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
+type TrackUploadClickUSDCDownloadWaitListLink = {
+  eventName: Name.TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK
+}
+
+// Track Downloads
+type TrackDownloadClickedDownloadAll = {
+  eventName: Name.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_ALL
+  parentTrackId: ID
+  stemTrackIds: ID[]
+  device: 'web' | 'native'
+}
+
+type TrackDownloadSuccessfulDownloadAll = {
+  eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL
+  device: 'web' | 'native'
+}
+
+type TrackDownloadFailedDownloadAll = {
+  eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL
+  device: 'web' | 'native'
+}
+
+type TrackDownloadClickedDownloadSingle = {
+  eventName: Name.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_SINGLE
+  trackId: ID
+  device: 'web' | 'native'
+}
+
+type TrackDownloadSuccessfulDownloadSingle = {
+  eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE
+  device: 'web' | 'native'
+}
+
+type TrackDownloadFailedDownloadSingle = {
+  eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE
+  device: 'web' | 'native'
 }
 
 // Track Edits
@@ -1093,6 +1169,16 @@ type FollowGatedTrackUnlocked = {
 
 type TipGatedTrackUnlocked = {
   eventName: Name.TIP_GATED_TRACK_UNLOCKED
+  trackId: number
+}
+
+type USDCGatedDownloadTrackUnlocked = {
+  eventName: Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
+  count: number
+}
+
+type FollowGatedDownloadTrackUnlocked = {
+  eventName: Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
   trackId: number
 }
 
@@ -2321,6 +2407,15 @@ export type AllTrackingEvents =
   | TrackUploadTipGated
   | TrackUploadUSDCGated
   | TrackUploadClickUSDCWaitListLink
+  | TrackUploadFollowGatedDownload
+  | TrackUploadUSDCGatedDownload
+  | TrackUploadClickUSDCDownloadWaitListLink
+  | TrackDownloadClickedDownloadAll
+  | TrackDownloadSuccessfulDownloadAll
+  | TrackDownloadFailedDownloadAll
+  | TrackDownloadClickedDownloadSingle
+  | TrackDownloadSuccessfulDownloadSingle
+  | TrackDownloadFailedDownloadSingle
   | TrackEditAccessChanged
   | TrackUploadSuccess
   | TrackUploadFailure
@@ -2333,6 +2428,8 @@ export type AllTrackingEvents =
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked
+  | USDCGatedDownloadTrackUnlocked
+  | FollowGatedDownloadTrackUnlocked
   | TrendingChangeView
   | TrendingPaginate
   | FeedChangeView

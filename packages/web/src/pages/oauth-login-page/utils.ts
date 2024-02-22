@@ -104,11 +104,13 @@ export const getFormattedAppAddress = ({
 export const formOAuthResponse = async ({
   account,
   userEmail,
+  apiKey,
+  onError,
   txSignature, // Only applicable to scope = write_once
-  onError
 }: {
   account: User
   userEmail?: string | null
+  apiKey: string | string[] | null
   onError: () => void
   txSignature?: { message: string; signature: string }
 }) => {
@@ -173,6 +175,7 @@ export const formOAuthResponse = async ({
     handle: account?.handle,
     verified: account?.is_verified,
     profilePicture,
+    apiKey,
     ...(txSignature ? { txSignature } : {}),
     sub: userId,
     iat: timestamp

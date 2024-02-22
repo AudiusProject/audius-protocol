@@ -27,9 +27,11 @@ import {
   IconCart,
   IconCollectible,
   IconSpecialAccess,
-  IconSolana as LogoSol
+  IconLogoCircleETH,
+  IconLogoCircleSOL,
+  useTheme
 } from '@audius/harmony'
-import { Button, ButtonType, LogoEth } from '@audius/stems'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -127,6 +129,7 @@ const LockedGatedTrackSection = ({
     ? FollowSource.HOW_TO_UNLOCK_MODAL
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const { spacing } = useTheme()
 
   const handlePurchase = useAuthenticatedCallback(() => {
     if (lockedContentModalVisibility) {
@@ -183,6 +186,10 @@ const LockedGatedTrackSection = ({
 
   const renderLockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
+      const { nft_collection } = streamConditions
+      const { imageUrl, name, chain } = nft_collection
+      const ChainIcon =
+        chain === Chain.Eth ? IconLogoCircleETH : IconLogoCircleSOL
       return (
         <Text variant='body' strength='strong'>
           <div className={styles.collectibleGatedDescription}>
@@ -192,21 +199,17 @@ const LockedGatedTrackSection = ({
             className={styles.gatedContentSectionCollection}
             onClick={goToCollection}
           >
-            {streamConditions.nft_collection?.imageUrl && (
+            {imageUrl && (
               <div className={styles.collectionIconsContainer}>
                 <img
+                  src={imageUrl}
+                  alt={`${name} nft collection`}
                   className={styles.collectibleImage}
-                  src={streamConditions.nft_collection.imageUrl}
-                  alt={`${streamConditions.nft_collection.name} nft collection`}
                 />
-                {streamConditions.nft_collection.chain === Chain.Eth ? (
-                  <LogoEth className={styles.collectionChainIcon} />
-                ) : (
-                  <LogoSol className={styles.collectionChainIcon} />
-                )}
+                <ChainIcon css={{ position: 'relative', left: -spacing.s }} />
               </div>
             )}
-            <span>{streamConditions.nft_collection?.name}</span>
+            <span>{name}</span>
           </div>
         </Text>
       )

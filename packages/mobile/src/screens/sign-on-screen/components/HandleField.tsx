@@ -1,3 +1,4 @@
+import { useIsWaitingForValidation } from '@audius/common/hooks'
 import { pickHandlePageMessages } from '@audius/common/messages'
 import { MAX_HANDLE_LENGTH } from '@audius/common/services'
 import { useField, useFormikContext } from 'formik'
@@ -12,29 +13,36 @@ export const HandleField = (props: Partial<HarmonyTextFieldProps>) => {
 
   const { isValid } = useFormikContext()
 
-  const helperText =
-    error && error !== 'handle required' && handle
-      ? error
-      : handle && isValid
-      ? pickHandlePageMessages.handleAvailable
-      : ''
+  const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
+
+  const getHelperText = () => {
+    if (isWaitingForValidation) return undefined
+    if (error && handle) return error
+    if (handle && isValid) return pickHandlePageMessages.handleAvailable
+    return undefined
+  }
 
   return (
     <HarmonyTextField
       name={name}
       label={pickHandlePageMessages.handle}
-      helperText={helperText}
+      helperText={getHelperText()}
       maxLength={MAX_HANDLE_LENGTH}
       startAdornmentText='@'
       placeholder={pickHandlePageMessages.handle}
       transformValueOnChange={(value) => value.replace(/\s/g, '')}
       debouncedValidationMs={1000}
-      endIcon={handle && isValid ? IconCheck : undefined}
+      endIcon={
+        handle && isValid && !isWaitingForValidation ? IconCheck : undefined
+      }
       IconProps={{ size: 'l', color: 'default' }}
       autoCapitalize='none'
       autoComplete='off'
-      clearErrorOnChange={false}
+      onChange={() => {
+        handleChange()
+      }}
       {...other}
+      error={!!error}
     />
   )
 }

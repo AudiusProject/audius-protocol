@@ -13,13 +13,9 @@ import {
   Flex,
   IconExternalLink,
   IconCheck,
-  Text
+  Text,
+  PlainButton
 } from '@audius/harmony'
-import {
-  HarmonyPlainButton,
-  HarmonyPlainButtonSize,
-  HarmonyPlainButtonType
-} from '@audius/stems'
 import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
@@ -112,14 +108,15 @@ export const TransferSuccessful = ({
             <Text variant='body' size='m' strength='default'>
               {addressValue}
             </Text>
-            <HarmonyPlainButton
-              style={{ padding: 0 }}
+            <PlainButton
+              css={{ padding: 0 }}
               onClick={handleClickTransactionLink}
               iconRight={IconExternalLink}
-              variant={HarmonyPlainButtonType.SUBDUED}
-              size={HarmonyPlainButtonSize.DEFAULT}
-              text={messages.viewOn}
-            />
+              variant='subdued'
+              size='default'
+            >
+              {messages.viewOn}
+            </PlainButton>
           </div>
         </>
       ) : null}

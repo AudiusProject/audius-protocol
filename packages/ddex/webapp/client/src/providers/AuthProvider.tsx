@@ -10,7 +10,6 @@ export type AuthedUser = {
   verified: boolean
   profilePicture: ProfilePicture | null
   isAdmin: boolean
-  isArtist: boolean
 }
 
 type AuthContextType = {

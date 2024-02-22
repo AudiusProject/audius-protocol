@@ -15,7 +15,6 @@ import {
 
 import ArtistHome from 'pages/ArtistHome'
 import Login from 'pages/Login/Login'
-import NotAllowlisted from 'pages/NotAllowlisted'
 import Upload from 'pages/Upload/Upload'
 import { AudiusSdkProvider } from 'providers/AudiusSdkProvider'
 import { AuthedUser, AuthProvider } from 'providers/AuthProvider'
@@ -65,7 +64,7 @@ const ddexRouter = createBrowserRouter(
       loader={() => defer({ userPromise: fetchUserSession() })}
     >
       {/* Authed admin routes */}
-      <Route path='/admin' element={<AuthedLayout userType='admin' />}>
+      <Route path='/admin' element={<AuthedLayout isAdmin />}>
         <Route path='' element={<Upload />} />
         <Route
           path='deliveries'
@@ -81,17 +80,9 @@ const ddexRouter = createBrowserRouter(
         />
       </Route>
 
-      {/* Authed artist routes */}
-      <Route path='/artist' element={<AuthedLayout userType='artist' />}>
+      {/* Authed non-admin routes */}
+      <Route path='/artist' element={<AuthedLayout />}>
         <Route path='' element={<ArtistHome />} />
-      </Route>
-
-      {/* Authed but not in the admin or artist allowlist */}
-      <Route
-        path='/not-allowlisted'
-        element={<AuthedLayout userType='not-allowlisted' />}
-      >
-        <Route path='' element={<NotAllowlisted />} />
       </Route>
 
       {/* Unauthed and fallback routes */}

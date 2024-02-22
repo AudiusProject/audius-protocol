@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ActivityFull } from './ActivityFull';
+import type { TrackActivityFull } from './TrackActivityFull';
 import {
-    ActivityFullFromJSON,
-    ActivityFullFromJSONTyped,
-    ActivityFullToJSON,
-} from './ActivityFull';
+    TrackActivityFullFromJSON,
+    TrackActivityFullFromJSONTyped,
+    TrackActivityFullToJSON,
+} from './TrackActivityFull';
 import type { VersionMetadata } from './VersionMetadata';
 import {
     VersionMetadataFromJSON,
@@ -77,10 +77,10 @@ export interface HistoryResponseFull {
     version: VersionMetadata;
     /**
      * 
-     * @type {Array<ActivityFull>}
+     * @type {Array<TrackActivityFull>}
      * @memberof HistoryResponseFull
      */
-    data?: Array<ActivityFull>;
+    data?: Array<TrackActivityFull>;
 }
 
 /**
@@ -116,7 +116,7 @@ export function HistoryResponseFullFromJSONTyped(json: any, ignoreDiscriminator:
         'signature': json['signature'],
         'timestamp': json['timestamp'],
         'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(ActivityFullFromJSON)),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(TrackActivityFullFromJSON)),
     };
 }
 
@@ -136,7 +136,7 @@ export function HistoryResponseFullToJSON(value?: HistoryResponseFull | null): a
         'signature': value.signature,
         'timestamp': value.timestamp,
         'version': VersionMetadataToJSON(value.version),
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(ActivityFullToJSON)),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(TrackActivityFullToJSON)),
     };
 }
 

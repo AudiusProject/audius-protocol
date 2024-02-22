@@ -287,7 +287,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			Tracks:         tracks,
 			Metadata: common.CollectionMetadata{
 				PlaylistName:        title,
-				PlaylistOwnerID:     artistName, // TODO: We don't have an ID here
+				PlaylistOwnerName:   artistName,
 				ReleaseDate:         releaseDate,
 				Genre:               genre,
 				IsAlbum:             true,
