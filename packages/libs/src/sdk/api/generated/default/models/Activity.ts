@@ -14,13 +14,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { Track } from './Track';
-import {
-    TrackFromJSON,
-    TrackFromJSONTyped,
-    TrackToJSON,
-} from './Track';
-
 /**
  * 
  * @export
@@ -35,16 +28,16 @@ export interface Activity {
     timestamp?: string;
     /**
      * 
-     * @type {string}
+     * @type {object}
      * @memberof Activity
      */
-    itemType?: string;
+    itemType?: object;
     /**
      * 
-     * @type {Track}
+     * @type {object}
      * @memberof Activity
      */
-    item?: Track;
+    item?: object;
 }
 
 /**
@@ -68,7 +61,7 @@ export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
         'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
-        'item': !exists(json, 'item') ? undefined : TrackFromJSON(json['item']),
+        'item': !exists(json, 'item') ? undefined : json['item'],
     };
 }
 
@@ -83,7 +76,7 @@ export function ActivityToJSON(value?: Activity | null): any {
         
         'timestamp': value.timestamp,
         'item_type': value.itemType,
-        'item': TrackToJSON(value.item),
+        'item': value.item,
     };
 }
 

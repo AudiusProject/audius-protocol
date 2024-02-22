@@ -60,8 +60,8 @@ activity_model_full = ns.model(
     },
 )
 
-history_track_activity_model = ns.model(
-    "activity",
+track_activity_model = ns.model(
+    "track_activity",
     {
         "timestamp": fields.String(allow_null=True),
         "item_type": fields.FormattedString("track"),
@@ -69,16 +69,7 @@ history_track_activity_model = ns.model(
     },
 )
 
-history_track_activity_model_full = ns.model(
-    "activity_full",
-    {
-        "timestamp": fields.String(allow_null=True),
-        "item_type": fields.FormattedString("track"),
-        "item": fields.Nested(track_full),
-    },
-)
-
-library_track_activity_model_full = ns.model(
+track_activity_model_full = ns.model(
     "track_activity_full",
     {
         "timestamp": fields.String(allow_null=True),
@@ -87,7 +78,7 @@ library_track_activity_model_full = ns.model(
     },
 )
 
-library_collection_activity_model_full = ns.model(
+collection_activity_model_full = ns.model(
     "collection_activity_full",
     {
         "timestamp": fields.String(allow_null=True),

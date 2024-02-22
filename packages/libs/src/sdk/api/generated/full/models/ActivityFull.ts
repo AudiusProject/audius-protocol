@@ -14,13 +14,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { TrackFull } from './TrackFull';
-import {
-    TrackFullFromJSON,
-    TrackFullFromJSONTyped,
-    TrackFullToJSON,
-} from './TrackFull';
-
 /**
  * 
  * @export
@@ -35,16 +28,16 @@ export interface ActivityFull {
     timestamp?: string;
     /**
      * 
-     * @type {string}
+     * @type {object}
      * @memberof ActivityFull
      */
-    itemType?: string;
+    itemType?: object;
     /**
      * 
-     * @type {TrackFull}
+     * @type {object}
      * @memberof ActivityFull
      */
-    item?: TrackFull;
+    item?: object;
 }
 
 /**
@@ -68,7 +61,7 @@ export function ActivityFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
         'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
-        'item': !exists(json, 'item') ? undefined : TrackFullFromJSON(json['item']),
+        'item': !exists(json, 'item') ? undefined : json['item'],
     };
 }
 
@@ -83,7 +76,7 @@ export function ActivityFullToJSON(value?: ActivityFull | null): any {
         
         'timestamp': value.timestamp,
         'item_type': value.itemType,
-        'item': TrackFullToJSON(value.item),
+        'item': value.item,
     };
 }
 
