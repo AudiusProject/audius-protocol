@@ -26,7 +26,9 @@ const selectSearchPlaylists = (state: CommonState) => {
     .filter((playlist) => playlist.user && !playlist.user.is_deactivated)
 }
 
-export const PlaylistsTab = () => {
+export const PlaylistsTab = ({ route }) => {
+  const { trackSearchResultSelect } = route.params
+
   const playlists = useProxySelector(selectSearchPlaylists, [])
   useFetchTabResultsEffect(SearchKind.PLAYLISTS)
 
@@ -36,6 +38,7 @@ export const PlaylistsTab = () => {
       isLoading={!playlists}
       collection={playlists}
       ListEmptyComponent={<EmptyResults />}
+      trackSearchResultSelect={trackSearchResultSelect}
     />
   )
 }

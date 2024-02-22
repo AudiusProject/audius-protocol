@@ -1,10 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 
-<<<<<<< Updated upstream
 import type { User } from '@audius/common/models'
-=======
-import type { ID, User } from '@audius/common'
->>>>>>> Stashed changes
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native'
 import { Text, View } from 'react-native'
 import type { LinearGradientProps } from 'react-native-linear-gradient'

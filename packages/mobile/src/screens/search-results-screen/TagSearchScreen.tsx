@@ -49,6 +49,20 @@ export const TagSearchScreen = () => {
     [query]
   )
   const searchQuery = useSelector(getSearchBarText)
+  const trackSearchResultSelect = (
+    id: ID,
+    kind: 'track' | 'profile' | 'playlist' | 'album'
+  ) => {
+    track(
+      make({
+        eventName: EventNames.SEARCH_RESULT_SELECT,
+        term: searchQuery,
+        source: 'more results page',
+        kind,
+        id
+      })
+    )
+  }
 
   useEffect(() => {
     dispatch(fetchSearch(query))
@@ -71,7 +85,10 @@ export const TagSearchScreen = () => {
   const tracksScreen = tabScreen({
     name: 'Tracks',
     Icon: IconNote,
-    component: TracksTab
+    component: TracksTab,
+    initialParams: {
+      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'track')
+    }
   })
 
   const profilesScreen = tabScreen({
@@ -79,7 +96,7 @@ export const TagSearchScreen = () => {
     Icon: IconUser,
     component: ProfilesTab,
     initialParams: {
-      onCardPress: (id) => trackPress(id, 'profile')
+      onCardPress: (id) => trackSearchResultSelect(id, 'profile')
     }
   })
 

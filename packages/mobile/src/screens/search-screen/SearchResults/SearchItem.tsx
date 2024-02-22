@@ -1,17 +1,13 @@
 import { useCallback } from 'react'
 
-<<<<<<< Updated upstream
 import type {
   SearchUser,
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
-=======
-import { SquareSizes } from '@audius/common'
-import type { SearchPlaylist, SearchTrack, SearchUser } from '@audius/common'
 import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
->>>>>>> Stashed changes
+
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

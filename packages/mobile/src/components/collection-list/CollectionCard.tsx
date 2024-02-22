@@ -111,6 +111,7 @@ const CollectionCardWithId = ({
   style,
   trackSearchResultSelect
 }: CollectionCardWithIdProps) => {
+  console.log('asdf CollectionCardWithId: ', trackSearchResultSelect)
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   )

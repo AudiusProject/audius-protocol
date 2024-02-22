@@ -22,7 +22,6 @@ const Lineup = (props: LineupProps) => {
   const isMobile = useIsMobile()
   const trackTile = isMobile ? MobileTrackTile : DesktopTrackTile
   const playlistTile = isMobile ? MobilePlaylistTile : DesktopPlaylistTile
-
   return (
     <LineupProvider
       {...props}
@@ -52,7 +51,7 @@ Lineup.defaultProps = {
   variant: LineupVariant.MAIN,
   selfLoad: true,
   delineate: false,
-  loadMore: () => {},
+  loadMore: () => { },
   ordered: false,
   setInView: undefined
 }

@@ -1,6 +1,6 @@
 import { Component } from 'react'
 
-import { Status } from '@audius/common/models'
+import { Status, Name } from '@audius/common/models'
 import {
   searchResultsPageTracksLineupActions as tracksActions,
   SearchKind
@@ -24,6 +24,7 @@ import {
   fullSearchResultsPage,
   NOT_FOUND_PAGE
 } from 'utils/route'
+import { make } from 'common/store/analytics/actions'
 
 import styles from './SearchPageContent.module.css'
 
@@ -215,9 +216,8 @@ class SearchPageContent extends Component {
             id={playlist.playlist_id}
             imageSize={playlist._cover_art_sizes}
             primaryText={playlist.playlist_name}
-            secondaryText={`${playlist.user.name} • ${
-              playlist.trackCount
-            } Track${playlist.trackCount > 1 ? 's' : ''}`}
+            secondaryText={`${playlist.user.name} • ${playlist.trackCount
+              } Track${playlist.trackCount > 1 ? 's' : ''}`}
             onClick={onClick}
             menu={{
               type: 'playlist',
@@ -308,7 +308,9 @@ class SearchPageContent extends Component {
         </Toast>
       )
     })
-
+    const trackSearchResultClick = (trackId, source) => {
+      this.props.dispatch(make(Name.SEARCH_RESULT_SELECT, { searchText, kind: 'track', id: trackId, source: source }))
+    }
     const foundResults =
       artistCards.length > 0 ||
       tracks.entries.length > 0 ||
@@ -354,9 +356,13 @@ class SearchPageContent extends Component {
                   })
                 )
               }}
-              playTrack={(uid) => this.props.dispatch(tracksActions.play(uid))}
+              playTrack={(uid, trackId) => {
+                trackSearchResultClick(trackId, 'more results page')
+                this.props.dispatch(tracksActions.play(uid))
+              }}
               pauseTrack={() => this.props.dispatch(tracksActions.pause())}
               actions={tracksActions}
+              trackSearchResultClick={(trackId) => { trackSearchResultClick(trackId, 'more results page') }}
             />
           </div>
         </>
@@ -441,11 +447,14 @@ class SearchPageContent extends Component {
                     })
                   )
                 }
-                playTrack={(uid) =>
+                playTrack={(uid, trackId) => {
+                  trackSearchResultClick(trackId, 'search results page')
                   this.props.dispatch(tracksActions.play(uid))
+                }
                 }
                 pauseTrack={(uid) => this.props.dispatch(tracksActions.pause())}
                 actions={tracksActions}
+                trackSearchResultClick={(trackId) => { trackSearchResultClick(trackId, 'search results page') }}
               />
             </div>
           ) : null}

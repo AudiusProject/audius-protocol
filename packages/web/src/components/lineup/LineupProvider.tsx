@@ -79,7 +79,7 @@ export const getLoadMoreTrackCount = (
 ) =>
   Math.ceil(
     (innerHeight / totalTileHeight[variant]) *
-      (typeof multiplier === 'function' ? multiplier() : multiplier)
+    (typeof multiplier === 'function' ? multiplier() : multiplier)
   )
 
 // Call load more when the user is LOAD_MORE_PAGE_THRESHOLD of the view height
@@ -129,7 +129,7 @@ export interface LineupProviderProps {
   playingUid: UID | null
   playingTrackId: ID | null
   playing: boolean
-  playTrack: (uid: UID) => void
+  playTrack: (uid: UID, trackId?: ID) => void
   pauseTrack: () => void
   variant: LineupVariant
   loadMore?: (offset: number, limit: number, overwrite: boolean) => void
@@ -210,6 +210,8 @@ export interface LineupProviderProps {
 
   /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
   rankIconCount?: number
+
+  trackSearchResultClick?: (trackId: ID) => void;
 }
 
 interface LineupProviderState {
@@ -277,7 +279,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
   togglePlay = (uid: UID, trackId: ID, source?: PlaybackSource) => {
     const { playTrack, pauseTrack, playing, playingUid, record } = this.props
     if (uid !== playingUid || (uid === playingUid && !playing)) {
-      playTrack(uid)
+      playTrack(uid, trackId)
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${trackId}`,
@@ -487,7 +489,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       numPlaylistSkeletonRows,
       isTrending = false,
       showFeedTipTile = false,
-      rankIconCount = 0
+      rankIconCount = 0,
+      trackSearchResultClick
     } = this.props
     const isMobile = this.context.isMobile
     const status = lineup.status
@@ -537,7 +540,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             hasLoaded: this.hasLoaded,
             isTrending,
             showRankIcon: index < rankIconCount,
-            showFeedTipTile
+            showFeedTipTile,
+            trackSearchResultClick,
           }
           if (entry.id === leadingElementId) {
             trackProps = { ...trackProps, ...leadingElementTileProps }
@@ -730,29 +734,29 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           {(featuredId: ID | null) =>
             featuredId
               ? (props) => (
+                <div
+                  className={cn(
+                    styles.featuredContainer,
+                    leadingElementClassName
+                  )}
+                  style={{
+                    height: '100%',
+                    maxHeight: props.maxHeight,
+                    marginBottom: props.marginBottom
+                  }}
+                >
                   <div
-                    className={cn(
-                      styles.featuredContainer,
-                      leadingElementClassName
-                    )}
+                    className={styles.featuredContent}
                     style={{
                       height: '100%',
-                      maxHeight: props.maxHeight,
-                      marginBottom: props.marginBottom
+                      opacity: props.opacity,
+                      maxHeight: props.maxHeight
                     }}
                   >
-                    <div
-                      className={styles.featuredContent}
-                      style={{
-                        height: '100%',
-                        opacity: props.opacity,
-                        maxHeight: props.maxHeight
-                      }}
-                    >
-                      {allTracks[featuredId]}
-                    </div>
+                    {allTracks[featuredId]}
                   </div>
-                )
+                </div>
+              )
               : () => null
           }
         </Transition>
@@ -772,7 +776,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             <InfiniteScroll
               aria-label={this.props['aria-label']}
               pageStart={0}
-              loadMore={lineup.hasMore ? this.loadMore : () => {}}
+              loadMore={lineup.hasMore ? this.loadMore : () => { }}
               hasMore={lineup.hasMore && canLoadMore}
               // If we're on mobile, we scroll the entire page so we should use the window
               // to calculate scroll position.

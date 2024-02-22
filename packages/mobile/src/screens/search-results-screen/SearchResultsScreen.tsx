@@ -78,7 +78,7 @@ export const SearchResultsScreen = () => {
     Icon: IconAlbum,
     component: AlbumsTab,
     initialParams: {
-      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'playlist')
+      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'album')
     }
   })
 
