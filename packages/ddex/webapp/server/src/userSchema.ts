@@ -1,6 +1,6 @@
 import type { ProfilePicture } from '@audius/sdk'
 import mongoose from 'mongoose'
-import { decodeHashedId, isUserAdmin, isUserArtist } from './utils'
+import { decodeHashedId, isUserAdmin } from './utils'
 
 export interface IUser {
   _id: string // Use _id to store the userId
@@ -11,7 +11,6 @@ export interface IUser {
   verified: boolean
   profilePicture: ProfilePicture | null
   isAdmin: boolean
-  isArtist: boolean
 }
 
 const profilePictureSchema = new mongoose.Schema({
@@ -40,7 +39,6 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   verified: { type: Boolean, default: false },
   profilePicture: { type: profilePictureSchema, default: null },
   isAdmin: { type: Boolean, default: false },
-  isArtist: { type: Boolean, default: false },
 })
 
 userSchema.method('updateRoles', async function updateRoles() {
@@ -48,7 +46,7 @@ userSchema.method('updateRoles', async function updateRoles() {
   if (!decodedUserId) return
 
   this.isAdmin = isUserAdmin(decodedUserId)
-  this.isArtist = isUserArtist(decodedUserId)
+  this.decodedUserId = decodedUserId
 
   await this.save()
   return this
