@@ -18,7 +18,7 @@ import type {
 } from 'common/store/pages/signon/types'
 import RNRestart from 'react-native-restart'
 import type { Store } from 'redux'
-import { createStore, combineReducers, applyMiddleware, compose } from 'redux'
+import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import thunk from 'redux-thunk'
