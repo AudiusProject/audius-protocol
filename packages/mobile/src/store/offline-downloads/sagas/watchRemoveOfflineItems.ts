@@ -44,7 +44,10 @@ function* removeItemFromDisk(
       getLocalCollectionDir,
       item.id.toString()
     )
-    const exists = yield* call(ReactNativeBlobUtil.fs.exists, collectionDirectory)
+    const exists = yield* call(
+      ReactNativeBlobUtil.fs.exists,
+      collectionDirectory
+    )
     if (exists) {
       yield* call(ReactNativeBlobUtil.fs.unlink, collectionDirectory)
     }

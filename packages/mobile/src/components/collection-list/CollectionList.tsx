@@ -76,7 +76,8 @@ const FullCollectionList = (props: FullCollectionListProps) => {
       collectionIdsToNumTracks,
       createPlaylistCallback,
       createPlaylistSource,
-      createPlaylistTrackId
+      createPlaylistTrackId,
+      trackSearchResultSelect
     ]
   )
 

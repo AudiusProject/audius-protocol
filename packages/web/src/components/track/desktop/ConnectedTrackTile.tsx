@@ -115,7 +115,7 @@ const ConnectedTrackTile = ({
   isTrending,
   isFeed = false,
   showRankIcon,
-  trackSearchResultClick,
+  trackSearchResultClick
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -309,10 +309,9 @@ const ConnectedTrackTile = ({
     shareTrack(trackId)
   }, [shareTrack, trackId])
 
-
   const onClickTitle = useCallback(() => {
     trackSearchResultClick?.(trackId)
-  }, [trackSearchResultClick])
+  }, [trackSearchResultClick, trackId])
 
   const openLockedContentModal = useCallback(() => {
     dispatch(setLockedContentId({ id: trackId }))

@@ -7,7 +7,6 @@ import type {
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
-
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 

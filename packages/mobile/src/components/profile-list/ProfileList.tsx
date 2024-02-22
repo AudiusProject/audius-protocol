@@ -10,7 +10,7 @@ type ListProps = Omit<CardListProps<User>, 'data'>
 
 export type ProfileListProps = {
   profiles: User[] | undefined
-  onCardPress: (user_id: ID) => void
+  onCardPress?: (user_id: ID) => void
 } & Partial<ListProps>
 
 export const ProfileList = (props: ProfileListProps) => {

@@ -9,6 +9,7 @@ import { formatCount } from '@audius/common/utils'
 import { IconSearch as IconBigSearch } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
+import { make } from 'common/store/analytics/actions'
 import Card from 'components/card/desktop/Card'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'
@@ -24,7 +25,6 @@ import {
   fullSearchResultsPage,
   NOT_FOUND_PAGE
 } from 'utils/route'
-import { make } from 'common/store/analytics/actions'
 
 import styles from './SearchPageContent.module.css'
 
@@ -310,7 +310,14 @@ class SearchPageContent extends Component {
       )
     })
     const trackSearchResultClick = (trackId, source) => {
-      this.props.dispatch(make(Name.SEARCH_RESULT_SELECT, { searchText, kind: 'track', id: trackId, source: source }))
+      this.props.dispatch(
+        make(Name.SEARCH_RESULT_SELECT, {
+          searchText,
+          kind: 'track',
+          id: trackId,
+          source
+        })
+      )
     }
     const foundResults =
       artistCards.length > 0 ||
@@ -363,7 +370,9 @@ class SearchPageContent extends Component {
               }}
               pauseTrack={() => this.props.dispatch(tracksActions.pause())}
               actions={tracksActions}
-              trackSearchResultClick={(trackId) => { trackSearchResultClick(trackId, 'more results page') }}
+              trackSearchResultClick={(trackId) => {
+                trackSearchResultClick(trackId, 'more results page')
+              }}
             />
           </div>
         </>
@@ -451,11 +460,12 @@ class SearchPageContent extends Component {
                 playTrack={(uid, trackId) => {
                   trackSearchResultClick(trackId, 'search results page')
                   this.props.dispatch(tracksActions.play(uid))
-                }
-                }
+                }}
                 pauseTrack={(uid) => this.props.dispatch(tracksActions.pause())}
                 actions={tracksActions}
-                trackSearchResultClick={(trackId) => { trackSearchResultClick(trackId, 'search results page') }}
+                trackSearchResultClick={(trackId) => {
+                  trackSearchResultClick(trackId, 'search results page')
+                }}
               />
             </div>
           ) : null}

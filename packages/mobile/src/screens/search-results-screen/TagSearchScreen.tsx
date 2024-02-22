@@ -68,20 +68,6 @@ export const TagSearchScreen = () => {
     dispatch(fetchSearch(query))
   }, [dispatch, query])
 
-  const trackPress = (
-    id: ID,
-    kind: 'track' | 'profile' | 'playlist' | 'album'
-  ) => {
-    console.log('asdf tag track')
-    track(
-      make({
-        eventName: EventNames.SEARCH_TAG_SEARCH,
-        tag: searchQuery,
-        source: 'more results page'
-      })
-    )
-  }
-
   const tracksScreen = tabScreen({
     name: 'Tracks',
     Icon: IconNote,

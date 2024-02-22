@@ -71,9 +71,9 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
 
         const textStyles = isSelected
           ? {
-            primaryText: styles.activeText,
-            secondaryText: styles.activeText
-          }
+              primaryText: styles.activeText,
+              secondaryText: styles.activeText
+            }
           : undefined
 
         return (
