@@ -9,7 +9,6 @@ import (
 	"ingester/constants"
 	"io"
 	"log"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,51 +23,16 @@ import (
 )
 
 type Indexer struct {
-	s3Downloader   *s3manager.Downloader
-	s3Uploader     *s3manager.Uploader
-	mongoClient    *mongo.Client
-	rawBucket      string
-	indexedBucket  string
-	deliveriesColl *mongo.Collection
-	ctx            context.Context
-	logger         *slog.Logger
+	*common.BaseIngester
 }
 
 // RunNewIndexer starts the indexer service, which listens for new uploads in the Mongo "uploads" collection and processes them.
 func RunNewIndexer(ctx context.Context) {
-	logger := slog.With("service", "indexer")
-	_, s3Session := common.InitS3Client(logger)
-	mongoClient := common.InitMongoClient(ctx, logger)
-	defer mongoClient.Disconnect(ctx)
-	deliveriesColl := mongoClient.Database("ddex").Collection("deliveries")
-
 	i := &Indexer{
-		s3Downloader:   s3manager.NewDownloader(s3Session),
-		s3Uploader:     s3manager.NewUploader(s3Session),
-		mongoClient:    mongoClient,
-		rawBucket:      common.MustGetenv("AWS_BUCKET_RAW"),
-		indexedBucket:  common.MustGetenv("AWS_BUCKET_INDEXED"),
-		deliveriesColl: deliveriesColl,
-		ctx:            ctx,
-		logger:         logger,
+		BaseIngester: common.NewBaseIngester(ctx, "indexer"),
 	}
-
-	uploadsColl := mongoClient.Database("ddex").Collection("uploads")
-	pipeline := mongo.Pipeline{bson.D{{Key: "$match", Value: bson.D{{Key: "operationType", Value: "insert"}}}}}
-	changeStream, err := uploadsColl.Watch(ctx, pipeline)
-	if err != nil {
-		panic(err)
-	}
-	i.logger.Info("Watching collection 'uploads'")
-	defer changeStream.Close(ctx)
-
-	for changeStream.Next(ctx) {
-		i.processZIP(changeStream)
-	}
-
-	if err := changeStream.Err(); err != nil {
-		log.Fatal(err)
-	}
+	defer i.MongoClient.Disconnect(ctx)
+	i.ProcessChangeStream(i.UploadsColl, i.processZIP)
 }
 
 // processZIP unzips an "upload" into a "delivery" (or multiple deliveries if the ZIP file contains multiple folders with XML files).
@@ -81,7 +45,7 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 		log.Fatal(err)
 	}
 	upload := changeDoc.FullDocument
-	i.logger.Info("Processing new upload", "_id", upload.ID)
+	i.Logger.Info("Processing new upload", "_id", upload.ID)
 
 	// Download ZIP file from S3
 	uploadETag := upload.UploadETag
@@ -89,20 +53,20 @@ func (i *Indexer) processZIP(changeStream *mongo.ChangeStream) {
 	zipFilePath, cleanup := i.downloadFromS3Raw(remotePath)
 	defer cleanup()
 	if zipFilePath == "" {
-		i.logger.Error("Failed to download ZIP file from S3 bucket", "path", remotePath)
+		i.Logger.Error("Failed to download ZIP file from S3 bucket", "path", remotePath)
 		return
 	}
 
 	// Unzip the file and process its contents
 	extractDir, err := os.MkdirTemp("", "extracted")
 	if err != nil {
-		i.logger.Error("Error creating temp directory", "error", err)
+		i.Logger.Error("Error creating temp directory", "error", err)
 		return
 	}
 	defer os.RemoveAll(extractDir)
 
 	if err := unzip(zipFilePath, extractDir); err != nil {
-		i.logger.Error("Error unzipping file", "error", err)
+		i.Logger.Error("Error unzipping file", "error", err)
 		return
 	}
 
@@ -162,7 +126,7 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 	}
 
 	if deliveryID == primitive.NilObjectID {
-		i.logger.Info("No XML file found in directory. Skipping", "dir", dir)
+		i.Logger.Info("No XML file found in directory. Skipping", "dir", dir)
 		return errors.New("no XML file found in directory")
 	}
 
@@ -191,7 +155,7 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 		"xml_content":     primitive.Binary{Data: xmlBytes, Subtype: 0x00}, // Store directly as generic binary for high data integrity
 		"created_at":      time.Now(),
 	}
-	if _, err := i.deliveriesColl.InsertOne(i.ctx, deliveryDoc); err != nil {
+	if _, err := i.DeliveriesColl.InsertOne(i.Ctx, deliveryDoc); err != nil {
 		return fmt.Errorf("failed to insert XML data into Mongo: %w", err)
 	}
 
@@ -200,23 +164,23 @@ func (i *Indexer) processDelivery(rootDir, dir, uploadETag string) error {
 
 // downloadFromRaw downloads a file from the S3 "raw" bucket to a temporary file.
 func (i *Indexer) downloadFromS3Raw(remotePath string) (string, func()) {
-	if !strings.HasPrefix(remotePath, "s3://"+i.rawBucket+"/") {
-		i.logger.Error("Invalid S3 path", "path", remotePath)
+	if !strings.HasPrefix(remotePath, "s3://"+i.RawBucket+"/") {
+		i.Logger.Error("Invalid S3 path", "path", remotePath)
 		return "", func() {}
 	}
-	s3Key := strings.TrimPrefix(remotePath, "s3://"+i.rawBucket+"/")
+	s3Key := strings.TrimPrefix(remotePath, "s3://"+i.RawBucket+"/")
 	file, err := os.CreateTemp("", "*.zip")
 	if err != nil {
-		i.logger.Error("Error creating temp file", "error", err)
+		i.Logger.Error("Error creating temp file", "error", err)
 		return "", func() {}
 	}
 
-	_, err = i.s3Downloader.Download(file, &s3.GetObjectInput{
-		Bucket: aws.String(i.rawBucket),
+	_, err = i.S3Downloader.Download(file, &s3.GetObjectInput{
+		Bucket: aws.String(i.RawBucket),
 		Key:    aws.String(s3Key),
 	})
 	if err != nil {
-		i.logger.Error("Error downloading file from S3", "error", err)
+		i.Logger.Error("Error downloading file from S3", "error", err)
 		file.Close()
 		os.Remove(file.Name())
 		return "", func() {}
@@ -243,7 +207,7 @@ func (i *Indexer) uploadDirToS3Indexed(dirPath, keyPrefix string) {
 	})
 
 	if err != nil {
-		i.logger.Warn("Error walking through the directory", "err", err)
+		i.Logger.Warn("Error walking through the directory", "err", err)
 	}
 }
 
@@ -251,20 +215,20 @@ func (i *Indexer) uploadDirToS3Indexed(dirPath, keyPrefix string) {
 func (i *Indexer) uploadFileToS3Indexed(filePath, fileKey string) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		i.logger.Error("Error opening file", "error", err)
+		i.Logger.Error("Error opening file", "error", err)
 		return
 	}
 	defer file.Close()
 
-	_, err = i.s3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(i.indexedBucket),
+	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(i.IndexedBucket),
 		Key:    aws.String(fileKey),
 		Body:   file,
 	})
 	if err != nil {
-		i.logger.Error("Error uploading file to S3", "error", err)
+		i.Logger.Error("Error uploading file to S3", "error", err)
 	} else {
-		i.logger.Info("Uploaded file to S3", "file", filePath, "key", fileKey)
+		i.Logger.Info("Uploaded file to S3", "file", filePath, "key", fileKey)
 	}
 }
 

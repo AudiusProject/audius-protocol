@@ -20,21 +20,6 @@ import type {
 } from '@audius/sdk'
 import createS3 from './s3Service'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getUserId = async (audiusSdk: AudiusSdkType, artistName: string) => {
-  // TODO: We previously did it like this, but the results are too random and don't return the user with an exact match as users[0].
-  // In the future, we could check all OAuthed usernames for an exact match and cross-reference SDK's search results to find a rough match if no exact match was found
-  // const { data: users } = await audiusSdk.users.searchUsers({
-  //   query: artistName,
-  // })
-  // if (!users || users.length === 0) {
-  //   throw new Error(`Could not find user ${artistName}`)
-  // }
-  // return users[0].id
-
-  return 'E32yWR'
-}
-
 const formatTrackMetadata = (
   metadata: TrackMetadata
 ): UploadTrackRequest['metadata'] => {
@@ -81,16 +66,8 @@ const uploadTrack = async (
   pendingTrack: CreateTrackRelease,
   s3Service: ReturnType<typeof createS3>
 ) => {
-  if (!pendingTrack.metadata.artist_name) {
-    throw new Error('Missing artist_name in track metadata')
-  }
-
-  const userId = await getUserId(audiusSdk, pendingTrack.metadata.artist_name)
+  const userId = pendingTrack.metadata.artist_id
   const metadata = formatTrackMetadata(pendingTrack.metadata)
-
-  if (!pendingTrack.metadata.cover_art_url) {
-    throw new Error('Missing cover_art_url in track metadata')
-  }
 
   const coverArtDownload = await s3Service.downloadFromS3Indexed(
     pendingTrack.metadata.cover_art_url
@@ -155,19 +132,13 @@ const uploadAlbum = async (
     (trackMetadata: TrackMetadata) => formatTrackMetadata(trackMetadata)
   )
 
-  // TODO: How can the parser know playlist_owner_id? Maybe we make the parser check OAuthed usernames for an exact match and hit Discovery's /v1/users/search endpoint to find a rough match if no exact match was found
-  const userId = await getUserId(
-    audiusSdk,
-    /* pendingAlbum.metadata.playlist_owner_id */ ''
-  )
-
   const uploadAlbumRequest: UploadAlbumRequest = {
     coverArtFile,
     metadata: formatAlbumMetadata(pendingAlbum.metadata),
     onProgress: (progress: any) => console.log('Progress:', progress),
     trackFiles,
     trackMetadatas,
-    userId,
+    userId: pendingAlbum.metadata.playlist_owner_id,
   }
   console.log(
     `Uploading ${pendingAlbum.metadata.playlist_name} by ${pendingAlbum.metadata.playlist_owner_id} to Audius...`

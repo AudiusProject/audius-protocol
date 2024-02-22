@@ -174,6 +174,7 @@ type TrackMetadata struct {
 
 	// Extra fields (not in SDK)
 	Artists                     []Artist `bson:"artists"`
+	ArtistID                    string   `bson:"artist_id"`
 	ArtistName                  string   `bson:"artist_name"`
 	Copyright                   string   `bson:"copyright"`
 	PreviewAudioFileURL         string   `bson:"preview_audio_file_url"`
@@ -194,15 +195,16 @@ type Artist struct {
 }
 
 type CollectionMetadata struct {
-	PlaylistName    string         `bson:"playlist_name"`
-	PlaylistOwnerID string         `bson:"playlist_owner_id"`
-	Description     NullableString `bson:"description,omitempty"`
-	IsAlbum         bool           `bson:"is_album"`
-	IsPrivate       bool           `bson:"is_private"`
-	Tags            NullableString `bson:"tags,omitempty"`
-	Genre           Genre          `bson:"genre"`
-	Mood            Mood           `bson:"mood,omitempty"`
-	ReleaseDate     time.Time      `bson:"release_date"`
+	PlaylistName      string         `bson:"playlist_name"`
+	PlaylistOwnerID   string         `bson:"playlist_owner_id"`
+	PlaylistOwnerName string         `bson:"playlist_owner_name"`
+	Description       NullableString `bson:"description,omitempty"`
+	IsAlbum           bool           `bson:"is_album"`
+	IsPrivate         bool           `bson:"is_private"`
+	Tags              NullableString `bson:"tags,omitempty"`
+	Genre             Genre          `bson:"genre"`
+	Mood              Mood           `bson:"mood,omitempty"`
+	ReleaseDate       time.Time      `bson:"release_date"`
 
 	// TODO: Handle these fields
 	License NullableString `bson:"license,omitempty"`

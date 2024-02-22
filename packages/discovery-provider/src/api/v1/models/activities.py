@@ -60,16 +60,28 @@ activity_model_full = ns.model(
     },
 )
 
-library_track_activity_model_full = ns.clone(
-    "track_activity_full",
-    activity_model_full,
-    {"item_type": fields.FormattedString("track"), "item": fields.Nested(track_full)},
+track_activity_model = ns.model(
+    "track_activity",
+    {
+        "timestamp": fields.String(allow_null=True),
+        "item_type": fields.FormattedString("track"),
+        "item": fields.Nested(track),
+    },
 )
 
-library_collection_activity_model_full = ns.clone(
-    "collection_activity_full",
-    activity_model_full,
+track_activity_model_full = ns.model(
+    "track_activity_full",
     {
+        "timestamp": fields.String(allow_null=True),
+        "item_type": fields.FormattedString("track"),
+        "item": fields.Nested(track_full),
+    },
+)
+
+collection_activity_model_full = ns.model(
+    "collection_activity_full",
+    {
+        "timestamp": fields.String(allow_null=True),
         "item_type": fields.FormattedString("playlist"),
         "item": fields.Nested(full_playlist_without_tracks_model),
     },

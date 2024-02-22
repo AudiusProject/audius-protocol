@@ -30,7 +30,7 @@
     "codepush-android-history:prod": "appcenter codepush deployment history -a Audius-Music/Audius-Android Production",
     "codepush-android-history:rc": "appcenter codepush deployment history -a Audius-Music/Audius-Android ReleaseCandidate",
     "codepush-android-history:staging": "appcenter codepush deployment history -a Audius-Music/Audius-Android Staging",
-    "start": "react-native start",
+    "start": "react-native start --experimental-debugger",
     "start:e2e": "RN_E2E=true react-native start",
     "start:storybook": "RN_STORYBOOK=true react-native start",
     "test": "jest src",

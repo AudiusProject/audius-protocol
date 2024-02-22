@@ -101,6 +101,7 @@ audiusSdk.oauth.init({
         handle: string;
         verified: boolean; // whether the user has the Audius "verified" checkmark
         profilePicture: {"150x150": string, "480x480": string, "1000x1000": string } | null // URLs for the user's profile picture
+        apiKey: string | null // the API key for your application if specified
         sub: number; // alias for userId
         iat: string; // timestamp for when auth was performed
       }
@@ -408,6 +409,7 @@ We recommend selecting a host each time your application starts up as availabili
   handle: string,
   verified: boolean, // whether the user has the Audius "verified" checkmark
   profilePicture: {"150x150": string, "480x480": string, "1000x1000": string } | null // URLs for the user's profile picture
+  apiKey: string | null // the API key for your application if specified
   sub: number, // alias for userId
   iat: string, // timestamp for when auth was performed
 }

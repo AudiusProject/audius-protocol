@@ -7,35 +7,23 @@ import AdminNavSidebar from './AdminNavSidebar'
 import { Banner } from './Banner/Banner'
 
 // Layout for routes that require authentication
-const AuthedLayout = ({
-  userType
-}: {
-  userType: 'admin' | 'artist' | 'not-allowlisted'
-}) => {
+const AuthedLayout = ({ isAdmin = false }) => {
   const { user } = useAuth()
   const outlet = useOutlet()
 
-  // If the user is authed but not allowlisted
-  if (
-    userType === 'not-allowlisted' &&
-    user &&
-    (user.isAdmin || user.isArtist)
-  ) {
-    return <Navigate to='/not-allowlisted' replace />
+  // If the user is not authed, or if a non-admin is viewing an admin page, redirect to the login page
+  if (!user || (isAdmin && !user.isAdmin)) {
+    return <Navigate to='/login' replace />
   }
 
-  // If the user is not authed, redirect to the login page
-  if (
-    !user ||
-    (userType === 'admin' && !user.isAdmin) ||
-    (userType === 'artist' && !user.isArtist)
-  ) {
-    return <Navigate to='/login' replace />
+  // If the user is authed as an admin but on an artist route, redirect to the admin route
+  if (user.isAdmin && !isAdmin) {
+    return <Navigate to='/admin' replace />
   }
 
   return (
     <Flex>
-      {userType === 'admin' && <AdminNavSidebar />}
+      {isAdmin && <AdminNavSidebar />}
       <div style={{ flexGrow: '5' }}>
         <Flex direction='column'>
           <Banner />
