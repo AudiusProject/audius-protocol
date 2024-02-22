@@ -6,6 +6,7 @@ import {
   GatedTrackStatus
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import MoreButton from 'components/alt-button/MoreButton'
