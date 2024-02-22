@@ -23,14 +23,16 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const uploadProgress = getUploadProgress(state)
   if (uploadProgress == null) return 0
 
-  const filteredProgress = uploadProgress.filter(
-    (progress) =>
-      key in progress && progress[key].status !== ProgressStatus.ERROR
-  )
+  const filteredProgress = uploadProgress.filter((progress) => key in progress)
   if (filteredProgress.length === 0) return 0
 
   const loaded = filteredProgress.reduce(
-    (acc, progress) => acc + (progress[key].loaded ?? 0),
+    (acc, progress) =>
+      acc +
+      // On error, treat it as "done" so that the percentage doesn't go backwards
+      (progress[key].status === ProgressStatus.ERROR
+        ? progress[key].total ?? 0
+        : progress[key].loaded ?? 0),
     0
   )
   const total = filteredProgress.reduce(
@@ -41,7 +43,12 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
 
   const transcodeProgress =
     filteredProgress.reduce(
-      (acc, progress) => acc + (progress[key].transcode ?? 0),
+      (acc, progress) =>
+        acc +
+        // On error, treat it as "done" so that the percentage doesn't go backwards
+        (progress[key].status === ProgressStatus.ERROR
+          ? 1
+          : progress[key].transcode ?? 0),
       0
     ) / filteredProgress.length
 
