@@ -34,7 +34,7 @@ export const SocialButton = (props: SocialButtonProps) => {
   return (
     <Button
       hexColor={socialHexColor[socialType]}
-      style={css({ flex: 1, height: 56, paddingHorizontal: 0 })}
+      style={css({ flex: 1, height: 48, paddingHorizontal: 0 })}
       {...rest}
     >
       {socialType === 'instagram' ? (
