@@ -2,15 +2,7 @@ import type { ComponentType, SVGProps } from 'react'
 
 import type { IconColors } from '../foundations/color/semantic'
 import type { ShadowOptions } from '../foundations/shadows'
-
-export const iconSizes = {
-  xs: 14,
-  s: 16,
-  m: 20,
-  l: 24,
-  xl: 30,
-  '2xl': 32
-}
+import { iconSizes } from '../foundations/spacing'
 
 type IconSize = keyof typeof iconSizes
 

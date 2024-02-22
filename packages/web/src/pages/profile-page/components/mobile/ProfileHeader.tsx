@@ -25,7 +25,6 @@ import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { Icon } from 'components/Icon'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { FollowButton } from 'components/follow-button/FollowButton'
@@ -442,13 +441,13 @@ const ProfileHeader = ({
             <div className={styles.sites}>
               {website && (
                 <div className={styles.website} onClick={onGoToWebsite}>
-                  <Icon icon={IconLink} className={styles.socialIcon} />
+                  <IconLink size='m' color='default' />
                   <span>{website}</span>
                 </div>
               )}
               {donation && (
                 <div className={styles.donation}>
-                  <Icon icon={IconDonate} className={styles.socialIcon} />
+                  <IconDonate size='m' color='default' />
                   <UserGeneratedText
                     size='s'
                     onClickLink={handleClickDonationLink}

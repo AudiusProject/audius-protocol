@@ -16,7 +16,6 @@ import {
 } from '@audius/harmony'
 import moment from 'moment'
 
-import { Icon } from 'components/Icon'
 import { ExternalLink } from 'components/link'
 
 import styles from './USDCTransactionDetailsModal.module.css'
@@ -89,7 +88,7 @@ export const USDCTransactionDetailsModal = () => {
               >
                 <span className={styles.transactionLink}>
                   {messages.destinationWallet}
-                  <Icon icon={IconExternalLink} />
+                  <IconExternalLink size='s' color='default' />
                 </span>
               </ExternalLink>
             }

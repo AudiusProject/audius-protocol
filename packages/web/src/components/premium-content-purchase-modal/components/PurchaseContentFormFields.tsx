@@ -13,10 +13,9 @@ import {
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { PurchaseContentStage } from '@audius/common/store'
-import { Flex, IconCheck, Text } from '@audius/harmony'
+import { Flex, Text, IconValidationCheck } from '@audius/harmony'
 import { useField } from 'formik'
 
-import { Icon } from 'components/Icon'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -24,7 +23,6 @@ import { usePurchaseSummaryValues } from '../hooks/usePurchaseSummaryValues'
 
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
-import styles from './PurchaseContentFormFields.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
@@ -95,9 +93,7 @@ export const PurchaseContentFormFields = ({
   if (isPurchased) {
     return (
       <Flex alignItems='center' justifyContent='center' gap='m' p='m'>
-        <div className={styles.completionCheck}>
-          <Icon icon={IconCheck} size='xxSmall' color='white' />
-        </div>
+        <IconValidationCheck size='m' />
         <Text variant='heading' size='s'>
           {messages.purchaseSuccessful}
         </Text>

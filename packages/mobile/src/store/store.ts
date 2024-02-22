@@ -44,6 +44,7 @@ import type { ShareToStoryProgressState } from './share-to-story-progress/slice'
 import { storeContext } from './storeContext'
 import type { WalletConnectState } from './wallet-connect/slice'
 import walletConnect from './wallet-connect/slice'
+import { Platform } from 'react-native'
 
 const errorRestartTimeout = 2000
 
@@ -133,9 +134,27 @@ const sagaMiddleware = createSagaMiddleware({
 
 const middlewares = [sagaMiddleware, chatMiddleware(audiusSdk), thunk]
 
+const getProdEnhancer = () => {
+  return applyMiddleware(...middlewares)
+}
+
+const getDevEnhancer = () => {
+  const { composeWithDevTools } = require('@redux-devtools/remote')
+  const composeEnhancers = composeWithDevTools({
+    name: Platform.OS,
+    hostname: Platform.select({ ios: 'localhost', android: '10.0.2.2' }),
+    port: 8000,
+    secure: false,
+    realtime: true
+  })
+  return composeEnhancers(getProdEnhancer())
+}
+
+const enhancer = __DEV__ ? getDevEnhancer() : getProdEnhancer()
+
 export const store = createStore(
   rootReducer,
-  applyMiddleware(...middlewares)
+  enhancer
 ) as unknown as Store<AppState> // need to explicitly type the store for offline-mode store reference
 
 export const persistor = persistStore(store)

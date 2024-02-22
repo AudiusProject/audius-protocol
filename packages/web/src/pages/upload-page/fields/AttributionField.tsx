@@ -12,7 +12,6 @@ import { get, set } from 'lodash'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Icon } from 'components/Icon'
 import { AiAttributionDropdown } from 'components/ai-attribution-modal/AiAttributionDropdown'
 import {
   ContextualMenu,
@@ -238,8 +237,8 @@ export const AttributionField = () => {
     if (licenseIcons) {
       value.push(
         <SelectedValue>
-          {licenseIcons.map(([icon, key]) => (
-            <Icon key={key} icon={icon} />
+          {licenseIcons.map(([Icon, key]) => (
+            <Icon key={key} size='s' color='default' />
           ))}
         </SelectedValue>
       )
@@ -414,7 +413,7 @@ const AttributionModalFields = () => {
           {licenseIcons ? (
             <div className={cn(layoutStyles.row, layoutStyles.gap1)}>
               {licenseIcons.map(([Icon, key]) => (
-                <Icon key={key} />
+                <Icon key={key} color='default' />
               ))}
             </div>
           ) : null}

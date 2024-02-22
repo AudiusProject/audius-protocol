@@ -11,11 +11,11 @@ import {
   IconCart,
   IconCollectible,
   IconComponent,
-  IconSpecialAccess
+  IconSpecialAccess,
+  useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { Icon } from 'components/Icon'
 import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
@@ -64,6 +64,7 @@ export const LockedTrackDetailsTile = ({
   const label = `${title} by ${owner.name}`
   const isCollectibleGated = isContentCollectibleGated(streamConditions)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const { color } = useTheme()
 
   let IconComponent: Nullable<IconComponent>
   let message: Nullable<string>
@@ -102,7 +103,14 @@ export const LockedTrackDetailsTile = ({
               [styles.usdcContentLabel]: isUSDCPurchaseGated
             })}
           >
-            <Icon size='small' icon={IconComponent} />
+            <IconComponent
+              size='s'
+              fill={
+                isUSDCPurchaseGated
+                  ? color.special.lightGreen
+                  : color.special.blue
+              }
+            />
             <span>{message}</span>
           </div>
         ) : null}

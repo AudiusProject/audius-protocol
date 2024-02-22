@@ -13,8 +13,6 @@ import {
   Text
 } from '@audius/harmony'
 
-import { Icon } from 'components/Icon'
-
 import { HelpCallout } from '../help-callout/HelpCallout'
 
 import styles from './LeavingAudiusModal.module.css'
@@ -42,7 +40,7 @@ export const LeavingAudiusModal = () => {
       size={'small'}
     >
       <ModalHeader>
-        <ModalTitle icon={<Icon icon={IconInfo} />} title={messages.title} />
+        <ModalTitle icon={<IconInfo />} title={messages.title} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Text>{messages.body}</Text>

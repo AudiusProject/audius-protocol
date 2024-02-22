@@ -24,6 +24,7 @@ import { PasswordCompletionChecklist } from '../components/PasswordCompletionChe
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 export type CreateLoginDetailsValues = {
   email: string
@@ -68,6 +69,8 @@ export const CreateLoginDetailsScreen = () => {
       toFormikValidationSchema(createLoginDetailsSchema(audiusQueryContext)),
     [audiusQueryContext]
   )
+
+  useTrackScreen('CreateLoginDetails')
 
   const isVerified = useSelector(getIsVerified)
   const navigation = useNavigation<SignUpScreenParamList>()

@@ -132,18 +132,10 @@
 .removeButton,
 .editTitleButton {
   display: none;
-  color: var(--neutral-light-4);
-  transition: var(--hover);
 }
 
-.removeButton svg,
-.editTitleButton svg {
-  height: 16px;
-  width: 16px;
-}
-
-.removeButton:hover {
-  color: var(--accent-red);
+.removeButton:hover svg path {
+  fill: var(--accent-red);
 }
 
 .iconsContainer {

@@ -150,7 +150,12 @@ export const RootScreen = () => {
           ) : null}
 
           {showHomeStack ? (
-            <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
+            <Stack.Screen
+              name='HomeStack'
+              component={AppDrawerScreen}
+              // animation: none here is a workaround to prevent "white screen of death" on Android
+              options={{ animation: 'none' }}
+            />
           ) : isSignUpRedesignEnabled ? (
             <Stack.Screen name='SignOnStackNew'>
               {() => (

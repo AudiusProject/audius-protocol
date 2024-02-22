@@ -17,7 +17,6 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { Icon } from 'components/Icon'
 import { AudioBalancePill } from 'components/audio-balance-pill/AUDIOBalancePill'
 import { NotificationDot } from 'components/notification-dot'
 import { USDCBalancePill } from 'components/usdc-balance-pill/USDCBalancePill'
@@ -88,7 +87,7 @@ const NavPopupMenu = () => {
           </div>
         ),
         onClick: () => navigate(PAYMENTS_PAGE),
-        icon: <Icon icon={IconDonate} />,
+        icon: <IconDonate size='s' />,
         iconClassName: styles.payAndEarnIcon
       }
     : null
@@ -156,7 +155,7 @@ const NavPopupMenu = () => {
                 ref={anchorRef}
                 onClick={() => triggerPopup()}
               >
-                <Icon icon={IconKebabHorizontal} />
+                <IconKebabHorizontal size='s' />
               </div>
               {showNotificationBubble ? (
                 <NotificationDot

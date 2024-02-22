@@ -33,7 +33,7 @@ import {
   ModalFooter,
   Flex,
   IconCart,
-  Text
+  ModalTitle
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Formik, useField, useFormikContext } from 'formik'
@@ -41,7 +41,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
@@ -128,16 +127,7 @@ const RenderForm = ({
         onClose={onClose}
         showDismissButton={!isMobile}
       >
-        <Text
-          variant='label'
-          color='subdued'
-          size='xl'
-          strength='strong'
-          className={styles.title}
-        >
-          <Icon size='large' icon={IconCart} />
-          {messages.completePurchase}
-        </Text>
+        <ModalTitle icon={<IconCart />} title={messages.completePurchase} />
       </ModalHeader>
       <ModalContentPages
         contentClassName={styles.content}

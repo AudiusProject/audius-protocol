@@ -8,12 +8,12 @@ mobile-init:
         name: copy staging env
         command: |
           cd packages/mobile
-          echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_STAGE" >> .env.stage
+          echo -e "\nAMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_STAGE" >> .env.stage
     - run:
         name: copy production env
         command: |
           cd packages/mobile
-          echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_PROD" >> .env.prod
+          echo -e "\nAMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_PROD" >> .env.prod
 
     - create_concatenated_patch_file:
         filename: combined-patch-file.txt

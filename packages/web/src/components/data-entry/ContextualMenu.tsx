@@ -25,7 +25,6 @@ import {
 } from 'formik'
 import { useToggle } from 'react-use'
 
-import { Icon } from 'components/Icon'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Tile } from 'components/tile'
 
@@ -115,10 +114,10 @@ type SelectedValueProps = {
 }
 
 export const SelectedValue = (props: SelectedValueProps) => {
-  const { label, icon, children } = props
+  const { label, icon: Icon, children } = props
   return (
     <span className={styles.selectedValue}>
-      {icon ? <Icon icon={icon} size='small' /> : null}
+      {Icon ? <Icon size='s' color='default' /> : null}
       {label ? (
         <Text variant='body' strength='strong'>
           {label}
@@ -193,7 +192,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
           <Text variant='title' size='l'>
             {label}
           </Text>
-          <Icon icon={IconCaretRight} color='neutralLight4' />
+          <IconCaretRight color='subdued' size='s' />
         </div>
         <Text variant='body' textAlign='left'>
           {description}

@@ -6,13 +6,13 @@ import {
   IconTrash,
   IconError,
   IconCloudUpload,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
-import { Icon } from 'components/Icon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 
@@ -33,6 +33,8 @@ const messages = {
 export const MultiTrackSidebar = () => {
   const scrollToTop = useContext(UploadFormScrollContext)
   const { errors, submitCount } = useFormikContext<TrackEditFormValues>()
+  const { spacing } = useTheme()
+
   return (
     <div className={styles.root}>
       <div className={cn(layoutStyles.col)}>
@@ -56,10 +58,10 @@ export const MultiTrackSidebar = () => {
           </div>
           {!isEmpty(errors) && submitCount > 0 ? (
             <div className={cn(layoutStyles.row, layoutStyles.gap1)}>
-              <Icon
-                className={styles.iconError}
-                icon={IconError}
-                size='xSmall'
+              <IconError
+                size='xs'
+                color='danger'
+                css={{ margin: spacing.unit1 }}
               />
               <Text variant='body' size='xs' color='danger'>
                 {messages.fixErrors}
@@ -91,6 +93,7 @@ type TrackRowProps = {
 const TrackRow = (props: TrackRowProps) => {
   const { index } = props
   const scrollToTop = useContext(UploadFormScrollContext)
+  const { spacing } = useTheme()
   const { values, setValues, errors, submitCount } =
     useFormikContext<TrackEditFormValues>()
   const { playingPreviewIndex, stopPreview } = useContext(UploadPreviewContext)
@@ -161,11 +164,10 @@ const TrackRow = (props: TrackRowProps) => {
         >
           <div className={layoutStyles.row}>
             {hasError ? (
-              <Icon
-                className={styles.iconError}
-                icon={IconError}
-                size='xSmall'
-                color='accentRed'
+              <IconError
+                size='xs'
+                color='danger'
+                css={{ margin: spacing.unit1 }}
               />
             ) : (
               <Text
@@ -196,7 +198,7 @@ const TrackRow = (props: TrackRowProps) => {
               className={styles.iconRemove}
               onClick={(e) => handleRemoveTrack(e, index)}
             >
-              <IconTrash fill='--default' />
+              <IconTrash color='default' />
             </div>
           ) : null}
         </div>

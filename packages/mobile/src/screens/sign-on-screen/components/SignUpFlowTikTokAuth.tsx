@@ -24,6 +24,7 @@ type SignUpFlowTikTokAuthProps = {
     platform: 'tiktok'
   }) => void
   onClose: () => void
+  page: 'create-email' | 'pick-handle'
 }
 
 // Wrapper around TikTokAuthButton that adds in new sign up schema
@@ -31,7 +32,8 @@ export const SignUpFlowTikTokAuth = ({
   onStart,
   onSuccess,
   onFailure,
-  onClose
+  onClose,
+  page
 }: SignUpFlowTikTokAuthProps) => {
   const dispatch = useDispatch()
   const abandoned = useSelector(getAbandoned)
@@ -39,9 +41,15 @@ export const SignUpFlowTikTokAuth = ({
 
   useEffect(() => {
     if (abandoned) {
+      track(
+        make({
+          eventName: Name.CREATE_ACCOUNT_CLOSED_TIKTOK,
+          page
+        })
+      )
       onClose()
     }
-  }, [abandoned, onClose])
+  }, [abandoned, onClose, page])
 
   const handleSuccess = async (
     profileData: TikTokProfileData,
@@ -64,6 +72,7 @@ export const SignUpFlowTikTokAuth = ({
         make({
           eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK,
           isVerified: !!profile.is_verified,
+          page,
           handle: profile.username || 'unknown'
         })
       )
@@ -86,6 +95,12 @@ export const SignUpFlowTikTokAuth = ({
 
   const handlePress = (e: GestureResponderEvent) => {
     onStart()
+    track(
+      make({
+        eventName: Name.CREATE_ACCOUNT_START_TIKTOK,
+        page
+      })
+    )
     dispatch(oauthActions.setTikTokError(null))
     withTikTokAuth(async (accessToken: string) => {
       try {
