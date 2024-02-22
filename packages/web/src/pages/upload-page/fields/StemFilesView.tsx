@@ -184,7 +184,9 @@ export const StemFilesView = ({
 
     return (
       <Dropzone
-        className={styles.dropZone}
+        className={cn(styles.dropZone, {
+          [styles.dropzoneDisabled]: atCapacity
+        })}
         titleTextClassName={cn(styles.dropzoneTitle, {
           [styles.dropzoneDisabled]: atCapacity
         })}
