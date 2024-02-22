@@ -7,8 +7,6 @@ import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { Icon } from 'components/Icon'
-
 import ProfileImage from './ProfileImage'
 import styles from './Stats.module.css'
 import { StatsText, Flavor } from './StatsText'
@@ -71,6 +69,8 @@ const Stats = memo((props: StatsProps) => {
     .slice(0, MAX_IMAGES)
     .map((item) => <ProfileImage key={item.user_id} userId={item.user_id} />)
 
+  const Icon = flavor === Flavor.REPOST ? IconRepost : IconFavorite
+
   return (
     <div
       className={cn(styles.root, {
@@ -89,10 +89,7 @@ const Stats = memo((props: StatsProps) => {
         <div className={styles.profileImages}>{profileImages}</div>
       ) : null}
       <span className={styles.text}>
-        <Icon
-          icon={flavor === Flavor.REPOST ? IconRepost : IconFavorite}
-          size='xSmall'
-        />
+        <Icon size='xs' color='subdued' />
         <StatsText
           flavor={flavor}
           count={count}

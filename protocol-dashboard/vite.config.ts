@@ -1,13 +1,18 @@
 import { defineConfig } from 'vite'
 import path from 'path'
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import svgr from 'vite-plugin-svgr'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import wasm from 'vite-plugin-wasm'
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      jsxImportSource: '@emotion/react',
+      babel: {
+        plugins: ['@emotion/babel-plugin']
+      }
+    }),
     wasm(),
     svgr(),
 

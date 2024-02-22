@@ -35,6 +35,8 @@ import {
   UserDisplayName
 } from 'app/components/core'
 import { StaticSkeleton } from 'app/components/skeleton'
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
 
 import { SelectArtistsPreviewContext } from './selectArtistPreviewContext'
 
@@ -80,9 +82,16 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
     if (isPreviewing) {
       togglePreview()
     } else {
+      track(
+        make({
+          eventName: EventNames.CREATE_ACCOUNT_ARTIST_PREVIEWED,
+          artistID: user_id,
+          artistName: artist.name
+        })
+      )
       playPreview(user_id)
     }
-  }, [isPreviewing, playPreview, togglePreview, user_id])
+  }, [artist.name, isPreviewing, playPreview, togglePreview, user_id])
 
   // The play/pause icon over the user avatar
   const renderPreviewElement = () => {
@@ -160,7 +169,7 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
         </Pressable>
       </Flex>
       <Flex pt='unit12' ph='s' pb='l' alignItems='center' gap='l'>
-        <Flex gap='s'>
+        <Flex gap='s' alignItems='center'>
           <UserDisplayName userId={user_id} />
           <Flex direction='row' gap='s' alignItems='center'>
             <Flex direction='row' gap='xs' alignItems='center'>

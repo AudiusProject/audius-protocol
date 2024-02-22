@@ -5,31 +5,33 @@ import {
   useDownloadableContentAccess,
   useGatedContentAccess
 } from '@audius/common/hooks'
-import { ModalSource, DownloadQuality } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
+import { DownloadQuality, ModalSource } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import {
   cacheTracksSelectors,
   usePremiumContentPurchaseModal,
-  useWaitForDownloadModal,
-  tracksSocialActions as socialTracksActions
+  useWaitForDownloadModal
 } from '@audius/common/store'
-import type { CommonState } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import {
+  Button,
   Flex,
+  IconLockUnlocked,
   IconReceive,
   Text,
-  Button,
-  IconLockUnlocked,
   useTheme
 } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 import { Expandable, ExpandableArrowIcon } from 'app/components/expandable'
 import { useToast } from 'app/hooks/useToast'
+import { make, track as trackEvent } from 'app/services/analytics'
+import type { AllEvents } from 'app/types/analytics'
+import { EventNames } from 'app/types/analytics'
 
 import { DownloadRow } from './DownloadRow'
 
@@ -53,7 +55,6 @@ const messages = {
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
-  const dispatch = useDispatch()
   const { color } = useTheme()
   const { toast } = useToast()
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -111,17 +112,27 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
           trackIds,
           quality
         })
-        dispatch(
-          socialTracksActions.downloadTrack({
-            trackIds,
+
+        // Track download attempt event
+        let event: AllEvents
+        if (parentTrackId) {
+          event = {
+            eventName: EventNames.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_ALL,
             parentTrackId,
-            original: quality === DownloadQuality.ORIGINAL
-          })
-        )
+            stemTrackIds: trackIds,
+            device: 'native'
+          }
+        } else {
+          event = {
+            eventName: EventNames.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_SINGLE,
+            trackId: trackIds[0],
+            device: 'native'
+          }
+        }
+        trackEvent(make(event))
       }
     },
     [
-      dispatch,
       openWaitForDownloadModal,
       quality,
       shouldDisplayDownloadFollowGated,

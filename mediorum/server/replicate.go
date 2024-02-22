@@ -8,7 +8,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
@@ -17,6 +19,56 @@ import (
 
 	"gocloud.dev/blob"
 )
+
+func (ss *MediorumServer) replicateFileParallel(cid string, filePath string, placementHosts []string) ([]string, error) {
+	replicaCount := ss.Config.ReplicationFactor
+
+	if len(placementHosts) > 0 {
+		// use all explicit placement hosts
+		replicaCount = len(placementHosts)
+	} else {
+		// use rendezvous
+		placementHosts, _ = ss.rendezvousHealthyHosts(cid)
+	}
+
+	queue := make(chan string, len(placementHosts))
+	for _, p := range placementHosts {
+		queue <- p
+	}
+
+	mu := sync.Mutex{}
+	results := []string{}
+
+	wg := sync.WaitGroup{}
+	wg.Add(replicaCount)
+
+	for i := 0; i < replicaCount; i++ {
+		go func() {
+			defer wg.Done()
+
+			file, err := os.Open(filePath)
+			if err != nil {
+				ss.logger.Error("failed to open file", "filePath", filePath, "err", err)
+				return
+			}
+			defer file.Close()
+			for peer := range queue {
+				file.Seek(0, 0)
+				err := ss.replicateFileToHost(peer, cid, file)
+				if err == nil {
+					mu.Lock()
+					results = append(results, peer)
+					mu.Unlock()
+					break
+				}
+			}
+
+		}()
+	}
+
+	wg.Wait()
+	return results, nil
+}
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
 	logger := ss.logger.With("task", "replicate", "cid", fileName)

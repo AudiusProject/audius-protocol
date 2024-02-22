@@ -1,5 +1,7 @@
 /// <reference types="vitest" />
 
+import path from 'path'
+
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
 import process from 'process/browser'
@@ -10,7 +12,6 @@ import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 
 import { env as APP_ENV } from './src/services/env'
-import path from 'path'
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
@@ -72,7 +73,11 @@ export default defineConfig(({ mode }) => {
     plugins: [
       glslify(),
       svgr({
-        include: '**/*.svg'
+        include: '**/*.svg',
+        exclude: [
+          'src/assets/img/wallet-link.svg',
+          'src/assets/img/phantom-icon-purple.svg'
+        ]
       }),
       // Import workerscript as raw string
       // Could use ?raw suffix but it breaks on mobile

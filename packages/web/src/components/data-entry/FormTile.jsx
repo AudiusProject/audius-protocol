@@ -1,5 +1,6 @@
 import { Component, useState, useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { createRemixOfMetadata } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -18,6 +19,7 @@ import {
   AiAttributionModal,
   AiAttributionButton
 } from 'components/ai-attribution-modal'
+import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Input from 'components/data-entry/Input'
 import LabeledInput from 'components/data-entry/LabeledInput'
@@ -36,6 +38,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
 import styles from './FormTile.module.css'
 import { ReleaseDateTriggerLegacy } from './ReleaseDateTriggerLegacy'
+import { StemsAndDownloadsTriggerLegacy } from './StemsAndDownloadsTriggerLegacy'
 
 const {
   ALL_RIGHTS_RESERVED_TYPE,
@@ -70,6 +73,9 @@ const Divider = (props) => {
 }
 
 const BasicForm = (props) => {
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
@@ -256,10 +262,6 @@ const BasicForm = (props) => {
   const renderSourceFilesModal = () => {
     return (
       <StemFilesModal
-        isOriginalAvailable={props.defaultFields.is_original_available}
-        onUpdateIsOriginalAvailable={(value) =>
-          props.onChangeField('is_original_available', value)
-        }
         downloadSettings={props.defaultFields.download}
         onUpdateDownloadSettings={(settings) =>
           props.onChangeField('download', settings)
@@ -270,6 +272,27 @@ const BasicForm = (props) => {
         stems={props.stems}
         onSelectCategory={props.onSelectStemCategory}
         onDeleteStem={props.onDeleteStem}
+      />
+    )
+  }
+
+  const renderStemsAndDownloadsTriggerLegacy = () => {
+    return (
+      <StemsAndDownloadsTriggerLegacy
+        onAddStems={props.onAddStems}
+        stems={props.stems}
+        onSelectCategory={props.onSelectStemCategory}
+        onDeleteStem={props.onDeleteStem}
+        fields={props.defaultFields}
+        onChangeField={props.onChangeField}
+        lastGateKeeper={props.lastGateKeeper}
+        setLastGateKeeper={props.setLastGateKeeper}
+        initialForm={props.initialForm}
+        closeMenuCallback={(data) => {
+          if (data === MenuFormCallbackStatus.OPEN_ACCESS_AND_SALE) {
+            props.setForceOpenAccessAndSale(true)
+          }
+        }}
       />
     )
   }
@@ -321,7 +344,9 @@ const BasicForm = (props) => {
           })}
         >
           {renderRemixSwitch()}
-          {renderDownloadButton()}
+          {isLosslessDownloadsEnabled
+            ? renderStemsAndDownloadsTriggerLegacy()
+            : renderDownloadButton()}
           {renderAdvancedButton()}
         </div>
       </div>
@@ -332,7 +357,7 @@ const BasicForm = (props) => {
     <div className={styles.basicContainer}>
       {renderBasicForm()}
       {renderBottomMenu()}
-      {renderSourceFilesModal()}
+      {!isLosslessDownloadsEnabled ? renderSourceFilesModal() : null}
       {!isGatedContentEnabled && renderRemixSettingsModal()}
       {renderAiAttributionModal()}
     </div>
@@ -359,7 +384,11 @@ const AdvancedForm = (props) => {
   let availabilityState = {
     is_stream_gated: props.defaultFields.is_stream_gated,
     stream_conditions: props.defaultFields.stream_conditions,
-    preview_start_seconds: props.defaultFields.preview_start_seconds
+    preview_start_seconds: props.defaultFields.preview_start_seconds,
+    is_download_gated: props.defaultFields.is_download_gated,
+    download_conditions: props.defaultFields.download_conditions,
+    is_downloadable: props.defaultFields.is_downloadable,
+    download: props.defaultFields.download
   }
 
   const releaseDateState = {
@@ -517,6 +546,10 @@ const AdvancedForm = (props) => {
               isRemix={!!props.defaultFields.remix_of?.tracks?.length}
               isUpload={props.isUpload}
               initialForm={props.initialForm}
+              forceOpen={props.forceOpenAccessAndSale}
+              setForceOpen={props.setForceOpenAccessAndSale}
+              lastGateKeeper={props.lastGateKeeper}
+              setLastGateKeeper={props.setLastGateKeeper}
             />
           )}
           {props.type === 'track' && (
@@ -656,7 +689,9 @@ class FormTile extends Component {
 
     remixSettingsModalVisible: false,
     aiAttributionModalVisible: false,
-    isRemix: !!this.props.defaultFields.remix_of
+    isRemix: !!this.props.defaultFields.remix_of,
+    forceOpenAccessAndSale: false,
+    lastGateKeeper: {}
   }
 
   componentDidMount() {
@@ -776,6 +811,14 @@ class FormTile extends Component {
     this.setState({ isRemix })
   }
 
+  setForceOpenAccessAndSale = (forceOpen) => {
+    this.setState({ forceOpenAccessAndSale: forceOpen })
+  }
+
+  setLastGateKeeper = (lastGateKeeper) => {
+    this.setState({ lastGateKeeper })
+  }
+
   render() {
     const {
       advancedShow,
@@ -805,6 +848,10 @@ class FormTile extends Component {
           setAiAttributionModalVisible={this.setAiAttributionModalVisible}
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
+          forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
+          setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
+          lastGateKeeper={this.state.lastGateKeeper}
+          setLastGateKeeper={this.setLastGateKeeper}
         />
         <AdvancedForm
           {...this.props}
@@ -825,6 +872,10 @@ class FormTile extends Component {
           setAiAttributionModalVisible={this.setAiAttributionModalVisible}
           isRemix={isRemix}
           setIsRemix={this.setIsRemix}
+          forceOpenAccessAndSale={this.state.forceOpenAccessAndSale}
+          setForceOpenAccessAndSale={this.setForceOpenAccessAndSale}
+          lastGateKeeper={this.state.lastGateKeeper}
+          setLastGateKeeper={this.setLastGateKeeper}
         />
         {this.props.children.length > 0 ? (
           <DragDropContext onDragEnd={this.onDragEnd}>

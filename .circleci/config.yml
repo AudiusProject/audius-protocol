@@ -320,7 +320,7 @@ jobs:
             git config --global user.email "audius-infra@audius.co"
             git config --global user.name "audius-infra"
             PREV_VERSION=$(jq -r .version ./package.json)
-            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short v${PREV_VERSION}..HEAD)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${PREV_VERSION}..HEAD)
             npm i --ignore-scripts
             npm version patch -ws --include-workspace-root --no-git-tag-version
             git add .
@@ -424,8 +424,7 @@ jobs:
 workflows:
   setup:
     when:
-      not:
-        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+      equal: ['main', << pipeline.parameters.workflow >>]
     jobs:
       - generate-config
       - init:
@@ -522,6 +521,7 @@ workflows:
             .* run-ddex-stage-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
+            .circleci/.* run-protocol-dashboard-workflow true
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
@@ -574,6 +574,7 @@ workflows:
             .* run-stems-workflow true
             .* run-harmony-workflow true
             .* run-probers-workflow false
+            .* run-protocol-dashboard-workflow true
           requires:
             - generate-config
             - init
@@ -581,44 +582,37 @@ workflows:
 
   release-create-branch:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['release-create-branch', << pipeline.schedule.name >>]
+      equal: ['release-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-release-branch
 
   auto-approve-foundation-deploy:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal:
-            ['auto-approve-foundation-deploy', << pipeline.schedule.name >>]
+      equal:
+        ['auto-approve-foundation-deploy', << pipeline.parameters.workflow >>]
     jobs:
       - approve-deployment-holds:
           context: [slack-secrets, circle-daily-deploy-secrets]
 
   notify-sp-release:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['notify-sp-release', << pipeline.schedule.name >>]
+      equal: ['notify-sp-release', << pipeline.parameters.workflow >>]
     jobs:
       - notify-sp-release-job:
           context: [slack-secrets, circle-daily-deploy-secrets]
 
   release-client-create-branch:
     when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['release-client-create-branch', << pipeline.schedule.name >>]
+      equal:
+        ['release-client-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-client-release
-  
+
   notify-stuck-stage-nodes:
     when:
       and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['notify-stuck-stage-nodes', << pipeline.schedule.name >>]
+        - equal:
+            ['notify-stuck-stage-nodes', << pipeline.parameters.workflow >>]
     jobs:
       - notify-stuck-stage-nodes-job:
           context: [slack-secrets]

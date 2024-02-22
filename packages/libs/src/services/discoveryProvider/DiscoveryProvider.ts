@@ -1082,14 +1082,67 @@ export class DiscoveryProvider {
   }
 
   async relay(
-    data: DiscoveryRelayBody
-  ): Promise<{ receipt: TransactionReceipt } | null | undefined> {
-    const req = {
-      endpoint: 'relay',
+    body: DiscoveryRelayBody
+  ): Promise<{ receipt: TransactionReceipt } | undefined> {
+    const requestObj: Record<string, unknown> = {
+      endpoint: '/relay',
       method: 'post',
-      data
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: body
     }
-    return await this._makeRequest(req, true, 0, true)
+    if (!this.discoveryProviderEndpoint || !this.discoveryNodeMiddleware) return
+
+    const axiosRequest = this._createDiscProvRequest(
+      requestObj as RequestParams,
+      this.discoveryProviderEndpoint
+    )
+
+    const { data, url = '', ...restRequest } = axiosRequest
+
+    const fetchRequestInit: RequestInit = {
+      body: data ? JSON.stringify(data) : data,
+      ...restRequest
+    }
+    let fetchParams = { url, init: fetchRequestInit }
+
+    fetchParams =
+      (await this.discoveryNodeMiddleware.pre?.({ fetch, ...fetchParams })) ??
+      fetchParams
+    let response: globalThis.Response | undefined
+
+    try {
+      response = await fetch(fetchParams.url, fetchParams.init)
+    } catch (error) {
+      response =
+        (await this.discoveryNodeMiddleware.onError?.({
+          fetch,
+          ...fetchParams,
+          error,
+          response: response ? response.clone() : undefined
+        })) ?? response
+
+      if (response === undefined) {
+        if (error instanceof Error) {
+          throw new FetchError(
+            error,
+            'The request failed and the interceptors did not return an alternative response'
+          )
+        } else {
+          throw error
+        }
+      }
+    }
+
+    response =
+      (await this.discoveryNodeMiddleware.post?.({
+        fetch,
+        ...fetchParams,
+        response
+      })) ?? response
+
+    return await response.json()
   }
 
   /**

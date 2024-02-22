@@ -21,9 +21,9 @@ import {
   confirmTransaction
 } from '@audius/common/store'
 import {
+  formatUrlName,
   makeKindId,
   squashNewLines,
-  formatUrlName,
   waitForAccount,
   waitForValue
 } from '@audius/common/utils'
@@ -175,12 +175,6 @@ function* confirmEditTrack(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        // debug
-        audiusBackendInstance.updateTrack(
-          trackId,
-          { ...formFields },
-          transcodePreview
-        )
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.updateTrack,
           trackId,
@@ -205,7 +199,7 @@ function* confirmEditTrack(
         const handle = yield* select(getUserHandle)
 
         return yield* call(
-          apiClient.getTrack,
+          [apiClient, apiClient.getTrack],
           {
             id: trackId,
             currentUserId: userId,
@@ -318,7 +312,7 @@ function* confirmDeleteTrack(trackId: ID) {
 
         if (!track) return
         return yield* call(
-          apiClient.getTrack,
+          [apiClient, apiClient.getTrack],
           {
             id: trackId,
             currentUserId: userId,

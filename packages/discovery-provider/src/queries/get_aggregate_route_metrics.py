@@ -39,6 +39,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
     today = date.today()
     seven_days_ago = today - timedelta(days=7)
     thirty_days_ago = today - timedelta(days=30)
+    one_year_ago = today - timedelta(days=365)
     first_day_of_month = today.replace(day=1)
 
     if time_range == "week":
@@ -186,6 +187,59 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                         bucket_size, AggregateDailyTotalUsersMetrics.timestamp
                     )
                 )
+                .order_by(asc("timestamp"))
+                .all()
+            )
+            total_count_records = ft.reduce(
+                lambda acc, curr: acc.update({str(curr[0]): curr[1]}) or acc,
+                total_counts,
+                {},
+            )
+
+            metrics = []
+            for timestamp, counts in unique_count_records.items():
+                if timestamp in total_count_records:
+                    metrics.append(
+                        {
+                            "timestamp": timestamp,
+                            "unique_count": counts["unique"],
+                            "summed_unique_count": counts["summed_unique"],
+                            "total_count": total_count_records[timestamp],
+                        }
+                    )
+            return metrics
+        raise exceptions.ArgumentError("Invalid bucket_size for time_range")
+    if time_range == "year":
+        if bucket_size == "month":
+            unique_counts = (
+                session.query(
+                    AggregateMonthlyUniqueUsersMetric.timestamp,
+                    AggregateMonthlyUniqueUsersMetric.count,
+                    AggregateMonthlyUniqueUsersMetric.summed_count,
+                )
+                .filter(
+                    AggregateMonthlyUniqueUsersMetric.timestamp < first_day_of_month
+                )
+                .filter(one_year_ago <= AggregateMonthlyUniqueUsersMetric.timestamp)
+                .order_by(asc("timestamp"))
+                .all()
+            )
+            unique_count_records = ft.reduce(
+                lambda acc, curr: acc.update(
+                    {str(curr[0]): {"unique": curr[1], "summed_unique": curr[2] or 0}}
+                )
+                or acc,
+                unique_counts,
+                {},
+            )
+
+            total_counts = (
+                session.query(
+                    AggregateMonthlyTotalUsersMetric.timestamp,
+                    AggregateMonthlyTotalUsersMetric.count,
+                )
+                .filter(AggregateMonthlyTotalUsersMetric.timestamp < first_day_of_month)
+                .filter(one_year_ago <= AggregateMonthlyTotalUsersMetric.timestamp)
                 .order_by(asc("timestamp"))
                 .all()
             )

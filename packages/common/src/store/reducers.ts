@@ -24,6 +24,7 @@ import { ChangePasswordState } from './change-password/types'
 import collectibles from './collectibles/slice'
 import confirmer from './confirmer/reducer'
 import { ConfirmerState } from './confirmer/types'
+import downloads, { DownloadState } from './downloads/slice'
 import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
@@ -282,7 +283,8 @@ export const reducers = (
   collectibles,
 
   upload,
-  confirmer
+  confirmer,
+  downloads
 })
 
 export type CommonState = {
@@ -410,4 +412,5 @@ export type CommonState = {
 
   upload: UploadState
   confirmer: ConfirmerState
+  downloads: DownloadState
 }

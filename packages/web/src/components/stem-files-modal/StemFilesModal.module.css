@@ -5,11 +5,6 @@
   overflow: auto;
 }
 
-.newModalContainer {
-  max-width: unset;
-  min-width: 600px;
-}
-
 .modalContainer {
   width: 720px;
   /* Need to account for the dropdown outside modal */
@@ -114,10 +109,6 @@
   margin-right: 22px;
   height: 20px;
   width: 20px;
-}
-
-.deleteButtonIcon path {
-  fill: var(--neutral-light-6);
 }
 
 .title {

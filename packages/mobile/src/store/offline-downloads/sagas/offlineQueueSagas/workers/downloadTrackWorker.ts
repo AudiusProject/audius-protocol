@@ -16,7 +16,7 @@ import {
   removeNullable,
   getQueryParams
 } from '@audius/common/utils'
-import RNFetchBlob from 'rn-fetch-blob'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
 import { createAllImageSources } from 'app/hooks/useContentNodeImage'
@@ -228,7 +228,7 @@ async function writeTrackMetadata(track: UserTrackMetadata) {
 
   const trackMetadataPath = getLocalTrackJsonPath(track_id.toString())
 
-  return await RNFetchBlob.fs.writeFile(
+  return await ReactNativeBlobUtil.fs.writeFile(
     trackMetadataPath,
     JSON.stringify(trackMetadata)
   )
@@ -236,7 +236,7 @@ async function writeTrackMetadata(track: UserTrackMetadata) {
 
 async function removeDownloadedTrack(trackId: ID) {
   const trackDirectory = getLocalTrackDir(trackId.toString())
-  const exists = await RNFetchBlob.fs.exists(trackDirectory)
+  const exists = await ReactNativeBlobUtil.fs.exists(trackDirectory)
   if (!exists) return
-  return await RNFetchBlob.fs.unlink(trackDirectory)
+  return await ReactNativeBlobUtil.fs.unlink(trackDirectory)
 }

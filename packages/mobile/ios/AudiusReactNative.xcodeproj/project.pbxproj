@@ -898,7 +898,7 @@
 				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TIKTOK_APP_ID = awlrj83t4nx6qc5a;
+				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Staging.ReleaseCandidate;
@@ -1001,7 +1001,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TIKTOK_APP_ID = awlrj83t4nx6qc5a;
+				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Staging.Debug;
@@ -1096,7 +1096,7 @@
 				SCSDK_CLIENT_ID = "6f90a744-e5d0-4115-ad14-fb1a356085cd";
 				SWIFT_OBJC_BRIDGING_HEADER = "AudiusReactNative-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TIKTOK_APP_ID = awlrj83t4nx6qc5a;
+				TIKTOK_APP_ID = awa9re2w7ec3xrn6;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Staging.Release;

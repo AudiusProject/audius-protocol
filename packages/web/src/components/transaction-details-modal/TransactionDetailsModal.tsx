@@ -5,16 +5,15 @@ import {
   transactionDetailsActions,
   transactionDetailsSelectors
 } from '@audius/common/store'
-import { IconTransaction } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  IconTransaction
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

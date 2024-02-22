@@ -72,7 +72,7 @@ export const env: Env = {
     'pk_test_51LPsGuCJOWtpH6AEZT3Wf2U2xmLZQrEV56yha7HEVTEyhYYVrWCdknml3t4gkSe9Nagd1o9Royy8zL3XEAmRzeHS00xAKTfgpi',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
-  TIKTOK_APP_ID: 'awlrj83t4nx6qc5a',
+  TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
   TRPC_ENDPOINT: 'https://discoveryprovider3.staging.audius.co/trpc/trpc',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USE_HASH_ROUTING: false,

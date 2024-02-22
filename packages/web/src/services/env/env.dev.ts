@@ -70,7 +70,7 @@ export const env: Env = {
   SOLANA_WEB3_CLUSTER: 'devnet',
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
-  TIKTOK_APP_ID: 'awlrj83t4nx6qc5a',
+  TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
   TRPC_ENDPOINT: 'http://localhost:2022/trpc',
   USDC_MINT_ADDRESS: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
   USER_NODE: 'http://audius-protocol-creator-node-1',

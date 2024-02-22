@@ -3,11 +3,9 @@ import { useCallback } from 'react'
 import { ShareSource, ID } from '@audius/common/models'
 import { shareModalUIActions } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconShare } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
+import { IconShare, IconButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import styles from './ShareUserButton.module.css'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 type ShareUserButtonProps = {
@@ -29,11 +27,6 @@ export const ShareUserButton = ({ userId }: ShareUserButtonProps) => {
   }, [dispatch, userId])
 
   return (
-    <IconButton
-      aria-label='share'
-      className={styles.button}
-      icon={<IconShare />}
-      onClick={handleClick}
-    />
+    <IconButton aria-label='share' icon={IconShare} onClick={handleClick} />
   )
 }

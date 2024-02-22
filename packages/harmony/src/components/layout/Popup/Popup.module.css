@@ -1,19 +1,19 @@
 .root {
   font-family: var(--harmony-font-family);
   position: absolute;
+  z-index: 20000;
 }
 
 .popup {
   background-color: var(--harmony-white);
   border-radius: var(--harmony-unit-2);
   border: 1px solid var(--harmony-neutral-light-7);
-  box-shadow: 0 16px 20px 0 var(--harmony-tile-shadow-1-alt);
   user-select: none;
 }
 
 .header {
   border: none;
-  margin-bottom: var(--harmony-unit-1);
+  margin-bottom: var(--harmony-spacing-m);
   padding-bottom: 0;
   display: flex;
   align-items: center;

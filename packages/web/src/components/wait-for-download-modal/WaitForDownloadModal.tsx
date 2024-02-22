@@ -1,19 +1,27 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { DownloadQuality } from '@audius/common/models'
 import {
   CommonState,
   useWaitForDownloadModal,
   cacheTracksSelectors,
-  tracksSocialActions
+  tracksSocialActions,
+  downloadsSelectors
 } from '@audius/common/store'
 import { getDownloadFilename } from '@audius/common/utils'
-import { Flex, IconReceive, Text } from '@audius/harmony'
-import { ModalHeader } from '@audius/stems'
+import {
+  ModalHeader,
+  Flex,
+  IconReceive,
+  Text,
+  Hint,
+  IconError,
+  TextLink,
+  ModalTitle
+} from '@audius/harmony'
 import cn from 'classnames'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
-import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
@@ -21,9 +29,13 @@ import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import styles from './WaitForDownloadModal.module.css'
 
 const { getTrack } = cacheTracksSelectors
+const { getDownloadError } = downloadsSelectors
 
 const messages = {
-  title: 'Downloading...'
+  title: 'Downloading...',
+  somethingWrong:
+    'Something went wrong. Please check your connection and storage and try again.',
+  tryAgain: 'Try again.'
 }
 
 export const WaitForDownloadModal = () => {
@@ -41,10 +53,26 @@ export const WaitForDownloadModal = () => {
     shallowEqual
   )
 
+  const downloadError = useSelector(getDownloadError)
+
   const handleClosed = useCallback(() => {
     dispatch(tracksSocialActions.cancelDownloads())
     onClosed()
   }, [onClosed, dispatch])
+
+  const performDownload = useCallback(() => {
+    dispatch(
+      tracksSocialActions.downloadTrack({
+        trackIds,
+        parentTrackId,
+        original: quality === DownloadQuality.ORIGINAL
+      })
+    )
+  }, [trackIds, parentTrackId, quality, dispatch])
+
+  useEffect(() => {
+    performDownload()
+  }, [performDownload])
 
   const trackName =
     !parentTrackId && track?.orig_filename && track?.orig_filename?.length > 0
@@ -70,18 +98,30 @@ export const WaitForDownloadModal = () => {
         showDismissButton={!isMobile}
         className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
       >
-        <Flex justifyContent='center' gap='s'>
-          <Icon size='large' icon={IconReceive} />
-          <Text variant='label' size='xl' strength='strong'>
-            {messages.title}
-          </Text>
-        </Flex>
+        <ModalTitle icon={<IconReceive />} title={messages.title} />
       </ModalHeader>
       <Flex direction='column' p='xl' gap='xl' alignItems='center'>
         <Text variant='body' size='l' strength='strong'>
           {trackName}
         </Text>
-        <LoadingSpinner className={styles.spinner} />
+        {downloadError ? (
+          <Hint icon={IconError}>
+            <Flex direction='column' gap='m'>
+              <Text variant='body' color='default'>
+                {messages.somethingWrong}
+              </Text>
+              <TextLink
+                variant='visible'
+                textVariant='body'
+                onClick={performDownload}
+              >
+                {messages.tryAgain}
+              </TextLink>
+            </Flex>
+          </Hint>
+        ) : (
+          <LoadingSpinner className={styles.spinner} />
+        )}
       </Flex>
     </ModalDrawer>
   )

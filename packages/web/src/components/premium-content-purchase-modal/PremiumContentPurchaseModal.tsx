@@ -27,18 +27,22 @@ import {
   isContentPurchaseInProgress
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import { Flex, IconCart } from '@audius/harmony'
-import { ModalContentPages, ModalFooter, ModalHeader } from '@audius/stems'
+import {
+  ModalContentPages,
+  ModalHeader,
+  ModalFooter,
+  Flex,
+  IconCart,
+  ModalTitle
+} from '@audius/harmony'
 import cn from 'classnames'
 import { Formik, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
-import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
@@ -123,16 +127,7 @@ const RenderForm = ({
         onClose={onClose}
         showDismissButton={!isMobile}
       >
-        <Text
-          variant='label'
-          color='neutralLight2'
-          size='xLarge'
-          strength='strong'
-          className={styles.title}
-        >
-          <Icon size='large' icon={IconCart} />
-          {messages.completePurchase}
-        </Text>
+        <ModalTitle icon={<IconCart />} title={messages.completePurchase} />
       </ModalHeader>
       <ModalContentPages
         contentClassName={styles.content}

@@ -39,5 +39,5 @@ export type StemUpload = {
 }
 
 export type StemUploadWithFile = StemUpload & {
-  file: File
+  file?: File
 }

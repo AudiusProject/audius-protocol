@@ -159,7 +159,7 @@ const TIKTOK_POLLER = `
         if (authorizationCode && csrfState) {
           await getAccessToken(authorizationCode, csrfState)
         } else {
-          exit(new Error(error ||'OAuth redirect has occured but authorizationCode was not found.'))
+          exit(new Error(error ||'OAuth redirect has occurred but authorizationCode was not found.'))
         }
       }
     } catch (error) {

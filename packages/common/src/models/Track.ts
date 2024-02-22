@@ -123,8 +123,11 @@ export enum TrackAccessType {
 
 export const isContentCollectibleGated = (
   gatedConditions?: Nullable<AccessConditions>
-): gatedConditions is CollectibleGatedConditions =>
-  'nft_collection' in (gatedConditions ?? {})
+): gatedConditions is {
+  nft_collection:
+    | AccessConditionsEthNFTCollection
+    | AccessConditionsSolNFTCollection
+} => 'nft_collection' in (gatedConditions ?? {})
 
 export const isContentFollowGated = (
   gatedConditions?: Nullable<AccessConditions>

@@ -24,7 +24,7 @@ from src.models.model_utils import (
 class User(Base, RepresentableMixin):
     __tablename__ = "users"
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
@@ -71,9 +71,6 @@ class User(Base, RepresentableMixin):
     user_authority_account = Column(String)
     allow_ai_attribution = Column(Boolean, nullable=False, server_default=text("false"))
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="User.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="User.blocknumber == Block.number"
     )

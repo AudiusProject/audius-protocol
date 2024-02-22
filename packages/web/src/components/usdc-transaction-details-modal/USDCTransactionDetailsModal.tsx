@@ -4,17 +4,17 @@ import {
   formatUSDCWeiToUSDString,
   makeSolanaTransactionLink
 } from '@audius/common/utils'
-import { Button, IconExternalLink } from '@audius/harmony'
 import {
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  Button,
+  IconExternalLink
+} from '@audius/harmony'
 import moment from 'moment'
 
-import { Icon } from 'components/Icon'
 import { ExternalLink } from 'components/link'
 import { Text } from 'components/typography'
 
@@ -88,7 +88,7 @@ export const USDCTransactionDetailsModal = () => {
               >
                 <span className={styles.transactionLink}>
                   {messages.destinationWallet}
-                  <Icon icon={IconExternalLink} />
+                  <IconExternalLink size='s' color='default' />
                 </span>
               </ExternalLink>
             }

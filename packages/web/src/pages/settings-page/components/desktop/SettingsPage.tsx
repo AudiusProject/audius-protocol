@@ -13,6 +13,7 @@ import {
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import {
+  Modal,
   IconAppearance,
   SegmentedControl,
   IconDesktop,
@@ -25,7 +26,7 @@ import {
   IconKey,
   IconMessage
 } from '@audius/harmony'
-import { Modal, Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 

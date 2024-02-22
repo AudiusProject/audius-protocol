@@ -6,7 +6,7 @@ from src.models.metrics.aggregate_daily_total_users_metrics import (
 from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
 )
-from src.queries.get_trailing_metrics import _get_aggregate_route_metrics_trailing_month
+from src.queries.get_trailing_metrics import _get_aggregate_route_metrics_trailing
 from src.utils.db_session import get_db
 
 limit = 2
@@ -44,7 +44,7 @@ def test_get_aggregate_route_metrics_trailing_month(app):
             ]
         )
 
-        aggregate_metrics = _get_aggregate_route_metrics_trailing_month(session)
+        aggregate_metrics = _get_aggregate_route_metrics_trailing(session, "month")
 
         assert aggregate_metrics["unique_count"] == 5
         assert aggregate_metrics["summed_unique_count"] == 7

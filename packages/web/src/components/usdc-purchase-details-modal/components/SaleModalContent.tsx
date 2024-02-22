@@ -8,6 +8,10 @@ import {
 } from '@audius/common/store'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalFooter,
   Button,
   Flex,
   IconCart,
@@ -15,16 +19,9 @@ import {
   IconMessage,
   TextLink
 } from '@audius/harmony'
-import {
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Icon } from 'components/Icon'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { Text } from 'components/typography'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
@@ -77,10 +74,7 @@ export const SaleModalContent = ({
   return (
     <>
       <ModalHeader>
-        <ModalTitle
-          icon={<Icon icon={IconCart} />}
-          title={messages.saleDetails}
-        />
+        <ModalTitle icon={<IconCart />} title={messages.saleDetails} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>

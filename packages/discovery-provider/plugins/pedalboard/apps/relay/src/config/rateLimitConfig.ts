@@ -88,13 +88,6 @@ export class RelayRateLimiter {
       throw blockedRes;
     }
     const pointsToConsume = rateLimiter.points / amountOfAllowedRequests;
-    logger.info({
-      constructedKey,
-      pointsToConsume,
-      totalPoints: rateLimiter.points,
-      amountOfAllowedRequests,
-      title: "rate-limit-math",
-    });
     return rateLimiter.consume(constructedKey, pointsToConsume);
   }
 
