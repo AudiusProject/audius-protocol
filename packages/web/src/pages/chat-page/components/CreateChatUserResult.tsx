@@ -16,9 +16,9 @@ import {
   IconMessage,
   IconMessageUnblock as IconUnblockMessages,
   IconUser,
-  PopupMenu
+  PopupMenu,
+  IconButton
 } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -61,7 +61,8 @@ const renderTrigger = (
   <IconButton
     ref={anchorRef}
     aria-label={messages.moreOptions}
-    icon={<IconKebabHorizontal className={styles.icon} />}
+    icon={IconKebabHorizontal}
+    color='default'
     onClick={triggerPopup}
   />
 )

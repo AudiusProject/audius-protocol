@@ -111,10 +111,6 @@
   width: 20px;
 }
 
-.deleteButtonIcon path {
-  fill: var(--neutral-light-6);
-}
-
 .title {
   font-size: var(--font-s);
   font-weight: var(--font-demi-bold);

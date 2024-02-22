@@ -10,10 +10,6 @@
   background: var(--neutral-light-10);
 }
 
-.icon path {
-  fill: var(--neutral);
-}
-
 .notPermitted {
   display: flex;
   align-items: center;

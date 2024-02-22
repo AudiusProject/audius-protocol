@@ -21,8 +21,3 @@ export const isUserAdmin = (decodedUserId: number) => {
   const adminList = (process.env.DDEX_ADMIN_ALLOWLIST || '').split(',')
   return adminList.includes(`${decodedUserId}`)
 }
-
-export const isUserArtist = (decodedUserId: number) => {
-  const artistList = (process.env.DDEX_ARTIST_ALLOWLIST || '').split(',')
-  return artistList.includes(`${decodedUserId}`)
-}
