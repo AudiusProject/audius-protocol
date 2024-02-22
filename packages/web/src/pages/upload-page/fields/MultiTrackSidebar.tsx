@@ -27,8 +27,7 @@ const messages = {
   title: 'UPLOADED TRACKS',
   complete: 'Complete Upload',
   fixErrors: 'Fix errors to complete your upload.',
-  titleRequired: 'Track name required',
-  removeTrack: 'Remove track'
+  titleRequired: 'Track name required'
 }
 
 export const MultiTrackSidebar = () => {
