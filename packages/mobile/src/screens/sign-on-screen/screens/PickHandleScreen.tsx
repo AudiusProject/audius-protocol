@@ -58,7 +58,13 @@ const SocialMediaSection = ({
 }: SocialMediaSectionProps) => {
   const { spacing } = useTheme()
   return (
-    <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
+    <Paper
+      shadow='flat'
+      direction='column'
+      backgroundColor='surface2'
+      p='l'
+      gap='l'
+    >
       <Flex direction='column' gap='s'>
         <Text variant='title' size='m'>
           {pickHandlePageMessages.claimHandleHeaderPrefix}{' '}
