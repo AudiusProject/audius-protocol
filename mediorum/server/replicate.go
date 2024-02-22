@@ -20,10 +20,19 @@ import (
 	"gocloud.dev/blob"
 )
 
-func (ss *MediorumServer) replicateFileParallel(cid string, filePath string) ([]string, error) {
-	preferred, _ := ss.rendezvousHealthyHosts(cid)
-	queue := make(chan string, len(preferred))
-	for _, p := range preferred {
+func (ss *MediorumServer) replicateFileParallel(cid string, filePath string, placementHosts []string) ([]string, error) {
+	replicaCount := ss.Config.ReplicationFactor
+
+	if len(placementHosts) > 0 {
+		// use all explicit placement hosts
+		replicaCount = len(placementHosts)
+	} else {
+		// use rendezvous
+		placementHosts, _ = ss.rendezvousHealthyHosts(cid)
+	}
+
+	queue := make(chan string, len(placementHosts))
+	for _, p := range placementHosts {
 		queue <- p
 	}
 
@@ -31,9 +40,9 @@ func (ss *MediorumServer) replicateFileParallel(cid string, filePath string) ([]
 	results := []string{}
 
 	wg := sync.WaitGroup{}
-	wg.Add(ss.Config.ReplicationFactor)
+	wg.Add(replicaCount)
 
-	for i := 0; i < ss.Config.ReplicationFactor; i++ {
+	for i := 0; i < replicaCount; i++ {
 		go func() {
 			defer wg.Done()
 

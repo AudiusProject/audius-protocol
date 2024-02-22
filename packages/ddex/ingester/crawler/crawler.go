@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"ingester/common"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -16,30 +15,14 @@ import (
 )
 
 type Crawler struct {
-	s3Client    *s3.S3
-	mongoClient *mongo.Client
-	rawBucket   string
-	cursorsColl *mongo.Collection
-	uploadsColl *mongo.Collection
-	ctx         context.Context
-	logger      *slog.Logger
+	*common.BaseIngester
 }
 
 func RunNewCrawler(ctx context.Context) {
-	logger := slog.With("service", "crawler")
-	s3Client, _ := common.InitS3Client(logger)
-	mongoClient := common.InitMongoClient(ctx, logger)
-	defer mongoClient.Disconnect(ctx)
-
 	c := &Crawler{
-		s3Client:    s3Client,
-		mongoClient: mongoClient,
-		rawBucket:   common.MustGetenv("AWS_BUCKET_RAW"),
-		cursorsColl: mongoClient.Database("ddex").Collection("cursors"),
-		uploadsColl: mongoClient.Database("ddex").Collection("uploads"),
-		ctx:         ctx,
-		logger:      logger,
+		BaseIngester: common.NewBaseIngester(ctx, "crawler"),
 	}
+	defer c.MongoClient.Disconnect(ctx)
 
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
@@ -51,28 +34,28 @@ func RunNewCrawler(ctx context.Context) {
 		case <-ticker.C:
 			lastPolledTime, err := c.getLastPolledTime()
 			if err != nil {
-				c.logger.Error("Failed to retrieve s3 raw bucket's last polled time", "error", err)
+				c.Logger.Error("Failed to retrieve s3 raw bucket's last polled time", "error", err)
 				continue
 			}
 
 			uploads, err := c.pollS3Bucket(lastPolledTime)
 			if err != nil {
-				c.logger.Error("Error polling S3 bucket", "error", err)
+				c.Logger.Error("Error polling S3 bucket", "error", err)
 				continue
 			}
 
 			if len(uploads) > 0 {
 				err = c.persistUploads(uploads)
 				if err != nil {
-					c.logger.Error("Error inserting into mongodb", "error", err)
+					c.Logger.Error("Error inserting into mongodb", "error", err)
 					continue
 				}
-				c.logger.Info(fmt.Sprintf("Processed %d new uploads", len(uploads)))
+				c.Logger.Info(fmt.Sprintf("Processed %d new uploads", len(uploads)))
 			}
 
 			err = c.updateLastPolledTime(time.Now())
 			if err != nil {
-				c.logger.Error("Failed to update s3 raw bucket's last polled time", "error", err)
+				c.Logger.Error("Failed to update s3 raw bucket's last polled time", "error", err)
 			}
 
 			if ctx.Err() != nil {
@@ -87,7 +70,7 @@ func (c *Crawler) updateLastPolledTime(lastPolledTime time.Time) error {
 	update := bson.M{"$set": bson.M{"s3RawLastPolledTime": lastPolledTime}}
 	opts := options.Update().SetUpsert(true)
 
-	_, err := c.cursorsColl.UpdateOne(c.ctx, filter, update, opts)
+	_, err := c.CursorsColl.UpdateOne(c.Ctx, filter, update, opts)
 	return err
 }
 
@@ -97,7 +80,7 @@ func (c *Crawler) getLastPolledTime() (time.Time, error) {
 	}
 	filter := bson.M{"service": "crawler"}
 
-	err := c.cursorsColl.FindOne(c.ctx, filter).Decode(&result)
+	err := c.CursorsColl.FindOne(c.Ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// No record found, return zero time
@@ -110,8 +93,8 @@ func (c *Crawler) getLastPolledTime() (time.Time, error) {
 }
 
 func (c *Crawler) pollS3Bucket(lastPolledTime time.Time) ([]*s3.Object, error) {
-	resp, err := c.s3Client.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: aws.String(c.rawBucket),
+	resp, err := c.S3Client.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: aws.String(c.RawBucket),
 	})
 	if err != nil {
 		return nil, err
@@ -128,13 +111,13 @@ func (c *Crawler) pollS3Bucket(lastPolledTime time.Time) ([]*s3.Object, error) {
 
 func (c *Crawler) persistUploads(uploads []*s3.Object) error {
 	for _, upload := range uploads {
-		path := "s3://" + c.rawBucket + "/" + *upload.Key
+		path := "s3://" + c.RawBucket + "/" + *upload.Key
 		etag := strings.Trim(*upload.ETag, "\"")
 		// Only insert if a document doesn't already exist with this path and etag
 		filter := bson.M{"path": path, "upload_etag": etag}
 		update := bson.M{"$setOnInsert": bson.M{"path": path, "upload_etag": etag, "created_at": upload.LastModified}}
 		opts := options.Update().SetUpsert(true)
-		_, err := c.uploadsColl.UpdateOne(c.ctx, filter, update, opts)
+		_, err := c.UploadsColl.UpdateOne(c.Ctx, filter, update, opts)
 		if err != nil {
 			return err
 		}

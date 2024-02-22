@@ -9,7 +9,8 @@ export default defineConfig({
   server: {
     proxy: isDevelopment
       ? {
-          '/api': 'http://localhost:9000' // Assuming port for ../server Express server is unchanged
+          '/api': 'http://localhost:9000', // Assuming port for ../server Express server is unchanged
+          '/auth': 'http://localhost:9000' // Assuming port for ../server Express server is unchanged
         }
       : {}
   },

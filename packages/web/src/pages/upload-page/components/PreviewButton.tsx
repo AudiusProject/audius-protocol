@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { IconPause, IconPlay } from '@audius/harmony'
-import { HarmonyPlainButton, HarmonyPlainButtonType } from '@audius/stems'
+import { IconPause, IconPlay, PlainButton } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { CollectionTrackForUpload } from '../types'
@@ -47,15 +46,16 @@ export const PreviewButton = (props: PreviewButtonProps) => {
   }, [track.preview, canPlay])
 
   return canPlayPreview ? (
-    <HarmonyPlainButton
+    <PlainButton
       className={className}
-      variant={HarmonyPlainButtonType.SUBDUED}
+      variant='subdued'
       type='button'
-      text={messages.preview}
       iconLeft={isPreviewPlaying ? IconPause : IconPlay}
       onClick={() => {
         togglePreview(track.preview, index)
       }}
-    />
+    >
+      {messages.preview}
+    </PlainButton>
   ) : null
 }

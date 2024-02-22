@@ -16,7 +16,6 @@ import {
 } from '@audius/harmony'
 import moment from 'moment'
 
-import { Icon } from 'components/Icon'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { Text } from 'components/typography'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
@@ -55,7 +54,7 @@ export const PurchaseModalContent = ({
     <>
       <ModalHeader>
         <ModalTitle
-          icon={<Icon icon={IconCart} />}
+          icon={<IconCart color='subdued' />}
           title={messages.purchaseDetails}
         />
       </ModalHeader>

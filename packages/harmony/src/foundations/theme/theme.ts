@@ -3,20 +3,11 @@ import { colorTheme } from '../color'
 import { CornerRadius, cornerRadius } from '../corner-radius'
 import { Motion, motion, Spring, spring } from '../motion'
 import { Shadows, shadows } from '../shadows'
-import { Spacing, spacing } from '../spacing'
+import { Spacing, spacing, iconSizes } from '../spacing'
 import { typography } from '../typography'
 import type { Typography } from '../typography'
 
 import type { Theme } from './types'
-
-const iconSizes = {
-  xs: 14,
-  s: 16,
-  m: 20,
-  l: 24,
-  xl: 30,
-  '2xl': 32
-}
 
 const commonFoundations = {
   shadows,

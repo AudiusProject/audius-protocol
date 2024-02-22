@@ -11,10 +11,13 @@ import {
   modalsActions,
   playlistUpdatesSelectors
 } from '@audius/common/store'
-import { IconFolder, IconCaretRight, PopupMenuItem } from '@audius/harmony'
-import { IconFolderOutline } from '@audius/stems'
+import {
+  IconFolder,
+  IconCaretRight,
+  PopupMenuItem,
+  useTheme
+} from '@audius/harmony'
 import cn from 'classnames'
-import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -52,6 +55,7 @@ const messages = {
 export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const { folder, level } = props
   const { name, contents, id } = folder
+  const { color, spacing } = useTheme()
   const folderHasUpdate = useSelector((state) => {
     return folder.contents.some(
       (content) =>
@@ -63,7 +67,6 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
-  const isEmptyFolder = isEmpty(contents)
   const dispatch = useDispatch()
   const record = useRecord()
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
@@ -147,21 +150,13 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
           onMouseLeave={handleMouseLeave}
           disabled={isDisabled}
         >
-          {isEmptyFolder ? (
-            <IconFolderOutline
-              width={12}
-              height={12}
-              className={styles.iconFolder}
-            />
-          ) : (
-            <IconFolder
-              width={12}
-              height={12}
-              className={cn(styles.iconFolder, {
-                [styles.iconFolderUpdated]: folderHasUpdate
-              })}
-            />
-          )}
+          <IconFolder
+            size='xs'
+            css={{ marginRight: spacing.s }}
+            fill={
+              folderHasUpdate ? color.secondary.secondary : color.neutral.n950
+            }
+          />
           <span className={styles.folderName}>{name}</span>
           <IconCaretRight
             height={11}

@@ -11,8 +11,10 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import { zip } from 'react-native-zip-archive'
 import { dedupFilenames } from '~/utils'
 
+import { make, track as trackEvent } from 'app/services/analytics'
 import { dispatch } from 'app/store'
 import { setVisibility } from 'app/store/drawers/slice'
+import { EventNames } from 'app/types/analytics'
 
 import { audiusBackendInstance } from './audius-backend-instance'
 
@@ -35,7 +37,9 @@ const removePathIfExists = async (path: string) => {
     const exists = await ReactNativeBlobUtil.fs.exists(path)
     if (!exists) return
     await ReactNativeBlobUtil.fs.unlink(path)
-  } catch {}
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 /**
@@ -73,6 +77,14 @@ const downloadOne = async ({
     dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
 
     await onFetchComplete?.(fetchRes.path())
+
+    // Track download success event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE,
+        device: 'native'
+      })
+    )
   } catch (err) {
     console.error(err)
     dispatch(
@@ -82,6 +94,14 @@ const downloadOne = async ({
     )
     // On failure attempt to delete the file
     removePathIfExists(filePath)
+
+    // Track download failure event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE,
+        device: 'native'
+      })
+    )
   }
 }
 
@@ -100,21 +120,30 @@ const downloadMany = async ({
   onFetchComplete?: (path: string) => Promise<void>
 }) => {
   dedupFilenames(files)
+  let responses
+  const tempDir = ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + 'AudiusTemp'
   try {
     const responsePromises = files.map(({ url, filename }) =>
       ReactNativeBlobUtil.config(
-        getFetchConfig(directory + '/' + filename)
+        getFetchConfig(tempDir + '/' + filename)
       ).fetch('GET', url)
     )
     fetchTasks = responsePromises
-    const responses = await Promise.all(responsePromises)
+    responses = await Promise.all(responsePromises)
     if (!responses.every((response) => response.info().status === 200)) {
       throw new Error('Download unsuccessful')
     }
 
-    await zip(directory, directory + '.zip')
+    await zip(tempDir, directory + '.zip')
     await onFetchComplete?.(directory + '.zip')
-    responses.forEach((response) => response.flush())
+
+    // Track download success event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL,
+        device: 'native'
+      })
+    )
   } catch (err) {
     console.error(err)
     dispatch(
@@ -122,9 +151,22 @@ const downloadMany = async ({
         err instanceof Error ? err : new Error(`Download failed: ${err}`)
       )
     )
+
+    // Track download failure event
+    trackEvent(
+      make({
+        eventName: EventNames.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL,
+        device: 'native'
+      })
+    )
   } finally {
     // Remove source directory at the end of the process regardless of what happens
-    removePathIfExists(directory)
+    removePathIfExists(tempDir)
+    try {
+      responses.forEach((response) => response.flush())
+    } catch (err) {
+      console.error(err)
+    }
   }
 }
 

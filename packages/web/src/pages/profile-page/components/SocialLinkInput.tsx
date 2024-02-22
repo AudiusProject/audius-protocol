@@ -1,13 +1,35 @@
-import { useState, useRef, ReactNode, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 
-import { IconLink, IconTikTok } from '@audius/harmony'
-import { IconTwitterBird, IconInstagram, IconDonate } from '@audius/stems'
+import {
+  IconLink,
+  IconTikTok,
+  IconTwitter,
+  IconInstagram,
+  IconDonate,
+  useTheme
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'
 
 import { Type, handleTypes } from './SocialLink'
 import styles from './SocialLinkInput.module.css'
+
+const socialLinkIcons = {
+  [Type.TWITTER]: IconTwitter,
+  [Type.INSTAGRAM]: IconInstagram,
+  [Type.TIKTOK]: IconTikTok,
+  [Type.WEBSITE]: IconLink,
+  [Type.DONATION]: IconDonate
+}
+
+const socialLinkPlaceholders = {
+  [Type.TWITTER]: 'Twitter Handle',
+  [Type.INSTAGRAM]: 'Instagram Handle',
+  [Type.TIKTOK]: 'TikTok Handle',
+  [Type.WEBSITE]: 'Website',
+  [Type.DONATION]: 'Donate'
+}
 
 const sanitizeHandle = (handle: string) => {
   if (handle.startsWith('http')) {
@@ -53,6 +75,7 @@ const SocialLinkInput = ({
   const [value, setValue] = useState(defaultValue)
   const [focused, setFocused] = useState(false)
   const timeoutRef = useRef<any>()
+  const { spacing } = useTheme()
 
   const inputRef = useRef()
 
@@ -96,43 +119,8 @@ const SocialLinkInput = ({
     setFocused(false)
   }
 
-  let icon: ReactNode
-  switch (type) {
-    case Type.TWITTER:
-      icon = <IconTwitterBird className={styles.icon} />
-      break
-    case Type.INSTAGRAM:
-      icon = <IconInstagram className={styles.icon} />
-      break
-    case Type.TIKTOK:
-      icon = <IconTikTok className={styles.icon} />
-      break
-    case Type.WEBSITE:
-      icon = <IconLink className={styles.icon} />
-      break
-    case Type.DONATION:
-      icon = <IconDonate className={styles.icon} />
-      break
-  }
-
-  let placeholder = ''
-  switch (type) {
-    case Type.TWITTER:
-      placeholder = 'Twitter Handle'
-      break
-    case Type.INSTAGRAM:
-      placeholder = 'Instagram Handle'
-      break
-    case Type.TIKTOK:
-      placeholder = 'TikTok Handle'
-      break
-    case Type.WEBSITE:
-      placeholder = 'Website'
-      break
-    case Type.DONATION:
-      placeholder = 'Donate'
-      break
-  }
+  const Icon = socialLinkIcons[type]
+  const placeholder = socialLinkPlaceholders[type]
 
   return (
     <div
@@ -141,7 +129,15 @@ const SocialLinkInput = ({
         [styles.hasValue]: value
       })}
     >
-      <div className={styles.icon}>{icon}</div>
+      <Icon
+        color='accent'
+        css={{
+          position: 'absolute',
+          top: spacing.unit1,
+          left: spacing.unit1,
+          zIndex: 2
+        }}
+      />
       {isHandle && <span className={styles.at}>{'@'}</span>}
       <Input
         className={cn(styles.input, className, {

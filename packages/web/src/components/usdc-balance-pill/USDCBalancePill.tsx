@@ -8,7 +8,6 @@ import { IconLogoCircleUSDC as LogoUSDC } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'
 
-import { Icon } from 'components/Icon'
 import Skeleton from 'components/skeleton/Skeleton'
 
 import styles from './USDCBalancePill.module.css'
@@ -26,7 +25,7 @@ export const USDCBalancePill = ({ className }: USDCPillProps) => {
 
   return (
     <div className={cn(styles.container, className)}>
-      <Icon className={styles.icon} icon={LogoUSDC} size='medium' />
+      <LogoUSDC size='m' className={styles.icon} />
       {usdcBalanceStatus === Status.LOADING ? (
         <Skeleton className={styles.skeleton} />
       ) : (

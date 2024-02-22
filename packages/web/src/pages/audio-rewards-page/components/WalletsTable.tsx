@@ -6,8 +6,12 @@ import {
   tokenDashboardPageActions
 } from '@audius/common/store'
 import { shortenSPLAddress, shortenEthAddress } from '@audius/common/utils'
-import { IconCopy, IconRemove, IconSolana as LogoSol } from '@audius/harmony'
-import { LogoEth } from '@audius/stems'
+import {
+  IconCopy,
+  IconRemove,
+  IconLogoCircleETH,
+  IconLogoCircleSOL
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -92,15 +96,13 @@ const Wallet = ({
           placement={ComponentPlacement.TOP}
         >
           <>
-            <div className={styles.chainIconContainer}>
-              {chain === Chain.Eth ? (
-                <LogoEth className={styles.chainIconEth} />
-              ) : (
-                <LogoSol className={styles.chainIconSol} />
-              )}
-            </div>
+            {chain === Chain.Eth ? (
+              <IconLogoCircleETH />
+            ) : (
+              <IconLogoCircleSOL />
+            )}
             <span className={styles.walletText}>{displayAddress(address)}</span>
-            {!isCopyDisabled && <IconCopy className={styles.iconCopy} />}
+            {!isCopyDisabled && <IconCopy size='s' color='subdued' />}
           </>
         </Toast>
       </div>

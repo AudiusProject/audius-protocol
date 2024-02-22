@@ -9,9 +9,10 @@ import {
   ModalFooter,
   Box,
   Text as HarmonyText,
-  IconCaretRight
+  IconCaretRight,
+  IconComponent
 } from '@audius/harmony'
-import { Button, ButtonType, IconComponent } from '@audius/stems'
+import { Button, ButtonType } from '@audius/stems'
 import {
   Form,
   Formik,
@@ -23,7 +24,6 @@ import {
 } from 'formik'
 import { useToggle } from 'react-use'
 
-import { Icon } from 'components/Icon'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
@@ -114,10 +114,10 @@ type SelectedValueProps = {
 }
 
 export const SelectedValue = (props: SelectedValueProps) => {
-  const { label, icon, children } = props
+  const { label, icon: Icon, children } = props
   return (
     <span className={styles.selectedValue}>
-      {icon ? <Icon icon={icon} size='small' /> : null}
+      {Icon ? <Icon size='s' color='default' /> : null}
       {label ? <Text strength='strong'>{label}</Text> : null}
       {children}
     </span>
@@ -188,7 +188,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
           <Text className={styles.title} variant='title' size='large'>
             {label}
           </Text>
-          <Icon icon={IconCaretRight} color='neutralLight4' />
+          <IconCaretRight color='subdued' size='s' />
         </div>
         <Text className={styles.description}>{description}</Text>
       </div>

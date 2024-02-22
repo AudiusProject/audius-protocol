@@ -14,7 +14,6 @@ import QRCode from 'react-qr-code'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import { Icon } from 'components/Icon'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
@@ -97,7 +96,7 @@ export const USDCManualTransfer = ({
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
-            icon={() => <Icon icon={IconError} size='large' fill='neutral' />}
+            icon={() => <IconError color='default' />}
             linkText={messages.learnMore}
           />
         </Flex>

@@ -24,7 +24,8 @@ import {
   Modal,
   ModalContent,
   ModalHeader,
-  IconTransaction
+  IconTransaction,
+  ModalTitle
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'
@@ -32,8 +33,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Icon } from 'components/Icon'
-import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 import { isValidSolAddress } from 'services/solana/solana'
 
@@ -248,16 +247,7 @@ export const WithdrawUSDCModal = () => {
         onClose={onClose}
         showDismissButton={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
       >
-        <Text
-          variant='label'
-          color='neutralLight2'
-          size='xLarge'
-          strength='strong'
-          className={styles.title}
-        >
-          <Icon size='large' icon={IconTransaction} />
-          {messages.title}
-        </Text>
+        <ModalTitle icon={<IconTransaction />} title={messages.title} />
       </ModalHeader>
       <ModalContent>
         <Formik

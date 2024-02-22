@@ -1,10 +1,8 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { IconDrag, IconTrash } from '@audius/harmony'
-import { HarmonyPlainButton, HarmonyPlainButtonType } from '@audius/stems'
+import { IconDrag, IconTrash, PlainButton } from '@audius/harmony'
 import { useField } from 'formik'
 
-import { Icon } from 'components/Icon'
 import { TagField } from 'components/form-fields'
 import { SwitchField } from 'components/form-fields/SwitchField'
 import { Tile } from 'components/tile'
@@ -64,7 +62,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
     <Tile className={styles.root} key={track.metadata.track_id} elevation='mid'>
       <div className={styles.trackNameRow}>
         <span className={styles.iconDrag}>
-          <Icon icon={IconDrag} size='large' />
+          <IconDrag color='default' />
         </span>
         <Text size='small'>{index + 1}</Text>
         <TrackNameField name={`tracks.${index}.metadata.title`} />
@@ -85,14 +83,15 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         </div>
         <div className={styles.actions}>
           <PreviewButton index={index} />
-          <HarmonyPlainButton
-            variant={HarmonyPlainButtonType.SUBDUED}
+          <PlainButton
+            variant='subdued'
             type='button'
-            text={messages.delete}
             iconLeft={IconTrash}
             onClick={handleRemove}
             disabled={disableDelete}
-          />
+          >
+            {messages.delete}
+          </PlainButton>
         </div>
       </div>
     </Tile>

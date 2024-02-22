@@ -1,6 +1,13 @@
 import { useState } from 'react'
 
-import { IconCloseAlt, IconPlay, Paper, Text } from '@audius/harmony-native'
+import {
+  IconButton,
+  IconCloseAlt,
+  IconPlay,
+  Paper,
+  Text,
+  useTheme
+} from '@audius/harmony-native'
 
 const messages = {
   previewNotice: "Press the artist's photo to preview their music."
@@ -8,6 +15,7 @@ const messages = {
 
 export const PreviewArtistHint = () => {
   const [isOpen, setIsOpen] = useState(true)
+  const { spacing } = useTheme()
 
   if (!isOpen) return null
 
@@ -27,8 +35,10 @@ export const PreviewArtistHint = () => {
       <Text variant='body' color='staticWhite' style={{ flex: 1 }}>
         {messages.previewNotice}
       </Text>
-      <IconCloseAlt
+      <IconButton
         role='button'
+        icon={IconCloseAlt}
+        hitSlop={spacing.l}
         color='staticWhite'
         size='m'
         onPress={() => setIsOpen(false)}

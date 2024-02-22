@@ -26,6 +26,7 @@ type Upload struct {
 	Mirrors           []string       `json:"mirrors" gorm:"serializer:json"`
 	TranscodedMirrors []string       `json:"transcoded_mirrors" gorm:"serializer:json"`
 	Status            string         `json:"status" gorm:"index"`
+	PlacementHosts    []string       `json:"placement_hosts" gorm:"serializer:json"`
 
 	CreatedBy string    `json:"created_by" `
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime:false"`

@@ -204,6 +204,18 @@ export enum Name {
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
   TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
   TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
+  // Download-Only Gated Track Uploads
+  TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD = 'Track Upload: Follow Gated Download',
+  TRACK_UPLOAD_USDC_GATED_DOWNLOAD = 'Track Upload: USDC Gated Download',
+  TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK = 'Track Upload: Clicked USDC Download Waitlist Link',
+
+  // Track Downloads
+  TRACK_DOWNLOAD_CLICKED_DOWNLOAD_ALL = 'Track Download: Clicked Download All',
+  TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL = 'Track Download: Successfull Download All',
+  TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL = 'Track Download: Failed Download All',
+  TRACK_DOWNLOAD_CLICKED_DOWNLOAD_SINGLE = 'Track Download: Clicked Download Single',
+  TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE = 'Track Download: Successfull Download Single',
+  TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE = 'Track Download: Failed Download Single',
 
   // Track Edits
   TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
@@ -216,6 +228,9 @@ export enum Name {
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
+  // Unlocked Download-Only Gated Tracks
+  USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED = 'USDC Gated: Download Track Unlocked',
+  FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED = 'Follow Gated: Download Track Unlocked',
 
   // Trending
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
@@ -561,10 +576,15 @@ type CreateAccountInstagramError = {
   page?: 'create-email' | 'pick-handle'
 }
 
+// TikTok account creation
 type CreateAccountStartTikTok = {
   eventName: Name.CREATE_ACCOUNT_START_TIKTOK
   emailAddress?: string
   page?: string
+}
+type CreateAccountClosedTikTok = {
+  eventName: Name.CREATE_ACCOUNT_CLOSED_TIKTOK
+  page?: 'create-email' | 'pick-handle'
 }
 type CreateAccountCompleteTikTok =
   | {
@@ -578,10 +598,16 @@ type CreateAccountCompleteTikTok =
       handle: string
       page?: string
     }
+type CreateAccountTikTokError = {
+  eventName: Name.CREATE_ACCOUNT_TIKTOK_ERROR
+  error?: string
+  page?: 'create-email' | 'pick-handle'
+}
+
 type CreateAccountUploadProfilePhoto = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
 }
 type CreateAccountUploadProfilePhotoError = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO_ERROR
@@ -589,8 +615,8 @@ type CreateAccountUploadProfilePhotoError = {
 }
 type CreateAccountUploadProfileCover = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
 }
 type CreateAccountUploadProfileCoverError = {
   eventName: Name.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO_ERROR
@@ -603,8 +629,8 @@ type CreateAccountCompleteProfile = {
 }
 type CreateAccountSelectGenre = {
   eventName: Name.CREATE_ACCOUNT_SELECT_GENRE
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
   genre: Genre
   selectedGenres: Genre[]
 }
@@ -1045,26 +1071,87 @@ type TrackUploadViewTrackPage = {
 type TrackUploadCollectibleGated = {
   eventName: Name.TRACK_UPLOAD_COLLECTIBLE_GATED
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadFollowGated = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadTipGated = {
   eventName: Name.TRACK_UPLOAD_TIP_GATED
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadUSDCGated = {
   eventName: Name.TRACK_UPLOAD_USDC_GATED
   price: number
   kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
 }
 
 type TrackUploadClickUSDCWaitListLink = {
   eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
+}
+
+type TrackUploadFollowGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
+type TrackUploadUSDCGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_USDC_GATED_DOWNLOAD
+  price: number
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
+type TrackUploadClickUSDCDownloadWaitListLink = {
+  eventName: Name.TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK
+}
+
+// Track Downloads
+type TrackDownloadClickedDownloadAll = {
+  eventName: Name.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_ALL
+  parentTrackId: ID
+  stemTrackIds: ID[]
+  device: 'web' | 'native'
+}
+
+type TrackDownloadSuccessfulDownloadAll = {
+  eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_ALL
+  device: 'web' | 'native'
+}
+
+type TrackDownloadFailedDownloadAll = {
+  eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_ALL
+  device: 'web' | 'native'
+}
+
+type TrackDownloadClickedDownloadSingle = {
+  eventName: Name.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_SINGLE
+  trackId: ID
+  device: 'web' | 'native'
+}
+
+type TrackDownloadSuccessfulDownloadSingle = {
+  eventName: Name.TRACK_DOWNLOAD_SUCCESSFUL_DOWNLOAD_SINGLE
+  device: 'web' | 'native'
+}
+
+type TrackDownloadFailedDownloadSingle = {
+  eventName: Name.TRACK_DOWNLOAD_FAILED_DOWNLOAD_SINGLE
+  device: 'web' | 'native'
 }
 
 // Track Edits
@@ -1093,6 +1180,16 @@ type FollowGatedTrackUnlocked = {
 
 type TipGatedTrackUnlocked = {
   eventName: Name.TIP_GATED_TRACK_UNLOCKED
+  trackId: number
+}
+
+type USDCGatedDownloadTrackUnlocked = {
+  eventName: Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
+  count: number
+}
+
+type FollowGatedDownloadTrackUnlocked = {
+  eventName: Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
   trackId: number
 }
 
@@ -2251,12 +2348,14 @@ export type AllTrackingEvents =
   | CreateAccountStartInstagram
   | CreateAccountCompleteInstagram
   | CreateAccountStartTikTok
+  | CreateAccountClosedTikTok
   | CreateAccountCompleteTikTok
   | CreateAccountCompleteProfile
   | CreateAccountCompleteFollow
   | CreateAccountCompleteCreating
   | CreateAccountOpenFinish
   | CreateAccountClosedTwitter
+  | CreateAccountTikTokError
   | CreateAccountTwitterError
   | CreateAccountClosedInstagram
   | CreateAccountInstagramError
@@ -2321,6 +2420,15 @@ export type AllTrackingEvents =
   | TrackUploadTipGated
   | TrackUploadUSDCGated
   | TrackUploadClickUSDCWaitListLink
+  | TrackUploadFollowGatedDownload
+  | TrackUploadUSDCGatedDownload
+  | TrackUploadClickUSDCDownloadWaitListLink
+  | TrackDownloadClickedDownloadAll
+  | TrackDownloadSuccessfulDownloadAll
+  | TrackDownloadFailedDownloadAll
+  | TrackDownloadClickedDownloadSingle
+  | TrackDownloadSuccessfulDownloadSingle
+  | TrackDownloadFailedDownloadSingle
   | TrackEditAccessChanged
   | TrackUploadSuccess
   | TrackUploadFailure
@@ -2333,6 +2441,8 @@ export type AllTrackingEvents =
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked
+  | USDCGatedDownloadTrackUnlocked
+  | FollowGatedDownloadTrackUnlocked
   | TrendingChangeView
   | TrendingPaginate
   | FeedChangeView
