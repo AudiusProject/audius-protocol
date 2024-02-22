@@ -9,7 +9,7 @@ class CollectionTrackRelation(Base, RepresentableMixin):
 
     collection_id = Column(Integer, nullable=False, primary_key=True, index=True)
     track_id = Column(Integer, nullable=False, primary_key=True, index=True)
-    is_delete = Column(Boolean, nullable=False)
+    is_removed = Column(Boolean, nullable=False)
     created_at = Column(
         DateTime, nullable=False, index=False, server_default=text("CURRENT_TIMESTAMP")
     )

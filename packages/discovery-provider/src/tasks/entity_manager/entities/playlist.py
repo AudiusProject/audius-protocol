@@ -137,7 +137,7 @@ def update_playlist_tracks_relations(
     # delete relations that previously existed but are not in the updated list
     for relation in existing_playlist_tracks_relations:
         if relation.track_id not in updated_track_ids:
-            relation.is_delete = True
+            relation.is_removed = True
             relation.updated_at = params.block_datetime
 
     for track_id in updated_track_ids:
@@ -146,15 +146,15 @@ def update_playlist_tracks_relations(
             new_collection_track_relation = CollectionTrackRelation(
                 collection_id=playlist["playlist_id"],
                 track_id=track_id,
-                is_delete=False,
+                is_removed=False,
                 created_at=params.block_datetime,
                 updated_at=params.block_datetime,
             )
             # upsert to handle duplicates
             session.merge(new_collection_track_relation)
-        elif existing_tracks[track_id].is_delete:
+        elif existing_tracks[track_id].is_removed:
             # recover deleted relation (track was previously removed then re-added)
-            existing_tracks[track_id].is_delete = False
+            existing_tracks[track_id].is_removed = False
             existing_tracks[track_id].updated_at = params.block_datetime
 
     params.logger.info(

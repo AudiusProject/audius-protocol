@@ -251,11 +251,11 @@ def test_remove_track_from_playlist(app, mocker):
         ).all()
         assert len(relations) == 2
         assert any(
-            [relation.is_delete and relation.track_id == 20 for relation in relations]
+            [relation.is_removed and relation.track_id == 20 for relation in relations]
         )
         assert any(
             [
-                not relation.is_delete and relation.track_id == 30
+                not relation.is_removed and relation.track_id == 30
                 for relation in relations
             ]
         )
@@ -333,14 +333,14 @@ def test_restore_removed_track_to_playlist(app, mocker):
         for id in [20, 30]:
             assert any(
                 [
-                    relation.track_id == id and not relation.is_delete
+                    relation.track_id == id and not relation.is_removed
                     for relation in relations
                 ]
             )
         for id in [10, 40]:
             assert not any(
                 [
-                    relation.track_id == id and relation.is_delete
+                    relation.track_id == id and relation.is_removed
                     for relation in relations
                 ]
             )
