@@ -1,15 +1,20 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { Button, IconTrash, IconError, IconCloudUpload } from '@audius/harmony'
+import {
+  Button,
+  IconTrash,
+  IconError,
+  IconCloudUpload,
+  Text,
+  useTheme
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
-import { Icon } from 'components/Icon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 
 import { UploadFormScrollContext } from '../UploadPage'
 import { useIndexedField } from '../hooks'
@@ -28,11 +33,13 @@ const messages = {
 export const MultiTrackSidebar = () => {
   const scrollToTop = useContext(UploadFormScrollContext)
   const { errors, submitCount } = useFormikContext<TrackEditFormValues>()
+  const { spacing } = useTheme()
+
   return (
     <div className={styles.root}>
       <div className={cn(layoutStyles.col)}>
         <div className={styles.title}>
-          <Text variant='label' size='small'>
+          <Text variant='label' size='s'>
             {messages.title}
           </Text>
         </div>
@@ -51,12 +58,12 @@ export const MultiTrackSidebar = () => {
           </div>
           {!isEmpty(errors) && submitCount > 0 ? (
             <div className={cn(layoutStyles.row, layoutStyles.gap1)}>
-              <Icon
-                className={styles.iconError}
-                icon={IconError}
-                size='xSmall'
+              <IconError
+                size='xs'
+                color='danger'
+                css={{ margin: spacing.unit1 }}
               />
-              <Text size='xSmall' color='accentRed'>
+              <Text variant='body' size='xs' color='danger'>
                 {messages.fixErrors}
               </Text>
             </div>
@@ -86,6 +93,7 @@ type TrackRowProps = {
 const TrackRow = (props: TrackRowProps) => {
   const { index } = props
   const scrollToTop = useContext(UploadFormScrollContext)
+  const { spacing } = useTheme()
   const { values, setValues, errors, submitCount } =
     useFormikContext<TrackEditFormValues>()
   const { playingPreviewIndex, stopPreview } = useContext(UploadPreviewContext)
@@ -156,16 +164,16 @@ const TrackRow = (props: TrackRowProps) => {
         >
           <div className={layoutStyles.row}>
             {hasError ? (
-              <Icon
-                className={styles.iconError}
-                icon={IconError}
-                size='xSmall'
-                color='accentRed'
+              <IconError
+                size='xs'
+                color='danger'
+                css={{ margin: spacing.unit1 }}
               />
             ) : (
               <Text
+                variant='body'
                 className={styles.trackIndex}
-                color={isSelected ? 'secondary' : 'neutral'}
+                color={isSelected ? 'accent' : 'default'}
               >
                 {index + 1}
               </Text>
@@ -178,15 +186,9 @@ const TrackRow = (props: TrackRowProps) => {
           </div>
           <div className={styles.trackTitleContainer}>
             <Text
-              size='small'
-              // @ts-ignore TODO: support for accent-red in other themes
-              color={
-                hasError
-                  ? '--accent-red'
-                  : isSelected
-                  ? '--secondary'
-                  : '--neutral'
-              }
+              variant='body'
+              size='s'
+              color={hasError ? 'danger' : isSelected ? 'accent' : 'default'}
             >
               {isTitleMissing ? messages.titleRequired : title}
             </Text>
@@ -196,7 +198,7 @@ const TrackRow = (props: TrackRowProps) => {
               className={styles.iconRemove}
               onClick={(e) => handleRemoveTrack(e, index)}
             >
-              <IconTrash fill='--default' />
+              <IconTrash color='default' />
             </div>
           ) : null}
         </div>

@@ -223,7 +223,7 @@ export const ProfileBio = ({
   return (
     <div>
       <UserGeneratedText
-        size='xSmall'
+        size='xs'
         ref={bioRef}
         className={cn(styles.description, {
           [styles.truncated]: isCollapsed

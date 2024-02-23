@@ -7,6 +7,7 @@ from src.models.playlists.collection_track_relation import CollectionTrackRelati
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
+from src.models.playlists.playlist_track import PlaylistTrack
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
@@ -112,36 +113,32 @@ def update_playlist_routes_table(
     )
 
 
-def update_playlist_tracks_relations(
-    params: ManageEntityParameters, playlist_record: Playlist
-):
-    # Update the playlist_tracks_relations table
+def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Playlist):
+    # Update the playlist_tracks table
     session = params.session
-    existing_playlist_tracks_relations = (
-        session.query(CollectionTrackRelation)
+    existing_playlist_tracks = (
+        session.query(PlaylistTrack)
         .filter(
-            CollectionTrackRelation.collection_id == params.entity_id,
+            PlaylistTrack.playlist_id == params.entity_id,
         )
         .all()
     )
-    existing_tracks = {
-        track.track_id: track for track in existing_playlist_tracks_relations
-    }
+    existing_tracks = {track.track_id: track for track in existing_playlist_tracks}
     playlist = helpers.model_to_dictionary(playlist_record)
     updated_track_ids = [
         track["track"] for track in playlist["playlist_contents"]["track_ids"]
     ]
     params.logger.info(
-        f"playlists.py | Updating playlist tracks relations for {playlist['playlist_id']}"
+        f"playlists.py | Updating playlist tracks for {playlist['playlist_id']}"
     )
 
     # delete relations that previously existed but are not in the updated list
-    for relation in existing_playlist_tracks_relations:
-        if relation.track_id not in updated_track_ids:
-            relation.is_removed = True
-            relation.updated_at = params.block_datetime
+    for playlist_track in existing_playlist_tracks:
+        if playlist_track.track_id not in updated_track_ids:
+            playlist_track.is_removed = True
+            playlist_track.updated_at = params.block_datetime
             track = (
-                session.query(Track).filter(Track.track_id == relation.track_id).first()
+                session.query(Track).filter(Track.track_id == playlist_track.track_id).first()
             )
             if track:
                 track.updated_at = params.block_datetime
@@ -154,15 +151,15 @@ def update_playlist_tracks_relations(
     for track_id in updated_track_ids:
         # add row for each track that is not already in the table
         if track_id not in existing_tracks:
-            new_collection_track_relation = CollectionTrackRelation(
-                collection_id=playlist["playlist_id"],
+            new_playlist_track = PlaylistTrack(
+                playlist_id=playlist["playlist_id"],
                 track_id=track_id,
                 is_removed=False,
                 created_at=params.block_datetime,
                 updated_at=params.block_datetime,
             )
             # upsert to handle duplicates
-            session.merge(new_collection_track_relation)
+            session.merge(new_playlist_track)
             track = session.query(Track).filter(Track.track_id == track_id).first()
             if track:
                 track.updated_at = params.block_datetime
@@ -186,8 +183,9 @@ def update_playlist_tracks_relations(
                     )
                 )
 
+
     params.logger.info(
-        f"playlists.py | Updated playlist tracks relations for {playlist['playlist_id']}"
+        f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
     )
 
 
@@ -320,7 +318,11 @@ def create_playlist(params: ManageEntityParameters):
 
     params.add_record(playlist_id, playlist_record)
 
+<<<<<<< HEAD
     update_playlist_tracks_relations(params, playlist_record)
+=======
+    update_playlist_tracks(params, playlist_record)
+>>>>>>> origin/main
 
     if tracks:
         dispatch_challenge_playlist_upload(
@@ -359,7 +361,11 @@ def update_playlist(params: ManageEntityParameters):
 
     update_playlist_routes_table(params, playlist_record, False)
 
+<<<<<<< HEAD
     update_playlist_tracks_relations(params, playlist_record)
+=======
+    update_playlist_tracks(params, playlist_record)
+>>>>>>> origin/main
 
     params.add_record(playlist_id, playlist_record)
 

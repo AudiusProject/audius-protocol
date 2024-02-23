@@ -16,6 +16,7 @@ import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 import { useRoute } from '../useRoute'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 export type CreatePasswordParams = {
   email: string
@@ -38,6 +39,8 @@ export const CreatePasswordScreen = () => {
   const { email } = params
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
+
+  useTrackScreen('CreatePassword')
 
   const handleSubmit = useCallback(
     (values: CreatePasswordValues) => {

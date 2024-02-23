@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import { Text } from 'components/typography'
+import { Text } from '@audius/harmony'
 
 import styles from './HelperText.module.css'
 
@@ -13,11 +13,7 @@ export const HelperText = (props: HelperTextProps) => {
   const { children, error } = props
   return (
     <div className={styles.root}>
-      <Text
-        size='xSmall'
-        strength='default'
-        color={error ? 'accentRed' : 'neutralLight4'}
-      >
+      <Text variant='body' size='xs' color={error ? 'danger' : 'subdued'}>
         {children}
       </Text>
     </div>

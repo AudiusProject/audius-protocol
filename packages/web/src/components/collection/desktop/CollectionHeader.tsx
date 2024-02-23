@@ -164,7 +164,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             />
           </div>
           <UserGeneratedText
-            size='xSmall'
+            size='xs'
             className={cn(styles.description, fadeIn)}
             linkSource='collection page'
           >

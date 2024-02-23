@@ -78,6 +78,7 @@
 
 .dropzoneDisabled {
   color: var(--neutral-light-4);
+  cursor: auto !important;
 }
 
 .dropzoneDisabled path {

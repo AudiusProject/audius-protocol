@@ -1,8 +1,8 @@
 import { accountSelectors } from '@audius/common/store'
+import { Text } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { Link, UserLink } from 'components/link'
-import { Text } from 'components/typography'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
@@ -29,28 +29,28 @@ export const AccountDetails = () => {
             <>
               <UserLink
                 variant='title'
-                size='small'
+                size='s'
                 strength='weak'
                 userId={account.user_id}
                 badgeSize={12}
               />
               <Link
                 variant='body'
-                size='xSmall'
+                size='xs'
                 to={profileLink}
               >{`@${account.handle}`}</Link>
             </>
           ) : (
             <>
-              <Text variant='body' size='small' strength='strong'>
+              <Text variant='body' size='s' strength='strong'>
                 {messages.haveAccount}
               </Text>
               <Link
                 to={SIGN_IN_PAGE}
                 variant='body'
-                size='xSmall'
+                size='xs'
                 strength='weak'
-                color='secondary'
+                color='accent'
               >
                 {messages.signIn}
               </Link>

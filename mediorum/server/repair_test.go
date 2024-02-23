@@ -12,34 +12,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func testNetworkRunRepair(cleanup bool) {
+	wg := sync.WaitGroup{}
+	wg.Add(len(testNetwork))
+	for _, s := range testNetwork {
+		s := s
+		go func() {
+			err := s.runRepair(&RepairTracker{StartedAt: time.Now(), CleanupMode: cleanup, Counters: map[string]int{}})
+			if err != nil {
+				panic(err)
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+
+func testNetworkLocateBlob(cid string) []string {
+	ctx := context.Background()
+	key := cidutil.ShardCID(cid)
+	result := []string{}
+	for _, s := range testNetwork {
+		if ok, _ := s.bucket.Exists(ctx, key); ok {
+			result = append(result, s.Config.Self.Host)
+		}
+	}
+	return result
+}
+
 func TestRepair(t *testing.T) {
 	replicationFactor := 5
-
-	runTestNetworkRepair := func(cleanup bool) {
-		wg := sync.WaitGroup{}
-		wg.Add(len(testNetwork))
-		for _, s := range testNetwork {
-			s := s
-			go func() {
-				err := s.runRepair(&RepairTracker{StartedAt: time.Now(), CleanupMode: cleanup, Counters: map[string]int{}})
-				assert.NoError(t, err)
-				wg.Done()
-			}()
-		}
-		wg.Wait()
-	}
-
-	findHostsWithBlob := func(cid string) []string {
-		ctx := context.Background()
-		key := cidutil.ShardCID(cid)
-		result := []string{}
-		for _, s := range testNetwork {
-			if ok, _ := s.bucket.Exists(ctx, key); ok {
-				result = append(result, s.Config.Self.Host)
-			}
-		}
-		return result
-	}
 
 	ss := testNetwork[0]
 
@@ -78,16 +80,16 @@ func TestRepair(t *testing.T) {
 
 	// assert it only exists on 1 host
 	{
-		hosts := findHostsWithBlob(cid)
+		hosts := testNetworkLocateBlob(cid)
 		assert.Len(t, hosts, 1)
 	}
 
 	// tell all servers do repair
-	runTestNetworkRepair(false)
+	testNetworkRunRepair(false)
 
 	// assert it exists on R hosts
 	{
-		hosts := findHostsWithBlob(cid)
+		hosts := testNetworkLocateBlob(cid)
 		assert.Len(t, hosts, replicationFactor)
 	}
 
@@ -101,16 +103,16 @@ func TestRepair(t *testing.T) {
 
 	// assert over-replicated
 	{
-		hosts := findHostsWithBlob(cid)
+		hosts := testNetworkLocateBlob(cid)
 		assert.Len(t, hosts, len(testNetwork))
 	}
 
 	// tell all servers do cleanup
-	runTestNetworkRepair(true)
+	testNetworkRunRepair(true)
 
 	// assert R copies
 	if false {
-		hosts := findHostsWithBlob(cid)
+		hosts := testNetworkLocateBlob(cid)
 		assert.Len(t, hosts, replicationFactor)
 	}
 

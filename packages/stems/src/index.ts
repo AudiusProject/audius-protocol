@@ -6,9 +6,7 @@ import './assets/styles/shadows.css'
 import './assets/styles/transforms.css'
 import './assets/styles/layers.css'
 
-// export * from './components/Icons'
 export * from './styles/colors'
-export * from './styles/types'
 export * from './utils/styles'
 
 export {
