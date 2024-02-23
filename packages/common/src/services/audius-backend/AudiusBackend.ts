@@ -752,12 +752,9 @@ export const audiusBackend = ({
   function getEthWeb3Config() {
     // In a dev env, always ignore the remote var which is inherited from staging
     const isDevelopment = env.ENVIRONMENT === 'development'
-    const overrideRemoteVar =
-      ethProviderUrls !== undefined && ethProviderUrls.length > 0
-    const providerUrls =
-      isDevelopment || overrideRemoteVar
-        ? ethProviderUrls
-        : getRemoteVar(StringKeys.ETH_PROVIDER_URLS) || ethProviderUrls
+    const providerUrls = isDevelopment
+      ? ethProviderUrls
+      : getRemoteVar(StringKeys.ETH_PROVIDER_URLS) || ethProviderUrls
 
     return {
       ethWeb3Config: AudiusLibs.configEthWeb3(
