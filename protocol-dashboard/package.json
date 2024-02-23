@@ -66,8 +66,8 @@
     "build": "NODE_OPTIONS=--max_old_space_size=8192 tsc -p ./tsconfig.node.json && vite build",
     "build:stage": "npm run configure-stage-env && ./node_modules/.bin/env-cmd -f .env.stage.local turbo run build",
     "build:prod": "npm run configure-prod-env && ./node_modules/.bin/env-cmd -f .env.prod.local turbo run build",
-    "lint": "npm run prettier:check",
-    "lint:fix": "npm run prettier:write",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prettier:base": "prettier --parser typescript --single-quote --no-semi",
     "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
     "prettier:write": "npm run prettier:base -- --write \"src/**/*.{ts,tsx}\"",
@@ -77,8 +77,8 @@
     "update-build:dev": "node ./scripts/updateBuild.cjs dev",
     "update-build:stage": "node ./scripts/updateBuild.cjs stage",
     "update-build:prod": "node ./scripts/updateBuild.cjs prod",
-    "TODO - ADD TYPECHECK TO VERIFY: =========================": "",
-    "verify": "concurrently \"npm:lint:fix\""
+    "typecheck": "tsc",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -96,6 +96,8 @@
     ]
   },
   "devDependencies": {
+    "eslint": "8.55.0",
+    "eslint-plugin-react-refresh": "0.4.5",
     "@openzeppelin/test-helpers": "0.5.6",
     "@pinata/sdk": "1.1.13",
     "@tanstack/eslint-plugin-query": "5.0.5",
