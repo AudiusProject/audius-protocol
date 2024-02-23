@@ -6,8 +6,8 @@ from src.exceptions import IndexingValidationError
 from src.models.playlists.collection_track_relation import CollectionTrackRelation
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
-from src.models.tracks.track import Track
 from src.models.playlists.playlist_track import PlaylistTrack
+from src.models.tracks.track import Track
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
@@ -138,7 +138,9 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             playlist_track.is_removed = True
             playlist_track.updated_at = params.block_datetime
             track = (
-                session.query(Track).filter(Track.track_id == playlist_track.track_id).first()
+                session.query(Track)
+                .filter(Track.track_id == playlist_track.track_id)
+                .first()
             )
             if track:
                 track.updated_at = params.block_datetime
@@ -182,7 +184,6 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
                         + [playlist["playlist_id"]]
                     )
                 )
-
 
     params.logger.info(
         f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
@@ -318,11 +319,7 @@ def create_playlist(params: ManageEntityParameters):
 
     params.add_record(playlist_id, playlist_record)
 
-<<<<<<< HEAD
-    update_playlist_tracks_relations(params, playlist_record)
-=======
     update_playlist_tracks(params, playlist_record)
->>>>>>> origin/main
 
     if tracks:
         dispatch_challenge_playlist_upload(
@@ -361,11 +358,7 @@ def update_playlist(params: ManageEntityParameters):
 
     update_playlist_routes_table(params, playlist_record, False)
 
-<<<<<<< HEAD
-    update_playlist_tracks_relations(params, playlist_record)
-=======
     update_playlist_tracks(params, playlist_record)
->>>>>>> origin/main
 
     params.add_record(playlist_id, playlist_record)
 
