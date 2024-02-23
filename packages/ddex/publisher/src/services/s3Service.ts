@@ -12,6 +12,10 @@ export default function createS3() {
     },
     region: process.env.AWS_REGION,
   }
+  if (process.env.AWS_ENDPOINT) {
+    config.endpoint = process.env.AWS_ENDPOINT
+    config.forcePathStyle = true
+  }
   const indexedBucket = process.env.AWS_BUCKET_INDEXED
   const client = new S3Client(config)
 

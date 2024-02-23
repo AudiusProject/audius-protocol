@@ -138,10 +138,15 @@ func InitS3Client(logger *slog.Logger) (*s3.S3, *session.Session) {
 	awsRegion := MustGetenv("AWS_REGION")
 	awsKey := MustGetenv("AWS_ACCESS_KEY_ID")
 	awsSecret := MustGetenv("AWS_SECRET_ACCESS_KEY")
-	sess, err := session.NewSession(&aws.Config{
+	conf := &aws.Config{
 		Region:      aws.String(awsRegion),
 		Credentials: credentials.NewStaticCredentials(awsKey, awsSecret, ""),
-	})
+	}
+	if os.Getenv("AWS_ENDPOINT") != "" {
+		conf.Endpoint = aws.String(os.Getenv("AWS_ENDPOINT"))
+		conf.S3ForcePathStyle = aws.Bool(true)
+	}
+	sess, err := session.NewSession(conf)
 	if err != nil {
 		panic(err)
 	}

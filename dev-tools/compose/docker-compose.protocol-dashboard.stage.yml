@@ -13,3 +13,5 @@ services:
       - 5173:5173
     deploy:
       mode: global
+    profiles:
+      - dashboard
