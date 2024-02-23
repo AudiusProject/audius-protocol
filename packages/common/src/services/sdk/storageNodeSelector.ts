@@ -1,4 +1,4 @@
-import type { Auth, StorageNodeSelectorService } from '@audius/sdk'
+import type { AuthService, StorageNodeSelectorService } from '@audius/sdk'
 import { StorageNodeSelector } from '@audius/sdk'
 
 import { Maybe } from '~/utils/typeUtils'
@@ -11,7 +11,7 @@ import { DiscoveryNodeSelectorService } from './discovery-node-selector'
 let storageNodeSelectorPromise: Maybe<Promise<StorageNodeSelectorService>>
 
 type StorageNodeSelectorConfig = {
-  auth: Auth
+  auth: AuthService
   discoveryNodeSelectorService: DiscoveryNodeSelectorService
   env: Env
 }

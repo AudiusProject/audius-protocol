@@ -22,11 +22,15 @@ import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
-import { addAppNameMiddleware } from './middleware'
+import {
+  addAppNameMiddleware,
+  addRequestSignatureMiddleware
+} from './middleware'
 import { OAuth } from './oauth'
 import {
   DiscoveryNodeSelector,
-  Auth,
+  HedgehogAuth,
+  DefaultAuth,
   Storage,
   EntityManager,
   AppAuth,
@@ -34,6 +38,7 @@ import {
 } from './services'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
+import { defaultHedgehogAuthConfig } from './services/Auth/constants'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
@@ -87,9 +92,16 @@ const initializeServices = (config: SdkConfig) => {
     )
   }
 
-  const defaultAuthService = config.apiKey
-    ? new AppAuth(config.apiKey, config.apiSecret)
-    : new Auth()
+  let auth
+  if (config.services?.auth) {
+    auth = config.services?.auth
+  } else if (config.apiKey && config.apiSecret) {
+    auth = new AppAuth(config.apiKey, config.apiSecret)
+  } else if (config.userAuth) {
+    auth = new HedgehogAuth(defaultHedgehogAuthConfig)
+  } else {
+    auth = new DefaultAuth(config.apiKey)
+  }
 
   const discoveryNodeSelector =
     config.services?.discoveryNodeSelector ??
@@ -98,7 +110,7 @@ const initializeServices = (config: SdkConfig) => {
   const storageNodeSelector =
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
-      auth: config.services?.auth ?? defaultAuthService,
+      auth,
       discoveryNodeSelector,
       logger
     })
@@ -150,7 +162,7 @@ const initializeServices = (config: SdkConfig) => {
     antiAbuseOracleSelector,
     entityManager: defaultEntityManager,
     storage: defaultStorage,
-    auth: defaultAuthService,
+    auth,
     claimableTokensClient,
     rewardManagerClient,
     solanaWalletAdapter: defaultSolanaWalletAdapter,
@@ -170,6 +182,7 @@ const initializeApis = ({
 }) => {
   const middleware = [
     addAppNameMiddleware({ appName, services }),
+    addRequestSignatureMiddleware({ services }),
     services.discoveryNodeSelector.createMiddleware()
   ]
   const generatedApiClientConfig = new Configuration({

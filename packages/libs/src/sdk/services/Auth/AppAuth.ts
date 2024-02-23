@@ -1,4 +1,7 @@
+import { keccak_256 } from '@noble/hashes/sha3'
+import * as secp from '@noble/secp256k1'
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
+import Wallet from 'ethereumjs-wallet'
 
 import type { AuthService } from './types'
 
@@ -7,15 +10,11 @@ import type { AuthService } from './types'
  */
 export class AppAuth implements AuthService {
   private readonly apiKey: string
-  private readonly apiSecret: string | null
+  private readonly apiSecret: string
 
-  constructor(apiKey: string, apiSecret?: string | null) {
+  constructor(apiKey: string, apiSecret: string) {
     this.apiKey = apiKey.replace(/^0x/, '')
-    if (apiSecret) {
-      this.apiSecret = apiSecret.replace(/^0x/, '')
-    } else {
-      this.apiSecret = null
-    }
+    this.apiSecret = apiSecret.replace(/^0x/, '')
   }
 
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
@@ -23,8 +22,13 @@ export class AppAuth implements AuthService {
       throw new Error('AppAuth does not support getSharedSecret')
     }
 
-  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> = () => {
-    throw new Error('AppAuth does not support sign')
+  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> = async (
+    data
+  ) => {
+    return secp.sign(keccak_256(data), this.apiSecret, {
+      recovered: true,
+      der: false
+    })
   }
 
   hashAndSign: (data: string) => Promise<string> = () => {
@@ -44,5 +48,35 @@ export class AppAuth implements AuthService {
 
   getAddress: () => Promise<string> = async () => {
     return `0x${this.apiKey}`
+  }
+
+  signIn: ({
+    email,
+    password,
+    otp
+  }: {
+    email: string
+    password: string
+    otp?: string | undefined
+  }) => Promise<Wallet> = async () => {
+    throw new Error('AppAuth cannot signIn')
+  }
+
+  signUp: ({
+    email,
+    password
+  }: {
+    email: string
+    password: string
+  }) => Promise<Wallet> = async () => {
+    throw new Error('AppAuth cannot signUp')
+  }
+
+  signOut: () => void = async () => {
+    throw new Error('AppAuth cannot signOut')
+  }
+
+  isSignedIn = () => {
+    return true
   }
 }

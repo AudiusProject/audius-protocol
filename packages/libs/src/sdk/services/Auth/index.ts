@@ -1,3 +1,4 @@
 export * from './types'
-export * from './Auth'
+export * from './HedgehogAuth'
 export * from './AppAuth'
+export * from './DefaultAuth'
