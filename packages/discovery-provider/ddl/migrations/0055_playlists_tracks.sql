@@ -1,18 +1,17 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS collection_track_relations (
-  collection_id INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS playlists_tracks (
+  playlist_id INTEGER NOT NULL,
   track_id INTEGER NOT NULL,
   is_removed BOOLEAN NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (collection_id, track_id)
+  PRIMARY KEY (playlist_id, track_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_collection_track_relations_collection_id ON collection_track_relations USING btree (collection_id, created_at);
-CREATE INDEX IF NOT EXISTS idx_collection_track_relations_track_id ON collection_track_relations USING btree (track_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_playlists_tracks_track_id ON playlists_tracks USING btree (track_id, created_at);
 
-INSERT INTO collection_track_relations (collection_id, track_id, is_removed) 
+INSERT INTO playlists_tracks (playlist_id, track_id, is_removed) 
 SELECT playlist_id, track_id, FALSE
 FROM (
     SELECT

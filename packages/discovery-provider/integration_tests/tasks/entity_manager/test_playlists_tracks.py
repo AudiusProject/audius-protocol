@@ -9,7 +9,7 @@ from web3.datastructures import AttributeDict
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
-from src.models.playlists.collection_track_relation import CollectionTrackRelation
+from src.models.playlists.playlist_track import PlaylistTrack
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
 from src.utils.db_session import get_db
@@ -146,9 +146,7 @@ def test_create_playlist(app, mocker):
             block_timestamp=1585336422,
             block_hash=hex(0),
         )
-        relations: List[CollectionTrackRelation] = session.query(
-            CollectionTrackRelation
-        ).all()
+        relations: List[PlaylistTrack] = session.query(PlaylistTrack).all()
         assert len(relations) == 2
         for id in [10, 20]:
             assert any([relation.track_id == id for relation in relations])
@@ -189,9 +187,7 @@ def test_add_tracks_to_playlist(app, mocker):
             block_timestamp=1585336422,
             block_hash=hex(0),
         )
-        relations: List[CollectionTrackRelation] = session.query(
-            CollectionTrackRelation
-        ).all()
+        relations: List[PlaylistTrack] = session.query(PlaylistTrack).all()
         assert len(relations) == 2
         for id in [20, 30]:
             assert any([relation.track_id == id for relation in relations])
@@ -246,9 +242,7 @@ def test_remove_track_from_playlist(app, mocker):
             block_timestamp=1585336422,
             block_hash=hex(0),
         )
-        relations: List[CollectionTrackRelation] = session.query(
-            CollectionTrackRelation
-        ).all()
+        relations: List[PlaylistTrack] = session.query(PlaylistTrack).all()
         assert len(relations) == 2
         assert any(
             [relation.is_removed and relation.track_id == 20 for relation in relations]
@@ -326,9 +320,7 @@ def test_restore_removed_track_to_playlist(app, mocker):
             block_timestamp=1585336422,
             block_hash=hex(0),
         )
-        relations: List[CollectionTrackRelation] = session.query(
-            CollectionTrackRelation
-        ).all()
+        relations: List[PlaylistTrack] = session.query(PlaylistTrack).all()
         assert len(relations) == 2
         for id in [20, 30]:
             assert any(
@@ -393,9 +385,7 @@ def test_reorder_playlist_tracks(app, mocker):
             block_timestamp=1585336422,
             block_hash=hex(0),
         )
-        relations: List[CollectionTrackRelation] = session.query(
-            CollectionTrackRelation
-        ).all()
+        relations: List[PlaylistTrack] = session.query(PlaylistTrack).all()
         assert len(relations) == 2
         for id in [20, 30]:
             assert any([relation.track_id == id for relation in relations])

@@ -4,10 +4,10 @@ from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class CollectionTrackRelation(Base, RepresentableMixin):
-    __tablename__ = "collection_track_relations"
+class PlaylistTrack(Base, RepresentableMixin):
+    __tablename__ = "playlists_tracks"
 
-    collection_id = Column(Integer, nullable=False, primary_key=True, index=True)
+    playlist_id = Column(Integer, nullable=False, primary_key=True, index=True)
     track_id = Column(Integer, nullable=False, primary_key=True, index=True)
     is_removed = Column(Boolean, nullable=False)
     created_at = Column(
