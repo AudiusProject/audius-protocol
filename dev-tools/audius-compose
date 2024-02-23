@@ -295,58 +295,21 @@ def push(ctx, services, prod):
             base_tag = f"{protocol_dir.name}-{service}"
 
             if service == "dashboard" and prod:
-                subprocess.run(
-                    [
-                        "docker",
-                        "tag",
-                        f"{base_tag}:dev",
-                        f"audius/{service}:{git_commit}-dev",
-                    ],
-                    check=True,
-                )
-                subprocess.run(
-                    [
-                        "docker",
-                        "tag",
-                        f"{base_tag}:stage",
-                        f"audius/{service}:{git_commit}-stage",
-                    ],
-                    check=True,
-                )
-                subprocess.run(
-                    [
-                        "docker",
-                        "tag",
-                        f"{base_tag}:prod",
-                        f"audius/{service}:{git_commit}-prod",
-                    ],
-                    check=True,
-                )
+                subprocess.run(["docker", "tag", f"{base_tag}:dev", f"audius/{service}:{git_commit}-dev"], check=True)
+                subprocess.run(["docker", "tag", f"{base_tag}:stage", f"audius/{service}:{git_commit}-stage"], check=True)
+                subprocess.run(["docker", "tag", f"{base_tag}:prod", f"audius/{service}:{git_commit}-prod"], check=True)
 
-            subprocess.run(
-                ["docker", "tag", base_tag, f"audius/{service}:{git_commit}"],
-                check=True,
-            )
-            subprocess.run(
-                ["docker", "push", f"audius/{service}:{git_commit}"], check=True
-            )
+            subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}"], check=True)
+            subprocess.run(["docker", "push", f"audius/{service}:{git_commit}"], check=True)
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to tag images")
 
     try:
         for service in services:
             if service == "dashboard" and prod:
-                subprocess.run(
-                    ["docker", "push", f"audius/{service}:{git_commit}-dev"], check=True
-                )
-                subprocess.run(
-                    ["docker", "push", f"audius/{service}:{git_commit}-stage"],
-                    check=True,
-                )
-                subprocess.run(
-                    ["docker", "push", f"audius/{service}:{git_commit}-prod"],
-                    check=True,
-                )
+                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-dev"], check=True)
+                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
+                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
 
             subprocess.run(
                 ["docker", "push", f"audius/{service}:{git_commit}"],
@@ -517,7 +480,7 @@ def up(
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
 
     # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
-    os.environ["MEDIORUM_ENV_TYPE"] = "dev"
+    os.environ['MEDIORUM_ENV_TYPE'] = 'dev'
 
     ctx.invoke(pull)
     sys.exit(
@@ -569,9 +532,6 @@ def down(protocol_dir):
             "--volumes",
         ],
     )
-
-    ctx = click.get_current_context()
-    ctx.invoke(test_down)
 
 
 @cli.command()
@@ -681,6 +641,8 @@ def test_up(protocol_dir, service):
 @test.command(name="down")
 @click.pass_obj
 def test_down(protocol_dir):
+    generate_env(protocol_dir, 0, 0)
+
     subprocess.run(
         [
             "docker",
