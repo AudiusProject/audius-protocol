@@ -64,9 +64,9 @@ const config = {
       // Replace with your project's social card
       // image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'Audius Docs',
+        title: 'Audius',
         logo: {
-          alt: 'Audius Docs Logo',
+          alt: 'Audius Logo',
           src: 'img/logo.png',
           srcDark: 'img/logo-white.png',
         },
@@ -105,7 +105,6 @@ const config = {
           },
         ],
       },
-
       algolia: {
         appId: '5HE2PIGNOV',
         // This API key is "search-only" and safe to be published
@@ -118,7 +117,6 @@ const config = {
         darkTheme: prismThemes.dracula,
       },
     }),
-
   markdown: {
     mermaid: true,
   },
