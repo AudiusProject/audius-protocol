@@ -144,9 +144,9 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             )
             if track:
                 track.updated_at = params.block_datetime
-                track.collections_containing_track = [
+                track.playlists_containing_track = [
                     collection_id
-                    for collection_id in (track.collections_containing_track or [])
+                    for collection_id in (track.playlists_containing_track or [])
                     if collection_id != playlist["playlist_id"]
                 ]
 
@@ -165,9 +165,9 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             track = session.query(Track).filter(Track.track_id == track_id).first()
             if track:
                 track.updated_at = params.block_datetime
-                track.collections_containing_track = list(
+                track.playlists_containing_track = list(
                     set(
-                        (track.collections_containing_track or [])
+                        (track.playlists_containing_track or [])
                         + [playlist["playlist_id"]]
                     )
                 )
@@ -178,9 +178,9 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             track = session.query(Track).filter(Track.track_id == track_id).first()
             if track:
                 track.updated_at = params.block_datetime
-                track.collections_containing_track = list(
+                track.playlists_containing_track = list(
                     set(
-                        (track.collections_containing_track or [])
+                        (track.playlists_containing_track or [])
                         + [playlist["playlist_id"]]
                     )
                 )
