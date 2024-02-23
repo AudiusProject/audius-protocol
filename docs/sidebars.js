@@ -108,6 +108,7 @@ module.exports = {
           ],
           collapsed: true,
         },
+        'node-operator/setup/advanced',
       ],
       collapsed: false,
     },
@@ -117,7 +118,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Introduction',
-      items: ['reference/overview'],
+      items: ['reference/overview', 'reference/whitepaper'],
       collapsed: false,
     },
     {

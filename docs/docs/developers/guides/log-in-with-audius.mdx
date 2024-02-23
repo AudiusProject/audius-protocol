@@ -89,8 +89,8 @@ const audiusSdk = sdk({ apiKey: 'Your API Key goes here' })
 
 :::tip
 
-See complete instructions [here](/developers/sdk/#install-the-sdk) to install and initialize the
-JavaScript SDK.
+See complete instructions [here](/developers/sdk/overview#install-the-sdk) to install and initialize
+the JavaScript SDK.
 
 :::
 
@@ -141,8 +141,8 @@ audiusSdk.oauth.renderButton({
 <div id="audiusLogInButton"></div>
 ```
 
-[`renderButton`](/developers/sdk-oauth-methods#renderbutton) replaces the given `element` with the
-Log In with Audius button.
+[`renderButton`](/developers/sdk/oauth#renderbutton) replaces the given `element` with the Log In
+with Audius button.
 
 If `scope` is set to `"write"`, the user will be prompted to grant your app read/write access to
 their account (allowing your app to perform actions like uploading a track on the user's behalf). If
@@ -165,7 +165,7 @@ Use [this playground](https://9ncjui.csb.app/) to explore the different button o
 :::
 
 If you don't want to use `renderButton`, you can implement a login button yourself and invoke the
-login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#login).
+login popup with [`audiusSdk.oauth.login`](/developers/sdk/oauth#login).
 
 <details>
 <summary>Optional: Show loader until the button is ready</summary>
@@ -234,7 +234,7 @@ Be careful to not expose API secrets on your frontend!
 
 - [See examples](#examples)
 
-- [Read full SDK `oauth` docs](sdk-oauth-methods)
+- [Read full SDK `oauth` docs](/developers/sdk/oauth)
 
 - [Explore the API docs](/developers/sdk/tracks)
 
@@ -506,7 +506,7 @@ const track = await audiusSdk.tracks.favoriteTrack({
 })
 ```
 
-See [Getting Started](/developers/sdk) with the SDK or
+See [Getting Started](/developers/sdk/overview) with the SDK or
 [the SDK methods reference](/developers/sdk/tracks) for further reading.
 
 #### [A quick note on email](#retrieving-email-addresses)
