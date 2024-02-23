@@ -79,6 +79,7 @@ function isAssetUrl(url) {
     pathname.startsWith('/fonts') ||
     pathname.startsWith('/favicons') ||
     pathname.startsWith('/manifest.json') ||
-    pathname.startsWith('/.well-known')
+    pathname.startsWith('/.well-known') ||
+    pathname.startsWith('/documents')
   )
 }
