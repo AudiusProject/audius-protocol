@@ -31,13 +31,17 @@ export const WelcomeDrawer = () => {
   const { onClose: closeDrawer } = useDrawer('Welcome')
   const dispatch = useDispatch()
 
+  const openNotificationsDrawer = useCallback(() => {
+    dispatch(requestPushNotificationPermissions())
+  }, [dispatch])
+
   const handleClose = useCallback(() => {
     closeDrawer()
-    dispatch(requestPushNotificationPermissions())
-  }, [closeDrawer, dispatch])
+    openNotificationsDrawer()
+  }, [closeDrawer, openNotificationsDrawer])
 
   return (
-    <NativeDrawer drawerName='Welcome'>
+    <NativeDrawer drawerName='Welcome' onClose={openNotificationsDrawer}>
       <Flex w='100%' h={96} style={css({ zIndex: 1 })}>
         <ReadOnlyCoverPhotoBanner />
         <Flex
