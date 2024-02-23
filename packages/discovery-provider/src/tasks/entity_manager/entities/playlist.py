@@ -3,7 +3,6 @@ from datetime import datetime
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
-from src.models.playlists.collection_track_relation import CollectionTrackRelation
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
