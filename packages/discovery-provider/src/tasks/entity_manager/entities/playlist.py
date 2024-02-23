@@ -111,8 +111,8 @@ def update_playlist_routes_table(
     )
 
 
-def update_playlists_tracks(params: ManageEntityParameters, playlist_record: Playlist):
-    # Update the playlist_tracks_relations table
+def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Playlist):
+    # Update the playlist_tracks table
     session = params.session
     existing_playlist_tracks = (
         session.query(PlaylistTrack)
@@ -287,7 +287,7 @@ def create_playlist(params: ManageEntityParameters):
 
     params.add_record(playlist_id, playlist_record)
 
-    update_playlists_tracks(params, playlist_record)
+    update_playlist_tracks(params, playlist_record)
 
     if tracks:
         dispatch_challenge_playlist_upload(
@@ -326,7 +326,7 @@ def update_playlist(params: ManageEntityParameters):
 
     update_playlist_routes_table(params, playlist_record, False)
 
-    update_playlists_tracks(params, playlist_record)
+    update_playlist_tracks(params, playlist_record)
 
     params.add_record(playlist_id, playlist_record)
 
