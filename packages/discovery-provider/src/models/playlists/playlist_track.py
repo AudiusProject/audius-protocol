@@ -5,7 +5,7 @@ from src.models.model_utils import RepresentableMixin
 
 
 class PlaylistTrack(Base, RepresentableMixin):
-    __tablename__ = "playlists_tracks"
+    __tablename__ = "playlist_tracks"
 
     playlist_id = Column(Integer, nullable=False, primary_key=True, index=True)
     track_id = Column(Integer, nullable=False, primary_key=True, index=True)

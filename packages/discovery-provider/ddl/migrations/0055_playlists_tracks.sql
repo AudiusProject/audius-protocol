@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS playlists_tracks (
+CREATE TABLE IF NOT EXISTS playlist_tracks (
   playlist_id INTEGER NOT NULL,
   track_id INTEGER NOT NULL,
   is_removed BOOLEAN NOT NULL,
@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS playlists_tracks (
   PRIMARY KEY (playlist_id, track_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_playlists_tracks_track_id ON playlists_tracks USING btree (track_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_playlist_tracks_track_id ON playlist_tracks USING btree (track_id, created_at);
 
-INSERT INTO playlists_tracks (playlist_id, track_id, is_removed) 
+INSERT INTO playlist_tracks (playlist_id, track_id, is_removed) 
 SELECT playlist_id, track_id, FALSE
 FROM (
     SELECT
