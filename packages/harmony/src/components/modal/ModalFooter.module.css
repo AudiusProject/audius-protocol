@@ -1,0 +1,8 @@
+.modalFooterContainer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: var(--harmony-unit-6);
+  padding-top: var(--harmony-unit-6);
+}

@@ -1,8 +1,8 @@
 import path from 'path'
 
 import { difference } from 'lodash'
+import ReactNativeBlobUtil from 'react-native-blob-util'
 import RNFS from 'react-native-fs'
-import RNFetchBlob from 'rn-fetch-blob'
 import { call, put, select } from 'typed-redux-saga'
 
 import { make, track } from 'app/services/analytics'
@@ -21,7 +21,7 @@ import { DOWNLOAD_REASON_FAVORITES } from '../constants'
 import { getIsOfflineEnabled } from './getIsOfflineEnabled'
 const {
   fs: { dirs, unlink, exists }
-} = RNFetchBlob
+} = ReactNativeBlobUtil
 
 // Current migration: 4/3/2023
 // dirs.DocumentDir -> dirs.CacheDir
@@ -63,7 +63,7 @@ export function* migrateOfflineDataPathSaga() {
   }
 }
 
-// Util to recursively copy a directory since neither RNFS or rn-fetch-blob come with one
+// Util to recursively copy a directory since neither RNFS or react-native-blob-util come with one
 async function copyRecursive(source: string, destination: string) {
   // reads items from source directory
   const items = await RNFS.readDir(source)

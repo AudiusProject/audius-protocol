@@ -21,7 +21,7 @@ from src.models.users.user import User
 class Playlist(Base, RepresentableMixin):
     __tablename__ = "playlists"
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
@@ -52,9 +52,6 @@ class Playlist(Base, RepresentableMixin):
     slot = Column(Integer)
     metadata_multihash = Column(String)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Playlist.blockhash == Block.blockhash"
-    )
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Playlist.blocknumber == Block.number"
     )

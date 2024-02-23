@@ -514,8 +514,10 @@ function* signUp() {
           FeatureFlags.SIGN_UP_REDESIGN
         )
 
-        if (isNativeMobile && !isSignUpRedesignEnabled) {
-          yield* put(requestPushNotificationPermissions())
+        if (isNativeMobile) {
+          if (!isSignUpRedesignEnabled) {
+            yield* put(requestPushNotificationPermissions())
+          }
         } else {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()

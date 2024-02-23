@@ -2,14 +2,16 @@ import { useCallback, useState } from 'react'
 
 import { ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { Button, Switch, IconRobot } from '@audius/harmony'
 import {
   Modal,
   ModalContent,
   ModalHeader,
+  ModalTitle,
   ModalProps,
-  ModalTitle
-} from '@audius/stems'
+  Button,
+  Switch,
+  IconRobot
+} from '@audius/harmony'
 import { useToggle } from 'react-use'
 
 import { AiAttributionDropdown } from './AiAttributionDropdown'

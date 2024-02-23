@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getLocalTimezone } from '@audius/common/utils'
-import { IconInfo, Flex, IconCalendarMonth, RadioGroup } from '@audius/harmony'
-import { ModalContent } from '@audius/stems'
+import {
+  ModalContent,
+  IconInfo,
+  Flex,
+  IconCalendarMonth,
+  RadioGroup
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import moment from 'moment'

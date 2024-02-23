@@ -1,7 +1,8 @@
 import { Text, Button, Box, Flex } from '@audius/harmony'
-import type { DecodedUserToken } from '@audius/sdk/dist/sdk/index.d.ts'
 
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
+import type { AuthedUser } from 'providers/AuthProvider'
+import { useAuth } from 'providers/AuthProvider'
 
 import styles from './Banner.module.css'
 
@@ -11,7 +12,7 @@ const ManageAudiusAccount = ({
   onChangeUser,
   oauthError
 }: {
-  currentUser: DecodedUserToken
+  currentUser: AuthedUser
   isAdmin: boolean
   onChangeUser: () => void
   oauthError: string | null
@@ -38,20 +39,19 @@ const ManageAudiusAccount = ({
 }
 
 export const Banner = () => {
-  const { audiusSdk, currentUser, isAdmin, oauthError } = useAudiusSdk()
+  const { audiusSdk, oauthError } = useAudiusSdk()
+  const { user } = useAuth()
 
-  if (currentUser) {
-    return (
-      <Box p='xl'>
-        <ManageAudiusAccount
-          currentUser={currentUser}
-          isAdmin={isAdmin}
-          onChangeUser={() => audiusSdk!.oauth!.login({ scope: 'read' })}
-          oauthError={oauthError}
-        />
-      </Box>
-    )
-  } else {
-    return null
-  }
+  if (!user) return null
+
+  return (
+    <Box p='xl'>
+      <ManageAudiusAccount
+        currentUser={user}
+        isAdmin={user.isAdmin}
+        onChangeUser={() => audiusSdk!.oauth!.login({ scope: 'write' })}
+        oauthError={oauthError}
+      />
+    </Box>
+  )
 }

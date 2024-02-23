@@ -186,6 +186,13 @@ export const parseHealthStatusReason = ({
     }
   }
 
+  if (data.chain_health?.status === "Unhealthy") {
+    return {
+      health: HealthCheckStatus.UNHEALTHY,
+      reason: "chain"
+    }
+  }
+
   if (!isIndexerHealthy({ data, maxBlockDiff })) {
     return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
   }

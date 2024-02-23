@@ -3,7 +3,10 @@ package server
 import (
 	"database/sql"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -172,28 +175,33 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			}
 			uploads[idx] = upload
 
-			formFileCID, err := cidutil.ComputeFileHeaderCID(formFile)
+			tmpFile, err := copyUploadToTempFile(formFile)
+			if err != nil {
+				upload.Error = err.Error()
+				return err
+			}
+			defer os.Remove(tmpFile.Name())
+
+			formFileCID, err := cidutil.ComputeFileCID(tmpFile)
 			if err != nil {
 				upload.Error = err.Error()
 				return err
 			}
 
 			upload.OrigFileCID = formFileCID
-			upload.FFProbe, err = ffprobeUpload(formFile)
+
+			// ffprobe:
+			upload.FFProbe, err = ffprobe(tmpFile.Name())
 			if err != nil && upload.Template == JobTemplateAudio {
 				// fail audio upload if ffprobe fails
 				upload.Error = err.Error()
 				return err
 			}
 
-			// mirror to n peers
-			file, err := formFile.Open()
-			if err != nil {
-				upload.Error = err.Error()
-				return err
-			}
+			// ffprobe: restore orig filename
+			upload.FFProbe.Format.Filename = formFile.Filename
 
-			upload.Mirrors, err = ss.replicateFile(formFileCID, file)
+			upload.Mirrors, err = ss.replicateFileParallel(formFileCID, tmpFile.Name())
 			if err != nil {
 				upload.Error = err.Error()
 				return err
@@ -215,4 +223,26 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	}
 
 	return c.JSON(status, uploads)
+}
+
+func copyUploadToTempFile(file *multipart.FileHeader) (*os.File, error) {
+	temp, err := os.CreateTemp("", "mediorumUpload")
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+
+	_, err = io.Copy(temp, r)
+	if err != nil {
+		return nil, err
+	}
+	temp.Sync()
+	temp.Seek(0, 0)
+
+	return temp, nil
 }

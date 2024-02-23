@@ -135,21 +135,3 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.dismissButton {
-  margin-left: var(--unit-2);
-  transform: scale3d(1, 1, 1);
-  transition: all 0.07s ease-in-out !important;
-}
-
-.dismissButton:hover {
-  transform: scale3d(1.1, 1.1, 1.1);
-}
-
-.dismissButton:active {
-  transform: scale3d(0.95, 0.95, 0.95);
-}
-
-.dismissIcon path {
-  fill: var(--neutral-light-4);
-}

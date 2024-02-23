@@ -1,10 +1,8 @@
-import { logger } from '../logger'
 import { RelayRateLimiter, ValidLimits } from '../config/rateLimitConfig'
-import { Knex } from 'knex'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { RateLimiterRes } from 'rate-limiter-flexible'
-import { Table, Users } from '@pedalboard/storage'
-import { config, discoveryDb } from '..'
+import { DeveloperApps, Table, Users } from '@pedalboard/storage'
+import { config } from '..'
 import { NextFunction, Request, Response, response } from 'express'
 import { rateLimitError } from '../error'
 
@@ -15,11 +13,17 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner } = res.locals.ctx
+  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
-  const signer = recoveredSigner.wallet
-  if (signer === undefined || signer === null) {
+  let signer: string | null
+  if (signerIsUser) {
+    signer = (recoveredSigner as Users).wallet!
+  } else {
+    signer = (recoveredSigner as DeveloperApps).address
+  }
+
+  if ((signer === undefined || signer === null) && !createOrDeactivate) {
     rateLimitError(next, 'user record does not have wallet')
     return
   }
@@ -41,11 +45,11 @@ export const rateLimiterMiddleware = async (
   }
 
   const limit = await determineLimit(
-    recoveredSigner,
+    signerIsUser,
+    createOrDeactivate,
     config.rateLimitAllowList,
     signer
   )
-  logger.info({ limit })
 
   try {
     const res = await globalRateLimiter.consume({
@@ -86,13 +90,14 @@ const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
 }
 
 const determineLimit = async (
-  user: Users,
+  isUser: boolean,
+  createOrDeactivate: boolean,
   allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
+  if (createOrDeactivate) return "app"
   const isAllowed = allowList.includes(signer)
   if (isAllowed) return 'allowlist'
-  logger.info({ user, signer })
-  if (user !== undefined) return 'owner'
+  if (isUser) return 'owner'
   return 'app'
 }

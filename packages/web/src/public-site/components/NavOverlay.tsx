@@ -4,12 +4,15 @@ import {
   IconAudiusLogoHorizontal,
   IconInstagram,
   IconRemove,
-  IconTwitter as IconTwitterBird,
-  IconDiscord as IconDiscord2,
+  IconTwitter,
+  IconDiscord,
   IconTelegram,
-  IconCloudDownload as IconDownloadQueued
+  IconCloudDownload as IconDownloadQueued,
+  IconSupport,
+  IconMerch,
+  IconBlog,
+  IconFoundation
 } from '@audius/harmony'
-import { IconSupport, IconMerch, IconBlog, IconFoundation } from '@audius/stems'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { Link } from 'react-router-dom'
@@ -47,11 +50,11 @@ const socialLinks = [
     link: AUDIUS_INSTAGRAM_LINK
   },
   {
-    Icon: IconTwitterBird,
+    Icon: IconTwitter,
     link: AUDIUS_TWITTER_LINK
   },
   {
-    Icon: IconDiscord2,
+    Icon: IconDiscord,
     link: AUDIUS_DISCORD_LINK
   },
   {

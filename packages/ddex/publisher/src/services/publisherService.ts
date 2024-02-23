@@ -1,14 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import aws from 'aws-sdk'
 import mongoose from 'mongoose'
 import Deliveries from '../models/deliveries'
 import PendingReleases from '../models/pendingReleases'
-import PublishedReleases from '../models/publishedReleases'
+import PublishedReleases, {
+  PublishedRelease,
+} from '../models/publishedReleases'
 import type {
   TrackMetadata,
   CollectionMetadata,
   CreateTrackRelease,
   CreateAlbumRelease,
+  PendingRelease,
 } from '../models/pendingReleases'
 import type {
   AudiusSdk as AudiusSdkType,
@@ -16,9 +17,10 @@ import type {
   UploadAlbumRequest,
   Genre,
   Mood,
-} from '@audius/sdk/dist/sdk/index.d.ts'
+} from '@audius/sdk'
 import createS3 from './s3Service'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getUserId = async (audiusSdk: AudiusSdkType, artistName: string) => {
   // TODO: We previously did it like this, but the results are too random and don't return the user with an exact match as users[0].
   // In the future, we could check all OAuthed usernames for an exact match and cross-reference SDK's search results to find a rough match if no exact match was found
@@ -40,7 +42,7 @@ const formatTrackMetadata = (
     title: metadata.title,
     description: metadata.description || '',
     genre: metadata.genre as Genre,
-    mood: (metadata.mood || 'Other') as Mood, // TODO: SDK requires mood, but XML doesn't provide one
+    ...(metadata.mood && { mood: metadata.mood as Mood }),
     tags: metadata.tags || '',
     isrc: metadata.isrc,
     license: metadata.license,
@@ -79,11 +81,16 @@ const uploadTrack = async (
   pendingTrack: CreateTrackRelease,
   s3Service: ReturnType<typeof createS3>
 ) => {
+  if (!pendingTrack.metadata.artist_name) {
+    throw new Error('Missing artist_name in track metadata')
+  }
+
   const userId = await getUserId(audiusSdk, pendingTrack.metadata.artist_name)
   const metadata = formatTrackMetadata(pendingTrack.metadata)
 
-  pendingTrack.metadata.cover_art_url =
-    's3://ddex-dev-audius-indexed/65cc6ff94bc8f81560c8749e/resources/A10301A0005108088N_T-1027024165547_Image.jpg' // TODO: Remove after ensuring tracks always have cover art
+  if (!pendingTrack.metadata.cover_art_url) {
+    throw new Error('Missing cover_art_url in track metadata')
+  }
 
   const coverArtDownload = await s3Service.downloadFromS3Indexed(
     pendingTrack.metadata.cover_art_url
@@ -170,24 +177,67 @@ const uploadAlbum = async (
   return result
 }
 
+async function recordPendingReleaseErr(
+  doc: PendingRelease,
+  error: any,
+  failedAfterUpload = false
+) {
+  let errorMsg = ''
+
+  if (error instanceof Error) {
+    errorMsg = error.message
+  } else {
+    errorMsg = 'An unknown error occurred'
+  }
+
+  console.error(errorMsg)
+  try {
+    await PendingReleases.updateOne(
+      { _id: doc._id },
+      {
+        $push: { upload_errors: errorMsg },
+        $inc: { failure_count: 1 },
+        $set: { failed_after_upload: failedAfterUpload },
+      }
+    )
+  } catch (updateError) {
+    console.error(
+      'Failed to update pending_releases doc with error:',
+      updateError
+    )
+  }
+}
+
 export const publishReleases = async (
   audiusSdk: AudiusSdkType,
   s3: ReturnType<typeof createS3>
 ) => {
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const currentDate = new Date()
-
-    const session = await mongoose.startSession()
-    session.startTransaction()
-
+    let documents
     try {
-      const documents = await PendingReleases.find({
+      const currentDate = new Date()
+      documents = await PendingReleases.find({
         publish_date: { $lte: currentDate },
-      }).session(session)
+      })
+    } catch (error) {
+      console.error('Failed to fetch pending releases:', error)
+      await new Promise((resolve) => setTimeout(resolve, 10_000))
+      continue
+    }
 
-      for (const doc of documents) {
-        let publishedData
+    for (const doc of documents) {
+      if (doc.failed_after_upload) {
+        console.error(
+          `pending_releases doc with delivery_id ${doc.delivery_id} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
+        )
+        continue
+      }
+
+      const deliveryId = doc.delivery_id
+      let publishedData: PublishedRelease
+
+      try {
         if (doc.create_track_release) {
           const uploadResult = await uploadTrack(
             audiusSdk,
@@ -195,11 +245,10 @@ export const publishReleases = async (
             s3
           )
           publishedData = {
-            ...doc.toObject(),
+            track: doc.create_track_release,
             entity_id: uploadResult.trackId,
             blockhash: uploadResult.blockHash,
             blocknumber: uploadResult.blockNumber,
-            created_at: new Date(),
           }
         } else if (doc.create_album_release) {
           const uploadResult = await uploadAlbum(
@@ -208,45 +257,61 @@ export const publishReleases = async (
             s3
           )
           publishedData = {
-            ...doc.toObject(),
+            album: doc.create_album_release,
             entity_id: uploadResult.albumId,
             blockhash: uploadResult.blockHash,
             blocknumber: uploadResult.blockNumber,
-            created_at: new Date(),
           }
         } else {
-          throw new Error('Missing track or album in pending release')
+          recordPendingReleaseErr(
+            doc,
+            'Missing track or album in pending release'
+          )
+          continue
         }
+      } catch (error) {
+        recordPendingReleaseErr(doc, error)
+        continue
+      }
 
-        // Move document to 'published_releases' collection
+      publishedData = {
+        ...publishedData,
+        publish_date: doc.publish_date,
+        upload_etag: doc.upload_etag,
+        delivery_id: deliveryId,
+        created_at: new Date(),
+      }
+      console.log('Published release: ', JSON.stringify(publishedData))
+
+      // Mark release as published in Mongo
+      const session = await mongoose.startSession()
+      try {
+        session.startTransaction()
         const publishedRelease = new PublishedReleases(publishedData)
         await publishedRelease.save({ session })
         await PendingReleases.deleteOne({ _id: doc._id }).session(session)
+
         // Update delivery_status to 'published' once all releases in the delivery are published
         const remainingCount = await PendingReleases.countDocuments({
-          delivery_id: doc.delivery_id,
-          _id: { $ne: doc._id },
+          delivery_id: deliveryId,
         }).session(session)
         if (remainingCount === 0) {
-          // Update delivery_status in deliveries collection
           await Deliveries.updateOne(
-            { _id: doc.delivery_id },
+            { _id: deliveryId },
             { $set: { delivery_status: 'published' } },
             { session }
           )
         }
-        console.log('Published release: ', publishedData)
+        await session.commitTransaction()
+      } catch (error) {
+        await session.abortTransaction()
+        recordPendingReleaseErr(doc, error, true)
+      } finally {
+        session.endSession()
       }
-
-      await session.commitTransaction()
-    } catch (error) {
-      console.error('Error publishing release, rolling back.', error)
-      await session.abortTransaction()
-    } finally {
-      session.endSession()
     }
 
-    // 10 seconds
-    await new Promise((resolve) => setTimeout(resolve, 10000))
+    // Wait 10 seconds before checking for new releases
+    await new Promise((resolve) => setTimeout(resolve, 10_000))
   }
 }

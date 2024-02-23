@@ -8,7 +8,7 @@ import {
   BuyUSDCStage,
   useAddFundsModal
 } from '@audius/common/store'
-import { ModalContent, ModalHeader } from '@audius/stems'
+import { ModalContent, ModalHeader } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

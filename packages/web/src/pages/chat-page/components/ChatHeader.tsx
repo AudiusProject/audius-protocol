@@ -11,9 +11,10 @@ import {
   IconError,
   IconCompose,
   IconSettings,
-  IconKebabHorizontal
+  IconKebabHorizontal,
+  PopupMenu,
+  IconButton
 } from '@audius/harmony'
-import { IconButton, PopupMenu } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -148,12 +149,14 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
             <div className={styles.options}>
               <IconButton
                 aria-label={messages.settings}
-                icon={<IconSettings className={styles.icon} />}
+                icon={IconSettings}
+                color='default'
                 onClick={handleSettingsClicked}
               />
               <IconButton
                 aria-label={messages.compose}
-                icon={<IconCompose className={styles.icon} />}
+                icon={IconCompose}
+                color='default'
                 onClick={handleComposeClicked}
               />
             </div>
@@ -170,7 +173,8 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
                     <IconButton
                       ref={ref}
                       aria-label={messages.chatSettings}
-                      icon={<IconKebabHorizontal color='default' />}
+                      icon={IconKebabHorizontal}
+                      color='default'
                       onClick={() => trigger()}
                     />
                   )}

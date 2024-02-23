@@ -10,14 +10,14 @@ import {
 } from '@audius/common/store'
 import { getDownloadFilename } from '@audius/common/utils'
 import {
+  ModalHeader,
   Flex,
-  Hint,
-  IconError,
   IconReceive,
   Text,
+  Hint,
+  IconError,
   TextLink
 } from '@audius/harmony'
-import { ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 

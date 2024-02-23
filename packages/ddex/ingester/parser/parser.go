@@ -83,6 +83,11 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 	}
 	p.logger.Info("Parsed delivery", "createTrackRelease", fmt.Sprintf("%+v", createTrackRelease), "createAlbumRelease", fmt.Sprintf("%+v", createAlbumRelease))
 
+	// If there's an album release, the tracks we parsed out are actually part of the album release
+	if len(createAlbumRelease) > 0 {
+		createTrackRelease = []common.CreateTrackRelease{}
+	}
+
 	// TODO: We can loop through each release and validate if its URLs exist in the delivery.
 	//       However, the DDEX spec actually says that a delivery can leave out the assets and just have the metadata (assuming they'll do another delivery with the assets closer to release date).
 
@@ -101,7 +106,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 				"upload_etag":          delivery.UploadETag,
 				"delivery_id":          delivery.ID,
 				"create_track_release": track,
-				"publish_date":         track.Metadata.ReleaseDate, // TODO: Use time instead of string so it can be queried properly
+				"publish_date":         track.Metadata.ReleaseDate,
 				"created_at":           time.Now(),
 			}
 			result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)
@@ -116,7 +121,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 				"upload_etag":          delivery.UploadETag,
 				"delivery_id":          delivery.ID,
 				"create_album_release": album,
-				"publish_date":         album.Metadata.ReleaseDate, // TODO: Use time instead of string so it can be queried properly
+				"publish_date":         album.Metadata.ReleaseDate,
 				"created_at":           time.Now(),
 			}
 			result, err := p.pendingReleasesColl.InsertOne(p.ctx, pendingRelease)

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
+import { Modal } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 

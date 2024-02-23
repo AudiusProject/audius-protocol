@@ -30,23 +30,6 @@
   opacity: 0;
 }
 
-.leftIconButton {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.leftIconButton svg {
-  width: 28px !important;
-  height: 28px !important;
-}
-
-.hasUnread svg path {
-  fill: var(--accent-orange-light-1);
-}
-
 .iconTag {
   position: absolute;
   top: 4px;
@@ -61,19 +44,6 @@
   line-height: 14px;
   text-transform: uppercase;
   padding: 0px 6px;
-}
-
-.caretRight {
-  transform: rotate(180deg);
-}
-
-.menu {
-  padding: 16px 6px 16px 12px;
-  margin-right: auto;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
 }
 
 .logo {
@@ -104,14 +74,12 @@
   width: 100%;
 }
 
-.rightElement.isLoading {
-  opacity: 0;
+.rightElement path {
+  fill: var(--harmony-n-400);
 }
 
-.searchIconContainer {
-  display: flex;
-  justify-content: flex-end;
-  height: 24px;
+.rightElement.isLoading {
+  opacity: 0;
 }
 
 .searchIcon {
@@ -137,10 +105,6 @@
 .searchIcon svg {
   width: 20px;
   height: 20px;
-}
-
-.container path {
-  fill: var(--neutral-light-4);
 }
 
 .searchBar {
@@ -194,25 +158,6 @@
   height: 100%;
   height: calc(100% - env(safe-area-inset-top, 0px));
   text-transform: uppercase;
-}
-
-.notificationIcon {
-  transition: opacity 0.3s ease-in-out;
-  opacity: 1;
-}
-
-.notificationIcon:active {
-  transition: opacity 0s ease-in-out;
-  opacity: 0.2;
-}
-
-.crownButton svg {
-  width: 18px;
-  height: 18px;
-}
-
-.crownButton svg path {
-  fill: var(--accent-orange);
 }
 
 .earlyAccess {

@@ -1,4 +1,4 @@
-import { useScrollLock as stemsScrollLock } from '@audius/stems'
+import { useScrollLock as harmonyScrollLock } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import {
@@ -17,7 +17,7 @@ const useScrollLock = (
   const dispatch = useDispatch()
   increment = increment ?? (() => dispatch(incrementScrollCount()))
   decrement = decrement ?? (() => dispatch(decrementScrollCount()))
-  stemsScrollLock(lock, increment, decrement)
+  harmonyScrollLock(lock, increment, decrement)
 }
 
 export default useScrollLock

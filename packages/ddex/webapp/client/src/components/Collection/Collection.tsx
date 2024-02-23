@@ -95,6 +95,7 @@ const Table = ({
               <th>Entity</th>
               <th>Publish Date</th>
               <th>Created At</th>
+              <th>Errors</th>
             </tr>
           </thead>
           <tbody>
@@ -112,6 +113,14 @@ const Table = ({
                 </td>
                 <td>{item.publish_date}</td>
                 <td>{item.created_at}</td>
+                <td className={item.failure_count ? styles.statusFailed : ''}>
+                  {item.failure_count
+                    ? (item.failed_after_upload ? '(after uploading) ' : '') +
+                      item.failure_count +
+                      ': ' +
+                      (item.upload_errors || ['unknown']).join(', ')
+                    : 'None'}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -127,9 +136,9 @@ const Table = ({
               <th>Delivery ID</th>
               <th>Entity</th>
               <th>Entity ID</th>
-              <th>Publish Date</th>
               <th>Blockhash</th>
               <th>Blocknumber</th>
+              <th>Publish Date</th>
               <th>Created At</th>
             </tr>
           </thead>
@@ -140,11 +149,7 @@ const Table = ({
                 <td>{item.upload_etag}</td>
                 <td>{item.delivery_id}</td>
                 <td>
-                  {item.create_track_release
-                    ? 'track'
-                    : item.create_album_release
-                      ? 'album'
-                      : 'unknown'}
+                  {item.track ? 'track' : item.album ? 'album' : 'unknown'}
                 </td>
                 <td>{item.entity_id}</td>
                 <td>{item.blockhash}</td>

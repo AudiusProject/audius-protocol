@@ -125,22 +125,6 @@
   color: var(--white);
 }
 
-.chain {
-  position: absolute;
-  bottom: var(--unit-3);
-  left: var(--unit-3);
-  height: var(--unit-6);
-  width: var(--unit-6);
-  display: flex;
-  align-items: center;
-  z-index: 10000;
-  background: var(--static-white);
-  border: 1px solid var(--static-neutral-light-7);
-  border-radius: 50%;
-  box-shadow: 0px 0px 1px -2px var(--tile-shadow-1),
-    0px 1px 0px -2px var(--tile-shadow-2), 0px 2px 5px -2px var(--tile-shadow-3);
-}
-
 .created {
   padding: var(--unit-1) var(--unit-2);
   border-radius: 50px;
@@ -191,7 +175,8 @@
   margin-bottom: 20px;
   font-size: var(--font-xs);
   line-height: 15px;
-  color: var(--white);
+  color: var(--static-white);
+  gap: var(--unit-2);
 }
 
 .date {

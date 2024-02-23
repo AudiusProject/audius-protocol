@@ -49,3 +49,38 @@ export const EqualWidth: Story = {
 export const IsMobile: Story = {
   render: (props) => <SegmentedControl {...props} isMobile />
 }
+
+export const Disabled: Story = {
+  render: (props) => <SegmentedControl {...props} disabled />
+}
+
+export const OptionDisabled: Story = {
+  render: (props) => {
+    const optionDisabledProps = {
+      ...props,
+      options: [
+        props.options[0],
+        ...props.options
+          .slice(1)
+          .map((option) => ({ ...option, disabled: true }))
+      ]
+    }
+    return <SegmentedControl {...optionDisabledProps} />
+  }
+}
+
+export const OptionVariant: Story = {
+  render: (props) => {
+    const optionVariantProps = {
+      ...props,
+      options: [
+        ...props.options.slice(0, 2),
+        ...props.options.slice(2).map((option) => ({
+          ...option,
+          variant: 'subdued' as 'default' | 'subdued'
+        }))
+      ]
+    }
+    return <SegmentedControl {...optionVariantProps} />
+  }
+}

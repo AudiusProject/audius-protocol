@@ -22,6 +22,7 @@ import {
   playbackRateValueMap
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
+import { removeHotkeys, setupHotkeys } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -38,7 +39,6 @@ import { audioPlayer } from 'services/audio-player'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import { getLocation } from 'store/routing/selectors'
-import { setupHotkeys } from 'utils/hotkeyUtil'
 import { collectibleDetailsPage, profilePage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
@@ -85,11 +85,12 @@ class PlayBar extends Component {
       initialVolume: null,
       mediaKey: 0
     }
+    this.hotkeysHook = null
     this.seekInterval = null
   }
 
   componentDidMount() {
-    setupHotkeys(
+    this.hotkeysHook = setupHotkeys(
       {
         32 /* space */: this.togglePlay,
         37 /* left arrow */: this.onPrevious,
@@ -134,6 +135,7 @@ class PlayBar extends Component {
 
   componentWillUnmount() {
     clearInterval(this.seekInterval)
+    removeHotkeys(this.hotkeysHook)
   }
 
   goToTrackPage = () => {

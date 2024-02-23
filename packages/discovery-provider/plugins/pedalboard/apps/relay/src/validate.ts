@@ -11,7 +11,6 @@ export const validateTransactionData = async (
   // TODO: maybe check transactions table? this is no longer possible with the way identity works
   // TODO: filter replica set updates
   // if (failed) throw new Error("validation failed")
-  logger.info("transaction data validated");
   return decoded;
 };
 

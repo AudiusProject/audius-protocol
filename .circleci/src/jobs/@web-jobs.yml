@@ -277,13 +277,10 @@ web-deploy-sentry-sourcemaps:
 web-dist-mac-staging:
   working_directory: ~/audius-protocol
   # run on macos so dmg can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   steps:
-    - run:
-        name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
     - web-distribute:
         build-type: mac-publish
         install-license: true
@@ -313,13 +310,10 @@ web-dist-linux-staging:
 web-dist-mac-production:
   working_directory: ~/audius-protocol
   # run on macos so dmg can be created and signed.
-  resource_class: macos.x86.medium.gen2
+  resource_class: macos.m1.medium.gen1
   macos:
-    xcode: '14.2.0'
+    xcode: '15.2.0'
   steps:
-    - run:
-        name: Set Ruby Version
-        command: rbenv global 2.7.7 && rbenv rehash
     - web-distribute:
         build-type: mac-publish-production
         install-license: true

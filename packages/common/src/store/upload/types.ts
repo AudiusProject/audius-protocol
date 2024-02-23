@@ -1,4 +1,4 @@
-import { CollectionMetadata, TrackMetadata } from '../../models'
+import { CollectionMetadata, StemUpload, TrackMetadata } from '../../models'
 import { Nullable } from '../../utils/typeUtils'
 
 export type NativeFile = {
@@ -68,6 +68,6 @@ export interface UploadState {
   error: boolean
   shouldReset: boolean
   completionId: Nullable<number>
-  stems: TrackMetadata[]
+  stems: StemUpload[][]
   failedTrackIndices: number[]
 }

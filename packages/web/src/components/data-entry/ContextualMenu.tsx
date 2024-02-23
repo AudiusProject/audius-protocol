@@ -1,17 +1,18 @@
 import { ReactNode, ReactElement, useCallback, useMemo, useEffect } from 'react'
 
 import { Nullable } from '@audius/common/utils'
-import { Box, Text as HarmonyText, IconCaretRight } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
-  IconComponent,
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  Box,
+  Text as HarmonyText,
+  IconCaretRight,
+  IconComponent
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import {
   Form,
   Formik,
