@@ -1,5 +1,6 @@
-import AudiusClient from './AudiusClient'
 import { Address } from 'types'
+
+import AudiusClient from './AudiusClient'
 
 /**
  * Wrapper functions for libs
@@ -14,24 +15,22 @@ import { Address } from 'types'
 export async function getUserDelegates(this: AudiusClient, delegator: Address) {
   await this.hasPermissions()
   const delegates = []
-  const increaseDelegateStakeEvents = await this.Delegate.getIncreaseDelegateStakeEvents(
-    {
+  const increaseDelegateStakeEvents =
+    await this.Delegate.getIncreaseDelegateStakeEvents({
       delegator
-    }
+    })
+  const pendingUndelegateRequest =
+    await this.Delegate.getPendingUndelegateRequest(delegator)
+  let serviceProviders = increaseDelegateStakeEvents.map(
+    (e) => e.serviceProvider
   )
-  const pendingUndelegateRequest = await this.Delegate.getPendingUndelegateRequest(
-    delegator
-  )
-  let serviceProviders = increaseDelegateStakeEvents.map(e => e.serviceProvider)
   // @ts-ignore
   serviceProviders = [...new Set(serviceProviders)]
-  for (let sp of serviceProviders) {
+  for (const sp of serviceProviders) {
     const delegators = await this.Delegate.getDelegatorsList(sp)
     if (delegators.includes(delegator)) {
-      const amountDelegated = await this.Delegate.getDelegatorStakeForServiceProvider(
-        delegator,
-        sp
-      )
+      const amountDelegated =
+        await this.Delegate.getDelegatorStakeForServiceProvider(delegator, sp)
       let activeAmount = amountDelegated
 
       if (

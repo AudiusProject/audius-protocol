@@ -1,11 +1,13 @@
 import React from 'react'
+
+import { IconArrow, IconCrown } from '@audius/stems'
 import clsx from 'clsx'
 
-import Paper from 'components/Paper'
-import styles from './RewardsCTABanner.module.css'
-import { useIsMobile, useModalControls } from 'utils/hooks'
 import AudioRewardsModal from 'components/AudioRewardsModal'
-import { IconArrow, IconCrown } from '@audius/stems'
+import Paper from 'components/Paper'
+import { useIsMobile, useModalControls } from 'utils/hooks'
+
+import styles from './RewardsCTABanner.module.css'
 
 const messages = {
   rewards: '$AUDIO REWARDS',

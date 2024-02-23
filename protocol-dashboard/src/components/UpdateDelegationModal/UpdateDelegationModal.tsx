@@ -1,25 +1,26 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import clsx from 'clsx'
-import { ButtonType } from 'components/Button'
-import BN from 'bn.js'
 
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './UpdateDelegationModal.module.css'
-import { Status, Address } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import BN from 'bn.js'
+import clsx from 'clsx'
+
+import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal, {
   OldStake,
   NewStake
 } from 'components/ConfirmTransactionModal'
+import DisplayAudio from 'components/DisplayAudio'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import ValueSlider from 'components/ValueSlider'
+import AudiusClient from 'services/Audius'
+import useUpdateDelegation from 'store/actions/updateDelegation'
+import { useUserDelegation } from 'store/actions/userDelegation'
+import { Status, Address } from 'types'
 import { TICKER } from 'utils/consts'
 import { useModalControls } from 'utils/hooks'
-import { useUserDelegation } from 'store/actions/userDelegation'
-import useUpdateDelegation from 'store/actions/updateDelegation'
-import DisplayAudio from 'components/DisplayAudio'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+
+import styles from './UpdateDelegationModal.module.css'
 
 const messages = {
   increaseTitle: 'Increase Delegation',

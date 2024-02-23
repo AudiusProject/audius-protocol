@@ -1,14 +1,17 @@
 import React from 'react'
+
 import clsx from 'clsx'
 import ReactCountryFlag from 'react-country-flag'
-import { NodeService, ContentNode, DiscoveryProvider } from 'types'
-import styles from './ServiceTable.module.css'
-import Table from 'components/Table'
+
 import Error from 'components/Error'
-import { isMobile } from 'utils/mobile'
+import Table from 'components/Table'
+import { DataObject, TrackerMini } from 'components/TrackerChart'
 import { useIndividualNodeUptime } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
-import { DataObject, TrackerMini } from 'components/TrackerChart'
+import { NodeService, ContentNode, DiscoveryProvider } from 'types'
+import { isMobile } from 'utils/mobile'
+
+import styles from './ServiceTable.module.css'
 
 type ServiceRow = {
   endpoint: string
@@ -50,6 +53,7 @@ const ServiceTable: React.FC<ServiceTableProps> = ({
 
   const renderRow = (data: NodeService) => {
     let error: boolean, uptimeData: DataObject[]
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { uptime } = useIndividualNodeUptime(
       data.type,
       data.endpoint,

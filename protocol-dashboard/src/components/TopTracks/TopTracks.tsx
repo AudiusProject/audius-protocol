@@ -1,7 +1,8 @@
+import React, { useCallback } from 'react'
+
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React, { useCallback } from 'react'
 import { useTopTracks } from 'store/cache/music/hooks'
 import { MusicError } from 'store/cache/music/slice'
 import { createStyles } from 'utils/mobile'
@@ -25,7 +26,7 @@ const TopTracks: React.FC<TopTracksProps> = () => {
 
   const renderTopTracks = () => {
     if (topTracks === MusicError.ERROR) return <Error />
-    return !!topTracks ? (
+    return topTracks ? (
       topTracks.map((t, i) => (
         <div key={i} className={styles.track}>
           <div

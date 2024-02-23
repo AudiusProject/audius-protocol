@@ -1,13 +1,6 @@
-import ServiceProviderClient from './service-provider/serviceProviderClient'
-import Staking from './staking/staking'
-import AudiusToken from './token/audiusToken'
+import Claim from './claim/claim'
 import Delegate from './delegate/delegate'
 import Governance from './governance/governance'
-import NodeType from './nodeType'
-import Identity from './identity'
-import Claim from './claim/claim'
-
-import { setup } from './setup'
 import {
   hasPermissions,
   awaitSetup,
@@ -30,6 +23,12 @@ import {
   decodeCallData,
   onMetaMaskAccountLoaded
 } from './helpers'
+import Identity from './identity'
+import NodeType from './nodeType'
+import ServiceProviderClient from './service-provider/serviceProviderClient'
+import { setup } from './setup'
+import Staking from './staking/staking'
+import AudiusToken from './token/audiusToken'
 import { getUserDelegates } from './wrappers'
 
 export class AudiusClient {

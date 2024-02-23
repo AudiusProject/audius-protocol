@@ -1,9 +1,11 @@
 import React from 'react'
-import SimpleBar from 'simplebar-react'
-import { ButtonType } from '@audius/stems'
 
-import Modal from 'components/Modal'
+import { ButtonType } from '@audius/stems'
+import SimpleBar from 'simplebar-react'
+
 import Button from 'components/Button'
+import Modal from 'components/Modal'
+
 import styles from './ErrorModal.module.css'
 
 const messages = {

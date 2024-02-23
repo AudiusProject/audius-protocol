@@ -1,21 +1,22 @@
 import React, { useCallback } from 'react'
+
 import clsx from 'clsx'
 
-import { Outcome, Proposal as ProposalType, Vote } from 'types'
-import VoteMeter from 'components/VoteMeter'
 import ProposalStatusBadge from 'components/ProposalStatusBadge'
-import { usePushRoute } from 'utils/effects'
-import { proposalPage } from 'utils/routes'
-import { leftPadZero, getHumanReadableTime, getDate } from 'utils/format'
+import ProposalStatusChip from 'components/ProposalStatusChip'
+import VoteMeter from 'components/VoteMeter'
+import Voted from 'components/Voted'
 import {
   useExecutionDelayTimeRemaining,
   useGetInProgressProposalSubstate,
   useProposalMilestoneBlocks,
   useProposalTimeRemaining
 } from 'store/cache/proposals/hooks'
-import ProposalStatusChip from 'components/ProposalStatusChip'
-import Voted from 'components/Voted'
+import { Outcome, Proposal as ProposalType, Vote } from 'types'
+import { usePushRoute } from 'utils/effects'
+import { leftPadZero, getHumanReadableTime, getDate } from 'utils/format'
 import { createStyles } from 'utils/mobile'
+import { proposalPage } from 'utils/routes'
 
 import desktopStyles from './Proposal.module.css'
 import mobileStyles from './ProposalMobile.module.css'
@@ -129,7 +130,7 @@ const Proposal: React.FC<ProposalProps> = ({
         </div>
       </div>
       <div className={styles.right}>
-        {!!vote ? (
+        {vote ? (
           <Voted vote={vote} />
         ) : proposal?.evaluatedBlock ? (
           <ProposalStatusChip outcome={proposal.outcome} />

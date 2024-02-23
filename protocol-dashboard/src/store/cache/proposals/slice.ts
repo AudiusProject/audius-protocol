@@ -57,8 +57,8 @@ const slice = createSlice({
         return acc
       }, {} as { [key: number]: Proposal })
       const resolvedProposals = proposals
-        .filter(p => p.outcome !== Outcome.InProgress)
-        .map(p => p.proposalId)
+        .filter((p) => p.outcome !== Outcome.InProgress)
+        .map((p) => p.proposalId)
         .reverse()
 
       state.allProposals = allProposals

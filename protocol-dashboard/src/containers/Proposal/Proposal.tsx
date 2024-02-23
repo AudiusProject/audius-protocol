@@ -1,23 +1,24 @@
 import { useEffect, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import gfm from 'remark-gfm'
-import Page from 'components/Page'
-import ProposalHero from 'components/ProposalHero'
-import { useProposal } from 'store/cache/proposals/hooks'
-import { Outcome } from 'types'
 
+import ReactMarkdown from 'react-markdown'
+import { useParams } from 'react-router-dom'
+import gfm from 'remark-gfm'
+
+import Loading from 'components/Loading'
+import Page from 'components/Page'
+import Paper from 'components/Paper'
+import ProposalHero from 'components/ProposalHero'
 import VotesTable from 'components/VotesTable'
+import { decodeProposalCallData } from 'services/Audius/helpers'
+import { IS_PRODUCTION } from 'services/Audius/setup'
+import { useProposal } from 'store/cache/proposals/hooks'
 import { useVotes, useUserVote } from 'store/cache/votes/hooks'
+import { Outcome } from 'types'
+import { createStyles } from 'utils/mobile'
 import { GOVERNANCE } from 'utils/routes'
 
 import desktopStyles from './Proposal.module.css'
 import mobileStyles from './ProposalMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import Paper from 'components/Paper'
-import Loading from 'components/Loading'
-import { IS_PRODUCTION } from 'services/Audius/setup'
-import { decodeProposalCallData } from 'services/Audius/helpers'
-import { useParams } from 'react-router-dom'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -75,7 +76,7 @@ const Proposal = () => {
         </div>
         {proposal ? (
           <div className={styles.descriptionBody}>
-            <ReactMarkdown plugins={[gfm]} linkTarget="_blank">
+            <ReactMarkdown plugins={[gfm]} linkTarget='_blank'>
               {proposal.description || ''}
             </ReactMarkdown>
           </div>
@@ -96,8 +97,8 @@ const Proposal = () => {
               <p className={styles.callDataSectionBody}>
                 <a
                   href={getContractLink(proposal.targetContractAddress)}
-                  target="_blank"
-                  rel="noreferrer"
+                  target='_blank'
+                  rel='noreferrer'
                 >
                   {proposal.targetContractAddress}
                 </a>
@@ -121,8 +122,8 @@ const Proposal = () => {
         )}
       </Paper>
       <div className={styles.votes}>
-        {<VotesTable title="For" votes={votesFor} />}
-        {<VotesTable title="Against" votes={votesAgainst} />}
+        {<VotesTable title='For' votes={votesFor} />}
+        {<VotesTable title='Against' votes={votesAgainst} />}
       </div>
     </Page>
   )

@@ -1,12 +1,14 @@
-import React, { ReactNode, useCallback, useEffect } from 'react'
-import Modal from 'components/Modal'
+import React, { ReactNode, useCallback } from 'react'
+
 import Button, { ButtonType } from 'components/Button'
-import styles from './ConnectMetaMaskModal.module.css'
+import Modal from 'components/Modal'
+import { getMetamaskChainId } from 'services/Audius/setup'
 import {
   ETH_NETWORK_ID,
   decimalNetworkIdToHexNetworkId
 } from 'utils/switchNetwork'
-import { getMetamaskChainId } from 'services/Audius/setup'
+
+import styles from './ConnectMetaMaskModal.module.css'
 
 const messages = {
   connectTitle: 'Connect MetaMask to Continue',
@@ -58,9 +60,9 @@ const ConnectMetaMaskContent = ({ onClose }: ConnectMetaMaskContentProps) => {
             {messages.ifNoPopupWindow}
             <a
               className={styles.externalLink}
-              target="_blank"
-              rel="noreferrer"
-              href="https://help.phantom.app/hc/en-us/articles/12182813094163-How-to-use-Phantom-Extension-Alongside-Other-Crypto-Wallets"
+              target='_blank'
+              rel='noreferrer'
+              href='https://help.phantom.app/hc/en-us/articles/12182813094163-How-to-use-Phantom-Extension-Alongside-Other-Crypto-Wallets'
             >
               {messages.setMetaMaskDefault}
             </a>
@@ -76,9 +78,9 @@ const ConnectMetaMaskContent = ({ onClose }: ConnectMetaMaskContentProps) => {
             {messages.openPhantomPrompt}
             <a
               className={styles.externalLink}
-              target="_blank"
-              rel="noreferrer"
-              href="https://help.phantom.app/hc/en-us/articles/12182813094163-How-to-use-Phantom-Extension-Alongside-Other-Crypto-Wallets"
+              target='_blank'
+              rel='noreferrer'
+              href='https://help.phantom.app/hc/en-us/articles/12182813094163-How-to-use-Phantom-Extension-Alongside-Other-Crypto-Wallets'
             >
               {messages.setMetaMaskDefault}
             </a>
@@ -139,9 +141,9 @@ const MisconfiguredMetaMaskContent = ({
             {messages.openPhantomPromptAddition}{' '}
             <a
               className={styles.externalLink}
-              target="_blank"
-              rel="noreferrer"
-              href="https://help.phantom.app/hc/en-us/articles/12182813094163-How-to-use-Phantom-Extension-Alongside-Other-Crypto-Wallets"
+              target='_blank'
+              rel='noreferrer'
+              href='https://help.phantom.app/hc/en-us/articles/12182813094163-How-to-use-Phantom-Extension-Alongside-Other-Crypto-Wallets'
             >
               {messages.setMetaMaskDefault}
             </a>

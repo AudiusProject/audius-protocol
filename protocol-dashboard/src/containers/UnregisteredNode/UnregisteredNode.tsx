@@ -1,15 +1,16 @@
 import { useMatch, useLocation } from 'react-router-dom'
-import { useAccount } from 'store/account/hooks'
 
-import styles from './UnregisteredNode.module.css'
+import NodeOverview from 'components/NodeOverview'
 import Page from 'components/Page'
+import { useAccount } from 'store/account/hooks'
 import { ServiceType } from 'types'
 import {
   SERVICES_UNREGISTERED_DISCOVERY_NODE,
   SERVICES_TITLE,
   SERVICES
 } from 'utils/routes'
-import NodeOverview from 'components/NodeOverview'
+
+import styles from './UnregisteredNode.module.css'
 
 const messages = {
   title: 'UNREGISTERED SERVICE'

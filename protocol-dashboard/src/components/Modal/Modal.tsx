@@ -1,8 +1,9 @@
 import React, { ReactNode } from 'react'
-import clsx from 'clsx'
-import styles from './Modal.module.css'
 
 import { IconRemove, Modal as StemsModal } from '@audius/stems'
+import clsx from 'clsx'
+
+import styles from './Modal.module.css'
 
 interface ModalProps {
   className?: string

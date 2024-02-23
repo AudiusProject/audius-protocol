@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import semver from 'semver'
 
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import {
   Address,
   Node,
@@ -12,11 +16,8 @@ import {
   ServiceType,
   ContentNode
 } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+
 import { setLoading, setNodes, setTotal } from './slice'
-import { useEffect } from 'react'
-import { AnyAction } from '@reduxjs/toolkit'
 
 type UseContentNodesProps = {
   owner?: Address
@@ -56,14 +57,12 @@ export const getNode = (spID: number) => (state: AppState) =>
   state.cache.contentNode.nodes[spID]
 
 export const getNodes = (state: AppState) => state.cache.contentNode.nodes
-export const getFilteredNodes = ({
-  owner,
-  sortBy,
-  limit
-}: UseContentNodesProps = {}) => (state: AppState) => {
-  const nodes = state.cache.contentNode.nodes
-  return filterNodes(nodes)
-}
+export const getFilteredNodes =
+  ({ owner, sortBy, limit }: UseContentNodesProps = {}) =>
+  (state: AppState) => {
+    const nodes = state.cache.contentNode.nodes
+    return filterNodes(nodes)
+  }
 
 // -------------------------------- Helpers  --------------------------------
 
@@ -102,7 +101,7 @@ export function fetchContentNodes(
       ServiceType.ContentNode
     )
     const contentNodeVersions = await Promise.all(
-      contentNodes.map(node => processNode(node, aud))
+      contentNodes.map((node) => processNode(node, aud))
     )
     const nodes = contentNodeVersions.reduce(
       (acc: { [spID: number]: ContentNode }, cn) => {
@@ -126,9 +125,10 @@ export function getContentNode(
   setStatus?: (status: Status) => void
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
-    const numContentNodes = await aud.ServiceProviderClient.getTotalServiceTypeProviders(
-      ServiceType.ContentNode
-    )
+    const numContentNodes =
+      await aud.ServiceProviderClient.getTotalServiceTypeProviders(
+        ServiceType.ContentNode
+      )
     dispatch(setTotal({ total: numContentNodes }))
     if (spID > numContentNodes) {
       if (setStatus) setStatus(Status.Failure)
@@ -155,12 +155,10 @@ export const useContentNodes = ({
 }: UseContentNodesProps) => {
   const status = useSelector(getStatus)
   const allNodes = useSelector(getNodes)
-  const nodes = useMemo(() => filterNodes(allNodes, { owner, sortBy, limit }), [
-    allNodes,
-    owner,
-    sortBy,
-    limit
-  ])
+  const nodes = useMemo(
+    () => filterNodes(allNodes, { owner, sortBy, limit }),
+    [allNodes, owner, sortBy, limit]
+  )
 
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
@@ -186,7 +184,7 @@ export const useContentNode = ({ spID }: UseContentNodeProps) => {
   }, [dispatch, node, totalNodes, spID])
   if (node && status !== Status.Success) setStatus(Status.Success)
   if (status === Status.Success) {
-    return { node: node, status }
+    return { node, status }
   }
   return {
     node: null,

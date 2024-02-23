@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from 'react'
+
 import clsx from 'clsx'
+
 import styles from './TextField.module.css'
 
 const formatValue = (value: string | undefined) => {
@@ -79,7 +81,7 @@ const TextField: React.FC<TextFieldProps> = ({
 
   const [inputPadding, setInputPadding] = useState(inputPaddingRight)
   const setLabelRef = useCallback(
-    node => {
+    (node) => {
       if (node) {
         // TODO: wait for animation before getting width
         // const width = node.getBoundingClientRect().width

@@ -1,19 +1,21 @@
 import React from 'react'
+
+import { IconArrowWhite } from '@audius/stems'
+import BN from 'bn.js'
 import clsx from 'clsx'
 
-import styles from './Delegate.module.css'
-import Paper from 'components/Paper'
-import BN from 'bn.js'
-import Tooltip, { Position } from 'components/Tooltip'
-import { TICKER } from 'utils/consts'
 import Button, { ButtonType } from 'components/Button'
-import { IconArrowWhite } from '@audius/stems'
-import { useModalControls } from 'utils/hooks'
+import DisplayAudio from 'components/DisplayAudio'
+import Paper from 'components/Paper'
+import Tooltip, { Position } from 'components/Tooltip'
 import UpdateDelegationModal from 'components/UpdateDelegationModal'
-import { Address, Status } from 'types'
 import { useHasPendingDecreaseDelegationTx } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
-import DisplayAudio from 'components/DisplayAudio'
+import { Address, Status } from 'types'
+import { TICKER } from 'utils/consts'
+import { useModalControls } from 'utils/hooks'
+
+import styles from './Delegate.module.css'
 
 const messages = {
   title: 'Manage Delegation',

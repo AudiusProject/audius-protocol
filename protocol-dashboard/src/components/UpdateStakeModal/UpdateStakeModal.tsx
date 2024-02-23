@@ -1,25 +1,27 @@
 import React, { useState, useCallback, useEffect } from 'react'
+
+import { ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 import clsx from 'clsx'
-import { ButtonType } from '@audius/stems'
 
-import { useUpdateStake } from 'store/actions/updateStake'
-import { useAccountUser } from 'store/account/hooks'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
 import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './UpdateStakeModal.module.css'
-import { Status, Operator } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import ConfirmTransactionModal, {
   OldStake,
   NewStake
 } from 'components/ConfirmTransactionModal'
-import { TICKER } from 'utils/consts'
-import { Position } from 'components/Tooltip'
 import DisplayAudio from 'components/DisplayAudio'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { Position } from 'components/Tooltip'
+import ValueSlider from 'components/ValueSlider'
+import AudiusClient from 'services/Audius'
+import { useAccountUser } from 'store/account/hooks'
+import { useUpdateStake } from 'store/actions/updateStake'
+import { Status, Operator } from 'types'
+import { TICKER } from 'utils/consts'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+
+import styles from './UpdateStakeModal.module.css'
 
 const messages = {
   increaseTitle: 'Increase Stake',

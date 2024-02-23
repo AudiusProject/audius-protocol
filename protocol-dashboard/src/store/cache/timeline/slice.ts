@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { TimelineEvent } from 'models/TimelineEvents'
 import { Address } from 'types'
 

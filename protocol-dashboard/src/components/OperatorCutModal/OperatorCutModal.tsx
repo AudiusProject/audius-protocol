@@ -1,16 +1,18 @@
 import React, { useState, useCallback, useEffect } from 'react'
+
 import { ButtonType } from '@audius/stems'
 
-import { useUpdateOperatorCut } from 'store/actions/updateOperatorCut'
-import Modal from 'components/Modal'
 import Button from 'components/Button'
-import TextField from 'components/TextField'
-import styles from './OperatorCutModal.module.css'
-import { Status } from 'types'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useUpdateOperatorCut } from 'store/actions/updateOperatorCut'
+import { Status } from 'types'
 import { useModalControls } from 'utils/hooks'
+
+import styles from './OperatorCutModal.module.css'
 
 const messages = {
   title: 'Change Deployer Cut',

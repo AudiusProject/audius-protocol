@@ -1,25 +1,26 @@
-import { useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
+import { useState, useEffect } from 'react'
 
+import { AnyAction } from '@reduxjs/toolkit'
+import { useSelector, useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { getUser, fetchUser } from 'store/cache/user/hooks'
+import { AppState } from 'store/types'
 import {
   Status,
   Address,
   DelayedPendingTransaction,
   PendingTransactionName
 } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+
 import {
   setLoading,
   setAccount,
   setPendingTransactionsLoading,
   setPendingTransactions
 } from './slice'
-import { useEffect } from 'react'
-import { getUser, fetchUser } from 'store/cache/user/hooks'
-import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getIsLoggedIn = (state: AppState) => state.account.loggedIn
@@ -62,13 +63,13 @@ export function fetchPendingTransactions(
     await aud.awaitSetup()
     dispatch(setPendingTransactionsLoading())
     try {
-      let pendingRequests: Array<DelayedPendingTransaction> = []
+      const pendingRequests: Array<DelayedPendingTransaction> = []
 
-      const decreaseStakeReq = await aud.ServiceProviderClient.getPendingDecreaseStakeRequest(
-        wallet
-      )
+      const decreaseStakeReq =
+        await aud.ServiceProviderClient.getPendingDecreaseStakeRequest(wallet)
       if (decreaseStakeReq.lockupExpiryBlock !== 0) {
-        const lockupDuration = await aud.ServiceProviderClient.getDecreaseStakeLockupDuration()
+        const lockupDuration =
+          await aud.ServiceProviderClient.getDecreaseStakeLockupDuration()
         pendingRequests.push({
           name: PendingTransactionName.DecreaseStake,
           lockupDuration,
@@ -76,11 +77,13 @@ export function fetchPendingTransactions(
         })
       }
 
-      const updateDeployerCutReq = await aud.ServiceProviderClient.getPendingUpdateDeployerCutRequest(
-        wallet
-      )
+      const updateDeployerCutReq =
+        await aud.ServiceProviderClient.getPendingUpdateDeployerCutRequest(
+          wallet
+        )
       if (updateDeployerCutReq.lockupExpiryBlock !== 0) {
-        const lockupDuration = await aud.ServiceProviderClient.getDeployerCutLockupDuration()
+        const lockupDuration =
+          await aud.ServiceProviderClient.getDeployerCutLockupDuration()
         pendingRequests.push({
           lockupDuration,
           name: PendingTransactionName.UpdateOperatorCut,
@@ -88,9 +91,8 @@ export function fetchPendingTransactions(
         })
       }
 
-      const pendingUndelegateRequest = await aud.Delegate.getPendingUndelegateRequest(
-        wallet
-      )
+      const pendingUndelegateRequest =
+        await aud.Delegate.getPendingUndelegateRequest(wallet)
       if (pendingUndelegateRequest.lockupExpiryBlock !== 0) {
         const lockupDuration = await aud.Delegate.getUndelegateLockupDuration()
         pendingRequests.push({
@@ -102,13 +104,15 @@ export function fetchPendingTransactions(
 
       const delegators = await aud.Delegate.getDelegatorsList(wallet)
       if (delegators.length > 0) {
-        const lockupDuration = await aud.Delegate.getRemoveDelegatorLockupDuration()
+        const lockupDuration =
+          await aud.Delegate.getRemoveDelegatorLockupDuration()
 
-        for (let delegator of delegators) {
-          const pendingRemoveDelegatorReq = await aud.Delegate.getPendingRemoveDelegatorRequest(
-            wallet,
-            delegator
-          )
+        for (const delegator of delegators) {
+          const pendingRemoveDelegatorReq =
+            await aud.Delegate.getPendingRemoveDelegatorRequest(
+              wallet,
+              delegator
+            )
           if (pendingRemoveDelegatorReq.lockupExpiryBlock > 0) {
             pendingRequests.push({
               lockupDuration,
@@ -123,6 +127,7 @@ export function fetchPendingTransactions(
       dispatch(setPendingTransactions(pendingRequests))
     } catch (error) {
       // TODO: Handle error case
+      // eslint-disable-next-line no-console
       console.log(error)
     }
   }
@@ -178,7 +183,7 @@ export const useHasPendingDecreaseStakeTx = () => {
   const pendingTransactions = usePendingTransactions()
   if (pendingTransactions.status === Status.Success) {
     const hasPendingDecreaseTx =
-      pendingTransactions.transactions?.some(tx => {
+      pendingTransactions.transactions?.some((tx) => {
         return tx.name === PendingTransactionName.DecreaseStake
       }) ?? false
     return { status: Status.Success, hasPendingDecreaseTx }
@@ -190,7 +195,7 @@ export const useHasPendingDecreaseDelegationTx = () => {
   const pendingTransactions = usePendingTransactions()
   if (pendingTransactions.status === Status.Success) {
     const hasPendingDecreaseTx =
-      pendingTransactions.transactions?.some(tx => {
+      pendingTransactions.transactions?.some((tx) => {
         return tx.name === PendingTransactionName.Undelegate
       }) ?? false
     return { status: Status.Success, hasPendingDecreaseTx }

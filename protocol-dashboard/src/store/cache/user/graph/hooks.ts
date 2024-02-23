@@ -1,16 +1,20 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
-import { Status, User, Operator } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { setLoading, setUsers } from '../slice'
 import { useEffect, useState } from 'react'
-import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
+
+import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch, useSelector } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
 import { getGraphAPI, useGraphQuery as useQuery } from 'store/api/hooks'
+import { AppState } from 'store/types'
+import { Status, User, Operator } from 'types'
+
+import { setLoading, setUsers } from '../slice'
+
 import { formatUser } from './formatter'
 import { GET_USERS, GET_USER } from './queries'
-import { AnyAction } from '@reduxjs/toolkit'
+import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
 
 // Async function to get
 function populateUsers(
@@ -22,7 +26,7 @@ function populateUsers(
       if (setStatus) setStatus(Status.Loading)
       else dispatch(setLoading())
       const formattedUsers = await Promise.all(
-        users.map(user => formatUser(aud, user))
+        users.map((user) => formatUser(aud, user))
       )
       dispatch(
         setUsers({
@@ -38,6 +42,7 @@ function populateUsers(
       )
       if (setStatus) setStatus(Status.Success)
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.log({ err })
     }
   }

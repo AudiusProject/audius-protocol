@@ -1,22 +1,24 @@
 import React, { useState } from 'react'
-import clsx from 'clsx'
-import BN from 'bn.js'
 
-import styles from './VotesTable.module.css'
-import Table from 'components/Table'
-import { VoteEvent, Address } from 'types'
-import { formatAud } from 'utils/format'
-import { usePushRoute } from 'utils/effects'
-import { accountPage } from 'utils/routes'
-import Modal from 'components/Modal'
+import BN from 'bn.js'
+import clsx from 'clsx'
+
 import DisplayAudio from 'components/DisplayAudio'
+import Modal from 'components/Modal'
+import Table from 'components/Table'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
+import { VoteEvent, Address } from 'types'
+import { usePushRoute } from 'utils/effects'
+import { formatAud } from 'utils/format'
+import { accountPage } from 'utils/routes'
+
+import styles from './VotesTable.module.css'
 
 const User = ({ wallet }: { wallet: Address }) => {
   return (
     <div className={styles.user}>
-      <UserImage className={styles.image} wallet={wallet} alt="User" />
+      <UserImage className={styles.image} wallet={wallet} alt='User' />
       <UserName className={styles.name} wallet={wallet} />
     </div>
   )

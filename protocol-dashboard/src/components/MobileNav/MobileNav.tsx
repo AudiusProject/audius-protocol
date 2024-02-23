@@ -1,12 +1,14 @@
 import { useCallback } from 'react'
+
+import { Button, ButtonType, IconRemove } from '@audius/stems'
 import clsx from 'clsx'
-import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
 import { matchPath, useNavigate, useLocation } from 'react-router-dom'
 
-import styles from './MobileNav.module.css'
-import { AUDIUS_DAPP_URL, navRoutes } from 'utils/routes'
-import { Button, ButtonType, IconRemove } from '@audius/stems'
+import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
 import useOpenLink from 'hooks/useOpenLink'
+import { AUDIUS_DAPP_URL, navRoutes } from 'utils/routes'
+
+import styles from './MobileNav.module.css'
 
 const messages = {
   launchApp: 'LAUNCH THE APP',
@@ -23,7 +25,7 @@ const MobileNavButton = ({
   const location = useLocation()
 
   const isActiveRoute = matchParams.some(
-    matchParam => !!matchPath(matchParam, location.pathname)
+    (matchParam) => !!matchPath(matchParam, location.pathname)
   )
   const onButtonClick = useCallback(() => {
     onClose()
@@ -76,12 +78,12 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
           <Logo className={styles.logo} />
           <div className={styles.name}>{messages.name}</div>
         </div>
-        {navRoutes.map(route => (
+        {navRoutes.map((route) => (
           <div key={route.text} className={styles.btnContainer}>
             <MobileNavButton
               {...route}
               onClose={onClose}
-              pushRoute={path => navigate(path)}
+              pushRoute={(path) => navigate(path)}
             />
           </div>
         ))}

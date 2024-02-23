@@ -4,14 +4,14 @@
 // Stolen from
 // https://stackoverflow.com/questions/47186273/rounded-corners-on-chartjs-v-2-bar-charts-with-negative-values
 // @ts-ignore
-Chart.elements.Rectangle.prototype.draw = function() {
-  let ctx = this._chart.ctx
-  let vm = this._view
+Chart.elements.Rectangle.prototype.draw = function () {
+  const ctx = this._chart.ctx
+  const vm = this._view
   let left, right, top, bottom, signX, signY, borderSkipped, radius
   let borderWidth = vm.borderWidth
   // Set Radius Here
   // If radius is large enough to cause drawing errors a max radius is imposed
-  let cornerRadius = 2
+  const cornerRadius = 2
 
   if (!vm.horizontal) {
     // bar
@@ -37,15 +37,16 @@ Chart.elements.Rectangle.prototype.draw = function() {
   // adjust the sizes to fit if we're setting a stroke on the line
   if (borderWidth) {
     // borderWidth shold be less than bar width and bar height.
-    let barSize = Math.min(Math.abs(left - right), Math.abs(top - bottom))
+    const barSize = Math.min(Math.abs(left - right), Math.abs(top - bottom))
     borderWidth = borderWidth > barSize ? barSize : borderWidth
-    let halfStroke = borderWidth / 2
+    const halfStroke = borderWidth / 2
     // Adjust borderWidth when bar top position is near vm.base(zero).
-    let borderLeft = left + (borderSkipped !== 'left' ? halfStroke * signX : 0)
-    let borderRight =
+    const borderLeft =
+      left + (borderSkipped !== 'left' ? halfStroke * signX : 0)
+    const borderRight =
       right + (borderSkipped !== 'right' ? -halfStroke * signX : 0)
-    let borderTop = top + (borderSkipped !== 'top' ? halfStroke * signY : 0)
-    let borderBottom =
+    const borderTop = top + (borderSkipped !== 'top' ? halfStroke * signY : 0)
+    const borderBottom =
       bottom + (borderSkipped !== 'bottom' ? -halfStroke * signY : 0)
     // not become a vertical line?
     if (borderLeft !== borderRight) {
@@ -67,7 +68,7 @@ Chart.elements.Rectangle.prototype.draw = function() {
   // Corner points, from bottom-left to bottom-right clockwise
   // | 1 2 |
   // | 0 3 |
-  let corners = [
+  const corners = [
     [left, bottom],
     [left, top],
     [right, top],
@@ -75,7 +76,7 @@ Chart.elements.Rectangle.prototype.draw = function() {
   ]
 
   // Find first (starting) corner with fallback to 'bottom'
-  let borders = ['bottom', 'left', 'top', 'right']
+  const borders = ['bottom', 'left', 'top', 'right']
   let startCorner = borders.indexOf(borderSkipped, 0)
   if (startCorner === -1) {
     startCorner = 0
@@ -159,7 +160,7 @@ Chart.elements.Rectangle.prototype.draw = function() {
       ctx.lineTo(x_bl, y_bl - radius)
       ctx.quadraticCurveTo(x_bl, y_bl, x_bl + radius, y_bl)
     } else {
-      //Positive Value
+      // Positive Value
       ctx.moveTo(x + radius, y)
       ctx.lineTo(x + width - radius, y)
       ctx.quadraticCurveTo(x + width, y, x + width, y + radius)

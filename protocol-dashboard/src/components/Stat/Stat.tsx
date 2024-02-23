@@ -1,9 +1,10 @@
 import React, { ReactNode } from 'react'
 
-import Paper from 'components/Paper'
-import styles from './Stat.module.css'
-import Loading from 'components/Loading'
 import Error from 'components/Error'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
+
+import styles from './Stat.module.css'
 
 type OwnProps = {
   stat: ReactNode

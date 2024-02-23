@@ -1,26 +1,27 @@
 import React from 'react'
-import Page from 'components/Page'
-import { useAccount } from 'store/account/hooks'
-import ManageService from 'components/ManageService'
-import { useProposals } from 'store/cache/proposals/hooks'
+
 import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
+import ApiCallsStat from 'components/ApiCallsStat'
+import EstimatedAnnualStat from 'components/EstimatedAnnualStat'
+import EstimatedWeeklyStat from 'components/EstimatedWeeklyStat'
+import Loading from 'components/Loading'
+import ManageService from 'components/ManageService'
+import Page from 'components/Page'
 import Paper from 'components/Paper'
 import Proposal from 'components/Proposal'
-import Loading from 'components/Loading'
 import { NoProposals } from 'components/Proposals'
 import TopAddressesTable from 'components/TopAddressesTable'
-import { usePushRoute } from 'utils/effects'
-import { GOVERNANCE } from 'utils/routes'
 import TotalStakedStat from 'components/TotalStakedStat'
-import ApiCallsStat from 'components/ApiCallsStat'
 import UniqueUsersStat from 'components/UniqueUsersStat'
-import EstimatedWeeklyStat from 'components/EstimatedWeeklyStat'
-import EstimatedAnnualStat from 'components/EstimatedAnnualStat'
+import { useAccount } from 'store/account/hooks'
+import { useProposals } from 'store/cache/proposals/hooks'
+import { usePushRoute } from 'utils/effects'
+import { useIsMobile } from 'utils/hooks'
+import { createStyles } from 'utils/mobile'
+import { GOVERNANCE } from 'utils/routes'
 
 import desktopStyles from './Home.module.css'
 import mobileStyles from './HomeMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import { useIsMobile } from 'utils/hooks'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -61,7 +62,7 @@ const Home = () => {
       <Paper className={styles.proposals}>
         <div className={styles.title}>{messages.recentProposals}</div>
         <div className={styles.list}>
-          {!!recentProposals ? (
+          {recentProposals ? (
             recentProposals.length > 0 ? (
               recentProposals.map((proposal, i) => (
                 <Proposal key={i} proposal={proposal} />

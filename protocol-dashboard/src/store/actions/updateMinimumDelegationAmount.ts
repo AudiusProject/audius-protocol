@@ -1,15 +1,16 @@
-import BN from 'bn.js'
 import { useState, useCallback, useEffect } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
+import BN from 'bn.js'
 import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
 import { getAccountWallet } from 'store/account/hooks'
 import { fetchUser } from 'store/cache/user/hooks'
-
-import { Status } from 'types'
-import Audius from 'services/Audius'
 import { AppState } from 'store/types'
-import { AnyAction } from '@reduxjs/toolkit'
+import { Status } from 'types'
 
 function updateMinimumDelegationAmount(
   amount: BN,

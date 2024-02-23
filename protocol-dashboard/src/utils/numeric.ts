@@ -1,15 +1,16 @@
 import BN from 'bn.js'
+
 import AudiusClient from 'services/Audius'
 
 export const WEI = new BN('1000000000000000000')
 
 export const checkOnlyNumeric = (number: string) => {
-  let reg = /^\d+$/
+  const reg = /^\d+$/
   return reg.test(number)
 }
 
 export const checkOnlyWeiFloat = (number: string): boolean => {
-  let reg = /^[+-]?\d+(\.\d+)?$/
+  const reg = /^[+-]?\d+(\.\d+)?$/
   const isFloat = reg.test(number)
   if (!isFloat) return false
   const nums = number.split('.')
@@ -23,9 +24,9 @@ export const convertFloatToWei = (number: string) => {
   const nums = number.split('.')
   if (nums.length !== 2) return null
   if (!checkOnlyNumeric(nums[0]) || !checkOnlyNumeric(nums[1])) return null
-  let aud = new BN(nums[0]).mul(new BN('1000000000000000000'))
+  const aud = new BN(nums[0]).mul(new BN('1000000000000000000'))
   const weiMultiplier = 18 - nums[1].length
-  let wei = new BN(nums[1]).mul(new BN('1'.padEnd(weiMultiplier + 1, '0')))
+  const wei = new BN(nums[1]).mul(new BN('1'.padEnd(weiMultiplier + 1, '0')))
   return aud.add(wei)
 }
 

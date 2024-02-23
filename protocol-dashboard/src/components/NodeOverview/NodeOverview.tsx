@@ -1,21 +1,22 @@
 import { ReactNode } from 'react'
+
+import { ButtonType, IconArrowWhite, IconPencil } from '@audius/stems'
 import clsx from 'clsx'
 
-import Paper from 'components/Paper'
-import Button from 'components/Button'
-import ModifyServiceModal from 'components/ModifyServiceModal'
-import { ButtonType, IconArrowWhite, IconPencil } from '@audius/stems'
-import { ServiceType, Address } from 'types'
-import { useModalControls } from 'utils/hooks'
-
-import IconWarning from 'assets/img/iconWarning.svg?react'
 import IconValidationCheck from 'assets/img/iconValidationCheck.svg?react'
-import desktopStyles from './NodeOverview.module.css'
-import mobileStyles from './NodeOverviewMobile.module.css'
-import { createStyles } from 'utils/mobile'
+import IconWarning from 'assets/img/iconWarning.svg?react'
+import Button from 'components/Button'
+import Loading from 'components/Loading'
+import ModifyServiceModal from 'components/ModifyServiceModal'
+import Paper from 'components/Paper'
 import RegisterServiceModal from 'components/RegisterServiceModal'
 import useNodeHealth from 'hooks/useNodeHealth'
-import Loading from 'components/Loading'
+import { ServiceType, Address } from 'types'
+import { useModalControls } from 'utils/hooks'
+import { createStyles } from 'utils/mobile'
+
+import desktopStyles from './NodeOverview.module.css'
+import mobileStyles from './NodeOverviewMobile.module.css'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -269,9 +270,9 @@ const NodeOverview = ({
             )}
             {!isDeregistered && (
               <div className={styles.version}>
-                {`${messages.version} ${health?.version ||
-                  version ||
-                  'unknown'}`}
+                {`${messages.version} ${
+                  health?.version || version || 'unknown'
+                }`}
               </div>
             )}
             {!isDeregistered && isUnregistered && (
@@ -338,7 +339,7 @@ const NodeOverview = ({
 
 export function RelTime({ date }: { date: Date | string }) {
   if (!date) return null
-  if (typeof date == 'string') {
+  if (typeof date === 'string') {
     date = new Date(date)
   }
   return (
@@ -350,7 +351,7 @@ export function RelTime({ date }: { date: Date | string }) {
 
 export function timeSince(date: Date) {
   if (!date || date.toString() === '0001-01-01T00:00:00Z') return null
-  if (typeof date == 'string') {
+  if (typeof date === 'string') {
     date = new Date(date)
   }
   const now = new Date()
@@ -364,7 +365,7 @@ export function nanosToReadableDuration(nanos: number) {
 }
 
 function secondsToReadableDuration(seconds: number) {
-  var interval = seconds / 31536000
+  let interval = seconds / 31536000
   if (interval >= 1) {
     const val = Math.floor(interval)
     return val + (val > 1 ? ' years' : ' year')

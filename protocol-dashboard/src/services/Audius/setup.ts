@@ -1,5 +1,6 @@
-import { AudiusClient } from './AudiusClient'
 import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs'
+
+import { AudiusClient } from './AudiusClient'
 
 declare global {
   interface Window {
@@ -71,7 +72,7 @@ const getMetamaskIsOnEthMainnet = async () => {
   if (chainId === ethNetworkId) return true
 
   // Try a second time just in case metamask was being slow to understand itself
-  chainId = await new Promise(resolve => {
+  chainId = await new Promise((resolve) => {
     console.debug('Metamask network not matching, trying again')
     setTimeout(async () => {
       chainId = await getMetamaskChainId()
@@ -101,6 +102,7 @@ export async function setup(this: AudiusClient): Promise<void> {
           // Reload anytime the accounts change
           window.ethereum.on('accountsChanged', () => {
             if (!willReload) {
+              // eslint-disable-next-line no-console
               console.log('Account change')
               willReload = true
               window.location.reload()
@@ -109,6 +111,7 @@ export async function setup(this: AudiusClient): Promise<void> {
           // Reload anytime the network changes
           window.ethereum.on('chainChanged', () => {
             if (!willReload) {
+              // eslint-disable-next-line no-console
               console.log('Chain change')
               willReload = true
               window.location.reload()
@@ -227,20 +230,21 @@ const configureLibsWithAccount = async ({
   //   //  window.ethereum.networkVersion,
   //   ethNetworkId!
   // )
-  let configuredMetamaskWeb3 = await configWeb3(
+  const configuredMetamaskWeb3 = await configWeb3(
     [window.ethereum],
     ethNetworkId!
   )
+  // eslint-disable-next-line no-console
   console.log(configuredMetamaskWeb3)
 
-  let metamaskAccounts: any = await new Promise(resolve => {
+  const metamaskAccounts: any = await new Promise((resolve) => {
     configuredMetamaskWeb3.externalWeb3Config.web3.eth.getAccounts(
       (...args: any) => {
         resolve(args[1])
       }
     )
   })
-  let metamaskAccount = metamaskAccounts[0]
+  const metamaskAccount = metamaskAccounts[0]
 
   onMetaMaskAccountLoaded(metamaskAccount)
 

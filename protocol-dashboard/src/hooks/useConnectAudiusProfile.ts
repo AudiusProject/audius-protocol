@@ -1,8 +1,10 @@
+import { useState } from 'react'
+
 import { DecodedUserToken, OAUTH_URL } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
-import { getDashboardWalletUserQueryKey } from 'hooks/useDashboardWalletUsers'
-import { useState } from 'react'
 import { useDispatch } from 'react-redux'
+
+import { getDashboardWalletUserQueryKey } from 'hooks/useDashboardWalletUsers'
 import { audiusSdk as sdk } from 'services/Audius/sdk'
 import { disableAudiusProfileRefetch } from 'store/account/slice'
 
@@ -75,7 +77,7 @@ export const useConnectAudiusProfile = ({
       }
     })
     window.removeEventListener('message', receiveUserId)
-    receiveUserHandlePromise = new Promise(resolve => {
+    receiveUserHandlePromise = new Promise((resolve) => {
       resolveUserHandle = resolve
     })
     window.addEventListener('message', receiveUserId, false)

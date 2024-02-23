@@ -1,19 +1,20 @@
 import React, { useCallback } from 'react'
-import clsx from 'clsx'
-import BN from 'bn.js'
 
+import BN from 'bn.js'
+import clsx from 'clsx'
+
+import DelegatorsModal from 'components/DelegatorsModal'
+import DisplayAudio from 'components/DisplayAudio'
+import Table from 'components/Table'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
+import { useUser, useDelegators } from 'store/cache/user/hooks'
+import { Operator, Address, Delegate } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useModalControls } from 'utils/hooks'
 import { accountPage } from 'utils/routes'
-import { useUser, useDelegators } from 'store/cache/user/hooks'
 
-import Table from 'components/Table'
 import styles from './DelegatorsTable.module.css'
-import { Operator, Address, Delegate } from 'types'
-import DelegatorsModal from 'components/DelegatorsModal'
-import DisplayAudio from 'components/DisplayAudio'
-import UserImage from 'components/UserImage'
-import UserName from 'components/UserName'
 
 const messages = {
   title: 'Delegators',
@@ -46,7 +47,7 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
   const { user } = useUser({ wallet })
 
   const pushRoute = usePushRoute()
-  const data = (delegators as Delegate[]).map(delegator => {
+  const data = (delegators as Delegate[]).map((delegator) => {
     return {
       img: delegator.img,
       name: delegator.name,

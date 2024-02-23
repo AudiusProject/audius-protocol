@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
-import AppState from 'store/types'
-import Audius from 'services/Audius'
-import { AnyAction } from '@reduxjs/toolkit'
 
-import { Address, Status, BigNumber } from 'types'
-import { undelegateAudiusStake } from 'store/actions/undelegateStake'
+import Audius from 'services/Audius'
 import { delegateAudiusStake } from 'store/actions/delegateStake'
+import { undelegateAudiusStake } from 'store/actions/undelegateStake'
+import AppState from 'store/types'
+import { Address, Status, BigNumber } from 'types'
 
 export const useUpdateDelegation = (
   isIncrease: boolean,

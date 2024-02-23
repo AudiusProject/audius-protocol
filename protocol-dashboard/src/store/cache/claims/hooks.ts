@@ -1,18 +1,18 @@
-import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
-
-import { Address, Status } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
 import { useEffect } from 'react'
 
+import { AnyAction } from '@reduxjs/toolkit'
+import { useSelector, useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
 import {
   fetchClaim,
   setClaim,
   setClaimMetadata as setMetadata
 } from 'store/cache/claims/slice'
-import { AnyAction } from '@reduxjs/toolkit'
+import { AppState } from 'store/types'
+import { Address, Status } from 'types'
 
 // -------------------------------- Selectors  --------------------------------
 export const getPendingClaim = (wallet: Address) => (state: AppState) =>
@@ -37,6 +37,7 @@ export function fetchPendingClaim(
       dispatch(setClaim({ wallet, hasClaim }))
     } catch (error) {
       // TODO: Handle error case
+      // eslint-disable-next-line no-console
       console.log(error)
     }
   }
@@ -72,6 +73,7 @@ export function setClaimMetadata(): ThunkAction<
       )
     } catch (error) {
       // TODO: Handle error case
+      // eslint-disable-next-line no-console
       console.log(error)
     }
   }

@@ -1,5 +1,5 @@
-import BN from 'bn.js'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import BN from 'bn.js'
 
 type ServiceInfo = {
   isValid: boolean

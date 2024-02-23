@@ -5,20 +5,22 @@ import {
 } from '@apollo/client'
 import { configureStore } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
+
 import Audius from 'services/Audius'
-import discoveryProvider from './cache/discoveryProvider/slice'
-import contentNode from './cache/contentNode/slice'
-import protocol from './cache/protocol/slice'
-import user from './cache/user/slice'
-import proposals from './cache/proposals/slice'
-import votes from './cache/votes/slice'
-import rewards from './cache/rewards/slice'
-import timeline from './cache/timeline/slice'
-import claims from './cache/claims/slice'
-import analytics from './cache/analytics/slice'
-import music from './cache/music/slice'
+
 import account from './account/slice'
 import api from './api/slice'
+import analytics from './cache/analytics/slice'
+import claims from './cache/claims/slice'
+import contentNode from './cache/contentNode/slice'
+import discoveryProvider from './cache/discoveryProvider/slice'
+import music from './cache/music/slice'
+import proposals from './cache/proposals/slice'
+import protocol from './cache/protocol/slice'
+import rewards from './cache/rewards/slice'
+import timeline from './cache/timeline/slice'
+import user from './cache/user/slice'
+import votes from './cache/votes/slice'
 
 declare global {
   interface Window {
@@ -80,7 +82,7 @@ export const createStore = () => {
         rewards
       })
     }),
-    middleware: getDefaultMiddleware =>
+    middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         thunk: {
           extraArgument: aud

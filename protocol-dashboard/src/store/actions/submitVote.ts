@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { Status, Vote } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { fetchVotes } from 'store/cache/votes/hooks'
-import { fetchProposal } from 'store/cache/proposals/hooks'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { fetchProposal } from 'store/cache/proposals/hooks'
+import { fetchVotes } from 'store/cache/votes/hooks'
+import { AppState } from 'store/types'
+import { Status, Vote } from 'types'
 
 function submitAudiusVote(
   proposalId: number,

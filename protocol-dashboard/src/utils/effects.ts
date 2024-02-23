@@ -1,5 +1,6 @@
-import { useNavigate } from 'react-router-dom'
 import { useCallback } from 'react'
+
+import { useNavigate } from 'react-router-dom'
 
 export const usePushRoute = () => {
   const navigate = useNavigate()
@@ -8,7 +9,8 @@ export const usePushRoute = () => {
 
 export const useReplaceRoute = () => {
   const navigate = useNavigate()
-  return useCallback((route: string) => navigate(route, { replace: true }), [
-    navigate
-  ])
+  return useCallback(
+    (route: string) => navigate(route, { replace: true }),
+    [navigate]
+  )
 }

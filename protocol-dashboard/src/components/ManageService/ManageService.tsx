@@ -1,23 +1,4 @@
-import BN from 'bn.js'
-import clsx from 'clsx'
-import DisplayAudio from 'components/DisplayAudio'
-import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
-import OperatorCutModal from 'components/OperatorCutModal'
-import Paper from 'components/Paper'
-import RegisterServiceModal from 'components/RegisterServiceModal'
-import TransactionStatus from 'components/TransactionStatus'
-import UpdateStakeModal from 'components/UpdateStakeModal'
 import React, { useCallback } from 'react'
-import {
-  useAccount,
-  useAccountUser,
-  useHasPendingDecreaseStakeTx
-} from 'store/account/hooks'
-import { usePendingClaim } from 'store/cache/claims/hooks'
-import { Address, Operator, Status } from 'types'
-import { useModalControls } from 'utils/hooks'
-import { accountPage } from 'utils/routes'
-import styles from './ManageService.module.css'
 
 import {
   IconArrowWhite,
@@ -26,6 +7,9 @@ import {
   IconUser,
   IconValidationCheck
 } from '@audius/stems'
+import BN from 'bn.js'
+import clsx from 'clsx'
+
 import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal, {
   StandaloneBox
@@ -33,11 +17,29 @@ import ConfirmTransactionModal, {
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import DelegatesModal from 'components/DelegatesModal'
 import DelegatorsModal from 'components/DelegatorsModal'
+import DisplayAudio from 'components/DisplayAudio'
 import Loading from 'components/Loading'
+import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
+import OperatorCutModal from 'components/OperatorCutModal'
+import Paper from 'components/Paper'
+import RegisterServiceModal from 'components/RegisterServiceModal'
+import TransactionStatus from 'components/TransactionStatus'
+import UpdateStakeModal from 'components/UpdateStakeModal'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
+import {
+  useAccount,
+  useAccountUser,
+  useHasPendingDecreaseStakeTx
+} from 'store/account/hooks'
 import { useMakeClaim } from 'store/actions/makeClaim'
+import { usePendingClaim } from 'store/cache/claims/hooks'
+import { Address, Operator, Status } from 'types'
 import { TICKER } from 'utils/consts'
 import { usePushRoute } from 'utils/effects'
+import { useModalControls } from 'utils/hooks'
+import { accountPage } from 'utils/routes'
+
+import styles from './ManageService.module.css'
 
 const messages = {
   title: 'Manage Your Account & Services',
@@ -99,18 +101,18 @@ const ConnectAudiusProfileButton = ({
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
-        action="connect"
+        action='connect'
       />
     </>
   )
 }
 
-type DisconnectAudiusProfileButton = {
+type DisconnectAudiusProfileButtonT = {
   wallet: string
 }
 const DisconnectAudiusProfileButton = ({
   wallet
-}: DisconnectAudiusProfileButton) => {
+}: DisconnectAudiusProfileButtonT) => {
   const { isOpen, onClick, onClose } = useModalControls()
 
   return (
@@ -122,7 +124,7 @@ const DisconnectAudiusProfileButton = ({
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
-        action="disconnect"
+        action='disconnect'
       />
     </>
   )
@@ -313,10 +315,8 @@ const ManageService: React.FC<ManageServiceProps> = (
   props: ManageServiceProps
 ) => {
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const {
-    data: audiusProfileData,
-    status: audiusProfileDataStatus
-  } = useDashboardWalletUser(accountUser?.wallet)
+  const { data: audiusProfileData, status: audiusProfileDataStatus } =
+    useDashboardWalletUser(accountUser?.wallet)
   const hasConnectedAudiusAccount = audiusProfileData != null
 
   const isServiceProvider =

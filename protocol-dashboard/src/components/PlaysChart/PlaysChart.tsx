@@ -1,5 +1,6 @@
-import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
+
+import LineChart from 'components/LineChart'
 import { usePlays } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 
@@ -17,12 +18,12 @@ const PlaysChart: React.FC<PlaysChartProps> = () => {
     labels = []
     data = []
   } else {
-    labels = plays?.map(p => p.timestamp) ?? null
-    data = plays?.map(p => p.count) ?? null
+    labels = plays?.map((p) => p.timestamp) ?? null
+    data = plays?.map((p) => p.count) ?? null
   }
   return (
     <LineChart
-      title="Plays"
+      title='Plays'
       data={data}
       labels={labels}
       selection={bucket}

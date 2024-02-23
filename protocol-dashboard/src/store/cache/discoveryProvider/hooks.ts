@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import semver from 'semver'
 
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import {
   Address,
   Node,
@@ -12,11 +16,8 @@ import {
   ServiceType,
   DiscoveryProvider
 } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+
 import { setLoading, setNodes, setTotal } from './slice'
-import { useEffect } from 'react'
-import { AnyAction } from '@reduxjs/toolkit'
 
 type UseDiscoveryProvidersProps = {
   owner?: Address
@@ -57,14 +58,12 @@ export const getNode = (spID: number) => (state: AppState) =>
   state.cache.discoveryProvider.nodes[spID]
 
 export const getNodes = (state: AppState) => state.cache.discoveryProvider.nodes
-export const getFilteredNodes = ({
-  owner,
-  sortBy,
-  limit
-}: UseDiscoveryProvidersProps = {}) => (state: AppState) => {
-  const nodes = getNodes(state)
-  return filterNodes(nodes, { owner, sortBy, limit })
-}
+export const getFilteredNodes =
+  ({ owner, sortBy, limit }: UseDiscoveryProvidersProps = {}) =>
+  (state: AppState) => {
+    const nodes = getNodes(state)
+    return filterNodes(nodes, { owner, sortBy, limit })
+  }
 
 // -------------------------------- Helpers  --------------------------------
 
@@ -107,9 +106,10 @@ export function fetchDiscoveryProviders(): ThunkAction<
     if (status) return
 
     dispatch(setLoading())
-    const discoveryProviders = await aud.ServiceProviderClient.getServiceProviderList(
-      ServiceType.DiscoveryProvider
-    )
+    const discoveryProviders =
+      await aud.ServiceProviderClient.getServiceProviderList(
+        ServiceType.DiscoveryProvider
+      )
     const legacy = (
       await aud.ServiceProviderClient.getServiceProviderList(
         // @ts-ignore
@@ -118,7 +118,7 @@ export function fetchDiscoveryProviders(): ThunkAction<
     ).map((d, i) => ({ ...d, spID: 100 + i }))
 
     const discoveryProviderVersions = await Promise.all(
-      discoveryProviders.concat(legacy).map(node => processDP(node, aud))
+      discoveryProviders.concat(legacy).map((node) => processDP(node, aud))
     )
     const nodes = discoveryProviderVersions.reduce(
       (acc: { [spId: number]: DiscoveryProvider }, dp) => {
@@ -143,9 +143,10 @@ export function getDiscoveryProvider(
   setStatus?: (status: Status) => void
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
-    const numDiscoveryProviders = await aud.ServiceProviderClient.getTotalServiceTypeProviders(
-      ServiceType.DiscoveryProvider
-    )
+    const numDiscoveryProviders =
+      await aud.ServiceProviderClient.getTotalServiceTypeProviders(
+        ServiceType.DiscoveryProvider
+      )
     dispatch(setTotal({ total: numDiscoveryProviders }))
     if (spID > numDiscoveryProviders) {
       if (setStatus) setStatus(Status.Failure)
@@ -172,12 +173,10 @@ export const useDiscoveryProviders = ({
 }: UseDiscoveryProvidersProps) => {
   const status = useSelector(getStatus)
   const allNodes = useSelector(getNodes)
-  const nodes = useMemo(() => filterNodes(allNodes, { owner, sortBy, limit }), [
-    allNodes,
-    owner,
-    sortBy,
-    limit
-  ])
+  const nodes = useMemo(
+    () => filterNodes(allNodes, { owner, sortBy, limit }),
+    [allNodes, owner, sortBy, limit]
+  )
 
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {

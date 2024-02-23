@@ -1,15 +1,17 @@
 import React from 'react'
-import clsx from 'clsx'
-import BN from 'bn.js'
 
+import BN from 'bn.js'
+import clsx from 'clsx'
+
+import DisplayAudio from 'components/DisplayAudio'
+import InlineStat from 'components/InlineStat/InlineStat'
+import StatsChip, { Divider } from 'components/StatsChip/StatsChip'
 import { Position } from 'components/Tooltip'
-import styles from './StakingStat.module.css'
 import { Status } from 'types'
 import { TICKER } from 'utils/consts'
 import { formatWei } from 'utils/format'
-import StatsChip, { Divider } from 'components/StatsChip/StatsChip'
-import InlineStat from 'components/InlineStat/InlineStat'
-import DisplayAudio from 'components/DisplayAudio'
+
+import styles from './StakingStat.module.css'
 
 const messages = {
   staked: `Staked ${TICKER}`,

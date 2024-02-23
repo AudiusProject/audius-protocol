@@ -1,10 +1,12 @@
 import React, { ReactNode } from 'react'
 
-import Paper from 'components/Paper'
-import styles from './RewardStat.module.css'
-import Loading from 'components/Loading'
-import Error from 'components/Error'
 import clsx from 'clsx'
+
+import Error from 'components/Error'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
+
+import styles from './RewardStat.module.css'
 
 type OwnProps = {
   className?: string

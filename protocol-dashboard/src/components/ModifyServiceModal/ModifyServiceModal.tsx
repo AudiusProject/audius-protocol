@@ -1,15 +1,17 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import Modal from 'components/Modal'
+
 import Button, { ButtonType } from 'components/Button'
-import TextField from 'components/TextField'
-import styles from './ModifyServiceModal.module.css'
-import { ServiceType, Status, Address } from 'types'
-import { useModifyService } from 'store/actions/modifyService'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
 import DeregisterServiceModal from 'components/DeregisterServiceModal'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useModifyService } from 'store/actions/modifyService'
+import { ServiceType, Status, Address } from 'types'
 import { useModalControls } from 'utils/hooks'
+
+import styles from './ModifyServiceModal.module.css'
 
 const messages = {
   title: 'Modify Service',
@@ -117,8 +119,8 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
   ])
 
   let topBox = null
-  let endpointUpdated = oldEndpoint !== endpoint
-  let walletUpdated = oldDelegateOwnerWallet !== delegateOwnerWallet
+  const endpointUpdated = oldEndpoint !== endpoint
+  const walletUpdated = oldDelegateOwnerWallet !== delegateOwnerWallet
   if (endpointUpdated && walletUpdated) {
     topBox = (
       <>

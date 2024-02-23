@@ -1,7 +1,8 @@
-import { AudiusClient } from '../AudiusClient'
-
 import BN from 'bn.js'
+
 import { Address } from 'types'
+
+import { AudiusClient } from '../AudiusClient'
 
 export default class Identity {
   public aud: AudiusClient
@@ -15,11 +16,10 @@ export default class Identity {
     serviceProviderWallet: Address
   ): Promise<BN | null> {
     try {
-      const {
-        minimumDelegationAmount
-      } = await this.aud.libs.identityService.getMinimumDelegationAmount(
-        serviceProviderWallet
-      )
+      const { minimumDelegationAmount } =
+        await this.aud.libs.identityService.getMinimumDelegationAmount(
+          serviceProviderWallet
+        )
 
       if (!minimumDelegationAmount) return null
 

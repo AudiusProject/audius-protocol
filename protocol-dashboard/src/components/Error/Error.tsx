@@ -1,7 +1,9 @@
-import Tooltip from 'components/Tooltip'
 import React from 'react'
+
 import clsx from 'clsx'
+
 import IconUhOh from 'assets/img/uhOh.svg?react'
+import Tooltip from 'components/Tooltip'
 
 import styles from './Error.module.css'
 

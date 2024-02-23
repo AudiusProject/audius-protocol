@@ -1,27 +1,29 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import clsx from 'clsx'
-import BN from 'bn.js'
-import { TabSlider, ButtonType } from '@audius/stems'
 
-import { useRegisterService } from 'store/actions/registerService'
-import { useServiceInfo } from 'store/cache/protocol/hooks'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
+import { TabSlider, ButtonType } from '@audius/stems'
+import BN from 'bn.js'
+import clsx from 'clsx'
+
 import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './RegisterServiceModal.module.css'
-import { ServiceType, Status } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import ConfirmTransactionModal, {
   OperatorStaking,
   NewService
 } from 'components/ConfirmTransactionModal'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import ValueSlider from 'components/ValueSlider'
+import AudiusClient from 'services/Audius'
 import { useAccountUser, useAccount } from 'store/account/hooks'
-import { formatShortWallet } from 'utils/format'
-import { TICKER } from 'utils/consts'
-import { useModalControls } from 'utils/hooks'
+import { useRegisterService } from 'store/actions/registerService'
+import { useServiceInfo } from 'store/cache/protocol/hooks'
+import { ServiceType, Status } from 'types'
 import getActiveStake from 'utils/activeStake'
+import { TICKER } from 'utils/consts'
+import { formatShortWallet } from 'utils/format'
+import { useModalControls } from 'utils/hooks'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+
+import styles from './RegisterServiceModal.module.css'
 
 const messages = {
   staking: `Staking Amount ${TICKER}`,
@@ -69,7 +71,7 @@ const RegisterServiceModal = ({
   //   where
   //    ACTIVE_STAKE = amount that we have staked in audius
   //    USED_STAKE = # of services we have * minstake for each service
-  let availableStake: BN | undefined = undefined
+  let availableStake: BN | undefined
   if (
     user &&
     'serviceProvider' in user &&
@@ -148,7 +150,7 @@ const RegisterServiceModal = ({
   ])
 
   const onSelectTab = useCallback(
-    selectedKey => {
+    (selectedKey) => {
       if (selectedKey === selectedTab) return
       setSelectedTab(selectedKey)
       setEndpoint(defaultEndpoint || '')

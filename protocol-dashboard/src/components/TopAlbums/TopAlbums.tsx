@@ -1,9 +1,11 @@
+import React, { useCallback } from 'react'
+
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React, { useCallback } from 'react'
 import { useTopAlbums } from 'store/cache/music/hooks'
 import { MusicError } from 'store/cache/music/slice'
+
 import styles from './TopAlbums.module.css'
 
 const messages = {
@@ -20,7 +22,7 @@ const TopAlbums: React.FC<TopAlbumsProps> = () => {
 
   const renderTopAlbums = () => {
     if (topAlbums === MusicError.ERROR) return <Error />
-    return !!topAlbums ? (
+    return topAlbums ? (
       topAlbums.map((p, i) => (
         <div key={i} className={styles.album} onClick={() => goToUrl(p.url)}>
           <div

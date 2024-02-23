@@ -1,27 +1,28 @@
 import React, { useCallback, useEffect, ReactNode } from 'react'
+
+import { IconRemove, IconCheck } from '@audius/stems'
 import clsx from 'clsx'
 
-import styles from './TransactionStatus.module.css'
 import Button, { ButtonType } from 'components/Button'
-import { IconRemove, IconCheck } from '@audius/stems'
+import ConfirmTransactionModal, {
+  StandaloneBox
+} from 'components/ConfirmTransactionModal'
 import Loading from 'components/Loading'
+import AudiusClient from 'services/Audius'
 import { usePendingTransactions } from 'store/account/hooks'
 import { useCancelTransaction } from 'store/actions/cancelTransaction'
+import { useSubmitTransaction } from 'store/actions/submitTransaction'
+import { useEthBlockNumber, useTimeRemaining } from 'store/cache/protocol/hooks'
 import {
   Status,
   DelayedPendingTransaction,
   PendingTransactionName
 } from 'types'
-import { useEthBlockNumber } from 'store/cache/protocol/hooks'
-import { useModalControls } from 'utils/hooks'
-import ConfirmTransactionModal, {
-  StandaloneBox
-} from 'components/ConfirmTransactionModal'
-import { useSubmitTransaction } from 'store/actions/submitTransaction'
-import AudiusClient from 'services/Audius'
 import { TICKER } from 'utils/consts'
 import { getHumanReadableTime } from 'utils/format'
-import { useTimeRemaining } from 'store/cache/protocol/hooks'
+import { useModalControls } from 'utils/hooks'
+
+import styles from './TransactionStatus.module.css'
 
 const messages = {
   ready: 'Ready',
@@ -70,15 +71,10 @@ type WaitingTransactionProps = {
   ethBlockNumber: number
 } & DelayedPendingTransaction
 
-const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
+const WaitingTransaction: React.FC<WaitingTransactionProps> = (props) => {
   const { isOpen, onClick, onClose } = useModalControls()
-  const {
-    status,
-    error,
-    setError,
-    setStatus,
-    cancelTransaction
-  } = useCancelTransaction(props.name, !isOpen)
+  const { status, error, setError, setStatus, cancelTransaction } =
+    useCancelTransaction(props.name, !isOpen)
 
   const onCloseModal = useCallback(() => {
     setStatus(undefined)
@@ -155,7 +151,7 @@ type ReadyTransactionProps = {
   className?: string
 } & DelayedPendingTransaction
 
-const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
+const ReadyTransaction: React.FC<ReadyTransactionProps> = (props) => {
   const {
     isOpen: isCancelOpen,
     onClick: onClickCancel,

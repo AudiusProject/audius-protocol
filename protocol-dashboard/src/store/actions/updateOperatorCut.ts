@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
-import { Action } from 'redux'
-import { getAccountWallet, fetchPendingTransactions } from 'store/account/hooks'
 
-import { Status } from 'types'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction } from 'redux-thunk'
+
 import Audius from 'services/Audius'
+import { getAccountWallet, fetchPendingTransactions } from 'store/account/hooks'
 import { AppState } from 'store/types'
+import { Status } from 'types'
 
 function updateAudiusOperatorCut(
   cut: number,

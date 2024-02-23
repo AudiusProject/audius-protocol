@@ -1,10 +1,12 @@
+import React from 'react'
+
+import BN from 'bn.js'
+
+import DisplayAudio from 'components/DisplayAudio'
 import InlineStat from 'components/InlineStat/InlineStat'
 import StatsChip from 'components/StatsChip/StatsChip'
-import React from 'react'
-import BN from 'bn.js'
-import { formatWei } from 'utils/format'
 import { TICKER } from 'utils/consts'
-import DisplayAudio from 'components/DisplayAudio'
+import { formatWei } from 'utils/format'
 
 type DelegationStatsChipProps = {
   className?: string

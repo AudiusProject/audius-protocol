@@ -1,13 +1,3 @@
-import { IconLink } from '@audius/stems'
-import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
-import BN from 'bn.js'
-import clsx from 'clsx'
-import Button from 'components/Button'
-import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
-import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
-import UserImage from 'components/UserImage'
-import UserBadges from 'components/UserInfo/AudiusProfileBadges'
-import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
 import React, {
   ReactNode,
   useCallback,
@@ -15,21 +5,31 @@ import React, {
   useRef,
   useState
 } from 'react'
+
+import { IconLink } from '@audius/stems'
+import clsx from 'clsx'
 import { useLocation } from 'react-router-dom'
+
+import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
+import Button from 'components/Button'
+import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
+import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
+import UserImage from 'components/UserImage'
+import UserBadges from 'components/UserInfo/AudiusProfileBadges'
+import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
 import { useAccount } from 'store/account/hooks'
 import { useEthBlockNumber } from 'store/cache/protocol/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, Status } from 'types'
-import getActiveStake from 'utils/activeStake'
 import { usePushRoute } from 'utils/effects'
 import { formatShortWallet } from 'utils/format'
 import { useIsMobile, useModalControls } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
 import { accountPage, isCryptoPage } from 'utils/routes'
+
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
 
-const env = import.meta.env.VITE_ENVIRONMENT
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
@@ -92,7 +92,6 @@ const LoadingAccount = () => {
 
 const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   const { user, audiusProfile, status } = useUser({ wallet })
-  const activeStake = user ? getActiveStake(user) : new BN('0')
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {
     if (user) {
@@ -148,7 +147,7 @@ const ConnectAudiusProfileButton = ({ wallet }: { wallet: string }) => {
         iconClassName={styles.launchAppBtnIcon}
       />
       <ConnectAudiusProfileModal
-        action="connect"
+        action='connect'
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
@@ -164,15 +163,11 @@ const AppBar: React.FC<AppBarProps> = () => {
   const timeoutIdRef = useRef<NodeJS.Timeout>(null)
   const [isAudiusClientSetup, setIsAudiusClientSetup] = useState(false)
   const [isMisconfigured, setIsMisconfigured] = useState(false)
-  const [
-    isRetrievingAccountTimingOut,
-    setIsRetrievingAccountTimingOut
-  ] = useState(false)
+  const [isRetrievingAccountTimingOut, setIsRetrievingAccountTimingOut] =
+    useState(false)
   const [isAccountMisconfigured, setIsAccountMisconfigured] = useState(false)
-  const {
-    data: audiusProfileData,
-    status: audiusProfileDataStatus
-  } = useDashboardWalletUser(wallet)
+  const { data: audiusProfileData, status: audiusProfileDataStatus } =
+    useDashboardWalletUser(wallet)
   const hasConnectedAudiusAccount = audiusProfileData != null
   const ethBlock = useEthBlockNumber()
   const { pathname } = useLocation()
@@ -187,7 +182,7 @@ const AppBar: React.FC<AppBarProps> = () => {
 
     // This will hang forever if an extension is not picked (in the case where user has
     // both Phantom and MetaMask), hence the `retrievingAccountTimeOut` logic
-    const account = await window.aud.metaMaskAccountLoadedPromise
+    const ignoredAccount = await window.aud.metaMaskAccountLoadedPromise
     setIsAudiusClientSetup(true)
     setIsRetrievingAccountTimingOut(false)
     setIsMisconfigured(window.aud.isMisconfigured)
@@ -201,6 +196,7 @@ const AppBar: React.FC<AppBarProps> = () => {
         clearTimeout(timeoutIdRef.current)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   let accountSnippetContent: ReactNode
