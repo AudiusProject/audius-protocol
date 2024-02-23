@@ -9,11 +9,12 @@ import {
 import {
   Modal,
   Flex,
-  Text as HarmonyText,
+  Text,
   Switch,
-  IconRemove
+  IconRemove,
+  IconButton
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, IconButton } from '@audius/stems'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { Divider } from 'components/divider'
@@ -75,12 +76,12 @@ const StemRow = ({
         {allowDelete ? (
           <IconButton
             aria-label='delete'
-            className={styles.deleteButtonIcon}
+            color='danger'
             onClick={() => {
               if (!allowDelete) return
               onDelete()
             }}
-            icon={<IconRemove />}
+            icon={IconRemove}
           />
         ) : (
           <LoadingSpinner />
@@ -228,24 +229,22 @@ const DownloadSection = ({
     <Flex direction='column' ph='xl' pt='xl' gap='l'>
       <Flex direction='column' gap='l' w='100%'>
         <Flex justifyContent='space-between'>
-          <HarmonyText variant='title' size='l'>
+          <Text variant='title' size='l'>
             {messages.allowDownloads}
-          </HarmonyText>
+          </Text>
           <Switch
             checked={downloadSettings?.is_downloadable ?? false}
             onChange={toggleIsDownloadable}
           />
         </Flex>
-        <HarmonyText variant='body'>
-          {messages.allowDownloadsDescription}
-        </HarmonyText>
+        <Text variant='body'>{messages.allowDownloadsDescription}</Text>
       </Flex>
       <Divider />
       <div className={styles.downloadSetting}>
         <>
-          <HarmonyText variant='title' size='l'>
+          <Text variant='title' size='l'>
             {messages.requireFollowToDownload}
-          </HarmonyText>
+          </Text>
           <Switch
             checked={downloadSettings?.requires_follow ?? false}
             onChange={toggleRequiresFollow}

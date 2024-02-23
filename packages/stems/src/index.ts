@@ -6,7 +6,7 @@ import './assets/styles/shadows.css'
 import './assets/styles/transforms.css'
 import './assets/styles/layers.css'
 
-export * from './components/Icons'
+// export * from './components/Icons'
 export * from './styles/colors'
 export * from './styles/types'
 export * from './utils/styles'
@@ -17,13 +17,7 @@ export {
   Type as ButtonType,
   Size as ButtonSize
 } from './components/Button'
-export * from './components/HarmonyButton'
-export {
-  IconButton,
-  IconButtonProps,
-  IconButtonButtonProps,
-  IconButtonAnchorProps
-} from './components/IconButton'
+
 export {
   PillButton,
   PillButtonProps,

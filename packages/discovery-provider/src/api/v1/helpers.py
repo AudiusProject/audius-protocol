@@ -668,16 +668,16 @@ class DescriptiveArgument(reqparse.Argument):
 
 
 # Helper to allow consumer to pass message and signature headers as request params
-def add_auth_headers_to_parser(parser):
+def add_auth_headers_to_parser(parser, required=True):
     parser.add_argument(
         MESSAGE_HEADER,
-        required=True,
+        required=required,
         description="The data that was signed by the user for signature recovery",
         location="headers",
     )
     parser.add_argument(
         SIGNATURE_HEADER,
-        required=True,
+        required=required,
         description="The signature of data, used for signature recovery",
         location="headers",
     )
@@ -726,6 +726,7 @@ track_history_parser.add_argument(
     type=str,
     choices=SortDirection._member_names_,
 )
+add_auth_headers_to_parser(track_history_parser, False)
 
 user_favorited_tracks_parser = pagination_with_current_user_parser.copy()
 user_favorited_tracks_parser.add_argument(

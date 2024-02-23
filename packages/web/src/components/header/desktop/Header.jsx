@@ -1,7 +1,7 @@
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import BackButton from 'components/back-button/BackButton'
+import { BackButton } from 'components/back-button/BackButton'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 
 import styles from './Header.module.css'
@@ -57,12 +57,7 @@ const Header = (props) => {
             style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}
           >
             <div className={cn(styles.headerWrapper, wrapperClassName)}>
-              {showBackButton ? (
-                <BackButton
-                  onClickBack={onClickBack}
-                  className={styles.backButton}
-                />
-              ) : null}
+              {showBackButton ? <BackButton onClick={onClickBack} /> : null}
               <h1 className={cn(styles.header, variantStyle)}>{primary}</h1>
               <h2 className={styles.secondary}>{secondary}</h2>
             </div>

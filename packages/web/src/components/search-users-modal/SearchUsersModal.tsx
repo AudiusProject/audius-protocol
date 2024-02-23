@@ -21,10 +21,10 @@ import {
   ModalProps,
   ModalTitleProps,
   Scrollbar,
-  IconRemove,
-  IconSearch
+  IconClose,
+  IconSearch,
+  IconButton
 } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
@@ -156,7 +156,9 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
           >
             {query ? (
               <IconButton
-                icon={<IconRemove className={styles.iconLight} />}
+                icon={IconClose}
+                color='subdued'
+                size='m'
                 aria-label='Clear Search'
                 onClick={() => {
                   setQuery('')

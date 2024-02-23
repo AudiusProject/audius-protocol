@@ -35,7 +35,7 @@ import {
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { TrackEvent, make } from 'common/store/analytics/actions'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { Expandable } from 'components/expandable/Expandable'
 import {
@@ -73,6 +73,7 @@ type DownloadSectionProps = {
 
 export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const dispatch = useDispatch()
+  const record = useRecord()
   const isMobile = useIsMobile()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
@@ -138,17 +139,31 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
           trackIds,
           quality
         })
-        const trackEvent: TrackEvent = make(Name.TRACK_PAGE_DOWNLOAD, {
-          id: parentTrackId ?? trackIds[0],
-          parent_track_id: parentTrackId
-        })
-        dispatch(trackEvent)
+
+        // Track download attempt event
+        if (parentTrackId) {
+          record(
+            make(Name.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_ALL, {
+              parentTrackId,
+              stemTrackIds: trackIds,
+              device: 'web'
+            })
+          )
+        } else {
+          record(
+            make(Name.TRACK_DOWNLOAD_CLICKED_DOWNLOAD_SINGLE, {
+              trackId: trackIds[0],
+              device: 'web'
+            })
+          )
+        }
       }
     },
     [
       dispatch,
       isMobile,
       openWaitForDownloadModal,
+      record,
       quality,
       shouldDisplayDownloadFollowGated,
       track

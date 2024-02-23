@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { IconDrag, IconTrash } from '@audius/harmony'
-import { HarmonyPlainButton, HarmonyPlainButtonType } from '@audius/stems'
+import { IconDrag, IconTrash, PlainButton } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'
@@ -85,14 +84,15 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         </div>
         <div className={styles.actions}>
           <PreviewButton index={index} />
-          <HarmonyPlainButton
-            variant={HarmonyPlainButtonType.SUBDUED}
+          <PlainButton
+            variant='subdued'
             type='button'
-            text={messages.delete}
             iconLeft={IconTrash}
             onClick={handleRemove}
             disabled={disableDelete}
-          />
+          >
+            {messages.delete}
+          </PlainButton>
         </div>
       </div>
     </Tile>

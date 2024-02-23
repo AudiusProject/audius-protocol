@@ -66,10 +66,6 @@
   width: 20px;
 }
 
-.deleteButtonIcon path {
-  fill: var(--neutral-light-6);
-}
-
 .dropdownContainer {
   width: 242px;
   margin-right: 16px;

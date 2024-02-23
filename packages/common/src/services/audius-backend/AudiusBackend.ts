@@ -1021,21 +1021,26 @@ export const audiusBackend = ({
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: (loaded: number, total: number) => void
+    onProgress: (loaded: number, total: number) => void,
+    trackId?: number
   ) {
     try {
-      const { trackId, updatedMetadata, txReceipt } =
-        await audiusLibs.Track.uploadTrackV2AndWriteToChain(
-          trackFile,
-          coverArtFile,
-          metadata,
-          onProgress
-        )
+      const {
+        trackId: updatedTrackId,
+        updatedMetadata,
+        txReceipt
+      } = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress,
+        trackId
+      )
       // Return with properties that confirmer expects
       return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber,
-        trackId,
+        trackId: updatedTrackId,
         transcodedTrackCID: updatedMetadata.track_cid,
         error: false
       }

@@ -9,9 +9,10 @@ import {
 } from '@audius/common/store'
 import {
   IconClose as IconRemove,
-  IconTipping as IconTip
+  IconTipping as IconTip,
+  IconButton
 } from '@audius/harmony'
-import { PillButton, IconButton } from '@audius/stems'
+import { PillButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -178,9 +179,11 @@ const DismissTipButton = () => {
   return (
     <IconButton
       aria-label={messages.dismissButton}
-      className={styles.dismissButton}
+      css={(theme) => ({ marginLeft: theme.spacing.unit2 })}
       onClick={handleClick}
-      icon={<IconRemove className={styles.dismissIcon} size='s' />}
+      size='s'
+      color='subdued'
+      icon={IconRemove}
     />
   )
 }
