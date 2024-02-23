@@ -133,7 +133,7 @@ export const navRoutes = [
   {
     baseRoute: SERVICES,
     matchParams: [{ path: `${SERVICES}*` }],
-    text: 'SERVICES'
+    text: 'NODES'
   },
   {
     baseRoute: GOVERNANCE,

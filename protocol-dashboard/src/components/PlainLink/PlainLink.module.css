@@ -1,0 +1,9 @@
+.link {
+  font-weight: 500;
+  color: var(--primary-dark-2);
+}
+
+.link:hover {
+  cursor: pointer;
+  opacity: 0.75;
+}

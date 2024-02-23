@@ -103,12 +103,25 @@
 
 .wtf .bg {
   position: absolute;
-  z-index: -1;
+  z-index: -2;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background-image: url(../../assets/img/WhatIsAudiusBackground@2x.jpg);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.wtf .bgImage {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 57%;
+  width: 68%;
+  height: 100%;
+  background-image: url(../../assets/img/ImageAudiusApp@2x.webp);
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
