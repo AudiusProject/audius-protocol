@@ -12,9 +12,12 @@
     "build:prod": "env-cmd -f .env.prod npm run build && npm run build-api && mv build build-production",
     "build-api": "webpack --config src/api/webpack.config.js -o build/api.js",
     "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
-    "lint": "eslint --cache --ext=js,jsx,ts,tsx src"
+    "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
+    "lint:env": "dotenv-linter",
+    "verify": "concurrently \"npm:lint:fix\" \"npm:lint:env\""
   },
   "devDependencies": {
+    "@audius/dotenv-linter": "*",
     "@cloudflare/kv-asset-handler": "^0.3.0",
     "@vitejs/plugin-react": "4.1.0",
     "env-cmd": "10.1.0",

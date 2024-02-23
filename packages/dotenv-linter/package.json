@@ -1,0 +1,15 @@
+{
+  "name": "@audius/dotenv-linter",
+  "private": true,
+  "version": "1.5.67",
+  "description": "dotenv lint",
+  "author": "Audius",
+  "homepage": "https://github.com/AudiusProject/audius-protocol#readme",
+  "license": "ISC",
+  "bin": {
+    "dotenv-linter": "dotenv-linter"
+  },
+  "bugs": {
+    "url": "https://github.com/AudiusProject/audius-protocol/issues"
+  }
+}
