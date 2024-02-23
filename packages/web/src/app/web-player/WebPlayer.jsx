@@ -5,7 +5,8 @@ import {
   Client,
   SmartCollectionVariant,
   Status,
-  Theme
+  Theme,
+  SystemAppearance
 } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
@@ -182,12 +183,15 @@ import {
   PURCHASES_PAGE,
   SALES_PAGE
 } from 'utils/route'
-import { getTheme as getSystemTheme } from 'utils/theme/theme'
+import {
+  doesPreferDarkMode,
+  getTheme as getSystemTheme
+} from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
 
-const { setTheme } = themeActions
-const { getTheme } = themeSelectors
+const { setTheme, setSystemAppearance } = themeActions
+const { getTheme, getSystemAppearance } = themeSelectors
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
@@ -374,9 +378,16 @@ class WebPlayer extends Component {
   }
 
   handleTheme() {
+    const { theme, systemAppearance, setTheme, setSystemAppearance } =
+      this.props
     // Set local theme
-    if (this.props.theme === null) {
-      this.props.setTheme(getSystemTheme() || Theme.DEFAULT)
+    if (theme === null) {
+      setTheme(getSystemTheme() || Theme.DEFAULT)
+    }
+    if (systemAppearance === null) {
+      setSystemAppearance(
+        doesPreferDarkMode() ? SystemAppearance.DARK : SystemAppearance.LIGHT
+      )
     }
   }
 
@@ -1010,12 +1021,15 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   theme: getTheme(state),
+  systemAppearance: getSystemAppearance(state),
   showCookieBanner: getShowCookieBanner(state),
   isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)
 })
 
 const mapDispatchToProps = (dispatch) => ({
   setTheme: (theme) => dispatch(setTheme({ theme })),
+  setSystemAppearance: (systemAppearance) =>
+    dispatch(setSystemAppearance({ systemAppearance })),
   updateRouteOnSignUpCompletion: (route) =>
     dispatch(updateRouteOnSignUpCompletion(route)),
   openSignOn: (signIn = true, page = null, fields = {}) =>
