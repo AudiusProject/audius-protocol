@@ -1,11 +1,9 @@
 import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
-import { Link } from 'react-router-dom'
+import { Text, TextLink } from '@audius/harmony'
 
 import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
-import { Text } from 'components/typography'
-import typeStyles from 'components/typography/typography.module.css'
 import { make, track } from 'services/analytics'
 import { TERMS_OF_SERVICE } from 'utils/route'
 
@@ -22,28 +20,28 @@ export const PayToUnlockInfo = () => {
   const handleClickTOSLink = useCallback(() => {
     track(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
+
   return (
     <div className={styles.container}>
       <Text
         variant='label'
-        size='large'
+        size='l'
         strength='strong'
         className={styles.header}
       >
         <span>{messages.payToUnlock}</span>
         <LockedStatusBadge locked />
       </Text>
-      <Text className={styles.copy}>
+      <Text className={styles.copy} variant='body'>
         <span>{messages.copyPart1}</span>
-        <Link
+        <TextLink
+          variant='visible'
+          isExternal
+          href={TERMS_OF_SERVICE}
           onClick={handleClickTOSLink}
-          className={typeStyles.link}
-          to={TERMS_OF_SERVICE}
-          target='_blank'
-          rel='noreferrer'
         >
           {messages.termsOfUse}
-        </Link>
+        </TextLink>
         <span>{messages.copyPart2}</span>
       </Text>
     </div>

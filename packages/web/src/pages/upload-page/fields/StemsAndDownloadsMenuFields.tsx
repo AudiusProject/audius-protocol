@@ -10,12 +10,12 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { removeNullable, formatPrice, Nullable } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { usePrevious } from 'react-use'
 import { z } from 'zod'
 
 import { Divider } from 'components/divider'
-import { Text } from 'components/typography'
 import { stemDropdownRows } from 'utils/stems'
 
 import { processFiles } from '../store/utils/processFiles'

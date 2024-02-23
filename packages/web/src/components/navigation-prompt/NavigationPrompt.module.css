@@ -2,10 +2,6 @@
   align-self: center;
 }
 
-.body {
-  text-align: center;
-}
-
 .button {
   flex-grow: 1;
 }

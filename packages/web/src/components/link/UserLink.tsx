@@ -1,9 +1,9 @@
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
+import { Text } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useSsrContext } from 'ssr/SsrContext'
 import { useSelector } from 'utils/reducer'
@@ -42,7 +42,7 @@ export const UserLink = (props: UserLinkProps) => {
 
   const linkElement = (
     <Link to={url} className={cn(styles.root, className)} {...other}>
-      <Text as={textAs} variant='inherit' className={styles.name}>
+      <Text tag={textAs} className={styles.name}>
         {userName}
       </Text>
       <UserBadges

@@ -2,7 +2,12 @@ import { useCallback, useContext, useMemo, useState } from 'react'
 
 import { isContentFollowGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { IconCaretLeft, IconCaretRight, PlainButton } from '@audius/harmony'
+import {
+  IconCaretLeft,
+  IconCaretRight,
+  Text,
+  PlainButton
+} from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
 import moment from 'moment'
@@ -13,7 +18,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { MenuFormCallbackStatus } from 'components/data-entry/ContextualMenu'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
-import { Text } from 'components/typography'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 
@@ -202,7 +206,7 @@ const MultiTrackHeader = () => {
 
   return (
     <div className={styles.multiTrackHeader}>
-      <Text variant='title' size='xSmall'>
+      <Text variant='title' size='xs'>
         {messages.multiTrackCount(index + 1, trackMetadatas.length)}
       </Text>
     </div>

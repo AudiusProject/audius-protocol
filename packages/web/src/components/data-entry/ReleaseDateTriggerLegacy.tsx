@@ -2,11 +2,10 @@ import { useMemo, useState } from 'react'
 
 import { Track } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
-import { Button, Flex, IconCalendarMonth } from '@audius/harmony'
+import { Button, Flex, IconCalendarMonth, Text } from '@audius/harmony'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Text } from 'components/typography'
 import {
   RELEASE_DATE,
   RELEASE_DATE_HOUR,
@@ -113,7 +112,7 @@ export const ReleaseDateTriggerLegacy = (
       menuFields={
         <>
           <Flex direction='column' gap='l'>
-            <Text>{messages.description}</Text>
+            <Text variant='body'>{messages.description}</Text>
             <ReleaseDateRadioItems
               isInitiallyUnlisted={props.initialForm.is_unlisted}
               initialReleaseDate={trackReleaseDateState}

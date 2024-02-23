@@ -16,6 +16,7 @@ import type {
   SignOnPageState,
   SignOnPageReducer
 } from 'common/store/pages/signon/types'
+import { Platform } from 'react-native'
 import RNRestart from 'react-native-restart'
 import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
@@ -44,7 +45,6 @@ import type { ShareToStoryProgressState } from './share-to-story-progress/slice'
 import { storeContext } from './storeContext'
 import type { WalletConnectState } from './wallet-connect/slice'
 import walletConnect from './wallet-connect/slice'
-import { Platform } from 'react-native'
 
 const errorRestartTimeout = 2000
 

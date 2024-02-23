@@ -14,7 +14,7 @@ import {
   UploadType,
   ShareContent
 } from '@audius/common/store'
-import { IconLink, IconTwitter as IconTwitterBird } from '@audius/harmony'
+import { IconLink, IconTwitter as IconTwitterBird, Text } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
@@ -25,7 +25,6 @@ import {
   getTwitterShareText
 } from 'components/share-modal/utils'
 import { ToastContext } from 'components/toast/ToastContext'
-import { Text } from 'components/typography'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
@@ -182,12 +181,12 @@ export const ShareBanner = (props: ShareBannerProps) => {
         backgroundImage: `linear-gradient(315deg, rgba(91, 35, 225, 0.8) 0%, rgba(162, 47, 237, 0.8) 100%), url(${backgroundPlaceholder})`
       }}
     >
-      <Text variant='display' as='h3' size='small' color='darkmodeStaticWhite'>
+      <Text variant='display' tag='h3' size='s' color='staticWhite'>
         {messages.uploadComplete}
       </Text>
       {!isUnlistedTrack ? (
         <>
-          <Text variant='heading' size='medium' color='darkmodeStaticWhite'>
+          <Text variant='heading' size='m' color='staticWhite'>
             {messages.shareText(uploadType)}
           </Text>
           <div className={styles.buttonContainer}>
@@ -196,7 +195,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
               leftIcon={<IconTwitterBird />}
               onClick={handleTwitterShare}
               text={
-                <Text variant='title' size='large' color='secondary'>
+                <Text variant='title' size='l' color='accent'>
                   {messages.twitterButtonText}
                 </Text>
               }
@@ -207,7 +206,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
               leftIcon={<IconLink />}
               onClick={handleCopyLink}
               text={
-                <Text variant='title' size='large' color='secondary'>
+                <Text variant='title' size='l' color='accent'>
                   {messages.copyLinkButtonText}
                 </Text>
               }

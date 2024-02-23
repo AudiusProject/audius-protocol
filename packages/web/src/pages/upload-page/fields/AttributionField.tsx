@@ -1,7 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
 import { creativeCommons } from '@audius/common/utils'
-import { IconCcBy as IconCreativeCommons, IconRobot } from '@audius/harmony'
+import {
+  IconCcBy as IconCreativeCommons,
+  IconRobot,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
@@ -18,7 +22,6 @@ import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 import { useTrackField } from 'pages/upload-page/hooks'
 import { SingleTrackEditValues } from 'pages/upload-page/types'
 import { computeLicenseIcons } from 'pages/upload-page/utils/computeLicenseIcons'
@@ -320,7 +323,7 @@ const AttributionModalFields = () => {
       </SwitchRowField>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-        <Text variant='title' size='large' as='h3'>
+        <Text variant='title' size='l' tag='h3'>
           {`${messages.isrc.header} / ${messages.iswc.header}`}
         </Text>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
@@ -342,7 +345,7 @@ const AttributionModalFields = () => {
       </div>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
-        <Text variant='title' size='large' as='h3'>
+        <Text variant='title' size='l' tag='h3'>
           {messages.licenseType}
         </Text>
         <div className={styles.attributionCommercialRow}>
@@ -353,12 +356,7 @@ const AttributionModalFields = () => {
               layoutStyles.gap2
             )}
           >
-            <Text
-              variant='title'
-              size='medium'
-              as='label'
-              id='allow-attribution'
-            >
+            <Text variant='title' size='m' tag='label' id='allow-attribution'>
               {messages.allowAttribution.header}
             </Text>
             <SegmentedControlField
@@ -379,7 +377,7 @@ const AttributionModalFields = () => {
               }
             )}
           >
-            <Text variant='title' size='medium' as='label' id='commercial'>
+            <Text variant='title' size='m' tag='label' id='commercial'>
               {messages.commercialUse.header}
             </Text>
             <SegmentedControlField
@@ -395,8 +393,8 @@ const AttributionModalFields = () => {
           <Text
             className={cn({ [styles.disabled]: !allowAttribution })}
             variant='title'
-            size='medium'
-            as='label'
+            size='m'
+            tag='label'
             id='derivative-works'
           >
             {messages.derivativeWorks.header}
@@ -419,13 +417,11 @@ const AttributionModalFields = () => {
               ))}
             </div>
           ) : null}
-          <Text variant='title' size='medium' as='h4'>
+          <Text variant='title' size='m' tag='h4'>
             {licenseType}
           </Text>
         </div>
-        {licenseDescription ? (
-          <Text size='small'>{licenseDescription}</Text>
-        ) : null}
+        {licenseDescription ? <Text size='s'>{licenseDescription}</Text> : null}
       </div>
     </div>
   )

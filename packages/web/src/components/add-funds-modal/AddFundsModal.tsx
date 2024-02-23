@@ -8,12 +8,11 @@ import {
   BuyUSDCStage,
   useAddFundsModal
 } from '@audius/common/store'
-import { ModalContent, ModalHeader } from '@audius/harmony'
+import { ModalContent, ModalHeader, ModalTitle } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { AddFunds } from 'components/add-funds/AddFunds'
-import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
@@ -90,15 +89,11 @@ export const AddFundsModal = () => {
         onClose={onClose}
         showDismissButton={!isMobile}
       >
-        <Text
-          variant='label'
-          color='neutralLight2'
-          size='xLarge'
-          strength='strong'
-          className={styles.title}
-        >
-          {page === 'add-funds' ? messages.addFunds : messages.cryptoTransfer}
-        </Text>
+        <ModalTitle
+          title={
+            page === 'add-funds' ? messages.addFunds : messages.cryptoTransfer
+          }
+        />
       </ModalHeader>
       <ModalContent className={styles.noPadding}>
         {page === 'add-funds' ? (

@@ -23,7 +23,8 @@ import {
   IconStar,
   IconCrown,
   IconVisibilityHidden,
-  IconTrending
+  IconTrending,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,8 +38,6 @@ import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
-import { Text } from 'components/typography'
-import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { profilePage } from 'utils/route'
@@ -137,17 +136,14 @@ export const RankIcon = ({
   className?: string
 }) => {
   return isVisible ? (
-    <div
-      className={cn(
-        typeStyles.body,
-        typeStyles.bodyXSmall,
-        styles.rankContainer,
-        className
-      )}
+    <Text
+      variant='body'
+      size='xs'
+      className={cn(styles.rankContainer, className)}
     >
       {showCrown ? <IconCrown /> : <IconTrending />}
       {index + 1}
-    </div>
+    </Text>
   ) : null
 }
 
@@ -317,13 +313,10 @@ const TrackTile = (props: CombinedProps) => {
         </div>
       ) : null}
       <div className={styles.mainContent} onClick={handleClick}>
-        <div
-          className={cn(
-            typeStyles.body,
-            typeStyles.bodyXSmall,
-            styles.topRight,
-            styles.statText
-          )}
+        <Text
+          variant='body'
+          size='xs'
+          className={cn(styles.topRight, styles.statText)}
         >
           {props.isUnlisted ? (
             <div className={styles.topRightIcon}>
@@ -339,7 +332,7 @@ const TrackTile = (props: CombinedProps) => {
                 )
               : null}
           </div>
-        </div>
+        </Text>
         <div className={styles.metadata}>
           <TrackTileArt
             id={props.id}
@@ -362,13 +355,11 @@ const TrackTile = (props: CombinedProps) => {
           >
             <Link
               variant='title'
-              color={isActive ? 'primary' : 'neutral'}
+              color={isActive ? 'active' : 'default'}
               className={cn(fadeIn, styles.title)}
               to={permalink}
             >
-              <Text variant='inherit' className={styles.text}>
-                {props.title}
-              </Text>
+              <Text className={styles.text}>{props.title}</Text>
               {isPlaying ? <IconVolume className={styles.playIcon} /> : null}
             </Link>
             {(!artworkLoaded || showSkeleton) && (
@@ -377,15 +368,13 @@ const TrackTile = (props: CombinedProps) => {
             <Link
               to={profilePage(artistHandle)}
               className={cn(fadeIn, styles.artist)}
-              color={isActive ? 'primary' : 'neutral'}
+              color={isActive ? 'active' : 'default'}
             >
               <ArtistPopover
                 handle={artistHandle}
                 containerClassName={styles.artistPopover}
               >
-                <Text variant='inherit' className={styles.text}>
-                  {props.artistName}
-                </Text>
+                <Text className={styles.text}>{props.artistName}</Text>
               </ArtistPopover>
               <UserBadges
                 userId={userId}
@@ -398,25 +387,18 @@ const TrackTile = (props: CombinedProps) => {
             )}
           </div>
           {coSign && (
-            <div
-              className={cn(
-                typeStyles.labelSmall,
-                typeStyles.labelStrong,
-                styles.coSignLabel
-              )}
+            <Text
+              variant='label'
+              size='s'
+              strength='strong'
+              className={cn(styles.coSignLabel)}
             >
               {messages.coSign}
-            </div>
+            </Text>
           )}
         </div>
         {coSign ? (
-          <div
-            className={cn(
-              typeStyles.body,
-              typeStyles.bodyXSmall,
-              styles.coSignText
-            )}
-          >
+          <Text variant='body' size='xs' className={styles.coSignText}>
             <div className={styles.name}>
               {coSign.user.name}
               <UserBadges userId={coSign.user.user_id} badgeSize={8} />
@@ -425,15 +407,9 @@ const TrackTile = (props: CombinedProps) => {
               hasReposted: coSign.has_remix_author_reposted,
               hasFavorited: coSign.has_remix_author_saved
             })}
-          </div>
+          </Text>
         ) : null}
-        <div
-          className={cn(
-            typeStyles.body,
-            typeStyles.bodyXSmall,
-            styles.statsRow
-          )}
-        >
+        <Text variant='body' size='xs' className={styles.statsRow}>
           <div className={styles.stats}>
             <RankIcon
               showCrown={showRankIcon}
@@ -487,13 +463,10 @@ const TrackTile = (props: CombinedProps) => {
               </>
             )}
           </div>
-          <div
-            className={cn(
-              typeStyles.body,
-              typeStyles.bodyXSmall,
-              styles.bottomRight,
-              fadeIn
-            )}
+          <Text
+            variant='body'
+            size='xs'
+            className={cn(styles.bottomRight, fadeIn)}
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
@@ -505,8 +478,8 @@ const TrackTile = (props: CombinedProps) => {
                   variant: isPurchase ? 'premium' : 'gated'
                 })
               : null}
-          </div>
-        </div>
+          </Text>
+        </Text>
         <BottomButtons
           hasSaved={props.hasCurrentUserSaved}
           hasReposted={props.hasCurrentUserReposted}
