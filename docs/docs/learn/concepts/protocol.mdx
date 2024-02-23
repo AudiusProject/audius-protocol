@@ -23,9 +23,14 @@ If you are interested in operating a service, see the [`running a node`](/node-o
 section. If you're interested in contributing to the Audius protocol, explore the code below!
 
 ```mermaid
-flowchart TD
-  A(((Artists)))-->|Publish Content|B([Audius Content Ledger])-->|Index Content Metadata|D[(Discovery Nodes)]-->|Discover Content|F;
-  A(((Artists)))-->|Upload Content|C[(Content Nodes)]-->|Stream Content|F(((Fans)));
+flowchart LR
+  A(((Artists)))--->|Publish Content|B([Audius Content Ledger])
+  B--->|Index Content Metadata|D[(Discovery Node)];
+  D--->|Discover Content|F;
+  A(((Artists)))--->|Upload Content|C[(Content Node)];
+  C--->|Stream Content|F(((Fans)));
+  click C href "/learn/architecture/content-node"
+  click D href "/learn/architecture/discovery-node"
 ```
 
 Audius consists of three demographics of users: Artists (content creators), Fans (content
@@ -50,11 +55,11 @@ For more details on the Audius architecture, see the
 
 ## Audius Services
 
-| Service          | Description                                                                                                        | GitHub                                                                                |
-| :--------------- | :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| Content Node     | Maintains the availability of users' content on IPFS including user metadata, images, and audio content            | [Link](https://github.com/AudiusProject/audius-protocol/tree/main/creator-node)       |
-| Discovery Node   | Indexes and stores the contents of the Audius contracts on the Ethereum blockchain for clients to query via an API | [Link](https://github.com/AudiusProject/audius-protocol/tree/main/discovery-provider) |
-| Identity Service | Stores encrypted auth ciphertexts, does Twitter OAuth and relays transactions (pays gas) on behalf of users        | [Link](https://github.com/AudiusProject/audius-protocol/tree/main/identity-service)   |
+| Service                                              | Description                                                                                                        | GitHub                                                                                      |
+| :--------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| [Content Node](/learn/architecture/content-node)     | Maintains the availability of users' content on IPFS including user metadata, images, and audio content            | [Link](https://github.com/AudiusProject/audius-docker-compose/tree/main/creator-node)       |
+| [Discovery Node](/learn/architecture/discovery-node) | Indexes and stores the contents of the Audius contracts on the Ethereum blockchain for clients to query via an API | [Link](https://github.com/AudiusProject/audius-docker-compose/tree/main/discovery-provider) |
+| Identity Service                                     | Stores encrypted auth ciphertexts, does Twitter OAuth and relays transactions (pays gas) on behalf of users        | [Link](https://github.com/AudiusProject/audius-docker-compose/tree/main/identity-service)   |
 
 ## Audius Smart Contracts & Libs
 
@@ -66,5 +71,4 @@ For more details on the Audius architecture, see the
 
 ## Service Provider Quickstart
 
-If you're a service provider, a quickstart guide to running services on Audius can be found
-[here](/node-operator/overview)
+A quick start guide to running Nodes on Audius can be found [here](/node-operator/overview)

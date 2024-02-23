@@ -290,3 +290,8 @@ html[data-theme='dark'] .navbar__items > a:nth-child(1) {
 html[data-theme='dark'] .navbar__items > a:nth-child(1):hover {
   color: var(--ifm-navbar-link-hover-color);
 }
+
+/* sidebar categorie bold */
+.menu__link--sublist {
+  font-weight: bold;
+}

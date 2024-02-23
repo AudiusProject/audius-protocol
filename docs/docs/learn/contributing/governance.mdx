@@ -19,22 +19,24 @@ principle driving Audius’s decentralized infrastructure.
 In this post, we’ll cover how governance works in Audius, and what you can do as an AUDIO holder to
 get involved.
 
-### **Governance Portal**
+## Governance Portal
 
 The single source of truth for Audius governance can be found in the protocol dashboard under the
-[Governance tab](https://dashboard.audius.org/governance).
+[Governance tab](https://dashboard.audius.org/#/governance).
 
 Here you can see a list of all Active and Resolved proposals in chronological order along with
 whether they have passed or failed.
 
 Every governance proposal comes with a breakdown of the following parameters:
 
-- _Proposer_ - The address responsible for submitting the proposal
-- _Description_ - A quick synthesis of what the governance proposal entails
-- _For_ - The amount of votes in favor of the proposal
-- _Against_ - The amount of votes against the proposal
+| Parameter   | Description                                               |
+| ----------- | --------------------------------------------------------- |
+| Proposer    | The address responsible for submitting the proposal       |
+| Description | A quick synthesis of what the governance proposal entails |
+| For         | The amount of votes in favor of the proposal              |
+| Against     | The amount of votes against the proposal                  |
 
-**All proposals are subject to 5% of staked $AUDIO quorum and 50% majority.**
+> All proposals are subject to 5% of staked $AUDIO quorum and 50% majority.
 
 This means that for a proposal to pass, at least 5% of all staked $AUDIO must vote on the proposal
 and more than 50% of the votes must be ‘For’ the proposal.
@@ -42,7 +44,7 @@ and more than 50% of the votes must be ‘For’ the proposal.
 Today, only those running a node may make a proposal on-chain. In future, the set of permitted
 proposers could be expanded in any way the community sees fit.
 
-### **Governance Process**
+## Governance Process
 
 Effective governance is much more than voting on proposals on-chain, and something that we want to
 make even more accessible at Audius.
@@ -50,17 +52,20 @@ make even more accessible at Audius.
 Here’s a breakdown of Audius’s evolving governance ecosystem, including the tools, processes and
 logistics behind AUDIO voting.
 
-_Discord feedback &gt; Forum post &gt; Submit to Governance Portal &gt; On-chain Vote &gt; Execute_
+```mermaid
+flowchart LR
+  A(<a href='/learn/contributing/governance#governance-discord'>Community Feedback</a>)-->B(Forum Post)-->C(Submit to Governance Portal)-->D(On-Chain Vote)-->E(Execute);
+
+```
 
 Please note that some users may be more inclined than others to facilitate the duration of this
 process, and we recommend anyone interested in shaping Audius to contribute in whatever ways
 possible, even if that means just starting a conversation around a topic on Discord!
 
-#### **Governance Discord**
+### Governance Discord
 
-In the [AUDIOphile Discord](https://discord.gg/ah5CcqW), you’ll notice a channel called
-\#governance. This is where early iterations and ideas for proposals can be submitted for community
-feedback.
+In the [AUDIOphile Discord](https://discord.gg/audius), you’ll notice a channel called \#governance.
+This is where early iterations and ideas for proposals can be submitted for community feedback.
 
 Getting feedback on a proposal in Discord is not required, but a great way to get a general feeling
 of whether or not a topic is worth fleshing out in detail prior to submitting on the forum for a
@@ -70,7 +75,7 @@ Governance topics can be seen as a means of signalling, where proposers receive 
 feedback from other community members to see whether or not their ideas will be received well in
 principle.
 
-#### **Governance Portal**
+### Governance Portal
 
 After receiving feedback, node operators can submit that proposal on-chain through the Governance
 portal.
@@ -84,7 +89,7 @@ The details of the proposal should map to the specifications outlined in the for
 details and implementations around any technical changes required for the proposal to be
 implemented.
 
-#### **On-chain Voting**
+### On-chain Voting
 
 Using Figment’s
 [most recent governance proposal](https://dashboard.audius.org/#/governance/proposal/9) as an
@@ -102,7 +107,7 @@ were
 [executed through the governance contract](https://etherscan.io/tx/0x4396652fb9c1116cec5900f412608dfba7a3ec1b9967f4109a8ec3e09d3a75af),
 changing the voting window from 48 hours to 72 hours!
 
-#### **Community Multisig**
+### Community Multisig
 
 Once a vote has been passed, the governance contract executes the proposal.
 
@@ -119,7 +124,7 @@ the system as well.
 More details on the signers of this multisig as well as the intent for its use will be shared in a
 future blog post.
 
-### **Evolving Governance**
+## Evolving Governance
 
 Audius governance is an evolving process geared at giving all $AUDIO holders a voice of future
 iterations of the platform.

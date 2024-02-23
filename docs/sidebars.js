@@ -9,14 +9,9 @@ module.exports = {
     {
       type: 'category',
       label: 'Core Concepts',
-      items: ['learn/concepts/protocol', 'learn/concepts/token', 'learn/concepts/nodes'],
-      collapsed: false,
-    },
-    {
-      type: 'category',
-      label: 'Architecture',
       items: [
-        'learn/architecture/overview',
+        'learn/concepts/token',
+        'learn/concepts/protocol',
         'learn/architecture/content-node',
         'learn/architecture/discovery-node',
       ],
