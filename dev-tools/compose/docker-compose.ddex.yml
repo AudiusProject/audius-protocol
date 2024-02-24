@@ -124,6 +124,12 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo
+    entrypoint: >
+      bash -c '
+        chmod 400 /etc/mongo-keyfile
+        chown 999:999 /etc/mongo-keyfile
+        exec docker-entrypoint.sh "$$@"
+      '
     command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     ports:
       - "27017:27017"
@@ -148,13 +154,7 @@ services:
   ddex-mongo-init:
     container_name: ddex-mongo-init
     image: mongo:latest
-    restart: no
-    volumes:
-      - ddex-mongo-db:/data/db
-      - ${PROJECT_ROOT}/packages/ddex/mongo-keyfile:/etc/mongo-keyfile
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=mongo
-      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    restart: "no"
     command: >
       bash -c "
         until mongosh --host ddex-mongo:27017 --authenticationDatabase admin -u mongo -p mongo --eval 'db.runCommand({ping: 1})'; do
