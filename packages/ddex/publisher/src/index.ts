@@ -14,7 +14,7 @@ import createS3 from './services/s3Service'
       process.env.DDEX_MONGODB_URL ||
       'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0'
     await dialDb(dbUrl)
-    const sdkService = createSdkService()
+    const sdkService = await createSdkService()
     const s3 = createS3()
 
     publishReleases(sdkService.getSdk(), s3)

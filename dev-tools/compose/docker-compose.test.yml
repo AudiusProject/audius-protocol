@@ -450,8 +450,8 @@ services:
     environment:
       AWS_ENDPOINT: 'http://localstack:4566'
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
       ddex-s3:
         condition: service_healthy
 
@@ -461,8 +461,8 @@ services:
       service: ddex-indexer
     logging: *default-logging
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
       ddex-s3:
         condition: service_healthy
 
@@ -472,8 +472,8 @@ services:
       service: ddex-parser
     logging: *default-logging
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
       ddex-s3:
         condition: service_healthy
 
@@ -485,8 +485,8 @@ services:
     environment:
       AWS_ENDPOINT: 'http://localstack:4566'
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
       ddex-s3:
         condition: service_healthy
 
@@ -495,6 +495,15 @@ services:
       file: docker-compose.yml
       service: ddex-mongo
     logging: *default-logging
+  
+  ddex-mongo-init:
+    extends:
+      file: docker-compose.yml
+      service: ddex-mongo-init
+    logging: *default-logging
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
   
   # TODO: this will need to create the raw and indexed buckets
   # It also wouldn't be a bad idea to set CORS and use localstack in the local dev setup (ie audius-compose up --ddex-only)
@@ -508,6 +517,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   test-ddex-e2e:
+    container_name: test-ddex-e2e
     extends:
       file: docker-compose.yml
       service: ddex-ingester
@@ -526,6 +536,7 @@ services:
       # We probably won't actually upload anything to Audius in the e2e test, but having a "dry run" publisher mode could be useful
   
   test-ddex-unittests:
+    container_name: test-ddex-unittests
     build:
       context: ${PROJECT_ROOT}/packages/ddex/ingester
       dockerfile: Dockerfile.test
