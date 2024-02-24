@@ -119,7 +119,7 @@ steps:
           sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" identity-service/docker-compose*.yml
           sed -i "s/\({TAG:-\)[^}]*\}/\1$CIRCLE_SHA1}/" ddex/docker-compose*.yml
           git add */docker-compose*.yml
-          git commit -m "$CIRCLE_BRANCH auto-deploy"
+          git commit --allow-empty -m "$CIRCLE_BRANCH auto-deploy"
           git push origin stage
 
           # Generate git diff for audius-docker-compose commits from last "release-vX.Y.Z auto-deploy" commit to HEAD
