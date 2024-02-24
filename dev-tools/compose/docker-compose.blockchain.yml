@@ -17,6 +17,8 @@ services:
       - '8545:8545'
     deploy:
       mode: global
+    profiles:
+      - chains
 
   poa-blockscout-db:
     image: postgres:13.6
@@ -71,6 +73,8 @@ services:
       - '8546:8545'
     deploy:
       mode: global
+    profiles:
+      - chains
 
   eth-blockscout-db:
     image: postgres:13.6

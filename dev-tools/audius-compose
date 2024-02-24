@@ -435,6 +435,7 @@ def load_env(protocol_dir, service, environment):
 @click.option("-e", "--elasticsearch-replicas", default=1, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
+@click.option("--dashboard", is_flag=True, help="Bring up the protocol dashboard container")
 @click.option(
     "-n",
     "--notifs",
@@ -448,7 +449,7 @@ def load_env(protocol_dir, service, environment):
     help="Bring up the pedalboard containers",
 )
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
-@click.option("--ddex", is_flag=True, help="Bring up ddex containers")
+@click.option("--ddex-only", is_flag=True, help="Bring up only ddex containers")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
     "--prod",
@@ -465,10 +466,11 @@ def up(
     elasticsearch_replicas,
     block_explorer,
     anti_abuse_oracle,
+    dashboard,
     notifs,
     pedalboard,
     comms,
-    ddex,
+    ddex_only,
     args,
     prod,
     services,
@@ -477,10 +479,28 @@ def up(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
-    AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
-
-    # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
-    os.environ['MEDIORUM_ENV_TYPE'] = 'dev'
+    if ddex_only:
+        generate_ddex_mongo_key(protocol_dir)
+        profiles = ["--profile=ddex"]
+    else:
+        AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
+        os.environ['MEDIORUM_ENV_TYPE'] = 'dev'  # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
+        profiles = (
+            *(["--profile=block-explorer"] if block_explorer else []),
+            *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
+            *(["--profile=notifications"] if notifs else []),
+            *(["--profile=pedalboard"] if pedalboard else []),
+            *(["--profile=comms"] if comms else []),
+            *(["--profile=dashboard"] if dashboard else []),
+            "--profile=storage",
+            "--profile=libs",
+            "--profile=solana",
+            "--profile=identity",
+            "--profile=discovery",
+            "--profile=chains",
+            "--profile=healthz",
+            *(["--file=" + str(AAO_DIR / 'audius-compose.yml')] if anti_abuse_oracle else []),
+        )
 
     ctx.invoke(pull)
     sys.exit(
@@ -491,20 +511,7 @@ def up(
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
                 f"--project-name={protocol_dir.name}",
                 f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
-                *(
-                    [f"--file={AAO_DIR / 'audius-compose.yml'}"]
-                    if anti_abuse_oracle
-                    else []
-                ),
-                *(["--profile=block-explorer"] if block_explorer else []),
-                *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
-                *(["--profile=notifications"] if notifs else []),
-                *(["--profile=pedalboard"] if pedalboard else []),
-                *(["--profile=comms"] if comms else []),
-                *(["--profile=ddex"] if ddex else []),
-                *(["--profile=storage"]),
-                *(["--profile=libs"]),
-                *(["--profile=solana"]),
+                *profiles,
                 "up",
                 "--build",
                 "--detach",
@@ -583,6 +590,23 @@ def test_build(protocol_dir):
     )
 
 
+def generate_ddex_mongo_key(protocol_dir):
+    keyfile_path = (protocol_dir / "packages/ddex/mongo-keyfile")
+    if not keyfile_path.exists():
+        result = subprocess.run(
+            ["openssl", "rand", "-base64", "756"],
+            capture_output=True,
+            text=True
+        )
+        key_content = result.stdout
+
+        with open(keyfile_path, "w") as keyfile:
+            keyfile.write(key_content)
+
+        subprocess.run(
+              ["chmod", "400", "packages/ddex/mongo-keyfile"],
+        )
+
 @test.command(name="run", default_command=True)
 @click.argument("service")
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
@@ -592,6 +616,11 @@ def test_run(protocol_dir, service, args):
     Runs tests for a given service.
     """
     generate_env(protocol_dir, 0, 0)
+    env = os.environ.copy()
+
+    if service.startswith("ddex"):
+        env["COMPOSE_PROFILES"] = "ddex"
+        generate_ddex_mongo_key(protocol_dir)
 
     sys.exit(
         subprocess.run(
@@ -607,7 +636,8 @@ def test_run(protocol_dir, service, args):
                 f"test-{service}",
                 "test",
                 *args,
-            ]
+            ],
+            env=env
         ).returncode
     )
 
