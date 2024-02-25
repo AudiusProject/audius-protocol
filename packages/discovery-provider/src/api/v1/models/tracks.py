@@ -50,15 +50,6 @@ stem_parent = ns.model(
     },
 )
 
-download = ns.model(
-    "download_metadata",
-    {
-        "cid": fields.String,
-        "is_downloadable": fields.Boolean(required=True),
-        "requires_follow": fields.Boolean(required=True),
-    },
-)
-
 field_visibility = ns.model(
     "field_visibility",
     {
@@ -109,8 +100,6 @@ track = ns.model(
         "user": fields.Nested(user_model, required=True),
         # Total track duration, rounded to the nearest second
         "duration": fields.Integer(required=True),
-        # Whether or not the track is downloadable, see `download`
-        # on `track_full` for more details
         "is_downloadable": fields.Boolean,
         "downloadable": fields.Boolean,  # todo: remove since we have 'is_downloadable' now
         "play_count": fields.Integer(required=True),
@@ -144,7 +133,6 @@ track_full = ns.clone(
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
         "created_at": fields.String,
         "credits_splits": fields.String,
-        "download": fields.Nested(download),
         "isrc": fields.String,
         "license": fields.String,
         "iswc": fields.String,

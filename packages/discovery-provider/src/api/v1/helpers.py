@@ -392,12 +392,7 @@ def extend_track(track):
             duration += float(segment["duration"])
         track["duration"] = round(duration)
 
-    downloadable = track.get("is_downloadable") or (
-        "download" in track
-        and track["download"]
-        and track["download"]["is_downloadable"]
-    )
-    track["downloadable"] = bool(downloadable)
+    track["downloadable"] = track.get("is_downloadable", False)
 
     return track
 
@@ -415,7 +410,7 @@ def stem_from_track(track):
         "id": track_id,
         "parent_id": parent_id,
         "category": category,
-        "cid": track["download"]["cid"],
+        "cid": track["track_cid"],
         "user_id": encode_int_id(track["owner_id"]),
         "orig_filename": orig_filename,
         "blocknumber": track["blocknumber"],

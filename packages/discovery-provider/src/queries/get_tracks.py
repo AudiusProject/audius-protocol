@@ -305,12 +305,10 @@ def get_tracks(args: GetTrackArgs):
         # bundle peripheral info into track results
         current_user_id = args.get("current_user_id")
 
-        # remove track segments and download cids from deactivated user tracks and deleted tracks
+        # remove track segments from deactivated user tracks and deleted tracks
         for track in tracks:
             if track["user"][0]["is_deactivated"] or track["is_delete"]:
                 track["track_segments"] = []
-                if track["download"] is not None:
-                    track["download"]["cid"] = None
 
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id, track_has_aggregates=True
