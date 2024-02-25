@@ -62,11 +62,6 @@ field_visibility = ns.model(
     },
 )
 
-premium_content_signature = ns.model(
-    "premium_content_signature",
-    {"data": fields.String, "signature": fields.String},
-)
-
 access = ns.model(
     "access",
     {"stream": fields.Boolean, "download": fields.Boolean},
@@ -158,9 +153,6 @@ track_full = ns.clone(
         "is_premium": fields.Boolean(attribute="is_stream_gated"),
         "premium_conditions": fields.Raw(
             attribute="stream_conditions", allow_null=True
-        ),
-        "premium_content_signature": fields.Nested(
-            premium_content_signature, allow_null=True
         ),
         "is_stream_gated": fields.Boolean,
         "stream_conditions": fields.Raw(allow_null=True),
