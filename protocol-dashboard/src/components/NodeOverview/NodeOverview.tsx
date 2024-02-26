@@ -80,7 +80,7 @@ type NodeOverviewProps = {
   isOwner?: boolean
   isDeregistered?: boolean
   isUnregistered?: boolean
-  isLoading: boolean
+  isLoading?: boolean
 }
 
 const NodeOverview = ({
