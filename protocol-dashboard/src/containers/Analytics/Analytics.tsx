@@ -1,21 +1,19 @@
 import React from 'react'
 
-import desktopStyles from './Analytics.module.css'
-import mobileStyles from './AnalyticsMobile.module.css'
+import { IconDashboard } from '@audius/harmony'
 import Page from 'components/Page'
-import TotalStakedStat from 'components/TotalStakedStat'
-import ApiCallsStat from 'components/ApiCallsStat'
-import UniqueUsersStat from 'components/UniqueUsersStat'
-import TotalApiCallsChart from 'components/TotalApiCallsChart'
 import PlaysChart from 'components/PlaysChart'
-import UniqueUsersChart from 'components/UniqueUsersChart'
-import TotalStakedChart from 'components/TotalStakedChart'
+import TopAlbums from 'components/TopAlbums'
 import TopAppsChart from 'components/TopAppsChart'
 import TopGenresChart from 'components/TopGenresChart'
-import TopTracks from 'components/TopTracks'
 import TopPlaylists from 'components/TopPlaylists'
-import TopAlbums from 'components/TopAlbums'
+import TopTracks from 'components/TopTracks'
+import TotalApiCallsChart from 'components/TotalApiCallsChart'
+import TotalStakedChart from 'components/TotalStakedChart'
+import UniqueUsersChart from 'components/UniqueUsersChart'
 import { createStyles } from 'utils/mobile'
+import desktopStyles from './Analytics.module.css'
+import mobileStyles from './AnalyticsMobile.module.css'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -28,21 +26,21 @@ type AnalyticsProps = OwnProps
 
 const Analytics: React.FC<AnalyticsProps> = () => {
   return (
-    <Page title={messages.title} className={styles.container} hidePreviousPage>
-      <div className={styles.statBar}>
-        <TotalStakedStat />
-        <ApiCallsStat />
-        <UniqueUsersStat />
-      </div>
+    <Page
+      icon={IconDashboard}
+      title={messages.title}
+      className={styles.container}
+      hidePreviousPage
+    >
       <div className={styles.big}>
         <TotalApiCallsChart />
       </div>
-      <div className={styles.big}>
-        <TotalStakedChart />
-      </div>
       <div className={styles.section}>
-        <PlaysChart />
+        <TotalStakedChart />
         <UniqueUsersChart />
+      </div>
+      <div className={styles.big}>
+        <PlaysChart />
       </div>
       <div className={styles.section}>
         <TopAppsChart />

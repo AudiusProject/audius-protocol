@@ -37,7 +37,7 @@ const TopAppsChart: React.FC<TopAppsChartProps> = () => {
       labels={labels}
       error={error}
       selection={bucket}
-      options={[Bucket.ALL_TIME, Bucket.MONTH, Bucket.WEEK]}
+      options={[Bucket.ALL_TIME, Bucket.YEAR, Bucket.MONTH, Bucket.WEEK]}
       onSelectOption={(option: string) => setBucket(option as Bucket)}
       onClick={goToAPIPage}
     />
