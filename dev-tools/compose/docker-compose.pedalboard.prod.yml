@@ -43,6 +43,8 @@ services:
     deploy:
       mode: replicated
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
+    profiles:
+      - discovery
 
   solana-relay:
     build:

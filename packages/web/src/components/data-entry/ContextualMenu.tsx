@@ -10,6 +10,7 @@ import {
   Box,
   Text as HarmonyText,
   IconCaretRight,
+  Text,
   IconComponent
 } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
@@ -26,7 +27,6 @@ import { useToggle } from 'react-use'
 
 import { HelperText } from 'components/data-entry/HelperText'
 import { Tile } from 'components/tile'
-import { Text } from 'components/typography'
 
 import styles from './ContextualMenu.module.css'
 
@@ -118,7 +118,11 @@ export const SelectedValue = (props: SelectedValueProps) => {
   return (
     <span className={styles.selectedValue}>
       {Icon ? <Icon size='s' color='default' /> : null}
-      {label ? <Text strength='strong'>{label}</Text> : null}
+      {label ? (
+        <Text variant='body' strength='strong'>
+          {label}
+        </Text>
+      ) : null}
       {children}
     </span>
   )
@@ -185,12 +189,14 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     <Tile onClick={toggleMenu} className={styles.root} elevation='flat'>
       <div className={styles.header}>
         <div className={styles.title}>
-          <Text className={styles.title} variant='title' size='large'>
+          <Text variant='title' size='l'>
             {label}
           </Text>
           <IconCaretRight color='subdued' size='s' />
         </div>
-        <Text className={styles.description}>{description}</Text>
+        <Text variant='body' textAlign='left'>
+          {description}
+        </Text>
       </div>
       {renderValue()}
       {error ? <HelperText error>{errorMessage}</HelperText> : null}

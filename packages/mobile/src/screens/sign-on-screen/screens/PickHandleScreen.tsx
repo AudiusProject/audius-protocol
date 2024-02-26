@@ -104,7 +104,6 @@ export const PickHandleScreen = () => {
     resetAction: unsetSocialProfile,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
-
   useTrackScreen('PickHandle')
 
   const audiusQueryContext = useAudiusQueryContext()
@@ -154,7 +153,7 @@ export const PickHandleScreen = () => {
     >
       <Page>
         {isWaitingForSocialLogin ? (
-          <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          <SocialMediaLoading onClose={handleCloseSocialMediaLogin} hideIcon />
         ) : null}
         <Heading
           heading={pickHandlePageMessages.title}

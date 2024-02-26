@@ -1,12 +1,11 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { IconDrag, IconTrash, PlainButton } from '@audius/harmony'
+import { IconDrag, IconTrash, Text, PlainButton } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { TagField } from 'components/form-fields'
 import { SwitchField } from 'components/form-fields/SwitchField'
 import { Tile } from 'components/tile'
-import { Text } from 'components/typography'
 
 import { PreviewButton } from '../components/PreviewButton'
 import { SelectGenreField } from '../fields/SelectGenreField'
@@ -64,7 +63,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         <span className={styles.iconDrag}>
           <IconDrag color='default' />
         </span>
-        <Text size='small'>{index + 1}</Text>
+        <Text size='s'>{index + 1}</Text>
         <TrackNameField name={`tracks.${index}.metadata.title`} />
       </div>
       {override ? (

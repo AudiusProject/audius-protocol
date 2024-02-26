@@ -6,6 +6,7 @@ import {
   IconTrash,
   IconError,
   IconCloudUpload,
+  Text,
   useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -14,7 +15,6 @@ import { isEmpty } from 'lodash'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 
 import { UploadFormScrollContext } from '../UploadPage'
 import { useIndexedField } from '../hooks'
@@ -39,7 +39,7 @@ export const MultiTrackSidebar = () => {
     <div className={styles.root}>
       <div className={cn(layoutStyles.col)}>
         <div className={styles.title}>
-          <Text variant='label' size='small'>
+          <Text variant='label' size='s'>
             {messages.title}
           </Text>
         </div>
@@ -63,7 +63,7 @@ export const MultiTrackSidebar = () => {
                 color='danger'
                 css={{ margin: spacing.unit1 }}
               />
-              <Text size='xSmall' color='accentRed'>
+              <Text variant='body' size='xs' color='danger'>
                 {messages.fixErrors}
               </Text>
             </div>
@@ -171,8 +171,9 @@ const TrackRow = (props: TrackRowProps) => {
               />
             ) : (
               <Text
+                variant='body'
                 className={styles.trackIndex}
-                color={isSelected ? 'secondary' : 'neutral'}
+                color={isSelected ? 'accent' : 'default'}
               >
                 {index + 1}
               </Text>
@@ -185,15 +186,9 @@ const TrackRow = (props: TrackRowProps) => {
           </div>
           <div className={styles.trackTitleContainer}>
             <Text
-              size='small'
-              // @ts-ignore TODO: support for accent-red in other themes
-              color={
-                hasError
-                  ? '--accent-red'
-                  : isSelected
-                  ? '--secondary'
-                  : '--neutral'
-              }
+              variant='body'
+              size='s'
+              color={hasError ? 'danger' : isSelected ? 'accent' : 'default'}
             >
               {isTitleMissing ? messages.titleRequired : title}
             </Text>

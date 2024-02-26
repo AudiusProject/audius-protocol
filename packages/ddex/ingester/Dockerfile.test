@@ -1,0 +1,14 @@
+FROM golang:alpine
+
+RUN apk update && apk add --no-cache git
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . ./
+
+# No need to build the application like in the regular Dockerfile because this just runs unit tests
+
+CMD ["go", "test", "./...", "-count=1", "-timeout=60s"]

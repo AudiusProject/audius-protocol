@@ -427,8 +427,8 @@ const ProfileHeader = ({
           {bio ? (
             <UserGeneratedText
               ref={bioRefCb}
-              color='neutralLight2'
-              size='small'
+              color='subdued'
+              size='s'
               linkSource='profile page'
               className={cn(styles.bio, {
                 [styles.bioExpanded]: hasEllipsis && !isDescriptionMinimized
@@ -449,7 +449,7 @@ const ProfileHeader = ({
                 <div className={styles.donation}>
                   <IconDonate size='m' color='default' />
                   <UserGeneratedText
-                    size='small'
+                    size='s'
                     onClickLink={handleClickDonationLink}
                   >
                     {donation}

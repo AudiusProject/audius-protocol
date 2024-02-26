@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
+import { Text } from '@audius/harmony'
 import cn from 'classnames'
 
-import { Text } from 'components/typography'
 import { env } from 'services/env'
 import { useSelector } from 'utils/reducer'
 

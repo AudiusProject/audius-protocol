@@ -209,7 +209,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           {!hideMessage ? (
             <UserGeneratedText
               className={styles.text}
-              color={isAuthor ? 'staticWhite' : 'neutral'}
+              color={isAuthor ? 'staticWhite' : 'default'}
             >
               {message.message}
             </UserGeneratedText>

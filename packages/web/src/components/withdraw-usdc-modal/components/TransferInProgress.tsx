@@ -4,12 +4,12 @@ import {
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { Text } from 'components/typography'
 
 import { ADDRESS, AMOUNT } from '../types'
 
@@ -43,7 +43,7 @@ export const TransferInProgress = () => {
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>
         <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='medium' strength='default'>
+        <Text variant='body' size='m' strength='default'>
           {addressValue}
         </Text>
       </div>

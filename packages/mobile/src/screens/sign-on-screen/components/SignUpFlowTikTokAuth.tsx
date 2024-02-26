@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name } from '@audius/common/models'
@@ -13,7 +13,7 @@ import { SocialButton } from '@audius/harmony-native'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 import { make, track } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
-import { getAbandoned } from 'app/store/oauth/selectors'
+import { getAbandoned, getIsOpen } from 'app/store/oauth/selectors'
 
 type SignUpFlowTikTokAuthProps = {
   onStart: () => void
@@ -37,19 +37,23 @@ export const SignUpFlowTikTokAuth = ({
 }: SignUpFlowTikTokAuthProps) => {
   const dispatch = useDispatch()
   const abandoned = useSelector(getAbandoned)
+  const isOpen = useSelector(getIsOpen)
+
+  const [tikTokOpen, setTikTokOpen] = useState(false)
   const audiusQueryContext = useAudiusQueryContext()
 
   useEffect(() => {
-    if (abandoned) {
+    if (!isOpen && abandoned && tikTokOpen) {
       track(
         make({
           eventName: Name.CREATE_ACCOUNT_CLOSED_TIKTOK,
           page
         })
       )
+      setTikTokOpen(false)
       onClose()
     }
-  }, [abandoned, onClose, page])
+  }, [abandoned, isOpen, onClose, page, tikTokOpen])
 
   const handleSuccess = async (
     profileData: TikTokProfileData,
@@ -88,12 +92,14 @@ export const SignUpFlowTikTokAuth = ({
 
   const withTikTokAuth = useTikTokAuth({
     onError: (error) => {
+      setTikTokOpen(false)
       onFailure(error)
       dispatch(oauthActions.setTikTokError(error))
     }
   })
 
   const handlePress = (e: GestureResponderEvent) => {
+    setTikTokOpen(true)
     onStart()
     track(
       make({
