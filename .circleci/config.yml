@@ -85,7 +85,7 @@ jobs:
             - ./packages/ddex/webapp/node_modules
             - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
-            - ./packages/dotenv-linter
+            - ./packages/dotenv-linter/bin
 
   generate-release-branch:
     working_directory: ~/audius-protocol
