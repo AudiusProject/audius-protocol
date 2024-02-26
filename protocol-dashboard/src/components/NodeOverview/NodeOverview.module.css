@@ -27,7 +27,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-2xl);
 
-  color: #BEC5E0;
+  color: #bec5e0;
 }
 
 .deregistered {
@@ -38,7 +38,7 @@
   line-height: 17px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #F15064;
+  color: #f15064;
   margin-left: 22px;
 }
 
@@ -48,7 +48,7 @@
   font-size: var(--font-s);
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #777C96;
+  color: #777c96;
   margin-left: 24px;
 }
 
@@ -68,7 +68,7 @@
   letter-spacing: 1px;
   text-transform: uppercase;
 
-  color: #777C96;
+  color: #777c96;
   margin-bottom: 8px;
 }
 
@@ -77,7 +77,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-xl);
 
-  color: #BEC5E0;
+  color: #bec5e0;
 }
 
 .modifyBtn {
@@ -105,8 +105,4 @@
   position: absolute;
   top: 0;
   right: 0;
-}
-
-.registerBtnText {
-  text-transform: uppercase;
 }

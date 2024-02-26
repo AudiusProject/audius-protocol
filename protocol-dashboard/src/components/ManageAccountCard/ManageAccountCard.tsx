@@ -1,5 +1,4 @@
 import { Box, Flex, Text } from '@audius/harmony'
-import BN from 'bn.js'
 import Button, { ButtonType } from 'components/Button'
 import { Card } from 'components/Card/Card'
 import UserImage from 'components/UserImage'
@@ -8,7 +7,6 @@ import { useCallback } from 'react'
 import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, Status } from 'types'
-import getActiveStake from 'utils/activeStake'
 import { TICKER } from 'utils/consts'
 import { usePushRoute } from 'utils/effects'
 import { formatShortWallet } from 'utils/format'
@@ -138,16 +136,18 @@ const UserAudioRewardEstimate = ({
   )
 }
 
-export const ManageAccountCard = () => {
-  const { isLoggedIn, wallet } = useAccount()
+type ManageAccountCardProps = {
+  wallet: string
+}
 
-  const { user, audiusProfile, status } = useUser({ wallet })
+export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
+  const { isLoggedIn, wallet: currentUserWallet } = useAccount()
+
+  const { user } = useUser({ wallet })
+  const isOwner = currentUserWallet === wallet
   const delegate = user?.delegates?.[0]
 
-  const activeStake = user ? getActiveStake(user) : new BN('0')
-  const activeStateFormatted = AudiusClient.displayShortAud(activeStake)
-
-  if (!isLoggedIn || !wallet || !delegate) {
+  if (!isLoggedIn || !user || !delegate) {
     return null
   }
 
@@ -210,13 +210,15 @@ export const ManageAccountCard = () => {
                   {messages.delegatedToken}
                 </Text>
               </Flex>
-              <Box mt="unit5">
-                <Button
-                  type={ButtonType.PRIMARY}
-                  text={messages.manage}
-                  css={{ width: '100%' }}
-                />
-              </Box>
+              {isOwner ? (
+                <Box mt="unit5">
+                  <Button
+                    type={ButtonType.PRIMARY}
+                    text={messages.manage}
+                    css={{ width: '100%' }}
+                  />
+                </Box>
+              ) : null}
             </Box>
           </Card>
         )
