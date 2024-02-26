@@ -1,20 +1,24 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import BN from 'bn.js'
 
-import Paper from 'components/Paper'
-import VoteMeter from 'components/VoteMeter'
-import ProposalStatusBadge from 'components/ProposalStatusBadge'
-import { Proposal, Outcome, Vote, Address, Status } from 'types'
-import Button, { ButtonType } from 'components/Button'
-import { leftPadZero, getDate, getHumanReadableTime } from 'utils/format'
-import IconThumbUp from 'assets/img/iconThumbUp.svg?react'
+import { IconCheck, IconRemove } from '@audius/stems'
+import BN from 'bn.js'
+import clsx from 'clsx'
+
 import IconThumbDown from 'assets/img/iconThumbDown.svg?react'
+import IconThumbUp from 'assets/img/iconThumbUp.svg?react'
+import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal from 'components/ConfirmTransactionModal'
-import { useSubmitVote } from 'store/actions/submitVote'
-import { useExecuteProposal } from 'store/actions/executeProposal'
 import { StandaloneBox } from 'components/ConfirmTransactionModal/ConfirmTransactionModal'
-import Loading from 'components/Loading'
 import DisplayAudio from 'components/DisplayAudio'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
+import ProposalStatusBadge from 'components/ProposalStatusBadge'
+import { Position } from 'components/Tooltip'
+import UserImage from 'components/UserImage'
+import VoteMeter from 'components/VoteMeter'
+import { useAccountUser } from 'store/account/hooks'
+import { useExecuteProposal } from 'store/actions/executeProposal'
+import { useSubmitVote } from 'store/actions/submitVote'
 import {
   useProposalTimeRemaining,
   useAmountAbstained,
@@ -22,16 +26,13 @@ import {
   useProposalMilestoneBlocks,
   useExecutionDelayTimeRemaining
 } from 'store/cache/proposals/hooks'
-import { useAccountUser } from 'store/account/hooks'
-import { Position } from 'components/Tooltip'
+import { Proposal, Outcome, Vote, Address, Status } from 'types'
+import getActiveStake from 'utils/activeStake'
+import { leftPadZero, getDate, getHumanReadableTime } from 'utils/format'
 import { createStyles } from 'utils/mobile'
-import { IconCheck, IconRemove } from '@audius/stems'
 
 import desktopStyles from './ProposalHero.module.css'
 import mobileStyles from './ProposalHeroMobile.module.css'
-import getActiveStake from 'utils/activeStake'
-import clsx from 'clsx'
-import UserImage from 'components/UserImage'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -63,9 +64,8 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
   currentVote,
   submissionBlock
 }) => {
-  const { timeRemaining, targetBlock } = useProposalTimeRemaining(
-    submissionBlock
-  )
+  const { timeRemaining, targetBlock } =
+    useProposalTimeRemaining(submissionBlock)
 
   const { status: userStatus, user: accountUser } = useAccountUser()
   const activeStake = accountUser ? getActiveStake(accountUser) : new BN('0')
@@ -119,9 +119,8 @@ type ExecutionDelayCTAProps = {
 const ExecutionDelayCTA: React.FC<ExecutionDelayCTAProps> = ({
   votingDeadlineBlock
 }) => {
-  const { timeRemaining, targetBlock } = useExecutionDelayTimeRemaining(
-    votingDeadlineBlock
-  )
+  const { timeRemaining, targetBlock } =
+    useExecutionDelayTimeRemaining(votingDeadlineBlock)
 
   return (
     <div className={styles.voteCTA}>
@@ -177,7 +176,7 @@ const User = ({ wallet }: { wallet: Address }) => {
   return (
     <div className={styles.user}>
       <div className={styles.image}>
-        <UserImage wallet={wallet} alt="User" />
+        <UserImage wallet={wallet} alt='User' />
       </div>
       {wallet}
     </div>
@@ -222,7 +221,7 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
   }, [setNewVote, setIsConfirmModalOpen])
 
   const onConfirm = useCallback(() => {
-    if (!!newVote) {
+    if (newVote) {
       submitVote(proposal.proposalId, newVote, currentVote)
     }
   }, [submitVote, newVote, currentVote, proposal])
@@ -274,9 +273,8 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
     error: executeError,
     status: executeStatus
   } = useExecuteProposal(reset)
-  const [isExecuteConfirmModalOpen, setIsExecuteConfirmModalOpen] = useState(
-    false
-  )
+  const [isExecuteConfirmModalOpen, setIsExecuteConfirmModalOpen] =
+    useState(false)
 
   const onExecuteCloseConfirm = useCallback(
     () => setIsExecuteConfirmModalOpen(false),

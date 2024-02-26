@@ -1,9 +1,17 @@
-import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
+import { useEffect, useState, useRef } from 'react'
 
+import { AnyAction } from '@reduxjs/toolkit'
+import { useSelector, useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+// eslint-disable-next-line import/no-duplicates
 import Audius from 'services/Audius'
+// eslint-disable-next-line import/no-duplicates
+import AudiusClient from 'services/Audius'
 import { AppState } from 'store/types'
+import { ServiceType, Block } from 'types'
+
 import {
   setTotalStaked,
   setDelgator,
@@ -11,10 +19,6 @@ import {
   setEthBlockNumber,
   setAverageBlockTime
 } from './slice'
-import { useEffect, useState, useRef } from 'react'
-import { ServiceType, Block } from 'types'
-import AudiusClient from 'services/Audius'
-import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getTotalStaked = (state: AppState) =>
@@ -168,7 +172,7 @@ export const useDispatchBasedOnBlockNumber = (
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (didMount.current && ethBlockNumber && ethBlockNumber % mod === 0) {
-      actions.forEach(action => {
+      actions.forEach((action) => {
         dispatch(action)
       })
     }
@@ -219,7 +223,7 @@ export const useTimeRemaining = (block: number, period: number | null) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeRemaining(timeRemaining => {
+      setTimeRemaining((timeRemaining) => {
         if (timeRemaining !== null) {
           if (timeRemaining === 0) return 0
           if (timeRemaining > 1000) {

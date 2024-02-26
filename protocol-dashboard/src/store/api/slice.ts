@@ -15,7 +15,7 @@ const slice = createSlice({
   name: 'api',
   initialState,
   reducers: {
-    setDidError: state => {
+    setDidError: (state) => {
       state.didError = true
     }
   }

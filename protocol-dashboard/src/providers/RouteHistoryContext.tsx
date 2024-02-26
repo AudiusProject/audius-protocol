@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+
 import { useLocation } from 'react-router-dom'
 
 type RouteHistoryContextType = {
@@ -20,7 +21,7 @@ export const RouteHistoryProvider = ({ children }) => {
       historyStack.length === 0 ||
       historyStack[historyStack.length - 1] !== location.pathname
     ) {
-      setHistoryStack(prev => [...prev, location.pathname])
+      setHistoryStack((prev) => [...prev, location.pathname])
     }
   }, [location.pathname, historyStack])
 

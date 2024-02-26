@@ -1,6 +1,5 @@
-import { AudiusClient } from '../AudiusClient'
 import BN from 'bn.js'
-import { Address, Amount, BlockNumber, TxReceipt, Permission } from 'types'
+
 import {
   DelegateClaimEvent,
   DelegateDecreaseStakeEvent,
@@ -8,6 +7,10 @@ import {
   DelegateRemovedEvent,
   DelegateSlashEvent
 } from 'models/TimelineEvents'
+import { Address, Amount, BlockNumber, TxReceipt, Permission } from 'types'
+
+import { AudiusClient } from '../AudiusClient'
+
 import {
   GetClaimEventsResponse,
   GetDelegatorRemovedEventsResponse,
@@ -71,9 +74,10 @@ export default class Delegate {
     serviceProvider: Address
   ): Promise<BN> {
     await this.aud.hasPermissions()
-    const info = await this.getContract().getTotalLockedDelegationForServiceProvider(
-      serviceProvider
-    )
+    const info =
+      await this.getContract().getTotalLockedDelegationForServiceProvider(
+        serviceProvider
+      )
     return info
   }
 
@@ -165,13 +169,12 @@ export default class Delegate {
     serviceProvider?: Address
   }): Promise<DelegateIncreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const info: GetIncreaseDelegateStakeEventsResponse[] = await this.getContract().getIncreaseDelegateStakeEvents(
-      {
+    const info: GetIncreaseDelegateStakeEventsResponse[] =
+      await this.getContract().getIncreaseDelegateStakeEvents({
         delegator,
         serviceProvider
-      }
-    )
-    return info.map(event => ({
+      })
+    return info.map((event) => ({
       ...event,
       _type: 'DelegateIncreaseStake',
       direction: delegator ? 'Sent' : 'Received'
@@ -187,13 +190,12 @@ export default class Delegate {
     serviceProvider?: Address
   }): Promise<DelegateDecreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const info: GetDecreaseDelegateStakeEvaluatedResponse[] = await this.getContract().getDecreaseDelegateStakeEvents(
-      {
+    const info: GetDecreaseDelegateStakeEvaluatedResponse[] =
+      await this.getContract().getDecreaseDelegateStakeEvents({
         delegator,
         serviceProvider
-      }
-    )
-    return info.map(event => ({
+      })
+    return info.map((event) => ({
       _type: 'DelegateDecreaseStake',
       direction: delegator ? 'Sent' : 'Received',
       blockNumber: event.blockNumber,
@@ -215,13 +217,12 @@ export default class Delegate {
     delegator?: Address
   }): Promise<DelegateDecreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const info: GetDecreaseDelegateStakeRequestedResponse[] = await this.getContract().getUndelegateStakeRequestedEvents(
-      {
+    const info: GetDecreaseDelegateStakeRequestedResponse[] =
+      await this.getContract().getUndelegateStakeRequestedEvents({
         serviceProvider,
         delegator
-      }
-    )
-    return info.map(event => ({
+      })
+    return info.map((event) => ({
       _type: 'DelegateDecreaseStake',
       direction: delegator ? 'Sent' : 'Received',
       blockNumber: event.blockNumber,
@@ -244,13 +245,12 @@ export default class Delegate {
     delegator?: Address
   }): Promise<DelegateDecreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const info: GetDecreaseDelegateStakeCancelledEventsResponse[] = await this.getContract().getUndelegateStakeCancelledEvents(
-      {
+    const info: GetDecreaseDelegateStakeCancelledEventsResponse[] =
+      await this.getContract().getUndelegateStakeCancelledEvents({
         serviceProvider,
         delegator
-      }
-    )
-    return info.map(event => ({
+      })
+    return info.map((event) => ({
       _type: 'DelegateDecreaseStake',
       direction: delegator ? 'Sent' : 'Received',
       blockNumber: event.blockNumber,
@@ -265,12 +265,11 @@ export default class Delegate {
 
   async getClaimEvents(claimer: Address): Promise<DelegateClaimEvent[]> {
     await this.aud.hasPermissions()
-    const info: GetClaimEventsResponse[] = await this.getContract().getClaimEvents(
-      {
+    const info: GetClaimEventsResponse[] =
+      await this.getContract().getClaimEvents({
         claimer
-      }
-    )
-    return info.map(event => ({
+      })
+    return info.map((event) => ({
       ...event,
       _type: 'DelegateClaim'
     }))
@@ -278,12 +277,11 @@ export default class Delegate {
 
   async getSlashEvents(target: Address): Promise<DelegateSlashEvent[]> {
     await this.aud.hasPermissions()
-    const info: GetSlashEventsResponse[] = await this.getContract().getSlashEvents(
-      {
+    const info: GetSlashEventsResponse[] =
+      await this.getContract().getSlashEvents({
         target
-      }
-    )
-    return info.map(event => ({
+      })
+    return info.map((event) => ({
       ...event,
       _type: 'DelegateSlash'
     }))
@@ -293,12 +291,11 @@ export default class Delegate {
     delegator: Address
   ): Promise<DelegateRemovedEvent[]> {
     await this.aud.hasPermissions()
-    const info: GetDelegatorRemovedEventsResponse[] = await this.getContract().getDecreaseDelegateStakeEvents(
-      {
+    const info: GetDelegatorRemovedEventsResponse[] =
+      await this.getContract().getDecreaseDelegateStakeEvents({
         delegator
-      }
-    )
-    return info.map(e => ({
+      })
+    return info.map((e) => ({
       ...e,
       _type: 'DelegateRemoved'
     }))
@@ -306,9 +303,8 @@ export default class Delegate {
 
   async getSPMinDelegationAmount(serviceProvider: Address): Promise<BN> {
     await this.aud.hasPermissions()
-    const minDelegationAmount = await this.getContract().getSPMinDelegationAmount(
-      { serviceProvider }
-    )
+    const minDelegationAmount =
+      await this.getContract().getSPMinDelegationAmount({ serviceProvider })
     return minDelegationAmount
   }
 

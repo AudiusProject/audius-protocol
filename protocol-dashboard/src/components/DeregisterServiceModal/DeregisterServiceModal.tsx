@@ -1,15 +1,16 @@
 import React, { useState, useCallback, useEffect } from 'react'
 
-import { useDeregisterService } from 'store/actions/deregisterService'
-import Modal from 'components/Modal'
 import Button, { ButtonType } from 'components/Button'
-import TextField from 'components/TextField'
-import styles from './DeregisterServiceModal.module.css'
-import { ServiceType, Status } from 'types'
 import ConfirmTransactionModal, {
   Box
 } from 'components/ConfirmTransactionModal'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useDeregisterService } from 'store/actions/deregisterService'
+import { ServiceType, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
+
+import styles from './DeregisterServiceModal.module.css'
 const messages = {
   title: 'Deregister Service',
   description: 'Are You Sure You Want to Deregister This Service?',

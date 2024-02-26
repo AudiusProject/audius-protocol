@@ -1,17 +1,19 @@
 import React, { ReactNode } from 'react'
+
+import { IconArrow, ButtonType } from '@audius/stems'
+import BN from 'bn.js'
 import clsx from 'clsx'
 import SimpleBar from 'simplebar-react'
-import BN from 'bn.js'
 
-import AudiusClient from 'services/Audius'
-import { IconArrow, ButtonType } from '@audius/stems'
-import Modal from 'components/Modal'
 import Button from 'components/Button'
-import styles from './ConfirmTransactionModal.module.css'
-import { BigNumber, ServiceType, Address, Status } from 'types'
 import Loading from 'components/Loading'
-import { TICKER } from 'utils/consts'
+import Modal from 'components/Modal'
 import UserImage from 'components/UserImage'
+import AudiusClient from 'services/Audius'
+import { BigNumber, ServiceType, Address, Status } from 'types'
+import { TICKER } from 'utils/consts'
+
+import styles from './ConfirmTransactionModal.module.css'
 
 const messages = {
   title: 'Confirm Transaction',
@@ -39,7 +41,7 @@ type OperatorStakingProps = {
   amount: BigNumber
   wallet: Address
 }
-export const OperatorStaking: React.FC<OperatorStakingProps> = props => {
+export const OperatorStaking: React.FC<OperatorStakingProps> = (props) => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}
@@ -65,7 +67,7 @@ type NewServiceProps = {
   serviceType: ServiceType
   delegateOwnerWallet: string
 }
-export const NewService: React.FC<NewServiceProps> = props => {
+export const NewService: React.FC<NewServiceProps> = (props) => {
   return (
     <Box
       className={clsx(styles.bottomBox, {
@@ -93,7 +95,7 @@ type OldStakeProps = {
   stakeDiff: BigNumber | null
   isIncrease: boolean
 }
-export const OldStake: React.FC<OldStakeProps> = props => {
+export const OldStake: React.FC<OldStakeProps> = (props) => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}
@@ -121,7 +123,7 @@ type NewStakeProps = {
   title: string
   stakeAmount: BigNumber
 }
-export const NewStake: React.FC<NewStakeProps> = props => {
+export const NewStake: React.FC<NewStakeProps> = (props) => {
   return (
     <Box
       className={clsx(styles.bottomBox, {
@@ -140,7 +142,7 @@ type DelegatingProps = {
   className?: string
   amount: BigNumber
 }
-export const Delegating: React.FC<DelegatingProps> = props => {
+export const Delegating: React.FC<DelegatingProps> = (props) => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}

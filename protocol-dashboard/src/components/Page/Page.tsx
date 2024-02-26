@@ -1,16 +1,19 @@
 import React, { useCallback, useEffect } from 'react'
-import clsx from 'clsx'
-import { Spring } from 'react-spring/renderprops'
+
 import { IconArrowWhite } from '@audius/stems'
+import clsx from 'clsx'
+import { useNavigate } from 'react-router-dom'
+import { Spring } from 'react-spring/renderprops'
+
 import { usePushRoute } from 'utils/effects'
+import { useIsMobile } from 'utils/hooks'
+import { createStyles } from 'utils/mobile'
+import { getPageTitle } from 'utils/routes'
+
+import { usePreviousRoute } from '../../providers/RouteHistoryContext'
 
 import desktopStyles from './Page.module.css'
 import mobileStyles from './PageMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import { useIsMobile } from 'utils/hooks'
-import { usePreviousRoute } from '../../providers/RouteHistoryContext'
-import { useNavigate } from 'react-router-dom'
-import { getPageTitle } from 'utils/routes'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -67,14 +70,14 @@ const Page = ({
     previousPage
   ])
 
-  let previousText = previousPage || prevTitle || defaultPreviousPage
+  const previousText = previousPage || prevTitle || defaultPreviousPage
   return (
     <Spring
       from={{ opacity: 0.2 }}
       to={{ opacity: 1 }}
       config={{ duration: FADE_DURATION }}
     >
-      {animProps => (
+      {(animProps) => (
         <div style={animProps}>
           <div className={styles.titleContainer}>
             <h1 className={styles.title}>{title}</h1>

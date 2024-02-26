@@ -1,20 +1,22 @@
 import React, { useState, useCallback, useEffect } from 'react'
+
 import { ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 
-import { useUpdateMinimumDelegationAmount } from 'store/actions/updateMinimumDelegationAmount'
-import Modal from 'components/Modal'
 import Button from 'components/Button'
-import TextField from 'components/TextField'
-import styles from './MinimumDelegationAmountModal.module.css'
-import { Status } from 'types'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
-import { useModalControls } from 'utils/hooks'
 import DisplayAudio from 'components/DisplayAudio'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useUpdateMinimumDelegationAmount } from 'store/actions/updateMinimumDelegationAmount'
+import { Status } from 'types'
 import { TICKER } from 'utils/consts'
+import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+
+import styles from './MinimumDelegationAmountModal.module.css'
 
 const messages = {
   title: 'Minimum Delegation Amount',
@@ -32,7 +34,9 @@ type OwnProps = {
 
 type MinimumDelegationAmountModalProps = OwnProps
 
-const MinimumDelegationAmountModal: React.FC<MinimumDelegationAmountModalProps> = ({
+const MinimumDelegationAmountModal: React.FC<
+  MinimumDelegationAmountModalProps
+> = ({
   minimumDelegationAmount,
   isOpen,
   onClose

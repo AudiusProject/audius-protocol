@@ -1,25 +1,27 @@
 import React, { useState, useCallback, useEffect } from 'react'
+
+import { ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 import clsx from 'clsx'
-import { ButtonType } from '@audius/stems'
 
-import { useDelegateStake } from 'store/actions/delegateStake'
-import { useUserDelegation } from 'store/actions/userDelegation'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
 import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './DelegateStakeModal.module.css'
-import { Status, Address } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import ConfirmTransactionModal, {
   Delegating,
   ToOperator
 } from 'components/ConfirmTransactionModal'
-import { useModalControls } from 'utils/hooks'
-import { formatShortWallet } from 'utils/format'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import ValueSlider from 'components/ValueSlider'
+import AudiusClient from 'services/Audius'
+import { useDelegateStake } from 'store/actions/delegateStake'
+import { useUserDelegation } from 'store/actions/userDelegation'
+import { Status, Address } from 'types'
 import { TICKER } from 'utils/consts'
+import { formatShortWallet } from 'utils/format'
+import { useModalControls } from 'utils/hooks'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+
+import styles from './DelegateStakeModal.module.css'
 
 const messages = {
   title: 'Delegate to Operator',

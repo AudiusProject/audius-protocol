@@ -1,5 +1,6 @@
-import { Address } from 'types'
 import BN from 'bn.js'
+
+import { Address } from 'types'
 
 export type GetClaimProcessedResponse = {
   blockNumber: number

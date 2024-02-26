@@ -31,7 +31,7 @@ const slice = createSlice({
   name: 'discoveryProvider',
   initialState,
   reducers: {
-    setLoading: state => {
+    setLoading: (state) => {
       state.status = Status.Loading
     },
     setNodes: (state, action: PayloadAction<SetNodesPayload>) => {

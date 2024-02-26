@@ -1,10 +1,13 @@
 import React from 'react'
+
 import BN from 'bn.js'
-import Paper from 'components/Paper'
-import styles from './StatsChip.module.css'
 import clsx from 'clsx'
-import Loading from 'components/Loading'
+
 import DisplayAudio from 'components/DisplayAudio'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
+
+import styles from './StatsChip.module.css'
 
 export const Divider = ({ className }: { className?: string }) => {
   return (

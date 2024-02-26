@@ -1,6 +1,4 @@
 import React from 'react'
-import clsx from 'clsx'
-import styles from './Button.module.css'
 
 import {
   Button as StemButton,
@@ -8,6 +6,9 @@ import {
   ButtonProps as StemsButtonProps,
   ButtonType as StemsButtonType
 } from '@audius/stems'
+import clsx from 'clsx'
+
+import styles from './Button.module.css'
 
 export enum CustomButtonType {
   RED = 'RED',

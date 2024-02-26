@@ -1,22 +1,24 @@
+import React from 'react'
+
+import { IconCrown } from '@audius/stems'
+import { Bar } from 'react-chartjs-2'
+
+import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React from 'react'
-import { Bar } from 'react-chartjs-2'
 import { formatShortNumber, formatShortNumberWithDecimal } from 'utils/format'
-import { IconCrown } from '@audius/stems'
 // Custom draw fn
 import 'components/BarChart/draw'
+import { useIsMobile } from 'utils/hooks'
+import { createStyles } from 'utils/mobile'
 
 import desktopStyles from './VerticalBarChart.module.css'
 import mobileStyles from './VerticalBarChartMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import { useIsMobile } from 'utils/hooks'
-import Error from 'components/Error'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const getData = (data: number[], isMobile: boolean) => ({
-  labels: data.map(d => formatShortNumber(d).toUpperCase()),
+  labels: data.map((d) => formatShortNumber(d).toUpperCase()),
   datasets: [
     {
       backgroundColor: 'rgba(145, 71, 204, 0.7)',
@@ -106,7 +108,7 @@ const getOptions = (id: string, max: number) => ({
     xAlign: 'left',
     yAlign: 'bottom',
     position: 'nearest',
-    custom: function(tooltipModel: any) {
+    custom: function (tooltipModel: any) {
       // Tooltip Element
       let tooltipEl = document.getElementById(`chartjs-tooltip-${id}`)
 

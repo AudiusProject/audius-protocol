@@ -1,3 +1,5 @@
+import BN from 'bn.js'
+
 import {
   Address,
   BlockNumber,
@@ -6,7 +8,6 @@ import {
   TokenApproveReceipt,
   TxReceipt
 } from 'types'
-import BN from 'bn.js'
 
 export type NodeList = Array<Node>
 export type GetServiceProviderIdsFromAddressResponse = Array<number>

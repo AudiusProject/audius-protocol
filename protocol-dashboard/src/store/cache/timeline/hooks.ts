@@ -1,16 +1,19 @@
-import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
-
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
 import { useEffect } from 'react'
-import { setTimeline } from './slice'
-import { Address } from 'types'
-import { useDispatchBasedOnBlockNumber } from '../protocol/hooks'
-import { useUsers } from 'store/cache/user/hooks'
-import { TimelineEvent } from 'models/TimelineEvents'
+
 import { AnyAction } from '@reduxjs/toolkit'
+import { useSelector, useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import { TimelineEvent } from 'models/TimelineEvents'
+import Audius from 'services/Audius'
+import { useUsers } from 'store/cache/user/hooks'
+import { AppState } from 'store/types'
+import { Address } from 'types'
+
+import { useDispatchBasedOnBlockNumber } from '../protocol/hooks'
+
+import { setTimeline } from './slice'
 
 const getFirstEvent = (...events: TimelineEvent[]) => {
   let min = Number.MAX_SAFE_INTEGER
@@ -34,7 +37,7 @@ const combineEvents = (...eventLists: TimelineEvent[][]) => {
   let i = 0
   const combinedLength = eventLists.reduce((acc, cur) => acc + cur.length, 0)
   while (i < combinedLength) {
-    const heads = eventLists.map(l => l[0])
+    const heads = eventLists.map((l) => l[0])
     const { firstEvent, index } = getFirstEvent(...heads)
     combined.push(firstEvent)
     eventLists[index].shift()
@@ -138,7 +141,7 @@ export function fetchTimeline(
 // -------------------------------- Hooks  --------------------------------
 
 export const useTimeline = (wallet: Address, timelineType: TimelineType) => {
-  const timeline = useSelector(state =>
+  const timeline = useSelector((state) =>
     getTimeline(state as AppState, { wallet })
   )
   // const ethBlockNumber = useEthBlockNumber()

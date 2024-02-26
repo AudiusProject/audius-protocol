@@ -1,8 +1,9 @@
-import styles from './StartListeningBanner.module.css'
 import { IconNote } from '@audius/stems'
 
 import { CallToActionBanner } from 'components/CallToActionBanner/CallToActionBanner'
 import { AUDIUS_DAPP_URL } from 'utils/routes'
+
+import styles from './StartListeningBanner.module.css'
 
 const messages = {
   audiusMusic: 'Audius Music',

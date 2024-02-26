@@ -1,12 +1,14 @@
 import React, { useCallback } from 'react'
+
 import { ButtonType } from '@audius/stems'
 
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import styles from './AudioRewardsModal.module.css'
 import apiLogo from 'assets/img/apiLogo.png'
+import Button from 'components/Button'
+import Modal from 'components/Modal'
 import useOpenLink from 'hooks/useOpenLink'
 import { AUDIUS_API_URL } from 'utils/routes'
+
+import styles from './AudioRewardsModal.module.css'
 
 const messages = {
   title: '$AUDIO REWARDS',

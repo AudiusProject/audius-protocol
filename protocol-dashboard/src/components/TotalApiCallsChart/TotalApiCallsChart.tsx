@@ -1,5 +1,6 @@
-import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
+
+import LineChart from 'components/LineChart'
 import { useApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { datesToSkip } from 'utils/consts'
@@ -8,7 +9,7 @@ type OwnProps = {}
 
 type TotalApiCallsChartProps = OwnProps
 
-const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = props => {
+const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = (props) => {
   const [bucket, setBucket] = useState(Bucket.MONTH)
 
   const { apiCalls } = useApiCalls(bucket)
@@ -20,17 +21,17 @@ const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = props => {
   } else {
     labels =
       apiCalls
-        ?.filter(a => !datesToSkip.has(a.timestamp))
-        ?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
+        ?.filter((a) => !datesToSkip.has(a.timestamp))
+        ?.map((a) => new Date(a.timestamp).getTime() / 1000) ?? null
     data =
       apiCalls
-        ?.filter(a => !datesToSkip.has(a.timestamp))
-        ?.map(a => a.total_count) ?? null
+        ?.filter((a) => !datesToSkip.has(a.timestamp))
+        ?.map((a) => a.total_count) ?? null
   }
   return (
     <LineChart
-      title="Total API Calls"
-      tooltipTitle="Calls"
+      title='Total API Calls'
+      tooltipTitle='Calls'
       error={error}
       data={data}
       labels={labels}

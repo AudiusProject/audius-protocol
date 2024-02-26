@@ -1,21 +1,22 @@
 import React from 'react'
 
-import desktopStyles from './Analytics.module.css'
-import mobileStyles from './AnalyticsMobile.module.css'
-import Page from 'components/Page'
-import TotalStakedStat from 'components/TotalStakedStat'
 import ApiCallsStat from 'components/ApiCallsStat'
-import UniqueUsersStat from 'components/UniqueUsersStat'
-import TotalApiCallsChart from 'components/TotalApiCallsChart'
+import Page from 'components/Page'
 import PlaysChart from 'components/PlaysChart'
-import UniqueUsersChart from 'components/UniqueUsersChart'
-import TotalStakedChart from 'components/TotalStakedChart'
+import TopAlbums from 'components/TopAlbums'
 import TopAppsChart from 'components/TopAppsChart'
 import TopGenresChart from 'components/TopGenresChart'
-import TopTracks from 'components/TopTracks'
 import TopPlaylists from 'components/TopPlaylists'
-import TopAlbums from 'components/TopAlbums'
+import TopTracks from 'components/TopTracks'
+import TotalApiCallsChart from 'components/TotalApiCallsChart'
+import TotalStakedChart from 'components/TotalStakedChart'
+import TotalStakedStat from 'components/TotalStakedStat'
+import UniqueUsersChart from 'components/UniqueUsersChart'
+import UniqueUsersStat from 'components/UniqueUsersStat'
 import { createStyles } from 'utils/mobile'
+
+import desktopStyles from './Analytics.module.css'
+import mobileStyles from './AnalyticsMobile.module.css'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

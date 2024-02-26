@@ -5,6 +5,7 @@ export const fetchWithTimeout = async (
   url: string,
   timeout: number = DEFAULT_TIMEOUT_MS
 ) => {
+  // eslint-disable-next-line promise/param-names
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => reject(new Error(`${TIMED_OUT_ERROR}:${url}`)), timeout)
   })
@@ -20,6 +21,7 @@ export const withTimeout = async (
   asyncCall: () => Promise<any>,
   timeout: number = DEFAULT_TIMEOUT_MS
 ) => {
+  // eslint-disable-next-line promise/param-names
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => reject(new Error(`${TIMED_OUT_ERROR}`)), timeout)
   })
@@ -37,6 +39,7 @@ export const fetchWithLibs = async (req: {
   const data = await window.audiusLibs.discoveryProvider._makeRequest(req)
 
   // if all nodes are unhealthy and unavailable
+  // eslint-disable-next-line prefer-promise-reject-errors
   if (!data) return Promise.reject()
 
   return data

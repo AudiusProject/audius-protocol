@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { Status, User, Operator } from 'types'
 
 export type State = {
@@ -27,7 +28,7 @@ const slice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setLoading: state => {
+    setLoading: (state) => {
       state.status = Status.Loading
     },
     setUsers: (state, action: PayloadAction<SetUsers>) => {
@@ -36,7 +37,7 @@ const slice = createSlice({
       if ('users' in action.payload) {
         // Don't replace images and names if we already have them
         const newUsers = { ...action.payload.users }
-        Object.keys(newUsers).forEach(wallet => {
+        Object.keys(newUsers).forEach((wallet) => {
           if (wallet in state.accounts) {
             newUsers[wallet] = {
               ...newUsers[wallet],

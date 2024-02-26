@@ -1,7 +1,8 @@
+import React, { useCallback } from 'react'
+
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React, { useCallback } from 'react'
 import { useTopPlaylists } from 'store/cache/music/hooks'
 import { MusicError } from 'store/cache/music/slice'
 
@@ -21,7 +22,7 @@ const TopPlaylists: React.FC<TopPlaylistsProps> = () => {
 
   const renderTopPlaylists = () => {
     if (topPlaylists === MusicError.ERROR) return <Error />
-    return !!topPlaylists ? (
+    return topPlaylists ? (
       topPlaylists!.map((p, i) => (
         <div key={i} className={styles.playlist} onClick={() => goToUrl(p.url)}>
           <div

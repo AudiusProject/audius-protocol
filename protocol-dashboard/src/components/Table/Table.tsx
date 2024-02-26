@@ -1,10 +1,12 @@
 import React, { useCallback } from 'react'
+
 import clsx from 'clsx'
-import Paper from 'components/Paper'
+
+import Error from 'components/Error'
 import Loading from 'components/Loading'
+import Paper from 'components/Paper'
 
 import styles from './Table.module.css'
-import Error from 'components/Error'
 
 type TableProps = {
   className?: string
@@ -97,7 +99,7 @@ const Table: React.FC<TableProps> = ({
       ) : (
         <>
           <div className={styles.headers}>
-            {columns.map(c => (
+            {columns.map((c) => (
               <div
                 key={c.title}
                 className={clsx(styles.columnTitle, c.className)}

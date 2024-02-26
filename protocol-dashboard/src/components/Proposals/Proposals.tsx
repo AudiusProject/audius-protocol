@@ -1,18 +1,20 @@
 import React, { useState, useCallback } from 'react'
-import clsx from 'clsx'
-import BN from 'bn.js'
 
-import { useProposals } from 'store/cache/proposals/hooks'
-import Paper from 'components/Paper'
-import Button, { ButtonType } from 'components/Button'
 import { IconSave } from '@audius/stems'
-import styles from './Proposals.module.css'
-import NewProposalModal from 'components/NewProposalModal'
-import Proposal from 'components/Proposal/Proposal'
+import BN from 'bn.js'
+import clsx from 'clsx'
+
+import Button, { ButtonType } from 'components/Button'
 import Loading from 'components/Loading'
+import NewProposalModal from 'components/NewProposalModal'
+import Paper from 'components/Paper'
+import Proposal from 'components/Proposal/Proposal'
 import { useAccountUser } from 'store/account/hooks'
+import { useProposals } from 'store/cache/proposals/hooks'
 import { Status } from 'types'
 import getActiveStake from 'utils/activeStake'
+
+import styles from './Proposals.module.css'
 
 const messages = {
   newProposal: 'New Proposal',
@@ -63,7 +65,7 @@ const Proposals: React.FC<ProposalsProps> = () => {
           {isUserStaker && <NewProposalBtn />}
         </div>
         <div className={styles.list}>
-          {!!activeProposals ? (
+          {activeProposals ? (
             activeProposals.length > 0 ? (
               activeProposals.map((proposal, i) => (
                 <Proposal key={i} proposal={proposal} />
@@ -79,7 +81,7 @@ const Proposals: React.FC<ProposalsProps> = () => {
       <Paper className={clsx(styles.container, styles.all)}>
         <div className={styles.title}>{messages.allProposals}</div>
         <div className={styles.list}>
-          {!!resolvedProposals ? (
+          {resolvedProposals ? (
             resolvedProposals.length > 0 ? (
               resolvedProposals.map((proposal, i) => (
                 <Proposal key={i} proposal={proposal} />

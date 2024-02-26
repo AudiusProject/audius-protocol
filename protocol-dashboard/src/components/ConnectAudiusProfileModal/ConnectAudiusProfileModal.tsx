@@ -1,9 +1,12 @@
+import cn from 'clsx'
+
 import Button, { ButtonType } from 'components/Button'
 import Modal from 'components/Modal'
 import { useConnectAudiusProfile } from 'hooks/useConnectAudiusProfile'
+
 import { LoadingSpinner } from '../LoadingSpinner/LoadingSpinner'
+
 import styles from './ConnectAudiusProfileModal.module.css'
-import cn from 'clsx'
 
 const messages = {
   connectAudiusProfileTitle: 'Connect Audius Profile',

@@ -1,26 +1,27 @@
+import { useEffect, useState } from 'react'
+
+import { DashboardWalletUser } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 import { create, windowScheduler } from '@yornaath/batshit'
-import { audiusSdk } from 'services/Audius/sdk'
-import { DashboardWalletUser } from '@audius/sdk'
 import { useSelector } from 'react-redux'
+
+import { audiusSdk } from 'services/Audius/sdk'
+import { safeService } from 'services/Safe'
 import {
   getAccountWallet,
   getIsAudiusProfileRefetchDisabled
 } from 'store/account/hooks'
-import { useEffect, useState } from 'react'
-import { safeService } from 'services/Safe'
 
 const dashboardWalletUsersBatcher = create({
   fetcher: async (wallets: string[]): Promise<DashboardWalletUser[]> => {
-    const res = await audiusSdk.dashboardWalletUsers.bulkGetDashboardWalletUsers(
-      {
+    const res =
+      await audiusSdk.dashboardWalletUsers.bulkGetDashboardWalletUsers({
         wallets
-      }
-    )
+      })
     return res.data
   },
   resolver: (data, query) => {
-    return data.find(d => d.wallet.toLowerCase() === query.toLowerCase())
+    return data.find((d) => d.wallet.toLowerCase() === query.toLowerCase())
   },
   scheduler: windowScheduler(10)
 })

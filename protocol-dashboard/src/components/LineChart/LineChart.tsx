@@ -1,9 +1,11 @@
+import React from 'react'
+
+import { Line } from 'react-chartjs-2'
+
 import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React from 'react'
-import { Line } from 'react-chartjs-2'
 import { formatBucketText } from 'store/cache/analytics/hooks'
 import { Bucket } from 'store/cache/analytics/slice'
 import {
@@ -144,7 +146,7 @@ const getOptions = (
     xAlign: 'left',
     yAlign: 'bottom',
     position: 'nearest',
-    custom: function(tooltipModel: any) {
+    custom: function (tooltipModel: any) {
       // Tooltip Element
       let tooltipEl = document.getElementById(`chartjs-tooltip-${id}`)
 

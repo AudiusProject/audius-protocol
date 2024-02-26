@@ -1,5 +1,7 @@
-import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
+
+import clsx from 'clsx'
+
 import { useUserProfile } from 'store/cache/user/hooks'
 import { Address } from 'types'
 
@@ -15,7 +17,7 @@ type UserImageProps = {
 }
 
 const preload = async (image: string, cb: () => void) => {
-  await new Promise(resolve => {
+  await new Promise((resolve) => {
     const i = new Image()
     i.src = image
     i.onload = cb

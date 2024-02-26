@@ -1,20 +1,22 @@
 import { useEffect, useMemo } from 'react'
+
+import BN from 'bn.js'
 import clsx from 'clsx'
 import { matchPath, useLocation, useParams } from 'react-router-dom'
-import BN from 'bn.js'
 
-import Page from 'components/Page'
-import Delegate from 'components/Delegate'
-import Timeline from 'components/Timeline'
-import StakingStat from 'components/StakingStat'
-import UserStakedStat from 'components/UserStakedStat'
-import DiscoveryTable from 'components/DiscoveryTable'
 import ContentTable from 'components/ContentTable'
-import DelegatorsTable from 'components/DelegatorsTable'
+import Delegate from 'components/Delegate'
 import DelegatesTable from 'components/DelegatesTable'
-import UserInfo from 'components/UserInfo'
+import DelegationStatsChip from 'components/DelegationStatsChip/DelegationStatsChip'
+import DelegatorsTable from 'components/DelegatorsTable'
+import DiscoveryTable from 'components/DiscoveryTable'
 import ManageService from 'components/ManageService'
-
+import Page from 'components/Page'
+import StakingStat from 'components/StakingStat'
+import Timeline from 'components/Timeline'
+import UserInfo from 'components/UserInfo'
+import UserStakedStat from 'components/UserStakedStat'
+import { useAccount } from 'store/account/hooks'
 import {
   useUser,
   useTotalDelegates,
@@ -22,7 +24,9 @@ import {
   useActiveInboundDelegation
 } from 'store/cache/user/hooks'
 import { Status, User, Operator } from 'types'
-import { useAccount } from 'store/account/hooks'
+import getActiveStake from 'utils/activeStake'
+import { useReplaceRoute } from 'utils/effects'
+import { createStyles } from 'utils/mobile'
 import {
   SERVICES_ACCOUNT_USER,
   SERVICES_TITLE,
@@ -30,13 +34,9 @@ import {
   operatorPage,
   accountPage
 } from 'utils/routes'
-import { useReplaceRoute } from 'utils/effects'
 
 import desktopStyles from './User.module.css'
 import mobileStyles from './UserMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import getActiveStake from 'utils/activeStake'
-import DelegationStatsChip from 'components/DelegationStatsChip/DelegationStatsChip'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -62,7 +62,7 @@ const UserPage = () => {
 
   const isOwner = accountWallet === wallet
 
-  let user = userAccount as User | Operator
+  const user = userAccount as User | Operator
 
   const isServiceProvider = user && 'serviceProvider' in user
 

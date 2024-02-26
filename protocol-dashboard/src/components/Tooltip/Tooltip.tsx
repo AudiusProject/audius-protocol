@@ -1,7 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react'
-import ReactDOM from 'react-dom'
-import styles from './Tooltip.module.css'
+
 import clsx from 'clsx'
+import ReactDOM from 'react-dom'
+
+import styles from './Tooltip.module.css'
 
 export enum Position {
   TOP = 'top',

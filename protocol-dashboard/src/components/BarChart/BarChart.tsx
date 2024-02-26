@@ -1,19 +1,21 @@
+import React from 'react'
+
 import clsx from 'clsx'
+import { HorizontalBar } from 'react-chartjs-2'
+
 import Dropdown from 'components/Dropdown'
+import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React from 'react'
-import { HorizontalBar } from 'react-chartjs-2'
+import { formatBucketText } from 'store/cache/analytics/hooks'
 import { formatShortNumber } from 'utils/format'
 // Custom draw fn
 import './draw'
+import { useIsMobile } from 'utils/hooks'
+import { createStyles } from 'utils/mobile'
 
 import desktopStyles from './BarChart.module.css'
 import mobileStyles from './BarChartMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import { useIsMobile } from 'utils/hooks'
-import { formatBucketText } from 'store/cache/analytics/hooks'
-import Error from 'components/Error'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -30,7 +32,7 @@ const colors = [
 ]
 
 const getData = (data: number[], isMobile: boolean) => ({
-  labels: data.map(d => formatShortNumber(d).toUpperCase()),
+  labels: data.map((d) => formatShortNumber(d).toUpperCase()),
   datasets: [
     {
       backgroundColor: colors,

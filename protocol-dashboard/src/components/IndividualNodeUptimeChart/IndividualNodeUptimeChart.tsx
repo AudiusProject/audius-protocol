@@ -1,8 +1,8 @@
-import { TrackerChart } from 'components/TrackerChart'
 import React from 'react'
+
+import { TrackerChart, DataObject } from 'components/TrackerChart'
 import { useIndividualNodeUptime } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
-import { DataObject } from 'components/TrackerChart'
 import { ServiceType } from 'types'
 
 type OwnProps = {
@@ -36,7 +36,7 @@ const IndividualNodeUptimeChart: React.FC<IndividualNodeUptimeChartProps> = ({
 
   return (
     <TrackerChart
-      title="Status"
+      title='Status'
       subtitle={subtitle}
       data={data}
       error={error}

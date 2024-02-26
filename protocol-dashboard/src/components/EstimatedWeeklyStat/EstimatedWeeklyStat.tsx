@@ -1,8 +1,8 @@
 import React from 'react'
 
 import RewardStat from 'components/RewardStat'
-import { Status } from 'types'
 import { useWeeklyRewardRate } from 'hooks/useRewardRate'
+import { Status } from 'types'
 
 const messages = {
   label: `ESTIMATED WEEKLY REWARD RATE`

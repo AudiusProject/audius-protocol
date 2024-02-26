@@ -1,5 +1,6 @@
-import BarChart from 'components/BarChart'
 import React, { useCallback, useState } from 'react'
+
+import BarChart from 'components/BarChart'
 import { useTopApps } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { usePushRoute } from 'utils/effects'
@@ -30,9 +31,9 @@ const TopAppsChart: React.FC<TopAppsChartProps> = () => {
 
   return (
     <BarChart
-      title="Top 3rd Party Apps"
-      column1="apps"
-      column2="requests"
+      title='Top 3rd Party Apps'
+      column1='apps'
+      column2='requests'
       data={data}
       labels={labels}
       error={error}

@@ -1,6 +1,8 @@
+import { Core } from '@self.id/core'
+
 import { Address } from 'types'
 import { getRandomDefaultImage } from 'utils/identicon'
-import { Core } from '@self.id/core'
+
 import { IdxUser } from './types'
 
 const core = new Core({ ceramic: 'https://ceramic-audius.hirenodes.io' })

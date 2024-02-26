@@ -1,5 +1,9 @@
-import { AudiusClient } from '../AudiusClient'
-
+import {
+  ServiceProviderDecreaseStakeEvent,
+  ServiceProviderDeregisteredEvent,
+  ServiceProviderIncreaseStakeEvent,
+  ServiceProviderRegisteredEvent
+} from 'models/TimelineEvents'
 import {
   ServiceType,
   Address,
@@ -11,6 +15,9 @@ import {
   Permission,
   Wallet
 } from 'types'
+
+import { AudiusClient } from '../AudiusClient'
+
 import {
   GetDecreasedStakeCancelledEventsResponse,
   GetDecreasedStakeEvaluatedEventsResponse,
@@ -28,12 +35,6 @@ import {
   DecreaseStakeResponse,
   DeregisterResponse
 } from './types'
-import {
-  ServiceProviderDecreaseStakeEvent,
-  ServiceProviderDeregisteredEvent,
-  ServiceProviderIncreaseStakeEvent,
-  ServiceProviderRegisteredEvent
-} from 'models/TimelineEvents'
 
 export default class ServiceProviderClient {
   aud: AudiusClient
@@ -52,9 +53,8 @@ export default class ServiceProviderClient {
     serviceType: ServiceType
   ): Promise<number> {
     await this.aud.hasPermissions()
-    const numberServiceProviders = await this.getContract().getTotalServiceTypeProviders(
-      serviceType
-    )
+    const numberServiceProviders =
+      await this.getContract().getTotalServiceTypeProviders(serviceType)
     return numberServiceProviders
   }
 
@@ -102,9 +102,8 @@ export default class ServiceProviderClient {
     account: Address
   ): Promise<GetPendingDecreaseStakeRequestResponse> {
     await this.aud.hasPermissions()
-    const pendingDecreaseStake = await this.getContract().getPendingDecreaseStakeRequest(
-      account
-    )
+    const pendingDecreaseStake =
+      await this.getContract().getPendingDecreaseStakeRequest(account)
     return pendingDecreaseStake
   }
 
@@ -203,12 +202,11 @@ export default class ServiceProviderClient {
     wallet: Address
   ): Promise<ServiceProviderRegisteredEvent[]> {
     await this.aud.hasPermissions()
-    const events: GetRegisteredServiceProviderEventsResponse[] = await this.getContract().getRegisteredServiceProviderEvents(
-      {
+    const events: GetRegisteredServiceProviderEventsResponse[] =
+      await this.getContract().getRegisteredServiceProviderEvents({
         owner: wallet
-      }
-    )
-    return events.map(event => ({
+      })
+    return events.map((event) => ({
       ...event,
       _type: 'ServiceProviderRegistered'
     }))
@@ -218,12 +216,11 @@ export default class ServiceProviderClient {
     wallet: Address
   ): Promise<ServiceProviderDeregisteredEvent[]> {
     await this.aud.hasPermissions()
-    const events: GetDeregisteredServiceProviderEventsResponse[] = await this.getContract().getDeregisteredServiceProviderEvents(
-      {
+    const events: GetDeregisteredServiceProviderEventsResponse[] =
+      await this.getContract().getDeregisteredServiceProviderEvents({
         owner: wallet
-      }
-    )
-    return events.map(event => ({
+      })
+    return events.map((event) => ({
       ...event,
       _type: 'ServiceProviderDeregistered'
     }))
@@ -233,12 +230,11 @@ export default class ServiceProviderClient {
     wallet: Address
   ): Promise<ServiceProviderIncreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const events: GetIncreasedStakeEventResponse[] = await this.getContract().getIncreasedStakeEvents(
-      {
+    const events: GetIncreasedStakeEventResponse[] =
+      await this.getContract().getIncreasedStakeEvents({
         owner: wallet
-      }
-    )
-    return events.map(event => ({
+      })
+    return events.map((event) => ({
       ...event,
       _type: 'ServiceProviderIncreaseStake'
     }))
@@ -248,12 +244,11 @@ export default class ServiceProviderClient {
     wallet: Address
   ): Promise<ServiceProviderDecreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const events: GetDecreasedStakeEvaluatedEventsResponse[] = await this.getContract().getDecreasedStakeEvaluatedEvents(
-      {
+    const events: GetDecreasedStakeEvaluatedEventsResponse[] =
+      await this.getContract().getDecreasedStakeEvaluatedEvents({
         owner: wallet
-      }
-    )
-    return events.map(event => ({
+      })
+    return events.map((event) => ({
       _type: 'ServiceProviderDecreaseStake',
       blockNumber: event.blockNumber,
       owner: event.owner,
@@ -269,12 +264,11 @@ export default class ServiceProviderClient {
     wallet: Address
   ): Promise<ServiceProviderDecreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const events: GetDecreasedStakeRequestedEventsResponse[] = await this.getContract().getDecreasedStakeRequestedEvents(
-      {
+    const events: GetDecreasedStakeRequestedEventsResponse[] =
+      await this.getContract().getDecreasedStakeRequestedEvents({
         owner: wallet
-      }
-    )
-    return events.map(event => ({
+      })
+    return events.map((event) => ({
       _type: 'ServiceProviderDecreaseStake',
       blockNumber: event.blockNumber,
       owner: event.owner,
@@ -288,12 +282,11 @@ export default class ServiceProviderClient {
 
   async getDecreasedStakeCancelledEvents(wallet: Address): Promise<any> {
     await this.aud.hasPermissions()
-    const events: GetDecreasedStakeCancelledEventsResponse[] = await this.getContract().getDecreasedStakeCancelledEvents(
-      {
+    const events: GetDecreasedStakeCancelledEventsResponse[] =
+      await this.getContract().getDecreasedStakeCancelledEvents({
         owner: wallet
-      }
-    )
-    return events.map(event => ({
+      })
+    return events.map((event) => ({
       _type: 'ServiceProviderDecreaseStake',
       blockNumber: event.blockNumber,
       owner: event.owner,

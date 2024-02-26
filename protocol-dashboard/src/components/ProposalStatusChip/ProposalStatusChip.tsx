@@ -1,9 +1,12 @@
 import React from 'react'
-import styles from './ProposalStatusChip.module.css'
-import clsx from 'clsx'
-import { Outcome } from 'types'
+
 import { IconCheck, IconRemove } from '@audius/stems'
+import clsx from 'clsx'
+
 import Loading from 'components/Loading'
+import { Outcome } from 'types'
+
+import styles from './ProposalStatusChip.module.css'
 
 const messages = {
   [Outcome.Rejected]: 'Rejected',

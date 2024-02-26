@@ -40,7 +40,7 @@ const slice = createSlice({
   name: 'account',
   initialState,
   reducers: {
-    setLoading: state => {
+    setLoading: (state) => {
       state.status = Status.Loading
     },
     setAccount: (state, action: PayloadAction<SetAccount>) => {
@@ -52,10 +52,10 @@ const slice = createSlice({
         state.error = action.payload.error
       }
     },
-    setPendingTransactionsLoading: state => {
+    setPendingTransactionsLoading: (state) => {
       state.pendingTransactions.status = Status.Loading
     },
-    setPendingClaimLoading: state => {
+    setPendingClaimLoading: (state) => {
       state.pendingClaim.status = Status.Loading
     },
     setPendingClaim: (state, action: PayloadAction<boolean>) => {
@@ -69,7 +69,7 @@ const slice = createSlice({
       state.pendingTransactions.status = Status.Success
       state.pendingTransactions.transactions = action.payload
     },
-    disableAudiusProfileRefetch: state => {
+    disableAudiusProfileRefetch: (state) => {
       state.isAudiusProfileRefetchDisabled = true
     }
   }

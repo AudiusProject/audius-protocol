@@ -1,6 +1,6 @@
-import { AudiusClient } from '../AudiusClient'
-
 import { Address, BigNumber } from 'types'
+
+import { AudiusClient } from '../AudiusClient'
 
 export default class AudiusToken {
   aud: AudiusClient

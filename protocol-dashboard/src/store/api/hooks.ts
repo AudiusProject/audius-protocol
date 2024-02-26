@@ -1,10 +1,12 @@
-import { useSelector, useDispatch } from 'react-redux'
 import { useQuery } from '@apollo/client'
-import { setDidError } from './slice'
-import { AppState } from 'store/types'
-import { ThunkDispatch } from 'redux-thunk'
-import Audius from 'services/Audius'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useSelector, useDispatch } from 'react-redux'
+import { ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
+
+import { setDidError } from './slice'
 
 // -------------------------------- Selectors  --------------------------------
 export const getGraphAPI = (state: AppState) => state.api

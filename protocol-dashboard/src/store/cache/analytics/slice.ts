@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { ServiceType } from 'types'
 
 export type TimeSeriesRecord = {

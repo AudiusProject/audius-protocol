@@ -1,5 +1,6 @@
-import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
+
+import LineChart from 'components/LineChart'
 import { useIndividualServiceApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 
@@ -9,9 +10,9 @@ type OwnProps = {
 
 type IndividualServiceUniqueUsersChartProps = OwnProps
 
-const IndividualServiceUniqueUsersChart: React.FC<IndividualServiceUniqueUsersChartProps> = ({
-  node
-}) => {
+const IndividualServiceUniqueUsersChart: React.FC<
+  IndividualServiceUniqueUsersChartProps
+> = ({ node }) => {
   const [bucket, setBucket] = useState(Bucket.MONTH)
 
   const { apiCalls } = useIndividualServiceApiCalls(node, bucket)
@@ -21,13 +22,14 @@ const IndividualServiceUniqueUsersChart: React.FC<IndividualServiceUniqueUsersCh
     labels = []
     data = []
   } else {
-    labels = apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
-    data = apiCalls?.map(a => a.unique_count) ?? null
+    labels =
+      apiCalls?.map((a) => new Date(a.timestamp).getTime() / 1000) ?? null
+    data = apiCalls?.map((a) => a.unique_count) ?? null
   }
   return (
     <LineChart
-      title="Unique Users"
-      tooltipTitle="Unique Users"
+      title='Unique Users'
+      tooltipTitle='Unique Users'
       error={error}
       data={data}
       labels={labels}

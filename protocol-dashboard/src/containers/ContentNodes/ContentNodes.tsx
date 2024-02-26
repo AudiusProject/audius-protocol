@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
+
 import { useLocation } from 'react-router-dom'
-import styles from './ContentNodes.module.css'
-import Page from 'components/Page'
+
 import ContentTable from 'components/ContentTable'
+import Page from 'components/Page'
+import { useReplaceRoute } from 'utils/effects'
 import {
   SERVICES_TITLE,
   SERVICES,
   SERVICES_CONTENT_NODE,
   SERVICES_UNREGISTERED_CONTENT_NODE
 } from 'utils/routes'
-import { useReplaceRoute } from 'utils/effects'
+
+import styles from './ContentNodes.module.css'
 
 const messages = {
   title: 'CONTENT NODES'
@@ -27,9 +30,10 @@ const ContentNodes = () => {
     const resolveEndpointToSpId = async () => {
       if (!endpoint) return
       try {
-        const spId = await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(
-          endpoint
-        )
+        const spId =
+          await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(
+            endpoint
+          )
         setSpId(spId)
       } catch (error) {
         console.error('Failed to resolve endpoint to spId:', error)
