@@ -73,7 +73,7 @@ export const SelectArtistsScreen = () => {
 
   return (
     <SelectArtistsPreviewContextProvider>
-      <Flex flex={1} pb='xl'>
+      <Flex flex={1} pb='l'>
         <Tab.Navigator
           tabBar={SelectedGenresTabBar}
           collapsibleOptions={{
