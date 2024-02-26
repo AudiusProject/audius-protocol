@@ -34,6 +34,8 @@ class Playlist(Base, RepresentableMixin):
     playlist_image_multihash = Column(String)
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
+    is_stream_gated = Column(Boolean, nullable=False, server_default=text("false"))
+    stream_conditions = Column(JSONB(True))
     description = Column(String)
     created_at = Column(DateTime, nullable=False, index=True)
     upc = Column(String)
