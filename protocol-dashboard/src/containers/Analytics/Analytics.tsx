@@ -30,7 +30,6 @@ const Analytics: React.FC<AnalyticsProps> = () => {
       icon={IconDashboard}
       title={messages.title}
       className={styles.container}
-      hidePreviousPage
     >
       <div className={styles.big}>
         <TotalApiCallsChart />

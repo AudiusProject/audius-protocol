@@ -1,15 +1,11 @@
-import { useMatch, useLocation } from 'react-router-dom'
+import { useLocation, useMatch } from 'react-router-dom'
 import { useAccount } from 'store/account/hooks'
 
-import styles from './UnregisteredNode.module.css'
+import NodeOverview from 'components/NodeOverview'
 import Page from 'components/Page'
 import { ServiceType } from 'types'
-import {
-  SERVICES_UNREGISTERED_DISCOVERY_NODE,
-  SERVICES_TITLE,
-  SERVICES
-} from 'utils/routes'
-import NodeOverview from 'components/NodeOverview'
+import { SERVICES_UNREGISTERED_DISCOVERY_NODE } from 'utils/routes'
+import styles from './UnregisteredNode.module.css'
 
 const messages = {
   title: 'UNREGISTERED SERVICE'
@@ -23,12 +19,7 @@ const UnregisteredNode = () => {
   const isDiscovery = !!useMatch(SERVICES_UNREGISTERED_DISCOVERY_NODE)
 
   return (
-    <Page
-      title={messages.title}
-      className={styles.container}
-      defaultPreviousPage={SERVICES_TITLE}
-      defaultPreviousPageRoute={SERVICES}
-    >
+    <Page title={messages.title} className={styles.container}>
       {isDiscovery ? (
         <NodeOverview
           isUnregistered={true}

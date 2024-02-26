@@ -5,13 +5,9 @@ import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { datesToSkip } from 'utils/consts'
 import { useTrailingApiCalls } from 'store/cache/analytics/hooks'
 
-type OwnProps = {}
-
-type TotalApiCallsChartProps = OwnProps
-
 type ApiCallsBucket = Bucket.MONTH | Bucket.WEEK | Bucket.ALL_TIME | Bucket.YEAR
 
-const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = () => {
+const TotalApiCallsChart: React.FC = () => {
   const [bucket, setBucket] = useState<ApiCallsBucket>(Bucket.MONTH)
 
   const { apiCalls } = useApiCalls(bucket)
