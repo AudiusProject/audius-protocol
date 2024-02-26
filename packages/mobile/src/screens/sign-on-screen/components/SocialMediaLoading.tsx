@@ -15,7 +15,13 @@ const messages = {
   connectingSocialMedia: 'We’re connecting your social account'
 }
 
-export const SocialMediaLoading = ({ onClose }: { onClose: () => void }) => {
+export const SocialMediaLoading = ({
+  onClose,
+  hideIcon
+}: {
+  onClose: () => void
+  hideIcon?: boolean
+}) => {
   const { color, spacing } = useTheme()
   return (
     <Flex
@@ -27,26 +33,28 @@ export const SocialMediaLoading = ({ onClose }: { onClose: () => void }) => {
       style={css({
         textAlign: 'center',
         position: 'absolute',
-        top: 0,
+        top: -20,
         right: 0,
         bottom: 0,
         left: 0,
-        zIndex: 6,
+        zIndex: 1000,
         borderRadius: 0,
         backgroundColor: color.background.white
       })}
     >
-      <IconButton
-        color='subdued'
-        icon={IconClose}
-        aria-label='Return to email screen'
-        style={css({
-          position: 'absolute',
-          top: spacing.xl,
-          left: spacing.xl
-        })}
-        onPress={onClose}
-      />
+      {hideIcon ? undefined : (
+        <IconButton
+          color='subdued'
+          icon={IconClose}
+          aria-label='Return to email screen'
+          style={css({
+            position: 'absolute',
+            top: spacing.xl,
+            left: spacing.xl
+          })}
+          onPress={() => onClose()}
+        />
+      )}
       <Text variant='heading' size='m' color='accent' textAlign='center'>
         {messages.hangTight}
         {'\n'}
