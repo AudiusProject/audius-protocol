@@ -47,7 +47,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
   const envVars = useEnvVars()
   const { login, logout } = useAuth()
 
-  const initSdk = () => {
+  const initSdk = async () => {
     if (audiusSdk) {
       return
     }
@@ -63,6 +63,23 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
     } else if (envVars.env === 'stage') {
       config = stagingConfig as ServicesConfig
       initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
+    } else {
+      let useStaging = true
+      try {
+        const response = await fetch(`${initialSelectedNode}/health_check`)
+        if (response.ok) {
+          useStaging = false
+        }
+      } catch (_) {
+        /* ignored */
+      }
+      if (useStaging) {
+        console.warn(
+          'Falling back to staging config in dev environment because dev Discovery Node is down'
+        )
+        config = stagingConfig as ServicesConfig
+        initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
+      }
     }
 
     // Get keys
@@ -101,7 +118,10 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
     })
 
     let env: OAuthEnv = 'production'
-    if (envVars.env === 'stage') {
+    if (
+      envVars.env === 'stage' ||
+      initialSelectedNode === 'https://discoveryprovider.staging.audius.co'
+    ) {
       env = 'staging'
     }
     sdkInst.oauth!.init({

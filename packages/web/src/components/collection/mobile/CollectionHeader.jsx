@@ -224,8 +224,8 @@ const CollectionHeader = ({
           <h1 className={styles.title}>{title}</h1>
           <UserLink
             userId={userId}
-            color='secondary'
-            size='large'
+            color='accent'
+            size='l'
             textAs='h2'
             className={styles.artist}
           />

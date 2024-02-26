@@ -37,6 +37,7 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
     * If the user has no profile picture, this field will be empty.
     */
     profilePicture: {"150x150": string, "480x480": string, "1000x1000": string } | { misc: string } | undefined | null
+    apiKey: string | null // the API key for your application if specified
     sub: number; // alias for userId
     iat: string; // timestamp for when auth was performed
   }

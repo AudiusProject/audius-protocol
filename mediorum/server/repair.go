@@ -149,14 +149,14 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, u := range uploads {
 			tracker.CursorUploadID = u.ID
-			ss.repairCid(u.OrigFileCID, tracker)
+			ss.repairCid(u.OrigFileCID, u.PlacementHosts, tracker)
 			// images are resized dynamically
 			// so only consider audio TranscodeResults for repair
 			if u.Template != JobTemplateAudio {
 				continue
 			}
 			for _, cid := range u.TranscodeResults {
-				ss.repairCid(cid, tracker)
+				ss.repairCid(cid, u.PlacementHosts, tracker)
 			}
 		}
 
@@ -191,7 +191,7 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, cid := range cidBatch {
 			tracker.CursorQmCID = cid
-			ss.repairCid(cid, tracker)
+			ss.repairCid(cid, nil, tracker)
 		}
 
 		tracker.Duration += time.Since(startIter)
@@ -201,12 +201,27 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 	return nil
 }
 
-func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
+func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker *RepairTracker) error {
 	ctx := context.Background()
 	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", tracker.CleanupMode)
 
 	preferredHosts, isMine := ss.rendezvousAllHosts(cid)
 	preferredHealthyHosts, isMineHealthy := ss.rendezvousHealthyHosts(cid)
+
+	// if placementHosts is specified
+	isPlaced := len(placementHosts) > 0
+	if isPlaced {
+		// we're not a preferred host
+		if !slices.Contains(placementHosts, ss.Config.Self.Host) {
+			return nil
+		}
+
+		// we are a preffered host
+		preferredHosts = placementHosts
+		preferredHealthyHosts = placementHosts
+		isMine = true
+		isMineHealthy = true
+	}
 
 	// fast path: do zero bucket ops if we know we don't care about this cid
 	if !tracker.CleanupMode && !isMineHealthy {
@@ -307,7 +322,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	// wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
 	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 
-	if !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor*3 && !wasReplicatedThisWeek {
+	if !isPlaced && !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor*3 && !wasReplicatedThisWeek {
 		// depth := 0
 		// // loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
 		// for _, host := range preferredHealthyHosts {

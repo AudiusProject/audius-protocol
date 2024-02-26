@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 
-import { Modal, ModalContent, ModalHeader, Button } from '@audius/harmony'
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  Button,
+  ModalTitle,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { Location } from 'history'
 import { Prompt } from 'react-router-dom'
 
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import styles from './NavigationPrompt.module.css'
@@ -66,19 +72,11 @@ export const NavigationPrompt = (props: Props) => {
       <Prompt when={when} message={handleBlockedNavigation} />
       <Modal isOpen={modalVisible} onClose={closeModal} size='small'>
         <ModalHeader>
-          <Text
-            className={styles.title}
-            size='xLarge'
-            variant='label'
-            strength='strong'
-            color='neutralLight2'
-          >
-            {messages.title}
-          </Text>
+          <ModalTitle title={messages.title} />
         </ModalHeader>
         <ModalContent>
           <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
-            <Text className={styles.body} size='large'>
+            <Text variant='body' size='l' textAlign='center'>
               {messages.body}
             </Text>
             <div className={cn(layoutStyles.row, layoutStyles.gap2)}>

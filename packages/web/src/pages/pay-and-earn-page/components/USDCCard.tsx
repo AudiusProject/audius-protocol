@@ -16,13 +16,12 @@ import {
   PlainButton,
   IconQuestionCircle,
   Flex,
-  IconLogoCircleUSDC as LogoUSDC
+  IconLogoCircleUSDC as LogoUSDC,
+  Text
 } from '@audius/harmony'
 import BN from 'bn.js'
 
-import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 
 import styles from './USDCCard.module.css'
@@ -81,11 +80,11 @@ export const USDCCard = () => {
       <div className={styles.backgroundBlueGradient}>
         <div className={styles.usdcTitleContainer}>
           <div className={styles.usdcTitle}>
-            <Icon icon={LogoUSDC} size='xxxLarge' color='staticWhite' />
+            <LogoUSDC size='3xl' color='staticWhite' />
             <div className={styles.usdc}>
               <Text
                 variant='heading'
-                size='xxLarge'
+                size='xl'
                 color='staticWhite'
                 strength='strong'
               >
@@ -102,7 +101,7 @@ export const USDCCard = () => {
                 variant='heading'
                 color='staticWhite'
                 strength='strong'
-                size='xxLarge'
+                size='xl'
               >
                 ${balanceFormatted}
               </Text>

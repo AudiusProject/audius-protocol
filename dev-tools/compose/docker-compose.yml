@@ -220,6 +220,12 @@ services:
       service: ddex-mongo
     <<: *common
   
+  ddex-mongo-init:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-mongo-init
+    <<: *common
+  
   ddex-ingester:
     extends:
       file: docker-compose.ddex.yml

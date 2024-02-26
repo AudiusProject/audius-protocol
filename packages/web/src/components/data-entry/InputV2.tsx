@@ -1,9 +1,9 @@
 import { ComponentPropsWithoutRef, MutableRefObject, RefCallback } from 'react'
 
+import { Text } from '@audius/harmony'
 import cn from 'classnames'
 
 import layoutStyles from 'components/layout/layout.module.css'
-import { Text } from 'components/typography'
 
 import { HelperText } from './HelperText'
 import styles from './InputV2.module.css'
@@ -91,7 +91,7 @@ export const InputV2 = (props: InputV2Props) => {
     <div className={cn(styles.inputRow, layoutStyles.row)}>
       <div className={cn(layoutStyles.row, styles.inputContainer)}>
         {startAdornment ? (
-          <Text variant='label' size='large' color='neutralLight2'>
+          <Text variant='label' size='l' color='subdued'>
             {startAdornment}
           </Text>
         ) : null}
@@ -112,7 +112,7 @@ export const InputV2 = (props: InputV2Props) => {
         />
       </div>
       {endAdornment ? (
-        <Text variant='label' size='large' color='neutralLight2'>
+        <Text variant='label' size='l' color='subdued'>
           {endAdornment}
         </Text>
       ) : null}

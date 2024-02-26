@@ -185,6 +185,7 @@ export type DiscoveryMilestonePlaylistNotificationAction = {
   type: 'playlist_repost_count' | 'playlist_save_count'
   threshold: number
   playlist_id: string
+  is_album: boolean
 }
 export type DiscoveryRemixNotificationAction = {
   parent_track_id: string

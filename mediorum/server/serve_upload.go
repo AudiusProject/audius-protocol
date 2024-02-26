@@ -134,6 +134,12 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	template := JobTemplate(c.FormValue("template"))
 	selectedPreview := sql.NullString{Valid: false}
 	previewStart := c.FormValue("previewStartSeconds")
+
+	var placementHosts []string = nil
+	if v := c.FormValue("placement_hosts"); v != "" {
+		placementHosts = strings.Split(v, ",")
+	}
+
 	if previewStart != "" {
 		previewStartSeconds, err := strconv.ParseFloat(previewStart, 64)
 		if err != nil {
@@ -172,6 +178,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				UpdatedAt:        now,
 				OrigFileName:     formFile.Filename,
 				TranscodeResults: map[string]string{},
+				PlacementHosts:   placementHosts,
 			}
 			uploads[idx] = upload
 
@@ -201,7 +208,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			// ffprobe: restore orig filename
 			upload.FFProbe.Format.Filename = formFile.Filename
 
-			upload.Mirrors, err = ss.replicateFileParallel(formFileCID, tmpFile.Name())
+			upload.Mirrors, err = ss.replicateFileParallel(formFileCID, tmpFile.Name(), placementHosts)
 			if err != nil {
 				upload.Error = err.Error()
 				return err
