@@ -20,3 +20,5 @@ fi
 # if [[ -z "${CI}" ]]; then
 #   ./dev-tools/setup.sh
 # fi
+
+npm run postinstall -w packages/dotenv-linter
