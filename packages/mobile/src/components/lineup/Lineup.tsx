@@ -142,9 +142,9 @@ const LineupTileView = memo(function LineupTileView({
   togglePlay,
   onPress
 }: LineupTileViewProps) {
-  const TrackOrCollectionTile = getLineupTileComponent(item)
-
-  if (TrackOrCollectionTile) {
+  const LineupTile = getLineupTileComponent(item)
+  console.log('asdf making lineuptile: ', onPress)
+  if (LineupTile) {
     return (
       <View style={styles.item}>
         <TrackOrCollectionTile
@@ -154,8 +154,8 @@ const LineupTileView = memo(function LineupTileView({
           showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
           showRankIcon={index < rankIconCount}
           togglePlay={togglePlay}
-          uid={item.uid}
           onPress={onPress}
+          uid={item.uid}
         />
       </View>
     )
@@ -231,9 +231,11 @@ export const Lineup = ({
   extraFetchOptions,
   ListFooterComponent,
   EndOfLineupComponent,
-  trackSearchResultSelect,
+  onPressItem,
   ...listProps
 }: LineupProps) => {
+  console.log('asdf Lineup: ', onPressItem)
+
   const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
@@ -392,7 +394,7 @@ export const Lineup = ({
           rankIconCount={rankIconCount}
           showLeadingElementArtistPick={showLeadingElementArtistPick}
           togglePlay={togglePlay}
-          trackSearchResultSelect={trackSearchResultSelect}
+          onPress={onPressItem}
         />
       )
     },
@@ -402,7 +404,7 @@ export const Lineup = ({
       rankIconCount,
       showLeadingElementArtistPick,
       togglePlay,
-      trackSearchResultSelect
+      onPressItem
     ]
   )
 

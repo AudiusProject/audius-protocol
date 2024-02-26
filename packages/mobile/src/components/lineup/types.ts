@@ -165,7 +165,7 @@ export type LineupProps = {
   /**
    * Track search result selection for analytics
    */
-  trackSearchResultSelect?: (id: ID) => void
+  onPressItem?: (id: ID) => void
   EndOfLineupComponent?: ComponentType<any> | ReactElement
 } & Pick<
   SectionListProps<unknown>,
@@ -186,7 +186,7 @@ export type LineupItemTileProps = Pick<
   item: LineupItem | LoadingLineupItem
   index: number
   togglePlay: ({ uid, id, source }: TogglePlayConfig) => void
-  trackSearchResultSelect?: (id: ID) => void
+  onPress?: (id: ID) => void
 }
 
 export type LineupTileViewProps = Omit<LineupItemTileProps, 'item'> & {

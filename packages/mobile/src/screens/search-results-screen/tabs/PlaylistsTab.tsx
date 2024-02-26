@@ -9,6 +9,9 @@ import { spacing } from 'app/styles/spacing'
 import { EmptyResults } from '../EmptyResults'
 
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
+import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
+import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
+import { useSelector } from 'react-redux'
 
 const { getSearchStatus } = searchResultsPageSelectors
 
@@ -27,7 +30,8 @@ const selectSearchPlaylists = (state: CommonState) => {
 }
 
 export const PlaylistsTab = ({ route }) => {
-  const { trackSearchResultSelect } = route.params
+  const searchQuery: string = useSelector(getSearchBarText)
+  const trackSearchResultSelect = useTrackSearchResultSelect(searchQuery, 'playlist')
   const playlists = useProxySelector(selectSearchPlaylists, [])
   useFetchTabResultsEffect(SearchKind.PLAYLISTS)
 
@@ -37,7 +41,7 @@ export const PlaylistsTab = ({ route }) => {
       isLoading={!playlists}
       collection={playlists}
       ListEmptyComponent={<EmptyResults />}
-      trackSearchResultSelect={trackSearchResultSelect}
+      onCollectionPress={trackSearchResultSelect}
     />
   )
 }

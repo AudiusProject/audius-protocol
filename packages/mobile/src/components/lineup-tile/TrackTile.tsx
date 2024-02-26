@@ -84,6 +84,7 @@ export const TrackTileComponent = ({
   variant,
   ...lineupTileProps
 }: TrackTileProps) => {
+  console.log('asdf TrackTile: ', onPress)
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK

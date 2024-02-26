@@ -9,6 +9,10 @@ import { spacing } from 'app/styles/spacing'
 import { EmptyResults } from '../EmptyResults'
 
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
+import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
+import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
+import { useSelector } from 'react-redux'
+
 
 const { getSearchStatus } = searchResultsPageSelectors
 
@@ -26,8 +30,9 @@ const selectSearchAlbums = (state: CommonState) => {
     .filter((album) => album.user && !album.user.is_deactivated)
 }
 
-export const AlbumsTab = ({ route }) => {
-  const { trackSearchResultSelect } = route.params
+export const AlbumsTab = () => {
+  const searchQuery: string = useSelector(getSearchBarText)
+  const trackSearchResultSelect = useTrackSearchResultSelect(searchQuery, 'album')
   const albums = useProxySelector(selectSearchAlbums, [])
   useFetchTabResultsEffect(SearchKind.ALBUMS)
 
@@ -37,7 +42,7 @@ export const AlbumsTab = ({ route }) => {
       isLoading={!albums}
       collection={albums}
       ListEmptyComponent={<EmptyResults />}
-      trackSearchResultSelect={trackSearchResultSelect}
+      onCollectionPress={trackSearchResultSelect}
     />
   )
 }

@@ -41,54 +41,28 @@ export const SearchResultsScreen = () => {
     [query]
   )
   const searchQuery = useSelector(getSearchBarText)
-  const trackSearchResultSelect = (
-    id: ID,
-    kind: 'track' | 'profile' | 'playlist' | 'album'
-  ) => {
-    track(
-      make({
-        eventName: EventNames.SEARCH_RESULT_SELECT,
-        term: searchQuery,
-        source: 'more results page',
-        kind,
-        id
-      })
-    )
-  }
   const profilesScreen = tabScreen({
     name: 'Profiles',
     Icon: IconUser,
     component: ProfilesTab,
-    initialParams: {
-      onCardPress: (id) => trackSearchResultSelect(id, 'profile')
-    }
   })
 
   const tracksScreen = tabScreen({
     name: 'Tracks',
     Icon: IconNote,
     component: TracksTab,
-    initialParams: {
-      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'track')
-    }
   })
 
   const albumsScreen = tabScreen({
     name: 'Albums',
     Icon: IconAlbum,
     component: AlbumsTab,
-    initialParams: {
-      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'album')
-    }
   })
 
   const playlistsScreen = tabScreen({
     name: 'Playlists',
     Icon: IconPlaylists,
     component: PlaylistsTab,
-    initialParams: {
-      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'playlist')
-    }
   })
 
   return (

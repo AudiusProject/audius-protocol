@@ -47,13 +47,13 @@ const FullCollectionCard = ({
   collection,
   numTracks,
   style,
-  trackSearchResultSelect
+  onPress
 }: FullCollectionCardProps) => {
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
     navigation.push('Collection', { id: collection.playlist_id })
-    trackSearchResultSelect?.(collection.playlist_id)
-  }, [navigation, collection.playlist_id, trackSearchResultSelect])
+    onPress?.(collection.playlist_id)
+  }, [navigation, collection.playlist_id, onPress])
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -108,7 +108,7 @@ const useTrackCountWithOfflineOverride = (collection: Collection | null) => {
 const CollectionCardWithId = ({
   collectionId,
   style,
-  trackSearchResultSelect
+  onPress
 }: CollectionCardWithIdProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
@@ -120,7 +120,7 @@ const CollectionCardWithId = ({
       collection={collection}
       numTracks={numTracks}
       style={style}
-      trackSearchResultSelect={trackSearchResultSelect}
+      onPress={onPress}
     />
   ) : null
 }
