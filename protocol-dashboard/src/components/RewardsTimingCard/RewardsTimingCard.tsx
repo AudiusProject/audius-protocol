@@ -48,7 +48,7 @@ export const RewardsTimingCard = () => {
 
   return (
     <Card direction="column">
-      <Box pv="2xl" ph="l" borderBottom="default">
+      <Box pv="2xl" ph="xl" borderBottom="default">
         <Text variant="heading" size="s">
           {messages.rewardsTiming}
         </Text>

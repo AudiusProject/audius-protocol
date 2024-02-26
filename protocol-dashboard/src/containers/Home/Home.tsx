@@ -166,6 +166,7 @@ const Home = () => {
         <TopAddressesTable limit={5} alwaysShowMore />
         <Paper className={styles.wtf}>
           <div className={styles.bg} />
+          <div className={styles.bgImage} />
           <Flex direction="column" gap="2xl" css={{ maxWidth: 488 }}>
             <IconAudiusLogoHorizontal
               color="staticWhite"

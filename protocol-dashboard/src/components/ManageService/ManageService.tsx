@@ -4,7 +4,6 @@ import DisplayAudio from 'components/DisplayAudio'
 import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
 import OperatorCutModal from 'components/OperatorCutModal'
 import Paper from 'components/Paper'
-import RegisterServiceModal from 'components/RegisterServiceModal'
 import TransactionStatus from 'components/TransactionStatus'
 import UpdateStakeModal from 'components/UpdateStakeModal'
 import React, { useCallback } from 'react'
@@ -34,14 +33,13 @@ import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/
 import DelegatesModal from 'components/DelegatesModal'
 import DelegatorsModal from 'components/DelegatorsModal'
 import Loading from 'components/Loading'
-import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
 import { useMakeClaim } from 'store/actions/makeClaim'
 import { TICKER } from 'utils/consts'
 import { usePushRoute } from 'utils/effects'
+import { RegisterNewServiceBtn } from './RegisterNewServiceBtn'
 
 const messages = {
   title: 'Manage Your Account & Services',
-  register: 'Register New Service',
   increase: 'Increase Stake',
   decrease: 'Decrease Stake',
   deployerCut: 'Deployer Cut',
@@ -60,23 +58,6 @@ const messages = {
 interface ManageServiceProps {
   className?: string
   showViewActiveServices?: boolean
-}
-
-const RegisterNewServiceBtn = () => {
-  const { isOpen, onClick, onClose } = useModalControls()
-  return (
-    <>
-      <Button
-        onClick={onClick}
-        leftIcon={<IconArrowWhite />}
-        type={ButtonType.PRIMARY}
-        text={messages.register}
-        className={clsx(styles.registerBtn)}
-        textClassName={styles.registerBtnText}
-      />
-      <RegisterServiceModal isOpen={isOpen} onClose={onClose} />
-    </>
-  )
 }
 
 type ConnectAudiusProtileBtnProps = {
@@ -313,16 +294,9 @@ const ManageService: React.FC<ManageServiceProps> = (
   props: ManageServiceProps
 ) => {
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const {
-    data: audiusProfileData,
-    status: audiusProfileDataStatus
-  } = useDashboardWalletUser(accountUser?.wallet)
-  const hasConnectedAudiusAccount = audiusProfileData != null
 
   const isServiceProvider =
     userStatus === Status.Success && 'serviceProvider' in accountUser
-  const isDelegator =
-    userStatus === Status.Success && 'delegates' in accountUser
 
   const hasPendingDecreaseTx = useHasPendingDecreaseStakeTx()
   let increaseStakeDisabled = !isServiceProvider
@@ -382,7 +356,6 @@ const ManageService: React.FC<ManageServiceProps> = (
                 </div>
               ) : (
                 <div className={styles.btnContainer}>
-                  <RegisterNewServiceBtn />
                   {isServiceProvider && (
                     <div>
                       <IncreaseStake isDisabled={increaseStakeDisabled} />
@@ -394,6 +367,7 @@ const ManageService: React.FC<ManageServiceProps> = (
             </div>
             {isServiceProvider && (
               <div className={styles.actionsContainer}>
+                <RegisterNewServiceBtn />
                 <ActiveServices
                   className={styles.accountAction}
                   showView={props.showViewActiveServices}
@@ -423,20 +397,6 @@ const ManageService: React.FC<ManageServiceProps> = (
                 )}
               </div>
             )}
-            {isDelegator && accountUser.delegates.length > 0 && (
-              <div
-                className={clsx(styles.actionsContainer, {
-                  [styles.isSPDelegate]: isServiceProvider
-                })}
-              >
-                <Delegates
-                  className={styles.accountAction}
-                  numberDelegates={accountUser.delegates.length}
-                  wallet={accountUser.wallet}
-                  moreText={messages.view}
-                />
-              </div>
-            )}
             <TransactionStatus />
           </>
         ) : (
@@ -445,25 +405,6 @@ const ManageService: React.FC<ManageServiceProps> = (
           </div>
         )}
       </div>
-      {!accountUser?.wallet || audiusProfileDataStatus !== 'success' ? null : (
-        <div className={styles.connectProfileContainer}>
-          {!hasConnectedAudiusAccount ? (
-            <>
-              <div className={styles.connectProfileTextContainer}>
-                <h3 className={styles.title}>
-                  {messages.connectAudiusProfile}
-                </h3>
-                <span>{messages.connectAudiusProfileDescription}</span>
-              </div>
-              <div>
-                <ConnectAudiusProfileButton wallet={accountUser.wallet} />
-              </div>
-            </>
-          ) : (
-            <DisconnectAudiusProfileButton wallet={accountUser.wallet} />
-          )}
-        </div>
-      )}
     </Paper>
   )
 }

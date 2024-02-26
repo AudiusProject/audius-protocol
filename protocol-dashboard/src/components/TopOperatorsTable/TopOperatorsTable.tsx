@@ -16,7 +16,7 @@ import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
 
 const messages = {
-  topAddresses: 'Top Service Operators by Active Stake',
+  topAddresses: 'Top Node Operators',
   viewMoreAddress: 'View Leaderboard'
 }
 

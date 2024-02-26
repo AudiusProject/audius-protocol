@@ -18,7 +18,7 @@ import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
 
 const messages = {
-  topAddresses: 'Top Addresses by Voting Weight',
+  topAddresses: 'Top Contributors',
   viewMoreAddress: 'View Leaderboard'
 }
 
@@ -62,7 +62,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
-      { title: 'Staked', className: styles.totalStakedColumn },
+      { title: 'Total Staked', className: styles.totalStakedColumn },
       { title: 'Vote Weight', className: styles.voteWeightColumn },
       { title: 'Proposals Voted', className: styles.proposalVotedColumn }
     ])
