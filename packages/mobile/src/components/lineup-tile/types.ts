@@ -42,8 +42,8 @@ export type LineupItemProps = {
   /** Function that will toggle play of a track */
   togglePlay: (args: { uid: UID; id: ID; source: PlaybackSource }) => void
 
-  /** Function that will track search analytics */
-  trackSearchResultSelect?: (id: ID) => void
+  /** Function when title or playback is pressed */
+  onPress?: (id: ID) => void
 
   /** Uid of the item */
   uid: UID

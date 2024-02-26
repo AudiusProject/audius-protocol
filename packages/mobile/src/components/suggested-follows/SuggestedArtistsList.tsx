@@ -71,15 +71,16 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
 
         const textStyles = isSelected
           ? {
-              primaryText: styles.activeText,
-              secondaryText: styles.activeText
-            }
+            primaryText: styles.activeText,
+            secondaryText: styles.activeText
+          }
           : undefined
 
         return (
           <ProfileCard
             profile={artist}
-            noNavigatePress={() => handleSelectArtist(user_id)}
+            preventNavigation
+            onPress={() => handleSelectArtist(user_id)}
             TileProps={{ as: LinearGradient, colors: gradientColors }}
             styles={textStyles}
           />

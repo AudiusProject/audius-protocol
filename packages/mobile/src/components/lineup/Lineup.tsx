@@ -70,7 +70,7 @@ export const getItemCount = (
 ) =>
   Math.ceil(
     (Dimensions.get('window').height / totalTileHeight[variant]) *
-      (typeof multiplier === 'function' ? multiplier() : multiplier)
+    (typeof multiplier === 'function' ? multiplier() : multiplier)
   )
 
 // Calculate minimum, initial, and loadMore itemCounts
@@ -93,7 +93,7 @@ const useItemCounts = (variant: LineupVariant) =>
     [variant]
   )
 
-const fallbackLineupSelector = (() => {}) as any
+const fallbackLineupSelector = (() => { }) as any
 
 const styles = StyleSheet.create({
   root: {
@@ -140,22 +140,22 @@ const LineupTileView = memo(function LineupTileView({
   leadingElementId,
   rankIconCount,
   togglePlay,
-  trackSearchResultSelect
+  onPress
 }: LineupTileViewProps) {
-  const LineupTile = getLineupTileComponent(item)
+  const TrackOrCollectionTile = getLineupTileComponent(item)
 
-  if (LineupTile) {
+  if (TrackOrCollectionTile) {
     return (
       <View style={styles.item}>
-        <LineupTile
+        <TrackOrCollectionTile
           {...item}
           index={index}
           isTrending={isTrending}
           showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
           showRankIcon={index < rankIconCount}
           togglePlay={togglePlay}
-          trackSearchResultSelect={trackSearchResultSelect}
           uid={item.uid}
+          onPress={onPress}
         />
       </View>
     )
@@ -174,7 +174,7 @@ const LineupItemTile = memo(function LineupItemTile({
   leadingElementId,
   rankIconCount,
   togglePlay,
-  trackSearchResultSelect
+  onPress
 }: LineupItemTileProps) {
   if (!item) return null
   if ('_loading' in item) {
@@ -191,7 +191,7 @@ const LineupItemTile = memo(function LineupItemTile({
         leadingElementId={leadingElementId}
         rankIconCount={rankIconCount}
         togglePlay={togglePlay}
-        trackSearchResultSelect={trackSearchResultSelect}
+        onPress={onPress}
       />
     )
   }
@@ -522,7 +522,7 @@ export const Lineup = ({
   const pullToRefreshProps =
     pullToRefresh || refreshProp
       ? // Need to disable refresh so scrolling the "ListEmptyComponent" doesn't trigger refresh
-        { onRefresh: areSectionsEmpty ? undefined : refresh, refreshing }
+      { onRefresh: areSectionsEmpty ? undefined : refresh, refreshing }
       : {}
 
   const handleEndReached = useCallback(() => handleLoadMore(), [handleLoadMore])

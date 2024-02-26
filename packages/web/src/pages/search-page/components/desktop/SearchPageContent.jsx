@@ -309,7 +309,7 @@ class SearchPageContent extends Component {
         </Toast>
       )
     })
-    const trackSearchResultClick = (trackId, source) => {
+    const onClickTile = (trackId, source) => {
       this.props.dispatch(
         make(Name.SEARCH_RESULT_SELECT, {
           searchText,
@@ -365,13 +365,13 @@ class SearchPageContent extends Component {
                 )
               }}
               playTrack={(uid, trackId) => {
-                trackSearchResultClick(trackId, 'more results page')
+                onClickTile(trackId, 'more results page')
                 this.props.dispatch(tracksActions.play(uid))
               }}
               pauseTrack={() => this.props.dispatch(tracksActions.pause())}
               actions={tracksActions}
-              trackSearchResultClick={(trackId) => {
-                trackSearchResultClick(trackId, 'more results page')
+              onClickTile={(trackId) => {
+                onClickTile(trackId, 'more results page')
               }}
             />
           </div>
@@ -458,13 +458,13 @@ class SearchPageContent extends Component {
                   )
                 }
                 playTrack={(uid, trackId) => {
-                  trackSearchResultClick(trackId, 'search results page')
+                  onClickTile(trackId, 'search results page')
                   this.props.dispatch(tracksActions.play(uid))
                 }}
                 pauseTrack={(uid) => this.props.dispatch(tracksActions.pause())}
                 actions={tracksActions}
-                trackSearchResultClick={(trackId) => {
-                  trackSearchResultClick(trackId, 'search results page')
+                onClickTile={(trackId) => {
+                  onClickTile(trackId, 'search results page')
                 }}
               />
             </div>

@@ -21,7 +21,7 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 )
 
 export const TracksTab = ({ route }) => {
-  const { trackSearchResultSelect } = route.params
+  const { trackSearchResultSelect } = route.params // make hook
   const lineup = useSelector(getSearchTracksLineupMetadatas)
   const dispatch = useDispatch()
   const { query, isTagSearch } = useContext(SearchQueryContext)
@@ -48,7 +48,7 @@ export const TracksTab = ({ route }) => {
         actions={tracksActions}
         lineup={lineup}
         loadMore={loadMore}
-        trackSearchResultSelect={trackSearchResultSelect}
+        onPressItem={trackSearchResultSelect}
       />
     </SearchResultsTab>
   )

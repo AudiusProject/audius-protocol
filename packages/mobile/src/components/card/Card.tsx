@@ -63,8 +63,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 }))
 
 type BaseCardProps = {
-  onPress: (id: ID) => void
-  noNavigatePress?: () => void
+  onPress: () => void
   primaryText: string
   renderImage: (options?: ImageProps) => ReactNode
   secondaryText?: string
@@ -94,14 +93,12 @@ export const Card = (props: CardProps) => {
     style,
     styles: stylesProp,
     TileProps = {},
-    noNavigatePress
   } = props
 
   const styles = useStyles()
 
   return (
     <Tile
-      onPress={noNavigatePress}
       styles={{ root: style, content: styles.cardContent }}
       {...TileProps}
     >

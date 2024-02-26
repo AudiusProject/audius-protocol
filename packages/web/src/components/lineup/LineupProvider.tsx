@@ -211,8 +211,8 @@ export interface LineupProviderProps {
   /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
   rankIconCount?: number
 
-  /** Track search result click metrics */
-  trackSearchResultClick?: (trackId: ID) => void
+  /** Function triggered on click of tile */
+  onClickTile?: (trackId: ID) => void
 }
 
 interface LineupProviderState {
@@ -491,7 +491,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       isTrending = false,
       showFeedTipTile = false,
       rankIconCount = 0,
-      trackSearchResultClick
+      onClickTile
     } = this.props
     const isMobile = this.context.isMobile
     const status = lineup.status
@@ -542,7 +542,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             isTrending,
             showRankIcon: index < rankIconCount,
             showFeedTipTile,
-            trackSearchResultClick
+            onClick: onClickTile
           }
           if (entry.id === leadingElementId) {
             trackProps = { ...trackProps, ...leadingElementTileProps }
