@@ -6,6 +6,9 @@
       "dependsOn": ["^build"],
       "outputMode": "new-only"
     },
+    "link": {
+      "outputMode": "new-only"
+    },
     "start": {
       "cache": false,
       "persistent": true,
@@ -14,15 +17,15 @@
     },
     "lint": {
       "outputMode": "new-only",
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "^link"]
     },
     "lint:fix": {
       "outputMode": "new-only",
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "^link"]
     },
     "verify": {
       "outputMode": "new-only",
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "^link"]
     },
     "test": {
       "outputs": ["coverage/**"],
