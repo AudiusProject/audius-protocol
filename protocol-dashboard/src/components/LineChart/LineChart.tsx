@@ -1,3 +1,4 @@
+import { Text } from '@audius/harmony'
 import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
 import Loading from 'components/Loading'
@@ -10,7 +11,8 @@ import {
   formatNumber,
   formatShortNumberWithDecimal,
   getShortDate,
-  getShortMonth
+  getShortMonth,
+  getShortMonthAndYear
 } from 'utils/format'
 import { createStyles } from 'utils/mobile'
 
@@ -21,15 +23,17 @@ const styles = createStyles({ desktopStyles, mobileStyles })
 
 export enum DateFormatter {
   DAY_AND_MONTH,
-  MONTH
+  MONTH,
+  MONTH_AND_YEAR
 }
 
 const getData = (data: number[], labels: string[], showLeadingDay: boolean) => {
   const common = {
-    fill: false,
+    responsive: true,
+    fill: true,
     lineTension: 0.2,
-    backgroundColor: 'rgb(145,71,204,1)',
-    borderWidth: 3,
+    backgroundColor: 'rgb(145,71,204,0.5)',
+    borderWidth: 1.5,
     borderColor: 'rgb(145,71,204,1)',
     borderCapStyle: 'round',
     borderDashOffset: 0.0,
@@ -41,7 +45,7 @@ const getData = (data: number[], labels: string[], showLeadingDay: boolean) => {
     pointHoverBackgroundColor: 'rgb(78,79,106,1)',
     pointHoverBorderColor: 'rgb(145,71,204,1)',
     pointHoverBorderWidth: 3,
-    pointRadius: 0,
+    pointRadius: 2,
     pointHitRadius: 8
   }
 
@@ -65,7 +69,8 @@ const getData = (data: number[], labels: string[], showLeadingDay: boolean) => {
 const getOptions = (
   id: string,
   dateFormatter: DateFormatter,
-  tooltipTitle: string
+  tooltipTitle: string,
+  chartSize?: 'large' | 'default'
 ) => ({
   layout: {
     padding: {
@@ -80,18 +85,20 @@ const getOptions = (
           color: 'rgba(90,94,120,1)'
         },
         ticks: {
+          maxTicksLimit: chartSize === 'large' ? 12 : undefined,
           padding: 13,
           fontColor: 'rgba(119,124,150,1)',
           fontFamily: 'Avenir Next LT Pro',
           fontSize: 12,
-          fontStyle: 'normal',
+          fontStyle: 'bold',
           callback: (value: any, index: any, values: any) => {
-            if (index === 0 || index === values.length - 1) {
-              return dateFormatter === DateFormatter.DAY_AND_MONTH
-                ? getShortDate(value * 1000)
-                : getShortMonth(value * 1000)
+            if (dateFormatter === DateFormatter.DAY_AND_MONTH) {
+              return getShortDate(value * 1000)
+            } else if (dateFormatter === DateFormatter.MONTH) {
+              return getShortMonth(value * 1000)
+            } else {
+              return getShortMonthAndYear(value * 1000)
             }
-            return ''
           },
           maxRotation: 0,
           minRotation: 0
@@ -100,7 +107,7 @@ const getOptions = (
     ],
     yAxes: [
       {
-        position: 'right',
+        position: 'left',
         gridLines: {
           display: true,
           color: 'rgba(90,94,120,1)',
@@ -219,6 +226,8 @@ const getOptions = (
 
 type OwnProps = {
   title: string
+  topNumber?: number | string
+  size?: 'default' | 'large'
   tooltipTitle?: string
   data: number[] | null
   labels: string[] | null
@@ -234,6 +243,8 @@ type LineChartProps = OwnProps
 const LineChart: React.FC<LineChartProps> = ({
   title,
   tooltipTitle,
+  size = 'default',
+  topNumber,
   data,
   labels,
   options,
@@ -242,17 +253,42 @@ const LineChart: React.FC<LineChartProps> = ({
   error,
   showLeadingDay = false
 }) => {
-  const dateFormatter =
-    selection === Bucket.ALL_TIME || selection === Bucket.YEAR
-      ? DateFormatter.MONTH
-      : DateFormatter.DAY_AND_MONTH
+  let dateFormatter: DateFormatter
+  if (selection === Bucket.ALL_TIME) {
+    dateFormatter = DateFormatter.MONTH_AND_YEAR
+  } else if (selection === Bucket.YEAR) {
+    dateFormatter = DateFormatter.MONTH
+  } else {
+    dateFormatter = DateFormatter.DAY_AND_MONTH
+  }
+
+  selection === Bucket.ALL_TIME || selection === Bucket.YEAR
+    ? DateFormatter.MONTH
+    : DateFormatter.DAY_AND_MONTH
+  const formattedTopNumber = topNumber
+    ? typeof topNumber === 'number'
+      ? formatNumber(topNumber)
+      : topNumber
+    : null
 
   if (!tooltipTitle) tooltipTitle = title
 
   return (
     <Paper className={styles.chartContainer}>
       <div className={styles.header}>
-        <div className={styles.title}>{title}</div>
+        <div>
+          {formattedTopNumber ? (
+            <Text
+              variant={size === 'large' ? 'display' : 'heading'}
+              size={size === 'large' ? 's' : 'l'}
+              strength="strong"
+              color="accent"
+            >
+              {formattedTopNumber}
+            </Text>
+          ) : null}
+          <div className={styles.title}>{title}</div>
+        </div>
         {options && selection && onSelectOption && (
           <div className={styles.dropdown}>
             <Dropdown
@@ -270,7 +306,7 @@ const LineChart: React.FC<LineChartProps> = ({
         ) : data && labels ? (
           <Line
             data={getData(data, labels, showLeadingDay)}
-            options={getOptions(title, dateFormatter, tooltipTitle)}
+            options={getOptions(title, dateFormatter, tooltipTitle, size)}
           />
         ) : (
           <Loading className={styles.loading} />
