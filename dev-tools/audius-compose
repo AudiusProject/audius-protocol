@@ -177,7 +177,7 @@ def generate_env(
 @click.pass_context
 def cli(ctx, protocol_dir):
     if protocol_dir is None:
-        protocol_dir = pathlib.Path.cwd().resolve()
+        protocol_dir = pathlib.Path(os.path.dirname(os.path.realpath(__file__))).resolve()
         while (
             protocol_dir.name != ""
             and not (protocol_dir / "dev-tools/compose/docker-compose.yml").exists()
