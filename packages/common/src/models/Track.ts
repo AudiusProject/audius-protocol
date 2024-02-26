@@ -24,16 +24,6 @@ export interface Followee extends User {
   repost_type: string
 }
 
-export interface Download {
-  // TODO: figure out why
-  // is_downloadable and requires_follow
-  // are randomly null on some tracks
-  // returned from the API
-  is_downloadable: Nullable<boolean>
-  requires_follow: Nullable<boolean>
-  cid: Nullable<string>
-}
-
 export type FieldVisibility = {
   genre: boolean
   mood: boolean
@@ -190,7 +180,6 @@ export type TrackMetadata = {
   genre: string
   has_current_user_reposted: boolean
   has_current_user_saved: boolean
-  download: Nullable<Download>
   license: Nullable<License>
   mood: Nullable<string>
   play_count: number

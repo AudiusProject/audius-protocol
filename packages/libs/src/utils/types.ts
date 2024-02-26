@@ -81,11 +81,6 @@ export interface TrackSegment {
   duration: string
   multihash: CID
 }
-export interface Download {
-  is_downloadable: Nullable<boolean>
-  requires_follow: Nullable<boolean>
-  cid: Nullable<string>
-}
 
 export type TokenStandard = 'ERC721' | 'ERC1155'
 
@@ -141,7 +136,6 @@ export type TrackMetadata = {
   ddex_release_ids?: Nullable<DDEXReleaseIDs>
   credits_splits: Nullable<string>
   description: Nullable<string>
-  download: Nullable<Download>
   genre: string
   has_current_user_reposted: boolean
   has_current_user_saved: boolean

@@ -3,22 +3,11 @@ import { useCallback } from 'react'
 import {
   StemCategory,
   stemCategoryFriendlyNames,
-  StemUpload,
-  Download
+  StemUpload
 } from '@audius/common/models'
-import {
-  Modal,
-  Flex,
-  Text,
-  Switch,
-  IconRemove,
-  IconButton,
-  Button,
-  Box
-} from '@audius/harmony'
+import { Modal, IconRemove, IconButton, Button, Box } from '@audius/harmony'
 import cn from 'classnames'
 
-import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import { Dropzone } from 'components/upload/Dropzone'
@@ -37,12 +26,6 @@ const messages = {
   requireFollowToDownload: 'Require Follow to Download',
   done: 'DONE',
   maxCapacity: 'Reached upload limit of 20 files.'
-}
-
-const defaultDownloadSettings: Download = {
-  is_downloadable: false,
-  requires_follow: false,
-  cid: null
 }
 
 type StemRowProps = {
@@ -180,89 +163,12 @@ const StemFilesView = ({
   )
 }
 
-type DownloadSectionProps = {
-  downloadSettings: Download
-  onUpdateDownloadSettings: (downloadSettings: Download) => void
-}
-
-const DownloadSection = ({
-  downloadSettings,
-  onUpdateDownloadSettings
-}: DownloadSectionProps) => {
-  const toggleIsDownloadable = useCallback(() => {
-    const newSettings = downloadSettings
-      ? { ...downloadSettings }
-      : { ...defaultDownloadSettings }
-
-    if (newSettings.is_downloadable) {
-      // Disabling
-      newSettings.is_downloadable = false
-      newSettings.requires_follow = false
-    } else {
-      // Enabling
-      newSettings.is_downloadable = true
-      newSettings.requires_follow = false
-    }
-    onUpdateDownloadSettings(newSettings)
-  }, [downloadSettings, onUpdateDownloadSettings])
-
-  const toggleRequiresFollow = useCallback(() => {
-    const newSettings = downloadSettings
-      ? { ...downloadSettings }
-      : { ...defaultDownloadSettings }
-
-    if (newSettings.requires_follow) {
-      // Disabling
-      newSettings.requires_follow = false
-    } else {
-      // Enabling
-      newSettings.requires_follow = true
-      newSettings.is_downloadable = true
-    }
-    onUpdateDownloadSettings(newSettings)
-  }, [onUpdateDownloadSettings, downloadSettings])
-
-  return (
-    <Flex direction='column' ph='xl' pt='xl' gap='l'>
-      <Flex direction='column' gap='l' w='100%'>
-        <Flex justifyContent='space-between'>
-          <Text variant='title' size='l'>
-            {messages.allowDownloads}
-          </Text>
-          <Switch
-            checked={downloadSettings?.is_downloadable ?? false}
-            onChange={toggleIsDownloadable}
-          />
-        </Flex>
-        <Text variant='body'>{messages.allowDownloadsDescription}</Text>
-      </Flex>
-      <Divider />
-      <div className={styles.downloadSetting}>
-        <>
-          <Text variant='title' size='l'>
-            {messages.requireFollowToDownload}
-          </Text>
-          <Switch
-            checked={downloadSettings?.requires_follow ?? false}
-            onChange={toggleRequiresFollow}
-          />
-        </>
-      </div>
-      <Divider />
-    </Flex>
-  )
-}
-
 type StemFilesModalProps = StemFilesViewProps & {
-  downloadSettings: Download
-  onUpdateDownloadSettings: (downloadSettings: Download) => void
   isOpen: boolean
   onClose: () => void
 }
 
 export const StemFilesModal = ({
-  downloadSettings,
-  onUpdateDownloadSettings,
   isOpen,
   onClose,
   onAddStems,
@@ -286,10 +192,6 @@ export const StemFilesModal = ({
       titleClassName={styles.modalTitle}
       subtitleClassName={styles.modalSubtitle}
     >
-      <DownloadSection
-        downloadSettings={downloadSettings}
-        onUpdateDownloadSettings={onUpdateDownloadSettings}
-      />
       <StemFilesView
         onAddStems={onAddStems}
         stems={stems}

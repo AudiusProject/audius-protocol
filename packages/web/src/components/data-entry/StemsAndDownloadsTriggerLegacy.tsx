@@ -29,7 +29,6 @@ import {
   DOWNLOAD_AVAILABILITY_TYPE,
   DOWNLOAD_CONDITIONS,
   DOWNLOAD_PRICE_HUMANIZED,
-  DOWNLOAD_REQUIRES_FOLLOW,
   GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
@@ -93,8 +92,7 @@ export const StemsAndDownloadsTriggerLegacy = (
     is_download_gated: isDownloadGated,
     download_conditions: savedDownloadConditions,
     is_downloadable: isDownloadable,
-    is_original_available: isOriginalAvailable,
-    download
+    is_original_available: isOriginalAvailable
   } = fields
 
   /**
@@ -115,11 +113,6 @@ export const StemsAndDownloadsTriggerLegacy = (
     const initialValues = {}
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
     set(initialValues, IS_ORIGINAL_AVAILABLE, isOriginalAvailable)
-    set(
-      initialValues,
-      DOWNLOAD_REQUIRES_FOLLOW,
-      isContentFollowGated(savedDownloadConditions)
-    )
     set(initialValues, STEMS, stems ?? [])
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, tempDownloadConditions)
@@ -164,7 +157,6 @@ export const StemsAndDownloadsTriggerLegacy = (
       const availabilityType = get(values, DOWNLOAD_AVAILABILITY_TYPE)
       const downloadConditions = get(values, DOWNLOAD_CONDITIONS)
       const isDownloadable = get(values, IS_DOWNLOADABLE)
-      const downloadRequiresFollow = get(values, DOWNLOAD_REQUIRES_FOLLOW)
       const lastGateKeeper = get(values, LAST_GATE_KEEPER)
 
       onChangeField(IS_DOWNLOADABLE, isDownloadable)
@@ -176,77 +168,46 @@ export const StemsAndDownloadsTriggerLegacy = (
           downloadable: 'stemsAndDownloads'
         })
       }
-      // Note that there is some redundancy with the download fields
-      // this will go away once we remove the download object from track
-      // and only keep the top level fields.
 
-      if (isLosslessDownloadsEnabled) {
-        // If download does not inherit from stream conditions,
-        // extract the correct download conditions based on the selected availability type.
-        if (!streamConditions) {
-          onChangeField(IS_DOWNLOAD_GATED, false)
-          onChangeField(DOWNLOAD_CONDITIONS, null)
-          onChangeField('download', { ...download, requires_follow: false })
-          switch (availabilityType) {
-            case DownloadTrackAvailabilityType.USDC_PURCHASE: {
-              onChangeField(IS_DOWNLOAD_GATED, true)
-              const {
-                usdc_purchase: { price }
-              } = downloadConditions as USDCPurchaseConditions
-              onChangeField(DOWNLOAD_CONDITIONS, {
-                // @ts-ignore fully formed in saga (validated + added splits)
-                usdc_purchase: { price: Math.round(price) }
-              })
-              setLastGateKeeper({
-                ...lastGateKeeper,
-                access: 'stemsAndDownloads'
-              })
-              break
-            }
-            case DownloadTrackAvailabilityType.FOLLOWERS: {
-              onChangeField(IS_DOWNLOAD_GATED, true)
-              const { follow_user_id } =
-                downloadConditions as FollowGatedConditions
-              onChangeField(DOWNLOAD_CONDITIONS, { follow_user_id })
-              onChangeField('download', { ...download, requires_follow: true })
-              setLastGateKeeper({
-                ...lastGateKeeper,
-                access: 'stemsAndDownloads'
-              })
-              break
-            }
-            case DownloadTrackAvailabilityType.PUBLIC: {
-              break
-            }
+      // If download does not inherit from stream conditions,
+      // extract the correct download conditions based on the selected availability type.
+      if (isLosslessDownloadsEnabled && !streamConditions) {
+        onChangeField(IS_DOWNLOAD_GATED, false)
+        onChangeField(DOWNLOAD_CONDITIONS, null)
+        switch (availabilityType) {
+          case DownloadTrackAvailabilityType.USDC_PURCHASE: {
+            onChangeField(IS_DOWNLOAD_GATED, true)
+            const {
+              usdc_purchase: { price }
+            } = downloadConditions as USDCPurchaseConditions
+            onChangeField(DOWNLOAD_CONDITIONS, {
+              // @ts-ignore fully formed in saga (validated + added splits)
+              usdc_purchase: { price: Math.round(price) }
+            })
+            setLastGateKeeper({
+              ...lastGateKeeper,
+              access: 'stemsAndDownloads'
+            })
+            break
           }
-        }
-      } else {
-        // If download does not inherit from stream conditions,
-        // set the download conditions to be follow gated if requires follow switch is on.
-        if (!streamConditions) {
-          onChangeField(IS_DOWNLOAD_GATED, downloadRequiresFollow)
-          onChangeField(
-            DOWNLOAD_CONDITIONS,
-            downloadRequiresFollow
-              ? ({
-                  follow_user_id: accountUserId
-                } as FollowGatedConditions)
-              : null
-          )
-          onChangeField('download', {
-            ...download,
-            requires_follow: downloadRequiresFollow
-          })
-          setLastGateKeeper({
-            ...lastGateKeeper,
-            access: 'stemsAndDownloads'
-          })
+          case DownloadTrackAvailabilityType.FOLLOWERS: {
+            onChangeField(IS_DOWNLOAD_GATED, true)
+            const { follow_user_id } =
+              downloadConditions as FollowGatedConditions
+            onChangeField(DOWNLOAD_CONDITIONS, { follow_user_id })
+            setLastGateKeeper({
+              ...lastGateKeeper,
+              access: 'stemsAndDownloads'
+            })
+            break
+          }
+          case DownloadTrackAvailabilityType.PUBLIC: {
+            break
+          }
         }
       }
     },
     [
-      accountUserId,
-      download,
       isLosslessDownloadsEnabled,
       onChangeField,
       setLastGateKeeper,

@@ -95,27 +95,11 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     (values: TrackEditFormValues) => {
       const tracksForUpload = tracks.map((track, i) => {
         const metadata = values.trackMetadatas[i]
-        const {
-          licenseType: ignoredLicenseType,
-          is_downloadable: isDownloadable,
-          download_conditions: downloadConditions,
-          ...restMetadata
-        } = metadata
-        // Update the download json field based on the isDownloadable flag and the download conditions.
-        // Note that this only needs to be done temporarily until the backend is updated to remove the download fields redundancy.
-        // TODO: Remove this once the backend is updated to remove the download fields redundancy.
-        const download = {
-          is_downloadable: isDownloadable,
-          requires_follow: isContentFollowGated(downloadConditions),
-          cid: null
-        }
+        const { licenseType: ignoredLicenseType, ...restMetadata } = metadata
         return {
           ...track,
           metadata: {
-            ...restMetadata,
-            is_downloadable: isDownloadable,
-            download_conditions: downloadConditions,
-            download
+            ...restMetadata
           }
         }
       })

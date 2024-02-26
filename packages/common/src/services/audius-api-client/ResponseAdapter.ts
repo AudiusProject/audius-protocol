@@ -441,11 +441,6 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     genre: '',
     has_current_user_reposted: false,
     has_current_user_saved: false,
-    download: {
-      is_downloadable: true,
-      requires_follow: false,
-      cid: stem.cid
-    },
     license: null,
     mood: null,
     play_count: 0,
@@ -475,10 +470,10 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     is_download_gated: false,
     download_conditions: null,
     access: { stream: true, download: true },
-    track_cid: '',
+    track_cid: stem.cid,
     orig_file_cid: '',
     orig_filename: stem.orig_filename,
-    is_downloadable: false,
+    is_downloadable: true,
     is_original_available: false,
     is_playlist_upload: false
   }

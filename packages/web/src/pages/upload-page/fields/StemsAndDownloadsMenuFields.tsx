@@ -30,7 +30,6 @@ import {
   DOWNLOAD_CONDITIONS,
   STREAM_CONDITIONS,
   DOWNLOAD_AVAILABILITY_TYPE,
-  DOWNLOAD_REQUIRES_FOLLOW,
   IS_DOWNLOADABLE,
   IS_ORIGINAL_AVAILABLE,
   STEMS,
@@ -44,11 +43,6 @@ const messages = {
   [IS_DOWNLOADABLE]: {
     header: 'Allow Full Track Download',
     description: 'Allow your fans to download a copy of your full track.'
-  },
-  [DOWNLOAD_REQUIRES_FOLLOW]: {
-    header: 'Available Only to Followers',
-    description:
-      'Make your stems and source files available only to your followers'
   },
   [IS_ORIGINAL_AVAILABLE]: {
     header: 'Provide Lossless Files',
@@ -80,7 +74,6 @@ export const stemsAndDownloadsSchema = ({
   z
     .object({
       [IS_DOWNLOADABLE]: z.boolean(),
-      [DOWNLOAD_REQUIRES_FOLLOW]: z.boolean(),
       [STEMS]: z.any(),
       [IS_ORIGINAL_AVAILABLE]: z.boolean(),
       [DOWNLOAD_CONDITIONS]: z.any(),
@@ -204,16 +197,9 @@ export const StemsAndDownloadsMenuFields = (
   const [, , { setValue: setIsOriginalAvailable }] = useField(
     IS_ORIGINAL_AVAILABLE
   )
-  const [
-    { value: downloadRequiresFollow },
-    ,
-    { setValue: setDownloadRequiresFollow }
-  ] = useField(DOWNLOAD_REQUIRES_FOLLOW)
   const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useField<StemUploadWithFile[]>(STEMS)
   const previousStemsValue = usePrevious(stemsValue)
-  const [{ value: streamConditions }] =
-    useField<Nullable<AccessConditions>>(STREAM_CONDITIONS)
   const [{ value: availabilityType }, , { setValue: setAvailabilityType }] =
     useField<DownloadTrackAvailabilityType>(DOWNLOAD_AVAILABILITY_TYPE)
   const [isAvailabilityTouched, setIsAvailabilityTouched] = useState(
@@ -253,23 +239,12 @@ export const StemsAndDownloadsMenuFields = (
     if (isLosslessDownloadsEnabled && isDownloadable) {
       setIsOriginalAvailable(true)
     }
-    if (!isDownloadable && stemsValue.length === 0) {
-      setDownloadRequiresFollow(false)
-    }
   }, [
     isLosslessDownloadsEnabled,
-    setDownloadRequiresFollow,
     isDownloadable,
     setIsOriginalAvailable,
     stemsValue.length
   ])
-
-  // If download requires follow is enabled, set the track to be downloadable.
-  useEffect(() => {
-    if (downloadRequiresFollow) {
-      setIsDownloadable(true)
-    }
-  }, [downloadRequiresFollow, setIsDownloadable])
 
   // Allow full track download and provide lossless files if additional are uploaded for the first time.
   useEffect(() => {
@@ -376,14 +351,7 @@ export const StemsAndDownloadsMenuFields = (
           header={messages[IS_ORIGINAL_AVAILABLE].header}
           description={messages[IS_ORIGINAL_AVAILABLE].description}
         />
-      ) : (
-        <SwitchRowField
-          name={DOWNLOAD_REQUIRES_FOLLOW}
-          header={messages[DOWNLOAD_REQUIRES_FOLLOW].header}
-          description={messages[DOWNLOAD_REQUIRES_FOLLOW].description}
-          disabled={!!streamConditions}
-        />
-      )}
+      ) : null}
       <Divider />
       <StemFilesView
         stems={stemsValue}
