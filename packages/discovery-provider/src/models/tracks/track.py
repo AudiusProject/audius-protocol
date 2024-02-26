@@ -87,6 +87,7 @@ class Track(Base, RepresentableMixin):
     download_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
+    placement_hosts = Column(String, nullable=True)
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"

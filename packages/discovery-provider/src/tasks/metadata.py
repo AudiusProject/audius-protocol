@@ -75,6 +75,7 @@ class TrackMetadata(TypedDict):
     download_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
     ai_attribution_user_id: Optional[int]
+    placement_hosts: Optional[str]
 
 
 track_metadata_format: TrackMetadata = {
@@ -120,6 +121,7 @@ track_metadata_format: TrackMetadata = {
     "download_conditions": None,
     "is_playlist_upload": False,
     "ai_attribution_user_id": None,
+    "placement_hosts": None,
 }
 
 # Required format for user metadata retrieved from the content system
