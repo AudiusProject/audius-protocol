@@ -10,7 +10,6 @@ export NVM_DIR=$HOME/.nvm;
 source $NVM_DIR/nvm.sh;
 
 nvm install
-cp .python-version-dev .python-version
 pyenv install -s
 rbenv install -s
 
