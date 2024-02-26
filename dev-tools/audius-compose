@@ -185,7 +185,6 @@ def cli(ctx, protocol_dir):
             protocol_dir = protocol_dir.parent
         if protocol_dir.name == "":
             raise click.ClickException("Unable to find protocol dir")
-        click.confirm(f'Using protocol dir "{protocol_dir}"', default=True, abort=True)
 
     ctx.obj = protocol_dir
 
