@@ -7,11 +7,7 @@ import AudiusClient from 'services/Audius'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { Status } from 'types'
 
-type OwnProps = {}
-
-type TotalStakedChartProps = OwnProps
-
-const TotalStakedChart: React.FC<TotalStakedChartProps> = () => {
+const TotalStakedChart: React.FC = () => {
   const { totalStaked } = useTotalStaked(Bucket.YEAR)
   let error, labels, data, topNumber: string
   if (totalStaked === MetricError.ERROR) {
