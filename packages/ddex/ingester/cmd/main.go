@@ -50,6 +50,10 @@ func main() {
 		go indexer.RunNewIndexer(ctx)
 	case "parser":
 		go parser.RunNewParser(ctx)
+	case "e2e-test":
+		// TODO: Something like RunNewE2ETest(ctx)
+		fmt.Println("e2e-test not implemented")
+		cancel()
 	default:
 		fmt.Println("Unknown service: " + *service)
 	}

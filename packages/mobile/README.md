@@ -55,21 +55,17 @@ cd android && ./gradlew clean && cd ..
 
 ## Debugging
 
-- To debug the app, install [Flipper](https://fbflipper.com/) either through their website, or using brew `brew install --cask flipper`.
+To debug the app follow the instructions [here](https://reactnative.dev/docs/debugging?js-debugger=new-debugger)
 
-> Note as of time of writing, flipper is not signed correctly, and macos will prevent Flipper from opening. To override this, follow the resulting popup's instructions (go to security and confirm you want to open Flipper)
+You can also start react and redux devtools with
 
-We use a few different plugins as a team, make sure to install and enable the various plugins in flipper GUI
+```
+npm run react-devtools -w audius-mobile-client
+```
 
-- Hermes (default)
-- React Devtools (default)
-- Network Inspector (default)
-- Layout (default)
-- Shared Preferences Viewer (default)
-- [Redux Debugger](https://github.com/jk-gan/flipper-plugin-redux-debugger)
-- [advanced-async-storage](https://github.com/lbaldy/flipper-plugin-async-storage-advanced)
-- [performance](https://github.com/oblador/react-native-performance)
-- [react-native-performance-monitor](https://github.com/bamlab/react-native-flipper-performance-monitor)
+```
+npm run redux-devtools -w audius-mobile-client
+```
 
 On Android, you can use the adb Android Studio tool or
 

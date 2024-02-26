@@ -6,7 +6,8 @@ import {
   IconInfo,
   Flex,
   IconCalendarMonth,
-  RadioGroup
+  RadioGroup,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -23,7 +24,6 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { Text } from 'components/typography'
 import { formatCalendarTime } from 'utils/dateUtils'
 
 import { useTrackField } from '../hooks'

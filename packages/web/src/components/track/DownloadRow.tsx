@@ -6,10 +6,9 @@ import {
 } from '@audius/common/models'
 import { cacheTracksSelectors, CommonState } from '@audius/common/store'
 import { getDownloadFilename, formatBytes } from '@audius/common/utils'
-import { Flex, IconReceive, PlainButton, Text } from '@audius/harmony'
+import { Flex, IconButton, IconReceive, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
 
-import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -20,7 +19,8 @@ const { getTrack } = cacheTracksSelectors
 
 const messages = {
   fullTrack: 'Full Track',
-  followToDownload: 'Must follow artist to download.'
+  followToDownload: 'Must follow artist to download.',
+  download: 'Download Stem'
 }
 
 type DownloadRowProps = {
@@ -61,16 +61,18 @@ export const DownloadRow = ({
     : { shouldDisplayDownloadFollowGated: false }
 
   const downloadButton = () => (
-    <PlainButton
+    <IconButton
+      icon={IconReceive}
+      size='s'
+      aria-label={messages.download}
+      color='default'
       onClick={() =>
         onDownload({
           trackIds: trackId ? [trackId] : []
         })
       }
       disabled={shouldDisplayDownloadFollowGated}
-    >
-      <Icon icon={IconReceive} size='small' />
-    </PlainButton>
+    />
   )
 
   return (
@@ -113,11 +115,18 @@ export const DownloadRow = ({
       </Flex>
       <Flex gap='2xl'>
         {size && !isMobile ? (
-          <Text variant='body' size='s' color='subdued'>
+          <Text
+            variant='body'
+            size='s'
+            color='subdued'
+            css={{
+              'white-space': 'nowrap'
+            }}
+          >
             {formatBytes(size)}
           </Text>
         ) : null}
-        {hideDownload ? null : (
+        {!hideDownload ? null : (
           <>
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip

@@ -21,6 +21,7 @@ import { HarmonyTextField } from 'app/components/fields'
 import { useToast } from 'app/hooks/useToast'
 
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 const initialValues = {
   otp: ''
@@ -38,6 +39,8 @@ export const ConfirmEmailScreen = () => {
   const { value: password } = useSelector(getPasswordField)
   const { value: otp } = useSelector(getOtpField)
   const isSubmitting = !!otp
+
+  useTrackScreen('ConfirmEmail')
 
   const handleSubmit = useCallback(
     (values: ConfirmEmailValues) => {

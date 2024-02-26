@@ -30,6 +30,7 @@ import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 const initialValues = {
   handle: ''
@@ -58,7 +59,13 @@ const SocialMediaSection = ({
 }: SocialMediaSectionProps) => {
   const { spacing } = useTheme()
   return (
-    <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
+    <Paper
+      shadow='flat'
+      direction='column'
+      backgroundColor='surface2'
+      p='l'
+      gap='l'
+    >
       <Flex direction='column' gap='s'>
         <Text variant='title' size='m'>
           {pickHandlePageMessages.claimHandleHeaderPrefix}{' '}
@@ -74,6 +81,7 @@ const SocialMediaSection = ({
         onError={onError}
         onClose={onClose}
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
+        page='pick-handle'
       />
       <Text variant='body' size='m'>
         {pickHandlePageMessages.claimHandleHeadsUp}
@@ -96,6 +104,7 @@ export const PickHandleScreen = () => {
     resetAction: unsetSocialProfile,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
+  useTrackScreen('PickHandle')
 
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(
@@ -144,7 +153,7 @@ export const PickHandleScreen = () => {
     >
       <Page>
         {isWaitingForSocialLogin ? (
-          <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+          <SocialMediaLoading onClose={handleCloseSocialMediaLogin} hideIcon />
         ) : null}
         <Heading
           heading={pickHandlePageMessages.title}

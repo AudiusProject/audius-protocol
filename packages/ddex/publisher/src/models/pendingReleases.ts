@@ -105,16 +105,18 @@ const trackMetadataSchema = new mongoose.Schema({
   audio_file_url_hash_algo: { type: String, required: true },
 
   // Required if it's a standalone track. Uses playlist_owner_id and playlist's cover_art_url if it's part of an album
-  artist_name: String,
-  cover_art_url: String,
-  cover_art_url_hash: String,
-  cover_art_url_hash_algo: String,
+  artist_id: { type: String, required: true },
+  artist_name: { type: String, required: true },
+  cover_art_url: { type: String, required: true },
+  cover_art_url_hash: { type: String, required: true },
+  cover_art_url_hash_algo: { type: String, required: true },
 })
 
 export type TrackMetadata = mongoose.InferSchemaType<typeof trackMetadataSchema>
 
 const collectionMetadataSchema = new mongoose.Schema({
   playlist_name: { type: String, required: true },
+  playlist_owner_name: { type: String, required: true },
   playlist_owner_id: { type: String, required: true },
   genre: { type: String, enum: genres, required: true },
   release_date: { type: Date, required: true },

@@ -221,7 +221,7 @@
   align-items: center;
 }
 
-.gatedContentSectionDescription img {
+.collectibleImage {
   width: var(--unit-8);
   height: var(--unit-8);
   border: 1px solid var(--neutral-light-7);

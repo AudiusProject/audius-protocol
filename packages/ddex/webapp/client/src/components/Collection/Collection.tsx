@@ -67,6 +67,7 @@ const Table = ({
               <th>Delivery Status</th>
               <th>XML Filepath</th>
               <th>Created At</th>
+              <th>Errors</th>
             </tr>
           </thead>
           <tbody>
@@ -79,6 +80,11 @@ const Table = ({
                 </td>
                 <td>{item.xml_file_path}</td>
                 <td>{item.created_at}</td>
+                <td>
+                  {item.errors && item.errors.length
+                    ? item.errors.join(', ')
+                    : 'None'}
+                </td>
               </tr>
             ))}
           </tbody>

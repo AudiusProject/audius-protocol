@@ -9,18 +9,11 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { encodeHashId } from '@audius/common/utils'
-import {
-  IconRemove,
-  Box,
-  Flex,
-  Text as HarmonyText,
-  IconButton
-} from '@audius/harmony'
+import { IconRemove, Box, Flex, Text, IconButton } from '@audius/harmony'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
-import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreview } from 'components/upload/TrackPreview'
 import { audiusSdk } from 'services/audius-sdk'
@@ -119,13 +112,11 @@ export const StemFilesView = ({
     return stems.length > 0 ? (
       <>
         <Flex direction='column'>
-          <HarmonyText variant='title' size='l'>
+          <Text variant='title' size='l'>
             {messages.stemTypeHeader}
-          </HarmonyText>
+          </Text>
           <Box mt='s'>
-            <HarmonyText variant='body'>
-              {messages.stemTypeDescription}
-            </HarmonyText>
+            <Text variant='body'>{messages.stemTypeDescription}</Text>
           </Box>
         </Flex>
         <Flex
@@ -184,7 +175,9 @@ export const StemFilesView = ({
 
     return (
       <Dropzone
-        className={styles.dropZone}
+        className={cn(styles.dropZone, {
+          [styles.dropzoneDisabled]: atCapacity
+        })}
         titleTextClassName={cn(styles.dropzoneTitle, {
           [styles.dropzoneDisabled]: atCapacity
         })}
@@ -275,7 +268,7 @@ const StemListItem = ({
           textClassName={styles.dropdownText}
         />
       </div>
-      <Text size='small' strength='strong'>
+      <Text variant='body' size='s' strength='strong'>
         {metadata.title}
       </Text>
       {renderDeleteButton()}

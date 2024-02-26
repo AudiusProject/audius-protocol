@@ -12,16 +12,15 @@ import {
   Button,
   Flex,
   IconExternalLink,
-  IconCheck,
-  PlainButton
+  Text,
+  PlainButton,
+  IconValidationCheck
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
-import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 
 import { ADDRESS, AMOUNT, METHOD } from '../types'
@@ -105,7 +104,7 @@ export const TransferSuccessful = ({
           <Divider style={{ margin: 0 }} />
           <div className={styles.destination}>
             <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='medium' strength='default'>
+            <Text variant='body' size='m' strength='default'>
               {addressValue}
             </Text>
             <PlainButton
@@ -121,10 +120,8 @@ export const TransferSuccessful = ({
         </>
       ) : null}
       <div className={styles.success}>
-        <div className={styles.completionCheck}>
-          <Icon icon={IconCheck} size='xxSmall' color='white' />
-        </div>
-        <Text variant={'heading'} size='small' strength='default'>
+        <IconValidationCheck size='m' />
+        <Text variant='heading' size='s' strength='default'>
           {messages.success}
         </Text>
       </div>

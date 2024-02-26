@@ -1,6 +1,9 @@
+import { useCallback, useState } from 'react'
+
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import { useScreenOptions } from 'app/app/navigation'
+import { ScreenOptionsContext, defaultScreenOptions } from 'app/app/navigation'
 
 import { AccountLoadingScreen } from './screens/AccountLoadingScreen'
 import { ConfirmEmailScreen } from './screens/ConfirmEmailScreen'
@@ -22,39 +25,62 @@ type SignOnStackProps = {
 
 export const SignOnStack = (props: SignOnStackProps) => {
   const { isSplashScreenDismissed } = props
-  const screenOptions = useScreenOptions(screenOptionsOverrides)
+  const [screenOptions, setScreenOptions] =
+    useState<NativeStackNavigationOptions>({
+      ...defaultScreenOptions,
+      ...screenOptionsOverrides
+    })
+
+  const updateOptions = useCallback(
+    (newOptions: NativeStackNavigationOptions) => {
+      setScreenOptions({
+        ...defaultScreenOptions,
+        ...screenOptionsOverrides,
+        ...newOptions
+      })
+    },
+    []
+  )
 
   return (
-    <Stack.Navigator initialRouteName='SignOn' screenOptions={screenOptions}>
-      <Stack.Group>
-        <Stack.Screen name='SignOn' options={{ headerShown: false }}>
-          {() => (
-            <SignOnScreen isSplashScreenDismissed={isSplashScreenDismissed} />
-          )}
-        </Stack.Screen>
-        <Stack.Screen name='ConfirmEmail' component={ConfirmEmailScreen} />
-      </Stack.Group>
-      <Stack.Group>
-        <Stack.Screen name='CreatePassword' component={CreatePasswordScreen} />
-        <Stack.Screen name='PickHandle' component={PickHandleScreen} />
-        <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
-        <Stack.Screen
-          name='CreateLoginDetails'
-          component={CreateLoginDetailsScreen}
-        />
-        <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
-        <Stack.Screen
-          name='SelectGenre'
-          component={SelectGenresScreen}
-          options={{ headerLeft: () => null, gestureEnabled: false }}
-        />
-        <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
-        <Stack.Screen
-          name='AccountLoading'
-          component={AccountLoadingScreen}
-          options={{ headerShown: false }}
-        />
-      </Stack.Group>
-    </Stack.Navigator>
+    <ScreenOptionsContext.Provider
+      value={{ options: screenOptions, updateOptions }}
+    >
+      <Stack.Navigator initialRouteName='SignOn' screenOptions={screenOptions}>
+        <Stack.Group>
+          <Stack.Screen name='SignOn' options={{ headerShown: false }}>
+            {() => (
+              <SignOnScreen isSplashScreenDismissed={isSplashScreenDismissed} />
+            )}
+          </Stack.Screen>
+          <Stack.Screen name='ConfirmEmail' component={ConfirmEmailScreen} />
+        </Stack.Group>
+        <Stack.Group>
+          <Stack.Screen
+            name='CreatePassword'
+            component={CreatePasswordScreen}
+          />
+          <Stack.Screen name='PickHandle' component={PickHandleScreen} />
+          <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
+          <Stack.Screen
+            name='CreateLoginDetails'
+            component={CreateLoginDetailsScreen}
+          />
+          <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
+          <Stack.Screen
+            name='SelectGenre'
+            component={SelectGenresScreen}
+            options={{ headerLeft: () => null, gestureEnabled: false }}
+          />
+          <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
+          <Stack.Screen
+            name='AccountLoading'
+            component={AccountLoadingScreen}
+            // animation: none here is a workaround to prevent "white screen of death" on Android
+            options={{ headerShown: false, animation: 'none' }}
+          />
+        </Stack.Group>
+      </Stack.Navigator>
+    </ScreenOptionsContext.Provider>
   )
 }

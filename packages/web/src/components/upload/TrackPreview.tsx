@@ -21,12 +21,12 @@ import {
   IconFileUnknown as iconFileUnknown,
   IconFileWAV as iconFileWav,
   IconFileWEBM,
-  IconTrash
+  IconTrash,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import numeral from 'numeral'
 
-import { Text } from 'components/typography'
 import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'
@@ -135,7 +135,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
   return (
     <div className={cn(styles.trackPreviewNew, className)}>
       {displayIndex ? (
-        <Text className={styles.indexText} size='small'>
+        <Text variant='body' className={styles.indexText} size='s'>
           {index + 1}
         </Text>
       ) : null}
@@ -148,7 +148,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
           setValue={onEditTitle}
         />
       ) : (
-        <Text className={styles.titleText} size='small'>
+        <Text variant='body' className={styles.titleText} size='s'>
           {trackTitle}
         </Text>
       )}
@@ -171,9 +171,10 @@ export const TrackPreview = (props: TrackPreviewProps) => {
           </Box>
         ) : null}
         <Text
+          variant='body'
           className={styles.fileSizeText}
-          size='small'
-          color='neutralLight2'
+          size='s'
+          color='subdued'
         >
           {numeral(fileSize).format('0.0 b')}
         </Text>
@@ -183,15 +184,17 @@ export const TrackPreview = (props: TrackPreviewProps) => {
               <IconButton
                 icon={IconCompose}
                 color='subdued'
+                size='s'
                 aria-label={messages.edit}
-                onClick={() => setIsEditingTitle(true)}
                 className={styles.editTitleButton}
+                onClick={() => setIsEditingTitle(true)}
               />
             ) : null}
             <IconButton
               icon={IconTrash}
               aria-label={messages.remove}
               color='subdued'
+              size='s'
               onClick={onRemove}
               disabled={!allowDelete}
               className={styles.removeButton}
@@ -204,6 +207,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
             aria-label={messages.remove}
             color='subdued'
             onClick={onRemove}
+            size='s'
             className={styles.removeButton}
           />
         ) : null}

@@ -20,6 +20,7 @@ type Delivery struct {
 	XmlFilePath    string             `bson:"xml_file_path"`
 	XmlContent     primitive.Binary   `bson:"xml_content"`
 	CreatedAt      time.Time          `bson:"created_at"`
+	Errors         []string           `bson:"errors"`
 }
 
 type PendingRelease struct {

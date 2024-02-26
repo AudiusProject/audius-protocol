@@ -18,7 +18,6 @@ declare module 'express-session' {
       verified: boolean
       profilePicture: ProfilePicture | null
       isAdmin: boolean
-      isArtist: boolean
     }
   }
 }
@@ -99,7 +98,6 @@ export default function createApp(
         verified: user.verified,
         profilePicture: user.profilePicture,
         isAdmin: user.isAdmin,
-        isArtist: user.isArtist,
       }
 
       req.session.save((err) => {
@@ -122,7 +120,7 @@ export default function createApp(
         return res.status(404).json({ error: 'User not found' })
       }
 
-      // Update the user's isAdmin and isArtist in case the allowlists changed
+      // Update the user's isAdmin in case the allowlist changed
       const updatedUser = await user.updateRoles()
       if (!updatedUser?._id) {
         return res.status(404).json({ error: 'User not found after updating' })
@@ -136,7 +134,6 @@ export default function createApp(
         verified: updatedUser.verified,
         profilePicture: updatedUser.profilePicture,
         isAdmin: updatedUser.isAdmin,
-        isArtist: updatedUser.isArtist,
       }
       req.session.save((err) => {
         if (err) {

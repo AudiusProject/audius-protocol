@@ -3,7 +3,7 @@ FROM golang:alpine3.18
 RUN apk add build-base make ffmpeg
 
 # Required for service registration
-RUN apk add curl build-base python3-dev=3.11.6-r0 py3-pip
+RUN apk add curl build-base python3-dev=3.11.8-r0 py3-pip
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install 'web3==6.6.1'
 

@@ -1,7 +1,5 @@
 import { Button, IconCart, Flex, Text } from '@audius/harmony'
 
-import { Icon } from 'components/Icon'
-
 export type NoTransactionsContentProps = {
   headerText: string
   bodyText: string
@@ -29,7 +27,7 @@ export const NoTransactionsContent = ({
         justifyContent='center'
         direction='column'
       >
-        <Icon icon={IconCart} color='neutralLight4' size='xxxLarge' />
+        <IconCart color='subdued' size='3xl' />
         <Text variant='heading' size='s'>
           {headerText}
         </Text>

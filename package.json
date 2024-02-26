@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.67",
+  "version": "1.5.68",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -100,6 +100,7 @@
   },
   "dependencies": {
     "@escape.tech/mookme": "2.4.1",
+    "@redux-devtools/remote": "0.8.0",
     "pg": "8.8.0"
   },
   "overrides": {
