@@ -26,7 +26,8 @@ import {
 const { requestPushNotificationPermissions } = settingsPageActions
 
 export const WelcomeDrawer = () => {
-  const { value: displayName } = useSelector(getNameField)
+  // const { value: displayName } = useSelector(getNameField)
+  const displayName = 'Super long dispaly name'
   const navigation = useNavigation()
   const { onClose: closeDrawer } = useDrawer('Welcome')
   const dispatch = useDispatch()
@@ -65,6 +66,7 @@ export const WelcomeDrawer = () => {
             strength='strong'
             id='welcome-title'
             color='accent'
+            textAlign='center'
           >
             {fillString(
               welcomeModalMessages.welcome,
@@ -84,7 +86,10 @@ export const WelcomeDrawer = () => {
             variant='tertiary'
             onPress={() => {
               handleClose()
-              navigation.navigate('HomeStack', { screen: 'Upload' })
+              navigation.navigate('HomeStack', {
+                screen: 'App',
+                params: { screen: 'Upload' }
+              })
             }}
             fullWidth
           >
