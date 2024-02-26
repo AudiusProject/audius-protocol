@@ -70,13 +70,13 @@ const messages = {
 }
 
 const Home = () => {
-  const { isLoggedIn } = useAccount()
+  const { isLoggedIn, wallet } = useAccount()
   const { recentProposals } = useProposals()
   const pushRoute = usePushRoute()
   const { typography } = useTheme() as HarmonyTheme // Need to cast because the type from import is incorrect
 
   return (
-    <Page icon={IconDrag} title={messages.title} hidePreviousPage>
+    <Page icon={IconDrag} title={messages.title}>
       <Flex direction="column" gap="l">
         <Card direction="column" gap="xl" p="xl">
           <Flex
@@ -135,7 +135,7 @@ const Home = () => {
           <EstimatedWeeklyStat />
           <EstimatedAnnualStat />
         </Card>
-        {isLoggedIn && <ManageAccountCard />}
+        {isLoggedIn && wallet ? <ManageAccountCard wallet={wallet} /> : null}
         <RewardsTimingCard />
         <Paper className={styles.proposals}>
           <Box p="xl">

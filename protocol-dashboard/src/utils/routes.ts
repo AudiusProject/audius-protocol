@@ -54,7 +54,7 @@ export const SERVICES_ACCOUNT_OPERATOR_TITLE = 'Operator'
 
 // Governance Pages
 export const GOVERNANCE = '/governance'
-export const GOVERNANCE_TITLE = 'All Governance Proposals'
+export const GOVERNANCE_TITLE = 'Governance'
 export const GOVERNANCE_PROPOSAL = '/governance/proposal/:proposalId'
 export const GOVERNANCE_PROPOSAL_TITLE = 'Proposal'
 

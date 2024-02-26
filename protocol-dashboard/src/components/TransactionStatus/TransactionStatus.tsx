@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, ReactNode } from 'react'
 import clsx from 'clsx'
+import { Text, Box, Flex } from '@audius/harmony'
 
 import styles from './TransactionStatus.module.css'
 import Button, { ButtonType } from 'components/Button'
@@ -22,6 +23,7 @@ import AudiusClient from 'services/Audius'
 import { TICKER } from 'utils/consts'
 import { getHumanReadableTime } from 'utils/format'
 import { useTimeRemaining } from 'store/cache/protocol/hooks'
+import { Card } from 'components/Card/Card'
 
 const messages = {
   ready: 'Ready',
@@ -29,7 +31,8 @@ const messages = {
   cancel: 'CANCEL',
   confirm: 'CONFIRM',
   claim: 'MAKE CLAIM',
-  target: 'Target block'
+  target: 'Target block',
+  pendingTransactions: 'Pending Transactions'
 }
 
 const getMessage = (
@@ -116,28 +119,32 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
         [props.className!]: !!props.className
       })}
     >
-      <Loading className={styles.loading} />
-      <div className={styles.textContainer}>
-        <div className={styles.primaryText}>{`Pending ${props.name}`}</div>
-        {timeRemaining !== null && (
-          <div className={styles.secondaryText}>
-            {`${messages.target} ${
-              props.lockupExpiryBlock
-            } - ${getHumanReadableTime(timeRemaining)} ${
-              messages.timeRemaining
-            }`}
-          </div>
-        )}
-      </div>
-      <Button
-        leftIcon={<IconRemove />}
-        className={styles.btn}
-        onClick={onClick}
-        textClassName={styles.btnText}
-        iconClassName={styles.btnIcon}
-        text={messages.cancel}
-        type={ButtonType.PRIMARY_ALT}
-      />
+      <Flex>
+        <Loading className={styles.loading} />
+        <div className={styles.textContainer}>
+          <div className={styles.primaryText}>{`Pending ${props.name}`}</div>
+          {timeRemaining !== null && (
+            <div className={styles.secondaryText}>
+              {`${messages.target} ${
+                props.lockupExpiryBlock
+              } - ${getHumanReadableTime(timeRemaining)} ${
+                messages.timeRemaining
+              }`}
+            </div>
+          )}
+        </div>
+      </Flex>
+      <Box>
+        <Button
+          leftIcon={<IconRemove />}
+          className={styles.btn}
+          onClick={onClick}
+          textClassName={styles.btnText}
+          iconClassName={styles.btnIcon}
+          text={messages.cancel}
+          type={ButtonType.PRIMARY_ALT}
+        />
+      </Box>
       <ConfirmTransactionModal
         isOpen={isOpen}
         onClose={onCloseModal}
@@ -220,24 +227,26 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
         <div className={styles.primaryText}>{props.name}</div>
         <div className={styles.secondaryText}>{messages.ready}</div>
       </div>
-      <Button
-        leftIcon={<IconRemove />}
-        text={messages.cancel}
-        className={clsx(styles.btn, styles.readyCancelBtn)}
-        textClassName={styles.btnText}
-        iconClassName={styles.btnIcon}
-        onClick={onClickCancel}
-        type={ButtonType.PRIMARY_ALT}
-      />
-      <Button
-        leftIcon={<IconCheck />}
-        text={messages.confirm}
-        className={styles.btn}
-        textClassName={styles.btnText}
-        iconClassName={styles.btnIcon}
-        type={ButtonType.PRIMARY}
-        onClick={onClickSubmit}
-      />
+      <Box>
+        <Button
+          leftIcon={<IconRemove />}
+          text={messages.cancel}
+          className={clsx(styles.btn, styles.readyCancelBtn)}
+          textClassName={styles.btnText}
+          iconClassName={styles.btnIcon}
+          onClick={onClickCancel}
+          type={ButtonType.PRIMARY_ALT}
+        />
+        <Button
+          leftIcon={<IconCheck />}
+          text={messages.confirm}
+          className={styles.btn}
+          textClassName={styles.btnText}
+          iconClassName={styles.btnIcon}
+          type={ButtonType.PRIMARY}
+          onClick={onClickSubmit}
+        />
+      </Box>
       <ConfirmTransactionModal
         isOpen={isCancelOpen}
         onClose={onCloseCancel}
@@ -276,26 +285,31 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ className }) => {
     return null
   }
   return (
-    <div
-      className={clsx(styles.container, {
-        [className!]: !!className
-      })}
-    >
-      {pendingTx.transactions.map((t, idx) => {
-        if (t.lockupExpiryBlock > ethBlockNumber) {
+    <Card direction="column" gap="l" p="xl">
+      <Text variant="heading" size="s">
+        {messages.pendingTransactions}
+      </Text>
+      <div
+        className={clsx(styles.container, {
+          [className!]: !!className
+        })}
+      >
+        {pendingTx.transactions.map((t, idx) => {
+          if (t.lockupExpiryBlock > ethBlockNumber) {
+            return (
+              <div key={idx} className={styles.transactionWrapper}>
+                <WaitingTransaction {...t} ethBlockNumber={ethBlockNumber} />
+              </div>
+            )
+          }
           return (
             <div key={idx} className={styles.transactionWrapper}>
-              <WaitingTransaction {...t} ethBlockNumber={ethBlockNumber} />
+              <ReadyTransaction {...t} />
             </div>
           )
-        }
-        return (
-          <div key={idx} className={styles.transactionWrapper}>
-            <ReadyTransaction {...t} />
-          </div>
-        )
-      })}
-    </div>
+        })}
+      </div>
+    </Card>
   )
 }
 

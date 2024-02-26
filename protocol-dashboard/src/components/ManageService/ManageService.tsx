@@ -29,7 +29,6 @@ import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
-import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import DelegatesModal from 'components/DelegatesModal'
 import DelegatorsModal from 'components/DelegatorsModal'
 import Loading from 'components/Loading'
@@ -48,65 +47,12 @@ const messages = {
   change: 'Change',
   manage: 'Manage',
   view: 'View',
-  claim: 'Make Claim',
-  connectAudiusProfile: 'Connect Audius Profile',
-  connectAudiusProfileDescription:
-    'Help other users identify you by connecting your Audius account.',
-  unlinkAudiusProfile: 'Unlink Audius Profile'
+  claim: 'Make Claim'
 }
 
 interface ManageServiceProps {
   className?: string
   showViewActiveServices?: boolean
-}
-
-type ConnectAudiusProtileBtnProps = {
-  wallet: string
-}
-const ConnectAudiusProfileButton = ({
-  wallet
-}: ConnectAudiusProtileBtnProps) => {
-  const { isOpen, onClick, onClose } = useModalControls()
-  return (
-    <>
-      <Button
-        onClick={onClick}
-        type={ButtonType.PRIMARY}
-        text={messages.connectAudiusProfile}
-        className={styles.registerBtn}
-        textClassName={styles.registerBtnText}
-      />
-      <ConnectAudiusProfileModal
-        wallet={wallet}
-        isOpen={isOpen}
-        onClose={onClose}
-        action="connect"
-      />
-    </>
-  )
-}
-
-type DisconnectAudiusProfileButton = {
-  wallet: string
-}
-const DisconnectAudiusProfileButton = ({
-  wallet
-}: DisconnectAudiusProfileButton) => {
-  const { isOpen, onClick, onClose } = useModalControls()
-
-  return (
-    <>
-      <span className={styles.actionText} onClick={onClick}>
-        {messages.unlinkAudiusProfile}
-      </span>
-      <ConnectAudiusProfileModal
-        wallet={wallet}
-        isOpen={isOpen}
-        onClose={onClose}
-        action="disconnect"
-      />
-    </>
-  )
 }
 
 const DecreaseStake = ({ isDisabled }: { isDisabled: boolean }) => {

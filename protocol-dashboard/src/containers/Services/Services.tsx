@@ -34,9 +34,11 @@ const Services: React.FC<ServicesProps> = () => {
     userStatus === Status.Success && 'serviceProvider' in accountUser
 
   return (
-    <Page title={messages.title} icon={IconEmbed} hidePreviousPage>
+    <Page title={messages.title} icon={IconEmbed}>
       <Flex direction="column" gap="l">
-        {isLoggedIn && <ManageAccountCard />}
+        {isLoggedIn && accountUser ? (
+          <ManageAccountCard wallet={accountUser?.wallet} />
+        ) : null}
         {isServiceProvider ? <ManageService /> : <RegisterNodeCard />}
         <RewardsTimingCard />
         <TopOperatorsTable

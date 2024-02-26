@@ -1,4 +1,5 @@
 .link {
+  all: unset;
   font-weight: 500;
   color: var(--primary-dark-2);
 }
