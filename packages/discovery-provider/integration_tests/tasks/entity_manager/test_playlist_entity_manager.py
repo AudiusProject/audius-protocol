@@ -1222,7 +1222,7 @@ def test_access_conditions(app, mocker, tx_receipts):
             "playlist_image_sizes_multihash": "",
             "playlist_name": "album",
             "is_stream_gated": False,
-            "stream_conditions": {},
+            "stream_conditions": None,
         },
         "InvalidCreatePlaylistAccessConditions": {
             "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
@@ -1419,7 +1419,8 @@ def test_access_conditions(app, mocker, tx_receipts):
         )
         assert album.is_album == True
         assert album.is_stream_gated == False
-        assert not album.stream_conditions
+        # assert not album.stream_conditions
+        assert album.stream_conditions == None
         # TODO: previously was assert album.stream_conditions == {} but what if None?
 
         # Validate creating usdc-gated non-album playlist fails
@@ -1445,4 +1446,5 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album.is_stream_gated == False
-        assert not album.stream_conditions
+        # assert not album.stream_conditions
+        assert album.stream_conditions == None
