@@ -65,7 +65,8 @@ program
         type,
         blocknumber,
         splits: streamConditions.usdc_purchase.splits,
-        purchaserUserId: user.user_id
+        purchaserUserId: user.user_id,
+        purchaseAccess: 'stream'
       })
       if (response.error) {
         program.error(chalk.red(response.error))
