@@ -175,7 +175,7 @@ const AlbumSearchResult = (props: AlbumSearchResultProps) => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const onSearchResultSelect = useTrackSearchResultSelect(
-    'playlist',
+    'album',
     'autocomplete'
   )
 
