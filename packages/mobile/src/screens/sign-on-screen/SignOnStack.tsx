@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { MobileOS } from '@audius/common/models'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { getMobileOS } from 'audius-client/src/utils/clientUtil'
+import { Platform } from 'react-native'
 
 import { ScreenOptionsContext, defaultScreenOptions } from 'app/app/navigation'
 
@@ -17,7 +17,6 @@ import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
-import { Platform } from 'react-native'
 
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
