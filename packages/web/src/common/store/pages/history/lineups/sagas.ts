@@ -1,17 +1,21 @@
-import { LineupEntry, Track, UserTrack, UserTrackMetadata } from '@audius/common/models'
+import { LineupEntry, Track, UserTrackMetadata } from '@audius/common/models'
+import { responseAdapter } from '@audius/common/services'
 import {
   accountSelectors,
   getContext,
   historyPageTracksLineupActions as tracksActions
 } from '@audius/common/store'
-import { decodeHashId, encodeHashId, removeNullable } from '@audius/common/utils'
+import {
+  decodeHashId,
+  encodeHashId,
+  removeNullable
+} from '@audius/common/utils'
 import { keyBy } from 'lodash'
 import { call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
-import { APIActivityV2, responseAdapter } from '@audius/common/services'
 const { getUserId } = accountSelectors
 const { prefix: PREFIX } = tracksActions
 
@@ -24,7 +28,7 @@ function* getHistoryTracks() {
   try {
     const currentUserId = yield* select(getUserId)
     if (!currentUserId) return []
-    
+
     const { data, signature } = yield* call([
       audiusBackendInstance,
       audiusBackendInstance.signDiscoveryNodeRequest
@@ -38,8 +42,11 @@ function* getHistoryTracks() {
         limit: 100
       }
     )
-    const activityData = activity.data as APIActivityV2[]
-    const tracks = activityData.map(responseAdapter.makeActivity)
+    const activityData = activity.data
+    if (!activityData) return []
+
+    const tracks = activityData
+      .map(responseAdapter.makeActivity)
       .filter(removeNullable) as UserTrackMetadata[]
 
     const processedTracks = yield* call(processAndCacheTracks, tracks)

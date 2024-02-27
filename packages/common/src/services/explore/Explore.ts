@@ -1,4 +1,5 @@
 import { AudiusSdk } from '@audius/sdk'
+
 import {
   Collection,
   FeedFilter,
@@ -30,13 +31,13 @@ type TopUserListen = {
 type ExploreConfig = {
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient
-  audiusSdk: AudiusSdk
+  audiusSdk: () => Promise<AudiusSdk>
 }
 
 export class Explore {
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient
-  audiusSdk: AudiusSdk
+  audiusSdk: () => Promise<AudiusSdk>
 
   constructor(config: ExploreConfig) {
     this.audiusBackendInstance = config.audiusBackendInstance
@@ -103,7 +104,8 @@ export class Explore {
       const tracks = lineupItems.filter(
         (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
       )
-      const { data, signature } = await this.audiusBackendInstance.signDiscoveryNodeRequest()
+      const { data, signature } =
+        await this.audiusBackendInstance.signDiscoveryNodeRequest()
       const history = await sdk.full.users.getUsersTrackHistory({
         id: encodeHashId(currentUserId),
         encodedDataMessage: data,
@@ -111,12 +113,15 @@ export class Explore {
         limit: 100
       })
       const activityData = history.data as APIActivityV2[]
-      const listenedToTracks = activityData.map(responseAdapter.makeActivity)
+      const listenedToTracks = activityData
+        .map(responseAdapter.makeActivity)
         .filter(removeNullable) as UserTrackMetadata[]
 
       // Imperfect solution. Ideally we use an endpoint that gives us true/false
       // if a user has listened to a passed in array of tracks.
-      const listenendToTrackIds = listenedToTracks.map((track) => track.track_id)
+      const listenendToTrackIds = listenedToTracks.map(
+        (track) => track.track_id
+      )
 
       const notListenedToTracks = tracks.filter(
         (track) => !listenendToTrackIds[track.track_id]

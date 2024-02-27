@@ -4,6 +4,7 @@ import {
   UserTrackMetadata,
   UserTrack
 } from '@audius/common/models'
+import { responseAdapter } from '@audius/common/services'
 import {
   accountSelectors,
   smartCollectionPageActions,
@@ -29,7 +30,6 @@ import {
   UNDER_THE_RADAR,
   REMIXABLES
 } from './smartCollections'
-import { APIActivityV2, responseAdapter } from '@audius/common/services'
 const { setSmartCollection } = collectionPageActions
 const { fetchSmartCollection, fetchSmartCollectionSucceeded } =
   smartCollectionPageActions
@@ -39,17 +39,19 @@ const { getUserId } = accountSelectors
 const COLLECTIONS_LIMIT = 25
 
 function* fetchHeavyRotation() {
+  yield* waitForRead()
+
   const currentUserId = yield* select(getUserId)
   const audiusSdk = yield* getContext('audiusSdk')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* call(audiusSdk)
-    
+
   const { data, signature } = yield* call([
     audiusBackendInstance,
     audiusBackendInstance.signDiscoveryNodeRequest
   ])
-
-  const userListeningHistoryMostListenedByUser = yield* call(
+  if (!currentUserId) return { ...HEAVY_ROTATION }
+  const activity = yield* call(
     [sdk.full.users, sdk.full.users.getUsersTrackHistory],
     {
       id: encodeHashId(currentUserId),
@@ -59,8 +61,11 @@ function* fetchHeavyRotation() {
       limit: 20
     }
   )
-  const activityData = userListeningHistoryMostListenedByUser.data as APIActivityV2[]
-  const mostListenedTracks = activityData.map(responseAdapter.makeActivity)
+  const activityData = activity.data
+  if (!activityData) return { ...HEAVY_ROTATION }
+
+  const mostListenedTracks = activityData
+    .map(responseAdapter.makeActivity)
     .filter(removeNullable) as UserTrackMetadata[]
 
   const users = yield* call(
@@ -88,8 +93,8 @@ function* fetchHeavyRotation() {
 }
 
 function* fetchBestNewReleases() {
-  const explore = yield* getContext('explore')
   yield* waitForRead()
+  const explore = yield* getContext('explore')
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -118,6 +123,7 @@ function* fetchBestNewReleases() {
 }
 
 function* fetchUnderTheRadar() {
+  yield* waitForRead()
   const explore = yield* getContext('explore')
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
@@ -191,8 +197,8 @@ function* fetchFeelingLucky() {
 }
 
 function* fetchRemixables() {
-  const explore = yield* getContext('explore')
   yield* waitForRead()
+  const explore = yield* getContext('explore')
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
