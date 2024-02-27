@@ -189,6 +189,8 @@ export const TrackPreview = (props: TrackPreviewProps) => {
             ) : null}
             <IconButton
               icon={IconTrash}
+              size='s'
+              color='subdued'
               aria-label={messages.remove}
               onClick={onRemove}
               disabled={!allowDelete}

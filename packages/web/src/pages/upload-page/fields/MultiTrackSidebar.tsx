@@ -196,7 +196,7 @@ const TrackRow = (props: TrackRowProps) => {
               className={styles.iconRemove}
               onClick={(e) => handleRemoveTrack(e, index)}
             >
-              <IconTrash fill='--default' />
+              <IconTrash color='default' />
             </div>
           ) : null}
         </div>
