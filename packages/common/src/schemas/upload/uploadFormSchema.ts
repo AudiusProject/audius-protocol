@@ -127,18 +127,18 @@ const createSdkSchema = () =>
       )
       .nullable(),
     release_date: z.optional(z.string()).nullable(),
-    remixOf: z.optional(
+    remix_of: z.optional(
       z
         .object({
           tracks: z
             .array(
               z.object({
-                parentTrackId: z.number()
+                parent_track_id: z.number()
               })
             )
             .min(1)
         })
-        .strict()
+        .strict().nullable()
     ),
     tags: z.optional(z.string()),
     title: z.string({

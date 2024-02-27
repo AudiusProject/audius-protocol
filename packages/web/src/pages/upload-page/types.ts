@@ -34,8 +34,8 @@ export type SingleTrackEditValues = Omit<TrackMetadataForUpload, 'remixOf'> & {
     commercialUse: Nullable<boolean>
     derivativeWorks: Nullable<boolean>
   }
-  remixOf: {
-    tracks: { parentTrackId: number }[]
+  remix_of: {
+    tracks: { parent_track_id: number }[]
   } | null
 }
 

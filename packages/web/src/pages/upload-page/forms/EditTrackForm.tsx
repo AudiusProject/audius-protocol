@@ -70,13 +70,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       tracks,
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
-        remixOf: track.metadata.remix_of
-          ? {
-              tracks: track.metadata.remix_of.tracks.map((t) => ({
-                parentTrackId: t.parent_track_id
-              }))
-            }
-          : null,
         description: '',
         releaseDate: new Date(moment().toString()),
         tags: '',
