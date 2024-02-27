@@ -340,19 +340,26 @@ export function* handleUploads({
       )
   )
   const numPublishWorkers = MAX_CONCURRENT_REGISTRATIONS
+
+  // Queue for the upload tasks (uploading files to storage)
   const uploadQueue = yield* call(
     channel<UploadTask>,
     buffers.expanding(tracks.length)
   )
+
+  // Queue for the publish tasks (writing to entity manager)
   const publishQueue = yield* call(
     channel<PublishTask>,
     buffers.expanding(tracks.length)
   )
+
+  // Channel to listen for responses
   const responseChannel = yield* call(
     channel<UploadTrackResponse>,
     buffers.expanding(10)
   )
 
+  // Channel to relay progress actions
   const progressChannel = yield* call(channel<ProgressAction>)
   const actionDispatcherTask = yield* fork(
     actionChannelDispatcher,
@@ -382,6 +389,9 @@ export function* handleUploads({
   // Make note of how many stems there are for each track and in total.
   for (let i = 0; i < tracks.length; i++) {
     const track = tracks[i]
+    uploadQueue.put({ trackIndex: i, stemIndex: null, track })
+
+    // Report analytics for each track
     yield* put(make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
       artworkSource: track.metadata.artwork?.source,
       genre: track.metadata.genre,
@@ -395,7 +405,8 @@ export function* handleUploads({
           : 'yes'
         : 'no'
     }))
-    uploadQueue.put({ trackIndex: i, stemIndex: null, track })
+
+    // Process the track's stems
     const trackStems = prepareStemsForUpload(
       track.metadata.stems ?? [],
       track.metadata.track_id
