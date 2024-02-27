@@ -84,7 +84,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      // @ts-ignore
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root}>

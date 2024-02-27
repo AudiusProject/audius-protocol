@@ -64,13 +64,19 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { formState, onContinue } = props
   const { tracks } = formState
 
-  // @ts-ignore - Slight differences in the sdk vs common track metadata types
   const initialValues: TrackEditFormValues = useMemo(
     () => ({
       trackMetadatasIndex: 0,
       tracks,
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
+        remixOf: track.metadata.remix_of
+          ? {
+              tracks: track.metadata.remix_of.tracks.map((t) => ({
+                parentTrackId: t.parent_track_id
+              }))
+            }
+          : null,
         description: '',
         releaseDate: new Date(moment().toString()),
         tags: '',

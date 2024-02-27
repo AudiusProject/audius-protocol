@@ -66,7 +66,7 @@ export const processFiles = (
       return null
     }
     const title = file.name.replace(/\.[^/.]+$/, '') // strip file extension
-    let artwork = { file: null, url: '' }
+    let artwork = { file: null as File | null, url: '' }
     try {
       const tags = await readMediaTags(file)
       if (tags && tags.picture) {
@@ -75,7 +75,6 @@ export const processFiles = (
         const artworkFile = new File([blob], 'Artwork', {
           type: tags.picture.format
         })
-        // @ts-ignore
         artwork = await createArtwork([artworkFile])
       }
     } catch (error) {
