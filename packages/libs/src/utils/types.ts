@@ -162,6 +162,7 @@ export type TrackMetadata = {
   permalink: string
   audio_upload_id: Nullable<string>
   preview_start_seconds: Nullable<number>
+  placement_hosts: Nullable<string>
 
   // Optional Fields
   is_invalid?: boolean
