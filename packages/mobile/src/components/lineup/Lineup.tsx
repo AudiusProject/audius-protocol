@@ -70,7 +70,7 @@ export const getItemCount = (
 ) =>
   Math.ceil(
     (Dimensions.get('window').height / totalTileHeight[variant]) *
-    (typeof multiplier === 'function' ? multiplier() : multiplier)
+      (typeof multiplier === 'function' ? multiplier() : multiplier)
   )
 
 // Calculate minimum, initial, and loadMore itemCounts
@@ -93,7 +93,7 @@ const useItemCounts = (variant: LineupVariant) =>
     [variant]
   )
 
-const fallbackLineupSelector = (() => { }) as any
+const fallbackLineupSelector = (() => {}) as any
 
 const styles = StyleSheet.create({
   root: {
@@ -142,9 +142,8 @@ const LineupTileView = memo(function LineupTileView({
   togglePlay,
   onPress
 }: LineupTileViewProps) {
-  const LineupTile = getLineupTileComponent(item)
-  console.log('asdf making lineuptile: ', onPress)
-  if (LineupTile) {
+  const TrackOrCollectionTile = getLineupTileComponent(item)
+  if (TrackOrCollectionTile) {
     return (
       <View style={styles.item}>
         <TrackOrCollectionTile
@@ -234,8 +233,6 @@ export const Lineup = ({
   onPressItem,
   ...listProps
 }: LineupProps) => {
-  console.log('asdf Lineup: ', onPressItem)
-
   const dispatch = useDispatch()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
@@ -524,7 +521,7 @@ export const Lineup = ({
   const pullToRefreshProps =
     pullToRefresh || refreshProp
       ? // Need to disable refresh so scrolling the "ListEmptyComponent" doesn't trigger refresh
-      { onRefresh: areSectionsEmpty ? undefined : refresh, refreshing }
+        { onRefresh: areSectionsEmpty ? undefined : refresh, refreshing }
       : {}
 
   const handleEndReached = useCallback(() => handleLoadMore(), [handleLoadMore])

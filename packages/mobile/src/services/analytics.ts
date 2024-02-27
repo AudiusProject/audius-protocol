@@ -75,8 +75,6 @@ export const identify = async (
 // Track Event
 // Docs: https://segment.com/docs/connections/spec/track/
 export const track = async ({ eventName, properties }: Track) => {
-  console.log('asdf track: ', eventName, properties)
-
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
   const version = VersionNumber.appVersion

@@ -12,8 +12,6 @@ import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
 import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
 
 const { getSearchStatus } = searchResultsPageSelectors
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
-import { useSelector } from 'react-redux'
 
 const selectSearchUsers = (state: CommonState) => {
   const searchStatus = getSearchStatus(state)
@@ -25,9 +23,7 @@ const selectSearchUsers = (state: CommonState) => {
 }
 
 export const ProfilesTab = () => {
-  const searchQuery: string = useSelector(getSearchBarText)
-  const onCardPress = useTrackSearchResultSelect(searchQuery, 'profile')
-  console.log('asdf ProfilesTab: ', searchQuery, onCardPress)
+  const onCardPress = useTrackSearchResultSelect('profile')
   const users = useProxySelector(selectSearchUsers, [])
 
   useFetchTabResultsEffect(SearchKind.USERS)

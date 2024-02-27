@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 
-import type { ID, User } from '@audius/common/models'
+import type { User } from '@audius/common/models'
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native'
 import { Text, View } from 'react-native'
 import type { LinearGradientProps } from 'react-native-linear-gradient'
@@ -64,7 +64,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 
 type BaseCardProps = {
   onPress: () => void
-  noNavigatePress?: boolean
   primaryText: string
   renderImage: (options?: ImageProps) => ReactNode
   secondaryText?: string
@@ -94,7 +93,7 @@ export const Card = (props: CardProps) => {
     secondaryText,
     style,
     styles: stylesProp,
-    TileProps = {},
+    TileProps = {}
   } = props
 
   const styles = useStyles()

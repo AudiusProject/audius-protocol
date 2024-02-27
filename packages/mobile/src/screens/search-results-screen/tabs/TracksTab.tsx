@@ -14,7 +14,6 @@ import { SearchQueryContext } from '../SearchQueryContext'
 
 import { SearchResultsTab } from './SearchResultsTab'
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
 import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
 
 const { getSearchTracksLineup } = searchResultsPageSelectors
@@ -24,8 +23,7 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 )
 
 export const TracksTab = ({ route }) => {
-  const searchQuery: string = useSelector(getSearchBarText)
-  const trackSearchResultSelect = useTrackSearchResultSelect(searchQuery, 'track')
+  const trackSearchResultSelect = useTrackSearchResultSelect('track')
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
   const dispatch = useDispatch()

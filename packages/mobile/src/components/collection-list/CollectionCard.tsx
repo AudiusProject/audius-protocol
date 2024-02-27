@@ -30,15 +30,15 @@ const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
 type FullCollectionCardProps = {
   collection: Collection
   style?: StyleProp<ViewStyle>
+  onPress?: (id: ID) => void
   /** Override for what number to show as the # of tracks. Optional. */
   numTracks?: number
-  trackSearchResultSelect?: (id: ID) => void
 }
 
 type CollectionCardWithIdProps = {
   collectionId: ID
   style?: StyleProp<ViewStyle>
-  trackSearchResultSelect?: (id: ID) => void
+  onPress?: (id: ID) => void
 }
 
 type CollectionCardProps = FullCollectionCardProps | CollectionCardWithIdProps

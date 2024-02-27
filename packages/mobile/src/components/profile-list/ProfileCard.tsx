@@ -17,12 +17,12 @@ const formatProfileCardSecondaryText = (followers: number) => {
 
 type ProfileCardProps = Partial<BaseProfileCardProps> & {
   profile: User
-  onPress: (id: ID) => void
   preventNavigation?: boolean
+  onCardPress?: (id: ID) => void
 }
 
 export const ProfileCard = (props: ProfileCardProps) => {
-  const { profile, preventNavigation, onPress, ...other } = props
+  const { profile, preventNavigation, onCardPress, ...other } = props
   const { user_id, handle } = profile
   const navigation = useNavigation()
 
@@ -30,8 +30,8 @@ export const ProfileCard = (props: ProfileCardProps) => {
     if (!preventNavigation) {
       navigation.push('Profile', { handle })
     }
-    onPress?.(user_id)
-  }, [navigation, handle, onPress, user_id])
+    onCardPress?.(user_id)
+  }, [navigation, handle, onCardPress, user_id, preventNavigation])
 
   const renderImage = useCallback(
     (props: ImageProps) => (

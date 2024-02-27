@@ -1,18 +1,14 @@
 import { useEffect, useMemo } from 'react'
 
-import type { ID } from '@audius/common/models'
 import { useIsFocused } from '@react-navigation/native'
 import { fetchSearch } from 'audius-client/src/common/store/search-bar/actions'
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconNote, IconUser } from '@audius/harmony-native'
 import { Screen, Tag, ScreenHeader, ScreenContent } from 'app/components/core'
 import { TabNavigator, tabScreen } from 'app/components/top-tab-bar'
 import { useRoute } from 'app/hooks/useRoute'
-import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
-import { EventNames } from 'app/types/analytics'
 
 import { SearchFocusContext } from './SearchFocusContext'
 import { SearchQueryContext } from './SearchQueryContext'
@@ -48,21 +44,6 @@ export const TagSearchScreen = () => {
     () => ({ isTagSearch: true, query }),
     [query]
   )
-  const searchQuery = useSelector(getSearchBarText)
-  const trackSearchResultSelect = (
-    id: ID,
-    kind: 'track' | 'profile' | 'playlist' | 'album'
-  ) => {
-    track(
-      make({
-        eventName: EventNames.SEARCH_RESULT_SELECT,
-        term: searchQuery,
-        source: 'more results page',
-        kind,
-        id
-      })
-    )
-  }
 
   useEffect(() => {
     dispatch(fetchSearch(query))
@@ -71,19 +52,13 @@ export const TagSearchScreen = () => {
   const tracksScreen = tabScreen({
     name: 'Tracks',
     Icon: IconNote,
-    component: TracksTab,
-    initialParams: {
-      trackSearchResultSelect: (id) => trackSearchResultSelect(id, 'track')
-    }
+    component: TracksTab
   })
 
   const profilesScreen = tabScreen({
     name: 'Profiles',
     Icon: IconUser,
-    component: ProfilesTab,
-    initialParams: {
-      onCardPress: (id) => trackSearchResultSelect(id, 'profile')
-    }
+    component: ProfilesTab
   })
 
   return (

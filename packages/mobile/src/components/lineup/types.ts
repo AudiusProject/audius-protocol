@@ -166,6 +166,7 @@ export type LineupProps = {
    * Track search result selection for analytics
    */
   onPressItem?: (id: ID) => void
+
   EndOfLineupComponent?: ComponentType<any> | ReactElement
 } & Pick<
   SectionListProps<unknown>,

@@ -9,9 +9,7 @@ import { spacing } from 'app/styles/spacing'
 import { EmptyResults } from '../EmptyResults'
 
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
 import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
-import { useSelector } from 'react-redux'
 
 const { getSearchStatus } = searchResultsPageSelectors
 
@@ -29,9 +27,8 @@ const selectSearchPlaylists = (state: CommonState) => {
     .filter((playlist) => playlist.user && !playlist.user.is_deactivated)
 }
 
-export const PlaylistsTab = ({ route }) => {
-  const searchQuery: string = useSelector(getSearchBarText)
-  const trackSearchResultSelect = useTrackSearchResultSelect(searchQuery, 'playlist')
+export const PlaylistsTab = () => {
+  const trackSearchResultSelect = useTrackSearchResultSelect('playlist')
   const playlists = useProxySelector(selectSearchPlaylists, [])
   useFetchTabResultsEffect(SearchKind.PLAYLISTS)
 

@@ -1,9 +1,6 @@
 import { useMemo } from 'react'
 
-import type { ID } from '@audius/common/models'
 import { useIsFocused } from '@react-navigation/native'
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
-import { useSelector } from 'react-redux'
 
 import {
   IconAlbum,
@@ -17,8 +14,6 @@ import {
   tabScreen
 } from 'app/components/top-tab-bar/TopTabNavigator'
 import { useRoute } from 'app/hooks/useRoute'
-import { make, track } from 'app/services/analytics'
-import { EventNames } from 'app/types/analytics'
 
 import { SearchFocusContext } from './SearchFocusContext'
 import { SearchQueryContext } from './SearchQueryContext'
@@ -40,29 +35,29 @@ export const SearchResultsScreen = () => {
     () => ({ isTagSearch: false, query }),
     [query]
   )
-  const searchQuery = useSelector(getSearchBarText)
+
   const profilesScreen = tabScreen({
     name: 'Profiles',
     Icon: IconUser,
-    component: ProfilesTab,
+    component: ProfilesTab
   })
 
   const tracksScreen = tabScreen({
     name: 'Tracks',
     Icon: IconNote,
-    component: TracksTab,
+    component: TracksTab
   })
 
   const albumsScreen = tabScreen({
     name: 'Albums',
     Icon: IconAlbum,
-    component: AlbumsTab,
+    component: AlbumsTab
   })
 
   const playlistsScreen = tabScreen({
     name: 'Playlists',
     Icon: IconPlaylists,
-    component: PlaylistsTab,
+    component: PlaylistsTab
   })
 
   return (
