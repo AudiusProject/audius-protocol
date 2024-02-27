@@ -1,5 +1,10 @@
 import { useCallback } from 'react'
 
+import {
+  AlbumSchema,
+  CollectionValues,
+  PlaylistSchema
+} from '@audius/common/schemas'
 import { UploadType } from '@audius/common/store'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
@@ -20,7 +25,6 @@ import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
 import { CollectionFormState } from '../types'
-import { AlbumSchema, CollectionValues, PlaylistSchema } from '../validation'
 
 import styles from './EditCollectionForm.module.css'
 
@@ -61,17 +65,13 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      const { tracks, trackDetails, ...collectionMetadata } = values
-
       onContinue({
         uploadType,
-        // @ts-expect-error more issues with tracks
         tracks,
-        // @ts-expect-error more issues with tracks
-        metadata: { ...collectionMetadata, ...trackDetails }
+        metadata: values
       })
     },
-    [onContinue, uploadType]
+    [onContinue, uploadType, tracks]
   )
 
   const collectionTypeName =

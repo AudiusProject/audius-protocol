@@ -1,6 +1,7 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
 import { isContentFollowGated } from '@audius/common/models'
+import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import { IconCaretLeft, IconCaretRight, PlainButton } from '@audius/harmony'
 import cn from 'classnames'
@@ -29,7 +30,6 @@ import { StemsAndDownloadsField } from '../fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
 import { defaultHiddenFields } from '../fields/stream-availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
-import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
 
@@ -124,7 +124,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     <Formik<TrackEditFormValues>
       initialValues={initialValues}
       onSubmit={onSubmit}
-      // @ts-expect-error issue with track types
       validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
     >
       {(props) => <TrackEditForm {...props} />}

@@ -80,8 +80,7 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
     displayArtwork = false,
     ...otherProps
   } = props
-  // @ts-ignore - Artwork exists on track metadata object
-  const artworkUrl = track.metadata.artwork.url
+  const artworkUrl = track.metadata.artwork?.url
 
   return (
     <div className={styles.uploadTrackItem} {...otherProps}>

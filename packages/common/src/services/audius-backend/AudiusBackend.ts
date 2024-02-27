@@ -1101,11 +1101,11 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: ExtendedTrackMetadata,
+    metadata: TrackMetadata | ExtendedTrackMetadata,
     transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
-    if (metadata.artwork) {
+    if ('artwork' in metadata && metadata.artwork) {
       const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
         metadata.artwork.file,
         () => {}

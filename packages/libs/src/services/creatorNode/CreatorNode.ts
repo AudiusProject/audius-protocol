@@ -177,7 +177,7 @@ export class CreatorNode {
 
   async uploadTrackAudioAndCoverArtV2(
     trackFile: File,
-    coverArtFile: File,
+    coverArtFile: File | null,
     metadata: TrackMetadata,
     onProgress: ProgressCB
   ): Promise<TrackMetadata> {

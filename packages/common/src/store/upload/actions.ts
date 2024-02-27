@@ -1,12 +1,8 @@
-import { StemUploadWithFile } from '../../models'
+import { CollectionValues } from '~/schemas'
 
-import {
-  ExtendedCollectionMetadata,
-  ExtendedTrackMetadata,
-  Progress,
-  UploadTrack,
-  UploadType
-} from './types'
+import { Collection, Track } from '../../models'
+
+import { Progress, UploadTrack, UploadType } from './types'
 
 export const UPLOAD_TRACKS = 'UPLOAD/UPLOAD_TRACKS'
 export const UPLOAD_TRACKS_REQUESTED = 'UPLOAD/UPLOAD_TRACKS_REQUESTED'
@@ -44,39 +40,43 @@ export const COLLECTION_CREATE_PLAYLIST_ID_EXISTS_ERROR =
 export const COLLECTION_POLL_PLAYLIST_TIMEOUT_ERROR =
   'UPLOAD/ERROR/COLLECTION_POLL_PLAYLIST_TIMEOUT'
 
-export const uploadTracks = (
-  tracks: UploadTrack[],
-  metadata?: ExtendedCollectionMetadata,
-  uploadType?: UploadType,
-  stems?: StemUploadWithFile[]
-) => {
-  return { type: UPLOAD_TRACKS, tracks, metadata, uploadType, stems }
+type UploadPayload =
+  | {
+      uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS
+      tracks: UploadTrack[]
+    }
+  | {
+      uploadType: UploadType.ALBUM | UploadType.PLAYLIST
+      tracks: UploadTrack[]
+      metadata: CollectionValues
+    }
+
+export const uploadTracks = (payload: UploadPayload) => {
+  return { type: UPLOAD_TRACKS, payload }
 }
 
 export const uploadSingleTrackFailed = (index: number) => {
   return { type: UPLOAD_SINGLE_TRACK_FAILED, index }
 }
 
-export const uploadTracksRequested = (
-  tracks: UploadTrack[],
-  metadata?: ExtendedCollectionMetadata,
-  uploadType?: UploadType,
-  stems?: StemUploadWithFile[][]
-) => {
+export const uploadTracksRequested = (payload: UploadPayload) => {
   return {
     type: UPLOAD_TRACKS_REQUESTED,
-    tracks,
-    metadata,
-    uploadType,
-    stems
+    payload
   }
 }
 
 export const uploadTracksSucceeded = (
-  id?: number,
-  trackMetadatas?: ExtendedTrackMetadata[]
+  id: number | null,
+  trackMetadatas: Partial<Track>[],
+  completedEntity: Track | Collection
 ) => {
-  return { type: UPLOAD_TRACKS_SUCCEEDED, id: id ?? null, trackMetadatas }
+  return {
+    type: UPLOAD_TRACKS_SUCCEEDED,
+    id: id ?? null,
+    trackMetadatas,
+    completedEntity
+  }
 }
 
 export const uploadTrackFailed = () => {

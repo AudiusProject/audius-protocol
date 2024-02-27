@@ -145,42 +145,38 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   yield* all(events.map((e) => put(e)))
 }
 
-export function* processTracksForUpload(tracks: TrackForUpload[]) {
+export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.USDC_PURCHASES
   )
-  if (!isUsdcPurchaseEnabled) return tracks
+  if (!isUsdcPurchaseEnabled) return track
 
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
   const ownerUserbank = yield* getUSDCUserBank(wallet)
 
-  tracks.forEach((track) => {
-    const streamConditions = track.metadata.stream_conditions
-    const downloadConditions = track.metadata.download_conditions
-    if (isContentUSDCPurchaseGated(streamConditions)) {
-      const priceCents = streamConditions.usdc_purchase.price
-      const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-      streamConditions.usdc_purchase = {
-        price: priceCents,
-        splits: {
-          [ownerUserbank?.toString() ?? '']: priceWei
-        }
+  if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+    const priceCents = track.stream_conditions.usdc_purchase.price
+    const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+    track.stream_conditions.usdc_purchase = {
+      price: priceCents,
+      splits: {
+        [ownerUserbank?.toString() ?? '']: priceWei
       }
     }
-    if (isContentUSDCPurchaseGated(downloadConditions)) {
-      const priceCents = downloadConditions.usdc_purchase.price
-      const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-      downloadConditions.usdc_purchase = {
-        price: priceCents,
-        splits: {
-          [ownerUserbank.toString()]: priceWei
-        }
+  }
+  if (isContentUSDCPurchaseGated(track.download_conditions)) {
+    const priceCents = track.download_conditions.usdc_purchase.price
+    const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+    track.download_conditions.usdc_purchase = {
+      price: priceCents,
+      splits: {
+        [ownerUserbank.toString()]: priceWei
       }
     }
-  })
+  }
 
-  return tracks
+  return track
 }

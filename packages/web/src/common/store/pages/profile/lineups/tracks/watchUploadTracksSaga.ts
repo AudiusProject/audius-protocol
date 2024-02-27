@@ -1,9 +1,11 @@
-import { Kind, Track } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
   profilePageTracksLineupActions,
   profilePageSelectors,
-  uploadActions
+  uploadActions,
+  CommonState,
+  UploadType
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { put, select, takeEvery } from 'typed-redux-saga'
@@ -19,31 +21,36 @@ export function* watchUploadTracksSaga() {
 }
 
 function* addUploadedTrackToLineup(action: UploadTracksSucceededAction) {
-  const { id, trackMetadatas } = action
   const accountHandle = yield* select(getUserHandle)
-  if (!id || !trackMetadatas || !accountHandle) return
-
+  const { uploadType, completedEntity } = yield* select(
+    (state: CommonState) => state.upload
+  )
   // We will only be adding single track uploads since multi-adds for lineups
   // are cumbersome. When we want to suport multi-track upload on mobile or
   // properly cache desktop profile lineups, we should revisit this.
-  if (trackMetadatas.length > 1) return
+  if (
+    !completedEntity ||
+    !accountHandle ||
+    uploadType !== UploadType.INDIVIDUAL_TRACK
+  )
+    return
 
-  const [uploadedTrack] = trackMetadatas
-  const { track_id } = uploadedTrack
+  const uploadedTrack = completedEntity
+  const id = uploadedTrack.track_id
   const source = yield* select(getTrackSource, accountHandle)
 
   const uploadedTrackLineupEntry = {
     kind: Kind.TRACKS,
-    id: track_id,
-    uid: makeUid(Kind.TRACKS, track_id),
+    id,
+    uid: makeUid(Kind.TRACKS, id),
     source,
-    ...(uploadedTrack as unknown as Track)
+    ...uploadedTrack
   }
 
   yield* put(
     profilePageTracksLineupActions.add(
       uploadedTrackLineupEntry,
-      track_id,
+      id,
       accountHandle,
       true
     )

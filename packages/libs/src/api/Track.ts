@@ -1,3 +1,4 @@
+import { ProgressCB } from '../services/creatorNode'
 import {
   Action,
   EntityManagerClient
@@ -401,9 +402,9 @@ export class Track extends Base {
    */
   async uploadTrackV2(
     trackFile: File,
-    coverArtFile: File,
+    coverArtFile: File | null,
     metadata: TrackMetadata,
-    onProgress: () => void
+    onProgress: ProgressCB
   ) {
     // Validate inputs
     this.REQUIRES(Services.CREATOR_NODE)

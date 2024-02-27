@@ -1,5 +1,7 @@
 import { cloneDeep } from 'lodash'
 
+import { StemUploadWithFile } from '~/models'
+
 import {
   TOGGLE_MULTI_TRACK_NOTIFICATION,
   UPLOAD_TRACKS_REQUESTED,
@@ -15,8 +17,7 @@ import {
   updateProgress,
   uploadSingleTrackFailed
 } from './actions'
-import { ProgressStatus, UploadState, UploadTrack } from './types'
-import { StemUploadWithFile } from '~/models'
+import { ProgressStatus, UploadState, UploadTrack, UploadType } from './types'
 
 const initialState: UploadState = {
   openMultiTrackNotification: true,
@@ -76,15 +77,25 @@ const actionsMap = {
     action: ReturnType<typeof uploadTracksRequested>
   ) {
     const newState = { ...state }
+    const { tracks, uploadType } = action.payload
     newState.uploading = true
-    newState.tracks = action.tracks
-    newState.uploadProgress = action.tracks
-      .map(getInitialProgress)
-      .concat(action.stems?.map((t) => t.map(getInitialProgress)).flat(1) ?? [])
-    newState.metadata = action.metadata ?? null
-    newState.uploadType = action.uploadType ?? null
-    newState.stems = action.stems ?? newState.stems
+    newState.tracks = tracks ?? null
+    newState.uploadProgress =
+      tracks
+        ?.map(getInitialProgress)
+        .concat(
+          tracks
+            ?.map((t) => t.metadata.stems?.map(getInitialProgress) ?? [])
+            .flat(1) ?? []
+        ) ?? null
+    newState.metadata =
+      action.payload.uploadType === UploadType.ALBUM ||
+      action.payload.uploadType === UploadType.PLAYLIST
+        ? action.payload.metadata
+        : null
+    newState.uploadType = uploadType ?? null
     newState.error = false
+    newState.success = false
     return newState
   },
   [UPLOAD_TRACKS_SUCCEEDED](
@@ -104,9 +115,13 @@ const actionsMap = {
       newState.tracks =
         state.tracks?.map((t, i) => ({
           ...t,
-          metadata: trackMetadatas[i]
+          metadata: {
+            ...t.metadata,
+            ...trackMetadatas[i]
+          }
         })) ?? null
     }
+    newState.completedEntity = action.completedEntity
     return newState
   },
   [UPLOAD_TRACKS_FAILED](state: UploadState) {

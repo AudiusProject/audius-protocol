@@ -25,7 +25,7 @@ export const CollectionTrackFieldArray = () => {
                 {tracks.map((track, index) => (
                   <Draggable
                     key={track.file.name}
-                    draggableId={track.file.name}
+                    draggableId={track.file.name ?? ''}
                     index={index}
                   >
                     {(provided) => (

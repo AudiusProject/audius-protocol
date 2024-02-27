@@ -1,18 +1,12 @@
 import { useCallback, useContext } from 'react'
 
-import {
-  Name,
-  ShareSource,
-  Collection,
-  Track,
-  User
-} from '@audius/common/models'
+import { Name, ShareSource, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
   tracksSocialActions,
   usersSocialActions,
-  UploadType,
-  ShareContent
+  ShareContent,
+  UploadType
 } from '@audius/common/store'
 import { IconLink, IconTwitter as IconTwitterBird } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
@@ -83,7 +77,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
   const handleTwitterShare = useCallback(async () => {
     let twitterShareContent: ShareContent
 
-    switch (uploadType) {
+    switch (upload.uploadType) {
       case UploadType.INDIVIDUAL_TRACK: {
         const track = upload.tracks?.[0]
         if (!track) return
@@ -97,7 +91,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
       }
 
       case UploadType.ALBUM: {
-        const album = upload.metadata as Collection
+        const album = upload.completedEntity
         if (!album) return
 
         twitterShareContent = {
@@ -109,7 +103,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
       }
 
       case UploadType.PLAYLIST: {
-        const playlist = upload.metadata as Collection
+        const playlist = upload.completedEntity
         if (!playlist) return
 
         twitterShareContent = {
@@ -142,7 +136,13 @@ export const ShareBanner = (props: ShareBannerProps) => {
         ...analyticsEvent
       })
     )
-  }, [uploadType, record, upload.tracks, upload.metadata, accountUser])
+  }, [
+    record,
+    upload.tracks,
+    accountUser,
+    upload.uploadType,
+    upload.completedEntity
+  ])
 
   const handleCopyLink = useCallback(() => {
     switch (uploadType) {

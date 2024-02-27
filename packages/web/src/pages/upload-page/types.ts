@@ -1,14 +1,12 @@
-import { TrackMetadata } from '@audius/common/models'
-import { UploadType } from '@audius/common/store'
+import { CollectionValues } from '@audius/common/schemas'
+import {
+  UploadTrack,
+  UploadType,
+  ExtendedTrackMetadata
+} from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 
-import { CollectionValues } from './validation'
-
-export type TrackForUpload = {
-  file: File
-  preview: HTMLAudioElement
-  metadata: TrackMetadata
-}
+export type TrackForUpload = UploadTrack
 
 export type InitialFormState = {
   uploadType: undefined
@@ -32,12 +30,15 @@ export type UploadFormState =
   | CollectionFormState
   | InitialFormState
 
-export type SingleTrackEditValues = TrackMetadata & {
+export type SingleTrackEditValues = Omit<ExtendedTrackMetadata, 'remixOf'> & {
   licenseType: {
     allowAttribution: Nullable<boolean>
     commercialUse: Nullable<boolean>
     derivativeWorks: Nullable<boolean>
   }
+  remixOf: {
+    tracks: { parentTrackId: number }[]
+  } | null
 }
 
 export type TrackEditFormValues = {

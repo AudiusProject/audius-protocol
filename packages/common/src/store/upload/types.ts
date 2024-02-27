@@ -1,4 +1,13 @@
-import { CollectionMetadata, StemUpload, TrackMetadata } from '../../models'
+import { CollectionValues } from '~/schemas'
+
+import {
+  Collection,
+  CollectionMetadata,
+  StemUpload,
+  StemUploadWithFile,
+  Track,
+  TrackMetadata
+} from '../../models'
 import { Nullable } from '../../utils/typeUtils'
 
 export type NativeFile = {
@@ -19,7 +28,7 @@ export enum UploadType {
 
 export interface UploadTrack {
   file: File | NativeFile
-  preview: any // Basically the Howler.js API, but with underscores.
+  preview?: any // Basically the Howler.js API, but with underscores.
   metadata: ExtendedTrackMetadata
 }
 
@@ -28,6 +37,7 @@ export interface ExtendedTrackMetadata extends TrackMetadata {
     file: Blob | NativeFile
     url: string
   }>
+  stems?: StemUploadWithFile[]
 }
 
 export interface ExtendedCollectionMetadata extends CollectionMetadata {
@@ -35,6 +45,11 @@ export interface ExtendedCollectionMetadata extends CollectionMetadata {
   artwork: {
     file: Blob
     url: string
+  }
+  trackDetails: {
+    genre: string
+    mood: string
+    tags: string
   }
 }
 
@@ -57,11 +72,10 @@ export type ProgressState = {
   audio: Progress
 }
 
-export interface UploadState {
+type UploadStateBase = {
   openMultiTrackNotification: boolean
   tracks: Nullable<UploadTrack[]>
-  metadata: Nullable<ExtendedCollectionMetadata>
-  uploadType: Nullable<UploadType>
+  metadata: Nullable<CollectionValues>
   uploading: boolean
   uploadProgress: Nullable<ProgressState[]>
   success: boolean
@@ -71,3 +85,16 @@ export interface UploadState {
   stems: StemUpload[][]
   failedTrackIndices: number[]
 }
+
+export type UploadState =
+  | (UploadStateBase & {
+      uploadType:
+        | UploadType.INDIVIDUAL_TRACK
+        | UploadType.INDIVIDUAL_TRACKS
+        | null
+      completedEntity?: Track
+    })
+  | (UploadStateBase & {
+      uploadType: UploadType.ALBUM | UploadType.PLAYLIST | null
+      completedEntity?: Collection
+    })

@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
-import { UploadType } from '@audius/common/store'
+import { NativeFile, UploadType } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
 import cn from 'classnames'
@@ -42,8 +42,10 @@ export const SelectPageNew = (props: SelectPageProps) => {
   const onSelectTracks = useCallback(
     async (selectedFiles: File[]) => {
       const existing = new Set(
-        tracks.map(
-          ({ file }: { file: File }) => `${file.name}-${file.lastModified}`
+        tracks.map(({ file }: { file: File | NativeFile }) =>
+          'lastModified' in file
+            ? `${file.name}-${file.lastModified}`
+            : file.name
         )
       )
       selectedFiles = selectedFiles.filter(({ name, lastModified }) => {

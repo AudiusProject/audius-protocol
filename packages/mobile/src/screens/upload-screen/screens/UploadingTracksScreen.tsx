@@ -65,7 +65,7 @@ export const UploadingTracksScreen = () => {
   const dispatch = useDispatch()
 
   useEffectOnce(() => {
-    dispatch(uploadTracks(tracks, undefined, UploadType.INDIVIDUAL_TRACK))
+    dispatch(uploadTracks({ tracks, uploadType: UploadType.INDIVIDUAL_TRACK }))
   })
 
   const trackUploadProgress = useSelector(getCombinedUploadPercentage)

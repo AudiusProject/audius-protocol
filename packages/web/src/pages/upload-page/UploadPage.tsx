@@ -178,24 +178,7 @@ export const UploadPage = (props: UploadPageProps) => {
 
   const handleUpload = useCallback(() => {
     if (!formState.tracks) return
-    const { tracks } = formState
-    const trackStems = tracks.map((track) => {
-      // @ts-ignore - This has stems in it sometimes
-      return track.metadata.stems ?? []
-    }, [])
-
-    dispatch(
-      uploadTracks(
-        // @ts-ignore - This has artwork on it
-        tracks,
-        formState.uploadType === UploadType.ALBUM ||
-          formState.uploadType === UploadType.PLAYLIST
-          ? formState.metadata
-          : undefined,
-        formState.uploadType,
-        trackStems
-      )
-    )
+    dispatch(uploadTracks(formState))
   }, [dispatch, formState])
 
   useEffect(() => {
