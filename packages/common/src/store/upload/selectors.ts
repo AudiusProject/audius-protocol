@@ -51,8 +51,8 @@ const trackProgressSummary = (
         : stemProgress[key].transcode ?? 0
   }
   return {
-    fileUploadProgress: loaded / total,
-    transcodeProgress: transcode / transcodeTotal
+    fileUploadProgress: total === 0 ? 1 : loaded / total,
+    transcodeProgress: key === 'audio' ? transcode / transcodeTotal : 0
   }
 }
 
