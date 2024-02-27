@@ -80,8 +80,9 @@ const MoodSchema = z
  * forms and their consumers - the form actually submits more data than
  * is validated here. Note the differences between this and the SDK or common 
  * metadata schema for tracks:
- * - This is snake cased, save for a few fields (remixOf, namely)
- * - IDs are numeric
+ * - This is snake cased, save for a few fields (remixOf, namely).
+ * - IDs are numeric.
+ * - No fields that are only knowable after upload.
  */
 const createSdkSchema = () =>
   z.object({
@@ -144,11 +145,6 @@ const createSdkSchema = () =>
     title: z.string({
       required_error: messages.track.titleRequiredError
     }),
-    previewStartSeconds: z.optional(z.number()),
-    audioUploadId: z.optional(z.string()),
-    previewCid: z.optional(z.string()),
-    orig_file_cid: z.optional(z.string()),
-    orig_filename: z.optional(z.string()),
     is_downloadable: z.optional(z.boolean()),
     is_original_available: z.optional(z.boolean())
   })
