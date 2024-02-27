@@ -1420,7 +1420,6 @@ def test_access_conditions(app, mocker, tx_receipts):
         assert album.is_album == True
         assert album.is_stream_gated == False
         assert album.stream_conditions == None
-        # TODO: previously was assert album.stream_conditions == {} but what if None?
 
         # Validate creating usdc-gated non-album playlist fails
         album: Playlist = (
