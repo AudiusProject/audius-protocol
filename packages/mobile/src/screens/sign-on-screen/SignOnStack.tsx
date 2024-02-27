@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { getAccountUser } from '@audius/common/store/account/selectors'
+import { accountSelectors } from '@audius/common/store'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { getSignOn } from 'audius-client/src/common/store/pages/signon/selectors'
@@ -18,6 +18,7 @@ import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
+const { getAccountUser } = accountSelectors
 
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
