@@ -4,8 +4,10 @@ import { welcomeModalMessages } from '@audius/common/messages'
 import { settingsPageActions } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
 import { css } from '@emotion/native'
+import { setWelcomeModalShown } from 'audius-client/src/common/store/pages/signon/actions'
 import { getNameField } from 'audius-client/src/common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import {
   Button,
@@ -26,11 +28,14 @@ import {
 const { requestPushNotificationPermissions } = settingsPageActions
 
 export const WelcomeDrawer = () => {
-  // const { value: displayName } = useSelector(getNameField)
-  const displayName = 'Super long dispaly name'
+  const { value: displayName } = useSelector(getNameField)
   const navigation = useNavigation()
   const { onClose: closeDrawer } = useDrawer('Welcome')
   const dispatch = useDispatch()
+
+  useEffectOnce(() => {
+    dispatch(setWelcomeModalShown(true))
+  })
 
   const openNotificationsDrawer = useCallback(() => {
     dispatch(requestPushNotificationPermissions())

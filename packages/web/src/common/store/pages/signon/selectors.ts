@@ -71,6 +71,9 @@ export const getHasCompletedAccount = createSelector(
   }
 )
 
+export const getWelcomeModalShown = (state: AppState) =>
+  state.signOn.welcomeModalShown
+
 /**
  * Each lineup that invokes this selector should pass its own selector as an argument, e.g.
  *   const getLineupMetadatas = makeGetLineupMetadatas(ownProps.lineupSelector)

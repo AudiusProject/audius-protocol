@@ -8,11 +8,14 @@ import {
   playerActions
 } from '@audius/common/store'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { setWelcomeModalShown } from 'audius-client/src/common/store/pages/signon/actions'
 import {
   getHasCompletedAccount,
-  getStartedSignUpProcess
+  getStartedSignUpProcess,
+  getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import useAppState from 'app/hooks/useAppState'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -61,14 +64,14 @@ export const RootScreen = () => {
   const accountStatus = useSelector(getAccountStatus)
   const showHomeStack = useSelector(getHasCompletedAccount)
   const startedSignUp = useSelector(getStartedSignUpProcess)
-  const [welcomeModalShown, setWelcomeModalShown] = useState(false)
+  const welcomeModalShown = useSelector(getWelcomeModalShown)
+
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
   const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )
   const { navigate } = useNavigation()
-
   const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
 
   useAppState(
@@ -108,7 +111,6 @@ export const RootScreen = () => {
     if (isSignUpRedesignEnabled) {
       if (showHomeStack && startedSignUp && !welcomeModalShown) {
         openWelcomeDrawer()
-        setWelcomeModalShown(true)
         // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
         if (navigate) {
           navigate('HomeStack')
