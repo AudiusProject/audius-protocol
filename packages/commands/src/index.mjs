@@ -23,7 +23,7 @@ import './tip-audio.mjs'
 import './auth-headers.mjs'
 import './get-audio-balance.mjs'
 import './create-user-bank.mjs'
-import './purchase-track.mjs'
+import './purchase-content.mjs'
 import './route-tokens-to-user-bank.mjs'
 import './withdraw-tokens.mjs'
 
