@@ -83,16 +83,13 @@ export const uploadTrackFailed = () => {
   return { type: UPLOAD_TRACKS_FAILED }
 }
 
-export const updateProgress = (
-  index: number,
-  key: 'audio' | 'art',
+export const updateProgress = (payload: {
+  trackIndex: number
+  stemIndex: number | null
+  key: 'audio' | 'art'
   progress: Progress
-) => {
-  return { type: UPDATE_PROGRESS, index, key, progress }
-}
-
-export const reset = () => {
-  return { type: RESET }
+}) => {
+  return { type: UPDATE_PROGRESS, payload }
 }
 
 // Actions used to reset the react state and then the store state of upload from external container

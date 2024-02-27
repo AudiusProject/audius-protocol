@@ -2,7 +2,7 @@ import { floor, clamp } from 'lodash'
 
 import { CommonState } from '../commonStore'
 
-import { ProgressStatus } from './types'
+import { ProgressState, ProgressStatus } from './types'
 
 export const getStems = (state: CommonState) => state.upload.stems
 export const getUploadProgress = (state: CommonState) =>
@@ -20,6 +20,46 @@ const TRANSCODE_WEIGHT = 1 - UPLOAD_WEIGHT
 const AUDIO_WEIGHT = 1
 const ART_WEIGHT = 0
 
+/**
+ * Get the upload and transcode status of a track including its stems.
+ * Results in [0,1] bounded progress for each type (fileUpload and transcode).
+ */
+const trackProgressSummary = (
+  trackProgress: ProgressState,
+  key: 'art' | 'audio'
+) => {
+  let loaded =
+    trackProgress[key].status === ProgressStatus.ERROR
+      ? trackProgress[key].total ?? 0
+      : trackProgress[key].loaded ?? 0
+  let total = trackProgress[key].total ?? 0
+  let transcode =
+    trackProgress[key].status === ProgressStatus.ERROR
+      ? 1
+      : trackProgress[key].transcode ?? 0
+  const transcodeTotal = 1 + trackProgress.stems.length
+
+  for (const stemProgress of trackProgress.stems) {
+    loaded +=
+      stemProgress[key].status === ProgressStatus.ERROR
+        ? stemProgress[key].total ?? 0
+        : stemProgress[key].loaded ?? 0
+    total += stemProgress[key].total ?? 0
+    transcode +=
+      stemProgress[key].status === ProgressStatus.ERROR
+        ? 1
+        : stemProgress[key].transcode ?? 0
+  }
+  return {
+    fileUploadProgress: loaded / total,
+    transcodeProgress: transcode / transcodeTotal
+  }
+}
+
+/**
+ * Gets the total upload progress for a particular asset type including stems,
+ * as a percentage between [0, 1]
+ */
 const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const uploadProgress = getUploadProgress(state)
   if (uploadProgress == null) return 0
@@ -27,31 +67,15 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const filteredProgress = uploadProgress.filter((progress) => key in progress)
   if (filteredProgress.length === 0) return 0
 
-  const loaded = filteredProgress.reduce(
-    (acc, progress) =>
-      acc +
-      // On error, treat it as "done" so that the percentage doesn't go backwards
-      (progress[key].status === ProgressStatus.ERROR
-        ? progress[key].total ?? 0
-        : progress[key].loaded ?? 0),
-    0
-  )
-  const total = filteredProgress.reduce(
-    (acc, progress) => acc + (progress[key].total ?? 0),
-    0
-  )
-  const fileUploadProgress = total > 0 ? loaded / total : 0
-
-  const transcodeProgress =
-    filteredProgress.reduce(
-      (acc, progress) =>
-        acc +
-        // On error, treat it as "done" so that the percentage doesn't go backwards
-        (progress[key].status === ProgressStatus.ERROR
-          ? 1
-          : progress[key].transcode ?? 0),
-      0
-    ) / filteredProgress.length
+  let fileUploadProgress = 0
+  let transcodeProgress = 0
+  for (const trackProgress of filteredProgress) {
+    const summary = trackProgressSummary(trackProgress, key)
+    fileUploadProgress += summary.fileUploadProgress
+    transcodeProgress += summary.transcodeProgress
+  }
+  fileUploadProgress /= filteredProgress.length
+  transcodeProgress /= filteredProgress.length
 
   const overallProgress =
     key === 'art'

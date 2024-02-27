@@ -70,6 +70,7 @@ export type Progress = {
 export type ProgressState = {
   art: Progress
   audio: Progress
+  stems: ProgressState[]
 }
 
 type UploadStateBase = {

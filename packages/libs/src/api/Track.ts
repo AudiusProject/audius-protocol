@@ -3,7 +3,7 @@ import {
   Action,
   EntityManagerClient
 } from '../services/dataContracts/EntityManagerClient'
-import { Nullable, TrackMetadata, Utils } from '../utils'
+import { Nullable, TrackMetadata, UploadTrackMetadata, Utils } from '../utils'
 
 import type { BaseConstructorArgs } from './base'
 import { Base, Services } from './base'
@@ -371,7 +371,7 @@ export class Track extends Base {
   async uploadTrackV2AndWriteToChain(
     trackFile: File,
     coverArtFile: File,
-    metadata: TrackMetadata,
+    metadata: UploadTrackMetadata,
     onProgress: () => void,
     trackId?: number
   ) {
@@ -403,7 +403,7 @@ export class Track extends Base {
   async uploadTrackV2(
     trackFile: File,
     coverArtFile: File | null,
-    metadata: TrackMetadata,
+    metadata: UploadTrackMetadata,
     onProgress: ProgressCB
   ) {
     // Validate inputs
@@ -589,7 +589,7 @@ export class Track extends Base {
   /* ------- PRIVATE  ------- */
 
   // Throws an error upon validation failure
-  _validateTrackMetadata(metadata: TrackMetadata) {
+  _validateTrackMetadata(metadata: Partial<TrackMetadata>) {
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
     this.creatorNode.validateTrackSchema(metadata)
   }

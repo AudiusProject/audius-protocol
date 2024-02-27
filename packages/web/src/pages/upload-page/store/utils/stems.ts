@@ -2,24 +2,20 @@ import { StemCategory, ID, StemUploadWithFile } from '@audius/common/models'
 
 import { TrackForUpload } from 'pages/upload-page/types'
 
-export const updateAndFlattenStems = (
-  stems: StemUploadWithFile[][],
-  parentTrackIds: ID[]
+export const prepareStemsForUpload = (
+  stems: StemUploadWithFile[],
+  parentTrackId: ID
 ) => {
-  return stems.flatMap((stemList, i) => {
-    const parentTrackId = parentTrackIds[i]
-
-    return stemList.map((stem) => {
-      const metadata = createStemMetadata({
-        parentTrackId,
-        track: stem.metadata,
-        stemCategory: stem.category ?? StemCategory.OTHER
-      })
-      return {
-        ...stem,
-        metadata
-      }
+  return stems.map((stem) => {
+    const metadata = createStemMetadata({
+      parentTrackId,
+      track: stem.metadata,
+      stemCategory: stem.category ?? StemCategory.OTHER
     })
+    return {
+      ...stem,
+      metadata
+    }
   })
 }
 
