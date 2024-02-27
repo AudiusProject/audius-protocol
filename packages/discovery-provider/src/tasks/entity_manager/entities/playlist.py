@@ -235,8 +235,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
-    if params.action == Action.UPDATE:
-        validate_update_access_conditions(params)
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         if not params.metadata:
             raise IndexingValidationError(
@@ -263,6 +261,9 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 raise IndexingValidationError(
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
+
+        if params.action == Action.UPDATE:
+            validate_update_access_conditions(params)
 
         if (
             params.action == Action.UPDATE
@@ -305,6 +306,8 @@ def validate_update_access_conditions(params: ManageEntityParameters):
         params.existing_records["Playlist"][playlist_id]
     )
 
+    print(f"REED params: {params}")
+    print(f"REED updated_playlist: {params.metadata}")
     updated_playlist = params.metadata
     existing_conditions = existing_playlist.get("stream_conditions")
     updated_conditions = updated_playlist.get("stream_conditions")

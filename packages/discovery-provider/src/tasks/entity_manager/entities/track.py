@@ -367,9 +367,6 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Cannot create track {track_id} below the offset"
             )
 
-    if params.action == Action.UPDATE:
-        validate_update_access_conditions(params)
-
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         if not params.metadata:
             raise IndexingValidationError(
@@ -385,6 +382,10 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
+
+        if params.action == Action.UPDATE:
+            validate_update_access_conditions(params)
+
         validate_remixability(params)
         validate_access_conditions(params)
 
