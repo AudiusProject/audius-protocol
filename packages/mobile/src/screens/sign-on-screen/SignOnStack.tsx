@@ -1,7 +1,10 @@
 import { useCallback, useState } from 'react'
 
+import { getAccountUser } from '@audius/common/store/account/selectors'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { getSignOn } from 'audius-client/src/common/store/pages/signon/selectors'
+import { useSelector } from 'react-redux'
 
 import { ScreenOptionsContext, defaultScreenOptions } from 'app/app/navigation'
 
@@ -31,11 +34,18 @@ export const SignOnStack = (props: SignOnStackProps) => {
       ...screenOptionsOverrides
     })
 
+  const signUpState = useSelector(getSignOn)
+  const user = useSelector(getAccountUser)
+  const hasAccount = !!user
+
+  const pastPhase1 = signUpState.finishedPhase1 || hasAccount
+
   const updateOptions = useCallback(
     (newOptions: NativeStackNavigationOptions) => {
       setScreenOptions({
         ...defaultScreenOptions,
         ...screenOptionsOverrides,
+        gestureEnabled: false,
         ...newOptions
       })
     },
@@ -47,39 +57,44 @@ export const SignOnStack = (props: SignOnStackProps) => {
       value={{ options: screenOptions, updateOptions }}
     >
       <Stack.Navigator initialRouteName='SignOn' screenOptions={screenOptions}>
-        <Stack.Group>
-          <Stack.Screen name='SignOn' options={{ headerShown: false }}>
-            {() => (
-              <SignOnScreen isSplashScreenDismissed={isSplashScreenDismissed} />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name='ConfirmEmail' component={ConfirmEmailScreen} />
-        </Stack.Group>
-        <Stack.Group>
-          <Stack.Screen
-            name='CreatePassword'
-            component={CreatePasswordScreen}
-          />
-          <Stack.Screen name='PickHandle' component={PickHandleScreen} />
-          <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
-          <Stack.Screen
-            name='CreateLoginDetails'
-            component={CreateLoginDetailsScreen}
-          />
-          <Stack.Screen name='FinishProfile' component={FinishProfileScreen} />
-          <Stack.Screen
-            name='SelectGenre'
-            component={SelectGenresScreen}
-            options={{ headerLeft: () => null, gestureEnabled: false }}
-          />
-          <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
-          <Stack.Screen
-            name='AccountLoading'
-            component={AccountLoadingScreen}
-            // animation: none here is a workaround to prevent "white screen of death" on Android
-            options={{ headerShown: false, animation: 'none' }}
-          />
-        </Stack.Group>
+        {!pastPhase1 ? (
+          <Stack.Group>
+            <Stack.Screen name='SignOn' options={{ headerShown: false }}>
+              {() => (
+                <SignOnScreen
+                  isSplashScreenDismissed={isSplashScreenDismissed}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name='ConfirmEmail' component={ConfirmEmailScreen} />
+            <Stack.Screen
+              name='CreatePassword'
+              component={CreatePasswordScreen}
+            />
+            <Stack.Screen name='PickHandle' component={PickHandleScreen} />
+            <Stack.Screen name='ReviewHandle' component={ReviewHandleScreen} />
+            <Stack.Screen
+              name='CreateLoginDetails'
+              component={CreateLoginDetailsScreen}
+            />
+            <Stack.Screen
+              name='FinishProfile'
+              component={FinishProfileScreen}
+            />
+          </Stack.Group>
+        ) : undefined}
+        <Stack.Screen
+          name='SelectGenre'
+          component={SelectGenresScreen}
+          options={{ headerLeft: () => null, gestureEnabled: false }}
+        />
+        <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
+        <Stack.Screen
+          name='AccountLoading'
+          component={AccountLoadingScreen}
+          // animation: none here is a workaround to prevent "white screen of death" on Android
+          options={{ headerShown: false, animation: 'none' }}
+        />
       </Stack.Navigator>
     </ScreenOptionsContext.Provider>
   )
