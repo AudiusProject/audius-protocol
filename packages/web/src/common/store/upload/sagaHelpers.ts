@@ -15,60 +15,12 @@ import {
 } from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import BN from 'bn.js'
-import { range } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
 
-export function* reportResultEvents({
-  numSuccess,
-  numFailure,
-  numRejected,
-  uploadType,
-  errors
-}: {
-  numSuccess: number
-  numFailure: number
-  numRejected: number
-  uploadType: 'single_track' | 'multi_track' | 'album' | 'playlist'
-  errors: string[]
-}) {
-  yield* waitForWrite()
-  const accountUser = yield* select(getAccountUser)
-  if (!accountUser) return
-  const primary = accountUser.creator_node_endpoint?.split(',')[0]
-  if (!primary) return
-  const successEvents = range(numSuccess).map((_) =>
-    make(Name.TRACK_UPLOAD_SUCCESS, {
-      endpoint: primary,
-      kind: uploadType
-    })
-  )
-
-  const failureEvents = range(numFailure).map((i) =>
-    make(Name.TRACK_UPLOAD_FAILURE, {
-      endpoint: primary,
-      kind: uploadType,
-      error: errors[i]
-    })
-  )
-
-  const rejectedEvents = range(numRejected).map((i) =>
-    make(Name.TRACK_UPLOAD_REJECTED, {
-      endpoint: primary,
-      kind: uploadType,
-      error: errors[i]
-    })
-  )
-
-  yield* all(
-    [...successEvents, ...failureEvents, ...rejectedEvents].map((e) => put(e))
-  )
-}
-
-// Record gated track uploads
+/** Records gated track uploads. */
 export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   const events = tracks.reduce<ReturnType<typeof make>[]>(
     (out, trackOrMetadata) => {
@@ -145,6 +97,9 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   yield* all(events.map((e) => put(e)))
 }
 
+/**
+ * Converts prices to WEI and adds splits for USDC purchasable content.
+ */
 export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(

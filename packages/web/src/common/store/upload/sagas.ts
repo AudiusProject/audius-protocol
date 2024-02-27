@@ -371,7 +371,8 @@ export function* handleUploads({
     )
   }
 
-  const stems: StemUploadWithFile[] = []
+  let stems = 0
+  const pendingStemCount: Record<ID, number> = {}
   for (let i = 0; i < tracks.length; i++) {
     const track = tracks[i]
     uploadQueue.put({ trackIndex: i, stemIndex: null, track })
@@ -379,20 +380,14 @@ export function* handleUploads({
       track.metadata.stems ?? [],
       track.metadata.track_id
     )
+    const stemCount = track.metadata.stems?.length ?? 0
+    pendingStemCount[track.metadata.track_id] = stemCount
+    stems += stemCount
     for (let j = 0; j < trackStems.length; j++) {
       const stem = trackStems[j]
       uploadQueue.put({ trackIndex: i, stemIndex: j, track: stem })
-      stems.push(stem)
     }
   }
-
-  const pendingStemCount = tracks.reduce<Record<ID, number>>(
-    (prev, parent) => ({
-      ...prev,
-      [parent.metadata.track_id]: parent.metadata.stems?.length ?? 0
-    }),
-    {}
-  )
 
   const pendingMetadata: TrackMetadata[] = []
 
@@ -402,7 +397,7 @@ export function* handleUploads({
 
   console.debug('Waiting for workers')
   const hasUnprocessedTracks = () =>
-    published.length + errored.length < tracks.length + stems.length
+    published.length + errored.length < tracks.length + stems
   const collectionUploadErrored = () => errored.length > 0 && isCollection
   while (hasUnprocessedTracks() && !collectionUploadErrored()) {
     const { type, payload } = yield* take(responseChannel)
@@ -544,7 +539,11 @@ export function* handleUploads({
         additionalInfo: {
           trackId,
           track: tracks[trackIndex],
+          fileSize: tracks[trackIndex].file.size,
+          trackIndex,
           stemIndex,
+          trackCount: tracks.length,
+          stemCount: stems,
           phase,
           kind
         }
@@ -569,22 +568,32 @@ export function* handleUploads({
     )
     if (stemsToDelete.length > 0) {
       console.debug(`Cleaning up ${stemsToDelete.length} orphaned stems`)
-      yield* call(
-        deleteTracks,
-        stemsToDelete.map((t) => t.trackId)
-      )
+      try {
+        yield* call(
+          deleteTracks,
+          stemsToDelete.map((t) => t.trackId)
+        )
+      } catch (e) {
+        console.error('Failed to clean up orphaned stems:', e)
+      }
     }
   }
 
-  // Attempt to delete all orphaned collection tracks
-  if (isCollection && errored.length > 0) {
+  // Attempt to delete all orphaned collection tracks,
+  // and throw as collection failures are all or nothing.
+  if (collectionUploadErrored()) {
     console.debug(`Cleaning up ${published.length} orphaned tracks`)
-    yield* call(
-      deleteTracks,
-      published.map((t) => t.trackId)
-    )
-    yield* put(make(Name.TRACK_UPLOAD_FAILURE, { kind }))
-    throw new Error('Failed to upload tracks for collection')
+    try {
+      yield* call(
+        deleteTracks,
+        published.map((t) => t.trackId)
+      )
+    } catch (e) {
+      console.error('Failed to clean up orphaned tracks:', e)
+    } finally {
+      yield* put(make(Name.TRACK_UPLOAD_FAILURE, { kind }))
+      throw new Error('Failed to upload tracks for collection')
+    }
   }
 
   console.debug('Finished track uploads')
@@ -603,11 +612,15 @@ export function* handleUploads({
  */
 function* uploadCollection(
   tracks: TrackForUpload[],
-  userId: ID,
   collectionMetadata: CollectionValues,
   isAlbum: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  
+  yield waitForAccount()
+  const account = yield* select(accountSelectors.getAccountUser)
+  const userId = account!.user_id
+
   // First upload album art
   yield* call(
     audiusBackendInstance.uploadImage,
@@ -902,12 +915,7 @@ function* uploadTracksAsync(
   action: ReturnType<typeof uploadActions.uploadTracks>
 ) {
   yield waitForWrite()
-  const user = yield* select(accountSelectors.getAccountUser)
   const payload = action.payload
-  if (payload.uploadType === undefined) {
-    console.error('Unexpected undefined uploadType in upload/sagas.ts')
-    return
-  }
   yield* put(uploadActions.uploadTracksRequested(payload))
 
   const kind = (() => {
@@ -942,7 +950,7 @@ function* uploadTracksAsync(
     payload.uploadType === UploadType.PLAYLIST ||
     payload.uploadType === UploadType.ALBUM
   ) {
-    yield* uploadCollection(tracks, user!.user_id, payload.metadata, isAlbum)
+    yield* call(uploadCollection, tracks, payload.metadata, isAlbum)
   } else {
     yield* call(uploadMultipleTracks, tracks)
   }
