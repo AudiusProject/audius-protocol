@@ -9,6 +9,7 @@ import {
   getCoverPhotoField,
   getHandleField,
   getIsVerified,
+  getNameField,
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import {
@@ -18,6 +19,10 @@ import {
 } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { isEmpty } from 'lodash'
+import type {
+  NativeSyntheticEvent,
+  TextInputFocusEventData
+} from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -50,6 +55,7 @@ export const FinishProfileScreen = () => {
   const { spacing } = useTheme()
   const savedProfileImage = useSelector(getProfileImageField)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
+  const { value: savedDisplayName } = useSelector(getNameField) ?? {}
 
   useTrackScreen('FinishProfile')
 
@@ -66,8 +72,16 @@ export const FinishProfileScreen = () => {
   const initialValues = {
     profileImage: savedProfileImage || ({} as Image),
     coverPhoto: savedCoverPhoto || ({} as Image),
-    displayName: ''
+    displayName: savedDisplayName
   }
+
+  const saveDisplayName = useCallback(
+    (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      const displayName = e.nativeEvent.text
+      dispatch(setValueField('name', displayName))
+    },
+    [dispatch]
+  )
 
   return (
     <Formik
@@ -88,6 +102,7 @@ export const FinishProfileScreen = () => {
             placeholder={finishProfilePageMessages.inputPlaceholder}
             maxLength={MAX_DISPLAY_NAME_LENGTH}
             autoComplete='off'
+            onChange={saveDisplayName}
             style={css({
               padding: spacing.l,
               paddingTop: spacing.unit10
