@@ -292,7 +292,7 @@ def validate_access_conditions(params: ManageEntityParameters):
             )
 
 
-# Make sure that access conditions do not incorrectly change during track update.
+# Make sure that access conditions do not incorrectly change during playlist update.
 # Rule of thumb is that access can only be modified to decrease strictness.
 def validate_update_access_conditions(params: ManageEntityParameters):
     playlist_id = params.entity_id
@@ -304,9 +304,6 @@ def validate_update_access_conditions(params: ManageEntityParameters):
     existing_playlist = helpers.model_to_dictionary(
         params.existing_records["Playlist"][playlist_id]
     )
-    # TODO: scheduled release playlists are not restricted on how they can be updated
-    # if existing_playlist.get("is_scheduled_release"):
-    #     return
 
     updated_playlist = params.metadata
     existing_conditions = existing_playlist.get("stream_conditions")

@@ -1419,7 +1419,6 @@ def test_access_conditions(app, mocker, tx_receipts):
         )
         assert album.is_album == True
         assert album.is_stream_gated == False
-        # assert not album.stream_conditions
         assert album.stream_conditions == None
         # TODO: previously was assert album.stream_conditions == {} but what if None?
 
@@ -1446,5 +1445,4 @@ def test_access_conditions(app, mocker, tx_receipts):
             .first()
         )
         assert album.is_stream_gated == False
-        # assert not album.stream_conditions
         assert album.stream_conditions == None
