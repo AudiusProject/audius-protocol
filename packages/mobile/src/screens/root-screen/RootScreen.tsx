@@ -8,14 +8,12 @@ import {
   playerActions
 } from '@audius/common/store'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { setWelcomeModalShown } from 'audius-client/src/common/store/pages/signon/actions'
 import {
   getHasCompletedAccount,
   getStartedSignUpProcess,
   getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
 import useAppState from 'app/hooks/useAppState'
 import { useDrawer } from 'app/hooks/useDrawer'
