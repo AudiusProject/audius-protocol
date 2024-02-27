@@ -16,7 +16,8 @@ export enum USDCTransactionMethod {
 }
 
 export enum USDCContentPurchaseType {
-  TRACK = 'track'
+  TRACK = 'track',
+  ALBUM = 'album'
 }
 
 export type USDCPurchaseDetails = {
