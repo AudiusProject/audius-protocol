@@ -312,14 +312,14 @@ type UploadTrackResponse =
 
 /**
  * Spins up workers to handle uploading of tracks and their stems in parallel.
- * 
+ *
  * Waits to publish parent tracks until their stems successfully upload.
  * If a stem fails, marks the parent as failed and unpublishes the other stems.
- * 
+ *
  * Waits to publish collection tracks until all other tracks successfully upload.
  * If a track from a collection fails, marks the collection as failed and
  * unpublishes all other collection tracks.
- * 
+ *
  * Also called from the edit track flow for uploading stems to existing tracks.
  * Those tracks must be uploaded as "tracks" since their parent is already
  * uploaded, rather than sending their parent with stems attached.
@@ -332,9 +332,13 @@ export function* handleUploads({
   kind: 'album' | 'playlist' | 'tracks' | 'stems'
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
-  const numUploadWorkers = getNumUploadWorkers(tracks.map((t) => t.file as File).concat(
-    tracks.map((t) => t.metadata.stems?.map((s) => s.file) ?? []).flat()
-  ))
+  const numUploadWorkers = getNumUploadWorkers(
+    tracks
+      .map((t) => t.file as File)
+      .concat(
+        tracks.map((t) => t.metadata.stems?.map((s) => s.file) ?? []).flat()
+      )
+  )
   const numPublishWorkers = MAX_CONCURRENT_REGISTRATIONS
   const uploadQueue = yield* call(
     channel<UploadTask>,
@@ -373,8 +377,24 @@ export function* handleUploads({
 
   let stems = 0
   const pendingStemCount: Record<ID, number> = {}
+
+  // Add tasks to the upload queue.
+  // Make note of how many stems there are for each track and in total.
   for (let i = 0; i < tracks.length; i++) {
     const track = tracks[i]
+    yield* put(make(Name.TRACK_UPLOAD_TRACK_UPLOADING, {
+      artworkSource: track.metadata.artwork?.source,
+      genre: track.metadata.genre,
+      moode: track.metadata.mood,
+      size: track.file.size,
+      type: track.file.type,
+      name: track.file.name,
+      downloadable: track.metadata.download && track.metadata.download.is_downloadable
+        ? track.metadata.download.requires_follow
+          ? 'follow'
+          : 'yes'
+        : 'no'
+    }))
     uploadQueue.put({ trackIndex: i, stemIndex: null, track })
     const trackStems = prepareStemsForUpload(
       track.metadata.stems ?? [],
@@ -395,17 +415,22 @@ export function* handleUploads({
   const uploaded: UploadedPayload[] = []
   const published: PublishedPayload[] = []
 
-  console.debug('Waiting for workers')
+  console.debug('Waiting for workers...')
   const hasUnprocessedTracks = () =>
     published.length + errored.length < tracks.length + stems
   const collectionUploadErrored = () => errored.length > 0 && isCollection
+
+  // Wait for the workers to process every track and stem
+  // - unless uploading a collection and hit an error, in which case leave early
   while (hasUnprocessedTracks() && !collectionUploadErrored()) {
     const { type, payload } = yield* take(responseChannel)
     if (type === 'UPLOADED') {
       uploaded.push(payload)
       const { trackIndex, stemIndex, metadata } = payload
       console.debug(
-        `${stemIndex === null && kind !== 'stems' ? 'Track' : 'Stem'} ${metadata.title} uploaded`,
+        `${stemIndex === null && kind !== 'stems' ? 'Track' : 'Stem'} ${
+          metadata.title
+        } uploaded`,
         { trackIndex, stemIndex }
       )
       const trackId = metadata.track_id
@@ -435,8 +460,12 @@ export function* handleUploads({
       published.push(payload)
       const { trackIndex, stemIndex, trackId, metadata } = payload
       console.debug(
-        `${stemIndex === null && kind !== 'stems' ? 'Track' : 'Stem'} ${metadata.title} published`
+        `${stemIndex === null && kind !== 'stems' ? 'Track' : 'Stem'} ${
+          metadata.title
+        } published`
       )
+
+      // Mark progress as complete
       yield* put(
         updateProgress({
           trackIndex,
@@ -453,28 +482,11 @@ export function* handleUploads({
           progress: { status: ProgressStatus.COMPLETE }
         })
       )
-      const parentTrackId = tracks[trackIndex].metadata.track_id
-      if (stemIndex !== null) {
-        if (!isCollection) {
-          // Trigger upload for parent if last stem
-          pendingStemCount[parentTrackId] -= 1
-          if (
-            pendingStemCount[parentTrackId] === 0 &&
-            pendingMetadata[trackIndex]
-          ) {
-            console.debug(
-              `Stems finished for ${parentTrackId}, uploading parent: ${pendingMetadata[trackIndex].title}`
-            )
-            publishQueue.put({
-              trackIndex,
-              stemIndex: null,
-              trackId: parentTrackId,
-              metadata: pendingMetadata[trackIndex]
-            })
-            delete pendingMetadata[trackIndex]
-          }
-        }
 
+      const parentTrackId = tracks[trackIndex].metadata.track_id
+
+      // Report metrics
+      if (stemIndex !== null) {
         yield* put(
           make(Name.STEM_COMPLETE_UPLOAD, {
             id: trackId,
@@ -485,10 +497,31 @@ export function* handleUploads({
       } else {
         yield* put(make(Name.TRACK_UPLOAD_SUCCESS, { kind }))
       }
+
+      // Trigger upload for parent if last stem
+      if (stemIndex !== null) {
+        pendingStemCount[parentTrackId] -= 1
+        if (
+          pendingStemCount[parentTrackId] === 0 &&
+          pendingMetadata[trackIndex]
+        ) {
+          console.debug(
+            `Stems finished for ${parentTrackId}, uploading parent: ${pendingMetadata[trackIndex].title}`
+          )
+          publishQueue.put({
+            trackIndex,
+            stemIndex: null,
+            trackId: parentTrackId,
+            metadata: pendingMetadata[trackIndex]
+          })
+          delete pendingMetadata[trackIndex]
+        }
+      }
     } else if (type === 'ERROR') {
       const { trackIndex, stemIndex, trackId, error, phase } = payload
       // Check to make sure we haven't already errored for this track.
       // This could happen if one of its stems failed.
+      // Double counting would terminate the loop too soon.
       if (
         !errored.find(
           (e) => e.trackIndex === trackIndex && e.stemIndex === stemIndex
@@ -592,15 +625,29 @@ export function* handleUploads({
       console.error('Failed to clean up orphaned tracks:', e)
     } finally {
       yield* put(make(Name.TRACK_UPLOAD_FAILURE, { kind }))
-      throw new Error('Failed to upload tracks for collection')
+      throw new Error('Failed to upload tracks for collection.')
     }
   }
 
-  console.debug('Finished track uploads')
-  return published
+  const publishedTrackIds = published
     .filter((t) => t.stemIndex === null)
     .sort((a, b) => b.trackIndex - a.trackIndex)
     .map((p) => p.trackId)
+
+  // If nothing uploaded, we failed!
+  if (publishedTrackIds.length === 0) {
+    yield* put(make(Name.TRACK_UPLOAD_FAILURE, { kind }))
+    throw new Error('No tracks were successfully uploaded.')
+  }
+
+  console.debug('Finished uploads')
+  yield* put(
+    make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
+      kind,
+      trackCount: publishedTrackIds.length
+    })
+  )
+  return publishedTrackIds
 }
 
 /**
@@ -616,7 +663,7 @@ function* uploadCollection(
   isAlbum: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  
+
   yield waitForAccount()
   const account = yield* select(accountSelectors.getAccountUser)
   const userId = account!.user_id
@@ -767,12 +814,6 @@ function* uploadCollection(
             category: LibraryCategory.Favorite
           })
         )
-        yield* put(
-          make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
-            count: trackIds.length,
-            kind: isAlbum ? 'album' : 'playlist'
-          })
-        )
         yield* put(cacheActions.setExpired(Kind.USERS, userId))
 
         // Finally, add to the library
@@ -821,6 +862,9 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
     audiusBackendInstance.getAudiusLibsTyped
   ])
 
+  // Ensure the user is logged in
+  yield waitForAccount()
+
   // Get the IDs ahead of time, so that stems can be associated.
   const tracksWithIds = yield* all(
     tracks.map((track) =>
@@ -846,35 +890,27 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
     kind: 'tracks'
   })
 
-  yield waitForAccount()
-  const account = yield* select(accountSelectors.getAccountUser)
-
   // Get true track metadatas back
   const newTracks = yield* call(retrieveTracks, {
     trackIds,
     forceRetrieveFromSource: true
   })
 
-  // Make sure track count changes
+  // Make sure track count changes for this user
+  const account = yield* select(accountSelectors.getAccountUser)
   yield* call(adjustUserField, {
     user: account!,
     fieldName: 'track_count',
     delta: newTracks.length
   })
 
+  // At this point, the upload was success! The rest is metrics.
   yield* put(
     uploadActions.uploadTracksSucceeded(
       newTracks[0].track_id,
       newTracks,
       newTracks[0]
     )
-  )
-
-  yield* put(
-    make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
-      count: newTracks.length,
-      kind: 'tracks'
-    })
   )
 
   // Send analytics for any gated content

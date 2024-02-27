@@ -235,6 +235,7 @@ type UnvalidatedCollectionMetadata = {
   playlist_id?: number
   artwork: {
     file: File | NativeFile
+    source?: string
   } | null
   tracks: TrackForUpload[]
 }
