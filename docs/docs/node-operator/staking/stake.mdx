@@ -9,19 +9,18 @@ description: Audius Protocol Documentation
 ## What is Staking?
 
 Built as a decentralized protocol on Ethereum, all the content, information and data on Audius is
-stored and indexed by a growing network of third-party node operators, rather than by the Audius
-team.
+stored and indexed by a growing network of third-party Node Operators.
 
-To ensure this content can be trusted and maintained, node operators are required to provide
+To ensure this content can be trusted and maintained, Node Operators are required to provide
 collateral or ‘stake’ as a bond to service the protocol. This stake, denominated in $AUDIO, ensures
-that node operators have tokens at risk that can be slashed, or taken, in the event of malicious or
+that Node Operators have tokens at risk that can be slashed, or taken, in the event of malicious or
 poor behavior.
 
 By using $AUDIO tokens as collateral, anyone with the proper hardware requirements can join as a
-node operator in a completely permissionless fashion. The more $AUDIO staked to the protocol, the
+Node Operator in a completely permissionless fashion. The more $AUDIO staked to the protocol, the
 more secure the network becomes and the less vulnerable it is to outside attacks.
 
-As a reward for servicing the network, node operators stand to earn $AUDIO through the automatic
+As a reward for servicing the network, Node Operators stand to earn $AUDIO through the automatic
 on-chain issuance, or the ongoing creation of new tokens distributed to value-added actors.
 
 Those who stake more $AUDIO stand to earn a larger portion of issuance in exchange for securing the
@@ -29,36 +28,42 @@ network.
 
 ## Staking on Audius
 
-To stake on Audius, node operators can set up content and/or discovery nodes using
+<!-- TODO: pull content from this link into these docs, replace github version with a link to this page -->
+
+To stake on Audius, Node Operators can set up content and/or discovery nodes using
 [these resources](https://github.com/AudiusProject/audius-protocol/wiki/Staking-Resources).
 
-https://twitter.com/Figment_io/status/1324763638729740288?s=20
+:::note Permissionless Staking
 
-A list of all active node operators can be found under the
-[Services tab](https://dashboard.audius.org/services) in the Audius protocol dashboard.
+Learn more about
+[staking with Figment](https://figment.io/insights/audius-guide-staking-delegating-audio-tokens/) if
+you are not ready to run your own Node.
 
-$AUDIO holders can delegate a minimum of 100 tokens to any of these node operators by connecting to
+:::
+
+<!-- TODO: add disclaimer that Figment is a 3rd party and not specifically endorsed by Audius/TikiLabs -->
+
+A list of all active Node Operators can be found under the
+[Services tab](https://dashboard.audius.org/services) in the
+[Audius Protocol Dashboard](https://dashboard.audius.org/).
+
+$AUDIO holders can delegate a minimum of 100 tokens to any of these Node Operators by connecting to
 either MetaMask or using a Gnosis Safe. More details on delegation will be released soon!
 
-Node operators can choose to run either a Content Node, a Discovery Node or a combination of both.
-The amount of $AUDIO staked to a given Operator can be thought of as their economic bandwidth to run
-one or a combination of services on the network.
+Node Operators can choose to run either a Content Node, a Discovery Node or a combination of both.
+The amount of $AUDIO staked to a given Node Operator can be thought of as their economic bandwidth
+to run one or a combination of services on the network.
 
-All node operators are required to post a **minimum self-bond of 200,000 $AUDIO tokens per node**.
+All Node Operators are required to post a **minimum self-bond of 200,000 $AUDIO tokens per node**.
 While both Content and Discovery Nodes utilize the same machine, Content Nodes require more storage
 and therefore cost slightly more to operate.
 
 To this effect, the staking parameters of each node is as follows:
 
-_Discovery Node_
-
-- Minimum Bond (Stake): 200,000 AUDIO
-- Maximum Bond (Stake): 7,000,000 AUDIO
-
-_Content Node_
-
-- Minimum Bond (Stake): 200,000 AUDIO
-- Maximum Bond (Stake): 10,000,0000 AUDIO
+|   Node Type    |  Minimum Stake |      Maximum Stake |
+| :------------: | -------------: | -----------------: |
+| Discovery Node | 200,000 $AUDIO |   7,000,000 $AUDIO |
+|  Content Node  | 200,000 $AUDIO | 10,000,0000 $AUDIO |
 
 The minimum stake ensures sufficient skin in the game, while the maximum prevents the protocol from
 becoming too centralized. Content nodes have slightly higher minimum requirements, which is why they
@@ -67,14 +72,16 @@ are able to accept more stake than discovery nodes.
 Each Operator is given a unique profile, allowing users to identify their address, timeline of
 votes, and the different nodes they maintain. Other key parameters include:
 
-- _Staked $AUDIO_ - The total amount of $AUDIO staked across all the operator’s nodes, measured as a
-  combination of tokens staked or delegated to a given address.
-- _Deployer Cut_ - The percentage of staking rewards that delegates pay to node operators for
-  staking $AUDIO on their node. This is configurable by the node operator.
-- _Services_ - The number of unique nodes run by a given operator.
-- _Delegators_ - The total number of unique addresses delegating tokens to the Operator.
+| Parameter     | Description                                                                                                                                         |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Staked $AUDIO | The total amount of $AUDIO staked across all the operator’s nodes, measured as a combination of tokens staked or delegated to a given address.      |
+| Deployer Cut  | The percentage of staking rewards that delegates pay to Node Operators for staking $AUDIO on their node. This is configurable by the Node Operator. |
+| Services      | The number of unique nodes run by a given operator.                                                                                                 |
+| Delegators    | The total number of unique addresses delegating tokens to the Operator.                                                                             |
 
-Node operators can also populate their information via [3Box](https://3box.io/), displaying a
+<!-- TODO: link to profile linking guide instead of 3box here -->
+
+Node Operators can also populate their information via [3Box](https://3box.io/), displaying a
 profile image, title and website link to allow delegates to more easily distinguish themselves from
 others on the network.
 
@@ -84,14 +91,14 @@ operated by the Audius foundation will have their Deployer Cut set to 100%, with
 routed to a community treasury to be governed by $AUDIO tokenholders. These nodes will be retired in
 the near future.
 
-### $AUDIO Staking Rewards
+## Staking Rewards
 
 Audius features a 7% automatic annual issuance rate distributed on-chain and on a weekly basis.
-$AUDIO rewards are distributed directly on-chain to node operators, with the on-chain system
+$AUDIO rewards are distributed directly on-chain to Node Operators, with the on-chain system
 deducting their Delegator Cut and routing the remaining rewards to those who delegated their tokens.
 
-Service providers are expected to run one transaction per week to distribute issuance for the
-network, where tokens can be claimed in real time by individual node operators.
+Node Operators are expected to run one transaction per week to distribute issuance for the network,
+where tokens can be claimed in real time by individual Node Operators.
 
 In the near future, $AUDIO issuance will begin to be computed from the call of the reward function.
 Moving forward, anyone in the network can call the reward function, with tokens being distributed on
