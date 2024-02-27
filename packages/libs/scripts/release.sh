@@ -146,7 +146,7 @@ function cleanup () {
 
 # configuration
 STUB=@audius/sdk
-cd ${PROTOCOL_DIR}/packages/libs
+cd "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"  # audius-protocol/packages/libs
 
 # pull in main
 git-reset
