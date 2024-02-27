@@ -1,12 +1,19 @@
 from datetime import datetime
+from typing import Union
+
+from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.gated_content.constants import USDC_PURCHASE_KEY
+from src.models.playlists.album_price_history import AlbumPriceHistory
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.tracks.track import Track
+from src.models.users.usdc_purchase import PurchaseAccessType
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
@@ -20,7 +27,9 @@ from src.tasks.entity_manager.utils import (
 from src.tasks.metadata import immutable_playlist_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
+from src.utils.structured_logger import StructuredLogger
 
+logger = StructuredLogger(__name__)
 
 def update_playlist_routes_table(
     params: ManageEntityParameters, playlist_record: Playlist, is_create: bool
@@ -188,6 +197,78 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
         f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
     )
 
+def update_album_price_history(
+    session: Session,
+    playlist_record: Playlist,
+    playlist_metadata: dict,
+    blocknumber: int,
+    timestamp: datetime,
+):
+    """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
+    new_record = None
+    is_stream_gated = playlist_metadata.get(
+        "is_stream_gated", False
+    ) and playlist_metadata.get("stream_conditions", None)
+    if is_stream_gated:
+        conditions = (
+            playlist_metadata["stream_conditions"]
+        )
+        if USDC_PURCHASE_KEY in conditions:
+            usdc_purchase = conditions[USDC_PURCHASE_KEY]
+            new_record = AlbumPriceHistory()
+            new_record.playlist_id = playlist_record.playlist_id
+            new_record.block_timestamp = timestamp
+            new_record.blocknumber = blocknumber
+            new_record.splits = {}
+            new_record.access = (
+                PurchaseAccessType.stream
+            )
+            if "price" in usdc_purchase:
+                price = usdc_purchase["price"]
+                if isinstance(price, int):
+                    new_record.total_price_cents = price
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase gated conditions 'price'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Price missing from usdc_purchase gated conditions"
+                )
+
+            if "splits" in usdc_purchase:
+                splits = usdc_purchase["splits"]
+                # TODO: better validation of splits
+                if isinstance(splits, dict):
+                    new_record.splits = splits
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase gated conditions 'splits'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Splits missing from usdc_purchase gated conditions"
+                )
+    if new_record:
+        old_record: Union[AlbumPriceHistory, None] = (
+            session.query(AlbumPriceHistory)
+            .filter(AlbumPriceHistory.playlist_id == playlist_record.playlist_id)
+            .order_by(desc(AlbumPriceHistory.block_timestamp))
+            .first()
+        )
+        if (
+            not old_record
+            or old_record.block_timestamp != new_record.block_timestamp
+            and (
+                old_record.total_price_cents != new_record.total_price_cents
+                or old_record.splits != new_record.splits
+            )
+        ):
+            logger.debug(
+                f"playlist.py | Updating price history for {playlist_record.playlist_id}. Old record={old_record} New record={new_record}"
+            )
+            session.add(new_record)
+
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
     return getattr(update_task.playlist_contract.events, event_type)().process_receipt(
@@ -320,6 +401,14 @@ def create_playlist(params: ManageEntityParameters):
 
     update_playlist_tracks(params, playlist_record)
 
+    update_album_price_history(
+        params.session,
+        playlist_record,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
+    )
+
     if tracks:
         dispatch_challenge_playlist_upload(
             params.challenge_bus, params.block_number, playlist_record
@@ -360,6 +449,14 @@ def update_playlist(params: ManageEntityParameters):
     update_playlist_tracks(params, playlist_record)
 
     params.add_record(playlist_id, playlist_record)
+
+    update_album_price_history(
+        params.session,
+        playlist_record,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
+    )
 
     if playlist_record.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(
