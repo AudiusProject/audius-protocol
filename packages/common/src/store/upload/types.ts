@@ -109,10 +109,7 @@ type UploadStateBase = {
 }
 
 type UploadStateForTracks = UploadStateBase & {
-  uploadType:
-    | UploadType.INDIVIDUAL_TRACK
-    | UploadType.INDIVIDUAL_TRACKS
-    | null
+  uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS | null
   completedEntity?: Track
 }
 
@@ -122,6 +119,4 @@ type UploadStateForCollection = UploadStateBase & {
 }
 
 /** The type for the upload reducer state of the store. */
-export type UploadState =
-  | UploadStateForCollection
-  | UploadStateForTracks
+export type UploadState = UploadStateForCollection | UploadStateForTracks

@@ -72,13 +72,13 @@ const MoodSchema = z
 // TODO: KJ - Need to update the schema in sdk and then import here
 /**
  * Creates a schema for validating tracks to be uploaded.
- * 
+ *
  * Used on the EditTrackForm of the upload page, for single/multiple
  * track uploads.
- * 
+ *
  * Note that it doesn't produce the same type as that used by those
  * forms and their consumers - the form actually submits more data than
- * is validated here. 
+ * is validated here.
  * Note the differences between this and other schemas for tracks:
  * - This is snake cased, save for a few fields (remixOf, namely).
  * - IDs are numeric.
@@ -139,7 +139,8 @@ const createSdkSchema = () =>
             )
             .min(1)
         })
-        .strict().nullable()
+        .strict()
+        .nullable()
     ),
     tags: z.optional(z.string()),
     title: z.string({
@@ -149,13 +150,13 @@ const createSdkSchema = () =>
     is_original_available: z.optional(z.boolean())
   })
 
-  /**
-   * This is not really used as it is, since we pick out the title only of it
-   * for collections and make the artwork required for non-collections.
-   * 
-   * It does produce a more "validated" correct type for the form but that
-   * wasn't used anywhere.
-   */
+/**
+ * This is not really used as it is, since we pick out the title only of it
+ * for collections and make the artwork required for non-collections.
+ *
+ * It does produce a more "validated" correct type for the form but that
+ * wasn't used anywhere.
+ */
 const TrackMetadataSchema = createSdkSchema().merge(
   z.object({
     artwork: z
@@ -169,7 +170,7 @@ const TrackMetadataSchema = createSdkSchema().merge(
 /**
  * This is what's actually used on the EditTrackForm.
  * It makes the artwork required from the TrackMetadataSchema.
- * 
+ *
  * @see {@link TrackMetadataSchema}
  * @see {@link createSdkSchema}
  */
