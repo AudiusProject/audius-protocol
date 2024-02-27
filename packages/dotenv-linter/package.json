@@ -11,7 +11,7 @@
   },
   "scripts": {
     "install": "BINDIR=./bin curl -sSfL https://raw.githubusercontent.com/dotenv-linter/dotenv-linter/v3.3.0/install.sh | sh -s",
-    "rebuild": "npm rebuild"
+    "rebuild": "npm rebuild --ignore-scripts"
   },
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
