@@ -274,6 +274,11 @@ article a:link {
   text-decoration: underline;
 }
 
+/* padding between navbar and body */
+article {
+  padding-left: 1.5rem;
+}
+
 /* force first navbar link to not highlight */
 .navbar__items > a:nth-child(1) {
   color: #4d535a;

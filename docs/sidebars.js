@@ -29,7 +29,10 @@ module.exports = {
     {
       type: 'category',
       label: 'Introduction',
-      items: ['developers/introduction/overview', 'developers/introduction/resources'],
+      items: [
+        'developers/introduction/overview',
+        // 'developers/introduction/resources'
+      ],
       collapsed: false,
     },
     {
@@ -80,7 +83,7 @@ module.exports = {
       type: 'category',
       label: 'Staking',
       items: [
-        'node-operator/staking/overview',
+        'node-operator/staking/stake',
         'node-operator/staking/delegate',
         'node-operator/staking/claim',
       ],
