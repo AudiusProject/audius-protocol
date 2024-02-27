@@ -358,6 +358,7 @@ class PlaylistMilestoneNotification(TypedDict):
     type: str
     playlist_id: int
     threshold: int
+    is_album: bool
 
 
 class TierChangeNotification(TypedDict):

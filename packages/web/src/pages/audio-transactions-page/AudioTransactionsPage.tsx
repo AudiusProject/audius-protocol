@@ -63,7 +63,7 @@ const Disclaimer = () => {
         onClick={() => setVisibility('AudioBreakdown')(true)}
       >
         <span className={styles.moreInfo}>{messages.moreInfo}</span>
-        <IconCaretRight className={styles.iconCaretRight} />
+        <IconCaretRight color='subdued' className={styles.iconCaretRight} />
       </div>
     </div>
   )

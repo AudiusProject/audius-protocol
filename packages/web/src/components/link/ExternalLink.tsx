@@ -46,7 +46,7 @@ export const ExternalLink = (props: ExternalLinkProps) => {
   return (
     // @ts-expect-error
     <Link
-      as='a'
+      tag='a'
       href={to as string}
       onClick={handleClick}
       {...other}

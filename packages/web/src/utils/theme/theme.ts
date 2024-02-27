@@ -35,7 +35,7 @@ const applyTheme = (theme: Theme) => {
   document.documentElement.setAttribute('data-theme', getThemeNameKey(theme))
 }
 
-const doesPreferDarkMode = () => {
+export const doesPreferDarkMode = () => {
   return (
     window.matchMedia && window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches
   )

@@ -4,7 +4,7 @@ set -x
 
 # TODO - MOVE OUT OF SHELL SCRIPT ASAP
 
-ANCHOR_PROGRAM_DIR="$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+ANCHOR_PROGRAM_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"   # audius-protocol/solana-programs/anchor/audius-data
 OWNER_KEYPAIR_PATH="$HOME/.config/solana/id.json"
 ADMIN_AUTHORITY_KEYPAIR_PATH="$PWD/adminAuthorityKeypair.json"
 ADMIN_ACCOUNT_KEYPAIR_PATH="$PWD/adminAccountKeypair.json"

@@ -14,13 +14,20 @@ import { SearchQueryContext } from '../SearchQueryContext'
 
 import { SearchResultsTab } from './SearchResultsTab'
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
+import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
+
 const { getSearchTracksLineup } = searchResultsPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
 const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
   getSearchTracksLineup
 )
 
-export const TracksTab = () => {
+export const TracksTab = ({ route }) => {
+  const onSelectSearchResult = useTrackSearchResultSelect(
+    'track',
+    'more results page'
+  )
+
   const lineup = useSelector(getSearchTracksLineupMetadatas)
   const dispatch = useDispatch()
   const { query, isTagSearch } = useContext(SearchQueryContext)
@@ -43,7 +50,12 @@ export const TracksTab = () => {
       noResults={lineup?.entries.length === 0}
       status={lineup?.status}
     >
-      <Lineup actions={tracksActions} lineup={lineup} loadMore={loadMore} />
+      <Lineup
+        actions={tracksActions}
+        lineup={lineup}
+        loadMore={loadMore}
+        onPressItem={onSelectSearchResult}
+      />
     </SearchResultsTab>
   )
 }

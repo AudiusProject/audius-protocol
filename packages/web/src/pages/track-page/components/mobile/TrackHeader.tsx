@@ -420,9 +420,9 @@ const TrackHeader = ({
         <h1 className={styles.title}>{title}</h1>
         <UserLink
           userId={userId}
-          color='secondary'
+          color='accent'
           variant='body'
-          size='large'
+          size='l'
           textAs='h2'
           badgeSize={16}
         />

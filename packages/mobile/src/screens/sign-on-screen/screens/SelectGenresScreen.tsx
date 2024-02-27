@@ -3,6 +3,7 @@ import { memo, useCallback, useEffect, useState } from 'react'
 import { selectGenresPageMessages } from '@audius/common/messages'
 import { selectableGenres, selectGenresSchema } from '@audius/common/schemas'
 import type { GENRES } from '@audius/common/utils'
+import type { Genre as SDKGenre } from '@audius/sdk'
 import { setField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { ScrollView } from 'react-native'
@@ -11,10 +12,13 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Box, Flex, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
 
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, gutterSize } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 type Genre = (typeof GENRES)[number]
 type SelectGenresValue = { genres: typeof GENRES }
@@ -33,15 +37,24 @@ const SelectGenresFieldArray = () => {
   )
   const [, , { setValue }] = useField('genres')
 
+  useTrackScreen('SelectGenre')
+
   // Update formik state to match our React state
   useEffect(() => {
     setValue(formValues)
   }, [formValues, setValue])
 
   // memoized handle press just handles the React state change
-  const handlePress = useCallback((genreValue: Genre) => {
+  const handlePress = (genreValue: Genre) => {
     setFormValues((prevValues) => {
       const newValues = [...prevValues]
+      track(
+        make({
+          eventName: EventNames.CREATE_ACCOUNT_SELECT_GENRE,
+          genre: genreValue as SDKGenre,
+          selectedGenres: newValues as SDKGenre[]
+        })
+      )
       const valueIndex = newValues.indexOf(genreValue)
       if (valueIndex > -1) {
         newValues.splice(valueIndex, 1)
@@ -50,7 +63,7 @@ const SelectGenresFieldArray = () => {
       }
       return newValues
     })
-  }, [])
+  }
 
   return (
     <ScrollView testID='genreScrollView'>

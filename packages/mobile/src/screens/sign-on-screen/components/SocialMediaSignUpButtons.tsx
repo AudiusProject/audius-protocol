@@ -18,6 +18,7 @@ type SocialMediaLoginOptionsProps = {
   onError: (e: unknown) => void
   onStart: () => void
   onClose: () => void
+  page: 'create-email' | 'pick-handle'
 }
 
 // Renders all the social buttons + pops up toasts accordingly
@@ -25,7 +26,8 @@ export const SocialMediaSignUpButtons = ({
   onCompleteSocialMediaLogin,
   onStart,
   onError,
-  onClose
+  onClose,
+  page
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useToast()
   const handleFailure = (e: unknown) => {
@@ -69,6 +71,7 @@ export const SocialMediaSignUpButtons = ({
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}
+          page={page}
         />
       ) : null}
       {isInstagramEnabled ? (
@@ -77,6 +80,7 @@ export const SocialMediaSignUpButtons = ({
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}
+          page={page}
         />
       ) : null}
       {isTikTokEnabled ? (
@@ -85,6 +89,7 @@ export const SocialMediaSignUpButtons = ({
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}
+          page={page}
         />
       ) : null}
     </Flex>
