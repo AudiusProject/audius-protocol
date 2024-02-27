@@ -3,7 +3,13 @@ import { put, takeEvery } from 'redux-saga/effects'
 
 import * as errorActions from 'store/errors/actions'
 
-function* handleUploadError(action: ReturnType<typeof uploadActions.createPlaylistErrorIDExists | typeof uploadActions.createPlaylistErrorNoId | typeof uploadActions.createPlaylistPollingTimeout>) {
+function* handleUploadError(
+  action: ReturnType<
+    | typeof uploadActions.createPlaylistErrorIDExists
+    | typeof uploadActions.createPlaylistErrorNoId
+    | typeof uploadActions.createPlaylistPollingTimeout
+  >
+) {
   yield put(
     errorActions.handleError({
       message: 'error' in action ? action.error : '',
