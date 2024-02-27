@@ -32,7 +32,7 @@ import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
-import { isPreview } from 'common/utils/isPreview'
+import { isPreview as isPreviewFn } from 'common/utils/isPreview'
 import { getLocation } from 'store/routing/selectors'
 
 const {
@@ -102,7 +102,7 @@ export function* getToQueue(
       id: track.track_id,
       uid: entry.uid,
       source: prefix,
-      isPreview: isPreview(track, currentUserId) && !doesUserHaveStreamAccess
+      isPreview: isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess
     }
   }
 }
@@ -257,11 +257,17 @@ export function* watchPlay() {
 
           if (!playTrack) return
 
+          const currentUserId = yield* select(getUserId)
+          const doesUserHaveStreamAccess =
+            !playTrack?.is_stream_gated || !!playTrack?.access?.stream
+          const isTrackPreview =
+            isPreviewFn(playTrack, currentUserId) && !doesUserHaveStreamAccess
           yield* put(
             play({
               uid: flattenedQueue[0].uid,
               trackId: playTrack.track_id,
-              source: lineup.prefix
+              source: lineup.prefix,
+              isPreview: isTrackPreview
             })
           )
         }
@@ -369,7 +375,7 @@ export function* watchNext() {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
         const isTrackPreview =
-          isPreview(track, currentUserId) && !doesUserHaveStreamAccess
+          isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(
@@ -477,7 +483,7 @@ export function* watchPrevious() {
               trackId: id,
               source,
               isPreview:
-                isPreview(track, currentUserId) && !doesUserHaveStreamAccess
+                isPreviewFn(track, currentUserId) && !doesUserHaveStreamAccess
             })
           )
           const event = make(Name.PLAYBACK_PLAY, {
