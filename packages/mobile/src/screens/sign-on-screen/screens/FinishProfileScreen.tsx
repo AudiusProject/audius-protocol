@@ -14,6 +14,7 @@ import {
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import {
   setField,
+  setFinishedPhase1,
   setValueField,
   signUp
 } from 'common/store/pages/signon/actions'
@@ -64,6 +65,7 @@ export const FinishProfileScreen = () => {
       const { displayName } = values
       dispatch(setValueField('name', displayName))
       dispatch(signUp())
+      dispatch(setFinishedPhase1(true))
       navigation.navigate('SelectGenre')
     },
     [dispatch, navigation]
