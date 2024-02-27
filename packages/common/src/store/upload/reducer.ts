@@ -140,15 +140,15 @@ const actionsMap = {
     action: ReturnType<typeof updateProgress>
   ) {
     const { key, trackIndex, stemIndex, progress } = action.payload
-    if (state.uploadProgress === null) {
-      throw new Error('Updating progress before upload request')
-    }
     const newState = { ...state }
     newState.uploadProgress = [...(state.uploadProgress ?? [])]
+    if (!newState.uploadProgress[trackIndex]) {
+      newState.uploadProgress[trackIndex] = cloneDeep(initialUploadState)
+    }
     const prevProgress =
       stemIndex === null
-        ? state.uploadProgress[trackIndex][key]
-        : state.uploadProgress[trackIndex].stems[stemIndex][key]
+        ? newState.uploadProgress[trackIndex]?.[key]
+        : newState.uploadProgress[trackIndex]?.stems[stemIndex][key]
     const nextProgress = { ...prevProgress }
     nextProgress.status = progress.status
     if (progress.loaded && progress.total) {
