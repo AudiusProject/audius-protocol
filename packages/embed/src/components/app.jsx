@@ -436,8 +436,8 @@ const App = (props) => {
     const artworkClickURL =
       tracksResponse?.permalink || collectionsResponse?.permalink
         ? stripLeadingSlash(
-          tracksResponse?.permalink || collectionsResponse?.permalink
-        )
+            tracksResponse?.permalink || collectionsResponse?.permalink
+          )
         : null
     const listenOnAudiusURL = artworkClickURL
     const flavor = requestState.playerFlavor
