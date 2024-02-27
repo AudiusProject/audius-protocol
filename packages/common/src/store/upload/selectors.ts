@@ -1,6 +1,7 @@
 import { floor, clamp } from 'lodash'
 
 import { CommonState } from '../commonStore'
+
 import { ProgressStatus } from './types'
 
 export const getStems = (state: CommonState) => state.upload.stems
