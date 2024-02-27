@@ -10,7 +10,6 @@ import { imageBlank } from '~/assets'
 import { NativeFile, TrackForUpload } from '~/store/upload/types'
 
 const messages = {
-  invalidReleaseDateError: 'Release date should not be in the future.',
   artworkRequiredError: 'Artwork is required.',
   genreRequiredError: 'Genre is required.',
   track: {
@@ -24,6 +23,7 @@ const messages = {
   }
 }
 
+/** Same as SDK but snake-cased */
 const CollectibleGatedConditions = z
   .object({
     nft_collection: z.optional(
@@ -32,18 +32,21 @@ const CollectibleGatedConditions = z
   })
   .strict()
 
+/** Same as SDK but snake-cased */
 const FollowGatedConditionsSchema = z
   .object({
     follow_user_id: z.number()
   })
   .strict()
 
+/** Same as SDK but snake-cased */
 const TipGatedConditionsSchema = z
   .object({
     tip_user_id: z.number()
   })
   .strict()
 
+/** Same as SDK but snake-cased */
 const USDCPurchaseConditionsSchema = z
   .object({
     usdc_purchase: z.object({
@@ -53,6 +56,7 @@ const USDCPurchaseConditionsSchema = z
   })
   .strict()
 
+/** Same as SDK. */
 const GenreSchema = z
   .enum(Object.values(Genre) as [Genre, ...Genre[]])
   .nullable()
@@ -60,11 +64,25 @@ const GenreSchema = z
     message: messages.genreRequiredError
   })
 
+/** Same as SDK. */
 const MoodSchema = z
   .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
   .nullable()
 
 // TODO: KJ - Need to update the schema in sdk and then import here
+/**
+ * Creates a schema for validating tracks to be uploaded.
+ * 
+ * Used on the EditTrackForm of the upload page, for single/multiple
+ * track uploads.
+ * 
+ * Note that it doesn't produce the same type as that used by those
+ * forms and their consumers - the form actually submits more data than
+ * is validated here. Note the differences between this and the SDK or common 
+ * metadata schema for tracks:
+ * - This is snake cased, save for a few fields (remixOf, namely)
+ * - IDs are numeric
+ */
 const createSdkSchema = () =>
   z.object({
     ai_attribution_user_id: z.optional(z.number()).nullable(),
@@ -135,7 +153,14 @@ const createSdkSchema = () =>
     is_original_available: z.optional(z.boolean())
   })
 
-export const TrackMetadataSchema = createSdkSchema().merge(
+  /**
+   * This is not really used as it is, since we pick out the title only of it
+   * for collections and make the artwork required for non-collections.
+   * 
+   * It does produce a more "validated" correct type for the form but that
+   * wasn't used anywhere.
+   */
+const TrackMetadataSchema = createSdkSchema().merge(
   z.object({
     artwork: z
       .object({
@@ -145,6 +170,10 @@ export const TrackMetadataSchema = createSdkSchema().merge(
   })
 )
 
+/**
+ * This is what's actually used on the EditTrackForm.
+ * It makes the artwork required from the TrackMetadataSchema.
+ */
 export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
   (form) => form.artwork?.url != null,
   {
@@ -153,10 +182,17 @@ export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
   }
 )
 
-export type TrackMetadata = z.input<typeof TrackMetadataSchema>
-
 const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({ title: true })
 
+/**
+ * Produces a schema that validates a collection metadata for upload.
+ * Note the differences between this schema and the normal collection type:
+ * - This one is snake cased.
+ * - It has artwork (only validates the url, not the file for some reason).
+ * - There's extra track details to be validated.
+ * - The tracks are only validated for their titles.
+ * - The release date can be in the future.
+ */
 export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
   z.object({
     artwork: z
@@ -189,6 +225,13 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
     tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema }))
   })
 
+/**
+ * Extra metadata on the collection that doesn't get validated to
+ * the types that are used.
+ * - Playlist ID isn't on the schema.
+ * - Artwork is more than just a URL.
+ * - Tracks are full TrackForUploads, not just titles.
+ */
 type UnvalidatedCollectionMetadata = {
   playlist_id?: number
   artwork: {
@@ -205,4 +248,5 @@ export const AlbumSchema = createCollectionSchema('album')
 export type AlbumValues = z.input<typeof AlbumSchema> &
   UnvalidatedCollectionMetadata
 
+/** Values produced by the collection form. */
 export type CollectionValues = PlaylistValues | AlbumValues

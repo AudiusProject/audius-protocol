@@ -26,12 +26,19 @@ export enum UploadType {
   ALBUM = 3
 }
 
+/**
+ * Represents a track file, its metadata prior to upload, and a preview.
+ */
 export interface TrackForUpload {
   file: File | NativeFile
   preview?: any // Basically the Howler.js API, but with underscores.
   metadata: TrackMetadataForUpload
 }
 
+/**
+ * Unlike normal Track metadata, TrackMetadataForUpload includes additional
+ * files: artwork and a stems field with StemsForUpload.
+ */
 export interface TrackMetadataForUpload extends TrackMetadata {
   artwork: Nullable<{
     file: Blob | NativeFile
@@ -39,9 +46,11 @@ export interface TrackMetadataForUpload extends TrackMetadata {
   }>
   stems?: StemUploadWithFile[]
 }
-
+/**
+ * Unlike normal CollectionMetadata, CollectionMetadataForUpload has artwork
+ * and track details to be passed to its descendant tracks.
+ */
 export interface CollectionMetadataForUpload extends CollectionMetadata {
-  playlist_name: string
   artwork: {
     file: Blob
     url: string
@@ -54,22 +63,33 @@ export interface CollectionMetadataForUpload extends CollectionMetadata {
 }
 
 export enum ProgressStatus {
+  /** The file is being uploaded to the storage node. */
   UPLOADING = 'UPLOADING',
+  /** The file is uploaded and being processed by the storage node. (Transcoding) */
   PROCESSING = 'PROCESSING',
+  /** The upload is complete. */
   COMPLETE = 'COMPLETE',
+  /** The upload failed. */
   ERROR = 'ERROR'
 }
 
 export type Progress = {
+  /** The current status of the upload. */
   status: ProgressStatus
+  /** Bytes currently uploaded. */
   loaded?: number
+  /** Total number of bytes. */
   total?: number
+  /** The transcoding progress, from [0, 1]. Used for audio files only. */
   transcode?: number
 }
 
 export type ProgressState = {
+  /** The progress of the artwork upload. */
   art: Progress
+  /** The progress of the audio track upload. */
   audio: Progress
+  /** Nested progress for a track's stems (audio only). */
   stems: ProgressState[]
 }
 
@@ -100,6 +120,7 @@ type UploadStateForCollection = UploadStateBase & {
   completedEntity?: Collection
 }
 
+/** The type for the upload reducer state of the store. */
 export type UploadState =
   | UploadStateForCollection
   | UploadStateForTracks

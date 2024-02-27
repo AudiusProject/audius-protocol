@@ -123,11 +123,9 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     )
   }
 
-  const trackForEdit = yield* processTrackForUpload(
-    action.formFields
-  )
+  const trackForEdit = yield* processTrackForUpload(action.formFields)
 
- yield* call(
+  yield* call(
     confirmEditTrack,
     action.trackId,
     trackForEdit,
