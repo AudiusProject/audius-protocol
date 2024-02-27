@@ -62,6 +62,14 @@ const { updateProgress } = uploadActions
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
+const MAX_CONCURRENT_UPLOADS = 4
+const MAX_CONCURRENT_REGISTRATIONS = 4
+const MAX_CONCURRENT_TRACK_SIZE_BYTES = 40 /* MB */ * 1024 * 1024
+
+/**
+ * Convert the track metadata for upload to what libs expects.
+ * Only thing that needs to be adjusted is preview start seconds is non-optional, evidently?
+ */
 const toUploadTrackMetadata = (
   trackMetadata: TrackMetadataForUpload
 ): UploadTrackMetadata => ({
@@ -93,6 +101,10 @@ const combineMetadata = (
   return trackMetadata
 }
 
+/**
+ * Creates a callback that runs on upload progress in libs/sdk and
+ * reports that progress to the store via actions.
+ */
 const makeOnProgress = (
   trackIndex: number,
   stemIndex: number | null,
@@ -134,6 +146,10 @@ const makeOnProgress = (
   }
 }
 
+/**
+ * Deletes a list of tracks by track IDs.
+ * Used in cleaning up orphaned stems or tracks of a collection.
+ */
 function* deleteTracks(trackIds: ID[]) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
@@ -143,6 +159,31 @@ function* deleteTracks(trackIds: ID[]) {
   )
 }
 
+/**
+ * Calculates the number of workers to process upload requests.
+ * Ensures we don't have absurd amounts of data going over the wire at once.
+ */
+const getNumUploadWorkers = (trackFiles: File[]) => {
+  const largestFileSize = Math.max(...trackFiles.map((t) => t.size))
+
+  // Divide it out so that we never hit > MAX_CONCURRENT_TRACK_SIZE_BYTES in flight.
+  // e.g. so if we have 40 MB max upload and max track size of 15MB,
+  // floor(40/15) => 2 workers
+  const numWorkers = Math.floor(
+    MAX_CONCURRENT_TRACK_SIZE_BYTES / largestFileSize
+  )
+  const maxWorkers = Math.min(MAX_CONCURRENT_UPLOADS, trackFiles.length)
+
+  // Clamp between 1 and `maxWorkers`
+  return Math.min(Math.max(numWorkers, 1), maxWorkers)
+}
+
+/**
+ * Worker that handles upload requests.
+ * @param uploadQueue The queue of upload requests to pull from.
+ * @param progressChannel The channel to report progress actions to.
+ * @param responseChannel The channel to report the outcome to.
+ */
 function* uploadWorker(
   uploadQueue: Channel<UploadTask>,
   progressChannel: Channel<ProgressAction>,
@@ -176,6 +217,11 @@ function* uploadWorker(
   }
 }
 
+/**
+ * Worker that handles the entity manager writes.
+ * @param publishQueue The queue of publish requests
+ * @param responseChannel The channel to report the outcome to.
+ */
 function* publishWorker(
   publishQueue: Channel<PublishTask>,
   responseChannel: Channel<UploadTrackResponse>
@@ -219,18 +265,21 @@ function* publishWorker(
   }
 }
 
+/** Queued task for the upload worker. */
 type UploadTask = {
   trackIndex: number
   stemIndex: number | null
   track: TrackForUpload
 }
 
+/** Upload worker success response payload */
 type UploadedPayload = {
   trackIndex: number
   stemIndex: number | null
   metadata: TrackMetadata
 }
 
+/** Queued task for the publish worker. */
 type PublishTask = {
   trackIndex: number
   stemIndex: number | null
@@ -238,6 +287,7 @@ type PublishTask = {
   metadata: TrackMetadata
 }
 
+/** Publish worker success response payload */
 type PublishedPayload = {
   trackIndex: number
   stemIndex: number | null
@@ -245,6 +295,7 @@ type PublishedPayload = {
   metadata: TrackMetadata
 }
 
+/** Error response payload (from either worker). */
 type ErrorPayload = {
   trackIndex: number
   stemIndex: number | null
@@ -253,11 +304,26 @@ type ErrorPayload = {
   error: unknown
 }
 
+/** All possible response payloads from workers. */
 type UploadTrackResponse =
   | { type: 'UPLOADED'; payload: UploadedPayload }
   | { type: 'PUBLISHED'; payload: PublishedPayload }
   | { type: 'ERROR'; payload: ErrorPayload }
 
+/**
+ * Spins up workers to handle uploading of tracks and their stems in parallel.
+ * 
+ * Waits to publish parent tracks until their stems successfully upload.
+ * If a stem fails, marks the parent as failed and unpublishes the other stems.
+ * 
+ * Waits to publish collection tracks until all other tracks successfully upload.
+ * If a track from a collection fails, marks the collection as failed and
+ * unpublishes all other collection tracks.
+ * 
+ * Also called from the edit track flow for uploading stems to existing tracks.
+ * Those tracks must be uploaded as "tracks" since their parent is already
+ * uploaded, rather than sending their parent with stems attached.
+ */
 export function* handleUploads({
   tracks,
   kind
@@ -266,8 +332,10 @@ export function* handleUploads({
   kind: 'album' | 'playlist' | 'tracks' | 'stems'
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
-  const numUploadWorkers = 4
-  const numPublishWorkers = 4
+  const numUploadWorkers = getNumUploadWorkers(tracks.map((t) => t.file as File).concat(
+    tracks.map((t) => t.metadata.stems?.map((s) => s.file) ?? []).flat()
+  ))
+  const numPublishWorkers = MAX_CONCURRENT_REGISTRATIONS
   const uploadQueue = yield* call(
     channel<UploadTask>,
     buffers.expanding(tracks.length)
@@ -342,7 +410,7 @@ export function* handleUploads({
       uploaded.push(payload)
       const { trackIndex, stemIndex, metadata } = payload
       console.debug(
-        `${stemIndex === null ? 'Track' : 'Stem'} ${metadata.title} uploaded`,
+        `${stemIndex === null && kind !== 'stems' ? 'Track' : 'Stem'} ${metadata.title} uploaded`,
         { trackIndex, stemIndex }
       )
       const trackId = metadata.track_id
@@ -372,7 +440,7 @@ export function* handleUploads({
       published.push(payload)
       const { trackIndex, stemIndex, trackId, metadata } = payload
       console.debug(
-        `${stemIndex === null ? 'Track' : 'Stem'} ${metadata.title} published`
+        `${stemIndex === null && kind !== 'stems' ? 'Track' : 'Stem'} ${metadata.title} published`
       )
       yield* put(
         updateProgress({
@@ -526,6 +594,13 @@ export function* handleUploads({
     .map((p) => p.trackId)
 }
 
+/**
+ * Uploads a collection.
+ * @param tracks The tracks of the collection
+ * @param userId The user uploading
+ * @param collectionMetadata misnomer - actually just the values from the form fields
+ * @param isAlbum Whether the collection is an album or not.
+ */
 function* uploadCollection(
   tracks: TrackForUpload[],
   userId: ID,
@@ -536,10 +611,10 @@ function* uploadCollection(
   // First upload album art
   yield* call(
     audiusBackendInstance.uploadImage,
-    collectionMetadata.artwork?.file as File // It's a blob, but close enough
+    collectionMetadata.artwork?.file as File
   )
 
-  // Then upload tracks
+  // Propagate the collection metadata to the tracks
   const tracksWithMetadata = tracks.map((track) => {
     const metadata = combineMetadata(track.metadata, collectionMetadata)
     return {
@@ -548,11 +623,11 @@ function* uploadCollection(
     }
   })
 
-  // Due to the channels, etc, the types are wrong - cast them.
-  const trackIds = (yield* call(handleUploads, {
+  // Upload the tracks
+  const trackIds = yield* call(handleUploads, {
     tracks: tracksWithMetadata,
     kind: isAlbum ? 'album' : 'playlist'
-  })) as unknown as ID[]
+  })
 
   yield* call(
     recordGatedTracks,
@@ -722,12 +797,18 @@ function* uploadCollection(
   )
 }
 
+/**
+ * Uploads any number of standalone tracks.
+ * @param tracks the tracks to upload
+ */
 function* uploadMultipleTracks(tracks: TrackForUpload[]) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const audiusLibs = yield* call([
     audiusBackendInstance,
     audiusBackendInstance.getAudiusLibsTyped
   ])
+
+  // Get the IDs ahead of time, so that stems can be associated.
   const tracksWithIds = yield* all(
     tracks.map((track) =>
       call(function* () {
@@ -755,11 +836,13 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
   yield waitForAccount()
   const account = yield* select(accountSelectors.getAccountUser)
 
+  // Get true track metadatas back
   const newTracks = yield* call(retrieveTracks, {
     trackIds,
     forceRetrieveFromSource: true
   })
 
+  // Make sure track count changes
   yield* call(adjustUserField, {
     user: account!,
     fieldName: 'track_count',
@@ -780,6 +863,8 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
       kind: 'tracks'
     })
   )
+
+  // Send analytics for any gated content
   yield* call(
     recordGatedTracks,
     tracksWithIds.map((track) => track.metadata)
@@ -798,6 +883,7 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
     }
   }
 
+  // Send analytics for any remixes
   for (const remixTrack of newTracks) {
     if (
       remixTrack.remix_of !== null &&
@@ -808,6 +894,7 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
     }
   }
 
+  // Bust the cache so we refetch the user
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
 }
 
