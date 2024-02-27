@@ -176,15 +176,19 @@ def get_track_owner_id(session: Session, track_id: int) -> Optional[int]:
     else:
         return None
 
+
 def get_playlist_owner_id(session: Session, playlist_id: int) -> Optional[int]:
     """Gets the owner of a playlist"""
     playlist_owner_id = (
-        session.query(Playlist.playlist_owner_id).filter(Playlist.playlist_id == playlist_id).first()
+        session.query(Playlist.playlist_owner_id)
+        .filter(Playlist.playlist_id == playlist_id)
+        .first()
     )
     if playlist_owner_id is not None:
         return playlist_owner_id[0]
     else:
         return None
+
 
 # Return highest payment router slot that has been processed
 def get_highest_payment_router_tx_slot(session: Session):

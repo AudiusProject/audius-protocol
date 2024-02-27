@@ -31,6 +31,7 @@ from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
 
+
 def update_playlist_routes_table(
     params: ManageEntityParameters, playlist_record: Playlist, is_create: bool
 ):
@@ -197,6 +198,7 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
         f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
     )
 
+
 def update_album_price_history(
     session: Session,
     playlist_record: Playlist,
@@ -210,9 +212,7 @@ def update_album_price_history(
         "is_stream_gated", False
     ) and playlist_metadata.get("stream_conditions", None)
     if is_stream_gated:
-        conditions = (
-            playlist_metadata["stream_conditions"]
-        )
+        conditions = playlist_metadata["stream_conditions"]
         if USDC_PURCHASE_KEY in conditions:
             usdc_purchase = conditions[USDC_PURCHASE_KEY]
             new_record = AlbumPriceHistory()
@@ -220,9 +220,7 @@ def update_album_price_history(
             new_record.block_timestamp = timestamp
             new_record.blocknumber = blocknumber
             new_record.splits = {}
-            new_record.access = (
-                PurchaseAccessType.stream
-            )
+            new_record.access = PurchaseAccessType.stream
             if "price" in usdc_purchase:
                 price = usdc_purchase["price"]
                 if isinstance(price, int):
