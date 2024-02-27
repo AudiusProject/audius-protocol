@@ -12,7 +12,7 @@ import (
 )
 
 func NewGraphStaging() PeerProvider {
-	endpoint := `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-goerli`
+	endpoint := `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-sepolia`
 	return &graphProvider{endpoint}
 }
 

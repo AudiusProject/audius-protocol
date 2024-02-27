@@ -73,8 +73,7 @@ const TrackPlayerTiny = ({
     infoStyle['--info-width'] = `${infoWidth + MARQUEE_SPACING}px`
   }
 
-  const isPurchaseable =
-    streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <div className={styles.wrapper}>

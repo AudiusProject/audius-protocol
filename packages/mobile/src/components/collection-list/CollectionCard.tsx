@@ -30,6 +30,7 @@ const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
 type FullCollectionCardProps = {
   collection: Collection
   style?: StyleProp<ViewStyle>
+  onPress?: (id: ID) => void
   /** Override for what number to show as the # of tracks. Optional. */
   numTracks?: number
 }
@@ -37,6 +38,7 @@ type FullCollectionCardProps = {
 type CollectionCardWithIdProps = {
   collectionId: ID
   style?: StyleProp<ViewStyle>
+  onPress?: (id: ID) => void
 }
 
 type CollectionCardProps = FullCollectionCardProps | CollectionCardWithIdProps
@@ -44,12 +46,14 @@ type CollectionCardProps = FullCollectionCardProps | CollectionCardWithIdProps
 const FullCollectionCard = ({
   collection,
   numTracks,
-  style
+  style,
+  onPress
 }: FullCollectionCardProps) => {
   const navigation = useNavigation()
   const handlePress = useCallback(() => {
     navigation.push('Collection', { id: collection.playlist_id })
-  }, [navigation, collection])
+    onPress?.(collection.playlist_id)
+  }, [navigation, collection.playlist_id, onPress])
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -103,7 +107,8 @@ const useTrackCountWithOfflineOverride = (collection: Collection | null) => {
 
 const CollectionCardWithId = ({
   collectionId,
-  style
+  style,
+  onPress
 }: CollectionCardWithIdProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
@@ -115,6 +120,7 @@ const CollectionCardWithId = ({
       collection={collection}
       numTracks={numTracks}
       style={style}
+      onPress={onPress}
     />
   ) : null
 }

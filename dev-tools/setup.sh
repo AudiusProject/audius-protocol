@@ -47,6 +47,10 @@ debian | ubuntu)
 
     # Increase file watchers
     echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+
+    # add script directories to path, avoiding duplication
+    grep -q "export PATH=$HOME/.local/bin:" ~/.profile || echo "export PATH=$HOME/.local/bin:\$PATH" >>~/.profile
+
     ;;
 *)
     if ! command -v docker &>/dev/null; then
@@ -72,22 +76,15 @@ debian | ubuntu)
 esac
 
 if [[ "${BASH_SOURCE[0]}" == "" ]]; then
-    export PROTOCOL_DIR="${PROTOCOL_DIR:-$HOME/audius-protocol}"
-    git clone https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
+    protocol_dir="$HOME/audius-protocol"
+    git clone https://github.com/AudiusProject/audius-protocol.git "$protocol_dir"
 else
-    export PROTOCOL_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
+    protocol_dir="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 fi
 
-python3 -m pip install -r "$PROTOCOL_DIR/dev-tools/requirements.txt"
+python3 -m pip install -r "$protocol_dir/dev-tools/requirements.txt"
 
 mkdir -p "$HOME/.local/bin"
 
-ln -sf "$PROTOCOL_DIR/dev-tools/audius-compose" "$HOME/.local/bin/audius-compose"
-ln -sf "$PROTOCOL_DIR/dev-tools/audius-cloud" "$HOME/.local/bin/audius-cloud"
-ln -sf "$PROTOCOL_DIR/dev-tools/audius-cmd" "$HOME/.local/bin/audius-cmd"
-
-# Add env vars to .profile, avoiding duplication
-grep -q PROTOCOL_DIR ~/.profile || echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
-grep -q "export PATH=$HOME/.local/bin:" ~/.profile || echo "export PATH=$HOME/.local/bin:\$PATH" >>~/.profile
-
-[[ "$AUDIUS_DEV" != "false" ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh" || true
+ln -sf "$protocol_dir/dev-tools/audius-compose" "$HOME/.local/bin/audius-compose"
+ln -sf "$protocol_dir/dev-tools/audius-cmd" "$HOME/.local/bin/audius-cmd"
