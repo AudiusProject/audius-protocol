@@ -91,6 +91,7 @@ class Track(Base, RepresentableMixin):
         ARRAY(Integer()), server_default="ARRAY[]::INTEGER[]"
     )
     ai_attribution_user_id = Column(Integer, nullable=True)
+    placement_hosts = Column(String, nullable=True)
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"

@@ -227,6 +227,7 @@ def test_index_valid_track(app, mocker):
             "orig_filename": "original-filename-4",
             "is_downloadable": False,
             "is_original_available": False,
+            "placement_hosts": "https://host1.com,https://host2.com,https://host3.com,https://host4.com",
         },
         "QmUpdateTrack1": {
             "title": "track 1 2",
@@ -444,6 +445,10 @@ def test_index_valid_track(app, mocker):
         )
         assert track_4.title == "track 4"
         assert track_4.is_delete == False
+        assert (
+            track_4.placement_hosts
+            == "https://host1.com,https://host2.com,https://host3.com,https://host4.com"
+        )
 
         # Check that track routes are updated appropriately
         track_routes = (
