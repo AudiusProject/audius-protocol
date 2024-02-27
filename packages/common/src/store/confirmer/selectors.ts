@@ -4,9 +4,13 @@ import { CommonState } from '~/store/commonStore'
 
 // Confirmer selectors
 
-/** Check whether anything is confirming so UI can block reloads. */
+/**
+ * Check whether anything is confirming so UI can block reloads.
+ * Also checks for uploads in progress, which don't always use confirmer but
+ * should also block unloads.
+ */
 export const getIsConfirming = (state: CommonState) =>
-  Object.keys(state.confirmer.confirm).length > 0
+  Object.keys(state.confirmer.confirm).length > 0 || state.upload.uploading
 
 export const getResult = (
   state: CommonState,
