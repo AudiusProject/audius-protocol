@@ -18,6 +18,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
+from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.payment_router import PaymentRouterTx
@@ -174,6 +175,15 @@ def get_track_owner_id(session: Session, track_id: int) -> Optional[int]:
     else:
         return None
 
+def get_playlist_owner_id(session: Session, playlist_id: int) -> Optional[int]:
+    """Gets the owner of a playlist"""
+    playlist_owner_id = (
+        session.query(Playlist.playlist_owner_id).filter(Playlist.playlist_id == playlist_id).first()
+    )
+    if playlist_owner_id is not None:
+        return playlist_owner_id[0]
+    else:
+        return None
 
 # Return highest payment router slot that has been processed
 def get_highest_payment_router_tx_slot(session: Session):
@@ -276,6 +286,8 @@ def parse_route_transaction_memo(
                 if result is not None:
                     price = result.total_price_cents
                     splits = result.splits
+            # TODO: Purchaseable Albums - Add album price history
+            # elif type == PurchaseType.album:
             else:
                 logger.error(f"index_payment_router.py | Unknown content type {type}")
             if (
