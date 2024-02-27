@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common/models'
+import { MobileOS, Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -34,6 +34,7 @@ import { ResetPasswordModalScreen } from '../reset-password-screen'
 import { SignOnStack } from '../sign-on-screen'
 
 import { StatusBar } from './StatusBar'
+import { Platform } from 'react-native'
 
 const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
@@ -63,6 +64,7 @@ export const RootScreen = () => {
   const showHomeStack = useSelector(getHasCompletedAccount)
   const startedSignUp = useSelector(getStartedSignUpProcess)
   const welcomeModalShown = useSelector(getWelcomeModalShown)
+  const isAndroid = Platform.OS === MobileOS.ANDROID
 
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
@@ -154,7 +156,7 @@ export const RootScreen = () => {
               name='HomeStack'
               component={AppDrawerScreen}
               // animation: none here is a workaround to prevent "white screen of death" on Android
-              options={{ animation: 'none' }}
+              options={isAndroid ? { animation: 'none' } : undefined}
             />
           ) : isSignUpRedesignEnabled ? (
             <Stack.Screen name='SignOnStackNew'>
