@@ -7,15 +7,13 @@ import {
   UPLOAD_TRACKS_REQUESTED,
   UPLOAD_TRACKS_SUCCEEDED,
   UPLOAD_TRACKS_FAILED,
-  UPLOAD_SINGLE_TRACK_FAILED,
   UPDATE_PROGRESS,
   RESET,
   RESET_STATE,
   UNDO_RESET_STATE,
   uploadTracksRequested,
   uploadTracksSucceeded,
-  updateProgress,
-  uploadSingleTrackFailed
+  updateProgress
 } from './actions'
 import {
   ProgressState,
@@ -184,15 +182,6 @@ const actionsMap = {
     return {
       ...state,
       shouldReset: false
-    }
-  },
-  [UPLOAD_SINGLE_TRACK_FAILED](
-    state: UploadState,
-    action: ReturnType<typeof uploadSingleTrackFailed>
-  ) {
-    return {
-      ...state,
-      failedTrackIndices: [...state.failedTrackIndices, action.index]
     }
   }
 }

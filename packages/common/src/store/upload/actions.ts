@@ -80,6 +80,11 @@ export const updateProgress = (payload: {
 }
 
 // Actions used to reset the react state and then the store state of upload from external container
+
+export const reset = () => {
+  return { type: RESET }
+}
+
 export const resetState = () => {
   return { type: RESET_STATE }
 }
