@@ -306,8 +306,6 @@ def validate_update_access_conditions(params: ManageEntityParameters):
         params.existing_records["Playlist"][playlist_id]
     )
 
-    print(f"REED params: {params}")
-    print(f"REED updated_playlist: {params.metadata}")
     updated_playlist = params.metadata
     existing_conditions = existing_playlist.get("stream_conditions")
     updated_conditions = updated_playlist.get("stream_conditions")
