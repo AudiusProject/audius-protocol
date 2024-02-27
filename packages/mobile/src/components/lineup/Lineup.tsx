@@ -139,20 +139,21 @@ const LineupTileView = memo(function LineupTileView({
   showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
-  togglePlay
+  togglePlay,
+  onPress
 }: LineupTileViewProps) {
-  const LineupTile = getLineupTileComponent(item)
-
-  if (LineupTile) {
+  const TrackOrCollectionTile = getLineupTileComponent(item)
+  if (TrackOrCollectionTile) {
     return (
       <View style={styles.item}>
-        <LineupTile
+        <TrackOrCollectionTile
           {...item}
           index={index}
           isTrending={isTrending}
           showArtistPick={showLeadingElementArtistPick && !!leadingElementId}
           showRankIcon={index < rankIconCount}
           togglePlay={togglePlay}
+          onPress={onPress}
           uid={item.uid}
         />
       </View>
@@ -171,7 +172,8 @@ const LineupItemTile = memo(function LineupItemTile({
   showLeadingElementArtistPick,
   leadingElementId,
   rankIconCount,
-  togglePlay
+  togglePlay,
+  onPress
 }: LineupItemTileProps) {
   if (!item) return null
   if ('_loading' in item) {
@@ -188,6 +190,7 @@ const LineupItemTile = memo(function LineupItemTile({
         leadingElementId={leadingElementId}
         rankIconCount={rankIconCount}
         togglePlay={togglePlay}
+        onPress={onPress}
       />
     )
   }
@@ -227,6 +230,7 @@ export const Lineup = ({
   extraFetchOptions,
   ListFooterComponent,
   EndOfLineupComponent,
+  onPressItem,
   ...listProps
 }: LineupProps) => {
   const dispatch = useDispatch()
@@ -387,6 +391,7 @@ export const Lineup = ({
           rankIconCount={rankIconCount}
           showLeadingElementArtistPick={showLeadingElementArtistPick}
           togglePlay={togglePlay}
+          onPress={onPressItem}
         />
       )
     },
@@ -395,7 +400,8 @@ export const Lineup = ({
       leadingElementId,
       rankIconCount,
       showLeadingElementArtistPick,
-      togglePlay
+      togglePlay,
+      onPressItem
     ]
   )
 

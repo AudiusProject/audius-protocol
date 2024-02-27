@@ -18,6 +18,7 @@
     "build": "npm run write-sha && NODE_OPTIONS=--max-old-space-size=8192 env-cmd ./env/.env.git vite build",
     "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
     "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
+    "lint:env": "dotenv-linter env",
     "prebuild": "npm run publish-scripts",
     "preview:prod": "npm run build:prod && vite preview --outDir build-production",
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -34,7 +35,7 @@
     "test": "vitest",
     "typecheck:watch": "tsc --watch",
     "typecheck": "tsc",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\"",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\" \"npm:lint:env\"",
     "worker-ssr:dev": "npx wrangler dev --env test --config ./src/ssr/wrangler.toml",
     "worker:dev": "npx wrangler dev --env test",
     "write-sha": "./scripts/writeSHA.sh",
@@ -201,6 +202,7 @@
     "extends": null
   },
   "devDependencies": {
+    "@audius/dotenv-linter": "*",
     "@electron/notarize": "2.2.0",
     "@esbuild-plugins/node-globals-polyfill": "0.2.3",
     "@pinata/sdk": "1.1.13",

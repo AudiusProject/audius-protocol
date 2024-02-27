@@ -77,6 +77,7 @@ type TrackTileProps = LineupItemProps & {
 }
 
 export const TrackTileComponent = ({
+  onPress,
   togglePlay,
   track,
   user,
@@ -144,11 +145,13 @@ export const TrackTileComponent = ({
       id: track_id,
       source: PlaybackSource.TRACK_TILE
     })
-  }, [togglePlay, lineupTileProps.uid, track_id])
+    onPress?.(track_id)
+  }, [togglePlay, lineupTileProps.uid, track_id, onPress])
 
   const handlePressTitle = useCallback(() => {
     navigation.push('Track', { id: track_id })
-  }, [navigation, track_id])
+    onPress?.(track_id)
+  }, [navigation, onPress, track_id])
 
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })

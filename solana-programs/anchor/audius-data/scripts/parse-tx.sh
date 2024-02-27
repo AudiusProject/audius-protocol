@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TX_PARSER_DIR="$PROTOCOL_DIR/packages/discovery-provider/solana-tx-parser"
+
+protocol_dir="$(readlink -f "${BASH_SOURCE[0]}" | sed -nr 's/(.*)\/solana-programs\/anchor.*/\1/p')"
+TX_PARSER_DIR="$protocol_dir/packages/discovery-provider/solana-tx-parser"
+
 AUDIUS_DATA_PROGRAM_ID=$(solana-keygen pubkey $PWD/target/deploy/audius_data-keypair.json)
 
 echo "Installing parser deps if needed..."

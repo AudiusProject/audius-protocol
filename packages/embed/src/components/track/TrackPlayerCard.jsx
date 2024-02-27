@@ -58,8 +58,7 @@ const TrackPlayerCard = ({
     }
     setArtworkWrapperStyle(newStyle)
   }, [height, width])
-  const isPurchaseable =
-    streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <Card
