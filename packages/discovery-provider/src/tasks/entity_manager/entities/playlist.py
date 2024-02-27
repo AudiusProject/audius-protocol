@@ -13,7 +13,6 @@ from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.tracks.track import Track
-from src.models.users.usdc_purchase import PurchaseAccessType
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
@@ -220,7 +219,6 @@ def update_album_price_history(
             new_record.block_timestamp = timestamp
             new_record.blocknumber = blocknumber
             new_record.splits = {}
-            new_record.access = PurchaseAccessType.stream
             if "price" in usdc_purchase:
                 price = usdc_purchase["price"]
                 if isinstance(price, int):
@@ -461,6 +459,8 @@ def create_playlist(params: ManageEntityParameters):
         is_current=False,
         is_delete=False,
     )
+
+    logger.info(f"playlist.py | ANDREW | Created playlist record {playlist_record}")
 
     update_playlist_routes_table(params, playlist_record, True)
 

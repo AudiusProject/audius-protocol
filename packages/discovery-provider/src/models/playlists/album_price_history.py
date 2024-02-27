@@ -12,7 +12,6 @@ class AlbumPriceHistory(Base, RepresentableMixin):
     playlist_id = Column(Integer, nullable=False, primary_key=True)
     splits = Column(JSONB(), nullable=False)
     total_price_cents = Column(BigInteger, nullable=False)
-    access = Column(Enum(PurchaseAccessType), nullable=False)
     blocknumber = Column(BigInteger, nullable=False)
     block_timestamp = Column(DateTime, nullable=False, primary_key=True)
     created_at = Column(

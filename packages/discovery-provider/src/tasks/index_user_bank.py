@@ -366,8 +366,7 @@ def get_purchase_metadata_from_memo(
                     query.filter(AlbumPriceHistory.block_timestamp < timestamp)
                 result = (
                     query.filter(
-                        AlbumPriceHistory.playlist_id == id,
-                        AlbumPriceHistory.access == access,
+                        AlbumPriceHistory.playlist_id == id
                     )
                     .order_by(desc(AlbumPriceHistory.block_timestamp))
                     .first()
