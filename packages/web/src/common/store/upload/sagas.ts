@@ -635,6 +635,7 @@ export function* handleUploads({
     } catch (e) {
       console.error('Failed to clean up orphaned tracks:', e)
     } finally {
+      yield* put(uploadActions.uploadTrackFailed())
       // Errors were reported to sentry earlier in the upload process.
       // Throwing here so callers don't think they succeeded.
       throw new Error('Failed to upload tracks for collection.')
@@ -648,6 +649,7 @@ export function* handleUploads({
 
   // If nothing uploaded, we failed!
   if (publishedTrackIds.length === 0) {
+    yield* put(uploadActions.uploadTrackFailed())
     // Errors were reported to sentry earlier in the upload process.
     // Throwing here so callers don't think they succeeded.
     throw new Error('No tracks were successfully uploaded.')
