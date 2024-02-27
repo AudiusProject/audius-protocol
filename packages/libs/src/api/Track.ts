@@ -371,8 +371,7 @@ export class Track extends Base {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: () => void,
-    trackId?: number
+    onProgress: () => void
   ) {
     const updatedMetadata = await this.uploadTrackV2(
       trackFile,
@@ -380,12 +379,11 @@ export class Track extends Base {
       metadata,
       onProgress
     )
-    const {
-      trackId: updatedTrackId,
-      metadataCid,
-      txReceipt
-    } = await this.writeTrackToChain(updatedMetadata, Action.CREATE, trackId)
-    return { trackId: updatedTrackId, metadataCid, updatedMetadata, txReceipt }
+    const { trackId, metadataCid, txReceipt } = await this.writeTrackToChain(
+      updatedMetadata,
+      Action.CREATE
+    )
+    return { trackId, metadataCid, updatedMetadata, txReceipt }
   }
 
   /**
@@ -476,7 +474,7 @@ export class Track extends Base {
       throw new Error('No users loaded for this wallet')
     }
 
-    if (!trackId) trackId = await this.generateTrackId()
+    if (!trackId) trackId = await this._generateTrackId()
     const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
       trackMetadata
     )
@@ -577,19 +575,19 @@ export class Track extends Base {
     )
   }
 
-  async generateTrackId(): Promise<number> {
-    const encodedId = await this.discoveryProvider.getUnclaimedId('tracks')
-    if (!encodedId) {
-      throw new Error('No unclaimed track IDs')
-    }
-    return decodeHashId(encodedId)!
-  }
-
   /* ------- PRIVATE  ------- */
 
   // Throws an error upon validation failure
   _validateTrackMetadata(metadata: TrackMetadata) {
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
     this.creatorNode.validateTrackSchema(metadata)
+  }
+
+  async _generateTrackId(): Promise<number> {
+    const encodedId = await this.discoveryProvider.getUnclaimedId('tracks')
+    if (!encodedId) {
+      throw new Error('No unclaimed track IDs')
+    }
+    return decodeHashId(encodedId)!
   }
 }
