@@ -18,6 +18,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
+from src.models.playlists.album_price_history import AlbumPriceHistory
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
@@ -286,8 +287,29 @@ def parse_route_transaction_memo(
                 if result is not None:
                     price = result.total_price_cents
                     splits = result.splits
-            # TODO: Purchaseable Albums - Add album price history
-            # elif type == PurchaseType.album:
+            elif type == PurchaseType.album:
+                env = shared_config["discprov"]["env"]
+                content_owner_id = get_playlist_owner_id(session, id)
+                if content_owner_id is None:
+                    logger.error(
+                        f"index_payment_router.py | Couldn't find content owner for playlist_id={id}"
+                    )
+                    continue
+                query = session.query(AlbumPriceHistory)
+                if env != "dev":
+                    # See above comment
+                    query.filter(AlbumPriceHistory.block_timestamp < timestamp)
+                result = (
+                    query.filter(
+                        AlbumPriceHistory.playlist_id == id,
+                        AlbumPriceHistory.access == access,
+                    )
+                    .order_by(desc(AlbumPriceHistory.block_timestamp))
+                    .first()
+                )
+                if result is not None:
+                    price = result.total_price_cents
+                    splits = result.splits
             else:
                 logger.error(f"index_payment_router.py | Unknown content type {type}")
             if (
