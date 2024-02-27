@@ -20,19 +20,6 @@ export const TOGGLE_MULTI_TRACK_NOTIFICATION =
   'UPLOAD/TOGGLE_MULTI_TRACK_NOTIFICATION'
 
 // Errors
-export const SINGLE_TRACK_UPLOAD_ERROR = 'UPLOAD/ERROR/SINGLE_TRACK_UPLOAD'
-export const SINGLE_TRACK_UPLOAD_TIMEOUT_ERROR =
-  'UPLOAD/ERROR/SINGLE_TRACK_UPLOAD_TIMEOUT'
-export const MULTI_TRACK_UPLOAD_ERROR = 'UPLOAD/ERROR/MULTI_TRACK_UPLOAD'
-export const MULTI_TRACK_TIMEOUT_ERROR = 'UPLOAD/ERROR/MULTI_TRACK_TIMEOUT'
-export const COLLECTION_CREATOR_NODE_UPLOAD_ERROR =
-  'UPLOAD/ERROR/COLLECTION_CREATOR_NODE_UPLOAD'
-export const COLLECTION_CREATOR_NODE_TIMEOUT_ERROR =
-  'UPLOAD/ERROR/COLLECTION_CREATOR_NODE_TIMEOU'
-export const COLLECTION_ADD_TRACK_TO_CHAIN_ERROR =
-  'UPLOAD/ERROR/COLLECTION_ADD_TRACK_TO_CHAIN'
-export const COLLECTION_ASSOCIATE_TRACKS_ERROR =
-  'UPLOAD/ERROR/COLLECTION_ASSOCIATE_TRACKS'
 export const COLLECTION_CREATE_PLAYLIST_NO_ID_ERROR =
   'UPLOAD/ERROR/COLLECTION_CREATE_PLAYLIST_NO_ID'
 export const COLLECTION_CREATE_PLAYLIST_ID_EXISTS_ERROR =
@@ -103,57 +90,6 @@ export const undoResetState = () => {
 export const toggleMultiTrackNotification = (open = false) => {
   return { type: TOGGLE_MULTI_TRACK_NOTIFICATION, open }
 }
-
-export const singleTrackUploadError = (
-  error: string,
-  phase?: string,
-  trackSizeBytes?: number
-) => ({
-  type: SINGLE_TRACK_UPLOAD_ERROR,
-  trackSizeBytes,
-  error,
-  phase
-})
-
-export const singleTrackTimeoutError = () => ({
-  type: SINGLE_TRACK_UPLOAD_TIMEOUT_ERROR
-})
-
-export const multiTrackUploadError = (
-  error: string,
-  phase?: string,
-  numTracks?: number,
-  isStem?: boolean
-) => ({
-  type: MULTI_TRACK_UPLOAD_ERROR,
-  error,
-  phase,
-  numTracks,
-  isStem
-})
-
-export const multiTrackTimeoutError = () => ({
-  type: MULTI_TRACK_TIMEOUT_ERROR
-})
-
-export const creatorNodeUploadError = (error: string) => ({
-  type: COLLECTION_CREATOR_NODE_UPLOAD_ERROR,
-  error
-})
-
-export const creatorNodeTimeoutError = () => ({
-  type: COLLECTION_CREATOR_NODE_TIMEOUT_ERROR
-})
-
-export const addTrackToChainError = (error: string) => ({
-  type: COLLECTION_ADD_TRACK_TO_CHAIN_ERROR,
-  error
-})
-
-export const associateTracksError = (error: string) => ({
-  type: COLLECTION_ASSOCIATE_TRACKS_ERROR,
-  error
-})
 
 export const createPlaylistErrorIDExists = (error: string) => ({
   type: COLLECTION_CREATE_PLAYLIST_ID_EXISTS_ERROR,
