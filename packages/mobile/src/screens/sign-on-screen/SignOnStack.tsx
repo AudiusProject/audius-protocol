@@ -17,6 +17,7 @@ import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
+import { Platform } from 'react-native'
 
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
@@ -33,7 +34,7 @@ export const SignOnStack = (props: SignOnStackProps) => {
       ...screenOptionsOverrides
     })
 
-  const isAndroid = getMobileOS() === MobileOS.ANDROID
+  const isAndroid = Platform.OS === MobileOS.ANDROID
 
   const updateOptions = useCallback(
     (newOptions: NativeStackNavigationOptions) => {
