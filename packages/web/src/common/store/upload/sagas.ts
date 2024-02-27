@@ -3,8 +3,7 @@ import {
   CollectionMetadata,
   ID,
   Kind,
-  Name,
-  StemUploadWithFile
+  Name
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
@@ -654,12 +653,11 @@ export function* handleUploads({
       )
     } catch (e) {
       console.error('Failed to clean up orphaned tracks:', e)
-    } finally {
-      yield* put(uploadActions.uploadTrackFailed())
-      // Errors were reported to sentry earlier in the upload process.
-      // Throwing here so callers don't think they succeeded.
-      throw new Error('Failed to upload tracks for collection.')
     }
+    yield* put(uploadActions.uploadTrackFailed())
+    // Errors were reported to sentry earlier in the upload process.
+    // Throwing here so callers don't think they succeeded.
+    throw new Error('Failed to upload tracks for collection.')
   }
 
   const publishedTrackIds = published
@@ -1007,7 +1005,7 @@ function* uploadTracksAsync(
     kind
   })
   yield* put(recordEvent)
-  
+
   const tracks = payload.tracks
 
   // Prep the USDC purchase conditions
