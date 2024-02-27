@@ -9,6 +9,7 @@ import { spacing } from 'app/styles/spacing'
 import { EmptyResults } from '../EmptyResults'
 
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
+import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
 
 const { getSearchStatus } = searchResultsPageSelectors
 
@@ -27,6 +28,10 @@ const selectSearchAlbums = (state: CommonState) => {
 }
 
 export const AlbumsTab = () => {
+  const onSelectSearchResult = useTrackSearchResultSelect(
+    'album',
+    'more results page'
+  )
   const albums = useProxySelector(selectSearchAlbums, [])
   useFetchTabResultsEffect(SearchKind.ALBUMS)
 
@@ -36,6 +41,7 @@ export const AlbumsTab = () => {
       isLoading={!albums}
       collection={albums}
       ListEmptyComponent={<EmptyResults />}
+      onCollectionPress={onSelectSearchResult}
     />
   )
 }

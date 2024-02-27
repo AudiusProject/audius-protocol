@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 
 import type { ImageProps } from '@audius/harmony-native'
@@ -15,18 +15,23 @@ const formatProfileCardSecondaryText = (followers: number) => {
   return `${formatCount(followers)} ${followersText}`
 }
 
-type ProfileCardProps = Partial<BaseProfileCardProps> & {
+type ProfileCardProps = Partial<Omit<BaseProfileCardProps, 'onPress'>> & {
   profile: User
+  preventNavigation?: boolean
+  onPress?: (id: ID) => void
 }
 
 export const ProfileCard = (props: ProfileCardProps) => {
-  const { profile, onPress, ...other } = props
+  const { profile, preventNavigation, onPress, ...other } = props
   const { user_id, handle } = profile
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.push('Profile', { handle })
-  }, [navigation, handle])
+    if (!preventNavigation) {
+      navigation.push('Profile', { handle })
+    }
+    onPress?.(user_id)
+  }, [navigation, handle, onPress, user_id, preventNavigation])
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -44,7 +49,7 @@ export const ProfileCard = (props: ProfileCardProps) => {
       renderImage={renderImage}
       primaryText={profile.name}
       secondaryText={formatProfileCardSecondaryText(profile.follower_count)}
-      onPress={onPress ?? handlePress}
+      onPress={handlePress}
       type='user'
       user={profile}
       {...other}
