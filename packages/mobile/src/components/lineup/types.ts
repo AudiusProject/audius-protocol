@@ -163,7 +163,7 @@ export type LineupProps = {
   pullToRefresh?: boolean
 
   /**
-   * Track search result selection for analytics
+   * Function called when item is pressed
    */
   onPressItem?: (id: ID) => void
 

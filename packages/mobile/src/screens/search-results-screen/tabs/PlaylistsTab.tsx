@@ -28,7 +28,10 @@ const selectSearchPlaylists = (state: CommonState) => {
 }
 
 export const PlaylistsTab = () => {
-  const trackSearchResultSelect = useTrackSearchResultSelect('playlist')
+  const onSelectSearchResult = useTrackSearchResultSelect(
+    'playlist',
+    'more results page'
+  )
   const playlists = useProxySelector(selectSearchPlaylists, [])
   useFetchTabResultsEffect(SearchKind.PLAYLISTS)
 
@@ -38,7 +41,7 @@ export const PlaylistsTab = () => {
       isLoading={!playlists}
       collection={playlists}
       ListEmptyComponent={<EmptyResults />}
-      onCollectionPress={trackSearchResultSelect}
+      onCollectionPress={onSelectSearchResult}
     />
   )
 }

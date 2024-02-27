@@ -23,7 +23,10 @@ const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
 )
 
 export const TracksTab = ({ route }) => {
-  const trackSearchResultSelect = useTrackSearchResultSelect('track')
+  const onSelectSearchResult = useTrackSearchResultSelect(
+    'track',
+    'more results page'
+  )
 
   const lineup = useSelector(getSearchTracksLineupMetadatas)
   const dispatch = useDispatch()
@@ -51,7 +54,7 @@ export const TracksTab = ({ route }) => {
         actions={tracksActions}
         lineup={lineup}
         loadMore={loadMore}
-        onPressItem={trackSearchResultSelect}
+        onPressItem={onSelectSearchResult}
       />
     </SearchResultsTab>
   )

@@ -19,7 +19,7 @@ export const ProfileList = (props: ProfileListProps) => {
     <CardList
       data={profiles}
       renderItem={({ item }) => (
-        <ProfileCard profile={item} onCardPress={onCardPress} />
+        <ProfileCard profile={item} onPress={onCardPress} />
       )}
       LoadingCardComponent={ProfileCardSkeleton}
       {...other}

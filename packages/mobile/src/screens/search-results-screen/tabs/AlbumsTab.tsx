@@ -28,7 +28,10 @@ const selectSearchAlbums = (state: CommonState) => {
 }
 
 export const AlbumsTab = () => {
-  const trackSearchResultSelect = useTrackSearchResultSelect('album')
+  const onSelectSearchResult = useTrackSearchResultSelect(
+    'album',
+    'more results page'
+  )
   const albums = useProxySelector(selectSearchAlbums, [])
   useFetchTabResultsEffect(SearchKind.ALBUMS)
 
@@ -38,7 +41,7 @@ export const AlbumsTab = () => {
       isLoading={!albums}
       collection={albums}
       ListEmptyComponent={<EmptyResults />}
-      onCollectionPress={trackSearchResultSelect}
+      onCollectionPress={onSelectSearchResult}
     />
   )
 }
