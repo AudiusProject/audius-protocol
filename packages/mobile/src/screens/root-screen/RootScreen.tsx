@@ -13,6 +13,7 @@ import {
   getStartedSignUpProcess,
   getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
+import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
@@ -34,7 +35,6 @@ import { ResetPasswordModalScreen } from '../reset-password-screen'
 import { SignOnStack } from '../sign-on-screen'
 
 import { StatusBar } from './StatusBar'
-import { Platform } from 'react-native'
 
 const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
