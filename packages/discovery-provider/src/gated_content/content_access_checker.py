@@ -13,6 +13,7 @@ from src.gated_content.helpers import (
 )
 from src.gated_content.types import GatedContentConditions, GatedContentType
 from src.models.tracks.track import Track
+from src.models.users.usdc_purchase import USDCPurchase
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
@@ -268,8 +269,31 @@ class ContentAccessChecker:
                 condition_options=condition_options,
             )
             if not has_access:
-                return False
+                return self._check_album_purchase(
+                    session=session, user_id=user_id, track_id=content_id
+                )
         return True
+
+    def _check_album_purchase(self, session: Session, user_id: int, track_id: int):
+        album_ids = (
+            session.query(Track.playlists_containing_track)
+            .filter(Track.track_id == track_id)
+            .first()
+        )
+        for album in album_ids:
+            album_id = album.album_id
+            album_purchase = (
+                session.query(USDCPurchase)
+                .filter(
+                    USDCPurchase.buyer_user_id == user_id,
+                    USDCPurchase.content_id == album_id,
+                    USDCPurchase.content_type == "album",
+                )
+                .first()
+            )
+            if album_purchase:
+                return True
+        return False
 
     def _check_stem_access(
         self,
