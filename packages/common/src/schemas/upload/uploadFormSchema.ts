@@ -78,8 +78,8 @@ const MoodSchema = z
  * 
  * Note that it doesn't produce the same type as that used by those
  * forms and their consumers - the form actually submits more data than
- * is validated here. Note the differences between this and the SDK or common 
- * metadata schema for tracks:
+ * is validated here. 
+ * Note the differences between this and other schemas for tracks:
  * - This is snake cased, save for a few fields (remixOf, namely).
  * - IDs are numeric.
  * - No fields that are only knowable after upload.
@@ -169,6 +169,9 @@ const TrackMetadataSchema = createSdkSchema().merge(
 /**
  * This is what's actually used on the EditTrackForm.
  * It makes the artwork required from the TrackMetadataSchema.
+ * 
+ * @see {@link TrackMetadataSchema}
+ * @see {@link createSdkSchema}
  */
 export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
   (form) => form.artwork?.url != null,
