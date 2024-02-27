@@ -20,7 +20,7 @@ import {
   cacheActions,
   confirmerActions,
   confirmTransaction,
-  ExtendedTrackMetadata
+  TrackMetadataForUpload
 } from '@audius/common/store'
 import {
   formatUrlName,
@@ -136,7 +136,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     currentTrack
   )
 
-  const track = { ...trackForEdit } as Track & ExtendedTrackMetadata
+  const track = { ...trackForEdit } as Track & TrackMetadataForUpload
   track.track_id = action.trackId
   if (track.artwork?.file) {
     track._cover_art_sizes = {
@@ -214,7 +214,7 @@ function* confirmEditTrack(
           /* retry */ false
         )
       },
-      function* (confirmedTrack: ExtendedTrackMetadata & Track) {
+      function* (confirmedTrack: TrackMetadataForUpload & Track) {
         if (wasUnlisted && isNowListed) {
           confirmedTrack._is_publishing = false
         }

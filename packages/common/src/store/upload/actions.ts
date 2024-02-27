@@ -2,7 +2,7 @@ import { CollectionValues } from '~/schemas'
 
 import { Collection, Track } from '../../models'
 
-import { Progress, UploadTrack, UploadType } from './types'
+import { Progress, TrackForUpload, UploadType } from './types'
 
 export const UPLOAD_TRACKS = 'UPLOAD/UPLOAD_TRACKS'
 export const UPLOAD_TRACKS_REQUESTED = 'UPLOAD/UPLOAD_TRACKS_REQUESTED'
@@ -43,11 +43,11 @@ export const COLLECTION_POLL_PLAYLIST_TIMEOUT_ERROR =
 type UploadPayload =
   | {
       uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS
-      tracks: UploadTrack[]
+      tracks: TrackForUpload[]
     }
   | {
       uploadType: UploadType.ALBUM | UploadType.PLAYLIST
-      tracks: UploadTrack[]
+      tracks: TrackForUpload[]
       metadata: CollectionValues
     }
 

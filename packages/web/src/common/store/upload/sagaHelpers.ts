@@ -10,7 +10,8 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   getUSDCUserBank,
-  getContext
+  getContext,
+  TrackForUpload
 } from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import BN from 'bn.js'
@@ -18,7 +19,6 @@ import { range } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { TrackForUpload } from 'pages/upload-page/types'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
 

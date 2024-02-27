@@ -21,7 +21,7 @@ import {
   ProgressState,
   ProgressStatus,
   UploadState,
-  UploadTrack,
+  TrackForUpload,
   UploadType
 } from './types'
 
@@ -61,7 +61,7 @@ const initialUploadState: ProgressState = {
   },
   stems: []
 }
-const getInitialProgress = (upload: UploadTrack | StemUploadWithFile) => {
+const getInitialProgress = (upload: TrackForUpload | StemUploadWithFile) => {
   const res = cloneDeep(initialUploadState)
   res.art.total =
     'artwork' in upload.metadata ? upload.metadata.artwork?.file?.size ?? 0 : 0

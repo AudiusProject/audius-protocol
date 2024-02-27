@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
-import type { ExtendedTrackMetadata } from '@audius/common/store'
+import type { TrackMetadataForUpload } from '@audius/common/store'
 import { cacheTracksActions, cacheTracksSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -36,7 +36,7 @@ export const EditTrackModalScreen = () => {
   })
 
   const handleSubmit = useCallback(
-    (metadata: ExtendedTrackMetadata) => {
+    (metadata: TrackMetadataForUpload) => {
       if (track?.is_unlisted === true && metadata.is_unlisted === false) {
         dispatch(
           setVisibility({

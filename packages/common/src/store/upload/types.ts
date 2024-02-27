@@ -26,13 +26,13 @@ export enum UploadType {
   ALBUM = 3
 }
 
-export interface UploadTrack {
+export interface TrackForUpload {
   file: File | NativeFile
   preview?: any // Basically the Howler.js API, but with underscores.
-  metadata: ExtendedTrackMetadata
+  metadata: TrackMetadataForUpload
 }
 
-export interface ExtendedTrackMetadata extends TrackMetadata {
+export interface TrackMetadataForUpload extends TrackMetadata {
   artwork: Nullable<{
     file: Blob | NativeFile
     url: string
@@ -40,7 +40,7 @@ export interface ExtendedTrackMetadata extends TrackMetadata {
   stems?: StemUploadWithFile[]
 }
 
-export interface ExtendedCollectionMetadata extends CollectionMetadata {
+export interface CollectionMetadataForUpload extends CollectionMetadata {
   playlist_name: string
   artwork: {
     file: Blob
@@ -75,7 +75,7 @@ export type ProgressState = {
 
 type UploadStateBase = {
   openMultiTrackNotification: boolean
-  tracks: Nullable<UploadTrack[]>
+  tracks: Nullable<TrackForUpload[]>
   metadata: Nullable<CollectionValues>
   uploading: boolean
   uploadProgress: Nullable<ProgressState[]>
@@ -87,15 +87,19 @@ type UploadStateBase = {
   failedTrackIndices: number[]
 }
 
+type UploadStateForTracks = UploadStateBase & {
+  uploadType:
+    | UploadType.INDIVIDUAL_TRACK
+    | UploadType.INDIVIDUAL_TRACKS
+    | null
+  completedEntity?: Track
+}
+
+type UploadStateForCollection = UploadStateBase & {
+  uploadType: UploadType.ALBUM | UploadType.PLAYLIST | null
+  completedEntity?: Collection
+}
+
 export type UploadState =
-  | (UploadStateBase & {
-      uploadType:
-        | UploadType.INDIVIDUAL_TRACK
-        | UploadType.INDIVIDUAL_TRACKS
-        | null
-      completedEntity?: Track
-    })
-  | (UploadStateBase & {
-      uploadType: UploadType.ALBUM | UploadType.PLAYLIST | null
-      completedEntity?: Collection
-    })
+  | UploadStateForCollection
+  | UploadStateForTracks

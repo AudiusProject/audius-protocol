@@ -8,10 +8,10 @@ import {
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
-  ExtendedTrackMetadata,
+  TrackMetadataForUpload,
   LibraryCategory,
   ProgressStatus,
-  UploadTrack,
+  TrackForUpload,
   UploadType,
   accountActions,
   accountSelectors,
@@ -63,7 +63,7 @@ const { updateProgress } = uploadActions
 type ProgressAction = ReturnType<typeof updateProgress>
 
 const toUploadTrackMetadata = (
-  trackMetadata: ExtendedTrackMetadata
+  trackMetadata: TrackMetadataForUpload
 ): UploadTrackMetadata => ({
   ...trackMetadata,
   preview_start_seconds: trackMetadata.preview_start_seconds ?? null
@@ -74,7 +74,7 @@ const toUploadTrackMetadata = (
  * taking the metadata from the playlist when the track is missing it.
  */
 const combineMetadata = (
-  trackMetadata: ExtendedTrackMetadata,
+  trackMetadata: TrackMetadataForUpload,
   collectionMetadata: CollectionValues
 ) => {
   const metadata = trackMetadata
@@ -222,7 +222,7 @@ function* publishWorker(
 type UploadTask = {
   trackIndex: number
   stemIndex: number | null
-  track: UploadTrack
+  track: TrackForUpload
 }
 
 type UploadedPayload = {
@@ -262,7 +262,7 @@ export function* handleUploads({
   tracks,
   kind
 }: {
-  tracks: UploadTrack[]
+  tracks: TrackForUpload[]
   kind: 'album' | 'playlist' | 'tracks' | 'stems'
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
@@ -527,7 +527,7 @@ export function* handleUploads({
 }
 
 function* uploadCollection(
-  tracks: UploadTrack[],
+  tracks: TrackForUpload[],
   userId: ID,
   collectionMetadata: CollectionValues,
   isAlbum: boolean
@@ -722,7 +722,7 @@ function* uploadCollection(
   )
 }
 
-function* uploadMultipleTracks(tracks: UploadTrack[]) {
+function* uploadMultipleTracks(tracks: TrackForUpload[]) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const audiusLibs = yield* call([
     audiusBackendInstance,
@@ -844,7 +844,7 @@ function* uploadTracksAsync(
   const tracks = payload.tracks
   for (const trackUpload of tracks) {
     trackUpload.metadata = yield* call(
-      processTrackForUpload<ExtendedTrackMetadata>,
+      processTrackForUpload<TrackMetadataForUpload>,
       trackUpload.metadata
     )
   }

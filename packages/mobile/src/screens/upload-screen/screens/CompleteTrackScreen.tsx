@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { UploadTrack, ExtendedTrackMetadata } from '@audius/common/store'
+import type { TrackForUpload, TrackMetadataForUpload } from '@audius/common/store'
 import { useRoute } from '@react-navigation/native'
 
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -13,7 +13,7 @@ export const messages = {
   done: 'Upload Track'
 }
 
-export type CompleteTrackParams = UploadTrack
+export type CompleteTrackParams = TrackForUpload
 
 export const CompleteTrackScreen = () => {
   const { params } = useRoute<UploadRouteProp<'CompleteTrack'>>()
@@ -21,7 +21,7 @@ export const CompleteTrackScreen = () => {
   const navigation = useNavigation<UploadParamList>()
 
   const handleSubmit = useCallback(
-    (metadata: ExtendedTrackMetadata) => {
+    (metadata: TrackMetadataForUpload) => {
       navigation.push('UploadingTracks', {
         tracks: [{ file, preview: null, metadata }]
       })

@@ -5,7 +5,7 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import type { UploadTrack } from '@audius/common/store'
+import type { TrackForUpload } from '@audius/common/store'
 import { creativeCommons, formatPrice } from '@audius/common/utils'
 import { Formik } from 'formik'
 import { z } from 'zod'
@@ -174,7 +174,7 @@ const useEditTrackSchema = () => {
 
 const PRECISION = 2
 
-export type EditTrackParams = UploadTrack
+export type EditTrackParams = TrackForUpload
 
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
   const editTrackSchema = toFormikValidationSchema(useEditTrackSchema())

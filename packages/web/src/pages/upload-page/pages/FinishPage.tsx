@@ -8,7 +8,8 @@ import {
   UploadType,
   ProgressStatus,
   CommonState,
-  ProgressState
+  ProgressState,
+  TrackForUpload
 } from '@audius/common/store'
 import {
   IconArrowRight as IconArrow,
@@ -29,7 +30,7 @@ import { Tile } from 'components/tile'
 import { collectionPage, profilePage } from 'utils/route'
 
 import { ShareBanner } from '../components/ShareBanner'
-import { CollectionFormState, TrackFormState, TrackForUpload } from '../types'
+import { CollectionFormState, TrackFormState } from '../types'
 
 import styles from './FinishPage.module.css'
 

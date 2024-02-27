@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { UploadType } from '@audius/common/store'
+import { TrackForUpload, UploadType } from '@audius/common/store'
 import {
   Button,
   SegmentedControl,
@@ -11,8 +11,6 @@ import {
 import cn from 'classnames'
 
 import { TrackPreview } from 'components/upload/TrackPreview'
-
-import { TrackForUpload } from '../types'
 
 import styles from './TracksPreview.module.css'
 

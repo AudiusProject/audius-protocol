@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import type { UploadTrack } from '@audius/common/store'
+import type { TrackForUpload } from '@audius/common/store'
 import {
   uploadActions,
   uploadSelectors,
@@ -53,7 +53,7 @@ const messages = {
     'Please make sure the screen stays on and keep the app open until the upload is complete.'
 }
 
-export type UploadingTracksParams = { tracks: UploadTrack[] }
+export type UploadingTracksParams = { tracks: TrackForUpload[] }
 
 export const UploadingTracksScreen = () => {
   useKeepAwake()

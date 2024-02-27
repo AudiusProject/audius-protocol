@@ -1,12 +1,11 @@
 import { CollectionValues } from '@audius/common/schemas'
 import {
-  UploadTrack,
   UploadType,
-  ExtendedTrackMetadata
+  TrackMetadataForUpload,
+  TrackForUpload
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 
-export type TrackForUpload = UploadTrack
 
 export type InitialFormState = {
   uploadType: undefined
@@ -30,7 +29,7 @@ export type UploadFormState =
   | CollectionFormState
   | InitialFormState
 
-export type SingleTrackEditValues = Omit<ExtendedTrackMetadata, 'remixOf'> & {
+export type SingleTrackEditValues = Omit<TrackMetadataForUpload, 'remixOf'> & {
   licenseType: {
     allowAttribution: Nullable<boolean>
     commercialUse: Nullable<boolean>

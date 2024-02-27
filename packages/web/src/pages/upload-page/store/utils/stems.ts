@@ -1,6 +1,5 @@
 import { StemCategory, ID, StemUploadWithFile } from '@audius/common/models'
-
-import { TrackForUpload } from 'pages/upload-page/types'
+import { TrackForUpload } from '@audius/common/store'
 
 export const prepareStemsForUpload = (
   stems: StemUploadWithFile[],

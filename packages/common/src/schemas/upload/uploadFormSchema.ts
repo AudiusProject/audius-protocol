@@ -7,7 +7,7 @@ import {
 import { z } from 'zod'
 
 import { imageBlank } from '~/assets'
-import { NativeFile, UploadTrack } from '~/store/upload/types'
+import { NativeFile, TrackForUpload } from '~/store/upload/types'
 
 const messages = {
   invalidReleaseDateError: 'Release date should not be in the future.',
@@ -194,7 +194,7 @@ type UnvalidatedCollectionMetadata = {
   artwork: {
     file: File | NativeFile
   } | null
-  tracks: UploadTrack[]
+  tracks: TrackForUpload[]
 }
 
 export const PlaylistSchema = createCollectionSchema('playlist')
