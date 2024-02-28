@@ -460,8 +460,6 @@ def create_playlist(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    logger.info(f"playlist.py | ANDREW | Created playlist record {playlist_record}")
-
     update_playlist_routes_table(params, playlist_record, True)
 
     params.add_record(playlist_id, playlist_record)

@@ -113,7 +113,6 @@ export class EntityManager extends Base {
   async createPlaylist(
     playlist: PlaylistParam
   ): Promise<EntityManagerResponse> {
-    console.log('andrew | createPlaylist', playlist)
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
     try {
