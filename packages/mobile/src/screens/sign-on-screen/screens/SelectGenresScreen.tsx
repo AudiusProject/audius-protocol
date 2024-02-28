@@ -4,10 +4,11 @@ import { selectGenresPageMessages } from '@audius/common/messages'
 import { selectableGenres, selectGenresSchema } from '@audius/common/schemas'
 import type { GENRES } from '@audius/common/utils'
 import type { Genre as SDKGenre } from '@audius/sdk'
-import { setField } from 'common/store/pages/signon/actions'
+import { setField, setFinishedPhase1 } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { ScrollView, View } from 'react-native'
 import { useDispatch } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Box, Flex, Paper, SelectablePill } from '@audius/harmony-native'
@@ -90,6 +91,10 @@ export const SelectGenresScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
 
+  useEffectOnce(() => {
+    dispatch(setFinishedPhase1(true))
+  })
+
   const handleSubmit = useCallback(
     (values: SelectGenresValue) => {
       const genres = values.genres
@@ -109,7 +114,7 @@ export const SelectGenresScreen = () => {
     >
       <View>
         <ScrollView testID='genreScrollView'>
-          <Paper flex={1} gap='2xl'>
+          <Paper flex={1} gap='2xl' pb='2xl'>
             <ReadOnlyAccountHeader />
             <Flex ph={gutterSize} gap='2xl' flex={1}>
               <Heading

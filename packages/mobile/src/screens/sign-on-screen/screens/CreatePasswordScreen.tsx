@@ -60,11 +60,11 @@ export const CreatePasswordScreen = () => {
     >
       <Page>
         <KeyboardAvoidingView keyboardShowingOffset={220}>
-          <Heading
-            heading={createPasswordPageMessages.createYourPassword}
-            description={createPasswordPageMessages.description}
-          />
           <Flex direction='column' h='100%' gap='l'>
+            <Heading
+              heading={createPasswordPageMessages.createYourPassword}
+              description={createPasswordPageMessages.description}
+            />
             <ReadOnlyField
               label={createPasswordPageMessages.yourEmail}
               value={email}

@@ -65,7 +65,6 @@ export const FinishProfileScreen = () => {
       const { displayName } = values
       dispatch(setValueField('name', displayName))
       dispatch(signUp())
-      dispatch(setFinishedPhase1(true))
       navigation.navigate('SelectGenre')
     },
     [dispatch, navigation]
