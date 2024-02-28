@@ -72,16 +72,16 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
     handleCloseSocialMediaLogin,
-    setIsWaitingForSocialLogin
+    handleCompleteSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: resetOAuthState,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
 
-  const handleCompleteSocialMediaLogin = useCallback(
+  const handleSocialMediaLoginSuccess = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
       const { handle, requiresReview } = result
-      setIsWaitingForSocialLogin(false)
+      handleCompleteSocialMediaLogin()
       dispatch(setLinkedSocialOnFirstPage(true))
       dispatch(setValueField('handle', handle))
 
@@ -89,7 +89,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
         requiresReview ? 'ReviewHandle' : 'CreateLoginDetails'
       )
     },
-    [dispatch, navigation, setIsWaitingForSocialLogin]
+    [dispatch, handleCompleteSocialMediaLogin, navigation]
   )
 
   return (
@@ -129,7 +129,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
             <SocialMediaSignUpButtons
               onError={handleErrorSocialMediaLogin}
               onStart={handleStartSocialMediaLogin}
-              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
               onClose={handleCloseSocialMediaLogin}
               page='create-email'
             />

@@ -99,7 +99,7 @@ export const PickHandleScreen = () => {
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
     handleCloseSocialMediaLogin,
-    setIsWaitingForSocialLogin
+    handleCompleteSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: unsetSocialProfile,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
@@ -124,7 +124,7 @@ export const PickHandleScreen = () => {
     [dispatch, navigation]
   )
 
-  const handleCompleteSocialMediaLogin = useCallback(
+  const handleSocialMediaLoginSuccess = useCallback(
     ({
       requiresReview,
       handle
@@ -133,7 +133,7 @@ export const PickHandleScreen = () => {
       handle: string
       platform: 'twitter' | 'instagram' | 'tiktok'
     }) => {
-      setIsWaitingForSocialLogin(false)
+      handleCompleteSocialMediaLogin()
       dispatch(setValueField('handle', handle))
       if (requiresReview) {
         navigation.navigate('ReviewHandle')
@@ -141,7 +141,7 @@ export const PickHandleScreen = () => {
         navigation.navigate('FinishProfile')
       }
     },
-    [dispatch, navigation, setIsWaitingForSocialLogin]
+    [dispatch, handleCompleteSocialMediaLogin, navigation]
   )
 
   return (
@@ -175,7 +175,7 @@ export const PickHandleScreen = () => {
             onStart={handleStartSocialMediaLogin}
             onError={handleErrorSocialMediaLogin}
             onClose={handleCloseSocialMediaLogin}
-            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+            onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
           />
         </Flex>
         <PageFooter />

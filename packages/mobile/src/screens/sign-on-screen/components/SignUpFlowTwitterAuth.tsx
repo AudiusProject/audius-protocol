@@ -4,7 +4,6 @@ import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { socialMediaMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTwitterProfile } from '@audius/common/services'
-import { useAsync } from 'react-use'
 
 import { SocialButton } from '@audius/harmony-native'
 import { env } from 'app/env'
@@ -124,26 +123,6 @@ const useSetProfileFromTwitter = () => {
   }
 }
 
-const useTwitterAuthToken = () => {
-  const [authToken, setAuthToken] = useState<string | undefined>()
-  useAsync(async () => {
-    // only refresh token if we don't have one already (avoid extra API calls)
-    if (!authToken) {
-      const tokenResp = await fetch(twitterApi.requestTokenUrl, {
-        method: 'POST',
-        credentials: twitterApi.credentialsType,
-        headers: twitterApi.headers
-      })
-      const tokenRespJson = await tokenResp.json()
-      if (tokenRespJson.oauth_token) {
-        setAuthToken(tokenRespJson.oauth_token)
-      }
-    }
-  }, [])
-
-  return authToken
-}
-
 export const SignUpFlowTwitterAuth = ({
   onSuccess,
   onError,
@@ -153,11 +132,25 @@ export const SignUpFlowTwitterAuth = ({
 }: SignUpFlowTwitterAuthProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const setProfileFromTwitter = useSetProfileFromTwitter()
-  const authToken = useTwitterAuthToken()
+  const [authToken, setAuthToken] = useState<string | undefined>()
+  const getOauthToken = async () => {
+    // only refresh token if we don't have one already (avoid extra API calls)
+    const tokenResp = await fetch(twitterApi.requestTokenUrl, {
+      method: 'POST',
+      credentials: twitterApi.credentialsType,
+      headers: twitterApi.headers
+    })
+    const tokenRespJson = await tokenResp.json()
+    if (tokenRespJson.oauth_token) {
+      setAuthToken(tokenRespJson.oauth_token)
+    }
+  }
+
   const authUrl = authenticationUrl(authToken)
 
   const handlePress = async () => {
     onStart?.()
+    getOauthToken()
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_START_TWITTER,
