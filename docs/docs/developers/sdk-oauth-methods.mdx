@@ -4,12 +4,13 @@ title: SDK Oauth Methods
 pagination_label: SDK Oauth Methods
 sidebar_label: SDK Oauth Methods
 description: Audius Protocol Documentation
-
 ---
 
 # OAuth
 
-Enable users to either authorize your app to perform actions on their behalf (i.e. grant write permissions), or simply verify who they are and give you access to their Audius profile info (no write permissions granted).
+Enable users to either authorize your app to perform actions on their behalf (i.e. grant write
+permissions), or simply verify who they are and give you access to their Audius profile info (no
+write permissions granted).
 
 ## Methods
 
@@ -21,7 +22,9 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
 
 **Params**
 
-- successCallback `(profile: UserProfile, encodedJwt: string) => void` - function to be called when the user successfully authorizes or authenticates with Audius. This function will be called with the user's profile information, which is an object with the following shape:
+- successCallback `(profile: UserProfile, encodedJwt: string) => void` - function to be called when
+  the user successfully authorizes or authenticates with Audius. This function will be called with
+  the user's profile information, which is an object with the following shape:
 
   ```typescript
   // `UserProfile` type:
@@ -42,9 +45,13 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
     iat: string; // timestamp for when auth was performed
   }
   ```
-  The second argument (`encodedJwt`) is for advanced use cases that want to pass the JWT to a backend for server-side verification.
 
-- errorCallback _optional_ `(errorMessage: string) => void` - function to be called when an error occurs during the authentication flow. This function will be called with a string describing the error.
+  The second argument (`encodedJwt`) is for advanced use cases that want to pass the JWT to a
+  backend for server-side verification.
+
+- errorCallback _optional_ `(errorMessage: string) => void` - function to be called when an error
+  occurs during the authentication flow. This function will be called with a string describing the
+  error.
 
 **Returns**: Nothing
 
@@ -52,9 +59,9 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
 
 ```js
 audiusSdk.oauth.init({
-  successCallback: (user) => console.log("Logged in user", user),
-  errorCallback: (error) => console.log("Got error", error),
-});
+  successCallback: (user) => console.log('Logged in user', user),
+  errorCallback: (error) => console.log('Got error', error),
+})
 ```
 
 ### renderButton
@@ -66,8 +73,13 @@ Replaces the element passed in the first parameter with the Log In with Audius b
 **Params**
 
 - element `HTMLElement` - HTML element to replace with the Log In with Audius button
-- scope _optional_ `'write' | 'read'` - Whether your app is requesting read or write permissions to the user's account. Specify "write" if you'd like the user to authorize your app to perform actions on their behalf, such as uploading a track or favoriting a playlist. Specify "read" if you simply need the user's email and profile information, and do not need any write permissions. Defaults to "read".
-- buttonOptions _optional_ `ButtonOptions` - optional object containing the customization settings for the button to be rendered. Here are the options available:
+- scope _optional_ `'write' | 'read'` - Whether your app is requesting read or write permissions to
+  the user's account. Specify "write" if you'd like the user to authorize your app to perform
+  actions on their behalf, such as uploading a track or favoriting a playlist. Specify "read" if you
+  simply need the user's email and profile information, and do not need any write permissions.
+  Defaults to "read".
+- buttonOptions _optional_ `ButtonOptions` - optional object containing the customization settings
+  for the button to be rendered. Here are the options available:
 
   ```typescript
   // type ButtonOptions =
@@ -89,11 +101,13 @@ Replaces the element passed in the first parameter with the Log In with Audius b
   }
   ```
 
-  Use [this playground](https://9ncjui.csb.app/) to see how these customizations affect the button appearance and determine what config works best for your app.
+  Use [this playground](https://9ncjui.csb.app/) to see how these customizations affect the button
+  appearance and determine what config works best for your app.
 
 :::note
 
-The `write` scope grants your app permission to perform most actions on the user's behalf, but it does NOT allow any access to DMs or wallets.
+The `write` scope grants your app permission to perform most actions on the user's behalf, but it
+does NOT allow any access to DMs or wallets.
 
 :::
 
@@ -102,28 +116,34 @@ The `write` scope grants your app permission to perform most actions on the user
 **Example**
 
 ```js
-audiusSdk.renderButton({
-  element: document.getElementById("audiusLogInButton"),
-  scope: "write",
+audiusSdk.oauth.renderButton({
+  element: document.getElementById('audiusLogInButton'),
+  scope: 'write',
   buttonOptions: {
-    size: "large",
+    size: 'large',
   },
-});
+})
 ```
 
 ### login
 
 #### login(`params`)
 
-Opens the Log In with Audius popup, which begins the authentication flow. Use this if you have your own link or button implementation, and don't want to use `renderButton`.
+Opens the Log In with Audius popup, which begins the authentication flow. Use this if you have your
+own link or button implementation, and don't want to use `renderButton`.
 
 **Params**
 
-- scope _optional_ `'write' | 'read'` - Whether your app is requesting read or write permissions to the user's account. Specify "write" if you'd like the user to authorize your app to perform actions on their behalf, such as uploading a track or favoriting a playlist. Specify "read" if you simply need the user's email and profile information, and do not need any write permissions. Defaults to "read".
+- scope _optional_ `'write' | 'read'` - Whether your app is requesting read or write permissions to
+  the user's account. Specify "write" if you'd like the user to authorize your app to perform
+  actions on their behalf, such as uploading a track or favoriting a playlist. Specify "read" if you
+  simply need the user's email and profile information, and do not need any write permissions.
+  Defaults to "read".
 
 :::note
 
-The `write` scope grants your app permission to perform most actions on the user's behalf, but it does NOT allow any access to DMs or wallets.
+The `write` scope grants your app permission to perform most actions on the user's behalf, but it
+does NOT allow any access to DMs or wallets.
 
 :::
 
@@ -133,7 +153,7 @@ The `write` scope grants your app permission to perform most actions on the user
 
 ```js title="script.js"
 function logInWithAudius() {
-  audiusSdk.oauth.login({ scope: "write" });
+  audiusSdk.oauth.login({ scope: 'write' })
 }
 ```
 
@@ -157,6 +177,6 @@ Checks whether your app has write permissions to the given user's account.
 
 ```js
 async function hasSkrillexAuthorizedApp() {
-  await audiusSdk.oauth.isWriteAccessGranted({ userId: "eAZl3" });
+  await audiusSdk.oauth.isWriteAccessGranted({ userId: 'eAZl3' })
 }
 ```
