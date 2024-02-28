@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react'
 
+import { MobileOS } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { getSignOn } from 'audius-client/src/common/store/pages/signon/selectors'
+import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { ScreenOptionsContext, defaultScreenOptions } from 'app/app/navigation'
@@ -40,6 +42,8 @@ export const SignOnStack = (props: SignOnStackProps) => {
   const hasAccount = !!user
 
   const pastPhase1 = signUpState.finishedPhase1 || hasAccount
+
+  const isAndroid = Platform.OS === MobileOS.ANDROID
 
   const updateOptions = useCallback(
     (newOptions: NativeStackNavigationOptions) => {
@@ -87,14 +91,21 @@ export const SignOnStack = (props: SignOnStackProps) => {
         <Stack.Screen
           name='SelectGenre'
           component={SelectGenresScreen}
-          options={{ headerLeft: () => null, gestureEnabled: false }}
+          options={{
+            headerLeft: () => null,
+            gestureEnabled: false,
+            ...(isAndroid ? { animation: 'none' } : undefined)
+          }}
         />
         <Stack.Screen name='SelectArtists' component={SelectArtistsScreen} />
         <Stack.Screen
           name='AccountLoading'
           component={AccountLoadingScreen}
           // animation: none here is a workaround to prevent "white screen of death" on Android
-          options={{ headerShown: false, animation: 'none' }}
+          options={{
+            headerShown: false,
+            ...(isAndroid ? { animation: 'none' } : undefined)
+          }}
         />
       </Stack.Navigator>
     </ScreenOptionsContext.Provider>
