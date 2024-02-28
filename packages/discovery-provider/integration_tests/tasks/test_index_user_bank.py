@@ -155,7 +155,6 @@ test_entries = {
 }
 
 
-# TODO: Copy this for album
 def test_process_user_bank_tx_details_valid_purchase(app):
     tx_response = mock_valid_track_purchase_tx
     with app.app_context():

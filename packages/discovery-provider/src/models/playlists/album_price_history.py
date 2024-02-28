@@ -1,9 +1,8 @@
-from sqlalchemy import BigInteger, Column, DateTime, Enum, Integer, text
+from sqlalchemy import BigInteger, Column, DateTime, Integer, text
 from sqlalchemy.dialects.postgresql import JSONB
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
-from src.models.users.usdc_purchase import PurchaseAccessType
 
 
 class AlbumPriceHistory(Base, RepresentableMixin):
