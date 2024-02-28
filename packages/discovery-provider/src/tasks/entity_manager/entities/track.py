@@ -28,6 +28,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
     validate_signer,
+    get_ddex_apps,
 )
 from src.tasks.metadata import immutable_track_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -463,6 +464,9 @@ def create_track(params: ManageEntityParameters):
         is_delete=False,
     )
 
+    if params.signer in get_ddex_apps():
+        track_record.ddex_app = params.signer
+
     update_track_routes_table(
         params, track_record, params.metadata, params.pending_track_routes
     )
@@ -484,6 +488,12 @@ def create_track(params: ManageEntityParameters):
     params.add_record(track_id, track_record)
 
 
+def validate_update_ddex_track(params: ManageEntityParameters, track_record):
+    if track_record.ddex_app:
+        if track_record.ddex_app != params.signer or params.signer not in get_ddex_apps():
+            raise IndexingValidationError(f"Signer {params.signer} does not have permission to {params.action} DDEX track {track_record.track_id}")
+
+
 def update_track(params: ManageEntityParameters):
     handle = get_handle(params)
     validate_track_tx(params)
@@ -494,6 +504,8 @@ def update_track(params: ManageEntityParameters):
         track_id in params.new_records["Track"]
     ):  # override with last updated track is in this block
         existing_track = params.new_records["Track"][track_id][-1]
+
+    validate_update_ddex_track(params, existing_track)
 
     track_record = copy_record(
         existing_track,
@@ -527,6 +539,8 @@ def delete_track(params: ManageEntityParameters):
     if params.entity_id in params.new_records["Track"]:
         # override with last updated playlist is in this block
         existing_track = params.new_records["Track"][params.entity_id][-1]
+
+    validate_update_ddex_track(params, existing_track)
 
     deleted_track = copy_record(
         existing_track,

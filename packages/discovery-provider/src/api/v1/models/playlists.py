@@ -39,6 +39,7 @@ playlist_model = ns.model(
         "favorite_count": fields.Integer(required=True),
         "total_play_count": fields.Integer(required=True),
         "user": fields.Nested(user_model, required=True),
+        "ddex_app": fields.String(allow_null=True)
     },
 )
 

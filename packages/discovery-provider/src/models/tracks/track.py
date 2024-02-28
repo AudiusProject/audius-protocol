@@ -70,6 +70,7 @@ class Track(Base, RepresentableMixin):
     download = Column(JSONB())
     is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
+    ddex_app = Column(String)
     field_visibility = Column(JSONB(True))
     route_id = Column(String)
     stem_of = Column(JSONB(True))

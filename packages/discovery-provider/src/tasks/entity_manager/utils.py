@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Literal, Set, Tuple, TypedDict, Union
@@ -479,3 +480,8 @@ def get_address_from_signature(signature):
         message_hash, signature=signature["signature"]
     )
     return app_address.lower()
+
+
+def get_ddex_apps():
+    # TODO read from a table in the db after implementing UI to register a DDEX node
+    return os.getenv("audius_ddex_apps").split(",")
