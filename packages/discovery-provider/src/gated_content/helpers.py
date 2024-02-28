@@ -74,29 +74,29 @@ def has_user_purchased_track(
         .filter(
             USDCPurchase.buyer_user_id == user_id,
             USDCPurchase.content_id == content_id,
-            USDCPurchase.content_type == "track",
+            USDCPurchase.content_type == "track"
         )
         .first()
     )
     if result:
         return True
 
-    playlist_ids = (
-        session.query(Track.playlists_containing_track)
+    track = (
+        session.query(Track)
         .filter(Track.track_id == content_id)
         .first()
     )
-    for playlist_id in playlist_ids:
-        album_purchase = (
-            session.query(USDCPurchase)
-            .filter(
-                USDCPurchase.buyer_user_id == user_id,
-                USDCPurchase.content_id == playlist_id,
-                USDCPurchase.content_type == "album",
-            )
-            .first()
+
+    album_purchase = (
+        session.query(USDCPurchase)
+        .filter(
+            USDCPurchase.buyer_user_id == user_id,
+            USDCPurchase.content_id.in_(track.playlists_containing_track),
+            USDCPurchase.content_type == "album"
         )
-        if album_purchase:
-            return True
+        .first()
+    )
+    if album_purchase:
+        return True
 
     return False
