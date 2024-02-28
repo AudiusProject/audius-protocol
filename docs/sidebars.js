@@ -14,6 +14,7 @@ module.exports = {
         'learn/concepts/protocol',
         'learn/architecture/content-node',
         'learn/architecture/discovery-node',
+        'node-operator/staking/stake',
       ],
       collapsed: false,
     },
@@ -37,17 +38,7 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Guides',
-      items: [
-        'developers/guides/log-in-with-audius',
-        'developers/guides/rest-api',
-        'developers/guides/hedgehog',
-      ],
-      collapsed: false,
-    },
-    {
-      type: 'category',
-      label: 'Javscript SDK',
+      label: 'Javascript SDK',
       items: [
         'developers/sdk/overview',
         'developers/sdk/tracks',
@@ -62,7 +53,17 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'SubGraph',
+      label: 'Guides',
+      items: [
+        'developers/guides/log-in-with-audius',
+        'developers/guides/rest-api',
+        'developers/guides/hedgehog',
+      ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'The Graph',
       items: [
         'developers/subgraph/overview',
         'developers/subgraph/entities',
@@ -91,7 +92,7 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Setup a Node',
+      label: 'Run a Node',
       items: [
         'node-operator/setup/overview',
         'node-operator/setup/wallet-management',

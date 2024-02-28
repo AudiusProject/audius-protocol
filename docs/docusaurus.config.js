@@ -82,7 +82,7 @@ const config = {
             position: 'right',
           },
           {
-            label: 'Run a Node',
+            label: 'Staking',
             to: '/node-operator/overview',
             position: 'right',
           },
