@@ -72,7 +72,7 @@ const UserBadges = ({
     )
   }
   return (
-    <div
+    <span
       className={cn(styles.container, className, {
         [noContentClassName]: !hasContent
       })}
@@ -82,7 +82,7 @@ const UserBadges = ({
       )}
       {audioBadge &&
         cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
-    </div>
+    </span>
   )
 }
 

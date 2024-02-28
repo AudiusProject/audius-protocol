@@ -31,13 +31,11 @@ import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'
-import { Link } from 'components/link'
+import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/Artwork'
-import UserBadges from 'components/user-badges/UserBadges'
 import {
   setUsers,
   setVisibility
@@ -48,7 +46,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
-import { fullTrackPage, profilePage } from 'utils/route'
+import { fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
@@ -143,6 +141,7 @@ const ConnectedTrackTile = ({
   } = trackWithFallback
 
   const {
+    user_id,
     artist_pick_track_id,
     name,
     handle,
@@ -247,21 +246,15 @@ const ConnectedTrackTile = ({
     )
   }
 
-  const renderUserName = () => {
-    return (
-      <ArtistPopover handle={handle}>
-        <Link to={profilePage(handle)} className={styles.name}>
-          {name}
-
-          <UserBadges
-            userId={user?.user_id ?? 0}
-            badgeSize={14}
-            className={styles.badgeWrapper}
-          />
-        </Link>
-      </ArtistPopover>
-    )
-  }
+  const userName = (
+    <UserLink
+      userId={user_id}
+      badgeSize='xs'
+      textVariant='body'
+      isActive={isActive}
+      popover
+    />
+  )
 
   const renderStats = () => {
     const contentTitle = 'track' // undefined,  playlist or album -  undefined is track
@@ -309,9 +302,13 @@ const ConnectedTrackTile = ({
     shareTrack(trackId)
   }, [shareTrack, trackId])
 
-  const onClickTitle = useCallback(() => {
-    onClick?.(trackId)
-  }, [onClick, trackId])
+  const onClickTitle = useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation()
+      onClick?.(trackId)
+    },
+    [onClick, trackId]
+  )
 
   const openLockedContentModal = useCallback(() => {
     dispatch(setLockedContentId({ id: trackId }))
@@ -357,7 +354,6 @@ const ConnectedTrackTile = ({
   const artwork = renderImage()
   const stats = renderStats()
   const rightActions = renderOverflowMenu()
-  const userName = renderUserName()
 
   const disableActions = false
   const showSkeleton = loading

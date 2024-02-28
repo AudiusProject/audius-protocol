@@ -27,7 +27,7 @@ import {
   shareModalUIActions,
   playerSelectors
 } from '@audius/common/store'
-import { IconKebabHorizontal } from '@audius/harmony'
+import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -35,14 +35,12 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'
-import { Link } from 'components/link'
+import { UserLink } from 'components/link'
 import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
 import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackTileSize } from 'components/track/types'
-import UserBadges from 'components/user-badges/UserBadges'
 import {
   setUsers,
   setVisibility
@@ -53,12 +51,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 import { isDescendantElementOf } from 'utils/domUtils'
-import {
-  fullCollectionPage,
-  fullTrackPage,
-  collectionPage,
-  profilePage
-} from 'utils/route'
+import { fullCollectionPage, fullTrackPage, collectionPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
@@ -158,7 +151,7 @@ const ConnectedPlaylistTile = ({
   } = getCollectionWithFallback(collection)
 
   const {
-    name,
+    user_id,
     handle,
     is_deactivated: isOwnerDeactivated
   } = getUserWithFallback(user)
@@ -321,23 +314,14 @@ const ConnectedPlaylistTile = ({
     )
   }
 
-  const renderUserName = () => {
-    return (
-      <div className={styles.userName}>
-        <span className={styles.createdBy}>{messages.createdBy}</span>
-        <ArtistPopover handle={handle}>
-          <Link to={profilePage(handle)} className={styles.name}>
-            {name}
-          </Link>
-        </ArtistPopover>
-        <UserBadges
-          userId={user?.user_id ?? 0}
-          className={styles.iconVerified}
-          badgeSize={14}
-        />
-      </div>
-    )
-  }
+  const userName = (
+    <Text variant='body'>
+      <Text tag='span' color='subdued'>
+        {messages.createdBy}{' '}
+      </Text>
+      <UserLink userId={user_id} badgeSize='xs' />
+    </Text>
+  )
 
   const onClickStatFavorite = useCallback(() => {
     setFavoriteUsers(id!)
@@ -478,7 +462,6 @@ const ConnectedPlaylistTile = ({
   const artwork = renderImage()
   const stats = renderStats()
   const rightActions = renderOverflowMenu()
-  const userName = renderUserName()
   const trackList = renderTrackList()
 
   const order = ordered && index !== undefined ? index + 1 : undefined

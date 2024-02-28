@@ -1,10 +1,9 @@
 import type { ComponentType, SVGProps } from 'react'
 
+import { IconSize } from 'foundations/spacing'
+
 import type { IconColors } from '../foundations/color/semantic'
 import type { ShadowOptions } from '../foundations/shadows'
-import { iconSizes } from '../foundations/spacing'
-
-type IconSize = keyof typeof iconSizes
 
 type SVGBaseProps = SVGProps<SVGSVGElement>
 

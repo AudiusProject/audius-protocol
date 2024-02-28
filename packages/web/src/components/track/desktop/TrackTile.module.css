@@ -138,17 +138,10 @@
 
 .titleRow {
   text-align: left;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   user-select: none;
   margin-right: 132px;
   padding-bottom: 2px;
   display: flex;
-}
-
-.titleRow .skeleton {
-  height: var(--unit-5);
 }
 
 .container .gatedDogEarContainer {
@@ -178,17 +171,6 @@
   display: inline-flex;
 }
 
-.creatorRow .userName,
-.creatorRow .userName:active,
-.creatorRow .userName:hover {
-  text-decoration: inherit;
-  color: inherit;
-}
-
-.creatorRow .skeleton {
-  height: var(--unit-4);
-}
-
 .large .creatorRow {
   margin-bottom: var(--unit-1);
 }
@@ -199,27 +181,6 @@
 
 .large .withoutHeader .creatorRow {
   margin-bottom: var(--unit-2);
-}
-
-.creatorRow .by {
-  font-style: normal;
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
-  color: var(--neutral-light-6);
-
-  margin-right: var(--unit-1);
-}
-
-.creatorRow .name {
-  font-style: normal;
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
-
-  color: var(--neutral);
-}
-
-.isActive .withoutHeader .creatorRow .name {
-  color: var(--primary);
 }
 
 .isDisabled .title:hover,

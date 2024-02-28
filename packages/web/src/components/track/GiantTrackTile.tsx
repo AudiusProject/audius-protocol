@@ -24,6 +24,7 @@ import {
   Nullable
 } from '@audius/common/utils'
 import {
+  Text,
   Box,
   Flex,
   IconRobot,
@@ -605,25 +606,25 @@ export const GiantTrackTile = ({
           <div className={styles.infoSectionHeader}>
             {renderCardTitle(cn(fadeIn))}
             <div className={styles.title}>
-              <h1 className={cn(fadeIn)}>{trackTitle}</h1>
+              <Text variant='heading' size='xl' className={cn(fadeIn)}>
+                {trackTitle}
+              </Text>
               {isLoading && <Skeleton className={styles.skeleton} />}
             </div>
-            <div className={styles.artistWrapper}>
-              <Flex className={cn(fadeIn)} gap='xs' alignItems='center'>
-                <span>By </span>
-                <UserLink
-                  variant='body'
-                  size='l'
-                  textAs='h2'
-                  userId={userId}
-                  badgeSize={18}
-                  popover
-                />
-              </Flex>
+            <Flex>
+              <Text
+                variant='title'
+                strength='weak'
+                tag='h2'
+                className={cn(fadeIn)}
+              >
+                <Text color='subdued'>By </Text>
+                <UserLink userId={userId} popover />
+              </Text>
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />
               )}
-            </div>
+            </Flex>
           </div>
 
           <ClientOnly>

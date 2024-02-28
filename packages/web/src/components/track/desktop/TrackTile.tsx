@@ -20,7 +20,8 @@ import {
   IconCheck,
   IconCrown,
   IconVisibilityHidden,
-  Text
+  Text,
+  Flex
 } from '@audius/harmony'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
@@ -28,7 +29,7 @@ import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
-import { Link } from 'components/link'
+import { TextLink } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
@@ -323,30 +324,26 @@ const TrackTile = ({
               {!isLoading && header && <div>{header}</div>}
             </Text>
           ) : null}
-          <div className={styles.titleRow}>
+          <Flex direction='column' gap='2xs'>
             {isLoading ? (
-              <Skeleton width='80%' className={styles.skeleton} />
+              <Skeleton width='80%' height='20px' />
             ) : (
-              <Link
-                variant='title'
+              <TextLink
                 to={permalink}
-                className={styles.title}
+                isActive={isActive}
+                textVariant='title'
+                applyHoverStylesToInnerSvg
+                css={{ marginRight: 132 }}
                 onClick={onClickTitle}
               >
-                <Text className={styles.text}>{title}</Text>
-                {isPlaying ? (
-                  <IconVolume size='m' className={styles.volumeIcon} />
-                ) : null}
-              </Link>
+                <Text ellipses>{title}</Text>
+                {isPlaying ? <IconVolume size='m' /> : null}
+              </TextLink>
             )}
-          </div>
-          <Text variant='title' strength='weak' className={styles.creatorRow}>
-            {isLoading ? (
-              <Skeleton width='50%' className={styles.skeleton} />
-            ) : (
-              userName
-            )}
-          </Text>
+            <div className={styles.creatorRow}>
+              {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
+            </div>
+          </Flex>
 
           <Text variant='body' size='xs' className={styles.socialsRow}>
             {isLoading ? (

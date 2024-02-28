@@ -229,7 +229,7 @@ export const TracksTable = ({
             size='s'
             strength='strong'
             color={index === playingIndex ? 'active' : 'default'}
-            badgeSize={12}
+            badgeSize='xs'
             popover
           />
         </div>
