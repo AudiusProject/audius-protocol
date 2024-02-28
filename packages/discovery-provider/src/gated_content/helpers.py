@@ -5,6 +5,7 @@ from sqlalchemy.orm.session import Session
 
 from src.gated_content.types import GatedContentType
 from src.models.social.follow import Follow
+from src.models.tracks.track import Track
 from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.models.users.usdc_purchase import USDCPurchase
 
@@ -61,7 +62,7 @@ def does_user_support_artist(
     return True if result else False
 
 
-def has_user_purchased_content(
+def has_user_purchased_track(
     session: Session,
     user_id: int,
     content_id: int,
@@ -73,8 +74,29 @@ def has_user_purchased_content(
         .filter(
             USDCPurchase.buyer_user_id == user_id,
             USDCPurchase.content_id == content_id,
-            USDCPurchase.content_type == content_type,
+            USDCPurchase.content_type == "track",
         )
         .first()
     )
-    return True if result else False
+    if result:
+        return True
+
+    playlist_ids = (
+        session.query(Track.playlists_containing_track)
+        .filter(Track.track_id == content_id)
+        .first()
+    )
+    for playlist_id in playlist_ids:
+        album_purchase = (
+            session.query(USDCPurchase)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id == playlist_id,
+                USDCPurchase.content_type == "album",
+            )
+            .first()
+        )
+        if album_purchase:
+            return True
+
+    return False

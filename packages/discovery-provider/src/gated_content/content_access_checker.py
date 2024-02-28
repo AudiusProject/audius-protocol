@@ -9,11 +9,10 @@ from src.gated_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
     does_user_support_artist,
-    has_user_purchased_content,
+    has_user_purchased_track,
 )
 from src.gated_content.types import GatedContentConditions, GatedContentType
 from src.models.tracks.track import Track
-from src.models.users.usdc_purchase import USDCPurchase
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
@@ -56,7 +55,7 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
-    "usdc_purchase": has_user_purchased_content,
+    "usdc_purchase": has_user_purchased_track,
 }
 
 
@@ -76,8 +75,8 @@ class ContentAccessChecker:
         content_type: GatedContentType,
         content_entity: Track,
     ) -> ContentAccessResponse:
-        # for now, we only allow tracks to be gated; gated playlists/albums will come later
-        if content_type != "track":
+
+        if content_type != "track" and content_type != "album":
             logger.warn(
                 f"gated_content_access_checker | check_access | gated content type {content_type} is not supported."
             )
@@ -269,31 +268,8 @@ class ContentAccessChecker:
                 condition_options=condition_options,
             )
             if not has_access:
-                return self._check_album_purchase(
-                    session=session, user_id=user_id, track_id=content_id
-                )
+                return False
         return True
-
-    def _check_album_purchase(self, session: Session, user_id: int, track_id: int):
-        album_ids = (
-            session.query(Track.playlists_containing_track)
-            .filter(Track.track_id == track_id)
-            .first()
-        )
-        for album in album_ids:
-            album_id = album.album_id
-            album_purchase = (
-                session.query(USDCPurchase)
-                .filter(
-                    USDCPurchase.buyer_user_id == user_id,
-                    USDCPurchase.content_id == album_id,
-                    USDCPurchase.content_type == "album",
-                )
-                .first()
-            )
-            if album_purchase:
-                return True
-        return False
 
     def _check_stem_access(
         self,
