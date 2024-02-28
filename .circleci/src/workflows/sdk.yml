@@ -15,9 +15,6 @@ jobs:
       requires:
         - test-audius-libs
         - test-audius-sdk
-      filters:
-        branches:
-          only: /(^main)|(^release.*)$/
       type: approval
   - release-audius-sdk:
       name: release-audius-sdk-patch
