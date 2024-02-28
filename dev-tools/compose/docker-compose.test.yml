@@ -448,7 +448,8 @@ services:
       service: ddex-crawler
     logging: *default-logging
     environment:
-      AWS_ENDPOINT: 'http://localstack:4566'
+      AWS_ENDPOINT: 'http://ddex-s3:4566'
+      TEST_MODE: 'true'
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -460,6 +461,8 @@ services:
       file: docker-compose.yml
       service: ddex-indexer
     logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3:4566'
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -471,6 +474,8 @@ services:
       file: docker-compose.yml
       service: ddex-parser
     logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3:4566'
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -483,7 +488,7 @@ services:
       service: ddex-publisher
     logging: *default-logging
     environment:
-      AWS_ENDPOINT: 'http://localstack:4566'
+      AWS_ENDPOINT: 'http://ddex-s3:4566'
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -505,13 +510,14 @@ services:
       ddex-mongo:
         condition: service_healthy
   
-  # TODO: this will need to create the raw and indexed buckets
   # It also wouldn't be a bad idea to set CORS and use localstack in the local dev setup (ie audius-compose up --ddex-only)
   ddex-s3:
     container_name: ddex-s3
     image: localstack/localstack:s3-latest
     ports:
       - "127.0.0.1:4566:4566"
+    networks:
+      - ddex-network
     volumes:
       - "ddex-s3:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -519,10 +525,14 @@ services:
   test-ddex-e2e:
     container_name: test-ddex-e2e
     extends:
-      file: docker-compose.yml
-      service: ddex-ingester
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  ./ingester --service e2e-test)' -
+      file: docker-compose.ddex.yml
+      service: ddex-test
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./e2e_test/... -count 1 -timeout 3m "$$@")' -
     logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3:4566'
+    networks:
+      - ddex-network
     depends_on:
       ddex-crawler:
         condition: service_healthy
@@ -533,14 +543,14 @@ services:
       # ddex-publisher:
       #   condition: service_healthy
       # Leaving out publisher for now because it takes a long time to build.
-      # We probably won't actually upload anything to Audius in the e2e test, but having a "dry run" publisher mode could be useful
+      # We don't actually upload anything to Audius in the e2e test, but having a "dry run" publisher mode could be useful
   
   test-ddex-unittests:
     container_name: test-ddex-unittests
-    build:
-      context: ${PROJECT_ROOT}/packages/ddex/ingester
-      dockerfile: Dockerfile.test
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./... -count 1 -timeout 60s "$$@")' -
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-test
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test $(go list ./... | grep -v /e2e_test) -count 1 -timeout 60s "$$@")' -
     logging: *default-logging
     # Will need a depends_on for S3 and Mongo if any future unit tests use them
 

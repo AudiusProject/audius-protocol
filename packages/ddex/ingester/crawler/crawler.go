@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"ingester/common"
+	"os"
 	"strings"
 	"time"
 
@@ -24,7 +25,11 @@ func RunNewCrawler(ctx context.Context) {
 	}
 	defer c.MongoClient.Disconnect(ctx)
 
-	ticker := time.NewTicker(3 * time.Minute)
+	interval := 3 * time.Minute
+	if os.Getenv("TEST_MODE") == "true" {
+		interval = time.Second
+	}
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
