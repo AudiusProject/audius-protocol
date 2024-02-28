@@ -482,6 +482,9 @@ def get_address_from_signature(signature):
     return app_address.lower()
 
 
-def get_ddex_apps():
+def is_ddex_signer(signer):
     # TODO read from a table in the db after implementing UI to register a DDEX node
-    return os.getenv("audius_ddex_apps").split(",")
+    ddex_apps = os.getenv("audius_ddex_apps")
+    if ddex_apps:
+        return signer.removeprefix("0x") in ddex_apps.split(",")
+    return False

@@ -17,7 +17,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
     validate_signer,
-    get_ddex_apps,
+    is_ddex_signer,
 )
 from src.tasks.metadata import immutable_playlist_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -347,7 +347,7 @@ def create_playlist(params: ManageEntityParameters):
     last_added_to = None
 
     ddex_app = None
-    if params.signer in get_ddex_apps():
+    if is_ddex_signer(params.signer):
         ddex_app = params.signer
 
     for track in tracks:
@@ -414,7 +414,7 @@ def dispatch_challenge_playlist_upload(
 
 def validate_update_ddex_playlist(params: ManageEntityParameters, playlist_record):
     if playlist_record.ddex_app:
-        if playlist_record.ddex_app != params.signer or params.signer not in get_ddex_apps():
+        if playlist_record.ddex_app != params.signer or not is_ddex_signer(params.signer):
             raise IndexingValidationError(f"Signer {params.signer} does not have permission to {params.action} DDEX playlist {playlist_record.playlist_id}")
 
 

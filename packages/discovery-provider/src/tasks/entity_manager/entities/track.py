@@ -28,7 +28,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
     validate_signer,
-    get_ddex_apps,
+    is_ddex_signer,
 )
 from src.tasks.metadata import immutable_track_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
@@ -464,7 +464,7 @@ def create_track(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    if params.signer in get_ddex_apps():
+    if is_ddex_signer(params.signer):
         track_record.ddex_app = params.signer
 
     update_track_routes_table(
@@ -490,7 +490,7 @@ def create_track(params: ManageEntityParameters):
 
 def validate_update_ddex_track(params: ManageEntityParameters, track_record):
     if track_record.ddex_app:
-        if track_record.ddex_app != params.signer or params.signer not in get_ddex_apps():
+        if track_record.ddex_app != params.signer or not is_ddex_signer(params.signer):
             raise IndexingValidationError(f"Signer {params.signer} does not have permission to {params.action} DDEX track {track_record.track_id}")
 
 
