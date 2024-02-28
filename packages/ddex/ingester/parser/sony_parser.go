@@ -119,7 +119,12 @@ func parseSonyXML(xmlData []byte, indexedBucket, deliveryIDHex string) (tracks [
 	)
 
 	// TODO: Implement updates and deletions
-	updateIndicator := xmlquery.FindOne(doc, "//UpdateIndicator").InnerText()
+	updateIndicatorNode := xmlquery.FindOne(doc, "//UpdateIndicator")
+	if updateIndicatorNode == nil {
+		errs = append(errs, fmt.Errorf("UpdateIndicator node not found"))
+		return
+	}
+	updateIndicator := updateIndicatorNode.InnerText()
 	if updateIndicator != "OriginalMessage" {
 		errs = append(errs, fmt.Errorf("unsupported <UpdateIndicator> '%s'", updateIndicator))
 		return
