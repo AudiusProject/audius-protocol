@@ -209,7 +209,9 @@ def entity_manager_update(
                         and params.entity_type == EntityType.PLAYLIST
                     ):
                         try:
-                            logger.info(f"entity_manager.py | ANDREW | metadata: {event['_metadata']}")
+                            logger.info(
+                                f"entity_manager.py | ANDREW | metadata: {event['_metadata']}"
+                            )
                         except Exception as e:
                             logger.error(f"entity_manager.py | ANDREW | error: {e}")
                         create_playlist(params)

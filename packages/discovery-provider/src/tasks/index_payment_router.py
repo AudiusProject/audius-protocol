@@ -304,9 +304,7 @@ def parse_route_transaction_memo(
                     # See above comment
                     query.filter(AlbumPriceHistory.block_timestamp < timestamp)
                 result = (
-                    query.filter(
-                        AlbumPriceHistory.playlist_id == id
-                    )
+                    query.filter(AlbumPriceHistory.playlist_id == id)
                     .order_by(desc(AlbumPriceHistory.block_timestamp))
                     .first()
                 )
