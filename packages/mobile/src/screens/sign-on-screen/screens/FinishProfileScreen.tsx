@@ -14,7 +14,6 @@ import {
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import {
   setField,
-  setFinishedPhase1,
   setValueField,
   signUp
 } from 'common/store/pages/signon/actions'
