@@ -190,9 +190,6 @@ docs/yarn-error.log*
 .yalc
 yalc.lock
 
-# ignored until ci has custom image with correct python version
-.python-version
-
 # Solana
 app-keypair.json
 
