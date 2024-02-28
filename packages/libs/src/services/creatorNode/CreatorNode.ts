@@ -188,6 +188,10 @@ export class CreatorNode {
         updatedMetadata.preview_start_seconds.toString()
     }
 
+    if (metadata.placement_hosts) {
+      audioUploadOpts.placement_hosts = metadata.placement_hosts
+    }
+
     // Upload audio and cover art
     const promises = [
       this._retry3(
