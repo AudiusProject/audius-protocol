@@ -60,3 +60,7 @@ Each service can be run independently as long as `ddex-mongo` is up (from `audiu
     }
 ]
 ```
+
+### Running / debugging the e2e test
+* Run `audius-compose test down && audius-compose test run ddex-e2e` to start the ddex stack and run the e2e test
+* To debug S3, exec into `ddex-s3`, run `pip install awscli`, and then you can run `aws --endpoint=http://localhost:4566 s3 ls` and other commands to debug the S3 state

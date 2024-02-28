@@ -157,10 +157,10 @@ func InitS3Client(logger *slog.Logger) (*s3.S3, *session.Session) {
 func MustGetenv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
-		log.Println("Missing required env variable: ", key, " sleeping ...")
+		log.Println("Missing required env variable:", key, "sleeping...")
 		// If config is incorrect, sleep a bit to prevent container from restarting constantly
 		time.Sleep(time.Hour)
-		log.Fatal("Missing required env variable: ", key)
+		log.Fatal("Missing required env variable:", key)
 	}
 	return val
 }
