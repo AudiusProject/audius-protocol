@@ -37,7 +37,7 @@ parameters:
     default: false
   run-sdk-workflow:
     type: boolean
-    default: false
+    default: true
 
   run-release-workflow:
     type: boolean
