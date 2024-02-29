@@ -41,6 +41,24 @@
           "type": "boolean",
           "default": false
         },
+        "is_stream_gated": {
+          "type": "boolean",
+          "default": false
+        },
+        "stream_conditions": {
+          "type": ["object", "null"],
+          "items": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/definitions/USDCPurchaseConditions"
+              }
+            ]
+          },
+          "default": null
+        },
         "ddex_app": {
           "type": ["string", "null"],
           "default": null
@@ -51,7 +69,9 @@
         "playlist_id",
         "description",
         "is_album",
-        "is_private"
+        "is_private",
+        "is_stream_gated",
+        "stream_conditions"
       ],
       "title": "Playlist"
     },
@@ -72,6 +92,25 @@
         }
       },
       "title": "PlaylistContents"
+    },
+    "USDCPurchaseConditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "price": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "splits": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-9A-HJ-NP-Za-km-z]{32,44}$": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
     }
   }
 }
