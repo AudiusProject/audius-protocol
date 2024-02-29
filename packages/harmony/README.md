@@ -68,18 +68,17 @@ import type { HarmonyTheme } from '@audius/harmony'
 declare module '@emotion/react' {
   export interface Theme extends HarmonyTheme {}
 }
-
 ```
 
 ## Usage
 
 ```tsx
-import { Button, ButtonType, Flex } from '@audius/harmony'
+import { Button, Flex } from '@audius/harmony'
 
 const App = () => {
   return (
     <Flex gap='m'>
-      <Button variant={ButtonType.SECONDARY}>Click This!</Button>
+      <Button variant='secondary'>Click This!</Button>
       <Button>Click That!</Button>
     </Flex>
   )
@@ -97,4 +96,3 @@ npm run storybook
 ## Contribution
 
 A Contribution Guide is [available here](https://www.notion.so/audiusproject/Submitting-for-Design-Updates-52a8bc3bb68747818a96d2721bace27f).
-

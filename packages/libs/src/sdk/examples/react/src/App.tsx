@@ -1,6 +1,8 @@
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { sdk, full as FullSdk } from '@audius/sdk'
+import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
+import { Button, Flex } from '@audius/harmony'
 
 const audiusSdk = sdk({
   appName: 'Audius SDK React Example'
@@ -91,16 +93,18 @@ function App() {
     }
 
   return (
-    <>
-      <h1>React + @audius/sdk</h1>
-      <h2>Stream and favorite tracks!</h2>
+    <HarmonyThemeProvider theme='day'>
+      <Flex>
+        <h1>React + @audius/sdk</h1>
+        <h2>Stream and favorite tracks!</h2>
+      </Flex>
       <div ref={loginWithAudiusButtonRef} />
       <div className='card' style={{ display: 'flex', gap: '16px' }}>
         <label>
           Get tracks for user handle:
           <input type='text' defaultValue={'skrillex'} ref={handleInputRef} />
         </label>
-        <button onClick={fetchTrack}>Get tracks</button>
+        <Button onClick={fetchTrack}>Get tracks</Button>
       </div>
       <audio controls src={streamSrc} autoPlay />
       <div className='card'>
@@ -122,7 +126,7 @@ function App() {
           </div>
         ))}
       </div>
-    </>
+    </HarmonyThemeProvider>
   )
 }
 
