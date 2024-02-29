@@ -84,7 +84,7 @@ def has_user_purchased_track(
     track = session.query(Track).filter(Track.track_id == content_id).first()
 
     # Don't check album purchase if track is download-gated only
-    if track.is_download_gated and not track.is_stream_gated:
+    if track and track.is_download_gated and not track.is_stream_gated:
         return False
 
     album_purchase = (
