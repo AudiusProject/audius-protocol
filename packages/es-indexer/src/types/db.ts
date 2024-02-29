@@ -423,6 +423,7 @@ export interface PlaylistRow {
   'txhash': string;
   'upc': string | null;
   'updated_at': Date;
+  'ddex_app': string | null;
 }
 export interface PlayRow {
   'city': string | null;
@@ -702,6 +703,7 @@ export interface TrackRow {
   'track_segments': any;
   'txhash': string;
   'updated_at': Date;
+  'ddex_app': string | null;
 }
 export interface TrendingParamRow {
   'genre': string | null;

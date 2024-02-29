@@ -17,15 +17,17 @@ import {
 } from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
+  Modal,
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,
   IconEmbed,
   IconImage,
   IconLink,
   IconShare,
-  IconSolana as LogoSol
+  IconLogoCircleSOL,
+  IconLogoCircleETH
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, LogoEth, Modal } from '@audius/stems'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -224,11 +226,11 @@ const CollectibleDetailsModal = ({
 
               {collectible.chain === Chain.Eth ? (
                 <Tooltip text='Ethereum' mount={MountPlacement.PARENT}>
-                  <LogoEth className={styles.chainIcon} />
+                  <IconLogoCircleETH size='m' />
                 </Tooltip>
               ) : (
                 <Tooltip text='Solana' mount={MountPlacement.PARENT}>
-                  <LogoSol className={styles.chainIcon} />
+                  <IconLogoCircleSOL size='m' />
                 </Tooltip>
               )}
             </div>
@@ -398,9 +400,9 @@ const CollectibleDetailsModal = ({
               )}
 
               {collectible.chain === Chain.Eth ? (
-                <LogoEth className={styles.chainIcon} />
+                <IconLogoCircleETH size='m' />
               ) : (
-                <LogoSol className={styles.chainIcon} />
+                <IconLogoCircleSOL size='m' />
               )}
             </div>
 

@@ -24,8 +24,8 @@ RUN apk update && \
   linux-headers \
   nodejs \
   npm \
-  python3=3.11.6-r0 \
-  python3-dev=3.11.6-r0 \
+  python3=3.11.8-r0 \
+  python3-dev=3.11.8-r0 \
   py3-numpy \
   py3-pip \
   py3-scipy \
@@ -54,11 +54,11 @@ RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
   apk update && \
   apk add \
-  libpq=15.5-r0 \
-  postgresql15-client=15.5-r0 \
-  postgresql15-contrib=15.5-r0 \
-  postgresql15-dev=15.5-r0 \
-  postgresql15=15.5-r0
+  libpq=15.6-r0 \
+  postgresql15-client=15.6-r0 \
+  postgresql15-contrib=15.6-r0 \
+  postgresql15-dev=15.6-r0 \
+  postgresql15=15.6-r0
 
 RUN python3 -m pip install --upgrade pip
 
@@ -87,8 +87,5 @@ ENV audius_loggly_token=$audius_loggly_token
 ENV audius_loggly_tags=$audius_loggly_tags
 
 EXPOSE 5000
-
-HEALTHCHECK --interval=5s --timeout=10s --retries=12 \
-  CMD pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]

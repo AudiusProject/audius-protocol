@@ -5,6 +5,7 @@ import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
 import {
+  Modal,
   Button,
   Flex,
   IconArrowRight,
@@ -13,7 +14,6 @@ import {
   Avatar,
   Box
 } from '@audius/harmony'
-import { Modal } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 

@@ -10,18 +10,18 @@ import {
 } from '@audius/common/store'
 import { getDownloadFilename } from '@audius/common/utils'
 import {
+  ModalHeader,
   Flex,
-  Hint,
-  IconError,
   IconReceive,
   Text,
-  TextLink
+  Hint,
+  IconError,
+  TextLink,
+  ModalTitle
 } from '@audius/harmony'
-import { ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
-import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
@@ -98,12 +98,7 @@ export const WaitForDownloadModal = () => {
         showDismissButton={!isMobile}
         className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
       >
-        <Flex justifyContent='center' gap='s'>
-          <Icon size='large' icon={IconReceive} />
-          <Text variant='label' size='xl' strength='strong'>
-            {messages.title}
-          </Text>
-        </Flex>
+        <ModalTitle icon={<IconReceive />} title={messages.title} />
       </ModalHeader>
       <Flex direction='column' p='xl' gap='xl' alignItems='center'>
         <Text variant='body' size='l' strength='strong'>

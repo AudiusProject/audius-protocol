@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
@@ -9,13 +10,12 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { removeNullable, formatPrice, Nullable } from '@audius/common/utils'
+import { Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { usePrevious } from 'react-use'
 import { z } from 'zod'
 
 import { Divider } from 'components/divider'
-import { Text } from 'components/typography'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { stemDropdownRows } from 'utils/stems'
 
 import { processFiles } from '../store/utils/processFiles'
@@ -62,13 +62,21 @@ const messages = {
   losslessNoDownloadableAssets:
     'You must enable full track download or upload a stem file to provide lossless files.',
   gatedNoDownloadableAssets:
-    'You must enable full track download or upload a stem file before setting download availability.'
+    'You must enable full track download or upload a stem file before setting download availability.',
+  noUsdcUploadAccess:
+    'You don’t have access to sell your downloads. Please change your availability settings.'
 }
 
+type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
+  isLosslessDownloadsEnabled: boolean
+  isUsdcUploadEnabled: boolean
+}
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
-  maxContentPriceCents
-}: USDCPurchaseRemoteConfig) =>
+  maxContentPriceCents,
+  isLosslessDownloadsEnabled,
+  isUsdcUploadEnabled
+}: StemsAndDownloadsSchemaProps) =>
   z
     .object({
       [IS_DOWNLOADABLE]: z.boolean(),
@@ -125,7 +133,11 @@ export const stemsAndDownloadsSchema = ({
         const stems = formValues[STEMS]
         const hasStems = stems.length > 0
         const hasDownloadableAssets = isDownloadable || hasStems
-        return !isOriginalAvailable || hasDownloadableAssets
+        return (
+          !isLosslessDownloadsEnabled ||
+          !isOriginalAvailable ||
+          hasDownloadableAssets
+        )
       },
       {
         message: messages.losslessNoDownloadableAssets,
@@ -153,6 +165,20 @@ export const stemsAndDownloadsSchema = ({
         path: [IS_DOWNLOAD_GATED]
       }
     )
+    .refine(
+      // cannot be download gated if usdc upload disabled
+      (values) => {
+        const formValues = values as StemsAndDownloadsFormValues
+        const availabilityType = formValues[DOWNLOAD_AVAILABILITY_TYPE]
+        const isUsdcGated =
+          availabilityType === DownloadTrackAvailabilityType.USDC_PURCHASE
+        return !isUsdcGated || isUsdcUploadEnabled
+      },
+      {
+        message: messages.noUsdcUploadAccess,
+        path: [IS_DOWNLOAD_GATED]
+      }
+    )
 
 // Because the upload and edit forms share the same menu fields,
 // we pass in the stems handlers in the edit flow to properly handle
@@ -170,7 +196,7 @@ type StemsAndDownloadsMenuFieldsProps = {
 export const StemsAndDownloadsMenuFields = (
   props: StemsAndDownloadsMenuFieldsProps
 ) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =

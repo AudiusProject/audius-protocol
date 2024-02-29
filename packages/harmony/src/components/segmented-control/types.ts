@@ -3,6 +3,7 @@ export type Option<T> = {
   text: string
   icon?: React.ReactNode
   disabled?: boolean
+  variant?: 'default' | 'subdued'
 }
 
 export type SegmentedControlProps<T extends string> = {

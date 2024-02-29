@@ -81,6 +81,7 @@ type OwnProps = {
   isTrending: boolean
   showRankIcon: boolean
   isFeed: boolean
+  onClick?: (trackId: ID) => void
 }
 
 type ConnectedTrackTileProps = OwnProps &
@@ -113,7 +114,8 @@ const ConnectedTrackTile = ({
   shareTrack,
   isTrending,
   isFeed = false,
-  showRankIcon
+  showRankIcon,
+  onClick
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -307,6 +309,10 @@ const ConnectedTrackTile = ({
     shareTrack(trackId)
   }, [shareTrack, trackId])
 
+  const onClickTitle = useCallback(() => {
+    onClick?.(trackId)
+  }, [onClick, trackId])
+
   const openLockedContentModal = useCallback(() => {
     dispatch(setLockedContentId({ id: trackId }))
     setLockedContentVisibility(true)
@@ -394,6 +400,7 @@ const ConnectedTrackTile = ({
       onClickShare={onClickShare}
       onClickLocked={openLockedContentModal}
       onTogglePlay={onTogglePlay}
+      onClickTitle={onClickTitle}
       isTrending={isTrending}
       showRankIcon={showRankIcon}
       permalink={permalink}

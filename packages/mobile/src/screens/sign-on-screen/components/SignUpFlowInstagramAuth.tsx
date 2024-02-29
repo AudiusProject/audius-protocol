@@ -28,6 +28,7 @@ type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   onError: (e: unknown) => void
   onStart?: () => void
   onClose?: () => void
+  page: 'create-email' | 'pick-handle'
 }
 
 const instagramAppId = env.INSTAGRAM_APP_ID
@@ -87,7 +88,8 @@ export const SignUpFlowInstagramAuth = ({
   onSuccess,
   onError,
   onStart,
-  onClose
+  onClose,
+  page
 }: SignUpFlowInstagramAuthProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -97,7 +99,8 @@ export const SignUpFlowInstagramAuth = ({
     onStart?.()
     track(
       make({
-        eventName: EventNames.CREATE_ACCOUNT_START_INSTAGRAM
+        eventName: EventNames.CREATE_ACCOUNT_START_INSTAGRAM,
+        page
       })
     )
     setIsModalOpen(true)
@@ -105,7 +108,24 @@ export const SignUpFlowInstagramAuth = ({
 
   const handleClose = () => {
     onClose?.()
+    track(
+      make({
+        eventName: EventNames.CREATE_ACCOUNT_CLOSED_INSTAGRAM,
+        page
+      })
+    )
     setIsModalOpen(false)
+  }
+
+  const handleError = (e: Error) => {
+    onError?.(e)
+    track(
+      make({
+        eventName: EventNames.CREATE_ACCOUNT_INSTAGRAM_ERROR,
+        page,
+        error: e?.message
+      })
+    )
   }
 
   const handleResponse = async (
@@ -124,19 +144,20 @@ export const SignUpFlowInstagramAuth = ({
           track(
             make({
               eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
+              page,
               isVerified,
               handle: handle || 'unknown'
             })
           )
           onSuccess({ handle, requiresReview, platform: 'instagram' })
         } catch (e) {
-          onError(e)
+          handleError(e)
         }
       } else {
-        onError(new Error('Unable to retrieve information'))
+        handleError(new Error('Unable to retrieve information'))
       }
     } else {
-      onError(new Error(payload.error).message)
+      handleError(new Error(payload.error))
     }
   }
 

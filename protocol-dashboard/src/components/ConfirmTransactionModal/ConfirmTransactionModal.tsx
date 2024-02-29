@@ -229,6 +229,7 @@ const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
   status,
   error
 }: ConfirmTransactionModalProps) => {
+  const formattedError = error.includes('\n') ? error.split('\n')[0] : error
   return (
     <Modal
       title={messages.title}
@@ -260,7 +261,9 @@ const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
       ) : (
         <>
           <div className={styles.errorHeader}>{messages.errorHeader}</div>
-          <SimpleBar className={styles.scrollableMessage}>{error}</SimpleBar>
+          <SimpleBar className={styles.scrollableMessage}>
+            {formattedError}
+          </SimpleBar>
           <Button
             text={messages.okay}
             type={ButtonType.PRIMARY}

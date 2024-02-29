@@ -21,6 +21,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { EmailField } from '../components/EmailField'
 import { Heading } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 const SignInSchema = toFormikValidationSchema(signInSchema)
 
@@ -37,6 +38,7 @@ export const SignInScreen = () => {
   const { onOpen } = useDrawer('ForgotPassword')
   const requiresOtp = useSelector(getRequiresOtp)
   const navigation = useNavigation<SignUpScreenParamList>()
+  useTrackScreen('SignIn')
 
   useEffect(() => {
     if (requiresOtp) {

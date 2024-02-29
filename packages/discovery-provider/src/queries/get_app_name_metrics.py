@@ -94,7 +94,7 @@ def get_aggregate_app_metrics(time_range, limit):
     Returns app name metrics for a given time range
 
     Args:
-        time_range: one of "week", "month", "all_time"
+        time_range: one of "week", "month", "year", or "all_time"
         limit: number The max number of apps to return
     Returns:
         [{ name: string, count: number }, ...]
@@ -108,6 +108,7 @@ def _get_aggregate_app_metrics(session, time_range, limit):
     today = date.today()
     seven_days_ago = today - timedelta(days=7)
     thirty_days_ago = today - timedelta(days=30)
+    one_year_ago = today - timedelta(days=365)
 
     if time_range == "week":
         query = (
@@ -132,6 +133,21 @@ def _get_aggregate_app_metrics(session, time_range, limit):
             .filter(AggregateDailyAppNameMetric.timestamp < today)
             .group_by(AggregateDailyAppNameMetric.application_name)
             .order_by(desc("count"), asc(AggregateDailyAppNameMetric.application_name))
+            .limit(limit)
+            .all()
+        )
+    elif time_range == "year":
+        query = (
+            session.query(
+                AggregateMonthlyAppNameMetric.application_name,
+                func.sum(AggregateMonthlyAppNameMetric.count).label("count"),
+            )
+            .filter(one_year_ago <= AggregateDailyAppNameMetric.timestamp)
+            .filter(AggregateMonthlyAppNameMetric.timestamp < today)
+            .group_by(AggregateMonthlyAppNameMetric.application_name)
+            .order_by(
+                desc("count"), asc(AggregateMonthlyAppNameMetric.application_name)
+            )
             .limit(limit)
             .all()
         )

@@ -84,6 +84,9 @@ export const StemsAndDownloadsTriggerLegacy = (
   const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
+  )
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
   const {
@@ -260,7 +263,11 @@ export const StemsAndDownloadsTriggerLegacy = (
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(
-        stemsAndDownloadsSchema(usdcPurchaseConfig)
+        stemsAndDownloadsSchema({
+          isLosslessDownloadsEnabled: !!isLosslessDownloadsEnabled,
+          isUsdcUploadEnabled: !!isUsdcUploadEnabled,
+          ...usdcPurchaseConfig
+        })
       )}
       menuFields={
         <StemsAndDownloadsMenuFields

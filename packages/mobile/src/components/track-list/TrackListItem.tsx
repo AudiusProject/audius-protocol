@@ -30,6 +30,9 @@ import {
   IconDrag,
   IconKebabHorizontal,
   IconLock,
+  IconPlaybackPause,
+  IconPlaybackPlay,
+  useTheme,
   IconRemove
 } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
@@ -39,7 +42,6 @@ import { useColor } from 'app/utils/theme'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'
 
-import { TablePlayButton } from './TablePlayButton'
 import { TrackArtwork } from './TrackArtwork'
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 
@@ -109,9 +111,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   icon: { height: 24, width: 24 },
   removeIcon: { height: 24, width: 24 },
 
-  playButtonContainer: {
-    marginRight: spacing(4)
-  },
   dragIcon: {
     marginRight: spacing(4)
   },
@@ -268,6 +267,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const white = useColor('white')
+  const { spacing } = useTheme()
   const [titleWidth, setTitleWidth] = useState(0)
 
   const deletedTextWidth = useMemo(
@@ -410,14 +410,13 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               isUnlisted={isUnlisted}
             />
           ) : isActive && !isDeleted && !isLocked ? (
-            <View style={styles.playButtonContainer}>
-              <TablePlayButton
-                playing
-                paused={!isPlaying}
-                hideDefault={false}
-                onPress={onPressTrack}
-              />
-            </View>
+            <IconButton
+              icon={isPlaying ? IconPlaybackPause : IconPlaybackPlay}
+              onPress={onPressTrack}
+              color='active'
+              size='xl'
+              style={{ marginRight: spacing.l }}
+            />
           ) : null}
           {isReorderable ? (
             <IconButton
@@ -472,6 +471,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
             <IconButton
               icon={IconKebabHorizontal}
               color='subdued'
+              size='m'
               style={styles.iconContainer}
               onPress={handlePressOverflow}
               aria-label={messages.overflowLabel}

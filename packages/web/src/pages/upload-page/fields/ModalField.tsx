@@ -1,13 +1,14 @@
 import { PropsWithChildren, ReactElement, useState } from 'react'
 
-import { Button, IconCaretRight } from '@audius/harmony'
 import {
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  Button,
+  IconCaretRight
+} from '@audius/harmony'
 import { useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 

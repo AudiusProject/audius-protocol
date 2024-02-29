@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   stemCategoryFriendlyNames,
   isContentFollowGated,
@@ -15,8 +15,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconReceive } from '@audius/harmony'
-import { IconCart } from '@audius/stems'
+import { IconReceive, IconCart } from '@audius/harmony'
 import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -27,7 +26,6 @@ import {
   SelectedValue,
   SelectedValues
 } from 'components/data-entry/ContextualMenu'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { useTrackField } from '../hooks'
 
@@ -74,8 +72,11 @@ type StemsAndDownloadsFieldProps = {
 export const StemsAndDownloadsField = ({
   closeMenuCallback
 }: StemsAndDownloadsFieldProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
+  )
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
   )
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
@@ -327,7 +328,11 @@ export const StemsAndDownloadsField = ({
       onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        stemsAndDownloadsSchema(usdcPurchaseConfig)
+        stemsAndDownloadsSchema({
+          isLosslessDownloadsEnabled: !!isLosslessDownloadsEnabled,
+          isUsdcUploadEnabled: !!isUsdcUploadEnabled,
+          ...usdcPurchaseConfig
+        })
       )}
       menuFields={
         <StemsAndDownloadsMenuFields

@@ -1,17 +1,17 @@
 import { MouseEvent } from 'react'
 
-import { IconKebabHorizontal } from '@audius/harmony'
 import {
-  IconButton,
-  IconButtonButtonProps,
+  IconKebabHorizontal,
   PopupMenu,
-  PopupMenuProps
-} from '@audius/stems'
+  PopupMenuProps,
+  IconButton,
+  IconButtonProps
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './NavItemKebabButton.module.css'
 
-type EditNavItemButtonProps = Omit<IconButtonButtonProps, 'icon'> & {
+type EditNavItemButtonProps = Omit<IconButtonProps, 'icon'> & {
   visible: boolean
   items: PopupMenuProps['items']
 }
@@ -22,6 +22,7 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
   return (
     <PopupMenu
       items={items}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       renderTrigger={(ref, onClick, triggerProps) => {
         const handleClick = (e: MouseEvent) => {
           e.preventDefault()
@@ -37,7 +38,9 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
             className={cn(styles.root, className, {
               [styles.visible]: visible
             })}
-            icon={<IconKebabHorizontal height={11} width={11} />}
+            icon={IconKebabHorizontal}
+            size='xs'
+            color='default'
           />
         )
       }}

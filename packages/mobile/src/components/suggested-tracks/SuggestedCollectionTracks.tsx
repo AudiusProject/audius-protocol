@@ -5,6 +5,7 @@ import {
   useGetCurrentUserId
 } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
+import { Status } from '@audius/common/models'
 
 import { SuggestedTracks } from './components/SuggestedTracks'
 
@@ -49,11 +50,12 @@ export const SuggestedCollectionTracks = (
 ) => {
   const { collectionId } = props
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
+  const { data: collection, status } = useGetPlaylistById({
     playlistId: collectionId,
     currentUserId
   })
 
+  if (status === Status.LOADING || !collection) return null
   return collection.is_album ? (
     <SuggestedAlbumTracks collectionId={collectionId} />
   ) : (

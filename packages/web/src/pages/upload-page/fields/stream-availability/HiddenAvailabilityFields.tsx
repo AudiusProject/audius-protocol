@@ -1,7 +1,5 @@
-import { Switch } from '@audius/harmony'
+import { Switch, Text } from '@audius/harmony'
 import { useField } from 'formik'
-
-import { Text } from 'components/typography'
 
 import { FIELD_VISIBILITY } from '../types'
 
@@ -47,7 +45,7 @@ export const HiddenAvailabilityFields = () => {
   return (
     <div className={styles.root}>
       <fieldset>
-        <Text variant='title' as='legend' className={styles.legend}>
+        <Text variant='title' tag='legend' className={styles.legend}>
           {messages.title}
         </Text>
         <div className={styles.switchContainer}>
@@ -84,7 +82,7 @@ const AvailabilityToggleField = (props: AvailabilityToggleFieldProps) => {
   return (
     <label className={styles.switchRow}>
       <Switch {...field} />
-      <Text className={styles.switchLabel}>
+      <Text variant='body' className={styles.switchLabel}>
         {messageByFieldName[fieldName]}
       </Text>
     </label>

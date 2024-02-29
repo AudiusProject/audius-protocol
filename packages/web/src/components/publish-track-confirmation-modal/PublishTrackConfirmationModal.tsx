@@ -1,21 +1,19 @@
 import { useCallback } from 'react'
 
 import { publishTrackConfirmationModalUISelectors } from '@audius/common/store'
-import { IconRocket } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
   Modal,
   ModalContent,
   ModalContentText,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
+  ModalTitle,
+  ModalFooter,
+  IconRocket
+} from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
-import { Text } from 'components/typography'
 
 import styles from '../upload-confirmation-modal/UploadConfirmationModal.module.css'
 
@@ -47,16 +45,7 @@ export const PublishTrackConfirmationModal = () => {
       <ModalHeader>
         <ModalTitle
           icon={<IconRocket className={styles.titleIcon} />}
-          title={
-            <Text
-              variant='label'
-              size='xLarge'
-              strength='strong'
-              color='neutralLight2'
-            >
-              {messages.title}
-            </Text>
-          }
+          title={messages.title}
         />
       </ModalHeader>
       <ModalContent>

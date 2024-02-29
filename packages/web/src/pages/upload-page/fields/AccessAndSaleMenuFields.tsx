@@ -8,7 +8,8 @@ import {
   IconVisibilityHidden,
   RadioGroup,
   IconSpecialAccess,
-  IconVisibilityPublic
+  IconVisibilityPublic,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -16,7 +17,6 @@ import { useField } from 'formik'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { Text } from 'components/typography'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { SingleTrackEditValues } from '../types'
@@ -53,7 +53,7 @@ export type AccesAndSaleMenuFieldsProps = {
   isUpload?: boolean
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
-  initialStreamConditions?: AccessConditions
+  initialStreamConditions?: AccessConditions | undefined
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {

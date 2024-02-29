@@ -16,7 +16,6 @@ import {
   isTrackUrl
 } from '@audius/common/utils'
 import { IconError, IconPlus } from '@audius/harmony'
-import { PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
@@ -210,7 +209,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           {!hideMessage ? (
             <UserGeneratedText
               className={styles.text}
-              color={isAuthor ? 'staticWhite' : 'neutral'}
+              color={isAuthor ? 'staticWhite' : 'default'}
             >
               {message.message}
             </UserGeneratedText>
@@ -228,9 +227,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           anchorRef={reactionButtonRef}
           isVisible={isReactionPopupVisible}
           onClose={handleCloseReactionPopup}
-          position={
-            isAuthor ? PopupPosition.BOTTOM_RIGHT : PopupPosition.BOTTOM_LEFT
-          }
+          isAuthor={isAuthor}
           onSelected={handleReactionSelected}
         />
       ) : null}

@@ -28,5 +28,4 @@ steps:
   - run:
       name: Release
       command: |
-        export PROTOCOL_DIR=$PWD
         packages/libs/scripts/release.sh << parameters.sdk-release-commit >> << parameters.sdk-release-version >> << parameters.sdk-release-preid >>

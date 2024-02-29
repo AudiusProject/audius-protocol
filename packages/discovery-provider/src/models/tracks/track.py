@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    ARRAY,
     Boolean,
     Column,
     DateTime,
@@ -27,7 +28,7 @@ from src.models.users.user import User
 class Track(Base, RepresentableMixin):
     __tablename__ = "tracks"
 
-    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blockhash = Column(Text, nullable=False)
     blocknumber = Column(
         Integer, ForeignKey("blocks.number"), index=True, nullable=False
     )
@@ -69,6 +70,7 @@ class Track(Base, RepresentableMixin):
     download = Column(JSONB())
     is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
+    ddex_app = Column(String)
     field_visibility = Column(JSONB(True))
     route_id = Column(String)
     stem_of = Column(JSONB(True))
@@ -86,11 +88,12 @@ class Track(Base, RepresentableMixin):
     is_download_gated = Column(Boolean, nullable=False, server_default=text("false"))
     download_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
-    ai_attribution_user_id = Column(Integer, nullable=True)
-
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Track.blockhash == Block.blockhash"
+    playlists_containing_track = Column(
+        ARRAY(Integer()), server_default="ARRAY[]::INTEGER[]"
     )
+    ai_attribution_user_id = Column(Integer, nullable=True)
+    placement_hosts = Column(String, nullable=True)
+
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"
     )

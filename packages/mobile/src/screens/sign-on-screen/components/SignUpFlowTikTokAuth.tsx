@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name } from '@audius/common/models'
@@ -13,7 +13,7 @@ import { SocialButton } from '@audius/harmony-native'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 import { make, track } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
-import { getAbandoned } from 'app/store/oauth/selectors'
+import { getAbandoned, getIsOpen } from 'app/store/oauth/selectors'
 
 type SignUpFlowTikTokAuthProps = {
   onStart: () => void
@@ -24,6 +24,7 @@ type SignUpFlowTikTokAuthProps = {
     platform: 'tiktok'
   }) => void
   onClose: () => void
+  page: 'create-email' | 'pick-handle'
 }
 
 // Wrapper around TikTokAuthButton that adds in new sign up schema
@@ -31,17 +32,28 @@ export const SignUpFlowTikTokAuth = ({
   onStart,
   onSuccess,
   onFailure,
-  onClose
+  onClose,
+  page
 }: SignUpFlowTikTokAuthProps) => {
   const dispatch = useDispatch()
   const abandoned = useSelector(getAbandoned)
+  const isOpen = useSelector(getIsOpen)
+
+  const [tikTokOpen, setTikTokOpen] = useState(false)
   const audiusQueryContext = useAudiusQueryContext()
 
   useEffect(() => {
-    if (abandoned) {
+    if (!isOpen && abandoned && tikTokOpen) {
+      track(
+        make({
+          eventName: Name.CREATE_ACCOUNT_CLOSED_TIKTOK,
+          page
+        })
+      )
+      setTikTokOpen(false)
       onClose()
     }
-  }, [abandoned, onClose])
+  }, [abandoned, isOpen, onClose, page, tikTokOpen])
 
   const handleSuccess = async (
     profileData: TikTokProfileData,
@@ -64,6 +76,7 @@ export const SignUpFlowTikTokAuth = ({
         make({
           eventName: Name.CREATE_ACCOUNT_COMPLETE_TIKTOK,
           isVerified: !!profile.is_verified,
+          page,
           handle: profile.username || 'unknown'
         })
       )
@@ -79,30 +92,39 @@ export const SignUpFlowTikTokAuth = ({
 
   const withTikTokAuth = useTikTokAuth({
     onError: (error) => {
+      setTikTokOpen(false)
       onFailure(error)
       dispatch(oauthActions.setTikTokError(error))
     }
   })
 
   const handlePress = (e: GestureResponderEvent) => {
+    setTikTokOpen(true)
     onStart()
+    track(
+      make({
+        eventName: Name.CREATE_ACCOUNT_START_TIKTOK,
+        page
+      })
+    )
     dispatch(oauthActions.setTikTokError(null))
     withTikTokAuth(async (accessToken: string) => {
       try {
-        // Using TikTok v1 api because v2 does not have CORS headers set
+        const fields = [
+          'open_id',
+          'username',
+          'display_name',
+          'avatar_large_url',
+          'is_verified'
+        ]
         const result = await fetch(
-          `https://open-api.tiktok.com/user/info/?access_token=${accessToken}`,
+          `https://open.tiktokapis.com/v2/user/info/?fields=${fields.join(
+            ','
+          )}`,
           {
-            method: 'POST',
-            body: JSON.stringify({
-              fields: [
-                'open_id',
-                'username',
-                'display_name',
-                'avatar_large_url',
-                'is_verified'
-              ]
-            })
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
           }
         )
 

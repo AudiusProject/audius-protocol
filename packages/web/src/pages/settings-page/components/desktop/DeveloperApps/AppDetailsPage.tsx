@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import {
   IconCopy as IconCopyPlain,
   IconError as IconWarning,
-  IconCaretRight
+  IconCaretRight,
+  IconButton
 } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
 
 import { Divider } from 'components/divider'
 import Toast from 'components/toast/Toast'
@@ -87,7 +87,8 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
             <IconButton
               onClick={copyApiKey}
               aria-label={messages.copyApiKeyLabel}
-              icon={<IconCopyPlain />}
+              color='subdued'
+              icon={IconCopyPlain}
             />
           </Toast>
         </span>
@@ -103,7 +104,8 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
               <IconButton
                 onClick={copySecret}
                 aria-label={messages.copyApiKeyLabel}
-                icon={<IconCopyPlain />}
+                color='subdued'
+                icon={IconCopyPlain}
               />
             </Toast>
           </span>

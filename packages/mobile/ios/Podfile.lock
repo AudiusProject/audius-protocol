@@ -9,7 +9,6 @@ PODS:
   - boost (1.83.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - CocoaAsyncSocket (7.6.5)
   - CodePush (8.1.1):
     - Base64 (~> 1.1)
     - JWT (~> 3.0.0-beta.12)
@@ -29,64 +28,6 @@ PODS:
     - ffmpeg-kit-ios-https-gpl (= 6.0.LTS)
     - React-Core
   - FingerprintPro (2.3.2)
-  - Flipper (0.175.0):
-    - Flipper-Folly (~> 2.6)
-  - Flipper-Boost-iOSX (1.76.0.1.11)
-  - Flipper-DoubleConversion (3.2.0.1)
-  - Flipper-Fmt (7.1.7)
-  - Flipper-Folly (2.6.10):
-    - Flipper-Boost-iOSX
-    - Flipper-DoubleConversion
-    - Flipper-Fmt (= 7.1.7)
-    - Flipper-Glog
-    - libevent (~> 2.1.12)
-    - OpenSSL-Universal (= 1.1.1100)
-  - Flipper-Glog (0.5.0.5)
-  - Flipper-PeerTalk (0.0.4)
-  - FlipperKit (0.175.0):
-    - FlipperKit/Core (= 0.175.0)
-  - FlipperKit/Core (0.175.0):
-    - Flipper (~> 0.175.0)
-    - FlipperKit/CppBridge
-    - FlipperKit/FBCxxFollyDynamicConvert
-    - FlipperKit/FBDefines
-    - FlipperKit/FKPortForwarding
-    - SocketRocket (~> 0.6.0)
-  - FlipperKit/CppBridge (0.175.0):
-    - Flipper (~> 0.175.0)
-  - FlipperKit/FBCxxFollyDynamicConvert (0.175.0):
-    - Flipper-Folly (~> 2.6)
-  - FlipperKit/FBDefines (0.175.0)
-  - FlipperKit/FKPortForwarding (0.175.0):
-    - CocoaAsyncSocket (~> 7.6)
-    - Flipper-PeerTalk (~> 0.0.4)
-  - FlipperKit/FlipperKitHighlightOverlay (0.175.0)
-  - FlipperKit/FlipperKitLayoutHelpers (0.175.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitHighlightOverlay
-    - FlipperKit/FlipperKitLayoutTextSearchable
-  - FlipperKit/FlipperKitLayoutIOSDescriptors (0.175.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitHighlightOverlay
-    - FlipperKit/FlipperKitLayoutHelpers
-    - YogaKit (~> 1.18)
-  - FlipperKit/FlipperKitLayoutPlugin (0.175.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitHighlightOverlay
-    - FlipperKit/FlipperKitLayoutHelpers
-    - FlipperKit/FlipperKitLayoutIOSDescriptors
-    - FlipperKit/FlipperKitLayoutTextSearchable
-    - YogaKit (~> 1.18)
-  - FlipperKit/FlipperKitLayoutTextSearchable (0.175.0)
-  - FlipperKit/FlipperKitNetworkPlugin (0.175.0):
-    - FlipperKit/Core
-  - FlipperKit/FlipperKitReactPlugin (0.175.0):
-    - FlipperKit/Core
-  - FlipperKit/FlipperKitUserDefaultsPlugin (0.175.0):
-    - FlipperKit/Core
-  - FlipperKit/SKIOSNetworkPlugin (0.175.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitNetworkPlugin
   - fmt (6.2.1)
   - glog (0.3.5)
   - google-cast-sdk-dynamic-xcframework-no-bluetooth (4.8.0)
@@ -113,7 +54,6 @@ PODS:
     - lottie-ios (~> 4.3.3)
     - React-Core
   - nSure (1.3.1)
-  - OpenSSL-Universal (1.1.1100)
   - PromisesObjC (2.3.1)
   - RCT-Folly (2022.05.16.00):
     - boost
@@ -986,6 +926,8 @@ PODS:
   - React-Mapbuffer (0.73.1):
     - glog
     - React-debug
+  - react-native-blob-util (0.19.4):
+    - React-Core
   - react-native-blur (4.3.2):
     - React-Core
   - react-native-config (1.5.1):
@@ -1224,8 +1166,6 @@ PODS:
     - React-Core
     - RiveRuntime (= 5.5.1)
   - RiveRuntime (5.5.1)
-  - rn-fetch-blob (0.12.0):
-    - React-Core
   - RNBootSplash (5.2.1):
     - React-Core
   - RNCAsyncStorage (1.21.0):
@@ -1313,8 +1253,6 @@ PODS:
   - TikTokOpenSDK (5.0.0)
   - TOCropViewController (2.6.1)
   - Yoga (1.14.0)
-  - YogaKit (1.18.1):
-    - Yoga (~> 1.14)
 
 DEPENDENCIES:
   - "amplitude-react-native (from `../../../node_modules/@amplitude/react-native`)"
@@ -1325,32 +1263,11 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - ffmpeg-kit-react-native/https-gpl-lts (from `../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec`)
-  - Flipper (= 0.175.0)
-  - Flipper-Boost-iOSX (= 1.76.0.1.11)
-  - Flipper-DoubleConversion (= 3.2.0.1)
-  - Flipper-Fmt (= 7.1.7)
-  - Flipper-Folly (= 2.6.10)
-  - Flipper-Glog (= 0.5.0.5)
-  - Flipper-PeerTalk (= 0.0.4)
-  - FlipperKit (= 0.175.0)
-  - FlipperKit/Core (= 0.175.0)
-  - FlipperKit/CppBridge (= 0.175.0)
-  - FlipperKit/FBCxxFollyDynamicConvert (= 0.175.0)
-  - FlipperKit/FBDefines (= 0.175.0)
-  - FlipperKit/FKPortForwarding (= 0.175.0)
-  - FlipperKit/FlipperKitHighlightOverlay (= 0.175.0)
-  - FlipperKit/FlipperKitLayoutPlugin (= 0.175.0)
-  - FlipperKit/FlipperKitLayoutTextSearchable (= 0.175.0)
-  - FlipperKit/FlipperKitNetworkPlugin (= 0.175.0)
-  - FlipperKit/FlipperKitReactPlugin (= 0.175.0)
-  - FlipperKit/FlipperKitUserDefaultsPlugin (= 0.175.0)
-  - FlipperKit/SKIOSNetworkPlugin (= 0.175.0)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - libevent (~> 2.1.12)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - nSure
-  - OpenSSL-Universal (= 1.1.1100)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -1359,7 +1276,6 @@ DEPENDENCIES:
   - React-callinvoker (from `../node_modules/react-native/ReactCommon/callinvoker`)
   - React-Codegen (from `build/generated/ios`)
   - React-Core (from `../node_modules/react-native/`)
-  - React-Core/DevSupport (from `../node_modules/react-native/`)
   - React-Core/RCTWebSocket (from `../node_modules/react-native/`)
   - React-CoreModules (from `../node_modules/react-native/React/CoreModules`)
   - React-cxxreact (from `../node_modules/react-native/ReactCommon/cxxreact`)
@@ -1375,6 +1291,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
+  - react-native-blob-util (from `../node_modules/react-native-blob-util`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - "react-native-cookies (from `../../../node_modules/@react-native-cookies/cookies`)"
@@ -1419,7 +1336,6 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - rive-react-native (from `../../../node_modules/rive-react-native`)
-  - rn-fetch-blob (from `../../../node_modules/rn-fetch-blob`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
@@ -1447,17 +1363,8 @@ SPEC REPOS:
     - Amplitude
     - AnalyticsConnector
     - Base64
-    - CocoaAsyncSocket
     - ffmpeg-kit-ios-https-gpl
     - FingerprintPro
-    - Flipper
-    - Flipper-Boost-iOSX
-    - Flipper-DoubleConversion
-    - Flipper-Fmt
-    - Flipper-Folly
-    - Flipper-Glog
-    - Flipper-PeerTalk
-    - FlipperKit
     - fmt
     - google-cast-sdk-dynamic-xcframework-no-bluetooth
     - JWT
@@ -1465,7 +1372,6 @@ SPEC REPOS:
     - libwebp
     - lottie-ios
     - nSure
-    - OpenSSL-Universal
     - PromisesObjC
     - RiveRuntime
     - SDWebImage
@@ -1478,7 +1384,6 @@ SPEC REPOS:
     - SwiftAudioEx
     - TikTokOpenSDK
     - TOCropViewController
-    - YogaKit
 
 EXTERNAL SOURCES:
   amplitude-react-native:
@@ -1546,6 +1451,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
+  react-native-blob-util:
+    :path: "../node_modules/react-native-blob-util"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
   react-native-config:
@@ -1634,8 +1541,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   rive-react-native:
     :path: "../../../node_modules/rive-react-native"
-  rn-fetch-blob:
-    :path: "../../../node_modules/rn-fetch-blob"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
@@ -1686,7 +1591,6 @@ SPEC CHECKSUMS:
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost: 69c3d61aee7f5f7facabe24312f0302003b5af29
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
-  CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CodePush: c3fdecab0dba1f760a1c6d1a562b9b88ce311fe1
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: 2296bacb2fa157a43991048b0a9d71c1c8b65083
@@ -1694,14 +1598,6 @@ SPEC CHECKSUMS:
   ffmpeg-kit-ios-https-gpl: 4f25b11cc9d0f20ed0d938061d242541a8ae531a
   ffmpeg-kit-react-native: 3cea88c9c5cfad62e1465279ea7d800dfbba3b00
   FingerprintPro: c6444f5a00d1126446da664124529e754475f198
-  Flipper: d9d1aa67916620c9a6af11cb8275f06cd522943e
-  Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
-  Flipper-DoubleConversion: 2dc99b02f658daf147069aad9dbd29d8feb06d30
-  Flipper-Fmt: 60cbdd92fc254826e61d669a5d87ef7015396a9b
-  Flipper-Folly: 584845625005ff068a6ebf41f857f468decd26b3
-  Flipper-Glog: 70c50ce58ddaf67dc35180db05f191692570f446
-  Flipper-PeerTalk: 116d8f857dc6ef55c7a5a75ea3ceaafe878aadc9
-  FlipperKit: 9f6df8cb028c2acd537ce24c1993aba142eceaf0
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
   google-cast-sdk-dynamic-xcframework-no-bluetooth: 09d47191ef8821d82e813e754bcf98bc61a3dbc9
@@ -1712,7 +1608,6 @@ SPEC CHECKSUMS:
   lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
   lottie-react-native: a2ae9c27c273b060b2affff2957bc0ff7fdca353
   nSure: b2d7022f54c180c5afd88f9f79073841e1cfa844
-  OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
   RCT-Folly: 7169b2b1c44399c76a47b5deaaba715eeeb476c0
   RCTRequired: 6dda55e483f75d2b43781d8ad5bd7df276a50981
@@ -1735,6 +1630,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 369048694e39942063c5d08e9580b43e2edd379a
   React-logger: e0c1e918d9588a9f39c9bc62d9d6bfe9ca238d9d
   React-Mapbuffer: 9731a0a63ebaf8976014623c4d637744d7353a7c
+  react-native-blob-util: 30a6c9fd067aadf9177e61a998f2c7efb670598d
   react-native-blur: cfdad7b3c01d725ab62a8a729f42ea463998afa2
   react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
@@ -1780,7 +1676,6 @@ SPEC CHECKSUMS:
   ReactCommon: ddb128564dcbfa0287d3d1a2d10f8c7457c971f6
   rive-react-native: 79777686cb29eaba6a28a0534fe82c8b8da41b4a
   RiveRuntime: b57830ff73f406f3b4022f457b16690535ca4d05
-  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBootSplash: f7fd5a7d4f1c13be3d0f5f31d27af7bcc1b1acef
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
@@ -1811,9 +1706,8 @@ SPEC CHECKSUMS:
   SwiftAudioEx: 6f511018b7a0fdfd14ed1bb4081f953588245cc0
   TikTokOpenSDK: a63564ea4dc1fabc56352bf7aa9ddc386cdb63b6
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
-  Yoga: 2b33a7ac96c58cdaa7b810948fc6a2a76ed2d108
-  YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
+  Yoga: 4f53dc50008d626fa679c7a1cb4bed898f8c0bde
 
-PODFILE CHECKSUM: ab62f00b76ec92f97506cd7b0a75c5c470923f11
+PODFILE CHECKSUM: 82012892a9211b68a6524992c2822b7e06765cbd
 
 COCOAPODS: 1.13.0

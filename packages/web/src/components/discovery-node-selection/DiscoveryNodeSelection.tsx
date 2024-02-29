@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button, ButtonType } from '@audius/stems'
 
 import Input from 'components/data-entry/Input'
-import { useDevModeHotkey } from 'hooks/useHotkey'
+import { useDevModeHotkey } from 'hooks/useDevModeHotkey'
 
 import styles from './DiscoveryNodeSelection.module.css'
 

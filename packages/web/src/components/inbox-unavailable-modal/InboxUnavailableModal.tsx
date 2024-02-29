@@ -13,19 +13,16 @@ import {
 } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalFooter,
   IconMessageUnblock as IconUnblockMessages,
   IconMessageLocked,
   IconTipping
 } from '@audius/harmony'
-import {
-  ModalTitle,
-  Modal,
-  ModalHeader,
-  Button,
-  ModalContent,
-  ModalFooter,
-  ButtonType
-} from '@audius/stems'
+import { Button, ButtonType } from '@audius/stems'
 import { Action } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 

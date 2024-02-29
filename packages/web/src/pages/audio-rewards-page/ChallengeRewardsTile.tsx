@@ -20,14 +20,13 @@ import {
   makeOptimisticChallengeSortComparator,
   isAudioMatchingChallenge
 } from '@audius/common/utils'
-import { IconArrowRight as IconArrow, IconCheck } from '@audius/harmony'
+import { IconArrowRight as IconArrow, IconCheck, Text } from '@audius/harmony'
 import { ProgressBar, ButtonType, Button } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { Text } from 'components/typography'
 import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -149,7 +148,7 @@ const RewardPanel = ({
             <span className={styles.pillMessage}>{messages.readyToClaim}</span>
           ) : showNewChallengePill ? (
             <Text
-              as='span'
+              tag='span'
               className={styles.newChallengePill}
               variant='body'
               strength='strong'

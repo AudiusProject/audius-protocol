@@ -9,6 +9,7 @@ import {
   getCoverPhotoField,
   getHandleField,
   getIsVerified,
+  getNameField,
   getProfileImageField
 } from 'audius-client/src/common/store/pages/signon/selectors'
 import {
@@ -18,6 +19,10 @@ import {
 } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { isEmpty } from 'lodash'
+import type {
+  NativeSyntheticEvent,
+  TextInputFocusEventData
+} from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -25,11 +30,14 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { Paper, useTheme, Text } from '@audius/harmony-native'
 import { HarmonyTextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
@@ -47,6 +55,9 @@ export const FinishProfileScreen = () => {
   const { spacing } = useTheme()
   const savedProfileImage = useSelector(getProfileImageField)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
+  const { value: savedDisplayName } = useSelector(getNameField) ?? {}
+
+  useTrackScreen('FinishProfile')
 
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
@@ -61,8 +72,16 @@ export const FinishProfileScreen = () => {
   const initialValues = {
     profileImage: savedProfileImage || ({} as Image),
     coverPhoto: savedCoverPhoto || ({} as Image),
-    displayName: ''
+    displayName: savedDisplayName
   }
+
+  const saveDisplayName = useCallback(
+    (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      const displayName = e.nativeEvent.text
+      dispatch(setValueField('name', displayName))
+    },
+    [dispatch]
+  )
 
   return (
     <Formik
@@ -83,6 +102,7 @@ export const FinishProfileScreen = () => {
             placeholder={finishProfilePageMessages.inputPlaceholder}
             maxLength={MAX_DISPLAY_NAME_LENGTH}
             autoComplete='off'
+            onChange={saveDisplayName}
             style={css({
               padding: spacing.l,
               paddingTop: spacing.unit10
@@ -104,6 +124,11 @@ const AccountHeaderField = () => {
     const handleImageSelected = (image: Image) => {
       dispatch(setField('profileImage', image))
       setProfileImage(image)
+      track(
+        make({
+          eventName: EventNames.CREATE_ACCOUNT_UPLOAD_PROFILE_PHOTO
+        })
+      )
     }
 
     launchSelectImageActionSheet(
@@ -120,6 +145,11 @@ const AccountHeaderField = () => {
     const handleImageSelected = (image: Image) => {
       setCoverPhoto(image)
       dispatch(setField('coverPhoto', image))
+      track(
+        make({
+          eventName: EventNames.CREATE_ACCOUNT_UPLOAD_COVER_PHOTO
+        })
+      )
     }
     launchSelectImageActionSheet(
       handleImageSelected,

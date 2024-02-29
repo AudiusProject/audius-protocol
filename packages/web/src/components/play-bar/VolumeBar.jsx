@@ -4,11 +4,11 @@ import {
   IconVolumeLevel0 as IconVolume0,
   IconVolumeLevel1 as IconVolume1,
   IconVolumeLevel2 as IconVolume2,
-  IconVolumeLevel3 as IconVolume3
+  IconVolumeLevel3 as IconVolume3,
+  setupHotkeys,
+  ModifierKeys
 } from '@audius/harmony'
 import PropTypes from 'prop-types'
-
-import { setupHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 
 import styles from './VolumeBar.module.css'
 import { Slider } from './slider/Slider'

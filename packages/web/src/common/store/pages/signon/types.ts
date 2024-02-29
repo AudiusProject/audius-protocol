@@ -76,6 +76,7 @@ export default interface SignOnPageState {
   routeOnExit: boolean
   page: number
   referrer: ID
+  welcomeModalShown: boolean
 }
 
 export type { SignOnPageState }

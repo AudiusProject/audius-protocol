@@ -9,6 +9,7 @@ import {
   TikTokProfile,
   Image
 } from '@audius/common/store'
+import { setupHotkeys, removeHotkeys } from '@audius/harmony'
 import {
   push as pushRoute,
   replace as replaceRoute,
@@ -32,7 +33,6 @@ import {
 import { Pages, FollowArtistsCategory } from 'common/store/pages/signon/types'
 import { AppState } from 'store/types'
 import { isElectron } from 'utils/clientUtil'
-import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 import {
   TRENDING_PAGE,
   UPLOAD_PAGE,
@@ -78,7 +78,7 @@ type SignOnState = {
   metaMaskModalOpen: boolean
   hasOpened: boolean
   initialPage: boolean
-  closeModalHotkey?: Function
+  closeModalHotkey?: (e: KeyboardEvent) => void
 }
 
 /**

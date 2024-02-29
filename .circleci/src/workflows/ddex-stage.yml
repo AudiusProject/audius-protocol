@@ -1,5 +1,17 @@
 when: << pipeline.parameters.run-ddex-stage-workflow >>
 jobs:
+  - test:
+      name: test-ddex-e2e-release-by-release
+      context: Vercel
+      service: ddex-e2e-release-by-release
+  - test:
+      name: test-ddex-e2e-batched
+      context: Vercel
+      service: ddex-e2e-batched
+  - test:
+      name: test-ddex-unittests
+      context: Vercel
+      service: ddex-unittests
   - push-docker-image:
       name: push-ddex-web
       context: [Vercel, dockerhub]
@@ -24,6 +36,9 @@ jobs:
   - deploy-stage-nodes:
       name: deploy-stage-ddex
       requires:
+        - test-ddex-e2e-release-by-release
+        - test-ddex-e2e-batched
+        - test-ddex-unittests
         - push-ddex-web
         - push-ddex-ingester
         - push-ddex-publisher

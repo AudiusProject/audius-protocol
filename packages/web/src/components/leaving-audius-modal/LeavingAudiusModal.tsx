@@ -1,17 +1,17 @@
 import { useCallback } from 'react'
 
 import { useLeavingAudiusModal } from '@audius/common/store'
-import { Button, IconExternalLink, IconInfo } from '@audius/harmony'
 import {
   Modal,
   ModalContent,
-  ModalFooter,
   ModalHeader,
-  ModalTitle
-} from '@audius/stems'
-
-import { Icon } from 'components/Icon'
-import { Text } from 'components/typography'
+  ModalTitle,
+  ModalFooter,
+  Button,
+  IconExternalLink,
+  IconInfo,
+  Text
+} from '@audius/harmony'
 
 import { HelpCallout } from '../help-callout/HelpCallout'
 
@@ -40,7 +40,7 @@ export const LeavingAudiusModal = () => {
       size={'small'}
     >
       <ModalHeader>
-        <ModalTitle icon={<Icon icon={IconInfo} />} title={messages.title} />
+        <ModalTitle icon={<IconInfo />} title={messages.title} />
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Text>{messages.body}</Text>

@@ -17,6 +17,8 @@ import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selecto
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { useThemeColors } from 'app/utils/theme'
 
+import { primitiveToImageSource } from './primitiveToImageSource'
+
 const { getIsReachable } = reachabilitySelectors
 
 type UseCollectionImageOptions = {
@@ -58,22 +60,27 @@ const useLocalCollectionImageUri = (collectionId: Maybe<ID>) => {
 
 export const useCollectionImage = (options: UseCollectionImageOptions) => {
   const { collection, size } = options
-  const optimisticCoverArt = collection?._cover_art_sizes?.OVERRIDE
+
   const cid = collection
-    ? collection.cover_art_sizes || collection.cover_art
+    ? collection.cover_art_sizes ?? collection.cover_art
     : null
 
+  const optimisticCoverArt = primitiveToImageSource(
+    collection?._cover_art_sizes?.OVERRIDE
+  )
   const localCollectionImageUri = useLocalCollectionImageUri(
     collection?.playlist_id
   )
-
-  const localSourceUri = optimisticCoverArt || localCollectionImageUri
+  const localCollectionImageSource = primitiveToImageSource(
+    localCollectionImageUri
+  )
+  const localSource = optimisticCoverArt ?? localCollectionImageSource
 
   const contentNodeSource = useContentNodeImage({
     cid,
     size,
     fallbackImageSource: imageEmpty,
-    localSource: localSourceUri ? { uri: localSourceUri } : null,
+    localSource,
     cidMap: collection?.cover_art_cids
   })
 

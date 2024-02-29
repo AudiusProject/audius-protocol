@@ -8,6 +8,27 @@ export enum Challengetype {
   Trending = "trending",
 }
 
+export enum DelistEntity {
+  Tracks = "TRACKS",
+  Users = "USERS",
+}
+
+export enum DelistTrackReason {
+  Dmca = "DMCA",
+  Acr = "ACR",
+  Manual = "MANUAL",
+  AcrCounterNotice = "ACR_COUNTER_NOTICE",
+  DmcaRetraction = "DMCA_RETRACTION",
+  DmcaCounterNotice = "DMCA_COUNTER_NOTICE",
+  DmcaAndAcrCounterNotice = "DMCA_AND_ACR_COUNTER_NOTICE",
+}
+
+export enum DelistUserReason {
+  StrikeThreshold = "STRIKE_THRESHOLD",
+  CopyrightSchool = "COPYRIGHT_SCHOOL",
+  Manual = "MANUAL",
+}
+
 export enum Reposttype {
   Track = "track",
   Playlist = "playlist",
@@ -25,12 +46,24 @@ export enum Skippedtransactionlevel {
   Network = "network",
 }
 
+export enum UsdcPurchaseAccessType {
+  Stream = "stream",
+  Download = "download",
+}
+
+export enum UsdcPurchaseContentType {
+  Track = "track",
+  Playlist = "playlist",
+  Album = "album",
+}
+
 export enum WalletChain {
   Eth = "eth",
   Sol = "sol",
 }
 
 export enum Table {
+  SequelizeMeta = "SequelizeMeta",
   AggregateDailyAppNameMetrics = "aggregate_daily_app_name_metrics",
   AggregateDailyTotalUsersMetrics = "aggregate_daily_total_users_metrics",
   AggregateDailyUniqueUsersMetrics = "aggregate_daily_unique_users_metrics",
@@ -43,7 +76,7 @@ export enum Table {
   AggregateTrack = "aggregate_track",
   AggregateUser = "aggregate_user",
   AggregateUserTips = "aggregate_user_tips",
-  AppDelegates = "app_delegates",
+  AlembicVersion = "alembic_version",
   AppNameMetrics = "app_name_metrics",
   AssociatedWallets = "associated_wallets",
   AudioTransactionsHistory = "audio_transactions_history",
@@ -54,142 +87,173 @@ export enum Table {
   ChallengeProfileCompletion = "challenge_profile_completion",
   Challenges = "challenges",
   Chat = "chat",
+  ChatBan = "chat_ban",
   ChatBlockedUsers = "chat_blocked_users",
   ChatMember = "chat_member",
   ChatMessage = "chat_message",
   ChatMessageReactions = "chat_message_reactions",
   ChatPermissions = "chat_permissions",
   CidData = "cid_data",
-  Delegations = "delegations",
+  DashboardWalletUsers = "dashboard_wallet_users",
+  DelistStatusCursor = "delist_status_cursor",
+  DeveloperApps = "developer_apps",
   EthBlocks = "eth_blocks",
   Follows = "follows",
+  Grants = "grants",
   HourlyPlayCounts = "hourly_play_counts",
   IndexingCheckpoints = "indexing_checkpoints",
   Milestones = "milestones",
   Notification = "notification",
   NotificationSeen = "notification_seen",
+  PaymentRouterTxs = "payment_router_txs",
   PgStatStatements = "pg_stat_statements",
+  PgStatStatementsInfo = "pg_stat_statements_info",
   PlaylistRoutes = "playlist_routes",
-  Playlists = "playlists",
   PlaylistSeen = "playlist_seen",
+  Playlists = "playlists",
   Plays = "plays",
   Pubkeys = "pubkeys",
   Reactions = "reactions",
   RelatedArtists = "related_artists",
   Remixes = "remixes",
   Reposts = "reposts",
+  RevertBlocks = "revert_blocks",
   RewardManagerTxs = "reward_manager_txs",
   RewardsManagerBackfillTxs = "rewards_manager_backfill_txs",
   RouteMetrics = "route_metrics",
   RpcCursor = "rpc_cursor",
-  Rpclog = "rpclog",
+  RpcError = "rpc_error",
   RpcLog = "rpc_log",
+  Rpclog = "rpclog",
   Saves = "saves",
   SchemaMigrations = "schema_migrations",
-  SequelizeMeta = "SequelizeMeta",
+  SchemaVersion = "schema_version",
   SkippedTransactions = "skipped_transactions",
   SplTokenBackfillTxs = "spl_token_backfill_txs",
   SplTokenTx = "spl_token_tx",
   Stems = "stems",
   Subscriptions = "subscriptions",
   SupporterRankUps = "supporter_rank_ups",
+  TrackDelistStatuses = "track_delist_statuses",
+  TrackPriceHistory = "track_price_history",
   TrackRoutes = "track_routes",
-  Tracks = "tracks",
   TrackTrendingScores = "track_trending_scores",
+  Tracks = "tracks",
   TrendingResults = "trending_results",
-  UrsmContentNodes = "ursm_content_nodes",
+  UsdcPurchases = "usdc_purchases",
+  UsdcTransactionsHistory = "usdc_transactions_history",
+  UsdcUserBankAccounts = "usdc_user_bank_accounts",
   UserBalanceChanges = "user_balance_changes",
   UserBalances = "user_balances",
   UserBankAccounts = "user_bank_accounts",
   UserBankBackfillTxs = "user_bank_backfill_txs",
   UserBankTxs = "user_bank_txs",
   UserChallenges = "user_challenges",
+  UserDelistStatuses = "user_delist_statuses",
   UserEvents = "user_events",
   UserListeningHistory = "user_listening_history",
   UserPubkeys = "user_pubkeys",
-  Users = "users",
   UserTips = "user_tips",
+  Users = "users",
 }
 
 export type Tables = {
-  aggregate_daily_app_name_metrics: AggregateDailyAppNameMetrics;
-  aggregate_daily_total_users_metrics: AggregateDailyTotalUsersMetrics;
-  aggregate_daily_unique_users_metrics: AggregateDailyUniqueUsersMetrics;
-  aggregate_monthly_app_name_metrics: AggregateMonthlyAppNameMetrics;
-  aggregate_monthly_plays: AggregateMonthlyPlays;
-  aggregate_monthly_total_users_metrics: AggregateMonthlyTotalUsersMetrics;
-  aggregate_monthly_unique_users_metrics: AggregateMonthlyUniqueUsersMetrics;
-  aggregate_playlist: AggregatePlaylist;
-  aggregate_plays: AggregatePlays;
-  aggregate_track: AggregateTrack;
-  aggregate_user: AggregateUser;
-  aggregate_user_tips: AggregateUserTips;
-  app_delegates: AppDelegates;
-  app_name_metrics: AppNameMetrics;
-  associated_wallets: AssociatedWallets;
-  audio_transactions_history: AudioTransactionsHistory;
-  audius_data_txs: AudiusDataTxs;
-  blocks: Blocks;
-  challenge_disbursements: ChallengeDisbursements;
-  challenge_listen_streak: ChallengeListenStreak;
-  challenge_profile_completion: ChallengeProfileCompletion;
-  challenges: Challenges;
-  chat: Chat;
-  chat_blocked_users: ChatBlockedUsers;
-  chat_member: ChatMember;
-  chat_message: ChatMessage;
-  chat_message_reactions: ChatMessageReactions;
-  chat_permissions: ChatPermissions;
-  cid_data: CidData;
-  delegations: Delegations;
-  eth_blocks: EthBlocks;
-  follows: Follows;
-  hourly_play_counts: HourlyPlayCounts;
-  indexing_checkpoints: IndexingCheckpoints;
-  milestones: Milestones;
-  notification: Notification;
-  notification_seen: NotificationSeen;
-  pg_stat_statements: PgStatStatements;
-  playlist_routes: PlaylistRoutes;
-  playlists: Playlists;
-  playlist_seen: PlaylistSeen;
-  plays: Plays;
-  pubkeys: Pubkeys;
-  reactions: Reactions;
-  related_artists: RelatedArtists;
-  remixes: Remixes;
-  reposts: Reposts;
-  reward_manager_txs: RewardManagerTxs;
-  rewards_manager_backfill_txs: RewardsManagerBackfillTxs;
-  route_metrics: RouteMetrics;
-  rpc_cursor: RpcCursor;
-  rpclog: Rpclog;
-  rpc_log: RpcLog;
-  saves: Saves;
-  schema_migrations: SchemaMigrations;
-  SequelizeMeta: SequelizeMeta;
-  skipped_transactions: SkippedTransactions;
-  spl_token_backfill_txs: SplTokenBackfillTxs;
-  spl_token_tx: SplTokenTx;
-  stems: Stems;
-  subscriptions: Subscriptions;
-  supporter_rank_ups: SupporterRankUps;
-  track_routes: TrackRoutes;
-  tracks: Tracks;
-  track_trending_scores: TrackTrendingScores;
-  trending_results: TrendingResults;
-  ursm_content_nodes: UrsmContentNodes;
-  user_balance_changes: UserBalanceChanges;
-  user_balances: UserBalances;
-  user_bank_accounts: UserBankAccounts;
-  user_bank_backfill_txs: UserBankBackfillTxs;
-  user_bank_txs: UserBankTxs;
-  user_challenges: UserChallenges;
-  user_events: UserEvents;
-  user_listening_history: UserListeningHistory;
-  user_pubkeys: UserPubkeys;
-  users: Users;
-  user_tips: UserTips;
+  "SequelizeMeta": SequelizeMeta,
+  "aggregate_daily_app_name_metrics": AggregateDailyAppNameMetrics,
+  "aggregate_daily_total_users_metrics": AggregateDailyTotalUsersMetrics,
+  "aggregate_daily_unique_users_metrics": AggregateDailyUniqueUsersMetrics,
+  "aggregate_monthly_app_name_metrics": AggregateMonthlyAppNameMetrics,
+  "aggregate_monthly_plays": AggregateMonthlyPlays,
+  "aggregate_monthly_total_users_metrics": AggregateMonthlyTotalUsersMetrics,
+  "aggregate_monthly_unique_users_metrics": AggregateMonthlyUniqueUsersMetrics,
+  "aggregate_playlist": AggregatePlaylist,
+  "aggregate_plays": AggregatePlays,
+  "aggregate_track": AggregateTrack,
+  "aggregate_user": AggregateUser,
+  "aggregate_user_tips": AggregateUserTips,
+  "alembic_version": AlembicVersion,
+  "app_name_metrics": AppNameMetrics,
+  "associated_wallets": AssociatedWallets,
+  "audio_transactions_history": AudioTransactionsHistory,
+  "audius_data_txs": AudiusDataTxs,
+  "blocks": Blocks,
+  "challenge_disbursements": ChallengeDisbursements,
+  "challenge_listen_streak": ChallengeListenStreak,
+  "challenge_profile_completion": ChallengeProfileCompletion,
+  "challenges": Challenges,
+  "chat": Chat,
+  "chat_ban": ChatBan,
+  "chat_blocked_users": ChatBlockedUsers,
+  "chat_member": ChatMember,
+  "chat_message": ChatMessage,
+  "chat_message_reactions": ChatMessageReactions,
+  "chat_permissions": ChatPermissions,
+  "cid_data": CidData,
+  "dashboard_wallet_users": DashboardWalletUsers,
+  "delist_status_cursor": DelistStatusCursor,
+  "developer_apps": DeveloperApps,
+  "eth_blocks": EthBlocks,
+  "follows": Follows,
+  "grants": Grants,
+  "hourly_play_counts": HourlyPlayCounts,
+  "indexing_checkpoints": IndexingCheckpoints,
+  "milestones": Milestones,
+  "notification": Notification,
+  "notification_seen": NotificationSeen,
+  "payment_router_txs": PaymentRouterTxs,
+  "pg_stat_statements": PgStatStatements,
+  "pg_stat_statements_info": PgStatStatementsInfo,
+  "playlist_routes": PlaylistRoutes,
+  "playlist_seen": PlaylistSeen,
+  "playlists": Playlists,
+  "plays": Plays,
+  "pubkeys": Pubkeys,
+  "reactions": Reactions,
+  "related_artists": RelatedArtists,
+  "remixes": Remixes,
+  "reposts": Reposts,
+  "revert_blocks": RevertBlocks,
+  "reward_manager_txs": RewardManagerTxs,
+  "rewards_manager_backfill_txs": RewardsManagerBackfillTxs,
+  "route_metrics": RouteMetrics,
+  "rpc_cursor": RpcCursor,
+  "rpc_error": RpcError,
+  "rpc_log": RpcLog,
+  "rpclog": Rpclog,
+  "saves": Saves,
+  "schema_migrations": SchemaMigrations,
+  "schema_version": SchemaVersion,
+  "skipped_transactions": SkippedTransactions,
+  "spl_token_backfill_txs": SplTokenBackfillTxs,
+  "spl_token_tx": SplTokenTx,
+  "stems": Stems,
+  "subscriptions": Subscriptions,
+  "supporter_rank_ups": SupporterRankUps,
+  "track_delist_statuses": TrackDelistStatuses,
+  "track_price_history": TrackPriceHistory,
+  "track_routes": TrackRoutes,
+  "track_trending_scores": TrackTrendingScores,
+  "tracks": Tracks,
+  "trending_results": TrendingResults,
+  "usdc_purchases": UsdcPurchases,
+  "usdc_transactions_history": UsdcTransactionsHistory,
+  "usdc_user_bank_accounts": UsdcUserBankAccounts,
+  "user_balance_changes": UserBalanceChanges,
+  "user_balances": UserBalances,
+  "user_bank_accounts": UserBankAccounts,
+  "user_bank_backfill_txs": UserBankBackfillTxs,
+  "user_bank_txs": UserBankTxs,
+  "user_challenges": UserChallenges,
+  "user_delist_statuses": UserDelistStatuses,
+  "user_events": UserEvents,
+  "user_listening_history": UserListeningHistory,
+  "user_pubkeys": UserPubkeys,
+  "user_tips": UserTips,
+  "users": Users,
+};
+
+export type SequelizeMeta = {
+  name: string;
 };
 
 export type AggregateDailyAppNameMetrics = {
@@ -207,6 +271,7 @@ export type AggregateDailyTotalUsersMetrics = {
   timestamp: Date;
   created_at: Date;
   updated_at: Date;
+  personal_count: number | null;
 };
 
 export type AggregateDailyUniqueUsersMetrics = {
@@ -216,6 +281,7 @@ export type AggregateDailyUniqueUsersMetrics = {
   created_at: Date;
   updated_at: Date;
   summed_count: number | null;
+  personal_count: number | null;
 };
 
 export type AggregateMonthlyAppNameMetrics = {
@@ -239,6 +305,7 @@ export type AggregateMonthlyTotalUsersMetrics = {
   timestamp: Date;
   created_at: Date;
   updated_at: Date;
+  personal_count: number | null;
 };
 
 export type AggregateMonthlyUniqueUsersMetrics = {
@@ -248,6 +315,7 @@ export type AggregateMonthlyUniqueUsersMetrics = {
   created_at: Date;
   updated_at: Date;
   summed_count: number | null;
+  personal_count: number | null;
 };
 
 export type AggregatePlaylist = {
@@ -279,6 +347,8 @@ export type AggregateUser = {
   track_save_count: string | null;
   supporter_count: number;
   supporting_count: number;
+  dominant_genre: string | null;
+  dominant_genre_count: number;
 };
 
 export type AggregateUserTips = {
@@ -287,18 +357,8 @@ export type AggregateUserTips = {
   amount: string;
 };
 
-export type AppDelegates = {
-  address: string;
-  blockhash: string | null;
-  blocknumber: number | null;
-  user_id: number | null;
-  name: string;
-  is_personal_access: boolean;
-  is_delete: boolean;
-  created_at: Date;
-  txhash: string;
-  is_current: boolean;
-  updated_at: Date;
+export type AlembicVersion = {
+  version_num: string;
 };
 
 export type AppNameMetrics = {
@@ -355,6 +415,7 @@ export type ChallengeDisbursements = {
   signature: string;
   slot: number;
   amount: string;
+  created_at: Date | null;
 };
 
 export type ChallengeListenStreak = {
@@ -381,6 +442,8 @@ export type Challenges = {
   active: boolean;
   step_count: number | null;
   starting_block: number | null;
+  weekly_pool: number | null;
+  cooldown_days: number | null;
 };
 
 export type Chat = {
@@ -388,6 +451,12 @@ export type Chat = {
   created_at: Date;
   last_message_at: Date;
   last_message: string | null;
+};
+
+export type ChatBan = {
+  user_id: number;
+  is_banned: boolean;
+  updated_at: Date;
 };
 
 export type ChatBlockedUsers = {
@@ -404,6 +473,7 @@ export type ChatMember = {
   invite_code: string;
   last_active_at: Date | null;
   unread_count: number;
+  created_at: Date;
 };
 
 export type ChatMessage = {
@@ -425,6 +495,7 @@ export type ChatMessageReactions = {
 export type ChatPermissions = {
   user_id: number;
   permits: string | null;
+  updated_at: Date;
 };
 
 export type CidData = {
@@ -433,18 +504,36 @@ export type CidData = {
   data: unknown | null;
 };
 
-export type Delegations = {
-  shared_address: string;
-  blockhash: string | null;
-  blocknumber: number | null;
-  delegate_address: string;
+export type DashboardWalletUsers = {
+  wallet: string;
   user_id: number;
-  is_revoked: boolean;
-  is_current: boolean;
-  is_approved: boolean;
+  is_delete: boolean;
   updated_at: Date;
   created_at: Date;
+  blockhash: string | null;
+  blocknumber: number | null;
   txhash: string;
+};
+
+export type DelistStatusCursor = {
+  host: string;
+  entity: DelistEntity;
+  created_at: Date;
+};
+
+export type DeveloperApps = {
+  address: string;
+  blockhash: string | null;
+  blocknumber: number | null;
+  user_id: number | null;
+  name: string;
+  is_personal_access: boolean;
+  is_delete: boolean;
+  created_at: Date;
+  txhash: string;
+  is_current: boolean;
+  updated_at: Date;
+  description: string | null;
 };
 
 export type EthBlocks = {
@@ -463,6 +552,19 @@ export type Follows = {
   created_at: Date;
   txhash: string;
   slot: number | null;
+};
+
+export type Grants = {
+  blockhash: string | null;
+  blocknumber: number | null;
+  grantee_address: string;
+  user_id: number;
+  is_revoked: boolean;
+  is_current: boolean;
+  is_approved: boolean;
+  updated_at: Date;
+  created_at: Date;
+  txhash: string;
 };
 
 export type HourlyPlayCounts = {
@@ -506,17 +608,30 @@ export type NotificationSeen = {
   txhash: string | null;
 };
 
+export type PaymentRouterTxs = {
+  signature: string;
+  slot: number;
+  created_at: Date;
+};
+
 export type PgStatStatements = {
   userid: unknown | null;
   dbid: unknown | null;
+  toplevel: boolean | null;
   queryid: string | null;
   query: string | null;
+  plans: string | null;
+  total_plan_time: number | null;
+  min_plan_time: number | null;
+  max_plan_time: number | null;
+  mean_plan_time: number | null;
+  stddev_plan_time: number | null;
   calls: string | null;
-  total_time: number | null;
-  min_time: number | null;
-  max_time: number | null;
-  mean_time: number | null;
-  stddev_time: number | null;
+  total_exec_time: number | null;
+  min_exec_time: number | null;
+  max_exec_time: number | null;
+  mean_exec_time: number | null;
+  stddev_exec_time: number | null;
   rows: string | null;
   shared_blks_hit: string | null;
   shared_blks_read: string | null;
@@ -530,6 +645,24 @@ export type PgStatStatements = {
   temp_blks_written: string | null;
   blk_read_time: number | null;
   blk_write_time: number | null;
+  temp_blk_read_time: number | null;
+  temp_blk_write_time: number | null;
+  wal_records: string | null;
+  wal_fpi: string | null;
+  wal_bytes: string | null;
+  jit_functions: string | null;
+  jit_generation_time: number | null;
+  jit_inlining_count: string | null;
+  jit_inlining_time: number | null;
+  jit_optimization_count: string | null;
+  jit_optimization_time: number | null;
+  jit_emission_count: string | null;
+  jit_emission_time: number | null;
+};
+
+export type PgStatStatementsInfo = {
+  dealloc: string | null;
+  stats_reset: Date | null;
 };
 
 export type PlaylistRoutes = {
@@ -542,6 +675,16 @@ export type PlaylistRoutes = {
   blockhash: string;
   blocknumber: number;
   txhash: string;
+};
+
+export type PlaylistSeen = {
+  user_id: number;
+  playlist_id: number;
+  seen_at: Date;
+  is_current: boolean;
+  blocknumber: number | null;
+  blockhash: string | null;
+  txhash: string | null;
 };
 
 export type Playlists = {
@@ -565,16 +708,8 @@ export type Playlists = {
   last_added_to: Date | null;
   slot: number | null;
   metadata_multihash: string | null;
-};
-
-export type PlaylistSeen = {
-  user_id: number;
-  playlist_id: number;
-  seen_at: Date;
-  is_current: boolean;
-  blocknumber: number | null;
-  blockhash: string | null;
-  txhash: string | null;
+  is_image_autogenerated: boolean;
+  ddex_app: string | null;
 };
 
 export type Plays = {
@@ -633,6 +768,11 @@ export type Reposts = {
   is_repost_of_repost: boolean;
 };
 
+export type RevertBlocks = {
+  blocknumber: number;
+  prev_records: unknown;
+};
+
 export type RewardManagerTxs = {
   signature: string;
   slot: number;
@@ -662,12 +802,12 @@ export type RpcCursor = {
   relayed_at: Date;
 };
 
-export type Rpclog = {
-  cuid: string;
-  wallet: string | null;
-  method: string | null;
-  params: unknown | null;
-  jetstream_seq: number | null;
+export type RpcError = {
+  sig: string;
+  rpc_log_json: unknown;
+  error_text: string;
+  error_count: number;
+  last_attempt: Date;
 };
 
 export type RpcLog = {
@@ -677,6 +817,14 @@ export type RpcLog = {
   sig: string;
   relayed_by: string;
   applied_at: Date;
+};
+
+export type Rpclog = {
+  cuid: string;
+  wallet: string | null;
+  method: string | null;
+  params: unknown | null;
+  jetstream_seq: number | null;
 };
 
 export type Saves = {
@@ -697,8 +845,10 @@ export type SchemaMigrations = {
   version: string;
 };
 
-export type SequelizeMeta = {
-  name: string;
+export type SchemaVersion = {
+  file_name: string;
+  md5: string | null;
+  applied_at: Date;
 };
 
 export type SkippedTransactions = {
@@ -748,6 +898,25 @@ export type SupporterRankUps = {
   rank: number;
 };
 
+export type TrackDelistStatuses = {
+  created_at: Date;
+  track_id: number;
+  owner_id: number;
+  track_cid: string;
+  delisted: boolean;
+  reason: DelistTrackReason;
+};
+
+export type TrackPriceHistory = {
+  track_id: number;
+  splits: unknown;
+  total_price_cents: string;
+  blocknumber: number;
+  block_timestamp: Date;
+  created_at: Date;
+  access: UsdcPurchaseAccessType;
+};
+
 export type TrackRoutes = {
   slug: string;
   title_slug: string;
@@ -758,6 +927,16 @@ export type TrackRoutes = {
   blockhash: string;
   blocknumber: number;
   txhash: string;
+};
+
+export type TrackTrendingScores = {
+  track_id: number;
+  type: string;
+  genre: string | null;
+  version: string;
+  time_range: string;
+  score: number;
+  created_at: Date;
 };
 
 export type Tracks = {
@@ -773,11 +952,9 @@ export type Tracks = {
   mood: string | null;
   credits_splits: string | null;
   create_date: string | null;
-  release_date: string | null;
   file_type: string | null;
   metadata_multihash: string | null;
   blocknumber: number | null;
-  track_segments: unknown;
   created_at: Date;
   description: string | null;
   isrc: string | null;
@@ -800,16 +977,19 @@ export type Tracks = {
   is_playlist_upload: boolean;
   duration: number | null;
   ai_attribution_user_id: number | null;
-};
-
-export type TrackTrendingScores = {
-  track_id: number;
-  type: string;
-  genre: string | null;
-  version: string;
-  time_range: string;
-  score: number;
-  created_at: Date;
+  preview_cid: string | null;
+  audio_upload_id: string | null;
+  preview_start_seconds: number | null;
+  release_date: Date | null;
+  track_segments: unknown[];
+  is_scheduled_release: boolean;
+  is_downloadable: boolean;
+  is_download_gated: boolean;
+  download_conditions: unknown | null;
+  is_original_available: boolean;
+  orig_file_cid: string | null;
+  orig_filename: string | null;
+  ddex_app: string | null;
 };
 
 export type TrendingResults = {
@@ -821,21 +1001,39 @@ export type TrendingResults = {
   week: Date;
 };
 
-export type UrsmContentNodes = {
-  blockhash: string | null;
-  blocknumber: number | null;
+export type UsdcPurchases = {
+  slot: number;
+  signature: string;
+  buyer_user_id: number;
+  seller_user_id: number;
+  amount: string;
+  content_type: UsdcPurchaseContentType;
+  content_id: number;
   created_at: Date;
-  is_current: boolean;
-  cnode_sp_id: number;
-  delegate_owner_wallet: string;
-  owner_wallet: string;
-  proposer_sp_ids: number[];
-  proposer_1_delegate_owner_wallet: string;
-  proposer_2_delegate_owner_wallet: string;
-  proposer_3_delegate_owner_wallet: string;
-  endpoint: string | null;
-  txhash: string;
-  slot: number | null;
+  updated_at: Date;
+  extra_amount: string;
+  access: UsdcPurchaseAccessType;
+};
+
+export type UsdcTransactionsHistory = {
+  user_bank: string;
+  slot: number;
+  signature: string;
+  transaction_type: string;
+  method: string;
+  created_at: Date;
+  updated_at: Date;
+  transaction_created_at: Date;
+  change: string;
+  balance: string;
+  tx_metadata: string | null;
+};
+
+export type UsdcUserBankAccounts = {
+  signature: string;
+  ethereum_address: string;
+  created_at: Date;
+  bank_account: string;
 };
 
 export type UserBalanceChanges = {
@@ -883,6 +1081,15 @@ export type UserChallenges = {
   is_complete: boolean;
   current_step_count: number | null;
   completed_blocknumber: number | null;
+  amount: number;
+  created_at: Date;
+};
+
+export type UserDelistStatuses = {
+  created_at: Date;
+  user_id: number;
+  delisted: boolean;
+  reason: DelistUserReason;
 };
 
 export type UserEvents = {
@@ -904,6 +1111,16 @@ export type UserListeningHistory = {
 export type UserPubkeys = {
   user_id: number;
   pubkey_base64: string;
+};
+
+export type UserTips = {
+  slot: number;
+  signature: string;
+  sender_user_id: number;
+  receiver_user_id: number;
+  amount: string;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type Users = {
@@ -942,12 +1159,3 @@ export type Users = {
   allow_ai_attribution: boolean;
 };
 
-export type UserTips = {
-  slot: number;
-  signature: string;
-  sender_user_id: number;
-  receiver_user_id: number;
-  amount: string;
-  created_at: Date;
-  updated_at: Date;
-};

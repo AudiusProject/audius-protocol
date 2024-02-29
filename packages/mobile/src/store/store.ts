@@ -16,6 +16,7 @@ import type {
   SignOnPageState,
   SignOnPageReducer
 } from 'common/store/pages/signon/types'
+import { Platform } from 'react-native'
 import RNRestart from 'react-native-restart'
 import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
@@ -133,9 +134,27 @@ const sagaMiddleware = createSagaMiddleware({
 
 const middlewares = [sagaMiddleware, chatMiddleware(audiusSdk), thunk]
 
+const getProdEnhancer = () => {
+  return applyMiddleware(...middlewares)
+}
+
+const getDevEnhancer = () => {
+  const { composeWithDevTools } = require('@redux-devtools/remote')
+  const composeEnhancers = composeWithDevTools({
+    name: Platform.OS,
+    hostname: Platform.select({ ios: 'localhost', android: '10.0.2.2' }),
+    port: 8000,
+    secure: false,
+    realtime: true
+  })
+  return composeEnhancers(getProdEnhancer())
+}
+
+const enhancer = __DEV__ ? getDevEnhancer() : getProdEnhancer()
+
 export const store = createStore(
   rootReducer,
-  applyMiddleware(...middlewares)
+  enhancer
 ) as unknown as Store<AppState> // need to explicitly type the store for offline-mode store reference
 
 export const persistor = persistStore(store)

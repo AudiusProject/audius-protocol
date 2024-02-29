@@ -7,8 +7,7 @@ import {
   modalsSelectors,
   modalsActions
 } from '@audius/common/store'
-import { Button } from '@audius/harmony'
-import { Modal, Anchor } from '@audius/stems'
+import { Modal, Anchor, Button } from '@audius/harmony'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'

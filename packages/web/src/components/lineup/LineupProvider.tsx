@@ -129,7 +129,7 @@ export interface LineupProviderProps {
   playingUid: UID | null
   playingTrackId: ID | null
   playing: boolean
-  playTrack: (uid: UID) => void
+  playTrack: (uid: UID, trackId?: ID) => void
   pauseTrack: () => void
   variant: LineupVariant
   loadMore?: (offset: number, limit: number, overwrite: boolean) => void
@@ -210,6 +210,9 @@ export interface LineupProviderProps {
 
   /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
   rankIconCount?: number
+
+  /** Function triggered on click of tile */
+  onClickTile?: (trackId: ID) => void
 }
 
 interface LineupProviderState {
@@ -277,7 +280,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
   togglePlay = (uid: UID, trackId: ID, source?: PlaybackSource) => {
     const { playTrack, pauseTrack, playing, playingUid, record } = this.props
     if (uid !== playingUid || (uid === playingUid && !playing)) {
-      playTrack(uid)
+      playTrack(uid, trackId)
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${trackId}`,
@@ -487,7 +490,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       numPlaylistSkeletonRows,
       isTrending = false,
       showFeedTipTile = false,
-      rankIconCount = 0
+      rankIconCount = 0,
+      onClickTile
     } = this.props
     const isMobile = this.context.isMobile
     const status = lineup.status
@@ -537,7 +541,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             hasLoaded: this.hasLoaded,
             isTrending,
             showRankIcon: index < rankIconCount,
-            showFeedTipTile
+            showFeedTipTile,
+            onClick: onClickTile
           }
           if (entry.id === leadingElementId) {
             trackProps = { ...trackProps, ...leadingElementTileProps }

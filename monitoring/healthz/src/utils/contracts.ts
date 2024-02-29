@@ -40,7 +40,7 @@ const ProdProvider = new WebSocketProvider(
   'wss://eth-mainnet.alchemyapi.io/v2/hELYSivAlDc8LV29Mw_LumSdCZ4HQEge'
 )
 const StageProvider = new WebSocketProvider(
-  'wss://eth-goerli.g.alchemy.com/v2/P_3blSvCiVoh6e563dEWbpyAsRdIYLd3'
+  'wss://eth-sepolia.g.alchemy.com/v2/J1Pj86H-g87FqUZVMUbLGgnyoaQTHP1P'
 )
 
 // `${env}-${type}` => SPs
@@ -61,7 +61,7 @@ export const getRegisteredNodes = async (
   const provider = isStaging(env) ? StageProvider : ProdProvider
 
   const initialRegistryAddress = isStaging(env)
-    ? '0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3'
+    ? '0xc682C2166E11690B64338e11633Cb8Bb60B0D9c0'
     : '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
 
   const registry = new Contract(initialRegistryAddress, RegistryAbi, provider)

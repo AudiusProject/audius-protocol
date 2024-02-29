@@ -9,14 +9,14 @@ import {
   IconDashboard,
   IconMessage,
   IconSettings,
-  IconDonate
+  IconDonate,
+  PopupMenu,
+  PopupMenuItem
 } from '@audius/harmony'
-import { PopupMenu, PopupMenuItem, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { Icon } from 'components/Icon'
 import { AudioBalancePill } from 'components/audio-balance-pill/AUDIOBalancePill'
 import { NotificationDot } from 'components/notification-dot'
 import { USDCBalancePill } from 'components/usdc-balance-pill/USDCBalancePill'
@@ -87,7 +87,7 @@ const NavPopupMenu = () => {
           </div>
         ),
         onClick: () => navigate(PAYMENTS_PAGE),
-        icon: <Icon icon={IconDonate} />,
+        icon: <IconDonate size='s' />,
         iconClassName: styles.payAndEarnIcon
       }
     : null
@@ -144,7 +144,8 @@ const NavPopupMenu = () => {
     <div className={styles.headerIconWrapper}>
       <PopupMenu
         items={menuItems}
-        position={PopupPosition.BOTTOM_RIGHT}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         className={styles.popupMenu}
         renderTrigger={(anchorRef, triggerPopup) => {
           return (
@@ -154,7 +155,7 @@ const NavPopupMenu = () => {
                 ref={anchorRef}
                 onClick={() => triggerPopup()}
               >
-                <Icon icon={IconKebabHorizontal} />
+                <IconKebabHorizontal size='s' />
               </div>
               {showNotificationBubble ? (
                 <NotificationDot

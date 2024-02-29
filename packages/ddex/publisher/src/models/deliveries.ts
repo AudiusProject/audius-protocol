@@ -2,12 +2,13 @@ import mongoose from 'mongoose'
 
 // DDEX deliveries indexed from DDEX uploads
 const deliveriesSchema = new mongoose.Schema({
-  id: mongoose.Schema.Types.ObjectId,
+  _id: mongoose.Schema.Types.ObjectId,
   upload_etag: String,
   delivery_status: String,
   xml_file_path: String,
   xml_content: Buffer,
   created_at: Date,
+  errors: [String],
 })
 
 const Deliveries = mongoose.model('Deliveries', deliveriesSchema, 'deliveries')

@@ -1,6 +1,7 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -201,7 +202,7 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const isLosslessDownloadsEnabled = useFlag(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
@@ -419,9 +420,9 @@ const TrackHeader = ({
         <h1 className={styles.title}>{title}</h1>
         <UserLink
           userId={userId}
-          color='secondary'
+          color='accent'
           variant='body'
-          size='large'
+          size='l'
           textAs='h2'
           badgeSize={16}
         />

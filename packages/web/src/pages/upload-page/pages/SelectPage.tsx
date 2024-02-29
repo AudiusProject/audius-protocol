@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import { UploadType } from '@audius/common/store'
@@ -10,7 +11,6 @@ import cn from 'classnames'
 import { AudioQuality } from 'components/upload/AudioQuality'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { TracksPreview } from '../components/TracksPreview'
 import { processFiles } from '../store/utils/processFiles'
@@ -26,7 +26,7 @@ type SelectPageProps = {
 }
 
 export const SelectPageNew = (props: SelectPageProps) => {
-  const isLosslessDownloadsEnabled = getFeatureEnabled(
+  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
     FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
   )
 

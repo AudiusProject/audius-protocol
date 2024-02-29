@@ -3,6 +3,10 @@ import { useCallback, useEffect } from 'react'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalFooter,
   Text,
   Button,
   Divider,
@@ -11,12 +15,6 @@ import {
   useTheme,
   IconTriangleExclamation
 } from '@audius/harmony'
-import {
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle
-} from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'

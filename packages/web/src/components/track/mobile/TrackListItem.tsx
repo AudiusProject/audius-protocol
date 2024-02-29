@@ -2,14 +2,14 @@ import { memo, MouseEvent } from 'react'
 
 import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
 import {
-  IconRemove as IconRemoveTrack,
-  IconPlaybackPause as IconPause,
-  IconPlaybackPlay as IconPlay,
+  IconRemove,
+  IconPlaybackPause,
+  IconPlaybackPlay,
   IconDrag,
   IconKebabHorizontal,
-  IconLock
+  IconLock,
+  IconButton
 } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -47,9 +47,9 @@ const ArtworkIcon = ({ isLoading, isPlaying }: ArtworkIconProps) => {
       </div>
     )
   } else if (isPlaying) {
-    artworkIcon = <IconPause />
+    artworkIcon = <IconPlaybackPause />
   } else {
-    artworkIcon = <IconPlay />
+    artworkIcon = <IconPlaybackPlay />
   }
   return <div className={styles.artworkIcon}>{artworkIcon}</div>
 }
@@ -224,8 +224,8 @@ const TrackListItem = ({
         <div className={styles.iconContainer}>
           <IconButton
             aria-label='more actions'
-            icon={<IconKebabHorizontal />}
-            className={styles.kebabContainer}
+            icon={IconKebabHorizontal}
+            color='subdued'
             onClick={(e: MouseEvent) => {
               e.stopPropagation()
               onClickOverflow()
@@ -237,10 +237,7 @@ const TrackListItem = ({
         <div className={styles.iconContainer}>
           <IconButton
             aria-label='remove track'
-            icon={<IconRemoveTrack />}
-            className={cn(styles.removeTrackContainer, {
-              [styles.isRemoveActive]: isRemoveActive
-            })}
+            icon={IconRemove}
             onClick={onRemoveTrack}
           />
         </div>

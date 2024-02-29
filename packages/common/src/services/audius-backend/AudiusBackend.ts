@@ -552,7 +552,9 @@ export const audiusBackend = ({
     }
 
     if (!collection.cover_art_sizes && !collection.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as string
+      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as
+        | string
+        | number // ReactNative require() is a number for images!
     }
 
     return {
@@ -1018,21 +1020,26 @@ export const audiusBackend = ({
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: (loaded: number, total: number) => void
+    onProgress: (loaded: number, total: number) => void,
+    trackId?: number
   ) {
     try {
-      const { trackId, updatedMetadata, txReceipt } =
-        await audiusLibs.Track.uploadTrackV2AndWriteToChain(
-          trackFile,
-          coverArtFile,
-          metadata,
-          onProgress
-        )
+      const {
+        trackId: updatedTrackId,
+        updatedMetadata,
+        txReceipt
+      } = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress,
+        trackId
+      )
       // Return with properties that confirmer expects
       return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber,
-        trackId,
+        trackId: updatedTrackId,
         transcodedTrackCID: updatedMetadata.track_cid,
         error: false
       }
@@ -1787,9 +1794,17 @@ export const audiusBackend = ({
     }
   }
 
-  function getDiscoveryEntityType(type: string) {
+  function getDiscoveryEntityType({
+    type,
+    is_album
+  }: {
+    type: string
+    is_album?: boolean
+  }) {
     if (type === 'track') {
       return Entity.Track
+    } else if (is_album === true) {
+      return Entity.Album
     }
     return Entity.Playlist
   }
@@ -1836,7 +1851,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.repost_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)
@@ -1854,7 +1869,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.save_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)
@@ -2101,7 +2116,7 @@ export const audiusBackend = ({
         }
         return {
           type: NotificationType.Milestone,
-          entityType: Entity.Playlist,
+          entityType: data.is_album ? Entity.Album : Entity.Playlist,
           entityId: decodeHashId(data.playlist_id) as number,
           value: data.threshold,
           achievement,
@@ -2149,7 +2164,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.repost_of_repost_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)
@@ -2167,7 +2182,7 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.save_of_repost_item_id) as number
-          entityType = getDiscoveryEntityType(data.type)
+          entityType = getDiscoveryEntityType(data)
           return decodeHashId(data.user_id)
         })
         .filter(removeNullable)

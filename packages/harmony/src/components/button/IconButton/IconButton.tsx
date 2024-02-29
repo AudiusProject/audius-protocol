@@ -11,8 +11,9 @@ export type IconButtonProps = {
   icon: IconComponent
   ripple?: boolean
   'aria-label': string
+  iconCss?: CSSObject
 } & Pick<IconProps, 'color' | 'size' | 'shadow' | 'height' | 'width'> &
-  Pick<BaseButtonProps, 'onClick' | 'disabled' | 'className'>
+  Pick<BaseButtonProps, 'onClick' | 'disabled' | 'className' | 'type'>
 
 /**
  * The icon component allows you to pass in an icon and
@@ -28,6 +29,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       ripple,
       height,
       width,
+      iconCss,
       ...other
     } = props
     const { disabled } = other
@@ -57,8 +59,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     return (
       <BaseButton
         ref={ref}
-        {...other}
         type='button'
+        {...other}
         css={[buttonCss, ripple && rippleCss]}
       >
         <Icon
@@ -68,6 +70,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           shadow={shadow}
           height={height}
           width={width}
+          css={iconCss}
         />
       </BaseButton>
     )

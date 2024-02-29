@@ -45,10 +45,6 @@
   padding: var(--unit-4);
 }
 
-.icon path {
-  fill: var(--neutral);
-}
-
 @media (max-width: 1080px) {
   .header {
     display: none;
