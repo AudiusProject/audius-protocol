@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bytes"
 	"fmt"
 	"ingester/common"
 	"regexp"
@@ -104,27 +103,16 @@ type ResourceGroupContentItem struct {
 	Image          *Image
 }
 
-// parseSonyXML parses the given XML data and returns structured data including releases, sound recordings, and images.
+// parseERN381 parses the given XML data and returns structured data including releases, sound recordings, and images.
 // NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
-func parseSonyXML(xmlData []byte, indexedBucket, deliveryIDHex string) (tracks []common.CreateTrackRelease, albums []common.CreateAlbumRelease, errs []error) {
-	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
-	if err != nil {
-		errs = append(errs, err)
-		return
-	}
-
+func parseERN381(doc *xmlquery.Node, indexedBucket, deliveryIDHex string) (tracks []common.CreateTrackRelease, albums []common.CreateAlbumRelease, errs []error) {
 	var (
 		soundRecordings []SoundRecording
 		images          []Image
 	)
 
 	// TODO: Implement updates and deletions
-	updateIndicatorNode := xmlquery.FindOne(doc, "//UpdateIndicator")
-	if updateIndicatorNode == nil {
-		errs = append(errs, fmt.Errorf("UpdateIndicator node not found"))
-		return
-	}
-	updateIndicator := updateIndicatorNode.InnerText()
+	updateIndicator := safeInnerText(xmlquery.FindOne(doc, "//UpdateIndicator"))
 	if updateIndicator != "OriginalMessage" {
 		errs = append(errs, fmt.Errorf("unsupported <UpdateIndicator> '%s'", updateIndicator))
 		return
@@ -132,6 +120,10 @@ func parseSonyXML(xmlData []byte, indexedBucket, deliveryIDHex string) (tracks [
 
 	// Parse <SoundRecording>s from <ResourceList>
 	soundRecordingNodes := xmlquery.Find(doc, "//ResourceList/SoundRecording")
+	if len(soundRecordingNodes) == 0 {
+		errs = append(errs, fmt.Errorf("no <SoundRecording> found"))
+		return
+	}
 	for _, sNode := range soundRecordingNodes {
 		if soundRecording, err := processSoundRecordingNode(sNode); err == nil {
 			soundRecordings = append(soundRecordings, *soundRecording)
@@ -142,6 +134,10 @@ func parseSonyXML(xmlData []byte, indexedBucket, deliveryIDHex string) (tracks [
 
 	// Parse <Image>s from <ResourceList>
 	imageNodes := xmlquery.Find(doc, "//ResourceList/Image")
+	if len(imageNodes) == 0 {
+		errs = append(errs, fmt.Errorf("no <Image> found"))
+		return
+	}
 	for _, iNode := range imageNodes {
 		if image, err := processImageNode(iNode); err == nil {
 			images = append(images, *image)
@@ -152,6 +148,10 @@ func parseSonyXML(xmlData []byte, indexedBucket, deliveryIDHex string) (tracks [
 
 	// Parse <Release>s from <ReleaseList>
 	releaseNodes := xmlquery.Find(doc, "//ReleaseList/Release")
+	if len(releaseNodes) == 0 {
+		errs = append(errs, fmt.Errorf("no <Release> found"))
+		return
+	}
 	for _, rNode := range releaseNodes {
 		track, album, err := processReleaseNode(rNode, &soundRecordings, &images, indexedBucket, deliveryIDHex)
 		if err != nil {

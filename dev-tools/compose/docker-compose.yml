@@ -194,24 +194,32 @@ services:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-crawler
+    environment:
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
   ddex-indexer:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-indexer
+    environment:
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
   ddex-parser:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-parser
+    environment:
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
   ddex-publisher:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-publisher
+    environment:
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
   ddex-mongo:

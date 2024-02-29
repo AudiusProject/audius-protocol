@@ -29,7 +29,14 @@ func TestRunE2E(t *testing.T) {
 		t.Fatalf("Failed to set up test environment: %v", err)
 	}
 
-	e.runERN381ReleaseByRelease(t)
+	choreography := common.MustGetChoreography()
+	if choreography == common.ERNReleaseByRelease {
+		e.runERN381ReleaseByRelease(t)
+	} else if choreography == common.ERNBatched {
+		t.Skip("Batched choreography not yet implemented")
+	} else {
+		t.Fatalf("Unexpected choreography: %s", choreography)
+	}
 }
 
 type e2eTest struct {

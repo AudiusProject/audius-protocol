@@ -58,6 +58,10 @@
             ]
           },
           "default": null
+        },
+        "ddex_app": {
+          "type": ["string", "null"],
+          "default": null
         }
       },
       "required": [
