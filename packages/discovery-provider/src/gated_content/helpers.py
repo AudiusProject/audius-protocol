@@ -74,25 +74,25 @@ def has_user_purchased_track(
         .filter(
             USDCPurchase.buyer_user_id == user_id,
             USDCPurchase.content_id == content_id,
-            USDCPurchase.content_type == "track"
+            USDCPurchase.content_type == "track",
         )
         .first()
     )
     if result:
         return True
 
-    track = (
-        session.query(Track)
-        .filter(Track.track_id == content_id)
-        .first()
-    )
+    track = session.query(Track).filter(Track.track_id == content_id).first()
+
+    # Don't check album purchase if track is download-gated only
+    if track.is_download_gated and not track.is_stream_gated:
+        return False
 
     album_purchase = (
         session.query(USDCPurchase)
         .filter(
             USDCPurchase.buyer_user_id == user_id,
             USDCPurchase.content_id.in_(track.playlists_containing_track),
-            USDCPurchase.content_type == "album"
+            USDCPurchase.content_type == "album",
         )
         .first()
     )
