@@ -18,7 +18,7 @@ import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesModal.module.css'
 
-const MAX_ROWS = 10
+const MAX_ROWS = 20
 
 const messages = {
   title: 'STEMS & DOWNLOADS',
@@ -30,7 +30,7 @@ const messages = {
     'Allow your fans to download a copy of your full track.',
   requireFollowToDownload: 'Require Follow to Download',
   done: 'DONE',
-  maxCapacity: 'Reached upload limit of 10 files.',
+  maxCapacity: 'Reached upload limit of 20 files.',
   stemTypeHeader: 'Select Stem Type',
   stemTypeDescription: 'Please select a stem type for each of your files.'
 }

@@ -23,12 +23,12 @@ import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesView.module.css'
 
-const MAX_ROWS = 10
+const MAX_ROWS = 20
 
 const messages = {
   additionalFiles: 'UPLOAD ADDITIONAL FILES',
   audioQuality: 'Provide FLAC, WAV, ALAC, or AIFF for highest audio quality',
-  maxCapacity: 'Reached upload limit of 10 files.',
+  maxCapacity: 'Reached upload limit of 20 files.',
   stemTypeHeader: 'Select Stem Type',
   stemTypeDescription: 'Please select a stem type for each of your files.'
 }
