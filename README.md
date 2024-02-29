@@ -1,8 +1,8 @@
 <p align="center">
   <br/>
   <a target="_blank" href="https://audius.co">
-    <img src="./packages/web/src/assets/audiusLogoColor.png#gh-light-mode-only" alt="audius-client" width="200">
-    <img src="./packages/web/src/assets/audiusLogoWhite.png#gh-dark-mode-only" alt="audius-client" width="200">
+    <img src="./packages/web/src/assets/img/audiusLogoColor.png#gh-light-mode-only" alt="audius-client" width="200">
+    <img src="./packages/web/src/assets/img/audiusLogoWhite.png#gh-dark-mode-only" alt="audius-client" width="200">
   </a>
 
   <br/>
