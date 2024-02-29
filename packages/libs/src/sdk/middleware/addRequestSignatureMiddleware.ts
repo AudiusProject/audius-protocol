@@ -42,7 +42,7 @@ export const addRequestSignatureMiddleware = ({
           )
           const r = Buffer.from(sig.slice(0, 32)).toString('hex')
           const s = Buffer.from(sig.slice(32, 64)).toString('hex')
-          // Add Ethereum- ecovery ID offset
+          // Add Ethereum Recovery ID offset
           const v = (recid + 27).toString(16)
 
           signature = `0x${r}${s}${v}`

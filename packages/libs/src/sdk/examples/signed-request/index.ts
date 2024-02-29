@@ -2,7 +2,7 @@ import { sdk } from '@audius/sdk'
 import prompt from 'prompt-sync'
 
 /**
- * Creates and sdk instance and logs in with user auth
+ * Creates nd sdk instance and logs in with user auth
  * Fetches the listening history for that user
  * Please set:
  *  <email@email.com>
