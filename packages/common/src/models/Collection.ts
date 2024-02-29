@@ -1,5 +1,5 @@
 import { CID, ID, UID } from '../models/Identifiers'
-import { CoverArtSizes } from '../models/ImageSizes'
+import { CoverArtSizes, CoverArtSizesCids } from '../models/ImageSizes'
 import { Repost } from '../models/Repost'
 import { Nullable } from '../utils/typeUtils'
 
@@ -43,7 +43,7 @@ export type CollectionMetadata = {
   playlist_id: ID
   cover_art: CID | null
   cover_art_sizes: Nullable<CID>
-  cover_art_cids?: Nullable<CoverArtSizes>
+  cover_art_cids?: Nullable<CoverArtSizesCids>
   permalink?: string
   playlist_name: string
   playlist_owner_id: ID
@@ -106,5 +106,5 @@ export type SmartCollection = {
 export type CollectionImage = {
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
-  cover_art_cids?: Nullable<CoverArtSizes>
+  cover_art_cids?: Nullable<CoverArtSizesCids>
 }

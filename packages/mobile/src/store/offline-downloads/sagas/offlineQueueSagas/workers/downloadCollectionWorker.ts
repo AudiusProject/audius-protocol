@@ -160,7 +160,9 @@ function* downloadCollectionCoverArt(collection: CollectionMetadata) {
     cidMap: cover_art_cids
   })
 
-  const coverArtUris = imageSources.map(({ uri }) => uri).filter(removeNullable)
+  const coverArtUris = imageSources
+    .map((src) => (typeof src === 'object' && 'uri' in src ? src.uri : null))
+    .filter(removeNullable)
   const covertArtFilePath = getCollectionCoverArtPath(playlist_id)
 
   for (const coverArtUri of coverArtUris) {
