@@ -81,6 +81,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const handleSocialMediaLoginSuccess = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
       const { handle, requiresReview } = result
+      dispatch(startSignUp())
       handleCompleteSocialMediaLogin()
       dispatch(setLinkedSocialOnFirstPage(true))
       dispatch(setValueField('handle', handle))
