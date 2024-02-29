@@ -118,20 +118,21 @@ tracks = [
 ]
 track_entities = []
 for track in tracks:
-    track_dict = model_to_dictionary(track)
     track_entities.append(
         Track(
             blockhash=hex(0),
             blocknumber=0,
             txhash=str(0),
-            track_id=track_dict.get("track_id"),
-            owner_id=track_dict.get("owner_id", 1),
-            is_stream_gated=track_dict.get("is_stream_gated", False),
-            stream_conditions=track_dict.get("stream_conditions", None),
-            is_download_gated=track_dict.get("is_download_gated", False),
-            download_conditions=track_dict.get("download_conditions", None),
-            stem_of=track_dict.get("stem_of", None),
-            playlists_containing_track=track_dict.get("playlists_containing_track", []),
+            # track_id=getattr(track, "track_id", None),
+            track_id=track.get("track_id"),
+            # owner_id=getattr(track, "owner_id", 1),
+            owner_id=track.get("owner_id", 1),
+            is_stream_gated=getattr(track, "is_stream_gated", False),
+            stream_conditions=getattr(track, "stream_conditions", None),
+            is_download_gated=getattr(track, "is_download_gated", False),
+            download_conditions=getattr(track, "download_conditions", None),
+            stem_of=getattr(track, "stem_of", None),
+            playlists_containing_track=getattr(track, "playlists_containing_track", []),
             is_current=True,
             is_delete=False,
         )
@@ -155,16 +156,15 @@ playlists = [
 ]
 playlist_entities = []
 for playlist in playlists:
-    playlist_dict = model_to_dictionary(playlist)
     playlist_entities.append(
         Playlist(
             blockhash=hex(0),
             blocknumber=0,
             txhash=str(0),
-            playlist_id=playlist_dict.get("playlist_id"),
-            playlist_owner_id=playlist_dict.get("playlist_owner_id", 1),
-            is_stream_gated=playlist_dict.get("is_stream_gated", False),
-            stream_conditions=playlist_dict.get("stream_conditions", None),
+            playlist_id=playlist.get("playlist_id"),
+            playlist_owner_id=playlist.get("playlist_owner_id", 1),
+            is_stream_gated=playlist.get("is_stream_gated", False),
+            stream_conditions=playlist.get("stream_conditions", None),
             is_current=True,
             is_delete=False,
         )
