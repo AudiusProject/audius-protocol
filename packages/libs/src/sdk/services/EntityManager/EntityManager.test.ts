@@ -54,22 +54,6 @@ class MockAuth implements AuthService {
   getAddress = async () => {
     return userWallet
   }
-
-  signIn = () => {
-    throw new Error()
-  }
-
-  signUp = () => {
-    throw new Error()
-  }
-
-  signOut = () => {
-    throw new Error()
-  }
-
-  isSignedIn = () => {
-    throw new Error()
-  }
 }
 
 const auth = new MockAuth()
