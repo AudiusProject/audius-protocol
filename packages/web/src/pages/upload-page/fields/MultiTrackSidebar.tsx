@@ -6,7 +6,6 @@ import {
   IconTrash,
   IconError,
   IconCloudUpload,
-  Text,
   useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -15,6 +14,7 @@ import { isEmpty } from 'lodash'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
+import { Text } from 'components/typography'
 
 import { UploadFormScrollContext } from '../UploadPage'
 import { useIndexedField } from '../hooks'
@@ -39,7 +39,7 @@ export const MultiTrackSidebar = () => {
     <div className={styles.root}>
       <div className={cn(layoutStyles.col)}>
         <div className={styles.title}>
-          <Text variant='label' size='s'>
+          <Text variant='label' size='small'>
             {messages.title}
           </Text>
         </div>
@@ -63,7 +63,7 @@ export const MultiTrackSidebar = () => {
                 color='danger'
                 css={{ margin: spacing.unit1 }}
               />
-              <Text variant='body' size='xs' color='danger'>
+              <Text size='xSmall' color='accentRed'>
                 {messages.fixErrors}
               </Text>
             </div>
@@ -171,9 +171,8 @@ const TrackRow = (props: TrackRowProps) => {
               />
             ) : (
               <Text
-                variant='body'
                 className={styles.trackIndex}
-                color={isSelected ? 'accent' : 'default'}
+                color={isSelected ? 'secondary' : 'neutral'}
               >
                 {index + 1}
               </Text>
@@ -186,9 +185,15 @@ const TrackRow = (props: TrackRowProps) => {
           </div>
           <div className={styles.trackTitleContainer}>
             <Text
-              variant='body'
-              size='s'
-              color={hasError ? 'danger' : isSelected ? 'accent' : 'default'}
+              size='small'
+              // @ts-ignore TODO: support for accent-red in other themes
+              color={
+                hasError
+                  ? '--accent-red'
+                  : isSelected
+                  ? '--secondary'
+                  : '--neutral'
+              }
             >
               {isTitleMissing ? messages.titleRequired : title}
             </Text>

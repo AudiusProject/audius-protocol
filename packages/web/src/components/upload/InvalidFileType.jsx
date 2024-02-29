@@ -1,8 +1,9 @@
-import { Text } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
+
+import { Text } from 'components/typography'
 
 import styles from './InvalidFileType.module.css'
 
@@ -29,9 +30,8 @@ const InvalidFileType = (props) => {
           })}
         >
           <Text
-            variant='body'
             className={styles.message}
-            size='l'
+            size='large'
             strength='strong'
             color='staticWhite'
           >

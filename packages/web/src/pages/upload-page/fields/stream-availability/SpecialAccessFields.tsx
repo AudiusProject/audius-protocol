@@ -5,13 +5,14 @@ import { AccessConditions } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconInfo, Radio, RadioGroup, Text } from '@audius/harmony'
+import { IconInfo, Radio, RadioGroup } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import Tooltip from 'components/tooltip/Tooltip'
+import { Text } from 'components/typography'
 
 import {
   AccessAndSaleFormValues,

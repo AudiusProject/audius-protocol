@@ -10,16 +10,11 @@ import {
   PurchaseContentError
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
-import {
-  Button,
-  IconCaretRight,
-  IconError,
-  Text,
-  PlainButton
-} from '@audius/harmony'
+import { Button, IconCaretRight, IconError, PlainButton } from '@audius/harmony'
 
 import { make } from 'common/store/analytics/actions'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
+import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -42,7 +37,7 @@ const ContentPurchaseError = ({
   error: PurchaseContentError
 }) => {
   return (
-    <Text variant='body' className={styles.errorContainer} color='danger'>
+    <Text className={styles.errorContainer} color='accentRed'>
       <IconError size='m' color='danger' />
       {usePurchaseContentErrorMessage(code)}
     </Text>

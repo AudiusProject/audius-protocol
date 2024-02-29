@@ -1,4 +1,6 @@
-import { IconComponent, Text } from '@audius/harmony'
+import { IconComponent } from '@audius/harmony'
+
+import { Text } from 'components/typography'
 
 import styles from './Hint.module.css'
 
@@ -24,7 +26,7 @@ export const Hint = ({
         <Text
           className={styles.text}
           variant='body'
-          size='m'
+          size='medium'
           strength='default'
         >
           {text}

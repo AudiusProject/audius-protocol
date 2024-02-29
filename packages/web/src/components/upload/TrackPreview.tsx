@@ -21,12 +21,12 @@ import {
   IconFileUnknown as iconFileUnknown,
   IconFileWAV as iconFileWav,
   IconFileWEBM,
-  IconTrash,
-  Text
+  IconTrash
 } from '@audius/harmony'
 import cn from 'classnames'
 import numeral from 'numeral'
 
+import { Text } from 'components/typography'
 import zIndex from 'utils/zIndex'
 
 import { EditableLabel } from './EditableLabel'
@@ -135,7 +135,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
   return (
     <div className={cn(styles.trackPreviewNew, className)}>
       {displayIndex ? (
-        <Text variant='body' className={styles.indexText} size='s'>
+        <Text className={styles.indexText} size='small'>
           {index + 1}
         </Text>
       ) : null}
@@ -148,7 +148,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
           setValue={onEditTitle}
         />
       ) : (
-        <Text variant='body' className={styles.titleText} size='s'>
+        <Text className={styles.titleText} size='small'>
           {trackTitle}
         </Text>
       )}
@@ -171,10 +171,9 @@ export const TrackPreview = (props: TrackPreviewProps) => {
           </Box>
         ) : null}
         <Text
-          variant='body'
           className={styles.fileSizeText}
-          size='s'
-          color='subdued'
+          size='small'
+          color='neutralLight2'
         >
           {numeral(fileSize).format('0.0 b')}
         </Text>

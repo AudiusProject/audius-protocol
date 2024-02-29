@@ -1,9 +1,9 @@
 import { useGetTrackById } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
-import { Text } from '@audius/harmony'
 
 import { SelectedValue } from 'components/data-entry/ContextualMenu'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
@@ -30,12 +30,16 @@ export const TrackInfo = (props: TrackInfoProps) => {
   return (
     <SelectedValue>
       <DynamicImage wrapperClassName={styles.artwork} image={image} />
-      <Text variant='body' strength='strong'>
-        <Text tag='span'>{track.title}</Text>{' '}
-        <Text tag='span' color='subdued'>
+      <Text strength='strong'>
+        <Text variant='inherit' as='span'>
+          {track.title}
+        </Text>{' '}
+        <Text variant='inherit' as='span' color='neutralLight2'>
           {messages.by}
         </Text>{' '}
-        <Text tag='span'>{user.name}</Text>
+        <Text variant='inherit' as='span'>
+          {user.name}
+        </Text>
       </Text>
       <UserBadges
         className={styles.iconVerified}

@@ -15,14 +15,14 @@ import {
   Button,
   IconQuestionCircle,
   Switch,
-  IconCaretLeft,
-  Text
+  IconCaretLeft
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
+import { Text } from 'components/typography'
 
 import { ADDRESS, AMOUNT, CONFIRM, METHOD } from '../types'
 
@@ -106,27 +106,27 @@ export const ConfirmTransferDetails = () => {
       </div>
       <Divider style={{ margin: 0 }} />
       {methodValue === WithdrawMethod.COINFLOW ? (
-        <Text variant='body' size='m'>
+        <Text variant='body' size='medium'>
           {messages.cashTransferDescription}
         </Text>
       ) : (
         <>
           <div className={styles.destination}>
             <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='m' strength='default'>
+            <Text variant='body' size='medium' strength='default'>
               {addressValue}
             </Text>
           </div>
           <div className={styles.details}>
-            <Text variant='title' size='m' strength='default'>
+            <Text variant='title' size='medium' strength='default'>
               {messages.review}
             </Text>
-            <Text variant='body' size='s' strength='default'>
+            <Text variant='body' size='small' strength='default'>
               {messages.byProceeding}
             </Text>
             <div className={styles.acknowledge}>
               <Switch {...confirmField} />
-              <Text variant='body' size='s' strength='default'>
+              <Text variant='body' size='small' strength='default'>
                 {messages.haveCarefully}
               </Text>
             </div>

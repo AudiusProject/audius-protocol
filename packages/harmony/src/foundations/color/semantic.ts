@@ -7,7 +7,6 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     default: primitives.neutral.neutral,
     subdued: primitives.neutral.n400,
     disabled: primitives.neutral.n150,
-    active: primitives.primary.primary,
     accent: primitives.secondary.s300,
     staticWhite: primitives.static.white,
     warning: primitives.special.orange,

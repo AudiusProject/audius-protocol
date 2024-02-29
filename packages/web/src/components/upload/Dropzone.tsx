@@ -87,7 +87,7 @@ export const Dropzone = ({
             })}
           />
         ) : null}
-        <Text variant='body'>
+        <Text>
           {message}&nbsp;
           <TextLink css={{ color: color.primary.p500 }}>
             {messages.browse}

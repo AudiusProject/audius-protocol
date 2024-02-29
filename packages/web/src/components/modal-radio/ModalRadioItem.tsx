@@ -1,12 +1,13 @@
 import { ReactNode, useContext, useEffect, useState } from 'react'
 
-import { Tag, Radio, RadioGroupContext, Text } from '@audius/harmony'
+import { Tag, Radio, RadioGroupContext } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
+import { Text } from 'components/typography'
 
 import styles from './ModalRadioItem.module.css'
 
@@ -66,7 +67,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           disabled={disabled}
           inputClassName={styles.input}
         />
-        <Text className={styles.optionTitle} variant='title' size='l'>
+        <Text className={styles.optionTitle} variant='title' size='large'>
           {icon}
           <span>{title ?? label}</span>
         </Text>

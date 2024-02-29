@@ -2,7 +2,7 @@ import { useState, useEffect, MouseEvent } from 'react'
 
 import { ID, UID, LineupTrack } from '@audius/common/models'
 import { formatCount, formatLineupTileDuration } from '@audius/common/utils'
-import { IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
+import { IconVolumeLevel2 as IconVolume } from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
 
@@ -11,6 +11,7 @@ import RepostButton from 'components/alt-button/RepostButton'
 import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
+import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { profilePage } from 'utils/route'
 
@@ -179,9 +180,11 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               to={permalink ?? ''}
               className={styles.title}
               variant='title'
-              color={props.isActive ? 'active' : 'default'}
+              color={props.isActive ? 'primary' : 'neutral'}
             >
-              <Text className={cn(fadeIn)}>{props.playlistTitle}</Text>
+              <Text variant='inherit' className={cn(fadeIn)}>
+                {props.playlistTitle}
+              </Text>
               {props.isPlaying && <IconVolume className={styles.playIcon} />}
               {!shouldShow && (
                 <Skeleton
@@ -195,9 +198,9 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               variant='body'
               className={styles.artist}
               to={profilePage(artistHandle)}
-              color={props.isActive ? 'active' : 'default'}
+              color={props.isActive ? 'primary' : 'neutral'}
             >
-              <Text className={cn(styles.userName, fadeIn)}>
+              <Text variant='inherit' className={cn(styles.userName, fadeIn)}>
                 {props.artistName}
               </Text>
               <UserBadges

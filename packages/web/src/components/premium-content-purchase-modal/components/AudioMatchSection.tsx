@@ -1,5 +1,6 @@
-import { Flex, useTheme, Text } from '@audius/harmony'
+import { Flex, useTheme } from '@audius/harmony'
 
+import { Text } from 'components/typography'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 const messages = {
@@ -24,7 +25,11 @@ export const AudioMatchSection = ({ amount }: AudioMatchSectionProps) => {
       w='100%'
       css={{ backgroundColor: color.secondary.secondary }}
     >
-      <Text variant='label' size={isMobile ? 's' : 'l'} color='staticWhite'>
+      <Text
+        variant='label'
+        size={isMobile ? 'small' : 'large'}
+        color='staticWhite'
+      >
         {messages.earn(amount)}
       </Text>
     </Flex>

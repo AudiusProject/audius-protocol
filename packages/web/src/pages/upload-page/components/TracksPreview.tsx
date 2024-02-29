@@ -5,11 +5,11 @@ import {
   Button,
   SegmentedControl,
   Scrollbar,
-  IconCaretRight,
-  Text
+  IconCaretRight
 } from '@audius/harmony'
 import cn from 'classnames'
 
+import { Text } from 'components/typography'
 import { TrackPreview } from 'components/upload/TrackPreview'
 
 import { TrackForUpload } from '../types'
@@ -55,7 +55,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
   return (
     <div className={styles.root}>
       <div className={cn(styles.info, styles.header)}>
-        <Text variant='label' size='s'>
+        <Text variant='label' size='small'>
           {messages.releaseType}
         </Text>
         <SegmentedControl
@@ -88,7 +88,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
         ))}
       </Scrollbar>
       <div className={cn(styles.info, styles.footer)}>
-        <Text variant='body' size='s'>
+        <Text size='small'>
           {`${tracks.length} ${
             tracks.length === 1 ? messages.trackAdded : messages.tracksAdded
           }`}

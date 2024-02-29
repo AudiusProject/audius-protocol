@@ -63,6 +63,7 @@
 
 .trackOwnerName {
   margin: 0 var(--unit-1);
+  font-weight: var(--font-medium);
 }
 
 .badgeIcon {

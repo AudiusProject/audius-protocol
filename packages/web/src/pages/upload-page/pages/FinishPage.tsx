@@ -15,7 +15,6 @@ import {
   IconError,
   IconCloudUpload as IconUpload,
   IconValidationCheck,
-  Text,
   PlainButton
 } from '@audius/harmony'
 import { ProgressBar } from '@audius/stems'
@@ -26,6 +25,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Link } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
+import { Text } from 'components/typography'
 import { collectionPage, profilePage } from 'utils/route'
 
 import { ShareBanner } from '../components/ShareBanner'
@@ -98,14 +98,14 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
             : trackProgress?.audio?.status
         }
       />
-      {displayIndex ? <Text size='s'>{index + 1}</Text> : null}
+      {displayIndex ? <Text size='small'>{index + 1}</Text> : null}
       {displayArtwork ? (
         <DynamicImage
           wrapperClassName={styles.trackItemArtwork}
           image={artworkUrl || placeholderArt}
         />
       ) : null}
-      <Text size='s'>{track.metadata.title}</Text>
+      <Text size='small'>{track.metadata.title}</Text>
     </div>
   )
 }
@@ -206,13 +206,13 @@ export const FinishPage = (props: FinishPageProps) => {
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
-            <Text id='upload-progress' variant='label' size='s'>
+            <Text id='upload-progress' variant='label' size='small'>
               {uploadComplete
                 ? messages.uploadComplete
                 : messages.uploadInProgress}
             </Text>
             <div className={styles.headerProgressInfo}>
-              <Text variant='label' tag='p' size='s'>
+              <Text variant='label' as='p' size='small'>
                 {uploadComplete
                   ? '100%'
                   : fullUploadPercent === 100 && !uploadComplete

@@ -1,7 +1,9 @@
 import { ChangeEvent, ComponentProps, PropsWithChildren } from 'react'
 
-import { Switch, Text } from '@audius/harmony'
+import { Switch } from '@audius/harmony'
 import { useField } from 'formik'
+
+import { Text } from 'components/typography'
 
 import styles from './SwitchRowField.module.css'
 
@@ -34,7 +36,7 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.content}>
-        <Text tag='label' htmlFor={inputId} variant='title' size='l'>
+        <Text as='label' htmlFor={inputId} variant='title' size='large'>
           {header}
         </Text>
         <Text id={descriptionId}>{description}</Text>

@@ -9,11 +9,18 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { encodeHashId } from '@audius/common/utils'
-import { IconRemove, Box, Flex, Text, IconButton } from '@audius/harmony'
+import {
+  IconRemove,
+  Box,
+  Flex,
+  Text as HarmonyText,
+  IconButton
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
+import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreview } from 'components/upload/TrackPreview'
 import { audiusSdk } from 'services/audius-sdk'
@@ -112,11 +119,13 @@ export const StemFilesView = ({
     return stems.length > 0 ? (
       <>
         <Flex direction='column'>
-          <Text variant='title' size='l'>
+          <HarmonyText variant='title' size='l'>
             {messages.stemTypeHeader}
-          </Text>
+          </HarmonyText>
           <Box mt='s'>
-            <Text variant='body'>{messages.stemTypeDescription}</Text>
+            <HarmonyText variant='body'>
+              {messages.stemTypeDescription}
+            </HarmonyText>
           </Box>
         </Flex>
         <Flex
@@ -268,7 +277,7 @@ const StemListItem = ({
           textClassName={styles.dropdownText}
         />
       </div>
-      <Text variant='body' size='s' strength='strong'>
+      <Text size='small' strength='strong'>
         {metadata.title}
       </Text>
       {renderDeleteButton()}

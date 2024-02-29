@@ -1,8 +1,8 @@
-import { Text } from '@audius/harmony'
 import cn from 'classnames'
 
 import { TextField, TextFieldProps } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
+import { Text } from 'components/typography'
 
 import styles from './BoxedTextField.module.css'
 

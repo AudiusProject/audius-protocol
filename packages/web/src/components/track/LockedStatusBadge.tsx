@@ -1,5 +1,7 @@
-import { IconLock, IconLockUnlocked, Text } from '@audius/harmony'
+import { IconLock, IconLockUnlocked } from '@audius/harmony'
 import cn from 'classnames'
+
+import { Text } from 'components/typography'
 
 import styles from './LockedStatusBadge.module.css'
 
@@ -42,9 +44,9 @@ export const LockedStatusBadge = ({
       {text ? (
         <Text
           className={styles.text}
-          size='xs'
+          size='xSmall'
           variant='label'
-          color='staticWhite'
+          color='white'
         >
           {text}
         </Text>

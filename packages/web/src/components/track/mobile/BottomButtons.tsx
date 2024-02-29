@@ -6,12 +6,13 @@ import {
   GatedTrackStatus
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { Text } from '@audius/harmony'
+import cn from 'classnames'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import MoreButton from 'components/alt-button/MoreButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
+import typeStyles from 'components/typography/typography.module.css'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
@@ -67,7 +68,13 @@ const BottomButtons = (props: BottomButtonsProps) => {
     !props.hasStreamAccess
   ) {
     return (
-      <Text variant='title' size='s' className={styles.bottomButtons}>
+      <div
+        className={cn(
+          typeStyles.title,
+          typeStyles.titleSmall,
+          styles.bottomButtons
+        )}
+      >
         <div className={styles.gatedContentContainer}>
           <GatedConditionsPill
             streamConditions={props.streamConditions}
@@ -76,7 +83,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
           />
         </div>
         {props.readonly ? null : moreButton}
-      </Text>
+      </div>
     )
   }
 

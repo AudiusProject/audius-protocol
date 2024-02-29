@@ -1,4 +1,4 @@
-import { Text } from '@audius/harmony'
+import { Text } from 'components/typography'
 
 import styles from './styles.module.css'
 
@@ -10,7 +10,7 @@ export const DetailSection = ({
   label: string | React.ReactNode
 }) => (
   <div className={styles.detailSection}>
-    <Text variant='label' size='l' color='subdued'>
+    <Text variant='label' size='large' color='neutralLight4'>
       {label}
     </Text>
     {children}

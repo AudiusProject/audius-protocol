@@ -472,8 +472,8 @@ export const GiantTrackTile = ({
         labelValue={
           <Link
             to={albumInfo.permalink}
-            color='accent'
-            size='s'
+            color='accentPurple'
+            size='small'
             css={({ spacing }) => ({
               // the link is too tall
               marginTop: spacing.negativeUnit,
@@ -612,8 +612,9 @@ export const GiantTrackTile = ({
               <Flex className={cn(fadeIn)} gap='xs' alignItems='center'>
                 <span>By </span>
                 <UserLink
+                  color='secondary'
                   variant='body'
-                  size='l'
+                  size='large'
                   textAs='h2'
                   userId={userId}
                   badgeSize={18}
@@ -747,7 +748,11 @@ export const GiantTrackTile = ({
           {renderAlbum()}
         </div>
         {description ? (
-          <UserGeneratedText tag='h3' size='s' className={styles.description}>
+          <UserGeneratedText
+            component='h3'
+            size='small'
+            className={styles.description}
+          >
             {description}
           </UserGeneratedText>
         ) : null}

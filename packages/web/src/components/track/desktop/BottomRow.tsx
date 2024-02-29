@@ -3,7 +3,6 @@ import { MouseEvent, ReactNode, useCallback } from 'react'
 import { ID, FieldVisibility, AccessConditions } from '@audius/common/models'
 import { gatedContentSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { Text } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -11,6 +10,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
 import Tooltip from 'components/tooltip/Tooltip'
+import typeStyles from 'components/typography/typography.module.css'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 
@@ -109,14 +109,20 @@ export const BottomRow = ({
 
   if (isTrack && streamConditions && !isLoading && !hasStreamAccess) {
     return (
-      <Text variant='title' size='s' className={styles.bottomRow}>
+      <div
+        className={cn(
+          typeStyles.title,
+          typeStyles.titleSmall,
+          styles.bottomRow
+        )}
+      >
         <GatedConditionsPill
           streamConditions={streamConditions}
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickPill}
         />
         <div>{rightActions}</div>
-      </Text>
+      </div>
     )
   }
 

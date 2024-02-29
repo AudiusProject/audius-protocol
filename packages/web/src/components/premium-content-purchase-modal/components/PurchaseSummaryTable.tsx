@@ -1,7 +1,7 @@
 import { formatPrice } from '@audius/common/utils'
-import { Text } from '@audius/harmony'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
+import { Text } from 'components/typography'
 
 const messages = {
   summary: 'Transaction Summary',
@@ -71,7 +71,7 @@ export const PurchaseSummaryTable = ({
       items={items}
       title={messages.total}
       secondaryTitle={
-        <Text tag='span' color='accent'>
+        <Text as='span' variant='inherit' color='secondary'>
           {messages.price(formatPrice(totalPriceInCents))}
         </Text>
       }

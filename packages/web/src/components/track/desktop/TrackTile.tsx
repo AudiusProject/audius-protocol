@@ -19,8 +19,7 @@ import {
   IconStar,
   IconCheck,
   IconCrown,
-  IconVisibilityHidden,
-  Text
+  IconVisibilityHidden
 } from '@audius/harmony'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
@@ -31,6 +30,8 @@ import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
+import { Text } from 'components/typography'
+import typeStyles from 'components/typography/typography.module.css'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -314,14 +315,15 @@ const TrackTile = ({
       >
         <div className={cn(styles.topSection)}>
           {size === TrackTileSize.LARGE ? (
-            <Text
-              variant='label'
-              size='xs'
-              strength='weak'
-              className={styles.headerRow}
+            <div
+              className={cn(
+                typeStyles.labelXSmall,
+                typeStyles.labelWeak,
+                styles.headerRow
+              )}
             >
               {!isLoading && header && <div>{header}</div>}
-            </Text>
+            </div>
           ) : null}
           <div className={styles.titleRow}>
             {isLoading ? (
@@ -333,22 +335,36 @@ const TrackTile = ({
                 className={styles.title}
                 onClick={onClickTitle}
               >
-                <Text className={styles.text}>{title}</Text>
+                <Text variant='inherit' className={styles.text}>
+                  {title}
+                </Text>
                 {isPlaying ? (
                   <IconVolume size='m' className={styles.volumeIcon} />
                 ) : null}
               </Link>
             )}
           </div>
-          <Text variant='title' strength='weak' className={styles.creatorRow}>
+          <div
+            className={cn(
+              typeStyles.titleMedium,
+              typeStyles.titleWeak,
+              styles.creatorRow
+            )}
+          >
             {isLoading ? (
               <Skeleton width='50%' className={styles.skeleton} />
             ) : (
               userName
             )}
-          </Text>
+          </div>
 
-          <Text variant='body' size='xs' className={styles.socialsRow}>
+          <div
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.socialsRow
+            )}
+          >
             {isLoading ? (
               <Skeleton width='30%' className={styles.skeleton} />
             ) : (
@@ -358,8 +374,14 @@ const TrackTile = ({
                 {isUnlisted ? null : stats}
               </>
             )}
-          </Text>
-          <Text variant='body' size='xs' className={styles.topRight}>
+          </div>
+          <div
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.topRight
+            )}
+          >
             {isUnlisted && !isScheduledRelease ? (
               <div className={styles.topRightIconLabel}>
                 <IconVisibilityHidden className={styles.topRightIcon} />
@@ -369,8 +391,14 @@ const TrackTile = ({
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
-          </Text>
-          <Text variant='body' size='xs' className={styles.bottomRight}>
+          </div>
+          <div
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.bottomRight
+            )}
+          >
             {!isLoading
               ? renderLockedOrPlaysContent({
                   hasStreamAccess,
@@ -381,7 +409,7 @@ const TrackTile = ({
                   variant: isPurchase ? 'premium' : 'gated'
                 })
               : null}
-          </Text>
+          </div>
         </div>
         <div className={styles.divider} />
         <BottomRow

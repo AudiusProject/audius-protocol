@@ -7,6 +7,7 @@ import './assets/styles/transforms.css'
 import './assets/styles/layers.css'
 
 export * from './styles/colors'
+export * from './styles/types'
 export * from './utils/styles'
 
 export {

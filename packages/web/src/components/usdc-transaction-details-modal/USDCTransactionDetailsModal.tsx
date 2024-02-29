@@ -11,12 +11,12 @@ import {
   ModalTitle,
   ModalFooter,
   Button,
-  IconExternalLink,
-  Text
+  IconExternalLink
 } from '@audius/harmony'
 import moment from 'moment'
 
 import { ExternalLink } from 'components/link'
+import { Text } from 'components/typography'
 
 import styles from './USDCTransactionDetailsModal.module.css'
 
@@ -38,10 +38,10 @@ const DetailSection = ({
   label: React.ReactNode
 }) => (
   <div className={styles.detailSection}>
-    <Text variant='label' size='l' color='subdued'>
+    <Text variant='label' size='large' color='neutralLight4'>
       {label}
     </Text>
-    <Text variant='body' className={styles.detailValue} size='l'>
+    <Text className={styles.detailValue} size='large'>
       {value}
     </Text>
   </div>

@@ -19,12 +19,13 @@ import {
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
-import { Button, SegmentedControl, Text } from '@audius/harmony'
+import { Button, SegmentedControl } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
+import { Text } from 'components/typography'
 import { make, track } from 'services/analytics'
 
 import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
@@ -139,7 +140,7 @@ export const EnterTransferDetails = () => {
       <div className={styles.amount}>
         <div className={styles.amountText}>
           <TextRow left={messages.amountToWithdraw} />
-          <Text variant='body' size='m' strength='default'>
+          <Text variant='body' size='medium' strength='default'>
             {messages.specify}
           </Text>
         </div>
@@ -166,14 +167,14 @@ export const EnterTransferDetails = () => {
         />
       ) : null}
       {methodValue === WithdrawMethod.COINFLOW ? (
-        <Text variant='body' size='m'>
+        <Text variant='body' size='medium'>
           {messages.cashTransferDescription}
         </Text>
       ) : (
         <div className={styles.destination}>
           <div className={styles.destinationText}>
             <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='m' strength='default'>
+            <Text variant='body' size='medium' strength='default'>
               {messages.destinationDetails}
             </Text>
           </div>

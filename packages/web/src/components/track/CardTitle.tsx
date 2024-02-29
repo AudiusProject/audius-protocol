@@ -5,15 +5,11 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
-import {
-  Text,
-  IconCart,
-  IconCollectible,
-  IconSpecialAccess
-} from '@audius/harmony'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/harmony'
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'
+import typeStyles from 'components/typography/typography.module.css'
 import { useFlag } from 'hooks/useRemoteConfig'
 import HiddenTrackHeader from 'pages/track-page/components/HiddenTrackHeader'
 
@@ -99,12 +95,16 @@ export const CardTitle = ({
   }
 
   return (
-    <Text
-      variant='title'
-      strength='weak'
-      className={cn(styles.headerContainer, className, ...extraStyles)}
+    <div
+      className={cn(
+        typeStyles.titleSmall,
+        typeStyles.titleWeak,
+        styles.headerContainer,
+        className,
+        ...extraStyles
+      )}
     >
       {content}
-    </Text>
+    </div>
   )
 }

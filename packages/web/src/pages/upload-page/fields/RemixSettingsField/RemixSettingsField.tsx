@@ -8,7 +8,7 @@ import {
   Remix
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { IconRemix, Text } from '@audius/harmony'
+import { IconRemix } from '@audius/harmony'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -16,6 +16,7 @@ import {
   ContextualMenu,
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
+import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
 
 import { useTrackField } from '../../hooks'
@@ -130,7 +131,7 @@ export const RemixSettingsField = () => {
         {!showRemixes ? <SelectedValue label={messages.remixesHidden} /> : null}
         {parentTrackId ? (
           <div className={styles.remixOfValue}>
-            <Text variant='label' size='s'>
+            <Text variant='label' size='small'>
               {messages.remixOf}:
             </Text>
             <TrackInfo trackId={parentTrackId} />

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { UploadType } from '@audius/common/store'
-import { Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -13,6 +12,7 @@ import {
   TextField
 } from 'components/form-fields'
 import { Tile } from 'components/tile'
+import { Text } from 'components/typography'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'

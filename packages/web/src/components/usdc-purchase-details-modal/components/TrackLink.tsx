@@ -1,6 +1,7 @@
 import { useGetTrackById } from '@audius/common/api'
-import { Text } from '@audius/harmony'
 import { Link } from 'react-router-dom'
+
+import { Text } from 'components/typography'
 
 import styles from './styles.module.css'
 
@@ -15,7 +16,7 @@ export const TrackLink = ({
   if (!track) return null
   return (
     <Link onClick={onClick} className={styles.link} to={track.permalink}>
-      <Text variant='body' size='l' color='accent'>
+      <Text size='large' color='secondary'>
         {track.title}
       </Text>
     </Link>

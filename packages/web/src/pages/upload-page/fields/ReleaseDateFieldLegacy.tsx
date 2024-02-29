@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { IconCalendarMonth, Text } from '@audius/harmony'
+import { IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
@@ -8,6 +8,7 @@ import {
   ContextualMenu,
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
+import { Text } from 'components/typography'
 
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
@@ -77,7 +78,7 @@ export const ReleaseDateFieldLegacy = () => {
           <Text
             className={cn(styles.title, styles.modalHeading)}
             variant='title'
-            size='l'
+            size='large'
           >
             {messages.title}
           </Text>

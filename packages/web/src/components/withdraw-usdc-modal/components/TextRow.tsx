@@ -1,4 +1,4 @@
-import { Text } from '@audius/harmony'
+import { Text } from 'components/typography'
 
 import styles from './TextRow.module.css'
 
@@ -10,14 +10,19 @@ type TextRowProps = {
 export const TextRow = ({ left, right }: TextRowProps) => {
   return (
     <div className={styles.root}>
-      <Text className={styles.left} variant='title' size='l' strength='default'>
+      <Text
+        className={styles.left}
+        variant='title'
+        size='large'
+        strength='default'
+      >
         {left}
       </Text>
       {right ? (
         <Text
           className={styles.right}
           variant='title'
-          size='l'
+          size='large'
           strength='default'
         >
           {right}

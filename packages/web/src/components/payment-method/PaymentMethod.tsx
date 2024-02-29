@@ -13,13 +13,13 @@ import {
   IconDonate,
   IconTransaction,
   Radio,
-  RadioGroup,
-  Text
+  RadioGroup
 } from '@audius/harmony'
 import BN from 'bn.js'
 
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
+import { Text } from 'components/typography'
 import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
 
@@ -77,10 +77,12 @@ export const PaymentMethod = ({
           disabled: isExistingBalanceDisabled,
           value: (
             <Text
-              tag='span' // Needed to avoid <p> inside <p> warning
+              as='span' // Needed to avoid <p> inside <p> warning
               variant='title'
               color={
-                selectedMethod === PurchaseMethod.BALANCE ? 'accent' : undefined
+                selectedMethod === PurchaseMethod.BALANCE
+                  ? 'secondary'
+                  : undefined
               }
             >
               ${balanceFormatted}
@@ -175,7 +177,6 @@ export const PaymentMethod = ({
               <Text>{label}</Text>
             </Flex>
             <Text
-              variant='body'
               css={{
                 width: isMobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
               }}

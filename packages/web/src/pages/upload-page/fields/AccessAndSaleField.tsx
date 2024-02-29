@@ -21,8 +21,7 @@ import {
   IconVisibilityHidden as IconHidden,
   IconNote,
   IconSpecialAccess,
-  IconVisibilityPublic,
-  Text
+  IconVisibilityPublic
 } from '@audius/harmony'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
@@ -35,6 +34,7 @@ import {
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { Text } from 'components/typography'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { useIndexedField, useTrackField } from '../hooks'
@@ -477,7 +477,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             icon={IconCollectible}
           />
           <div className={styles.nftOwner}>
-            <Text variant='label' size='s'>
+            <Text variant='label' size='small'>
               {messages.ownersOf}:
             </Text>
             <SelectedValue>

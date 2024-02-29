@@ -5,13 +5,13 @@ import {
   IconTikTok,
   IconTwitter as IconTwitterBird,
   IconInstagram,
-  IconDonate,
-  Text
+  IconDonate
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ExternalLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
+import { Text } from 'components/typography'
 import { UserGeneratedText } from 'components/user-generated-text'
 
 import styles from './SocialLink.module.css'
@@ -82,7 +82,7 @@ const SocialLink = (props: SocialLinkProps) => {
   } else {
     text = link.replace(/((?:https?):\/\/)|www./g, '')
     if (type === Type.DONATION) {
-      text = <UserGeneratedText size='s'>{text}</UserGeneratedText>
+      text = <UserGeneratedText size='small'>{text}</UserGeneratedText>
     }
   }
 
@@ -101,10 +101,14 @@ const SocialLink = (props: SocialLinkProps) => {
   const Root = href ? ExternalLink : Text
 
   return (
-    <Root to={href} onClick={onClick} size='s' className={styles.root}>
+    <Root to={href} onClick={onClick} size='small' className={styles.root}>
       {icon}
       {iconOnly ? null : (
-        <Text className={cn(styles.text, isSingleLink && styles.singleLink)}>
+        <Text
+          variant='inherit'
+          id='hello'
+          className={cn(styles.text, isSingleLink && styles.singleLink)}
+        >
           {text}
         </Text>
       )}

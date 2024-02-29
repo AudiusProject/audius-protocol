@@ -198,9 +198,9 @@ export const TracksTable = ({
         <div className={styles.textContainer}>
           <Link
             variant='inherit'
-            tag={isLocked || deleted ? 'span' : undefined}
+            as={isLocked || deleted ? 'span' : undefined}
             to={isLocked || deleted ? '' : track.permalink}
-            color={active ? 'active' : 'default'}
+            color={active ? 'primary' : 'neutral'}
             className={styles.trackCell}
           >
             {track.name}
@@ -226,9 +226,9 @@ export const TracksTable = ({
           <UserLink
             className={styles.textCell}
             userId={user.user_id}
-            size='s'
+            size='small'
             strength='strong'
-            color={index === playingIndex ? 'active' : 'default'}
+            color={index === playingIndex ? 'primary' : 'neutral'}
             badgeSize={12}
             popover
           />

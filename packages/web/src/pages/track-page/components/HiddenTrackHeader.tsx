@@ -1,4 +1,7 @@
-import { IconVisibilityHidden, Text } from '@audius/harmony'
+import { IconVisibilityHidden } from '@audius/harmony'
+import cn from 'classnames'
+
+import typeStyles from 'components/typography/typography.module.css'
 
 import styles from './HiddenTrackHeader.module.css'
 
@@ -12,9 +15,15 @@ const HiddenTrackHeader = () => {
   return (
     <span className={styles.root}>
       <IconVisibilityHidden className={styles.icon} />
-      <Text variant='title' size='s' strength='weak' className={styles.label}>
+      <div
+        className={cn(
+          typeStyles.titleSmall,
+          typeStyles.titleWeak,
+          styles.label
+        )}
+      >
         {messages.hiddenTrackTitle}
-      </Text>
+      </div>
     </span>
   )
 }

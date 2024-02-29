@@ -1,7 +1,7 @@
 import { SquareSizes, WidthSizes, ID } from '@audius/common/models'
-import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -40,12 +40,12 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
         />
         <div className={styles.info}>
           <div className={styles.name}>
-            <Text size='l' strength='default' variant='title'>
+            <Text size='large' strength='default' variant='title'>
               {name}
             </Text>
             <UserBadges userId={userId} badgeSize={14} useSVGTiers />
           </div>
-          <Text size='l' strength='default' variant='body'>
+          <Text size='large' strength='default' variant='body'>
             {`@${handle}`}
           </Text>
         </div>

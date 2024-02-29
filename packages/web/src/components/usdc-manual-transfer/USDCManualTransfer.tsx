@@ -7,13 +7,7 @@ import {
   isContentPurchaseInProgress
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import {
-  Button,
-  Flex,
-  IconLogoCircleUSDC,
-  IconError,
-  Text
-} from '@audius/harmony'
+import { Button, Flex, IconLogoCircleUSDC, IconError } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
@@ -22,6 +16,7 @@ import { useAsync } from 'react-use'
 
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
+import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track as trackAnalytics, make } from 'services/analytics'
