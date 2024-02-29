@@ -84,7 +84,7 @@ const purchasesApi = createApi({
             context
           )
         }
-        // TODO: Purchaseable Albums - fetch metadata for albums
+        // TODO: [PAY-2548] Purchaseable Albums - fetch metadata for albums
         return purchases
       },
       options: { retry: true }
@@ -146,7 +146,7 @@ const purchasesApi = createApi({
             context
           )
         }
-        // TODO: Purchaseable Albums - fetch metadata for albums
+        // TODO: [PAY-2548] Purchaseable Albums - fetch metadata for albums
         return purchases
       },
       options: { retry: true }

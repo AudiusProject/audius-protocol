@@ -83,7 +83,7 @@ function bump-version () {
             && mv "$tmp" package.json
 
         # Build project
-        npm run build
+        npx turbo run build
 
         # Publishing dry run, prior to pushing a branch
         npm publish . --access public --dry-run

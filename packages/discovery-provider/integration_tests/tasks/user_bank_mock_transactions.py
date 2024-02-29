@@ -52,6 +52,7 @@ WAUDIO_PDA = "8GrLc33SYDHaVKoXRLMau2yjYnMnSVg179qwJp9izeQb"
 USDC_PDA = "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt"
 
 # contentType:contentId:blockNumber:purchaseUserId:accessType
+# (backwards compatibility to old 3 or 4 field format)
 # base58.b58encode("track:1:10").decode("utf-8")
 PURCHASE_TRACK1_MEMO_DATA = "7YSwHDhdZsHu6X"
 # base58.b58encode("track:2:10").decode("utf-8")

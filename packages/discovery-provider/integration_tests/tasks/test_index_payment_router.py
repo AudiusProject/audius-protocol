@@ -149,8 +149,8 @@ def test_process_payment_router_tx_details_valid_purchase(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
@@ -199,8 +199,8 @@ def test_process_payment_router_tx_details_valid_purchase_album(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.album
@@ -249,8 +249,8 @@ def test_process_payment_router_tx_details_valid_purchase_from_user_bank(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
@@ -484,8 +484,8 @@ def test_process_payment_router_tx_details_valid_purchase_with_pay_extra(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 1500000
         assert purchase.content_type == PurchaseType.track
@@ -534,8 +534,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients(ap
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 2000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
@@ -603,8 +603,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients_pa
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 2000000
         assert purchase.extra_amount == 1500000
         assert purchase.content_type == PurchaseType.track

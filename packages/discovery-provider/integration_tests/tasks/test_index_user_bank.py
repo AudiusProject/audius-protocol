@@ -188,8 +188,8 @@ def test_process_user_bank_tx_details_valid_purchase(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == track_owner_id
+        assert purchase.buyer_user_id == track_buyer_id
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
@@ -260,8 +260,8 @@ def test_process_user_bank_tx_details_valid_purchase_album(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == track_owner_id
+        assert purchase.buyer_user_id == track_buyer_id
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.album
@@ -393,8 +393,8 @@ def test_process_user_bank_tx_details_valid_purchase_with_pay_extra(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == track_owner_id
+        assert purchase.buyer_user_id == track_buyer_id
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 1000000
         assert purchase.content_type == PurchaseType.track

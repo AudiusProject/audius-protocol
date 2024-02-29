@@ -4,41 +4,8 @@
   gap: var(--unit-6);
 }
 
-.secretNotice {
-  background-color: var(--neutral-light-9);
-  border: 1px solid var(--netural-light-7);
-  border-radius: var(--unit-2);
-  display: flex;
-  flex-direction: column;
-  gap: var(--unit-3);
-  padding: var(--unit-3) var(--unit-4);
-}
-
-.noticeIcon {
-  height: var(--unit-8);
-  width: var(--unit-8);
-}
-
-.noticeTextRoot {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--unit-4);
-}
-
-.noticeText {
-  font-size: var(--font-l);
-  font-weight: var(--font-medium);
-  line-height: 1.3;
-}
-
 .readTheDocs {
-  /* left-aligns link with title */
-  margin-left: calc(var(--unit-5) + var(--unit-4));
-  align-self: flex-start;
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
   color: var(--secondary);
-  text-align: left;
   text-decoration: underline !important;
 }
 

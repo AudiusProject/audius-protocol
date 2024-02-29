@@ -44,7 +44,7 @@ const createImageSourcesForEndpoints = ({
  * Create all the sources for an image.
  * Includes legacy endpoints and optionally lokj cal sources
  */
-export const createAllImageSources = ({
+export const createAllImageSources = <T extends ImageSourcePropType>({
   cid,
   endpoints,
   size,
@@ -54,7 +54,7 @@ export const createAllImageSources = ({
   cid: Nullable<CID>
   endpoints: string[]
   size: SquareSizes | WidthSizes
-  localSource?: ImageURISource | null
+  localSource?: T
   cidMap?: Nullable<{ [key: string]: string }>
 }) => {
   if (!cid || !endpoints) {
@@ -95,8 +95,10 @@ export const createAllImageSources = ({
  * or a local source. This is useful for cases where there is no error
  * callback if the image fails to load - like the MusicControls on the lockscreen
  */
-export const getImageSourceOptimistic = (
-  options: Parameters<typeof createAllImageSources>[0]
+export const getImageSourceOptimistic = <
+  T extends ImageSourcePropType = ImageURISource
+>(
+  options: Parameters<typeof createAllImageSources<T>>[0]
 ) => {
   const allImageSources = createAllImageSources(options)
   return allImageSources[0]
@@ -107,7 +109,7 @@ type UseContentNodeImageOptions = {
   // The size of the image to fetch
   size: SquareSizes | WidthSizes
   fallbackImageSource: ImageSourcePropType
-  localSource?: ImageURISource | null
+  localSource?: ImageSourcePropType
   cidMap?: Nullable<{ [key: string]: string }>
 }
 
