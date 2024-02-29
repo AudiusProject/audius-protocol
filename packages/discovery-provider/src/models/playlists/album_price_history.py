@@ -10,6 +10,11 @@ class AlbumPriceHistory(Base, RepresentableMixin):
 
     playlist_id = Column(Integer, nullable=False, primary_key=True)
     splits = Column(JSONB(), nullable=False)
+    """
+    Dict[str, int]: The splits of the playlist.
+            The key is the destination address and the value is allocated split in usdc wei.
+    """
+
     total_price_cents = Column(BigInteger, nullable=False)
     blocknumber = Column(BigInteger, nullable=False)
     block_timestamp = Column(DateTime, nullable=False, primary_key=True)
