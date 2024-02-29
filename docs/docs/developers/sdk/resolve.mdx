@@ -6,6 +6,9 @@ sidebar_label: Resolve
 description: Audius Protocol Documentation
 ---
 
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
 ### resolve
 
 #### resolve(`params`)
@@ -14,7 +17,7 @@ Resolve a provided Audius app URL to the API resource it represents.
 
 Example:
 
-```typescript
+```ts
 const { data: track } = await audiusSdk.resolve<Track>({
   url: 'https://audius.co/camouflybeats/hypermantra-86216',
 })

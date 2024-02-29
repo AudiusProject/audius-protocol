@@ -6,13 +6,16 @@ sidebar_label: Advanced Options
 description: Audius Protocol Documentation
 ---
 
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
 # AdvancedOptions
 
 You can pass a `AdvancedOptions` object to any SDK write method for further control of its behavior.
 
 ## Examples
 
-```typescript
+```ts
 await audiusSdk.playlists.favoritePlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",
@@ -21,7 +24,7 @@ await audiusSdk.playlists.favoritePlaylist({
 });
 ```
 
-```typescript
+```ts
 await audiusSdk.playlists.favoritePlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",

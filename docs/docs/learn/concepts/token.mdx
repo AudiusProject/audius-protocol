@@ -1,8 +1,8 @@
 ---
 id: token
 title: The $AUDIO Token
-pagination_label: Audio Token
-sidebar_label: Audio Token
+pagination_label: $AUDIO Token
+sidebar_label: $AUDIO Token
 description: Audius Protocol Documentation
 ---
 
@@ -14,9 +14,13 @@ which allows our early adopters to share in the upside of Audius as we continue 
 The Audius platform token $AUDIO has three prongs of functionality within the Audius protocol
 ecosystem:
 
-1. [Security](#security)
-2. [Feature Access](#feature-access)
-3. [Governance](#governance)
+```mermaid
+flowchart LR
+  token((Audius Token Utility));
+  token--->P1[<a href="#security">Security</a>]
+  token--->P2[<a href="#feature-access">Feature Access</a>]
+  token--->P3[<a href="#governance">Governance</a>]
+```
 
 $AUDIO is staked as collateral for a value-added service such as
 [operating a Node](/node-operator/overview) or participating in governance.

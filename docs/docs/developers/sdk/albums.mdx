@@ -6,6 +6,9 @@ sidebar_label: Albums
 description: Audius Protocol Documentation
 ---
 
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
 ### getAlbum
 
 #### getAlbum(`params`)
@@ -14,7 +17,7 @@ Get an album by id.
 
 Example:
 
-```typescript
+```ts
 const { data: album } = await audiusSdk.album.getAlbum({
   playlistId: 'D7KyD',
 })
@@ -103,7 +106,7 @@ Get the tracks in an album.
 
 Example:
 
-```typescript
+```ts
 const { data: tracks } = await audiusSdk.albums.getAlbumTracks({
   albumId: 'D7KyD',
 })
@@ -134,7 +137,7 @@ Upload an album.
 
 Example:
 
-```typescript
+```ts
 import { Mood, Genre } from '@audius/sdk'
 import fs from 'fs'
 
@@ -241,7 +244,7 @@ same as before.
 
 Example:
 
-```typescript
+```ts
 import fs from 'fs'
 
 const coverArtBuffer = fs.readFileSync('path/to/updated-cover-art.png')
@@ -315,7 +318,7 @@ Delete an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.deleteAlbum({
   albumId: 'x5pJ3Bo',
   userId: '7eP5n',
@@ -359,7 +362,7 @@ Favorite an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.favoriteAlbum({
   albumId: 'x5pJ3Az',
   userId: '7eP5n',
@@ -410,7 +413,7 @@ Unfavorite an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.unfavoriteAlbum({
   albumId: 'x5pJ3Az',
   userId: '7eP5n',
@@ -454,7 +457,7 @@ Repost a album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.repostAlbum({
   albumId: 'x5pJ3Az',
   userId: '7eP5n',
@@ -505,7 +508,7 @@ Unrepost an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.unrepostAlbum({
   albumId: 'x5pJ3Az',
   userId: '7eP5n',

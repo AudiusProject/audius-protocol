@@ -6,6 +6,9 @@ sidebar_label: Users
 description: Audius Protocol Documentation
 ---
 
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
 ### getUser
 
 #### getUser(`params`)
@@ -14,7 +17,7 @@ Get a user.
 
 Example:
 
-```typescript
+```ts
 const { data: user } = await audiusSdk.users.getUser({
   id: 'eAZl3',
 })
@@ -81,7 +84,7 @@ Get the AI generated tracks attributed to a user using the user's handle.
 
 Example:
 
-```typescript
+```ts
 const { data: tracks } = await audiusSdk.users.getAIAttributedTracksByUserHandle({
   handle: 'skrillex',
 })
@@ -118,7 +121,7 @@ Get the apps that a user has authorized to write to their account.
 
 Example:
 
-```typescript
+```ts
 const { data: apps } = await audiusSdk.users.getAuthorizedApps({
   id: 'eAZl3',
 })
@@ -161,7 +164,7 @@ Get a user's connected ERC and SPL wallets.
 
 Example:
 
-```typescript
+```ts
 const { data: wallets } = await audiusSdk.users.getConnectedWallets({
   id: 'eAZl3',
 })
@@ -200,7 +203,7 @@ Get the developer apps a user owns.
 
 Example:
 
-```typescript
+```ts
 const { data: developerApps } = await audiusSdk.users.getDeveloperApps({
   id: 'eAZl3',
 })
@@ -241,7 +244,7 @@ Get a user's favorites.
 
 Example:
 
-```typescript
+```ts
 const { data: favorites } = await audiusSdk.users.getFavorites({
   id: 'eAZl3',
 })
@@ -283,7 +286,7 @@ Get a user's followers
 
 Example:
 
-```typescript
+```ts
 const { data: followers } = await audiusSdk.users.getFollowers({
   id: 'eAZl3',
 })
@@ -352,7 +355,7 @@ Get users that a user is following
 
 Example:
 
-```typescript
+```ts
 const { data: following } = await audiusSdk.users.getFollowing({
   id: 'eAZl3',
 })
@@ -385,7 +388,7 @@ Get a list of users that might be of interest to followers of this user.
 
 Example:
 
-```typescript
+```ts
 const { data: relatedUsers } = await audiusSdk.users.getRelatedUsers({
   id: 'eAZl3',
 })
@@ -416,7 +419,7 @@ Get a user's reposts.
 
 Example:
 
-```typescript
+```ts
 const { data: reposts } = await audiusSdk.users.getReposts({
   id: 'eAZl3',
 })
@@ -462,7 +465,7 @@ Get users that are subscribed to a user.
 
 Example:
 
-```typescript
+```ts
 const { data: subscribers } = await audiusSdk.users.getSubscribers({
   id: 'eAZl3',
 })
@@ -495,7 +498,7 @@ Get users that are supporting a user (they have sent them a tip).
 
 Example:
 
-```typescript
+```ts
 const { data: supporters } = await audiusSdk.users.getSupporters({
   id: 'eAZl3',
 })
@@ -570,7 +573,7 @@ Get users that a user is supporting (they have sent them a tip).
 
 Example:
 
-```typescript
+```ts
 const { data: supportings } = await audiusSdk.users.getSupportings({
   id: 'eAZl3',
 })
@@ -643,7 +646,7 @@ Get the most used track tags by a user.
 
 Example:
 
-```typescript
+```ts
 const { data: tags } = await audiusSdk.users.getTopTrackTags({
   id: 'eAZl3',
 })
@@ -681,7 +684,7 @@ Get a user's tracks.
 
 Example:
 
-```typescript
+```ts
 const { data: tracks } = await audiusSdk.users.getTracksByUser({
   id: 'eAZl3',
 })
@@ -718,7 +721,7 @@ Get a user by their handle.
 
 Example:
 
-```typescript
+```ts
 const { data: user } = await audiusSdk.users.getUserByHandle({
   handle: 'skrillex',
 })
@@ -749,7 +752,7 @@ Get a user ID by an associated wallet address.
 
 Example:
 
-```typescript
+```ts
 const { data: userId } = await audiusSdk.users.getUserIdByWallet({
   associatedWallet: '6f229f7e8462f198e5be9139175a0b460a9fa35b',
 })
@@ -787,7 +790,7 @@ Search for users.
 
 Example:
 
-```typescript
+```ts
 const { data: users } = await audiusSdk.users.searchUsers({
   query: 'skrillex',
 })
@@ -818,7 +821,7 @@ Update a user profile.
 
 Example:
 
-```typescript
+```ts
 import { Mood, Genre } from '@audius/sdk'
 import fs from 'fs'
 
@@ -887,7 +890,7 @@ Follow a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.followUser({
   userId: '7eP5n',
   followeeUserId: '2kN2a', // User id to follow
@@ -931,7 +934,7 @@ Unfollow a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.unfollowUser({
   userId: '7eP5n',
   followeeUserId: '2kN2a', // User id to unfollow
@@ -975,7 +978,7 @@ Subscribe to a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.subscribeToUser({
   userId: '7eP5n',
   subscribeeUserId: '2kN2a', // User id to subscribe to
@@ -1019,7 +1022,7 @@ Unsubscribe from a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.unsubscribeFromUser({
   trackId: 'x5pJ3Az'
   userId: "7eP5n",

@@ -9,7 +9,8 @@ import { themes as prismThemes } from 'prism-react-renderer'
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Audius Docs',
-  tagline: '',
+  tagline:
+    'Audius is a fully decentralized music platform. ARTISTS (AND DEVELOPERS) DESERVE MORE 💜',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here

@@ -419,8 +419,12 @@ the message would look like this:
 where `<JWT>` is a [JSON web token](https://jwt.io/introduction) containing the user's encoded
 profile information and a signature.
 
-:::caution Make sure that your `postMessage` event listener validates that the origin of the
-incoming event is `https://audius.co`! :::
+:::caution
+
+Make sure that your `postMessage` event listener validates that the origin of the incoming event is
+`https://audius.co`!
+
+:::
 
 ### 3. Verify the response
 
@@ -461,7 +465,7 @@ time.
 - Code: 200 OK
 - Content: The decoded JWT payload, which contains the user's profile information:
 
-```typescript
+```ts
 {
   userId: number, // unique Audius user identifier
   email: string,

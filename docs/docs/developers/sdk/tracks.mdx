@@ -6,23 +6,27 @@ sidebar_label: Tracks
 description: Audius Protocol Documentation
 ---
 
-### getTrack
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
-#### getTrack(`params`)
+---
+
+## getTrack
+
+> #### getTrack(`params`)
 
 Get a track by id.
 
-Example:
-
-```typescript
-const { data: track } = await audiusSdk.tracks.getTrack({
-  trackId: 'D7KyD',
-})
-
-console.log(track)
-```
-
-#### Params
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -31,7 +35,19 @@ example above.
 | :-------- | :------- | :------------------ | :----------- |
 | `trackId` | `string` | The ID of the track | **Required** |
 
-#### Returns
+</TabItem>
+<TabItem value="example">
+
+```ts
+const { data: track } = await audiusSdk.tracks.getTrack({
+  trackId: 'D7KyD',
+})
+
+console.log(track)
+```
+
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with a `data` field. `data` contains information about the
 track as described below.
@@ -96,24 +112,27 @@ track as described below.
 };
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### getBulkTracks
+## getBulkTracks
 
-#### getBulkTracks(`params`)
+> #### getBulkTracks(`params`)
 
 Get a list of tracks using their IDs or permalinks.
 
-Example:
-
-```typescript
-const { data: tracks } = await audiusSdk.tracks.getBulkTracks({
-  id: ['D7KyD', 'PjdWN', 'Jwo2A'],
-})
-console.log(tracks)
-```
-
-#### Params
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -123,7 +142,18 @@ example above.
 | `id`        | `string[]` | An array of IDs of tracks        | _Optional_ |
 | `permalink` | `string[]` | An array of permalinks of tracks | _Optional_ |
 
-#### Returns
+</TabItem>
+<TabItem value="example">
+
+```ts
+const { data: tracks } = await audiusSdk.tracks.getBulkTracks({
+  id: ['D7KyD', 'PjdWN', 'Jwo2A'],
+})
+console.log(tracks)
+```
+
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
 information about the tracks as described below.
@@ -188,22 +218,27 @@ information about the tracks as described below.
 }[];
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### getTrendingTracks
+## getTrendingTracks
 
-#### getTrendingTracks(`params`)
+> #### getTrendingTracks(`params`)
 
 Get the top 100 trending (most popular) tracks on Audius.
 
-Example:
-
-```typescript
-const { data: tracks } = await audiusSdk.tracks.getTrendingTracks()
-console.log(tracks)
-```
-
-#### Params
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Optionally create an object with the following fields and pass it as the first argument.
 
@@ -212,24 +247,99 @@ Optionally create an object with the following fields and pass it as the first a
 | `genre` | `Genre` (can be imported from `@audius/sdk`)                     | If provided, the top 100 trending tracks of the genre will be returned                                       | _Optional_ |
 | `time`  | `GetTrendingTracksTimeEnum` (can be imported from `@audius/sdk`) | A time range for which to return the trending tracks. Default value is **GetTrendingTracksTimeEnum.AllTime** | _Optional_ |
 
-#### Returns
+</TabItem>
+<TabItem value="example">
 
-The return type is the same as [`getBulkTracks`](#getbulktracks)
-
-### getUndergroundTrendingTracks
-
-#### getUndergroundTrendingTracks(`params`)
-
-Get the top 100 trending underground tracks on Audius.
-
-Example:
-
-```typescript
-const { data: tracks } = await audiusSdk.tracks.getUndergroundTrendingTracks()
+```ts
+const { data: tracks } = await audiusSdk.tracks.getTrendingTracks()
 console.log(tracks)
 ```
 
-#### Params
+</TabItem>
+<TabItem value="response">
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the tracks as described below.
+
+```ts
+{
+  artwork?: {
+    _1000x1000?: string;
+    _150x150?: string;
+    _480x480?: string;
+  };
+  description?: string;
+  downloadable?: boolean;
+  duration: number;
+  favoriteCount: number;
+  genre?: string;
+  id: string;
+  isStreamable?: string;
+  mood?: string;
+  permalink?: string;
+  playCount: number;
+  releaseDate: string;
+  remixOf?: {
+    tracks: { parentTrackId: string }[];
+  };
+  repostCount: number;
+  tags?: string[];
+  title: string;
+  trackCid?: string;
+  user: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}[];
+```
+
+</TabItem>
+</Tabs>
+
+## getUndergroundTrendingTracks
+
+> #### getUndergroundTrendingTracks(`params`)
+
+Get the top 100 trending underground tracks on Audius.
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Optionally create an object with the following fields and pass it as the first argument.
 
@@ -238,28 +348,101 @@ Optionally create an object with the following fields and pass it as the first a
 | `limit`  | `number` | If provided, will return only the given number of tracks. Default is **100** | _Optional_ |
 | `offset` | `number` | An offset to apply to the list of results. Default value is **0**            | _Optional_ |
 
-#### Returns
+</TabItem>
+<TabItem value="example">
 
-The return type is the same as [`getBulkTracks`](#getbulktracks)
-
----
-
-### searchTracks
-
-#### searchTracks(`params`)
-
-Search for tracks.
-
-Example:
-
-```typescript
-const { data: tracks } = await audiusSdk.tracks.searchTracks({
-  query: 'skrillex',
-})
+```ts
+const { data: tracks } = await audiusSdk.tracks.getUndergroundTrendingTracks()
 console.log(tracks)
 ```
 
-#### Params
+</TabItem>
+<TabItem value="response">
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the tracks as described below.
+
+```ts
+{
+  artwork?: {
+    _1000x1000?: string;
+    _150x150?: string;
+    _480x480?: string;
+  };
+  description?: string;
+  downloadable?: boolean;
+  duration: number;
+  favoriteCount: number;
+  genre?: string;
+  id: string;
+  isStreamable?: string;
+  mood?: string;
+  permalink?: string;
+  playCount: number;
+  releaseDate: string;
+  remixOf?: {
+    tracks: { parentTrackId: string }[];
+  };
+  repostCount: number;
+  tags?: string[];
+  title: string;
+  trackCid?: string;
+  user: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}[];
+```
+
+</TabItem>
+</Tabs>
+
+---
+
+## searchTracks
+
+> #### searchTracks(`params`)
+
+Search for tracks.
+
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -268,29 +451,103 @@ example above.
 | :------ | :------- | :---------------------- | :----------- |
 | `query` | `string` | The query to search for | **Required** |
 
-#### Returns
+</TabItem>
+<TabItem value="example">
 
-The return type is the same as [`getBulkTracks`](#getbulktracks)
+```ts
+const { data: tracks } = await audiusSdk.tracks.searchTracks({
+  query: 'skrillex',
+})
+console.log(tracks)
+```
+
+</TabItem>
+<TabItem value="response">
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the tracks as described below.
+
+```ts
+{
+  artwork?: {
+    _1000x1000?: string;
+    _150x150?: string;
+    _480x480?: string;
+  };
+  description?: string;
+  downloadable?: boolean;
+  duration: number;
+  favoriteCount: number;
+  genre?: string;
+  id: string;
+  isStreamable?: string;
+  mood?: string;
+  permalink?: string;
+  playCount: number;
+  releaseDate: string;
+  remixOf?: {
+    tracks: { parentTrackId: string }[];
+  };
+  repostCount: number;
+  tags?: string[];
+  title: string;
+  trackCid?: string;
+  user: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}[];
+```
+
+</TabItem>
+</Tabs>
 
 ---
 
-### streamTrack
+## streamTrack
 
-#### streamTrack(`params`)
+> #### streamTrack(`params`)
 
 Get the url of the track's streamable mp3 file.
 
-Example:
-
-```typescript
-const url = await audiusSdk.tracks.streamTrack({
-  trackId: 'PjdWN',
-})
-const audio = new Audio(url)
-audio.play()
-```
-
-#### Params
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -299,21 +556,64 @@ example above.
 | :-------- | :------- | :------------------ | :----------- |
 | `trackId` | `string` | The ID of the track | **Required** |
 
-#### Returns
+</TabItem>
+<TabItem value="example">
+
+```ts
+const url = await audiusSdk.tracks.streamTrack({
+  trackId: 'PjdWN',
+})
+const audio = new Audio(url)
+audio.play()
+```
+
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing a `string` url which can be used to stream the track.
 
+</TabItem>
+</Tabs>
+
 ---
 
-### uploadTrack
+## uploadTrack
 
-#### uploadTrack(`params`, `advancedOptions?`)
+> #### uploadTrack(`params`, `advancedOptions?`)
 
 Upload a track.
 
-Example:
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
-```typescript
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
+
+| Name           | Type                                                       | Description                                                             | Required?    |
+| :------------- | :--------------------------------------------------------- | :---------------------------------------------------------------------- | :----------- |
+| `coverArtFile` | `File`                                                     | A file that will be used as the cover art for the track                 | _Optional_   |
+| `metadata`     | [`UploadTrackMetadata`](/developers/upload-track-metadata) | An object containing the details of the track                           | **Required** |
+| `onProgress`   | `(progress: number) => void`                               | A function that will be called with progress events as the files upload | _Optional_   |
+| `trackFile`    | `File`                                                     | The audio file of the track                                             | **Required** |
+| `userId`       | `string`                                                   | The ID of the user                                                      | **Required** |
+
+> #### `advancedOptions`
+
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
+
+</TabItem>
+<TabItem value="example">
+
+```ts
 import { Mood, Genre } from '@audius/sdk'
 import fs from 'fs'
 
@@ -339,25 +639,8 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 })
 ```
 
-#### `parameters`
-
-Create an object with the following fields and pass it as the first argument, as shown in the
-example above.
-
-| Name           | Type                                                       | Description                                                             | Required?    |
-| :------------- | :--------------------------------------------------------- | :---------------------------------------------------------------------- | :----------- |
-| `coverArtFile` | `File`                                                     | A file that will be used as the cover art for the track                 | _Optional_   |
-| `metadata`     | [`UploadTrackMetadata`](/developers/upload-track-metadata) | An object containing the details of the track                           | **Required** |
-| `onProgress`   | `(progress: number) => void`                               | A function that will be called with progress events as the files upload | _Optional_   |
-| `trackFile`    | `File`                                                     | The audio file of the track                                             | **Required** |
-| `userId`       | `string`                                                   | The ID of the user                                                      | **Required** |
-
-#### `advancedOptions`
-
-You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
-argument.
-
-#### Returns
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with the new track's ID (`trackId`), as well as the block
 hash (`blockHash`) and block number (`blockNumber`) for the transaction.
@@ -370,18 +653,49 @@ hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 }
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### updateTrack
+## updateTrack
 
-#### updateTrack(`params`, `advancedOptions?`)
+> #### updateTrack(`params`, `advancedOptions?`)
 
 Update a track. If cover art or any metadata fields are not provided, their values will be kept the
 same as before.
 
-Example:
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
-```typescript
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
+
+| Name           | Type                                                                    | Description                                                                   | Required?    |
+| :------------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `trackId`      | `string`                                                                | The ID of the track                                                           | **Required** |
+| `userId`       | `string`                                                                | The ID of the user                                                            | **Required** |
+| `coverArtFile` | `File`                                                                  | A file that will be used as the cover art for the track                       | _Optional_   |
+| `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/upload-track-metadata)`>` | An object containing the details of the track                                 | **Required** |
+| `onProgress`   | `(progress: number) => void`                                            | A function that will be called with progress events as the image file uploads | _Optional_   |
+
+> #### `advancedOptions`
+
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
+
+</TabItem>
+<TabItem value="example">
+
+```ts
 import fs from 'fs'
 import { Mood } from '@audius/sdk'
 
@@ -404,25 +718,8 @@ const { trackId } = await audiusSdk.tracks.updateTrack({
 })
 ```
 
-#### `params`
-
-Create an object with the following fields and pass it as the first argument, as shown in the
-example above.
-
-| Name           | Type                                                                    | Description                                                                   | Required?    |
-| :------------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
-| `trackId`      | `string`                                                                | The ID of the track                                                           | **Required** |
-| `userId`       | `string`                                                                | The ID of the user                                                            | **Required** |
-| `coverArtFile` | `File`                                                                  | A file that will be used as the cover art for the track                       | _Optional_   |
-| `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/upload-track-metadata)`>` | An object containing the details of the track                                 | **Required** |
-| `onProgress`   | `(progress: number) => void`                                            | A function that will be called with progress events as the image file uploads | _Optional_   |
-
-#### `advancedOptions`
-
-You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
-argument.
-
-#### Returns
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
 (`blockNumber`) for the transaction.
@@ -434,24 +731,27 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 }
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### deleteTrack
+## deleteTrack
 
-#### deleteTrack(`params`, `advancedOptions?`)
+> #### deleteTrack(`params`, `advancedOptions?`)
 
 Delete a track
 
-Example:
-
-```typescript
-await audiusSdk.tracks.deleteTrack({
-  trackId: 'h5pJ3Bz',
-  userId: '7eP5n',
-})
-```
-
-#### `params`
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -461,12 +761,23 @@ example above.
 | `trackId` | `string` | The ID of the track | **Required** |
 | `userId`  | `string` | The ID of the user  | **Required** |
 
-#### `advancedOptions`
+> #### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
 argument.
 
-#### Returns
+</TabItem>
+<TabItem value="example">
+
+```ts
+await audiusSdk.tracks.deleteTrack({
+  trackId: 'h5pJ3Bz',
+  userId: '7eP5n',
+})
+```
+
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
 (`blockNumber`) for the transaction.
@@ -478,24 +789,27 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 }
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### favoriteTrack
+## favoriteTrack
 
-#### favoriteTrack(`params`, `advancedOptions?`)
+> #### favoriteTrack(`params`, `advancedOptions?`)
 
 Favorite a track
 
-Example:
-
-```typescript
-await audiusSdk.tracks.favoriteTrack({
-  trackId: 'x5pJ3Az'
-  userId: "7eP5n",
-});
-```
-
-#### `params`
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -512,12 +826,23 @@ example above.
 }
 ```
 
-#### `advancedOptions`
+> #### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
 argument.
 
-#### Returns
+</TabItem>
+<TabItem value="example">
+
+```ts
+await audiusSdk.tracks.favoriteTrack({
+  trackId: 'x5pJ3Az'
+  userId: "7eP5n",
+});
+```
+
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
 (`blockNumber`) for the transaction.
@@ -529,24 +854,27 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 }
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### unfavoriteTrack
+## unfavoriteTrack
 
-#### unfavoriteTrack(`params`, `advancedOptions?`)
+> #### unfavoriteTrack(`params`, `advancedOptions?`)
 
 Unfavorite a track
 
-Example:
-
-```typescript
-await audiusSdk.tracks.unfavoriteTrack({
-  trackId: 'x5pJ3Az'
-  userId: "7eP5n",
-});
-```
-
-#### `params`
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -556,12 +884,23 @@ example above.
 | `trackId` | `string` | The ID of the track | **Required** |
 | `userId`  | `string` | The ID of the user  | **Required** |
 
-#### `advancedOptions`
+> #### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
 argument.
 
-#### Returns
+</TabItem>
+<TabItem value="example">
+
+```ts
+await audiusSdk.tracks.unfavoriteTrack({
+  trackId: 'x5pJ3Az'
+  userId: "7eP5n",
+});
+```
+
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
 (`blockNumber`) for the transaction.
@@ -573,24 +912,27 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 }
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### repostTrack
+## repostTrack
 
-#### repostTrack(`params`, `advancedOptions?`)
+> #### repostTrack(`params`, `advancedOptions?`)
 
 Repost a track
 
-Example:
-
-```typescript
-await audiusSdk.tracks.repostTrack({
-  trackId: 'x5pJ3Az'
-  userId: "7eP5n",
-});
-```
-
-#### `params`
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -607,12 +949,23 @@ example above.
 }
 ```
 
-#### `advancedOptions`
+> #### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
 argument.
 
-#### Returns
+</TabItem>
+<TabItem value="example">
+
+```ts
+await audiusSdk.tracks.repostTrack({
+  trackId: 'x5pJ3Az'
+  userId: "7eP5n",
+});
+```
+
+</TabItem>
+<TabItem value="response">
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
 (`blockNumber`) for the transaction.
@@ -626,24 +979,28 @@ Return type:
 }
 ```
 
+</TabItem>
+</Tabs>
+
 ---
 
-### unrepostTrack
+## unrepostTrack
 
-#### unrepostTrack(`params`, `advancedOptions?`)
+> #### unrepostTrack(`params`, `advancedOptions?`)
 
 Unrepost a track
 
-Example:
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[
+    { label: 'Params', value: 'request' },
+    { label: 'Example', value: 'example' },
+    { label: 'Response', value: 'response' },
+  ]}
+>
 
-```typescript
-await audiusSdk.tracks.unrepostTrack({
-  trackId: 'x5pJ3Az'
-  userId: "7eP5n",
-});
-```
-
-#### `params`
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the
 example above.
@@ -653,12 +1010,25 @@ example above.
 | `trackId` | `string` | The ID of the track | **Required** |
 | `userId`  | `string` | The ID of the user  | **Required** |
 
-#### `advancedOptions`
+> #### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
 argument.
 
-#### Returns
+</TabItem>
+
+<TabItem value="example">
+
+```ts
+await audiusSdk.tracks.unrepostTrack({
+  trackId: 'x5pJ3Az',
+  userId: '7eP5n',
+})
+```
+
+</TabItem>
+
+<TabItem value="response">
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
 (`blockNumber`) for the transaction.
@@ -669,5 +1039,9 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
   blockNumber: number
 }
 ```
+
+</TabItem>
+
+</Tabs>
 
 ---

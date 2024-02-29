@@ -171,7 +171,6 @@ img.welcomeBanner {
 }
 
 /* Screen Snippet Display Boxes */
-
 .screensnippet-wrapper {
   background: #f5f7fd;
   border-radius: 24px;
@@ -183,9 +182,11 @@ img.welcomeBanner {
   justify-content: center;
   flex-direction: column;
 }
+
 .screensnippet-wrapper img {
   max-height: 500px;
 }
+
 .screensnippet-wrapper figcaption {
   background: white;
   color: rgb(64, 68, 79);
@@ -196,6 +197,7 @@ img.welcomeBanner {
   border-radius: 18px;
   white-space: normal;
 }
+
 .screensnippet-wrapper .add-shadow {
   box-shadow: 0px 1.4px 5.2px -10px rgba(0, 0, 0, 0.004), 0px 2.3px 8.2px -10px rgba(0, 0, 0, 0.006),
     0px 3px 10.5px -10px rgba(0, 0, 0, 0.008), 0px 3.5px 12.6px -10px rgba(0, 0, 0, 0.009),
@@ -213,7 +215,7 @@ img.welcomeBanner {
 }
 
 .screensnippet-wrapper .add-border-radius {
-  border-radius: 18px;
+  border-radius: 24px;
 }
 
 /* Navbar Social Icons */
@@ -274,6 +276,11 @@ article a:link {
   text-decoration: underline;
 }
 
+/* force underline on links in admonitions */
+.alert a {
+  text-decoration: underline;
+}
+
 /* padding between navbar and body */
 article {
   padding-left: 1.5rem;
@@ -299,4 +306,13 @@ html[data-theme='dark'] .navbar__items > a:nth-child(1):hover {
 /* sidebar categorie bold */
 .menu__link--sublist {
   font-weight: bold;
+}
+
+/* tab container */
+.tabs__item--active {
+  background-color: #0000000d;
+}
+
+html[data-theme='dark'] .tabs__item--active {
+  background-color: #00000080;
 }

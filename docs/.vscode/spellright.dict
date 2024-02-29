@@ -5,6 +5,7 @@ ciphertexts
 delegater
 delegaters
 docusaurus
+erc
 esque
 eth
 ethereum
@@ -43,12 +44,14 @@ sequelize
 skrillex
 sla
 sp
+spl
 staker
 stakers
 testnet
 ts
 typehash
 undelegate
+unrepost
 unstake
 userbase
 wei

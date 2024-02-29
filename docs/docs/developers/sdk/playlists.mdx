@@ -6,6 +6,9 @@ sidebar_label: Playlists
 description: Audius Protocol Documentation
 ---
 
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
 ### getPlaylist
 
 #### getPlaylist(`params`)
@@ -14,7 +17,7 @@ Get a playlist by id.
 
 Example:
 
-```typescript
+```ts
 const { data: playlist } = await audiusSdk.playlists.getPlaylist({
   playlistId: 'D7KyD',
 })
@@ -104,7 +107,7 @@ Get the tracks in a playlist.
 
 Example:
 
-```typescript
+```ts
 const { data: tracks } = await audiusSdk.playlists.getPlaylistTracks({
   playlistId: 'D7KyD',
 })
@@ -135,7 +138,7 @@ Get the top trending playlists on Audius
 
 Example:
 
-```typescript
+```ts
 const { data: playlists } = await audiusSdk.playlists.getTrendingPlaylists()
 
 console.log(playlists)
@@ -221,7 +224,7 @@ Search for playlists.
 
 Example:
 
-```typescript
+```ts
 const { data: playlists } = await audiusSdk.playlists.searchPlaylists({
   query: 'skrillex',
 })
@@ -251,7 +254,7 @@ Create a playlist from existing tracks
 
 Example:
 
-```typescript
+```ts
 import fs from 'fs'
 
 const coverArtBuffer = fs.readFileSync('path/to/cover-art.png')
@@ -328,7 +331,7 @@ See [uploadAlbum](/developers/sdk/albums#uploadalbum) to upload an album instead
 
 Example:
 
-```typescript
+```ts
 import { Mood, Genre } from '@audius/sdk'
 import fs from 'fs'
 
@@ -434,7 +437,7 @@ Add a single track to the end of a playlist. For more control, use
 
 Example:
 
-```typescript
+```ts
 
 await audiusSdk.playlists.addTrackToPlaylist({
   playlistId: 'x5pJ3Az'
@@ -483,7 +486,7 @@ Removes a single track at the given index of playlist. For more control, use
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.playlists.removeTrackFromPlaylist({
   playlistId: 'x5pJ3Az'
   trackIndex: 2,
@@ -530,7 +533,7 @@ the same as before.
 
 Example:
 
-```typescript
+```ts
 import fs from 'fs'
 
 const coverArtBuffer = fs.readFileSync('path/to/updated-cover-art.png')
@@ -613,7 +616,7 @@ Delete a playlist
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.playlists.deletePlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",
@@ -657,7 +660,7 @@ Favorites a playlist
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.playlists.favoritePlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",
@@ -708,7 +711,7 @@ Unfavorite a playlist
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.playlists.unfavoritePlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",
@@ -752,7 +755,7 @@ Repost a playlist
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.playlists.repostPlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",
@@ -803,7 +806,7 @@ Unrepost a playlist
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.playlists.unrepostPlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",
@@ -847,7 +850,7 @@ Changes a playlist from hidden (private) to public.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.playlists.publishPlaylist({
   playlistId: 'x5pJ3Az'
   userId: "7eP5n",

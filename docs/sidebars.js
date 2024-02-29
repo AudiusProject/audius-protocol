@@ -14,7 +14,7 @@ module.exports = {
         'learn/concepts/protocol',
         'learn/architecture/content-node',
         'learn/architecture/discovery-node',
-        'node-operator/staking/stake',
+        'learn/concepts/staking-and-delegating',
       ],
       collapsed: false,
     },
@@ -42,6 +42,7 @@ module.exports = {
       items: [
         'developers/sdk/overview',
         'developers/sdk/tracks',
+        'developers/upload-track-metadata',
         'developers/sdk/users',
         'developers/sdk/playlists',
         'developers/sdk/albums',
@@ -77,7 +78,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Introduction',
-      items: ['node-operator/overview', 'node-operator/sla'],
+      items: ['node-operator/overview'],
       collapsed: false,
     },
     {
@@ -108,6 +109,7 @@ module.exports = {
           collapsed: true,
         },
         'node-operator/setup/advanced',
+        'node-operator/sla',
       ],
       collapsed: false,
     },
