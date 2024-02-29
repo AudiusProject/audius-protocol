@@ -192,9 +192,21 @@ services:
 
   ddex-ingester:
     container_name: ddex-ingester
+    env_file: .env
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     build:
       context: ${PROJECT_ROOT}/packages/ddex/ingester
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+  
+  ddex-test:
+    container_name: ddex-test
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file: .env
+    build:
+      context: ${PROJECT_ROOT}/packages/ddex/ingester
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile.test
 
 networks:
   ddex-network:

@@ -5,6 +5,8 @@
 import 'setimmediate'
 import { Buffer } from 'buffer'
 
+import createCache from '@emotion/cache'
+import { CacheProvider } from '@emotion/react'
 import processBrowser from 'process/browser'
 import { createRoot } from 'react-dom/client'
 
@@ -12,6 +14,8 @@ import '../../index.css'
 import { SsrContextProvider } from 'ssr/SsrContext'
 
 import { Root } from '../../Root'
+
+const cache = createCache({ key: 'harmony', prepend: true })
 
 // @ts-ignore
 window.global ||= window
@@ -24,17 +28,19 @@ export function render() {
   if (container) {
     const root = createRoot(container)
     root.render(
-      <SsrContextProvider
-        value={{
-          isServerSide: false,
-          isSsrEnabled: false,
-          pageProps: {},
-          isMobile: false,
-          history: null
-        }}
-      >
-        <Root />
-      </SsrContextProvider>
+      <CacheProvider value={cache}>
+        <SsrContextProvider
+          value={{
+            isServerSide: false,
+            isSsrEnabled: false,
+            pageProps: {},
+            isMobile: false,
+            history: null
+          }}
+        >
+          <Root />
+        </SsrContextProvider>
+      </CacheProvider>
     )
   }
 }

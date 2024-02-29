@@ -130,6 +130,10 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		log.Fatal(err)
 	}
 	delivery := changeDoc.FullDocument
+	if delivery.DeliveryStatus != constants.DeliveryStatusValidating {
+		p.Logger.Info("Skipping delivery", "_id", delivery.ID, "status", delivery.DeliveryStatus)
+		return
+	}
 	p.Logger.Info("Processing new delivery", "_id", delivery.ID)
 
 	xmlData := delivery.XmlContent.Data
@@ -151,7 +155,8 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 
 	// Find an ID for each artist name in the delivery
 
-	for _, track := range createTrackRelease {
+	for i := range createTrackRelease {
+		track := &createTrackRelease[i]
 		artistID, err := p.getArtistID(track.Metadata.ArtistName)
 		if err != nil {
 			p.failAndUpdateStatus(delivery.ID, fmt.Errorf("track '%s' failed to find artist ID for '%s': %v", track.Metadata.Title, track.Metadata.ArtistName, err))
@@ -160,7 +165,8 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		track.Metadata.ArtistID = artistID
 	}
 
-	for _, album := range createAlbumRelease {
+	for i := range createAlbumRelease {
+		album := &createAlbumRelease[i]
 		artistID, err := p.getArtistID(album.Metadata.PlaylistOwnerName)
 		if err != nil {
 			p.failAndUpdateStatus(delivery.ID, fmt.Errorf("album '%s' failed to find artist ID for '%s': %v", album.Metadata.PlaylistName, album.Metadata.PlaylistOwnerName, err))
