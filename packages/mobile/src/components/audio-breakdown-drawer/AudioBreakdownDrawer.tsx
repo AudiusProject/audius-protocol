@@ -10,12 +10,10 @@ import BN from 'bn.js'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { IconInfo } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { Wallet } from './Wallet'
 const { getAccountBalance } = walletSelectors
@@ -69,9 +67,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textTransform: 'uppercase',
     color: palette.neutralLight4,
     fontSize: spacing(3)
-  },
-  infoIcon: {
-    marginLeft: 8
   },
   walletsHeader: {
     flexDirection: 'row',
@@ -192,11 +187,6 @@ export const AudioBreakdownDrawer = () => {
           <View style={styles.sectionDescription}>
             <Text style={styles.description} weight='bold'>
               {messages.linkedWalletsDescription}
-              <IconInfo
-                style={styles.infoIcon}
-                height={spacing(3)}
-                width={spacing(3)}
-              />
             </Text>
           </View>
         </View>
