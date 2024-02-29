@@ -70,11 +70,19 @@ export const useSocialMediaLoader = ({
     }
   }, [openTimeout, updateScreenOptions])
 
+  const handleCompleteSocialMediaLogin = useCallback(() => {
+    setIsWaitingForSocialLogin(false)
+    // Without this setTimeout, the header just "disappears"
+    // My suspicion is this is something related to animations
+    setTimeout(() => updateScreenOptions(undefined), 0)
+  }, [updateScreenOptions])
+
   return {
     isWaitingForSocialLogin,
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
     handleCloseSocialMediaLogin,
+    handleCompleteSocialMediaLogin,
     setIsWaitingForSocialLogin
   }
 }

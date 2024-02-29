@@ -33,12 +33,13 @@ export const SocialMediaLoading = ({
       style={css({
         textAlign: 'center',
         position: 'absolute',
-        top: -20,
+        top: 0,
         right: 0,
         bottom: 0,
         left: 0,
-        zIndex: 1000,
+        zIndex: 100,
         borderRadius: 0,
+        background: color.background.white,
         backgroundColor: color.background.white
       })}
     >
@@ -49,7 +50,7 @@ export const SocialMediaLoading = ({
           aria-label='Return to email screen'
           style={css({
             position: 'absolute',
-            top: spacing.xl,
+            top: spacing.l,
             left: spacing.xl
           })}
           onPress={() => onClose()}
