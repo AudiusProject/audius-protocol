@@ -61,10 +61,10 @@ function git-reset () {
 
         # only allow commits found on main or release branches to be deployed
         echo "commit has to be on main or a release branch"
-        # git branch -a --contains ${GIT_COMMIT} \
-        #     | tee /dev/tty \
-        #     | grep -Eq 'remotes/origin/main|remotes/origin/release' \
-        #     || exit 1
+        git branch -a --contains ${GIT_COMMIT} \
+            | tee /dev/tty \
+            | grep -Eq 'remotes/origin/main|remotes/origin/release' \
+            || exit 1
 
         # Ensure working directory clean
         git reset --hard ${GIT_COMMIT}
