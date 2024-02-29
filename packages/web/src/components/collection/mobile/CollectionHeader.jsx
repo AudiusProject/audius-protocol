@@ -85,6 +85,7 @@ const CollectionHeader = ({
   isSaved,
   modified,
   numTracks,
+  isPlayable,
   duration,
   isPublished,
   isPublishing,
@@ -230,7 +231,9 @@ const CollectionHeader = ({
             className={styles.artist}
           />
           <div className={styles.buttonSection}>
-            <PlayButton playing={playing} onPlay={onPlay} />
+            {isPlayable ? (
+              <PlayButton playing={playing} onPlay={onPlay} />
+            ) : null}
             <ActionButtonRow
               isOwner={isOwner}
               isSaved={isSaved}
@@ -306,6 +309,8 @@ CollectionHeader.propTypes = {
   isSaved: PropTypes.bool,
   saves: PropTypes.number,
   repostCount: PropTypes.number,
+  numTracks: PropTypes.number,
+  isPlayable: PropTypes.bool,
 
   // Actions
   onRepost: PropTypes.func,
