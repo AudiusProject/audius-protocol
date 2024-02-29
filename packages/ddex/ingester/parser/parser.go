@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/antchfx/xmlquery"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -137,7 +139,41 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 	p.Logger.Info("Processing new delivery", "_id", delivery.ID)
 
 	xmlData := delivery.XmlContent.Data
-	createTrackRelease, createAlbumRelease, errs := parseSonyXML(xmlData, p.IndexedBucket, delivery.ID.Hex())
+	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
+	if err != nil {
+		p.Logger.Error("Failed to read XML bytes", "error", err)
+		p.failAndUpdateStatus(delivery.ID, fmt.Errorf("failed to read XML bytes: %v", err))
+		return
+	}
+
+	// Use local-name() to ignore namespace because sometimes it's ern and sometimes it's ernm
+	msgVersionElem := xmlquery.FindOne(doc, "//*[local-name()='NewReleaseMessage']")
+	if msgVersionElem == nil {
+		p.Logger.Error("Missing <NewReleaseMessage> element")
+		p.failAndUpdateStatus(delivery.ID, errors.New("missing <NewReleaseMessage> element"))
+		return
+	}
+
+	// Extract the ERN Version in the form of 'ern/xxx' or '/ern/xxx'
+	msgSchemaVersionId := msgVersionElem.SelectAttr("MessageSchemaVersionId")
+	ernVersion := strings.TrimPrefix(msgSchemaVersionId, "/")
+	ernVersion = strings.TrimPrefix(ernVersion, "ern/")
+
+	var createTrackRelease []common.CreateTrackRelease
+	var createAlbumRelease []common.CreateAlbumRelease
+	var errs []error
+	switch ernVersion {
+	// Not sure what the difference is between 3.81 and 3.82
+	case "381":
+		createTrackRelease, createAlbumRelease, errs = parseERN381(doc, p.IndexedBucket, delivery.ID.Hex())
+	case "382":
+		createTrackRelease, createAlbumRelease, errs = parseERN381(doc, p.IndexedBucket, delivery.ID.Hex())
+	default:
+		p.Logger.Error("Unsupported schema. Expected ern/381 or ern/382", "schema", msgSchemaVersionId)
+		p.failAndUpdateStatus(delivery.ID, fmt.Errorf("unsupported schema '%s'. Expected ern/381 or ern/382", msgSchemaVersionId))
+		return
+	}
+
 	if len(errs) != 0 {
 		p.Logger.Error("Failed to parse delivery. Printing errors...")
 		for _, err := range errs {
