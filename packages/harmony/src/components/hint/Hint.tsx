@@ -33,9 +33,11 @@ export const Hint = (props: HintProps) => {
           {children}
         </Text>
       </Flex>
-      <Flex pl='unit10' gap='l'>
-        {actions}
-      </Flex>
+      {actions ? (
+        <Flex pl='unit10' gap='l'>
+          {actions}
+        </Flex>
+      ) : null}
     </Paper>
   )
 }
