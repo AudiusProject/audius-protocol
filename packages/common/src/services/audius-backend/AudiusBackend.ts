@@ -552,7 +552,9 @@ export const audiusBackend = ({
     }
 
     if (!collection.cover_art_sizes && !collection.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as string
+      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as
+        | string
+        | number // ReactNative require() is a number for images!
     }
 
     return {
