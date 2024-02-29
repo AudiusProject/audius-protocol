@@ -120,30 +120,6 @@
   text-overflow: ellipsis;
 }
 
-.topSection {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-}
-
-/* Playlist or Album Header */
-.headerRow {
-  letter-spacing: 2.5px;
-  text-align: left;
-  height: var(--unit-3);
-
-  /* Neutral Light 4 [day] */
-  color: var(--neutral-light-4);
-}
-
-.titleRow {
-  text-align: left;
-  user-select: none;
-  margin-right: 132px;
-  padding-bottom: 2px;
-  display: flex;
-}
-
 .container .gatedDogEarContainer {
   box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
     inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
@@ -151,43 +127,6 @@
 
 .volumeIcon {
   margin-left: 6px;
-}
-
-.title {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.isActive .title {
-  color: var(--primary);
-}
-
-.isActive .volumeIcon path {
-  fill: var(--primary);
-}
-
-.creatorRow {
-  display: inline-flex;
-}
-
-.large .creatorRow {
-  margin-bottom: var(--unit-1);
-}
-
-.small .creatorRow {
-  margin-bottom: var(--unit-2);
-}
-
-.large .withoutHeader .creatorRow {
-  margin-bottom: var(--unit-2);
-}
-
-.isDisabled .title:hover,
-.isDisabled .creatorRow:hover {
-  cursor: default;
-  color: inherit;
-  text-decoration: none !important;
 }
 
 .isHidden {

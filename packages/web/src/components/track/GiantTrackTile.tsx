@@ -43,7 +43,7 @@ import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
-import { Link, UserLink } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -471,18 +471,9 @@ export const GiantTrackTile = ({
         className={styles.infoLabelPlacement}
         labelName='album'
         labelValue={
-          <Link
-            to={albumInfo.permalink}
-            color='accent'
-            size='s'
-            css={({ spacing }) => ({
-              // the link is too tall
-              marginTop: spacing.negativeUnit,
-              textTransform: 'none'
-            })}
-          >
+          <TextLink to={albumInfo.permalink}>
             {albumInfo.playlist_name}
-          </Link>
+          </TextLink>
         }
       />
     )

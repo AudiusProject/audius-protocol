@@ -315,11 +315,15 @@ const ConnectedPlaylistTile = ({
   }
 
   const userName = (
-    <Text variant='body'>
-      <Text tag='span' color='subdued'>
-        {messages.createdBy}{' '}
-      </Text>
-      <UserLink userId={user_id} badgeSize='xs' />
+    <Text variant='body' ellipses css={{ display: 'inline-flex', gap: 4 }}>
+      <Text color='subdued'>{messages.createdBy}</Text>
+      <UserLink
+        ellipses
+        userId={user_id}
+        badgeSize='xs'
+        isActive={isActive}
+        popover
+      />
     </Text>
   )
 

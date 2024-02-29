@@ -20,7 +20,7 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
 
 export const UserLink = (props: UserLinkProps) => {
   const { isServerSide } = useSsrContext()
-  const { userId, badgeSize = 's', popover, ...other } = props
+  const { userId, badgeSize = 's', popover, children, ...other } = props
   const { iconSizes, spacing } = useTheme()
 
   const url = useSelector((state) => {
@@ -35,6 +35,7 @@ export const UserLink = (props: UserLinkProps) => {
     <TextLink
       to={url}
       css={{ columnGap: spacing.xs, alignItems: 'center' }}
+      ellipses={popover}
       {...other}
     >
       <Text ellipses>{userName}</Text>
@@ -43,11 +44,16 @@ export const UserLink = (props: UserLinkProps) => {
         userId={userId}
         css={{ marginTop: spacing['2xs'] }}
       />
+      {children}
     </TextLink>
   )
 
   return !isServerSide && popover && handle ? (
-    <ArtistPopover handle={handle} component='span'>
+    <ArtistPopover
+      css={{ display: 'inline-flex', overflow: 'hidden' }}
+      handle={handle}
+      component='span'
+    >
       {linkElement}
     </ArtistPopover>
   ) : (

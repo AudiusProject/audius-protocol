@@ -24,7 +24,8 @@ import {
   IconCrown,
   IconVisibilityHidden,
   IconTrending,
-  Text
+  Text,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -32,15 +33,13 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { DogEar } from 'components/dog-ear'
-import { Link } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
-import { profilePage } from 'utils/route'
 
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
 import { messages } from '../trackTileMessages'
@@ -176,14 +175,14 @@ const TrackTile = (props: CombinedProps) => {
     isTrending,
     showRankIcon,
     permalink,
-    artistHandle,
     duration,
     genre,
     isPlaying,
     isBuffering,
     variant,
     containerClassName,
-    hasPreview = false
+    hasPreview = false,
+    title
   } = props
 
   const hideShare: boolean = props.fieldVisibility
@@ -344,48 +343,40 @@ const TrackTile = (props: CombinedProps) => {
             coverArtSizes={props.coverArtSizes}
             coSign={coSign}
             className={styles.albumArtContainer}
-            label={`${props.title} by ${props.artistName}`}
+            label={`${title} by ${props.artistName}`}
             artworkIconClassName={styles.artworkIcon}
           />
-          <div
-            className={cn(styles.titles, {
-              [styles.titlesActive]: isActive,
-              [styles.titlesSkeleton]: props.showSkeleton
-            })}
+          <Flex
+            direction='column'
+            justifyContent='center'
+            gap='2xs'
+            mr='m'
+            flex='0 1 65%'
+            css={{ overflow: 'hidden' }}
           >
-            <Link
-              variant='title'
-              color={isActive ? 'active' : 'default'}
-              className={cn(fadeIn, styles.title)}
+            <TextLink
               to={permalink}
+              textVariant='title'
+              isActive={isActive}
+              applyHoverStylesToInnerSvg
             >
-              <Text className={styles.text}>{props.title}</Text>
-              {isPlaying ? <IconVolume className={styles.playIcon} /> : null}
-            </Link>
-            {(!artworkLoaded || showSkeleton) && (
-              <Skeleton className={styles.skeleton} width='80%' height='80%' />
-            )}
-            <Link
-              to={profilePage(artistHandle)}
-              className={cn(fadeIn, styles.artist)}
-              color={isActive ? 'active' : 'default'}
-            >
-              <ArtistPopover
-                handle={artistHandle}
-                containerClassName={styles.artistPopover}
-              >
-                <Text className={styles.text}>{props.artistName}</Text>
-              </ArtistPopover>
-              <UserBadges
-                userId={userId}
-                badgeSize={12}
-                className={styles.iconVerified}
-              />
-            </Link>
-            {(!artworkLoaded || showSkeleton) && (
-              <Skeleton className={styles.skeleton} width='60%' height='80%' />
-            )}
-          </div>
+              <Text ellipses>
+                {title}
+                {title}
+                {title}
+                {title}
+              </Text>
+              {isPlaying ? <IconVolume size='m' /> : null}
+              {(!artworkLoaded || showSkeleton) && (
+                <Skeleton className={styles.skeleton} height='20px' />
+              )}
+            </TextLink>
+            <UserLink userId={userId} textVariant='body' badgeSize='xs'>
+              {(!artworkLoaded || showSkeleton) && (
+                <Skeleton className={styles.skeleton} height='20px' />
+              )}
+            </UserLink>
+          </Flex>
           {coSign && (
             <Text
               variant='label'

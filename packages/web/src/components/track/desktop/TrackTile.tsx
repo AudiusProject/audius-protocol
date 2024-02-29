@@ -21,7 +21,8 @@ import {
   IconCrown,
   IconVisibilityHidden,
   Text,
-  Flex
+  Flex,
+  spacing
 } from '@audius/harmony'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
@@ -307,42 +308,40 @@ const TrackTile = ({
           <DogEar type={dogEarType} />
         </div>
       ) : null}
-      <div
-        className={cn(styles.body, {
-          // if track and not playlist/album
-          [styles.withoutHeader]: true
-        })}
-      >
-        <div className={cn(styles.topSection)}>
+      <div className={styles.body}>
+        <Flex inline direction='column'>
           {size === TrackTileSize.LARGE ? (
             <Text
               variant='label'
               size='xs'
               strength='weak'
-              className={styles.headerRow}
+              textAlign='left'
+              color='subdued'
+              css={{ letterSpacing: 2.5, height: spacing.m }}
             >
-              {!isLoading && header && <div>{header}</div>}
+              {isLoading || !header ? null : header}
             </Text>
           ) : null}
-          <Flex direction='column' gap='2xs'>
+          <Flex direction='column' gap='2xs' mb={header ? 'xs' : 's'}>
             {isLoading ? (
               <Skeleton width='80%' height='20px' />
             ) : (
-              <TextLink
-                to={permalink}
-                isActive={isActive}
-                textVariant='title'
-                applyHoverStylesToInnerSvg
-                css={{ marginRight: 132 }}
-                onClick={onClickTitle}
-              >
-                <Text ellipses>{title}</Text>
-                {isPlaying ? <IconVolume size='m' /> : null}
-              </TextLink>
+              <Flex css={{ marginRight: 132 }}>
+                <TextLink
+                  to={permalink}
+                  isActive={isActive}
+                  textVariant='title'
+                  applyHoverStylesToInnerSvg
+                  onClick={onClickTitle}
+                  disabled={isDisabled}
+                  ellipses
+                >
+                  <Text ellipses>{title}</Text>
+                  {isPlaying ? <IconVolume size='m' /> : null}
+                </TextLink>
+              </Flex>
             )}
-            <div className={styles.creatorRow}>
-              {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
-            </div>
+            {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
           </Flex>
 
           <Text variant='body' size='xs' className={styles.socialsRow}>
@@ -379,7 +378,7 @@ const TrackTile = ({
                 })
               : null}
           </Text>
-        </div>
+        </Flex>
         <div className={styles.divider} />
         <BottomRow
           hasStreamAccess={hasStreamAccess}
