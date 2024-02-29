@@ -15,8 +15,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconReceive } from '@audius/harmony'
-import { IconCart } from '@audius/stems'
+import { IconReceive, IconCart } from '@audius/harmony'
 import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -330,6 +329,7 @@ export const StemsAndDownloadsField = ({
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema({
+          isLosslessDownloadsEnabled: !!isLosslessDownloadsEnabled,
           isUsdcUploadEnabled: !!isUsdcUploadEnabled,
           ...usdcPurchaseConfig
         })

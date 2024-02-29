@@ -1,3 +1,15 @@
 when: << pipeline.parameters.run-ddex-webapp-workflow >>
 jobs:
   - ddex-webapp-init
+  - test:
+      name: test-ddex-e2e-release-by-release
+      context: Vercel
+      service: ddex-e2e-release-by-release
+  - test:
+      name: test-ddex-e2e-batched
+      context: Vercel
+      service: ddex-e2e-batched
+  - test:
+      name: test-ddex-unittests
+      context: Vercel
+      service: ddex-unittests

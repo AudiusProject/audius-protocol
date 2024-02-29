@@ -4,6 +4,7 @@ import {
   UserTrackMetadata,
   UserTrack
 } from '@audius/common/models'
+import { responseAdapter } from '@audius/common/services'
 import {
   accountSelectors,
   smartCollectionPageActions,
@@ -11,7 +12,7 @@ import {
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import { encodeHashId, removeNullable } from '@audius/common/utils'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -38,22 +39,34 @@ const { getUserId } = accountSelectors
 const COLLECTIONS_LIMIT = 25
 
 function* fetchHeavyRotation() {
+  yield* waitForRead()
+
   const currentUserId = yield* select(getUserId)
-  const apiClient = yield* getContext('apiClient')
-  const userListeningHistoryMostListenedByUser = yield* call(
-    [apiClient, apiClient.getUserTrackHistory],
+  const audiusSdk = yield* getContext('audiusSdk')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* call(audiusSdk)
+
+  const { data, signature } = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.signDiscoveryNodeRequest
+  ])
+  if (!currentUserId) return { ...HEAVY_ROTATION }
+  const activity = yield* call(
+    [sdk.full.users, sdk.full.users.getUsersTrackHistory],
     {
-      userId: currentUserId!,
-      currentUserId,
-      limit: 20,
-      offset: 0,
-      sortMethod: 'most_listens_by_user'
+      id: encodeHashId(currentUserId),
+      encodedDataMessage: data,
+      encodedDataSignature: signature,
+      sortMethod: 'most_listens_by_user',
+      limit: 20
     }
   )
+  const activityData = activity.data
+  if (!activityData) return { ...HEAVY_ROTATION }
 
-  const mostListenedTracks = userListeningHistoryMostListenedByUser
-    .map((listeningHistoryWithTrack) => listeningHistoryWithTrack.track)
-    .filter(removeNullable)
+  const mostListenedTracks = activityData
+    .map(responseAdapter.makeActivity)
+    .filter(removeNullable) as UserTrackMetadata[]
 
   const users = yield* call(
     retrieveUsers,
@@ -80,8 +93,8 @@ function* fetchHeavyRotation() {
 }
 
 function* fetchBestNewReleases() {
-  const explore = yield* getContext('explore')
   yield* waitForRead()
+  const explore = yield* getContext('explore')
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return
@@ -110,6 +123,7 @@ function* fetchBestNewReleases() {
 }
 
 function* fetchUnderTheRadar() {
+  yield* waitForRead()
   const explore = yield* getContext('explore')
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
@@ -183,8 +197,8 @@ function* fetchFeelingLucky() {
 }
 
 function* fetchRemixables() {
-  const explore = yield* getContext('explore')
   yield* waitForRead()
+  const explore = yield* getContext('explore')
   const currentUserId = yield* select(getUserId)
   if (currentUserId == null) {
     return

@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex } from '@audius/harmony-native'
+import { KeyboardAvoidingView } from 'app/components/core'
 import { PasswordField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -16,6 +17,7 @@ import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 import { useRoute } from '../useRoute'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 export type CreatePasswordParams = {
   email: string
@@ -39,6 +41,8 @@ export const CreatePasswordScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
 
+  useTrackScreen('CreatePassword')
+
   const handleSubmit = useCallback(
     (values: CreatePasswordValues) => {
       const { password } = values
@@ -55,27 +59,29 @@ export const CreatePasswordScreen = () => {
       validationSchema={passwordFormikSchema}
     >
       <Page>
-        <Heading
-          heading={createPasswordPageMessages.createYourPassword}
-          description={createPasswordPageMessages.description}
-        />
-        <Flex direction='column' h='100%' gap='l'>
-          <ReadOnlyField
-            label={createPasswordPageMessages.yourEmail}
-            value={email}
-          />
-          <PasswordField
-            name='password'
-            clearErrorOnChange={false}
-            label={createPasswordPageMessages.passwordLabel}
-          />
-          <PasswordField
-            name='confirmPassword'
-            clearErrorOnChange={false}
-            label={createPasswordPageMessages.confirmPasswordLabel}
-          />
-          <PasswordCompletionChecklist />
-        </Flex>
+        <KeyboardAvoidingView keyboardShowingOffset={220}>
+          <Flex direction='column' h='100%' gap='l'>
+            <Heading
+              heading={createPasswordPageMessages.createYourPassword}
+              description={createPasswordPageMessages.description}
+            />
+            <ReadOnlyField
+              label={createPasswordPageMessages.yourEmail}
+              value={email}
+            />
+            <PasswordField
+              name='password'
+              clearErrorOnChange={false}
+              label={createPasswordPageMessages.passwordLabel}
+            />
+            <PasswordField
+              name='confirmPassword'
+              clearErrorOnChange={false}
+              label={createPasswordPageMessages.confirmPasswordLabel}
+            />
+            <PasswordCompletionChecklist />
+          </Flex>
+        </KeyboardAvoidingView>
         <PageFooter prefix={<SignUpAgreementText />} />
       </Page>
     </Formik>

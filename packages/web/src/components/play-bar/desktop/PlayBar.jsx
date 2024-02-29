@@ -22,7 +22,7 @@ import {
   playbackRateValueMap
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
-import { setupHotkeys } from '@audius/harmony'
+import { removeHotkeys, setupHotkeys } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -85,11 +85,12 @@ class PlayBar extends Component {
       initialVolume: null,
       mediaKey: 0
     }
+    this.hotkeysHook = null
     this.seekInterval = null
   }
 
   componentDidMount() {
-    setupHotkeys(
+    this.hotkeysHook = setupHotkeys(
       {
         32 /* space */: this.togglePlay,
         37 /* left arrow */: this.onPrevious,
@@ -134,6 +135,7 @@ class PlayBar extends Component {
 
   componentWillUnmount() {
     clearInterval(this.seekInterval)
+    removeHotkeys(this.hotkeysHook)
   }
 
   goToTrackPage = () => {

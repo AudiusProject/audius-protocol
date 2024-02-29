@@ -12,9 +12,9 @@ import (
 	"image/png"
 	"io"
 	"log"
-	"mime/multipart"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -35,7 +35,12 @@ var (
 func (ss *MediorumServer) startTranscoder() {
 	myHost := ss.Config.Self.Host
 	work := make(chan *Upload)
-	numWorkers := 2
+
+	// use most cpus for transcode
+	numWorkers := runtime.NumCPU() - 2
+	if numWorkers < 2 {
+		numWorkers = 2
+	}
 
 	// on boot... reset any of my wip jobs
 	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}} {
@@ -380,7 +385,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	upload.TranscodedMirrors, err = ss.replicateFileParallel(resultHash, destPath)
+	upload.TranscodedMirrors, err = ss.replicateFileParallel(resultHash, destPath, upload.PlacementHosts)
 	if err != nil {
 		return onError(err, upload.Status, "replicateFile")
 	}
@@ -448,7 +453,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
-	mirrors, err := ss.replicateFileParallel(resultHash, destPath)
+	mirrors, err := ss.replicateFileParallel(resultHash, destPath, upload.PlacementHosts)
 	if err != nil {
 		return onError(err, upload.Status, "replicating file")
 	}
@@ -617,35 +622,6 @@ type FFProbeResult struct {
 		ProbeScore     int               `json:"probe_score"`
 		Tags           map[string]string `json:"tags,omitempty"`
 	} `json:"format"`
-}
-
-func ffprobeUpload(file *multipart.FileHeader) (*FFProbeResult, error) {
-	temp, err := os.CreateTemp("", "mediorumProbe")
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := file.Open()
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-
-	_, err = io.Copy(temp, r)
-	if err != nil {
-		return nil, err
-	}
-	temp.Close()
-	defer os.Remove(temp.Name())
-
-	probe, err := ffprobe(temp.Name())
-	if err != nil {
-		return nil, err
-	}
-
-	// restore orig filename
-	probe.Format.Filename = file.Filename
-	return probe, nil
 }
 
 func ffprobe(sourcePath string) (*FFProbeResult, error) {

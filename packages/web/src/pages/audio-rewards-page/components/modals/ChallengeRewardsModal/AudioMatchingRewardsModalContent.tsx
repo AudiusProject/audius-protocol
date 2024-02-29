@@ -7,12 +7,13 @@ import {
   formatNumberCommas,
   challengeRewardsConfig
 } from '@audius/common/utils'
-import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
-  HarmonyButton,
-  HarmonyButtonProps,
-  HarmonyButtonType
-} from '@audius/stems'
+  Button,
+  ButtonProps,
+  IconArrowRight,
+  IconCloudUpload,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -62,15 +63,15 @@ type AudioMatchingRewardsModalContentProps = {
 }
 
 const ctaButtonProps: {
-  [k in AudioMatchingChallengeName]: Partial<HarmonyButtonProps>
+  [k in AudioMatchingChallengeName]: Partial<ButtonProps>
 } = {
   [ChallengeName.AudioMatchingBuy]: {
     iconRight: IconArrowRight,
-    text: messages.viewPremiumTracks
+    children: messages.viewPremiumTracks
   },
   [ChallengeName.AudioMatchingSell]: {
     iconLeft: IconCloudUpload,
-    text: messages.uploadTrack
+    children: messages.uploadTrack
   }
 }
 
@@ -171,16 +172,17 @@ export const AudioMatchingRewardsModalContent = ({
         </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
-        <HarmonyButton
+        <Button
           fullWidth
           iconRight={claimInProgress ? ClaimInProgressSpinner : IconArrowRight}
           disabled={claimInProgress}
-          text={messages.claimAudio(formatNumberCommas(claimableAmount))}
           onClick={onClaimRewardClicked}
-        />
+        >
+          {messages.claimAudio(formatNumberCommas(claimableAmount))}
+        </Button>
       ) : (
-        <HarmonyButton
-          variant={HarmonyButtonType.SECONDARY}
+        <Button
+          variant='secondary'
           fullWidth
           {...ctaButtonProps[challengeName]}
           onClick={handleClickCTA}

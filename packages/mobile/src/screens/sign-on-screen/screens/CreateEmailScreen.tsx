@@ -33,6 +33,7 @@ import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons
 import { Heading } from '../components/layout'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
 import type { SignUpScreenParamList } from '../types'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 import type { SignOnScreenProps } from './types'
 
@@ -54,6 +55,8 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     return toFormikValidationSchema(emailSchema(queryContext))
   }, [queryContext])
 
+  useTrackScreen('CreateEmail')
+
   const handleSubmit = useCallback(
     (values: SignUpEmailValues) => {
       const { email } = values
@@ -69,16 +72,17 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
     handleCloseSocialMediaLogin,
-    setIsWaitingForSocialLogin
+    handleCompleteSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: resetOAuthState,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
   })
 
-  const handleCompleteSocialMediaLogin = useCallback(
+  const handleSocialMediaLoginSuccess = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
       const { handle, requiresReview } = result
-      setIsWaitingForSocialLogin(false)
+      dispatch(startSignUp())
+      handleCompleteSocialMediaLogin()
       dispatch(setLinkedSocialOnFirstPage(true))
       dispatch(setValueField('handle', handle))
 
@@ -86,7 +90,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
         requiresReview ? 'ReviewHandle' : 'CreateLoginDetails'
       )
     },
-    [dispatch, navigation, setIsWaitingForSocialLogin]
+    [dispatch, handleCompleteSocialMediaLogin, navigation]
   )
 
   return (
@@ -101,52 +105,55 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
           {isWaitingForSocialLogin ? (
             <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
           ) : null}
-          <Heading
-            heading={createEmailPageMessages.title}
-            description={
-              <>
-                {createEmailPageMessages.subHeader.line1}
-                {'\n'}
-                {createEmailPageMessages.subHeader.line2}
-              </>
-            }
-            centered
-          />
-          <Flex direction='column' gap='l'>
-            <NewEmailField
-              name='email'
-              label={createEmailPageMessages.emailLabel}
-              onChangeScreen={onChangeScreen}
+          <Flex style={{ zIndex: 1 }} gap='l'>
+            <Heading
+              heading={createEmailPageMessages.title}
+              description={
+                <>
+                  {createEmailPageMessages.subHeader.line1}
+                  {'\n'}
+                  {createEmailPageMessages.subHeader.line2}
+                </>
+              }
+              centered
             />
-            <Divider>
-              <Text variant='body' size='s' color='subdued'>
-                {createEmailPageMessages.socialsDividerText}
-              </Text>
-            </Divider>
-            <SocialMediaSignUpButtons
-              onError={handleErrorSocialMediaLogin}
-              onStart={handleStartSocialMediaLogin}
-              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-              onClose={handleCloseSocialMediaLogin}
-            />
-          </Flex>
-          <Flex direction='column' gap='l'>
-            <Button
-              onPress={() => handleSubmit()}
-              fullWidth
-              iconRight={IconArrowRight}
-            >
-              {createEmailPageMessages.signUp}
-            </Button>
-            <Text variant='body' size='m' textAlign='center'>
-              {createEmailPageMessages.haveAccount}{' '}
-              <TextLink
-                variant='visible'
-                onPress={() => onChangeScreen('sign-in')}
+            <Flex direction='column' gap='l'>
+              <NewEmailField
+                name='email'
+                label={createEmailPageMessages.emailLabel}
+                onChangeScreen={onChangeScreen}
+              />
+              <Divider>
+                <Text variant='body' size='s' color='subdued'>
+                  {createEmailPageMessages.socialsDividerText}
+                </Text>
+              </Divider>
+              <SocialMediaSignUpButtons
+                onError={handleErrorSocialMediaLogin}
+                onStart={handleStartSocialMediaLogin}
+                onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
+                onClose={handleCloseSocialMediaLogin}
+                page='create-email'
+              />
+            </Flex>
+            <Flex direction='column' gap='l'>
+              <Button
+                onPress={() => handleSubmit()}
+                fullWidth
+                iconRight={IconArrowRight}
               >
-                {createEmailPageMessages.signIn}
-              </TextLink>
-            </Text>
+                {createEmailPageMessages.signUp}
+              </Button>
+              <Text variant='body' size='m' textAlign='center'>
+                {createEmailPageMessages.haveAccount}{' '}
+                <TextLink
+                  variant='visible'
+                  onPress={() => onChangeScreen('sign-in')}
+                >
+                  {createEmailPageMessages.signIn}
+                </TextLink>
+              </Text>
+            </Flex>
           </Flex>
         </>
       )}

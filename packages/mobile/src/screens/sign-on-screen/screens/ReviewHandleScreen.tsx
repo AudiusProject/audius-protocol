@@ -22,6 +22,7 @@ import { HandleField } from '../components/HandleField'
 import { Heading, Page, PageFooter } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 import { restrictedHandles } from '../utils/restrictedHandles'
+import { useTrackScreen } from '../utils/useTrackScreen'
 
 type ReviewHandleValues = {
   handle: string
@@ -46,6 +47,8 @@ export const ReviewHandleScreen = () => {
       pickHandleSchema({ audiusQueryContext, restrictedHandles })
     )
   }, [audiusQueryContext])
+
+  useTrackScreen('ReviewHandle')
 
   const handleSubmit = useCallback(
     (values: ReviewHandleValues) => {

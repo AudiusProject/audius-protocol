@@ -11,7 +11,7 @@ import {
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Spring } from 'react-spring/renderprops.cjs'
+import { animated, useSpring } from 'react-spring'
 // @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
@@ -156,66 +156,63 @@ export const Page = (props: PageProps) => {
     structuredData,
     noIndex
   }
+  const springProps = useSpring({
+    from: { opacity: fromOpacity },
+    opacity: 1,
+    config: { duration: fadeDuration }
+  })
 
   return (
     <>
       <MetaTags {...metaTagsProps} />
-      <Spring
-        from={{ opacity: fromOpacity }}
-        to={{ opacity: 1 }}
-        config={{ duration: fadeDuration }}
-      >
-        {(animProps) => (
-          <div
-            ref={containerRef}
-            style={animProps}
-            className={cn(
-              styles.pageContainer,
-              props.containerClassName,
-              props.className
-            )}
-          >
-            {header && (
-              <HeaderContainer
-                header={header}
-                showSearch={showSearch}
-                containerRef={calculateHeaderHeight}
-              />
-            )}
-            <div
-              className={cn({
-                [styles.inset]: variant === 'inset',
-                [styles.flush]: variant === 'flush',
-                [styles.medium]: size === 'medium',
-                [styles.large]: size === 'large',
-                [containerClassName ?? '']: !!containerClassName
-              })}
-              style={
-                variant === 'inset'
-                  ? { paddingTop: `${headerHeight + HEADER_MARGIN_PX}px` }
-                  : undefined
-              }
-            >
-              {/* Set an id so that nested components can mount in relation to page if needed, e.g. fixed menu popups. */}
-              <div
-                id='page'
-                className={cn(styles.pageContent, {
-                  [contentClassName ?? '']: !!contentClassName
-                })}
-              >
-                {children}
-              </div>
-            </div>
-            <ClientOnly>
-              {scrollableSearch && (
-                <div className={styles.searchWrapper}>
-                  <SearchBar />
-                </div>
-              )}
-            </ClientOnly>
-          </div>
+      <animated.div
+        ref={containerRef}
+        style={springProps}
+        className={cn(
+          styles.pageContainer,
+          props.containerClassName,
+          props.className
         )}
-      </Spring>
+      >
+        {header && (
+          <HeaderContainer
+            header={header}
+            showSearch={showSearch}
+            containerRef={calculateHeaderHeight}
+          />
+        )}
+        <div
+          className={cn({
+            [styles.inset]: variant === 'inset',
+            [styles.flush]: variant === 'flush',
+            [styles.medium]: size === 'medium',
+            [styles.large]: size === 'large',
+            [containerClassName ?? '']: !!containerClassName
+          })}
+          style={
+            variant === 'inset'
+              ? { paddingTop: `${headerHeight + HEADER_MARGIN_PX}px` }
+              : undefined
+          }
+        >
+          {/* Set an id so that nested components can mount in relation to page if needed, e.g. fixed menu popups. */}
+          <div
+            id='page'
+            className={cn(styles.pageContent, {
+              [contentClassName ?? '']: !!contentClassName
+            })}
+          >
+            {children}
+          </div>
+        </div>
+        <ClientOnly>
+          {scrollableSearch && (
+            <div className={styles.searchWrapper}>
+              <SearchBar />
+            </div>
+          )}
+        </ClientOnly>
+      </animated.div>
     </>
   )
 }

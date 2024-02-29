@@ -12,13 +12,12 @@ import {
   IconArrowRight,
   IconExternalLink,
   TextLink,
-  IconCart
+  IconCart,
+  Text
 } from '@audius/harmony'
 import moment from 'moment'
 
-import { Icon } from 'components/Icon'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
-import { Text } from 'components/typography'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 
@@ -55,7 +54,7 @@ export const PurchaseModalContent = ({
     <>
       <ModalHeader>
         <ModalTitle
-          icon={<Icon icon={IconCart} />}
+          icon={<IconCart color='subdued' />}
           title={messages.purchaseDetails}
         />
       </ModalHeader>
@@ -67,7 +66,7 @@ export const PurchaseModalContent = ({
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>
         <DetailSection label={messages.by}>
-          <Text size='large' color='secondary'>
+          <Text variant='body' size='l' color='accent'>
             <UserNameAndBadges
               onNavigateAway={onClose}
               userId={purchaseDetails.sellerUserId}
@@ -75,7 +74,7 @@ export const PurchaseModalContent = ({
           </Text>
         </DetailSection>
         <DetailSection label={messages.date}>
-          <Text size='large'>
+          <Text variant='body' size='l'>
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>

@@ -42,6 +42,10 @@
   width: 100%;
 }
 
+.handleWrapper {
+  margin-top: 4px;
+}
+
 .handleWrapper > .handle {
   display: inline-block;
   margin-right: 8px;
@@ -61,6 +65,9 @@
 
 .nameWrapper .editableName {
   max-width: 440px;
+}
+.nameWrapper .name {
+  margin-top: -8px;
 }
 
 .info {

@@ -7,18 +7,6 @@
   padding: var(--unit-2) var(--unit-4);
 }
 
-.icon {
-  width: var(--unit-5);
-  height: var(--unit-5);
-  /* 1 pixel nudge to visually center */
-  position: relative;
-  left: -1px;
-}
-
-.icon path {
-  fill: var(--static-white);
-}
-
 button.sendButton {
   display: flex;
   justify-content: center;

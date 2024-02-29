@@ -21,6 +21,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
 import { Heading, PageFooter } from '../../components/layout'
 import type { SignUpScreenParamList } from '../../types'
+import { useTrackScreen } from '../../utils/useTrackScreen'
 
 import { SelectedGenresTabBar } from './SelectedGenresTabBar'
 import { TopArtistsCardList } from './TopArtistsCardList'
@@ -38,6 +39,7 @@ export const SelectArtistsScreen = () => {
   const selectedArtists = useSelector(getFollowIds)
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
+  useTrackScreen('SelectArtists')
 
   const accountCreationStatus = useSelector(getStatus)
 
@@ -71,7 +73,7 @@ export const SelectArtistsScreen = () => {
 
   return (
     <SelectArtistsPreviewContextProvider>
-      <Flex flex={1}>
+      <Flex flex={1} pb='l'>
         <Tab.Navigator
           tabBar={SelectedGenresTabBar}
           collapsibleOptions={{

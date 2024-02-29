@@ -1,6 +1,6 @@
 {
   "name": "@audius/ddex-webapp-server",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "description": "Backend server for DDEX ingestion (also serves frontend as static assets)",
   "main": "index.js",
   "scripts": {
@@ -20,12 +20,15 @@
     "@aws-sdk/client-s3": "3.504.0",
     "@aws-sdk/s3-request-presigner": "3.504.0",
     "@trpc/server": "10.38.4",
+    "connect-mongodb-session": "5.0.0",
     "cors": "2.8.5",
     "decompress": "4.2.1",
     "dotenv": "16.3.1",
     "express": "4.18.2",
+    "express-session": "1.18.0",
     "fast-xml-parser": "4.3.2",
     "fastq": "1.16.0",
+    "hashids": "2.3.0",
     "mongodb": "6.3.0",
     "mongoose": "8.1.0",
     "multer": "1.4.5-lts.1",
@@ -33,8 +36,10 @@
     "zod": "3.22.4"
   },
   "devDependencies": {
+    "@types/connect-mongodb-session": "2.4.7",
     "@types/cors": "2.8.17",
     "@types/express": "4.17.21",
+    "@types/express-session": "1.17.10",
     "@types/node": "20.10.6",
     "@typescript-eslint/eslint-plugin": "6.17.0",
     "@typescript-eslint/parser": "6.17.0",

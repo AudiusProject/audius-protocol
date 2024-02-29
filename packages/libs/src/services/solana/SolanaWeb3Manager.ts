@@ -70,6 +70,7 @@ type CreateSenderParams = Omit<
 
 export type MintName = 'usdc' | 'audio'
 export const DEFAULT_MINT: MintName = 'audio'
+export type PurchaseContentType = 'track' | 'album'
 export type PurchaseAccess = 'stream' | 'download'
 
 const MEMO_PROGRAM_ID = new PublicKey(
@@ -531,7 +532,7 @@ export class SolanaWeb3Manager {
     purchaseAccess
   }: {
     id: number
-    type: 'track'
+    type: PurchaseContentType
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
@@ -619,7 +620,7 @@ export class SolanaWeb3Manager {
     purchaseAccess
   }: {
     id: number
-    type: 'track'
+    type: PurchaseContentType
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number

@@ -14,9 +14,11 @@ import {
   IconArrowRight as IconArrow,
   IconError,
   IconCloudUpload as IconUpload,
-  IconValidationCheck
+  IconValidationCheck,
+  Text,
+  PlainButton
 } from '@audius/harmony'
-import { HarmonyPlainButton, ProgressBar } from '@audius/stems'
+import { ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -24,7 +26,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Link } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
-import { Text } from 'components/typography'
 import { collectionPage, profilePage } from 'utils/route'
 
 import { ShareBanner } from '../components/ShareBanner'
@@ -97,14 +98,14 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
             : trackProgress?.audio?.status
         }
       />
-      {displayIndex ? <Text size='small'>{index + 1}</Text> : null}
+      {displayIndex ? <Text size='s'>{index + 1}</Text> : null}
       {displayArtwork ? (
         <DynamicImage
           wrapperClassName={styles.trackItemArtwork}
           image={artworkUrl || placeholderArt}
         />
       ) : null}
-      <Text size='small'>{track.metadata.title}</Text>
+      <Text size='s'>{track.metadata.title}</Text>
     </div>
   )
 }
@@ -123,14 +124,21 @@ export const FinishPage = (props: FinishPageProps) => {
   const dispatch = useDispatch()
 
   const uploadComplete = useMemo(() => {
-    if (!upload.uploadProgress || upload.uploading || !upload.success)
+    if (
+      !upload.uploadProgress ||
+      upload.uploading ||
+      !upload.success ||
+      upload.error
+    )
       return false
 
     return upload.uploadProgress.reduce((acc, progress) => {
       return (
         acc &&
-        progress.art.status === ProgressStatus.COMPLETE &&
-        progress.audio.status === ProgressStatus.COMPLETE
+        (progress.art.status === ProgressStatus.COMPLETE ||
+          progress.art.status === ProgressStatus.ERROR) &&
+        (progress.audio.status === ProgressStatus.COMPLETE ||
+          progress.audio.status === ProgressStatus.ERROR)
       )
     }, true)
   }, [upload])
@@ -205,13 +213,13 @@ export const FinishPage = (props: FinishPageProps) => {
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
-            <Text id='upload-progress' variant='label' size='small'>
+            <Text id='upload-progress' variant='label' size='s'>
               {uploadComplete
                 ? messages.uploadComplete
                 : messages.uploadInProgress}
             </Text>
             <div className={styles.headerProgressInfo}>
-              <Text variant='label' as='p' size='small'>
+              <Text variant='label' tag='p' size='s'>
                 {uploadComplete
                   ? '100%'
                   : fullUploadPercent === 100 && !uploadComplete
@@ -261,20 +269,15 @@ export const FinishPage = (props: FinishPageProps) => {
         </div>
         {uploadComplete && visitButtonPath ? (
           <div className={styles.uploadFooter}>
-            <HarmonyPlainButton
-              onClick={handleUploadMoreClick}
-              text={messages.uploadMore}
-              iconLeft={IconUpload}
-            />
+            <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
+              {messages.uploadMore}
+            </PlainButton>
             <Link
               to={visitButtonPath}
               onClick={dispatchVisitEvent}
               className={styles.visitLink}
             >
-              <HarmonyPlainButton
-                text={visitButtonText}
-                iconRight={IconArrow}
-              />
+              <PlainButton iconRight={IconArrow}>{visitButtonText}</PlainButton>
             </Link>
           </div>
         ) : null}

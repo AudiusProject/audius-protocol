@@ -16,15 +16,6 @@
   flex: 1;
 }
 
-.iconLight {
-  /* Fixes vertical alignment inside IconButton */
-  display: block;
-}
-
-.iconLight path {
-  fill: var(--neutral-light-4);
-}
-
 .spinner {
   width: var(--unit-12);
   height: var(--unit-12);

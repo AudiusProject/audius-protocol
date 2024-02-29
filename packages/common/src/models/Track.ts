@@ -5,7 +5,7 @@ import { Nullable } from '../utils/typeUtils'
 import { Chain } from './Chain'
 import { Favorite } from './Favorite'
 import { CID, ID, UID } from './Identifiers'
-import { CoverArtSizes } from './ImageSizes'
+import { CoverArtSizes, CoverArtSizesCids } from './ImageSizes'
 import { Repost } from './Repost'
 import { StemCategory } from './Stems'
 import { Timestamped } from './Timestamped'
@@ -123,8 +123,11 @@ export enum TrackAccessType {
 
 export const isContentCollectibleGated = (
   gatedConditions?: Nullable<AccessConditions>
-): gatedConditions is CollectibleGatedConditions =>
-  'nft_collection' in (gatedConditions ?? {})
+): gatedConditions is {
+  nft_collection:
+    | AccessConditionsEthNFTCollection
+    | AccessConditionsSolNFTCollection
+} => 'nft_collection' in (gatedConditions ?? {})
 
 export const isContentFollowGated = (
   gatedConditions?: Nullable<AccessConditions>
@@ -200,7 +203,7 @@ export type TrackMetadata = {
   track_segments: TrackSegment[]
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
-  cover_art_cids?: Nullable<CoverArtSizes>
+  cover_art_cids?: Nullable<CoverArtSizesCids>
   is_scheduled_release: boolean
   is_unlisted: boolean
   is_available: boolean
@@ -217,6 +220,7 @@ export type TrackMetadata = {
   orig_filename: Nullable<string>
   is_downloadable: boolean
   is_original_available: boolean
+  ddex_app?: Nullable<string>
 
   // Optional Fields
   is_playlist_upload?: boolean

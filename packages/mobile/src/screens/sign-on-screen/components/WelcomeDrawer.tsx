@@ -4,8 +4,10 @@ import { welcomeModalMessages } from '@audius/common/messages'
 import { settingsPageActions } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
 import { css } from '@emotion/native'
+import { setWelcomeModalShown } from 'audius-client/src/common/store/pages/signon/actions'
 import { getNameField } from 'audius-client/src/common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import {
   Button,
@@ -31,13 +33,21 @@ export const WelcomeDrawer = () => {
   const { onClose: closeDrawer } = useDrawer('Welcome')
   const dispatch = useDispatch()
 
+  useEffectOnce(() => {
+    dispatch(setWelcomeModalShown(true))
+  })
+
+  const openNotificationsDrawer = useCallback(() => {
+    dispatch(requestPushNotificationPermissions())
+  }, [dispatch])
+
   const handleClose = useCallback(() => {
     closeDrawer()
-    dispatch(requestPushNotificationPermissions())
-  }, [closeDrawer, dispatch])
+    openNotificationsDrawer()
+  }, [closeDrawer, openNotificationsDrawer])
 
   return (
-    <NativeDrawer drawerName='Welcome'>
+    <NativeDrawer drawerName='Welcome' onClose={openNotificationsDrawer}>
       <Flex w='100%' h={96} style={css({ zIndex: 1 })}>
         <ReadOnlyCoverPhotoBanner />
         <Flex
@@ -61,6 +71,7 @@ export const WelcomeDrawer = () => {
             strength='strong'
             id='welcome-title'
             color='accent'
+            textAlign='center'
           >
             {fillString(
               welcomeModalMessages.welcome,
@@ -80,7 +91,10 @@ export const WelcomeDrawer = () => {
             variant='tertiary'
             onPress={() => {
               handleClose()
-              navigation.navigate('HomeStack', { screen: 'Upload' })
+              navigation.navigate('HomeStack', {
+                screen: 'App',
+                params: { screen: 'Upload' }
+              })
             }}
             fullWidth
           >

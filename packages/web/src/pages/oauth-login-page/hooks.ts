@@ -315,6 +315,7 @@ export const useOAuthSetup = ({
       const jwt = await formOAuthResponse({
         account,
         userEmail,
+        apiKey,
         onError: () => {
           dispatch(
             errorActions.handleError({

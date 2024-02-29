@@ -1175,3 +1175,273 @@ def test_index_add_tracks_to_collections(app, mocker):
             {"metadata_time": 1660927554, "time": 1585336422, "track": 1},
             {"metadata_time": 1660927554, "time": 1585336422, "track": 2},
         ]
+
+
+def test_access_conditions(app, mocker, tx_receipts):
+    "Tests that playlists cannot have invalid access stream conditions"
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
+
+    test_metadata = {
+        "CreatePublicAlbum": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "album",
+            "is_album": True,
+        },
+        "CreateAlbumAccessConditions": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "album",
+            "is_album": True,
+            "is_stream_gated": True,
+            "stream_conditions": {
+                "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
+            },
+        },
+        "UpdatePlaylistAccessConditions": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "album",
+            "is_stream_gated": True,
+            "stream_conditions": {
+                "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
+            },
+        },
+        "UpdatePlaylistMakePublic": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "album",
+            "is_stream_gated": False,
+            "stream_conditions": None,
+        },
+        "InvalidCreatePlaylistAccessConditions": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "album",
+            "is_stream_gated": True,
+            "stream_conditions": {
+                "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
+            },
+        },
+        "InvalidCreateAlbumNoConditions": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "album",
+            "is_album": True,
+            "is_stream_gated": True,
+            "stream_conditions": None,
+        },
+    }
+
+    create_album_access_conditions_json = json.dumps(
+        test_metadata["CreateAlbumAccessConditions"]
+    )
+    update_album_make_public_json = json.dumps(
+        test_metadata["UpdatePlaylistMakePublic"]
+    )
+    invalid_create_playlist_access_conditions_json = json.dumps(
+        test_metadata["InvalidCreatePlaylistAccessConditions"]
+    )
+    invalid_create_album_no_conditions_json = json.dumps(
+        test_metadata["InvalidCreateAlbumNoConditions"]
+    )
+    create_public_album_access_conditions_json = json.dumps(
+        test_metadata["CreatePublicAlbum"]
+    )
+    update_album_make_gated_json = json.dumps(
+        test_metadata["UpdatePlaylistAccessConditions"]
+    )
+
+    tx_receipts = {
+        "CreateAlbumAccessConditionsTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 7,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "CreateAlbumAccessConditions", "data": {create_album_access_conditions_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAlbumAccessConditionsTx2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 8,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "CreateAlbumAccessConditions2", "data": {create_album_access_conditions_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateAlbumAccessConditionsMakePublicTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 8,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdateAlbumAccessConditionsMakePublic", "data": {update_album_make_public_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "InvalidCreatePlaylistAccessConditionsTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 9,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "InvalidCreatePlaylistAccessConditions", "data": {invalid_create_playlist_access_conditions_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "InvalidCreateAlbumNoConditionsTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 10,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "InvalidCreateAlbumNoConditions", "data": {invalid_create_album_no_conditions_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "CreatePublicAlbumTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 11,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "CreatePublicAlbum", "data": {create_public_album_access_conditions_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "InvalidUpdateAlbumMakeGatedTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 11,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdateAlbumMakeGated", "data": {update_album_make_gated_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+        ],
+    }
+    populate_mock_db(db, entities)
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+
+        # Validate usdc-gated album
+        album: Playlist = (
+            session.query(Playlist)
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 7)
+            .first()
+        )
+        assert album.is_album == True
+        assert album.is_stream_gated == True
+        assert album.stream_conditions == {
+            "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
+        }
+
+        # Validate previously usdc-gated album that is now public
+        album: Playlist = (
+            session.query(Playlist)
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 8)
+            .first()
+        )
+        assert album.is_album == True
+        assert album.is_stream_gated == False
+        assert album.stream_conditions == None
+
+        # Validate creating usdc-gated non-album playlist fails
+        album: Playlist = (
+            session.query(Playlist)
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 9)
+            .first()
+        )
+        assert album == None
+
+        # Validate creating usdc-gated album without stream_conditions fails
+        album: Playlist = (
+            session.query(Playlist)
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 10)
+            .first()
+        )
+        assert album == None
+
+        # Validate making a public album gated fails
+        album: Playlist = (
+            session.query(Playlist)
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 11)
+            .first()
+        )
+        assert album.is_stream_gated == False
+        assert album.stream_conditions == None

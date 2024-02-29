@@ -12,7 +12,7 @@ import type {
   ButtonProps
 } from '@audius/harmony-native'
 import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony-native'
-import { KeyboardAvoidingView } from 'app/components/core'
+import { KeyboardAvoidingView, HeaderShadow } from 'app/components/core'
 
 const messages = {
   continue: 'Continue'
@@ -41,22 +41,25 @@ export const Page = (props: PageProps) => {
   }
 
   return (
-    // 1 zIndex is to appear below
-    <Flex
-      {...layoutProps}
-      style={[
-        css({
-          zIndex: 1,
-          minHeight:
-            Dimensions.get('window').height - insets.top - insets.bottom,
-          paddingBottom: insets.bottom
-        }),
-        style
-      ]}
-      {...other}
-    >
-      {children}
-    </Flex>
+    <>
+      <HeaderShadow />
+      {/* // 1 zIndex is to appear below */}
+      <Flex
+        {...layoutProps}
+        style={[
+          css({
+            zIndex: 1,
+            minHeight:
+              Dimensions.get('window').height - insets.top - insets.bottom,
+            paddingBottom: insets.bottom
+          }),
+          style
+        ]}
+        {...other}
+      >
+        {children}
+      </Flex>
+    </>
   )
 }
 

@@ -27,7 +27,7 @@ export const ScheduledReleaseLabel = ({
       )}
     >
       <IconCalendarMonth size='s' />
-      <Text>
+      <Text variant='body'>
         Releases{' '}
         {moment(released).format('M/D/YY [@] h:mm A') +
           ' ' +

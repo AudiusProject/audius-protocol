@@ -1,7 +1,7 @@
 {
   "name": "@audius/ddex-webapp-client",
   "private": true,
-  "version": "0.0.10",
+  "version": "0.0.12",
   "type": "module",
   "scripts": {
     "start": "vite",
@@ -14,8 +14,9 @@
     "serve": "vite preview",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:env": "dotenv-linter",
     "typecheck": "tsc",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:lint:env\""
   },
   "dependencies": {
     "@audius/harmony": "*",
@@ -23,7 +24,6 @@
     "@emotion/css": "11.11.2",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
-    "@optimizely/optimizely-sdk": "4.9.2",
     "@radix-ui/react-slot": "1.0.2",
     "@react-spring/web": "9.7.3",
     "@tanstack/react-query": "4.35.7",
@@ -31,7 +31,6 @@
     "@trpc/react-query": "10.38.4",
     "@trpc/server": "10.38.4",
     "classnames": "2.5.1",
-    "hashids": "2.2.1",
     "lodash": "4.17.21",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -45,6 +44,7 @@
     "web3": "4.3.0"
   },
   "devDependencies": {
+    "@audius/dotenv-linter": "*",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@vitejs/plugin-react-swc": "3.5.0",

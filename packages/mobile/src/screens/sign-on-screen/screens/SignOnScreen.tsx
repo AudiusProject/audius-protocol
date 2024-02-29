@@ -41,6 +41,8 @@ const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 const CreateAccountLink = (props: TextProps) => {
   const { onPress } = props
+  const { spacing } = useTheme()
+
   return (
     <AnimatedFlex
       alignItems='center'
@@ -49,7 +51,7 @@ const CreateAccountLink = (props: TextProps) => {
       entering={FadeIn}
       exiting={FadeOut}
     >
-      <SafeAreaView>
+      <SafeAreaView style={{ paddingBottom: spacing['3xl'] }}>
         <Text
           variant='title'
           strength='weak'

@@ -48,7 +48,7 @@ export const FeedScreen = () => {
   )
 
   return (
-    <Screen>
+    <Screen url='Feed'>
       <ScreenHeader text={messages.header} icon={IconFeed}>
         <OnlineOnly>
           <FeedFilterButton />

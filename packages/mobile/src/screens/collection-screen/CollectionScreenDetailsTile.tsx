@@ -7,7 +7,8 @@ import {
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
   reachabilitySelectors,
-  playerSelectors
+  playerSelectors,
+  cacheTracksSelectors
 } from '@audius/common/store'
 import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
 import type { Maybe } from '@audius/common/utils'
@@ -32,6 +33,7 @@ const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection } = cacheCollectionsSelectors
+const { getTracks } = cacheTracksSelectors
 
 const selectTrackUids = createSelector(
   (state: AppState) => getCollectionTracksLineup(state).entries,
@@ -233,6 +235,14 @@ export const CollectionScreenDetailsTile = ({
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined
 
+  const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
+  const tracks = useSelector((state) => getTracks(state, { uids }))
+  const areAllTracksDeleted = Object.values(tracks).every(
+    (track) => track.is_delete
+  )
+  const isPlayable =
+    !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
+
   const renderTrackList = useCallback(() => {
     return (
       <TrackList
@@ -242,7 +252,7 @@ export const CollectionScreenDetailsTile = ({
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
         isAlbumPage={isAlbum}
-        uids={isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids}
+        uids={uids}
         ListEmptyComponent={
           isLineupLoading ? null : (
             <Text fontSize='medium' weight='medium' style={styles.empty}>
@@ -258,13 +268,10 @@ export const CollectionScreenDetailsTile = ({
     handlePressTrackListItemPlay,
     isLineupLoading,
     styles,
-    trackUids,
-    trackCount,
+    uids,
     isOwner,
     messages
   ])
-
-  const isPlayable = isQueued || (trackCount > 0 && !!firstTrack)
 
   return (
     <DetailsTile

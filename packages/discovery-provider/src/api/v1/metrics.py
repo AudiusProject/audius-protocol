@@ -21,7 +21,7 @@ from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_historical_route_metrics import get_historical_route_metrics
 from src.queries.get_personal_route_metrics import get_personal_route_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
-from src.queries.get_trailing_metrics import get_aggregate_route_metrics_trailing_month
+from src.queries.get_trailing_metrics import get_aggregate_route_metrics_trailing
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import (
     get_aggregate_metrics_info,
@@ -66,6 +66,10 @@ valid_date_buckets = [
 valid_bucket_sizes = {
     "week": ["day"],
     "month": ["day", "week"],
+    "all_time": ["month", "week"],
+}
+valid_bucket_sizes_with_year = {
+    **valid_bucket_sizes,
     "all_time": ["month", "week"],
 }
 
@@ -158,12 +162,14 @@ class AggregateHistoricalMetrics(Resource):
         return response
 
 
-@ns.route("/aggregates/routes/trailing/month", doc=False)
+@ns.route("/aggregates/routes/trailing/<string:time_range>", doc=False)
 class AggregateRouteMetricsTrailingMonth(Resource):
     @cache(ttl_sec=30 * 60)
-    def get(self):
-        """Gets aggregated route metrics for the last trailing 30 days"""
-        metrics = get_aggregate_route_metrics_trailing_month()
+    def get(self, time_range):
+        """Gets aggregated route metrics for the last trailing week, month, or year"""
+        if time_range != "month" and time_range != "year" and time_range != "week":
+            abort_bad_path_param("time_range", ns)
+        metrics = get_aggregate_route_metrics_trailing(time_range)
         response = success_response(metrics)
         return response
 
@@ -184,11 +190,11 @@ class AggregateRouteMetrics(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self, time_range):
         """Gets aggregated route metrics based on time range and bucket size"""
-        if time_range not in valid_bucket_sizes:
+        if time_range not in valid_bucket_sizes_with_year:
             abort_bad_path_param("time_range", ns)
 
         args = aggregate_route_metrics_parser.parse_args()
-        valid_buckets = valid_bucket_sizes[time_range]
+        valid_buckets = valid_bucket_sizes_with_year[time_range]
         bucket_size = args.get("bucket_size") or valid_buckets[0]
 
         if bucket_size not in valid_buckets:
@@ -213,7 +219,7 @@ class AggregateAppMetricsTrailing(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self, time_range):
         """Gets aggregated app metrics based on time range and bucket size"""
-        if time_range not in valid_bucket_sizes:
+        if time_range not in valid_bucket_sizes_with_year:
             abort_bad_path_param("time_range", ns)
 
         args = aggregate_app_metrics_parser.parse_args()

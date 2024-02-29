@@ -30,6 +30,7 @@ export default async ({ track_id, updated_at, created_at }) => {
       'tracks.genre',
       'tracks.release_date',
       'tracks.is_stream_gated',
+      'tracks.is_download_gated',
       'tracks.owner_id',
       'users.user_id',
       'users.handle',

@@ -51,7 +51,8 @@ WAUDIO_PDA = "8GrLc33SYDHaVKoXRLMau2yjYnMnSVg179qwJp9izeQb"
 # Pubkey.find_program_address([bytes(USDC_MINT)], Pubkey.from_string(CLAIMABLE_TOKENS_PDA))
 USDC_PDA = "7vKR1WSmyHvBmCvKPZBiN66PHZqYQbXw51SZdwtVd9Dt"
 
-# contentType:contentId:blockNumber
+# contentType:contentId:blockNumber:purchaseUserId:accessType
+# (backwards compatibility to old 3 or 4 field format)
 # base58.b58encode("track:1:10").decode("utf-8")
 PURCHASE_TRACK1_MEMO_DATA = "7YSwHDhdZsHu6X"
 # base58.b58encode("track:2:10").decode("utf-8")
@@ -60,7 +61,8 @@ PURCHASE_TRACK2_MEMO_DATA = "7YSwHDhdZtmtNs"
 PURCHASE_TRACK_STREAM_ACCESS_MEMO_DATA = "NKSrfbiivt2H3Rc3uQd2JbGcAY"
 # base58.b58encode("track:3:10:2:download").decode("utf-8")
 PURCHASE_TRACK_DOWNLOAD_MEMO_DATA = "8AJuUqamV55ZcUtzu1FNWfHj9WwVm"
-
+# base58.b58encode("album:1:10:2:stream").decode("utf-8")
+PURCHASE_ALBUM1_MEMO_DATA = "JqTGUU6bYmRE1wDmu6zqRtzpKe"
 
 # base58.b58encode("Prepare Withdrawal").decode("utf-8")
 PREPARE_WITHDRAWAL_MEMO = "4LXeTxmZydvvx9jk2DnmBAwcX"
@@ -119,6 +121,179 @@ mock_valid_track_purchase_tx = GetTransactionResp.from_json(
                                 "programIdIndex": 8,
                                 "accounts": [0],
                                 "data": PURCHASE_TRACK1_MEMO_DATA,
+                                "stackHeight": None,
+                            },
+                        ],
+                    },
+                },
+                "meta": {
+                    "err": None,
+                    "status": {"Ok": None},
+                    "fee": 10000,
+                    "preBalances": [
+                        1689358166,
+                        2039280,
+                        953520,
+                        2039280,
+                        1,
+                        1141440,
+                        0,
+                        1,
+                        121159680,
+                        0,
+                        1009200,
+                        934087680,
+                    ],
+                    "postBalances": [
+                        1689348166,
+                        2039280,
+                        953520,
+                        2039280,
+                        1,
+                        1141440,
+                        0,
+                        1,
+                        121159680,
+                        0,
+                        1009200,
+                        934087680,
+                    ],
+                    "innerInstructions": [
+                        {
+                            "index": 1,
+                            "instructions": [
+                                {
+                                    "programIdIndex": 11,
+                                    "accounts": [1, 3, 6, 6],
+                                    "data": "3mhiKuxuaKy1",
+                                    "stackHeight": 2,
+                                }
+                            ],
+                        }
+                    ],
+                    "logMessages": [
+                        f"Program {CLAIMABLE_TOKENS_PDA} invoke [1]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+                        "Program log: Instruction: Transfer",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 4728 of 581084 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+                        f"Program {CLAIMABLE_TOKENS_PDA} consumed 24149 of 600000 compute units",
+                        f"Program {CLAIMABLE_TOKENS_PDA} success",
+                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo invoke [1]",
+                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo consumed 588 of 575851 compute units",
+                        "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo success",
+                    ],
+                    "preTokenBalances": [
+                        {
+                            "accountIndex": 1,
+                            "mint": USDC_MINT,
+                            "uiTokenAmount": {
+                                "uiAmount": 1.0,
+                                "decimals": 6,
+                                "amount": "1000000",
+                                "uiAmountString": "1",
+                            },
+                            "owner": USDC_PDA,
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                        {
+                            "accountIndex": 3,
+                            "mint": USDC_MINT,
+                            "uiTokenAmount": {
+                                "uiAmount": None,
+                                "decimals": 6,
+                                "amount": "0",
+                                "uiAmountString": "0",
+                            },
+                            "owner": USDC_PDA,
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                    ],
+                    "postTokenBalances": [
+                        {
+                            "accountIndex": 1,
+                            "mint": USDC_MINT,
+                            "uiTokenAmount": {
+                                "uiAmount": None,
+                                "decimals": 6,
+                                "amount": "0",
+                                "uiAmountString": "0",
+                            },
+                            "owner": USDC_PDA,
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                        {
+                            "accountIndex": 3,
+                            "mint": USDC_MINT,
+                            "uiTokenAmount": {
+                                "uiAmount": 1.0,
+                                "decimals": 6,
+                                "amount": "1000000",
+                                "uiAmountString": "1",
+                            },
+                            "owner": USDC_PDA,
+                            "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        },
+                    ],
+                    "rewards": [],
+                    "loadedAddresses": {"writable": [], "readonly": []},
+                    "computeUnitsConsumed": 24737,
+                },
+                "blockTime": 1698802811,
+            },
+            "id": 0,
+        }
+    )
+)
+
+# Purchase of album for $1 USDC
+mock_valid_album_purchase_tx = GetTransactionResp.from_json(
+    json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "result": {
+                "slot": 227246439,
+                "transaction": {
+                    "signatures": [MOCK_SIGNATURE],
+                    "message": {
+                        "header": {
+                            "numRequiredSignatures": 1,
+                            "numReadonlySignedAccounts": 0,
+                            "numReadonlyUnsignedAccounts": 8,
+                        },
+                        "accountKeys": [
+                            FEE_PAYER,
+                            SENDER_USDC_USER_BANK_ADDRESS,
+                            NONCE_ACCOUNT_ADDRESS,
+                            RECIPIENT_USDC_USER_BANK_ADDRESS,
+                            "11111111111111111111111111111111",
+                            CLAIMABLE_TOKENS_PDA,
+                            USDC_PDA,
+                            "KeccakSecp256k11111111111111111111111111111",
+                            "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+                            "Sysvar1nstructions1111111111111111111111111",
+                            "SysvarRent111111111111111111111111111111111",
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        ],
+                        "recentBlockhash": "5H434VMiHgK7RaJZaBKKcriu4eky8erb9QGfcHJSZquU",
+                        "instructions": [
+                            {
+                                "programIdIndex": 7,
+                                "accounts": [],
+                                "data": "H4eCheRWTZDTCFYUcyMzE6EhQMZvvvLKJ9g6YaUpbZeoLLgVj1uvwCTdzcb2MzbKHsRjN8DjLYdqxuQEZe2TjUKCuBMrFtpnnLd4RcvBnr4ieHCdH8ZU1N6XDfiqyKB4zenQ9S4viza4ob4gbtmiRS6o6KGEtL3fJQRvaA3tdtSx1rfFogZzwMXAxHrkuxHrpAqfm",
+                                "stackHeight": None,
+                            },
+                            {
+                                "programIdIndex": 5,
+                                "accounts": [0, 1, 3, 2, 6, 10, 9, 4, 11],
+                                "data": "6dMrrkPeSzw2r5huQ6RToaJCaVuu",
+                                "stackHeight": None,
+                            },
+                            {
+                                "programIdIndex": 8,
+                                "accounts": [0],
+                                "data": PURCHASE_ALBUM1_MEMO_DATA,
                                 "stackHeight": None,
                             },
                         ],

@@ -8,6 +8,7 @@ const deliveriesSchema = new mongoose.Schema({
   xml_file_path: String,
   xml_content: Buffer,
   created_at: Date,
+  errors: [String],
 })
 
 const Deliveries = mongoose.model('Deliveries', deliveriesSchema, 'deliveries')
