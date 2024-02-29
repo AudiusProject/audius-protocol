@@ -29,7 +29,26 @@ type Ingester interface {
 	UpdateResumeToken(ctx context.Context, collectionName string, resumeToken bson.Raw) error
 }
 
+type DDEXChoreography string
+
+const (
+	ERNReleaseByRelease DDEXChoreography = "ERNReleaseByRelease"
+	ERNBatched          DDEXChoreography = "ERNBatched"
+)
+
+func MustGetChoreography() DDEXChoreography {
+	choreography := os.Getenv("DDEX_CHOREOGRAPHY")
+	if choreography == "" {
+		log.Fatal("Missing required env var: DDEX_CHOREOGRAPHY")
+	}
+	if choreography != string(ERNReleaseByRelease) && choreography != string(ERNBatched) {
+		log.Fatalf("Invalid value for DDEX_CHOREOGRAPHY: %s", choreography)
+	}
+	return DDEXChoreography(choreography)
+}
+
 type BaseIngester struct {
+	DDEXChoreography    DDEXChoreography
 	Ctx                 context.Context
 	MongoClient         *mongo.Client
 	S3Client            *s3.S3
@@ -51,6 +70,7 @@ func NewBaseIngester(ctx context.Context, service string) *BaseIngester {
 	mongoClient := InitMongoClient(ctx, logger)
 
 	return &BaseIngester{
+		DDEXChoreography:    MustGetChoreography(),
 		S3Client:            s3,
 		S3Downloader:        s3manager.NewDownloader(s3Session),
 		S3Uploader:          s3manager.NewUploader(s3Session),
