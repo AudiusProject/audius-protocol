@@ -85,7 +85,7 @@ const getOptions = (
           color: 'rgba(90,94,120,1)'
         },
         ticks: {
-          maxTicksLimit: chartSize === 'large' ? 12 : undefined,
+          maxTicksLimit: chartSize === 'large' ? 12 : 6,
           padding: 13,
           fontColor: 'rgba(119,124,150,1)',
           fontFamily: 'Avenir Next LT Pro',

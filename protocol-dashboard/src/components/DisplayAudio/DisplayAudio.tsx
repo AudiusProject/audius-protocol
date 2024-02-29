@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
 
@@ -41,6 +41,11 @@ const DisplayAudio: React.FC<DisplayAudioProps> = ({
     },
     [amount, setTooltipText]
   )
+
+  useEffect(() => {
+    setTooltipText(formatWei(amount))
+  }, [amount])
+
   return (
     <Tooltip
       onClick={onClick}

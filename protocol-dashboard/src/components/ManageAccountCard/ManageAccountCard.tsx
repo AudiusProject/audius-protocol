@@ -18,6 +18,7 @@ import {
   useUserWeeklyRewards
 } from 'store/cache/rewards/hooks'
 import styles from './ManageAccountCard.module.css'
+import Loading from 'components/Loading'
 
 const messages = {
   estimatedReward: `Estimated ${TICKER} Reward`,
@@ -29,9 +30,17 @@ const messages = {
   manage: 'Manage'
 }
 
-type DelegateInfoProps = { wallet: Address }
+type DelegateInfoProps = {
+  wallet: Address
+  longFormat?: boolean
+  clickable?: boolean
+}
 
-const DelegateInfo = ({ wallet }: DelegateInfoProps) => {
+export const DelegateInfo = ({
+  wallet,
+  longFormat = false,
+  clickable = true
+}: DelegateInfoProps) => {
   const { user, audiusProfile } = useUser({ wallet })
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {
@@ -43,7 +52,11 @@ const DelegateInfo = ({ wallet }: DelegateInfoProps) => {
   if (!user) return null
 
   return (
-    <Flex gap="s" onClick={onClickUser}>
+    <Flex
+      gap="s"
+      onClick={clickable ? onClickUser : undefined}
+      css={{ cursor: clickable ? 'pointer' : 'default' }}
+    >
       <Flex gap="s" alignItems="center">
         <UserImage
           wallet={wallet}
@@ -66,8 +79,13 @@ const DelegateInfo = ({ wallet }: DelegateInfoProps) => {
             <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
           </Flex>
           <Box>
-            <Text variant="body" size="m" strength="strong">
-              {formatShortWallet(user.wallet)}
+            <Text
+              variant="body"
+              size="m"
+              strength="strong"
+              color={longFormat ? 'subdued' : 'default'}
+            >
+              {longFormat ? user.wallet : formatShortWallet(user.wallet)}
             </Text>
           </Box>
         </Flex>
@@ -111,7 +129,7 @@ const UserAudioRewardEstimate = ({
       : AudiusClient.displayShortAud(weekly)
 
   if (isLoading) {
-    return null
+    return <Loading />
   }
 
   return (

@@ -39,7 +39,11 @@ const Services: React.FC<ServicesProps> = () => {
         {isLoggedIn && accountUser ? (
           <ManageAccountCard wallet={accountUser?.wallet} />
         ) : null}
-        {isServiceProvider ? <ManageService /> : <RegisterNodeCard />}
+        {isServiceProvider ? (
+          <ManageService wallet={accountUser?.wallet} showPendingTransactions />
+        ) : (
+          <RegisterNodeCard />
+        )}
         <RewardsTimingCard />
         <TopOperatorsTable
           limit={5}

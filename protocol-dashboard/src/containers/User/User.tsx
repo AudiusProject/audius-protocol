@@ -28,6 +28,7 @@ import getActiveStake from 'utils/activeStake'
 import { createStyles } from 'utils/mobile'
 import desktopStyles from './User.module.css'
 import mobileStyles from './UserMobile.module.css'
+import ManageService from 'components/ManageService'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -92,6 +93,7 @@ const UserPage = () => {
           status={status}
         />
         {isOwner ? <ConnectAudiusProfileCard /> : null}
+        {isServiceProvider && <ManageService wallet={wallet} />}
         {<ManageAccountCard wallet={wallet} />}
         {isOwner ? <TransactionStatus /> : null}
         <Timeline

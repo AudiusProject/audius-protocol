@@ -17,7 +17,6 @@ import {
   setTopApps,
   setTrailingTopGenres,
   MetricError,
-  UptimeRecord,
   setIndividualNodeUptime,
   setIndividualServiceApiCalls
 } from './slice'
@@ -192,13 +191,14 @@ async function fetchTimeSeries(
     }
     if (node) {
       data = (await fetchWithTimeout(endpoint)).data.slice(1) // Trim off the first day so we don't show partial data
+      metric = data
     } else {
       data = await fetchWithLibs({
         endpoint: `v1/metrics/${route}`,
         queryParams: { bucket_size: bucketSize, start_time: startTime }
       })
+      metric = data.reverse()
     }
-    metric = data.reverse()
   } catch (e) {
     console.error(e)
     error = true
