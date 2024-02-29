@@ -4,16 +4,73 @@ title: Delegating to a Node Operator
 pagination_label: Delegating
 sidebar_label: Delegating
 description: Audius Protocol Documentation
-draft: true
 ---
 
-:::warning Work in progress
+## What is Delegating?
 
-This page will not be published to builds. it is available when run locally only.
+For users that either do not hold enough $AUDIO to self stake a Node, do not want to operate a Node,
+or are just looking to get started, Delegation is a great place to get involved.
+
+Delegating tokens earns rewards, and increases your ownership of the protocol while supporting Node
+Operators, assisting in keeping them up and running, which in turns keeps the Audius protocol
+healthy.
+
+---
+
+## Delegating on Audius
+
+To stake on Audius, Node Operators can set up content and/or discovery nodes using
+[these resources](https://github.com/AudiusProject/audius-protocol/wiki/Staking-Resources).
+
+:::info Active Node Operators
+
+A list of all active Node Operators can be found under the
+[Services tab](https://dashboard.audius.org/services) in the
+[Audius Protocol Dashboard](https://dashboard.audius.org/).
 
 :::
 
-> content goes here
+$AUDIO holders can delegate a minimum of 100 tokens to any Node Operator by connecting to either
+MetaMask or using a Gnosis Safe. Each Node Operator is also able to set a higher minimum delegation,
+keep that in mind when evaluating which Node Operator you chose to delegate towards.
 
-$AUDIO holders can delegate a minimum of 100 tokens to any of these Node Operators by connecting to
-either MetaMask or using a Gnosis Safe. More details on delegation will be released soon!
+### Delegate with MetaMask
+
+First sign in to your MetaMask account and connect to the
+[Audius Protocol Dashboard](https://dashboard.audius.org).
+
+Select a Node Operator you would like to delegate toward and click the "Delegate" button.
+
+Select the amount of $AUDIO to delegate and click the "Delegate" button.
+
+Sign the transaction in MetaMask to complete the process.
+
+---
+
+## Cooldown Period
+
+Audius features a 7 day cooldown period to undelegate in order to provide adequate time for Nodes to
+be slashed in the event of malicious behavior.
+
+---
+
+## Delegation Rewards
+
+Audius features a 7% automatic annual issuance rate distributed on-chain and on a weekly basis.
+$AUDIO rewards are distributed directly on-chain to Node Operators, with the on-chain system
+deducting their Deployer Cut and routing the remaining rewards to those who delegated their tokens.
+
+The Audius Protocol Dashboard includes information on the "Deployer Cut" that each Node Operator
+receives, with the remainder being distributed proportionally by delegation to each Delegator.
+
+As an example, you delegate 1,000 $AUDIO to a a Node Operator with a Deployer Cut set to 4% which
+earns 2,000 $AUDIO in a reward period will first receive 80 $AUDIO, and the remaining 1,920 $AUDIO
+will be split across the Delegators based on the ratio of their delegation to the total.
+
+:::info Ends of the spectrum
+
+A Deployer Cut set to 100% will route all earned rewards to the Node Operator itself.
+
+A Deployer Cut set to 0% will route all earned rewards to the Delegators.
+
+:::

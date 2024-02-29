@@ -6,16 +6,14 @@ sidebar_label: Overview
 description: Audius Protocol Documentation
 ---
 
-This section describes how to run an Audius Node.
-
-The Audius protocol is powered by two off-chain services, the Discovery Node and the Content Node.
-
 ## How Audius Works
 
 On Audius, content is routed to two different types of nodes:
 
-- _Content Nodes_ - To store and relay audio content \(tracks, mixes, etc.\) streamed on Audius
-- _Discovery Nodes_ - To index and hash data like user profiles, playlists and followers.
+- [Content Nodes](/learn/architecture/content-node) - To store and relay audio content (tracks,
+  mixes, etc.) streamed on Audius
+- [Discovery Nodes](/learn/architecture/discovery-node) - To index and hash data like user profiles,
+  playlists and followers.
 
 As an artist, uploading to Audius feels no different than uploading to a platform like Soundcloud.
 But, what happens behind the scenes is what makes Audius so unique.
@@ -46,25 +44,3 @@ By staking $AUDIO, you’re helping to protect and power the protocol.
 
 This design allows Audius to operate on the back of a global network of third-party node operators,
 rather than solely by the Audius team.
-
-The decision to use two node types allows Audius to scale in correlation to different metrics,
-meaning that if the number of listeners were to spike relative to the Audius catalog, Discovery
-Nodes could pick up the weight while the Content Nodes continue to run as normal. Similarly, the
-network could choose to adjust incentives depending on where bandwidth is needed to meet demand at
-any given time.
-
-## Discovery Node
-
-- Indexes blockchains used by the Audius protocol \(Main-net Ethereum, POA, and Solana\)
-- Serves API traffic
-- Tracks usage metrics
-
-## Content Node
-
-- Hosts audio and image content
-- Syncs content across nodes to ensure data is consistent and highly available \(using the Audius
-  Storage Protocol under the hood\)
-
-Please join the node operator discord channel on the
-[Audius discord server](https://discord.com/invite/audius) for announcements & troubleshooting
-assistance.

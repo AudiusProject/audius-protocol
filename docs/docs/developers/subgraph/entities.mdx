@@ -6,34 +6,6 @@ sidebar_label: Entities
 description: Audius Protocol Documentation
 ---
 
-- [`AudiusNetwork`](#audiusnetwork)
-- [`ServiceType`](#servicetype)
-- [`ServiceTypeVersion`](#servicetypeversion)
-- [`ServiceNode`](#servicenode)
-- [`User`](#user)
-- [`Delegate`](#delegate)
-- [`DecreaseStakeEvent`](#decreasestakeevent)
-- [`UpdateDeployerCutEvent`](#updatedeployercutevent)
-- [`RemoveDelegatorEvent`](#removedelegatorevent)
-- [`UndelegateStakeEvent`](#undelegatestakeevent)
-- [`IncreasedStakeEvent`](#increasedstakeevent)
-- [`IncreaseDelegatedStakeEvent`](#increaseddelegatedstakeevent)
-- [`ClaimEvent`](#claimevent)
-- [`SlashEvent`](#slashevent)
-- [`ClaimRound`](#claimround)
-- [`ClaimProcessedEvent`](#claimprocessedevent)
-- [`RegisteredServiceProviderEvent`](#registerproviderservicerevent)
-- [`DeregisteredServiceProviderEvent`](#deregisterproviderservicerevent)
-- [`Proposal`](#proposal)
-- [`Vote`](#vote)
-- [`ProposalSubmittedEvent`](#propotalsubmittedevent)
-- [`ProposalVoteSubmittedEvent`](#propotalvotesubmittedevent)
-- [`ProposalVoteUpdatedEvent`](#propotalvoteupdatedevent)
-- [`ProposalOutcomeEvaluatedEvent`](#propotaloutcomeevaluatedevent)
-- [`ProposalTransactionExecutedEvent`](#proposaltransactionexecutedevent)
-- [`GuardianTransactionExecutedEvent`](#guardiantransactionexecutedevent)
-- [`ProposalVetoedEvent`](#proposalvetoedevent)
-
 ## AudiusNetwork
 
 Description:
@@ -76,6 +48,8 @@ Description:
 | requestCount                    | BigInt! |                                                                                                   |
 | totalStaked                     | BigInt! |
 
+---
+
 ## ServiceType
 
 Description:
@@ -88,6 +62,8 @@ Description:
 | maxStake | BigInt!                                                  | Max Token Stake to run the service       |
 | versions | [ServiceTypeVersion!]! @derivedFrom(field: serviceType") |
 
+---
+
 ## ServiceTypeVersion
 
 Description:
@@ -98,6 +74,8 @@ Description:
 | serviceType    | ServiceType! |             |
 | serviceVersion | String!      |             |
 | blockNumber    | BigInt!      |
+
+---
 
 ## ServiceNode
 
@@ -113,6 +91,8 @@ Description:
 | delegateOwnerWallet | Bytes!       | Address used to confirm the ownership of the service node                   |
 | createdAt           | Int!         | When the service node was created                                           |
 | isRegistered        | Boolean!     | Boolean if th service is registered/deregistered                            |
+
+---
 
 ## User
 
@@ -144,6 +124,8 @@ Description:
 | votes                             | [Vote!] @derivedFrom(field: "voter")        | Reference to votes by the user                                                         |
 | createdAt                         | BigInt!                                     |                                                                                        |
 
+---
+
 ## Delegate
 
 Description:
@@ -156,6 +138,8 @@ Description:
 | amount          | BigInt! | The amount delegated                                             |
 | fromUser        | User!   | Reference to the user sending/delegating tokens                  |
 | toUser          | User!   | Reference to the user receiving delegation                       |
+
+---
 
 ## DecreaseStakeEvent
 
@@ -172,6 +156,8 @@ Description:
 | decreaseAmount     | BigInt!       |             |
 | newStakeAmount     | BigInt        |             |
 
+---
+
 ## UpdateDeployerCutEvent
 
 Description: implements LockupEvent
@@ -185,6 +171,8 @@ Description: implements LockupEvent
 | createdBlockNumber | BigInt!       |             |
 | endedBlockNumber   | BigInt        |             |
 | updatedCut         | BigInt!       |             |
+
+---
 
 ## RemoveDelegatorEvent
 
@@ -201,6 +189,8 @@ Description:
 | updatedCut         | BigInt!       |             |
 | delegator          | User!         |             |
 
+---
+
 ## UndelegateStakeEvent
 
 Description:
@@ -216,6 +206,8 @@ Description:
 | serviceProvider    | User!         |             |
 | amount             | BigInt!       |             |
 
+---
+
 ## IncreasedStakeEvent
 
 Description:
@@ -227,6 +219,8 @@ Description:
 | newStakeAmount | BigInt! |             |
 | increaseAmount | BigInt! |             |
 | blockNumber    | BigInt! |             |
+
+---
 
 ## IncreasedDelegatedStakeEvent
 
@@ -240,6 +234,8 @@ Description:
 | increaseAmount  | BigInt! |             |
 | blockNumber     | BigInt! |             |
 
+---
+
 ## ClaimEvent
 
 Description:
@@ -251,6 +247,8 @@ Description:
 | rewards     | BigInt! |             |
 | newTotal    | BigInt! |             |
 | blockNumber | BigInt! |             |
+
+---
 
 ## SlashEvent
 
@@ -264,6 +262,8 @@ Description:
 | newTotal    | BigInt! |             |
 | blockNumber | BigInt! |             |
 
+---
+
 ## ClaimRound
 
 Description:
@@ -273,6 +273,8 @@ Description:
 | id          | ID!     | The round number |
 | fundAmount  | BigInt! |                  |
 | blockNumber | BigInt! |                  |
+
+---
 
 ## ClaimProcessedEvent
 
@@ -286,6 +288,8 @@ Description:
 | oldTotal    | BigInt! |             |
 | newTotal    | BigInt! |             |
 | blockNumber | BigInt! |             |
+
+---
 
 ## RegisterProviderServicerEvent
 
@@ -302,6 +306,8 @@ Description:
 | stakeAmount | BigInt!      |             |
 | blockNumber | BigInt!      |             |
 
+---
+
 ## DeregisterProviderServicerEvent
 
 Description:
@@ -316,6 +322,8 @@ Description:
 | endpoint      | String!      |             |
 | unstakeAmount | BigInt!      |             |
 | blockNumber   | BigInt!      |             |
+
+---
 
 ## Proposal
 
@@ -339,6 +347,8 @@ Description:
 | numVotes                  | BigInt!                                  | Number of votes                                |
 | votes                     | [Vote!]! @derivedFrom(field: "proposal") | Reference to the votes - user & vote weight    |
 
+---
+
 ## Vote
 
 Description:
@@ -353,7 +363,9 @@ Description:
 | createdBlockNumber | BigInt!   | The block number the vote was created            |
 | updatedBlockNumber | BigInt    | The block number the vote was updated            |
 
-## PropotalSubmittedEvent
+---
+
+## ProposalSubmittedEvent
 
 Description:
 
@@ -365,7 +377,9 @@ Description:
 | name        | String!   |             |
 | description | String!   |
 
-## PropotalVoteSubmittedEvent
+---
+
+## ProposalVoteSubmittedEvent
 
 Description:
 
@@ -379,7 +393,9 @@ Description:
 | voterStake  | BigInt!   |             |
 | blockNumber | BigInt!   |             |
 
-## PropotalVoteUpdatedEvent
+---
+
+## ProposalVoteUpdatedEvent
 
 Description:
 
@@ -394,7 +410,9 @@ Description:
 | previousVote | VoteType! |             |
 | blockNumber  | BigInt!   |             |
 
-## PropotalOutcomeEvaluatedEvent
+---
+
+## ProposalOutcomeEvaluatedEvent
 
 Description:
 
@@ -408,6 +426,8 @@ Description:
 | numVotes:        | BigInt!   |             |
 | blockNumber      | BigInt!   |             |
 
+---
+
 ## ProposalTransactionExecutedEvent
 
 Description:
@@ -419,6 +439,8 @@ Description:
 | success     | Boolean!  |             |
 | returnData  | Bytes     |             |
 | blockNumber | BigInt!   |
+
+---
 
 ## GuardianTransactionExecutedEvent
 
@@ -433,6 +455,8 @@ Description:
 | callData               | Bytes!  |             |
 | returnData             | Bytes!  |             |
 | blockNumber            | BigInt! |             |
+
+---
 
 ## ProposalVetoedEvent
 

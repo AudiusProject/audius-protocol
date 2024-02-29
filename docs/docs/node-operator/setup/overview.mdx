@@ -6,46 +6,9 @@ sidebar_label: Node Registration Overview
 description: Audius Protocol Documentation
 ---
 
-This section describes how to run an Audius Node.
+This section describes how to run an Audius node.
 
-The Audius protocol is powered by two off-chain services, the Discovery Node and the Content Node.
-
-## How Audius Works
-
-On Audius, content is routed to two different types of nodes:
-
-- _Content Nodes_ - To store and relay audio content \(tracks, mixes, etc.\) streamed on Audius
-- _Discovery Nodes_ - To index and hash data like user profiles, playlists and followers.
-
-As an artist, uploading to Audius feels no different than uploading to a platform like Soundcloud.
-But, what happens behind the scenes is what makes Audius so unique.
-
-When an artist uploads a track to Audius:
-
-1. That content is uploaded to a Content Node.
-2. The data gets transcoded and returns a reference code used to identify the track
-3. The data linked by the reference code is replicated to two other Content Nodes on the network.
-4. An on-chain transaction is published signifying that the track exists on Audius and that the
-   metadata is attached to the profile that uploaded the track.
-5. The transaction is picked up and indexed by a Discovery Node
-6. The client returns that the track was successfully published when it shows up on the Discovery
-   Node, marking the upload complete!
-
-Super simple right! Well, this is where staking comes into play.
-
-On other platforms, a similar process is operated by the parent company, effectively making them the
-true owner of the content. Should that company cease to exist, so does all the content stored in its
-database. With Audius, the track is maintained by the network and controlled by third-party and
-decentralized node operators. **Audius is not dependent on one company to keep running**.
-
-:::info
-
-By staking $AUDIO, you’re helping to protect and power the protocol.
-
-:::
-
-This design allows Audius to operate on the back of a global network of third-party node operators,
-rather than solely by the Audius team.
+The Audius protocol is powered by two off-chain services, the Content Node and the Discovery Node.
 
 The decision to use two node types allows Audius to scale in correlation to different metrics,
 meaning that if the number of listeners were to spike relative to the Audius catalog, Discovery
@@ -53,17 +16,21 @@ Nodes could pick up the weight while the Content Nodes continue to run as normal
 network could choose to adjust incentives depending on where bandwidth is needed to meet demand at
 any given time.
 
-## Discovery Node
-
-- Indexes blockchains used by the Audius protocol \(Main-net Ethereum, POA, and Solana\)
-- Serves API traffic
-- Tracks usage metrics
+---
 
 ## Content Node
 
 - Hosts audio and image content
-- Syncs content across nodes to ensure data is consistent and highly available \(using the Audius
-  Storage Protocol under the hood\)
+- Syncs content across nodes to ensure data is consistent and highly available (using the Audius
+  Storage Protocol under the hood)
+
+---
+
+## Discovery Node
+
+- Indexes blockchains used by the Audius protocol (Main-net Ethereum, POA, and Solana)
+- Serves API traffic
+- Tracks usage metrics
 
 Please join the node operator discord channel on the
 [Audius discord server](https://discord.com/invite/audius) for announcements & troubleshooting
