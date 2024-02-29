@@ -16,6 +16,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    is_ddex_signer,
     validate_signer,
 )
 from src.tasks.metadata import immutable_playlist_fields
@@ -344,6 +345,11 @@ def create_playlist(params: ManageEntityParameters):
     tracks = params.metadata["playlist_contents"].get("track_ids", [])
     tracks_with_index_time = []
     last_added_to = None
+
+    ddex_app = None
+    if is_ddex_signer(params.signer):
+        ddex_app = params.signer
+
     for track in tracks:
         if "track" not in track or "time" not in track:
             raise IndexingValidationError(
@@ -382,6 +388,7 @@ def create_playlist(params: ManageEntityParameters):
         last_added_to=last_added_to,
         is_current=False,
         is_delete=False,
+        ddex_app=ddex_app,
     )
 
     update_playlist_routes_table(params, playlist_record, True)
@@ -405,6 +412,16 @@ def dispatch_challenge_playlist_upload(
     )
 
 
+def validate_update_ddex_playlist(params: ManageEntityParameters, playlist_record):
+    if playlist_record.ddex_app:
+        if playlist_record.ddex_app != params.signer or not is_ddex_signer(
+            params.signer
+        ):
+            raise IndexingValidationError(
+                f"Signer {params.signer} does not have permission to {params.action} DDEX playlist {playlist_record.playlist_id}"
+            )
+
+
 def update_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
     # TODO ignore updates on deleted playlists?
@@ -415,6 +432,8 @@ def update_playlist(params: ManageEntityParameters):
         playlist_id in params.new_records["Playlist"]
     ):  # override with last updated playlist is in this block
         existing_playlist = params.new_records["Playlist"][playlist_id][-1]
+
+    validate_update_ddex_playlist(params, existing_playlist)
 
     playlist_record = copy_record(
         existing_playlist,
@@ -444,6 +463,8 @@ def delete_playlist(params: ManageEntityParameters):
     if params.entity_id in params.new_records["Playlist"]:
         # override with last updated playlist is in this block
         existing_playlist = params.new_records["Playlist"][params.entity_id][-1]
+
+    validate_update_ddex_playlist(params, existing_playlist)
 
     deleted_playlist = copy_record(
         existing_playlist,

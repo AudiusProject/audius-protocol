@@ -158,6 +158,13 @@
           ],
           "default": null
         },
+        "ddex_app": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
         "track_segments": {
           "type": "array",
           "minItems": 0,

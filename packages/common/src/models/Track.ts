@@ -220,6 +220,7 @@ export type TrackMetadata = {
   orig_filename: Nullable<string>
   is_downloadable: boolean
   is_original_available: boolean
+  ddex_app?: Nullable<string>
 
   // Optional Fields
   is_playlist_upload?: boolean

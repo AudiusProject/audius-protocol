@@ -58,6 +58,7 @@ export type CollectionMetadata = {
   offline?: OfflineCollectionMetadata
   local?: boolean
   release_date?: string
+  ddex_app?: string | null
 }
 
 export type CollectionDownloadReason = { is_from_favorites: boolean }
