@@ -2,7 +2,7 @@ import { accountSelectors } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
-import { TextLink, Link, UserLink } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
@@ -45,15 +45,15 @@ export const AccountDetails = () => {
               <Text variant='body' size='s' strength='strong'>
                 {messages.haveAccount}
               </Text>
-              <Link
+              <TextLink
                 to={SIGN_IN_PAGE}
-                variant='body'
+                variant='visible'
+                textVariant='body'
                 size='xs'
                 strength='weak'
-                color='accent'
               >
                 {messages.signIn}
-              </Link>
+              </TextLink>
             </>
           )}
         </div>

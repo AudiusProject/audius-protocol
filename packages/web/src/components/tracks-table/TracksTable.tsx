@@ -8,7 +8,7 @@ import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
 
-import { Link, UserLink } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import {
   Table,
   OverflowMenuButton,
@@ -195,8 +195,21 @@ export const TracksTable = ({
       }
 
       return (
-        <div className={styles.textContainer}>
-          <Link
+        <div className={styles.textContainer} css={{ overflow: 'hidden' }}>
+          <TextLink
+            tag={isLocked || deleted ? 'span' : undefined}
+            to={isLocked || deleted ? '' : track.permalink}
+            isActive={active}
+            textVariant='title'
+            size='s'
+            strength='weak'
+            css={{ display: 'block' }}
+            ellipses
+          >
+            {track.name}
+            {deleted ? ` [Deleted By Artist]` : ''}
+          </TextLink>
+          {/* <Link
             variant='inherit'
             tag={isLocked || deleted ? 'span' : undefined}
             to={isLocked || deleted ? '' : track.permalink}
@@ -204,11 +217,33 @@ export const TracksTable = ({
             className={styles.trackCell}
           >
             {track.name}
+            {track.name}
+            {track.name}
+            {track.name}
             {deleted ? ` [Deleted By Artist]` : ''}
-          </Link>
+          </Link> */}
           {!deleted && isLocked ? renderLocked() : null}
         </div>
       )
+
+      // return (
+      //   <div className={styles.textContainer}>
+      //     <Link
+      //       variant='inherit'
+      //       tag={isLocked || deleted ? 'span' : undefined}
+      //       to={isLocked || deleted ? '' : track.permalink}
+      //       color={active ? 'active' : 'default'}
+      //       className={styles.trackCell}
+      //     >
+      //       {track.name}
+      //       {track.name}
+      //       {track.name}
+      //       {track.name}
+      //       {deleted ? ` [Deleted By Artist]` : ''}
+      //     </Link>
+      //     {!deleted && isLocked ? renderLocked() : null}
+      //   </div>
+      // )
     },
     [trackAccessMap, playingIndex]
   )
