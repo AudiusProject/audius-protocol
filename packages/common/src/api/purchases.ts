@@ -57,8 +57,6 @@ const purchasesApi = createApi({
         }: GetPurchaseListArgs,
         context
       ) => {
-        const { data: encodedDataMessage, signature: encodedDataSignature } =
-          await context.audiusBackend.signDiscoveryNodeRequest()
         const sdk = await context.audiusSdk()
         const { data = [] } = await sdk.full.users.getPurchases({
           limit,
@@ -67,8 +65,8 @@ const purchasesApi = createApi({
           sortMethod,
           id: Id.parse(userId!),
           userId: Id.parse(userId!),
-          encodedDataMessage,
-          encodedDataSignature
+          encodedDataMessage: '', // TODO: remove, handled by sdk
+          encodedDataSignature: ''
         })
         const purchases = data.map(parsePurchase)
 
@@ -92,16 +90,14 @@ const purchasesApi = createApi({
     getPurchasesCount: {
       fetch: async (
         { userId }: Pick<GetPurchaseListArgs, 'userId'>,
-        { audiusSdk, audiusBackend }
+        { audiusSdk }
       ) => {
-        const { data: encodedDataMessage, signature: encodedDataSignature } =
-          await audiusBackend.signDiscoveryNodeRequest()
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getPurchasesCount({
           id: Id.parse(userId!),
           userId: Id.parse(userId!),
-          encodedDataMessage,
-          encodedDataSignature
+          encodedDataMessage: '', // TODO: remove, handled by sdk
+          encodedDataSignature: '' // TODO: remove, handled by sdk
         })
         return data ?? 0
       },
@@ -118,8 +114,6 @@ const purchasesApi = createApi({
         }: GetPurchaseListArgs,
         context
       ) => {
-        const { data: encodedDataMessage, signature: encodedDataSignature } =
-          await context.audiusBackend.signDiscoveryNodeRequest()
         const sdk = await context.audiusSdk()
         const { data = [] } = await sdk.full.users.getSales({
           limit,
@@ -128,8 +122,8 @@ const purchasesApi = createApi({
           sortMethod,
           id: Id.parse(userId!),
           userId: Id.parse(userId!),
-          encodedDataMessage,
-          encodedDataSignature
+          encodedDataMessage: '', // TODO: remove, handled by sdk
+          encodedDataSignature: '' // TODO: remove, handled by sdk
         })
 
         const purchases = data.map(parsePurchase)
@@ -154,16 +148,14 @@ const purchasesApi = createApi({
     getSalesCount: {
       fetch: async (
         { userId }: Pick<GetPurchaseListArgs, 'userId'>,
-        { audiusSdk, audiusBackend }
+        { audiusSdk }
       ) => {
-        const { data: encodedDataMessage, signature: encodedDataSignature } =
-          await audiusBackend.signDiscoveryNodeRequest()
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getSalesCount({
           id: Id.parse(userId!),
           userId: Id.parse(userId!),
-          encodedDataMessage,
-          encodedDataSignature
+          encodedDataMessage: '', // TODO: remove, handled by sdk
+          encodedDataSignature: '' // TODO: remove, handled by sdk
         })
         return data ?? 0
       },

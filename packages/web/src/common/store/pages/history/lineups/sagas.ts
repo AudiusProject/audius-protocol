@@ -23,22 +23,15 @@ function* getHistoryTracks() {
   yield* waitForRead()
 
   const audiusSdk = yield* getContext('audiusSdk')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* call(audiusSdk)
   try {
     const currentUserId = yield* select(getUserId)
     if (!currentUserId) return []
 
-    const { data, signature } = yield* call([
-      audiusBackendInstance,
-      audiusBackendInstance.signDiscoveryNodeRequest
-    ])
     const activity = yield* call(
       [sdk.full.users, sdk.full.users.getUsersTrackHistory],
       {
         id: encodeHashId(currentUserId),
-        encodedDataMessage: data,
-        encodedDataSignature: signature,
         limit: 100
       }
     )

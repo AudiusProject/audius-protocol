@@ -43,20 +43,13 @@ function* fetchHeavyRotation() {
 
   const currentUserId = yield* select(getUserId)
   const audiusSdk = yield* getContext('audiusSdk')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* call(audiusSdk)
 
-  const { data, signature } = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.signDiscoveryNodeRequest
-  ])
   if (!currentUserId) return { ...HEAVY_ROTATION }
   const activity = yield* call(
     [sdk.full.users, sdk.full.users.getUsersTrackHistory],
     {
       id: encodeHashId(currentUserId),
-      encodedDataMessage: data,
-      encodedDataSignature: signature,
       sortMethod: 'most_listens_by_user',
       limit: 20
     }

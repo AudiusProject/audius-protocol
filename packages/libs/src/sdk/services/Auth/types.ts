@@ -1,3 +1,4 @@
+import type { LocalStorage } from '@audius/hedgehog'
 import type { EIP712TypedData, MessageData } from 'eth-sig-util'
 
 export type TransactionData = MessageData<EIP712TypedData>['data']
@@ -24,4 +25,21 @@ export type AuthService = {
    * Get the sender address, used for EntityManager writes
    */
   getAddress: () => Promise<string>
+}
+
+export type UserAuthConfig = {
+  /**
+   * The identity service that backs hedgehog authentication
+   */
+  identityService: string
+
+  /**
+   * Whether hedgehog uses local storage to keep user sessions
+   */
+  useLocalStorage: boolean
+
+  /**
+   * An interface to local storage provided to hedgehog
+   */
+  localStorage: Promise<LocalStorage>
 }

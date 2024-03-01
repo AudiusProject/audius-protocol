@@ -104,12 +104,8 @@ export class Explore {
       const tracks = lineupItems.filter(
         (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
       )
-      const { data, signature } =
-        await this.audiusBackendInstance.signDiscoveryNodeRequest()
       const history = await sdk.full.users.getUsersTrackHistory({
         id: encodeHashId(currentUserId),
-        encodedDataMessage: data,
-        encodedDataSignature: signature,
         limit: 100
       })
       const activityData = history.data as APIActivityV2[]
