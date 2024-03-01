@@ -3,7 +3,9 @@ import {
   Flex,
   Text,
   useTheme,
-  IconQuestionCircle as IconQuestionMark
+  IconQuestionCircle,
+  ModalHeader,
+  ModalTitle
 } from '@audius/harmony'
 import { CSSObject } from '@emotion/styled'
 
@@ -11,7 +13,7 @@ import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
-import styles from './ForgotPasswordHelper.module.css'
+import styles from './ForgotPasswordModal.module.css'
 
 const messages = {
   forgotPassword: 'Forgot Your Password',
@@ -24,27 +26,16 @@ const messages = {
   copied: 'Copied to Clipboard!'
 }
 
-type ForgotPasswordHelperProps = {
+type ForgotPasswordModalProps = {
   isOpen: boolean
   onClose(): void
 }
 
 const TOOLTIP_DELAY = 1000
 
-export const ForgotPasswordHelper = ({
-  isOpen,
-  onClose
-}: ForgotPasswordHelperProps) => {
+export const ForgotPasswordModal = (props: ForgotPasswordModalProps) => {
+  const { isOpen, onClose } = props
   const { color } = useTheme()
-
-  const renderTitle = () => {
-    return (
-      <Flex gap='s' alignItems='center'>
-        <IconQuestionMark />
-        <Text>{messages.forgotPassword}</Text>
-      </Flex>
-    )
-  }
 
   const onCopyFrom = () => {
     copyToClipboard(messages.from)
@@ -65,13 +56,15 @@ export const ForgotPasswordHelper = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      showTitleHeader
-      showDismissButton
-      title={renderTitle()}
-      allowScroll={false}
-      dismissOnClickOutside={true}
+      dismissOnClickOutside
       bodyClassName={styles.modal}
     >
+      <ModalHeader>
+        <ModalTitle
+          icon={<IconQuestionCircle />}
+          title={messages.forgotPassword}
+        />
+      </ModalHeader>
       <Flex direction='column' gap='xl' m='xl'>
         <Text variant='body' strength='strong' textAlign='center'>
           {messages.restoreAccess}
