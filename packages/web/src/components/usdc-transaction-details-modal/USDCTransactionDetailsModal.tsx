@@ -83,7 +83,6 @@ export const USDCTransactionDetailsModal = () => {
           <DetailSection
             label={
               <ExternalLink
-                variant='inherit'
                 to={makeSolanaTransactionLink(transactionDetails.signature)}
               >
                 <span className={styles.transactionLink}>

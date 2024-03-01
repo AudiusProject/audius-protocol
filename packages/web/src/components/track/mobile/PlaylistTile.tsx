@@ -2,17 +2,15 @@ import { useState, useEffect, MouseEvent } from 'react'
 
 import { ID, UID, LineupTrack } from '@audius/common/models'
 import { formatCount, formatLineupTileDuration } from '@audius/common/utils'
-import { IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
+import { Flex, IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
-import { Link } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
-import UserBadges from 'components/user-badges/UserBadges'
-import { profilePage } from 'utils/route'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
@@ -134,7 +132,10 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     variant,
     containerClassName,
     permalink,
-    artistHandle
+    isActive,
+    playlistTitle,
+    isPlaying,
+    ownerId
   } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -158,10 +159,15 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
         containerClassName
       )}
     >
-      <div className={styles.mainContent} onClick={props.togglePlay}>
+      <div
+        css={{ overflow: 'hidden' }}
+        className={styles.mainContent}
+        onClick={props.togglePlay}
+      >
         <div className={cn(styles.duration, styles.statText, fadeIn)}>
           {formatLineupTileDuration(props.duration)}
         </div>
+
         <div className={styles.metadata}>
           <TrackTileArt
             id={props.id}
@@ -174,46 +180,40 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             isBuffering={props.isLoading}
             artworkIconClassName={styles.artworkIcon}
           />
-          <div className={styles.titles}>
-            <Link
+          <Flex
+            direction='column'
+            justifyContent='center'
+            gap='2xs'
+            mt='m'
+            mr='m'
+            flex='0 1 65%'
+            css={{ overflow: 'hidden' }}
+          >
+            <TextLink
               to={permalink ?? ''}
-              className={styles.title}
-              variant='title'
-              color={props.isActive ? 'active' : 'default'}
+              textVariant='title'
+              isActive={isActive}
+              applyHoverStylesToInnerSvg
             >
-              <Text className={cn(fadeIn)}>{props.playlistTitle}</Text>
-              {props.isPlaying && <IconVolume className={styles.playIcon} />}
-              {!shouldShow && (
-                <Skeleton
-                  className={styles.skeleton}
-                  width='90px'
-                  height='16px'
-                />
-              )}
-            </Link>
-            <Link
-              variant='body'
-              className={styles.artist}
-              to={profilePage(artistHandle)}
-              color={props.isActive ? 'active' : 'default'}
-            >
-              <Text className={cn(styles.userName, fadeIn)}>
-                {props.artistName}
+              <Text ellipses className={cn(fadeIn)}>
+                {playlistTitle}
+                {playlistTitle}
+                {playlistTitle}
+                {playlistTitle}
+                {playlistTitle}
+                {playlistTitle}
               </Text>
-              <UserBadges
-                userId={props.ownerId}
-                badgeSize={10}
-                className={styles.iconVerified}
-              />
-              {!shouldShow && (
-                <Skeleton
-                  className={styles.skeleton}
-                  width='180px'
-                  height='16px'
-                />
-              )}
-            </Link>
-          </div>
+              {isPlaying ? <IconVolume size='m' /> : null}
+              {!shouldShow ? (
+                <Skeleton className={styles.skeleton} height='20px' />
+              ) : null}
+            </TextLink>
+            <UserLink userId={ownerId} textVariant='body' badgeSize='xs'>
+              {!shouldShow ? (
+                <Skeleton className={styles.skeleton} height='20px' />
+              ) : null}
+            </UserLink>
+          </Flex>
         </div>
         <div className={cn(styles.stats, styles.statText)}>
           <RankIcon

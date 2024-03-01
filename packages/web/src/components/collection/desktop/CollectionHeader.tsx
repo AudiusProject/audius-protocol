@@ -2,7 +2,13 @@ import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useEditPlaylistModal } from '@audius/common/store'
 import { formatSecondsAsText, formatDate } from '@audius/common/utils'
-import { IconFilter, IconVisibilityHidden, IconPencil } from '@audius/harmony'
+import {
+  Text,
+  IconFilter,
+  IconVisibilityHidden,
+  IconPencil,
+  Flex
+} from '@audius/harmony'
 import cn from 'classnames'
 
 import { Input } from 'components/input'
@@ -122,26 +128,33 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             className={cn(styles.title, { [styles.editableTitle]: isOwner })}
             onClick={isOwner ? handleClickEditTitle : undefined}
           >
-            <h1 className={cn(styles.titleHeader, fadeIn)}>{title}</h1>
+            <Text
+              variant='heading'
+              size='xl'
+              className={cn(styles.titleHeader, fadeIn)}
+            >
+              {title}
+            </Text>
             {isOwner ? <IconPencil className={styles.editIcon} /> : null}
             {isLoading ? <Skeleton className={styles.skeleton} /> : null}
           </TitleComponent>
-          {artistName && (
-            <div className={styles.artistWrapper}>
-              <div className={cn(fadeIn)}>
-                <span>By </span>
-                <UserLink
-                  userId={userId}
-                  strength='strong'
-                  popover
-                  textAs='h2'
-                />
-              </div>
-              {isLoading && (
-                <Skeleton className={styles.skeleton} width='60%' />
-              )}
-            </div>
-          )}
+          <Flex>
+            {artistName ? (
+              <Text
+                variant='title'
+                strength='weak'
+                tag='h2'
+                className={cn(fadeIn)}
+              >
+                <Text color='subdued'>By </Text>
+                <UserLink userId={userId} popover />
+              </Text>
+            ) : null}
+            {isLoading ? (
+              <Skeleton className={styles.skeleton} width='60%' />
+            ) : null}
+          </Flex>
+
           <div className={cn(styles.infoLabelsSection, fadeIn)}>
             {modified && (
               <InfoLabel

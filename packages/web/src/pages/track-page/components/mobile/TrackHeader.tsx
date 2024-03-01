@@ -421,10 +421,9 @@ const TrackHeader = ({
         <UserLink
           userId={userId}
           color='accent'
-          variant='body'
+          textVariant='body'
           size='l'
-          textAs='h2'
-          badgeSize={16}
+          tag='h2'
         />
       </div>
       {showPlay ? (

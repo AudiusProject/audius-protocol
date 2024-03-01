@@ -20,10 +20,10 @@ import {
 } from '@audius/harmony'
 import { ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { Link } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
 import { collectionPage, profilePage } from 'utils/route'
@@ -272,13 +272,13 @@ export const FinishPage = (props: FinishPageProps) => {
             <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
               {messages.uploadMore}
             </PlainButton>
-            <Link
-              to={visitButtonPath}
+            <PlainButton
+              asChild
+              iconRight={IconArrow}
               onClick={dispatchVisitEvent}
-              className={styles.visitLink}
             >
-              <PlainButton iconRight={IconArrow}>{visitButtonText}</PlainButton>
-            </Link>
+              <Link to={visitButtonPath}>{visitButtonText}</Link>
+            </PlainButton>
           </div>
         ) : null}
       </Tile>
