@@ -129,10 +129,8 @@ export const useHarmonyField = <Value = any>(
    * allowing errors to show.
    */
   const validateAndSetIdle = useCallback(() => {
-    // We'll validate ourselves - pass false for validation
-    setTouched(true, false)
-    // Cast back to promise (the types are wrong)
-    const maybePromise = validateField(name) as Promise<any> | void
+    // Cast result to promise (the types are wrong and validation is async)
+    const maybePromise = setTouched(true) as Promise<void> | void
     // Wait for validation before confirming we're not editing
     if (maybePromise) {
       maybePromise.then(() => {
