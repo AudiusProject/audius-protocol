@@ -1,9 +1,10 @@
 import { productionConfig } from '../../config'
 import { getPlatformLocalStorage } from '../../utils/localStorage'
 
-import { AuthConfig } from './types'
+import { UserAuthConfig } from './types'
 
-export const defaultHedgehogAuthConfig: AuthConfig = {
+export const defaultUserAuthConfig: UserAuthConfig = {
   identityService: productionConfig.identityServiceUrl,
+  useLocalStorage: true,
   localStorage: getPlatformLocalStorage()
 }

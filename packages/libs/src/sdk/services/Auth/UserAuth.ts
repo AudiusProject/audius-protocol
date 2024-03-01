@@ -6,22 +6,22 @@ import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
 
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 
-import { defaultHedgehogAuthConfig } from './constants'
-import type { AuthConfig, AuthService } from './types'
+import { defaultUserAuthConfig } from './constants'
+import type { UserAuthConfig, AuthService } from './types'
 
-export class HedgehogAuth implements AuthService {
+export class UserAuth implements AuthService {
   /**
    * Configuration passed in by the consumer (with defaults)
    */
-  private config: AuthConfig
+  private config: UserAuthConfig
 
   /**
    * Hedgehog instance to handle auth
    */
   private readonly hedgehog: Hedgehog
 
-  constructor(config?: AuthConfig) {
-    this.config = mergeConfigWithDefaults(config, defaultHedgehogAuthConfig)
+  constructor(config?: UserAuthConfig) {
+    this.config = mergeConfigWithDefaults(config, defaultUserAuthConfig)
 
     const get: GetFn = async ({ lookupKey, email, otp }) => {
       const params = new URLSearchParams({
@@ -55,7 +55,7 @@ export class HedgehogAuth implements AuthService {
       get,
       setAuth,
       setUser,
-      /* useLocalStorage */ true
+      config?.useLocalStorage ?? true
     )
     this.config.localStorage.then((ls) => (this.hedgehog.localStorage = ls))
   }

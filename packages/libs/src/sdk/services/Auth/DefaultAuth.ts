@@ -32,20 +32,4 @@ export class DefaultAuth implements AuthService {
     }
     return `0x${this.apiKey}`
   }
-
-  signIn = () => {
-    throw new Error(NOT_INITIALIZED)
-  }
-
-  signUp = () => {
-    throw new Error(NOT_INITIALIZED)
-  }
-
-  signOut = () => {
-    throw new Error(NOT_INITIALIZED)
-  }
-
-  isSignedIn = () => {
-    throw new Error(NOT_INITIALIZED)
-  }
 }

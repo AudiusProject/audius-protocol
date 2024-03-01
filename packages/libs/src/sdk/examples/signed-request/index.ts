@@ -1,34 +1,39 @@
-import { sdk } from '@audius/sdk'
+import { sdk, UserAuth } from '@audius/sdk'
 import prompt from 'prompt-sync'
+
+const email = ''
+const password = ''
+const handle = ''
 
 /**
  * Creates nd sdk instance and logs in with user auth
  * Fetches the listening history for that user
  * Please set:
- *  <email@email.com>
- *  <password>
- *  <my-handle>
+ *  - email
+ *  - password
+ *  - handle
  */
 const main = async () => {
   // Create an sdk with an app name and user auth
+  const auth = new UserAuth()
   const audiusSdk = sdk({
     appName: 'Example',
-    userAuth: true
+    services: { auth }
   })
 
   // Sign in as our user, catching the first attempt to add
   // the one-time-pass code.
   try {
-    await audiusSdk.services.auth.signIn?.({
-      email: '<email@email.com>',
-      password: '<password>'
+    await auth.signIn({
+      email,
+      password
     })
   } catch (e) {
     const otp = prompt()('Enter email verification code: ')
 
-    await audiusSdk.services.auth.signIn?.({
-      email: '<email@email.com>',
-      password: '<password>',
+    await auth.signIn({
+      email,
+      password,
       otp
     })
   }
@@ -36,7 +41,7 @@ const main = async () => {
   // Get our user id
   const userId = (
     await audiusSdk.users.getUserByHandle({
-      handle: '<my-handle>'
+      handle
     })
   ).data?.id
 
@@ -49,7 +54,7 @@ const main = async () => {
   console.info(history)
 
   // Log our user out
-  await audiusSdk.services.auth.signOut?.()
+  await auth.signOut()
 
   process.exit(0)
 }

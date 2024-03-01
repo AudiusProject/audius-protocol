@@ -96,13 +96,7 @@ const DevAppSchema = z.object({
   /**
    * API secret, required for writes
    */
-  apiSecret: z.optional(z.string().min(1)),
-  /**
-   * Opt to use user (hedgehog) auth instead of
-   * by specifying app keys. User credentials will need to be
-   * supplied to sign requests.
-   */
-  userAuth: z.undefined()
+  apiSecret: z.optional(z.string().min(1))
 })
 
 const CustomAppSchema = z.object({
@@ -121,44 +115,9 @@ const CustomAppSchema = z.object({
   /**
    * API secret, required for writes
    */
-  apiSecret: z.optional(z.string().min(1)),
-  /**
-   * Opt to use user (hedgehog) auth instead of
-   * by specifying app keys. User credentials will need to be
-   * supplied to sign requests.
-   */
-  userAuth: z.undefined()
+  apiSecret: z.optional(z.string().min(1))
 })
 
-const UserAppSchema = z.object({
-  /**
-   * Your app name
-   */
-  appName: z.string().min(1),
-  /**
-   * Services injection
-   */
-  services: z.optional(z.custom<Partial<ServicesContainer>>()),
-  /**
-   * API key
-   */
-  apiKey: z.undefined(),
-  /**
-   * API secret
-   */
-  apiSecret: z.undefined(),
-  /**
-   * Opt to use user (hedgehog) auth instead of
-   * by specifying app keys. User credentials will need to be
-   * supplied to sign requests.
-   */
-  userAuth: z.boolean().refine((v) => v === true)
-})
-
-export const SdkConfigSchema = z.union([
-  DevAppSchema,
-  CustomAppSchema,
-  UserAppSchema
-])
+export const SdkConfigSchema = z.union([DevAppSchema, CustomAppSchema])
 
 export type SdkConfig = z.infer<typeof SdkConfigSchema>

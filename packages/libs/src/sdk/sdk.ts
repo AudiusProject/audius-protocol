@@ -29,7 +29,6 @@ import {
 import { OAuth } from './oauth'
 import {
   DiscoveryNodeSelector,
-  HedgehogAuth,
   DefaultAuth,
   Storage,
   EntityManager,
@@ -38,7 +37,6 @@ import {
 } from './services'
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
-import { defaultHedgehogAuthConfig } from './services/Auth/constants'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 import { Logger } from './services/Logger'
 import { SolanaRelay } from './services/Solana/SolanaRelay'
@@ -92,16 +90,11 @@ const initializeServices = (config: SdkConfig) => {
     )
   }
 
-  let auth
-  if (config.services?.auth) {
-    auth = config.services?.auth
-  } else if (config.apiKey && config.apiSecret) {
-    auth = new AppAuth(config.apiKey, config.apiSecret)
-  } else if (config.userAuth) {
-    auth = new HedgehogAuth(defaultHedgehogAuthConfig)
-  } else {
-    auth = new DefaultAuth(config.apiKey)
-  }
+  const auth =
+    config.services?.auth ??
+    (config.apiKey && config.apiSecret
+      ? new AppAuth(config.apiKey, config.apiSecret)
+      : new DefaultAuth(config.apiKey))
 
   const discoveryNodeSelector =
     config.services?.discoveryNodeSelector ??
