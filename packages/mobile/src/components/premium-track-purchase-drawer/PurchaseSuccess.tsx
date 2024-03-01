@@ -94,8 +94,8 @@ export const PurchaseSuccess = ({
   const onRepost = useCallback(() => {
     dispatch(
       isReposted
-        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCAHSE)
-        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCAHSE)
+        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCHASE)
+        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCHASE)
     )
   }, [dispatch, isReposted, trackId])
 
