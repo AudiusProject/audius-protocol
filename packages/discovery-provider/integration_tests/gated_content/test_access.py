@@ -1,3 +1,5 @@
+from typing import Any, Dict, List
+
 from integration_tests.utils import populate_mock_db
 from src.gated_content.content_access_checker import ContentAccessChecker
 from src.models.playlists.playlist import Playlist
@@ -102,7 +104,7 @@ usdc_download_gated_track = {
     "download_conditions": usdc_gate_1,
     "playlists_containing_track": [1],
 }
-tracks = [
+tracks: List[Dict[str, Any]] = [
     non_gated_track,
     stream_gated_track_1,
     stream_gated_track_2,
@@ -134,7 +136,7 @@ for track in tracks:
             is_delete=False,
         )
     )
-playlists = [
+playlists: List[Dict[str, Any]] = [
     {
         "playlist_id": 1,
         "playlist_owner_id": 1,
