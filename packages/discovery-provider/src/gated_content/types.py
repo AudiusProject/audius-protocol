@@ -2,7 +2,7 @@ from typing import Literal
 
 # These are the different types of content that can be made gated.
 # For now, we only support tracks.
-GatedContentType = Literal["track"]
+GatedContentType = Literal["track", "album"]
 
 # These are the different conditions on which gated content access
 # will be gated.
