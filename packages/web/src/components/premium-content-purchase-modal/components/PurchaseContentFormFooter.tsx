@@ -105,14 +105,14 @@ export const PurchaseContentFormFooter = ({
   const onRepost = useCallback(() => {
     dispatch(
       isReposted
-        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCAHSE)
-        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCAHSE)
+        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCHASE)
+        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCHASE)
     )
-  }, [dispatch, isReposted])
+  }, [trackId, dispatch, isReposted])
 
   if (isPurchased) {
     return (
-      <>
+      <Flex direction='column' gap='xl' alignSelf='stretch'>
         <Flex gap='l'>
           <EntityActionButton
             buttonType='button'
@@ -139,7 +139,7 @@ export const PurchaseContentFormFooter = ({
         >
           {messages.viewTrack}
         </PlainButton>
-      </>
+      </Flex>
     )
   }
   return (
