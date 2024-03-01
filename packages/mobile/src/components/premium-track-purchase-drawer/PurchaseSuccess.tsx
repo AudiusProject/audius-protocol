@@ -1,13 +1,20 @@
 import { useCallback } from 'react'
 
 import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
+import { tracksSocialActions } from '@audius/common/store'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
-import { IconCaretRight, IconVerified } from '@audius/harmony-native'
+import {
+  IconCaretRight,
+  IconRepost,
+  IconVerified,
+  Button as HarmonyButton
+} from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { EventNames } from 'app/types/analytics'
+import { EventNames, RepostSource } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -19,7 +26,9 @@ const messages = {
     `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
   shareTwitterTextStems: (trackTitle: string, handle: string) =>
     `I bought the stems for ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
-  viewTrack: 'View Track'
+  viewTrack: 'View Track',
+  repost: 'Repost',
+  reposted: 'Reposted'
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -51,8 +60,17 @@ export const PurchaseSuccess = ({
   const styles = useStyles()
   const { specialGreen, staticWhite, neutralLight4 } = useThemeColors()
   const { handle } = track.user
-  const { title, is_download_gated, _stems } = track
+  const {
+    title,
+    is_download_gated,
+    _stems,
+    has_current_user_reposted: isReposted,
+    track_id: trackId
+  } = track
+
   const link = getTrackRoute(track, true)
+
+  const dispatch = useDispatch()
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
@@ -73,6 +91,14 @@ export const PurchaseSuccess = ({
     [title, is_download_gated, _stems]
   )
 
+  const onRepost = useCallback(() => {
+    dispatch(
+      isReposted
+        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCAHSE)
+        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCAHSE)
+    )
+  }, [dispatch, isReposted, trackId])
+
   return (
     <View style={styles.root}>
       <View style={styles.successContainer}>
@@ -84,6 +110,14 @@ export const PurchaseSuccess = ({
         />
         <Text weight='bold'>{messages.success}</Text>
       </View>
+      <HarmonyButton
+        onPress={onRepost}
+        variant={'secondary'}
+        size='default'
+        iconLeft={IconRepost}
+      >
+        {isReposted ? messages.reposted : messages.repost}
+      </HarmonyButton>
       <TwitterButton
         fullWidth
         type='dynamic'

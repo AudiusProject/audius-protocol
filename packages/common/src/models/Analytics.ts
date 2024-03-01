@@ -824,7 +824,8 @@ export enum RepostSource {
   HISTORY_PAGE = 'history page',
   LIBRARY_PAGE = 'library page',
   OVERFLOW = 'overflow',
-  TRACK_LIST = 'track list'
+  TRACK_LIST = 'track list',
+  PURCAHSE = 'purchase'
 }
 export enum FavoriteSource {
   TILE = 'tile',

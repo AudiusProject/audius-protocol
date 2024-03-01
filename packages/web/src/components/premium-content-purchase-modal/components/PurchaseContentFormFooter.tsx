@@ -4,10 +4,11 @@ import {
   PurchaseableTrackMetadata,
   usePurchaseContentErrorMessage
 } from '@audius/common/hooks'
-import { Name } from '@audius/common/models'
+import { Name, RepostSource } from '@audius/common/models'
 import {
   PurchaseContentStage,
-  PurchaseContentError
+  PurchaseContentError,
+  tracksSocialActions
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import {
@@ -15,10 +16,15 @@ import {
   IconCaretRight,
   IconError,
   Text,
-  PlainButton
+  PlainButton,
+  IconRepost,
+  Flex
 } from '@audius/harmony'
+import { ButtonType } from '@audius/stems'
+import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { fullTrackPage } from 'utils/route'
 
@@ -33,7 +39,9 @@ const messages = {
   shareButtonContent: 'I just purchased a track on Audius!',
   shareTwitterText: (trackTitle: string, handle: string) =>
     `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
-  purchaseSuccessful: 'Your Purchase Was Successful!'
+  purchaseSuccessful: 'Your Purchase Was Successful!',
+  reposted: 'Reposted',
+  repost: 'Repost'
 }
 
 const ContentPurchaseError = ({
@@ -75,8 +83,11 @@ export const PurchaseContentFormFooter = ({
   const {
     title,
     permalink,
-    user: { handle }
+    user: { handle },
+    has_current_user_reposted: isReposted,
+    track_id: trackId
   } = track
+  const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
 
@@ -91,16 +102,35 @@ export const PurchaseContentFormFooter = ({
     [title]
   )
 
+  const onRepost = useCallback(() => {
+    dispatch(
+      isReposted
+        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCAHSE)
+        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCAHSE)
+    )
+  }, [dispatch, isReposted])
+
   if (isPurchased) {
     return (
       <>
-        <TwitterShareButton
-          fullWidth
-          type='dynamic'
-          url={fullTrackPage(permalink)}
-          shareData={handleTwitterShare}
-          handle={handle}
-        />
+        <Flex gap='l'>
+          <EntityActionButton
+            buttonType='button'
+            type={isReposted ? ButtonType.SECONDARY : ButtonType.COMMON}
+            text={isReposted ? messages.reposted : messages.repost}
+            fullWidth
+            leftIcon={<IconRepost />}
+            onClick={onRepost}
+            role='log'
+          />
+          <TwitterShareButton
+            fullWidth
+            type='dynamic'
+            url={fullTrackPage(permalink)}
+            shareData={handleTwitterShare}
+            handle={handle}
+          />
+        </Flex>
         <PlainButton
           onClick={onViewTrackClicked}
           iconRight={IconCaretRight}
