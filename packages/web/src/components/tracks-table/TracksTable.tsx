@@ -209,41 +209,9 @@ export const TracksTable = ({
             {track.name}
             {deleted ? ` [Deleted By Artist]` : ''}
           </TextLink>
-          {/* <Link
-            variant='inherit'
-            tag={isLocked || deleted ? 'span' : undefined}
-            to={isLocked || deleted ? '' : track.permalink}
-            color={active ? 'active' : 'default'}
-            className={styles.trackCell}
-          >
-            {track.name}
-            {track.name}
-            {track.name}
-            {track.name}
-            {deleted ? ` [Deleted By Artist]` : ''}
-          </Link> */}
           {!deleted && isLocked ? renderLocked() : null}
         </div>
       )
-
-      // return (
-      //   <div className={styles.textContainer}>
-      //     <Link
-      //       variant='inherit'
-      //       tag={isLocked || deleted ? 'span' : undefined}
-      //       to={isLocked || deleted ? '' : track.permalink}
-      //       color={active ? 'active' : 'default'}
-      //       className={styles.trackCell}
-      //     >
-      //       {track.name}
-      //       {track.name}
-      //       {track.name}
-      //       {track.name}
-      //       {deleted ? ` [Deleted By Artist]` : ''}
-      //     </Link>
-      //     {!deleted && isLocked ? renderLocked() : null}
-      //   </div>
-      // )
     },
     [trackAccessMap, playingIndex]
   )

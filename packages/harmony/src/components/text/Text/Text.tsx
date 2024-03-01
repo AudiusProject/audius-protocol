@@ -24,15 +24,10 @@ export const Text = forwardRef(
       asChild,
       textAlign,
       ellipses,
-      id,
       ...other
     } = props
 
     const theme = useTheme()
-
-    if (id) {
-      console.log('blah!', ellipses)
-    }
 
     const variantConfig = variant && variantStylesMap[variant]
     const css = {

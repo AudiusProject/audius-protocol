@@ -360,12 +360,7 @@ const TrackTile = (props: CombinedProps) => {
               isActive={isActive}
               applyHoverStylesToInnerSvg
             >
-              <Text ellipses>
-                {title}
-                {title}
-                {title}
-                {title}
-              </Text>
+              <Text ellipses>{title}</Text>
               {isPlaying ? <IconVolume size='m' /> : null}
               {(!artworkLoaded || showSkeleton) && (
                 <Skeleton className={styles.skeleton} height='20px' />
