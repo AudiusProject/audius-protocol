@@ -19,7 +19,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { StatusMessage } from 'components/status-message/StatusMessage'
 
-import { ForgotPasswordHelper } from './ForgotPasswordHelper'
+import { ForgotPasswordModal } from './ForgotPasswordModal'
 import { MetaMaskOption } from './MetaMaskOption'
 import styles from './SignInPage.module.css'
 
@@ -239,7 +239,7 @@ export const SignInPage = ({
             {messages.forgotPasswordText}
           </span>
         </div>
-        <ForgotPasswordHelper
+        <ForgotPasswordModal
           isOpen={showForgotPassword}
           onClose={() => setShowForgotPassword(false)}
         />
