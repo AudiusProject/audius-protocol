@@ -9,7 +9,7 @@ from src.gated_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
     does_user_support_artist,
-    has_user_purchased_track,
+    has_user_purchased_track_or_album_containing_track,
 )
 from src.gated_content.types import GatedContentConditions, GatedContentType
 from src.models.tracks.track import Track
@@ -55,7 +55,7 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
-    "usdc_purchase": has_user_purchased_track,
+    "usdc_purchase": has_user_purchased_track_or_album_containing_track,
 }
 
 

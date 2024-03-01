@@ -62,7 +62,7 @@ def does_user_support_artist(
     return True if result else False
 
 
-def has_user_purchased_track(
+def has_user_purchased_track_or_album_containing_track(
     session: Session,
     user_id: int,
     content_id: int,
