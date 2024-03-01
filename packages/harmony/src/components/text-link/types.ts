@@ -20,7 +20,7 @@ export type TextLinkProps = TextLinkTextProps &
      * Which variant to display.
      * @default default
      */
-    variant?: 'default' | 'subdued' | 'visible' | 'inverted'
+    variant?: 'default' | 'subdued' | 'visible' | 'inverted' | 'secondary'
 
     /**
      * Which text variant to display.

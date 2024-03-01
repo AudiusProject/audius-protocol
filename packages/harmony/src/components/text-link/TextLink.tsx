@@ -27,14 +27,16 @@ export const TextLink = (props: TextLinkProps) => {
     default: color.link.default,
     subdued: color.link.subdued,
     visible: color.link.visible,
-    inverted: color.static.white
+    inverted: color.static.white,
+    secondary: color.secondary.secondary
   }
 
   const variantHoverColors = {
     default: color.primary.p300,
     subdued: color.primary.p300,
     visible: color.link.visible,
-    inverted: color.static.white
+    inverted: color.static.white,
+    secondary: color.secondary.secondary
   }
 
   const hoverStyles = {
