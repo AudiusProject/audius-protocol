@@ -189,6 +189,7 @@ def test_valid_parse_metadata(app):
                 "audio_upload_id": None,
                 "placement_hosts": None,
                 "ddex_app": None,
+                "playlists_containing_track": None,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,
