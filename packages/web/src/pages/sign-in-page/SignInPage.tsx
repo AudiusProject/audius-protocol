@@ -131,7 +131,7 @@ export const SignInPage = () => {
               <TextLink
                 variant='visible'
                 textVariant='body'
-                css={{ textAlign: isMobile ? 'center' : undefined }}
+                css={{ alignSelf: isMobile ? 'center' : undefined }}
                 onClick={() => {
                   setShowForgotPassword(true)
                 }}
