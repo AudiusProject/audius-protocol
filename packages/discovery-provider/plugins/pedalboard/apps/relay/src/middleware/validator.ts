@@ -57,7 +57,7 @@ export const validator = async (
   let signerIsApp = false
   let signerIsUser = false
   let createOrDeactivate = false
-  let isSenderVerifier = senderAddress === config.verifierAddress
+  const isSenderVerifier = senderAddress === config.verifierAddress
 
   const user = await retrieveUser(
     contractRegistryKey,
