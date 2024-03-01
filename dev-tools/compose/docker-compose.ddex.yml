@@ -190,6 +190,20 @@ services:
     profiles:
       - ddex
 
+  ddex-s3:
+    container_name: ddex-s3
+    env_file: .env
+    image: localstack/localstack:s3-latest
+    ports:
+      - "127.0.0.1:4566:4566"
+    networks:
+      - ddex-network
+    volumes:
+      - "ddex-s3:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    profiles:
+      - ddex
+
   ddex-ingester:
     container_name: ddex-ingester
     env_file: .env
@@ -213,3 +227,4 @@ networks:
 
 volumes:
   ddex-mongo-db:
+  ddex-s3:

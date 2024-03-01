@@ -233,6 +233,12 @@ services:
       file: docker-compose.ddex.yml
       service: ddex-mongo-init
     <<: *common
+
+  ddex-s3:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-s3
+    <<: *common
   
   ddex-ingester:
     extends:
@@ -311,3 +317,4 @@ volumes:
   mediorum:
   legacy_creator_file_storage:
   ddex-mongo-db:
+  ddex-s3:
