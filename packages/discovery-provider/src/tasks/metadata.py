@@ -74,6 +74,7 @@ class TrackMetadata(TypedDict):
     is_download_gated: Optional[bool]
     download_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
+    playlists_containing_track: Optional[List[int]]
     ai_attribution_user_id: Optional[int]
     placement_hosts: Optional[str]
     ddex_app: Optional[str]
@@ -121,6 +122,7 @@ track_metadata_format: TrackMetadata = {
     "is_download_gated": False,
     "download_conditions": None,
     "is_playlist_upload": False,
+    "playlists_containing_track": None,
     "ai_attribution_user_id": None,
     "placement_hosts": None,
     "ddex_app": None,
