@@ -57,6 +57,7 @@ export const validator = async (
   let signerIsApp = false
   let signerIsUser = false
   let createOrDeactivate = false
+  const isSenderVerifier = senderAddress === config.verifierAddress
 
   const user = await retrieveUser(
     contractRegistryKey,
@@ -84,7 +85,7 @@ export const validator = async (
   }
 
   // could not find user and is not create, find app
-  if (!signerIsUser && !createOrDeactivate) {
+  if (!signerIsUser && !createOrDeactivate && !isSenderVerifier) {
     const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
     if (developerApp === undefined) {
       logger.error({ encodedABI }, "neither user nor developer app could be found for address")
@@ -106,7 +107,8 @@ export const validator = async (
     createOrDeactivate,
     ip,
     signerIsApp,
-    signerIsUser
+    signerIsUser,
+    isSenderVerifier
   }
   next()
 }
