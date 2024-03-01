@@ -27,10 +27,10 @@ export const antiAbuseMiddleware = async (
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
-  const { ip, recoveredSigner, signerIsApp, createOrDeactivate} = response.locals.ctx
+  const { ip, recoveredSigner, signerIsApp, createOrDeactivate, isSenderVerifier } = response.locals.ctx
 
   // no AAO to check and creates / deactivates should always be allowed
-  if (signerIsApp || createOrDeactivate) {
+  if (signerIsApp || createOrDeactivate || isSenderVerifier) {
     next()
     return
   }

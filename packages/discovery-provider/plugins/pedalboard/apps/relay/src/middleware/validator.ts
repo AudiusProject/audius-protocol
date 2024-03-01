@@ -107,7 +107,8 @@ export const validator = async (
     createOrDeactivate,
     ip,
     signerIsApp,
-    signerIsUser
+    signerIsUser,
+    isSenderVerifier
   }
   next()
 }
