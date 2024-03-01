@@ -6,7 +6,7 @@ const password = ''
 const handle = ''
 
 /**
- * Creates nd sdk instance and logs in with user auth
+ * Creates an sdk instance and logs in with user auth
  * Fetches the listening history for that user
  * Please set:
  *  - email
