@@ -1671,9 +1671,9 @@ export const audiusBackend = ({
     )
   }
 
-  async function resetPassword(email: string, password: string) {
-    await waitForLibsInit()
-    return audiusLibs.Account.resetPassword(email, password)
+  async function resetPassword(username: string, password: string) {
+    const libs = await getAudiusLibsTyped()
+    return libs.Account!.resetPassword({ username, password })
   }
 
   async function sendRecoveryEmail() {
