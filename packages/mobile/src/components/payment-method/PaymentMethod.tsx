@@ -69,6 +69,7 @@ type PaymentMethodProps = {
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
   isCoinflowEnabled?: boolean
+  showVendorChoice?: boolean
 }
 
 export const PaymentMethod = ({
@@ -77,7 +78,8 @@ export const PaymentMethod = ({
   balance,
   isExistingBalanceDisabled,
   showExistingBalance,
-  isCoinflowEnabled
+  isCoinflowEnabled,
+  showVendorChoice
 }: PaymentMethodProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
@@ -111,7 +113,7 @@ export const PaymentMethod = ({
       ),
       icon: IconCreditCard,
       content:
-        vendorOptions.length > 1 ? (
+        vendorOptions.length > 1 && showVendorChoice ? (
           <CardSelectionButton
             selectedVendor={purchaseVendor ?? vendorOptions[0]}
           />
