@@ -138,7 +138,6 @@
     "DDEX_KEY": "49d5e13d355709b615b7cce7369174fb240b6b39",
     "DDEX_SECRET": "2b2c2b90d9a489234ae629a5284de84fb0633306257f17667aaebf2345d92152",
     "SESSION_SECRET": "something random",
-    "NODE_ENV": "stage",
-    "DDEX_ADMIN_ALLOWLIST":  "741187809"
+    "NODE_ENV": "stage"
   }
 }
