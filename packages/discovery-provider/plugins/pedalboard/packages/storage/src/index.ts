@@ -987,6 +987,7 @@ export type Tracks = {
   is_download_gated: boolean;
   download_conditions: unknown | null;
   is_original_available: boolean;
+  playlists_containing_track: number[] | null;
   orig_file_cid: string | null;
   orig_filename: string | null;
   ddex_app: string | null;
