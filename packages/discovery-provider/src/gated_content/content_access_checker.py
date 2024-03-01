@@ -93,7 +93,11 @@ class ContentAccessChecker:
         # note that stem tracks do not have stream/download conditions.
         stream_conditions = content_entity.stream_conditions
         download_conditions = content_entity.download_conditions
-        if content_type == "track" and not stream_conditions and not download_conditions:
+        if (
+            content_type == "track"
+            and not stream_conditions
+            and not download_conditions
+        ):
             access = self._check_stem_access(
                 session=session,
                 user_id=user_id,

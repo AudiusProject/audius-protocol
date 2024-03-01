@@ -69,7 +69,7 @@ def does_user_have_usdc_access(
     content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
-    if content_type == GatedContentType.TRACK:
+    if content_type == "track":
         result = (
             session.query(USDCPurchase)
             .filter(
