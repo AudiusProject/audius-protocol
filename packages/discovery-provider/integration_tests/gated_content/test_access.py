@@ -1,9 +1,10 @@
+from typing import Any, Dict, List
+
 from integration_tests.utils import populate_mock_db
 from src.gated_content.content_access_checker import ContentAccessChecker
 from src.models.playlists.playlist import Playlist
 from src.models.tracks.track import Track
 from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import model_to_dictionary
 
 # Data for tests
 collectible_gate = {
@@ -103,7 +104,7 @@ usdc_download_gated_track = {
     "download_conditions": usdc_gate_1,
     "playlists_containing_track": [1],
 }
-tracks = [
+tracks: List[Dict[str, Any]] = [
     non_gated_track,
     stream_gated_track_1,
     stream_gated_track_2,
@@ -123,27 +124,19 @@ for track in tracks:
             blockhash=hex(0),
             blocknumber=0,
             txhash=str(0),
-            # track_id=track.get("track_id"),
-            # owner_id=track.get("owner_id", 1),
+            track_id=track.get("track_id", 0),
+            owner_id=track.get("owner_id", 1),
             is_stream_gated=track.get("is_stream_gated", False),
             stream_conditions=track.get("stream_conditions", None),
             is_download_gated=track.get("is_download_gated", False),
             download_conditions=track.get("download_conditions", None),
             stem_of=track.get("stem_of", None),
             playlists_containing_track=track.get("playlists_containing_track", []),
-            # track_id=getattr(track, "track_id", None),
-            # owner_id=getattr(track, "owner_id", 1),
-            # is_stream_gated=getattr(track, "is_stream_gated", False),
-            # stream_conditions=getattr(track, "stream_conditions", None),
-            # is_download_gated=getattr(track, "is_download_gated", False),
-            # download_conditions=getattr(track, "download_conditions", None),
-            # stem_of=getattr(track, "stem_of", None),
-            # playlists_containing_track=getattr(track, "playlists_containing_track", []),
             is_current=True,
             is_delete=False,
         )
     )
-playlists = [
+playlists: List[Dict[str, Any]] = [
     {
         "playlist_id": 1,
         "playlist_owner_id": 1,
@@ -167,11 +160,7 @@ for playlist in playlists:
             blockhash=hex(0),
             blocknumber=0,
             txhash=str(0),
-            # playlist_id=getattr(playlist, "playlist_id", None),
-            # playlist_owner_id=getattr(playlist, "playlist_owner_id", 1),
-            # is_stream_gated=getattr(playlist, "is_stream_gated", False),
-            # stream_conditions=getattr(playlist, "stream_conditions", None),
-            playlist_id=playlist.get("playlist_id"),
+            playlist_id=playlist.get("playlist_id", 0),
             playlist_owner_id=playlist.get("playlist_owner_id", 1),
             is_stream_gated=playlist.get("is_stream_gated", False),
             stream_conditions=playlist.get("stream_conditions", None),
