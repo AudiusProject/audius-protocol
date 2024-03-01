@@ -8,8 +8,8 @@ from typing_extensions import Protocol
 from src.gated_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
+    does_user_have_usdc_access,
     does_user_support_artist,
-    has_user_purchased_track_or_album_containing_track,
 )
 from src.gated_content.types import GatedContentConditions, GatedContentType
 from src.models.tracks.track import Track
@@ -55,7 +55,7 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
-    "usdc_purchase": has_user_purchased_track_or_album_containing_track,
+    "usdc_purchase": does_user_have_usdc_access,
 }
 
 
@@ -88,12 +88,12 @@ class ContentAccessChecker:
             return {"has_stream_access": True, "has_download_access": True}
 
         # if not gated on either stream or download,
-        # then check if track is a stem track and check parent track access,
+        # then check if content is a stem track and check parent track access,
         # otherwise, user has access to stream and download.
         # note that stem tracks do not have stream/download conditions.
         stream_conditions = content_entity.stream_conditions
         download_conditions = content_entity.download_conditions
-        if not stream_conditions and not download_conditions:
+        if content_type == "track" and not stream_conditions and not download_conditions:
             access = self._check_stem_access(
                 session=session,
                 user_id=user_id,

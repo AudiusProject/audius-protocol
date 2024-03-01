@@ -62,45 +62,54 @@ def does_user_support_artist(
     return True if result else False
 
 
-def has_user_purchased_track_or_album_containing_track(
+def does_user_have_usdc_access(
     session: Session,
     user_id: int,
     content_id: int,
     content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
-    result = (
-        session.query(USDCPurchase)
-        .filter(
-            USDCPurchase.buyer_user_id == user_id,
-            USDCPurchase.content_id == content_id,
-            USDCPurchase.content_type == "track",
+    if content_type == GatedContentType.TRACK:
+        result = (
+            session.query(USDCPurchase)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id == content_id,
+                USDCPurchase.content_type == "track",
+            )
+            .first()
         )
-        .first()
-    )
-    if result:
-        return True
+        if result:
+            return True
 
-    track = session.query(Track).filter(Track.track_id == content_id).first()
+        track = session.query(Track).filter(Track.track_id == content_id).first()
 
-    # Don't check album purchase if track is download-gated only
-    if (
-        not track
-        or not track.playlists_containing_track
-        or (track.is_download_gated and not track.is_stream_gated)
-    ):
-        return False
+        # Don't check album purchase if track is download-gated only
+        if (
+            not track
+            or not track.playlists_containing_track
+            or (track.is_download_gated and not track.is_stream_gated)
+        ):
+            return False
 
-    album_purchase = (
-        session.query(USDCPurchase)
-        .filter(
-            USDCPurchase.buyer_user_id == user_id,
-            USDCPurchase.content_id.in_(track.playlists_containing_track),
-            USDCPurchase.content_type == "album",
+        album_purchase = (
+            session.query(USDCPurchase)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id.in_(track.playlists_containing_track),
+                USDCPurchase.content_type == "album",
+            )
+            .first()
         )
-        .first()
-    )
-    if album_purchase:
-        return True
-
-    return False
+        return bool(album_purchase)
+    else:
+        result = (
+            session.query(USDCPurchase)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id == content_id,
+                USDCPurchase.content_type == content_type,
+            )
+            .first()
+        )
+        return bool(result)
