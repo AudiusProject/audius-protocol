@@ -81,6 +81,7 @@ export const track = async ({ eventName, properties }: Track) => {
   const propertiesWithContext = {
     ...properties,
     clientVersion,
+    isNativeMobile: true,
     mobileClientVersion: version,
     mobileClientVersionInclOTA: versionInfo ?? 'unknown'
   }
