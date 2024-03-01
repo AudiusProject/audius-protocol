@@ -11,8 +11,15 @@ import type {
   PaperProps,
   ButtonProps
 } from '@audius/harmony-native'
-import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony-native'
-import { KeyboardAvoidingView, HeaderShadow } from 'app/components/core'
+import {
+  Button,
+  Divider,
+  Flex,
+  Paper,
+  Text,
+  useTheme
+} from '@audius/harmony-native'
+import { KeyboardAvoidingView } from 'app/components/core'
 
 const messages = {
   continue: 'Continue'
@@ -36,13 +43,13 @@ export const Page = (props: PageProps) => {
     h: '100%',
     gap: '2xl',
     ph: noGutter ? undefined : gutterSize,
-    pv: '2xl',
+    pv: 'xl',
     backgroundColor: 'white'
   }
 
   return (
     <>
-      <HeaderShadow />
+      <Divider />
       {/* // 1 zIndex is to appear below */}
       <Flex
         {...layoutProps}
