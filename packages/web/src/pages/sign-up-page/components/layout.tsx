@@ -10,7 +10,6 @@ import {
 
 import { Maybe } from '@audius/common/utils'
 import {
-  Box,
   BoxProps,
   Button,
   ButtonProps,
