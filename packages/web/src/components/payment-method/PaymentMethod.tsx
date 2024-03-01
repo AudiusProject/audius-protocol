@@ -174,7 +174,7 @@ export const PaymentMethod = ({
                   <Icon color='default' />
                 </Flex>
               ) : null}
-              <Text>{label}</Text>
+              <Text variant='body' strength='default' size='m'>{label}</Text>
             </Flex>
             <Text
               variant='body'
