@@ -1,4 +1,4 @@
-import { LocalStorage } from '@audius/hedgehog'
+import type { LocalStorage } from '@audius/hedgehog'
 import type { EIP712TypedData, MessageData } from 'eth-sig-util'
 
 export type TransactionData = MessageData<EIP712TypedData>['data']

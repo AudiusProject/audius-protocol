@@ -4,6 +4,7 @@ import * as secp from '@noble/secp256k1'
 import fetch from 'cross-fetch'
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
 
+import { MissingOtpUserAuthError } from '../../utils/errors'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 
 import { defaultUserAuthConfig } from './constants'
@@ -34,7 +35,11 @@ export class UserAuth implements AuthService {
       const response = await fetch(
         `${this.config.identityService}/authentication?${params}`
       )
-      return response.json()
+      const json = await response.json()
+      if (json.error === 'Missing otp') {
+        throw new MissingOtpUserAuthError('Missing OTP coode')
+      }
+      return json
     }
 
     const setAuth: SetAuthFn = async (params) => {
@@ -96,12 +101,9 @@ export class UserAuth implements AuthService {
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
     async (publicKey) => {
       await this.hedgehog.waitUntilReady()
-      return secp.getSharedSecret(
-        // @ts-ignore private key is private
-        this.hedgehog.getWallet()?.privateKey,
-        publicKey,
-        true
-      )
+      const wallet = this.hedgehog.getWallet()
+      if (!wallet) throw new Error('No wallet found')
+      return secp.getSharedSecret(wallet.getPrivateKeyString(), publicKey, true)
     }
 
   sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> = async (
@@ -109,15 +111,10 @@ export class UserAuth implements AuthService {
   ) => {
     const wallet = this.hedgehog.getWallet()
     if (!wallet) throw new Error('No wallet')
-    return secp.sign(
-      keccak_256(data),
-      // @ts-ignore private key is private
-      wallet.privateKey,
-      {
-        recovered: true,
-        der: false
-      }
-    )
+    return secp.sign(keccak_256(data), wallet.getPrivateKeyString(), {
+      recovered: true,
+      der: false
+    })
   }
 
   hashAndSign: (data: string) => Promise<string> = () => {
@@ -130,14 +127,9 @@ export class UserAuth implements AuthService {
     await this.hedgehog.waitUntilReady()
     const wallet = this.hedgehog.getWallet()
     if (!wallet) throw new Error('No wallet')
-    return signTypedData(
-      Buffer.from(
-        // @ts-ignore private key is private
-        wallet.privateKey,
-        'hex'
-      ),
-      { data }
-    )
+    return signTypedData(Buffer.from(wallet.getPrivateKeyString(), 'hex'), {
+      data
+    })
   }
 
   getAddress: () => Promise<string> = async () => {

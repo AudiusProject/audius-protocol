@@ -1,4 +1,4 @@
-import { sdk, UserAuth } from '@audius/sdk'
+import { sdk, UserAuth, Errors } from '@audius/sdk'
 import prompt from 'prompt-sync'
 
 const email = ''
@@ -29,13 +29,17 @@ const main = async () => {
       password
     })
   } catch (e) {
-    const otp = prompt()('Enter email verification code: ')
+    if (e instanceof Errors.MissingOtpUserAuthError) {
+      const otp = prompt()('Enter email verification code: ')
 
-    await auth.signIn({
-      email,
-      password,
-      otp
-    })
+      await auth.signIn({
+        email,
+        password,
+        otp
+      })
+    } else {
+      throw e
+    }
   }
 
   // Get our user id
