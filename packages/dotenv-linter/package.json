@@ -1,7 +1,7 @@
 {
   "name": "@audius/dotenv-linter",
   "private": true,
-  "version": "1.5.67",
+  "version": "1.5.68",
   "description": "dotenv lint",
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-protocol#readme",
