@@ -187,6 +187,7 @@ const ExplorePage = ({
                     ? styles.premiumTracksBackgroundIcon
                     : undefined
                 }
+                color='staticWhite'
               />
             }
             goToRoute={goToRoute}

@@ -33,9 +33,9 @@ import {
   IconPlay,
   IconSpecialAccess,
   IconCart,
-  Box
+  Box,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -86,25 +86,26 @@ const PlayButton = ({ disabled, playing, onPlay }: PlayButtonProps) => {
   return (
     <Button
       disabled={disabled}
-      type={ButtonType.PRIMARY_ALT}
-      text={playing ? messages.pause : messages.play}
-      leftIcon={playing ? <IconPause /> : <IconPlay />}
+      variant='primary'
+      iconLeft={playing ? IconPause : IconPlay}
       onClick={onPlay}
-      size={ButtonSize.LARGE}
       fullWidth
-    />
+    >
+      {playing ? messages.pause : messages.play}
+    </Button>
   )
 }
 
 const PreviewButton = ({ playing, onPlay }: PlayButtonProps) => {
   return (
     <Button
-      type={ButtonType.SECONDARY}
-      text={playing ? messages.pause : messages.preview}
-      leftIcon={playing ? <IconPause /> : <IconPlay />}
+      variant='secondary'
+      iconLeft={playing ? IconPause : IconPlay}
       onClick={onPlay}
       fullWidth
-    />
+    >
+      {playing ? messages.pause : messages.preview}
+    </Button>
   )
 }
 
