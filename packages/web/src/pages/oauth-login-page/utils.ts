@@ -106,7 +106,7 @@ export const formOAuthResponse = async ({
   userEmail,
   apiKey,
   onError,
-  txSignature, // Only applicable to scope = write_once
+  txSignature // Only applicable to scope = write_once
 }: {
   account: User
   userEmail?: string | null

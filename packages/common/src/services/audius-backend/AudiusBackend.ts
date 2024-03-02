@@ -1787,7 +1787,13 @@ export const audiusBackend = ({
     }
   }
 
-  function getDiscoveryEntityType({ type, is_album }: { type: string, is_album?: boolean}) {
+  function getDiscoveryEntityType({
+    type,
+    is_album
+  }: {
+    type: string
+    is_album?: boolean
+  }) {
     if (type === 'track') {
       return Entity.Track
     } else if (is_album === true) {
