@@ -17,6 +17,12 @@ import {
 } from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
+  Button as HarmonyButton,
+  ModalContent,
+  ModalContentText,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
   Modal,
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,
@@ -338,39 +344,34 @@ const CollectibleDetailsModal = ({
       </Modal>
 
       <Modal
-        showTitleHeader
-        showDismissButton
-        headerContainerClassName={styles.modalHeader}
         isOpen={isPicConfirmModalOpen}
         onClose={() => setIsPicConfirmaModalOpen(false)}
-        titleClassName={styles.confirmModalTitle}
-        title={
-          <>
-            <IconImage />
-            <span>Set as Profile Pic</span>
-          </>
-        }
       >
-        <div className={styles.confirmModalContainer}>
-          <p className={styles.confirmModalText}>
+        <ModalHeader>
+          <ModalTitle title='Set as Profile Pic' icon={<IconImage />} />
+        </ModalHeader>
+        <ModalContent>
+          <ModalContentText>
             Are you sure you want to change your profile picture?
-          </p>
+          </ModalContentText>
+        </ModalContent>
 
-          <div className={styles.confirmButtonContainer}>
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={() => setIsPicConfirmaModalOpen(false)}
-              text='Nevermind'
-              type={ButtonType.COMMON_ALT}
-            />
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={onClickProfPicUpload}
-              text='Yes'
-              type={ButtonType.PRIMARY_ALT}
-            />
-          </div>
-        </div>
+        <ModalFooter>
+          <HarmonyButton
+            variant='secondary'
+            onClick={() => setIsPicConfirmaModalOpen(false)}
+            fullWidth
+          >
+            Nevermind
+          </HarmonyButton>
+          <HarmonyButton
+            variant='primary'
+            onClick={onClickProfPicUpload}
+            fullWidth
+          >
+            Yes
+          </HarmonyButton>
+        </ModalFooter>
       </Modal>
 
       <Drawer

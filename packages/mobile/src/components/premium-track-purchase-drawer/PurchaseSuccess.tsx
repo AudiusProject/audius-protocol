@@ -86,13 +86,9 @@ export const PurchaseSuccess = ({
         </Text>
       </Flex>
       <Flex gap='l'>
-        <EntityActionButton
-          onPress={onRepost}
-          iconLeft={IconRepost}
-          isActive={isReposted}
-        >
+        <Button onPress={onRepost} iconLeft={IconRepost} isActive={isReposted}>
           {isReposted ? messages.reposted : messages.repost}
-        </EntityActionButton>
+        </Button>
         <TwitterButton
           fullWidth
           type='dynamic'

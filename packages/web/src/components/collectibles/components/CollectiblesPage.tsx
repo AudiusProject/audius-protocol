@@ -16,6 +16,7 @@ import {
 } from '@audius/common/store'
 import { getHash } from '@audius/common/utils'
 import {
+  Button as HarmonyButton,
   Modal,
   IconKebabHorizontal,
   IconPencil,
@@ -734,13 +735,13 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           )}
 
-          <Button
-            className={styles.editDoneButton}
-            type={ButtonType.PRIMARY_ALT}
-            size={ButtonSize.SMALL}
-            text='Done'
+          <HarmonyButton
+            variant='primary'
+            size='small'
             onClick={handleDoneClick}
-          />
+          >
+            Done
+          </HarmonyButton>
         </div>
       </Modal>
 
@@ -784,13 +785,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   </div>
                 </div>
               </Toast>
-              <Button
-                type={ButtonType.PRIMARY_ALT}
-                onClick={closeEmbedModal}
-                text={collectibleMessages.done}
-                textClassName={styles.embedButtonText}
-                className={styles.embedButton}
-              />
+              <HarmonyButton variant='primary' onClick={closeEmbedModal}>
+                {collectibleMessages.done}
+              </HarmonyButton>
             </div>
           </div>
         </div>

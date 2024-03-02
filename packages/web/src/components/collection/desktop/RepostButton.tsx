@@ -6,13 +6,10 @@ import {
   collectionsSocialActions,
   CommonState
 } from '@audius/common/store'
-import { IconRepost } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { ButtonProps, IconRepost, Button } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
-
-import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
 const { getCollection } = collectionPageSelectors
 const { repostCollection, undoRepostCollection } = collectionsSocialActions
@@ -28,7 +25,7 @@ type RepostButtonProps = Partial<ButtonProps> & {
 }
 
 export const RepostButton = (props: RepostButtonProps) => {
-  const { collectionId, type, ...other } = props
+  const { collectionId, variant, ...other } = props
   const dispatch = useDispatch()
 
   const { has_current_user_reposted } =
@@ -48,16 +45,16 @@ export const RepostButton = (props: RepostButtonProps) => {
     <Tooltip
       text={has_current_user_reposted ? messages.unrepost : messages.repost}
     >
-      <EntityActionButton
-        type={
-          type ??
-          (has_current_user_reposted ? ButtonType.SECONDARY : ButtonType.COMMON)
+      <Button
+        variant={
+          variant ?? (has_current_user_reposted ? 'primary' : 'secondary')
         }
-        text={has_current_user_reposted ? messages.reposted : messages.repost}
-        leftIcon={<IconRepost />}
+        iconLeft={IconRepost}
         onClick={handleRepost}
         {...other}
-      />
+      >
+        {has_current_user_reposted ? messages.reposted : messages.repost}
+      </Button>
     </Tooltip>
   )
 }
