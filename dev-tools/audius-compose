@@ -620,24 +620,35 @@ def test_run(protocol_dir, service, args):
         env["COMPOSE_PROFILES"] = "ddex"
         generate_ddex_mongo_key(protocol_dir)
 
-    sys.exit(
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-                f"--project-name={protocol_dir.name}-test",
-                f"--project-directory={protocol_dir / 'dev-tools/compose'}",
-                "run",
-                "--rm",
-                "--build",
-                f"test-{service}",
-                "test",
-                *args,
-            ],
-            env=env
-        ).returncode
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
+            f"--project-name={protocol_dir.name}-test",
+            f"--project-directory={protocol_dir / 'dev-tools/compose'}",
+            "run",
+            "--rm",
+            "--build",
+            f"test-{service}",
+            "test",
+            *args,
+        ],
+        env=env
     )
+
+    if result.returncode != 0 and service.startswith("ddex"):
+        containers = ["ddex-crawler-release-by-release", "ddex-parser-release-by-release"] if service.endswith("release") else ["ddex-crawler-batched", "ddex-parser-batched"]
+        for container in containers:
+            logs_result = subprocess.run(f"docker logs {container}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if logs_result.returncode == 0:
+                print(f"\nLogs for {container}:\n")
+                print(logs_result.stdout.decode("utf-8"))
+            else:
+                print(f"\nFailed to retrieve logs for {container}\n")
+                print(logs_result.stderr.decode("utf-8"))
+
+    sys.exit(result.returncode)
 
 
 @test.command(name="up")

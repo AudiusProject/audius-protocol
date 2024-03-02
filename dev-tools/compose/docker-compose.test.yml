@@ -450,23 +450,8 @@ services:
     logging: *default-logging
     environment:
       AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
       TEST_MODE: 'true'
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3-release-by-release:
-        condition: service_healthy
-
-  ddex-indexer-release-by-release:
-    extends:
-      file: docker-compose.yml
-      service: ddex-indexer
-    container_name: ddex-indexer-release-by-release
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -530,15 +515,13 @@ services:
     depends_on:
       ddex-crawler-release-by-release:
         condition: service_healthy
-      ddex-indexer-release-by-release:
-        condition: service_healthy
       ddex-parser-release-by-release:
         condition: service_healthy
       # ddex-publisher:
       #   condition: service_healthy
       # Leaving out publisher for now because it takes a long time to build.
       # We don't actually upload anything to Audius in the e2e test, but having a "dry run" publisher mode could be useful
-  
+
   ddex-crawler-batched:
     extends:
       file: docker-compose.yml
@@ -547,23 +530,8 @@ services:
     logging: *default-logging
     environment:
       AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
       TEST_MODE: 'true'
-      DDEX_CHOREOGRAPHY: 'ERNBatched'
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3-batched:
-        condition: service_healthy
-
-  ddex-indexer-batched:
-    extends:
-      file: docker-compose.yml
-      service: ddex-indexer
-    container_name: ddex-indexer-batched
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
-      DDEX_CHOREOGRAPHY: 'ERNBatched'
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -625,8 +593,6 @@ services:
       - ddex-network
     depends_on:
       ddex-crawler-batched:
-        condition: service_healthy
-      ddex-indexer-batched:
         condition: service_healthy
       ddex-parser-batched:
         condition: service_healthy

@@ -30,10 +30,10 @@ func TestRunE2E(t *testing.T) {
 	}
 
 	choreography := common.MustGetChoreography()
-	if choreography == common.ERNReleaseByRelease {
+	if choreography == constants.ERNReleaseByRelease {
 		e.runERN381ReleaseByRelease(t)
-	} else if choreography == common.ERNBatched {
-		t.Skip("Batched choreography not yet implemented")
+	} else if choreography == constants.ERNBatched {
+		e.runERN382Batched(t)
 	} else {
 		t.Fatalf("Unexpected choreography: %s", choreography)
 	}
@@ -47,9 +47,10 @@ func (e *e2eTest) setupEnv() error {
 	if err := createBucket(e.S3Client, e.RawBucket); err != nil {
 		return err
 	}
-	if err := createBucket(e.S3Client, e.IndexedBucket); err != nil {
+	if err := createBucket(e.S3Client, e.CrawledBucket); err != nil {
 		return err
 	}
+	fmt.Printf("Created buckets: %s, %s\n", e.RawBucket, e.CrawledBucket)
 
 	users := e.MongoClient.Database("ddex").Collection("users")
 	_, err := users.InsertOne(e.Ctx, bson.M{
@@ -69,44 +70,21 @@ func (e *e2eTest) setupEnv() error {
 	return nil
 }
 
+func (e *e2eTest) runERN382Batched(t *testing.T) {
+	e.Logger.Info("Starting E2E test for ERN 382 Batched choreography")
+
+	e.uploadFixture(t, "batch/ern382/CPD1.zip")
+	// TODO: Implement the rest of the test
+}
+
 func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 	e.Logger.Info("Starting E2E test for ERN 381 Release-By-Release choreography")
 
-	// Upload test file to S3 "raw" bucket
-	filepath := "./fixtures/delivery_ern381_release_by_release.zip"
-	file, err := os.Open(filepath)
-	if err != nil {
-		e.Logger.Error("Failed to open test file", "error", err)
-	}
-	defer file.Close()
+	e.uploadFixture(t, "release_by_release/ern381/sony1.zip")
+	eTag := "b0271b98d23e02947e86b5857e25e4c0"
 
-	_, err = e.S3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(e.RawBucket),
-		Key:    aws.String("delivery_ern381_release_by_release.zip"),
-		Body:   file,
-	})
-	if err != nil {
-		t.Fatalf("Failed to upload test file to S3: %v", err)
-	}
-
-	eTag := "88345d185785b2dbde73df5adf5f3129"
-
-	// Verify the crawler (uploads collection)
-	doc, err := waitForDocument(e.Ctx, e.UploadsColl, bson.M{"upload_etag": eTag})
-	if err != nil {
-		t.Fatalf("Error finding crawled upload in Mongo: %v", err)
-	}
-	if doc.Err() == mongo.ErrNoDocuments {
-		t.Fatalf("No crawled upload was found in Mongo: %v", doc.Err())
-	}
-	var upload common.Upload
-	if err = doc.Decode(&upload); err != nil {
-		t.Fatalf("Failed to decode crawled upload from Mongo: %v", err)
-	}
-	assert.Equal(t, "s3://audius-test-raw/delivery_ern381_release_by_release.zip", upload.Path, "Path doesn't match expected")
-
-	// Verify the indexer (deliveries collection)
-	doc, err = waitForDocument(e.Ctx, e.DeliveriesColl, bson.M{"upload_etag": eTag})
+	// Verify the crawler (deliveries collection)
+	doc, err := waitForDocument(e.Ctx, e.DeliveriesColl, bson.M{"_id": eTag})
 	if err != nil {
 		t.Fatalf("Error finding delivery in Mongo: %v", err)
 	}
@@ -117,13 +95,16 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 	if err = doc.Decode(&delivery); err != nil {
 		t.Fatalf("Failed to decode delivery from Mongo: %v", err)
 	}
-	deliveryID := delivery.ID.Hex()
-	assert.NotNil(t, deliveryID, "ID was empty")
-	assert.Equal(t, constants.DeliveryStatusAwaitingPublishing, delivery.DeliveryStatus, "delivery_status doesn't match expected")
-	assert.Equal(t, "delivery_ern381_release_by_release/A10301A0005108088N.xml", delivery.XmlFilePath, "XML path doesn't match expected")
+	assert.Equal(t, "s3://audius-test-raw/sony1.zip", delivery.ZIPFilePath, "Path doesn't match expected")
+	assert.Equal(t, delivery.ZIPFileETag, eTag, "ETag (delivery ID) doesn't match expected")
+	assert.Equal(t, constants.DeliveryStatusParsing, delivery.DeliveryStatus, "delivery_status doesn't match expected")
+	assert.Equal(t, 1, len(delivery.Releases), "Expected 1 release in delivery")
+	assert.Equal(t, 0, len(delivery.Batches), "Expected 0 batches in delivery")
+	assert.Equal(t, "A10301A0005108088N", delivery.Releases[0].ReleaseID, "Release ID doesn't match expected")
+	assert.Equal(t, "A10301A0005108088N/A10301A0005108088N.xml", delivery.Releases[0].XmlFilePath, "XML path doesn't match expected")
 
 	// Verify the parser (pending_deliveries collection)
-	doc, err = waitForDocument(e.Ctx, e.PendingReleasesColl, bson.M{"upload_etag": eTag})
+	doc, err = waitForDocument(e.Ctx, e.PendingReleasesColl, bson.M{"delivery_etag": eTag})
 	if err != nil {
 		t.Fatalf("Error finding pending release in Mongo: %v", err)
 	}
@@ -136,9 +117,10 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 	}
 	publishDate := time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC)
 	assert.Equal(t, publishDate, pendingRelease.PublishDate, "publish_date doesn't match expected")
-	assert.Equal(t, common.CreateTrackRelease{}, pendingRelease.Track, "Unexpected non-empty track release")
-	assert.Equal(t, deliveryID, pendingRelease.DeliveryID.Hex(), "delivery_id doesn't match expected")
-	assert.Equal(t, []string(nil), pendingRelease.Errors, "Expected there to be no errors")
+	assert.Equal(t, common.CreateTrackRelease{}, pendingRelease.CreateTrackRelease, "Unexpected non-empty track release")
+	assert.Equal(t, []string(nil), delivery.ValidationErrors, "Expected there to be no validation errors")
+	assert.Equal(t, []string{}, delivery.Releases[0].ValidationErrors, "Expected there to be no validation errors")
+	assert.Equal(t, []string{}, pendingRelease.PublishErrors, "Expected there to be no publish errors")
 	assert.Equal(t, common.CreateAlbumRelease{
 		DDEXReleaseRef: "R0",
 		Metadata: common.CollectionMetadata{
@@ -149,7 +131,7 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 			IsAlbum:             true,
 			IsPrivate:           false,
 			Genre:               common.HipHopRap,
-			CoverArtURL:         fmt.Sprintf("s3://audius-test-indexed/%s/resources/A10301A0005108088N_T-1027024165547_Image.jpg", deliveryID),
+			CoverArtURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1027024165547_Image.jpg", pendingRelease.ReleaseID),
 			CoverArtURLHash:     "582fb410615167205e8741580cf77e71",
 			CoverArtURLHashAlgo: "MD5",
 		},
@@ -164,8 +146,8 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				ArtistName:           "",
 				ISRC:                 stringPtr("ZAA012300131"),
 				PreviewStartSeconds:  intPtr(48),
-				PreviewAudioFileURL:  fmt.Sprintf("s3://audius-test-indexed/%s/", deliveryID),
-				AudioFileURL:         fmt.Sprintf("s3://audius-test-indexed/%s/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.m4a", deliveryID),
+				PreviewAudioFileURL:  fmt.Sprintf("s3://audius-test-crawled/%s/", pendingRelease.ReleaseID),
+				AudioFileURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.m4a", pendingRelease.ReleaseID),
 				AudioFileURLHash:     "8bb2ce119257314a8fcb215a49f14b33",
 				AudioFileURLHashAlgo: "MD5",
 			},
@@ -179,13 +161,13 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				Artists:              []common.Artist{{Name: "Theo Random", Roles: []string{"AssociatedPerformer", "MainArtist"}}, {Name: "Thato Saul", Roles: []string{"AssociatedPerformer", "MainArtist"}}},
 				ISRC:                 stringPtr("ZAA012300128"),
 				PreviewStartSeconds:  intPtr(48),
-				PreviewAudioFileURL:  fmt.Sprintf("s3://audius-test-indexed/%s/", deliveryID),
-				AudioFileURL:         fmt.Sprintf("s3://audius-test-indexed/%s/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.m4a", deliveryID),
+				PreviewAudioFileURL:  fmt.Sprintf("s3://audius-test-crawled/%s/", pendingRelease.ReleaseID),
+				AudioFileURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.m4a", pendingRelease.ReleaseID),
 				AudioFileURLHash:     "1e9183898a4f6b45f895e45cd18ba162",
 				AudioFileURLHashAlgo: "MD5",
 			},
 		},
-	}, pendingRelease.Album, "Album release doesn't match expected")
+	}, pendingRelease.CreateAlbumRelease, "Album release doesn't match expected")
 
 	// TODO: Leaving the publisher untested for now
 }
@@ -211,6 +193,25 @@ func createBucket(s3Client *s3.S3, bucket string) error {
 	}
 
 	return nil
+}
+
+// uploadFixture uploads a test fixture to the S3 "raw" bucket
+func (e *e2eTest) uploadFixture(t *testing.T, filepath string) {
+	filepath = fmt.Sprintf("./fixtures/%s", filepath)
+	file, err := os.Open(filepath)
+	if err != nil {
+		e.Logger.Error("Failed to open test file", "error", err)
+	}
+	defer file.Close()
+
+	_, err = e.S3Uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(e.RawBucket),
+		Key:    aws.String("sony1.zip"),
+		Body:   file,
+	})
+	if err != nil {
+		t.Fatalf("Failed to upload '%s' to S3: %v", filepath, err)
+	}
 }
 
 func waitForDocument(ctx context.Context, collection *mongo.Collection, filter bson.M) (*mongo.SingleResult, error) {

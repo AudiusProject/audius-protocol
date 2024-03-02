@@ -198,14 +198,6 @@ services:
       DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
-  ddex-indexer:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-indexer
-    environment:
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    <<: *common
-
   ddex-parser:
     extends:
       file: docker-compose.ddex.yml
