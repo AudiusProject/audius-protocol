@@ -1,0 +1,19 @@
+{
+  "name": "@audius/dotenv-linter",
+  "private": true,
+  "version": "1.5.68",
+  "description": "dotenv lint",
+  "author": "Audius",
+  "homepage": "https://github.com/AudiusProject/audius-protocol#readme",
+  "license": "Apache-2.0",
+  "bin": {
+    "dotenv-linter": "bin/dotenv-linter"
+  },
+  "scripts": {
+    "install": "BINDIR=./bin curl -sSfL https://raw.githubusercontent.com/dotenv-linter/dotenv-linter/v3.3.0/install.sh | sh -s",
+    "rebuild": "npm rebuild --ignore-scripts"
+  },
+  "bugs": {
+    "url": "https://github.com/AudiusProject/audius-protocol/issues"
+  }
+}

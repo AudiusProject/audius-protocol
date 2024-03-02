@@ -1,6 +1,6 @@
 {
   "name": "@audius/commands",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "private": true,
   "description": "Collection of command useful for debugging audius-protocol",
   "main": "src/index.mjs",
