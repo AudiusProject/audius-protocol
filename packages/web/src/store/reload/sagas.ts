@@ -10,7 +10,7 @@ const SHA_CHECK_MS = 60 * 60 * 1000 // Once every hour
 let localSha: string | null = null
 
 function* fetchCurrentGitSha() {
-  const res = yield* call(fetch, `${window.location.origin}/.version`)
+  const res = yield* call(fetch, `${window.location.origin}/.gitsha`)
   const json = yield* call([res, res.json])
   if (typeof json?.git === 'string') {
     return json.git as string
