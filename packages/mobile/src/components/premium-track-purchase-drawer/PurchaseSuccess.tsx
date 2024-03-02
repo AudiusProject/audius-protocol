@@ -2,26 +2,25 @@ import { useCallback } from 'react'
 
 import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
 import { tracksSocialActions } from '@audius/common/store'
-import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
   IconCaretRight,
   IconRepost,
-  IconVerified,
-  Button as HarmonyButton
+  IconValidationCheck,
+  Flex,
+  Text,
+  PlainButton,
+  EntityActionButton
 } from '@audius/harmony-native'
-import { Button, Text } from 'app/components/core'
-import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { EventNames, RepostSource } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
-import { useThemeColors } from 'app/utils/theme'
 
 import { TwitterButton } from '../twitter-button'
 
 const messages = {
-  success: 'Your purchase was successful!',
+  success: 'Your Purchase Was Successful!',
   shareTwitterTextTrack: (trackTitle: string, handle: string) =>
     `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
   shareTwitterTextStems: (trackTitle: string, handle: string) =>
@@ -31,25 +30,6 @@ const messages = {
   reposted: 'Reposted'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: {
-    paddingTop: spacing(2),
-    gap: spacing(9),
-    alignSelf: 'center'
-  },
-  successContainer: {
-    ...flexRowCentered(),
-    alignSelf: 'center',
-    gap: spacing(2)
-  },
-  viewTrack: {
-    borderWidth: 0
-  },
-  viewTrackText: {
-    color: palette.neutralLight4
-  }
-}))
-
 export const PurchaseSuccess = ({
   onPressViewTrack,
   track
@@ -57,8 +37,6 @@ export const PurchaseSuccess = ({
   onPressViewTrack: () => void
   track: PurchaseableTrackMetadata
 }) => {
-  const styles = useStyles()
-  const { specialGreen, staticWhite, neutralLight4 } = useThemeColors()
   const { handle } = track.user
   const {
     title,
@@ -100,44 +78,38 @@ export const PurchaseSuccess = ({
   }, [dispatch, isReposted, trackId])
 
   return (
-    <View style={styles.root}>
-      <View style={styles.successContainer}>
-        <IconVerified
-          height={spacing(4)}
-          width={spacing(4)}
-          fill={specialGreen}
-          fillSecondary={staticWhite}
+    <Flex pt='unitHalf' gap='2xl' alignSelf='center'>
+      <Flex direction='row' justifyContent='center' alignItems='center' gap='s'>
+        <IconValidationCheck height={spacing(4)} width={spacing(4)} />
+        <Text variant='heading' size='s'>
+          {messages.success}
+        </Text>
+      </Flex>
+      <Flex gap='l'>
+        <EntityActionButton
+          onPress={onRepost}
+          iconLeft={IconRepost}
+          isActive={isReposted}
+        >
+          {isReposted ? messages.reposted : messages.repost}
+        </EntityActionButton>
+        <TwitterButton
+          fullWidth
+          type='dynamic'
+          url={link}
+          shareData={handleTwitterShare}
+          handle={handle}
+          size='large'
         />
-        <Text weight='bold'>{messages.success}</Text>
-      </View>
-      <HarmonyButton
-        onPress={onRepost}
-        variant={'secondary'}
-        size='default'
-        iconLeft={IconRepost}
-      >
-        {isReposted ? messages.reposted : messages.repost}
-      </HarmonyButton>
-      <TwitterButton
-        fullWidth
-        type='dynamic'
-        url={link}
-        shareData={handleTwitterShare}
-        handle={handle}
+      </Flex>
+      <PlainButton
         size='large'
-      />
-      <Button
+        variant='subdued'
         onPress={onPressViewTrack}
-        title={messages.viewTrack}
-        variant='commonAlt'
-        styles={{
-          root: styles.viewTrack,
-          text: styles.viewTrackText
-        }}
-        IconProps={{ width: 20, height: 20, fill: neutralLight4 }}
-        size='large'
-        icon={IconCaretRight}
-      />
-    </View>
+        iconRight={IconCaretRight}
+      >
+        {messages.viewTrack}
+      </PlainButton>
+    </Flex>
   )
 }
