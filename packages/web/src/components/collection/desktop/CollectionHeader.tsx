@@ -40,6 +40,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     isOwner,
     modified,
     numTracks,
+    isPlayable,
     duration,
     isPublished,
     tracksLoading,
@@ -193,7 +194,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             userId={userId}
             collectionId={collectionId}
             onPlay={onPlay}
-            isEmptyPlaylist={numTracks === 0}
+            isPlayable={isPlayable}
             tracksLoading={tracksLoading}
           />
         </div>
