@@ -39,6 +39,7 @@ import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { SelectArtistsPreviewContext } from './selectArtistPreviewContext'
+import { formatCount } from '@audius/common/utils'
 
 type FollowArtistCardProps = {
   artist: UserMetadata
@@ -175,14 +176,14 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
             <Flex direction='row' gap='xs' alignItems='center'>
               <IconNote size='s' color='subdued' />
               <Text variant='body' size='s' strength='strong'>
-                {track_count}
+                {formatCount(track_count)}
               </Text>
             </Flex>
             <Divider orientation='vertical' />
             <Flex direction='row' gap='xs' alignItems='center'>
               <IconUser size='s' color='subdued' />
               <Text variant='body' size='s' strength='strong'>
-                {follower_count}
+                {formatCount(follower_count)}
               </Text>
             </Flex>
           </Flex>
