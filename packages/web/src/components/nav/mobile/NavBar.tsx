@@ -8,7 +8,7 @@ import {
   IconSettings,
   IconCrown,
   IconCaretLeft,
-  IconRemove,
+  IconClose,
   IconNotificationOn,
   IconButton
 } from '@audius/harmony'
@@ -139,7 +139,8 @@ const NavBar = ({
       <IconButton
         aria-label='close'
         color='subdued'
-        icon={IconRemove}
+        icon={IconClose}
+        size='m'
         onClick={getIsIOS() ? goBackAndResetSlide : goBackAndDoNotAnimate}
       />
     )
@@ -148,7 +149,8 @@ const NavBar = ({
       <IconButton
         aria-label='close'
         color='subdued'
-        icon={IconRemove}
+        icon={IconClose}
+        size='m'
         onClick={goBackAndDoNotAnimate}
       />
     )
