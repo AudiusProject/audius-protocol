@@ -17,7 +17,8 @@ import {
   useEditTrackModal,
   playbackPositionActions,
   playbackPositionSelectors,
-  CommonState
+  CommonState,
+  artistPickModalActions
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
@@ -28,7 +29,6 @@ import { Dispatch } from 'redux'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
 import { albumPage, profilePage } from 'utils/route'
 import { trpc } from 'utils/trpcClientWeb'
@@ -354,8 +354,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     undoRepostTrack: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.OVERFLOW)),
     setArtistPick: (trackId: ID) =>
-      dispatch(showSetAsArtistPickConfirmation(trackId)),
-    unsetArtistPick: () => dispatch(showSetAsArtistPickConfirmation()),
+      dispatch(artistPickModalActions.open({ trackId })),
+    unsetArtistPick: () =>
+      dispatch(artistPickModalActions.open({ trackId: null })),
     openAddToCollectionModal: (
       collectionType: 'album' | 'playlist',
       trackId: ID,

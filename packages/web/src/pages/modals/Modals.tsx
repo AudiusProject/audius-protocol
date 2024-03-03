@@ -6,6 +6,7 @@ import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
+import { ArtistPickModal } from 'components/artist-pick-modal/ArtistPickModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
@@ -112,7 +113,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   USDCTransactionDetailsModal,
   AddFundsModal,
   CoinflowWithdraw: CoinflowWithdrawModal,
-  WaitForDownloadModal
+  WaitForDownloadModal,
+  ArtistPick: ArtistPickModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
