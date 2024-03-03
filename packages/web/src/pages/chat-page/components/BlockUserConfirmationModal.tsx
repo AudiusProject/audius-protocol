@@ -77,12 +77,7 @@ export const BlockUserConfirmationModal = ({
         <HelpCallout icon={<IconInfo />} content={messages.callout} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <Button
-          className={styles.button}
-          variant='primary'
-          onClick={onClose}
-          fullWidth
-        >
+        <Button variant='secondary' onClick={onClose} fullWidth>
           {messages.cancel}
         </Button>
         <Button variant='destructive' onClick={handleConfirmClicked} fullWidth>
