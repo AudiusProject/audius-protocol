@@ -20,7 +20,6 @@ from src.queries.query_helpers import (
     SortMethod,
 )
 from src.queries.reactions import ReactionResponse
-from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
 from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
