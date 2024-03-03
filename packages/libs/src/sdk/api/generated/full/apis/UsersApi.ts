@@ -105,14 +105,10 @@ export interface GetAIAttributedTracksByUserHandleRequest {
 
 export interface GetAudioTransactionCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
 }
 
 export interface GetAudioTransactionsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     sortMethod?: GetAudioTransactionsSortMethodEnum;
@@ -145,8 +141,6 @@ export interface GetFollowingRequest {
 
 export interface GetPurchasesRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -156,8 +150,6 @@ export interface GetPurchasesRequest {
 
 export interface GetPurchasesCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
 }
 
@@ -184,8 +176,6 @@ export interface GetRepostsByHandleRequest {
 
 export interface GetSalesRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -195,8 +185,6 @@ export interface GetSalesRequest {
 
 export interface GetSalesCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
 }
 
@@ -271,8 +259,6 @@ export interface GetTracksByUserHandleRequest {
 
 export interface GetUSDCTransactionCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     type?: GetUSDCTransactionCountTypeEnum;
     includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionCountMethodEnum;
@@ -280,8 +266,6 @@ export interface GetUSDCTransactionCountRequest {
 
 export interface GetUSDCTransactionsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     sortMethod?: GetUSDCTransactionsSortMethodEnum;
@@ -303,8 +287,6 @@ export interface GetUserByHandleRequest {
 
 export interface GetUserLibraryAlbumsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -316,8 +298,6 @@ export interface GetUserLibraryAlbumsRequest {
 
 export interface GetUserLibraryPlaylistsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -329,8 +309,6 @@ export interface GetUserLibraryPlaylistsRequest {
 
 export interface GetUserLibraryTracksRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -353,8 +331,6 @@ export interface GetUsersTrackHistoryRequest {
     query?: string;
     sortMethod?: GetUsersTrackHistorySortMethodEnum;
     sortDirection?: GetUsersTrackHistorySortDirectionEnum;
-    encodedDataMessage?: string;
-    encodedDataSignature?: string;
 }
 
 /**
@@ -504,25 +480,9 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactionCount.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionCount.');
-        }
-
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/audio/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -551,14 +511,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactions.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactions.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactions.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -578,14 +530,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/audio`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -755,14 +699,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchases.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getPurchases.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getPurchases.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -786,14 +722,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/purchases`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -822,14 +750,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasesCount.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getPurchasesCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getPurchasesCount.');
-        }
-
         const queryParameters: any = {};
 
         if (params.userId !== undefined) {
@@ -837,14 +757,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/purchases/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1002,14 +914,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSales.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getSales.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getSales.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1033,14 +937,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/sales`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1069,14 +965,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSalesCount.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getSalesCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getSalesCount.');
-        }
-
         const queryParameters: any = {};
 
         if (params.userId !== undefined) {
@@ -1084,14 +972,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/sales/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1531,14 +1411,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactionCount.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactionCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactionCount.');
-        }
-
         const queryParameters: any = {};
 
         if (params.type !== undefined) {
@@ -1554,14 +1426,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/usdc/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1588,14 +1452,6 @@ export class UsersApi extends runtime.BaseAPI {
     async getUSDCTransactionsRaw(params: GetUSDCTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactions.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactions.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactions.');
         }
 
         const queryParameters: any = {};
@@ -1629,14 +1485,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/usdc`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1736,14 +1584,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryAlbums.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryAlbums.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryAlbums.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1775,14 +1615,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/library/albums`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1813,14 +1645,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryPlaylists.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryPlaylists.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryPlaylists.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1852,14 +1676,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/library/playlists`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1890,14 +1706,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryTracks.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryTracks.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryTracks.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1929,14 +1737,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/library/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -2028,14 +1828,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/history/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),

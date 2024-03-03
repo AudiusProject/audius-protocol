@@ -7,7 +7,6 @@ from src.api.v1.helpers import (
     abort_bad_request_param,
     abort_forbidden,
     abort_unauthorized,
-    add_auth_headers_to_parser,
     decode_with_abort,
     extend_transaction_details,
     make_full_response,
@@ -62,8 +61,6 @@ transaction_history_parser.add_argument(
     choices=SortDirection._member_names_,
     default=SortDirection.desc,
 )
-
-add_auth_headers_to_parser(transaction_history_parser)
 
 
 @full_user_ns.route("/<string:id>/transactions/audio")
@@ -122,7 +119,6 @@ transaction_history_count_response = make_full_response(
 transaction_history_count_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
-add_auth_headers_to_parser(transaction_history_count_parser)
 
 
 @full_user_ns.route("/<string:id>/transactions/audio/count")
@@ -235,7 +231,6 @@ usdc_transaction_history_count_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
 add_transaction_history_filters(usdc_transaction_history_count_parser)
-add_auth_headers_to_parser(usdc_transaction_history_count_parser)
 
 
 @full_user_ns.route("/<string:id>/transactions/usdc/count")

@@ -129,9 +129,7 @@ const userApi = createApi({
           sortMethod,
           id: Id.parse(userId!),
           type,
-          method,
-          encodedDataMessage: '', // TODO: remove, handled by sdk
-          encodedDataSignature: '' // TODO: remove, handled by sdk
+          method
         })
 
         return data.map((transaction) => parseTransaction({ transaction }))
@@ -151,9 +149,7 @@ const userApi = createApi({
         const { data } = await sdk.full.users.getUSDCTransactionCount({
           id: Id.parse(userId!),
           type,
-          method,
-          encodedDataMessage: '', // TODO: remove, handled by sdk
-          encodedDataSignature: '' // TODO: remove, handled by sdk
+          method
         })
         return data ?? 0
       },

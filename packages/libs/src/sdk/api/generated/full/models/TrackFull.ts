@@ -233,6 +233,18 @@ export interface TrackFull {
     isStreamable?: boolean;
     /**
      * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    ddexApp?: string;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TrackFull
+     */
+    playlistsContainingTrack?: Array<number>;
+    /**
+     * 
      * @type {number}
      * @memberof TrackFull
      */
@@ -506,6 +518,8 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
+        'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
         'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
@@ -577,6 +591,8 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'play_count': value.playCount,
         'permalink': value.permalink,
         'is_streamable': value.isStreamable,
+        'ddex_app': value.ddexApp,
+        'playlists_containing_track': value.playlistsContainingTrack,
         'blocknumber': value.blocknumber,
         'create_date': value.createDate,
         'cover_art_sizes': value.coverArtSizes,

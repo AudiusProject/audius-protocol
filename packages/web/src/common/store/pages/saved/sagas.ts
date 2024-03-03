@@ -74,9 +74,7 @@ function* sendLibraryRequest({
       query,
       sortMethod,
       sortDirection,
-      type: category,
-      encodedDataMessage: '', // TODO: remove, handled by sdk
-      encodedDataSignature: '' // TODO: remove, handled by sdk
+      type: category
     }
   )) as any
   const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]

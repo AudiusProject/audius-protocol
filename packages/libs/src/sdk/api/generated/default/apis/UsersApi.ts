@@ -73,22 +73,16 @@ import {
 
 export interface DownloadPurchasesAsCSVRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
 }
 
 export interface DownloadSalesAsCSVRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
 }
 
 export interface DownloadUSDCWithdrawalsAsCSVRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
 }
 
@@ -220,14 +214,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadPurchasesAsCSV.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadPurchasesAsCSV.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadPurchasesAsCSV.');
-        }
-
         const queryParameters: any = {};
 
         if (params.userId !== undefined) {
@@ -235,14 +221,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/purchases/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -270,14 +248,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadSalesAsCSV.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadSalesAsCSV.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadSalesAsCSV.');
-        }
-
         const queryParameters: any = {};
 
         if (params.userId !== undefined) {
@@ -285,14 +255,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/sales/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -320,14 +282,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
-        }
-
         const queryParameters: any = {};
 
         if (params.userId !== undefined) {
@@ -335,14 +289,6 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
 
         const response = await this.request({
             path: `/users/{id}/withdrawals/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
