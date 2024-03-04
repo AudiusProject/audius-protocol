@@ -1,29 +1,3 @@
 .container {
   width: 720px;
 }
-
-.content {
-  display: inline-flex;
-  padding-top: 24px;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-}
-
-.input {
-  max-width: 240px;
-  width: 240px;
-}
-
-.currentLabel {
-  padding-left: 28px;
-  max-width: 240px;
-  width: 240px;
-  font-family: var(--font-family);
-  font-weight: 500;
-  font-size: var(--font-m);
-  text-align: center;
-  color: #BEC5E0;
-  flex: 1;
-  text-align: left;
-}

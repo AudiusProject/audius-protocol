@@ -1,31 +1,45 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import BN from 'bn.js'
-import clsx from 'clsx'
 import { ButtonType } from '@audius/stems'
+import BN from 'bn.js'
+import React, { useCallback, useEffect, useState } from 'react'
 
-import { useDelegateStake } from 'store/actions/delegateStake'
-import { useUserDelegation } from 'store/actions/userDelegation'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
+import { Flex, Text, TokenAmountInput } from '@audius/harmony'
 import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './DelegateStakeModal.module.css'
-import { Status, Address } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import ConfirmTransactionModal, {
   Delegating,
   ToOperator
 } from 'components/ConfirmTransactionModal'
-import { useModalControls } from 'utils/hooks'
-import { formatShortWallet } from 'utils/format'
+import { InfoBox } from 'components/InfoBox/InfoBox'
+import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
+import Modal from 'components/Modal'
+import AudiusClient from 'services/Audius'
+import { useAccountUser } from 'store/account/hooks'
+import { useDelegateStake } from 'store/actions/delegateStake'
+import { useUserDelegation } from 'store/actions/userDelegation'
+import { useUser } from 'store/cache/user/hooks'
+import { Address, Operator, Status } from 'types'
 import { TICKER } from 'utils/consts'
+import { formatShortWallet, formatWeiNumber } from 'utils/format'
+import { useModalControls } from 'utils/hooks'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import styles from './DelegateStakeModal.module.css'
 
 const messages = {
   title: 'Delegate to Operator',
   amountLabel: 'Delegate Amount',
   btn: 'Delegate',
-  inputLabel: TICKER
+  inputLabel: TICKER,
+  delegateAudio: `Delegate ${TICKER}`,
+  guidance:
+    'Need some guidance? Visit the Audius help center for help and resources.',
+  helpCenter: 'Help Center',
+  nodeOperator: 'Node Operator',
+  operatorFee: 'Operator Fee',
+  enterAmount: 'Enter an amount',
+  max: 'Max',
+  noAudio: `You have no ${TICKER} available to delegate`,
+  balanceExceeded: `Exceeds amount of ${TICKER} in wallet`,
+  maxDelegationExceeded: "Exceeds this node's maximum delegation amount",
+  minDelegationNotMet: "Will not meet this node's minimum delegation amount"
 }
 
 type OwnProps = {
@@ -41,9 +55,23 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
   isOpen,
   onClose
 }: DelegateStakeModalProps) => {
-  const { min, max, user } = useUserDelegation(serviceOperatorWallet)
+  const {
+    min: minDelegation,
+    max: maxDelegation,
+    user: serviceUser
+  } = useUserDelegation(serviceOperatorWallet)
+  const { user: accountUser } = useAccountUser()
+  const { audiusProfile } = useUser({
+    wallet: serviceOperatorWallet
+  })
   const [stakingBN, setStakingBN] = useState(new BN('0'))
   const [stakingAmount, setStakingAmount] = useState('')
+  const deployerCut =
+    (serviceUser as Operator)?.serviceProvider?.deployerCut ?? null
+  const effectiveMax = BN.min(
+    maxDelegation,
+    accountUser?.audToken ?? maxDelegation
+  )
 
   useEffect(() => {
     if (!isOpen) {
@@ -53,11 +81,11 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
   }, [isOpen, setStakingAmount, setStakingBN])
 
   useEffect(() => {
-    if (min && stakingBN.isZero()) {
-      setStakingBN(min)
-      setStakingAmount(AudiusClient.getAud(min).toString())
+    if (minDelegation && stakingBN.isZero()) {
+      setStakingBN(minDelegation)
+      setStakingAmount(AudiusClient.getAud(minDelegation).toString())
     }
-  }, [min, stakingBN, setStakingAmount, setStakingBN])
+  }, [minDelegation, stakingBN, setStakingAmount, setStakingBN])
 
   const onUpdateStaking = useCallback(
     (value: string) => {
@@ -76,10 +104,10 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
   } = useModalControls()
 
   const onDelegate = useCallback(() => {
-    if (min.lte(stakingBN) && max.gte(stakingBN)) {
+    if (minDelegation.lte(stakingBN) && maxDelegation.gte(stakingBN)) {
       onOpenConfirmation()
     }
-  }, [min, max, stakingBN, onOpenConfirmation])
+  }, [minDelegation, maxDelegation, stakingBN, onOpenConfirmation])
 
   const { status, delegateStake, error } = useDelegateStake(!isConfirmationOpen)
 
@@ -98,11 +126,31 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
   const topBox = <Delegating amount={stakingBN} />
   const bottomBox = (
     <ToOperator
-      image={user?.image ?? ''}
-      name={user?.name || formatShortWallet(user?.wallet ?? '')}
+      name={
+        audiusProfile?.name ||
+        serviceUser?.name ||
+        formatShortWallet(serviceUser?.wallet ?? '')
+      }
       wallet={serviceOperatorWallet}
     />
   )
+
+  const isInputDisabled = accountUser?.audToken.isZero()
+
+  let helperText: string | undefined
+  if (accountUser?.audToken.isZero()) {
+    helperText = messages.noAudio
+  } else if (
+    accountUser?.audToken != null &&
+    stakingBN.gt(accountUser?.audToken)
+  ) {
+    helperText = messages.balanceExceeded
+  } else if (maxDelegation && stakingBN.gt(maxDelegation)) {
+    helperText = messages.maxDelegationExceeded
+  } else if (minDelegation && stakingBN.lt(minDelegation)) {
+    helperText = messages.minDelegationNotMet
+  }
+  const hasError = !!helperText
 
   return (
     <Modal
@@ -114,29 +162,75 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
       isCloseable={true}
       dismissOnClickOutside={!isConfirmationOpen}
     >
-      <ValueSlider
-        min={min}
-        max={max}
-        value={stakingBN}
-        className={styles.slider}
-      />
-      <TextField
-        value={stakingAmount}
-        isNumeric
-        label={messages.amountLabel}
-        onChange={onUpdateStaking}
-        className={clsx(styles.input, {
-          [styles.invalid]:
-            min && max && (stakingBN.gt(max) || stakingBN.lt(min))
-        })}
-        rightLabel={messages.inputLabel}
-      />
-      <Button
-        text={messages.btn}
-        type={ButtonType.PRIMARY}
-        onClick={onDelegate}
-      />
+      <Flex pt="xl" w="100%" direction="column" alignItems="center" gap="xl">
+        <InfoBox
+          fullWidth
+          description={messages.guidance}
+          ctaText={messages.helpCenter}
+          ctaHref="https://support.audius.co/help"
+        />
+        <Flex direction="column" gap="xl" w="100%" css={{ maxWidth: 480 }}>
+          <Flex justifyContent="space-between" w="100%">
+            <Flex gap="s" direction="column">
+              <Text variant="body" size="m" strength="strong" color="subdued">
+                {messages.nodeOperator}
+              </Text>
+              <DelegateInfo clickable={false} wallet={serviceOperatorWallet} />
+            </Flex>
+            <Flex gap="s" direction="column" alignItems="flex-end">
+              <Text variant="body" size="m" strength="strong">
+                {messages.operatorFee}
+              </Text>
+              <Text variant="heading" size="s">
+                {deployerCut}%
+              </Text>
+            </Flex>
+          </Flex>
+          <Flex gap="l" alignItems="center">
+            <TokenAmountInput
+              label={messages.delegateAudio}
+              isWhole={false}
+              placeholder={messages.enterAmount}
+              tokenLabel={TICKER}
+              decimals={8}
+              value={stakingAmount}
+              error={hasError}
+              disabled={isInputDisabled}
+              onChange={stringValue => {
+                onUpdateStaking(stringValue)
+              }}
+              helperText={helperText}
+              max={AudiusClient.displayShortAud(maxDelegation)}
+            />
+            <Button
+              onClick={() => {
+                onUpdateStaking(formatWeiNumber(effectiveMax))
+              }}
+              isDisabled={isInputDisabled}
+              className={styles.maxButton}
+              text={messages.max.toUpperCase()}
+              type={ButtonType.PRIMARY_ALT}
+            />
+          </Flex>
+          <Flex justifyContent="center">
+            <Button
+              isDisabled={
+                !stakingAmount ||
+                hasError ||
+                stakingBN.isZero() ||
+                status === Status.Loading ||
+                isInputDisabled ||
+                isConfirmationOpen
+              }
+              text={messages.btn}
+              type={ButtonType.PRIMARY}
+              onClick={onDelegate}
+            />
+          </Flex>
+        </Flex>
+      </Flex>
       <ConfirmTransactionModal
+        showTwoPopupsWarning
         isOpen={isConfirmationOpen}
         onClose={onCloseConfirmation}
         onConfirm={onConfirm}

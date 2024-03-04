@@ -66,6 +66,8 @@ export const OAF_URL = 'https://audius.org'
 export const WHITEPAPER_URL = 'https://whitepaper.audius.co'
 export const AUDIUS_DAPP_URL =
   import.meta.env.VITE_AUDIUS_URL || 'https://audius.co'
+export const REGISTER_NODE_DOCS_URL =
+  'https://docs.audius.org/token/running-a-node/setup/registration'
 
 // Get Routes
 export const accountPage = (address: string) => {
