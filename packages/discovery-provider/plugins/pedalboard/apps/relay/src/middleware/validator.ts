@@ -7,6 +7,8 @@ import { config, discoveryDb } from '..'
 import { logger } from '../logger'
 import { isUserCreate, isUserDeactivate } from '../utils'
 
+const MAX_ACDC_GAS_LIMIT = 10485760
+
 export const validator = async (
   request: Request,
   response: Response,
@@ -34,7 +36,7 @@ export const validator = async (
   const encodedABI = body.encodedABI
 
   // remove "null" possibility
-  const gasLimit = body.gasLimit || 3000000
+  const gasLimit = MAX_ACDC_GAS_LIMIT
   const senderAddress = body.senderAddress || undefined
   const handle = body.handle || undefined
 
