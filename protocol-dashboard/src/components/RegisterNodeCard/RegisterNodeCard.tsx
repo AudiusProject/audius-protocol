@@ -1,7 +1,8 @@
-import { Box, Flex, IconQuestionCircle, Text } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 import { Card } from 'components/Card/Card'
-import { PlainLink } from 'components/PlainLink/PlainLink'
+import { InfoBox } from 'components/InfoBox/InfoBox'
 import { RegisterNewServiceBtn } from 'components/ManageService/RegisterNewServiceBtn'
+import { REGISTER_NODE_DOCS_URL } from 'utils/routes'
 
 const messages = {
   registerNode: 'Register a Node',
@@ -31,19 +32,11 @@ export const RegisterNodeCard = () => {
         </Box>
       </Flex>
       <Flex ph="xl" pv="l" gap="xl">
-        <Card backgroundColor="surface2" pv="m" ph="l" gap="l">
-          <Box pv="s">
-            <IconQuestionCircle size="2xl" color="default" />
-          </Box>
-          <Flex direction="column" gap="m">
-            <Text variant="body" size="m" strength="default">
-              {messages.registerNodeInfo}
-            </Text>
-            <PlainLink href="https://docs.audius.org/token/running-a-node/setup/registration">
-              {messages.registerNodeInfoLink}
-            </PlainLink>
-          </Flex>
-        </Card>
+        <InfoBox
+          description={messages.registerNodeInfo}
+          ctaText={messages.registerNodeInfoLink}
+          ctaHref={REGISTER_NODE_DOCS_URL}
+        />
       </Flex>
     </Card>
   )

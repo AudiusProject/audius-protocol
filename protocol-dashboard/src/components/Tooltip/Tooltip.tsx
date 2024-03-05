@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react'
+import clsx from 'clsx'
+import React, { PropsWithChildren, useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import styles from './Tooltip.module.css'
-import clsx from 'clsx'
 
 export enum Position {
   TOP = 'top',
@@ -27,13 +27,13 @@ const TooltipText: React.FC<{
   </div>
 )
 
-interface TooltipProps {
+type TooltipProps = PropsWithChildren<{
   className?: string
   text: string
   onClick?: (e: React.MouseEvent) => void
   isDisabled?: boolean
   position?: Position
-}
+}>
 
 function offset(el: any) {
   const rect = el.getBoundingClientRect()

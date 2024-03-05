@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
 
@@ -26,21 +26,23 @@ const DisplayAudio: React.FC<DisplayAudioProps> = ({
   label,
   shortFormat = false
 }) => {
-  const [tooltipText, setTooltipText] = useState(formatWei(amount))
+  const [showCopied, setShowCopied] = useState(false)
+  const tooltipText = showCopied ? 'Copied!' : formatWei(amount)
   const formatter = shortFormat ? formatShortAud : AudiusClient.displayShortAud
   const onClick = useCallback(
     e => {
       e.preventDefault()
       e.stopPropagation()
       copyToClipboard(formatWeiNumber(amount))
-      setTooltipText('Copied!')
+      setShowCopied(true)
       const timeout = setTimeout(() => {
-        setTooltipText(formatWei(amount))
+        setShowCopied(false)
       }, 1000)
       return () => clearTimeout(timeout)
     },
-    [amount, setTooltipText]
+    [amount, setShowCopied]
   )
+
   return (
     <Tooltip
       onClick={onClick}

@@ -15,11 +15,11 @@ import { createStyles } from 'utils/mobile'
 import { NOT_FOUND, SERVICES_DISCOVERY_PROVIDER_NODE } from 'utils/routes'
 import desktopStyles from './Node.module.css'
 import mobileStyles from './NodeMobile.module.css'
+import { IconEmbed } from '@audius/harmony'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
-  title: 'SERVICE',
   discovery: 'Discovery Node',
   content: 'Content Node'
 }
@@ -122,7 +122,11 @@ const Node = () => {
   const isDiscovery = !!useMatch(SERVICES_DISCOVERY_PROVIDER_NODE)
 
   return (
-    <Page title={messages.title} className={styles.container}>
+    <Page
+      icon={IconEmbed}
+      title={isDiscovery ? messages.discovery : messages.content}
+      className={styles.container}
+    >
       {isDiscovery ? (
         <DiscoveryNode spID={spID} accountWallet={accountWallet} />
       ) : (
