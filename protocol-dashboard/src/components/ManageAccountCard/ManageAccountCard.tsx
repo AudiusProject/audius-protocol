@@ -1,17 +1,18 @@
 import { Box, Flex, Text } from '@audius/harmony'
-import Button, { ButtonType } from 'components/Button'
 import { Card } from 'components/Card/Card'
 import UserImage from 'components/UserImage'
 import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useCallback } from 'react'
 import { useAccount } from 'store/account/hooks'
-import { useUser } from 'store/cache/user/hooks'
+import { useUser, useUserDelegates } from 'store/cache/user/hooks'
 import { Address, Status } from 'types'
 import { TICKER } from 'utils/consts'
 import { usePushRoute } from 'utils/effects'
 import { formatShortWallet } from 'utils/format'
 import { accountPage } from 'utils/routes'
 
+import Loading from 'components/Loading'
+import { ManageDelegation } from 'components/UpdateDelegationModal/UpdateDelegationModal'
 import AudiusClient from 'services/Audius/AudiusClient'
 import {
   useUserAnnualRewardRate,
@@ -29,9 +30,17 @@ const messages = {
   manage: 'Manage'
 }
 
-type DelegateInfoProps = { wallet: Address }
+type DelegateInfoProps = {
+  wallet: Address
+  longFormat?: boolean
+  clickable?: boolean
+}
 
-const DelegateInfo = ({ wallet }: DelegateInfoProps) => {
+export const DelegateInfo = ({
+  wallet,
+  longFormat = false,
+  clickable = true
+}: DelegateInfoProps) => {
   const { user, audiusProfile } = useUser({ wallet })
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {
@@ -43,7 +52,11 @@ const DelegateInfo = ({ wallet }: DelegateInfoProps) => {
   if (!user) return null
 
   return (
-    <Flex gap="s" onClick={onClickUser}>
+    <Flex
+      gap="s"
+      onClick={clickable ? onClickUser : undefined}
+      css={{ cursor: clickable ? 'pointer' : 'default' }}
+    >
       <Flex gap="s" alignItems="center">
         <UserImage
           wallet={wallet}
@@ -66,8 +79,13 @@ const DelegateInfo = ({ wallet }: DelegateInfoProps) => {
             <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
           </Flex>
           <Box>
-            <Text variant="body" size="m" strength="strong">
-              {formatShortWallet(user.wallet)}
+            <Text
+              variant="body"
+              size="m"
+              strength="strong"
+              color={longFormat ? 'subdued' : 'default'}
+            >
+              {longFormat ? user.wallet : formatShortWallet(user.wallet)}
             </Text>
           </Box>
         </Flex>
@@ -111,7 +129,7 @@ const UserAudioRewardEstimate = ({
       : AudiusClient.displayShortAud(weekly)
 
   if (isLoading) {
-    return null
+    return <Loading />
   }
 
   return (
@@ -138,6 +156,20 @@ const UserAudioRewardEstimate = ({
 
 type ManageAccountCardProps = {
   wallet: string
+}
+
+type ManageDelegationContainerProps = { nodeWallet: string }
+
+const ManageDelegationContainer = ({
+  nodeWallet
+}: ManageDelegationContainerProps) => {
+  const { status: userDelegatesStatus, delegates } = useUserDelegates({
+    wallet: nodeWallet
+  })
+  if (userDelegatesStatus !== Status.Success || delegates.isZero()) {
+    return null
+  }
+  return <ManageDelegation delegates={delegates} wallet={nodeWallet} />
 }
 
 export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
@@ -212,11 +244,7 @@ export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
               </Flex>
               {isOwner ? (
                 <Box mt="unit5">
-                  <Button
-                    type={ButtonType.PRIMARY}
-                    text={messages.manage}
-                    css={{ width: '100%' }}
-                  />
+                  <ManageDelegationContainer nodeWallet={d.wallet} />
                 </Box>
               ) : null}
             </Box>

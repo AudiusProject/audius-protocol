@@ -80,29 +80,13 @@
   color: #bec5e0;
 }
 
-.modifyBtn {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.modifyBtnText {
-  text-transform: uppercase;
-}
-
 .textWithIcon {
   display: flex;
   align-items: center;
-  max-width: 960px;
+  max-width: 1080px;
 }
 
 .textWithIcon > .icon {
   margin-right: 8px;
   display: flex;
-}
-
-.registerBtn {
-  position: absolute;
-  top: 0;
-  right: 0;
 }

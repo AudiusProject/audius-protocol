@@ -1,44 +1,47 @@
-import { ReactNode } from 'react'
 import clsx from 'clsx'
+import { ReactNode } from 'react'
 
-import Paper from 'components/Paper'
+import { ButtonType } from '@audius/stems'
 import Button from 'components/Button'
 import ModifyServiceModal from 'components/ModifyServiceModal'
-import { ButtonType, IconArrowWhite, IconPencil } from '@audius/stems'
-import { ServiceType, Address } from 'types'
+import { Address, ServiceType } from 'types'
 import { useModalControls } from 'utils/hooks'
 
-import IconWarning from 'assets/img/iconWarning.svg?react'
+import { Box, Flex, Text } from '@audius/harmony'
 import IconValidationCheck from 'assets/img/iconValidationCheck.svg?react'
-import desktopStyles from './NodeOverview.module.css'
-import mobileStyles from './NodeOverviewMobile.module.css'
-import { createStyles } from 'utils/mobile'
+import IconWarning from 'assets/img/iconWarning.svg?react'
+import { Card } from 'components/Card/Card'
+import Loading from 'components/Loading'
+import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
 import RegisterServiceModal from 'components/RegisterServiceModal'
 import useNodeHealth from 'hooks/useNodeHealth'
-import Loading from 'components/Loading'
+import { createStyles } from 'utils/mobile'
+import desktopStyles from './NodeOverview.module.css'
+import mobileStyles from './NodeOverviewMobile.module.css'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
   dp: 'Discovery Node',
   cn: 'Content Node',
-  version: 'VER.',
-  deregistered: 'DEREGISTERED',
-  endpoint: 'SERVICE ENDPOINT',
-  operator: 'OPERATOR',
-  delegate: 'DELEGATE OWNER WALLET',
-  register: 'REGISTER SERVICE',
-  modify: 'MODIFY SERVICE',
-  health: 'HEALTH',
-  errors: 'ERRORS',
-  uptime: 'UPTIME',
-  diskHealth: 'DISK HEALTH',
-  dbHealth: 'DATABASE HEALTH',
-  healthyPeers2m: 'HEALTHY PEERS',
-  chain: 'AUDIUS CHAIN',
-  peerReachability: 'PEER REACHABILITY',
-  uploadsCountErr: 'ERROR READING UPLOADS COUNT',
-  seedingDataLabel: 'SEEDING DATA',
+  unknown: 'Unknown',
+  version: 'Version',
+  deregistered: 'Deregistered',
+  endpoint: 'Endpoint',
+  operator: 'Node Operator',
+  nodeWalletAddress: 'Node Wallet Address',
+  register: 'Register Service',
+  modify: 'Manage Node',
+  health: 'Health',
+  errors: 'Errors',
+  uptime: 'Uptime',
+  diskHealth: 'Disk Health',
+  dbHealth: 'Database Health',
+  healthyPeers2m: 'Healthy Peers',
+  chain: 'Audius Chain',
+  peerReachability: 'Peer Reachability',
+  uploadsCountErr: 'Error Reading Uploads Count',
+  seedingDataLabel: 'Seeding Data',
   failedFetch: 'Failed to fetch health data',
   peerReachabilityWarning: 'Check firewall and connection to/from peers',
   checkDiskWarning: 'Check disk/mount',
@@ -55,8 +58,12 @@ type ServiceDetailProps = {
 const ServiceDetail = ({ label, value }: ServiceDetailProps) => {
   return (
     <div className={styles.descriptor}>
-      <div className={styles.label}>{label}</div>
-      <div className={styles.value}>{value}</div>
+      <Text variant="heading" size="s">
+        {value}
+      </Text>
+      <Text variant="body" size="m" strength="strong" color="subdued">
+        {label}
+      </Text>
     </div>
   )
 }
@@ -253,35 +260,63 @@ const NodeOverview = ({
   }
 
   return (
-    <Paper className={styles.container}>
+    <Card direction="column" p="xl">
       {isLoading ? (
         <Loading className={styles.loading} />
       ) : (
-        <>
-          <div className={styles.header}>
-            <div className={styles.serviceType}>
-              {serviceType === ServiceType.DiscoveryProvider
-                ? messages.dp
-                : messages.cn}
-            </div>
-            {isDeregistered && (
-              <div className={styles.deregistered}>{messages.deregistered}</div>
+        <Flex gap="l">
+          <Box pv="s" ph="l">
+            <Text variant="heading" size="s">
+              {isDeregistered
+                ? messages.deregistered
+                : health?.version || version || messages.unknown}
+            </Text>
+            <Text variant="body" size="m" strength="strong" color="subdued">
+              {messages.version}
+            </Text>
+          </Box>
+          <Box pv="s" ph="l">
+            <ServiceDetail label={messages.endpoint} value={endpoint} />
+            {(delegateOwnerWallet || health?.delegateOwnerWallet) && (
+              <ServiceDetail
+                label={messages.nodeWalletAddress}
+                value={delegateOwnerWallet || health.delegateOwnerWallet}
+              />
             )}
-            {!isDeregistered && (
-              <div className={styles.version}>
-                {`${messages.version} ${health?.version ||
-                  version ||
-                  'unknown'}`}
-              </div>
-            )}
+            {operatorWallet || health?.operatorWallet ? (
+              <Card pv="l" ph="xl" mb="xl">
+                <Flex direction="column" gap="l">
+                  <Text
+                    variant="body"
+                    size="l"
+                    color="subdued"
+                    strength="strong"
+                  >
+                    {messages.operator}
+                  </Text>
+                  <DelegateInfo
+                    longFormat
+                    wallet={operatorWallet || health?.operatorWallet}
+                  />
+                </Flex>
+              </Card>
+            ) : null}
+            {healthDetails}
+          </Box>
+          <Flex
+            pv="s"
+            ph="l"
+            w="100%"
+            gap="l"
+            direction="column"
+            alignItems="flex-end"
+          >
             {!isDeregistered && isUnregistered && (
-              <>
+              <Box>
                 <Button
                   onClick={onClick}
-                  leftIcon={<IconArrowWhite />}
                   type={ButtonType.PRIMARY}
                   text={messages.register}
-                  className={clsx(styles.registerBtn)}
                   textClassName={styles.registerBtnText}
                 />
                 <RegisterServiceModal
@@ -293,14 +328,13 @@ const NodeOverview = ({
                   defaultEndpoint={endpoint}
                   defaultServiceType={serviceType}
                 />
-              </>
+              </Box>
             )}
             {!isDeregistered && isOwner && (
-              <>
+              <Box>
                 <Button
                   onClick={onClick}
-                  leftIcon={<IconPencil />}
-                  type={ButtonType.PRIMARY_ALT}
+                  type={ButtonType.PRIMARY}
                   text={messages.modify}
                   className={clsx(styles.modifyBtn)}
                   textClassName={styles.modifyBtnText}
@@ -313,26 +347,12 @@ const NodeOverview = ({
                   endpoint={endpoint}
                   delegateOwnerWallet={health?.delegateOwnerWallet}
                 />
-              </>
+              </Box>
             )}
-          </div>
-          <ServiceDetail label={messages.endpoint} value={endpoint} />
-          {(operatorWallet || health?.operatorWallet) && (
-            <ServiceDetail
-              label={messages.operator}
-              value={operatorWallet || health?.operatorWallet}
-            />
-          )}
-          {(delegateOwnerWallet || health?.delegateOwnerWallet) && (
-            <ServiceDetail
-              label={messages.delegate}
-              value={delegateOwnerWallet || health.delegateOwnerWallet}
-            />
-          )}
-          {healthDetails}
-        </>
+          </Flex>
+        </Flex>
       )}
-    </Paper>
+    </Card>
   )
 }
 

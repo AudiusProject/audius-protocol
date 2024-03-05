@@ -1,16 +1,16 @@
-import React from 'react'
+import React, { PropsWithChildren } from 'react'
 import SimpleBar from 'simplebar-react'
 import styles from './ModalTable.module.css'
 import Modal from 'components/Modal'
 
-type OwnProps = {
+type OwnProps = PropsWithChildren<{
   title: string
-  header: string
+  header?: string
   isOpen: boolean
   dismissOnClickOutside?: boolean
   allowScroll?: boolean
   onClose: () => void
-}
+}>
 
 type ModalTableProps = OwnProps
 
@@ -33,7 +33,7 @@ const ModalTable: React.FC<ModalTableProps> = ({
       dismissOnClickOutside={dismissOnClickOutside}
       className={styles.container}
     >
-      <div className={styles.modalHeader}> {header}</div>
+      {header ? <div className={styles.modalHeader}> {header}</div> : null}
       <div className={styles.divider}></div>
       <SimpleBar style={{ width: 'calc(100% + 48px)' }}>{children}</SimpleBar>
     </Modal>

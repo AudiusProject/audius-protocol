@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react'
 import { Flex, IconEmbed } from '@audius/harmony'
 import clsx from 'clsx'
 import ContentTable from 'components/ContentTable'
@@ -30,6 +31,21 @@ type ServicesProps = OwnProps
 const Services: React.FC<ServicesProps> = () => {
   const { isLoggedIn } = useAccount()
   const { status: userStatus, user: accountUser } = useAccountUser()
+  const discoveryTableRef = useRef(null)
+  const contentTableRef = useRef(null)
+  const handleClickDiscoveryTable = useCallback(() => {
+    window.scrollTo({
+      top: discoveryTableRef.current?.offsetTop,
+      behavior: 'smooth'
+    })
+  }, [])
+  const handleClickContentTable = useCallback(() => {
+    window.scrollTo({
+      top: contentTableRef.current?.offsetTop,
+      behavior: 'smooth'
+    })
+  }, [])
+
   const isServiceProvider =
     userStatus === Status.Success && 'serviceProvider' in accountUser
 
@@ -39,7 +55,20 @@ const Services: React.FC<ServicesProps> = () => {
         {isLoggedIn && accountUser ? (
           <ManageAccountCard wallet={accountUser?.wallet} />
         ) : null}
-        {isServiceProvider ? <ManageService /> : <RegisterNodeCard />}
+        {isServiceProvider ? (
+          <ManageService
+            wallet={accountUser?.wallet}
+            showPendingTransactions
+            onClickDiscoveryTable={
+              discoveryTableRef?.current ? handleClickDiscoveryTable : undefined
+            }
+            onClickContentTable={
+              contentTableRef?.current ? handleClickContentTable : undefined
+            }
+          />
+        ) : (
+          <RegisterNodeCard />
+        )}
         <RewardsTimingCard />
         <TopOperatorsTable
           limit={5}
@@ -47,16 +76,20 @@ const Services: React.FC<ServicesProps> = () => {
           alwaysShowMore
         />
         <div className={styles.serviceContainer}>
-          <DiscoveryTable
-            className={clsx(styles.serviceTable, styles.rightSpacing)}
-            limit={NODE_LIMIT}
-            alwaysShowMore
-          />
-          <ContentTable
-            className={clsx(styles.serviceTable, styles.leftSpacing)}
-            limit={NODE_LIMIT}
-            alwaysShowMore
-          />
+          <div ref={discoveryTableRef}>
+            <DiscoveryTable
+              className={clsx(styles.serviceTable, styles.rightSpacing)}
+              limit={NODE_LIMIT}
+              alwaysShowMore
+            />
+          </div>
+          <div ref={contentTableRef}>
+            <ContentTable
+              className={clsx(styles.serviceTable, styles.leftSpacing)}
+              limit={NODE_LIMIT}
+              alwaysShowMore
+            />
+          </div>
         </div>
       </Flex>
     </Page>

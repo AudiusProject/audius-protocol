@@ -1,37 +1,48 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import clsx from 'clsx'
+import { Box, Flex, Text } from '@audius/harmony'
+import { ButtonType, TabSlider } from '@audius/stems'
 import BN from 'bn.js'
-import { TabSlider, ButtonType } from '@audius/stems'
+import clsx from 'clsx'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import Button from 'components/Button'
+import ConfirmTransactionModal, {
+  NewService,
+  OperatorStaking
+} from 'components/ConfirmTransactionModal'
+import DisplayAudio from 'components/DisplayAudio'
+import { InfoBox } from 'components/InfoBox/InfoBox'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
+import AudiusClient from 'services/Audius'
+import { useAccount, useAccountUser } from 'store/account/hooks'
 import { useRegisterService } from 'store/actions/registerService'
 import { useServiceInfo } from 'store/cache/protocol/hooks'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './RegisterServiceModal.module.css'
 import { ServiceType, Status } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
-import ConfirmTransactionModal, {
-  OperatorStaking,
-  NewService
-} from 'components/ConfirmTransactionModal'
-import { useAccountUser, useAccount } from 'store/account/hooks'
-import { formatShortWallet } from 'utils/format'
-import { TICKER } from 'utils/consts'
-import { useModalControls } from 'utils/hooks'
 import getActiveStake from 'utils/activeStake'
+import { TICKER } from 'utils/consts'
+import { formatShortWallet } from 'utils/format'
+import { useModalControls } from 'utils/hooks'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import { REGISTER_NODE_DOCS_URL } from 'utils/routes'
+import styles from './RegisterServiceModal.module.css'
 
 const messages = {
-  staking: `Staking Amount ${TICKER}`,
+  registerNode: 'Register Node',
+  ctaCn: 'Register Creator Node',
+  ctaDn: 'Register Discovery Node',
+  staking: 'Stake',
   stakingPlaceholder: `200,000 ${TICKER}`,
-  dpEndpoint: 'Discovery Node Service Endpoint',
   dpEndpointPlaceholder: 'https://discoverynode.audius.co',
-  cnEndpoint: 'Content Node Service Endpoint',
+  endpoint: 'Node Endpoint',
   cnEndpointPlaceholder: 'https://contentnode.audius.co',
-  delegate: 'Delegate Owner Wallet',
-  registerService: 'Register Service'
+  delegate: 'Node Wallet Address',
+  learnMoreNode:
+    'To learn more about running a node, please visit our help center.',
+  runningAudiusNode: 'Running an Audius Node',
+  minStake: 'Min Stake',
+  maxStakeExceeded: 'Exceeds maximum stake',
+  minStakeNotMet: 'Does not meet minimum stake'
 }
 
 type RegisterServiceModalProps = {
@@ -60,6 +71,7 @@ const RegisterServiceModal = ({
   const { wallet } = useAccount()
   const serviceInfo = useServiceInfo()
   const { user } = useAccountUser()
+  const { data: connectedAudiusUserData } = useDashboardWalletUser(user?.wallet)
   const calculatedMinStakeRef = useRef<BN>()
 
   // Check how much available stake the SP can use for registration
@@ -201,8 +213,11 @@ const RegisterServiceModal = ({
 
   const topBox = user && (
     <OperatorStaking
-      image={user.image}
-      name={user.name || formatShortWallet(user.wallet)}
+      name={
+        connectedAudiusUserData?.user.name ||
+        user.name ||
+        formatShortWallet(user.wallet)
+      }
       amount={stakingBN}
       wallet={user.wallet}
     />
@@ -216,63 +231,95 @@ const RegisterServiceModal = ({
 
   const min = calculatedMinStake
   const max = selectedServiceInfo?.maxStake
+  const exceedsMaxStake = max && stakingBN.gt(max)
+  const doesNotMeetMinStake = min && stakingBN.lt(min)
+  const canSubmit = !(
+    exceedsMaxStake ||
+    doesNotMeetMinStake ||
+    !endpoint ||
+    !delegateOwnerWallet
+  )
 
   return (
     <Modal
-      title={'Register New Service'}
+      title={messages.registerNode}
       className={styles.container}
       isOpen={isOpen}
       onClose={onCloseRegisterModal}
       isCloseable={true}
       dismissOnClickOutside={!isConfirmModalOpen}
     >
+      <Box mt="xl">
+        <InfoBox
+          description={messages.learnMoreNode}
+          ctaHref={REGISTER_NODE_DOCS_URL}
+          ctaText={messages.runningAudiusNode}
+        />
+      </Box>
       <TabSlider
         className={styles.tabSliderContainer}
         options={tabOptions}
         selected={selectedTab}
         onSelectOption={onSelectTab}
       />
-      <ValueSlider
-        min={min}
-        max={max}
-        value={stakingBN}
-        className={styles.slider}
-      />
-      <TextField
-        value={stakingAmount}
-        isNumeric
-        label={messages.staking}
-        onChange={onUpdateStaking}
-        placeholder={messages.stakingPlaceholder}
-        className={clsx(styles.input, {
-          [styles.invalid]:
-            min && max && (stakingBN.gt(max) || stakingBN.lt(min))
-        })}
-      />
-      <TextField
-        value={endpoint}
-        onChange={setEndpoint}
-        label={
-          selectedTab === ServiceType.DiscoveryProvider
-            ? messages.dpEndpoint
-            : messages.cnEndpoint
-        }
-        placeholder={
-          selectedTab === ServiceType.DiscoveryProvider
-            ? messages.dpEndpointPlaceholder
-            : messages.cnEndpointPlaceholder
-        }
-        className={styles.input}
-      />
-      <TextField
-        value={delegateOwnerWallet}
-        onChange={setDelegateOwnerWallet}
-        label={messages.delegate}
-        placeholder={defaultDelegateOwnerWallet || wallet || ''}
-        className={styles.input}
-      />
+      <Box css={{ maxWidth: 480 }}>
+        <TextField
+          value={endpoint}
+          onChange={setEndpoint}
+          label={messages.endpoint}
+          placeholder={
+            selectedTab === ServiceType.DiscoveryProvider
+              ? messages.dpEndpointPlaceholder
+              : messages.cnEndpointPlaceholder
+          }
+          className={styles.input}
+        />
+        <TextField
+          value={delegateOwnerWallet}
+          onChange={setDelegateOwnerWallet}
+          label={messages.delegate}
+          placeholder={defaultDelegateOwnerWallet || wallet || ''}
+          className={styles.input}
+        />
+        <Flex gap="l" alignItems="flex-end" mb="xl">
+          <Flex direction="column" gap="xs" css={{ flexGrow: 1 }}>
+            <TextField
+              value={stakingAmount}
+              isNumeric
+              label={messages.staking}
+              onChange={onUpdateStaking}
+              rightLabel={TICKER}
+              placeholder={messages.stakingPlaceholder}
+              inputClassName={styles.stakeInput}
+              className={clsx({
+                [styles.invalid]: exceedsMaxStake || doesNotMeetMinStake
+              })}
+            />
+            {exceedsMaxStake || doesNotMeetMinStake ? (
+              <Text color="danger" variant="body" size="s">
+                {exceedsMaxStake
+                  ? messages.maxStakeExceeded
+                  : messages.minStakeNotMet}
+              </Text>
+            ) : null}
+          </Flex>
+          <Flex direction="column" alignItems="flex-end">
+            <Text variant="heading" size="s">
+              <DisplayAudio amount={min} />
+            </Text>
+            <Text variant="body" size="m" strength="strong" color="subdued">
+              {messages.minStake}
+            </Text>
+          </Flex>
+        </Flex>
+      </Box>
       <Button
-        text={messages.registerService}
+        isDisabled={!canSubmit}
+        text={
+          selectedTab === ServiceType.DiscoveryProvider
+            ? messages.ctaDn
+            : messages.ctaCn
+        }
         type={ButtonType.PRIMARY}
         onClick={onRegister}
       />
