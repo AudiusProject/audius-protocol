@@ -1,7 +1,6 @@
 import { Flex, IconUser } from '@audius/harmony'
-import BN from 'bn.js'
 import clsx from 'clsx'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { matchPath, useLocation, useParams } from 'react-router-dom'
 
 import ContentTable from 'components/ContentTable'
@@ -10,25 +9,19 @@ import Page from 'components/Page'
 import Timeline from 'components/Timeline'
 
 import { useAccount } from 'store/account/hooks'
-import {
-  useActiveInboundDelegation,
-  useTotalDelegates,
-  useUser,
-  useUserDelegates
-} from 'store/cache/user/hooks'
+import { useUser } from 'store/cache/user/hooks'
 import { Operator, Status, User } from 'types'
 import { useReplaceRoute } from 'utils/effects'
 import { SERVICES_ACCOUNT_USER, accountPage, operatorPage } from 'utils/routes'
 
 import { ConnectAudiusProfileCard } from 'components/ConnectAudiusProfileCard/ConnectAudiusProfileCard'
 import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
+import ManageService from 'components/ManageService'
 import ProfileInfoCard from 'components/ProfileInfoCard/ProfileInfoCard'
 import TransactionStatus from 'components/TransactionStatus'
-import getActiveStake from 'utils/activeStake'
 import { createStyles } from 'utils/mobile'
 import desktopStyles from './User.module.css'
 import mobileStyles from './UserMobile.module.css'
-import ManageService from 'components/ManageService'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -41,16 +34,25 @@ const messages = {
 const UserPage = () => {
   const { wallet } = useParams<{ wallet: string }>()
   const location = useLocation()
+  const discoveryTableRef = useRef(null)
+  const contentTableRef = useRef(null)
+  const handleClickDiscoveryTable = useCallback(() => {
+    window.scrollTo({
+      top: discoveryTableRef.current?.offsetTop,
+      behavior: 'smooth'
+    })
+  }, [])
+  const handleClickContentTable = useCallback(() => {
+    window.scrollTo({
+      top: contentTableRef.current?.offsetTop,
+      behavior: 'smooth'
+    })
+  }, [])
 
   const { pathname } = location
   const { status, user: userAccount, audiusProfile } = useUser({ wallet })
-  const { status: userDelegatesStatus, delegates } = useUserDelegates({
-    wallet
-  })
+
   const { wallet: accountWallet } = useAccount()
-  const { status: totalDelegatesStatus, totalDelegates } = useTotalDelegates({
-    wallet
-  })
 
   const isOwner = accountWallet === wallet
 
@@ -74,10 +76,7 @@ const UserPage = () => {
       replaceRoute(accountPage(wallet))
   }, [status, wallet, pathname, isServiceProvider, replaceRoute])
 
-  const numDiscoveryNodes = (user as Operator)?.discoveryProviders?.length ?? 0
-  const numContentNodes = (user as Operator)?.contentNodes?.length ?? 0
-  const activeStake = user ? getActiveStake(user) : new BN('0')
-  const inboundDelegation = useActiveInboundDelegation({ wallet })
+  // const inboundDelegation = useActiveInboundDelegation({ wallet })
   const title = isOwner
     ? messages.owner
     : isServiceProvider
@@ -93,7 +92,17 @@ const UserPage = () => {
           status={status}
         />
         {isOwner ? <ConnectAudiusProfileCard /> : null}
-        {isServiceProvider && <ManageService wallet={wallet} />}
+        {isServiceProvider && (
+          <ManageService
+            wallet={wallet}
+            onClickDiscoveryTable={
+              discoveryTableRef?.current ? handleClickDiscoveryTable : undefined
+            }
+            onClickContentTable={
+              contentTableRef?.current ? handleClickContentTable : undefined
+            }
+          />
+        )}
         {<ManageAccountCard wallet={wallet} />}
         {isOwner ? <TransactionStatus /> : null}
         <Timeline
@@ -103,20 +112,24 @@ const UserPage = () => {
         />
         <div className={styles.serviceContainer}>
           {hasDiscoveryProviders && (
-            <DiscoveryTable
-              owner={user?.wallet}
-              className={clsx(styles.serviceTable, {
-                [styles.rightSpacing]: hasContentNodes
-              })}
-            />
+            <div ref={discoveryTableRef}>
+              <DiscoveryTable
+                owner={user?.wallet}
+                className={clsx(styles.serviceTable, {
+                  [styles.rightSpacing]: hasContentNodes
+                })}
+              />
+            </div>
           )}
           {hasContentNodes && (
-            <ContentTable
-              owner={user?.wallet}
-              className={clsx(styles.serviceTable, {
-                [styles.leftSpacing]: hasDiscoveryProviders
-              })}
-            />
+            <div ref={contentTableRef}>
+              <ContentTable
+                owner={user?.wallet}
+                className={clsx(styles.serviceTable, {
+                  [styles.leftSpacing]: hasDiscoveryProviders
+                })}
+              />
+            </div>
           )}
         </div>
       </Flex>

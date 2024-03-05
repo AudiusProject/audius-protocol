@@ -19,9 +19,13 @@ import Loading from 'components/Loading'
 import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
 import Modal from 'components/Modal'
 import AudiusClient from 'services/Audius'
-import { useAccountUser } from 'store/account/hooks'
+import {
+  useAccountUser,
+  useHasPendingDecreaseDelegationTx
+} from 'store/account/hooks'
 import useUpdateDelegation from 'store/actions/updateDelegation'
 import { useUserDelegation } from 'store/actions/userDelegation'
+import { usePendingClaim } from 'store/cache/claims/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, Operator, Status } from 'types'
 import { TICKER } from 'utils/consts'
@@ -40,6 +44,10 @@ const messages = {
   increaseBtn: 'Increase Delegation',
   decreaseTitle: 'Decrease Delegation',
   decreaseBtn: 'Decrease Delegation',
+  pendingDecreaseDisabled:
+    'Not permitted while you still have a pending Decrease Delegation transaction.',
+  pendingClaimDisabled:
+    'You cannot change your delegation amount while the operator has an unclaimed reward distribution.',
   currentDelegation: 'Current Delegation',
   change: 'Change',
   newStakingAmount: 'New Delegation Amount',
@@ -74,7 +82,6 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
 }: UpdateDelegationModalProps) => {
   const { user: serviceUser } = useUser({ wallet })
   const { user: accountUser } = useAccountUser()
-  const isLoading = !serviceUser || !accountUser
   const { color } = useTheme() as HarmonyTheme
   const [inputValue, setInputValue] = useState('')
   const [inputNumberValue, setInputNumberValue] = useState(new BN(0))
@@ -82,7 +89,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
   const maxDecrease = delegates.sub(minDelegation)
   const maxIncrease = BN.min(
     maxDelegation.sub(delegates),
-    accountUser?.audToken ?? new BN(delegates)
+    accountUser?.audToken ?? maxDelegation.sub(delegates)
   )
 
   const deployerCut =
@@ -147,27 +154,53 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
     }
   }
 
-  const isDisabled =
-    (isIncrease && maxIncrease.isZero()) ||
-    (!isIncrease && maxDecrease.isZero())
-
   const handleSelectOption = useCallback((option: 'increase' | 'decrease') => {
     setSelectedOption(option)
   }, [])
+
   const options = [
     {
       key: 'increase',
-      text: messages.increase,
-      disabled: false,
-      variant: 'default' as const
+      text: messages.increase
     },
     {
       key: 'decrease',
-      text: messages.decrease,
-      disabled: false,
-      variant: 'default' as const
+      text: messages.decrease
     }
   ]
+
+  const { hasClaim, status: claimStatus } = usePendingClaim(wallet)
+  const hasPendingDecreaseResult = useHasPendingDecreaseDelegationTx()
+  const isDecreaseDelegationDisabled =
+    hasPendingDecreaseResult.status !== Status.Success ||
+    hasPendingDecreaseResult.hasPendingDecreaseTx ||
+    claimStatus !== Status.Success ||
+    hasClaim
+  const isIncreaseDelegationDisabled =
+    claimStatus !== Status.Success || hasClaim
+  const isDisabled =
+    (isIncrease && maxIncrease.isZero()) ||
+    (!isIncrease && maxDecrease.isZero()) ||
+    (isDecreaseDelegationDisabled && !isIncrease) ||
+    (isIncreaseDelegationDisabled && isIncrease)
+
+  let actionDisabledText = ''
+
+  if (isIncrease && isIncreaseDelegationDisabled) {
+    actionDisabledText = messages.pendingClaimDisabled
+  } else if (!isIncrease && isDecreaseDelegationDisabled) {
+    if (hasPendingDecreaseResult.hasPendingDecreaseTx) {
+      actionDisabledText = messages.pendingDecreaseDisabled
+    } else {
+      actionDisabledText = messages.pendingClaimDisabled
+    }
+  }
+
+  const isLoading =
+    !serviceUser ||
+    !accountUser ||
+    claimStatus === Status.Loading ||
+    hasPendingDecreaseResult.status === Status.Loading
 
   if (isLoading) {
     return (
@@ -219,83 +252,105 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
               </Flex>
             </Flex>
             <Divider css={{ borderColor: color.neutral.n100 }} />
-            <Flex gap="l" alignItems="center">
-              <TokenAmountInput
-                label={
-                  selectedOption === 'increase'
-                    ? messages.increase
-                    : messages.decrease
-                }
-                isWhole={false}
-                placeholder={messages.enterAmount}
-                tokenLabel={TICKER}
-                decimals={8}
-                value={inputValue}
-                error={hasError}
-                disabled={isDisabled}
-                onChange={(stringValue, bnValue) => {
-                  if (checkWeiNumber(stringValue)) {
-                    setInputNumberValue(parseWeiNumber(stringValue)!)
-                  }
-                  setInputValue(stringValue)
-                }}
-                helperText={helperText}
-                max={
-                  isIncrease
-                    ? AudiusClient.displayShortAud(maxIncrease)
-                    : AudiusClient.displayShortAud(maxDecrease)
-                }
-              />
-              <Button
-                onClick={() => {
-                  setInputNumberValue(isIncrease ? maxIncrease : maxDecrease)
-                  setInputValue(
-                    isIncrease
-                      ? formatWeiNumber(maxIncrease)
-                      : formatWeiNumber(maxDecrease)
-                  )
-                }}
-                className={styles.maxButton}
-                text={messages.max.toUpperCase()}
-                type={ButtonType.PRIMARY_ALT}
-              />
-            </Flex>
-            <Flex direction="column" gap="xs" alignSelf="center" p="l">
-              <Flex gap="s">
-                <Text variant="heading" size="s">
-                  <DisplayAudio amount={newDelegationAmount} />
-                </Text>
+            {actionDisabledText ? (
+              <Flex justifyContent="center">
                 <Text
-                  variant="heading"
-                  size="s"
-                  color="subdued"
-                  css={{ textDecoration: 'line-through' }}
+                  variant="body"
+                  size="l"
+                  strength="strong"
+                  textAlign="center"
                 >
-                  <DisplayAudio amount={delegates} />
+                  {actionDisabledText}
                 </Text>
               </Flex>
-              <Box>
-                <Text variant="body" size="m" strength="strong" color="subdued">
-                  {messages.newStakingAmount}
-                </Text>
-              </Box>
-            </Flex>
-            <Flex justifyContent="center">
-              <Button
-                isDisabled={
-                  !inputNumberValue ||
-                  inputNumberValue.isZero() ||
-                  status === Status.Loading
-                }
-                text={
-                  status === Status.Loading
-                    ? messages.loadingSubmit
-                    : messages.saveChanges
-                }
-                type={ButtonType.PRIMARY}
-                onClick={onConfirm}
-              />
-            </Flex>
+            ) : (
+              <>
+                <Flex gap="l" alignItems="center">
+                  <TokenAmountInput
+                    label={
+                      selectedOption === 'increase'
+                        ? messages.increase
+                        : messages.decrease
+                    }
+                    isWhole={false}
+                    placeholder={messages.enterAmount}
+                    tokenLabel={TICKER}
+                    decimals={8}
+                    value={inputValue}
+                    error={hasError}
+                    disabled={isDisabled}
+                    onChange={stringValue => {
+                      if (checkWeiNumber(stringValue)) {
+                        setInputNumberValue(parseWeiNumber(stringValue)!)
+                      }
+                      setInputValue(stringValue)
+                    }}
+                    helperText={helperText}
+                    max={
+                      isIncrease
+                        ? AudiusClient.displayShortAud(maxIncrease)
+                        : AudiusClient.displayShortAud(maxDecrease)
+                    }
+                  />
+                  <Button
+                    onClick={() => {
+                      setInputNumberValue(
+                        isIncrease ? maxIncrease : maxDecrease
+                      )
+                      setInputValue(
+                        isIncrease
+                          ? formatWeiNumber(maxIncrease)
+                          : formatWeiNumber(maxDecrease)
+                      )
+                    }}
+                    className={styles.maxButton}
+                    text={messages.max.toUpperCase()}
+                    type={ButtonType.PRIMARY_ALT}
+                  />
+                </Flex>
+                <Flex direction="column" gap="xs" alignSelf="center" p="l">
+                  <Flex gap="s">
+                    <Text variant="heading" size="s">
+                      <DisplayAudio amount={newDelegationAmount} />
+                    </Text>
+                    <Text
+                      variant="heading"
+                      size="s"
+                      color="subdued"
+                      css={{ textDecoration: 'line-through' }}
+                    >
+                      <DisplayAudio amount={delegates} />
+                    </Text>
+                  </Flex>
+                  <Box>
+                    <Text
+                      variant="body"
+                      size="m"
+                      strength="strong"
+                      color="subdued"
+                    >
+                      {messages.newStakingAmount}
+                    </Text>
+                  </Box>
+                </Flex>
+                <Flex justifyContent="center">
+                  <Button
+                    isDisabled={
+                      !inputNumberValue ||
+                      inputNumberValue.isZero() ||
+                      status === Status.Loading
+                    }
+                    text={
+                      status === Status.Loading
+                        ? messages.loadingSubmit
+                        : messages.saveChanges
+                    }
+                    type={ButtonType.PRIMARY}
+                    onClick={onConfirm}
+                  />
+                </Flex>
+              </>
+            )}
           </Flex>
         </div>
       </Modal>

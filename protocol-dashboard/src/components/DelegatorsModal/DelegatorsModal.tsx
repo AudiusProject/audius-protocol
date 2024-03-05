@@ -1,25 +1,25 @@
-import React, { useCallback, useState, useEffect } from 'react'
-import clsx from 'clsx'
-import { useModalControls } from 'utils/hooks'
 import BN from 'bn.js'
+import clsx from 'clsx'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useModalControls } from 'utils/hooks'
 
-import { useDelegators } from 'store/cache/user/hooks'
 import TrashIcon from 'assets/img/iconTrash.svg?react'
+import { useDelegators } from 'store/cache/user/hooks'
 
-import styles from './DelegatorsModal.module.css'
-import { Address, Delegate, Status } from 'types'
-import ModalTable from 'components/ModalTable'
-import { useAccount } from 'store/account/hooks'
-import { useRemoveDelegator } from 'store/actions/removeDelegator'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
-import { useUndelegateStake } from 'store/actions/undelegateStake'
-import { accountPage } from 'utils/routes'
-import { usePushRoute } from 'utils/effects'
 import DisplayAudio from 'components/DisplayAudio'
+import ModalTable from 'components/ModalTable'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
+import { useAccount } from 'store/account/hooks'
+import { useRemoveDelegator } from 'store/actions/removeDelegator'
+import { useUndelegateStake } from 'store/actions/undelegateStake'
+import { Address, Delegate, Status } from 'types'
+import { usePushRoute } from 'utils/effects'
+import { accountPage } from 'utils/routes'
+import styles from './DelegatorsModal.module.css'
 
 const messages = {
   title: 'Delegators',
@@ -153,9 +153,6 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
     )
   }
 
-  const count = data.length
-  const modalHeader = `${count} Addresses`
-
   const removeDelegatorBox = (
     <StandaloneBox>
       <div>{messages.removeDelegator}</div>
@@ -172,7 +169,6 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
   return (
     <ModalTable
       title={messages.modalTitle}
-      header={modalHeader}
       isOpen={isOpen}
       onClose={onClose}
       dismissOnClickOutside={!removeDelegatorOpen}

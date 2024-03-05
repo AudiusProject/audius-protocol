@@ -4,7 +4,13 @@
   color: var(--primary-dark-2);
 }
 
-.link:hover {
+.link:hover:not(.disabled) {
   cursor: pointer;
   opacity: 0.75;
+}
+
+.link.disabled,
+.link.disabled:hover {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
