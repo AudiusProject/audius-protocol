@@ -475,9 +475,13 @@ class TrackInspect(Resource):
         )
         content_nodes = rendezvous.get_n(9999999, cid)
         for content_node in content_nodes:
-            response = requests.get(urljoin(content_node, path))
-            blob_info = extend_blob_info(response.json())
-            return success_response(blob_info)
+            try:
+                response = requests.get(urljoin(content_node, path))
+                if response:
+                    blob_info = extend_blob_info(response.json())
+                    return success_response(blob_info)
+            except Exception as e:
+                logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
 
         abort_not_found(track_id, ns)
 
@@ -635,11 +639,14 @@ class TrackStream(Resource):
             content_nodes = track.get("placement_hosts").split(",")
 
         for content_node in content_nodes:
-            stream_url = get_stream_url_from_content_node(content_node, path)
-            if stream_url:
-                redis.set(redis_key, content_node)
-                redis.expire(redis_key, 60 * 30)  # 30 min ttl
-                return stream_url
+            try:
+                stream_url = get_stream_url_from_content_node(content_node, path)
+                if stream_url:
+                    redis.set(redis_key, content_node)
+                    redis.expire(redis_key, 60 * 30)  # 30 min ttl
+                    return stream_url
+            except Exception as e:
+                logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
         abort_not_found(track_id, ns)
 
 
@@ -757,11 +764,14 @@ class TrackDownload(Resource):
 
         content_nodes = rendezvous.get_n(9999999, cid)
         for content_node in content_nodes:
-            stream_url = get_stream_url_from_content_node(content_node, path)
-            if stream_url:
-                redis.set(redis_key, content_node)
-                redis.expire(redis_key, 60 * 30)  # 30 min ttl
-                return stream_url
+            try:
+                stream_url = get_stream_url_from_content_node(content_node, path)
+                if stream_url:
+                    redis.set(redis_key, content_node)
+                    redis.expire(redis_key, 60 * 30)  # 30 min ttl
+                    return stream_url
+            except Exception as e:
+                logger.error(f"Could not locate cid {cid} on {content_node}: {e}")
         abort_not_found(track_id, ns)
 
 
