@@ -150,7 +150,15 @@ const LeftNav = (props: NavColumnProps) => {
               }
             >
               <AccountDetails />
+
               <div className={styles.links}>
+                {account?.handle === 'fbtest' ? (
+                  <div className={styles.linkGroup}>
+                    <LeftNavLink to={'/fb/share'}>
+                      Share Profile to Facebook
+                    </LeftNavLink>
+                  </div>
+                ) : null}
                 <div className={styles.linkGroup}>
                   <GroupHeader>{messages.discover}</GroupHeader>
                   <LeftNavLink
