@@ -134,7 +134,7 @@
     "AWS_SECRET_ACCESS_KEY": "test",
     "AWS_REGION": "us-west-2",
     "AWS_BUCKET_RAW": "audius-test-raw",
-    "AWS_BUCKET_INDEXED": "audius-test-indexed",
+    "AWS_BUCKET_CRAWLED": "audius-test-crawled",
     "DDEX_KEY": "49d5e13d355709b615b7cce7369174fb240b6b39",
     "DDEX_SECRET": "2b2c2b90d9a489234ae629a5284de84fb0633306257f17667aaebf2345d92152",
     "SESSION_SECRET": "something random",
