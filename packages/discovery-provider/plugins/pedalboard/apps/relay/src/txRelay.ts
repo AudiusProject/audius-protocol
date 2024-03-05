@@ -6,6 +6,7 @@ import {
   TransactionRequest,
 } from "@ethersproject/abstract-provider";
 import { NextFunction, Request, Response } from "express";
+import { logger } from './logger'
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -42,6 +43,7 @@ export const relayTransaction = async (
     receipt.blockNumber += config.finalPoaBlock
     res.send({ receipt });
   } catch (e) {
+    logger.error(e)
     internalError(next, e as string);
     return;
   }
