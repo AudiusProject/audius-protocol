@@ -52,13 +52,13 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 	p.Logger.Info("Parsing releases from delivery", "_id", delivery.ZIPFileETag)
 
 	// Parse the delivery's releases
-	pendingReleases := []common.PendingRelease{}
+	pendingReleases := []*common.PendingRelease{}
 	if p.DDEXChoreography == constants.ERNReleaseByRelease {
 		for i := range delivery.Releases {
-			release := delivery.Releases[i]
-			morePendingReleases, err := p.parseRelease(&release, delivery.ZIPFileETag, "")
+			release := &delivery.Releases[i]
+			morePendingReleases, err := p.parseRelease(release, delivery.ZIPFileETag, "")
 			if err == nil {
-				pendingReleases = append(pendingReleases, *morePendingReleases...)
+				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
 				p.Logger.Error("Failed to process release", "error", err)
 				p.replaceDelivery(&delivery)
@@ -67,10 +67,10 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		}
 	} else {
 		for i := range delivery.Batches {
-			batch := delivery.Batches[i]
-			morePendingReleases, err := p.parseBatch(&batch, delivery.ZIPFileETag)
+			batch := &delivery.Batches[i]
+			morePendingReleases, err := p.parseBatch(batch, delivery.ZIPFileETag)
 			if err == nil {
-				pendingReleases = append(pendingReleases, *morePendingReleases...)
+				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
 				p.Logger.Error("Failed to process batch", "error", err)
 				p.replaceDelivery(&delivery)
@@ -115,7 +115,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 }
 
 // parseRelease takes an unprocessed release and turns it into PendingReleases (doesn't insert into Mongo)
-func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFileETag, expectedERNVersion string) (*[]common.PendingRelease, error) {
+func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFileETag, expectedERNVersion string) ([]*common.PendingRelease, error) {
 	xmlData := release.XmlContent.Data
 	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
@@ -127,7 +127,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 	// Use local-name() to ignore namespace because sometimes it's "ern" and sometimes it's "ernm"
 	msgVersionElem := xmlquery.FindOne(doc, "//*[local-name()='NewReleaseMessage']")
 	if msgVersionElem == nil {
-		err = fmt.Errorf("Missing <NewReleaseMessage> element")
+		err = fmt.Errorf("missing <NewReleaseMessage> element")
 		release.ValidationErrors = append(release.ValidationErrors, err.Error())
 		return nil, err
 	}
@@ -196,9 +196,9 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 	}
 
 	// Create (but don't yet insert into Mongo) a PendingRelease for each track and album release
-	pendingReleases := []common.PendingRelease{}
+	pendingReleases := []*common.PendingRelease{}
 	for _, track := range createTrackRelease {
-		pendingRelease := common.PendingRelease{
+		pendingRelease := &common.PendingRelease{
 			ReleaseID:          release.ReleaseID,
 			DeliveryETag:       deliveryZipFileETag,
 			CreateTrackRelease: track,
@@ -211,7 +211,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 		pendingReleases = append(pendingReleases, pendingRelease)
 	}
 	for _, album := range createAlbumRelease {
-		pendingRelease := common.PendingRelease{
+		pendingRelease := &common.PendingRelease{
 			ReleaseID:          release.ReleaseID,
 			DeliveryETag:       deliveryZipFileETag,
 			CreateAlbumRelease: album,
@@ -224,11 +224,11 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 		pendingReleases = append(pendingReleases, pendingRelease)
 	}
 
-	return &pendingReleases, nil
+	return pendingReleases, nil
 }
 
 // parseBatch takes an unprocessed batch and turns it into PendingReleases (doesn't insert into Mongo)
-func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag string) (*[]common.PendingRelease, error) {
+func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag string) ([]*common.PendingRelease, error) {
 	xmlData := batch.BatchXmlContent.Data
 	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
@@ -275,7 +275,7 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 	}
 
 	// Parse each MessageInBatch
-	var pendingReleases []common.PendingRelease
+	var pendingReleases []*common.PendingRelease
 	for i := 1; i <= numMessages; i++ {
 		messageInBatch := xmlquery.FindOne(doc, fmt.Sprintf("//MessageInBatch[%d]", i))
 		if messageInBatch == nil {
@@ -315,9 +315,9 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 		// Find the release with the given releaseID in the batch's Releases
 		// TODO: Should probably make Releases and Batches maps instead of slices
 		var targetRelease *common.UnprocessedRelease
-		for _, release := range batch.Releases {
-			if release.ReleaseID == releaseID {
-				targetRelease = &release
+		for i := range batch.Releases {
+			if batch.Releases[i].ReleaseID == releaseID {
+				targetRelease = &batch.Releases[i]
 				break
 			}
 		}
@@ -327,10 +327,10 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 			return nil, err
 		}
 
-		releaseURL := safeInnerText(messageInBatch.SelectElement("URL"))
-		expectedReleaseURL := fmt.Sprintf("/%s/%s", batch.BatchID, targetRelease.XmlFilePath)
-		if releaseURL != expectedReleaseURL {
-			err := fmt.Errorf("URL '%s' does not match expected value", releaseURL)
+		// Validate the URL without the prefix "/"
+		releaseURL := strings.TrimPrefix(safeInnerText(messageInBatch.SelectElement("URL")), "/")
+		if releaseURL != targetRelease.XmlFilePath {
+			err := fmt.Errorf("URL '%s' does not match expected value: '%s'", releaseURL, targetRelease.XmlFilePath)
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
 			return nil, err
 		}
@@ -340,10 +340,10 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 		if err != nil {
 			return nil, err
 		}
-		pendingReleases = append(pendingReleases, *pendingRelease...)
+		pendingReleases = append(pendingReleases, pendingRelease...)
 	}
 
-	return &pendingReleases, nil
+	return pendingReleases, nil
 }
 
 func (p *Parser) replaceDelivery(updatedDelivery *common.Delivery) {

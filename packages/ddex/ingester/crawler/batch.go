@@ -96,9 +96,9 @@ func (c *Crawler) getBatchManifest(unzippedRoot, batchDir string) (*common.Unpro
 
 func (c *Crawler) crawlReleasesInBatch(unzippedRoot, dir string) (*[]common.UnprocessedRelease, error) {
 	// Find each subdirectory (only 1 level lower, not recursively) of the batch, which should contain a release
-	files, err := os.ReadDir(unzippedRoot)
+	files, err := os.ReadDir(dir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read directory %s: %w", unzippedRoot, err)
+		return nil, fmt.Errorf("failed to read directory %s: %w", dir, err)
 	}
 
 	var releases []common.UnprocessedRelease
