@@ -52,15 +52,15 @@ export const rateLimiterMiddleware = async (
   )
 
   try {
-    const res = await globalRateLimiter.consume({
+    const rateLimitData = await globalRateLimiter.consume({
       operation,
       signer,
       limit
     })
-    insertReplyHeaders(response, res)
+    insertReplyHeaders(res, rateLimitData)
   } catch (e) {
     if (e instanceof RateLimiterRes) {
-      insertReplyHeaders(response, e as RateLimiterRes)
+      insertReplyHeaders(res, e as RateLimiterRes)
       rateLimitError(next, 'rate limit hit')
       return
     }
