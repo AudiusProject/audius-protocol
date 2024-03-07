@@ -79,6 +79,8 @@ const messages = {
   operatorName: 'Operator Name',
   operatorImage: 'Operator Profile Image',
   undelegateAudio: `Undelegate ${TICKER}`,
+  cantUndelegateMultiple:
+    'Cannot undelegate while you have another pending Undelegate transaction.',
   cantUndelegatePendingClaim:
     'Cannot undelegate while the operator has an unclaimed reward distribution',
   cantDelegatePendingClaim:
@@ -418,7 +420,7 @@ const ManageService = (props: ManageServiceProps) => {
     !isOwner &&
     delegates.isZero()
   const showUndelegate = isDoneLoading && !isOwner && !delegates.isZero()
-  const cantUndelegateReason = !pendingClaim.hasClaim
+  const cantUndelegateReason = pendingClaim.hasClaim
     ? messages.cantUndelegatePendingClaim
     : null
   const isDelegatorLimitReached =
@@ -426,7 +428,7 @@ const ManageService = (props: ManageServiceProps) => {
     (serviceUser as Operator)?.delegators?.length >= maxDelegators
   const cantDelegateReason = isDelegatorLimitReached
     ? messages.delegatorLimitReached
-    : !pendingClaim.hasClaim
+    : pendingClaim.hasClaim
     ? messages.cantDelegatePendingClaim
     : !isTotalStakeInBounds
     ? messages.cantDelegateTotalStakeOutOfBounds

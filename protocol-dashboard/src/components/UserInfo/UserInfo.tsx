@@ -39,7 +39,7 @@ const messages = {
   undelegate: 'UNDELEGATE',
   claim: 'CLAIM',
   makeClaim: 'Make Claim',
-  claimOutOfBounds: 'Total stake out of bounds',
+  claimOutOfBounds: 'Total stake out of bounds', // add this!!!
   delegatorLimitReached: 'This operator has reached its delegator limit'
 }
 

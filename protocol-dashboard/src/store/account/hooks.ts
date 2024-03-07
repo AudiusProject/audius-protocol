@@ -20,13 +20,25 @@ import {
 import { useEffect } from 'react'
 import { getUser, fetchUser } from 'store/cache/user/hooks'
 import { AnyAction } from '@reduxjs/toolkit'
+import BN from 'bn.js'
 
 // -------------------------------- Selectors  --------------------------------
 export const getIsLoggedIn = (state: AppState) => state.account.loggedIn
 export const getAccountWallet = (state: AppState) => state.account.wallet
 export const getAccountStatus = (state: AppState) => state.account.status
-export const getPendingTransactions = (state: AppState) =>
-  state.account.pendingTransactions
+export const getPendingTransactions = (state: AppState) => ({
+  status: Status.Success,
+  transactions: [
+    {
+      name: PendingTransactionName.DecreaseStake,
+      status: 'awer',
+      wallet: '34',
+      lockupDuration: 33,
+      lockupExpiryBlock: 33,
+      amount: new BN(33)
+    }
+  ]
+})
 export const getPendingClaim = (state: AppState) => state.account.pendingClaim
 export const getIsAudiusProfileRefetchDisabled = (state: AppState) =>
   state.account.isAudiusProfileRefetchDisabled

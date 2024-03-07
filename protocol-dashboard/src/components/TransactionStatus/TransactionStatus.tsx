@@ -224,9 +224,8 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
   const { hasClaim, status: claimStatus } = usePendingClaim(
     props.name === PendingTransactionName.Undelegate ? props.target : ''
   )
-  const isDisabled =
-    props.name === PendingTransactionName.Undelegate &&
-    (claimStatus !== Status.Success || hasClaim)
+  // const isDisabled = true
+  const isDisabled = claimStatus !== Status.Success || hasClaim
 
   return (
     <div
