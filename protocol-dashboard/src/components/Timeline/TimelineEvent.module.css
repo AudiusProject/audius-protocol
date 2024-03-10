@@ -1,7 +1,7 @@
 .container {
   min-height: 103px;
   width: 100%;
-  border-top: 1px solid #3F415B;
+  border-top: 1px solid #3f415b;
   padding: 11px 52px 12px 32px;
   box-sizing: border-box;
   color: var(--neutral);
@@ -12,7 +12,7 @@
 }
 
 .container.onClick:hover {
-  background: #393A54;
+  background: #393a54;
 }
 
 .header {
@@ -22,7 +22,7 @@
   font-size: 12px;
   line-height: 15px;
   letter-spacing: 1px;
-  color: #777C96;
+  color: #777c96;
   margin-bottom: 8px;
 }
 
@@ -57,7 +57,6 @@
   margin-left: 6px;
   white-space: nowrap;
 }
-
 
 .userWalletName:hover {
   color: var(--secondary);

@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { Flex, IconEmbed } from '@audius/harmony'
+import { Box, Flex, IconEmbed } from '@audius/harmony'
 import clsx from 'clsx'
 import ContentTable from 'components/ContentTable'
 import DiscoveryTable from 'components/DiscoveryTable'
@@ -76,20 +76,20 @@ const Services: React.FC<ServicesProps> = () => {
           alwaysShowMore
         />
         <div className={styles.serviceContainer}>
-          <div ref={discoveryTableRef}>
+          <Box ref={discoveryTableRef} w="100%">
             <DiscoveryTable
               className={clsx(styles.serviceTable, styles.rightSpacing)}
               limit={NODE_LIMIT}
               alwaysShowMore
             />
-          </div>
-          <div ref={contentTableRef}>
+          </Box>
+          <Box ref={discoveryTableRef} w="100%">
             <ContentTable
               className={clsx(styles.serviceTable, styles.leftSpacing)}
               limit={NODE_LIMIT}
               alwaysShowMore
             />
-          </div>
+          </Box>
         </div>
       </Flex>
     </Page>

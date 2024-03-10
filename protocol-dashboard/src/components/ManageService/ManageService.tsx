@@ -5,7 +5,11 @@ import OperatorCutModal from 'components/OperatorCutModal'
 import UpdateStakeModal from 'components/UpdateStakeModal'
 import { PropsWithChildren, useCallback } from 'react'
 import AudiusClient from 'services/Audius/AudiusClient'
-import { useAccountUser, usePendingTransactions } from 'store/account/hooks'
+import {
+  useAccount,
+  useAccountUser,
+  usePendingTransactions
+} from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
 import { Address, Operator, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
@@ -42,6 +46,7 @@ import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import { TICKER } from 'utils/consts'
 import { formatShortWallet } from 'utils/format'
 import { RegisterNewServiceBtn } from './RegisterNewServiceBtn'
+import Loading from 'components/Loading'
 
 const messages = {
   ownerTitle: 'Your Nodes',
@@ -370,6 +375,7 @@ const Stake = ({ stake, enableChange, disabledReason }: StakeProps) => {
 const ManageService = (props: ManageServiceProps) => {
   const wallet = props.wallet
 
+  const { isLoggedIn } = useAccount()
   const { status: accountUserStatus, user: accountUser } = useAccountUser()
   const { maxDelegators } = useSelector(getDelegatorInfo)
   const {
@@ -385,8 +391,9 @@ const ManageService = (props: ManageServiceProps) => {
   const totalActiveDelegated = getTotalActiveDelegatedStake(serviceUser)
   const pendingTx = usePendingTransactions()
   const pendingClaim = usePendingClaim(wallet)
-  const hasPendingUndelegateRequest = !!accountUser.pendingUndelegateRequest
-    ?.target
+  const hasPendingUndelegateRequest =
+    accountUserStatus === Status.Success &&
+    !!accountUser.pendingUndelegateRequest?.target
 
   const isServiceProvider =
     serviceUserStatus === Status.Success && 'serviceProvider' in serviceUser
@@ -405,12 +412,13 @@ const ManageService = (props: ManageServiceProps) => {
     ? (serviceUser as Operator).delegators.length
     : 0
   const deployerCut = isServiceProvider
-    ? (serviceUser as Operator).serviceProvider.deployerCut
+    ? (serviceUser as Operator)?.serviceProvider?.deployerCut
     : null
   const isOwner =
     accountUserStatus === Status.Success && wallet === accountUser?.wallet
-  const minDelegationAmount =
-    isServiceProvider && (serviceUser as Operator).minDelegationAmount
+  const minDelegationAmount = isServiceProvider
+    ? (serviceUser as Operator)?.minDelegationAmount
+    : null
 
   const isDoneLoading =
     accountUserStatus === Status.Success &&
@@ -486,7 +494,7 @@ const ManageService = (props: ManageServiceProps) => {
           </Box>
         </Flex>
       </Flex>
-      <Flex pv="l" ph="xl" gap="2xl" alignItems="stretch">
+      <Flex pv="l" ph="xl" gap="2xl" alignItems="stretch" wrap="wrap">
         <Flex direction="column" alignItems="stretch" gap="s">
           <ServiceBigStat
             data={numContentNodes}
@@ -523,14 +531,22 @@ const ManageService = (props: ManageServiceProps) => {
           <Divider css={{ borderColor: color.neutral.n100 }} />
           <Flex direction="column" gap="m">
             <Stake stake={activeStake} enableChange={isOwner} />
-            <OperatorServiceFee
-              deployerCut={deployerCut}
-              enableChange={isOwner}
-            />
-            <MinimumDelegationAmount
-              minimumDelegationAmount={minDelegationAmount}
-              enableChange={isOwner}
-            />
+            {deployerCut == null ? (
+              <Loading />
+            ) : (
+              <OperatorServiceFee
+                deployerCut={deployerCut}
+                enableChange={isOwner}
+              />
+            )}
+            {minDelegationAmount == null ? (
+              <Loading />
+            ) : (
+              <MinimumDelegationAmount
+                minimumDelegationAmount={minDelegationAmount}
+                enableChange={isOwner}
+              />
+            )}
             {pendingClaim.status !== Status.Success ||
             !pendingClaim.hasClaim ? null : (
               <>
@@ -541,18 +557,20 @@ const ManageService = (props: ManageServiceProps) => {
                       label={messages.rewardDistribution}
                     />
                   </Flex>
-                  <ActionPlainLink
-                    tooltipDisabled={!isClaimDisabled}
-                    tooltipText={
-                      isOwner
-                        ? messages.operatorCantClaimTotalStakeOufOfBounds
-                        : messages.delegatorCantClaimTotalStakeOutOfBounds
-                    }
-                    onClick={onClickClaimModal}
-                    disabled={isClaimDisabled}
-                  >
-                    {isOwner ? messages.claim : messages.claimForOperator}
-                  </ActionPlainLink>
+                  {isLoggedIn ? (
+                    <ActionPlainLink
+                      tooltipDisabled={!isClaimDisabled}
+                      tooltipText={
+                        isOwner
+                          ? messages.operatorCantClaimTotalStakeOufOfBounds
+                          : messages.delegatorCantClaimTotalStakeOutOfBounds
+                      }
+                      onClick={onClickClaimModal}
+                      disabled={isClaimDisabled}
+                    >
+                      {isOwner ? messages.claim : messages.claimForOperator}
+                    </ActionPlainLink>
+                  ) : null}
                 </Flex>
                 <ConfirmTransactionModal
                   isOpen={isClaimModalOpen}

@@ -260,11 +260,11 @@ const NodeOverview = ({
   }
 
   return (
-    <Card direction="column" p="xl">
+    <Card direction="column" p="xl" w="100%">
       {isLoading ? (
         <Loading className={styles.loading} />
       ) : (
-        <Flex gap="l">
+        <Flex gap="l" wrap="wrap" css={{ overflow: 'scroll' }}>
           <Box pv="s" ph="l">
             <Text variant="heading" size="s">
               {isDeregistered

@@ -35,7 +35,7 @@ import { Card } from 'components/Card/Card'
 import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
 import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCard'
 import { StatLabel } from 'components/StatLabel/StatLabel'
-import { createStyles } from 'utils/mobile'
+import { createStyles, isMobile } from 'utils/mobile'
 import desktopStyles from './Home.module.css'
 import mobileStyles from './HomeMobile.module.css'
 import { InfoCard } from './InfoCard'
@@ -73,6 +73,7 @@ const Home = () => {
   const { isLoggedIn, wallet } = useAccount()
   const { recentProposals } = useProposals()
   const pushRoute = usePushRoute()
+  const mobile = isMobile()
   const { typography } = useTheme() as HarmonyTheme // Need to cast because the type from import is incorrect
 
   return (
@@ -89,13 +90,17 @@ const Home = () => {
               color="heading"
               variant="display"
               strength="strong"
-              size="l"
+              size={mobile ? 's' : 'l'}
             />
-            <StatLabel variant="heading" strength="default" size="m">
+            <StatLabel
+              variant="heading"
+              strength="default"
+              size={mobile ? 'm' : 's'}
+            >
               {messages.uniqueMonthlyUsers}
             </StatLabel>
           </Flex>
-          <Flex gap="s" w="100%" justifyContent="space-around">
+          <Flex gap="s" w="100%" justifyContent="space-around" wrap="wrap">
             <Flex
               direction="column"
               alignItems="center"
@@ -107,7 +112,11 @@ const Home = () => {
                 strength="strong"
                 size="s"
               />
-              <StatLabel variant="title" size="l" strength="default">
+              <StatLabel
+                variant="title"
+                size={mobile ? 'm' : 'l'}
+                strength="default"
+              >
                 {messages.globalStakedAudio}
               </StatLabel>
             </Flex>
@@ -122,16 +131,28 @@ const Home = () => {
                 size="s"
                 color="heading"
               />
-              <StatLabel variant="title" size="l" strength="default">
+              <StatLabel
+                variant="title"
+                size={mobile ? 'm' : 'l'}
+                strength="default"
+              >
                 {messages.apiCalls}
               </StatLabel>
             </Flex>
           </Flex>
         </Card>
-        <Card pv="l" ph="xl" justifyContent="space-around" alignItems="center">
-          <Text variant="heading" color="subdued" size="s" strength="default">
-            {messages.estimatedRewardRate}
-          </Text>
+        <Card
+          pv="l"
+          ph="xl"
+          justifyContent={mobile ? 'space-between' : 'space-around'}
+          alignItems="center"
+          wrap="wrap"
+        >
+          <Box mb={mobile ? 'm' : undefined}>
+            <Text variant="heading" color="subdued" size="s" strength="default">
+              {messages.estimatedRewardRate}
+            </Text>
+          </Box>
           <EstimatedWeeklyStat />
           <EstimatedAnnualStat />
         </Card>
@@ -166,7 +187,7 @@ const Home = () => {
         <TopAddressesTable limit={5} alwaysShowMore />
         <Paper className={styles.wtf}>
           <div className={styles.bg} />
-          <div className={styles.bgImage} />
+          {!mobile ? <div className={styles.bgImage} /> : null}
           <Flex direction="column" gap="2xl" css={{ maxWidth: 488 }}>
             <IconAudiusLogoHorizontal
               color="staticWhite"
@@ -208,7 +229,7 @@ const Home = () => {
           ctaLink={OAF_URL}
           ctaText={messages.trustedNameCTA}
         />
-        <Flex gap="l">
+        <Flex gap="l" wrap="wrap">
           <InfoCard
             title={messages.powerOfDecentralizationTitle}
             description={messages.powerOfDecentralizationDescription}

@@ -1,10 +1,11 @@
 .titleContainer {
   margin-bottom: 22px;
   padding: 0 24px;
+  display: flex;
+  gap: var(--unit-2);
 }
 
 .title {
-  margin-top: 24px;
   color: var(--static-white);
   font-weight: bold;
   font-size: 18px;
