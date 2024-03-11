@@ -1,0 +1,571 @@
+import { Name, StemUploadWithFile } from '@audius/common/models'
+import {
+  TrackForUpload,
+  TrackMetadataForUpload,
+  UploadType,
+  accountSelectors,
+  confirmTransaction,
+  uploadActions
+} from '@audius/common/store'
+import { waitForAccount } from '@audius/common/utils'
+import { EntityManagerAction } from '@audius/sdk'
+import { expectSaga, testSaga } from 'redux-saga-test-plan'
+import { call, getContext, select } from 'redux-saga-test-plan/matchers'
+import { all, fork } from 'typed-redux-saga'
+import { describe, expect, it, vitest } from 'vitest'
+
+import { reportToSentry } from 'store/errors/reportToSentry'
+import { waitForWrite } from 'utils/sagaHelpers'
+
+import { make } from '../analytics/actions'
+import { retrieveTracks } from '../cache/tracks/utils'
+
+import { processTrackForUpload } from './sagaHelpers'
+import uploadSagas, {
+  deleteTracks,
+  handleUploads,
+  uploadCollection,
+  uploadMultipleTracks
+} from './sagas'
+
+function* saga() {
+  yield* all(uploadSagas().map(fork))
+}
+
+const emptyMetadata: TrackMetadataForUpload = {
+  artwork: null,
+  blocknumber: 0,
+  is_delete: false,
+  track_id: 0,
+  created_at: '',
+  isrc: null,
+  iswc: null,
+  credits_splits: null,
+  description: null,
+  followee_reposts: [],
+  followee_saves: [],
+  genre: '',
+  has_current_user_reposted: false,
+  has_current_user_saved: false,
+  download: null,
+  license: null,
+  mood: null,
+  play_count: 0,
+  owner_id: 0,
+  release_date: null,
+  repost_count: 0,
+  save_count: 0,
+  tags: null,
+  title: '',
+  track_segments: [],
+  cover_art: null,
+  cover_art_sizes: null,
+  is_scheduled_release: false,
+  is_unlisted: false,
+  is_available: false,
+  is_stream_gated: false,
+  stream_conditions: null,
+  is_download_gated: false,
+  download_conditions: null,
+  access: {
+    stream: false,
+    download: false
+  },
+  permalink: '',
+  track_cid: null,
+  orig_file_cid: null,
+  orig_filename: null,
+  is_downloadable: false,
+  is_original_available: false,
+  remix_of: null,
+  duration: 0,
+  updated_at: ''
+}
+
+describe('upload', () => {
+  it('uploads single track as non-collection', () => {
+    const testTrack: TrackForUpload = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test'),
+      metadata: emptyMetadata
+    }
+    return (
+      expectSaga(saga)
+        .dispatch(
+          uploadActions.uploadTracks({
+            uploadType: UploadType.INDIVIDUAL_TRACK,
+            tracks: [testTrack]
+          })
+        )
+        .provide([
+          [call.fn(waitForWrite), undefined],
+          [select(accountSelectors.getAccountUser), {}],
+          [call.fn(uploadMultipleTracks), undefined],
+          [call.fn(processTrackForUpload), testTrack]
+        ])
+        // Assertions
+        // Assert that we format the tracks for premium conditions
+        .call.like({ fn: processTrackForUpload })
+        // Ensure that we call uploadMultipleTracks
+        .call.like({ fn: uploadMultipleTracks, args: [[testTrack]] })
+        // Ensure that this isn't treated as a collection
+        .not.call.like({ fn: uploadCollection })
+        .run()
+    )
+  })
+
+  it('uploads stems with track', () => {
+    const stemMetadata: TrackMetadataForUpload = emptyMetadata
+    const stem: StemUploadWithFile = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test'),
+      metadata: stemMetadata,
+      category: null,
+      allowDelete: false,
+      allowCategorySwitch: false
+    }
+    const testTrack: TrackForUpload = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test'),
+      metadata: {
+        ...emptyMetadata,
+        stems: [stem]
+      }
+    }
+
+    let i = 1
+    return (
+      expectSaga(saga)
+        .dispatch(
+          uploadActions.uploadTracks({
+            uploadType: UploadType.INDIVIDUAL_TRACK,
+            tracks: [testTrack]
+          })
+        )
+        .provide([
+          [call.fn(waitForWrite), undefined],
+          [select(accountSelectors.getAccountUser), {}],
+          [call.fn(processTrackForUpload), testTrack.metadata],
+          [
+            getContext('audiusBackendInstance'),
+            {
+              getAudiusLibsTyped: () => {
+                return {
+                  Track: {
+                    generateTrackId: () => i++,
+                    uploadTrackV2: () => testTrack.metadata,
+                    writeTrackToChain: () => ({
+                      trackId: 1,
+                      txReceipt: { blockHash: '0x0', blockNumber: 123 }
+                    })
+                  }
+                }
+              }
+            }
+          ],
+          [call.fn(confirmTransaction), true],
+          [call.fn(waitForAccount), undefined],
+          [call.fn(retrieveTracks), [testTrack.metadata]]
+        ])
+        // Assertions
+        // Uploaded track
+        .put.like({
+          action: {
+            type: 'UPLOADED',
+            payload: { trackIndex: 0, stemIndex: null }
+          }
+        })
+        // Uploaded stem
+        .put.like({
+          action: {
+            type: 'UPLOADED',
+            payload: { trackIndex: 0, stemIndex: 0 }
+          }
+        })
+        // Published stem
+        .put.like({
+          action: {
+            type: 'PUBLISHED',
+            payload: { trackIndex: 0, stemIndex: 0 }
+          }
+        })
+        // Published track
+        .put.like({
+          action: {
+            type: 'PUBLISHED',
+            payload: { trackIndex: 0, stemIndex: null }
+          }
+        })
+        // Succeeds upload
+        .put.actionType(uploadActions.UPLOAD_TRACKS_SUCCEEDED)
+        .silentRun()
+    )
+  })
+
+  it('does not upload parent if stem fails and deletes orphaned stems', () => {
+    const stem1: StemUploadWithFile = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test stem1'),
+      metadata: { ...emptyMetadata, track_id: 2, title: 'stem1' },
+      category: null,
+      allowDelete: false,
+      allowCategorySwitch: false
+    }
+    const stem2: StemUploadWithFile = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test stem2'),
+      metadata: { ...emptyMetadata, track_id: 3, title: 'stem2' },
+      category: null,
+      allowDelete: false,
+      allowCategorySwitch: false
+    }
+    const testTrack: TrackForUpload = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test'),
+      metadata: {
+        ...emptyMetadata,
+        track_id: 1,
+        title: 'parent',
+        stems: [stem1, stem2]
+      }
+    }
+    const mockError = new Error('Publish failed')
+
+    const mockWriteTrackToChain = vitest.fn()
+    // Mock successful first stem publish
+    mockWriteTrackToChain.mockReturnValueOnce({
+      trackId: 2,
+      txReceipt: { blockHash: '0x0', blockNumber: 123 }
+    })
+    // Mock failure for second stem
+    mockWriteTrackToChain.mockRejectedValueOnce(mockError)
+
+    // Mock successful uploads
+    const mockUploadTrackV2 = vitest.fn()
+    mockUploadTrackV2.mockReturnValueOnce(testTrack.metadata)
+    mockUploadTrackV2.mockReturnValueOnce(stem1.metadata)
+    mockUploadTrackV2.mockReturnValueOnce(stem2.metadata)
+
+    expectSaga(handleUploads, { tracks: [testTrack], kind: 'tracks' })
+      .provide([
+        [call.fn(waitForWrite), undefined],
+        [select(accountSelectors.getAccountUser), {}],
+        [call.fn(processTrackForUpload), testTrack.metadata],
+        [
+          getContext('audiusBackendInstance'),
+          {
+            getAudiusLibsTyped: () => {
+              return {
+                Track: {
+                  uploadTrackV2: mockUploadTrackV2,
+                  writeTrackToChain: mockWriteTrackToChain
+                }
+              }
+            }
+          }
+        ],
+        [call.fn(confirmTransaction), true],
+        [call.fn(waitForAccount), undefined],
+        [call.fn(retrieveTracks), [testTrack.metadata]]
+      ])
+      // Reports to sentry
+      .call(reportToSentry, {
+        error: mockError,
+        additionalInfo: {
+          trackId: 3,
+          metadata: stem2.metadata,
+          fileSize: stem2.file.size,
+          trackIndex: 0,
+          stemIndex: 1,
+          trackCount: 1,
+          stemCount: 2,
+          phase: 'publish',
+          kind: 'tracks'
+        }
+      })
+      .call(reportToSentry, {
+        error: new Error('Stem failed to upload.'),
+        additionalInfo: {
+          trackId: 1,
+          metadata: testTrack.metadata,
+          fileSize: testTrack.file.size,
+          trackIndex: 0,
+          stemIndex: null,
+          trackCount: 1,
+          stemCount: 2,
+          phase: 'publish',
+          kind: 'tracks'
+        }
+      })
+      // Delete the stem that was successfully published
+      .call(deleteTracks, [2])
+      // Expect the saga to throw since no tracks succeeded
+      .throws(Error)
+      .run()
+
+    expect(mockWriteTrackToChain).not.toBeCalledWith(
+      testTrack.metadata,
+      EntityManagerAction.CREATE,
+      1
+    )
+  })
+
+  it('waits for stems to upload before publishing parent', () => {
+    const stem: StemUploadWithFile = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test stem'),
+      metadata: { ...emptyMetadata, track_id: 2, title: 'stem' },
+      category: null,
+      allowDelete: false,
+      allowCategorySwitch: false
+    }
+    const testTrack: TrackForUpload = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test'),
+      metadata: {
+        ...emptyMetadata,
+        track_id: 1,
+        title: 'parent',
+        stems: [stem]
+      }
+    }
+    const mockUploadChannel = {
+      take: vitest.fn(),
+      close: vitest.fn(),
+      put: vitest.fn()
+    }
+    const mockPublishChannel = {
+      take: vitest.fn(),
+      close: vitest.fn(),
+      put: vitest.fn()
+    }
+    const mockResponseChannel = { take: vitest.fn(), close: vitest.fn() }
+    const mockProgressChannel = {
+      take: vitest.fn(),
+      close: vitest.fn()
+    }
+    const mockWorker = {
+      cancel: vitest.fn()
+    }
+
+    // Use testSaga so we can control the order of events
+    const test = testSaga(handleUploads, {
+      tracks: [testTrack],
+      kind: 'tracks'
+    })
+      .next()
+      // Upload Queue
+      .next(mockUploadChannel)
+      // Publish Queue
+      .next(mockPublishChannel)
+      // Response channel
+      .next(mockResponseChannel)
+      // Progress channel
+      .next(mockProgressChannel)
+      // ActionChannelDispatcher
+      .next()
+      // Upload worker
+      .next(mockWorker)
+      .next(mockWorker)
+      // Publish workers x4
+      .next(mockWorker)
+      .next(mockWorker)
+      .next(mockWorker)
+      .next(mockWorker)
+      // Analytics request track upload
+      .next()
+      // Response channel take
+      .take(mockResponseChannel)
+      .next({
+        type: 'UPLOADED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: null,
+          metadata: testTrack.metadata
+        }
+      })
+    // Don't publish parent until stems are uploaded
+    expect(mockPublishChannel.put).not.toBeCalled()
+    test.take(mockResponseChannel).next({
+      type: 'UPLOADED',
+      payload: {
+        trackIndex: 0,
+        stemIndex: 0,
+        metadata: stem.metadata
+      }
+    })
+    // Publish stem right away
+    expect(mockPublishChannel.put).toBeCalledTimes(1)
+    test
+      .take(mockResponseChannel)
+      .next({
+        type: 'PUBLISHED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: 0,
+          trackId: 2,
+          metadata: stem.metadata
+        }
+      })
+      // Mark progress as complete
+      .next()
+      .next()
+      // Report analytics stem upload success
+      .next()
+    // Publish parent after final stem uploaded
+    expect(mockPublishChannel.put).toBeCalledTimes(2)
+    test
+      .take(mockResponseChannel)
+      .next({
+        type: 'PUBLISHED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: null,
+          trackId: 2,
+          metadata: stem.metadata
+        }
+      })
+      // Mark progress as complete
+      .next()
+      .next()
+      // Report analytics stem upload success
+      .next()
+      // Close progress channel
+      .next()
+      // Close progress dispatcher
+      .next()
+      // Success
+      .put(
+        make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
+          kind: 'tracks',
+          trackCount: 1
+        })
+      )
+  })
+
+  it('uploads parent immediately if stems are already uploaded', () => {
+    const stem: StemUploadWithFile = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test stem'),
+      metadata: { ...emptyMetadata, track_id: 2, title: 'stem' },
+      category: null,
+      allowDelete: false,
+      allowCategorySwitch: false
+    }
+    const testTrack: TrackForUpload = {
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test'),
+      metadata: {
+        ...emptyMetadata,
+        track_id: 1,
+        title: 'parent',
+        stems: [stem]
+      }
+    }
+    const mockUploadChannel = {
+      take: vitest.fn(),
+      close: vitest.fn(),
+      put: vitest.fn()
+    }
+    const mockPublishChannel = {
+      take: vitest.fn(),
+      close: vitest.fn(),
+      put: vitest.fn()
+    }
+    const mockResponseChannel = { take: vitest.fn(), close: vitest.fn() }
+    const mockProgressChannel = {
+      take: vitest.fn(),
+      close: vitest.fn()
+    }
+    const mockWorker = {
+      cancel: vitest.fn()
+    }
+
+    // Use testSaga so we can control the order of events
+    const test = testSaga(handleUploads, {
+      tracks: [testTrack],
+      kind: 'tracks'
+    })
+      .next()
+      // Upload Queue
+      .next(mockUploadChannel)
+      // Publish Queue
+      .next(mockPublishChannel)
+      // Response channel
+      .next(mockResponseChannel)
+      // Progress channel
+      .next(mockProgressChannel)
+      // ActionChannelDispatcher
+      .next()
+      // Upload worker
+      .next(mockWorker)
+      .next(mockWorker)
+      // Publish workers x4
+      .next(mockWorker)
+      .next(mockWorker)
+      .next(mockWorker)
+      .next(mockWorker)
+      // Analytics request track upload
+      .next()
+      // Response channel take
+      .take(mockResponseChannel)
+      .next({
+        type: 'UPLOADED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: 0,
+          metadata: stem.metadata
+        }
+      })
+    // Publish stem immediately
+    expect(mockPublishChannel.put).toBeCalled()
+    test
+      .take(mockResponseChannel)
+      .next({
+        type: 'PUBLISHED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: 0,
+          trackId: 2,
+          metadata: stem.metadata
+        }
+      })
+      // Mark progress as complete
+      .next()
+      .next()
+      // Report analytics stem upload success
+      .next()
+      // Finish upload task of parent track
+      .take(mockResponseChannel)
+      .next({
+        type: 'UPLOADED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: null,
+          metadata: testTrack.metadata
+        }
+      })
+    // Publish parent right away since stem is published
+    expect(mockPublishChannel.put).toBeCalledTimes(2)
+    test
+      .take(mockResponseChannel)
+      .next({
+        type: 'PUBLISHED',
+        payload: {
+          trackIndex: 0,
+          stemIndex: null,
+          trackId: 2,
+          metadata: testTrack.metadata
+        }
+      })
+      // Mark progress as complete
+      .next()
+      .next()
+      // Report analytics stem upload success
+      .next()
+    // Publish parent after final stem uploaded
+    expect(mockPublishChannel.put).toBeCalledTimes(2)
+    test
+      // Close progress channel
+      .next()
+      // Close progress dispatcher
+      .next()
+      // Success
+      .put(
+        make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
+          kind: 'tracks',
+          trackCount: 1
+        })
+      )
+  })
+})

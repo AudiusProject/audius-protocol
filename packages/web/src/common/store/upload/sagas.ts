@@ -149,7 +149,7 @@ const makeOnProgress = (
  * Deletes a list of tracks by track IDs.
  * Used in cleaning up orphaned stems or tracks of a collection.
  */
-function* deleteTracks(trackIds: ID[]) {
+export function* deleteTracks(trackIds: ID[]) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
 
@@ -210,7 +210,13 @@ function* uploadWorker(
     } catch (e) {
       yield* put(responseChannel, {
         type: 'ERROR',
-        payload: { phase: 'upload', trackIndex, stemIndex, error: e }
+        payload: {
+          trackId: track.metadata.track_id,
+          phase: 'upload',
+          trackIndex,
+          stemIndex,
+          error: e
+        }
       })
     }
   }
@@ -258,7 +264,13 @@ function* publishWorker(
     } catch (e) {
       yield* put(responseChannel, {
         type: 'ERROR',
-        payload: { phase: 'publish', trackIndex, stemIndex, error: e }
+        payload: {
+          trackId: presetTrackId,
+          phase: 'publish',
+          trackIndex,
+          stemIndex,
+          error: e
+        }
       })
     }
   }
@@ -298,7 +310,7 @@ type PublishedPayload = {
 type ErrorPayload = {
   trackIndex: number
   stemIndex: number | null
-  trackId?: ID
+  trackId: ID
   phase: 'upload' | 'publish'
   error: unknown
 }
@@ -569,22 +581,28 @@ export function* handleUploads({
           trackIndex,
           stemIndex: null,
           trackId: tracks[trackIndex].metadata.track_id,
-          error: 'Stem failed to upload.',
-          phase: 'publish'
+          error: new Error('Stem failed to upload.'),
+          phase
         }
       })
     } else {
       yield* put(make(Name.TRACK_UPLOAD_FAILURE, { kind }))
     }
 
-    console.error(`Track ${trackId} errored in the ${phase} phase:`, error)
+    console.error(
+      `Track ${trackId} (trackIndex: ${trackIndex}, stemIndex: ${stemIndex}) errored in the ${phase} phase:`,
+      error
+    )
 
     // Report to sentry
     yield* call(reportToSentry, {
       error: error instanceof Error ? error : new Error(String(error)),
       additionalInfo: {
         trackId,
-        track: tracks[trackIndex],
+        metadata:
+          stemIndex === null
+            ? tracks[trackIndex].metadata
+            : tracks[trackIndex].metadata.stems?.[stemIndex].metadata,
         fileSize: tracks[trackIndex].file.size,
         trackIndex,
         stemIndex,
@@ -606,11 +624,11 @@ export function* handleUploads({
   while (hasUnprocessedTracks() && !collectionUploadErrored()) {
     const { type, payload } = yield* take(responseChannel)
     if (type === 'UPLOADED') {
-      handleUploaded(payload)
+      yield* handleUploaded(payload)
     } else if (type === 'PUBLISHED') {
-      handlePublished(payload)
+      yield* handlePublished(payload)
     } else if (type === 'ERROR') {
-      handleError(payload)
+      yield* handleError(payload)
     }
   }
 
@@ -690,7 +708,7 @@ export function* handleUploads({
  * @param collectionMetadata misnomer - actually just the values from the form fields
  * @param isAlbum Whether the collection is an album or not.
  */
-function* uploadCollection(
+export function* uploadCollection(
   tracks: TrackForUpload[],
   collectionMetadata: CollectionValues,
   isAlbum: boolean
@@ -888,7 +906,7 @@ function* uploadCollection(
  * Uploads any number of standalone tracks.
  * @param tracks the tracks to upload
  */
-function* uploadMultipleTracks(tracks: TrackForUpload[]) {
+export function* uploadMultipleTracks(tracks: TrackForUpload[]) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const audiusLibs = yield* call([
     audiusBackendInstance,
@@ -896,7 +914,7 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
   ])
 
   // Ensure the user is logged in
-  yield waitForAccount()
+  yield* call(waitForAccount)
 
   // Get the IDs ahead of time, so that stems can be associated.
   const tracksWithIds = yield* all(
@@ -980,10 +998,10 @@ function* uploadMultipleTracks(tracks: TrackForUpload[]) {
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
 }
 
-function* uploadTracksAsync(
+export function* uploadTracksAsync(
   action: ReturnType<typeof uploadActions.uploadTracks>
 ) {
-  yield waitForWrite()
+  yield* call(waitForWrite)
   const payload = action.payload
   yield* put(uploadActions.uploadTracksRequested(payload))
 

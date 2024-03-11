@@ -110,7 +110,7 @@ export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
 
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-  const ownerUserbank = yield* getUSDCUserBank(wallet)
+  const ownerUserbank = yield* call(getUSDCUserBank, wallet)
 
   if (isContentUSDCPurchaseGated(track.stream_conditions)) {
     const priceCents = track.stream_conditions.usdc_purchase.price

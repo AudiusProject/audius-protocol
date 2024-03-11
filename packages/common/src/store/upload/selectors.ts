@@ -22,7 +22,6 @@ const ART_WEIGHT = 0
 
 /**
  * Get the upload and transcode status of a track including its stems.
- * Results in [0,1] bounded progress for each type (fileUpload and transcode).
  */
 const trackProgressSummary = (
   trackProgress: ProgressState,
@@ -51,8 +50,9 @@ const trackProgressSummary = (
         : stemProgress[key].transcode ?? 0
   }
   return {
-    fileUploadProgress: total === 0 ? 1 : loaded / total,
-    transcodeProgress: key === 'audio' ? transcode / transcodeTotal : 0
+    loaded,
+    total,
+    transcode: key === 'audio' ? transcode / transcodeTotal : 0
   }
 }
 
@@ -67,15 +67,18 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const filteredProgress = uploadProgress.filter((progress) => key in progress)
   if (filteredProgress.length === 0) return 0
 
-  let fileUploadProgress = 0
-  let transcodeProgress = 0
+  let loaded = 0
+  let total = 0
+  let transcoded = 0
   for (const trackProgress of filteredProgress) {
     const summary = trackProgressSummary(trackProgress, key)
-    fileUploadProgress += summary.fileUploadProgress
-    transcodeProgress += summary.transcodeProgress
+    loaded += summary.loaded
+    transcoded += summary.transcode * summary.total
+    total += summary.total
   }
-  fileUploadProgress /= filteredProgress.length
-  transcodeProgress /= filteredProgress.length
+
+  const fileUploadProgress = total === 0 ? 0 : loaded / total
+  const transcodeProgress = total === 0 ? 0 : transcoded / total
 
   const overallProgress =
     key === 'art'
