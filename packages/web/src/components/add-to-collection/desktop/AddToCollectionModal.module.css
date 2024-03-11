@@ -53,22 +53,22 @@
 }
 
 .add {
-  margin-right: 16px;
+  margin-right: 12px;
 }
 
-.add circle {
+.add path:nth-child(1) {
   fill: var(--secondary);
 }
 
-.add path {
+.add path:nth-child(2) {
   fill: var(--white);
 }
 
-.listItem:hover .add circle {
+.listItem:hover .add path:nth-child(1) {
   fill: var(--white);
 }
 
-.listItem:hover .add path {
+.listItem:hover .add path:nth-child(2) {
   fill: var(--secondary);
 }
 
