@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { IconUserFollow as IconFollow } from '@audius/harmony'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
+import { Button, IconUserFollow as IconFollow } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
@@ -60,14 +59,13 @@ const FollowUsers = (props) => {
       </div>
       <div className={styles.buttonContainer}>
         <Button
-          text={`Follow Selected Artists`}
-          type={disabled ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
-          size={ButtonSize.MEDIUM}
-          leftIcon={<IconFollow />}
+          variant='primary'
+          disabled={disabled}
+          iconLeft={IconFollow}
           onClick={onFollowUsers}
-          className={styles.button}
-          textClassName={styles.buttonText}
-        />
+        >
+          Follow Selected Artists
+        </Button>
       </div>
     </div>
   )

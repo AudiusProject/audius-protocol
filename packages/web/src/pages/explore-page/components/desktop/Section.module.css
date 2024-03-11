@@ -88,12 +88,4 @@
 
 .expandable.expanded .children {
   max-height: 4000px;
-}
-
-.expandButton {
-  margin-top: 32px;
-}
-
-.expandable .expandButton .expandButtonText {
-  text-transform: uppercase;
-}
+}}

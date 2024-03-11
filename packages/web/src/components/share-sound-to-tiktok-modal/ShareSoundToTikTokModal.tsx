@@ -6,8 +6,7 @@ import {
   ShareSoundToTiktokModalStatus
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { Modal, IconTikTok } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Modal, IconTikTok, Button } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -118,27 +117,21 @@ const ShareSoundToTikTokModal = () => {
   const renderButton = () => {
     if (status === ShareSoundToTiktokModalStatus.SHARE_SUCCESS) {
       return (
-        <Button
-          className={styles.button}
-          onClick={() => setIsOpen(false)}
-          text={messages.completeButton}
-        />
+        <Button variant='primary' onClick={() => setIsOpen(false)}>
+          {messages.completeButton}
+        </Button>
       )
     } else {
       const isButtonDisabled = fileRequirementError !== null
       return (
         <Button
-          className={styles.button}
-          type={isButtonDisabled ? ButtonType.DISABLED : ButtonType.PRIMARY}
-          isDisabled={isButtonDisabled}
+          variant='primary'
+          disabled={isButtonDisabled}
           onClick={handleShareButtonClick}
-          text={
-            <div className={styles.button}>
-              <span>{messages.shareButton}</span>
-              <IconTikTok color='staticWhite' />
-            </div>
-          }
-        />
+          iconRight={IconTikTok}
+        >
+          {messages.shareButton}
+        </Button>
       )
     }
   }

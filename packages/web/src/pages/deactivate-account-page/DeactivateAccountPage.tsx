@@ -5,7 +5,7 @@ import {
   deactivateAccountActions,
   deactivateAccountSelectors
 } from '@audius/common/store'
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -86,22 +86,18 @@ export const DeactivateAcccountPageContents = ({
       )}
       <div className={styles.buttons}>
         <Button
-          className={cn(styles.button, {
-            [styles.buttonDanger]: !(isLoading && isMobile)
-          })}
-          text={messages.buttonDeactivate}
-          type={
-            isLoading && isMobile ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT
-          }
+          variant='destructive'
+          isLoading={isLoading}
           onClick={openConfirmation}
-        />
+          fullWidth={isMobile}
+        >
+          {messages.buttonDeactivate}
+        </Button>
         <Button
-          className={styles.button}
-          text={messages.buttonSafety}
-          type={
-            isLoading && isMobile ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT
-          }
+          variant='secondary'
+          isLoading={isLoading}
           onClick={goToSafety}
+          fullWidth={isMobile}
         />
       </div>
     </div>

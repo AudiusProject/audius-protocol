@@ -75,10 +75,6 @@
   align-items: center;
 }
 
-.understandText {
-  font-size: var(--font-s) !important;
-}
-
 .audio {
   font-weight: var(--font-bold);
 }

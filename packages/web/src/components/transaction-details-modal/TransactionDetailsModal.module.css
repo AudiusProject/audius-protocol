@@ -1,16 +1,6 @@
 .root {
   min-width: 470px;
 }
-.content {
-  padding-top: 16px;
-  padding-bottom: 0;
-}
-.footer {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  padding: 24px;
-}
 
 .spinner {
   width: 64px;

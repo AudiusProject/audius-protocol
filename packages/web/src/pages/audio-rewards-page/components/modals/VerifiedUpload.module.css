@@ -134,14 +134,3 @@
 .mobile .twitterButton {
   width: 100% !important;
 }
-
-.uploadButton {
-  margin-top: 24px;
-}
-.mobile .uploadButton {
-  display: none;
-}
-
-.uploadText {
-  font-size: 18px !important;
-}

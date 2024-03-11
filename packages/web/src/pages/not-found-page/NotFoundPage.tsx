@@ -1,14 +1,11 @@
 import { useEffect, useContext } from 'react'
 
 import { Name } from '@audius/common/models'
-import { themeSelectors } from '@audius/common/store'
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
+import { useTheme } from '@emotion/react'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import Lottie from 'react-lottie'
-import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { Dispatch } from 'redux'
+import { Link } from 'react-router-dom'
 
 import notFoundAnimation from 'assets/animations/404.json'
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
@@ -19,11 +16,9 @@ import NavContext, {
 } from 'components/nav/store/context'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { AppState } from 'store/types'
-import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+import { HOME_PAGE } from 'utils/route'
 
 import styles from './NotFoundPage.module.css'
-const { getTheme } = themeSelectors
 
 const messages = {
   title: 'Not Found',
@@ -33,11 +28,8 @@ const messages = {
   cta: 'Take Me Back To The Music'
 }
 
-type NotFoundPageProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
-
-const NotFoundPage = ({ goToHomePage, theme }: NotFoundPageProps) => {
+export const NotFoundPage = () => {
+  const theme = useTheme()
   const isMobile = useIsMobile()
   const record = useRecord()
   useEffect(() => {
@@ -72,10 +64,9 @@ const NotFoundPage = ({ goToHomePage, theme }: NotFoundPageProps) => {
         className={cn(styles.bodyWrapper, {
           [styles.bodyWrapperMobile]: isMobile
         })}
-        style={{
+        css={{
           backgroundImage: `url(${tiledBackground})`,
-          backgroundBlendMode:
-            shouldShowDark(theme) || isMatrix() ? 'color-burn' : 'none'
+          backgroundBlendMode: theme.type === 'day' ? 'none' : 'color-burn'
         }}
       >
         <div className={styles.contentWrapper}>
@@ -91,32 +82,12 @@ const NotFoundPage = ({ goToHomePage, theme }: NotFoundPageProps) => {
             </div>
           </div>
           <div className={styles.buttonWrapper}>
-            <Button
-              className={styles.buttonFormatting}
-              textClassName={styles.buttonFormattingText}
-              type={ButtonType.PRIMARY_ALT}
-              text={messages.cta}
-              onClick={goToHomePage}
-            />
+            <Button variant='primary' fullWidth={isMobile} asChild>
+              <Link to={HOME_PAGE}>{messages.cta}</Link>
+            </Button>
           </div>
         </div>
       </div>
     </Page>
   )
 }
-
-function mapStateToProps(state: AppState) {
-  return {
-    theme: getTheme(state)
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    goToHomePage: () => dispatch(pushRoute('/'))
-  }
-}
-
-export default withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(NotFoundPage)
-)

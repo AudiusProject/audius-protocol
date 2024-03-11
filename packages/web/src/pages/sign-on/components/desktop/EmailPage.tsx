@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Button, IconArrowRight } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import Input from 'components/data-entry/Input'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { StatusMessage } from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
@@ -162,24 +160,15 @@ export const EmailPage = ({
       ) : null}
       <div className={styles.buttonsContainer}>
         <Button
-          size={ButtonSize.MEDIUM}
-          text='Continue'
+          variant='primary'
           name='continue'
-          rightIcon={
-            shouldDisableInputs && shouldShowLoadingSpinner ? (
-              <LoadingSpinner className={styles.spinner} />
-            ) : (
-              <IconArrowRight />
-            )
-          }
-          type={
-            shouldDisableInputs ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT
-          }
+          isLoading={shouldDisableInputs && shouldShowLoadingSpinner}
+          iconRight={IconArrowRight}
           onClick={onClickSubmit}
-          textClassName={styles.signInButtonText}
-          className={styles.signInButton}
-          isDisabled={shouldDisableInputs}
-        />
+          disabled={shouldDisableInputs}
+        >
+          Continue
+        </Button>
         {hasMetaMask ? (
           <MetaMaskOption
             text='Sign Up With'
@@ -193,10 +182,11 @@ export const EmailPage = ({
               [styles.hasAccountErrMetaMask]: hasMetaMask && showError,
               [styles.hasAccountErr]: !hasMetaMask && showError
             })}
-            type={ButtonType.COMMON_ALT}
-            text={'Have an Account? Sign In'}
+            variant='secondary'
             onClick={onSignIn}
-          />
+          >
+            Have an Account? Sign In
+          </Button>
         </div>
         <div className={styles.forgotPasswordTextContainer}>
           <span
