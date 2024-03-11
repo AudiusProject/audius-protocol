@@ -3,7 +3,10 @@ import { call, fork, takeEvery } from 'typed-redux-saga'
 
 import { env } from 'services/env'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { foregroundPollingDaemon, visibilityPollingDaemon } from 'utils/sagaPollingDaemons'
+import {
+  foregroundPollingDaemon,
+  visibilityPollingDaemon
+} from 'utils/sagaPollingDaemons'
 
 const checkGitSHA = createAction('RELOAD/CHECK_GIT_SHA')
 const SHA_CHECK_MS = 60 * 60 * 1000 // Once every hour
@@ -31,10 +34,16 @@ function* reloadIfNecessary() {
     }
     const isLocalBundleCurrent = fetchedSha === localSha
     if (!isLocalBundleCurrent) {
-      console.warn('[reload] Bundle out of date. Reloading...', { fetchedSha, localSha })
+      console.warn('[reload] Bundle out of date. Reloading...', {
+        fetchedSha,
+        localSha
+      })
       window.location.reload()
     } else {
-      console.debug('[reload] SHAs match, bundle up to date.', { fetchedSha, localSha })
+      console.debug('[reload] SHAs match, bundle up to date.', {
+        fetchedSha,
+        localSha
+      })
     }
   } catch (e) {
     console.error('[reload] Failed to check git SHA.', e)

@@ -51,18 +51,3 @@
   text-align: center;
   margin: 0px auto;
 }
-
-.isMobile .buttonWrapper {
-  margin: 40px 0px 60px;
-}
-
-.isMobile .buttonFormatting {
-  width: 100%;
-  justify-content: center;
-}
-
-.isMobile .buttonFormatting .buttonText {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
-  text-align: center;
-}
