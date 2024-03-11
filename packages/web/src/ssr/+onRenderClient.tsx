@@ -2,8 +2,6 @@ import { Buffer } from 'buffer'
 
 import 'setimmediate'
 import { full as FullSdk } from '@audius/sdk'
-import createCache from '@emotion/cache'
-import { CacheProvider } from '@emotion/react'
 import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
 import type { PageContextClient } from 'vike/types'
@@ -11,11 +9,10 @@ import type { PageContextClient } from 'vike/types'
 import { isMobile as getIsMobile } from 'utils/clientUtil'
 
 import '../index.css'
+import { HarmonyCacheProvider } from '../HarmonyCacheProvider'
 import { Root } from '../Root'
 
 import { SsrContextProvider } from './SsrContext'
-
-const cache = createCache({ key: 'harmony', prepend: true })
 
 // @ts-ignore
 window.global ||= window
@@ -37,7 +34,7 @@ export default async function render(
   if (HYDRATE_CLIENT) {
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
-      <CacheProvider value={cache}>
+      <HarmonyCacheProvider>
         <SsrContextProvider
           value={{
             isServerSide: false,
@@ -49,7 +46,7 @@ export default async function render(
         >
           <Root />
         </SsrContextProvider>
-      </CacheProvider>
+      </HarmonyCacheProvider>
     )
   }
 }
