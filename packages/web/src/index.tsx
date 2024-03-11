@@ -3,9 +3,9 @@ import 'setimmediate'
 import { createRoot } from 'react-dom/client'
 
 import './index.css'
-import { HarmonyCacheProvider } from 'HarmonyCacheProvider'
 import { SsrContextProvider } from 'ssr/SsrContext'
 
+import { HarmonyCacheProvider } from './HarmonyCacheProvider'
 import { Root } from './Root'
 
 // @ts-ignore
