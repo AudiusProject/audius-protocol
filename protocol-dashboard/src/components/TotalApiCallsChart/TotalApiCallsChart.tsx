@@ -4,11 +4,13 @@ import { useApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { datesToSkip } from 'utils/consts'
 import { useTrailingApiCalls } from 'store/cache/analytics/hooks'
+import { isMobile as getIsMobile } from 'utils/mobile'
 
 type ApiCallsBucket = Bucket.MONTH | Bucket.WEEK | Bucket.ALL_TIME | Bucket.YEAR
 
 const TotalApiCallsChart: React.FC = () => {
   const [bucket, setBucket] = useState<ApiCallsBucket>(Bucket.MONTH)
+  const isMobile = getIsMobile()
 
   const { apiCalls } = useApiCalls(bucket)
   const { apiCalls: trailingApiCalls } = useTrailingApiCalls(
@@ -49,7 +51,7 @@ const TotalApiCallsChart: React.FC = () => {
   return (
     <LineChart
       topNumber={topNumber}
-      size="large"
+      size={isMobile ? 'default' : 'large'}
       title="API Calls"
       tooltipTitle="Calls"
       error={error}

@@ -184,7 +184,7 @@ const AppBar: React.FC<AppBarProps> = () => {
 
     // This will hang forever if an extension is not picked (in the case where user has
     // both Phantom and MetaMask), hence the `retrievingAccountTimeOut` logic
-    const account = await window.aud.metaMaskAccountLoadedPromise
+
     setIsAudiusClientSetup(true)
     setIsRetrievingAccountTimingOut(false)
     setIsMisconfigured(window.aud.isMisconfigured)
@@ -223,13 +223,15 @@ const AppBar: React.FC<AppBarProps> = () => {
     <div className={styles.appBar}>
       <div className={styles.left}>
         <IconAudiusLogoHorizontal color="staticWhite" className={styles.logo} />
-        <Box
-          h={spacing['2xl']}
-          css={{
-            borderRight: `solid 1px ${color.static.white}`,
-            opacity: '80%'
-          }}
-        />
+        {isMobile ? null : (
+          <Box
+            h={spacing['2xl']}
+            css={{
+              borderRight: `solid 1px ${color.static.white}`,
+              opacity: '80%'
+            }}
+          />
+        )}
         <div className={styles.name}>
           <Text
             variant="heading"

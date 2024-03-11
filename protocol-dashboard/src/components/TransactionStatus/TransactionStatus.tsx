@@ -23,6 +23,8 @@ import { TICKER } from 'utils/consts'
 import { getHumanReadableTime } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import styles from './TransactionStatus.module.css'
+import { usePendingClaim } from 'store/cache/claims/hooks'
+import Tooltip, { Position } from 'components/Tooltip'
 
 const messages = {
   ready: 'Ready',
@@ -31,7 +33,9 @@ const messages = {
   confirm: 'CONFIRM',
   claim: 'MAKE CLAIM',
   target: 'Target block',
-  pendingTransactions: 'Pending Transactions'
+  pendingTransactions: 'Pending Transactions',
+  cantCompleteBecausePendingClaim:
+    'Cannot complete right now because the operator has an unclaimed reward distribution.'
 }
 
 const getMessage = (
@@ -216,6 +220,14 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
     }
   }, [name, target, cancelTransaction])
 
+  // Disable complete undelegation from operator if operator has a pending claim
+  const { hasClaim, status: claimStatus } = usePendingClaim(
+    props.name === PendingTransactionName.Undelegate ? props.target : ''
+  )
+  const isDisabled =
+    props.name === PendingTransactionName.Undelegate &&
+    (claimStatus !== Status.Success || hasClaim)
+
   return (
     <div
       className={clsx(styles.transactionItemContainer, {
@@ -226,26 +238,32 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
         <div className={styles.primaryText}>{props.name}</div>
         <div className={styles.secondaryText}>{messages.ready}</div>
       </div>
-      <Box>
+      <Flex gap="l">
         <Button
           leftIcon={<IconRemove />}
           text={messages.cancel}
-          className={clsx(styles.btn, styles.readyCancelBtn)}
           textClassName={styles.btnText}
           iconClassName={styles.btnIcon}
           onClick={onClickCancel}
           type={ButtonType.PRIMARY_ALT}
         />
-        <Button
-          leftIcon={<IconCheck />}
-          text={messages.confirm}
-          className={styles.btn}
-          textClassName={styles.btnText}
-          iconClassName={styles.btnIcon}
-          type={ButtonType.PRIMARY}
-          onClick={onClickSubmit}
-        />
-      </Box>
+
+        <Tooltip
+          position={Position.LEFT}
+          text={messages.cantCompleteBecausePendingClaim}
+          isDisabled={!isDisabled}
+        >
+          <Button
+            leftIcon={<IconCheck />}
+            text={messages.confirm}
+            isDisabled={isDisabled}
+            textClassName={styles.btnText}
+            iconClassName={styles.btnIcon}
+            type={ButtonType.PRIMARY}
+            onClick={onClickSubmit}
+          />
+        </Tooltip>
+      </Flex>
       <ConfirmTransactionModal
         isOpen={isCancelOpen}
         onClose={onCloseCancel}
