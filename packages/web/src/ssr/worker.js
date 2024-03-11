@@ -19,10 +19,10 @@ addEventListener('fetch', (event) => {
   const sentry =
     typeof SENTRY_DSN !== 'undefined'
       ? new Toucan({
-        dsn: SENTRY_DSN,
-        context: event,
-        request: event.request
-      })
+          dsn: SENTRY_DSN,
+          context: event,
+          request: event.request
+        })
       : null
   try {
     event.respondWith(handleEvent(event))
