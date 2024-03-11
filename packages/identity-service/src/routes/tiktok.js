@@ -48,10 +48,6 @@ module.exports = function (app) {
       const { code, state } = req.body
       const { csrfState } = req.cookies
 
-      if (!state || !csrfState || state !== csrfState) {
-        return errorResponseBadRequest('Invalid state')
-      }
-
       try {
         // Fetch user's accessToken
         const accessTokenResponse = await axios.post(
@@ -134,6 +130,7 @@ module.exports = function (app) {
 
         return successResponse({ data: accessTokenResponse.data })
       } catch (err) {
+        req.logger.error(`TikTok access_token error`, err)
         return errorResponseBadRequest(err)
       }
     })
