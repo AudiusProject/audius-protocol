@@ -63,9 +63,9 @@
     "prepack": "turbo run build"
   },
   "dependencies": {
-    "@audius/fixed-decimal": "*",
+    "@audius/fixed-decimal": "^0.0.20",
     "@audius/hedgehog": "3.0.0-alpha.0",
-    "@audius/spl": "*",
+    "@audius/spl": "^0.0.27",
     "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",
     "@babel/runtime": "7.18.3",
