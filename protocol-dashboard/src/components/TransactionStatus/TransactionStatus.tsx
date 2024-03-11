@@ -9,10 +9,12 @@ import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
 import Loading from 'components/Loading'
+import Tooltip, { Position } from 'components/Tooltip'
 import AudiusClient from 'services/Audius'
 import { usePendingTransactions } from 'store/account/hooks'
 import { useCancelTransaction } from 'store/actions/cancelTransaction'
 import { useSubmitTransaction } from 'store/actions/submitTransaction'
+import { usePendingClaim } from 'store/cache/claims/hooks'
 import { useEthBlockNumber, useTimeRemaining } from 'store/cache/protocol/hooks'
 import {
   DelayedPendingTransaction,
@@ -23,8 +25,6 @@ import { TICKER } from 'utils/consts'
 import { getHumanReadableTime } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import styles from './TransactionStatus.module.css'
-import { usePendingClaim } from 'store/cache/claims/hooks'
-import Tooltip, { Position } from 'components/Tooltip'
 
 const messages = {
   ready: 'Ready',
@@ -290,30 +290,22 @@ interface TransactionStatusProps {
   className?: string
 }
 
+type TransactionStatusContentProps = {
+  transactions: DelayedPendingTransaction[]
+  ethBlockNumber: number
+}
+
 export const TransactionStatusContent = ({
-  className
-}: TransactionStatusProps) => {
-  const pendingTx = usePendingTransactions()
-  const ethBlockNumber = useEthBlockNumber()
-  if (
-    pendingTx.status !== Status.Success ||
-    !Array.isArray(pendingTx.transactions) ||
-    pendingTx.transactions?.length === 0 ||
-    !ethBlockNumber
-  ) {
-    return null
-  }
+  transactions,
+  ethBlockNumber
+}: TransactionStatusContentProps) => {
   return (
     <>
       <Text variant="heading" size="s">
         {messages.pendingTransactions}
       </Text>
-      <div
-        className={clsx(styles.container, {
-          [className!]: !!className
-        })}
-      >
-        {pendingTx.transactions.map((t, idx) => {
+      <div className={styles.container}>
+        {transactions.map((t, idx) => {
           if (t.lockupExpiryBlock > ethBlockNumber) {
             return (
               <div key={idx} className={styles.transactionWrapper}>
@@ -333,9 +325,23 @@ export const TransactionStatusContent = ({
 }
 
 export const TransactionStatus: React.FC<TransactionStatusProps> = props => {
+  const pendingTx = usePendingTransactions()
+  const ethBlockNumber = useEthBlockNumber()
+  if (
+    pendingTx.status !== Status.Success ||
+    !Array.isArray(pendingTx.transactions) ||
+    pendingTx.transactions?.length === 0 ||
+    !ethBlockNumber
+  ) {
+    return null
+  }
   return (
     <Card direction="column" gap="l" p="xl">
-      <TransactionStatusContent {...props} />
+      <TransactionStatusContent
+        transactions={pendingTx.transactions}
+        ethBlockNumber={ethBlockNumber}
+        {...props}
+      />
     </Card>
   )
 }
