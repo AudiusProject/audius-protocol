@@ -92,8 +92,8 @@ def test_tier_change(app):
         )
         assert notifications[2].data == {
             "new_tier": "platinum",
-            "new_tier_value": 100000,
-            "current_value": "200000000000000000000000",
+            "new_tier_value": 10000,
+            "current_value": "20000000000000000000000",
         }
 
         session.execute(
