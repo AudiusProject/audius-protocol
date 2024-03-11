@@ -184,7 +184,7 @@ const AppBar: React.FC<AppBarProps> = () => {
 
     // This will hang forever if an extension is not picked (in the case where user has
     // both Phantom and MetaMask), hence the `retrievingAccountTimeOut` logic
-
+    await window.aud.metaMaskAccountLoadedPromise
     setIsAudiusClientSetup(true)
     setIsRetrievingAccountTimingOut(false)
     setIsMisconfigured(window.aud.isMisconfigured)
