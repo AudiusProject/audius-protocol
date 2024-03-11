@@ -97,7 +97,10 @@ const ProfileInfo = ({
           alt={'User Profile'}
         />
       </div>
-      <div className={styles.userName}>
+      <div
+        className={styles.userName}
+        css={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
+      >
         <Text variant="title" size="l">
           {audiusProfileName ?? (name !== wallet && name)}
         </Text>
@@ -105,7 +108,11 @@ const ProfileInfo = ({
           <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
         ) : null}
       </div>
-      <Text variant="body" size="m">
+      <Text
+        variant="body"
+        size="m"
+        css={{ width: '100%', wordWrap: 'break-word' }}
+      >
         {wallet}
       </Text>
     </>

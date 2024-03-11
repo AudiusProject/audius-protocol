@@ -39,12 +39,10 @@ const Page = ({ className, children, title, icon }: PageProps) => {
       {animProps => (
         <div style={animProps}>
           <div className={styles.titleContainer}>
-            <h1 className={styles.title}>
-              {IconComponent == null ? null : (
-                <IconComponent color="staticWhite" />
-              )}
-              {title}
-            </h1>
+            {IconComponent == null ? null : (
+              <IconComponent color="staticWhite" />
+            )}
+            <h1 className={styles.title}>{title}</h1>
           </div>
           <div className={clsx({ [className!]: !!className })}>{children}</div>
         </div>
