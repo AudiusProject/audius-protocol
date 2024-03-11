@@ -8,6 +8,7 @@ import { useEthBlockNumber, useTimeRemaining } from 'store/cache/protocol/hooks'
 import { Status } from 'types'
 import { formatNumber, getHumanReadableTime } from 'utils/format'
 import styles from './RewardsTimingCard.module.css'
+import { useAccount } from 'store/account/hooks'
 
 const messages = {
   rewardsTiming: 'Rewards Timing',
@@ -31,6 +32,8 @@ export const RewardsTimingCard = () => {
     getCurrentRound()
   }, [])
 
+  const { isLoggedIn } = useAccount()
+
   const period =
     status === Status.Success
       ? claimMetadata.lastFundedBlock +
@@ -53,7 +56,7 @@ export const RewardsTimingCard = () => {
           {messages.rewardsTiming}
         </Text>
       </Box>
-      <Flex p="l" gap="xl">
+      <Flex p="l" gap="xl" wrap="wrap">
         <Card p="xl" direction="column">
           <Box>
             {currentBlockNumber == null ? (
@@ -72,8 +75,14 @@ export const RewardsTimingCard = () => {
             </Text>
           </Box>
         </Card>
-        <Card p="xl" css={{ flexGrow: 1 }} justifyContent="space-between">
-          <Flex gap="xl">
+        <Card
+          p="xl"
+          css={{ flexGrow: 1 }}
+          justifyContent="space-between"
+          wrap="wrap"
+          gap="l"
+        >
+          <Flex gap="xl" wrap="wrap">
             <Box>
               {timeRemaining == null ? (
                 <Box mb="xs">
@@ -103,14 +112,16 @@ export const RewardsTimingCard = () => {
               </Text>
             </Box>
           </Flex>
-          <Button
-            type={canInitiateRound ? ButtonType.PRIMARY : ButtonType.DISABLED}
-            text={messages.startNextRound}
-            isDisabled={!canInitiateRound}
-            onClick={() => {
-              window.aud?.Claim?.initiateRound()
-            }}
-          />
+          {isLoggedIn ? (
+            <Button
+              type={canInitiateRound ? ButtonType.PRIMARY : ButtonType.DISABLED}
+              text={messages.startNextRound}
+              isDisabled={!canInitiateRound}
+              onClick={() => {
+                window.aud?.Claim?.initiateRound()
+              }}
+            />
+          ) : null}
         </Card>
       </Flex>
     </Card>
