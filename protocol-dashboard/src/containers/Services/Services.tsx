@@ -32,19 +32,16 @@ const Services: React.FC<ServicesProps> = () => {
   const { isLoggedIn } = useAccount()
   const { status: userStatus, user: accountUser } = useAccountUser()
   const discoveryTableRef = useRef(null)
-  const contentTableRef = useRef(null)
-  const handleClickDiscoveryTable = useCallback(() => {
+  const scrollToNodeTables = useCallback(() => {
     window.scrollTo({
       top: discoveryTableRef.current?.offsetTop,
       behavior: 'smooth'
     })
   }, [])
-  const handleClickContentTable = useCallback(() => {
-    window.scrollTo({
-      top: contentTableRef.current?.offsetTop,
-      behavior: 'smooth'
-    })
-  }, [])
+
+  const handleClickNodes = discoveryTableRef?.current
+    ? scrollToNodeTables
+    : undefined
 
   const isServiceProvider =
     userStatus === Status.Success && 'serviceProvider' in accountUser
@@ -59,12 +56,8 @@ const Services: React.FC<ServicesProps> = () => {
           <ManageService
             wallet={accountUser?.wallet}
             showPendingTransactions
-            onClickDiscoveryTable={
-              discoveryTableRef?.current ? handleClickDiscoveryTable : undefined
-            }
-            onClickContentTable={
-              contentTableRef?.current ? handleClickContentTable : undefined
-            }
+            onClickDiscoveryTable={handleClickNodes}
+            onClickContentTable={handleClickNodes}
           />
         ) : (
           <RegisterNodeCard />
@@ -75,21 +68,17 @@ const Services: React.FC<ServicesProps> = () => {
           className={styles.topAddressesTable}
           alwaysShowMore
         />
-        <div className={styles.serviceContainer}>
-          <Box ref={discoveryTableRef} w="100%">
-            <DiscoveryTable
-              className={clsx(styles.serviceTable, styles.rightSpacing)}
-              limit={NODE_LIMIT}
-              alwaysShowMore
-            />
-          </Box>
-          <Box ref={discoveryTableRef} w="100%">
-            <ContentTable
-              className={clsx(styles.serviceTable, styles.leftSpacing)}
-              limit={NODE_LIMIT}
-              alwaysShowMore
-            />
-          </Box>
+        <div className={styles.serviceContainer} ref={discoveryTableRef}>
+          <DiscoveryTable
+            className={clsx(styles.serviceTable, styles.rightSpacing)}
+            limit={NODE_LIMIT}
+            alwaysShowMore
+          />
+          <ContentTable
+            className={clsx(styles.serviceTable, styles.leftSpacing)}
+            limit={NODE_LIMIT}
+            alwaysShowMore
+          />
         </div>
       </Flex>
     </Page>

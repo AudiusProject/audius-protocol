@@ -35,19 +35,16 @@ const UserPage = () => {
   const { wallet } = useParams<{ wallet: string }>()
   const location = useLocation()
   const discoveryTableRef = useRef(null)
-  const contentTableRef = useRef(null)
-  const handleClickDiscoveryTable = useCallback(() => {
+  const scrollToNodeTables = useCallback(() => {
     window.scrollTo({
       top: discoveryTableRef.current?.offsetTop,
       behavior: 'smooth'
     })
   }, [])
-  const handleClickContentTable = useCallback(() => {
-    window.scrollTo({
-      top: contentTableRef.current?.offsetTop,
-      behavior: 'smooth'
-    })
-  }, [])
+
+  const handleClickNodes = discoveryTableRef?.current
+    ? scrollToNodeTables
+    : undefined
 
   const { pathname } = location
   const { status, user: userAccount, audiusProfile } = useUser({ wallet })
@@ -95,12 +92,8 @@ const UserPage = () => {
         {isServiceProvider && (
           <ManageService
             wallet={wallet}
-            onClickDiscoveryTable={
-              discoveryTableRef?.current ? handleClickDiscoveryTable : undefined
-            }
-            onClickContentTable={
-              contentTableRef?.current ? handleClickContentTable : undefined
-            }
+            onClickDiscoveryTable={handleClickNodes}
+            onClickContentTable={handleClickNodes}
           />
         )}
         {<ManageAccountCard wallet={wallet} />}
@@ -110,26 +103,22 @@ const UserPage = () => {
           wallet={user?.wallet}
           timelineType={isServiceProvider ? 'ServiceProvider' : 'Delegator'}
         />
-        <div className={styles.serviceContainer}>
+        <div className={styles.serviceContainer} ref={discoveryTableRef}>
           {hasDiscoveryProviders && (
-            <div ref={discoveryTableRef}>
-              <DiscoveryTable
-                owner={user?.wallet}
-                className={clsx(styles.serviceTable, {
-                  [styles.rightSpacing]: hasContentNodes
-                })}
-              />
-            </div>
+            <DiscoveryTable
+              owner={user?.wallet}
+              className={clsx(styles.serviceTable, {
+                [styles.rightSpacing]: hasContentNodes
+              })}
+            />
           )}
           {hasContentNodes && (
-            <div ref={contentTableRef}>
-              <ContentTable
-                owner={user?.wallet}
-                className={clsx(styles.serviceTable, {
-                  [styles.leftSpacing]: hasDiscoveryProviders
-                })}
-              />
-            </div>
+            <ContentTable
+              owner={user?.wallet}
+              className={clsx(styles.serviceTable, {
+                [styles.leftSpacing]: hasDiscoveryProviders
+              })}
+            />
           )}
         </div>
       </Flex>

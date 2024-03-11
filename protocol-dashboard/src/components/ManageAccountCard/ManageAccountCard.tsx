@@ -193,6 +193,7 @@ export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
             justifyContent="space-between"
             alignItems="center"
             gap="2xl"
+            wrap="wrap"
           >
             <Card direction="column" pv="l" ph="xl">
               <Text

@@ -19,6 +19,7 @@ import styles from './ProfileInfoCard.module.css'
 
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import { PlainLink } from 'components/PlainLink/PlainLink'
+import { isMobile as getIsMobile } from 'utils/mobile'
 
 const messages = {
   viewOnAudius: 'View On Audius',
@@ -61,6 +62,7 @@ const ProfileInfo = ({
   const { name, wallet } = user
   const audiusProfileName = audiusProfile?.name
   const { spacing } = useTheme() as HarmonyTheme
+  const isMobile = getIsMobile()
 
   return (
     <>
@@ -90,16 +92,22 @@ const ProfileInfo = ({
             </Box>
           ) : null}
         </Box>
-
-        <UserImage
-          className={styles.userImg}
-          wallet={wallet}
-          alt={'User Profile'}
-        />
+        <Box mt={isMobile ? 'xl' : undefined}>
+          <UserImage
+            className={styles.userImg}
+            wallet={wallet}
+            alt={'User Profile'}
+          />
+        </Box>
       </div>
       <div
         className={styles.userName}
-        css={{ width: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
+        css={{
+          width: '100%',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          justifyContent: 'center'
+        }}
       >
         <Text variant="title" size="l">
           {audiusProfileName ?? (name !== wallet && name)}
@@ -111,7 +119,7 @@ const ProfileInfo = ({
       <Text
         variant="body"
         size="m"
-        css={{ width: '100%', wordWrap: 'break-word' }}
+        css={{ wordWrap: 'break-word', maxWidth: '100%', textAlign: 'center' }}
       >
         {wallet}
       </Text>
