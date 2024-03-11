@@ -56,7 +56,7 @@ const messages = {
     "The 'Operator Service Fee' refers to the percentage of staking rewards that node operators earn for running their nodes. The fee amount is configurable by the node operator and is deducted from the delegator rewards before they're distributed.",
   nodeOperatorTooltipTitle: 'What is a Node Operator?',
   nodeOperatorTooltipBody:
-    'A Node Operator is an individual or organization responsible for running a Nodes on the Audius Network.',
+    'A Node Operator is an individual or organization responsible for running a Node on the Audius Network.',
   registerNodeTooltipTitle: 'How to Register a Node?',
   registerNodeTooltipBody:
     'Node Operators run the decentralized infrastructure that powers the Audius Network.  To learn more about running a node, please read the docs.',
