@@ -62,30 +62,16 @@ export const formatUser = async (
     userWallet
   )
 
-  // Fetch the user's min delegation amount and default to the protocol value if not set or too low
   const protocolMinDelegationAmount = await aud.Delegate.getMinDelegationAmount()
-  let minDelegationAmount = await aud.Identity.getMinimumDelegationAmount(
-    userWallet
-  )
   const spMinDelegationAmount = await aud.Delegate.getSPMinDelegationAmount(
     userWallet
   )
-  // Prefer min delegation amount if provided and greater than protocol wide amount
-  if (!spMinDelegationAmount.isZero()) {
-    if (
-      minDelegationAmount === null ||
-      spMinDelegationAmount.gt(minDelegationAmount)
-    ) {
-      minDelegationAmount = spMinDelegationAmount
-    }
-  } else {
-    if (
-      minDelegationAmount === null ||
-      protocolMinDelegationAmount.gt(minDelegationAmount)
-    ) {
-      minDelegationAmount = protocolMinDelegationAmount
-    }
-  }
+  // Prefer service provider min delegation amount if provided and greater than protocol wide amount
+  const minDelegationAmount = spMinDelegationAmount.gt(
+    protocolMinDelegationAmount
+  )
+    ? spMinDelegationAmount
+    : protocolMinDelegationAmount
 
   const delegators = user.delegateFrom
     ? await Promise.all(
