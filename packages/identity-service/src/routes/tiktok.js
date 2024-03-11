@@ -48,6 +48,10 @@ module.exports = function (app) {
       const { code, state } = req.body
       const { csrfState } = req.cookies
 
+      if (!state || !csrfState || state !== csrfState) {
+        return errorResponseBadRequest('Invalid state')
+      }
+
       try {
         // Fetch user's accessToken
         const accessTokenResponse = await axios.post(
