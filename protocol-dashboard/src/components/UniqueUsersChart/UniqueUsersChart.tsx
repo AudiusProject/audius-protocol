@@ -1,8 +1,8 @@
+import { UniqueUsersInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
-import { useApiCalls } from 'store/cache/analytics/hooks'
+import { useApiCalls, useTrailingApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
-import { useTrailingApiCalls } from 'store/cache/analytics/hooks'
 import { datesToSkip } from 'utils/consts'
 
 type OwnProps = {}
@@ -45,6 +45,7 @@ const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
   }
   return (
     <LineChart
+      titleTooltipComponent={UniqueUsersInfoTooltip}
       topNumber={topNumber}
       title="Unique Users"
       tooltipTitle="Users"

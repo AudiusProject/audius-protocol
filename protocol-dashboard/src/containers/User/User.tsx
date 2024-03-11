@@ -26,8 +26,8 @@ import mobileStyles from './UserMobile.module.css'
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
-  operator: 'OPERATOR',
-  user: 'USER',
+  operator: 'Node Operator',
+  user: 'User',
   owner: 'Your Account'
 }
 

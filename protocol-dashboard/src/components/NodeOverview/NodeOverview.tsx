@@ -11,6 +11,10 @@ import { Box, Flex, Text } from '@audius/harmony'
 import IconValidationCheck from 'assets/img/iconValidationCheck.svg?react'
 import IconWarning from 'assets/img/iconWarning.svg?react'
 import { Card } from 'components/Card/Card'
+import {
+  AppliedInfoTooltipProps,
+  NodeOperatorInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
 import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
 import RegisterServiceModal from 'components/RegisterServiceModal'
@@ -53,17 +57,26 @@ const messages = {
 type ServiceDetailProps = {
   label: string
   value: ReactNode
+  tooltipComponent?: React.ComponentType<AppliedInfoTooltipProps>
 }
 
-const ServiceDetail = ({ label, value }: ServiceDetailProps) => {
+const ServiceDetail = ({
+  label,
+  value,
+  tooltipComponent
+}: ServiceDetailProps) => {
+  const TooltipComponent = tooltipComponent
   return (
     <div className={styles.descriptor}>
       <Text variant="heading" size="s">
         {value}
       </Text>
-      <Text variant="body" size="m" strength="strong" color="subdued">
-        {label}
-      </Text>
+      <Flex inline gap="xs" alignItems="center">
+        <Text variant="body" size="m" strength="strong" color="subdued">
+          {label}
+        </Text>
+        {TooltipComponent == null ? null : <TooltipComponent color="subdued" />}
+      </Flex>
     </div>
   )
 }
@@ -286,14 +299,17 @@ const NodeOverview = ({
             {operatorWallet || health?.operatorWallet ? (
               <Card pv="l" ph="xl" mb="xl">
                 <Flex direction="column" gap="l">
-                  <Text
-                    variant="body"
-                    size="l"
-                    color="subdued"
-                    strength="strong"
-                  >
-                    {messages.operator}
-                  </Text>
+                  <Flex inline gap="xs" alignItems="center">
+                    <Text
+                      variant="body"
+                      size="l"
+                      color="subdued"
+                      strength="strong"
+                    >
+                      {messages.operator}
+                    </Text>
+                    <NodeOperatorInfoTooltip color="subdued" />
+                  </Flex>
                   <DelegateInfo
                     longFormat
                     wallet={operatorWallet || health?.operatorWallet}

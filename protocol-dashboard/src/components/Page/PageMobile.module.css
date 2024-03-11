@@ -3,6 +3,7 @@
   padding: 0 24px;
   display: flex;
   gap: var(--unit-2);
+  align-items: center;
 }
 
 .title {

@@ -10,6 +10,9 @@
   max-width: 1080px;
   margin: 0px auto 32px;
   user-select: none;
+  display: flex;
+  gap: var(--unit-2);
+  align-items: center;
 }
 
 .title {

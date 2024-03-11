@@ -11,7 +11,7 @@ import {
   usePendingTransactions
 } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
-import { Address, Operator, Status } from 'types'
+import { Address, Operator, PendingTransactionName, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
 import styles from './ManageService.module.css'
 
@@ -32,21 +32,33 @@ import ConfirmTransactionModal, {
 } from 'components/ConfirmTransactionModal'
 import DelegateStakeModal from 'components/DelegateStakeModal'
 import DelegatorsModal from 'components/DelegatorsModal'
+import {
+  AggregateContributionInfoTooltip,
+  AppliedInfoTooltipProps,
+  ContentNodesInfoTooltip,
+  DelegatedAudioInfoTooltip,
+  DelegatorsInfoTooltip,
+  DiscoveryNodesInfoTooltip,
+  EstimatedAudioRewardsPoolInfoTooltip,
+  NodeOperatorInfoTooltip,
+  NodeServiceFeeInfoTooltip,
+  OperatorStakeInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
+import Loading from 'components/Loading'
 import MyEstimatedRewards from 'components/MyEstimatedRewards'
 import { PlainLink } from 'components/PlainLink/PlainLink'
-import Tooltip, { Position } from 'components/Tooltip'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import { TransactionStatusContent } from 'components/TransactionStatus/TransactionStatus'
 import { ManageDelegation } from 'components/UpdateDelegationModal/UpdateDelegationModal'
 import { useSelector } from 'react-redux'
 import { useMakeClaim } from 'store/actions/makeClaim'
 import useUndelegateStake from 'store/actions/undelegateStake'
-import { getDelegatorInfo } from 'store/cache/protocol/hooks'
+import { getDelegatorInfo, useEthBlockNumber } from 'store/cache/protocol/hooks'
 import { useUser, useUserDelegates } from 'store/cache/user/hooks'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import { TICKER } from 'utils/consts'
 import { formatShortWallet } from 'utils/format'
 import { RegisterNewServiceBtn } from './RegisterNewServiceBtn'
-import Loading from 'components/Loading'
 
 const messages = {
   ownerTitle: 'Your Nodes',
@@ -126,6 +138,7 @@ const Delegators = ({
             ? messages.delegatorsSingular
             : messages.delegators
         }
+        tooltipComponent={DelegatorsInfoTooltip}
       />
       <DelegatorsModal wallet={wallet} isOpen={isOpen} onClose={onClose} />
     </>
@@ -172,7 +185,7 @@ const UndelegateSection = ({
 
   return (
     <>
-      <Tooltip
+      <BasicTooltip
         position={Position.TOP}
         text={cantUndelegateReason}
         isDisabled={!Boolean(cantUndelegateReason)}
@@ -184,7 +197,7 @@ const UndelegateSection = ({
           isDisabled={Boolean(cantUndelegateReason)}
           onClick={onClickUndelegate}
         />
-      </Tooltip>
+      </BasicTooltip>
       <ConfirmTransactionModal
         topBox={undelegateBox}
         bottomBox={bottomBox}
@@ -214,7 +227,7 @@ const ActionPlainLink = ({
   tooltipDisabled
 }: ActionPlainLinkProps) => {
   return (
-    <Tooltip
+    <BasicTooltip
       position={Position.TOP}
       text={tooltipText}
       isDisabled={tooltipDisabled || !tooltipText}
@@ -222,7 +235,7 @@ const ActionPlainLink = ({
       <PlainLink onClick={onClick} disabled={disabled}>
         {children}
       </PlainLink>
-    </Tooltip>
+    </BasicTooltip>
   )
 }
 
@@ -230,11 +243,17 @@ type ServiceBigStatProps = {
   data: number | string
   label: string
   onClick?: () => void
+  tooltipComponent?: React.ComponentType<AppliedInfoTooltipProps>
 }
 
-const ServiceBigStat = ({ data, label, onClick }: ServiceBigStatProps) => {
+const ServiceBigStat = ({
+  data,
+  label,
+  onClick,
+  tooltipComponent
+}: ServiceBigStatProps) => {
   const { color } = useTheme() as HarmonyTheme
-
+  const TooltipComponent = tooltipComponent
   return (
     <Card
       ph="l"
@@ -256,9 +275,12 @@ const ServiceBigStat = ({ data, label, onClick }: ServiceBigStatProps) => {
         <Text variant="heading" size="s">
           {data}
         </Text>
-        <Text variant="body" size="l" strength="strong" color="subdued">
-          {label}
-        </Text>
+        <Flex inline gap="xs" alignItems="center">
+          <Text variant="body" size="l" strength="strong" color="subdued">
+            {label}
+          </Text>
+          <TooltipComponent color="subdued" />
+        </Flex>
       </Flex>
     </Card>
   )
@@ -268,12 +290,15 @@ type ServiceSmallStatProps = {
   data: BN | number | string
   isAudioAmount?: boolean
   label: string
+  tooltipComponent?: React.ComponentType<AppliedInfoTooltipProps>
 }
 const ServiceSmallStat = ({
   data,
   isAudioAmount,
-  label
+  label,
+  tooltipComponent
 }: ServiceSmallStatProps) => {
+  const TooltipComponent = tooltipComponent
   return (
     <Flex gap="s">
       <Text variant="heading" size="s">
@@ -283,9 +308,12 @@ const ServiceSmallStat = ({
           (data as number | string)
         )}
       </Text>
-      <Text variant="body" size="l" strength="strong" color="subdued">
-        {label}
-      </Text>
+      <Flex inline gap="xs" alignItems="center">
+        <Text variant="body" size="l" strength="strong" color="subdued">
+          {label}
+        </Text>
+        {TooltipComponent == null ? null : <TooltipComponent color="subdued" />}
+      </Flex>
     </Flex>
   )
 }
@@ -306,6 +334,7 @@ const OperatorServiceFee = ({
       <ServiceSmallStat
         data={`${deployerCut}%`}
         label={messages.operatorServiceFee}
+        tooltipComponent={NodeServiceFeeInfoTooltip}
       />
       {enableChange ? (
         <ActionPlainLink onClick={onClick}>{messages.change}</ActionPlainLink>
@@ -363,6 +392,7 @@ const Stake = ({ stake, enableChange, disabledReason }: StakeProps) => {
         data={stake}
         label={messages.operatorStake}
         isAudioAmount
+        tooltipComponent={OperatorStakeInfoTooltip}
       />
       {enableChange ? (
         <ActionPlainLink onClick={onClick}>{messages.change}</ActionPlainLink>
@@ -390,10 +420,8 @@ const ManageService = (props: ManageServiceProps) => {
   const activeStake = getActiveStake(serviceUser)
   const totalActiveDelegated = getTotalActiveDelegatedStake(serviceUser)
   const pendingTx = usePendingTransactions()
+  const ethBlockNumber = useEthBlockNumber()
   const pendingClaim = usePendingClaim(wallet)
-  const hasPendingUndelegateRequest =
-    accountUserStatus === Status.Success &&
-    !!accountUser.pendingUndelegateRequest?.target
 
   const isServiceProvider =
     serviceUserStatus === Status.Success && 'serviceProvider' in serviceUser
@@ -402,6 +430,12 @@ const ManageService = (props: ManageServiceProps) => {
     pendingTx.status === Status.Success &&
     Array.isArray(pendingTx.transactions) &&
     pendingTx.transactions?.length !== 0
+  const hasPendingUndelegateRequest =
+    hasPendingTx &&
+    pendingTx.transactions.some(
+      tx => tx.name === PendingTransactionName.Undelegate
+    )
+
   const isTotalStakeInBounds =
     (serviceUser as Operator)?.serviceProvider?.validBounds ?? false
   const numDiscoveryNodes =
@@ -477,9 +511,12 @@ const ManageService = (props: ManageServiceProps) => {
         alignItems="center"
         w="100%"
       >
-        <Text variant="heading" size="s">
-          {isOwner ? messages.ownerTitle : messages.nonOwnertitle}
-        </Text>
+        <Flex inline gap="xs" alignItems="center">
+          <Text variant="heading" size="s">
+            {isOwner ? messages.ownerTitle : messages.nonOwnertitle}
+          </Text>
+          {isOwner ? null : <NodeOperatorInfoTooltip />}
+        </Flex>
         <Flex gap="xl" alignItems="center">
           {isOwner ? (
             <RegisterNewServiceBtn customText={messages.registerNode} />
@@ -488,9 +525,13 @@ const ManageService = (props: ManageServiceProps) => {
             <Text variant="heading" size="m" color="accent">
               {AudiusClient.displayShortAud(aggregateContribution)}
             </Text>
-            <Text variant="body" size="m" strength="strong" color="subdued">
-              {messages.aggregateContribution}
-            </Text>
+
+            <Flex inline gap="xs" alignItems="center">
+              <Text variant="body" size="m" strength="strong" color="subdued">
+                {messages.aggregateContribution}
+              </Text>
+              <AggregateContributionInfoTooltip color="subdued" />
+            </Flex>
           </Box>
         </Flex>
       </Flex>
@@ -503,6 +544,7 @@ const ManageService = (props: ManageServiceProps) => {
                 ? messages.contentNodesSingular
                 : messages.contentNodes
             }
+            tooltipComponent={ContentNodesInfoTooltip}
             onClick={() => props.onClickContentTable?.()}
           />
           <ServiceBigStat
@@ -512,6 +554,7 @@ const ManageService = (props: ManageServiceProps) => {
                 ? messages.discoveryNodesSingular
                 : messages.discoveryNodes
             }
+            tooltipComponent={DiscoveryNodesInfoTooltip}
             onClick={() => props.onClickDiscoveryTable?.()}
           />
           <Delegators
@@ -521,9 +564,12 @@ const ManageService = (props: ManageServiceProps) => {
         </Flex>
         <Flex direction="column" gap="xl" css={{ flexGrow: 1 }}>
           <Flex direction="column" gap="l">
-            <Text variant="body" size="l" strength="strong" color="subdued">
-              {messages.rewardsPool}
-            </Text>
+            <Flex inline gap="xs" alignItems="center">
+              <Text variant="body" size="l" strength="strong" color="subdued">
+                {messages.rewardsPool}
+              </Text>
+              <EstimatedAudioRewardsPoolInfoTooltip color="subdued" />
+            </Flex>
             <Flex direction="column" gap="m">
               <MyEstimatedRewards wallet={wallet} />
             </Flex>
@@ -586,9 +632,15 @@ const ManageService = (props: ManageServiceProps) => {
           </Flex>
         </Flex>
       </Flex>
-      {props.showPendingTransactions && hasPendingTx && isOwner ? (
+      {!!ethBlockNumber &&
+      props.showPendingTransactions &&
+      hasPendingTx &&
+      isOwner ? (
         <Box p="xl" borderTop="default">
-          <TransactionStatusContent />
+          <TransactionStatusContent
+            ethBlockNumber={ethBlockNumber}
+            transactions={pendingTx.transactions}
+          />
         </Box>
       ) : null}
       {userDelegatesStatus === Status.Success && !delegates.isZero() ? (
@@ -617,9 +669,12 @@ const ManageService = (props: ManageServiceProps) => {
             <Text variant="heading" size="m" color="accent">
               {AudiusClient.displayShortAud(delegates)}
             </Text>
-            <Text variant="body" size="l" color="subdued" strength="strong">
-              {messages.delegatedAudio}
-            </Text>
+            <Flex inline gap="xs" alignItems="center">
+              <Text variant="body" size="l" color="subdued" strength="strong">
+                {messages.delegatedAudio}
+              </Text>
+              <DelegatedAudioInfoTooltip color="subdued" />
+            </Flex>
           </Flex>
         </Flex>
       ) : null}
@@ -630,7 +685,7 @@ const ManageService = (props: ManageServiceProps) => {
           p="xl"
           borderTop="default"
         >
-          <Tooltip
+          <BasicTooltip
             position={Position.TOP}
             text={cantDelegateReason}
             isDisabled={!Boolean(cantDelegateReason)}
@@ -641,7 +696,7 @@ const ManageService = (props: ManageServiceProps) => {
               isDisabled={Boolean(cantDelegateReason)}
               onClick={onClickDelegate}
             />
-          </Tooltip>
+          </BasicTooltip>
           <DelegateStakeModal
             serviceOperatorWallet={wallet}
             isOpen={isDelegateOpen}

@@ -6,7 +6,7 @@ import BN from 'bn.js'
 import Button, { ButtonType } from 'components/Button'
 import DisplayAudio from 'components/DisplayAudio'
 import Paper from 'components/Paper'
-import Tooltip, { Position } from 'components/Tooltip'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import UpdateDelegationModal from 'components/UpdateDelegationModal'
 import { useHasPendingDecreaseDelegationTx } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
@@ -132,7 +132,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
           </div>
         </div>
         <div className={styles.btnContainer}>
-          <Tooltip
+          <BasicTooltip
             position={Position.TOP}
             text={messages.pendingClaimDisabled}
             isDisabled={!isIncreaseDelegationDisabled}
@@ -143,8 +143,8 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
               delegates={delegates}
               isDisabled={isIncreaseDelegationDisabled}
             />
-          </Tooltip>
-          <Tooltip
+          </BasicTooltip>
+          <BasicTooltip
             position={Position.TOP}
             text={
               useHasPendingDecrease.hasPendingDecreaseTx
@@ -159,7 +159,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
               delegates={delegates}
               isDisabled={isDecreaseDelegationDisabled}
             />
-          </Tooltip>
+          </BasicTooltip>
         </div>
       </div>
     </Paper>

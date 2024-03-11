@@ -1,9 +1,9 @@
+import { APICallsInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
-import { useApiCalls } from 'store/cache/analytics/hooks'
+import { useApiCalls, useTrailingApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { datesToSkip } from 'utils/consts'
-import { useTrailingApiCalls } from 'store/cache/analytics/hooks'
 import { isMobile as getIsMobile } from 'utils/mobile'
 
 type ApiCallsBucket = Bucket.MONTH | Bucket.WEEK | Bucket.ALL_TIME | Bucket.YEAR
@@ -54,6 +54,7 @@ const TotalApiCallsChart: React.FC = () => {
       size={isMobile ? 'default' : 'large'}
       title="API Calls"
       tooltipTitle="Calls"
+      titleTooltipComponent={APICallsInfoTooltip}
       error={error}
       data={data}
       labels={labels}

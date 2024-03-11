@@ -15,6 +15,11 @@ import {
 import Button from 'components/Button'
 import DisplayAudio from 'components/DisplayAudio'
 import ErrorModal from 'components/ErrorModal'
+import {
+  DelegatedAudioInfoTooltip,
+  NodeOperatorInfoTooltip,
+  NodeServiceFeeInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
 import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
 import Modal from 'components/Modal'
@@ -44,6 +49,7 @@ const messages = {
   increaseBtn: 'Increase Delegation',
   decreaseTitle: 'Decrease Delegation',
   decreaseBtn: 'Decrease Delegation',
+  twoPopupsWarning: '2 MetaMask Pop-Ups Will Appear',
   pendingDecreaseDisabled:
     'Not permitted while you still have a pending Decrease Delegation transaction.',
   pendingClaimDisabled:
@@ -237,15 +243,26 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
             />
             <Flex justifyContent="space-between" w="100%">
               <Flex gap="s" direction="column">
-                <Text variant="body" size="m" strength="strong" color="subdued">
-                  {messages.nodeOperator}
-                </Text>
+                <Flex inline gap="xs" alignItems="center">
+                  <Text
+                    variant="body"
+                    size="m"
+                    strength="strong"
+                    color="subdued"
+                  >
+                    {messages.nodeOperator}
+                  </Text>
+                  <NodeOperatorInfoTooltip color="subdued" />
+                </Flex>
                 <DelegateInfo clickable={false} wallet={wallet} />
               </Flex>
               <Flex gap="s" direction="column" alignItems="flex-end">
-                <Text variant="body" size="m" strength="strong">
-                  {messages.operatorFee}
-                </Text>
+                <Flex inline gap="xs" alignItems="center">
+                  <Text variant="body" size="m" strength="strong">
+                    {messages.operatorFee}
+                  </Text>
+                  <NodeServiceFeeInfoTooltip color="subdued" />
+                </Flex>
                 <Text variant="heading" size="s">
                   {deployerCut}%
                 </Text>
@@ -313,6 +330,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                     <Text variant="heading" size="s">
                       <DisplayAudio amount={newDelegationAmount} />
                     </Text>
+
                     <Text
                       variant="heading"
                       size="s"
@@ -323,17 +341,25 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                     </Text>
                   </Flex>
                   <Box>
-                    <Text
-                      variant="body"
-                      size="m"
-                      strength="strong"
-                      color="subdued"
-                    >
-                      {messages.newStakingAmount}
-                    </Text>
+                    <Flex inline gap="xs" alignItems="center">
+                      <Text
+                        variant="body"
+                        size="m"
+                        strength="strong"
+                        color="subdued"
+                      >
+                        {messages.newStakingAmount}
+                      </Text>
+                      <DelegatedAudioInfoTooltip color="subdued" />
+                    </Flex>
                   </Box>
                 </Flex>
-                <Flex justifyContent="center">
+                <Flex direction="column" gap="l" alignItems="center">
+                  {status === Status.Loading ? (
+                    <Text variant="heading" size="s" color="warning">
+                      {messages.twoPopupsWarning}
+                    </Text>
+                  ) : null}
                   <Button
                     isDisabled={
                       !inputNumberValue ||

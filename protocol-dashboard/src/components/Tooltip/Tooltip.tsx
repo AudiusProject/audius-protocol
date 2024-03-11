@@ -1,5 +1,12 @@
+import { Box, Text } from '@audius/harmony'
 import clsx from 'clsx'
-import React, { PropsWithChildren, useEffect, useRef, useState } from 'react'
+import React, {
+  PropsWithChildren,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import ReactDOM from 'react-dom'
 import styles from './Tooltip.module.css'
 
@@ -10,7 +17,74 @@ export enum Position {
   RIGHT = 'right'
 }
 
-const TooltipText: React.FC<{
+const DescriptiveTooltipText: React.FC<{
+  title?: string
+  text: string
+  ctaHref?: string
+  ctaText?: string
+  className: string
+  style?: object
+  onDimensionsKnown?: (height: number) => void
+}> = ({
+  title,
+  text,
+  ctaHref,
+  ctaText,
+  style,
+  className,
+  onDimensionsKnown
+}) => {
+  const targetRef = useRef<HTMLDivElement | null>(null)
+  useLayoutEffect(() => {
+    if (targetRef.current) {
+      onDimensionsKnown(targetRef.current.clientHeight)
+    }
+  }, [])
+  return (
+    <div className={clsx(className, styles.tooltipContent)} style={style}>
+      <div className={styles.tooltipContainer}>
+        <div className={styles.tooltipContainerReal}>
+          <Box w={250}>
+            <div className={styles.tooltipText} ref={targetRef}>
+              {title == null ? null : (
+                <Box mb="m">
+                  <Text variant="title" size="m">
+                    {title}
+                  </Text>
+                </Box>
+              )}
+              <Text variant="body" size="s" color="staticWhite">
+                {text}
+              </Text>
+              <Box mt="s">
+                {ctaText == null ? null : (
+                  <a
+                    href={ctaHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    css={{
+                      all: 'unset',
+                      fontWeight: 500,
+                      color: 'white',
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      fontSize: 14
+                    }}
+                  >
+                    {ctaText}
+                  </a>
+                )}
+              </Box>
+              <div className={styles.descriptiveArrow} />
+            </div>
+          </Box>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const BasicTooltipText: React.FC<{
   text: string
   className: string
   style?: object
@@ -18,7 +92,7 @@ const TooltipText: React.FC<{
   <div className={clsx(className, styles.tooltipContent)} style={style}>
     <div className={styles.tooltipContainer}>
       <div className={styles.tooltipContainerReal}>
-        <div className={styles.tooltipText}>
+        <div className={styles.basicTooltipText}>
           {text}
           <div className={styles.arrow} />
         </div>
@@ -29,10 +103,16 @@ const TooltipText: React.FC<{
 
 type TooltipProps = PropsWithChildren<{
   className?: string
-  text: string
+  /** Deprecated - use `body` instead */
+  text?: string
+  body?: string
+  title?: string
+  ctaText?: string
+  ctaHref?: string
   onClick?: (e: React.MouseEvent) => void
   isDisabled?: boolean
   position?: Position
+  isBasic?: boolean
 }>
 
 function offset(el: any) {
@@ -41,30 +121,50 @@ function offset(el: any) {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop
   return {
     top: rect.top + scrollTop,
+    height: rect.height,
     left: rect.left + rect.width / 2 + scrollLeft
   }
 }
 
-const Tooltip: React.FC<TooltipProps> = ({
+const BaseTooltip: React.FC<TooltipProps> = ({
   className,
   children,
+  title,
+  body,
+  ctaHref,
+  ctaText,
   text,
   onClick = () => {},
   isDisabled = false,
-  position = Position.TOP
+  position = Position.TOP,
+  isBasic = false
 }) => {
   const containerRef = useRef(null)
-  const [tooltipPosition, setPosition] = useState({ left: 0, top: 0 })
+  const [height, setHeight] = useState(0)
+
+  const [tooltipPosition, setPosition] = useState({
+    left: 0,
+    top: 0,
+    height: 0
+  })
   const rootDomNode = document.getElementById('root') as any
   const [isHover, setHover] = useState(false)
 
-  const getPostition = () => {
+  const getPosition = () => {
     return offset(containerRef.current)
   }
 
+  const TooltipTextComponent = isBasic
+    ? BasicTooltipText
+    : DescriptiveTooltipText
   const tooltip = (
-    <TooltipText
-      text={text}
+    <TooltipTextComponent
+      text={body ?? text}
+      // @ts-ignore
+      title={title}
+      ctaHref={ctaHref}
+      ctaText={ctaText}
+      onDimensionsKnown={setHeight}
       className={clsx({
         [styles.tooltipLeft]: position === Position.LEFT,
         [styles.tooltipRight]: position === Position.RIGHT,
@@ -72,16 +172,22 @@ const Tooltip: React.FC<TooltipProps> = ({
         [styles.tooltipBottom]: position === Position.BOTTOM
       })}
       style={{
-        top: `${tooltipPosition.top - 16}px`,
-        left: `${tooltipPosition.left}px`
+        top: `${tooltipPosition.top - (isBasic ? 16 : height / 2 - 25)}px`,
+        left: `${tooltipPosition.left - (isBasic ? 0 : 12)}px`
       }}
     />
   )
 
   useEffect(() => {
-    if (isHover) {
-      const tooltipPosition = getPostition()
+    if (isHover && !!height) {
+      const tooltipPosition = getPosition()
       setPosition(tooltipPosition)
+    }
+  }, [isHover, height])
+
+  useEffect(() => {
+    if (!isHover) {
+      setHeight(0)
     }
   }, [isHover])
 
@@ -100,7 +206,10 @@ const Tooltip: React.FC<TooltipProps> = ({
   return (
     <span
       ref={containerRef}
-      className={clsx(styles.tooltipContainer, { [className!]: !!className })}
+      className={clsx(styles.tooltipContainer, {
+        [className!]: !!className,
+        [styles.increaseHitbox]: isHover && !isBasic
+      })}
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -111,4 +220,11 @@ const Tooltip: React.FC<TooltipProps> = ({
   )
 }
 
+export const BasicTooltip = (props: Omit<TooltipProps, 'isBasic'>) => {
+  return <BaseTooltip {...props} isBasic />
+}
+
+export const Tooltip = (props: Omit<TooltipProps, 'isBasic'>) => {
+  return <BaseTooltip {...props} isBasic={false} />
+}
 export default Tooltip
