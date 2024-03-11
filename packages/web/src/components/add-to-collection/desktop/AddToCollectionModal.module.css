@@ -53,7 +53,7 @@
 }
 
 .add {
-  margin-right: 12px;
+  margin-right: var(--harmony-spacing-m);
 }
 
 .add path:nth-child(1) {
