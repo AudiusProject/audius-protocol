@@ -23,7 +23,7 @@ def search_es_full(args: dict):
     if not esclient:
         raise Exception("esclient is None")
 
-    search_str = args.get("query")
+    search_str = args.get("query").strip()
     current_user_id = args.get("current_user_id")
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
@@ -58,21 +58,6 @@ def search_es_full(args: dict):
             ]
         )
 
-        # saved tracks
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_TRACKS},
-                    track_dsl(
-                        search_str=search_str,
-                        current_user_id=current_user_id,
-                        must_saved=True,
-                        only_downloadable=only_downloadable,
-                        include_purchaseable=include_purchaseable,
-                    ),
-                ]
-            )
-
     # users
     if do_users:
         mdsl.extend(
@@ -81,14 +66,7 @@ def search_es_full(args: dict):
                 user_dsl(search_str, current_user_id),
             ]
         )
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_USERS},
-                    user_dsl(search_str, current_user_id, True),
-                ]
-            )
-
+    print("asdf: ", mdsl)
     # playlists
     if do_playlists:
         mdsl.extend(
@@ -98,15 +76,6 @@ def search_es_full(args: dict):
             ]
         )
 
-        # saved playlists
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_PLAYLISTS},
-                    playlist_dsl(search_str, current_user_id, True),
-                ]
-            )
-
     # albums
     if do_albums:
         mdsl.extend(
@@ -115,14 +84,6 @@ def search_es_full(args: dict):
                 album_dsl(search_str, current_user_id),
             ]
         )
-        # saved albums
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_PLAYLISTS},
-                    album_dsl(search_str, current_user_id, True),
-                ]
-            )
 
     mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
@@ -140,24 +101,15 @@ def search_es_full(args: dict):
 
     if do_tracks:
         response["tracks"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["saved_tracks"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_users:
         response["users"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_playlists:
         response["playlists"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["saved_playlists"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_albums:
         response["albums"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["saved_albums"] = pluck_hits(mfound["responses"].pop(0))
-
     finalize_response(
         response, limit, current_user_id, is_auto_complete=is_auto_complete
     )
@@ -333,11 +285,11 @@ def base_match(search_str: str, operator="or", extra_fields=[]):
 
 
 def be_saved(current_user_id):
-    return {"term": {"saved_by": {"value": current_user_id, "boost": 1.2}}}
+    return {"term": {"saved_by": {"value": current_user_id, "boost": 0.2}}}
 
 
 def be_reposted(current_user_id):
-    return {"term": {"reposted_by": {"value": current_user_id, "boost": 1.2}}}
+    return {"term": {"reposted_by": {"value": current_user_id, "boost": 0.2}}}
 
 
 def be_followed(current_user_id):
@@ -386,9 +338,28 @@ def track_dsl(
 ):
     dsl = {
         "must": [
-            *base_match(search_str),
             {"term": {"is_unlisted": {"value": False}}},
             {"term": {"is_delete": False}},
+            {
+                "bool": {
+                    "should": [
+                        *base_match(search_str),
+                        *[
+                            {"match": {"genre": {"query": term.title(), "boost": 0.5}}}
+                            for term in search_str.split()
+                        ],
+                        *[
+                            {"match": {"tag_list": {"query": term, "boost": 0.1}}}
+                            for term in search_str.split()
+                        ],
+                        *[
+                            {"match": {"mood": {"query": term.title(), "boost": 0.5}}}
+                            for term in search_str.split()
+                        ],
+                    ],
+                    "minimum_should_match": 1,
+                }
+            },
         ],
         "must_not": [
             {"exists": {"field": "stem_of"}},
@@ -401,8 +372,16 @@ def track_dsl(
                         "query": search_str,
                         "minimum_should_match": "100%",
                     },
-                }
+                },
+                "match": {
+                    "user.name.searchable": {
+                        "query": search_str,
+                        "fuzziness": "AUTO",
+                        "boost": 0.5,
+                    }
+                },
             },
+            {"term": {"user.is_verified": {"value": True}}},
         ],
     }
 
@@ -420,8 +399,39 @@ def user_dsl(search_str, current_user_id, must_saved=False):
     # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
-            *base_match(search_str, extra_fields=["handle"]),
             {"term": {"is_deactivated": {"value": False}}},
+            {
+                "bool": {
+                    "should": [
+                        *base_match(search_str, extra_fields=["handle"]),
+                        *[
+                            {
+                                "match": {
+                                    "tracks.genre": {
+                                        "query": term.title(),
+                                    }
+                                }
+                            }
+                            for term in search_str.split()
+                        ],
+                        *[
+                            {"match": {"tracks.tags": {"query": term, "boost": 0.1}}}
+                            for term in search_str.split()
+                        ],
+                        *[
+                            {
+                                "match": {
+                                    "tracks.mood": {
+                                        "query": term.title(),
+                                    }
+                                }
+                            }
+                            for term in search_str.split()
+                        ],
+                    ],
+                    "minimum_should_match": 1,
+                }
+            },
         ],
         "must_not": [],
         "should": [
@@ -444,14 +454,33 @@ def user_dsl(search_str, current_user_id, must_saved=False):
 def base_playlist_dsl(search_str, is_album):
     return {
         "must": [
-            *base_match(search_str),
+            {
+                "bool": {
+                    "should": [
+                        *base_match(search_str),
+                        *[
+                            {"match": {"tracks.tags": {"query": term, "boost": 0.5}}}
+                            for term in search_str.split()
+                        ],
+                        *[
+                            {"match": {"tracks.genre": {"query": term, "boost": 0.1}}}
+                            for term in search_str.split()
+                        ],
+                        *[
+                            {"match": {"tracks.mood": {"query": term, "boost": 0.1}}}
+                            for term in search_str.split()
+                        ],
+                    ],
+                    "minimum_should_match": 1,
+                }
+            },
             {"term": {"is_private": {"value": False}}},
             {"term": {"is_delete": False}},
             {"term": {"is_album": {"value": is_album}}},
         ],
         "should": [
             *base_match(search_str, operator="and"),
-            {"term": {"is_verified": {"value": True}}},
+            {"term": {"user.is_verified": {"value": True}}},
         ],
     }
 

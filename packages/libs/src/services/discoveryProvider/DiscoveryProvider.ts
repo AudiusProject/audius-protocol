@@ -235,7 +235,7 @@ export class DiscoveryProvider {
   }
 
   setEndpoint(endpoint: string) {
-    this.discoveryProviderEndpoint = endpoint
+    this.discoveryProviderEndpoint = 'https://isaac.sandbox.audius.co/'
   }
 
   setUnhealthyBlockDiff(updatedBlockDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {
@@ -1522,7 +1522,7 @@ export class DiscoveryProvider {
 
     const axiosRequest = this._createDiscProvRequest(
       requestObj as RequestParams,
-      this.discoveryProviderEndpoint
+      'https://isaac.sandbox.audius.co'
     )
 
     const { data, url = '', ...restRequest } = axiosRequest
@@ -1589,23 +1589,7 @@ export class DiscoveryProvider {
    * @param attemptedRetries the number of attempted requests made to the current disc prov endpoint
    */
   async getHealthyDiscoveryProviderEndpoint(attemptedRetries: number) {
-    let endpoint = this.discoveryProviderEndpoint as string
-    if (attemptedRetries > this.selectionRequestRetries || !endpoint) {
-      // Add to unhealthy list if current disc prov endpoint has reached max retry count
-      console.info(`Attempted max retries with endpoint ${endpoint}`)
-      this.serviceSelector.addUnhealthy(endpoint)
-
-      // Clear the cached endpoint and select new endpoint from backups
-      this.serviceSelector.clearCached()
-      endpoint = await this.serviceSelector.select()
-    }
-
-    // If there are no more available backups, throw error
-    if (!endpoint) {
-      throw new Error('All Discovery Providers are unhealthy and unavailable.')
-    }
-
-    return endpoint
+    return 'https://isaac.sandbox.audius.co'
   }
 
   /**

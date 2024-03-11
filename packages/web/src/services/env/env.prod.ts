@@ -20,7 +20,7 @@ export const env: Env = {
   COINFLOW_MERCHANT_ID: 'tikilabs',
   COINFLOW_PARTNER_ID: 'AUDIUS',
   EAGER_DISCOVERY_NODES:
-    'https://discoveryprovider.audius.co,https://discoveryprovider2.audius.co,https://discoveryprovider3.audius.co',
+    'https://isaac.sandbox.audius.co',
   ENTITY_MANAGER_ADDRESS: '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64',
   ENVIRONMENT: 'production',
   ETH_BRIDGE_ADDRESS: '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B',

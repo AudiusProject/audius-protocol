@@ -122,6 +122,7 @@ class SearchPageContent extends Component {
       search: { status },
       recordSearchResultClick
     } = this.props
+    console.log('asdf albums: ', albums)
     const { cardToast } = this.state
     const searchTitle = isTagSearch ? `Tag Search` : `Search`
     const artistCards = artists.map((artist, ind) => {

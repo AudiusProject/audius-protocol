@@ -5,7 +5,6 @@ from elasticsearch import Elasticsearch, logger, logging
 
 from src.utils.spl_audio import to_wei
 
-logger.setLevel(logging.WARNING)
 es_url = os.getenv("audius_elasticsearch_url")
 esclient = None
 if es_url and not esclient:
