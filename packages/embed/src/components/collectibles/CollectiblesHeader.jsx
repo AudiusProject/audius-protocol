@@ -45,7 +45,7 @@ const getTierIcon = (balance) => {
 const CollectiblesHeader = ({
   user,
   backButtonVisible = false,
-  onBackButtonClick = () => { }
+  onBackButtonClick = () => {}
 }) => {
   const { name, handle, isVerified, totalBalance } = user
   const onClick = () =>
