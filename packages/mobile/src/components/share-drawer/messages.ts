@@ -17,7 +17,6 @@ export const messages = {
   instagramStory: 'Instagram Story',
   snapchat: 'Snapchat',
   tikTokVideo: 'TikTok',
-  tikTokSound: 'Share Sound to TikTok',
   copyLink: 'Copy Link',
   shareToStoryError: 'Sorry, something went wrong.',
   shareSheet: 'More...',

@@ -3,20 +3,17 @@ package parser
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
+	"ingester/artistutils"
 	"ingester/common"
 	"ingester/constants"
-	"io"
 	"log"
-	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/antchfx/xmlquery"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,7 +21,7 @@ type Parser struct {
 	*common.BaseIngester
 }
 
-// RunNewParser starts the parser service, which listens for new delivery documents in the Mongo "deliveries" collection and turns them into Audius format track format.
+// RunNewParser continuously listens for new delivery documents in the Mongo "deliveries" collection and turns them into Audius track format
 func RunNewParser(ctx context.Context) {
 	p := &Parser{
 		BaseIngester: common.NewBaseIngester(ctx, "parser"),
@@ -32,99 +29,15 @@ func RunNewParser(ctx context.Context) {
 	defer p.MongoClient.Disconnect(ctx)
 
 	// Run migration to create artist name index
-	if err := p.createArtistNameIndex(); err != nil {
+	if err := artistutils.CreateArtistNameIndex(p.UsersColl, p.Ctx); err != nil {
 		log.Fatal(err)
 	}
 
 	p.ProcessChangeStream(p.DeliveriesColl, p.processDelivery)
 }
 
-// createArtistNameIndex creates an index on the name (display name) field in the 'users' collection
-func (p *Parser) createArtistNameIndex() error {
-	_, err := p.UsersColl.Indexes().CreateOne(p.Ctx, mongo.IndexModel{
-		Keys: bson.M{"name": 1},
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (p *Parser) getArtistID(artistName string) (string, error) {
-	// Search Mongo for an exact match on artist name
-	filter := bson.M{"name": artistName}
-	cursor, err := p.UsersColl.Find(p.Ctx, filter)
-	if err != nil {
-		return "", err
-	}
-	defer cursor.Close(p.Ctx)
-
-	var results []bson.M
-	if err = cursor.All(p.Ctx, &results); err != nil {
-		return "", err
-	}
-
-	// Fail if multiple artists have their display name set to the same string
-	if len(results) > 1 {
-		var handles []string
-		for _, result := range results {
-			if handle, ok := result["handle"].(string); ok {
-				handles = append(handles, "@"+handle)
-			}
-		}
-		idsStr := strings.Join(handles, ", ")
-		return "", fmt.Errorf("error: more than one artist found with the same display name: %s", idsStr)
-	}
-
-	// Fail if no artist is found, and use /v1/users/search to display potential matches in the error message
-	if len(results) == 0 {
-		return p.searchArtistOnAudius(artistName)
-	}
-
-	artistID, ok := results[0]["_id"].(string)
-	if !ok {
-		return "", errors.New("error: unable to parse artist ID")
-	}
-	return artistID, nil
-}
-
-func (p *Parser) searchArtistOnAudius(artistName string) (string, error) {
-	type AudiusUser struct {
-		Handle     string `json:"handle"`
-		ID         string `json:"id"`
-		IsVerified bool   `json:"is_verified"`
-		Name       string `json:"name"`
-	}
-
-	url := fmt.Sprintf("https://discoveryprovider.audius.co/v1/users/search?query=%s", artistName)
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var data struct {
-		Data []AudiusUser `json:"data"`
-	}
-	if err = json.Unmarshal(body, &data); err != nil {
-		return "", err
-	}
-
-	// Include potential matches in the error message for manual review
-	errMsg := "No artist found in the database. Found on Audius: "
-	for _, user := range data.Data {
-		errMsg += fmt.Sprintf("{ Handle: %s, ID: %s, Verified: %t, Name: %s } ", user.Handle, user.ID, user.IsVerified, user.Name)
-	}
-	return "", errors.New(errMsg)
-}
-
 func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
-	// Decode the "delivery" from Mongo
+	// Decode the delivery from Mongo
 	var changeDoc struct {
 		FullDocument common.Delivery `bson:"fullDocument"`
 	}
@@ -132,88 +45,46 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		log.Fatal(err)
 	}
 	delivery := changeDoc.FullDocument
-	if delivery.DeliveryStatus != constants.DeliveryStatusValidating {
-		p.Logger.Info("Skipping delivery", "_id", delivery.ID, "status", delivery.DeliveryStatus)
+	if delivery.DeliveryStatus != constants.DeliveryStatusParsing {
+		p.Logger.Info("Skipping delivery", "_id", delivery.ZIPFileETag, "delivery_status", delivery.DeliveryStatus)
 		return
 	}
-	p.Logger.Info("Processing new delivery", "_id", delivery.ID)
+	p.Logger.Info("Parsing releases from delivery", "_id", delivery.ZIPFileETag)
 
-	xmlData := delivery.XmlContent.Data
-	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
-	if err != nil {
-		p.Logger.Error("Failed to read XML bytes", "error", err)
-		p.failAndUpdateStatus(delivery.ID, fmt.Errorf("failed to read XML bytes: %v", err))
-		return
-	}
-
-	// Use local-name() to ignore namespace because sometimes it's ern and sometimes it's ernm
-	msgVersionElem := xmlquery.FindOne(doc, "//*[local-name()='NewReleaseMessage']")
-	if msgVersionElem == nil {
-		p.Logger.Error("Missing <NewReleaseMessage> element")
-		p.failAndUpdateStatus(delivery.ID, errors.New("missing <NewReleaseMessage> element"))
-		return
-	}
-
-	// Extract the ERN Version in the form of 'ern/xxx' or '/ern/xxx'
-	msgSchemaVersionId := msgVersionElem.SelectAttr("MessageSchemaVersionId")
-	ernVersion := strings.TrimPrefix(msgSchemaVersionId, "/")
-	ernVersion = strings.TrimPrefix(ernVersion, "ern/")
-
-	var createTrackRelease []common.CreateTrackRelease
-	var createAlbumRelease []common.CreateAlbumRelease
-	var errs []error
-	switch ernVersion {
-	// Not sure what the difference is between 3.81 and 3.82
-	case "381":
-		createTrackRelease, createAlbumRelease, errs = parseERN381(doc, p.IndexedBucket, delivery.ID.Hex())
-	case "382":
-		createTrackRelease, createAlbumRelease, errs = parseERN381(doc, p.IndexedBucket, delivery.ID.Hex())
-	default:
-		p.Logger.Error("Unsupported schema. Expected ern/381 or ern/382", "schema", msgSchemaVersionId)
-		p.failAndUpdateStatus(delivery.ID, fmt.Errorf("unsupported schema '%s'. Expected ern/381 or ern/382", msgSchemaVersionId))
-		return
-	}
-
-	if len(errs) != 0 {
-		p.Logger.Error("Failed to parse delivery. Printing errors...")
-		for _, err := range errs {
-			p.Logger.Error(err.Error())
+	// Parse the delivery's releases
+	pendingReleases := []*common.PendingRelease{}
+	if p.DDEXChoreography == constants.ERNReleaseByRelease {
+		for i := range delivery.Releases {
+			release := &delivery.Releases[i]
+			morePendingReleases, err := p.parseRelease(release, delivery.ZIPFileETag, "")
+			if err == nil {
+				pendingReleases = append(pendingReleases, morePendingReleases...)
+			} else {
+				p.Logger.Error("Failed to process release", "error", err)
+				p.replaceDelivery(&delivery)
+				return
+			}
 		}
-		p.failAndUpdateStatus(delivery.ID, fmt.Errorf("failed to parse delivery: %v", errs))
-		return
-	}
-	p.Logger.Info("Parsed delivery", "createTrackRelease", fmt.Sprintf("%+v", createTrackRelease), "createAlbumRelease", fmt.Sprintf("%+v", createAlbumRelease))
-
-	// If there's an album release, the tracks we parsed out are actually part of the album release
-	if len(createAlbumRelease) > 0 {
-		createTrackRelease = []common.CreateTrackRelease{}
-	}
-
-	// Find an ID for each artist name in the delivery
-
-	for i := range createTrackRelease {
-		track := &createTrackRelease[i]
-		artistID, err := p.getArtistID(track.Metadata.ArtistName)
-		if err != nil {
-			p.failAndUpdateStatus(delivery.ID, fmt.Errorf("track '%s' failed to find artist ID for '%s': %v", track.Metadata.Title, track.Metadata.ArtistName, err))
-			return
+	} else {
+		for i := range delivery.Batches {
+			batch := &delivery.Batches[i]
+			morePendingReleases, err := p.parseBatch(batch, delivery.ZIPFileETag)
+			if err == nil {
+				pendingReleases = append(pendingReleases, morePendingReleases...)
+			} else {
+				p.Logger.Error("Failed to process batch", "error", err)
+				p.replaceDelivery(&delivery)
+				return
+			}
 		}
-		track.Metadata.ArtistID = artistID
 	}
 
-	for i := range createAlbumRelease {
-		album := &createAlbumRelease[i]
-		artistID, err := p.getArtistID(album.Metadata.PlaylistOwnerName)
-		if err != nil {
-			p.failAndUpdateStatus(delivery.ID, fmt.Errorf("album '%s' failed to find artist ID for '%s': %v", album.Metadata.PlaylistName, album.Metadata.PlaylistOwnerName, err))
-			return
-		}
-		album.Metadata.PlaylistOwnerID = artistID
-	}
-
+	// Insert the parsed releases into the Mongo PendingReleases collection
 	session, err := p.MongoClient.StartSession()
 	if err != nil {
-		p.failAndUpdateStatus(delivery.ID, err)
+		err = fmt.Errorf("failed to start Mongo session: %v", err)
+		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
+		delivery.ValidationErrors = append(delivery.ValidationErrors, err.Error())
 		return
 	}
 	err = mongo.WithSession(p.Ctx, session, func(sessionCtx mongo.SessionContext) error {
@@ -222,73 +93,262 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		}
 		defer session.EndSession(p.Ctx)
 
-		// 2. Write each release in "delivery_xml" in the delivery as a bson doc in the 'pending_releases' collection
-		for _, track := range createTrackRelease {
-			pendingRelease := bson.M{
-				"upload_etag":          delivery.UploadETag,
-				"delivery_id":          delivery.ID,
-				"create_track_release": track,
-				"publish_date":         track.Metadata.ReleaseDate,
-				"created_at":           time.Now(),
-			}
+		// Create a PendingRelease doc for each parsed release
+		for _, pendingRelease := range pendingReleases {
 			result, err := p.PendingReleasesColl.InsertOne(p.Ctx, pendingRelease)
 			if err != nil {
 				session.AbortTransaction(sessionCtx)
 				return err
 			}
-			p.Logger.Info("Inserted pending track release", "_id", result.InsertedID)
-		}
-		for _, album := range createAlbumRelease {
-			pendingRelease := bson.M{
-				"upload_etag":          delivery.UploadETag,
-				"delivery_id":          delivery.ID,
-				"create_album_release": album,
-				"publish_date":         album.Metadata.ReleaseDate,
-				"created_at":           time.Now(),
-			}
-			result, err := p.PendingReleasesColl.InsertOne(p.Ctx, pendingRelease)
-			if err != nil {
-				session.AbortTransaction(sessionCtx)
-				return err
-			}
-			p.Logger.Info("Inserted pending album release", "_id", result.InsertedID)
+			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
 		}
 
-		// 3. Set delivery status for delivery in 'deliveries' collection
-		err = p.setDeliveryStatus(delivery.ID, constants.DeliveryStatusAwaitingPublishing, nil, sessionCtx)
-		if err != nil {
-			session.AbortTransaction(sessionCtx)
-			return err
-		}
-
+		delivery.DeliveryStatus = constants.DeliveryStatusSuccess
 		return session.CommitTransaction(sessionCtx)
 	})
 
 	if err != nil {
-		p.failAndUpdateStatus(delivery.ID, err)
+		err = fmt.Errorf("failed to insert Mongo PendingRelease docs: %v", err)
+		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
+		delivery.ValidationErrors = append(delivery.ValidationErrors, err.Error())
 	}
 }
 
-func (p *Parser) setDeliveryStatus(documentId primitive.ObjectID, status string, err error, ctx context.Context) error {
-	var update bson.M
+// parseRelease takes an unprocessed release and turns it into PendingReleases (doesn't insert into Mongo)
+func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFileETag, expectedERNVersion string) ([]*common.PendingRelease, error) {
+	xmlData := release.XmlContent.Data
+	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
-		update = bson.M{
-			"$set":  bson.M{"delivery_status": status},
-			"$push": bson.M{"errors": err.Error()},
-		}
-	} else {
-		update = bson.M{"$set": bson.M{"delivery_status": status}}
+		err = fmt.Errorf("failed to read XML bytes: %v", err)
+		release.ValidationErrors = append(release.ValidationErrors, err.Error())
+		return nil, err
 	}
 
-	_, updateErr := p.DeliveriesColl.UpdateByID(ctx, documentId, update)
-	return updateErr
+	// Use local-name() to ignore namespace because sometimes it's "ern" and sometimes it's "ernm"
+	msgVersionElem := xmlquery.FindOne(doc, "//*[local-name()='NewReleaseMessage']")
+	if msgVersionElem == nil {
+		err = fmt.Errorf("missing <NewReleaseMessage> element")
+		release.ValidationErrors = append(release.ValidationErrors, err.Error())
+		return nil, err
+	}
+
+	// Extract the ERN Version in the form of 'ern/xxx' or '/ern/xxx'
+	msgSchemaVersionId := msgVersionElem.SelectAttr("MessageSchemaVersionId")
+	ernVersion := strings.TrimPrefix(msgSchemaVersionId, "/")
+	ernVersion = strings.TrimPrefix(ernVersion, "ern/")
+
+	if expectedERNVersion != "" && ernVersion != expectedERNVersion {
+		err = fmt.Errorf("expected ERN version '%s' but got '%s'", expectedERNVersion, ernVersion)
+		release.ValidationErrors = append(release.ValidationErrors, err.Error())
+		return nil, err
+	}
+
+	var createTrackRelease []common.CreateTrackRelease
+	var createAlbumRelease []common.CreateAlbumRelease
+	var errs []error
+	switch ernVersion {
+	// Not sure what the difference is between 3.81 and 3.82 because DDEX only provides the most recent version and 1 version behind unless you contact them
+	case "381":
+		createTrackRelease, createAlbumRelease, errs = parseERN38x(doc, p.CrawledBucket, release.ReleaseID)
+	case "382":
+		createTrackRelease, createAlbumRelease, errs = parseERN38x(doc, p.CrawledBucket, release.ReleaseID)
+	default:
+		err = fmt.Errorf("unsupported schema: '%s'. Expected ern/381 or ern/382", msgSchemaVersionId)
+		release.ValidationErrors = append(release.ValidationErrors, err.Error())
+		return nil, err
+	}
+
+	if len(errs) != 0 {
+		for _, err := range errs {
+			release.ValidationErrors = append(release.ValidationErrors, err.Error())
+		}
+		return nil, fmt.Errorf("failed to parse release: %v", errs)
+	}
+	p.Logger.Info("Parsed release", "createTrackRelease", fmt.Sprintf("%+v", createTrackRelease), "createAlbumRelease", fmt.Sprintf("%+v", createAlbumRelease))
+
+	// If there's an album release, the tracks we parsed out are actually part of the album release
+	if len(createAlbumRelease) > 0 {
+		createTrackRelease = []common.CreateTrackRelease{}
+	}
+
+	// Find an ID for each artist name in the release
+
+	for i := range createTrackRelease {
+		track := &createTrackRelease[i]
+		artistID, err := artistutils.GetArtistID(track.Metadata.ArtistName, p.UsersColl, p.Ctx)
+		if err != nil {
+			err = fmt.Errorf("track '%s' failed to find artist ID for '%s': %v", track.Metadata.Title, track.Metadata.ArtistName, err)
+			release.ValidationErrors = append(release.ValidationErrors, err.Error())
+			return nil, err
+		}
+		track.Metadata.ArtistID = artistID
+	}
+
+	for i := range createAlbumRelease {
+		album := &createAlbumRelease[i]
+		artistID, err := artistutils.GetArtistID(album.Metadata.PlaylistOwnerName, p.UsersColl, p.Ctx)
+		if err != nil {
+			err = fmt.Errorf("album '%s' failed to find artist ID for '%s': %v", album.Metadata.PlaylistName, album.Metadata.PlaylistOwnerName, err)
+			release.ValidationErrors = append(release.ValidationErrors, err.Error())
+			return nil, err
+		}
+		album.Metadata.PlaylistOwnerID = artistID
+	}
+
+	// Create (but don't yet insert into Mongo) a PendingRelease for each track and album release
+	pendingReleases := []*common.PendingRelease{}
+	for _, track := range createTrackRelease {
+		pendingRelease := &common.PendingRelease{
+			ReleaseID:          release.ReleaseID,
+			DeliveryETag:       deliveryZipFileETag,
+			CreateTrackRelease: track,
+			PublishDate:        track.Metadata.ReleaseDate,
+			CreatedAt:          time.Now(),
+			PublishErrors:      []string{},
+			FailureCount:       0,
+			FailedAfterUpload:  false,
+		}
+		pendingReleases = append(pendingReleases, pendingRelease)
+	}
+	for _, album := range createAlbumRelease {
+		pendingRelease := &common.PendingRelease{
+			ReleaseID:          release.ReleaseID,
+			DeliveryETag:       deliveryZipFileETag,
+			CreateAlbumRelease: album,
+			PublishDate:        album.Metadata.ReleaseDate,
+			CreatedAt:          time.Now(),
+			PublishErrors:      []string{},
+			FailureCount:       0,
+			FailedAfterUpload:  false,
+		}
+		pendingReleases = append(pendingReleases, pendingRelease)
+	}
+
+	return pendingReleases, nil
 }
 
-func (p *Parser) failAndUpdateStatus(documentID primitive.ObjectID, err error) {
-	updateErr := p.setDeliveryStatus(documentID, constants.DeliveryStatusError, err, p.Ctx)
-	if updateErr != nil {
-		p.Logger.Error("Failed to set error on delivery status", "documentID", documentID, "updateErr", updateErr, "originalErr", err)
-	} else {
-		p.Logger.Error("Set delivery status to error", "documentID", documentID, "error", err)
+// parseBatch takes an unprocessed batch and turns it into PendingReleases (doesn't insert into Mongo)
+func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag string) ([]*common.PendingRelease, error) {
+	xmlData := batch.BatchXmlContent.Data
+	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
+	if err != nil {
+		err = fmt.Errorf("failed to read XML bytes: %v", err)
+		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+		return nil, err
+	}
+
+	// Parse the batch's DDEX schema version
+	ernmAttr := xmlquery.FindOne(doc, "//@xmlns:ernm")
+	if ernmAttr == nil {
+		err = fmt.Errorf("xmlns:ernm attribute not found")
+		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+		return nil, err
+	}
+	ernVersion, ok := strings.CutPrefix(ernmAttr.InnerText(), "http://ddex.net/xml/ern/")
+	if !ok {
+		err = fmt.Errorf("unexpected xmlns:ernm value: %s", ernmAttr.InnerText())
+		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+		return nil, err
+	}
+
+	// Parse NumberOfMessages
+	numMessagesNode := xmlquery.FindOne(doc, "//NumberOfMessages")
+	if numMessagesNode == nil {
+		err := fmt.Errorf("NumberOfMessages element not found")
+		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+		return nil, err
+	}
+	numMessages, err := strconv.Atoi(numMessagesNode.InnerText())
+	if err != nil {
+		err := fmt.Errorf("failed to parse NumberOfMessages value: %v", err)
+		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+		return nil, err
+	}
+
+	batch.DDEXSchema = ernVersion
+	batch.NumMessages = numMessages
+
+	if numMessages != len(batch.Releases) {
+		err := fmt.Errorf("NumberOfMessages value %d does not match the number of releases %d", numMessages, len(batch.Releases))
+		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+		return nil, err
+	}
+
+	// Parse each MessageInBatch
+	var pendingReleases []*common.PendingRelease
+	for i := 1; i <= numMessages; i++ {
+		messageInBatch := xmlquery.FindOne(doc, fmt.Sprintf("//MessageInBatch[%d]", i))
+		if messageInBatch == nil {
+			err := fmt.Errorf("MessageInBatch %d not found", i)
+			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+			return nil, err
+		}
+
+		// TODO: Handle updates and deletes
+		deliveryType := safeInnerText(messageInBatch.SelectElement("DeliveryType"))
+		if deliveryType != "NewReleaseDelivery" {
+			err := fmt.Errorf("DeliveryType %s not supported", deliveryType)
+			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+			return nil, err
+		}
+
+		productType := safeInnerText(messageInBatch.SelectElement("ProductType"))
+		if productType != "AudioProduct" {
+			err := fmt.Errorf("ProductType %s not supported", productType)
+			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+			return nil, err
+		}
+
+		// TODO: Support more ID types (GRid is preferred) as we get more examples
+		var releaseID string
+		releaseICPN := safeInnerText(messageInBatch.SelectElement("IncludedReleaseId/ICPN"))
+		if releaseICPN != "" {
+			releaseID = releaseICPN
+			// } else if releaseGRid != "" {
+			// 	releaseID = releaseGRid
+		} else {
+			err := fmt.Errorf("no valid IncludedReleaseId found")
+			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+			return nil, err
+		}
+
+		// Find the release with the given releaseID in the batch's Releases
+		// TODO: Should probably make Releases and Batches maps instead of slices
+		var targetRelease *common.UnprocessedRelease
+		for i := range batch.Releases {
+			if batch.Releases[i].ReleaseID == releaseID {
+				targetRelease = &batch.Releases[i]
+				break
+			}
+		}
+		if targetRelease == nil {
+			err := fmt.Errorf("release with ID '%s' not found in batch's Releases", releaseID)
+			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+			return nil, err
+		}
+
+		// Validate the URL without the prefix "/"
+		releaseURL := strings.TrimPrefix(safeInnerText(messageInBatch.SelectElement("URL")), "/")
+		if releaseURL != targetRelease.XmlFilePath {
+			err := fmt.Errorf("URL '%s' does not match expected value: '%s'", releaseURL, targetRelease.XmlFilePath)
+			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
+			return nil, err
+		}
+
+		// Parse the release using parseRelease function
+		pendingRelease, err := p.parseRelease(targetRelease, deliveryZipFileETag, ernVersion)
+		if err != nil {
+			return nil, err
+		}
+		pendingReleases = append(pendingReleases, pendingRelease...)
+	}
+
+	return pendingReleases, nil
+}
+
+func (p *Parser) replaceDelivery(updatedDelivery *common.Delivery) {
+	_, replaceErr := p.DeliveriesColl.ReplaceOne(p.Ctx, bson.M{"_id": updatedDelivery.ZIPFileETag}, updatedDelivery)
+	if replaceErr != nil {
+		p.Logger.Error("Failed to replace delivery", "_id", updatedDelivery.ZIPFileETag, "error", replaceErr)
 	}
 }

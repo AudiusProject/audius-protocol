@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"ingester/constants"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -29,35 +31,27 @@ type Ingester interface {
 	UpdateResumeToken(ctx context.Context, collectionName string, resumeToken bson.Raw) error
 }
 
-type DDEXChoreography string
-
-const (
-	ERNReleaseByRelease DDEXChoreography = "ERNReleaseByRelease"
-	ERNBatched          DDEXChoreography = "ERNBatched"
-)
-
-func MustGetChoreography() DDEXChoreography {
+func MustGetChoreography() constants.DDEXChoreography {
 	choreography := os.Getenv("DDEX_CHOREOGRAPHY")
 	if choreography == "" {
 		log.Fatal("Missing required env var: DDEX_CHOREOGRAPHY")
 	}
-	if choreography != string(ERNReleaseByRelease) && choreography != string(ERNBatched) {
+	if choreography != string(constants.ERNReleaseByRelease) && choreography != string(constants.ERNBatched) {
 		log.Fatalf("Invalid value for DDEX_CHOREOGRAPHY: %s", choreography)
 	}
-	return DDEXChoreography(choreography)
+	return constants.DDEXChoreography(choreography)
 }
 
 type BaseIngester struct {
-	DDEXChoreography    DDEXChoreography
+	DDEXChoreography    constants.DDEXChoreography
 	Ctx                 context.Context
 	MongoClient         *mongo.Client
 	S3Client            *s3.S3
 	S3Downloader        *s3manager.Downloader
 	S3Uploader          *s3manager.Uploader
 	RawBucket           string
-	IndexedBucket       string
+	CrawledBucket       string
 	CursorsColl         *mongo.Collection
-	UploadsColl         *mongo.Collection
 	DeliveriesColl      *mongo.Collection
 	PendingReleasesColl *mongo.Collection
 	UsersColl           *mongo.Collection
@@ -76,9 +70,8 @@ func NewBaseIngester(ctx context.Context, service string) *BaseIngester {
 		S3Uploader:          s3manager.NewUploader(s3Session),
 		MongoClient:         mongoClient,
 		RawBucket:           MustGetenv("AWS_BUCKET_RAW"),
-		IndexedBucket:       MustGetenv("AWS_BUCKET_INDEXED"),
+		CrawledBucket:       MustGetenv("AWS_BUCKET_CRAWLED"),
 		CursorsColl:         mongoClient.Database("ddex").Collection("cursors"),
-		UploadsColl:         mongoClient.Database("ddex").Collection("uploads"),
 		DeliveriesColl:      mongoClient.Database("ddex").Collection("deliveries"),
 		PendingReleasesColl: mongoClient.Database("ddex").Collection("pending_releases"),
 		UsersColl:           mongoClient.Database("ddex").Collection("users"),

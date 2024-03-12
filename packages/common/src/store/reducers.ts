@@ -118,8 +118,6 @@ import relatedArtistsReducer from './ui/related-artists/slice'
 import { RelatedArtistsState } from './ui/related-artists/types'
 import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
-import shareSoundToTikTokModalReducer from './ui/share-sound-to-tiktok-modal/slice'
-import { ShareSoundToTikTokModalState } from './ui/share-sound-to-tiktok-modal/types'
 import stripeModalReducer from './ui/stripe-modal/slice'
 import { StripeModalState } from './ui/stripe-modal/types'
 import theme, { ThemeState } from './ui/theme/slice'
@@ -211,7 +209,6 @@ export const reducers = (
     nowPlaying: nowPlayingReducer,
     reactions: reactionsReducer,
     remixSettings: remixSettingsReducer,
-    shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
     coinflowModal: coinflowModalReducer,
@@ -343,7 +340,6 @@ export type CommonState = {
     reactions: ReactionsState
     relatedArtists: RelatedArtistsState
     remixSettings: RemixSettingsState
-    shareSoundToTikTokModal: ShareSoundToTikTokModalState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
     stripeModal: StripeModalState

@@ -311,3 +311,7 @@
 .iconSuccess path:nth-child(2) {
   fill: var(--static-white);
 }
+
+.iconToken path {
+  fill: revert-layer;
+}

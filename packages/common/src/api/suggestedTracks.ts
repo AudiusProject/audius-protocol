@@ -13,7 +13,6 @@ import { addTrackToPlaylist } from '~/store/cache/collections/actions'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { CommonState } from '~/store/index'
-import { removeNullable } from '~/utils/typeUtils'
 
 import { useGetFavoritedTrackList } from './favorites'
 import { useGetTracksByIds } from './track'
@@ -44,16 +43,47 @@ const skeletons = [...Array(suggestedTrackCount)].map((_, index) => ({
 const selectSuggestedTracks = (
   state: CommonState,
   ids: ID[],
+  // NOTE: This is needed to remove deleted tracks from the list of ids
+  setIds: (ids: ID[]) => void,
   maxLength = suggestedTrackCount
 ): SuggestedTrack[] => {
-  const suggestedTracks = ids
-    .map((id) => {
-      const track = getTrack(state, { id })
-      if (!track) return { id, isLoading: true as const, key: id }
-      if (!isValidTrack) return null
-      return { id, track, isLoading: false as const, key: id }
-    })
-    .filter(removeNullable)
+  const idsToRemove: ID[] = []
+  const suggestedTracks: (
+    | {
+        id: number
+        key: number
+        isLoading: false
+        track: Track
+      }
+    | {
+        id: number
+        key: number
+        isLoading: true
+      }
+  )[] = []
+
+  // Loop until we have 5 valid track entries
+  let i = 0
+  while (i < ids.length && suggestedTracks.length < 5) {
+    const id = ids[i]
+    const track = getTrack(state, { id })
+
+    if (track) {
+      if (!isValidTrack(track)) {
+        idsToRemove.push(id)
+      } else {
+        suggestedTracks.push({ id, track, isLoading: false as const, key: id })
+      }
+    } else {
+      suggestedTracks.push({ id, isLoading: true as const, key: id })
+    }
+
+    i++
+  }
+
+  if (idsToRemove.length > 0) {
+    setIds(difference(ids, idsToRemove))
+  }
 
   return [...suggestedTracks, ...skeletons].slice(
     0,
@@ -99,7 +129,8 @@ export const useGetSuggestedAlbumTracks = (collectionId: ID) => {
     (state: CommonState) =>
       selectSuggestedTracks(
         state,
-        suggestedTrackIds.slice(0, suggestedTrackCount),
+        suggestedTrackIds,
+        setSuggestedTrackIds,
         suggestedTrackIds.length
       ),
     isEqual
@@ -144,6 +175,9 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
   const dispatch = useDispatch()
   const [suggestedTrackIds, setSuggestedTrackIds] = useState<ID[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [suggestedTrackStatus, setSuggestedTrackStatus] = useState<Status>(
+    Status.LOADING
+  )
 
   const collectionTrackIds = useSelector((state: CommonState) =>
     selectCollectionTrackIds(state, collectionId)
@@ -153,15 +187,16 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
     useGetFavoritedTrackList({ currentUserId }, { disabled: !currentUserId })
 
   useEffect(() => {
-    if (favoritedTracks) {
+    if (favoritedStatus === Status.SUCCESS) {
       const suggestedTrackIds = difference(
         shuffle(favoritedTracks).map((track) => track.save_item_id),
         collectionTrackIds
       )
+      setSuggestedTrackStatus(Status.SUCCESS)
       setSuggestedTrackIds(suggestedTrackIds)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favoritedTracks])
+  }, [favoritedStatus])
 
   const {
     data: trendingTracks,
@@ -181,7 +216,10 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
   )
 
   useEffect(() => {
-    if (trendingStatus === Status.SUCCESS) {
+    if (
+      trendingStatus === Status.SUCCESS &&
+      suggestedTrackStatus === Status.SUCCESS
+    ) {
       const trendingTrackIds = difference(
         trendingTracks.filter(isValidTrack).map((track) => track.track_id),
         collectionTrackIds
@@ -189,7 +227,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
       setSuggestedTrackIds([...suggestedTrackIds, ...trendingTrackIds])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trendingStatus])
+  }, [trendingStatus, suggestedTrackStatus])
 
   useEffect(() => {
     if (suggestedTrackIds.length < suggestedTrackCount) {
@@ -200,10 +238,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
 
   const suggestedTracks = useSelector(
     (state: CommonState) =>
-      selectSuggestedTracks(
-        state,
-        suggestedTrackIds.slice(0, suggestedTrackCount)
-      ),
+      selectSuggestedTracks(state, suggestedTrackIds, setSuggestedTrackIds),
     isEqual
   )
 

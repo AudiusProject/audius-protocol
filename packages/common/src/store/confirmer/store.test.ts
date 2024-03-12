@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux'
 import { call } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'
+import { vitest, describe, it, expect } from 'vitest'
 
 import * as actions from './actions'
 import reducer from './reducer'
@@ -13,12 +14,12 @@ const initialState = {
   operationSuccessCallIdx: {}
 }
 
-jest.spyOn(global.console, 'debug')
+vitest.spyOn(global.console, 'debug')
 
 describe('requestConfirmation', () => {
   it('makes success call', async () => {
-    const confirm = jest.fn().mockResolvedValue(1)
-    const success = jest.fn()
+    const confirm = vitest.fn().mockResolvedValue(1)
+    const success = vitest.fn()
 
     const { storeState } = await expectSaga(sagas.watchRequestConfirmation)
       .withReducer(
@@ -42,12 +43,12 @@ describe('requestConfirmation', () => {
   })
 
   it('chains calls', async () => {
-    const confirm1 = jest.fn().mockResolvedValue(1)
-    const success1 = jest.fn()
+    const confirm1 = vitest.fn().mockResolvedValue(1)
+    const success1 = vitest.fn()
 
-    const confirm2 = jest.fn().mockResolvedValue(2)
-    const success2 = jest.fn()
-    const fail2 = jest.fn()
+    const confirm2 = vitest.fn().mockResolvedValue(2)
+    const success2 = vitest.fn()
+    const fail2 = vitest.fn()
 
     const { storeState } = await expectSaga(sagas.watchRequestConfirmation)
       .withReducer(
@@ -85,12 +86,12 @@ describe('requestConfirmation', () => {
   })
 
   it('chains calls and uses results selector', async () => {
-    const confirm1 = jest.fn().mockResolvedValue({ id: 1 })
-    const success1 = jest.fn()
+    const confirm1 = vitest.fn().mockResolvedValue({ id: 1 })
+    const success1 = vitest.fn()
 
-    const confirm2 = jest.fn().mockResolvedValue({ id: 2 })
-    const success2 = jest.fn()
-    const fail2 = jest.fn()
+    const confirm2 = vitest.fn().mockResolvedValue({ id: 2 })
+    const success2 = vitest.fn()
+    const fail2 = vitest.fn()
 
     const { storeState } = await expectSaga(sagas.watchRequestConfirmation)
       .withReducer(
@@ -128,12 +129,14 @@ describe('requestConfirmation', () => {
   })
 
   it('makes fail call', async () => {
-    const consoleDebugMock = jest.spyOn(console, 'debug').mockImplementation()
-    const confirm = jest.fn((_) => {
+    const consoleDebugMock = vitest
+      .spyOn(console, 'debug')
+      .mockImplementation(() => {})
+    const confirm = vitest.fn((_) => {
       throw new Error('Error Message')
     })
-    const success = jest.fn()
-    const fail = jest.fn()
+    const success = vitest.fn()
+    const fail = vitest.fn()
 
     const { storeState } = await expectSaga(sagas.watchRequestConfirmation)
       .withReducer(
@@ -178,17 +181,17 @@ describe('requestConfirmation', () => {
   })
 
   it('handles multiple chains', async () => {
-    const confirm11 = jest.fn().mockResolvedValue(11)
-    const success11 = jest.fn()
+    const confirm11 = vitest.fn().mockResolvedValue(11)
+    const success11 = vitest.fn()
 
-    const confirm12 = jest.fn().mockResolvedValue(12)
-    const success12 = jest.fn()
+    const confirm12 = vitest.fn().mockResolvedValue(12)
+    const success12 = vitest.fn()
 
-    const confirm21 = jest.fn().mockResolvedValue(21)
-    const success21 = jest.fn()
+    const confirm21 = vitest.fn().mockResolvedValue(21)
+    const success21 = vitest.fn()
 
-    const confirm22 = jest.fn().mockResolvedValue(22)
-    const success22 = jest.fn()
+    const confirm22 = vitest.fn().mockResolvedValue(22)
+    const success22 = vitest.fn()
 
     const { storeState } = await expectSaga(sagas.watchRequestConfirmation)
       .withReducer(
@@ -244,15 +247,15 @@ describe('requestConfirmation timeouts', () => {
       await timeout(10)
       return 1
     }
-    const success1 = jest.fn()
-    const fail1 = jest.fn()
+    const success1 = vitest.fn()
+    const fail1 = vitest.fn()
 
     const confirm2 = async () => {
       await timeout(200) // will timeout
       return 2
     }
-    const success2 = jest.fn()
-    const fail2 = jest.fn()
+    const success2 = vitest.fn()
+    const fail2 = vitest.fn()
 
     const { storeState } = await expectSaga(sagas.watchRequestConfirmation)
       .withReducer(
@@ -306,17 +309,17 @@ describe('requestConfirmation timeouts', () => {
 })
 
 it('handles parallelization', async () => {
-  const confirm11 = jest.fn().mockResolvedValue(11)
-  const success11 = jest.fn()
+  const confirm11 = vitest.fn().mockResolvedValue(11)
+  const success11 = vitest.fn()
 
-  const confirm12 = jest.fn().mockResolvedValue(12)
-  const success12 = jest.fn()
+  const confirm12 = vitest.fn().mockResolvedValue(12)
+  const success12 = vitest.fn()
 
-  const confirm13 = jest.fn().mockResolvedValue(13)
-  const success13 = jest.fn()
+  const confirm13 = vitest.fn().mockResolvedValue(13)
+  const success13 = vitest.fn()
 
-  const confirm14 = jest.fn().mockResolvedValue(14)
-  const success14 = jest.fn()
+  const confirm14 = vitest.fn().mockResolvedValue(14)
+  const success14 = vitest.fn()
 
   const confirmationOptions = {
     operationId: 'test',
@@ -401,17 +404,17 @@ it('handles parallelization', async () => {
 })
 
 it('handles squashable calls', async () => {
-  const confirm11 = jest.fn().mockResolvedValue(11)
-  const success11 = jest.fn()
+  const confirm11 = vitest.fn().mockResolvedValue(11)
+  const success11 = vitest.fn()
 
-  const confirm12 = jest.fn().mockResolvedValue(12)
-  const success12 = jest.fn()
+  const confirm12 = vitest.fn().mockResolvedValue(12)
+  const success12 = vitest.fn()
 
-  const confirm13 = jest.fn().mockResolvedValue(13)
-  const success13 = jest.fn()
+  const confirm13 = vitest.fn().mockResolvedValue(13)
+  const success13 = vitest.fn()
 
-  const confirm14 = jest.fn().mockResolvedValue(14)
-  const success14 = jest.fn()
+  const confirm14 = vitest.fn().mockResolvedValue(14)
+  const success14 = vitest.fn()
 
   const confirmationOptions = {
     operationId: 'test',
@@ -488,11 +491,11 @@ it('handles squashable calls', async () => {
 })
 
 it('only calls the success call of the last function to resolve if `useOnlyLastSuccessCall` is passed', async () => {
-  const confirm11 = jest.fn().mockResolvedValue(11)
-  const success11 = jest.fn()
+  const confirm11 = vitest.fn().mockResolvedValue(11)
+  const success11 = vitest.fn()
 
-  const confirm12 = jest.fn().mockResolvedValue(12)
-  const success12 = jest.fn()
+  const confirm12 = vitest.fn().mockResolvedValue(12)
+  const success12 = vitest.fn()
 
   const confirmationOptions = {
     operationId: 'test',
