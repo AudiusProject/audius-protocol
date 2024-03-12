@@ -20,8 +20,7 @@ export const ConnectInstagram = () => {
 
   const { handleStartSocialMediaLogin, handleErrorSocialMediaLogin } =
     useSocialMediaLoader({
-      linkedSocialOnThisPagePreviously: false,
-      page: 'pick-handle'
+      linkedSocialOnThisPagePreviously: false
     })
 
   const handleStart = useCallback(() => {

@@ -15,7 +15,7 @@ export const useSocialMediaLoader = ({
 }: {
   linkedSocialOnThisPagePreviously: boolean
   resetAction?: () => AnyAction
-  page: 'create-email' | 'pick-handle'
+  page?: 'create-email' | 'pick-handle'
 }) => {
   const dispatch = useDispatch()
   const [isWaitingForSocialLogin, setIsWaitingForSocialLogin] = useState(false)
