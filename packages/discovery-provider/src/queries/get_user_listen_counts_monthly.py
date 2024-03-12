@@ -1,5 +1,6 @@
 from typing import TypedDict
 
+from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
@@ -45,11 +46,16 @@ def _get_user_listen_counts_monthly(
     end_time = args["end_time"]
 
     query = (
-        session.query(AggregateMonthlyPlay)
+        session.query(
+            AggregateMonthlyPlay.play_item_id,
+            AggregateMonthlyPlay.timestamp,
+            func.sum(AggregateMonthlyPlay.count),
+        )
         .join(Track, Track.track_id == AggregateMonthlyPlay.play_item_id)
         .filter(Track.owner_id == user_id)
         .filter(Track.is_current == True)
         .filter(AggregateMonthlyPlay.timestamp >= start_time)
         .filter(AggregateMonthlyPlay.timestamp < end_time)
+        .group_by(AggregateMonthlyPlay.play_item_id, AggregateMonthlyPlay.timestamp)
     )
     return query.all()

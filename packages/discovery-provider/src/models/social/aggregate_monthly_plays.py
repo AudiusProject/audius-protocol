@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, Integer, text
+from sqlalchemy import Column, Date, Integer, String, text
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
@@ -13,4 +13,5 @@ class AggregateMonthlyPlay(Base, RepresentableMixin):
     timestamp = Column(
         Date, primary_key=True, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
+    country = Column(String, primary_key=True, nullable=False, server_default="")
     count = Column(Integer, nullable=False)
