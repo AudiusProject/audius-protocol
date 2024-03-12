@@ -11,6 +11,7 @@ import { waitForAccount } from '@audius/common/utils'
 import { EntityManagerAction } from '@audius/sdk'
 import { expectSaga, testSaga } from 'redux-saga-test-plan'
 import { call, getContext, select } from 'redux-saga-test-plan/matchers'
+import { dynamic } from 'redux-saga-test-plan/providers'
 import { all, fork } from 'typed-redux-saga'
 import { describe, expect, it, vitest } from 'vitest'
 
@@ -27,7 +28,6 @@ import uploadSagas, {
   uploadCollection,
   uploadMultipleTracks
 } from './sagas'
-import { dynamic } from 'redux-saga-test-plan/providers'
 
 function* saga() {
   yield* all(uploadSagas().map(fork))
@@ -582,7 +582,7 @@ describe('upload', () => {
       metadata: {
         ...emptyMetadata,
         title: name,
-        stems: stems
+        stems
       }
     })
     const makeStems = (parentName: string, count: number) => {
