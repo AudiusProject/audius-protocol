@@ -116,6 +116,8 @@ track = ns.model(
         "play_count": fields.Integer(required=True),
         "permalink": fields.String,
         "is_streamable": fields.Boolean,
+        "ddex_app": fields.String(allow_null=True),
+        "playlists_containing_track": fields.List(fields.Integer),
     },
 )
 

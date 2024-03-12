@@ -58,6 +58,13 @@
           "type": "integer",
           "default": 0
         },
+        "playlists_containing_track": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "integer"
+          }
+        },
         "preview_start_seconds": {
           "type": [
             "float",
@@ -152,6 +159,13 @@
           "default": null
         },
         "iswc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "ddex_app": {
           "type": [
             "string",
             "null"

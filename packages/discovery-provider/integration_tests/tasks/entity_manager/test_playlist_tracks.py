@@ -10,14 +10,17 @@ from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.playlists.playlist_track import PlaylistTrack
+from src.models.tracks.track import Track
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
-# Insert Playlist with two new tracks and check that a notification is created for the track owners
+PLAYLIST_ID = PLAYLIST_ID_OFFSET + 1
+
 now = datetime.now()
+
 entities = {
     "users": [
         {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
@@ -119,7 +122,7 @@ create_playlist_tx_receipts = {
         {
             "args": AttributeDict(
                 {
-                    "_entityId": PLAYLIST_ID_OFFSET + 1,
+                    "_entityId": PLAYLIST_ID,
                     "_entityType": "Playlist",
                     "_userId": 1,
                     "_action": "Create",
@@ -152,6 +155,27 @@ def test_create_playlist(app, mocker):
             assert any([relation.track_id == id for relation in relations])
         for id in [30, 40]:
             assert not any([relation.track_id == id for relation in relations])
+
+        assert session.query(Track).filter(
+            Track.track_id == 10
+        ).first().playlists_containing_track == [PLAYLIST_ID]
+        assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_containing_track == [PLAYLIST_ID]
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 30)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_containing_track
+            == []
+        )
 
 
 # Add tracks to a playlist
@@ -193,6 +217,27 @@ def test_add_tracks_to_playlist(app, mocker):
             assert any([relation.track_id == id for relation in relations])
         for id in [10, 40]:
             assert not any([relation.track_id == id for relation in relations])
+
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_containing_track
+            == []
+        )
 
 
 # Remove a track from an playlist
@@ -257,6 +302,31 @@ def test_remove_track_from_playlist(app, mocker):
         assert len([relation for relation in relations if relation.track_id == 30]) == 1
         for id in [10, 40]:
             assert not any([relation.track_id == id for relation in relations])
+
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 20)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_containing_track
+            == []
+        )
 
 
 # Remove a track from a playlist and then restore it
@@ -337,6 +407,27 @@ def test_restore_removed_track_to_playlist(app, mocker):
                 ]
             )
 
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+
 
 # Create a playlist then reorder the tracks
 reorder_playlist_tracks_tx_receipts = {
@@ -391,3 +482,118 @@ def test_reorder_playlist_tracks(app, mocker):
             assert any([relation.track_id == id for relation in relations])
         for id in [10, 40]:
             assert not any([relation.track_id == id for relation in relations])
+
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+
+
+# Add track to multiple playlists
+add_tracks_to_multiple_playlists_tx_receipts = {
+    "UpdatePlaylistTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "CreatePlaylist": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET + 1,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Create",
+                    "_metadata": f'{{"cid": "QmCreatePlaylist1", "data": {json.dumps(test_metadata["PlaylistToCreate"])}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        },
+    ],
+}
+
+
+def test_add_track_to_multiple_playlists(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(
+        app, mocker, entities, add_tracks_to_multiple_playlists_tx_receipts
+    )
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        playlist_1_relations: List[PlaylistTrack] = (
+            session.query(PlaylistTrack)
+            .filter(PlaylistTrack.playlist_id == PLAYLIST_ID_OFFSET)
+            .all()
+        )
+        assert len(playlist_1_relations) == 2
+        for id in [20, 30]:
+            assert any([relation.track_id == id for relation in playlist_1_relations])
+        for id in [10, 40]:
+            assert not any(
+                [relation.track_id == id for relation in playlist_1_relations]
+            )
+
+        playlist_2_relations: List[PlaylistTrack] = (
+            session.query(PlaylistTrack)
+            .filter(PlaylistTrack.playlist_id == PLAYLIST_ID_OFFSET + 1)
+            .all()
+        )
+        assert len(playlist_2_relations) == 2
+        for id in [10, 20]:
+            assert any([relation.track_id == id for relation in playlist_2_relations])
+        for id in [30, 40]:
+            assert not any(
+                [relation.track_id == id for relation in playlist_2_relations]
+            )
+
+        assert session.query(Track).filter(
+            Track.track_id == 10
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET + 1]
+        assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_containing_track == [
+            PLAYLIST_ID_OFFSET,
+            PLAYLIST_ID_OFFSET + 1,
+        ]
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_containing_track
+            == []
+        )

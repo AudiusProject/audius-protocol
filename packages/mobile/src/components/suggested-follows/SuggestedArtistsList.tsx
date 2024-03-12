@@ -79,6 +79,7 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
         return (
           <ProfileCard
             profile={artist}
+            preventNavigation
             onPress={() => handleSelectArtist(user_id)}
             TileProps={{ as: LinearGradient, colors: gradientColors }}
             styles={textStyles}

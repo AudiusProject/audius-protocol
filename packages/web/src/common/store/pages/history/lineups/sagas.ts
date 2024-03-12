@@ -1,10 +1,15 @@
 import { LineupEntry, Track, UserTrackMetadata } from '@audius/common/models'
+import { responseAdapter } from '@audius/common/services'
 import {
   accountSelectors,
   getContext,
   historyPageTracksLineupActions as tracksActions
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import {
+  decodeHashId,
+  encodeHashId,
+  removeNullable
+} from '@audius/common/utils'
 import { keyBy } from 'lodash'
 import { call, select } from 'typed-redux-saga'
 
@@ -17,28 +22,33 @@ const { prefix: PREFIX } = tracksActions
 function* getHistoryTracks() {
   yield* waitForRead()
 
-  const apiClient = yield* getContext('apiClient')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   try {
     const currentUserId = yield* select(getUserId)
     if (!currentUserId) return []
 
-    const activity = yield* call([apiClient, apiClient.getUserTrackHistory], {
-      currentUserId,
-      userId: currentUserId,
-      limit: 100
-    })
+    const activity = yield* call(
+      [sdk.full.users, sdk.full.users.getUsersTrackHistory],
+      {
+        id: encodeHashId(currentUserId),
+        limit: 100
+      }
+    )
+    const activityData = activity.data
+    if (!activityData) return []
 
-    const activityTracks: UserTrackMetadata[] = activity
-      .map((a) => a.track)
-      .filter(removeNullable)
+    const tracks = activityData
+      .map(responseAdapter.makeActivity)
+      .filter(removeNullable) as UserTrackMetadata[]
 
-    const processedTracks = yield* call(processAndCacheTracks, activityTracks)
+    const processedTracks = yield* call(processAndCacheTracks, tracks)
     const processedTracksMap = keyBy(processedTracks, 'track_id')
 
     const lineupTracks: Track[] = []
-    activity.forEach((activity) => {
-      const trackMetadata = activity.track
-        ? processedTracksMap[activity.track.track_id]
+    activityData.forEach((activity) => {
+      const trackMetadata = activity.item
+        ? processedTracksMap[decodeHashId(activity.item.id)!]
         : null
       // Prevent history for invalid tracks from getting into the lineup.
       if (trackMetadata) {

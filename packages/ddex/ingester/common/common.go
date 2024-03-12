@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"ingester/constants"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -29,16 +31,27 @@ type Ingester interface {
 	UpdateResumeToken(ctx context.Context, collectionName string, resumeToken bson.Raw) error
 }
 
+func MustGetChoreography() constants.DDEXChoreography {
+	choreography := os.Getenv("DDEX_CHOREOGRAPHY")
+	if choreography == "" {
+		log.Fatal("Missing required env var: DDEX_CHOREOGRAPHY")
+	}
+	if choreography != string(constants.ERNReleaseByRelease) && choreography != string(constants.ERNBatched) {
+		log.Fatalf("Invalid value for DDEX_CHOREOGRAPHY: %s", choreography)
+	}
+	return constants.DDEXChoreography(choreography)
+}
+
 type BaseIngester struct {
+	DDEXChoreography    constants.DDEXChoreography
 	Ctx                 context.Context
 	MongoClient         *mongo.Client
 	S3Client            *s3.S3
 	S3Downloader        *s3manager.Downloader
 	S3Uploader          *s3manager.Uploader
 	RawBucket           string
-	IndexedBucket       string
+	CrawledBucket       string
 	CursorsColl         *mongo.Collection
-	UploadsColl         *mongo.Collection
 	DeliveriesColl      *mongo.Collection
 	PendingReleasesColl *mongo.Collection
 	UsersColl           *mongo.Collection
@@ -51,14 +64,14 @@ func NewBaseIngester(ctx context.Context, service string) *BaseIngester {
 	mongoClient := InitMongoClient(ctx, logger)
 
 	return &BaseIngester{
+		DDEXChoreography:    MustGetChoreography(),
 		S3Client:            s3,
 		S3Downloader:        s3manager.NewDownloader(s3Session),
 		S3Uploader:          s3manager.NewUploader(s3Session),
 		MongoClient:         mongoClient,
 		RawBucket:           MustGetenv("AWS_BUCKET_RAW"),
-		IndexedBucket:       MustGetenv("AWS_BUCKET_INDEXED"),
+		CrawledBucket:       MustGetenv("AWS_BUCKET_CRAWLED"),
 		CursorsColl:         mongoClient.Database("ddex").Collection("cursors"),
-		UploadsColl:         mongoClient.Database("ddex").Collection("uploads"),
 		DeliveriesColl:      mongoClient.Database("ddex").Collection("deliveries"),
 		PendingReleasesColl: mongoClient.Database("ddex").Collection("pending_releases"),
 		UsersColl:           mongoClient.Database("ddex").Collection("users"),
@@ -138,10 +151,15 @@ func InitS3Client(logger *slog.Logger) (*s3.S3, *session.Session) {
 	awsRegion := MustGetenv("AWS_REGION")
 	awsKey := MustGetenv("AWS_ACCESS_KEY_ID")
 	awsSecret := MustGetenv("AWS_SECRET_ACCESS_KEY")
-	sess, err := session.NewSession(&aws.Config{
+	conf := &aws.Config{
 		Region:      aws.String(awsRegion),
 		Credentials: credentials.NewStaticCredentials(awsKey, awsSecret, ""),
-	})
+	}
+	if os.Getenv("AWS_ENDPOINT") != "" {
+		conf.Endpoint = aws.String(os.Getenv("AWS_ENDPOINT"))
+		conf.S3ForcePathStyle = aws.Bool(true)
+	}
+	sess, err := session.NewSession(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -152,10 +170,10 @@ func InitS3Client(logger *slog.Logger) (*s3.S3, *session.Session) {
 func MustGetenv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
-		log.Println("Missing required env variable: ", key, " sleeping ...")
+		log.Println("Missing required env variable:", key, "sleeping...")
 		// If config is incorrect, sleep a bit to prevent container from restarting constantly
 		time.Sleep(time.Hour)
-		log.Fatal("Missing required env variable: ", key)
+		log.Fatal("Missing required env variable:", key)
 	}
 	return val
 }

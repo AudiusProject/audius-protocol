@@ -440,6 +440,190 @@ services:
       - tests
       - identity
 
+  # ddex
+
+  ddex-crawler-release-by-release:
+    extends:
+      file: docker-compose.yml
+      service: ddex-crawler
+    container_name: ddex-crawler-release-by-release
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+      TEST_MODE: 'true'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-release-by-release:
+        condition: service_healthy
+
+  ddex-parser-release-by-release:
+    extends:
+      file: docker-compose.yml
+      service: ddex-parser
+    container_name: ddex-parser-release-by-release
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-release-by-release:
+        condition: service_healthy
+
+  ddex-publisher-release-by-release:
+    extends:
+      file: docker-compose.yml
+      service: ddex-publisher
+    container_name: ddex-publisher-release-by-release
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-release-by-release:
+        condition: service_healthy
+  
+  # It also wouldn't be a bad idea to set CORS and use localstack in the local dev setup (ie audius-compose up --ddex-only)
+  ddex-s3-release-by-release:
+    container_name: ddex-s3-release-by-release
+    image: localstack/localstack:s3-latest
+    ports:
+      - "127.0.0.1:4566:4566"
+    networks:
+      - ddex-network
+    volumes:
+      - "ddex-s3:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  test-ddex-e2e-release-by-release:
+    container_name: test-ddex-e2e-release-by-release
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-test
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./e2e_test/... -count 1 -timeout 3m "$$@")' -
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+    networks:
+      - ddex-network
+    depends_on:
+      ddex-crawler-release-by-release:
+        condition: service_healthy
+      ddex-parser-release-by-release:
+        condition: service_healthy
+      # ddex-publisher:
+      #   condition: service_healthy
+      # Leaving out publisher for now because it takes a long time to build.
+      # We don't actually upload anything to Audius in the e2e test, but having a "dry run" publisher mode could be useful
+
+  ddex-crawler-batched:
+    extends:
+      file: docker-compose.yml
+      service: ddex-crawler
+    container_name: ddex-crawler-batched
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+      TEST_MODE: 'true'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-batched:
+        condition: service_healthy
+
+  ddex-parser-batched:
+    extends:
+      file: docker-compose.yml
+      service: ddex-parser
+    container_name: ddex-parser-batched
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-batched:
+        condition: service_healthy
+
+  ddex-publisher-batched:
+    extends:
+      file: docker-compose.yml
+      service: ddex-publisher
+    container_name: ddex-publisher-batched
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-batched:
+        condition: service_healthy
+  
+  ddex-s3-batched:
+    container_name: ddex-s3-batched
+    image: localstack/localstack:s3-latest
+    ports:
+      - "127.0.0.1:4566:4566"
+    networks:
+      - ddex-network
+    volumes:
+      - "ddex-s3:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  test-ddex-e2e-batched:
+    container_name: test-ddex-e2e-batched
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-test
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./e2e_test/... -count 1 -timeout 3m "$$@")' -
+    logging: *default-logging
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+    networks:
+      - ddex-network
+    depends_on:
+      ddex-crawler-batched:
+        condition: service_healthy
+      ddex-parser-batched:
+        condition: service_healthy
+
+  ddex-mongo:
+    extends:
+      file: docker-compose.yml
+      service: ddex-mongo
+    logging: *default-logging
+  
+  ddex-mongo-init:
+    extends:
+      file: docker-compose.yml
+      service: ddex-mongo-init
+    logging: *default-logging
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+  
+  test-ddex-unittests:
+    container_name: test-ddex-unittests
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-test
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test $(go list ./... | grep -v /e2e_test) -count 1 -timeout 60s "$$@")' -
+    logging: *default-logging
+    # Will need a depends_on for S3 and Mongo if any future unit tests use them
+
+networks:
+  ddex-network:
+
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -447,3 +631,5 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
+  ddex-mongo-db:
+  ddex-s3:

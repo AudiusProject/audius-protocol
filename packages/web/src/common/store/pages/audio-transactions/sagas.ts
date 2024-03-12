@@ -102,11 +102,6 @@ function* fetchAudioTransactionsAsync() {
   yield* takeLatest(
     fetchAudioTransactions.type,
     function* (action: ReturnType<typeof fetchAudioTransactions>): any {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      const { data, signature } = yield* call([
-        audiusBackendInstance,
-        audiusBackendInstance.signDiscoveryNodeRequest
-      ])
       const audiusSdk = yield* getContext('audiusSdk')
       const sdk = yield* call(audiusSdk)
       const response = yield* call(
@@ -115,8 +110,8 @@ function* fetchAudioTransactionsAsync() {
           sdk.full.transactions.getAudioTransactionHistory
         ],
         {
-          encodedDataMessage: data,
-          encodedDataSignature: signature,
+          encodedDataMessage: '', // TODO: remove, handled by sdk
+          encodedDataSignature: '', // TODO: remove, handled by sdk
           ...action.payload
         }
       )
@@ -179,11 +174,6 @@ function* fetchTransactionMetadata() {
 
 function* fetchTransactionsCount() {
   yield* takeLatest(fetchAudioTransactionsCount.type, function* () {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const { data, signature } = yield* call([
-      audiusBackendInstance,
-      audiusBackendInstance.signDiscoveryNodeRequest
-    ])
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const response = yield* call(
@@ -192,8 +182,8 @@ function* fetchTransactionsCount() {
         sdk.full.transactions.getAudioTransactionHistoryCount
       ],
       {
-        encodedDataMessage: data,
-        encodedDataSignature: signature
+        encodedDataMessage: '', // TODO: remove, handled by sdk
+        encodedDataSignature: '' // TODO: remove, handled by sdk
       }
     )
     if (!response) {

@@ -14,7 +14,7 @@ import { StatusMessage } from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 
 import styles from './EmailPage.module.css'
-import { ForgotPasswordHelper } from './ForgotPasswordHelper'
+import { ForgotPasswordModal } from './ForgotPasswordModal'
 import { MetaMaskOption } from './MetaMaskOption'
 
 const messages = {
@@ -208,7 +208,7 @@ export const EmailPage = ({
             {messages.forgotPasswordText}
           </span>
         </div>
-        <ForgotPasswordHelper
+        <ForgotPasswordModal
           isOpen={showForgotPassword}
           onClose={() => setShowForgotPassword(false)}
         />

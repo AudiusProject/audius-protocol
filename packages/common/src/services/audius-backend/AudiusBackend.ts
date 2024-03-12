@@ -552,7 +552,9 @@ export const audiusBackend = ({
     }
 
     if (!collection.cover_art_sizes && !collection.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as string
+      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as
+        | string
+        | number // ReactNative require() is a number for images!
     }
 
     return {
@@ -1676,9 +1678,9 @@ export const audiusBackend = ({
     )
   }
 
-  async function resetPassword(email: string, password: string) {
-    await waitForLibsInit()
-    return audiusLibs.Account.resetPassword(email, password)
+  async function resetPassword(username: string, password: string) {
+    const libs = await getAudiusLibsTyped()
+    return libs.Account!.resetPassword({ username, password })
   }
 
   async function sendRecoveryEmail() {
@@ -1792,7 +1794,13 @@ export const audiusBackend = ({
     }
   }
 
-  function getDiscoveryEntityType({ type, is_album }: { type: string, is_album?: boolean}) {
+  function getDiscoveryEntityType({
+    type,
+    is_album
+  }: {
+    type: string
+    is_album?: boolean
+  }) {
     if (type === 'track') {
       return Entity.Track
     } else if (is_album === true) {

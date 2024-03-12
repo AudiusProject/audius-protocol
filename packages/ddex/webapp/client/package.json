@@ -1,7 +1,7 @@
 {
   "name": "@audius/ddex-webapp-client",
   "private": true,
-  "version": "0.0.11",
+  "version": "0.0.15",
   "type": "module",
   "scripts": {
     "start": "vite",
@@ -14,8 +14,9 @@
     "serve": "vite preview",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:env": "dotenv-linter",
     "typecheck": "tsc",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:lint:env\""
   },
   "dependencies": {
     "@audius/harmony": "*",
@@ -43,6 +44,7 @@
     "web3": "4.3.0"
   },
   "devDependencies": {
+    "@audius/dotenv-linter": "*",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@vitejs/plugin-react-swc": "3.5.0",

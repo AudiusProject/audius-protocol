@@ -20,7 +20,9 @@ import {
   IconCheck,
   IconCrown,
   IconVisibilityHidden,
-  Text
+  Text,
+  Flex,
+  spacing
 } from '@audius/harmony'
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
@@ -28,7 +30,7 @@ import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import { DogEar } from 'components/dog-ear'
-import { Link } from 'components/link'
+import { TextLink } from 'components/link'
 import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
@@ -306,47 +308,41 @@ const TrackTile = ({
           <DogEar type={dogEarType} />
         </div>
       ) : null}
-      <div
-        className={cn(styles.body, {
-          // if track and not playlist/album
-          [styles.withoutHeader]: true
-        })}
-      >
-        <div className={cn(styles.topSection)}>
+      <div className={styles.body}>
+        <Flex inline direction='column'>
           {size === TrackTileSize.LARGE ? (
             <Text
               variant='label'
               size='xs'
               strength='weak'
-              className={styles.headerRow}
+              textAlign='left'
+              color='subdued'
+              css={{ letterSpacing: 2.5, height: spacing.m }}
             >
-              {!isLoading && header && <div>{header}</div>}
+              {isLoading || !header ? null : header}
             </Text>
           ) : null}
-          <div className={styles.titleRow}>
+          <Flex direction='column' gap='2xs' mb={header ? 'xs' : 's'}>
             {isLoading ? (
-              <Skeleton width='80%' className={styles.skeleton} />
+              <Skeleton width='80%' height='20px' />
             ) : (
-              <Link
-                variant='title'
-                to={permalink}
-                className={styles.title}
-                onClick={onClickTitle}
-              >
-                <Text className={styles.text}>{title}</Text>
-                {isPlaying ? (
-                  <IconVolume size='m' className={styles.volumeIcon} />
-                ) : null}
-              </Link>
+              <Flex css={{ marginRight: 132 }}>
+                <TextLink
+                  to={permalink}
+                  isActive={isActive}
+                  textVariant='title'
+                  applyHoverStylesToInnerSvg
+                  onClick={onClickTitle}
+                  disabled={isDisabled}
+                  ellipses
+                >
+                  <Text ellipses>{title}</Text>
+                  {isPlaying ? <IconVolume size='m' /> : null}
+                </TextLink>
+              </Flex>
             )}
-          </div>
-          <Text variant='title' strength='weak' className={styles.creatorRow}>
-            {isLoading ? (
-              <Skeleton width='50%' className={styles.skeleton} />
-            ) : (
-              userName
-            )}
-          </Text>
+            {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
+          </Flex>
 
           <Text variant='body' size='xs' className={styles.socialsRow}>
             {isLoading ? (
@@ -382,7 +378,7 @@ const TrackTile = ({
                 })
               : null}
           </Text>
-        </div>
+        </Flex>
         <div className={styles.divider} />
         <BottomRow
           hasStreamAccess={hasStreamAccess}

@@ -14,6 +14,9 @@ services:
       - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
     ports:
       - "9000:9000"
     networks:
@@ -30,26 +33,14 @@ services:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     entrypoint: ./ingester --service crawler
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-
-  ddex-indexer:
-    container_name: ddex-indexer
-    build:
-      context: ${PROJECT_ROOT}/packages/ddex/ingester
-      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
-    environment:
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
-    env_file: .env
-    depends_on:
-      ddex-mongo:
-        condition: service_healthy
-    entrypoint: ./ingester --service indexer
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - ddex-network
     profiles:
@@ -64,9 +55,14 @@ services:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     entrypoint: ./ingester --service parser
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - ddex-network
     profiles:
@@ -85,10 +81,12 @@ services:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
     depends_on:
-      ddex-mongo:
-        condition: service_healthy
+      ddex-mongo-init:
+        condition: service_completed_successfully
     ports:
       - "9001:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep node || exit 1"]
     networks:
       - ddex-network
     profiles:
@@ -104,6 +102,12 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongo
       - MONGO_INITDB_ROOT_PASSWORD=mongo
+    entrypoint: >
+      bash -c '
+        chmod 400 /etc/mongo-keyfile
+        chown 999:999 /etc/mongo-keyfile
+        exec docker-entrypoint.sh "$$@"
+      '
     command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     ports:
       - "27017:27017"
@@ -114,14 +118,9 @@ services:
           if (!ping.ok) {
             exit(1);  // Unhealthy: MongoDB server not responding
           }
-          var result = rs.status();
-          if (result.ok && result.set) {
-            exit(0);  // Healthy: MongoDB server is up and replica set is initiated
-          } else {
-            exit(1);  // Unhealthy: Replica set not initiated or not OK
-          }
+          exit(0);  // Healthy: MongoDB server is up (replica set status will be checked by ddex-mongo-init)
         "' localhost:27017/ddex
-      interval: 30s
+      interval: 10s
       timeout: 10s
       retries: 5
       start_period: 40s
@@ -130,14 +129,80 @@ services:
     profiles:
       - ddex
 
+  ddex-mongo-init:
+    container_name: ddex-mongo-init
+    image: mongo:latest
+    restart: "no"
+    command: >
+      bash -c "
+        until mongosh --host ddex-mongo:27017 --authenticationDatabase admin -u mongo -p mongo --eval 'db.runCommand({ping: 1})'; do
+          echo 'Waiting for ddex-mongo...'
+          sleep 2
+        done
+        mongosh --host ddex-mongo:27017 --authenticationDatabase admin -u mongo -p mongo --eval '
+          var rsConfig = {
+            _id: \"rs0\",
+            members: [{ _id: 0, host: \"ddex-mongo:27017\" }]
+          };
+          if (db.isMaster().ismaster) {
+            print(\"Replica set already initiated.\");
+            quit(0);
+          }
+          else {
+            var result = rs.initiate(rsConfig);
+            if (result.ok) {
+              print(\"Replica set initiated.\");
+              quit(0);
+            }
+            else {
+              print(\"Failed to initiate replica set.\");
+              quit(1);
+            }
+          }
+        '
+      "
+    networks:
+      - ddex-network
+    depends_on:
+      - ddex-mongo
+    profiles:
+      - ddex
+
+  ddex-s3:
+    container_name: ddex-s3
+    env_file: .env
+    image: localstack/localstack:s3-latest
+    ports:
+      - "127.0.0.1:4566:4566"
+    networks:
+      - ddex-network
+    volumes:
+      - "ddex-s3:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    profiles:
+      - ddex
+
   ddex-ingester:
     container_name: ddex-ingester
+    env_file: .env
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     build:
       context: ${PROJECT_ROOT}/packages/ddex/ingester
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+  
+  ddex-test:
+    container_name: ddex-test
+    environment:
+      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
+    env_file: .env
+    build:
+      context: ${PROJECT_ROOT}/packages/ddex/ingester
+      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile.test
 
 networks:
   ddex-network:
 
 volumes:
   ddex-mongo-db:
+  ddex-s3:

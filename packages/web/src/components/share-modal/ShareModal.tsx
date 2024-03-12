@@ -1,14 +1,12 @@
 import { useCallback, useContext } from 'react'
 
 import { Name, PlayableType } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   usersSocialActions,
   shareModalUISelectors,
-  shareSoundToTiktokModalActions,
   modalsActions,
   useCreateChatModal
 } from '@audius/common/store'
@@ -18,7 +16,6 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useModalState } from 'pages/modals/useModalState'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
@@ -29,7 +26,6 @@ import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
 import { getTwitterShareText } from './utils'
 const { getShareState } = shareModalUISelectors
-const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
@@ -46,10 +42,6 @@ export const ShareModal = () => {
   const { content, source } = useSelector(getShareState)
   const account = useSelector(getAccountUser)
   const { onOpen: openCreateChatModal } = useCreateChatModal()
-
-  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
-    FeatureFlags.SHARE_SOUND_TO_TIKTOK
-  )
 
   const isOwner =
     content?.type === 'track' && account?.user_id === content.artist.user_id
@@ -79,15 +71,6 @@ export const ShareModal = () => {
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
     onClose()
   }, [source, content, account, record, onClose])
-
-  const handleShareToTikTok = useCallback(() => {
-    if (content?.type === 'track') {
-      dispatch(requestOpenTikTokModal({ id: content.track.track_id }))
-      onClose()
-    } else {
-      console.error('Tried to share sound to TikTok but track was missing')
-    }
-  }, [content, dispatch, onClose])
 
   const handleCopyLink = useCallback(() => {
     if (!source || !content) return
@@ -139,20 +122,12 @@ export const ShareModal = () => {
     isOwner,
     onShareToDirectMessage: handleShareToDirectMessage,
     onShareToTwitter: handleShareToTwitter,
-    onShareToTikTok: handleShareToTikTok,
     onCopyLink: handleCopyLink,
     onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
       ? handleEmbed
       : undefined,
     onClose,
     onClosed,
-    showTikTokShareAction: Boolean(
-      content?.type === 'track' &&
-        isShareSoundToTikTokEnabled &&
-        isOwner &&
-        !content.track.is_unlisted &&
-        !content.track.is_delete
-    ),
     shareType: content?.type ?? 'track',
     isPrivate:
       content?.type === 'playlist' ? content.playlist.is_private : false

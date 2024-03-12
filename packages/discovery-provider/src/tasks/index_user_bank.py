@@ -19,6 +19,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
+from src.models.playlists.album_price_history import AlbumPriceHistory
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
@@ -352,6 +353,20 @@ def get_purchase_metadata_from_memo(
                         TrackPriceHistory.access == access,
                     )
                     .order_by(desc(TrackPriceHistory.block_timestamp))
+                    .first()
+                )
+                if result is not None:
+                    price = result.total_price_cents
+                    splits = result.splits
+            elif type == PurchaseType.album:
+                env = shared_config["discprov"]["env"]
+                query = session.query(AlbumPriceHistory)
+                if env != "dev":
+                    # See above comment
+                    query.filter(AlbumPriceHistory.block_timestamp < timestamp)
+                result = (
+                    query.filter(AlbumPriceHistory.playlist_id == id)
+                    .order_by(desc(AlbumPriceHistory.block_timestamp))
                     .first()
                 )
                 if result is not None:

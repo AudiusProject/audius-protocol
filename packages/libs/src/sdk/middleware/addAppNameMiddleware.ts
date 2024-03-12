@@ -47,11 +47,14 @@ export const addAppNameMiddleware = ({
       }
 
       return {
+        ...context,
         url:
           context.url +
           (context.url.includes('?') ? '&' : '?') +
           querystring({ app_name: appName ?? '' }),
-        init: context.init ?? {}
+        init: {
+          ...context.init
+        }
       }
     }
   }

@@ -694,6 +694,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       } else {
         setHasRequestedBrowserPermission()
         yield* put(accountActions.showPushNotificationConfirmation())
+        if (signInResponse.user.handle === 'fbtest') {
+          yield put(pushRoute('/fb/share'))
+        }
       }
     } else if (
       !signInResponse.error &&

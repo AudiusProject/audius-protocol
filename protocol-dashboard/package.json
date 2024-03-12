@@ -1,6 +1,6 @@
 {
   "name": "audius-protocol-dashboard",
-  "version": "0.1.4",
+  "version": "0.1.8",
   "private": true,
   "type": "module",
   "homepage": "./",
@@ -68,6 +68,7 @@
     "build:prod": "npm run configure-prod-env && ./node_modules/.bin/env-cmd -f .env.prod.local turbo run build",
     "lint": "npm run prettier:check",
     "lint:fix": "npm run prettier:write",
+    "lint:env": "dotenv-linter",
     "prettier:base": "prettier --parser typescript --single-quote --no-semi",
     "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
     "prettier:write": "npm run prettier:base -- --write \"src/**/*.{ts,tsx}\"",
@@ -78,7 +79,7 @@
     "update-build:stage": "node ./scripts/updateBuild.cjs stage",
     "update-build:prod": "node ./scripts/updateBuild.cjs prod",
     "TODO - ADD TYPECHECK TO VERIFY: =========================": "",
-    "verify": "concurrently \"npm:lint:fix\""
+    "verify": "concurrently \"npm:lint:fix\" \"npm:lint:env\""
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -96,6 +97,7 @@
     ]
   },
   "devDependencies": {
+    "@audius/dotenv-linter": "*",
     "@openzeppelin/test-helpers": "0.5.6",
     "@pinata/sdk": "1.1.13",
     "@tanstack/eslint-plugin-query": "5.0.5",

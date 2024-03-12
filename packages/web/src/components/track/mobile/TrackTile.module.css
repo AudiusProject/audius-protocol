@@ -115,69 +115,6 @@
   transform: scale(1);
 }
 
-.titles {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  color: var(--neutral);
-  font-size: var(--unit-4);
-  text-align: left;
-
-  /* Text truncation*/
-  flex: 0 1 65%;
-  overflow: hidden;
-  margin-right: var(--unit-3);
-}
-
-.titlesActive {
-  color: var(--primary);
-}
-
-.text {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.titlesSkeleton div,
-.titlesSkeleton a {
-  width: 100%;
-}
-
-.title {
-  margin-top: auto;
-  padding-right: 5px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.playIcon {
-  margin-left: var(--unit-2);
-}
-
-.playIcon path {
-  fill: var(--primary);
-}
-
-.artist {
-  margin-bottom: auto;
-  padding-right: 5px;
-  max-width: 100%;
-  min-height: var(--unit-5);
-  flex-wrap: nowrap;
-  align-items: center;
-  position: relative;
-  display: flex;
-  color: inherit;
-}
-
-.artistPopover {
-  width: 100%;
-}
-
 .skeleton {
   position: absolute;
   top: 0;

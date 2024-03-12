@@ -133,6 +133,7 @@ export const PurchaseContentFormFields = ({
           isExistingBalanceDisabled={isExistingBalanceDisabled}
           showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
           isCoinflowEnabled={showCoinflow}
+          showVendorChoice={false}
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}

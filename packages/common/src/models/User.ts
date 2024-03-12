@@ -1,7 +1,12 @@
 import { Collectible, CollectiblesMetadata } from '~/models/Collectible'
 import { Color } from '~/models/Color'
 import { CID, ID } from '~/models/Identifiers'
-import { CoverPhotoSizes, ProfilePictureSizes } from '~/models/ImageSizes'
+import {
+  CoverPhotoSizes,
+  CoverPhotoSizesCids,
+  ProfilePictureSizes,
+  ProfilePictureSizesCids
+} from '~/models/ImageSizes'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
 import { Nullable } from '~/utils/typeUtils'
@@ -35,9 +40,9 @@ export type UserMetadata = {
   repost_count: number
   track_count: number
   cover_photo_sizes: Nullable<CID>
-  cover_photo_cids?: Nullable<CoverPhotoSizes>
+  cover_photo_cids?: Nullable<CoverPhotoSizesCids>
   profile_picture_sizes: Nullable<CID>
-  profile_picture_cids?: Nullable<ProfilePictureSizes>
+  profile_picture_cids?: Nullable<ProfilePictureSizesCids>
   metadata_multihash: Nullable<CID>
   erc_wallet: WalletAddress
   spl_wallet: Nullable<SolanaWalletAddress>

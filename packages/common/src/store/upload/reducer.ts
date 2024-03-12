@@ -1,5 +1,7 @@
 import { cloneDeep } from 'lodash'
 
+import { StemUploadWithFile } from '~/models'
+
 import {
   TOGGLE_MULTI_TRACK_NOTIFICATION,
   UPLOAD_TRACKS_REQUESTED,
@@ -16,7 +18,6 @@ import {
   uploadSingleTrackFailed
 } from './actions'
 import { ProgressStatus, UploadState, UploadTrack } from './types'
-import { StemUploadWithFile } from '~/models'
 
 const initialState: UploadState = {
   openMultiTrackNotification: true,

@@ -16,6 +16,7 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     mock_invalid_track_purchase_missing_splits_tx,
     mock_invalid_track_purchase_unknown_pda_tx,
     mock_unknown_instruction_tx,
+    mock_valid_album_purchase_tx,
     mock_valid_create_audio_token_account_tx,
     mock_valid_create_usdc_token_account_tx,
     mock_valid_track_purchase_pay_extra_tx,
@@ -120,6 +121,9 @@ test_entries = {
         {"track_id": 1, "title": "track 1", "owner_id": 1},
         {"track_id": 2, "title": "track 2", "owner_id": 1},
     ],
+    "playlists": [
+        {"playlist_id": 1, "title": "playlist 1", "owner_id": 1},
+    ],
     "track_price_history": [
         {  # pay full price to trackOwner
             "track_id": 1,
@@ -139,6 +143,13 @@ test_entries = {
             "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
             "total_price_cents": 100,
             "access": PurchaseAccessType.download,
+        },
+    ],
+    "album_price_history": [
+        {  # pay full price to albumOwner
+            "playlist_id": 1,
+            "splits": {RECIPIENT_USDC_USER_BANK_ADDRESS: 1000000},
+            "total_price_cents": 100,
         },
     ],
 }
@@ -177,11 +188,83 @@ def test_process_user_bank_tx_details_valid_purchase(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == track_owner_id
+        assert purchase.buyer_user_id == track_buyer_id
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 1
+        assert purchase.access == PurchaseAccessType.stream
+
+        owner_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == track_owner_usdc_user_bank)
+            .first()
+        )
+        assert owner_transaction_record is not None
+        assert (
+            owner_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert owner_transaction_record.method == USDCTransactionMethod.receive
+        assert owner_transaction_record.change == 1000000
+        assert owner_transaction_record.tx_metadata == str(track_buyer_id)
+
+        buyer_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == track_buyer_user_bank)
+            .first()
+        )
+        assert buyer_transaction_record is not None
+        assert (
+            buyer_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert buyer_transaction_record.method == USDCTransactionMethod.send
+        assert buyer_transaction_record.change == -1000000
+        assert buyer_transaction_record.tx_metadata == str(track_owner_id)
+
+
+def test_process_user_bank_tx_details_valid_purchase_album(app):
+    tx_response = mock_valid_album_purchase_tx
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.seller_user_id == track_owner_id
+        assert purchase.buyer_user_id == track_buyer_id
+        assert purchase.amount == 1000000
+        assert purchase.extra_amount == 0
+        assert purchase.content_type == PurchaseType.album
         assert purchase.content_id == 1
         assert purchase.access == PurchaseAccessType.stream
 
@@ -310,8 +393,8 @@ def test_process_user_bank_tx_details_valid_purchase_with_pay_extra(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == track_owner_id
+        assert purchase.buyer_user_id == track_buyer_id
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 1000000
         assert purchase.content_type == PurchaseType.track

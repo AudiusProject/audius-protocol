@@ -17,7 +17,7 @@ import cn from 'classnames'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
-import { ExternalLink, Link } from 'components/link'
+import { ExternalLink, TextLink } from 'components/link'
 
 import styles from './UserGeneratedText.module.css'
 
@@ -50,10 +50,10 @@ const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const isExternalLink = !isAudiusUrl(href)
   const to = isExternalLink ? formatExternalLink(href) : formatAudiusUrl(href)
 
-  const LinkComponent = isExternalLink ? ExternalLink : Link
+  const LinkComponent = isExternalLink ? ExternalLink : TextLink
 
   return (
-    <LinkComponent to={to} variant='inherit' color='active' {...props}>
+    <LinkComponent to={to} variant='visible' {...props}>
       {content}
     </LinkComponent>
   )

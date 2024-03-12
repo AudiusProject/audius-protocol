@@ -7,6 +7,7 @@ from integration_tests.tasks.payment_router_mock_transactions import (
     mock_invalid_track_purchase_insufficient_split_tx,
     mock_invalid_track_purchase_missing_split_tx,
     mock_non_route_transfer_purchase_single_recipient_tx,
+    mock_valid_album_purchase_single_recipient_tx,
     mock_valid_track_purchase_download_access,
     mock_valid_track_purchase_from_user_bank_single_recipient_tx,
     mock_valid_track_purchase_multi_recipient_pay_extra_tx,
@@ -85,6 +86,9 @@ test_entries = {
         {"track_id": 2, "title": "track 2", "owner_id": 1},
         {"track_id": 3, "title": "track 3", "owner_id": 1},
     ],
+    "playlists": [
+        {"playlist_id": 1, "title": "playlist 1", "owner_id": 1},
+    ],
     "track_price_history": [
         {  # pay full price to trackOwner
             "track_id": 1,
@@ -105,6 +109,13 @@ test_entries = {
             "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
             "total_price_cents": 100,
             "access": PurchaseAccessType.download,
+        },
+    ],
+    "album_price_history": [
+        {  # pay full price to albumOwner
+            "playlist_id": 1,
+            "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
+            "total_price_cents": 100,
         },
     ],
 }
@@ -138,11 +149,61 @@ def test_process_payment_router_tx_details_valid_purchase(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 1
+
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is not None
+        assert transaction_record.user_bank == trackOwnerUserBank
+        assert (
+            transaction_record.transaction_type == USDCTransactionType.purchase_content
+        )
+        assert transaction_record.method == USDCTransactionMethod.receive
+        assert transaction_record.change == 1000000
+        assert transaction_record.tx_metadata == str(trackBuyerId)
+
+
+def test_process_payment_router_tx_details_valid_purchase_album(app):
+    tx_response = mock_valid_album_purchase_single_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
+        assert purchase.amount == 1000000
+        assert purchase.extra_amount == 0
+        assert purchase.content_type == PurchaseType.album
         assert purchase.content_id == 1
 
         transaction_record = (
@@ -188,8 +249,8 @@ def test_process_payment_router_tx_details_valid_purchase_from_user_bank(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
@@ -423,8 +484,8 @@ def test_process_payment_router_tx_details_valid_purchase_with_pay_extra(app):
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 1000000
         assert purchase.extra_amount == 1500000
         assert purchase.content_type == PurchaseType.track
@@ -473,8 +534,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients(ap
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 2000000
         assert purchase.extra_amount == 0
         assert purchase.content_type == PurchaseType.track
@@ -542,8 +603,8 @@ def test_process_payment_router_tx_details_valid_purchase_multiple_recipients_pa
             .first()
         )
         assert purchase is not None
-        assert purchase.seller_user_id == 1
-        assert purchase.buyer_user_id == 2
+        assert purchase.seller_user_id == trackOwnerId
+        assert purchase.buyer_user_id == trackBuyerId
         assert purchase.amount == 2000000
         assert purchase.extra_amount == 1500000
         assert purchase.content_type == PurchaseType.track

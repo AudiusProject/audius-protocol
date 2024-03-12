@@ -11,6 +11,7 @@ from src.models.notifications.notification import (
     NotificationSeen,
     PlaylistSeen,
 )
+from src.models.playlists.album_price_history import AlbumPriceHistory
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.rewards.challenge import Challenge
@@ -157,6 +158,7 @@ def populate_mock_db(db, entities, block_offset=None):
         cid_datas = entities.get("cid_datas", [])
         usdc_transactions_history = entities.get("usdc_transactions_history", [])
         track_price_history = entities.get("track_price_history", [])
+        album_price_history = entities.get("album_price_history", [])
 
         num_blocks = max(
             len(tracks),
@@ -231,6 +233,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_playlist_upload=track_meta.get("is_playlist_upload", False),
                 track_cid=track_meta.get("track_cid", None),
                 ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None),
+                playlists_containing_track=track_meta.get(
+                    "playlists_containing_track", []
+                ),
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):
@@ -247,6 +252,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
             )
             session.add(track_price_history)
+        for i, album_price_history_meta in enumerate(album_price_history):
+            album_price_history = AlbumPriceHistory(
+                blocknumber=i + block_offset,
+                playlist_id=album_price_history_meta.get("playlist_id", i),
+                splits=album_price_history_meta.get("splits", {}),
+                block_timestamp=album_price_history_meta.get(
+                    "block_timestamp", datetime.now()
+                ),
+                total_price_cents=album_price_history_meta.get("total_price_cents", 0),
+            )
+            session.add(album_price_history)
         for i, playlist_meta in enumerate(playlists):
             playlist_created_at = datetime.now()
             playlist = Playlist(

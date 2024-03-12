@@ -32,6 +32,7 @@ env/.env.dev.local
 /build-ipfs-staging.zip
 /build-ipfs-production
 /build-ipfs-production.zip
+/public/.gitsha
 
 # distribution
 /dist

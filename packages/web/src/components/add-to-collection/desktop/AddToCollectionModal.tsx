@@ -166,7 +166,7 @@ const AddToCollectionModal = () => {
       <Scrollbar>
         <div className={styles.listContent}>
           <div className={cn(styles.listItem)} onClick={handleCreateCollection}>
-            <IconMultiselectAdd className={styles.add} />
+            <IconMultiselectAdd className={styles.add} size='xl' />
             <span>{messages.newCollection}</span>
           </div>
           <div className={styles.list}>

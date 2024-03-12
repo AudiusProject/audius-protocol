@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+cd "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"   # audius-protocol/solana-programs/anchor/audius-data
 # Replace program ID with solana pubkey generated from anchor build
 cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' programs/audius-data/src/lib.rs)
 echo "Building and deploying audius_data program with anchor CLI..."

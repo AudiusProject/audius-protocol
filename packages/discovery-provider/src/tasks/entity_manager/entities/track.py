@@ -27,6 +27,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    is_ddex_signer,
     validate_signer,
 )
 from src.tasks.metadata import immutable_track_fields
@@ -126,7 +127,7 @@ def update_track_price_history(
 
             if "splits" in usdc_purchase:
                 splits = usdc_purchase["splits"]
-                # TODO: better validation of splits
+                # TODO: [PAY-2553] better validation of splits
                 if isinstance(splits, dict):
                     new_record.splits = splits
                 else:
@@ -367,9 +368,6 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Cannot create track {track_id} below the offset"
             )
 
-    if params.action == Action.UPDATE:
-        validate_update_access_conditions(params)
-
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         if not params.metadata:
             raise IndexingValidationError(
@@ -385,6 +383,10 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
+
+        if params.action == Action.UPDATE:
+            validate_update_access_conditions(params)
+
         validate_remixability(params)
         validate_access_conditions(params)
 
@@ -462,6 +464,9 @@ def create_track(params: ManageEntityParameters):
         is_delete=False,
     )
 
+    if is_ddex_signer(params.signer):
+        track_record.ddex_app = params.signer
+
     update_track_routes_table(
         params, track_record, params.metadata, params.pending_track_routes
     )
@@ -483,6 +488,14 @@ def create_track(params: ManageEntityParameters):
     params.add_record(track_id, track_record)
 
 
+def validate_update_ddex_track(params: ManageEntityParameters, track_record):
+    if track_record.ddex_app:
+        if track_record.ddex_app != params.signer or not is_ddex_signer(params.signer):
+            raise IndexingValidationError(
+                f"Signer {params.signer} does not have permission to {params.action} DDEX track {track_record.track_id}"
+            )
+
+
 def update_track(params: ManageEntityParameters):
     handle = get_handle(params)
     validate_track_tx(params)
@@ -493,6 +506,8 @@ def update_track(params: ManageEntityParameters):
         track_id in params.new_records["Track"]
     ):  # override with last updated track is in this block
         existing_track = params.new_records["Track"][track_id][-1]
+
+    validate_update_ddex_track(params, existing_track)
 
     track_record = copy_record(
         existing_track,
@@ -526,6 +541,8 @@ def delete_track(params: ManageEntityParameters):
     if params.entity_id in params.new_records["Track"]:
         # override with last updated playlist is in this block
         existing_track = params.new_records["Track"][params.entity_id][-1]
+
+    validate_update_ddex_track(params, existing_track)
 
     deleted_track = copy_record(
         existing_track,

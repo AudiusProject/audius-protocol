@@ -14,6 +14,7 @@ import { CollectionImage } from 'app/components/image/CollectionImage'
 import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useTrackSearchResultSelect } from 'app/screens/search-results-screen/tabs/useTrackSearchResultSelect'
 import { addItem } from 'app/store/search/searchSlice'
 import { makeStyles } from 'app/styles'
 
@@ -49,11 +50,22 @@ const UserSearchResult = (props: UserSearchResultProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
-
+  const onSearchResultSelect = useTrackSearchResultSelect(
+    'profile',
+    'autocomplete'
+  )
   const handlePress = useCallback(() => {
     dispatch(addItem({ searchItem: user.name }))
     navigation.push('Profile', { handle: user.handle })
-  }, [user, navigation, dispatch])
+    onSearchResultSelect(user.user_id)
+  }, [
+    dispatch,
+    user.name,
+    user.handle,
+    user.user_id,
+    navigation,
+    onSearchResultSelect
+  ])
 
   return (
     <SearchResultItem onPress={handlePress}>
@@ -75,6 +87,10 @@ const TrackSearchResult = (props: TrackSearchResultProps) => {
 
   const navigation = useNavigation()
   const dispatch = useDispatch()
+  const onSearchResultSelect = useTrackSearchResultSelect(
+    'track',
+    'autocomplete'
+  )
 
   const handlePress = useCallback(() => {
     dispatch(addItem({ searchItem: track.title }))
@@ -83,7 +99,8 @@ const TrackSearchResult = (props: TrackSearchResultProps) => {
       searchTrack: track,
       canBeUnlisted: false
     })
-  }, [track, navigation, dispatch])
+    onSearchResultSelect(track.track_id)
+  }, [dispatch, track, navigation, onSearchResultSelect])
 
   return (
     <SearchResultItem onPress={handlePress}>
@@ -114,6 +131,10 @@ const PlaylistSearchResult = (props: PlaylistSearchResultProps) => {
 
   const navigation = useNavigation()
   const dispatch = useDispatch()
+  const onSearchResultSelect = useTrackSearchResultSelect(
+    'playlist',
+    'autocomplete'
+  )
 
   const handlePress = useCallback(() => {
     dispatch(addItem({ searchItem: playlist.playlist_name }))
@@ -121,7 +142,8 @@ const PlaylistSearchResult = (props: PlaylistSearchResultProps) => {
       id: playlist.playlist_id,
       searchCollection: playlist
     })
-  }, [playlist, navigation, dispatch])
+    onSearchResultSelect(playlist.playlist_id)
+  }, [dispatch, playlist, navigation, onSearchResultSelect])
 
   return (
     <SearchResultItem onPress={handlePress}>
@@ -152,6 +174,10 @@ const AlbumSearchResult = (props: AlbumSearchResultProps) => {
 
   const navigation = useNavigation()
   const dispatch = useDispatch()
+  const onSearchResultSelect = useTrackSearchResultSelect(
+    'album',
+    'autocomplete'
+  )
 
   const handlePress = useCallback(() => {
     dispatch(addItem({ searchItem: album.playlist_name }))
@@ -159,7 +185,8 @@ const AlbumSearchResult = (props: AlbumSearchResultProps) => {
       id: album.playlist_id,
       searchCollection: album
     })
-  }, [album, navigation, dispatch])
+    onSearchResultSelect(album.playlist_id)
+  }, [dispatch, album, navigation, onSearchResultSelect])
 
   return (
     <SearchResultItem onPress={handlePress}>

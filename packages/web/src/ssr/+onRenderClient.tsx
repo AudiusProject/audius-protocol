@@ -9,6 +9,7 @@ import type { PageContextClient } from 'vike/types'
 import { isMobile as getIsMobile } from 'utils/clientUtil'
 
 import '../index.css'
+import { HarmonyCacheProvider } from '../HarmonyCacheProvider'
 import { Root } from '../Root'
 
 import { SsrContextProvider } from './SsrContext'
@@ -33,17 +34,19 @@ export default async function render(
   if (HYDRATE_CLIENT) {
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
-      <SsrContextProvider
-        value={{
-          isServerSide: false,
-          isSsrEnabled: true,
-          pageProps,
-          isMobile,
-          history: null
-        }}
-      >
-        <Root />
-      </SsrContextProvider>
+      <HarmonyCacheProvider>
+        <SsrContextProvider
+          value={{
+            isServerSide: false,
+            isSsrEnabled: true,
+            pageProps,
+            isMobile,
+            history: null
+          }}
+        >
+          <Root />
+        </SsrContextProvider>
+      </HarmonyCacheProvider>
     )
   }
 }

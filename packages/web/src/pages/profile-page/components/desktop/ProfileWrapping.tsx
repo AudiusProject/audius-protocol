@@ -110,7 +110,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
           {!isDeactivated && userId && (
             <>
               <EditableName
-                className={editMode ? styles.editableName : null}
+                className={editMode ? styles.editableName : styles.name}
                 name={name}
                 editable={editMode}
                 verified={verified}
