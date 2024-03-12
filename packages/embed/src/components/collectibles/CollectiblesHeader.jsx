@@ -16,12 +16,12 @@ const badgeTiers = [
   {
     tier: 'platinum',
     icon: <IconPlatinumBadge />,
-    amount: new BN('100000000000000000000000')
+    amount: new BN('10000000000000000000000')
   },
   {
     tier: 'gold',
     icon: <IconGoldBadge />,
-    amount: new BN('10000000000000000000000')
+    amount: new BN('1000000000000000000000')
   },
   {
     tier: 'silver',
@@ -45,7 +45,7 @@ const getTierIcon = (balance) => {
 const CollectiblesHeader = ({
   user,
   backButtonVisible = false,
-  onBackButtonClick = () => {}
+  onBackButtonClick = () => { }
 }) => {
   const { name, handle, isVerified, totalBalance } = user
   const onClick = () =>

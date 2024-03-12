@@ -19,13 +19,13 @@ export type BadgeTierInfo = {
 export const badgeTiers: BadgeTierInfo[] = [
   {
     tier: 'platinum',
-    minAudio: stringAudioToBN('100000' as StringAudio),
-    humanReadableAmount: 100000
+    minAudio: stringAudioToBN('10000' as StringAudio),
+    humanReadableAmount: 10000
   },
   {
     tier: 'gold',
-    minAudio: stringAudioToBN('10000' as StringAudio),
-    humanReadableAmount: 10000
+    minAudio: stringAudioToBN('1000' as StringAudio),
+    humanReadableAmount: 1000
   },
   {
     tier: 'silver',

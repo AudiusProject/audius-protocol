@@ -35,8 +35,8 @@ const tierInfoMap = {
   none: { label: 'None', icon: '', amount: 0 },
   bronze: { label: 'Bronze', icon: '🥉', amount: 10 },
   silver: { label: 'Silver', icon: '🥈', amount: 100 },
-  gold: { label: 'Gold', icon: '🥇', amount: 10000 },
-  platinum: { label: 'Platinum', icon: '🥇', amount: 100000 }
+  gold: { label: 'Gold', icon: '🥇', amount: 1000 },
+  platinum: { label: 'Platinum', icon: '🥇', amount: 10000 }
 }
 
 type TierChangeNotificationProps = {
