@@ -36,7 +36,6 @@ export type Modals =
   | 'MobileConnectWalletsDrawer'
   | 'MobileEditCollectiblesDrawer'
   | 'Share'
-  | 'ShareSoundToTikTok'
   | 'HCaptcha'
   | 'BrowserPushPermissionConfirmation'
   | 'AudioBreakdown'
