@@ -168,6 +168,7 @@ export type ProposalEvent = {
 }
 
 export enum Status {
+  Idle = 'Idle',
   Loading = 'Loading',
   Success = 'Success',
   Failure = 'Failure'
