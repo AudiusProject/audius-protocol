@@ -23,7 +23,7 @@ const { getUserId } = accountSelectors
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 
-const isStaging = env().ENVIRONMENT === 'staging'
+const isStaging = env.ENVIRONMENT === 'staging'
 
 const messages = {
   appearance: 'Appearance',

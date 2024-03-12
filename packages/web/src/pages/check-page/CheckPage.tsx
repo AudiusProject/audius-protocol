@@ -21,8 +21,8 @@ declare global {
   }
 }
 
-const COGNITO_KEY = env().COGNITO_KEY
-const COGNITO_TEMPLATE_ID = env().COGNITO_TEMPLATE_ID
+const COGNITO_KEY = env.COGNITO_KEY
+const COGNITO_TEMPLATE_ID = env.COGNITO_TEMPLATE_ID
 
 const CheckPage = () => {
   const dispatch = useDispatch()

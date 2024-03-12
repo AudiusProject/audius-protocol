@@ -25,7 +25,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
-const GENERAL_ADMISSION = env().GENERAL_ADMISSION ?? ''
+const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You',

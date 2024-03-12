@@ -12,8 +12,8 @@ const { version: clientVersion } = packageInfo
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
-const AmplitudeWriteKey = env().AMPLITUDE_WRITE_KEY
-const AmplitudeProxy = env().AMPLITUDE_PROXY
+const AmplitudeWriteKey = env.AMPLITUDE_WRITE_KEY
+const AmplitudeProxy = env.AMPLITUDE_PROXY
 const amplitudeInstance = Amplitude.getInstance()
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 

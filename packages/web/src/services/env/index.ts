@@ -6,17 +6,20 @@ import { env as envStage } from './env.stage'
 
 const environment = process.env.VITE_ENVIRONMENT as Environment
 
-export const getEnv = (): Env => {
-  switch (environment) {
-    case 'development':
-      return envDev
-    case 'production':
-      return envProd
-    case 'staging':
-      return envStage
-    default:
-      throw new Error(`Unknown environment: ${environment}`)
-  }
+let env: Env
+
+switch (environment) {
+  case 'development':
+    env = envDev
+    break
+  case 'production':
+    env = envProd
+    break
+  case 'staging':
+    env = envStage
+    break
+  default:
+    throw new Error(`Unknown environment: ${environment}`)
 }
 
-export const env = getEnv
+export { env }

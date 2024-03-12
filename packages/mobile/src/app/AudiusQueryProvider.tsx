@@ -20,7 +20,7 @@ export const audiusQueryContext = {
   audiusSdk,
   dispatch: store.dispatch,
   reportToSentry,
-  env: env(),
+  env,
   fetch,
   remoteConfigInstance
 }

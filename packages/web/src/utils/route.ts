@@ -8,19 +8,19 @@ import { matchPath } from 'react-router'
 // TODO: Move routing to @audius/common with an injected env
 // so that it can properly handle routing to the correct environment.
 // These values are defaulted to the production context.
-const env = (): Partial<Env> => ({
+const env: Partial<Env> = {
   BASENAME: '',
   USE_HASH_ROUTING: false,
   PUBLIC_PROTOCOL: 'https:',
   PUBLIC_HOSTNAME: 'audius.co'
-})
+}
 
-const USE_HASH_ROUTING = env().USE_HASH_ROUTING
+const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
 // Host/protocol.
-export const BASE_URL = `${env().PUBLIC_PROTOCOL}//${env().PUBLIC_HOSTNAME}`
-export const BASE_GA_URL = `${env().PUBLIC_PROTOCOL}//${env().PUBLIC_HOSTNAME}`
-export const BASENAME = env().BASENAME
+export const BASE_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+export const BASE_GA_URL = `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+export const BASENAME = env.BASENAME
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'

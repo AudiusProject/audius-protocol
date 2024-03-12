@@ -44,8 +44,8 @@ const initSdk = async () => {
       claimableTokensClient: claimableTokensService,
       rewardManagerClient: rewardManagerService,
       antiAbuseOracleSelector: new AntiAbuseOracleSelector({
-        endpoints: [env().AAO_ENDPOINT!],
-        registeredAddresses: env().ORACLE_ETH_ADDRESSES?.split(',') ?? []
+        endpoints: [env.AAO_ENDPOINT!],
+        registeredAddresses: env.ORACLE_ETH_ADDRESSES?.split(',') ?? []
       })
     }
   })

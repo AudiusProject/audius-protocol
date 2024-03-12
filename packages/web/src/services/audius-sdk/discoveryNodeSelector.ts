@@ -67,7 +67,7 @@ const updateCachedDiscoveryNode = (endpoint: string) => {
 }
 
 export const discoveryNodeSelectorService = new DiscoveryNodeSelectorService({
-  env: env(),
+  env,
   remoteConfigInstance,
   initialSelectedNode: getCachedDiscoveryNode(),
   onChange: updateCachedDiscoveryNode

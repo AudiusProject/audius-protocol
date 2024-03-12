@@ -31,8 +31,8 @@ const parseTransactionFromSuccessParams = (params: string) => {
   }
 }
 
-const MERCHANT_ID = env().COINFLOW_MERCHANT_ID
-const IS_PRODUCTION = env().ENVIRONMENT === 'production'
+const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowWithdrawModal = () => {
   const { isOpen, onClose, onClosed } = useCoinflowWithdrawModal()

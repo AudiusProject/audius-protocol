@@ -36,21 +36,21 @@ export const storeContext: CommonStoreContext = {
   localStorage,
   isNativeMobile: true,
   isElectron: false,
-  env: env(),
+  env,
   explore,
   solanaClient: new SolanaClient({
-    solanaClusterEndpoint: env().SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: env().METADATA_PROGRAM_ID
+    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: env.METADATA_PROGRAM_ID
   }),
   sentry: Sentry,
   reportToSentry,
   // Shim in main, but defined in native-reloaded branch
   audioPlayer,
   trackDownload,
-  instagramAppId: env().INSTAGRAM_APP_ID,
-  instagramRedirectUrl: env().INSTAGRAM_REDIRECT_URL,
+  instagramAppId: env.INSTAGRAM_APP_ID,
+  instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
-  openSeaClient: new OpenSeaClient(env().OPENSEA_API_URL!),
+  openSeaClient: new OpenSeaClient(env.OPENSEA_API_URL!),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

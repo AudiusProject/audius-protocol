@@ -508,7 +508,7 @@ export function CidImage({
   }
 
   const host =
-    env().ENVIRONMENT === 'staging'
+    env.ENVIRONMENT === 'staging'
       ? 'https://creatornode12.staging.audius.co'
       : 'https://creatornode2.audius.co'
 

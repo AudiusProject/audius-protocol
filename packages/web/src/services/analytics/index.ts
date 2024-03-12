@@ -9,7 +9,7 @@ import packageInfo from '../../../package.json'
 import * as amplitude from './amplitude'
 const { version } = packageInfo
 
-const IS_PRODUCTION_BUILD = env().ENVIRONMENT === 'production'
+const IS_PRODUCTION_BUILD = env.ENVIRONMENT === 'production'
 
 let resolveCallback: Nullable<(value?: any) => void> = null
 let rejectCallback: Nullable<(value?: any) => void> = null

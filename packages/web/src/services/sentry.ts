@@ -16,7 +16,7 @@ const MAX_BREADCRUMBS = 300
 
 export const initializeSentry = () => {
   init({
-    dsn: env().SENTRY_DSN,
+    dsn: env.SENTRY_DSN,
 
     // Need to give Sentry a version so it can
     // associate stacktraces with sourcemaps

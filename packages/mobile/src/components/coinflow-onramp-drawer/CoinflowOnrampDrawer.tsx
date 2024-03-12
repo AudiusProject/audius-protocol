@@ -21,7 +21,7 @@ import { zIndex } from 'app/utils/zIndex'
 
 const MODAL_NAME = 'CoinflowOnramp'
 
-const { ENVIRONMENT } = env()
+const { ENVIRONMENT } = env
 const IS_PRODUCTION = ENVIRONMENT === 'production'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -121,7 +121,7 @@ export const CoinflowOnrampDrawer = () => {
           chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
           connection={adapter.connection}
           onSuccess={handleSuccess}
-          merchantId={env().COINFLOW_MERCHANT_ID || ''}
+          merchantId={env.COINFLOW_MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
           disableGooglePay={false}
           disableApplePay={false}

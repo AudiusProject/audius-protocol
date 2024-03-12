@@ -1,7 +1,7 @@
 import { env } from 'services/env'
 
-const PUBLIC_PROTOCOL = env().PUBLIC_PROTOCOL
-const PUBLIC_HOSTNAME = env().PUBLIC_HOSTNAME
+const PUBLIC_PROTOCOL = env.PUBLIC_PROTOCOL
+const PUBLIC_HOSTNAME = env.PUBLIC_HOSTNAME
 
 const isIOS =
   typeof navigator !== 'undefined' &&

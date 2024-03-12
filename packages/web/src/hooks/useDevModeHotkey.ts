@@ -10,7 +10,7 @@ export const useDevModeHotkey = (keyCode: number) => {
 
   const listener = useCallback(() => {
     if (
-      env().ENVIRONMENT === 'production' &&
+      env.ENVIRONMENT === 'production' &&
       (!window.localStorage ||
         !window.localStorage.getItem(ENABLE_DEV_MODE_KEY))
     )

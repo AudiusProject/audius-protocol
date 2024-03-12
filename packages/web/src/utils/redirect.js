@@ -1,8 +1,8 @@
 import { env } from 'services/env'
 import { isElectron } from 'utils/clientUtil'
 
-const ENV = env().ENVIRONMENT
-// const SCHEME = env().SCHEME
+const ENV = env.ENVIRONMENT
+// const SCHEME = env.SCHEME
 
 // On startup, when this script is included, create a link to the
 // downloaded electron app (if available) and try redirecting to it.

@@ -234,9 +234,9 @@ export const useShareToStory = ({
       const shareOptions: ShareSingleOptions = {
         backgroundVideo: videoUri,
         stickerImage: stickerUri,
-        attributionURL: env().AUDIUS_URL,
+        attributionURL: env.AUDIUS_URL,
         social: Social.InstagramStories,
-        appId: env().INSTAGRAM_APP_ID
+        appId: env.INSTAGRAM_APP_ID
       }
       await Share.shareSingle(shareOptions)
     },
@@ -266,7 +266,7 @@ export const useShareToStory = ({
   )
 
   const pasteToTikTokApp = useCallback((videoUri: string) => {
-    initTikTokShare(env().TIKTOK_APP_ID as string)
+    initTikTokShare(env.TIKTOK_APP_ID as string)
     shareToTikTok(videoUri, (_code) => {
       // TODO: Handle errors handed back from TikTok
     })

@@ -22,8 +22,8 @@ type HCaptchaMessage = {
   data: string
 }
 
-const siteKey = env().HCAPTCHA_SITE_KEY as string
-const baseUrl = env().HCAPTCHA_BASE_URL
+const siteKey = env.HCAPTCHA_SITE_KEY as string
+const baseUrl = env.HCAPTCHA_BASE_URL
 
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
 const REWARD_MODAL_NAME = 'ChallengeRewardsExplainer'

@@ -17,7 +17,7 @@ import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import { EventNames } from 'app/types/analytics'
 
-const authenticationUrl = `${env().IDENTITY_SERVICE}/tiktok`
+const authenticationUrl = `${env.IDENTITY_SERVICE}/tiktok`
 
 const canOpenTikTok = () => {
   return Linking.canOpenURL('tiktok://app')
@@ -46,7 +46,7 @@ const createAuthenticate =
       })
     }
 
-    tikTokInit(env().TIKTOK_APP_ID!)
+    tikTokInit(env.TIKTOK_APP_ID!)
 
     return new Promise((resolve, reject) => {
       let authDone = false
@@ -66,14 +66,14 @@ const createAuthenticate =
         }
 
         // Need to set a csrf cookie because it is required for web
-        await CookieManager.set(env().IDENTITY_SERVICE!, {
+        await CookieManager.set(env.IDENTITY_SERVICE!, {
           name: 'csrfState',
           value: 'true'
         })
 
         try {
           const response = await fetch(
-            `${env().IDENTITY_SERVICE}/tiktok/access_token`,
+            `${env.IDENTITY_SERVICE}/tiktok/access_token`,
             {
               credentials: 'include',
               method: 'POST',

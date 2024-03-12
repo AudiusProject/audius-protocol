@@ -9,9 +9,9 @@ import {
 import { env } from './env'
 
 const servicesConfig =
-  env().ENVIRONMENT === 'development'
+  env.ENVIRONMENT === 'development'
     ? developmentConfig
-    : env().ENVIRONMENT === 'staging'
+    : env.ENVIRONMENT === 'staging'
     ? stagingConfig
     : productionConfig
 

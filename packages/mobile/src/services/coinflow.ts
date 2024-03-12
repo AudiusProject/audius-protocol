@@ -20,16 +20,16 @@ export const getCoinflowDeviceId = (): string => {
 
   if (Platform.OS === 'ios') {
     nsureSDK.sharedInstanceWithAppID(
-      env().COINFLOW_APP_ID,
-      env().COINFLOW_PARTNER_ID,
+      env.COINFLOW_APP_ID,
+      env.COINFLOW_PARTNER_ID,
       (_: unknown, _deviceId: string) => {
         deviceId = _deviceId ?? ''
       }
     )
   } else if (Platform.OS === 'android') {
     nsureSDK.getDeviceId(
-      env().COINFLOW_APP_ID,
-      env().COINFLOW_PARTNER_ID,
+      env.COINFLOW_APP_ID,
+      env.COINFLOW_PARTNER_ID,
       (_deviceId: string) => {
         deviceId = _deviceId ?? ''
       }

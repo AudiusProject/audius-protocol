@@ -8,5 +8,5 @@ import { discoveryNodeSelectorService } from './discoveryNodeSelector'
 export const getStorageNodeSelector = makeGetStorageNodeSelector({
   auth,
   discoveryNodeSelectorService,
-  env: env()
+  env
 })

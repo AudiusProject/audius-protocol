@@ -29,15 +29,15 @@ type SignUpFlowTwitterAuthProps = Partial<SocialButtonProps> & {
 }
 
 const twitterApi = {
-  loginUrl: `${env().IDENTITY_SERVICE}/twitter/callback`,
-  requestTokenUrl: `${env().IDENTITY_SERVICE}/twitter`,
+  loginUrl: `${env.IDENTITY_SERVICE}/twitter/callback`,
+  requestTokenUrl: `${env.IDENTITY_SERVICE}/twitter`,
   forceLogin: true,
   screenName: '',
   credentialsType: 'same-origin' as CredentialsType,
   headers: {
     'Content-Type': 'application/json',
-    origin: env().AUDIUS_URL,
-    referrer: env().AUDIUS_URL
+    origin: env.AUDIUS_URL,
+    referrer: env.AUDIUS_URL
   }
 }
 

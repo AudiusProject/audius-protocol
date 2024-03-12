@@ -18,8 +18,8 @@ import styles from './CoinflowOnrampModal.module.css'
 
 const { transactionSucceeded, transactionCanceled } = coinflowModalUIActions
 
-const MERCHANT_ID = env().COINFLOW_MERCHANT_ID
-const IS_PRODUCTION = env().ENVIRONMENT === 'production'
+const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const CoinflowOnrampModal = () => {
   const {
