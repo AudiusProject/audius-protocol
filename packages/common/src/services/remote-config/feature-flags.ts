@@ -3,7 +3,6 @@ import { Environment } from '../env'
 /* FeatureFlags must be lowercase snake case */
 export enum FeatureFlags {
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
-  SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok',
   CHALLENGE_REWARDS_UI = 'challenge_rewards_ui',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
@@ -78,7 +77,6 @@ export const environmentFlagDefaults: Record<
  */
 export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
-  [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,

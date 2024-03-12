@@ -15,7 +15,6 @@ import cn from 'classnames'
 import { messages } from '../messages'
 import { ShareProps } from '../types'
 
-import { IconTikTok } from './IconTikTok'
 import styles from './ShareDialog.module.css'
 
 const iconProps = { height: 24, width: 24 }
@@ -43,13 +42,11 @@ type ShareDialogProps = ShareProps
 export const ShareDialog = ({
   onShareToDirectMessage,
   onShareToTwitter,
-  onShareToTikTok,
   onCopyLink,
   onEmbed,
   isOpen,
   onClose,
   onClosed,
-  showTikTokShareAction,
   shareType,
   isPrivate
 }: ShareDialogProps) => {
@@ -90,15 +87,6 @@ export const ShareDialog = ({
               iconClassName={styles.shareIcon}
               textClassName={styles.shareActionLabel}
             />
-            {showTikTokShareAction ? (
-              <ShareActionListItem
-                leftIcon={<IconTikTok {...iconProps} />}
-                text={messages.tikTok}
-                iconClassName={styles.shareIcon}
-                textClassName={styles.shareActionLabel}
-                onClick={onShareToTikTok}
-              />
-            ) : null}
             <ShareActionListItem
               leftIcon={<IconLink {...iconProps} />}
               iconClassName={styles.shareIcon}

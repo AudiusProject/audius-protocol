@@ -17,7 +17,6 @@ export const initialState: BasicModalsState = {
   MobileConnectWalletsDrawer: { isOpen: false },
   MobileEditCollectiblesDrawer: { isOpen: false },
   Share: { isOpen: false },
-  ShareSoundToTikTok: { isOpen: false },
   HCaptcha: { isOpen: false },
   BrowserPushPermissionConfirmation: { isOpen: false },
   AudioBreakdown: { isOpen: false },

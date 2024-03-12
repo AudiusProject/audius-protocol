@@ -25,7 +25,6 @@ import { LockedContentModal } from 'components/locked-content-modal/LockedConten
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishTrackConfirmationModal } from 'components/publish-track-confirmation-modal/PublishTrackConfirmationModal'
-import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -98,7 +97,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   ChallengeRewardsExplainer: ChallengeRewardsModal,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
-  ShareSoundToTikTok: ShareSoundToTikTokModal,
   AiAttributionSettings: AiAttributionSettingsModal,
   Welcome: WelcomeModal,
   PremiumContentPurchaseModal,
