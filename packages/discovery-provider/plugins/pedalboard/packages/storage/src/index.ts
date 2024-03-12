@@ -959,6 +959,7 @@ export type Tracks = {
   description: string | null;
   isrc: string | null;
   iswc: string | null;
+  additional_ids: unknown | null;
   license: string | null;
   updated_at: Date;
   cover_art_sizes: string | null;

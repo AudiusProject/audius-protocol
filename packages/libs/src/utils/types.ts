@@ -114,6 +114,10 @@ type USDCPurchaseConditions = {
   }
 }
 
+type AdditionalIDs = {
+  [key: string]: string
+}
+
 export type GatedConditions = {
   nft_collection?: EthCollectibleGatedConditions | SolCollectibleGatedConditions
   follow_user_id?: number
@@ -134,6 +138,7 @@ export type TrackMetadata = {
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>
+  additional_ids: Nullable<AdditionalIDs>
   credits_splits: Nullable<string>
   description: Nullable<string>
   download: Nullable<Download>

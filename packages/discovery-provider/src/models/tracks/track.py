@@ -64,6 +64,7 @@ class Track(Base, RepresentableMixin):
     description = Column(String)
     isrc = Column(String)
     iswc = Column(String)
+    additional_ids = Column(JSONB())
     license = Column(String)
     updated_at = Column(DateTime, nullable=False)
     cover_art_sizes = Column(String)

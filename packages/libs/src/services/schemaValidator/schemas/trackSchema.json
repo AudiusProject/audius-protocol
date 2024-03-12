@@ -154,6 +154,13 @@
           ],
           "default": null
         },
+        "additional_ids": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "default": null
+        },
         "ddex_app": {
           "type": [
             "string",

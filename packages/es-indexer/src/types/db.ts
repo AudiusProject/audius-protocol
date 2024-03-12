@@ -681,6 +681,7 @@ export interface TrackRow {
   'download_conditions': any | null;
   'isrc': string | null;
   'iswc': string | null;
+  'additional_ids': any | null;
   'license': string | null;
   'metadata_multihash': string | null;
   'mood': string | null;
