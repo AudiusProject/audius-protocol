@@ -83,6 +83,7 @@ const createSdkSchema = () =>
     is_scheduled_release: z.optional(z.boolean()),
     is_unlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
+    additionalIds: z.optional(z.record(z.string()).nullable()),
     license: z.optional(z.string().nullable()),
     mood: MoodSchema,
     is_stream_gated: z.optional(z.boolean()),
