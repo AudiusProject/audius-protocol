@@ -5,6 +5,7 @@ import FormData from 'form-data'
 import type { StorageNodeSelectorService } from '../../sdk'
 import type { UserStateManager } from '../../userStateManager'
 import {
+  GatedConditions,
   Nullable,
   TrackMetadata,
   UploadTrackMetadata,
