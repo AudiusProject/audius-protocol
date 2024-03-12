@@ -4,7 +4,7 @@ import path from 'path'
 
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
-import process from 'process/browser'
+// import process from 'process/browser'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
@@ -31,7 +31,7 @@ const fixAcceptHeader404 = () => ({
 })
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const env = loadEnv(mode, path.join(process.cwd(), 'env'), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
   const ssr = env.VITE_SSR === 'true'
@@ -82,6 +82,7 @@ export default defineConfig(({ mode }) => {
       // Import workerscript as raw string
       // Could use ?raw suffix but it breaks on mobile
       {
+        name: 'workerscript',
         transform(code, id) {
           if (/\.workerscript$/.test(id)) {
             const str = JSON.stringify(code)
