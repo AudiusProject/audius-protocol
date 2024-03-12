@@ -29,10 +29,23 @@ const fixAcceptHeader404 = () => ({
 })
 
 export default defineConfig(async ({ mode }) => {
+  // Despite loading env here, the result is the same as a filtered process.env
+  // rather than dynamically loading the correct env file by mode.
+  // Since the build/start scripts use turbo, and other packages don't use vite,
+  // --mode isn't an allowed parameter. Instead, each script sets the
+  // environment manually using env-cmd.
+  // The only exception is test (vitest), which does not set the env manually,
+  // and uses the "test" mode to load .env.test which sets VITE_ENVIRONMENT to
+  // "development". Even in that case, process.env gets explicitly set
+  // anyway because that's what the application code looks at.
+  // Despite loading .env.production (which notably doesn't exist anyway),
+  // loadEnv prioritizes process.env anyway so we're not at risk of overrides.
   const env = loadEnv(mode, path.join(process.cwd(), 'env'), 'VITE_')
-  // Explicitly set the VITE_ENVIRONMENT for the process from the helper loadEnv
-  // result since we need it to use the app env to generate the config.
-  process.env.VITE_ENVIRONMENT = env.VITE_ENVIRONMENT
+  // Explicitly set VITE_ENVIRONMENT to "development" when in test mode.
+  // Better than defaulting to using env.VITE_ENVIRONMENT, which would lead to
+  // accidentally using "production"!
+  process.env.VITE_ENVIRONMENT =
+    mode === 'test' ? 'development' : process.env.VITE_ENVIRONMENT
   // Dynamically import the app environment so that process.env.VITE_ENVIRONMENT
   // is already set before evaluating the switch/case. The app env is used for
   // transforming the index.html file.
