@@ -103,6 +103,7 @@ def search_es_full(args: dict):
         response["tracks"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_users:
+        logger.info(f"asdf users: {mfound['responses'][0]['hits']['hits']}")
         response["users"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_playlists:
@@ -320,7 +321,7 @@ def default_function_score(dsl, ranking_field):
                 "query": {"bool": dsl},
                 "field_value_factor": {
                     "field": ranking_field,
-                    "factor": 20,
+                    "factor": 0.1,
                     "modifier": "ln2p",
                 },
                 "boost_mode": "multiply",
@@ -403,7 +404,42 @@ def user_dsl(search_str, current_user_id, must_saved=False):
             {
                 "bool": {
                     "should": [
-                        *base_match(search_str, extra_fields=["handle"]),
+                        *base_match(
+                            search_str,
+                            extra_fields=["handle.searchable", "name.searchable"],
+                        ),
+                        {
+                            "match": {
+                                "name.searchable": {
+                                    "query": search_str,
+                                    "fuzziness": "AUTO",
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "handle.searchable": {
+                                    "query": search_str,
+                                    "fuzziness": "AUTO",
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "name": {
+                                    "value": search_str.replace(" ", ""),
+                                    "boost": 3,
+                                }
+                            }
+                        },
+                        {
+                            "term": {
+                                "handle": {
+                                    "value": search_str.replace(" ", ""),
+                                    "boost": 3,
+                                }
+                            }
+                        },
                         *[
                             {
                                 "match": {
@@ -436,9 +472,13 @@ def user_dsl(search_str, current_user_id, must_saved=False):
         "must_not": [],
         "should": [
             *base_match(search_str, operator="and", extra_fields=["handle"]),
-            {"term": {"handle": {"value": search_str, "boost": 0.2}}},
-            {"term": {"name": {"value": search_str, "boost": 0.2}}},
-            {"term": {"is_verified": {"value": True, "boost": 1.5}}},
+            {
+                "term": {
+                    "is_verified": {
+                        "value": True,
+                    }
+                }
+            },
         ],
     }
 
