@@ -35,6 +35,7 @@ import {
 } from 'utils/route'
 
 import { AccountDetails } from './AccountDetails'
+import { ConnectInstagram } from './ConnectInstagram'
 import { GroupHeader } from './GroupHeader'
 import styles from './LeftNav.module.css'
 import { LeftNavDroppable, LeftNavLink } from './LeftNavLink'
@@ -156,6 +157,9 @@ const LeftNav = (props: NavColumnProps) => {
                   <div className={styles.linkGroup}>
                     <LeftNavLink to={'/fb/share'}>
                       Share Profile to Facebook
+                    </LeftNavLink>
+                    <LeftNavLink>
+                      <ConnectInstagram />
                     </LeftNavLink>
                   </div>
                 ) : null}
