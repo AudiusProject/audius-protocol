@@ -9,7 +9,7 @@ import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
 import Loading from 'components/Loading'
-import Tooltip, { Position } from 'components/Tooltip'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import AudiusClient from 'services/Audius'
 import { usePendingTransactions } from 'store/account/hooks'
 import { useCancelTransaction } from 'store/actions/cancelTransaction'
@@ -248,7 +248,7 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
           type={ButtonType.PRIMARY_ALT}
         />
 
-        <Tooltip
+        <BasicTooltip
           position={Position.LEFT}
           text={messages.cantCompleteBecausePendingClaim}
           isDisabled={!isDisabled}
@@ -262,7 +262,7 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
             type={ButtonType.PRIMARY}
             onClick={onClickSubmit}
           />
-        </Tooltip>
+        </BasicTooltip>
       </Flex>
       <ConfirmTransactionModal
         isOpen={isCancelOpen}

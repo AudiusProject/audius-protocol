@@ -1,17 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import { Box, Flex, Text } from '@audius/harmony'
 import { ButtonType } from '@audius/stems'
-import { Flex, Text, Box } from '@audius/harmony'
+import React, { useCallback, useEffect, useState } from 'react'
 
-import { useUpdateOperatorCut } from 'store/actions/updateOperatorCut'
-import Modal from 'components/Modal'
 import Button from 'components/Button'
-import TextField from 'components/TextField'
-import styles from './OperatorCutModal.module.css'
-import { Status } from 'types'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
+import { NodeServiceFeeInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useUpdateOperatorCut } from 'store/actions/updateOperatorCut'
+import { Status } from 'types'
 import { useModalControls } from 'utils/hooks'
+import styles from './OperatorCutModal.module.css'
 
 const messages = {
   title: 'Change Operator Fee',
@@ -102,9 +103,12 @@ const OperatorCutModal: React.FC<OperatorCutModalProps> = ({
           <Text variant="heading" size="s">
             {`${cut}%`}
           </Text>
-          <Text variant="body" size="m" strength="strong" color="subdued">
-            {messages.currentLabel}
-          </Text>
+          <Flex inline gap="xs" alignItems="center">
+            <Text variant="body" size="m" strength="strong" color="subdued">
+              {messages.currentLabel}
+            </Text>
+            <NodeServiceFeeInfoTooltip color="subdued" />
+          </Flex>
         </Flex>
       </Flex>
       <Button

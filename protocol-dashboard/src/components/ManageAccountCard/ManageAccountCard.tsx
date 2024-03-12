@@ -11,6 +11,11 @@ import { usePushRoute } from 'utils/effects'
 import { formatShortWallet } from 'utils/format'
 import { accountPage } from 'utils/routes'
 
+import {
+  DelegatedAudioInfoTooltip,
+  DelegatingToInfoTooltip,
+  EstimatedAudioRewardInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
 import { ManageDelegation } from 'components/UpdateDelegationModal/UpdateDelegationModal'
 import AudiusClient from 'services/Audius/AudiusClient'
@@ -196,27 +201,33 @@ export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
             wrap="wrap"
           >
             <Card direction="column" pv="l" ph="xl">
-              <Text
-                variant="heading"
-                color="subdued"
-                size="s"
-                strength="default"
-              >
-                {messages.delegatingTo}
-              </Text>
+              <Flex inline gap="xs" alignItems="center">
+                <Text
+                  variant="heading"
+                  color="subdued"
+                  size="s"
+                  strength="default"
+                >
+                  {messages.delegatingTo}
+                </Text>
+                <DelegatingToInfoTooltip color="subdued" />
+              </Flex>
               <Box mt="l">
                 <DelegateInfo wallet={d.wallet} />
               </Box>
             </Card>
             <Box css={{ flexGrow: 1 }}>
-              <Text
-                variant="heading"
-                color="subdued"
-                size="s"
-                strength="default"
-              >
-                {messages.estimatedReward}
-              </Text>
+              <Flex inline gap="xs" alignItems="center">
+                <Text
+                  variant="heading"
+                  color="subdued"
+                  size="s"
+                  strength="default"
+                >
+                  {messages.estimatedReward}
+                </Text>
+                <EstimatedAudioRewardInfoTooltip color="subdued" />
+              </Flex>
               <Box mt="l">
                 <UserAudioRewardEstimate
                   wallet={wallet}
@@ -234,14 +245,17 @@ export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
                 >
                   {AudiusClient.displayShortAud(d.amount)}
                 </Text>
-                <Text
-                  variant="heading"
-                  color="subdued"
-                  size="s"
-                  strength="default"
-                >
-                  {messages.delegatedToken}
-                </Text>
+                <Flex inline gap="xs" alignItems="center">
+                  <Text
+                    variant="heading"
+                    color="subdued"
+                    size="s"
+                    strength="default"
+                  >
+                    {messages.delegatedToken}
+                  </Text>
+                  <DelegatedAudioInfoTooltip color="subdued" />
+                </Flex>
               </Flex>
               {isOwner ? (
                 <Box mt="unit5">

@@ -11,6 +11,7 @@ import ConfirmTransactionModal, {
 } from 'components/ConfirmTransactionModal'
 import DisplayAudio from 'components/DisplayAudio'
 import { InfoBox } from 'components/InfoBox/InfoBox'
+import { OperatorStakeInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import Modal from 'components/Modal'
 import TextField from 'components/TextField'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
@@ -37,8 +38,7 @@ const messages = {
   endpoint: 'Node Endpoint',
   cnEndpointPlaceholder: 'https://contentnode.audius.co',
   delegate: 'Node Wallet Address',
-  learnMoreNode:
-    'To learn more about running a node, please visit our help center.',
+  learnMoreNode: 'To learn more about running a node, please read the docs.',
   runningAudiusNode: 'Running an Audius Node',
   minStake: 'Min Stake',
   maxStakeExceeded: 'Exceeds maximum stake',
@@ -307,9 +307,12 @@ const RegisterServiceModal = ({
             <Text variant="heading" size="s">
               <DisplayAudio amount={min} />
             </Text>
-            <Text variant="body" size="m" strength="strong" color="subdued">
-              {messages.minStake}
-            </Text>
+            <Flex inline gap="xs" alignItems="center">
+              <Text variant="body" size="m" strength="strong" color="subdued">
+                {messages.minStake}
+              </Text>
+              <OperatorStakeInfoTooltip color="subdued" />
+            </Flex>
           </Flex>
         </Flex>
       </Box>

@@ -1,21 +1,22 @@
-import React, { useCallback } from 'react'
-import clsx from 'clsx'
 import BN from 'bn.js'
+import clsx from 'clsx'
+import React, { useCallback } from 'react'
 import Audius from 'services/Audius'
 import { SERVICES_USERS, accountPage } from 'utils/routes'
 
-import styles from './TopAddressesTable.module.css'
 import Table from 'components/Table'
 import { formatWeight } from 'utils/format'
+import styles from './TopAddressesTable.module.css'
 
-import { useUsers } from 'store/cache/user/hooks'
-import { Address, SortUser, Status } from 'types'
-import { usePushRoute } from 'utils/effects'
-import { useIsMobile } from 'utils/hooks'
-import getActiveStake from 'utils/activeStake'
 import DisplayAudio from 'components/DisplayAudio'
+import { TopContributorsInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
+import { useUsers } from 'store/cache/user/hooks'
+import { Address, SortUser, Status } from 'types'
+import getActiveStake from 'utils/activeStake'
+import { usePushRoute } from 'utils/effects'
+import { useIsMobile } from 'utils/hooks'
 
 const messages = {
   topAddresses: 'Top Contributors',
@@ -132,6 +133,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   return (
     <Table
       title={messages.topAddresses}
+      tooltipComponent={TopContributorsInfoTooltip}
       isLoading={status === Status.Loading}
       className={clsx(styles.topAddressesTable, {
         [className!]: !!className

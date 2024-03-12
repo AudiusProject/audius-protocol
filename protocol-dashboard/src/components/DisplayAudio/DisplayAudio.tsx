@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
+import React, { useCallback, useState } from 'react'
 
-import Tooltip, { Position } from 'components/Tooltip'
+import { Position } from 'components/Tooltip'
 import AudiusClient from 'services/Audius'
 import { formatShortAud, formatWei, formatWeiNumber } from 'utils/format'
 
-import styles from './DisplayAudio.module.css'
+import { BasicTooltip } from 'components/Tooltip/Tooltip'
 import copyToClipboard from 'utils/copyToClipboard'
+import styles from './DisplayAudio.module.css'
 
 type OwnProps = {
   className?: string
@@ -44,14 +45,14 @@ const DisplayAudio: React.FC<DisplayAudioProps> = ({
   )
 
   return (
-    <Tooltip
+    <BasicTooltip
       onClick={onClick}
       position={position}
       className={clsx(styles.tooltip, { [className!]: !!className })}
       text={tooltipText}
     >
       {`${formatter(amount)}${label ? ` ${label}` : ''}`}
-    </Tooltip>
+    </BasicTooltip>
   )
 }
 

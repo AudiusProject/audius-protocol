@@ -1,4 +1,4 @@
-import { Text } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
 import Loading from 'components/Loading'
@@ -226,6 +226,7 @@ const getOptions = (
 
 type OwnProps = {
   title: string
+  titleTooltipComponent?: React.ComponentType
   topNumber?: number | string
   size?: 'default' | 'large'
   tooltipTitle?: string
@@ -243,6 +244,7 @@ type LineChartProps = OwnProps
 const LineChart: React.FC<LineChartProps> = ({
   title,
   tooltipTitle,
+  titleTooltipComponent,
   size = 'default',
   topNumber,
   data,
@@ -273,6 +275,8 @@ const LineChart: React.FC<LineChartProps> = ({
 
   if (!tooltipTitle) tooltipTitle = title
 
+  const TitleTooltipComponent = titleTooltipComponent
+
   return (
     <Paper className={styles.chartContainer}>
       <div className={styles.header}>
@@ -287,7 +291,10 @@ const LineChart: React.FC<LineChartProps> = ({
               {formattedTopNumber}
             </Text>
           ) : null}
-          <div className={styles.title}>{title}</div>
+          <Flex inline gap="xs" alignItems="center">
+            <div className={styles.title}>{title}</div>
+            {TitleTooltipComponent == null ? null : <TitleTooltipComponent />}
+          </Flex>
         </div>
         {options && selection && onSelectOption && (
           <div className={styles.dropdown}>

@@ -8,7 +8,7 @@ import { REGISTER_NODE_DOCS_URL } from 'utils/routes'
 const messages = {
   registerNode: 'Register a Node',
   registerNodeInfo:
-    'Node operators run the decentralized infrastructure that powers the Audius Network.  To learn more about running a node, please visit our help center.',
+    'Node operators run the decentralized infrastructure that powers the Audius Network.  To learn more about running a node, please read the docs.',
   registerNodeInfoLink: 'Running an Audius Node',
   registerNodeCta: 'Register Node'
 }

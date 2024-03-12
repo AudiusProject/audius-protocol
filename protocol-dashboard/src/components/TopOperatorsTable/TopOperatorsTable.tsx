@@ -1,19 +1,20 @@
-import React, { useCallback } from 'react'
 import clsx from 'clsx'
+import React, { useCallback } from 'react'
 import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 
-import styles from './TopOperatorsTable.module.css'
 import Table from 'components/Table'
+import styles from './TopOperatorsTable.module.css'
 
-import { useUsers } from 'store/cache/user/hooks'
-import { Address, Operator, SortUser, Status } from 'types'
-import { usePushRoute } from 'utils/effects'
-import { useIsMobile } from 'utils/hooks'
-import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import BN from 'bn.js'
 import DisplayAudio from 'components/DisplayAudio'
+import { NodeOperatorInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
+import { useUsers } from 'store/cache/user/hooks'
+import { Address, Operator, SortUser, Status } from 'types'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
+import { usePushRoute } from 'utils/effects'
+import { useIsMobile } from 'utils/hooks'
 
 const messages = {
   topAddresses: 'Top Node Operators',
@@ -122,6 +123,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   return (
     <Table
       title={messages.topAddresses}
+      tooltipComponent={NodeOperatorInfoTooltip}
       isLoading={!status || status === Status.Loading}
       className={clsx(styles.topAddressesTable, {
         [className!]: !!className

@@ -32,6 +32,12 @@ import {
 } from 'utils/routes'
 
 import { Card } from 'components/Card/Card'
+import {
+  APICallsInfoTooltip,
+  EstimatedRewardRateInfoTooltip,
+  GlobalStakedInfoTooltip,
+  UniqueUsersInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
 import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
 import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCard'
 import { StatLabel } from 'components/StatLabel/StatLabel'
@@ -92,13 +98,16 @@ const Home = () => {
               strength="strong"
               size={mobile ? 's' : 'l'}
             />
-            <StatLabel
-              variant="heading"
-              strength="default"
-              size={mobile ? 'm' : 's'}
-            >
-              {messages.uniqueMonthlyUsers}
-            </StatLabel>
+            <Flex inline gap="xs" alignItems="center">
+              <StatLabel
+                variant="heading"
+                strength="default"
+                size={mobile ? 'm' : 's'}
+              >
+                {messages.uniqueMonthlyUsers}
+              </StatLabel>
+              <UniqueUsersInfoTooltip />
+            </Flex>
           </Flex>
           <Flex gap="s" w="100%" justifyContent="space-around" wrap="wrap">
             <Flex
@@ -112,13 +121,16 @@ const Home = () => {
                 strength="strong"
                 size="s"
               />
-              <StatLabel
-                variant="title"
-                size={mobile ? 'm' : 'l'}
-                strength="default"
-              >
-                {messages.globalStakedAudio}
-              </StatLabel>
+              <Flex inline gap="xs" alignItems="center">
+                <StatLabel
+                  variant="title"
+                  size={mobile ? 'm' : 'l'}
+                  strength="default"
+                >
+                  {messages.globalStakedAudio}
+                </StatLabel>
+                <GlobalStakedInfoTooltip />
+              </Flex>
             </Flex>
             <Flex
               direction="column"
@@ -131,13 +143,16 @@ const Home = () => {
                 size="s"
                 color="heading"
               />
-              <StatLabel
-                variant="title"
-                size={mobile ? 'm' : 'l'}
-                strength="default"
-              >
-                {messages.apiCalls}
-              </StatLabel>
+              <Flex inline gap="xs" alignItems="center">
+                <StatLabel
+                  variant="title"
+                  size={mobile ? 'm' : 'l'}
+                  strength="default"
+                >
+                  {messages.apiCalls}
+                </StatLabel>
+                <APICallsInfoTooltip />
+              </Flex>
             </Flex>
           </Flex>
         </Card>
@@ -149,9 +164,17 @@ const Home = () => {
           wrap="wrap"
         >
           <Box mb={mobile ? 'm' : undefined}>
-            <Text variant="heading" color="subdued" size="s" strength="default">
-              {messages.estimatedRewardRate}
-            </Text>
+            <Flex inline gap="xs" alignItems="center">
+              <Text
+                variant="heading"
+                color="subdued"
+                size="s"
+                strength="default"
+              >
+                {messages.estimatedRewardRate}
+              </Text>
+              <EstimatedRewardRateInfoTooltip color="subdued" />
+            </Flex>
           </Box>
           <EstimatedWeeklyStat />
           <EstimatedAnnualStat />

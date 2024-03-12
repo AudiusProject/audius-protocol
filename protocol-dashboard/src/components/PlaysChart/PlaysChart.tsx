@@ -1,3 +1,4 @@
+import { PlaysInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
 import { usePlays } from 'store/cache/analytics/hooks'
@@ -30,6 +31,7 @@ const PlaysChart: React.FC<PlaysChartProps> = () => {
     <LineChart
       topNumber={topNumber}
       title="Plays"
+      titleTooltipComponent={PlaysInfoTooltip}
       data={data}
       labels={labels}
       selection={bucket}

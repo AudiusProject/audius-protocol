@@ -9,6 +9,10 @@ import ConfirmTransactionModal, {
   ToOperator
 } from 'components/ConfirmTransactionModal'
 import { InfoBox } from 'components/InfoBox/InfoBox'
+import {
+  NodeOperatorInfoTooltip,
+  NodeServiceFeeInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
 import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
 import Modal from 'components/Modal'
 import AudiusClient from 'services/Audius'
@@ -172,15 +176,21 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
         <Flex direction="column" gap="xl" w="100%" css={{ maxWidth: 480 }}>
           <Flex justifyContent="space-between" w="100%">
             <Flex gap="s" direction="column">
-              <Text variant="body" size="m" strength="strong" color="subdued">
-                {messages.nodeOperator}
-              </Text>
+              <Flex inline gap="xs" alignItems="center">
+                <Text variant="body" size="m" strength="strong" color="subdued">
+                  {messages.nodeOperator}
+                </Text>
+                <NodeOperatorInfoTooltip color="subdued" />
+              </Flex>
               <DelegateInfo clickable={false} wallet={serviceOperatorWallet} />
             </Flex>
             <Flex gap="s" direction="column" alignItems="flex-end">
-              <Text variant="body" size="m" strength="strong">
-                {messages.operatorFee}
-              </Text>
+              <Flex inline gap="xs" alignItems="center">
+                <Text variant="body" size="m" strength="strong">
+                  {messages.operatorFee}
+                </Text>
+                <NodeServiceFeeInfoTooltip color="subdued" />
+              </Flex>
               <Text variant="heading" size="s">
                 {deployerCut}%
               </Text>
