@@ -36,8 +36,8 @@ const PrivateKeyExporterModal = lazy(
   () => import('pages/private-key-exporter-page/PrivateKeyExporterModal')
 )
 
-const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
-const IS_PRODUCTION = env.ENVIRONMENT === 'production'
+const MERCHANT_ID = env().COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = env().ENVIRONMENT === 'production'
 
 export const AppInner = () => {
   const { history } = useHistoryContext()

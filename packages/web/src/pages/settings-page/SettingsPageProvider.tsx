@@ -62,7 +62,7 @@ const {
   getUserName
 } = accountSelectors
 
-const isStaging = env.ENVIRONMENT === 'staging'
+const isStaging = env().ENVIRONMENT === 'staging'
 
 const messages = {
   title: 'Settings',

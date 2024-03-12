@@ -23,7 +23,7 @@ const messages = {
   following: 'Following'
 }
 
-const ENVIRONMENT = env.ENVIRONMENT
+const ENVIRONMENT = env().ENVIRONMENT
 const MINIMUM_FOLLOWER_COUNT =
   ENVIRONMENT === 'production' || ENVIRONMENT === 'staging' ? 3 : 0
 

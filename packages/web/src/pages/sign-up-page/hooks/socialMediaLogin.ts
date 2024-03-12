@@ -25,7 +25,7 @@ import { env } from 'services/env'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { restrictedHandles } from 'utils/restrictedHandles'
 
-const GENERAL_ADMISSION = env.GENERAL_ADMISSION ?? ''
+const GENERAL_ADMISSION = env().GENERAL_ADMISSION ?? ''
 
 export const useSetProfileFromTwitter = () => {
   const dispatch = useDispatch()

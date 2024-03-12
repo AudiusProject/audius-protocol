@@ -11,7 +11,7 @@ import { getUrl, getIsOpen, getAuthProvider } from 'app/store/oauth/selectors'
 import type { Credentials } from 'app/store/oauth/types'
 import { AUTH_RESPONSE_MESSAGE_TYPE } from 'app/store/oauth/types'
 
-const IDENTITY_SERVICE = env.IDENTITY_SERVICE
+const IDENTITY_SERVICE = env().IDENTITY_SERVICE
 
 const TWITTER_POLLER = `
 (function() {

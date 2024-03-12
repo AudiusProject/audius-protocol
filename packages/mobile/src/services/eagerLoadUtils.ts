@@ -30,7 +30,7 @@ export const withEagerOption = async (
   ...args: any
 ) => {
   const disprovEndpoint =
-    endpoint ?? (await getEagerDiscprov(localStorage, env))
+    endpoint ?? (await getEagerDiscprov(localStorage, env()))
   if (audiusLibs) {
     return normal(audiusLibs)(...args)
   } else {
@@ -41,7 +41,7 @@ export const withEagerOption = async (
         disprovEndpoint as string,
         requiresUser,
         localStorage,
-        env
+        env()
       )
       return res
     } catch (e) {

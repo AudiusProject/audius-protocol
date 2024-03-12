@@ -31,8 +31,8 @@ type SignUpFlowInstagramAuthProps = Partial<SocialButtonProps> & {
   page: 'create-email' | 'pick-handle'
 }
 
-const instagramAppId = env.INSTAGRAM_APP_ID
-const instagramRedirectUrl = env.INSTAGRAM_REDIRECT_URL
+const instagramAppId = env().INSTAGRAM_APP_ID
+const instagramRedirectUrl = env().INSTAGRAM_REDIRECT_URL
 
 const signUpFlowInstagramAuthorizeUrl = `https://api.instagram.com/oauth/authorize?client_id=${instagramAppId}&redirect_uri=${encodeURIComponent(
   instagramRedirectUrl
@@ -45,7 +45,7 @@ const useSetProfileFromInstagram = () => {
   return async ({ code }: { code: string }) => {
     const { igUserProfile: profile } = await getInstagramProfile(
       code,
-      env.IDENTITY_SERVICE
+      env().IDENTITY_SERVICE
     )
     // Update info in redux
     dispatch(

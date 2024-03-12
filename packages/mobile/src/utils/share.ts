@@ -10,7 +10,7 @@ type ShareProps = {
 }
 
 const share = async ({ message, url }: ShareProps) => {
-  const fullUrl = `${env.AUDIUS_URL}${url}`
+  const fullUrl = `${env().AUDIUS_URL}${url}`
 
   try {
     // on iOS we can have both message and URL, on android, we need to concat

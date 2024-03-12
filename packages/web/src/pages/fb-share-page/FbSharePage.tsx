@@ -9,7 +9,7 @@ import { useSelector } from 'utils/reducer'
 
 import styles from './FbSharePage.module.css'
 
-const PUBLIC_HOSTNAME = env.PUBLIC_HOSTNAME
+const PUBLIC_HOSTNAME = env().PUBLIC_HOSTNAME
 
 const messages = {
   share: 'Share your profile with your friends on Facebook!'

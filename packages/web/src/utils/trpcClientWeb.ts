@@ -30,5 +30,5 @@ export function createAudiusTrpcClient(
 // since tRPC server is deployed manually atm.
 // in the future some tRPC middleware can set host to currently selected DN per request
 function getTrpcEndpoint() {
-  return env.TRPC_ENDPOINT
+  return env().TRPC_ENDPOINT
 }

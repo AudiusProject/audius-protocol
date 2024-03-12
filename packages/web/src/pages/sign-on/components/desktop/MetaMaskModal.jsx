@@ -11,7 +11,7 @@ import { env } from 'services/env'
 
 import styles from './MetaMaskModal.module.css'
 
-const WEB3_NETWORK_ID = env.WEB3_NETWORK_ID
+const WEB3_NETWORK_ID = env().WEB3_NETWORK_ID
 
 const messages = {
   title: '    Are You Sure You Want To Continue With MetaMask?   ',

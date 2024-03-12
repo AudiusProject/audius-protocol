@@ -51,22 +51,22 @@ export const buildStoreContext = ({
   localStorage,
   isNativeMobile: false,
   isElectron: isElectron(),
-  env,
+  env: env(),
   explore,
   // @ts-ignore js file
   getLineupSelectorForRoute,
   audioPlayer: audioPlayer!,
   solanaClient: new SolanaClient({
-    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: env.METADATA_PROGRAM_ID
+    solanaClusterEndpoint: env().SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: env().METADATA_PROGRAM_ID
   }),
   sentry: { setTag, configureScope },
   reportToSentry,
   trackDownload,
-  instagramAppId: env.INSTAGRAM_APP_ID,
-  instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
+  instagramAppId: env().INSTAGRAM_APP_ID,
+  instagramRedirectUrl: env().INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
-  openSeaClient: new OpenSeaClient(env.OPENSEA_API_URL as string),
+  openSeaClient: new OpenSeaClient(env().OPENSEA_API_URL as string),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

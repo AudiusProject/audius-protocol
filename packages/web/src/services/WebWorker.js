@@ -3,7 +3,7 @@ import importWorkerScript from 'workers/importWorkerScript'
 import { env } from './env'
 
 const importWorkScriptCode = importWorkerScript.toString()
-const basename = env.BASENAME
+const basename = env().BASENAME
 
 export default class WebWorker {
   /**

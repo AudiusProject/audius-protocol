@@ -25,7 +25,7 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
         audiusSdk,
         dispatch,
         reportToSentry,
-        env,
+        env: env(),
         fetch,
         remoteConfigInstance
       }}

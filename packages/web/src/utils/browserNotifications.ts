@@ -36,10 +36,10 @@ declare global {
  *
  */
 
-const basename = env.BASENAME
+const basename = env().BASENAME
 
-const fcmWebPushPublicKey = env.FCM_PUSH_PUBLIC_KEY
-const safariWebPushID = env.SAFARI_WEB_PUSH_ID
+const fcmWebPushPublicKey = env().FCM_PUSH_PUBLIC_KEY
+const safariWebPushID = env().SAFARI_WEB_PUSH_ID
 const applicationServerPublicKey = fcmWebPushPublicKey
 export const isPushManagerAvailable =
   !isElectron() &&

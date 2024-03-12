@@ -5,19 +5,17 @@ import { env } from 'app/env'
 
 type UserHandle = Pick<User, 'handle'>
 
-const { AUDIUS_URL } = env
-
 export const getTrackRoute = (
   track: { permalink: string },
   fullUrl = false
 ) => {
   const route = track.permalink
-  return fullUrl ? `${AUDIUS_URL}${route}` : route
+  return fullUrl ? `${env().AUDIUS_URL}${route}` : route
 }
 
 export const getUserRoute = (user: UserHandle, fullUrl = false) => {
   const route = `/${encodeUrlName(user.handle)}`
-  return fullUrl ? `${AUDIUS_URL}${route}` : route
+  return fullUrl ? `${env().AUDIUS_URL}${route}` : route
 }
 
 export const getCollectionRoute = (
@@ -26,22 +24,22 @@ export const getCollectionRoute = (
 ) => {
   const { permalink } = collection
 
-  return fullUrl ? `${AUDIUS_URL}${permalink}` : permalink || ''
+  return fullUrl ? `${env().AUDIUS_URL}${permalink}` : permalink || ''
 }
 
 export const getSearchRoute = (query: string, fullUrl = false) => {
   const route = `/search/${encodeUrlName(query)}`
-  return fullUrl ? `${AUDIUS_URL}${route}` : route
+  return fullUrl ? `${env().AUDIUS_URL}${route}` : route
 }
 
 export const getTagSearchRoute = (query: string, fullUrl = false) => {
   const route = `/search/#${encodeUrlName(query)}`
-  return fullUrl ? `${AUDIUS_URL}${route}` : route
+  return fullUrl ? `${env().AUDIUS_URL}${route}` : route
 }
 
 export const getEmptyPageRoute = (fullUrl = false) => {
   const route = `/empty_page`
-  return fullUrl ? `${AUDIUS_URL}${route}` : route
+  return fullUrl ? `${env().AUDIUS_URL}${route}` : route
 }
 
 export const getAudioPageRoute = () => {
@@ -53,6 +51,6 @@ export const getCollectiblesRoute = (
   collectibleId?: string,
   fullUrl?: boolean
 ) =>
-  `${fullUrl ? AUDIUS_URL : ''}/${encodeUrlName(handle)}/collectibles${
+  `${fullUrl ? env().AUDIUS_URL : ''}/${encodeUrlName(handle)}/collectibles${
     collectibleId ? `/${getHash(collectibleId)}` : ''
   }`

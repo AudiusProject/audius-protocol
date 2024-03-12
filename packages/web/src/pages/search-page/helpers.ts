@@ -5,7 +5,7 @@ import { matchPath } from 'react-router'
 import { env } from 'services/env'
 import { getPathname } from 'utils/route'
 
-const USE_HASH_ROUTING = env.USE_HASH_ROUTING
+const USE_HASH_ROUTING = env().USE_HASH_ROUTING
 
 type matchParams = {
   category?: string

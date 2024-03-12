@@ -2,7 +2,7 @@ import { OS } from '@audius/common/models'
 
 import { env } from 'services/env'
 
-const ENVIRONMENT = env.ENVIRONMENT
+const ENVIRONMENT = env().ENVIRONMENT
 
 let APP_DOWNLOAD_URL: string
 switch (ENVIRONMENT) {

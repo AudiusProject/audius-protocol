@@ -6,8 +6,8 @@ import amplitude from 'amplitude-js'
 import { env } from 'services/env'
 import { isElectron as getIsElectron, getMobileOS } from 'utils/clientUtil'
 
-const AMP_API_KEY = env.AMPLITUDE_API_KEY
-const AMPLITUDE_PROXY = env.AMPLITUDE_PROXY
+const AMP_API_KEY = env().AMPLITUDE_API_KEY
+const AMPLITUDE_PROXY = env().AMPLITUDE_PROXY
 
 /**
  * ========================= Amplitude Analytics =========================

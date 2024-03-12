@@ -32,7 +32,7 @@ import { VanityMetrics } from './VanityMetrics'
 const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
 
-const isStaging = env.ENVIRONMENT === 'staging'
+const isStaging = env().ENVIRONMENT === 'staging'
 
 const messages = {
   profile: 'Your Profile',

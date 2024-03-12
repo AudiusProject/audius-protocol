@@ -150,7 +150,9 @@ const FeaturedContent = (props: FeaturedContentProps) => {
   const { storageNodeSelector } = useAppContext()
   const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
     useAsyncFn(async () => {
-      const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
+      const featuredContent = await fetchExploreContent(
+        env().EXPLORE_CONTENT_URL
+      )
       const ids = featuredContent.featuredPlaylists
       const playlists = audiusBackendInstance.getPlaylists(
         null,

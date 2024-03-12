@@ -4,7 +4,7 @@ import { env } from 'services/env'
 
 import styles from './TermsOfUsePage.module.css'
 
-const BASENAME = env.BASENAME
+const BASENAME = env().BASENAME
 
 const messages = {
   download: 'Download Terms of Use'

@@ -8,7 +8,7 @@ import { env } from 'app/env'
 import { dispatch } from 'app/store'
 import { setCurrentNetworkType } from 'app/store/offline-downloads/slice'
 
-const REACHABILITY_URL = env.REACHABILITY_URL
+const REACHABILITY_URL = env().REACHABILITY_URL
 
 export const checkNetInfoReachability = (netInfo: NetInfoState | null) => {
   if (!netInfo) return true

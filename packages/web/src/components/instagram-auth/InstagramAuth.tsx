@@ -7,9 +7,9 @@ import 'url-search-params-polyfill'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
 
-const HOSTNAME = env.PUBLIC_HOSTNAME
-const INSTAGRAM_APP_ID = env.INSTAGRAM_APP_ID
-const INSTAGRAM_REDIRECT_URL = env.INSTAGRAM_REDIRECT_URL || ''
+const HOSTNAME = env().PUBLIC_HOSTNAME
+const INSTAGRAM_APP_ID = env().INSTAGRAM_APP_ID
+const INSTAGRAM_REDIRECT_URL = env().INSTAGRAM_REDIRECT_URL || ''
 const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
   INSTAGRAM_REDIRECT_URL
 )}&scope=user_profile,user_media&response_type=code`

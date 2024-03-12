@@ -3,9 +3,9 @@ import { FingerprintJsProAgent } from '@fingerprintjs/fingerprintjs-pro-react-na
 
 import { env } from 'app/env'
 
-const apiKey = env.FINGERPRINT_PUBLIC_API_KEY || ''
-const endpoint = env.FINGERPRINT_ENDPOINT || ''
-const identityService = env.IDENTITY_SERVICE || ''
+const apiKey = env().FINGERPRINT_PUBLIC_API_KEY || ''
+const endpoint = env().FINGERPRINT_ENDPOINT || ''
+const identityService = env().IDENTITY_SERVICE || ''
 
 export const fingerprintClient = new FingerprintClient<FingerprintJsProAgent>({
   apiKey,

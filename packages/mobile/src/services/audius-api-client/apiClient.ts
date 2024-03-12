@@ -11,6 +11,6 @@ export const apiClient = new AudiusAPIClient({
   remoteConfigInstance,
   getAudiusLibs: () => audiusLibs,
   localStorage,
-  env,
+  env: env(),
   waitForLibsInit
 })

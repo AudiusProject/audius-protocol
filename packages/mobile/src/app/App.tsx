@@ -37,7 +37,7 @@ import { ThemeProvider } from './ThemeProvider'
 import { AudiusTrpcProvider } from './TrpcProvider'
 
 Sentry.init({
-  dsn: env.SENTRY_DSN
+  dsn: env().SENTRY_DSN
 })
 
 const Airplay = Platform.select({

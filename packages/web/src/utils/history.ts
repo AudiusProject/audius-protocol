@@ -7,8 +7,8 @@ import {
 
 import { env } from 'services/env'
 
-const USE_HASH_ROUTING = env.USE_HASH_ROUTING
-const basename = env.BASENAME
+const USE_HASH_ROUTING = env().USE_HASH_ROUTING
+const basename = env().BASENAME
 
 export const createHistory = () => {
   if (USE_HASH_ROUTING) {

@@ -18,7 +18,7 @@ import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 const { getStripeClientSecret } = stripeModalUISelectors
 const { stripeSessionStatusChanged, cancelStripeOnramp } = stripeModalUIActions
 
-const STRIPE_PUBLISHABLE_KEY = env.STRIPE_CLIENT_PUBLISHABLE_KEY
+const STRIPE_PUBLISHABLE_KEY = env().STRIPE_CLIENT_PUBLISHABLE_KEY
 
 const useStyles = makeStyles(() => ({
   root: {
