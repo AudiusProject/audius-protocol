@@ -60,11 +60,12 @@ const HistoryPage = ({
 
   const playAllButton = !loading ? (
     <Button
+      variant='primary'
       css={(theme) => ({ marginLeft: theme.spacing.xl })}
       iconLeft={queuedAndPlaying ? IconPause : IconPlay}
       onClick={onPlay}
     >
-      {queuedAndPlaying ? 'play' : 'pause'}
+      {queuedAndPlaying ? 'Play' : 'Pause'}
     </Button>
   ) : null
 

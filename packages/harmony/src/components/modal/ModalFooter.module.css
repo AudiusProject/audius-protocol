@@ -3,6 +3,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: var(--harmony-unit-6);
+  padding: var(--harmony-spacing-xl);
   gap: var(--harmony-spacing-s);
 }

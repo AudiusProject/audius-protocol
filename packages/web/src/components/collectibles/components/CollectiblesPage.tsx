@@ -90,7 +90,12 @@ export const collectibleMessages = {
   videoNotSupported: 'Your browser does not support the video tag.',
   clickCopy: 'Click To Copy',
   copied: 'Copied to Clipboard',
-  done: 'Done'
+  done: 'Done',
+  setAsProfilePic: 'Set As Profile Pic',
+  setAsProfilePicDescription:
+    'Are you sure you want to change your profile picture?',
+  setAsProfilePickCancel: 'Nevermind',
+  setAsProfilePickConfirm: 'Yes'
 }
 
 const dedupe = (list: any[]) => {

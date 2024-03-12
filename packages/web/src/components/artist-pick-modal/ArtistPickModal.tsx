@@ -34,12 +34,8 @@ const messagesMap = {
   },
   remove: {
     title: 'Unset as Artist Pick',
-    description: (
-      <div>
-        <p>Are you sure you want to remove your pick?</p>
-        <p>This track will be displayed based on its release date.</p>
-      </div>
-    ),
+    description:
+      'Are you sure you want to remove your pick? This track will be displayed based on its release date.',
     confirm: 'Unset Track'
   }
 }
@@ -75,7 +71,9 @@ export const ArtistPickModal = () => {
         <ModalTitle title={messages.title} />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText>{messages.description}</ModalContentText>
+        <ModalContentText css={{ textAlign: 'center' }}>
+          {messages.description}
+        </ModalContentText>
       </ModalContent>
       <ModalFooter>
         <Button variant='secondary' onClick={onClose} fullWidth>

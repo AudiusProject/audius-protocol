@@ -98,7 +98,9 @@ export const DeactivateAcccountPageContents = ({
           isLoading={isLoading}
           onClick={goToSafety}
           fullWidth={isMobile}
-        />
+        >
+          {messages.buttonSafety}
+        </Button>
       </div>
     </div>
   )

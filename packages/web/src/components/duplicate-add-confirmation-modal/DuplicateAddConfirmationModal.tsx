@@ -111,7 +111,7 @@ export const DuplicateAddConfirmationModal = () => {
         </Button>
         <Button fullWidth variant='primary' onClick={onClose}>
           {messages.cancel}
-        </Button>{' '}
+        </Button>
       </ModalFooter>
     </Modal>
   )

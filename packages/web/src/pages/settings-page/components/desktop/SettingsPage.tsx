@@ -30,8 +30,7 @@ import {
   ModalTitle,
   ModalContent,
   ModalContentText,
-  ModalFooter,
-  useTheme
+  ModalFooter
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
@@ -186,8 +185,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
     updateEmailFrequency,
     emailFrequency
   } = props
-
-  const { spacing } = useTheme()
 
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
   const [
@@ -461,7 +458,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
           variant='common'
           iconLeft={IconSignOut}
           onClick={openSignOutModal}
-          css={{ marginBottom: spacing.l }}
+          css={(theme) => ({ marginBottom: theme.spacing.l })}
         >
           {messages.signOut}
         </Button>

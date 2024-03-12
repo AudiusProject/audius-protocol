@@ -348,11 +348,14 @@ const CollectibleDetailsModal = ({
         onClose={() => setIsPicConfirmaModalOpen(false)}
       >
         <ModalHeader>
-          <ModalTitle title='Set as Profile Pic' icon={<IconImage />} />
+          <ModalTitle
+            title={collectibleMessages.setAsProfilePic}
+            icon={<IconImage />}
+          />
         </ModalHeader>
         <ModalContent>
           <ModalContentText>
-            Are you sure you want to change your profile picture?
+            {collectibleMessages.setAsProfilePicDescription}
           </ModalContentText>
         </ModalContent>
 
@@ -362,14 +365,14 @@ const CollectibleDetailsModal = ({
             onClick={() => setIsPicConfirmaModalOpen(false)}
             fullWidth
           >
-            Nevermind
+            {collectibleMessages.setAsProfilePickCancel}
           </HarmonyButton>
           <HarmonyButton
             variant='primary'
             onClick={onClickProfPicUpload}
             fullWidth
           >
-            Yes
+            {collectibleMessages.setAsProfilePickConfirm}
           </HarmonyButton>
         </ModalFooter>
       </Modal>

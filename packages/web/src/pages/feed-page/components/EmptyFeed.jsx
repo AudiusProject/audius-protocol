@@ -53,7 +53,7 @@ const EmptyFeed = (props) => {
                 <i className='emoji small headphone' />
               </div>
               <div className={styles.item}>and much more!</div>
-              <Button variant='primory' size='small' onClick={props.onClick}>
+              <Button variant='primary' size='small' onClick={props.onClick}>
                 Sign Up
               </Button>
             </>
