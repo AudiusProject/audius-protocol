@@ -61,9 +61,8 @@ const { updateProgress } = uploadActions
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
-const MAX_CONCURRENT_UPLOADS = 4
-const MAX_CONCURRENT_REGISTRATIONS = 4
-const MAX_CONCURRENT_TRACK_SIZE_BYTES = 40 /* MB */ * 1024 * 1024
+const MAX_CONCURRENT_UPLOADS = 6
+const MAX_CONCURRENT_PUBLISHES = 6
 
 /**
  * Convert the track metadata for upload to what libs expects.
@@ -156,25 +155,6 @@ export function* deleteTracks(trackIds: ID[]) {
   yield* all(
     trackIds.map((id) => call([libs.Track, libs.Track!.deleteTrack], id))
   )
-}
-
-/**
- * Calculates the number of workers to process upload requests.
- * Ensures we don't have absurd amounts of data going over the wire at once.
- */
-const getNumUploadWorkers = (trackFiles: File[]) => {
-  const largestFileSize = Math.max(...trackFiles.map((t) => t.size))
-
-  // Divide it out so that we never hit > MAX_CONCURRENT_TRACK_SIZE_BYTES in flight.
-  // e.g. so if we have 40 MB max upload and max track size of 15MB,
-  // floor(40/15) => 2 workers
-  const numWorkers = Math.floor(
-    MAX_CONCURRENT_TRACK_SIZE_BYTES / largestFileSize
-  )
-  const maxWorkers = Math.min(MAX_CONCURRENT_UPLOADS, trackFiles.length)
-
-  // Clamp between 1 and `maxWorkers`
-  return Math.min(Math.max(numWorkers, 1), maxWorkers)
 }
 
 /**
@@ -343,14 +323,6 @@ export function* handleUploads({
   kind: 'album' | 'playlist' | 'tracks' | 'stems'
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
-  const numUploadWorkers = getNumUploadWorkers(
-    tracks
-      .map((t) => t.file as File)
-      .concat(
-        tracks.map((t) => t.metadata.stems?.map((s) => s.file) ?? []).flat()
-      )
-  )
-  const numPublishWorkers = MAX_CONCURRENT_REGISTRATIONS
 
   // Queue for the upload tasks (uploading files to storage)
   const uploadQueue = yield* call(
@@ -377,27 +349,9 @@ export function* handleUploads({
     progressChannel
   )
 
-  console.debug(
-    `Spinning up ${numUploadWorkers} upload workers and ${numPublishWorkers} publish workers`
-  )
-  const uploadWorkers: Task[] = []
-  for (let i = 0; i < numUploadWorkers; i++) {
-    uploadWorkers.push(
-      yield* fork(uploadWorker, uploadQueue, progressChannel, responseChannel)
-    )
-  }
-  const publishWorkers: Task[] = []
-  for (let i = 0; i < numPublishWorkers; i++) {
-    publishWorkers.push(
-      yield* fork(publishWorker, publishQueue, responseChannel)
-    )
-  }
-
+  console.debug(`Queuing tracks (and stems if applicable) to upload...`)
   let stems = 0
   const pendingStemCount: Record<ID, number> = {}
-
-  // Add tasks to the upload queue.
-  // Make note of how many stems there are for each track and in total.
   for (let i = 0; i < tracks.length; i++) {
     const track = tracks[i]
     uploadQueue.put({ trackIndex: i, stemIndex: null, track })
@@ -432,6 +386,29 @@ export function* handleUploads({
       const stem = trackStems[j]
       uploadQueue.put({ trackIndex: i, stemIndex: j, track: stem })
     }
+  }
+
+  const uploadRequestCount = tracks.length + stems
+  const numUploadWorkers = Math.min(uploadRequestCount, MAX_CONCURRENT_UPLOADS)
+  const numPublishWorkers = Math.min(
+    uploadRequestCount,
+    MAX_CONCURRENT_PUBLISHES
+  )
+
+  console.debug(
+    `Spinning up ${numUploadWorkers} upload workers and ${numPublishWorkers} publish workers to upload ${tracks.length} tracks and ${stems} stems`
+  )
+  const uploadWorkers: Task[] = []
+  for (let i = 0; i < numUploadWorkers; i++) {
+    uploadWorkers.push(
+      yield* fork(uploadWorker, uploadQueue, progressChannel, responseChannel)
+    )
+  }
+  const publishWorkers: Task[] = []
+  for (let i = 0; i < numPublishWorkers; i++) {
+    publishWorkers.push(
+      yield* fork(publishWorker, publishQueue, responseChannel)
+    )
   }
 
   const pendingMetadata: TrackMetadata[] = []
@@ -528,7 +505,7 @@ export function* handleUploads({
         pendingMetadata[trackIndex]
       ) {
         console.debug(
-          `Stems finished for ${parentTrackId}, uploading parent: ${pendingMetadata[trackIndex].title}`
+          `Stems finished for ${parentTrackId}, publishing parent: ${pendingMetadata[trackIndex].title}`
         )
         publishQueue.put({
           trackIndex,
@@ -616,7 +593,7 @@ export function* handleUploads({
 
   console.debug('Waiting for workers...')
   const hasUnprocessedTracks = () =>
-    published.length + errored.length < tracks.length + stems
+    published.length + errored.length < uploadRequestCount
   const collectionUploadErrored = () => errored.length > 0 && isCollection
 
   // Wait for the workers to process every track and stem

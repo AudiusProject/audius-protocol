@@ -27,6 +27,7 @@ import uploadSagas, {
   uploadCollection,
   uploadMultipleTracks
 } from './sagas'
+import { dynamic } from 'redux-saga-test-plan/providers'
 
 function* saga() {
   yield* all(uploadSagas().map(fork))
@@ -356,16 +357,14 @@ describe('upload', () => {
       .next(mockProgressChannel)
       // ActionChannelDispatcher
       .next()
-      // Upload worker
-      .next(mockWorker)
-      .next(mockWorker)
-      // Publish workers x4
-      .next(mockWorker)
-      .next(mockWorker)
-      .next(mockWorker)
-      .next(mockWorker)
       // Analytics request track upload
       .next()
+      // Upload workers x2
+      .next(mockWorker)
+      .next(mockWorker)
+      // Publish workers x2
+      .next(mockWorker)
+      .next(mockWorker)
       // Response channel take
       .take(mockResponseChannel)
       .next({
@@ -487,16 +486,14 @@ describe('upload', () => {
       .next(mockProgressChannel)
       // ActionChannelDispatcher
       .next()
-      // Upload worker
-      .next(mockWorker)
-      .next(mockWorker)
-      // Publish workers x4
-      .next(mockWorker)
-      .next(mockWorker)
-      .next(mockWorker)
-      .next(mockWorker)
       // Analytics request track upload
       .next()
+      // Upload workers x2
+      .next(mockWorker)
+      .next(mockWorker)
+      // Publish workers x2
+      .next(mockWorker)
+      .next(mockWorker)
       // Response channel take
       .take(mockResponseChannel)
       .next({
@@ -567,5 +564,93 @@ describe('upload', () => {
           trackCount: 1
         })
       )
+  })
+
+  it('can queue 99 uploads', () => {
+    const makeStem = (name: string): StemUploadWithFile => ({
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], `${name}.mp3`),
+      metadata: { ...emptyMetadata, title: name },
+      category: null,
+      allowDelete: false,
+      allowCategorySwitch: false
+    })
+    const makeTrack = (
+      name: string,
+      stems: StemUploadWithFile[]
+    ): TrackForUpload => ({
+      file: new File(['abcdefghijklmnopqrstuvwxyz'], `${name}.mp3`),
+      metadata: {
+        ...emptyMetadata,
+        title: name,
+        stems: stems
+      }
+    })
+    const makeStems = (parentName: string, count: number) => {
+      const res = []
+      for (let i = 0; i < count; i++) {
+        res.push(makeStem(`${parentName}s${i}`))
+      }
+      return res
+    }
+
+    const tracks = [
+      makeTrack('p1', makeStems('p1', 10)),
+      makeTrack('p2', makeStems('p2', 10)),
+      makeTrack('p3', makeStems('p3', 10)),
+      makeTrack('p4', makeStems('p4', 10)),
+      makeTrack('p5', makeStems('p5', 10)),
+      makeTrack('p6', makeStems('p6', 10)),
+      makeTrack('p7', makeStems('p7', 10)),
+      makeTrack('p8', makeStems('p8', 10)),
+      makeTrack('p9', makeStems('p9', 10))
+    ]
+
+    let trackId = 0
+    const libsMock = {
+      Track: {
+        generateTrackId: vitest.fn().mockImplementation(() => ++trackId),
+        uploadTrackV2: vitest
+          .fn()
+          .mockImplementation((_audio, _art, metadata) => metadata),
+        writeTrackToChain: vitest.fn().mockImplementation((metadata) => ({
+          txReceipt: { blockHash: '0x0', blockNumber: 0 },
+          trackId: metadata.track_id
+        }))
+      }
+    }
+
+    return (
+      expectSaga(saga)
+        .dispatch(
+          uploadActions.uploadTracks({
+            uploadType: UploadType.INDIVIDUAL_TRACK,
+            tracks
+          })
+        )
+        .provide([
+          [call.fn(waitForWrite), undefined],
+          [select(accountSelectors.getAccountUser), {}],
+          [
+            getContext('audiusBackendInstance'),
+            {
+              getAudiusLibsTyped: () => libsMock
+            }
+          ],
+          [call.fn(confirmTransaction), true],
+          [call.fn(waitForAccount), undefined],
+          [
+            call.fn(processTrackForUpload),
+            dynamic((effect, next) => effect.args[0])
+          ],
+          [call.fn(retrieveTracks), tracks.map((t) => t.metadata)]
+        ])
+        // Assertions
+        // Succeeds upload
+        .put.actionType(uploadActions.UPLOAD_TRACKS_SUCCEEDED)
+        .run()
+        .then(() => {
+          expect(libsMock.Track.uploadTrackV2).toHaveBeenCalledTimes(99)
+        })
+    )
   })
 })
