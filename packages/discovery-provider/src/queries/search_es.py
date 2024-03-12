@@ -314,14 +314,14 @@ def personalize_dsl(dsl, current_user_id, must_saved):
         dsl["should"].append(be_reposted(current_user_id))
 
 
-def default_function_score(dsl, ranking_field):
+def default_function_score(dsl, ranking_field, factor=0.1):
     return {
         "query": {
             "function_score": {
                 "query": {"bool": dsl},
                 "field_value_factor": {
                     "field": ranking_field,
-                    "factor": 0.1,
+                    "factor": factor,
                     "modifier": "ln2p",
                 },
                 "boost_mode": "multiply",
@@ -393,7 +393,7 @@ def track_dsl(
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count")
+    return default_function_score(dsl, "repost_count", factor=20)
 
 
 def user_dsl(search_str, current_user_id, must_saved=False):
@@ -472,13 +472,9 @@ def user_dsl(search_str, current_user_id, must_saved=False):
         "must_not": [],
         "should": [
             *base_match(search_str, operator="and", extra_fields=["handle"]),
-            {
-                "term": {
-                    "is_verified": {
-                        "value": True,
-                    }
-                }
-            },
+            {"term": {"handle": {"value": search_str, "boost": 4}}},
+            {"term": {"name": {"value": search_str, "boost": 4}}},
+            {"term": {"is_verified": {"value": True, "boost": 1.5}}},
         ],
     }
 
@@ -520,6 +516,15 @@ def base_playlist_dsl(search_str, is_album):
         ],
         "should": [
             *base_match(search_str, operator="and"),
+            {
+                "match": {
+                    "playlist_name": {
+                        "query": search_str,
+                        "fuzziness": "AUTO",
+                        "boost": 2,
+                    }
+                }
+            },
             {"term": {"user.is_verified": {"value": True}}},
         ],
     }
