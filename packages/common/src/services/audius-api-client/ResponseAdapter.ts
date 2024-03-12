@@ -337,6 +337,10 @@ export const makePlaylist = (
   const total_play_count =
     'total_play_count' in playlist ? playlist.total_play_count : 0
   const track_count = 'track_count' in playlist ? playlist.track_count : 0
+  const is_stream_gated =
+    'is_stream_gated' in playlist ? playlist.is_stream_gated : false
+  const stream_conditions =
+    'stream_conditions' in playlist ? playlist.stream_conditions : null
 
   const playlistContents = {
     track_ids: playlist.added_timestamps
@@ -377,6 +381,8 @@ export const makePlaylist = (
     track_count,
     total_play_count,
     playlist_contents: playlistContents,
+    is_stream_gated,
+    stream_conditions,
 
     // Fields to prune
     id: undefined,

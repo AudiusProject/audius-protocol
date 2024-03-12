@@ -216,6 +216,17 @@ const CollectionPage = ({
       gradient={gradient}
       icon={icon}
       imageOverride={imageOverride}
+      ownerId={playlistOwnerId}
+      isStreamGated={
+        metadata?.variant === Variant.USER_GENERATED
+          ? metadata?.is_stream_gated
+          : null
+      }
+      streamConditions={
+        metadata?.variant === Variant.USER_GENERATED
+          ? metadata?.stream_conditions
+          : null
+      }
     />
   )
 
