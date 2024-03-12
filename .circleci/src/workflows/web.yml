@@ -60,7 +60,7 @@ jobs:
   - web-test:
       context: Audius Client
       requires:
-        - web-init
+        - web-build-staging
 
   - web-deploy-staging-s3:
       context: Audius Client
