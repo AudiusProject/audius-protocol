@@ -1,8 +1,14 @@
 from datetime import datetime
+from typing import Union
+
+from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.gated_content.constants import USDC_PURCHASE_KEY
+from src.models.playlists.album_price_history import AlbumPriceHistory
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
@@ -15,11 +21,15 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    is_ddex_signer,
     validate_signer,
 )
 from src.tasks.metadata import immutable_playlist_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
+from src.utils.structured_logger import StructuredLogger
+
+logger = StructuredLogger(__name__)
 
 
 def update_playlist_routes_table(
@@ -189,6 +199,74 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
     )
 
 
+def update_album_price_history(
+    session: Session,
+    playlist_record: Playlist,
+    playlist_metadata: dict,
+    blocknumber: int,
+    timestamp: datetime,
+):
+    """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
+    new_record = None
+    is_stream_gated = playlist_metadata.get(
+        "is_stream_gated", False
+    ) and playlist_metadata.get("stream_conditions", None)
+    if is_stream_gated:
+        conditions = playlist_metadata["stream_conditions"]
+        if USDC_PURCHASE_KEY in conditions:
+            usdc_purchase = conditions[USDC_PURCHASE_KEY]
+            new_record = AlbumPriceHistory()
+            new_record.playlist_id = playlist_record.playlist_id
+            new_record.block_timestamp = timestamp
+            new_record.blocknumber = blocknumber
+            new_record.splits = {}
+            if "price" in usdc_purchase:
+                price = usdc_purchase["price"]
+                if isinstance(price, int):
+                    new_record.total_price_cents = price
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase gated conditions 'price'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Price missing from usdc_purchase gated conditions"
+                )
+
+            if "splits" in usdc_purchase:
+                splits = usdc_purchase["splits"]
+                # TODO: [PAY-2553] better validation of splits
+                if isinstance(splits, dict):
+                    new_record.splits = splits
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase gated conditions 'splits'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Splits missing from usdc_purchase gated conditions"
+                )
+    if new_record:
+        old_record: Union[AlbumPriceHistory, None] = (
+            session.query(AlbumPriceHistory)
+            .filter(AlbumPriceHistory.playlist_id == playlist_record.playlist_id)
+            .order_by(desc(AlbumPriceHistory.block_timestamp))
+            .first()
+        )
+        if (
+            not old_record
+            or old_record.block_timestamp != new_record.block_timestamp
+            and (
+                old_record.total_price_cents != new_record.total_price_cents
+                or old_record.splits != new_record.splits
+            )
+        ):
+            logger.debug(
+                f"playlist.py | Updating price history for {playlist_record.playlist_id}. Old record={old_record} New record={new_record}"
+            )
+            session.add(new_record)
+
+
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
     return getattr(update_task.playlist_contract.events, event_type)().process_receipt(
         tx_receipt
@@ -212,8 +290,8 @@ def validate_playlist_tx(params: ManageEntityParameters):
             params.existing_records["Track"].values(),
         )
     )
-    if stream_gated_tracks:
-        raise IndexingValidationError("Cannot add gated tracks to playlist")
+    if stream_gated_tracks and not params.metadata.get("is_album"):
+        raise IndexingValidationError("Can only add stream gated tracks to albums")
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records["Playlist"]:
@@ -261,12 +339,79 @@ def validate_playlist_tx(params: ManageEntityParameters):
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
 
+        if params.action == Action.UPDATE:
+            validate_update_access_conditions(params)
+
         if (
             params.action == Action.UPDATE
             and not existing_playlist.is_private
             and params.metadata.get("is_private")
         ):
             raise IndexingValidationError(f"Cannot unlist playlist {playlist_id}")
+        validate_access_conditions(params)
+
+
+def validate_access_conditions(params: ManageEntityParameters):
+    playlist_metadata = params.metadata
+
+    is_stream_gated = playlist_metadata.get("is_stream_gated")
+    stream_conditions = playlist_metadata.get("stream_conditions", {}) or {}
+
+    if is_stream_gated:
+        # if stream gated, must have stream conditions
+        if not stream_conditions:
+            raise IndexingValidationError(
+                f"Playlist {params.entity_id} is stream gated but has no stream conditions"
+            )
+        # must be gated on a single condition
+        if len(stream_conditions) != 1:
+            raise IndexingValidationError(
+                f"Playlist {params.entity_id} has an invalid number of stream conditions"
+            )
+
+
+# Make sure that access conditions do not incorrectly change during playlist update.
+# Rule of thumb is that access can only be modified to decrease strictness.
+def validate_update_access_conditions(params: ManageEntityParameters):
+    playlist_id = params.entity_id
+    if playlist_id not in params.existing_records["Playlist"]:
+        raise IndexingValidationError(
+            f"Playlist {playlist_id} is not in existing records"
+        )
+
+    existing_playlist = helpers.model_to_dictionary(
+        params.existing_records["Playlist"][playlist_id]
+    )
+
+    updated_playlist = params.metadata
+    existing_conditions = existing_playlist.get("stream_conditions")
+    updated_conditions = updated_playlist.get("stream_conditions")
+
+    if not existing_conditions:
+        # non gated playlist cannot be updated to be gated
+        if updated_conditions:
+            raise IndexingValidationError(
+                f"Playlist {playlist_id} cannot increase strictness of stream access conditions"
+            )
+    else:
+        # note that usdc purchase may be edited to change price (and maybe splits?)
+        is_existing_usdc_purchase = USDC_PURCHASE_KEY in existing_conditions
+        is_updated_usdc_purchase = (
+            updated_conditions and USDC_PURCHASE_KEY in updated_conditions
+        )
+        is_valid_usdc_purchase = is_existing_usdc_purchase and is_updated_usdc_purchase
+        # the updated stream conditions must be:
+        # - public (None),
+        # - equal to the existing stream conditions,
+        # - or a valid usdc purchase
+        if (
+            updated_conditions
+            and existing_conditions != updated_conditions
+            and not is_valid_usdc_purchase
+        ):
+            raise IndexingValidationError(
+                f"Playlist {playlist_id} cannot change access conditions"
+            )
 
 
 def create_playlist(params: ManageEntityParameters):
@@ -276,6 +421,11 @@ def create_playlist(params: ManageEntityParameters):
     tracks = params.metadata["playlist_contents"].get("track_ids", [])
     tracks_with_index_time = []
     last_added_to = None
+
+    ddex_app = None
+    if is_ddex_signer(params.signer):
+        ddex_app = params.signer
+
     for track in tracks:
         if "track" not in track or "time" not in track:
             raise IndexingValidationError(
@@ -303,6 +453,8 @@ def create_playlist(params: ManageEntityParameters):
         playlist_name=params.metadata["playlist_name"],
         is_private=params.metadata.get("is_private", False),
         is_image_autogenerated=params.metadata.get("is_image_autogenerated", False),
+        is_stream_gated=params.metadata.get("is_stream_gated", False),
+        stream_conditions=params.metadata.get("stream_conditions", None),
         playlist_contents={"track_ids": tracks_with_index_time},
         created_at=params.block_datetime,
         updated_at=params.block_datetime,
@@ -312,6 +464,7 @@ def create_playlist(params: ManageEntityParameters):
         last_added_to=last_added_to,
         is_current=False,
         is_delete=False,
+        ddex_app=ddex_app,
     )
 
     update_playlist_routes_table(params, playlist_record, True)
@@ -319,6 +472,14 @@ def create_playlist(params: ManageEntityParameters):
     params.add_record(playlist_id, playlist_record)
 
     update_playlist_tracks(params, playlist_record)
+
+    update_album_price_history(
+        params.session,
+        playlist_record,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
+    )
 
     if tracks:
         dispatch_challenge_playlist_upload(
@@ -335,6 +496,16 @@ def dispatch_challenge_playlist_upload(
     )
 
 
+def validate_update_ddex_playlist(params: ManageEntityParameters, playlist_record):
+    if playlist_record.ddex_app:
+        if playlist_record.ddex_app != params.signer or not is_ddex_signer(
+            params.signer
+        ):
+            raise IndexingValidationError(
+                f"Signer {params.signer} does not have permission to {params.action} DDEX playlist {playlist_record.playlist_id}"
+            )
+
+
 def update_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
     # TODO ignore updates on deleted playlists?
@@ -345,6 +516,8 @@ def update_playlist(params: ManageEntityParameters):
         playlist_id in params.new_records["Playlist"]
     ):  # override with last updated playlist is in this block
         existing_playlist = params.new_records["Playlist"][playlist_id][-1]
+
+    validate_update_ddex_playlist(params, existing_playlist)
 
     playlist_record = copy_record(
         existing_playlist,
@@ -361,6 +534,14 @@ def update_playlist(params: ManageEntityParameters):
 
     params.add_record(playlist_id, playlist_record)
 
+    update_album_price_history(
+        params.session,
+        playlist_record,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
+    )
+
     if playlist_record.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(
             params.challenge_bus, params.block_number, playlist_record
@@ -374,6 +555,8 @@ def delete_playlist(params: ManageEntityParameters):
     if params.entity_id in params.new_records["Playlist"]:
         # override with last updated playlist is in this block
         existing_playlist = params.new_records["Playlist"][params.entity_id][-1]
+
+    validate_update_ddex_playlist(params, existing_playlist)
 
     deleted_playlist = copy_record(
         existing_playlist,

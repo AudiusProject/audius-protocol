@@ -194,24 +194,24 @@ services:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-crawler
-    <<: *common
-
-  ddex-indexer:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-indexer
+    environment:
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
   ddex-parser:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-parser
+    environment:
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
   ddex-publisher:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-publisher
+    environment:
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
     <<: *common
 
   ddex-mongo:
@@ -224,6 +224,12 @@ services:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-mongo-init
+    <<: *common
+
+  ddex-s3:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-s3
     <<: *common
   
   ddex-ingester:
@@ -303,3 +309,4 @@ volumes:
   mediorum:
   legacy_creator_file_storage:
   ddex-mongo-db:
+  ddex-s3:

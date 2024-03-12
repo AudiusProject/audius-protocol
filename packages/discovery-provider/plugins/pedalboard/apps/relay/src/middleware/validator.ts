@@ -7,6 +7,8 @@ import { config, discoveryDb } from '..'
 import { logger } from '../logger'
 import { isUserCreate, isUserDeactivate } from '../utils'
 
+const MAX_ACDC_GAS_LIMIT = 10485760
+
 export const validator = async (
   request: Request,
   response: Response,
@@ -34,7 +36,7 @@ export const validator = async (
   const encodedABI = body.encodedABI
 
   // remove "null" possibility
-  const gasLimit = body.gasLimit || 3000000
+  const gasLimit = MAX_ACDC_GAS_LIMIT
   const senderAddress = body.senderAddress || undefined
   const handle = body.handle || undefined
 
@@ -57,6 +59,7 @@ export const validator = async (
   let signerIsApp = false
   let signerIsUser = false
   let createOrDeactivate = false
+  const isSenderVerifier = senderAddress === config.verifierAddress
 
   const user = await retrieveUser(
     contractRegistryKey,
@@ -84,7 +87,7 @@ export const validator = async (
   }
 
   // could not find user and is not create, find app
-  if (!signerIsUser && !createOrDeactivate) {
+  if (!signerIsUser && !createOrDeactivate && !isSenderVerifier) {
     const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
     if (developerApp === undefined) {
       logger.error({ encodedABI }, "neither user nor developer app could be found for address")
@@ -106,7 +109,8 @@ export const validator = async (
     createOrDeactivate,
     ip,
     signerIsApp,
-    signerIsUser
+    signerIsUser,
+    isSenderVerifier
   }
   next()
 }

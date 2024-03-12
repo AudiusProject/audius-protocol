@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-custom-server",
-  "version": "0.0.22",
+  "version": "0.0.25",
   "license": "MIT",
   "main": "index.js",
   "publishConfig": {

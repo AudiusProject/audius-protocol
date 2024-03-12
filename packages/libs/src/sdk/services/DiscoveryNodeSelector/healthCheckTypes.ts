@@ -139,11 +139,6 @@ export type HealthCheckResponseData = DeepPartial<{
     }
   }
   total_memory: number
-  transactions_history_backfill: {
-    rewards_manager_backfilling_complete: boolean
-    spl_token_backfilling_complete: boolean
-    user_bank_backfilling_complete: boolean
-  }
   transferred_bytes_per_sec: number
   trending_playlists_age_sec: number
   trending_tracks_age_sec: number

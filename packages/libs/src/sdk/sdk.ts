@@ -22,11 +22,14 @@ import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
-import { addAppNameMiddleware } from './middleware'
+import {
+  addAppNameMiddleware,
+  addRequestSignatureMiddleware
+} from './middleware'
 import { OAuth } from './oauth'
 import {
   DiscoveryNodeSelector,
-  Auth,
+  DefaultAuth,
   Storage,
   EntityManager,
   AppAuth,
@@ -87,9 +90,11 @@ const initializeServices = (config: SdkConfig) => {
     )
   }
 
-  const defaultAuthService = config.apiKey
-    ? new AppAuth(config.apiKey, config.apiSecret)
-    : new Auth()
+  const auth =
+    config.services?.auth ??
+    (config.apiKey && config.apiSecret
+      ? new AppAuth(config.apiKey, config.apiSecret)
+      : new DefaultAuth(config.apiKey))
 
   const discoveryNodeSelector =
     config.services?.discoveryNodeSelector ??
@@ -98,7 +103,7 @@ const initializeServices = (config: SdkConfig) => {
   const storageNodeSelector =
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
-      auth: config.services?.auth ?? defaultAuthService,
+      auth,
       discoveryNodeSelector,
       logger
     })
@@ -150,7 +155,7 @@ const initializeServices = (config: SdkConfig) => {
     antiAbuseOracleSelector,
     entityManager: defaultEntityManager,
     storage: defaultStorage,
-    auth: defaultAuthService,
+    auth,
     claimableTokensClient,
     rewardManagerClient,
     solanaWalletAdapter: defaultSolanaWalletAdapter,
@@ -170,6 +175,7 @@ const initializeApis = ({
 }) => {
   const middleware = [
     addAppNameMiddleware({ appName, services }),
+    addRequestSignatureMiddleware({ services }),
     services.discoveryNodeSelector.createMiddleware()
   ]
   const generatedApiClientConfig = new Configuration({

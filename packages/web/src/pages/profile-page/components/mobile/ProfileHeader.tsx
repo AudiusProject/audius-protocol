@@ -19,7 +19,8 @@ import {
   IconDonate,
   IconLink,
   IconTikTok,
-  IconTwitter as IconTwitterBird
+  IconTwitter as IconTwitterBird,
+  Flex
 } from '@audius/harmony'
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
@@ -395,34 +396,32 @@ const ProfileHeader = ({
               </div>
             </div>
           </div>
-          <div className={styles.socials}>
-            <ProfilePageBadge
-              userId={userId}
-              isCompact
-              className={styles.badge}
-            />
-            {twitterHandle ? (
-              <SocialLink
-                to={`https://twitter.com/${twitterHandle}`}
-                onClick={onGoToTwitter}
-                icon={<IconTwitterBird />}
-              />
-            ) : null}
-            {instagramHandle ? (
-              <SocialLink
-                to={`https://instagram.com/${instagramHandle}`}
-                onClick={onGoToInstagram}
-                icon={<IconInstagram />}
-              />
-            ) : null}
-            {tikTokHandle ? (
-              <SocialLink
-                to={`https://tiktok.com/@${tikTokHandle}`}
-                onClick={onGoToTikTok}
-                icon={<IconTikTok />}
-              />
-            ) : null}
-          </div>
+          <Flex alignItems='center' gap='m'>
+            <ProfilePageBadge userId={userId} isCompact />
+            <Flex gap='xl' justifyContent='center' flex={1}>
+              {twitterHandle ? (
+                <SocialLink
+                  to={`https://twitter.com/${twitterHandle}`}
+                  onClick={onGoToTwitter}
+                  icon={<IconTwitterBird size='xl' />}
+                />
+              ) : null}
+              {instagramHandle ? (
+                <SocialLink
+                  to={`https://instagram.com/${instagramHandle}`}
+                  onClick={onGoToInstagram}
+                  icon={<IconInstagram size='xl' />}
+                />
+              ) : null}
+              {tikTokHandle ? (
+                <SocialLink
+                  to={`https://tiktok.com/@${tikTokHandle}`}
+                  onClick={onGoToTikTok}
+                  icon={<IconTikTok />}
+                />
+              ) : null}
+            </Flex>
+          </Flex>
 
           {bio ? (
             <UserGeneratedText

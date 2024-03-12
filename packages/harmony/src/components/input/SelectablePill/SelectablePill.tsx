@@ -8,25 +8,16 @@ import { Text } from 'components/text'
 
 import type { SelectablePillProps } from './types'
 
-const RadioInput = (
-  props: ComponentProps<'input'> & { isSelected?: boolean }
-) => {
+const RadioInput = (props: ComponentProps<'input'>) => {
   const { name, checked, onChange } = useRadioGroup(props)
-  const { isSelected } = props
-
   return (
-    <HiddenInput
-      {...props}
-      name={name}
-      checked={checked ?? isSelected}
-      onChange={onChange}
-    />
+    <HiddenInput {...props} name={name} checked={checked} onChange={onChange} />
   )
 }
 
 export const SelectablePill = (props: SelectablePillProps) => {
   const {
-    isSelected,
+    isSelected: isSelectedProp,
     size = 'small',
     _isHovered,
     icon: Icon,
@@ -35,6 +26,10 @@ export const SelectablePill = (props: SelectablePillProps) => {
   } = props
 
   const { disabled, type } = other
+  const isSelected =
+    type === 'checkbox' || type === 'radio'
+      ? other.checked ?? isSelectedProp
+      : isSelectedProp
 
   const theme = useTheme()
   const { spacing } = theme
@@ -129,12 +124,10 @@ export const SelectablePill = (props: SelectablePillProps) => {
 
   switch (type) {
     case 'checkbox': {
-      const { checked, ...rest } = other
-
       return (
         <label {...rootProps}>
           {pillContent}
-          <HiddenInput {...rest} checked={checked ?? isSelected} />
+          <HiddenInput {...other} checked={isSelected} />
         </label>
       )
     }
@@ -142,7 +135,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
       return (
         <label {...rootProps}>
           {pillContent}
-          <RadioInput {...other} isSelected={isSelected} />
+          <RadioInput {...other} checked={isSelected} />
         </label>
       )
     }

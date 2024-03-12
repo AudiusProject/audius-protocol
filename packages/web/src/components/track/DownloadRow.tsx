@@ -126,7 +126,7 @@ export const DownloadRow = ({
             {formatBytes(size)}
           </Text>
         ) : null}
-        {!hideDownload ? null : (
+        {hideDownload ? null : (
           <>
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip

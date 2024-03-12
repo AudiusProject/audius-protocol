@@ -82,10 +82,6 @@
 }
 
 .titleHeader {
-  color: var(--neutral);
-  font-size: var(--font-4xl);
-  line-height: 40px;
-  font-weight: var(--font-bold);
   transition: opacity var(--calm), color var(--quick);
 }
 
@@ -104,35 +100,6 @@
 
 .editableTitle:hover .editIcon {
   opacity: 1;
-}
-
-.artistWrapper {
-  color: var(--neutral-light-4);
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
-  display: flex;
-  user-select: none;
-  position: relative;
-}
-
-.artistWrapper :global(.artistPopover) {
-  display: inline;
-}
-
-.artistWrapper .artist {
-  display: inline;
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
-  line-height: 18px;
-  min-height: 18px;
-  padding-left: 4px;
-}
-
-.artistWrapper .artist:hover {
-  color: var(--primary);
-  cursor: pointer;
-  text-decoration: underline;
 }
 
 .actionButtons {

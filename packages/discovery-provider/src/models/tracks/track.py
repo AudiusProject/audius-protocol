@@ -70,6 +70,7 @@ class Track(Base, RepresentableMixin):
     download = Column(JSONB())
     is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
+    ddex_app = Column(String)
     field_visibility = Column(JSONB(True))
     route_id = Column(String)
     stem_of = Column(JSONB(True))
@@ -91,6 +92,7 @@ class Track(Base, RepresentableMixin):
         ARRAY(Integer()), server_default="ARRAY[]::INTEGER[]"
     )
     ai_attribution_user_id = Column(Integer, nullable=True)
+    placement_hosts = Column(String, nullable=True)
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"

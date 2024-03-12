@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"ingester/crawler"
-	"ingester/indexer"
 	"ingester/parser"
 	"log"
 	"log/slog"
@@ -17,7 +16,7 @@ import (
 )
 
 func main() {
-	service := flag.String("service", "", "Specify the service to run: crawler, indexer, or parser")
+	service := flag.String("service", "", "Specify the service to run: crawler or parser")
 	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -46,14 +45,8 @@ func main() {
 	switch *service {
 	case "crawler":
 		go crawler.RunNewCrawler(ctx)
-	case "indexer":
-		go indexer.RunNewIndexer(ctx)
 	case "parser":
 		go parser.RunNewParser(ctx)
-	case "e2e-test":
-		// TODO: Something like RunNewE2ETest(ctx)
-		fmt.Println("e2e-test not implemented")
-		cancel()
 	default:
 		fmt.Println("Unknown service: " + *service)
 	}

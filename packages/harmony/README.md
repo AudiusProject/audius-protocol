@@ -1,6 +1,6 @@
 <p align="center">
-  <img height="288px" src="./src/storybook/assets/harmonyLogoDark.png#gh-dark-mode-only">
-  <img height="288px" src="./src/storybook/assets/harmonyLogo.png#gh-light-mode-only">
+  <img height="288px" src="https://github.com/AudiusProject/audius-protocol/blob/main/packages/harmony/src/storybook/assets/harmonyLogoDark.png#gh-dark-mode-only">
+  <img height="288px" src="https://github.com/AudiusProject/audius-protocol/blob/main/packages/harmony/src/storybook/assets/harmonyLogo.png?raw=true#gh-light-mode-only">
 
   <p align="center">
     Harmony is design system focused on collaboration, reusability, and scalability.
@@ -68,7 +68,6 @@ import type { HarmonyTheme } from '@audius/harmony'
 declare module '@emotion/react' {
   export interface Theme extends HarmonyTheme {}
 }
-
 ```
 
 ## Usage
@@ -97,4 +96,3 @@ npm run storybook
 ## Contribution
 
 A Contribution Guide is [available here](https://www.notion.so/audiusproject/Submitting-for-Design-Updates-52a8bc3bb68747818a96d2721bace27f).
-

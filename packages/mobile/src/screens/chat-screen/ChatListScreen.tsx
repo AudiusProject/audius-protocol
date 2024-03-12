@@ -7,7 +7,13 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconCompose, IconMessage } from '@audius/harmony-native'
 import Button, { ButtonType } from 'app/components/button'
-import { Text, Screen, FlatList, ScreenContent } from 'app/components/core'
+import {
+  Text,
+  Screen,
+  FlatList,
+  ScreenContent,
+  HeaderShadow
+} from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
@@ -16,7 +22,6 @@ import { useThemePalette, useColor } from 'app/utils/theme'
 
 import { ChatListItem } from './ChatListItem'
 import { ChatListItemSkeleton } from './ChatListItemSkeleton'
-import { HeaderShadow } from './HeaderShadow'
 
 const { getChats, getChatsStatus, getHasMoreChats } = chatSelectors
 const { fetchMoreMessages, fetchLatestChats, fetchMoreChats } = chatActions

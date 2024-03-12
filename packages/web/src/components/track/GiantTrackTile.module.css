@@ -61,17 +61,10 @@
 }
 
 .title {
-  color: var(--neutral);
-  font-size: 38px;
-  font-weight: bold;
   margin-bottom: var(--unit-3);
   width: 100%;
   position: relative;
   min-height: 38px;
-}
-
-.title h1 {
-  color: var(--neutral);
 }
 
 .trackLength {
@@ -79,27 +72,6 @@
   color: var(--neutral-light-4);
   font-size: var(--unit-3);
   font-weight: 600;
-}
-
-.artistWrapper {
-  color: var(--neutral-light-5);
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
-  display: flex;
-  align-items: center;
-  width: 100%;
-  position: relative;
-}
-
-.artistWrapper :global(.artistPopover) {
-  display: inline;
-}
-
-.artist {
-  display: inline-flex;
-  padding-left: var(--unit-1);
-  text-decoration: inherit;
-  color: inherit;
 }
 
 .playSection {

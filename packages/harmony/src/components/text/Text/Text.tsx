@@ -23,13 +23,14 @@ export const Text = forwardRef(
       tag,
       asChild,
       textAlign,
+      ellipses,
       ...other
     } = props
 
     const theme = useTheme()
 
     const variantConfig = variant && variantStylesMap[variant]
-    const styles = {
+    const css = {
       fontFamily: `'Avenir Next LT Pro', 'Helvetica Neue', Helvetica,
     Arial, sans-serif`,
       position: 'relative',
@@ -51,21 +52,26 @@ export const Text = forwardRef(
         lineHeight: typography.lineHeight[variantConfig.lineHeight[size]],
         // @ts-ignore
         fontWeight: typography.weight[variantConfig.fontWeight[strength]],
-        ...('css' in variantConfig && variantConfig.css),
-        ...(shadow && {
-          textShadow: typography.shadow[shadow]
-        }),
-        textAlign
+        ...('css' in variantConfig && variantConfig.css)
+      }),
+      ...(shadow && {
+        textShadow: typography.shadow[shadow]
+      }),
+      textAlign,
+      ...(ellipses && {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
       })
     }
 
     // @ts-ignore
     const variantTag = variant && variantTagMap[variant]?.[size]
 
-    const Tag: ElementType = asChild ? Slot : tag ?? variantTag ?? 'p'
+    const Tag: ElementType = asChild ? Slot : tag ?? variantTag ?? 'span'
 
     return (
-      <Tag ref={ref} css={styles} {...other}>
+      <Tag ref={ref} css={css} {...other}>
         {children}
       </Tag>
     )

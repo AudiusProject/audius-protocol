@@ -4,19 +4,20 @@ import { selectGenresPageMessages } from '@audius/common/messages'
 import { selectableGenres, selectGenresSchema } from '@audius/common/schemas'
 import type { GENRES } from '@audius/common/utils'
 import type { Genre as SDKGenre } from '@audius/sdk'
-import { setField } from 'common/store/pages/signon/actions'
+import { setField, setFinishedPhase1 } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
-import { ScrollView } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { useDispatch } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Box, Flex, SelectablePill } from '@audius/harmony-native'
+import { Box, Flex, Paper, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
-import { Heading, Page, PageFooter, gutterSize } from '../components/layout'
+import { Heading, PageFooter, gutterSize } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
@@ -66,7 +67,7 @@ const SelectGenresFieldArray = () => {
   }
 
   return (
-    <ScrollView testID='genreScrollView'>
+    <View>
       <Flex gap='s' direction='row' wrap='wrap'>
         {selectableGenres.map((genre) => (
           <MemoSelectablePill
@@ -82,13 +83,17 @@ const SelectGenresFieldArray = () => {
       </Flex>
       {/* TODO improved sticky footer and header */}
       <Box h={80} />
-    </ScrollView>
+    </View>
   )
 }
 
 export const SelectGenresScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
+
+  useEffectOnce(() => {
+    dispatch(setFinishedPhase1(true))
+  })
 
   const handleSubmit = useCallback(
     (values: SelectGenresValue) => {
@@ -107,17 +112,21 @@ export const SelectGenresScreen = () => {
       validateOnChange
       validationSchema={toFormikValidationSchema(selectGenresSchema)}
     >
-      <Page noGutter>
-        <ReadOnlyAccountHeader />
-        <Flex ph={gutterSize} gap='2xl' flex={1}>
-          <Heading
-            heading={selectGenresPageMessages.header}
-            description={selectGenresPageMessages.description}
-          />
-          <SelectGenresFieldArray />
-        </Flex>
+      <View>
+        <ScrollView testID='genreScrollView'>
+          <Paper flex={1} gap='2xl' pb='2xl'>
+            <ReadOnlyAccountHeader />
+            <Flex ph={gutterSize} gap='2xl' flex={1}>
+              <Heading
+                heading={selectGenresPageMessages.header}
+                description={selectGenresPageMessages.description}
+              />
+              <SelectGenresFieldArray />
+            </Flex>
+          </Paper>
+        </ScrollView>
         <PageFooter />
-      </Page>
+      </View>
     </Formik>
   )
 }

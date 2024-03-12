@@ -23,13 +23,18 @@ import { useDebounce } from 'react-use'
 
 import { IconCompose, IconSearch } from '@audius/harmony-native'
 import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
-import { Screen, ScreenContent, Text, TextInput } from 'app/components/core'
+import {
+  Screen,
+  ScreenContent,
+  Text,
+  TextInput,
+  HeaderShadow
+} from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { ChatUserListItem } from './ChatUserListItem'
-import { HeaderShadow } from './HeaderShadow'
 
 const { getAccountUser } = accountSelectors
 const { searchUsers } = searchUsersModalActions

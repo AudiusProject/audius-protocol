@@ -1,6 +1,6 @@
 {
   "name": "@pedalboard/app-template",
-  "version": "0.0.22",
+  "version": "0.0.25",
   "private": true,
   "scripts": {
     "build": "tsc",

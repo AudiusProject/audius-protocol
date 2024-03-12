@@ -143,28 +143,15 @@ const getServiceProviderMetadata = async (
   )
 
   const protocolMinDelegationAmount = await aud.Delegate.getMinDelegationAmount()
-  let minDelegationAmount = await aud.Identity.getMinimumDelegationAmount(
-    wallet
-  )
   const spMinDelegationAmount = await aud.Delegate.getSPMinDelegationAmount(
     wallet
   )
-  // Prefer min delegation amount if provided and greater than protocol wide amount
-  if (!spMinDelegationAmount.isZero()) {
-    if (
-      minDelegationAmount === null ||
-      spMinDelegationAmount.gt(minDelegationAmount)
-    ) {
-      minDelegationAmount = spMinDelegationAmount
-    }
-  } else {
-    if (
-      minDelegationAmount === null ||
-      protocolMinDelegationAmount.gt(minDelegationAmount)
-    ) {
-      minDelegationAmount = protocolMinDelegationAmount
-    }
-  }
+  // Prefer service provider min delegation amount if provided and greater than protocol wide amount
+  const minDelegationAmount = spMinDelegationAmount.gt(
+    protocolMinDelegationAmount
+  )
+    ? spMinDelegationAmount
+    : protocolMinDelegationAmount
 
   return {
     serviceProvider,

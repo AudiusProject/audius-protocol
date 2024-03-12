@@ -37,7 +37,6 @@ import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { MainContentContext } from 'pages/MainContentContext'
 import { make, track } from 'services/analytics'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
@@ -269,12 +268,10 @@ export const useWithdrawals = () => {
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
-    const { data: encodedDataMessage, signature: encodedDataSignature } =
-      await audiusBackendInstance.signDiscoveryNodeRequest()
     const blob = await sdk.users.downloadUSDCWithdrawalsAsCSVBlob({
       id: Id.parse(userId!),
-      encodedDataMessage,
-      encodedDataSignature
+      encodedDataMessage: '', // TODO: remove, handled by sdk
+      encodedDataSignature: '' // TODO: remove, handled by sdk
     })
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')

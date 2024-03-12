@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux'
 
 import {
   Avatar,
+  Divider,
   Flex,
   CoverPhoto as HarmonyCoverPhoto,
   IconButton,
@@ -61,6 +62,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
         profilePicture={profilePicture}
         coverPhoto={coverPhoto}
       />
+      <Divider />
       <Flex
         direction='row'
         alignItems='flex-start'

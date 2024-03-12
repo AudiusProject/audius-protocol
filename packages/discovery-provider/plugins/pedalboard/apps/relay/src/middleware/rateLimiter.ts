@@ -13,7 +13,7 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate } = res.locals.ctx
+  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
   let signer: string | null
@@ -23,7 +23,7 @@ export const rateLimiterMiddleware = async (
     signer = (recoveredSigner as DeveloperApps).address
   }
 
-  if ((signer === undefined || signer === null) && !createOrDeactivate) {
+  if ((signer === undefined || signer === null) && !createOrDeactivate && !isSenderVerifier) {
     rateLimitError(next, 'user record does not have wallet')
     return
   }
@@ -52,15 +52,15 @@ export const rateLimiterMiddleware = async (
   )
 
   try {
-    const res = await globalRateLimiter.consume({
+    const rateLimitData = await globalRateLimiter.consume({
       operation,
       signer,
       limit
     })
-    insertReplyHeaders(response, res)
+    insertReplyHeaders(res, rateLimitData)
   } catch (e) {
     if (e instanceof RateLimiterRes) {
-      insertReplyHeaders(response, e as RateLimiterRes)
+      insertReplyHeaders(res, e as RateLimiterRes)
       rateLimitError(next, 'rate limit hit')
       return
     }

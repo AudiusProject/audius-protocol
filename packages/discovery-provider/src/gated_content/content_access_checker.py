@@ -8,8 +8,8 @@ from typing_extensions import Protocol
 from src.gated_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
+    does_user_have_usdc_access,
     does_user_support_artist,
-    has_user_purchased_content,
 )
 from src.gated_content.types import GatedContentConditions, GatedContentType
 from src.models.tracks.track import Track
@@ -55,7 +55,7 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
-    "usdc_purchase": has_user_purchased_content,
+    "usdc_purchase": does_user_have_usdc_access,
 }
 
 
@@ -75,8 +75,8 @@ class ContentAccessChecker:
         content_type: GatedContentType,
         content_entity: Track,
     ) -> ContentAccessResponse:
-        # for now, we only allow tracks to be gated; gated playlists/albums will come later
-        if content_type != "track":
+
+        if content_type != "track" and content_type != "album":
             logger.warn(
                 f"gated_content_access_checker | check_access | gated content type {content_type} is not supported."
             )
@@ -88,12 +88,16 @@ class ContentAccessChecker:
             return {"has_stream_access": True, "has_download_access": True}
 
         # if not gated on either stream or download,
-        # then check if track is a stem track and check parent track access,
+        # then check if content is a stem track and check parent track access,
         # otherwise, user has access to stream and download.
         # note that stem tracks do not have stream/download conditions.
         stream_conditions = content_entity.stream_conditions
         download_conditions = content_entity.download_conditions
-        if not stream_conditions and not download_conditions:
+        if (
+            content_type == "track"
+            and not stream_conditions
+            and not download_conditions
+        ):
             access = self._check_stem_access(
                 session=session,
                 user_id=user_id,
@@ -148,7 +152,11 @@ class ContentAccessChecker:
         if not valid_args:
             return {"track": {}}
 
-        track_access_users = {arg["content_id"]: arg["user_id"] for arg in valid_args}
+        track_access_users: Dict[int, List[int]] = {}
+        for arg in valid_args:
+            if arg["content_id"] not in track_access_users:
+                track_access_users[arg["content_id"]] = []
+            track_access_users[arg["content_id"]].append(arg["user_id"])
 
         gated_track_data = self._get_gated_track_data_for_batch(
             session, list(track_access_users.keys())
@@ -157,65 +165,66 @@ class ContentAccessChecker:
         track_access_result: GatedTrackAccessResult = {}
 
         for track_id, track_entity in gated_track_data.items():
-            user_id = track_access_users[track_id]
-            if user_id not in track_access_result:
-                track_access_result[user_id] = {}
+            user_ids = track_access_users[track_id]
+            for user_id in user_ids:
+                if user_id not in track_access_result:
+                    track_access_result[user_id] = {}
 
-            # content owner has access to their own gated content
-            content_owner_id = track_entity["content_owner_id"]
-            if content_owner_id == user_id:
-                track_access_result[user_id][track_id] = {
-                    "has_stream_access": True,
-                    "has_download_access": True,
-                }
-                continue
+                # content owner has access to their own gated content
+                content_owner_id = track_entity["content_owner_id"]
+                if content_owner_id == user_id:
+                    track_access_result[user_id][track_id] = {
+                        "has_stream_access": True,
+                        "has_download_access": True,
+                    }
+                    continue
 
-            # if not gated on either stream or download,
-            # then check if track is a stem track and check parent track access,
-            # otherwise, user has access to stream and download.
-            # note that stem tracks do not have stream/download conditions.
-            stream_conditions = track_entity["stream_conditions"]
-            download_conditions = track_entity["download_conditions"]
-            if not stream_conditions and not download_conditions:
-                access = self._check_stem_access(
-                    session=session,
-                    user_id=user_id,
-                    content_entity=track_entity,
-                )
-                track_access_result[user_id][track_id] = {
-                    "has_stream_access": access,
-                    "has_download_access": access,
-                }
-                continue
+                # if not gated on either stream or download,
+                # then check if track is a stem track and check parent track access,
+                # otherwise, user has access to stream and download.
+                # note that stem tracks do not have stream/download conditions.
+                stream_conditions = track_entity["stream_conditions"]
+                download_conditions = track_entity["download_conditions"]
+                if not stream_conditions and not download_conditions:
+                    access = self._check_stem_access(
+                        session=session,
+                        user_id=user_id,
+                        content_entity=track_entity,
+                    )
+                    track_access_result[user_id][track_id] = {
+                        "has_stream_access": access,
+                        "has_download_access": access,
+                    }
+                    continue
 
-            # if stream gated, check stream access which also determines download access
-            if stream_conditions:
-                has_access = self._evaluate_conditions(
+                # if stream gated, check stream access which also determines download access
+                if stream_conditions:
+                    has_access = self._evaluate_conditions(
+                        session=session,
+                        user_id=user_id,
+                        content_id=track_id,
+                        content_type="track",
+                        conditions=stream_conditions,
+                    )
+                    track_access_result[user_id][track_id] = {
+                        "has_stream_access": has_access,
+                        "has_download_access": has_access,
+                    }
+                    continue
+
+                # if we reach here, it means that the
+                # content is download gated and not stream gated
+                has_download_access = self._evaluate_conditions(
                     session=session,
                     user_id=user_id,
                     content_id=track_id,
                     content_type="track",
-                    conditions=stream_conditions,
+                    conditions=download_conditions,
                 )
                 track_access_result[user_id][track_id] = {
-                    "has_stream_access": has_access,
-                    "has_download_access": has_access,
+                    "has_stream_access": True,
+                    "has_download_access": has_download_access,
                 }
-                continue
-
-            # if we reach here, it means that the
-            # content is download gated and not stream gated
-            has_download_access = self._evaluate_conditions(
-                session=session,
-                user_id=user_id,
-                content_id=track_id,
-                content_type="track",
-                conditions=download_conditions,
-            )
-            track_access_result[user_id][track_id] = {
-                "has_stream_access": True,
-                "has_download_access": has_download_access,
-            }
 
         return {"track": track_access_result}
 

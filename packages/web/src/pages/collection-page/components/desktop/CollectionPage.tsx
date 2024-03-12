@@ -180,6 +180,9 @@ const CollectionPage = ({
     playlistSaveCount,
     playlistRepostCount
   } = computeCollectionMetadataProps(metadata)
+  const numTracks = tracks.entries.length
+  const areAllTracksDeleted = tracks.entries.every((track) => track.is_delete)
+  const isPlayable = !areAllTracksDeleted && numTracks > 0
 
   const topSection = (
     <CollectionHeader
@@ -195,7 +198,8 @@ const CollectionPage = ({
       description={description}
       isOwner={isOwner}
       isAlbum={isAlbum}
-      numTracks={tracks.entries.length}
+      numTracks={numTracks}
+      isPlayable={isPlayable}
       modified={lastModified}
       duration={duration}
       isPublished={!isPrivate}
