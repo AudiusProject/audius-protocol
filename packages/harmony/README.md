@@ -48,18 +48,15 @@ Setup the ThemeProvider exported by Harmony
 import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 const App = () => {
-
-  return (
-    <HarmonyThemeProvider theme='day'>
-        ...
-    </HarmonyThemeProvider>
-  )
+  return <HarmonyThemeProvider theme='day'>...</HarmonyThemeProvider>
 }
 ```
 
 In order use emotion yourself, follow their documentation for [setting up the css-prop](https://emotion.sh/docs/css-prop)
 
-If using typescript add an emotion.d.ts file and include the following for access to harmony's theme type
+If using typescript you will need to:
+
+1. Add an emotion.d.ts file and include the following for access to harmony's theme type
 
 ```ts
 import '@emotion/react'
@@ -67,6 +64,17 @@ import type { HarmonyTheme } from '@audius/harmony'
 
 declare module '@emotion/react' {
   export interface Theme extends HarmonyTheme {}
+}
+```
+
+2. Update your tsconfig to specify the jsxImportLocation:
+
+```ts
+{
+  "compilerOptions": {
+    "jsxImportSource": "@emotion/react",
+    ...
+  }
 }
 ```
 

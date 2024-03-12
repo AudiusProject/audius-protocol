@@ -1,8 +1,19 @@
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
-import './App.css'
 import { sdk, full as FullSdk } from '@audius/sdk'
-import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
+import {
+  ThemeProvider as HarmonyThemeProvider,
+  Hint,
+  IconInfo,
+  IconPause,
+  IconPlay,
+  Paper,
+  Text,
+  TextInput
+} from '@audius/harmony'
 import { Button, Flex } from '@audius/harmony'
+import { css } from '@emotion/react'
+
+type User = { userId: string; handle: string }
 
 const audiusSdk = sdk({
   appName: 'Audius SDK React Example'
@@ -14,11 +25,12 @@ const audiusSdk = sdk({
 
 function App() {
   const [tracks, setTracks] = useState<FullSdk.TrackFull[]>([])
-  const [user, setUser] = useState<{ userId: string; handle: string } | null>(
-    null
-  )
-  const [streamSrc, setStreamSrc] = useState<string>('')
+  const [user, setUser] = useState<User | null>(null)
+  const [streamSrcs, setStreamSrcs] = useState<Record<string, string>>({})
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>()
+  const [isPlaying, setIsPlaying] = useState(false)
   const [favorites, setFavorites] = useState<Record<string, boolean>>({})
+  const audioRef = useRef<HTMLAudioElement>(null)
   const handleInputRef = useRef<HTMLInputElement>(null)
   const loginWithAudiusButtonRef = useRef<HTMLDivElement>(null)
 
@@ -27,8 +39,8 @@ function App() {
    */
   useEffect(() => {
     audiusSdk.oauth?.init({
-      successCallback: (user) => setUser(user),
-      errorCallback: (error) => console.log('Got error', error)
+      successCallback: (user: User) => setUser(user),
+      errorCallback: (error: Error) => console.log('Got error', error)
     })
 
     audiusSdk.oauth?.renderButton({
@@ -52,23 +64,37 @@ function App() {
     })
     setTracks(tracks ?? [])
 
-    // const trackFavorites = (tracks ?? []).reduce<Record<string, boolean>>(
-    //   (result, track) => ({
-    //     ...result,
-    //     [track.id]: track.hasCurrentUserSaved
-    //   }),
-    //   {}
-    // )
+    const trackFavorites = (tracks ?? []).reduce<Record<string, boolean>>(
+      (result, track) => ({
+        ...result,
+        [track.id]: track.hasCurrentUserSaved
+      }),
+      {}
+    )
 
-    // setFavorites(trackFavorites)
+    setFavorites(trackFavorites)
   }
 
   /**
    * Set the streamUrl for the audio player based on the clicked track
    */
   const streamTrack = async (trackId: string) => {
-    const streamUrl = await audiusSdk.tracks.streamTrack({ trackId })
-    setStreamSrc(streamUrl)
+    const fetchTrackStreamUrl = async () => {
+      const streamUrl = await audiusSdk.tracks.streamTrack({ trackId })
+      setStreamSrcs((prev) => ({ ...prev, [trackId]: streamUrl }))
+      return streamUrl
+    }
+
+    if (!streamSrcs[trackId]) {
+      await fetchTrackStreamUrl()
+    }
+
+    if (trackId === playingTrackId) {
+      setIsPlaying((prev) => !prev)
+    } else {
+      setPlayingTrackId(trackId)
+      setIsPlaying(true)
+    }
   }
 
   /**
@@ -92,40 +118,130 @@ function App() {
       }
     }
 
+  useEffect(() => {
+    if (isPlaying && audioRef.current?.src) {
+      audioRef.current?.play()
+    } else {
+      audioRef.current?.pause()
+    }
+  }, [isPlaying])
+
   return (
     <HarmonyThemeProvider theme='day'>
-      <Flex>
-        <h1>React + @audius/sdk</h1>
-        <h2>Stream and favorite tracks!</h2>
-      </Flex>
-      <div ref={loginWithAudiusButtonRef} />
-      <div className='card' style={{ display: 'flex', gap: '16px' }}>
-        <label>
-          Get tracks for user handle:
-          <input type='text' defaultValue={'skrillex'} ref={handleInputRef} />
-        </label>
-        <Button onClick={fetchTrack}>Get tracks</Button>
-      </div>
-      <audio controls src={streamSrc} autoPlay />
-      <div className='card'>
-        {tracks.map((track) => (
-          <div
-            key={track.id}
-            style={{ display: 'flex' }}
-            onClick={() => streamTrack(track.id)}
+      <Flex direction='column' gap='m' m='2xl' alignItems='center'>
+        <Flex direction='column'>
+          <Text color='heading' strength='strong' variant='display'>
+            React + @audius/sdk
+          </Text>
+          <h2>
+            <Text color='accent' variant='heading'>
+              Stream and favorite tracks!
+            </Text>
+          </h2>
+        </Flex>
+        {!user ? (
+          <Hint
+            icon={() => <IconInfo size='l' color='default' />}
+            m='m'
+            css={{ maxWidth: 400 }}
           >
-            <img src={track.artwork?.['_150x150']} alt={track.title} />
-            <div>
-              <h3>{track.title}</h3>
-              {!favorites[track.id] ? (
-                <button onClick={favoriteTrack(track.id)}>Favorite</button>
+            <Flex gap='m' direction='column'>
+              <Text>
+                To perform writes with @audius/sdk please authorize this app to
+                perform writes on your behalf
+              </Text>
+              <div ref={loginWithAudiusButtonRef} />
+            </Flex>
+          </Hint>
+        ) : null}
+        <Flex direction='column' gap='s'>
+          <Text>Enter a user handle to fetch their tracks:</Text>
+          <Flex gap='m'>
+            <TextInput
+              label='Get tracks for user handle:'
+              size={'small' as any}
+              defaultValue={'RAC'}
+              ref={handleInputRef}
+            />
+            <Button size='small' onClick={fetchTrack}>
+              Get tracks
+            </Button>
+          </Flex>
+        </Flex>
+        {tracks.map((track) => (
+          <Paper
+            m='m'
+            key={track.id}
+            onClick={() => streamTrack(track.id)}
+            css={{ width: 400 }}
+          >
+            <Flex
+              css={css`
+                position: relative;
+                cursor: pointer;
+                &:hover {
+                  > svg {
+                    display: block;
+                  }
+                }
+              `}
+            >
+              <img
+                src={track.artwork?.['_150x150']}
+                alt={track.title}
+                css={{ height: '100%' }}
+              />
+              {!isPlaying || track.id !== playingTrackId ? (
+                <IconPlay
+                  size='3xl'
+                  opacity={0.8}
+                  color='staticWhite'
+                  css={{
+                    display: 'none',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-45%, -50%)'
+                  }}
+                />
               ) : (
-                <p>Favorited</p>
+                <IconPause
+                  size='3xl'
+                  opacity={0.8}
+                  color='staticWhite'
+                  css={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-45%, -50%)'
+                  }}
+                />
               )}
-            </div>
-          </div>
+            </Flex>
+            <Flex direction='column' m='m' gap='s' css={{ width: '100%' }}>
+              <Text>{track.title}</Text>
+              <Text>{track.user.name}</Text>
+              {!favorites[track.id] ? (
+                <Button
+                  fullWidth={true}
+                  onClick={favoriteTrack(track.id)}
+                  size='small'
+                >
+                  Favorite
+                </Button>
+              ) : (
+                <Text>Favorited</Text>
+              )}
+            </Flex>
+          </Paper>
         ))}
-      </div>
+      </Flex>
+      <audio
+        css={{ display: 'none' }}
+        src={playingTrackId ? streamSrcs[playingTrackId] : undefined}
+        ref={audioRef}
+        autoPlay
+      />
     </HarmonyThemeProvider>
   )
 }
