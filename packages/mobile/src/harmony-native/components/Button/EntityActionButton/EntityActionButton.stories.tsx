@@ -7,7 +7,7 @@ import { Flex } from '../../layout'
 import { EntityActionButton } from './EntityActionButton'
 import type { EntityActionButtonProps } from './types'
 
-const meta: Meta<ButtonProps> = {
+const meta: Meta<EntityActionButtonProps> = {
   title: 'Components/Button/EntityActionButton',
   component: EntityActionButton,
   argTypes: {
@@ -23,13 +23,13 @@ const meta: Meta<ButtonProps> = {
   },
   render: (props) => (
     <Flex p='l'>
-      <Button {...props}>Repost Me</Button>
+      <EntityActionButton {...props}>Repost Me</EntityActionButton>
     </Flex>
   )
 }
 
 export default meta
 
-type Story = StoryObj<ButtonProps>
+type Story = StoryObj<EntityActionButtonProps>
 
 export const Default: Story = {}

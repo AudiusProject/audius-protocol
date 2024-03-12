@@ -2,6 +2,7 @@ import type { ChangeEvent } from 'react'
 import { useCallback, useContext } from 'react'
 
 import type { UserMetadata } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import {
   addFollowArtists,
@@ -39,7 +40,6 @@ import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { SelectArtistsPreviewContext } from './selectArtistPreviewContext'
-import { formatCount } from '@audius/common/utils'
 
 type FollowArtistCardProps = {
   artist: UserMetadata
