@@ -267,14 +267,15 @@ const LockedGatedTrackSection = ({
     if (isContentFollowGated(streamConditions)) {
       return (
         <FollowButton
-          color='blue'
+          color='accentBlue'
+          className={styles.followButton}
           messages={{
             follow: messages.followArtist,
             unfollow: '',
             following: ''
           }}
           onFollow={handleFollow}
-          fullWidth
+          invertedColor
         />
       )
     }

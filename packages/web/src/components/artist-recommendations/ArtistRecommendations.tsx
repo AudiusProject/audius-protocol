@@ -273,13 +273,13 @@ export const ArtistRecommendations = forwardRef<
       {renderMainContent()}
       <div className={cn(styles.contentItem, itemClassName)}>
         <FollowButton
-          isLoading={isLoading}
+          isDisabled={isLoading}
           following={isFollowingAll}
           invertedColor
+          size='full'
           messages={messages}
           onFollow={handleFollowAll}
           onUnfollow={handleUnfollowAll}
-          fullWidth
         />
       </div>
     </div>

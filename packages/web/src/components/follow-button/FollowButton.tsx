@@ -1,13 +1,16 @@
 import { useState, useCallback, useEffect, forwardRef, MouseEvent } from 'react'
 
 import {
-  Button,
-  ButtonProps,
-  ButtonVariant,
-  IconUserFollow,
-  IconUserFollowing,
-  IconUserUnfollow
+  IconUserFollow as IconFollow,
+  IconUserFollowing as IconFollowing,
+  IconUserUnfollow as IconUnfollow
 } from '@audius/harmony'
+import { Button, ButtonProps, ButtonSize, ButtonType } from '@audius/stems'
+import cn from 'classnames'
+
+import styles from './FollowButton.module.css'
+
+type FollowButtonSize = 'small' | 'medium' | 'full'
 
 type FollowMessages = {
   follow: string
@@ -15,13 +18,14 @@ type FollowMessages = {
   unfollow: string
 }
 
-export type FollowButtonProps = Omit<ButtonProps, 'children'> & {
+export type FollowButtonProps = Omit<ButtonProps, 'size' | 'text'> & {
   following?: boolean
   messages?: FollowMessages
   onUnfollow?: () => void
   onFollow?: () => void
   stopPropagation?: boolean
   showIcon?: boolean
+  size?: FollowButtonSize
   invertedColor?: boolean
 }
 
@@ -35,13 +39,15 @@ export const FollowButton = forwardRef<HTMLButtonElement, FollowButtonProps>(
   function FollowButton(props, ref) {
     const {
       color,
+      className,
       following = false,
       onUnfollow,
       onFollow,
-      disabled,
+      isDisabled,
       messages = defaultMessages,
       stopPropagation,
       showIcon = true,
+      size = 'medium',
       invertedColor = false,
       ...buttonProps
     } = props
@@ -55,6 +61,13 @@ export const FollowButton = forwardRef<HTMLButtonElement, FollowButtonProps>(
     const handleMouseLeave = useCallback(() => {
       setIsHovering(false)
     }, [setIsHovering])
+
+    const style = {
+      [styles.noIcon]: !showIcon,
+      [styles.full]: size === 'full',
+      [styles.medium]: size === 'medium',
+      [styles.small]: size === 'small'
+    }
 
     const handleClick = useCallback(
       (e: MouseEvent<HTMLButtonElement>) => {
@@ -78,43 +91,49 @@ export const FollowButton = forwardRef<HTMLButtonElement, FollowButtonProps>(
 
     const isFollowing = following || (!following && isHoveringClicked)
 
-    let buttonVariant: ButtonVariant
+    let buttonType
     if (color) {
-      buttonVariant = 'primary'
+      buttonType = ButtonType.PRIMARY
     } else {
-      buttonVariant = !isFollowing && !invertedColor ? 'secondary' : 'primary'
+      buttonType =
+        !isFollowing && !invertedColor
+          ? ButtonType.SECONDARY
+          : ButtonType.PRIMARY_ALT
     }
 
     let icon
     let text
 
     if (!following && !isHoveringClicked) {
-      icon = IconUserFollow
+      icon = <IconFollow width={18} height={18} />
       text = messages.follow
     } else if (isFollowing && !isHovering) {
-      icon = IconUserFollowing
+      icon = <IconFollowing width={18} height={18} />
       text = messages.following
     } else if (isFollowing && isHovering) {
-      icon = IconUserUnfollow
+      icon = <IconUnfollow width={18} height={18} />
       text = messages.unfollow
     }
 
-    if (!showIcon) icon = undefined
+    if (!showIcon) icon = null
 
     return (
       <Button
         ref={ref}
         {...buttonProps}
         color={color}
-        variant={buttonVariant}
+        className={cn(styles.followButton, className, style)}
+        textClassName={styles.followButtonText}
+        iconClassName={styles.followButtonIcon}
+        type={buttonType}
         onClick={handleClick}
-        disabled={disabled}
+        disabled={isDisabled}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        iconLeft={icon}
-      >
-        {text}
-      </Button>
+        leftIcon={icon}
+        size={ButtonSize.SMALL}
+        text={text}
+      />
     )
   }
 )
