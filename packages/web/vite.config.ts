@@ -4,7 +4,7 @@ import path from 'path'
 
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
-// import process from 'process/browser'
+import process from 'process/browser'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
