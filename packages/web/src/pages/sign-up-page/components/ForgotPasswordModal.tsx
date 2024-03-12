@@ -13,8 +13,6 @@ import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
-import styles from './ForgotPasswordModal.module.css'
-
 const messages = {
   forgotPassword: 'Forgot Your Password',
   restoreAccess:
@@ -57,7 +55,7 @@ export const ForgotPasswordModal = (props: ForgotPasswordModalProps) => {
       isOpen={isOpen}
       onClose={onClose}
       dismissOnClickOutside
-      bodyClassName={styles.modal}
+      size='medium'
     >
       <ModalHeader>
         <ModalTitle
