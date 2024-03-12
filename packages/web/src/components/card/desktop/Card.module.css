@@ -136,33 +136,10 @@
   align-items: flex-end;
 }
 
-.iconContainer {
-  width: 24px;
-  height: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.iconContainer:hover path {
-  fill: #858199;
-}
-
 .smallActionsContainer {
   position: absolute;
-  right: 26px;
-  bottom: 8px;
-  width: 4px;
-}
-
-.iconKebabHorizontal {
-  width: 18px;
-  height: 5px;
-}
-
-.iconKebabHorizontal path {
-  fill: var(--neutral-light-4);
+  right: 8px;
+  bottom: 0;
 }
 
 .iconVerified {
