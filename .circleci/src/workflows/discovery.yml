@@ -36,6 +36,20 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-pedalboard-solana-relay
+      context: [Vercel, dockerhub]
+      service: solana-relay
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-pedalboard-solana-relay
+      context: [Vercel, dockerhub]
+      service: solana-relay
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-pedalboard-sla-auditor
       context: [Vercel, dockerhub]
       service: sla-auditor
@@ -163,6 +177,16 @@ jobs:
         - push-pedalboard-relay
 
   - push-arm-image:
+      name: push-pedalboard-solana-relay-arm
+      context: [Vercel, dockerhub]
+      service: solana-relay
+      filters:
+        branches:
+          only: main
+        requires:
+          - push-pedalboard-solana-relay
+
+  - push-arm-image:
       name: push-pedalboard-sla-auditor-arm
       context: [Vercel, dockerhub]
       service: sla-auditor
@@ -262,6 +286,7 @@ jobs:
         - push-discovery-provider-notifications
         - push-pedalboard-trending-challenge-rewards
         - push-pedalboard-relay
+        - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
         - push-comms
         - push-trpc
@@ -276,6 +301,7 @@ jobs:
         # - push-discovery-provider-notifications-arm
         # - push-pedalboard-trending-challenge-rewards-arm
         # - push-pedalboard-relay-arm
+        # - push-pedalboard-solana-relay-arm
         # - push-pedalboard-sla-auditor-arm
         # - push-comms-arm
         # - push-trpc-arm
