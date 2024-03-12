@@ -11,8 +11,6 @@ import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 
-import { env as APP_ENV } from './src/services/env'
-
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
 const fixAcceptHeader404 = () => ({
@@ -30,14 +28,22 @@ const fixAcceptHeader404 = () => ({
   }
 })
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, path.join(process.cwd(), 'env'), 'VITE_')
+  // Explicitly set the VITE_ENVIRONMENT for the process from the helper loadEnv
+  // result since we need it to use the app env to generate the config.
+  process.env.VITE_ENVIRONMENT = env.VITE_ENVIRONMENT
+  // Dynamically import the app environment so that process.env.VITE_ENVIRONMENT
+  // is already set before evaluating the switch/case. The app env is used for
+  // transforming the index.html file.
+  const { env: APP_ENV } = await import('./src/services/env')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
   const ssr = env.VITE_SSR === 'true'
   env.VITE_BASENAME = env.VITE_BASENAME ?? ''
 
   return {
+    envDir: 'env',
     base: env.VITE_BASENAME || '/',
     build: {
       outDir: ssr ? 'build-ssr' : 'build',
