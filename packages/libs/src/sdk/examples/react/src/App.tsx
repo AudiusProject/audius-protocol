@@ -8,7 +8,8 @@ import {
   IconPlay,
   Paper,
   Text,
-  TextInput
+  TextInput,
+  TextInputSize
 } from '@audius/harmony'
 import { Button, Flex } from '@audius/harmony'
 import { css } from '@emotion/react'
@@ -23,13 +24,14 @@ const audiusSdk = sdk({
   // Instead, store the apiSecret on your server and make requests using @audius/sdk server side
 })
 
-function App() {
-  const [tracks, setTracks] = useState<FullSdk.TrackFull[]>([])
+export default function App() {
   const [user, setUser] = useState<User | null>(null)
-  const [streamSrcs, setStreamSrcs] = useState<Record<string, string>>({})
-  const [playingTrackId, setPlayingTrackId] = useState<string | null>()
+  const [tracks, setTracks] = useState<FullSdk.TrackFull[]>([])
   const [isPlaying, setIsPlaying] = useState(false)
+  const [playingTrackId, setPlayingTrackId] = useState<string | null>()
+  const [playingTrackSrc, setPlayingTrackSrc] = useState<string | undefined>()
   const [favorites, setFavorites] = useState<Record<string, boolean>>({})
+
   const audioRef = useRef<HTMLAudioElement>(null)
   const handleInputRef = useRef<HTMLInputElement>(null)
   const loginWithAudiusButtonRef = useRef<HTMLDivElement>(null)
@@ -40,13 +42,15 @@ function App() {
   useEffect(() => {
     audiusSdk.oauth?.init({
       successCallback: (user: User) => setUser(user),
-      errorCallback: (error: Error) => console.log('Got error', error)
+      errorCallback: (error: string) => console.log('Got error', error)
     })
 
-    audiusSdk.oauth?.renderButton({
-      element: loginWithAudiusButtonRef.current!,
-      scope: 'write'
-    })
+    if (loginWithAudiusButtonRef.current) {
+      audiusSdk.oauth?.renderButton({
+        element: loginWithAudiusButtonRef.current,
+        scope: 'write'
+      })
+    }
   }, [])
 
   /**
@@ -62,6 +66,7 @@ function App() {
       id: selectedUser?.id ?? '',
       userId: user?.userId ?? ''
     })
+
     setTracks(tracks ?? [])
 
     const trackFavorites = (tracks ?? []).reduce<Record<string, boolean>>(
@@ -79,19 +84,10 @@ function App() {
    * Set the streamUrl for the audio player based on the clicked track
    */
   const streamTrack = async (trackId: string) => {
-    const fetchTrackStreamUrl = async () => {
-      const streamUrl = await audiusSdk.tracks.streamTrack({ trackId })
-      setStreamSrcs((prev) => ({ ...prev, [trackId]: streamUrl }))
-      return streamUrl
-    }
-
-    if (!streamSrcs[trackId]) {
-      await fetchTrackStreamUrl()
-    }
-
     if (trackId === playingTrackId) {
       setIsPlaying((prev) => !prev)
     } else {
+      setPlayingTrackSrc(await audiusSdk.tracks.streamTrack({ trackId }))
       setPlayingTrackId(trackId)
       setIsPlaying(true)
     }
@@ -118,6 +114,9 @@ function App() {
       }
     }
 
+  /**
+   * Update the audio player based on the isPlaying state
+   */
   useEffect(() => {
     if (isPlaying && audioRef.current?.src) {
       audioRef.current?.play()
@@ -159,7 +158,7 @@ function App() {
           <Flex gap='m'>
             <TextInput
               label='Get tracks for user handle:'
-              size={'small' as any}
+              size={TextInputSize.SMALL}
               defaultValue={'RAC'}
               ref={handleInputRef}
             />
@@ -192,30 +191,9 @@ function App() {
                 css={{ height: '100%' }}
               />
               {!isPlaying || track.id !== playingTrackId ? (
-                <IconPlay
-                  size='3xl'
-                  opacity={0.8}
-                  color='staticWhite'
-                  css={{
-                    display: 'none',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-45%, -50%)'
-                  }}
-                />
+                <PlayButton />
               ) : (
-                <IconPause
-                  size='3xl'
-                  opacity={0.8}
-                  color='staticWhite'
-                  css={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-45%, -50%)'
-                  }}
-                />
+                <PauseButton />
               )}
             </Flex>
             <Flex direction='column' m='m' gap='s' css={{ width: '100%' }}>
@@ -230,7 +208,7 @@ function App() {
                   Favorite
                 </Button>
               ) : (
-                <Text>Favorited</Text>
+                <Text>Favorited!</Text>
               )}
             </Flex>
           </Paper>
@@ -238,7 +216,7 @@ function App() {
       </Flex>
       <audio
         css={{ display: 'none' }}
-        src={playingTrackId ? streamSrcs[playingTrackId] : undefined}
+        src={playingTrackSrc}
         ref={audioRef}
         autoPlay
       />
@@ -246,4 +224,35 @@ function App() {
   )
 }
 
-export default App
+function PlayButton() {
+  return (
+    <IconPlay
+      size='3xl'
+      opacity={0.8}
+      color='staticWhite'
+      css={{
+        display: 'none',
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-45%, -50%)'
+      }}
+    />
+  )
+}
+
+function PauseButton() {
+  return (
+    <IconPause
+      size='3xl'
+      opacity={0.8}
+      color='staticWhite'
+      css={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-45%, -50%)'
+      }}
+    />
+  )
+}
