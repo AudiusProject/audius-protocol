@@ -114,6 +114,22 @@ web-test-staging:
     - store_artifacts:
         path: /home/circleci/audius-protocol/packages/probers/cypress/screenshots
 
+web-test:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: test
+        no_output_timeout: 30m
+        command: |
+          cd packages/web
+          npm run test
+
 web-build-production:
   working_directory: ~/audius-protocol
   docker:

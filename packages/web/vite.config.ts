@@ -4,14 +4,11 @@ import path from 'path'
 
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
-import process from 'process/browser'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
-
-import { env as APP_ENV } from './src/services/env'
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
@@ -30,14 +27,35 @@ const fixAcceptHeader404 = () => ({
   }
 })
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'VITE_')
+export default defineConfig(async ({ mode }) => {
+  // Despite loading env here, the result is the same as a filtered process.env
+  // rather than dynamically loading the correct env file by mode.
+  // Since the build/start scripts use turbo, and other packages don't use vite,
+  // --mode isn't an allowed parameter. Instead, each script sets the
+  // environment manually using env-cmd.
+  // The only exception is test (vitest), which does not set the env manually,
+  // and uses the "test" mode to load .env.test which sets VITE_ENVIRONMENT to
+  // "development". Even in that case, process.env gets explicitly set
+  // anyway because that's what the application code looks at.
+  // Despite loading .env.production (which notably doesn't exist anyway),
+  // loadEnv prioritizes process.env anyway so we're not at risk of overrides.
+  const env = loadEnv(mode, path.join(process.cwd(), 'env'), 'VITE_')
+  // Explicitly set VITE_ENVIRONMENT to "development" when in test mode.
+  // Better than defaulting to using env.VITE_ENVIRONMENT, which would lead to
+  // accidentally using "production"!
+  process.env.VITE_ENVIRONMENT =
+    mode === 'test' ? 'development' : process.env.VITE_ENVIRONMENT
+  // Dynamically import the app environment so that process.env.VITE_ENVIRONMENT
+  // is already set before evaluating the switch/case. The app env is used for
+  // transforming the index.html file.
+  const { env: APP_ENV } = await import('./src/services/env')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
   const ssr = env.VITE_SSR === 'true'
   env.VITE_BASENAME = env.VITE_BASENAME ?? ''
 
   return {
+    envDir: 'env',
     base: env.VITE_BASENAME || '/',
     build: {
       outDir: ssr ? 'build-ssr' : 'build',
@@ -82,6 +100,7 @@ export default defineConfig(({ mode }) => {
       // Import workerscript as raw string
       // Could use ?raw suffix but it breaks on mobile
       {
+        name: 'workerscript',
         transform(code, id) {
           if (/\.workerscript$/.test(id)) {
             const str = JSON.stringify(code)
