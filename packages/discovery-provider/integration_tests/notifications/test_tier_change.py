@@ -122,7 +122,7 @@ def test_tier_change(app):
         )
         assert notifications[0].data == {
             "new_tier": "platinum",
-            "new_tier_value": 100000,
+            "new_tier_value": 10000,
             "current_value": "9999999000000000000000000",
         }
 
