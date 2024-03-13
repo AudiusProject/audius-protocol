@@ -474,7 +474,7 @@ def user_dsl(search_str, current_user_id, must_saved=False):
             *base_match(search_str, operator="and", extra_fields=["handle"]),
             {"term": {"handle": {"value": search_str, "boost": 4}}},
             {"term": {"name": {"value": search_str, "boost": 4}}},
-            {"term": {"is_verified": {"value": True, "boost": 1.5}}},
+            {"term": {"is_verified": {"value": True, "boost": 3}}},
         ],
     }
 
