@@ -132,11 +132,9 @@ export default function App() {
           <Text color='heading' strength='strong' variant='display'>
             React + @audius/sdk
           </Text>
-          <h2>
-            <Text color='accent' variant='heading'>
-              Stream and favorite tracks!
-            </Text>
-          </h2>
+          <Text color='accent' variant='heading'>
+            Stream and favorite tracks!
+          </Text>
         </Flex>
         {!user ? (
           <Hint
