@@ -339,7 +339,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           ? makeConfirmerSuccessForCollection
           : makeConfirmerSuccess)(id, index),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
-        () => { },
+        () => {},
         UPLOAD_TIMEOUT_MILLIS
       )
     )

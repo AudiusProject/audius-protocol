@@ -179,8 +179,8 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   const clientOrigin = isNativeMobile
     ? 'mobile'
     : isElectron
-      ? 'desktop'
-      : 'web'
+    ? 'desktop'
+    : 'web'
   fingerprintClient.identify(account.user_id, clientOrigin)
 
   yield call(recordIPIfNotRecent, account.handle)
@@ -196,15 +196,27 @@ export function* fetchLocalAccountAsync() {
 
   yield put(accountActions.fetchAccountRequested())
 
-  const audiusLibs = yield call([audiusBackendInstance, audiusBackendInstance.getAudiusLibs])
-  const wallet = yield call([audiusLibs.web3Manager, audiusLibs.web3Manager.getWalletAddress])
+  const audiusLibs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  const wallet = yield call([
+    audiusLibs.web3Manager,
+    audiusLibs.web3Manager.getWalletAddress
+  ])
   const cachedAccount = yield call([localStorage, 'getAudiusAccount'])
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
   const currentUserExists = yield call([localStorage, 'getCurrentUserExists'])
 
-  const walletMatches = wallet.toLowerCase() === cachedAccountUser.wallet.toLowerCase()
+  const walletMatches =
+    wallet.toLowerCase() === cachedAccountUser.wallet.toLowerCase()
 
-  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated && walletMatches) {
+  if (
+    cachedAccount &&
+    cachedAccountUser &&
+    !cachedAccountUser.is_deactivated &&
+    walletMatches
+  ) {
     yield call(
       cacheAccount,
       { ...cachedAccountUser, local: true },
