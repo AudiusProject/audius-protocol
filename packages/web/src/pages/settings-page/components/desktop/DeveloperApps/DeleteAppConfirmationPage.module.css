@@ -19,13 +19,3 @@
   gap: var(--unit-2);
   padding-bottom: 0;
 }
-
-.deletingSpinner {
-  height: var(--unit-6);
-  width: var(--unit-6);
-  color: var(--white);
-}
-
-.deletingSpinner g path {
-  stroke: var(--accent-red);
-}

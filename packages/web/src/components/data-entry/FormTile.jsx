@@ -9,8 +9,7 @@ import {
   GENRES,
   convertGenreLabelToValue
 } from '@audius/common/utils'
-import { Switch, IconCloudDownload, IconIndent } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, Switch, IconCloudDownload, IconIndent } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
@@ -302,15 +301,15 @@ const BasicForm = (props) => {
     return (
       shouldRender && (
         <Button
-          type={ButtonType.COMMON_ALT}
+          variant='common'
+          size='small'
           className={styles.menuButton}
-          textClassName={styles.menuButtonText}
-          iconClassName={styles.menuButtonIcon}
           name='DownloadAndSource'
-          text='Downloads & Source Files'
-          leftIcon={<IconCloudDownload />}
+          iconLeft={IconCloudDownload}
           onClick={() => setSourceFilesModalVisible(true)}
-        />
+        >
+          Downloads & Source Files
+        </Button>
       )
     )
   }
@@ -318,15 +317,15 @@ const BasicForm = (props) => {
   const renderAdvancedButton = () => {
     return (
       <Button
+        variant='common'
+        size='small'
         className={cn(styles.menuButton, styles.advancedButton)}
-        textClassName={styles.menuButtonText}
-        iconClassName={styles.menuButtonIcon}
-        type={ButtonType.COMMON_ALT}
         name={props.advancedShow ? 'showAdvanced' : 'hideAdvanced'}
-        text={props.advancedShow ? 'Hide Advanced' : 'Show Advanced'}
-        leftIcon={<IconIndent />}
+        iconLeft={IconIndent}
         onClick={props.toggleAdvanced}
-      />
+      >
+        {props.advancedShow ? 'Hide Advanced' : 'Show Advanced'}
+      </Button>
     )
   }
 

@@ -15,18 +15,6 @@
   font-weight: var(--font-bold);
 }
 
-.newAppButton {
-  padding: var(--unit-2) var(--unit-3);
-}
-
-.newAppButtonText {
-  font-size: var(--font-s) !important;
-}
-
-.newAppButtonIcon {
-  margin-right: var(--unit-2) !important;
-}
-
 .noApps {
   font-size: var(--font-s);
   font-weight: var(--font-medium);
