@@ -1,4 +1,23 @@
-# React + TypeScript + Vite
+# @audius/sdk + React + TypeScript + Vite
+
+This examples shows how to use [`@audius/sdk`](https://www.npmjs.com/package/@audius/sdk) to:
+
+- Fetch data including users and tracks
+- Authorize the app to perform writes on behalf of an Audius user
+- Write data, in this case favoriting tracks
+- Stream tracks
+
+Make sure to add your `apiKey` and `apiSecret` at the top of `App.tsx`
+
+To start run:
+
+```
+npm run dev
+```
+
+For more details, check out the [docs](https://docs.audius.org/developers/sdk/overview)
+
+## React + TypeScript + Vite Template
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
