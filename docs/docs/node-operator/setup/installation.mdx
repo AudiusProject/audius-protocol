@@ -30,18 +30,34 @@ During installation there will be prompts for required environment variables. Th
 - `spOwnerWallet` - Wallet that registered (or will register) the content node on chain
 
 If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-provider)
+[this section](/node-operator/setup/advanced#discovery-node)
+
+:::warning Port Configuration
+
+Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` for Content
+Nodes.
+
+:::
 
 ---
 
-## Discovery Provider
+## Discovery Node
 
 - `audius_delegate_owner_wallet` - Address of wallet that contains no tokens but that is registered
   on chain, used to sign JSON responses from server
 - `audius_delegate_private_key` - Private key associated with `audius_delegate_owner_wallet`
 
 If you're using an externally managed Postgres DB please see
-[this section](/node-operator/setup/advanced#discovery-provider)
+[this section](/node-operator/setup/advanced#discovery-node)
+
+:::warning Port Configuration
+
+Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300` for
+Discovery Nodes.
+
+:::
+
+---
 
 ## More options
 

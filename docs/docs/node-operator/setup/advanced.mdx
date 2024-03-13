@@ -21,7 +21,9 @@ audius-cli set-config --required creator-node
 audius-cli set-config --required discovery-provider
 ```
 
-#### Creator Node
+---
+
+## Creator Node
 
 There are four required creator node environment variables, available in the creator node section
 [here](/node-operator/setup/installation#creator-node).
@@ -30,7 +32,7 @@ The full list of variables and explanations can be found
 [here](https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/config.js).
 Generally node operators will not need to modify any other environment variables.
 
-##### External Creator Node Postgres
+### External Creator Node Postgres
 
 If you set an external Postgres url during setup you can skip this section.
 
@@ -43,16 +45,25 @@ key   : dbUrl
 value : <db url>
 ```
 
-#### Discovery Provider
+:::warning Port Configuration
 
-There are two required discovery provider environment variables, available in the discovery provider
-section [here](/node-operator/setup/installation#discovery-provider).
+Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` for Content
+Nodes.
+
+:::
+
+---
+
+## Discovery Node
+
+There are two required Discovery Node environment variables, available in the Discovery Node section
+[here](/node-operator/setup/installation#discovery-node).
 
 The full list of variables and explanations can be found
 [here](https://github.com/AudiusProject/audius-protocol/blob/main/packages/discovery-provider/default_config.ini).
 Generally node operators will not need to modify any other environment variables.
 
-##### External Discovery Provider Postgres Instance
+### External Discovery Node Postgres Instance
 
 If you set an external Postgres url during setup you can skip this section.
 
@@ -76,7 +87,16 @@ following SQL command on the destination db.
 CREATE EXTENSION pg_trgm;
 ```
 
-### Launch
+:::warning Port Configuration
+
+Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300` for
+Discovery Nodes.
+
+:::
+
+---
+
+## Launch
 
 ```sh
 audius-cli launch creator-node
