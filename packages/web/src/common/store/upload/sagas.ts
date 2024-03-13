@@ -519,7 +519,7 @@ export function* handleUploads({
   }
 
   /** Handler for errors in any worker */
-  function* handleError(payload: ErrorPayload) {
+  function* handleWorkerError(payload: ErrorPayload) {
     const { trackIndex, stemIndex, trackId, error, phase } = payload
     // Check to make sure we haven't already errored for this track.
     // This could happen if one of its stems failed.
@@ -572,8 +572,10 @@ export function* handleUploads({
     )
 
     // Report to sentry
+    const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      error: error instanceof Error ? error : new Error(String(error)),
+      name: `Upload: ${e.name}`,
+      error: e,
       additionalInfo: {
         trackId,
         metadata:
@@ -605,7 +607,7 @@ export function* handleUploads({
     } else if (type === 'PUBLISHED') {
       yield* handlePublished(payload)
     } else if (type === 'ERROR') {
-      yield* handleError(payload)
+      yield* handleWorkerError(payload)
     }
   }
 
@@ -625,12 +627,13 @@ export function* handleUploads({
       (p) => tracks[p.trackIndex].metadata.track_id === errorPayload.trackId
     )
     if (stemsToDelete.length > 0) {
-      console.debug(`Cleaning up ${stemsToDelete.length} orphaned stems`)
+      console.debug(`Cleaning up ${stemsToDelete.length} orphaned stems...`)
       try {
         yield* call(
           deleteTracks,
           stemsToDelete.map((t) => t.trackId)
         )
+        console.debug('Done cleaning up stems')
       } catch (e) {
         console.error('Failed to clean up orphaned stems:', e)
       }
@@ -640,16 +643,16 @@ export function* handleUploads({
   // Attempt to delete all orphaned collection tracks,
   // and throw as collection failures are all or nothing.
   if (collectionUploadErrored()) {
-    console.debug(`Cleaning up ${published.length} orphaned tracks`)
+    console.debug(`Cleaning up ${published.length} orphaned tracks...`)
     try {
       yield* call(
         deleteTracks,
         published.map((t) => t.trackId)
       )
+      console.debug('Done cleaning up tracks')
     } catch (e) {
       console.error('Failed to clean up orphaned tracks:', e)
     }
-    yield* put(uploadActions.uploadTrackFailed())
     // Errors were reported to sentry earlier in the upload process.
     // Throwing here so callers don't think they succeeded.
     throw new Error('Failed to upload tracks for collection.')
@@ -662,7 +665,6 @@ export function* handleUploads({
 
   // If no tracks uploaded, we failed!
   if (publishedTrackIds.length === 0) {
-    yield* put(uploadActions.uploadTrackFailed())
     // Errors were reported to sentry earlier in the upload process.
     // Throwing here so callers don't think they succeeded.
     throw new Error('No tracks were successfully uploaded.')
@@ -747,18 +749,16 @@ export function* uploadCollection(
         if (error) {
           console.debug('Caught an error creating playlist')
           if (playlistId) {
-            yield* put(uploadActions.createPlaylistErrorIDExists(error))
             console.debug('Deleting playlist')
             // If we got a playlist ID back, that means we
             // created the playlist but adding tracks to it failed. So we must delete the playlist
             yield* call(audiusBackendInstance.deletePlaylist, playlistId)
             console.debug('Playlist deleted successfully')
-          } else {
-            // I think this is what we want
-            yield put(uploadActions.createPlaylistErrorNoId(error))
           }
           // Throw to trigger the fail callback
-          throw new Error('Playlist creation error')
+          throw error instanceof Error
+            ? error
+            : new Error(`Error creating playlist: ${error}`)
         }
 
         const confirmed = yield* call(
@@ -767,9 +767,7 @@ export function* uploadCollection(
           blockNumber
         )
         if (!confirmed) {
-          throw new Error(
-            `Could not confirm playlist creation for playlist id ${playlistId}`
-          )
+          throw new Error(`Could not confirm playlist creation`)
         }
 
         return (yield* call(audiusBackendInstance.getPlaylists, userId, [
@@ -847,13 +845,7 @@ export function* uploadCollection(
         // Finally, add to the library
         yield* call(addPlaylistsNotInLibrary)
       },
-      function* ({ timeout }) {
-        // All other non-timeout errors have
-        // been accounted for at this point
-        if (timeout) {
-          yield* put(uploadActions.createPlaylistPollingTimeout())
-        }
-
+      function* ({ error }) {
         console.error(
           `Create playlist call failed, deleting tracks: ${JSON.stringify(
             trackIds
@@ -867,11 +859,21 @@ export function* uploadCollection(
         } catch (err) {
           console.debug(`Could not delete all tracks: ${err}`)
         }
+        // Handle error loses error details, so call reportToSentry explicitly
+        yield* call(reportToSentry, {
+          name: `Upload: ${error.name}`,
+          error,
+          additionalInfo: {
+            trackIds,
+            playlistId
+          }
+        })
+        yield* put(uploadActions.uploadTracksFailed())
         yield* put(
           errorActions.handleError({
-            name: 'Create Playlist Error',
-            message: 'Create playlist call failed',
-            shouldRedirect: true
+            message: error.message,
+            shouldRedirect: true,
+            shouldReport: false
           })
         )
       }
@@ -1013,13 +1015,31 @@ export function* uploadTracksAsync(
 
   // Upload content.
   const isAlbum = payload.uploadType === UploadType.ALBUM
-  if (
-    payload.uploadType === UploadType.PLAYLIST ||
-    payload.uploadType === UploadType.ALBUM
-  ) {
-    yield* call(uploadCollection, tracks, payload.metadata, isAlbum)
-  } else {
-    yield* call(uploadMultipleTracks, tracks)
+  const isCollection = payload.uploadType === UploadType.PLAYLIST || isAlbum
+  try {
+    if (isCollection) {
+      yield* call(uploadCollection, tracks, payload.metadata, isAlbum)
+    } else {
+      yield* call(uploadMultipleTracks, tracks)
+    }
+  } catch (e) {
+    const error = e instanceof Error ? e : new Error(String(e))
+    // Handle error loses error details, so call reportToSentry explicitly
+    yield* call(reportToSentry, {
+      error,
+      name: `Upload: ${error.name}`,
+      additionalInfo: {
+        kind
+      }
+    })
+    yield* put(uploadActions.uploadTracksFailed())
+    yield* put(
+      errorActions.handleError({
+        message: error.message,
+        shouldRedirect: true,
+        shouldReport: false
+      })
+    )
   }
 }
 
