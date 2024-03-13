@@ -2,7 +2,8 @@ import { createPortal } from 'react-dom'
 import { useDispatch } from 'react-redux'
 
 import { configureMetaMask } from 'common/store/pages/signon/actions'
-import MetaMaskModal from 'pages/sign-on/components/desktop/MetaMaskModal'
+
+import MetaMaskModal from './MetaMaskModal'
 
 const META_MASK_SETUP_URL =
   'https://help.audius.co/help/Configuring-MetaMask-For-Use-With-Audius-2d446'
