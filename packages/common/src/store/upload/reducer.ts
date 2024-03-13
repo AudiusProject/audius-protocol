@@ -1,7 +1,5 @@
 import { cloneDeep } from 'lodash'
 
-import { StemUploadWithFile } from '~/models'
-
 import {
   TOGGLE_MULTI_TRACK_NOTIFICATION,
   UPLOAD_TRACKS_REQUESTED,
@@ -17,7 +15,7 @@ import {
   updateProgress,
   uploadSingleTrackFailed
 } from './actions'
-import { ProgressStatus, UploadState, UploadTrack } from './types'
+import { ProgressStatus, UploadState } from './types'
 
 const initialState: UploadState = {
   openMultiTrackNotification: true,
@@ -54,13 +52,6 @@ const initialUploadState = {
     transcode: 0
   }
 }
-const getInitialProgress = (upload: UploadTrack | StemUploadWithFile) => {
-  const res = cloneDeep(initialUploadState)
-  res.art.total =
-    'artwork' in upload.metadata ? upload.metadata.artwork?.file?.size ?? 0 : 0
-  res.audio.total = upload.file?.size ?? 0
-  return res
-}
 
 const actionsMap = {
   [TOGGLE_MULTI_TRACK_NOTIFICATION](
@@ -79,13 +70,12 @@ const actionsMap = {
     const newState = { ...state }
     newState.uploading = true
     newState.tracks = action.tracks
-    newState.uploadProgress = action.tracks
-      .map(getInitialProgress)
-      .concat(action.stems?.map((t) => t.map(getInitialProgress)).flat(1) ?? [])
+    newState.uploadProgress = action.tracks.map(() =>
+      cloneDeep(initialUploadState)
+    )
     newState.metadata = action.metadata ?? null
     newState.uploadType = action.uploadType ?? null
     newState.stems = action.stems ?? newState.stems
-    newState.error = false
     return newState
   },
   [UPLOAD_TRACKS_SUCCEEDED](
@@ -117,7 +107,6 @@ const actionsMap = {
     newState.tracks = null
     newState.metadata = null
     newState.stems = []
-    newState.error = true
     return newState
   },
   [UPDATE_PROGRESS](

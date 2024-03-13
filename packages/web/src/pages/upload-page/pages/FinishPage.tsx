@@ -124,21 +124,14 @@ export const FinishPage = (props: FinishPageProps) => {
   const dispatch = useDispatch()
 
   const uploadComplete = useMemo(() => {
-    if (
-      !upload.uploadProgress ||
-      upload.uploading ||
-      !upload.success ||
-      upload.error
-    )
+    if (!upload.uploadProgress || upload.uploading || !upload.success)
       return false
 
     return upload.uploadProgress.reduce((acc, progress) => {
       return (
         acc &&
-        (progress.art.status === ProgressStatus.COMPLETE ||
-          progress.art.status === ProgressStatus.ERROR) &&
-        (progress.audio.status === ProgressStatus.COMPLETE ||
-          progress.audio.status === ProgressStatus.ERROR)
+        progress.art.status === ProgressStatus.COMPLETE &&
+        progress.audio.status === ProgressStatus.COMPLETE
       )
     }, true)
   }, [upload])
