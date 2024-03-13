@@ -97,7 +97,6 @@ import userListModalSagas from 'store/application/ui/userListModal/sagas'
 import withdrawUSDCSagas from 'store/application/ui/withdraw-usdc/sagas'
 import errorSagas from 'store/errors/sagas'
 import reachabilitySagas from 'store/reachability/sagas'
-import reloadSagas from 'store/reload/sagas'
 import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
@@ -232,10 +231,7 @@ export default function* rootSaga() {
     withdrawUSDCSagas(),
 
     // Error
-    errorSagas(),
-
-    // Version refresh
-    reloadSagas()
+    errorSagas()
   )
   yield all(sagas.map(fork))
 }

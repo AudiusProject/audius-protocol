@@ -1,5 +1,3 @@
-import { useCallback, useState } from 'react'
-
 import {
   FieldHelperProps,
   FieldHookConfig,
@@ -8,8 +6,8 @@ import {
   useFormikContext,
   useField as useFormikField
 } from 'formik'
-
 import { useDebouncedCallback } from './useDebouncedCallback'
+import { useCallback, useState } from 'react'
 
 /** Extracts the event target's value from the event for both React and ReactNative. */
 const getEventTargetValue = (
