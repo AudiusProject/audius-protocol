@@ -45,13 +45,6 @@ key   : dbUrl
 value : <db url>
 ```
 
-:::warning Port Configuration
-
-Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` for Content
-Nodes.
-
-:::
-
 ---
 
 ## Discovery Node
@@ -86,13 +79,6 @@ following SQL command on the destination db.
 ```
 CREATE EXTENSION pg_trgm;
 ```
-
-:::warning Port Configuration
-
-Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300` for
-Discovery Nodes.
-
-:::
 
 ---
 
