@@ -325,42 +325,6 @@
   height: var(--unit-9);
 }
 
-.confirmModalContainer {
-  padding: 0 var(--unit-6);
-}
-.confirmModalTitle {
-  color: var(--neutral-light-4);
-  font-size: 22px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-.confirmModalTitle span {
-  margin-left: var(--unit-2);
-}
-.confirmModalTitle path {
-  fill: var(--neutral-light-4);
-}
-
-.confirmModalText {
-  margin: 2rem 4rem;
-  font-size: var(--font-l);
-  font-weight: var(--font-medium);
-}
-
-.confirmButtonContainer {
-  display: flex;
-  gap: var(--unit-8);
-  justify-content: center;
-  margin-bottom: var(--unit-6);
-}
-.confirmButtonContainer .profPicConfirmButton {
-  padding: var(--unit-3) var(--unit-6);
-}
-.confirmButtonContainer .profPicConfirmButton span {
-  font-size: var(--font-l);
-  letter-spacing: 0;
-}
-
 .nftModal {
   display: flex;
   align-items: flex-start;
@@ -517,11 +481,6 @@
   opacity: 1;
 }
 
-.editDoneButton {
-  margin: 32px 0;
-  padding: 18px 24px !important;
-}
-
 .editTableContainer {
   max-height: 20vh;
   overflow-y: auto;
@@ -660,14 +619,6 @@
   font-weight: var(--font-medium);
   line-height: 20px;
   border-radius: 0.25rem;
-}
-
-.embedButton {
-  padding: 0.75rem 1.5rem !important;
-}
-
-.embedButtonText {
-  font-size: var(--font-l) !important;
 }
 
 .embedClickText {

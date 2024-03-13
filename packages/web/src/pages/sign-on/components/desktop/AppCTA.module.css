@@ -49,8 +49,3 @@
   width: 272px;
   animation: QRAnim 0.6s cubic-bezier(0.24, 1.84, 0.43, 1.01);
 }
-
-.continueButton .continueButtonText {
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
-}

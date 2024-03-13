@@ -37,17 +37,3 @@
   font-weight: var(--font-demi-bold);
   margin-bottom: 52px;
 }
-
-.button :global(.btnRightIcon .ant-spin-dot i) {
-  background-color: var(--white);
-}
-
-.spinner {
-  display: block;
-  height: 16px;
-  width: 16px;
-}
-
-.spinner g path {
-  stroke: var(--static-white) !important;
-}

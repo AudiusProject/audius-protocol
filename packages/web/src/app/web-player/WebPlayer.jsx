@@ -45,7 +45,6 @@ import Navigator from 'components/nav/Navigator'
 import TopLevelPage from 'components/nav/mobile/TopLevelPage'
 import Notice from 'components/notice/Notice'
 import { NotificationPage } from 'components/notification'
-import PinnedTrackConfirmation from 'components/pin-track-confirmation/PinTrackConfirmation'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
 import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaimedToast'
 import DesktopRoute from 'components/routes/DesktopRoute'
@@ -75,7 +74,7 @@ import FeedPage from 'pages/feed-page/FeedPage'
 import FollowersPage from 'pages/followers-page/FollowersPage'
 import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
-import NotFoundPage from 'pages/not-found-page/NotFoundPage'
+import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
 import NotificationUsersPage from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
@@ -999,7 +998,6 @@ class WebPlayer extends Component {
           <RewardClaimedToast />
           {/* Non-mobile */}
           {!isMobile ? <Visualizer /> : null}
-          {!isMobile ? <PinnedTrackConfirmation /> : null}
           {!isMobile ? <DevModeMananger /> : null}
           {/* Mobile-only */}
           {isMobile ? (

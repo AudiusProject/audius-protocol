@@ -29,9 +29,9 @@ import {
   IconSpecialAccess,
   IconLogoCircleETH,
   IconLogoCircleSOL,
-  useTheme
+  useTheme,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -253,14 +253,14 @@ const LockedGatedTrackSection = ({
     if (isContentCollectibleGated(streamConditions)) {
       return (
         <Button
-          color='accentBlue'
-          text={messages.goToCollection}
+          variant='primary'
+          color='blue'
           onClick={goToCollection}
-          rightIcon={<IconExternalLink />}
-          type={ButtonType.PRIMARY}
-          iconClassName={styles.buttonIcon}
-          textClassName={styles.buttonText}
-        />
+          iconRight={IconExternalLink}
+          fullWidth
+        >
+          {messages.goToCollection}
+        </Button>
       )
     }
 
@@ -283,26 +283,27 @@ const LockedGatedTrackSection = ({
     if (isContentTipGated(streamConditions)) {
       return (
         <Button
-          color='accentBlue'
-          text={messages.sendTip}
+          variant='primary'
+          color='blue'
           onClick={handleSendTip}
-          rightIcon={<IconTip />}
-          type={ButtonType.PRIMARY}
-          iconClassName={styles.buttonIcon}
-          textClassName={styles.buttonText}
-        />
+          iconRight={IconTip}
+          fullWidth
+        >
+          {messages.sendTip}
+        </Button>
       )
     }
 
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <Button
-          color='specialLightGreen'
-          text={messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+          variant='primary'
+          color='lightGreen'
           onClick={handlePurchase}
-          type={ButtonType.PRIMARY}
-          textClassName={styles.buttonText}
-        />
+          fullWidth
+        >
+          {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+        </Button>
       )
     }
 

@@ -3,6 +3,7 @@ import { Action } from '@reduxjs/toolkit'
 import { ModalSource } from '~/models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
+import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -81,6 +82,7 @@ export type Modals =
   | 'Welcome'
   | 'CoinflowWithdraw'
   | 'WaitForDownloadModal'
+  | 'ArtistPick'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -101,6 +103,7 @@ export type StatefulModalsState = {
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
   CoinflowWithdraw: CoinflowWithdrawModalState
   WaitForDownloadModal: WaitForDownloadModalState
+  ArtistPick: ArtistPickModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

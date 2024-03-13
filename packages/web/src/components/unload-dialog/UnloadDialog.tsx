@@ -5,14 +5,17 @@ import {
   Modal,
   setupHotkeys,
   removeHotkeys,
-  ModifierKeys
+  ModifierKeys,
+  ModalHeader,
+  ModalTitle,
+  ModalContent,
+  ModalContentText,
+  ModalFooter,
+  Button
 } from '@audius/harmony'
-import { connect } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import { isElectron } from 'utils/clientUtil'
-
-import styles from './UnloadDialog.module.css'
 
 const { getIsConfirming } = confirmerSelectors
 
@@ -25,19 +28,21 @@ const MESSAGE_TEXT = `
 const RELOAD_TEXT = 'RELOAD ANYWAY'
 const QUIT_TEXT = 'QUIT ANYWAY'
 
-const UnloadDialog = (props) => {
+export const UnloadDialog = () => {
   const [showModal, setShowModal] = useState(false)
   const [reload, setReload] = useState(true)
 
+  const isConfirming = useSelector(getIsConfirming)
+
   const seenModalRef = useRef(false)
-  const hotkeyHookRef = useRef(null)
+  const hotkeyHookRef = useRef<(e: KeyboardEvent) => void>()
 
   const addElectronListener = isElectron()
-  const ipcRef = useRef(null)
+  const ipcRef = useRef<any>(null)
 
   useEffect(() => {
-    if (props.isConfirming) {
-      const beforeUnload = (event) => {
+    if (isConfirming) {
+      const beforeUnload = (event: BeforeUnloadEvent) => {
         event.preventDefault()
         if (!seenModalRef.current) event.returnValue = ''
       }
@@ -47,7 +52,7 @@ const UnloadDialog = (props) => {
         // Configure IPC so we can send receive/send close/quit events from
         // the main process.
         const ipc = window.require('electron').ipcRenderer
-        ipc.on('close', (event, arg) => {
+        ipc.on('close', () => {
           setReload(false)
           setShowModal(true)
         })
@@ -69,7 +74,7 @@ const UnloadDialog = (props) => {
         window.removeEventListener('beforeunload', beforeUnload)
       }
     }
-  }, [props.isConfirming, addElectronListener])
+  }, [isConfirming, addElectronListener])
 
   const onRefreshHotkey = () => {
     setReload(true)
@@ -98,36 +103,30 @@ const UnloadDialog = (props) => {
   }
 
   return (
-    <Modal
-      title={
-        <>
-          Hang tight! <i className='emoji woman-surfing' />
-        </>
-      }
-      isOpen={showModal}
-      showTitleHeader
-      onClose={onModalClose}
-      bodyClassName={styles.modalBody}
-      wrapperClassName={styles.modalWrapper}
-      titleClassName={styles.modalTitle}
-      headerContainerClassName={styles.modalHeader}
-      showDismissButton
-    >
-      <ConfirmationBox
-        text={MESSAGE_TEXT}
-        rightText='GOT IT'
-        leftText={reload ? RELOAD_TEXT : QUIT_TEXT}
-        rightClick={onModalClose}
-        leftClick={reload ? onReloadAnyway : onQuitAnyway}
-      />
+    <Modal isOpen={showModal} onClose={onModalClose}>
+      <ModalHeader>
+        <ModalTitle
+          title={
+            <>
+              Hang tight! <i className='emoji woman-surfing' />
+            </>
+          }
+        />
+      </ModalHeader>
+      <ModalContent>
+        <ModalContentText>{MESSAGE_TEXT}</ModalContentText>
+      </ModalContent>
+      <ModalFooter>
+        <Button variant='secondary' onClick={onModalClose}>
+          Got It
+        </Button>
+        <Button
+          variant='primary'
+          onClick={reload ? onReloadAnyway : onQuitAnyway}
+        >
+          {reload ? RELOAD_TEXT : QUIT_TEXT}
+        </Button>
+      </ModalFooter>
     </Modal>
   )
 }
-
-const mapStateToProps = (state) => ({
-  isConfirming: getIsConfirming(state)
-})
-
-const mapDispatchToProps = (dispatch) => ({})
-
-export default connect(mapStateToProps, mapDispatchToProps)(UnloadDialog)

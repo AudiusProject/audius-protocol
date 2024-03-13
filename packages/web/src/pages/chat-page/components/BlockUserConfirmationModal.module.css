@@ -2,10 +2,6 @@
   max-width: 488px;
 }
 
-.button {
-  flex: 1;
-}
-
 .content > div {
   line-height: 150%;
   font-weight: var(--font-medium);
@@ -13,10 +9,4 @@
   display: flex;
   flex-direction: column;
   gap: var(--unit-4);
-}
-
-.footer {
-  display: flex;
-  gap: var(--unit-4);
-  padding: 0 var(--unit-6) var(--unit-6) var(--unit-6);
 }

@@ -17,24 +17,6 @@
   gap: var(--unit-6);
 }
 
-.signOutButton {
-  margin-bottom: 16px;
-  height: 48px;
-  flex: 0 0 48px;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-.signOutButton .signOutButtonText {
-  color: var(--neutral-light-4);
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
-}
-
-.signOutButton .signOutButtonIcon path {
-  fill: var(--neutral-light-4);
-}
-
 .version {
   align-self: center;
   flex: 0 1;
@@ -61,33 +43,8 @@
   color: var(--neutral-light-2);
 }
 
-.modalBody {
-  max-width: 500px;
-  width: 100%;
-}
-
-.modalHeader {
-  margin: 0 16px;
-}
-
-.modalTitle {
-  color: var(--neutral-light-4);
-  font-size: var(--font-l);
-  font-weight: var(--font-heavy);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .cardFull {
   flex: 1 1 100%;
-}
-
-.cardButton {
-  width: 100%;
-}
-
-.cardButton .settingButtonText {
-  font-size: var(--font-l);
 }
 
 .iconVerified path:nth-child(2) {

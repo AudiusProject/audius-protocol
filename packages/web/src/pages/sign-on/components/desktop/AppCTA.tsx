@@ -1,7 +1,6 @@
 import { ReactNode } from 'react'
 
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconArrowRight } from '@audius/harmony'
 import cn from 'classnames'
 
 import QRCode from 'assets/img/imageQR.png'
@@ -54,14 +53,13 @@ const AppCTA = ({ onNextPage }: AppCTAProps) => {
         {messages.qrInstruction}
       </Subtitle>
       <Button
-        text='Continue'
+        variant='primary'
         name='continue'
-        rightIcon={<IconArrowRight />}
-        type={ButtonType.PRIMARY_ALT}
+        iconRight={IconArrowRight}
         onClick={onNextPage}
-        textClassName={styles.continueButtonText}
-        className={styles.continueButton}
-      />
+      >
+        Continue
+      </Button>
     </div>
   )
 }

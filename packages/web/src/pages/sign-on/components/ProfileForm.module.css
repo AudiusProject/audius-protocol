@@ -132,11 +132,6 @@
   top: 34px;
 }
 
-.continueButton .continueButtonText {
-  font-weight: var(--font-bold);
-  font-size: var(--font-l);
-}
-
 .handleInput :global(.placeholder) {
   padding-left: 20px;
 }
@@ -222,15 +217,4 @@
 .isMobile .profilePic {
   margin-bottom: 20px;
   overflow: hidden;
-}
-
-.spinner {
-  display: block;
-  height: 18px;
-  width: 18px;
-  margin: 3px;
-}
-
-.spinner g path {
-  stroke: var(--white) !important;
 }

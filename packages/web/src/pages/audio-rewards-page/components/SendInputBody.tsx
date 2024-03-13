@@ -22,13 +22,13 @@ import {
   Nullable
 } from '@audius/common/utils'
 import {
+  Button,
   Flex,
   IconTokenGold as IconGoldBadgeSVG,
   IconValidationX,
   TextInput,
   TokenAmountInput
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -298,13 +298,9 @@ const SendInputBody = ({
           onChange={handleChangeAddress}
         />
         {renderAddressError()}
-        <Button
-          className={styles.sendBtn}
-          text={messages.sendAudio}
-          textClassName={styles.sendBtnText}
-          onClick={onClickSend}
-          type={hasError ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
-        />
+        <Button variant='primary' onClick={onClickSend} disabled={!!hasError}>
+          {messages.sendAudio}
+        </Button>
       </Flex>
     </ModalBodyWrapper>
   )

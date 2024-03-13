@@ -1,10 +1,8 @@
 import { useState, useCallback } from 'react'
 
-import { IconEmbed } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconEmbed } from '@audius/harmony'
 
 import SettingsCard from '../SettingsCard'
-import styles from '../SettingsPage.module.css'
 
 import { DeveloperAppsSettingsModal } from './DeveloperAppsSettingsModal'
 
@@ -32,13 +30,9 @@ export const DeveloperAppsSettingsCard = () => {
         title={messages.title}
         description={messages.description}
       >
-        <Button
-          onClick={handleOpen}
-          className={styles.cardButton}
-          textClassName={styles.settingButtonText}
-          type={ButtonType.COMMON_ALT}
-          text={messages.buttonText}
-        />
+        <Button variant='common' onClick={handleOpen} fullWidth>
+          {messages.buttonText}
+        </Button>
       </SettingsCard>
       <DeveloperAppsSettingsModal isOpen={isModalOpen} onClose={handleClose} />
     </>

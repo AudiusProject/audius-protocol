@@ -64,9 +64,6 @@
 .buttonWrapper {
   margin-top: 100px;
 }
-.buttonWrapper .buttonFormatting .buttonFormattingText {
-  font-size: 18px;
-}
 
 /* Mobile styles */
 .isMobile {
@@ -117,15 +114,4 @@
 
 .isMobile .buttonWrapper {
   margin: 40px 0px 60px;
-}
-
-.isMobile .buttonFormatting {
-  width: 100%;
-  justify-content: center;
-}
-
-.isMobile .buttonFormatting .buttonFormattingText {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
-  text-align: center;
 }

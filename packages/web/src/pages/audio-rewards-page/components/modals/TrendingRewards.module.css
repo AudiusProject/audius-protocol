@@ -123,14 +123,6 @@
   color: var(--neutral-light-6);
 }
 
-.mobile .button {
-  width: 100%;
-}
-
-.buttonIcon {
-  margin: 0 2px 0 0px !important;
-}
-
 .titleHeader {
   text-align: center;
   color: var(--white);
