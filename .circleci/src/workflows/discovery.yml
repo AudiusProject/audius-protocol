@@ -39,9 +39,9 @@ jobs:
       name: push-pedalboard-solana-relay
       context: [Vercel, dockerhub]
       service: solana-relay
-      # filters:
-      #   branches:
-      #     only: main
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-pedalboard-sla-auditor
       context: [Vercel, dockerhub]
