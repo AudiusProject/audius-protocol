@@ -30,16 +30,12 @@ const MAX_ROWS = 20
 const messages = {
   title: 'STEMS & DOWNLOADS',
   additionalFiles: 'UPLOAD ADDITIONAL FILES',
-  description:
-    'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
   allowDownloads: 'Allow Full Track Download',
   allowDownloadsDescription:
     'Allow your fans to download a copy of your full track.',
   requireFollowToDownload: 'Require Follow to Download',
   done: 'DONE',
-  maxCapacity: 'Reached upload limit of 20 files.',
-  stemTypeHeader: 'Select Stem Type',
-  stemTypeDescription: 'Please select a stem type for each of your files.'
+  maxCapacity: 'Reached upload limit of 20 files.'
 }
 
 const defaultDownloadSettings: Download = {

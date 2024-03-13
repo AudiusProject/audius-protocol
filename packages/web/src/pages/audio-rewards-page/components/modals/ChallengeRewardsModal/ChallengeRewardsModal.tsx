@@ -23,16 +23,17 @@ import {
   IconValidationCheck,
   IconCheck,
   IconVerified,
-  IconTwitter as IconTwitterBird
+  IconTwitter as IconTwitterBird,
+  SocialButton,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType, ProgressBar } from '@audius/stems'
+import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -101,6 +102,7 @@ const messages = {
   twitterShare: (modalType: 'referrals' | 'ref-v') =>
     `Share Invite With Your ${modalType === 'referrals' ? 'Friends' : 'Fans'}`,
   twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`,
+  twitterReferralLabel: 'Share referral link on Twitter',
   verifiedChallenge: 'VERIFIED CHALLENGE',
   claimAmountLabel: '$AUDIO available to claim',
   claimedSoFar: '$AUDIO claimed so far',
@@ -161,17 +163,18 @@ const TwitterShareButton = ({
   modalType,
   inviteLink
 }: TwitterShareButtonProps) => {
-  const wm = useWithMobileStyle(styles.mobile)
+  const isMobile = useIsMobile()
+
   return (
-    <Button
-      type={ButtonType.PRIMARY_ALT}
-      text={messages.twitterShare(modalType)}
-      leftIcon={<IconTwitterBird />}
+    <SocialButton
+      socialType='twitter'
+      iconLeft={IconTwitterBird}
       onClick={() => openTwitterLink(inviteLink, messages.twitterCopy)}
-      className={wm(styles.twitterButton)}
-      textClassName={styles.twitterText}
-      iconClassName={styles.twitterIcon}
-    />
+      aria-label={messages.twitterReferralLabel}
+      fullWidth={isMobile}
+    >
+      {messages.twitterShare(modalType)}
+    </SocialButton>
   )
 }
 
@@ -448,13 +451,14 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       )}
       {buttonLink && challenge?.state !== 'completed' && (
         <Button
-          className={wm(cn(styles.button, styles.buttonLink))}
-          type={ButtonType.PRIMARY_ALT}
-          text={buttonInfo?.label}
+          variant='primary'
+          fullWidth={isMobile}
           onClick={goToRoute}
-          leftIcon={buttonInfo?.leftIcon}
-          rightIcon={buttonInfo?.rightIcon}
-        />
+          iconLeft={buttonInfo?.leftIcon}
+          iconRight={buttonInfo?.rightIcon}
+        >
+          {buttonInfo?.label}
+        </Button>
       )}
       <div className={wm(styles.claimRewardWrapper)}>
         {audioToClaim > 0 ? (
@@ -463,21 +467,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               {`${audioToClaim} ${messages.claimAmountLabel}`}
             </div>
             <Button
-              text={messages.claimYourReward}
-              className={wm(styles.button)}
-              type={
-                claimInProgress ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT
-              }
-              isDisabled={claimInProgress}
-              rightIcon={
-                claimInProgress ? (
-                  <LoadingSpinner className={styles.spinner} />
-                ) : (
-                  <IconCheck />
-                )
-              }
+              variant='primary'
+              isLoading={claimInProgress}
+              iconRight={IconCheck}
               onClick={onClaimRewardClicked}
-            />
+            >
+              {messages.claimYourReward}
+            </Button>
           </>
         ) : null}
         {audioClaimedSoFar > 0 && challenge?.state !== 'disbursed' ? (

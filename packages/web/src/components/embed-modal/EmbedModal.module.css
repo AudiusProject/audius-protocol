@@ -62,11 +62,3 @@
   line-height: 23px;
   margin-bottom: 16px;
 }
-
-.button .buttonText {
-  font-size: var(--font-s);
-  text-transform: uppercase;
-  font-weight: var(--font-bold);
-  letter-spacing: 0.5px;
-  line-height: 10px;
-}

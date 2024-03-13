@@ -7,23 +7,6 @@
   justify-content: left;
 }
 
-.savedPageHeader .playAllButton {
-  margin-left: 28px;
-  height: 28px;
-  width: 94px;
-  display: flex;
-  justify-content: center;
-}
-.savedPageHeader .playAllButton .playAllButtonIcon {
-  margin-right: 8px;
-  width: 12px !important;
-  height: 12px !important;
-}
-
-.savedPageHeader .playAllButton .playAllButtonText {
-  font-size: 11px;
-}
-
 /* Filter Input in Header */
 .savedPageWrapper :global(.ant-input-affix-wrapper) {
   position: absolute;

@@ -35,11 +35,6 @@
   line-height: 150%;
 }
 
-.doneButton {
-  align-self: center;
-  width: 100%;
-}
-
 .markdownFrame {
   background: var(--background);
   box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.1);

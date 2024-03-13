@@ -35,14 +35,14 @@ const getQuote = async ({
   inputTokenSymbol,
   outputTokenSymbol,
   inputAmount,
-  slippage,
+  slippageBps,
   swapMode = 'ExactIn',
   onlyDirectRoutes = false
 }: {
   inputTokenSymbol: JupiterTokenSymbol
   outputTokenSymbol: JupiterTokenSymbol
   inputAmount: number
-  slippage: number
+  slippageBps: number
   swapMode?: JupiterSwapMode
   onlyDirectRoutes?: boolean
 }) => {
@@ -62,7 +62,7 @@ const getQuote = async ({
     inputMint: inputToken.address,
     outputMint: outputToken.address,
     amount,
-    slippageBps: slippage,
+    slippageBps,
     swapMode,
     onlyDirectRoutes
   })

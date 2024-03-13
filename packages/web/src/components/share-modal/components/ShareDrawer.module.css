@@ -48,12 +48,3 @@
 .shareToTwitterAction path {
   fill: var(--static-twitter-blue);
 }
-
-.shareToTikTokAction {
-  composes: action;
-  color: black;
-}
-
-.shareToTikTokActionDark {
-  color: var(--static-white);
-}
