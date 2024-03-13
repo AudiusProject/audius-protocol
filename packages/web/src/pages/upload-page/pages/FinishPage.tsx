@@ -158,13 +158,15 @@ export const FinishPage = (props: FinishPageProps) => {
         return upload.tracks?.[0].metadata.permalink
       case UploadType.ALBUM:
       case UploadType.PLAYLIST:
-        return collectionPage(
-          user!.handle,
-          upload.metadata?.playlist_name,
-          upload.completionId,
-          null,
-          uploadType === UploadType.ALBUM
-        )
+        return upload.completedEntity
+          ? collectionPage(
+              null,
+              null,
+              null,
+              upload.completedEntity.permalink,
+              uploadType === UploadType.ALBUM
+            )
+          : ''
       default:
         if (!upload.tracks || upload.tracks.length > 1) {
           return profilePage(user!.handle)
