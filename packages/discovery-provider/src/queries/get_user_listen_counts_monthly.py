@@ -1,12 +1,9 @@
 from typing import TypedDict
 
-from sqlalchemy import func
+from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 
-from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
-from src.models.tracks.track import Track
 from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import query_result_to_list
 
 
 class GetUserListenCountsMonthlyArgs(TypedDict):
@@ -34,28 +31,24 @@ def get_user_listen_counts_monthly(args: GetUserListenCountsMonthlyArgs):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        user_listen_counts_monthly = _get_user_listen_counts_monthly(session, args)
-        return query_result_to_list(user_listen_counts_monthly)
+        return list(_get_user_listen_counts_monthly(session, args))
 
 
 def _get_user_listen_counts_monthly(
     session: Session, args: GetUserListenCountsMonthlyArgs
 ):
-    user_id = args["user_id"]
-    start_time = args["start_time"]
-    end_time = args["end_time"]
-
-    query = (
-        session.query(
-            AggregateMonthlyPlay.play_item_id,
-            AggregateMonthlyPlay.timestamp,
-            func.sum(AggregateMonthlyPlay.count),
-        )
-        .join(Track, Track.track_id == AggregateMonthlyPlay.play_item_id)
-        .filter(Track.owner_id == user_id)
-        .filter(Track.is_current == True)
-        .filter(AggregateMonthlyPlay.timestamp >= start_time)
-        .filter(AggregateMonthlyPlay.timestamp < end_time)
-        .group_by(AggregateMonthlyPlay.play_item_id, AggregateMonthlyPlay.timestamp)
+    sql = text(
+        """
+    select
+        play_item_id,
+        timestamp,
+        sum(count) as count
+    from aggregate_monthly_plays
+    where play_item_id in (select track_id from tracks where owner_id = :user_id)
+    and timestamp >= :start_time
+    and timestamp < :end_time
+    group by play_item_id, timestamp
+    """
     )
-    return query.all()
+
+    return session.execute(sql, args)
