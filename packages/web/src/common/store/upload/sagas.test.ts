@@ -241,67 +241,79 @@ describe('upload', () => {
     mockUploadTrackV2.mockReturnValueOnce(stem1.metadata)
     mockUploadTrackV2.mockReturnValueOnce(stem2.metadata)
 
-    expectSaga(handleUploads, { tracks: [testTrack], kind: 'tracks' })
-      .provide([
-        [call.fn(waitForWrite), undefined],
-        [select(accountSelectors.getAccountUser), {}],
-        [call.fn(processTrackForUpload), testTrack.metadata],
-        [
-          getContext('audiusBackendInstance'),
-          {
-            getAudiusLibsTyped: () => {
-              return {
-                Track: {
-                  uploadTrackV2: mockUploadTrackV2,
-                  writeTrackToChain: mockWriteTrackToChain
+    return (
+      expectSaga(handleUploads, { tracks: [testTrack], kind: 'tracks' })
+        .provide([
+          [call.fn(waitForWrite), undefined],
+          [select(accountSelectors.getAccountUser), {}],
+          [call.fn(processTrackForUpload), testTrack.metadata],
+          [
+            getContext('audiusBackendInstance'),
+            {
+              getAudiusLibsTyped: () => {
+                return {
+                  Track: {
+                    uploadTrackV2: mockUploadTrackV2,
+                    writeTrackToChain: mockWriteTrackToChain
+                  }
                 }
               }
             }
+          ],
+          [call.fn(confirmTransaction), true],
+          [call.fn(waitForAccount), undefined],
+          [call.fn(retrieveTracks), [testTrack.metadata]],
+          [call.fn(deleteTracks), undefined]
+        ])
+        // Reports to sentry
+        .call(reportToSentry, {
+          name: 'Upload: Error',
+          error: mockError,
+          additionalInfo: {
+            trackId: 3,
+            metadata: stem2.metadata,
+            fileSize: stem2.file.size,
+            trackIndex: 0,
+            stemIndex: 1,
+            trackCount: 1,
+            stemCount: 2,
+            phase: 'publish',
+            kind: 'tracks'
           }
-        ],
-        [call.fn(confirmTransaction), true],
-        [call.fn(waitForAccount), undefined],
-        [call.fn(retrieveTracks), [testTrack.metadata]]
-      ])
-      // Reports to sentry
-      .call(reportToSentry, {
-        error: mockError,
-        additionalInfo: {
-          trackId: 3,
-          metadata: stem2.metadata,
-          fileSize: stem2.file.size,
-          trackIndex: 0,
-          stemIndex: 1,
-          trackCount: 1,
-          stemCount: 2,
-          phase: 'publish',
-          kind: 'tracks'
-        }
-      })
-      .call(reportToSentry, {
-        error: new Error('Stem failed to upload.'),
-        additionalInfo: {
-          trackId: 1,
-          metadata: testTrack.metadata,
-          fileSize: testTrack.file.size,
-          trackIndex: 0,
-          stemIndex: null,
-          trackCount: 1,
-          stemCount: 2,
-          phase: 'publish',
-          kind: 'tracks'
-        }
-      })
-      // Delete the stem that was successfully published
-      .call(deleteTracks, [2])
-      // Expect the saga to throw since no tracks succeeded
-      .throws(Error)
-      .run()
-
-    expect(mockWriteTrackToChain).not.toBeCalledWith(
-      testTrack.metadata,
-      EntityManagerAction.CREATE,
-      1
+        })
+        // Fails the parent too
+        .call.like({
+          fn: reportToSentry,
+          args: [
+            {
+              name: 'Upload: Error',
+              additionalInfo: {
+                trackId: 1,
+                metadata: testTrack.metadata,
+                fileSize: testTrack.file.size,
+                trackIndex: 0,
+                stemIndex: null,
+                trackCount: 1,
+                stemCount: 2,
+                phase: 'publish',
+                kind: 'tracks'
+              }
+            }
+          ]
+        })
+        // Delete the stem that was successfully published
+        .call(deleteTracks, [2])
+        // Expect the saga to throw since no tracks succeeded
+        .throws(Error)
+        .run()
+        .then(() => {
+          // Never published the parent track
+          expect(mockWriteTrackToChain).not.toBeCalledWith(
+            testTrack.metadata,
+            EntityManagerAction.CREATE,
+            1
+          )
+        })
     )
   })
 
