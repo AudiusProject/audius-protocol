@@ -43,7 +43,6 @@ import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import { DogEar } from 'components/dog-ear'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
@@ -304,22 +303,6 @@ const TrackHeader = ({
     )
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <DownloadButtons
-        className={cn(
-          styles.downloadButtonsContainer,
-          styles.withSectionDivider
-        )}
-        trackId={trackId}
-        isOwner={isOwner}
-        following={isFollowing}
-        hasDownloadAccess={hasDownloadAccess}
-        onDownload={onDownload}
-      />
-    )
-  }
-
   const renderTrackLabels = () => {
     return trackLabels.map((infoFact) => {
       return (
@@ -505,7 +488,6 @@ const TrackHeader = ({
         {renderTrackLabels()}
       </div>
       {renderTags()}
-      {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
       {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
           <Suspense>

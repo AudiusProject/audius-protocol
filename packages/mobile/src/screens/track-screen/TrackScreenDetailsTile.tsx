@@ -74,7 +74,6 @@ import { moodMap } from 'app/utils/moods'
 import { useThemeColors } from 'app/utils/theme'
 
 import { DownloadSection } from './DownloadSection'
-import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -221,9 +220,7 @@ export const TrackScreenDetailsTile = ({
   uid,
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
-  const { hasStreamAccess, hasDownloadAccess } = useGatedContentAccess(
-    track as Track
-  ) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
+  const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -582,22 +579,10 @@ export const TrackScreenDetailsTile = ({
     ) : null
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <TrackScreenDownloadButtons
-        following={user.does_current_user_follow}
-        hasDownloadAccess={hasDownloadAccess}
-        isOwner={isOwner}
-        trackId={track_id}
-      />
-    )
-  }
-
   const renderBottomContent = () => {
     return (
       <View style={styles.bottomContent}>
         {renderTags()}
-        {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
         {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
           <DownloadSection trackId={track_id} />
         ) : null}
