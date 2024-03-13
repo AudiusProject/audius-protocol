@@ -71,7 +71,10 @@ const fadeIn = (
     // Set default background color for static images (transparent background defaults)
     if (image.includes('/static')) {
       ref.current.style.backgroundColor = 'var(--neutral-light-5)'
-    } else if (!image.startsWith('data:image/png')) {
+    } else if (
+      !image.startsWith('data:image/png') &&
+      !image.startsWith('/@fs')
+    ) {
       ref.current.style.backgroundColor = 'unset'
     }
 
