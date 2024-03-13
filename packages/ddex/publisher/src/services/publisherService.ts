@@ -32,6 +32,7 @@ const formatTrackMetadata = (
     isrc: metadata.isrc,
     license: metadata.license,
     releaseDate: new Date(metadata.release_date),
+    ddexReleaseIds: metadata.ddex_release_ids,
     previewStartSeconds: metadata.preview_start_seconds ?? undefined,
     // isUnlisted: // TODO: set visibility
     // iswc:
@@ -56,6 +57,7 @@ const formatAlbumMetadata = (
     license: metadata.license || '',
     mood: (metadata.mood || 'Other') as Mood, // TODO: SDK requires mood, but XML doesn't provide one
     releaseDate: new Date(metadata.release_date),
+    ddexReleaseIds: metadata.ddex_release_ids,
     tags: metadata.tags || '',
     upc: metadata.upc || '',
   }
