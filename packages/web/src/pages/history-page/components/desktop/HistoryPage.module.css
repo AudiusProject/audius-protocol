@@ -2,23 +2,6 @@
   position: relative;
 }
 
-.historyPageHeader .playAllButton {
-  margin-left: 28px;
-  height: 28px;
-  width: 94px;
-  display: flex;
-  justify-content: center;
-}
-.historyPageHeader .playAllButton .playAllButtonIcon {
-  margin-right: 8px;
-  width: 12px !important;
-  height: 12px !important;
-}
-
-.historyPageHeader .playAllButton .playAllButtonText {
-  font-size: 11px;
-}
-
 /* Filter Input in Header */
 .historyPageWrapper :global(.ant-input-affix-wrapper) {
   position: absolute;

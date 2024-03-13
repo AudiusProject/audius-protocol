@@ -2,8 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 
 import { Name, PlayableType, ID, Track } from '@audius/common/models'
 import { encodeHashId } from '@audius/common/utils'
-import { Modal, SegmentedControl } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, Modal, SegmentedControl } from '@audius/harmony'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -200,13 +199,9 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
           </div>
 
           <div className={styles.bottom}>
-            <Button
-              type={ButtonType.PRIMARY_ALT}
-              onClick={close}
-              text='Done'
-              textClassName={styles.buttonText}
-              className={styles.button}
-            />
+            <Button variant='primary' onClick={close}>
+              Done
+            </Button>
           </div>
         </div>
       </div>

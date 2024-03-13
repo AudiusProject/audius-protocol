@@ -32,19 +32,17 @@ import {
   IconHeart,
   IconKebabHorizontal,
   IconShare,
-  IconRocket
+  IconRocket,
+  Button
 } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
-import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
-import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { TextLink, UserLink } from 'components/link'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import { ScheduledReleaseGiantLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
@@ -263,17 +261,16 @@ export const GiantTrackTile = ({
   const renderShareButton = () => {
     const shouldShow =
       (!isUnlisted && !isPublishing) || fieldVisibility.share || isOwner
-    return (
-      shouldShow && (
-        <EntityActionButton
-          type={ButtonType.COMMON}
-          text='share'
-          leftIcon={<IconShare />}
-          widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
-          onClick={onShare}
-        />
-      )
-    )
+    return shouldShow ? (
+      <Button
+        variant='secondary'
+        iconLeft={IconShare}
+        widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+        onClick={onShare}
+      >
+        share
+      </Button>
+    ) : null
   }
 
   const renderMakePublicButton = () => {
@@ -284,31 +281,23 @@ export const GiantTrackTile = ({
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
-        <EntityActionButton
-          type={isPublishing ? ButtonType.DISABLED : ButtonType.COMMON}
-          text={text}
-          leftIcon={
-            isPublishing ? (
-              <LoadingSpinner className={styles.spinner} />
-            ) : (
-              <IconRocket />
-            )
-          }
+        <Button
+          variant='secondary'
+          isLoading={isPublishing}
+          iconLeft={IconRocket}
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          onClick={
-            isPublishing
-              ? undefined
-              : () => {
-                  dispatch(
-                    openPublishTrackConfirmationModal({
-                      confirmCallback: () => {
-                        onMakePublic(trackId)
-                      }
-                    })
-                  )
+          onClick={() => {
+            dispatch(
+              openPublishTrackConfirmationModal({
+                confirmCallback: () => {
+                  onMakePublic(trackId)
                 }
-          }
-        />
+              })
+            )
+          }}
+        >
+          {text}
+        </Button>
       )
     )
   }
@@ -330,24 +319,18 @@ export const GiantTrackTile = ({
             text={isReposted ? 'Unrepost' : 'Repost'}
           >
             <div>
-              <EntityActionButton
+              <Button
+                variant={isReposted ? 'primary' : 'secondary'}
                 name='repost'
-                type={
-                  isOwner
-                    ? ButtonType.DISABLED
-                    : isReposted
-                    ? ButtonType.SECONDARY
-                    : ButtonType.COMMON
-                }
+                disabled={isOwner}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-                text={
-                  isReposted
-                    ? messages.repostedButtonText
-                    : messages.repostButtonText
-                }
-                leftIcon={<IconRepost />}
-                onClick={isOwner ? () => {} : onRepost}
-              />
+                iconLeft={IconRepost}
+                onClick={onRepost}
+              >
+                {isReposted
+                  ? messages.repostedButtonText
+                  : messages.repostButtonText}
+              </Button>
             </div>
           </Tooltip>
         </Toast>
@@ -371,20 +354,16 @@ export const GiantTrackTile = ({
             text={isSaved ? 'Unfavorite' : 'Favorite'}
           >
             <div>
-              <EntityActionButton
+              <Button
                 name='favorite'
-                type={
-                  isOwner
-                    ? ButtonType.DISABLED
-                    : isSaved
-                    ? ButtonType.SECONDARY
-                    : ButtonType.COMMON
-                }
-                text={isSaved ? 'FAVORITED' : 'FAVORITE'}
+                disabled={isOwner}
+                variant={isSaved ? 'primary' : 'secondary'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
-                leftIcon={<IconHeart />}
-                onClick={isOwner ? undefined : onSave}
-              />
+                iconLeft={IconHeart}
+                onClick={onSave}
+              >
+                {isSaved ? 'favorited' : 'favorite'}
+              </Button>
             </div>
           </Tooltip>
         </Toast>
@@ -669,15 +648,10 @@ export const GiantTrackTile = ({
                   {(ref, triggerPopup) => (
                     <div className={cn(styles.menuKebabContainer)} ref={ref}>
                       <Button
-                        className={cn(
-                          styles.buttonFormatting,
-                          styles.moreButton
-                        )}
-                        leftIcon={<IconKebabHorizontal />}
+                        variant='secondary'
+                        aria-label='More options'
+                        iconLeft={IconKebabHorizontal}
                         onClick={() => triggerPopup()}
-                        text={null}
-                        textClassName={styles.buttonTextFormatting}
-                        type={ButtonType.COMMON}
                       />
                     </div>
                   )}

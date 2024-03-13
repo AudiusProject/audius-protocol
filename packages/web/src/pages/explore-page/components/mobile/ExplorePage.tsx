@@ -166,7 +166,7 @@ const ExplorePage = ({
             description={t.description}
             gradient={t.gradient}
             shadow={t.shadow}
-            icon={<Icon height={512} width={512} color='staticWhite' />}
+            icon={<Icon color='staticWhite' width={200} height={200} />}
             goToRoute={goToRoute}
           />
         )
@@ -179,16 +179,7 @@ const ExplorePage = ({
             description={t.subtitle}
             gradient={t.gradient}
             shadow={t.shadow}
-            // @ts-ignore
-            icon={
-              <Icon
-                className={
-                  t.title === PREMIUM_TRACKS.title
-                    ? styles.premiumTracksBackgroundIcon
-                    : undefined
-                }
-              />
-            }
+            icon={<Icon color='staticWhite' width={200} height={200} />}
             goToRoute={goToRoute}
             isIncentivized={t.incentivized}
           />

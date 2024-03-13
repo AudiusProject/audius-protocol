@@ -47,16 +47,6 @@
   margin-top: 16px;
 }
 
-.mainButton {
-  border-radius: 32px;
-}
-
-.mainButton span {
-  color: var(--primary) !important;
-  font-size: var(--font-l) !important;
-  font-weight: var(--font-bold) !important;
-}
-
 .notNow {
   margin-top: 15px;
   color: white;

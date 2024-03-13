@@ -6,6 +6,7 @@ import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
+import { ArtistPickModal } from 'components/artist-pick-modal/ArtistPickModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
@@ -29,7 +30,7 @@ import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
-import UnloadDialog from 'components/unload-dialog/UnloadDialog'
+import { UnloadDialog } from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
@@ -110,7 +111,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   USDCTransactionDetailsModal,
   AddFundsModal,
   CoinflowWithdraw: CoinflowWithdrawModal,
-  WaitForDownloadModal
+  WaitForDownloadModal,
+  ArtistPick: ArtistPickModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

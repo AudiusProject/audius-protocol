@@ -8,8 +8,7 @@ import {
   formatSecondsAsText,
   formatDate
 } from '@audius/common/utils'
-import { IconPause, IconPlay } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
@@ -53,23 +52,13 @@ const Loading = (props) => {
 
 const PlayButton = (props) => {
   return props.playing ? (
-    <Button
-      className={cn(styles.playAllButton, styles.buttonFormatting)}
-      textClassName={styles.playAllButtonText}
-      type={ButtonType.PRIMARY_ALT}
-      text={messages.pause}
-      leftIcon={<IconPause />}
-      onClick={props.onPlay}
-    />
+    <Button variant='primary' iconLeft={IconPause} onClick={props.onPlay}>
+      {messages.pause}
+    </Button>
   ) : (
-    <Button
-      className={cn(styles.playAllButton, styles.buttonFormatting)}
-      textClassName={styles.playAllButtonText}
-      type={ButtonType.PRIMARY_ALT}
-      text={messages.play}
-      leftIcon={<IconPlay />}
-      onClick={props.onPlay}
-    />
+    <Button variant='primary' iconLeft={IconPlay} onClick={props.onPlay}>
+      {messages.play}
+    </Button>
   )
 }
 

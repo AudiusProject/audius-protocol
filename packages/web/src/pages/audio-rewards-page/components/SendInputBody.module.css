@@ -52,10 +52,6 @@
   color: var(--neutral);
 }
 
-.sendBtnText {
-  font-size: var(--font-s) !important;
-}
-
 .errorLabel {
   color: var(--accent-red);
   display: flex;

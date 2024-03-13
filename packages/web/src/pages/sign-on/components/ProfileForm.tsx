@@ -6,8 +6,7 @@ import {
   MAX_DISPLAY_NAME_LENGTH
 } from '@audius/common/services'
 import { getErrorMessage } from '@audius/common/utils'
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconArrowRight } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
@@ -17,7 +16,6 @@ import Input from 'components/data-entry/Input'
 import InstagramAuth, {
   InstagramAuthProps
 } from 'components/instagram-auth/InstagramAuth'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import { StatusMessage } from 'components/status-message/StatusMessage'
 import { TwitterAuthProps } from 'components/twitter-auth/TwitterAuth'
@@ -262,22 +260,15 @@ const ProfileForm = (props: ProfileFormProps) => {
         ) : null}
       </div>
       <Button
-        text='Continue'
+        variant='primary'
         name='continue'
-        minWidth={160}
-        rightIcon={
-          shouldShowLoadingSpinner ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : (
-            <IconArrowRight />
-          )
-        }
-        type={profileValid ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED}
-        isDisabled={!profileValid}
+        isLoading={shouldShowLoadingSpinner}
+        iconRight={IconArrowRight}
+        disabled={!profileValid}
         onClick={onContinue}
-        textClassName={styles.continueButtonText}
-        className={cn(styles.continueButton)}
-      />
+      >
+        Continue
+      </Button>
     </div>
   )
 }

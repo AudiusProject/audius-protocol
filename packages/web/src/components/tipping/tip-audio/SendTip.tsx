@@ -30,9 +30,9 @@ import {
   IconArrowRight as IconArrow,
   IconTrophy,
   TokenAmountInput,
-  TokenAmountInputChangeHandler
+  TokenAmountInputChangeHandler,
+  Button
 } from '@audius/harmony'
-import { ButtonType, Button } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -247,15 +247,13 @@ export const SendTip = () => {
       {renderAvailableAmount()}
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
-          text={messages.sendATip}
-          type={ButtonType.PRIMARY_ALT}
+          variant='primary'
           onClick={handleSendClick}
-          rightIcon={<IconArrow />}
-          textClassName={styles.buttonText}
-          className={cn(styles.buttonText, { [styles.disabled]: isDisabled })}
+          iconRight={IconArrow}
           disabled={isDisabled}
-          iconClassName={styles.buttonIcon}
-        />
+        >
+          {messages.sendATip}
+        </Button>
       </div>
       {hasInsufficientBalance && (
         <div className={cn(styles.flexCenter, styles.error)}>

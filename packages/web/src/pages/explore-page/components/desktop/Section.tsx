@@ -1,6 +1,6 @@
 import { useState, useCallback, ReactNode } from 'react'
 
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './Section.module.css'
@@ -54,12 +54,12 @@ const Section = ({
       <div className={styles.children}>{children}</div>
       {expandable && !isExpanded && (
         <Button
-          className={styles.expandButton}
-          textClassName={styles.expandButtonText}
-          type={ButtonType.PRIMARY_ALT}
-          text={expandText || messages.more}
+          variant='primary'
+          css={(theme) => ({ marginTop: theme.spacing['3xl'] })}
           onClick={expand}
-        />
+        >
+          {expandText || messages.more}
+        </Button>
       )}
     </div>
   )

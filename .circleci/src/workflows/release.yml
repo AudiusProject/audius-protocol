@@ -36,6 +36,11 @@ jobs:
       service: relay
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-pedalboard-solana-relay
+      context: [Vercel, dockerhub, slack-secrets]
+      service: solana-relay
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-pedalboard-sla-auditor
       context: [Vercel, dockerhub, slack-secrets]
       service: sla-auditor
@@ -110,6 +115,12 @@ jobs:
       service: relay
       requires:
         - push-pedalboard-relay
+  - push-docker-image:
+      name: push-pedalboard-solana-relay
+      context: [Vercel, dockerhub, slack-secrets]
+      service: solana-relay
+      requires:
+        - push-pedalboard-solana-relay
 
   - push-arm-image:
       name: push-pedalboard-sla-auditor-arm
@@ -195,6 +206,7 @@ jobs:
         - push-discovery-provider-notifications
         - push-pedalboard-trending-challenge-rewards
         - push-pedalboard-relay
+        - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
         - push-comms
         - push-trpc

@@ -156,8 +156,3 @@
 .emoji {
   margin-left: 3px;
 }
-
-.emptyButton .emptyButtonText {
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
-}

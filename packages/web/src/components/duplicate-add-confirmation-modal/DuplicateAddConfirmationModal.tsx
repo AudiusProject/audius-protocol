@@ -8,6 +8,7 @@ import {
 } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
 import {
+  Button,
   Modal,
   ModalContent,
   ModalContentText,
@@ -15,7 +16,6 @@ import {
   ModalTitle,
   ModalFooter
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -24,8 +24,6 @@ import { useSelector } from 'common/hooks/useSelector'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { collectionPage } from 'utils/route'
-
-import styles from './DuplicateAddConfirmationModal.module.css'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
@@ -107,21 +105,13 @@ export const DuplicateAddConfirmationModal = () => {
           )}
         </ModalContentText>
       </ModalContent>
-      <ModalFooter className={styles.modalFooter}>
-        <Button
-          textClassName={styles.modalButton}
-          fullWidth
-          text={messages.add}
-          type={ButtonType.COMMON}
-          onClick={handleAdd}
-        />
-        <Button
-          textClassName={styles.modalButton}
-          fullWidth
-          text={messages.cancel}
-          type={ButtonType.PRIMARY}
-          onClick={onClose}
-        />
+      <ModalFooter>
+        <Button variant='secondary' fullWidth onClick={handleAdd}>
+          {messages.add}
+        </Button>
+        <Button fullWidth variant='primary' onClick={onClose}>
+          {messages.cancel}
+        </Button>
       </ModalFooter>
     </Modal>
   )

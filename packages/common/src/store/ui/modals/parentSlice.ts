@@ -61,7 +61,8 @@ export const initialState: BasicModalsState = {
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false },
   CoinflowWithdraw: { isOpen: false },
-  WaitForDownloadModal: { isOpen: false }
+  WaitForDownloadModal: { isOpen: false },
+  ArtistPick: { isOpen: false }
 }
 
 const slice = createSlice({

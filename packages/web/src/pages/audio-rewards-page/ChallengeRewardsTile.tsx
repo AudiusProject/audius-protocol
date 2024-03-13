@@ -20,8 +20,13 @@ import {
   makeOptimisticChallengeSortComparator,
   isAudioMatchingChallenge
 } from '@audius/common/utils'
-import { IconArrowRight as IconArrow, IconCheck, Text } from '@audius/harmony'
-import { ProgressBar, ButtonType, Button } from '@audius/stems'
+import {
+  Button,
+  IconArrowRight as IconArrow,
+  IconCheck,
+  Text
+} from '@audius/harmony'
+import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -129,11 +134,11 @@ const RewardPanel = ({
     ? messages.viewDetails
     : panelButtonText
 
-  const buttonType = needsDisbursement
-    ? ButtonType.PRIMARY_ALT
+  const buttonVariant = needsDisbursement
+    ? 'primary'
     : hasDisbursed
-    ? ButtonType.COMMON_ALT
-    : ButtonType.COMMON
+    ? 'secondary'
+    : 'common'
 
   return (
     <div
@@ -179,16 +184,13 @@ const RewardPanel = ({
           )}
         </div>
         <Button
-          className={wm(
-            cn(styles.panelButton, hasDisbursed ? styles.disbursed : '')
-          )}
-          type={buttonType}
-          text={buttonMessage}
-          rightIcon={hasDisbursed ? null : <IconArrow />}
-          iconClassName={styles.buttonIcon}
+          variant={buttonVariant}
+          size='small'
+          iconRight={hasDisbursed ? null : IconArrow}
           onClick={openRewardModal}
-          textClassName={styles.panelButtonText}
-        />
+        >
+          {buttonMessage}
+        </Button>
       </div>
     </div>
   )

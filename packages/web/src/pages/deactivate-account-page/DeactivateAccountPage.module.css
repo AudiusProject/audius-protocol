@@ -32,23 +32,6 @@
   margin-bottom: 24px;
 }
 
-.button {
-  height: auto !important;
-  margin-inline-end: 24px;
-  padding: 12px 24px !important;
-}
-.button.buttonDanger,
-.button.buttonDanger:hover {
-  background-color: var(--accent-red);
-}
-.button.buttonDanger:active {
-  background-color: var(--accent-red-dark-1);
-}
-
-.button > span {
-  font-size: var(--font-m) !important;
-}
-
 /** MOBILE **/
 .mobile.tile {
   padding: 24px;
@@ -67,8 +50,4 @@
 .mobile .errorMessage {
   display: inline-block;
   margin-bottom: 8px;
-}
-.mobile .button {
-  margin: 12px 0 0;
-  width: 100%;
 }
