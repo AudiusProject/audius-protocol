@@ -22,13 +22,7 @@ Full documentation can be found here: [Harmony Docs](https://harmony.audius.co)
 
 ## Installation
 
-Install `@audius/harmony` required peer dependencies:
-
-```bash
-npm install --save @emotion/react @emotion/styled @radix-ui/react-slot @react-spring/web classnames lodash react-lottie react-merge-refs react-perfect-scrollbar react-use react-use-measure
-```
-
-Then install `@audius/harmony`
+Install `@audius/harmony`:
 
 ```bash
 npm install --save @audius/harmony
@@ -48,12 +42,7 @@ Setup the ThemeProvider exported by Harmony
 import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 const App = () => {
-
-  return (
-    <HarmonyThemeProvider theme='day'>
-        ...
-    </HarmonyThemeProvider>
-  )
+  return <HarmonyThemeProvider theme='day'>...</HarmonyThemeProvider>
 }
 ```
 
