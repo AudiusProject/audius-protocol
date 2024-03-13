@@ -209,7 +209,7 @@ export function* fetchLocalAccountAsync() {
   const currentUserExists = yield call([localStorage, 'getCurrentUserExists'])
 
   const walletMatches =
-    wallet.toLowerCase() === cachedAccountUser.wallet.toLowerCase()
+    wallet.toLowerCase() === cachedAccountUser?.wallet.toLowerCase()
 
   if (
     cachedAccount &&
