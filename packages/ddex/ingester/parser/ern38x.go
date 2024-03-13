@@ -179,6 +179,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	// Release IDs
 	ddexReleaseIDs := &common.ReleaseIDs{
 		PartyID:       safeInnerText(rNode.SelectElement("ReleaseId/PartyId")),
+		CatalogNumber: safeInnerText(rNode.SelectElement("ReleaseId/CatalogNumber")),
 		ICPN:          safeInnerText(rNode.SelectElement("ReleaseId/ICPN")),
 		GRid:          safeInnerText(rNode.SelectElement("ReleaseId/GRid")),
 		ISAN:          safeInnerText(rNode.SelectElement("ReleaseId/ISAN")),
@@ -358,13 +359,17 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			trackMetadata.Title = title
 		}
 
-		if *trackMetadata.ISRC == "" {
+		if trackMetadata.ISRC == nil || *trackMetadata.ISRC == "" {
 			if isrc == "" {
 				err = fmt.Errorf("missing isrc for <ReleaseReference>%s</ReleaseReference>", releaseRef)
 				return
 			}
 			*trackMetadata.ISRC = isrc
-			(*ddexReleaseIDs).ISRC = isrc
+		} else {
+			if *trackMetadata.ISRC != isrc {
+				// Use the ISRC from the SoundRecording if it differs from the Release ISRC
+				(*ddexReleaseIDs).ISRC = *trackMetadata.ISRC
+			}
 		}
 
 		if trackMetadata.Genre == "" {

@@ -86,6 +86,7 @@ const artistSchema = new mongoose.Schema({
 
 const ddexReleaseIdsSchema = new mongoose.Schema({
   party_id: String,
+  catalog_number: String,
   icpn: String,
   grid: String,
   isan: String,

@@ -294,8 +294,9 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 			PlaylistOwnerName: "Theo Random",
 			ReleaseDate:       publishDate,
 			DDEXReleaseIDs: common.ReleaseIDs{
-				GRid: "A10301A0005108088N",
-				ICPN: "196871335584",
+				CatalogNumber: "G010005108088N",
+				GRid:          "A10301A0005108088N",
+				ICPN:          "196871335584",
 			},
 			IsAlbum:             true,
 			IsPrivate:           false,

@@ -158,6 +158,7 @@ type NullableInt = *int
 
 type ReleaseIDs struct {
 	PartyID       string `bson:"party_id"`
+	CatalogNumber string `bson:"catalog_number"`
 	ICPN          string `bson:"icpn"`
 	GRid          string `bson:"grid"`
 	ISAN          string `bson:"isan"`

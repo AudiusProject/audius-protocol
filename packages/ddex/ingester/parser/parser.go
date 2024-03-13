@@ -168,6 +168,23 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 
 	// If there's an album release, the tracks we parsed out are actually part of the album release
 	if len(createAlbumRelease) > 0 {
+		// Copy release IDs from individual track releases to the album's tracks
+		isrcToReleaseIDsMap := make(map[string]common.ReleaseIDs)
+		for _, trackRelease := range createTrackRelease {
+			if trackRelease.Metadata.ISRC != nil {
+				isrcToReleaseIDsMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata.DDEXReleaseIDs
+			}
+		}
+		for i, album := range createAlbumRelease {
+			for j, trackMetadata := range album.Tracks {
+				if trackMetadata.ISRC != nil {
+					if releaseIDs, exists := isrcToReleaseIDsMap[*trackMetadata.ISRC]; exists {
+						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = releaseIDs
+					}
+				}
+			}
+		}
+		// Clear the individual track releases
 		createTrackRelease = []common.CreateTrackRelease{}
 	}
 
@@ -302,10 +319,11 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 		// TODO: Support more ID types (GRid is preferred) as we get more examples
 		var releaseID string
 		releaseICPN := safeInnerText(messageInBatch.SelectElement("IncludedReleaseId/ICPN"))
+		releaseGRid := safeInnerText(messageInBatch.SelectElement("IncludedReleaseId/GRid"))
 		if releaseICPN != "" {
 			releaseID = releaseICPN
-			// } else if releaseGRid != "" {
-			// 	releaseID = releaseGRid
+		} else if releaseGRid != "" {
+			releaseID = releaseGRid
 		} else {
 			err := fmt.Errorf("no valid IncludedReleaseId found")
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
