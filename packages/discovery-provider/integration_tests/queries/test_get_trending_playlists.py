@@ -2,9 +2,6 @@ import logging
 from time import time
 
 from integration_tests.utils import populate_mock_db
-from src.models.social.repost import RepostType
-from src.models.social.save import SaveType
-from src.queries import response_name_constants
 from src.queries.get_trending_playlists import _get_trending_playlists_with_session
 from src.trending_strategies.BDNxn_trending_playlists_strategy import (
     TrendingPlaylistsStrategyBDNxn,
