@@ -116,7 +116,7 @@ export const TrackScreenDownloadButtons = ({
       dispatch(
         setVisibility({ drawer: 'DownloadTrackProgress', visible: true })
       )
-      dispatch(downloadTrack({ trackIds: [trackId], stemName: category }))
+      dispatch(downloadTrack({ trackIds: [trackId] }))
       track(
         make({
           eventName: Name.TRACK_PAGE_DOWNLOAD,
