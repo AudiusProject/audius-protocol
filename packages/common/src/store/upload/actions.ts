@@ -19,14 +19,6 @@ export const UNDO_RESET_STATE = 'UPLOAD/UNDO_RESET_STATE'
 export const TOGGLE_MULTI_TRACK_NOTIFICATION =
   'UPLOAD/TOGGLE_MULTI_TRACK_NOTIFICATION'
 
-// Errors
-export const COLLECTION_CREATE_PLAYLIST_NO_ID_ERROR =
-  'UPLOAD/ERROR/COLLECTION_CREATE_PLAYLIST_NO_ID'
-export const COLLECTION_CREATE_PLAYLIST_ID_EXISTS_ERROR =
-  'UPLOAD/ERROR/COLLECTION_CREATE_PLAYLIST_ID_EXISTS'
-export const COLLECTION_POLL_PLAYLIST_TIMEOUT_ERROR =
-  'UPLOAD/ERROR/COLLECTION_POLL_PLAYLIST_TIMEOUT'
-
 type UploadPayload =
   | {
       uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS
@@ -66,7 +58,7 @@ export const uploadTracksSucceeded = (
   }
 }
 
-export const uploadTrackFailed = () => {
+export const uploadTracksFailed = () => {
   return { type: UPLOAD_TRACKS_FAILED }
 }
 
@@ -95,17 +87,3 @@ export const undoResetState = () => {
 export const toggleMultiTrackNotification = (open = false) => {
   return { type: TOGGLE_MULTI_TRACK_NOTIFICATION, open }
 }
-
-export const createPlaylistErrorIDExists = (error: string) => ({
-  type: COLLECTION_CREATE_PLAYLIST_ID_EXISTS_ERROR,
-  error
-})
-
-export const createPlaylistErrorNoId = (error: string) => ({
-  type: COLLECTION_CREATE_PLAYLIST_NO_ID_ERROR,
-  error
-})
-
-export const createPlaylistPollingTimeout = () => ({
-  type: COLLECTION_POLL_PLAYLIST_TIMEOUT_ERROR
-})
