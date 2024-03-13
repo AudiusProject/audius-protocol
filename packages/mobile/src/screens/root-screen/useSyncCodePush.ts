@@ -1,11 +1,11 @@
 import { useCallback, useRef, useState } from 'react'
-import { playerSelectors } from '@audius/common/store'
 
+import { playerSelectors } from '@audius/common/store'
 import codePush from 'react-native-code-push'
+import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import { useEnterBackground, useEnterForeground } from 'app/hooks/useAppState'
-import { useSelector } from 'react-redux'
 
 const { getPlaying } = playerSelectors
 
@@ -42,7 +42,7 @@ export const useSyncCodePush = () => {
           ) {
             // If there's a pending update and it's not mandatory, and the user backgrounded the app for over an hour and came back, and the user is NOT playing music, restart the app to apply the new update
             const time = new Date().getTime() / 1000
-            if (time - timeLastBackgrounded.current > 3600) {
+            if (time - timeLastBackgrounded.current > 2) {
               codePush.restartApp(true)
             }
           }
@@ -50,7 +50,7 @@ export const useSyncCodePush = () => {
         })
       }
     )
-  }, [])
+  }, [playing])
 
   useEffectOnce(() => {
     codePushSync()
