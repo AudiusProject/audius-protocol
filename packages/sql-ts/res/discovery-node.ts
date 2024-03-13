@@ -381,6 +381,7 @@ export interface PlaylistRow {
   'upc'?: string | null;
   'updated_at': Date;
   'ddex_app': string | null;
+  'ddex_release_ids': any | null;
 }
 export interface PlayRow {
   'city'?: string | null;

@@ -148,7 +148,7 @@ track_full = ns.clone(
         "isrc": fields.String,
         "license": fields.String,
         "iswc": fields.String,
-        "additional_ids": fields.Raw(allow_null=True),
+        "ddex_release_ids": fields.Raw(allow_null=True),
         "field_visibility": fields.Nested(field_visibility),
         "followee_reposts": fields.List(fields.Nested(repost), required=True),
         "has_current_user_reposted": fields.Boolean(required=True),

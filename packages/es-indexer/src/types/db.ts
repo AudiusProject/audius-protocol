@@ -424,6 +424,7 @@ export interface PlaylistRow {
   'upc': string | null;
   'updated_at': Date;
   'ddex_app': string | null;
+  'ddex_release_ids': any | null;
 }
 export interface PlayRow {
   'city': string | null;
@@ -681,7 +682,7 @@ export interface TrackRow {
   'download_conditions': any | null;
   'isrc': string | null;
   'iswc': string | null;
-  'additional_ids': any | null;
+  'ddex_release_ids': any | null;
   'license': string | null;
   'metadata_multihash': string | null;
   'mood': string | null;

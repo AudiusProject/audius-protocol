@@ -62,7 +62,7 @@ class TrackMetadata(TypedDict):
     license: Optional[str]
     isrc: Optional[str]
     iswc: Optional[str]
-    additional_ids: Optional[Any]
+    ddex_release_ids: Optional[Any]
     track_segments: List[TrackSegment]
     download: Any
     remix_of: Optional[TrackRemix]
@@ -107,7 +107,7 @@ track_metadata_format: TrackMetadata = {
     "license": None,
     "isrc": None,
     "iswc": None,
-    "additional_ids": None,
+    "ddex_release_ids": None,
     "track_segments": [],
     "download": {
         "is_downloadable": False,

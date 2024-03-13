@@ -165,7 +165,7 @@
           ],
           "default": null
         },
-        "additional_ids": {
+        "ddex_release_ids": {
           "type": [
             "object",
             "null"
