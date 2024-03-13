@@ -13,13 +13,10 @@ import {
   getPathFromAudiusUrl
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
-import cn from 'classnames'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
 import { ExternalLink, TextLink } from 'components/link'
-
-import styles from './UserGeneratedText.module.css'
 
 type LinkifyTextProps = TextProps<any> & {
   innerRef?: Ref<any>
@@ -69,8 +66,7 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
     color,
     size,
     strength,
-    tag,
-    className,
+    tag = 'p',
     linkSource,
     onClickLink,
     ...other
@@ -99,7 +95,7 @@ export const UserGeneratedText = forwardRef(function <T extends ElementType>(
       color={color}
       size={size}
       strength={strength}
-      className={cn(styles.root, className)}
+      css={{ whiteSpace: 'pre-line' }}
       {...other}
     >
       {children}
