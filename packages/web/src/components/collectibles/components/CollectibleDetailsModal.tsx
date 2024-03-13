@@ -17,6 +17,12 @@ import {
 } from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
+  Button as HarmonyButton,
+  ModalContent,
+  ModalContentText,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
   Modal,
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,
@@ -338,39 +344,37 @@ const CollectibleDetailsModal = ({
       </Modal>
 
       <Modal
-        showTitleHeader
-        showDismissButton
-        headerContainerClassName={styles.modalHeader}
         isOpen={isPicConfirmModalOpen}
         onClose={() => setIsPicConfirmaModalOpen(false)}
-        titleClassName={styles.confirmModalTitle}
-        title={
-          <>
-            <IconImage />
-            <span>Set as Profile Pic</span>
-          </>
-        }
       >
-        <div className={styles.confirmModalContainer}>
-          <p className={styles.confirmModalText}>
-            Are you sure you want to change your profile picture?
-          </p>
+        <ModalHeader>
+          <ModalTitle
+            title={collectibleMessages.setAsProfilePic}
+            icon={<IconImage />}
+          />
+        </ModalHeader>
+        <ModalContent>
+          <ModalContentText>
+            {collectibleMessages.setAsProfilePicDescription}
+          </ModalContentText>
+        </ModalContent>
 
-          <div className={styles.confirmButtonContainer}>
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={() => setIsPicConfirmaModalOpen(false)}
-              text='Nevermind'
-              type={ButtonType.COMMON_ALT}
-            />
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={onClickProfPicUpload}
-              text='Yes'
-              type={ButtonType.PRIMARY_ALT}
-            />
-          </div>
-        </div>
+        <ModalFooter>
+          <HarmonyButton
+            variant='secondary'
+            onClick={() => setIsPicConfirmaModalOpen(false)}
+            fullWidth
+          >
+            {collectibleMessages.setAsProfilePickCancel}
+          </HarmonyButton>
+          <HarmonyButton
+            variant='primary'
+            onClick={onClickProfPicUpload}
+            fullWidth
+          >
+            {collectibleMessages.setAsProfilePickConfirm}
+          </HarmonyButton>
+        </ModalFooter>
       </Modal>
 
       <Drawer

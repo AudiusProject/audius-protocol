@@ -148,14 +148,6 @@
   color: var(--white);
 }
 
-.button * {
-  font-size: var(--font-l) !important;
-  letter-spacing: 0px !important;
-}
-.button.mobile {
-  width: 100%;
-}
-
 .buttonLink {
   margin-top: 32px;
 }
@@ -366,37 +358,6 @@
   flex-direction: column;
 }
 
-.twitterButton {
-  min-height: 60px;
-  flex: 1;
-  padding: unset;
-  background-color: var(--static-twitter-blue);
-  border-radius: 6px;
-}
-
-.twitterButton.mobile {
-  width: 100%;
-}
-
-.twitterButton:hover {
-  background-color: var(--static-twitter-blue) !important;
-}
-
-.twitterButton .twitterText {
-  font-size: var(--font-m);
-  color: var(--static-white);
-}
-.twitterButton .twitterIcon {
-  margin-right: 8px !important;
-}
-.twitterButton .twitterIcon path {
-  fill: var(--static-white);
-}
-.twitterButton .twitterIcon svg {
-  width: 24px;
-  height: 18px;
-  fill: var(--static-white);
-}
 .buttonSpacer {
   width: 10px;
 }

@@ -28,10 +28,3 @@
   display: inline-flex;
   justify-content: center;
 }
-
-.button .buttonText {
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: bold;
-  line-height: 12px;
-}

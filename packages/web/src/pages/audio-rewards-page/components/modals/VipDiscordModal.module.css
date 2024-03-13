@@ -28,14 +28,6 @@
   margin-top: 24px;
 }
 
-.btn {
-  margin: 24px 0px;
-}
-
-.btn svg {
-  height: 20px;
-}
-
 .description {
   font-weight: 600;
   font-size: var(--font-m);

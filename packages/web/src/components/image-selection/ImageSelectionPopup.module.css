@@ -88,16 +88,6 @@
   margin: 0 auto var(--unit-6);
 }
 
-.button {
-  height: var(--unit-9) !important;
-  width: 100%;
-}
-
-.button .buttonText {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
-}
-
 .suggestion {
   font-size: var(--font-s);
   font-weight: var(--font-medium);

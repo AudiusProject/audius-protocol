@@ -20,16 +20,15 @@ import {
   ModalFooter,
   IconMessageUnblock as IconUnblockMessages,
   IconMessageLocked,
-  IconTipping
+  IconTipping,
+  Button,
+  ModalContentText
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { Action } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useSelector } from 'utils/reducer'
-
-import styles from './InboxUnavailableModal.module.css'
 
 const { unblockUser, createChat } = chatActions
 
@@ -76,13 +75,13 @@ const actionToContent = ({
           )
         ),
         buttonText: messages.tipButton,
-        buttonIcon: <IconTipping />
+        buttonIcon: IconTipping
       }
     case ChatPermissionAction.UNBLOCK:
       return {
         content: messages.unblockContent,
         buttonText: messages.unblockButton,
-        buttonIcon: <IconUnblockMessages />
+        buttonIcon: IconUnblockMessages
       }
     default:
       return {
@@ -177,24 +176,22 @@ export const InboxUnavailableModal = () => {
   })
 
   return (
-    <Modal
-      bodyClassName={styles.modalBody}
-      isOpen={isOpen}
-      onClose={onClose}
-      onClosed={onClosed}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size='small'>
       <ModalHeader onClose={handleCancel}>
         <ModalTitle icon={<IconMessageLocked />} title={messages.title} />
       </ModalHeader>
-      <ModalContent className={styles.content}>{content}</ModalContent>
-      <ModalFooter className={styles.footer}>
+      <ModalContent>
+        <ModalContentText>{content}</ModalContentText>
+      </ModalContent>
+      <ModalFooter>
         <Button
-          className={styles.button}
-          type={hasAction ? ButtonType.PRIMARY_ALT : ButtonType.COMMON_ALT}
-          text={buttonText}
-          leftIcon={buttonIcon}
+          variant={hasAction ? 'primary' : 'secondary'}
+          fullWidth
+          iconLeft={buttonIcon}
           onClick={handleClick}
-        />
+        >
+          {buttonText}
+        </Button>
       </ModalFooter>
     </Modal>
   )

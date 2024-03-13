@@ -20,11 +20,9 @@ import {
   IconRepost,
   Flex
 } from '@audius/harmony'
-import { ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { fullTrackPage } from 'utils/route'
 
@@ -113,15 +111,16 @@ export const PurchaseContentFormFooter = ({
     return (
       <Flex direction='column' gap='xl' alignSelf='stretch'>
         <Flex gap='l'>
-          <EntityActionButton
-            buttonType='button'
-            type={isReposted ? ButtonType.SECONDARY : ButtonType.COMMON}
-            text={isReposted ? messages.reposted : messages.repost}
+          <Button
+            type='button'
+            variant={isReposted ? 'primary' : 'secondary'}
             fullWidth
-            leftIcon={<IconRepost />}
+            iconLeft={IconRepost}
             onClick={onRepost}
             role='log'
-          />
+          >
+            {isReposted ? messages.reposted : messages.repost}
+          </Button>
           <TwitterShareButton
             fullWidth
             type='dynamic'

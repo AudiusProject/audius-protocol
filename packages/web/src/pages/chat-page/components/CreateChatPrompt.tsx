@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
 import { chatSelectors, useCreateChatModal } from '@audius/common/store'
-import { IconCompose } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconCompose } from '@audius/harmony'
 
 import { useSelector } from 'common/hooks/useSelector'
 
@@ -38,13 +37,9 @@ export const CreateChatPrompt = () => {
           {hasChats ? messages.selectSubtitle : messages.newSubtitle}
         </div>
       </div>
-      <Button
-        className={styles.button}
-        type={ButtonType.PRIMARY_ALT}
-        text={messages.writeMessage}
-        leftIcon={<IconCompose />}
-        onClick={handleClick}
-      />
+      <Button variant='primary' iconLeft={IconCompose} onClick={handleClick}>
+        {messages.writeMessage}
+      </Button>
     </div>
   )
 }

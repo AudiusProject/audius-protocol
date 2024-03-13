@@ -7,8 +7,11 @@ import {
   audioRewardsPageActions,
   TrendingRewardsModalType
 } from '@audius/common/store'
-import { SegmentedControl, IconArrowRight as IconArrow } from '@audius/harmony'
-import { ButtonType, Button } from '@audius/stems'
+import {
+  SegmentedControl,
+  IconArrowRight as IconArrow,
+  Button
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
@@ -207,13 +210,14 @@ const TrendingRewardsBody = ({
           </div>
         </div>
         <Button
-          type={ButtonType.PRIMARY_ALT}
-          text={textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
+          variant='primary'
           onClick={onButtonClick}
           className={styles.button}
-          rightIcon={<IconArrow size='s' />}
-          iconClassName={wm(styles.buttonIcon)}
-        />
+          iconRight={IconArrow}
+          fullWidth={isMobile}
+        >
+          {textMap[modalType][isMobile ? 'buttonMobile' : 'button']}
+        </Button>
         <span onClick={onClickToS} className={styles.terms}>
           {messages.terms}
         </span>

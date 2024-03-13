@@ -9,9 +9,10 @@ import {
   ModalContent,
   ModalHeader,
   ModalTitle,
-  IconRobot
+  IconRobot,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType, MarkdownViewer } from '@audius/stems'
+import { MarkdownViewer } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -84,21 +85,13 @@ export const AiAttributionSettingsModal = () => {
           />
         </div>
         {allowAiAttribution ? (
-          <Button
-            text={messages.disable}
-            type={ButtonType.COMMON}
-            size={ButtonSize.MEDIUM}
-            className={styles.doneButton}
-            onClick={handleSubmit}
-          />
+          <Button variant='secondary' onClick={handleSubmit} fullWidth>
+            {messages.disable}
+          </Button>
         ) : (
-          <Button
-            text={messages.accept}
-            type={ButtonType.PRIMARY}
-            size={ButtonSize.MEDIUM}
-            className={styles.doneButton}
-            onClick={handleSubmit}
-          />
+          <Button variant='primary' onClick={handleSubmit} fullWidth>
+            {messages.accept}
+          </Button>
         )}
       </ModalContent>
     </Modal>

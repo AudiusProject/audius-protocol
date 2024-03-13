@@ -3,10 +3,8 @@ import { useEffect, useState } from 'react'
 import { StringAudio, BNWei, WalletAddress } from '@audius/common/models'
 import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { weiToAudio, stringAudioToBN } from '@audius/common/utils'
-import { IconArrowRight } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconArrowRight } from '@audius/harmony'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useSelector } from 'utils/reducer'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
@@ -76,16 +74,13 @@ const SendInputConfirmation = ({
       <AddressWithArrow address={recipientAddress} />
       <div className={styles.buttonWrapper}>
         <Button
-          text={messages.sendButton}
+          variant='primary'
           onClick={canRecipientReceiveWAudio === 'true' ? onSend : undefined}
-          type={ButtonType.PRIMARY_ALT}
           disabled={canRecipientReceiveWAudio === 'false' || isLongLoading}
-          rightIcon={
-            isLongLoading ? (
-              <LoadingSpinner className={styles.loadingSpinner} />
-            ) : null
-          }
-        />
+          isLoading={isLongLoading}
+        >
+          {messages.sendButton}
+        </Button>
       </div>
       {canRecipientReceiveWAudio === 'false' ? (
         <div className={styles.errorMessage}>{messages.errorMessage}</div>
