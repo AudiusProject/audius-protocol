@@ -103,7 +103,7 @@ const { getBuyAudioFlowStage, getFeesCache, getBuyAudioProvider } =
 const { increaseBalance } = walletActions
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
-const DEFAULT_SLIPPAGE = 3 // The default slippage amount to allow for exchanges, overridden in optimizely
+const DEFAULT_SLIPPAGE_BPS = 30 // The default slippage amount to allow for exchanges, overridden in optimizely
 const BUY_AUDIO_LOCAL_STORAGE_KEY = 'buy-audio-transaction-details'
 const NUM_TRANSFER_TRANSACTIONS = 3
 
@@ -350,9 +350,9 @@ function* getBuyAudioRemoteConfig() {
   const maxAudioAmount =
     remoteConfigInstance.getRemoteVar(IntKeys.MAX_AUDIO_PURCHASE_AMOUNT) ??
     DEFAULT_MAX_AUDIO_PURCHASE_AMOUNT
-  const slippage =
+  const slippageBps =
     remoteConfigInstance.getRemoteVar(IntKeys.BUY_AUDIO_SLIPPAGE) ??
-    DEFAULT_SLIPPAGE
+    DEFAULT_SLIPPAGE_BPS
   const retryDelayMs =
     remoteConfigInstance.getRemoteVar(IntKeys.BUY_TOKEN_WALLET_POLL_DELAY_MS) ??
     undefined
@@ -363,7 +363,7 @@ function* getBuyAudioRemoteConfig() {
   return {
     minAudioAmount,
     maxAudioAmount,
-    slippage,
+    slippageBps,
     maxRetryCount,
     retryDelayMs
   }
@@ -374,7 +374,7 @@ function* getAudioPurchaseInfo({
 }: ReturnType<typeof calculateAudioPurchaseInfo>) {
   try {
     // Fail early if audioAmount is too small/large
-    const { minAudioAmount, maxAudioAmount, slippage } = yield* call(
+    const { minAudioAmount, maxAudioAmount, slippageBps } = yield* call(
       getBuyAudioRemoteConfig
     )
     if (audioAmount > maxAudioAmount) {
@@ -418,9 +418,9 @@ function* getAudioPurchaseInfo({
       inputTokenSymbol: 'AUDIO',
       outputTokenSymbol: 'SOL',
       inputAmount: audioAmount,
-      slippage
+      slippageBps
     })
-    const slippageFactor = 100.0 / (100.0 - slippage)
+    const slippageFactor = 100 / (100 - slippageBps / 100)
 
     // Adjust quote for potential slippage
     const inSol = Math.ceil(reverseQuote.outputAmount.amount * slippageFactor)
@@ -430,7 +430,7 @@ function* getAudioPurchaseInfo({
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: inSol / LAMPORTS_PER_SOL,
-      slippage
+      slippageBps
     })
     const {
       rootAccountMinBalance,
@@ -459,12 +459,12 @@ function* getAudioPurchaseInfo({
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'USDC',
       inputAmount: estimatedLamports / LAMPORTS_PER_SOL,
-      slippage: 0
+      slippageBps: 0
     })
 
     console.debug(
       `Quoted: ${reverseQuote.outputAmount.uiAmountString} SOL
-Adjustment For Slippage (${slippage}%): ${
+Adjustment For Slippage (${slippageBps}bps): ${
         (inSol - reverseQuote.outputAmount.amount) / LAMPORTS_PER_SOL
       } SOL
 Fees: ${
@@ -686,19 +686,21 @@ function* swapStep({
   retryDelayMs,
   maxRetryCount
 }: SwapStepParams) {
-  const { slippage } = yield* call(getBuyAudioRemoteConfig)
+  const { slippageBps } = yield* call(getBuyAudioRemoteConfig)
   // Get quote adjusted for fees
   const quote = yield* call(JupiterSingleton.getQuote, {
     inputTokenSymbol: 'SOL',
     outputTokenSymbol: 'AUDIO',
     inputAmount: Number(exchangeAmount) / LAMPORTS_PER_SOL,
-    slippage
+    slippageBps
   })
 
   // Check that we get the desired AUDIO from the quote
   const audioAdjusted = convertBigIntToAmountObject(
     BigInt(
-      Math.floor((Number(quote.quote.outAmount) * 100 - slippage) / 100.0)
+      Math.floor(
+        (Number(quote.quote.outAmount) * 100 - slippageBps / 100) / 100
+      )
     ),
     TOKEN_LISTING_MAP.AUDIO.decimals
   )
@@ -876,7 +878,7 @@ function* doBuyAudio({
     userRootWallet = rootAccount.publicKey.toString()
 
     // Get config
-    const { retryDelayMs, maxRetryCount, slippage } = yield* call(
+    const { retryDelayMs, maxRetryCount, slippageBps } = yield* call(
       getBuyAudioRemoteConfig
     )
 
@@ -915,7 +917,7 @@ function* doBuyAudio({
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: newBalance / LAMPORTS_PER_SOL,
-      slippage
+      slippageBps
     })
     const { totalFees } = yield* call(getSwapFees, { quote: quote.quote })
     const exchangeAmount = newBalance - totalFees
@@ -1043,7 +1045,7 @@ function* recoverPurchaseIfNecessary() {
     provider = localStorageState.provider
 
     // Get config
-    const { slippage, maxRetryCount, retryDelayMs } = yield* call(
+    const { slippageBps, maxRetryCount, retryDelayMs } = yield* call(
       getBuyAudioRemoteConfig
     )
 
@@ -1059,7 +1061,7 @@ function* recoverPurchaseIfNecessary() {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
       inputAmount: existingBalance / LAMPORTS_PER_SOL,
-      slippage
+      slippageBps
     })
     const { totalFees, rootAccountMinBalance } = yield* call(getSwapFees, {
       quote: quote.quote
