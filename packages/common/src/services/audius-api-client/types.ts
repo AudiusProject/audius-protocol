@@ -114,7 +114,6 @@ export type APITrack = {
   title: string
   user: APIUser
   duration: number
-  downloadable: boolean
   create_date: Nullable<string>
   created_at: string
   credits_splits: Nullable<string>

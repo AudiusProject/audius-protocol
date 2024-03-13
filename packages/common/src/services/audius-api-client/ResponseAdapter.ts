@@ -200,7 +200,6 @@ export const makeUserlessTrack = (
     user_id: undefined,
     followee_favorites: undefined,
     artwork: undefined,
-    downloadable: undefined,
     favorite_count: undefined
   }
 
@@ -208,7 +207,6 @@ export const makeUserlessTrack = (
   delete marshalled.user_id
   delete marshalled.followee_favorites
   delete marshalled.artwork
-  delete marshalled.downloadable
   delete marshalled.favorite_count
 
   return marshalled
@@ -281,7 +279,6 @@ export const makeTrack = (
     user_id: undefined,
     followee_favorites: undefined,
     artwork: undefined,
-    downloadable: undefined,
     favorite_count: undefined,
     is_streamable: undefined
   }
@@ -290,7 +287,6 @@ export const makeTrack = (
   delete marshalled.user_id
   delete marshalled.followee_favorites
   delete marshalled.artwork
-  delete marshalled.downloadable
   delete marshalled.favorite_count
   delete marshalled.is_streamable
   return marshalled

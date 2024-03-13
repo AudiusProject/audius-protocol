@@ -392,8 +392,6 @@ def extend_track(track):
             duration += float(segment["duration"])
         track["duration"] = round(duration)
 
-    track["downloadable"] = track.get("is_downloadable", False)
-
     return track
 
 

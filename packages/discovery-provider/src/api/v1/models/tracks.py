@@ -96,7 +96,6 @@ track = ns.model(
         # Total track duration, rounded to the nearest second
         "duration": fields.Integer(required=True),
         "is_downloadable": fields.Boolean,
-        "downloadable": fields.Boolean,  # todo: remove since we have 'is_downloadable' now
         "play_count": fields.Integer(required=True),
         "permalink": fields.String,
         "is_streamable": fields.Boolean,
