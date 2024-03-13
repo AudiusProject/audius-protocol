@@ -1,7 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -202,9 +201,6 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { getTrack } = cacheTracksSelectors
   const track = useSelector(
@@ -488,7 +484,7 @@ const TrackHeader = ({
         {renderTrackLabels()}
       </div>
       {renderTags()}
-      {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+      {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
           <Suspense>
             <DownloadSection trackId={trackId} />

@@ -278,9 +278,6 @@ export const TrackScreenDetailsTile = ({
   const isScheduledRelease = release_date
     ? moment(release_date).isAfter(moment.now())
     : false
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const hasDownloadableAssets =
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
@@ -583,9 +580,7 @@ export const TrackScreenDetailsTile = ({
     return (
       <View style={styles.bottomContent}>
         {renderTags()}
-        {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
-          <DownloadSection trackId={track_id} />
-        ) : null}
+        {hasDownloadableAssets ? <DownloadSection trackId={track_id} /> : null}
       </View>
     )
   }
