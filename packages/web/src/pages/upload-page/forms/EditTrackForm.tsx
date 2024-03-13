@@ -1,6 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
-import { isContentFollowGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   IconCaretLeft,
