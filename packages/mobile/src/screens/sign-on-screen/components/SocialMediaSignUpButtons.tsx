@@ -1,11 +1,13 @@
 import { useRemoteVar } from '@audius/common/hooks'
 import { socialMediaMessages } from '@audius/common/messages'
+import { ErrorLevel } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 
 import { Flex } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { SignUpFlowInstagramAuth } from 'app/screens/sign-on-screen/components/SignUpFlowInstagramAuth'
 import { SignUpFlowTwitterAuth } from 'app/screens/sign-on-screen/components/SignUpFlowTwitterAuth'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { SignUpFlowTikTokAuth } from './SignUpFlowTikTokAuth'
 
@@ -30,11 +32,18 @@ export const SocialMediaSignUpButtons = ({
   page
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useToast()
-  const handleFailure = (e: unknown) => {
-    onError(e)
-    console.error(e)
-    toast({ content: socialMediaMessages.verificationError, type: 'error' })
-  }
+  const handleFailure =
+    (platform: 'twitter' | 'instagram' | 'tiktok') =>
+    (e: unknown, additionalInfo?: Record<any, any>) => {
+      onError(e)
+      reportToSentry({
+        level: ErrorLevel.Error,
+        error: e as Error,
+        name: 'Sign Up',
+        additionalInfo: { page, platform, ...additionalInfo }
+      })
+      toast({ content: socialMediaMessages.verificationError, type: 'error' })
+    }
 
   const handleSuccess = ({
     handle,
@@ -67,7 +76,7 @@ export const SocialMediaSignUpButtons = ({
     <Flex direction='row' gap='s' w='100%'>
       {isTwitterEnabled ? (
         <SignUpFlowTwitterAuth
-          onError={handleFailure}
+          onError={handleFailure('twitter')}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}
@@ -76,7 +85,7 @@ export const SocialMediaSignUpButtons = ({
       ) : null}
       {isInstagramEnabled ? (
         <SignUpFlowInstagramAuth
-          onError={handleFailure}
+          onError={handleFailure('instagram')}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}
@@ -85,7 +94,7 @@ export const SocialMediaSignUpButtons = ({
       ) : null}
       {isTikTokEnabled ? (
         <SignUpFlowTikTokAuth
-          onFailure={handleFailure}
+          onFailure={handleFailure('tiktok')}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}

@@ -3,7 +3,8 @@ import {
   FavoriteSource,
   ID,
   FollowSource,
-  UserMetadata
+  UserMetadata,
+  ErrorLevel
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -136,8 +137,14 @@ function* fetchDefaultFollowArtists() {
   try {
     const defaultFollowUserIds = yield* call(getDefautFollowUserIds)
     yield* call(fetchUsers, Array.from(defaultFollowUserIds))
-  } catch (e) {
-    console.error('Unable to fetch default follow artists', e)
+  } catch (e: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'Unable to fetch default follow artists',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error: e }
+    })
   }
 }
 
@@ -159,7 +166,13 @@ function* fetchAllFollowArtist() {
       )
     )
   } catch (e) {
-    console.error('Unable to fetch sign up follows', e)
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'Unable to fetch sign up follows',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error: e }
+    })
   }
 }
 
@@ -184,8 +197,15 @@ function* fetchFollowArtistGenre(
     yield* put(
       signOnActions.fetchFollowArtistsSucceeded(followArtistCategory, userIds)
     )
-  } catch (err: any) {
-    yield* put(signOnActions.fetchFollowArtistsFailed(err))
+  } catch (error: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'fetchFollowArtistGenre failed',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error }
+    })
+    yield* put(signOnActions.fetchFollowArtistsFailed(error))
   }
 }
 
@@ -215,8 +235,14 @@ function* fetchReferrer(
           events: { referrer: user.user_id }
         })
       }
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      const reportToSentry = yield* getContext('reportToSentry')
+      reportToSentry({
+        error: 'fetchReferrer failed',
+        level: ErrorLevel.Error,
+        name: 'Sign Up',
+        additionalInfo: { error: e }
+      })
     }
   }
 }
@@ -332,6 +358,13 @@ function* validateHandle(
       if (onValidate) onValidate(false)
     }
   } catch (err: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'validateHandle failed',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error: err }
+    })
     yield* put(signOnActions.validateHandleFailed(err.message))
     if (onValidate) onValidate(true)
   }
@@ -365,6 +398,14 @@ function* checkEmail(action: ReturnType<typeof signOnActions.checkEmail>) {
       }
     }
   } catch (err) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'email check failed',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      name: 'Sign Up',
+      additionalInfo: { error: err }
+    })
     yield* put(toast({ content: messages.emailCheckFailed }))
     if (action.onError) {
       yield* call(action.onError)
@@ -414,6 +455,7 @@ function* signUp() {
     confirmerActions.requestConfirmation(
       handle,
       function* () {
+        const reportToSentry = yield* getContext('reportToSentry')
         const { blockHash, blockNumber, userId, error, errorStatus, phase } =
           yield* call(audiusBackendInstance.signUp, {
             email,
@@ -444,8 +486,13 @@ function* signUp() {
                 location
               })
             )
-          }
-          if (blocked) {
+            reportToSentry({
+              error: 'User rate limited',
+              level: ErrorLevel.Warning,
+              name: 'Sign Up',
+              additionalInfo: { error }
+            })
+          } else if (blocked) {
             params.message = 'User was blocked'
             params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
             yield* put(
@@ -455,6 +502,19 @@ function* signUp() {
                 location
               })
             )
+            reportToSentry({
+              error: 'User was blocked',
+              level: ErrorLevel.Warning,
+              name: 'Sign Up',
+              additionalInfo: { error }
+            })
+          } else {
+            reportToSentry({
+              error: 'Unknown sign up error',
+              level: ErrorLevel.Error,
+              name: 'Sign Up',
+              additionalInfo: { error }
+            })
           }
           yield* put(signOnActions.signUpFailed(params))
           return
@@ -468,6 +528,12 @@ function* signUp() {
             handle
           )
           if (error) {
+            reportToSentry({
+              error: 'Error while associating Twitter account',
+              level: ErrorLevel.Error,
+              name: 'Sign Up',
+              additionalInfo: { error }
+            })
             yield* put(signOnActions.setTwitterProfileError(error as string))
           }
         }
@@ -479,6 +545,12 @@ function* signUp() {
             handle
           )
           if (error) {
+            reportToSentry({
+              error: 'Error while associating Instagram account',
+              level: ErrorLevel.Error,
+              name: 'Sign Up',
+              additionalInfo: { error }
+            })
             yield* put(signOnActions.setInstagramProfileError(error as string))
           }
         }
@@ -491,6 +563,12 @@ function* signUp() {
             handle
           )
           if (error) {
+            reportToSentry({
+              error: 'Error while associating TikTok account',
+              level: ErrorLevel.Error,
+              name: 'Sign Up',
+              additionalInfo: { error }
+            })
             yield* put(signOnActions.setTikTokProfileError(error as string))
           }
         }
@@ -536,7 +614,16 @@ function* signUp() {
             blockNumber
           )
           if (!confirmed) {
-            throw new Error(`Could not confirm sign up for user id ${userId}`)
+            const error = new Error(
+              `Could not confirm sign up for user id ${userId}`
+            )
+            reportToSentry({
+              error: 'Could not confirm sign up for user',
+              level: ErrorLevel.Error,
+              name: 'Sign Up',
+              additionalInfo: { error, userId }
+            })
+            throw error
           }
         }
       },
@@ -552,7 +639,13 @@ function* signUp() {
           yield* put(signOnActions.signUpTimeout())
         }
         if (error) {
-          console.error(error)
+          const reportToSentry = yield* getContext('reportToSentry')
+          reportToSentry({
+            error: 'Error in signUp saga',
+            level: ErrorLevel.Error,
+            name: 'Sign Up',
+            additionalInfo: { error, message, timeout }
+          })
         }
         if (message) {
           console.debug(message)
@@ -611,7 +704,13 @@ function* repairSignUp() {
           yield* fetchAccountAsync({ isSignUp: true })
         },
         function* ({ timeout }) {
-          console.error('Failed to repair user')
+          const reportToSentry = yield* getContext('reportToSentry')
+          reportToSentry({
+            error: 'Failed to repair user',
+            level: ErrorLevel.Error,
+            name: 'Sign Up',
+            additionalInfo: { userMetadata: metadata, dnUser }
+          })
           yield* put(make(Name.SIGN_UP_REPAIR_FAILURE, {}))
           if (timeout) {
             console.debug('Timed out trying to fix registration')
@@ -623,7 +722,13 @@ function* repairSignUp() {
       )
     )
   } catch (e) {
-    console.error('Failed to repair account', e)
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'Failed to repair account',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error: e }
+    })
   }
 }
 
@@ -741,6 +846,13 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       yield* put(trackEvent)
     }
   } catch (err: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'SignIn failed',
+      level: ErrorLevel.Error,
+      name: 'Sign In',
+      additionalInfo: { error: err }
+    })
     yield* put(signOnActions.signInFailed(err))
   }
 }
@@ -760,7 +872,13 @@ function* followCollections(
       }
     }
   } catch (err) {
-    console.error({ err })
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'Follow collections failed',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error: err, collectionIds, favoriteSource }
+    })
   }
 }
 
@@ -784,7 +902,7 @@ function* followArtists(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { ENVIRONMENT } = yield* getContext('env')
   const defaultFollowUserIds = skipDefaultFollows
-    ? []
+    ? new Set([])
     : yield* call(getDefautFollowUserIds)
   yield* call(waitForWrite)
   try {
@@ -826,6 +944,15 @@ function* followArtists(
         )
       })
       const followAction = success || failed
+      if (failed) {
+        const reportToSentry = yield* getContext('reportToSentry')
+        reportToSentry({
+          error: 'Artist follow failed during sign up',
+          level: ErrorLevel.Error,
+          name: 'Sign Up',
+          additionalInfo: { error: failed.error, userId: failed.userId }
+        })
+      }
       const userIndex = userIdsToFollow.findIndex(
         (fId) => fId === followAction?.userId
       )
@@ -842,8 +969,14 @@ function* followArtists(
     // persisted across the next refresh of the client. Initially the user is pulled in from
     // local storage before we get any response back from a discovery node.
     yield* call(reCacheAccount)
-  } catch (err) {
-    console.error({ err })
+  } catch (err: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'Unkown error while following artists on sign up',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error: err }
+    })
   }
 }
 
@@ -851,8 +984,14 @@ function* configureMetaMask() {
   try {
     window.localStorage.setItem('useMetaMask', JSON.stringify(true))
     yield* put(backendActions.setupBackend())
-  } catch (err) {
-    console.error({ err })
+  } catch (err: any) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: 'Configure metamask failed',
+      level: ErrorLevel.Error,
+      name: 'Sign Up',
+      additionalInfo: { error: err }
+    })
   }
 }
 

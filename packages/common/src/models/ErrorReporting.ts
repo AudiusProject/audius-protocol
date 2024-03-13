@@ -10,10 +10,10 @@ export type AdditionalErrorReportInfo = Record<string, unknown>
 
 export type ReportToSentryArgs = {
   /**
-   * The raw JS `Error` to report to sentry. If trying to report a string,
-   * call this with `new Error(message)`
+   * The raw JS `Error` to report to sentry.
+   * If using a string, an error will be created for you like this: `new Error(error)`
    */
-  error: Error
+  error: Error | string
   /**
    * The severity level that we should report to sentry
    */
@@ -28,4 +28,9 @@ export type ReportToSentryArgs = {
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name
    */
   name?: string
+  /**
+   * Attach filterable sentry tags
+   * https://docs.sentry.io/platforms/javascript/enriching-events/tags/
+   */
+  tags?: Record<string, string>
 }

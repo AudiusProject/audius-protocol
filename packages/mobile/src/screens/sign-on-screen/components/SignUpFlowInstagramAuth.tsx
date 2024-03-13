@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { socialMediaMessages } from '@audius/common/messages'
-import { Name } from '@audius/common/models'
+import { ErrorLevel, Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { useDispatch } from 'react-redux'
@@ -15,6 +15,7 @@ import { Provider } from 'app/store/oauth/reducer'
 import { getInstagramProfile } from 'app/store/oauth/sagas'
 import type { InstagramCredentials } from 'app/store/oauth/types'
 import { EventNames } from 'app/types/analytics'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 import OAuthWebView from '../../../components/oauth/OAuthWebView'
 import type { SocialButtonProps } from '../../../components/social-button/SocialButton'
@@ -119,13 +120,6 @@ export const SignUpFlowInstagramAuth = ({
 
   const handleError = (e: Error) => {
     onError?.(e)
-    track(
-      make({
-        eventName: EventNames.CREATE_ACCOUNT_INSTAGRAM_ERROR,
-        page,
-        error: e?.message
-      })
-    )
   }
 
   const handleResponse = async (
@@ -154,7 +148,7 @@ export const SignUpFlowInstagramAuth = ({
           handleError(e)
         }
       } else {
-        handleError(new Error('Unable to retrieve information'))
+        handleError(new Error('No auth code in response from Instagram'))
       }
     } else {
       handleError(new Error(payload.error))

@@ -22,7 +22,7 @@ type SignUpFlowTwitterAuthProps = Partial<SocialButtonProps> & {
     handle: string
     platform: 'twitter'
   }) => void
-  onError: (e: unknown) => void
+  onError: (e: unknown, additionalInfo?: Record<any, any>) => void
   onStart?: () => void
   onClose?: () => void
   page: 'create-email' | 'pick-handle'
@@ -48,20 +48,15 @@ const getOauthToken = async (
   headers: any,
   credentialsType: CredentialsType
 ) => {
-  try {
-    const response = await fetch(
-      `${loginUrl}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
-      {
-        method: 'POST',
-        credentials: credentialsType,
-        headers
-      }
-    )
-    return response.json()
-  } catch (error) {
-    console.error(error)
-    throw new Error(error.message)
-  }
+  const response = await fetch(
+    `${loginUrl}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
+    {
+      method: 'POST',
+      credentials: credentialsType,
+      headers
+    }
+  )
+  return response.json()
 }
 
 const authenticationUrl = (oauthToken: string | undefined) =>
@@ -171,17 +166,6 @@ export const SignUpFlowTwitterAuth = ({
     setIsModalOpen(false)
   }
 
-  const handleError = (e: Error) => {
-    onError?.(e)
-    track(
-      make({
-        eventName: EventNames.CREATE_ACCOUNT_TWITTER_ERROR,
-        page,
-        error: e?.message
-      })
-    )
-  }
-
   const handleResponse = async (payload: any) => {
     setIsModalOpen(false)
     if (!payload.error) {
@@ -203,13 +187,18 @@ export const SignUpFlowTwitterAuth = ({
           )
           onSuccess?.({ handle, requiresReview, platform: 'twitter' })
         } catch (e) {
-          handleError(e)
+          onError?.(e, { oauthVerifier, oauthToken, payload })
         }
       } else {
-        handleError(new Error('Failed oauth'))
+        onError?.(
+          new Error(
+            'No oauthToken/oauthVerifier received from Twitter payload'
+          ),
+          { oauthVerifier, oauthToken }
+        )
       }
     } else {
-      handleError(new Error(payload.error))
+      onError?.(new Error(payload.error))
     }
   }
 

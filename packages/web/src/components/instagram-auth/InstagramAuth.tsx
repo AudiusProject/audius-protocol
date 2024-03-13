@@ -1,11 +1,12 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import { captureException } from '@sentry/browser'
+import { ErrorLevel } from '@audius/common/models'
 import cn from 'classnames'
 
 import 'url-search-params-polyfill'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 const HOSTNAME = env.PUBLIC_HOSTNAME
 const INSTAGRAM_APP_ID = env.INSTAGRAM_APP_ID
@@ -88,10 +89,14 @@ const InstagramAuth = ({
         }, {})
 
         return onSuccess(profileRespJson.username, igUserProfile)
-      } catch (err) {
-        console.error(err)
+      } catch (err: any) {
+        reportToSentry({
+          level: ErrorLevel.Error,
+          error: 'InstagramAuth getProfile failed',
+          additionalInfo: { error: err },
+          name: 'Sign Up'
+        })
         onFailure((err as Error).message)
-        captureException(`Instagram getProfile failed with ${err}`)
       }
     },
     [onSuccess, onFailure]
@@ -125,13 +130,18 @@ const InstagramAuth = ({
               return getProfile(instagramCode)
             } else {
               closeDialog()
-              return onFailure(
-                new Error(
-                  'OAuth redirect has occurred but no query or hash parameters were found. ' +
-                    'They were either not set during the redirect, or were removed—typically by a ' +
-                    'routing library—before Instagram react component could read it.'
-                )
+              const error = new Error(
+                'OAuth redirect has occurred but no query or hash parameters were found. ' +
+                  'They were either not set during the redirect, or were removed—typically by a ' +
+                  'routing library—before Instagram react component could read it.'
               )
+              reportToSentry({
+                level: ErrorLevel.Error,
+                error: 'InstagramAuth oauth redirect failed',
+                additionalInfo: { error },
+                name: 'Sign Up'
+              })
+              return onFailure(error)
             }
           }
         } catch (error) {
@@ -147,7 +157,11 @@ const InstagramAuth = ({
     const popup = openPopup()
     await new Promise((resolve) => setTimeout(resolve, 500))
     if (!popup) {
-      console.error('unable to open window')
+      reportToSentry({
+        level: ErrorLevel.Error,
+        error: 'Unable to open InstagramAuth popup',
+        name: 'Sign Up'
+      })
     }
     try {
       if (popup) {
@@ -157,7 +171,12 @@ const InstagramAuth = ({
         polling(popup)
       }
     } catch (error) {
-      console.error(error)
+      reportToSentry({
+        level: ErrorLevel.Error,
+        error: 'InstagramAuth popup polling failed',
+        additionalInfo: { error },
+        name: 'Sign Up'
+      })
       if (popup) popup.close()
       return onFailure(error)
     }

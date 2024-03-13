@@ -1,5 +1,6 @@
 import { MouseEvent, ReactElement, cloneElement, useCallback } from 'react'
 
+import { ErrorLevel } from '@audius/common/models'
 import { TikTokProfile } from '@audius/common/store'
 
 import {
@@ -7,6 +8,7 @@ import {
   TikTokButtonProps
 } from 'components/social-button/tiktok-button/TikTokButton'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 type TikTokAuthButtonProps = {
   onFailure: (e: Error) => void
@@ -56,7 +58,12 @@ export const TikTokAuth = ({
           const tikTokProfile = resultJson.data.user
           onSuccess(tikTokProfile.open_id, tikTokProfile)
         } catch (e) {
-          console.error(e)
+          reportToSentry({
+            level: ErrorLevel.Error,
+            error: 'TikTok auth failed',
+            additionalInfo: { error: e },
+            name: 'Sign Up'
+          })
         }
       })
     },
