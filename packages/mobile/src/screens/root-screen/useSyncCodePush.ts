@@ -42,7 +42,7 @@ export const useSyncCodePush = () => {
           ) {
             // If there's a pending update and it's not mandatory, and the user backgrounded the app for over an hour and came back, and the user is NOT playing music, restart the app to apply the new update
             const time = new Date().getTime() / 1000
-            if (time - timeLastBackgrounded.current > 2) {
+            if (time - timeLastBackgrounded.current > 3600) {
               codePush.restartApp(true)
             }
           }
