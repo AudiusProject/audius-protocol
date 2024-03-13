@@ -339,7 +339,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           ? makeConfirmerSuccessForCollection
           : makeConfirmerSuccess)(id, index),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
-        () => {},
+        () => { },
         UPLOAD_TIMEOUT_MILLIS
       )
     )
@@ -723,6 +723,10 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
     collectionMetadata.artwork.file
   )
   collectionMetadata.cover_art_sizes = coverArtResp.id ?? coverArtResp.dirCID
+
+  // TODO: Remove these lines when enabling album purchases
+  collectionMetadata.stream_conditions = null
+  collectionMetadata.is_stream_gated = false
 
   // Then upload tracks
   const tracksWithMetadata = tracks.map((track) => {
