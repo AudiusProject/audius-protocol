@@ -183,8 +183,8 @@ jobs:
       filters:
         branches:
           only: main
-        requires:
-          - push-pedalboard-solana-relay
+      requires:
+        - push-pedalboard-solana-relay
 
   - push-arm-image:
       name: push-pedalboard-sla-auditor-arm
