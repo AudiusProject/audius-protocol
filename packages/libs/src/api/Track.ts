@@ -609,7 +609,7 @@ export class Track extends Base {
       blocknumber: trackMetadata.blocknumber,
       is_delete: trackMetadata.is_delete,
       track_id: trackMetadata.track_id,
-      is_downloadable: trackMetadata.is_download_gated,
+      is_downloadable: trackMetadata.is_downloadable,
       is_original_available: trackMetadata.is_original_available,
       created_at: trackMetadata.created_at,
       isrc: trackMetadata.isrc,
