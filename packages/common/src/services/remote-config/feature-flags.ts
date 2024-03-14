@@ -57,7 +57,8 @@ export enum FeatureFlags {
   EDIT_ALBUMS = 'edit_albums',
   LOSSLESS_DOWNLOADS_ENABLED = 'lossless_downloads_enabled',
   COINFLOW_OFFRAMP_ENABLED = 'coinflow_offramp_enabled',
-  TIKTOK_NATIVE_AUTH = 'tiktok_native_auth'
+  TIKTOK_NATIVE_AUTH = 'tiktok_native_auth',
+  PREMIUM_ALBUMS_ENABLED = 'premium_albums_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -130,5 +131,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.EDIT_ALBUMS]: false,
   [FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED]: false,
   [FeatureFlags.COINFLOW_OFFRAMP_ENABLED]: false,
-  [FeatureFlags.TIKTOK_NATIVE_AUTH]: true
+  [FeatureFlags.TIKTOK_NATIVE_AUTH]: true,
+  [FeatureFlags.PREMIUM_ALBUMS_ENABLED]: false
 }
