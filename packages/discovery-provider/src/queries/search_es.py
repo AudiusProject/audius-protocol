@@ -100,10 +100,10 @@ def search_es_full(args: dict):
     }
 
     if do_tracks:
+        logger.info(f"asdf users: {mfound['responses'][0]['hits']['hits']}")
         response["tracks"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_users:
-        logger.info(f"asdf users: {mfound['responses'][0]['hits']['hits']}")
         response["users"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_playlists:
@@ -266,7 +266,7 @@ def finalize_response(
     return response
 
 
-def base_match(search_str: str, operator="or", extra_fields=[]):
+def base_match(search_str: str, operator="or", extra_fields=[], boost=1):
     return [
         {
             "multi_match": {
@@ -280,6 +280,7 @@ def base_match(search_str: str, operator="or", extra_fields=[]):
                 "operator": operator,
                 "type": "bool_prefix",
                 "fuzziness": "AUTO",
+                "boost": boost,
             }
         }
     ]
@@ -345,6 +346,15 @@ def track_dsl(
                 "bool": {
                     "should": [
                         *base_match(search_str),
+                        {
+                            "multi_match": {
+                                "query": search_str,
+                                "fields": ["title.searchable", "user.name.searchable"],
+                                "type": "cross_fields",
+                                "operator": "and",
+                                "boost": 4,
+                            }
+                        },
                         *[
                             {"match": {"genre": {"query": term.title(), "boost": 0.5}}}
                             for term in search_str.split()
@@ -366,22 +376,23 @@ def track_dsl(
             {"exists": {"field": "stem_of"}},
         ],
         "should": [
-            *base_match(search_str, operator="and"),
-            {
-                "match": {
-                    "title.searchable": {
-                        "query": search_str,
-                        "minimum_should_match": "100%",
-                    },
-                },
-                "match": {
-                    "user.name.searchable": {
-                        "query": search_str,
-                        "fuzziness": "AUTO",
-                        "boost": 0.5,
-                    }
-                },
-            },
+            #     "match": {
+            #         "user.name.searchable": {
+            #             "query": search_str,
+            #             "fuzziness": "AUTO",
+            #             "boost": 0.5,
+            #         }
+            #     },
+            # },
+            # {
+            #     "multi_match": {
+            #         "query": search_str,
+            #         "fields": ["title", "user.name"],
+            #         "type": "most_fields",
+            #         "operator": "and",
+            #         "boost": 1000,
+            #     }
+            # },
             {"term": {"user.is_verified": {"value": True}}},
         ],
     }
@@ -393,7 +404,8 @@ def track_dsl(
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count", factor=20)
+    # return default_function_score(dsl, "repost_count", factor=0.1)
+    return default_function_score(dsl, "repost_count")
 
 
 def user_dsl(search_str, current_user_id, must_saved=False):
@@ -471,7 +483,9 @@ def user_dsl(search_str, current_user_id, must_saved=False):
         ],
         "must_not": [],
         "should": [
-            *base_match(search_str, operator="and", extra_fields=["handle"]),
+            *base_match(
+                search_str, operator="and", extra_fields=["handle", "name"], boost=4
+            ),
             {"term": {"handle": {"value": search_str, "boost": 4}}},
             {"term": {"name": {"value": search_str, "boost": 4}}},
             {"term": {"is_verified": {"value": True, "boost": 3}}},
