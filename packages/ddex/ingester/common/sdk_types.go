@@ -157,20 +157,20 @@ type NullableString = *string
 type NullableInt = *int
 
 type ReleaseIDs struct {
-	PartyID       string `bson:"party_id"`
-	CatalogNumber string `bson:"catalog_number"`
-	ICPN          string `bson:"icpn"`
-	GRid          string `bson:"grid"`
-	ISAN          string `bson:"isan"`
-	ISBN          string `bson:"isbn"`
-	ISMN          string `bson:"ismn"`
-	ISRC          string `bson:"isrc"`
-	ISSN          string `bson:"issn"`
-	ISTC          string `bson:"istc"`
-	ISWC          string `bson:"iswc"`
-	MWLI          string `bson:"mwli"`
-	SICI          string `bson:"sici"`
-	ProprietaryID string `bson:"proprietary_id"`
+	PartyID       string `bson:"party_id,omitempty"`
+	CatalogNumber string `bson:"catalog_number,omitempty"`
+	ICPN          string `bson:"icpn,omitempty"`
+	GRid          string `bson:"grid,omitempty"`
+	ISAN          string `bson:"isan,omitempty"`
+	ISBN          string `bson:"isbn,omitempty"`
+	ISMN          string `bson:"ismn,omitempty"`
+	ISRC          string `bson:"isrc,omitempty"`
+	ISSN          string `bson:"issn,omitempty"`
+	ISTC          string `bson:"istc,omitempty"`
+	ISWC          string `bson:"iswc,omitempty"`
+	MWLI          string `bson:"mwli,omitempty"`
+	SICI          string `bson:"sici,omitempty"`
+	ProprietaryID string `bson:"proprietary_id,omitempty"`
 }
 
 type TrackMetadata struct {

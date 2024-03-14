@@ -84,27 +84,10 @@ const artistSchema = new mongoose.Schema({
   roles: [String],
 })
 
-const ddexReleaseIdsSchema = new mongoose.Schema({
-  party_id: String,
-  catalog_number: String,
-  icpn: String,
-  grid: String,
-  isan: String,
-  isbn: String,
-  ismn: String,
-  isrc: String,
-  issn: String,
-  istc: String,
-  iswc: String,
-  mwli: String,
-  sici: String,
-  proprietary_id: String,
-})
-
 const trackMetadataSchema = new mongoose.Schema({
   title: { type: String, required: true },
   release_date: { type: Date, required: true },
-  ddex_release_ids: ddexReleaseIdsSchema,
+  ddex_release_ids: mongoose.Schema.Types.Mixed,
   genre: { type: String, enum: genres, required: true },
   duration: { type: Number, required: true },
   preview_start_seconds: Number,
@@ -138,7 +121,7 @@ const collectionMetadataSchema = new mongoose.Schema({
   playlist_owner_id: { type: String, required: true },
   genre: { type: String, enum: genres, required: true },
   release_date: { type: Date, required: true },
-  ddex_release_ids: ddexReleaseIdsSchema,
+  ddex_release_ids: mongoose.Schema.Types.Mixed,
   description: String,
   is_album: Boolean,
   is_private: Boolean,

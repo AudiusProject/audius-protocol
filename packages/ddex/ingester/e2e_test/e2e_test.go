@@ -149,8 +149,11 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 		DDEXReleaseRef: "R0",
 		Tracks: []common.TrackMetadata{
 			{
-				Title:               "Can you feel ...the Monkey Claw!",
-				ReleaseDate:         time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Title:       "Can you feel ...the Monkey Claw!",
+				ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				DDEXReleaseIDs: common.ReleaseIDs{
+					ISRC: "CASE00000001",
+				},
 				Genre:               "Metal",
 				Duration:            811,
 				PreviewStartSeconds: intPtr(0),
@@ -164,8 +167,11 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
 			},
 			{
-				Title:               "Red top mountain, blown sky high",
-				ReleaseDate:         time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Title:       "Red top mountain, blown sky high",
+				ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				DDEXReleaseIDs: common.ReleaseIDs{
+					ISRC: "CASE00000002",
+				},
 				Genre:               "Metal",
 				Duration:            366,
 				PreviewStartSeconds: intPtr(0),
@@ -179,8 +185,11 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
 			},
 			{
-				Title:               "Seige of Antioch",
-				ReleaseDate:         time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Title:       "Seige of Antioch",
+				ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				DDEXReleaseIDs: common.ReleaseIDs{
+					ISRC: "CASE00000003",
+				},
 				Genre:               "Metal",
 				Duration:            1269,
 				PreviewStartSeconds: intPtr(0),
@@ -194,8 +203,11 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T3_003.wav",
 			},
 			{
-				Title:               "Warhammer",
-				ReleaseDate:         time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Title:       "Warhammer",
+				ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				DDEXReleaseIDs: common.ReleaseIDs{
+					ISRC: "CASE00000004",
+				},
 				Genre:               "Metal",
 				Duration:            165,
 				PreviewStartSeconds: intPtr(0),
@@ -209,8 +221,11 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T4_004.wav",
 			},
 			{
-				Title:               "Iron Horse",
-				ReleaseDate:         time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Title:       "Iron Horse",
+				ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				DDEXReleaseIDs: common.ReleaseIDs{
+					ISRC: "CASE00000005",
+				},
 				Genre:               "Metal",
 				Duration:            294,
 				PreviewStartSeconds: intPtr(0),
@@ -224,8 +239,11 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T5_005.wav",
 			},
 			{
-				Title:               "Yes... I can feel the Monkey Claw!",
-				ReleaseDate:         time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Title:       "Yes... I can feel the Monkey Claw!",
+				ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+				DDEXReleaseIDs: common.ReleaseIDs{
+					ISRC: "CASE00000006",
+				},
 				Genre:               "Metal",
 				Duration:            741,
 				PreviewStartSeconds: intPtr(0),
