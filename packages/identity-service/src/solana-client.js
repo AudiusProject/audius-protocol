@@ -100,9 +100,9 @@ function getFeePayerKeypair(singleFeePayer = true) {
   if (!feePayerKeypairs) {
     feePayerKeypairs = config.get('solanaFeePayerWallets')
       ? config
-          .get('solanaFeePayerWallets')
-          .map((item) => item.privateKey)
-          .map((key) => solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(key)))
+        .get('solanaFeePayerWallets')
+        .map((item) => item.privateKey)
+        .map((key) => solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(key)))
       : null
   }
   if (!feePayerKeypair) {
@@ -231,8 +231,12 @@ async function createTrackListenInstructions({
     programId: TRACK_LISTEN_PROGRAM,
     data: serializedInstructionArgs
   })
+  const priorityFeeInstruction =
+    solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+      microLamports: 100000
+    })
 
-  return [secpInstruction, listenInstruction]
+  return [secpInstruction, listenInstruction, priorityFeeInstruction]
 }
 
 module.exports = {
