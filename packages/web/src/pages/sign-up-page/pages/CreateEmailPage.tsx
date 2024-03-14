@@ -68,14 +68,6 @@ export const CreateEmailPage = () => {
     email: existingEmailValue.value ?? ''
   }
 
-  useEffectOnce(() => {
-    reportToSentry({
-      error: new Error('Hello World type error'),
-      name: 'Ignore'
-    })
-    console.error('Ignore: Heres another error')
-  })
-
   const {
     isWaitingForSocialLogin,
     handleStartSocialMediaLogin,
