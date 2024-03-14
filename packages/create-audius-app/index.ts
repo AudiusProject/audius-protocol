@@ -28,7 +28,7 @@ const program = new Commander.Command(packageJson.name)
     `
 
   An example to bootstrap the app with. You can use an example name
-  from the Audius repo. They are found in AudiusProject/audius-protocol/packages/libs/src/sdk/examples.
+  from the Audius repo. They are found in AudiusProject/audius-protocol/packages/libs/src/sdk/examples
   For example: --example react
 `,
     'react'
