@@ -40,7 +40,7 @@ export const reportToSentry = async ({
         scope.setLevel(sentryLevel)
       }
       if (additionalInfo) {
-        scope.setExtras(additionalInfo)
+        scope.setContext('additionalInfo', additionalInfo)
       }
       if (tags) {
         scope.setTags(tags)
@@ -52,7 +52,10 @@ export const reportToSentry = async ({
       const consoleMethod =
         jsLoggerMapping[level || ErrorLevel.Log] || jsLoggerMapping.Log
       // eslint-disable-next-line no-console
-      console[consoleMethod](error, { additionalInfo }, { tags })
+      console[consoleMethod](error, 'More info in console.debug')
+      if (additionalInfo || tags) {
+        console.debug('Additional error info:', { additionalInfo, tags })
+      }
       captureException(error)
     })
   } catch (error) {
