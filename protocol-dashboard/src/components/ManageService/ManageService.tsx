@@ -426,12 +426,12 @@ const ManageService = (props: ManageServiceProps) => {
   const isServiceProvider =
     serviceUserStatus === Status.Success && 'serviceProvider' in serviceUser
   const aggregateContribution = activeStake.add(totalActiveDelegated)
-  const hasPendingTx =
+  const currentUserHasPendingTx =
     pendingTx.status === Status.Success &&
     Array.isArray(pendingTx.transactions) &&
     pendingTx.transactions?.length !== 0
-  const hasPendingUndelegateRequest =
-    hasPendingTx &&
+  const currentUserHasPendingUndelegateRequest =
+    currentUserHasPendingTx &&
     pendingTx.transactions.some(
       tx => tx.name === PendingTransactionName.Undelegate
     )
@@ -463,10 +463,14 @@ const ManageService = (props: ManageServiceProps) => {
     (numDiscoveryNodes ?? 0) + (numContentNodes ?? 0) > 0 &&
     !isOwner &&
     delegates.isZero()
-  const showUndelegate = isDoneLoading && !isOwner && !delegates.isZero()
+  const showUndelegate =
+    isDoneLoading &&
+    !isOwner &&
+    pendingTx.status === Status.Success &&
+    !delegates.isZero()
   const cantUndelegateReason = pendingClaim.hasClaim
     ? messages.cantUndelegatePendingClaim
-    : hasPendingUndelegateRequest
+    : currentUserHasPendingUndelegateRequest
     ? messages.cantUndelegateMultiple
     : null
   const isDelegatorLimitReached =
@@ -640,7 +644,7 @@ const ManageService = (props: ManageServiceProps) => {
       </Flex>
       {!!ethBlockNumber &&
       props.showPendingTransactions &&
-      hasPendingTx &&
+      currentUserHasPendingTx &&
       isOwner ? (
         <Box p="xl" borderTop="default">
           <TransactionStatusContent
