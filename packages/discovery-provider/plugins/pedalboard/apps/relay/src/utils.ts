@@ -18,3 +18,12 @@ export const isUserDeactivate = (
     JSON.parse(decodedAbi.metadata).data.is_deactivated === true
   )
 }
+
+export const coerceErrorToString = (e: unknown): string => {
+  if (isString(e)) return e as string
+  return e instanceof Error ? e.message : String(e)
+}
+
+export const isString = (value: unknown): value is string => {
+  return typeof value === 'string';
+}

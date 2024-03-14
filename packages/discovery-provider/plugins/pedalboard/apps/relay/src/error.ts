@@ -1,5 +1,6 @@
 import { NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
+import { coerceErrorToString } from "./utils";
 
 /** Various options for error types that can be returned from middleware or handlers. */
 export interface AppError {
@@ -29,11 +30,11 @@ export const validationError = (next: NextFunction, message: string) => {
   });
 };
 
-export const internalError = (next: NextFunction, message: string) => {
+export const internalError = (next: NextFunction, e: unknown) => {
   customError(next, {
     name: "INTERNAL_ERROR",
     statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-    message,
+    message: coerceErrorToString(e),
   });
 };
 

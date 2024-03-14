@@ -13,15 +13,18 @@ export const errorHandler = (
   const { requestId, validatedRelayRequest } = response.locals.ctx
   // if unknown error is thrown somewhere
   if (!isAppError(error)) {
-    logger.error({ error, requestId, validatedRelayRequest }, "unhandled error occured");
+    logger.error({ requestId, error, validatedRelayRequest }, "unhandled error occured");
     response
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ name: "INTERNAL_ERROR" });
+      outgoingLog(request, response);
+      next();
+      return
   }
 
   // app specific errors caught, safe cast
   const appError = error as AppError;
-  logger.error({ error: appError, requestId, validatedRelayRequest }, "error occured");
+  logger.error({ requestId, error: appError, validatedRelayRequest }, "error occured");
   const { name, message, statusCode } = appError;
   let errorMessage = undefined;
   if (statusCode < StatusCodes.INTERNAL_SERVER_ERROR) {
