@@ -1,13 +1,14 @@
-import React, { useCallback, useState } from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
+import React, { useCallback, useState } from 'react'
 
-import Tooltip, { Position } from 'components/Tooltip'
+import { Position } from 'components/Tooltip'
 import AudiusClient from 'services/Audius'
 import { formatShortAud, formatWei, formatWeiNumber } from 'utils/format'
 
-import styles from './DisplayAudio.module.css'
+import { BasicTooltip } from 'components/Tooltip/Tooltip'
 import copyToClipboard from 'utils/copyToClipboard'
+import styles from './DisplayAudio.module.css'
 
 type OwnProps = {
   className?: string
@@ -26,30 +27,32 @@ const DisplayAudio: React.FC<DisplayAudioProps> = ({
   label,
   shortFormat = false
 }) => {
-  const [tooltipText, setTooltipText] = useState(formatWei(amount))
+  const [showCopied, setShowCopied] = useState(false)
+  const tooltipText = showCopied ? 'Copied!' : formatWei(amount)
   const formatter = shortFormat ? formatShortAud : AudiusClient.displayShortAud
   const onClick = useCallback(
     e => {
       e.preventDefault()
       e.stopPropagation()
       copyToClipboard(formatWeiNumber(amount))
-      setTooltipText('Copied!')
+      setShowCopied(true)
       const timeout = setTimeout(() => {
-        setTooltipText(formatWei(amount))
+        setShowCopied(false)
       }, 1000)
       return () => clearTimeout(timeout)
     },
-    [amount, setTooltipText]
+    [amount, setShowCopied]
   )
+
   return (
-    <Tooltip
+    <BasicTooltip
       onClick={onClick}
       position={position}
       className={clsx(styles.tooltip, { [className!]: !!className })}
       text={tooltipText}
     >
       {`${formatter(amount)}${label ? ` ${label}` : ''}`}
-    </Tooltip>
+    </BasicTooltip>
   )
 }
 

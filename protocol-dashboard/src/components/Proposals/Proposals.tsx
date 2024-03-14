@@ -1,18 +1,19 @@
-import React, { useState, useCallback } from 'react'
-import clsx from 'clsx'
 import BN from 'bn.js'
+import clsx from 'clsx'
+import React, { useCallback, useState } from 'react'
 
-import { useProposals } from 'store/cache/proposals/hooks'
-import Paper from 'components/Paper'
-import Button, { ButtonType } from 'components/Button'
 import { IconSave } from '@audius/stems'
-import styles from './Proposals.module.css'
-import NewProposalModal from 'components/NewProposalModal'
-import Proposal from 'components/Proposal/Proposal'
+import { Box } from '@audius/harmony'
+import Button, { ButtonType } from 'components/Button'
 import Loading from 'components/Loading'
+import NewProposalModal from 'components/NewProposalModal'
+import Paper from 'components/Paper'
+import Proposal from 'components/Proposal/Proposal'
 import { useAccountUser } from 'store/account/hooks'
+import { useProposals } from 'store/cache/proposals/hooks'
 import { Status } from 'types'
 import getActiveStake from 'utils/activeStake'
+import styles from './Proposals.module.css'
 
 const messages = {
   newProposal: 'New Proposal',
@@ -72,7 +73,9 @@ const Proposals: React.FC<ProposalsProps> = () => {
               <NoProposals text={messages.noActiveProposals} />
             )
           ) : (
-            <Loading className={styles.loading} />
+            <Box p="xl">
+              <Loading className={styles.loading} />
+            </Box>
           )}
         </div>
       </Paper>
@@ -88,7 +91,9 @@ const Proposals: React.FC<ProposalsProps> = () => {
               <NoProposals text={messages.noProposals} />
             )
           ) : (
-            <Loading className={styles.loading} />
+            <Box p="xl">
+              <Loading className={styles.loading} />
+            </Box>
           )}
         </div>
       </Paper>
