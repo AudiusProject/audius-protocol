@@ -75,15 +75,15 @@ function* watchAdd() {
   )
 }
 
-type TrackRemixParams = Pick<Track, 'track_id' | 'title'> & {
+type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
 }
 
-export function* trackNewRemixEvent(remixTrack: TrackRemixParams) {
+export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* waitForAccount()
   const account = yield* select(getAccountUser)
-  if (!remixTrack.remix_of || !account) return
-  const remixParentTrack = remixTrack.remix_of.tracks[0]
+  if (!track.remix_of || !account) return
+  const remixParentTrack = track.remix_of.tracks[0]
   const parentTrack = yield* select(getTrack, {
     id: remixParentTrack.parent_track_id
   })
@@ -92,9 +92,9 @@ export function* trackNewRemixEvent(remixTrack: TrackRemixParams) {
     : null
   yield* put(
     make(Name.REMIX_NEW_REMIX, {
-      id: remixTrack.track_id,
+      id: track.track_id,
       handle: account.handle,
-      title: remixTrack.title,
+      title: track.title,
       parent_track_id: remixParentTrack.parent_track_id,
       parent_track_title: parentTrack ? parentTrack.title : '',
       parent_track_user_handle: parentTrackUser ? parentTrackUser.handle : ''
