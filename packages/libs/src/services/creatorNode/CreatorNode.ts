@@ -201,7 +201,7 @@ export class CreatorNode {
       ...metadata
     }
     const audioUploadOpts: { [key: string]: string } = {}
-    if (updatedMetadata.preview_start_seconds != null) {
+    if (updatedMetadata.preview_start_seconds !== null) {
       audioUploadOpts.previewStartSeconds =
         updatedMetadata.preview_start_seconds.toString()
     }
