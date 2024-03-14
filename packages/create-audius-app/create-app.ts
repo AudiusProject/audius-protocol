@@ -28,7 +28,7 @@ export async function createApp({
         )}. It could be due to the following:\n`,
         `1. Your spelling of example ${red(
           `"${example}"`
-        )} might be incorrect.\n`
+        )} might be incorrect. \n\n Double check that the example exists in https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs/src/sdk/examples\n`
       )
       process.exit(1)
     }
