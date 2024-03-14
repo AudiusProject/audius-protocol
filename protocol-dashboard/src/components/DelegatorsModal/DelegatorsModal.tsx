@@ -51,6 +51,7 @@ type DelegatorTableRowProps = {
   isDelegateOwner: boolean
   isDelegatorOwner: boolean
   onClickRemoveDelegator: (e: React.MouseEvent, address: string) => void
+  disableRemoveDelegator?: boolean
 }
 
 const DelegatorTableRow = ({
@@ -58,9 +59,9 @@ const DelegatorTableRow = ({
   delegator,
   isDelegateOwner,
   isDelegatorOwner,
+  disableRemoveDelegator,
   onClickRemoveDelegator
 }: DelegatorTableRowProps) => {
-  const hasPendingUndelegateRequest = useHasPendingDecreaseDelegationTx() // Note - only relevant when isDelegatorOwner is `true`
   return (
     <div className={styles.rowContainer} onClick={() => onClickRow(delegator)}>
       <UserImage
@@ -76,8 +77,7 @@ const DelegatorTableRow = ({
         className={clsx(styles.rowCol, styles.colAmount)}
         amount={delegator.amount}
       />
-      {(isDelegateOwner ||
-        (isDelegatorOwner && !hasPendingUndelegateRequest)) && (
+      {(isDelegateOwner || (isDelegatorOwner && !disableRemoveDelegator)) && (
         <div
           className={clsx(styles.rowCol, styles.trashIconContainer)}
           onClick={(e: React.MouseEvent) =>
@@ -98,6 +98,7 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
 }: DelegatorsTableProps) => {
   const { delegators } = useDelegators({ wallet })
   const { wallet: accountWallet } = useAccount()
+  const hasPendingDecreaseDelegationResult = useHasPendingDecreaseDelegationTx()
 
   const isOwner = accountWallet === wallet
 
@@ -173,11 +174,17 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
   )
 
   const renderTableRow = (data: Delegator) => {
+    const isDelegatorOwner = data.address === accountWallet
     return (
       <DelegatorTableRow
-        isDelegatorOwner={data.address === accountWallet}
+        isDelegatorOwner={isDelegatorOwner}
         delegator={data}
         isDelegateOwner={isOwner}
+        disableRemoveDelegator={
+          isDelegatorOwner &&
+          (hasPendingDecreaseDelegationResult.status !== Status.Success ||
+            hasPendingDecreaseDelegationResult.hasPendingDecreaseTx)
+        }
         onClickRow={onRowClick}
         onClickRemoveDelegator={onClickRemoveDelegator}
       />
