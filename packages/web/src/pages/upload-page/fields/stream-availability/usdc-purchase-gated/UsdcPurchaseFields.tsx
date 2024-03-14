@@ -5,9 +5,7 @@ import {
   useState
 } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { AccessConditions } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   filterDecimalString,
   padDecimalValue,
@@ -58,15 +56,12 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       <PriceField disabled={disabled} />
       <PreviewField disabled={disabled} />
-      {isLosslessDownloadsEnabled && downloadConditions ? (
+      {downloadConditions ? (
         <HelpCallout icon={<IconInfo />} content={messages.premiumDownloads} />
       ) : null}
     </div>

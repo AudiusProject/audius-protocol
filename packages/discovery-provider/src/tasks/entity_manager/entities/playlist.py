@@ -465,6 +465,7 @@ def create_playlist(params: ManageEntityParameters):
         is_current=False,
         is_delete=False,
         ddex_app=ddex_app,
+        ddex_release_ids=params.metadata.get("ddex_release_ids", None),
     )
 
     update_playlist_routes_table(params, playlist_record, True)

@@ -176,6 +176,24 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
 	releaseType := safeInnerText(rNode.SelectElement("ReleaseType"))
 
+	// Release IDs
+	ddexReleaseIDs := &common.ReleaseIDs{
+		PartyID:       safeInnerText(rNode.SelectElement("ReleaseId/PartyId")),
+		CatalogNumber: safeInnerText(rNode.SelectElement("ReleaseId/CatalogNumber")),
+		ICPN:          safeInnerText(rNode.SelectElement("ReleaseId/ICPN")),
+		GRid:          safeInnerText(rNode.SelectElement("ReleaseId/GRid")),
+		ISAN:          safeInnerText(rNode.SelectElement("ReleaseId/ISAN")),
+		ISBN:          safeInnerText(rNode.SelectElement("ReleaseId/ISBN")),
+		ISMN:          safeInnerText(rNode.SelectElement("ReleaseId/ISMN")),
+		ISRC:          isrc,
+		ISSN:          safeInnerText(rNode.SelectElement("ReleaseId/ISSN")),
+		ISTC:          safeInnerText(rNode.SelectElement("ReleaseId/ISTC")),
+		ISWC:          safeInnerText(rNode.SelectElement("ReleaseId/ISWC")),
+		MWLI:          safeInnerText(rNode.SelectElement("ReleaseId/MWLI")),
+		SICI:          safeInnerText(rNode.SelectElement("ReleaseId/SICI")),
+		ProprietaryID: safeInnerText(rNode.SelectElement("ReleaseId/ProprietaryId")),
+	}
+
 	// Convert releaseDate from string of format YYYY-MM-DD to time.Time
 	if releaseDateStr == "" {
 		err = fmt.Errorf("missing release date for <ReleaseReference>%s</ReleaseReference>", releaseRef)
@@ -286,6 +304,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 				PlaylistName:        title,
 				PlaylistOwnerName:   artistName,
 				ReleaseDate:         releaseDate,
+				DDEXReleaseIDs:      *ddexReleaseIDs,
 				Genre:               genre,
 				IsAlbum:             true,
 				IsPrivate:           false, // TODO: Use DealList to determine this. Same with releaseDate because I think the XML element it's reading is deprecated
@@ -340,12 +359,17 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			trackMetadata.Title = title
 		}
 
-		if *trackMetadata.ISRC == "" {
+		if trackMetadata.ISRC == nil || *trackMetadata.ISRC == "" {
 			if isrc == "" {
 				err = fmt.Errorf("missing isrc for <ReleaseReference>%s</ReleaseReference>", releaseRef)
 				return
 			}
 			*trackMetadata.ISRC = isrc
+		} else {
+			if *trackMetadata.ISRC != isrc {
+				// Use the ISRC from the SoundRecording if it differs from the Release ISRC
+				(*ddexReleaseIDs).ISRC = *trackMetadata.ISRC
+			}
 		}
 
 		if trackMetadata.Genre == "" {
@@ -368,6 +392,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 
 		trackMetadata.ArtistName = artistName
 		trackMetadata.ReleaseDate = releaseDate
+		trackMetadata.DDEXReleaseIDs = *ddexReleaseIDs
 		trackMetadata.Copyright = copyright
 		trackMetadata.CoverArtURL = coverArtURL
 		trackMetadata.CoverArtURLHash = coverArtURLHash

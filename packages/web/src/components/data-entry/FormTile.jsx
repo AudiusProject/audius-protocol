@@ -1,6 +1,5 @@
 import { Component, useState, useCallback } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { createRemixOfMetadata } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -9,7 +8,7 @@ import {
   GENRES,
   convertGenreLabelToValue
 } from '@audius/common/utils'
-import { Switch, IconCloudDownload, IconIndent } from '@audius/harmony'
+import { Switch, IconIndent } from '@audius/harmony'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -28,7 +27,6 @@ import TextArea from 'components/data-entry/TextArea'
 import Dropdown from 'components/navigation/Dropdown'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
 import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/RemixSettingsModalTrigger'
-import { StemFilesModal } from 'components/stem-files-modal/StemFilesModal'
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -73,9 +71,6 @@ const Divider = (props) => {
 }
 
 const BasicForm = (props) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
@@ -257,25 +252,6 @@ const BasicForm = (props) => {
     )
   }
 
-  const [sourceFilesModalVisible, setSourceFilesModalVisible] = useState(false)
-
-  const renderSourceFilesModal = () => {
-    return (
-      <StemFilesModal
-        downloadSettings={props.defaultFields.download}
-        onUpdateDownloadSettings={(settings) =>
-          props.onChangeField('download', settings)
-        }
-        isOpen={sourceFilesModalVisible}
-        onClose={() => setSourceFilesModalVisible(false)}
-        onAddStems={props.onAddStems}
-        stems={props.stems}
-        onSelectCategory={props.onSelectStemCategory}
-        onDeleteStem={props.onDeleteStem}
-      />
-    )
-  }
-
   const renderStemsAndDownloadsTriggerLegacy = () => {
     return (
       <StemsAndDownloadsTriggerLegacy
@@ -294,24 +270,6 @@ const BasicForm = (props) => {
           }
         }}
       />
-    )
-  }
-
-  const renderDownloadButton = () => {
-    const shouldRender = props.type === 'track'
-    return (
-      shouldRender && (
-        <Button
-          type={ButtonType.COMMON_ALT}
-          className={styles.menuButton}
-          textClassName={styles.menuButtonText}
-          iconClassName={styles.menuButtonIcon}
-          name='DownloadAndSource'
-          text='Downloads & Source Files'
-          leftIcon={<IconCloudDownload />}
-          onClick={() => setSourceFilesModalVisible(true)}
-        />
-      )
     )
   }
 
@@ -344,9 +302,7 @@ const BasicForm = (props) => {
           })}
         >
           {renderRemixSwitch()}
-          {isLosslessDownloadsEnabled
-            ? renderStemsAndDownloadsTriggerLegacy()
-            : renderDownloadButton()}
+          {renderStemsAndDownloadsTriggerLegacy()}
           {renderAdvancedButton()}
         </div>
       </div>
@@ -357,7 +313,6 @@ const BasicForm = (props) => {
     <div className={styles.basicContainer}>
       {renderBasicForm()}
       {renderBottomMenu()}
-      {!isLosslessDownloadsEnabled ? renderSourceFilesModal() : null}
       {!isGatedContentEnabled && renderRemixSettingsModal()}
       {renderAiAttributionModal()}
     </div>

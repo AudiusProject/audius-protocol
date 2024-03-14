@@ -30,6 +30,7 @@ export const createUploadAlbumMetadataSchema = () =>
       releaseDate: z.optional(
         z.date().max(new Date(), { message: 'should not be in the future' })
       ),
+      ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
       tags: z.optional(z.string()),
       upc: z.optional(z.string())
     })

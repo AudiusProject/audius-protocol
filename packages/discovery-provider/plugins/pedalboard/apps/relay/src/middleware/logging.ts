@@ -15,7 +15,7 @@ export const incomingRequestLogger = (
   const { route, method } = request;
   const path: string = route.path
   if (!path.includes("health")) {
-    logger.info({ requestId, route, method }, "incoming request");
+    logger.info({ requestId, path, method }, "incoming request");
   }
   next();
 };
@@ -26,11 +26,12 @@ export const outgoingLog = (request: Request, response: Response) => {
     new Date().getTime() - response.locals.ctx.startTime.getTime();
   const { route, method } = request;
   const { locals: ctx } = response;
+  const requestId = ctx.ctx.requestId
   const statusCode = response.statusCode;
   const path: string = route.path
   if (!path.includes("health")) {
     logger.info(
-      { route, method, abi: ctx.ctx.validatedRelayRequest.encodedABI, responseTime, statusCode },
+      { requestId, path, method, responseTime, statusCode },
       "request completed"
     );
   }

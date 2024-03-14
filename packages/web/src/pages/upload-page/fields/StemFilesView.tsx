@@ -1,23 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import {
-  StemCategory,
-  stemCategoryFriendlyNames,
-  StemUpload,
-  StemUploadWithFile
-} from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { StemCategory, StemUploadWithFile } from '@audius/common/models'
 import { encodeHashId } from '@audius/common/utils'
-import { IconRemove, Box, Flex, Text, IconButton } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 import cn from 'classnames'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import Dropdown from 'components/navigation/Dropdown'
 import { Dropzone } from 'components/upload/Dropzone'
 import { TrackPreview } from 'components/upload/TrackPreview'
 import { audiusSdk } from 'services/audius-sdk'
-import { stemDropdownRows } from 'utils/stems'
 
 import styles from './StemFilesView.module.css'
 
@@ -102,10 +92,6 @@ export const StemFilesView = ({
   onSelectCategory,
   onDeleteStem
 }: StemFilesViewProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
   const fileInfos = useStemFileInfos(stems)
 
   const renderStemFiles = () => {
@@ -145,21 +131,6 @@ export const StemFilesView = ({
     ) : null
   }
 
-  const renderCurrentStems = () => {
-    return (
-      <ul className={styles.stemListItems}>
-        {stems.map((stem, i) => (
-          <StemListItem
-            key={`${stem.metadata.title}-${i}`}
-            stem={stem}
-            didSelectCategory={(category) => onSelectCategory(category, i)}
-            onDelete={() => onDeleteStem(i)}
-          />
-        ))}
-      </ul>
-    )
-  }
-
   const useRenderDropzone = () => {
     const atCapacity = stems.length >= MAX_ROWS
 
@@ -188,9 +159,7 @@ export const StemFilesView = ({
           [styles.dropzoneDisabled]: atCapacity
         })}
         textAboveIcon={messages.additionalFiles}
-        subtextAboveIcon={
-          isLosslessDownloadsEnabled ? messages.audioQuality : undefined
-        }
+        subtextAboveIcon={messages.audioQuality}
         onDropAccepted={onAdd}
         type='stem'
         subtitle={atCapacity ? messages.maxCapacity : undefined}
@@ -202,76 +171,8 @@ export const StemFilesView = ({
 
   return (
     <div className={styles.stemFilesContainer}>
-      {isLosslessDownloadsEnabled ? renderStemFiles() : null}
+      {renderStemFiles()}
       {useRenderDropzone()}
-      {!isLosslessDownloadsEnabled ? renderCurrentStems() : null}
     </div>
-  )
-}
-
-type StemListItemProps = {
-  stem: StemUpload
-  didSelectCategory: (category: StemCategory) => void
-  onDelete: () => void
-}
-
-const StemListItem = ({
-  stem: { category, metadata, allowCategorySwitch, allowDelete },
-  didSelectCategory,
-  onDelete
-}: StemListItemProps) => {
-  const onSelectIndex = (index: number) => {
-    const cat = stemDropdownRows[index]
-    didSelectCategory(cat)
-  }
-
-  let stemIndex = stemDropdownRows.findIndex((r) => r === category)
-  if (stemIndex === -1) {
-    console.error(`Couldn't find stem row for category: ${category}`)
-    stemIndex = 0
-  }
-
-  const renderDeleteButton = () => {
-    return (
-      <span className={styles.deleteButton}>
-        {allowDelete ? (
-          <IconButton
-            aria-label='delete'
-            color='danger'
-            onClick={() => {
-              if (!allowDelete) return
-              onDelete()
-            }}
-            icon={IconRemove}
-          />
-        ) : (
-          <LoadingSpinner />
-        )}
-      </span>
-    )
-  }
-
-  return (
-    <li className={styles.stemListItemContainer}>
-      <div className={styles.dropdownContainer}>
-        <Dropdown
-          size='medium'
-          menu={{
-            items: stemDropdownRows.map((r) => ({
-              text: stemCategoryFriendlyNames[r]
-            }))
-          }}
-          variant='border'
-          onSelectIndex={onSelectIndex}
-          defaultIndex={stemIndex}
-          disabled={!allowCategorySwitch}
-          textClassName={styles.dropdownText}
-        />
-      </div>
-      <Text variant='body' size='s' strength='strong'>
-        {metadata.title}
-      </Text>
-      {renderDeleteButton()}
-    </li>
   )
 }

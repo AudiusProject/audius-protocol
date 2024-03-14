@@ -509,16 +509,7 @@ function* signUp() {
 
         yield* call(waitForRemoteConfig)
 
-        const isSignUpRedesignEnabled = yield* call(
-          getFeatureEnabled,
-          FeatureFlags.SIGN_UP_REDESIGN
-        )
-
-        if (isNativeMobile) {
-          if (!isSignUpRedesignEnabled) {
-            yield* put(requestPushNotificationPermissions())
-          }
-        } else {
+        if (!isNativeMobile) {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
         }

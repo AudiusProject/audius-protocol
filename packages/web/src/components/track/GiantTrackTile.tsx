@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   isContentUSDCPurchaseGated,
   ID,
@@ -41,7 +40,6 @@ import moment from 'moment'
 import { useDispatch, shallowEqual, useSelector } from 'react-redux'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { TextLink, UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -225,9 +223,6 @@ export const GiantTrackTile = ({
   )
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const isEditAlbumsEnabled = getFeatureEnabled(FeatureFlags.EDIT_ALBUMS)
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -501,19 +496,6 @@ export const GiantTrackTile = ({
     )
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <DownloadButtons
-        className={styles.downloadButtonsContainer}
-        trackId={trackId}
-        isOwner={isOwner}
-        following={following}
-        hasDownloadAccess={hasDownloadAccess}
-        onDownload={onDownload}
-      />
-    )
-  }
-
   const isLoading = loading || artworkLoading
   // Omitting isOwner and hasStreamAccess so that we always show gated DogEars
   const dogEarType = isLoading
@@ -719,8 +701,7 @@ export const GiantTrackTile = ({
         ) : null}
         <ClientOnly>
           {renderTags()}
-          {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
-          {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+          {hasDownloadableAssets ? (
             <Box pt='l' w='100%'>
               <Suspense>
                 <DownloadSection trackId={trackId} />

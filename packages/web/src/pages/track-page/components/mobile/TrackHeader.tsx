@@ -1,7 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -43,7 +42,6 @@ import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import { DogEar } from 'components/dog-ear'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
@@ -203,9 +201,6 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { getTrack } = cacheTracksSelectors
   const track = useSelector(
@@ -301,22 +296,6 @@ const TrackHeader = ({
           </SearchTag>
         ))}
       </Flex>
-    )
-  }
-
-  const renderDownloadButtons = () => {
-    return (
-      <DownloadButtons
-        className={cn(
-          styles.downloadButtonsContainer,
-          styles.withSectionDivider
-        )}
-        trackId={trackId}
-        isOwner={isOwner}
-        following={isFollowing}
-        hasDownloadAccess={hasDownloadAccess}
-        onDownload={onDownload}
-      />
     )
   }
 
@@ -505,8 +484,7 @@ const TrackHeader = ({
         {renderTrackLabels()}
       </div>
       {renderTags()}
-      {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
-      {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+      {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
           <Suspense>
             <DownloadSection trackId={trackId} />
