@@ -925,6 +925,9 @@ export function* uploadMultipleTracks(tracks: TrackForUpload[]) {
     trackIds,
     forceRetrieveFromSource: true
   })
+  if (newTracks.length === 0) {
+    throw new Error('No tracks found after uploading.')
+  }
 
   // Make sure track count changes for this user
   const account = yield* select(accountSelectors.getAccountUser)
