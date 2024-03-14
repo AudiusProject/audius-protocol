@@ -6,6 +6,7 @@ import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
 import { logger } from '../logger'
 import { isUserCreate, isUserDeactivate } from '../utils'
+import { getEntityManagerActionKey } from './rateLimiter'
 
 const MAX_ACDC_GAS_LIMIT = 10485760
 
@@ -15,6 +16,7 @@ export const validator = async (
   next: NextFunction
 ) => {
   const body = request.body as RelayRequest
+  const { requestId } = response.locals.ctx
 
   // Validation of input fields
   const contractAddress =
@@ -49,6 +51,9 @@ export const validator = async (
     handle
   }
 
+  const operation = getEntityManagerActionKey(encodedABI)
+  logger.info({ requestId, operation })
+
   // Gather user from input data
   // @ts-ignore, partially populate for now
   let recoveredSigner: Users | DeveloperApps = {
@@ -71,18 +76,19 @@ export const validator = async (
   if (user !== undefined) {
     recoveredSigner = user
     signerIsUser = true
+    logger.info({ requestId, handle: user.handle_lc, address: user.wallet, userId: user.user_id, operation }, `retrieved user ${user.handle_lc}`)
   }
 
   if (signerIsUser) {
     const isDeactivated = (recoveredSigner as Users).is_deactivated
     if (isUserDeactivate(isDeactivated, encodedABI)) {
-      logger.info({ requestId: response.locals.ctx.requestId, encodedABI }, "user deactivation")
+      logger.info({ requestId, encodedABI, operation }, "user deactivation")
       createOrDeactivate = true
     }
   }
 
   if (isUserCreate(encodedABI)) {
-    logger.info({ requestId: response.locals.ctx.requestId, encodedABI }, "user create")
+    logger.info({ requestId: response.locals.ctx.requestId, encodedABI, operation }, "user create")
     createOrDeactivate = true
   }
 
@@ -90,12 +96,13 @@ export const validator = async (
   if (!signerIsUser && !createOrDeactivate && !isSenderVerifier) {
     const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
     if (developerApp === undefined) {
-      logger.error({ encodedABI }, "neither user nor developer app could be found for address")
+      logger.error({ encodedABI, operation }, "neither user nor developer app could be found for address")
       validationError(next, 'recoveredSigner not valid')
       return
     }
     recoveredSigner = developerApp
     signerIsApp = true
+    logger.info({ requestId, address: developerApp.address, userId: developerApp.user_id, name: developerApp.name, operation }, `retrieved developer app ${developerApp.name}`)
   }
 
   // inject remaining fields into ctx for downstream middleware

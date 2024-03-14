@@ -5,6 +5,7 @@ import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { config } from '..'
 import { NextFunction, Request, Response, response } from 'express'
 import { rateLimitError } from '../error'
+import { logger } from '../logger'
 
 const globalRateLimiter = new RelayRateLimiter()
 
@@ -13,7 +14,7 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier } = res.locals.ctx
+  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier, requestId } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
   let signer: string | null
@@ -57,10 +58,12 @@ export const rateLimiterMiddleware = async (
       signer,
       limit
     })
+    logger.info({ requestId, address: signer, operation, limit }, "calculated rate limit")
     insertReplyHeaders(res, rateLimitData)
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders(res, e as RateLimiterRes)
+      logger.info({ requestId, address: signer, operation, limit }, "rate limit hit")
       rateLimitError(next, 'rate limit hit')
       return
     }
@@ -68,7 +71,7 @@ export const rateLimiterMiddleware = async (
   next()
 }
 
-const getEntityManagerActionKey = (encodedABI: string): string => {
+export const getEntityManagerActionKey = (encodedABI: string): string => {
   const decodedABI = AudiusABIDecoder.decodeAbi('EntityManager', encodedABI)
   const action = decodedABI.get('action')
   if (action === undefined) throw new Error('action not defined in encodedABI')
