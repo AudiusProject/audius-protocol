@@ -104,6 +104,8 @@ const messages = {
     'Cannot delegate while the operator has an unclaimed reward distribution',
   cantDelegateTotalStakeOutOfBounds:
     "Cannot delegate because the operator's total stake is out of bounds",
+  cantUpdateDelegationPendingClaim:
+    'Cannot update delegation while the operator has an unclaimed reward distribution',
   delegatorCantClaimTotalStakeOutOfBounds:
     "Cannot claim because the operator's total stake is out of bounds",
   operatorCantClaimTotalStakeOufOfBounds:
@@ -665,7 +667,15 @@ const ManageService = (props: ManageServiceProps) => {
             alignItems="center"
             css={{ flexGrow: 1, maxWidth: 226 }}
           >
-            <ManageDelegation delegates={delegates} wallet={wallet} />
+            <ManageDelegation
+              delegates={delegates}
+              wallet={wallet}
+              disabledReason={
+                pendingClaim.status === Status.Success && pendingClaim.hasClaim
+                  ? messages.cantUpdateDelegationPendingClaim
+                  : null
+              }
+            />
             {showUndelegate ? (
               <UndelegateSection
                 cantUndelegateReason={cantUndelegateReason}

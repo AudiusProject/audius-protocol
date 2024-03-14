@@ -38,6 +38,7 @@ import { formatWeiNumber } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import styles from './UpdateDelegationModal.module.css'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 
 const messages = {
   manageDelegation: 'Manage Delegation',
@@ -223,7 +224,9 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
         onClose={onClose}
         isCloseable={true}
       >
-        <Loading />
+        <Box mt="xl">
+          <Loading />
+        </Box>
       </Modal>
     )
   }
@@ -398,20 +401,29 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
 type ManageDelegationProps = {
   delegates: BN
   wallet: Address
+  disabledReason?: string | null
 }
 export const ManageDelegation = ({
   delegates,
-  wallet
+  wallet,
+  disabledReason
 }: ManageDelegationProps) => {
   const { isOpen, onClick, onClose } = useModalControls()
   return (
     <>
-      <Button
-        type={ButtonType.PRIMARY}
-        text={messages.manage}
-        css={{ width: '100%' }}
-        onClick={onClick}
-      />
+      <BasicTooltip
+        position={Position.TOP}
+        text={disabledReason}
+        isDisabled={!Boolean(disabledReason)}
+      >
+        <Button
+          type={ButtonType.PRIMARY}
+          text={messages.manage}
+          css={{ width: '100%' }}
+          onClick={onClick}
+          isDisabled={Boolean(disabledReason)}
+        />
+      </BasicTooltip>
       <UpdateDelegationModal
         wallet={wallet}
         delegates={delegates}
