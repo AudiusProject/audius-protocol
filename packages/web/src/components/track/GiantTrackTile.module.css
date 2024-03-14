@@ -298,13 +298,6 @@
   line-height: 26px;
 }
 
-.downloadButtonsContainer {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-
 .verified {
   margin-left: var(--unit-2);
   display: inline-block;
