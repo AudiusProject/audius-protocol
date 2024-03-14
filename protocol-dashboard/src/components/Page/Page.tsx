@@ -1,4 +1,4 @@
-import { IconComponent } from '@audius/harmony'
+import { HarmonyTheme, IconComponent } from '@audius/harmony'
 import clsx from 'clsx'
 import React, { useEffect } from 'react'
 import { Spring } from 'react-spring/renderprops'
@@ -40,7 +40,11 @@ const Page = ({ className, children, title, icon }: PageProps) => {
         <div style={animProps}>
           <div className={styles.titleContainer}>
             {IconComponent == null ? null : (
-              <IconComponent color="staticWhite" />
+              <IconComponent
+                css={({ color }: HarmonyTheme) => ({
+                  '& path': { fill: color.icon.staticWhite }
+                })}
+              />
             )}
             <h1 className={styles.title}>{title}</h1>
           </div>

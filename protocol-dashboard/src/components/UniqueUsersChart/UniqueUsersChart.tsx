@@ -16,7 +16,7 @@ type UniqueUsersBucket =
   | Bucket.YEAR
 
 const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
-  const [bucket, setBucket] = useState<UniqueUsersBucket>(Bucket.MONTH)
+  const [bucket, setBucket] = useState<UniqueUsersBucket>(Bucket.ALL_TIME)
   const { apiCalls: trailingApiCalls } = useTrailingApiCalls(
     bucket === Bucket.ALL_TIME ? Bucket.MONTH : bucket
   )

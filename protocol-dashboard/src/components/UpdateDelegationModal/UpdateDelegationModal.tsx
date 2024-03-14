@@ -51,7 +51,7 @@ const messages = {
   decreaseBtn: 'Decrease Delegation',
   twoPopupsWarning: '2 MetaMask Pop-Ups Will Appear',
   pendingDecreaseDisabled:
-    'Not permitted while you still have a pending Decrease Delegation transaction.',
+    'Not permitted while you still have a pending Decrease Delegation (Undelegate) transaction.',
   pendingClaimDisabled:
     'You cannot change your delegation amount while the operator has an unclaimed reward distribution.',
   currentDelegation: 'Current Delegation',
@@ -63,7 +63,6 @@ const messages = {
   enterAmount: 'Enter an amount',
   oldDelegation: `Old  Delegation ${TICKER}`,
   newDelegation: `New  Delegation ${TICKER}`,
-  loadingSubmit: 'Opening Wallet...',
   max: 'Max',
   noAudio: `You have no ${TICKER} available to delegate`,
   balanceExceeded: `Exceeds amount of ${TICKER} in wallet`,
@@ -92,6 +91,15 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
   const [inputValue, setInputValue] = useState('')
   const [inputNumberValue, setInputNumberValue] = useState(new BN(0))
   const { min: minDelegation, max: maxDelegation } = useUserDelegation(wallet)
+  const [selectedOption, setSelectedOption] = useState<'increase' | 'decrease'>(
+    'increase'
+  )
+  const isIncrease = selectedOption === 'increase'
+  const reset = () => {
+    setInputValue('')
+    setInputNumberValue(new BN(0))
+    setSelectedOption('increase')
+  }
   const maxDecrease = delegates.sub(minDelegation)
   const maxIncrease = BN.min(
     maxDelegation.sub(delegates),
@@ -100,10 +108,6 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
 
   const deployerCut =
     (serviceUser as Operator)?.serviceProvider?.deployerCut ?? null
-  const [selectedOption, setSelectedOption] = useState<'increase' | 'decrease'>(
-    'increase'
-  )
-  const isIncrease = selectedOption === 'increase'
 
   const {
     isOpen: isErrorModalOpen,
@@ -136,6 +140,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
   // Close All modals on success status
   useEffect(() => {
     if (status === Status.Success) {
+      reset()
       onClose()
       onCloseErrorModal()
     }
@@ -231,7 +236,8 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
         wrapperClassName={styles.wrapperClassName}
         isOpen={isOpen}
         onClose={onClose}
-        isCloseable={true}
+        isCloseable={status !== Status.Loading}
+        dismissOnClickOutside={status !== Status.Loading}
       >
         <div className={styles.content}>
           <Flex direction="column" gap="l" w="100%">
@@ -240,6 +246,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
               selected={selectedOption}
               onSelectOption={handleSelectOption}
               fullWidth
+              disabled={status === Status.Loading}
             />
             <Flex justifyContent="space-between" w="100%">
               <Flex gap="s" direction="column">
@@ -295,7 +302,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                     decimals={8}
                     value={inputValue}
                     error={hasError}
-                    disabled={isDisabled}
+                    disabled={isDisabled || status === Status.Loading}
                     onChange={stringValue => {
                       if (checkWeiNumber(stringValue)) {
                         setInputNumberValue(parseWeiNumber(stringValue)!)
@@ -320,6 +327,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                           : formatWeiNumber(maxDecrease)
                       )
                     }}
+                    isDisabled={status === Status.Loading}
                     className={styles.maxButton}
                     text={messages.max.toUpperCase()}
                     type={ButtonType.PRIMARY_ALT}
@@ -355,25 +363,23 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                   </Box>
                 </Flex>
                 <Flex direction="column" gap="l" alignItems="center">
-                  {status === Status.Loading ? (
+                  {status === Status.Loading && isIncrease ? (
                     <Text variant="heading" size="s" color="warning">
                       {messages.twoPopupsWarning}
                     </Text>
                   ) : null}
-                  <Button
-                    isDisabled={
-                      !inputNumberValue ||
-                      inputNumberValue.isZero() ||
-                      status === Status.Loading
-                    }
-                    text={
-                      status === Status.Loading
-                        ? messages.loadingSubmit
-                        : messages.saveChanges
-                    }
-                    type={ButtonType.PRIMARY}
-                    onClick={onConfirm}
-                  />
+                  {status === Status.Loading ? (
+                    <Loading />
+                  ) : (
+                    <Button
+                      isDisabled={
+                        !inputNumberValue || inputNumberValue.isZero()
+                      }
+                      text={messages.saveChanges}
+                      type={ButtonType.PRIMARY}
+                      onClick={onConfirm}
+                    />
+                  )}
                 </Flex>
               </>
             )}

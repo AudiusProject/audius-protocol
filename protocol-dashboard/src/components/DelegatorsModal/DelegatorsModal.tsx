@@ -13,7 +13,10 @@ import DisplayAudio from 'components/DisplayAudio'
 import ModalTable from 'components/ModalTable'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
-import { useAccount } from 'store/account/hooks'
+import {
+  useAccount,
+  useHasPendingDecreaseDelegationTx
+} from 'store/account/hooks'
 import { useRemoveDelegator } from 'store/actions/removeDelegator'
 import { useUndelegateStake } from 'store/actions/undelegateStake'
 import { Address, Delegate, Status } from 'types'
@@ -42,6 +45,52 @@ type OwnProps = {
 }
 type DelegatorsTableProps = OwnProps
 
+type DelegatorTableRowProps = {
+  onClickRow: (delegator: Delegator) => void
+  delegator: Delegator
+  isDelegateOwner: boolean
+  isDelegatorOwner: boolean
+  onClickRemoveDelegator: (e: React.MouseEvent, address: string) => void
+  disableRemoveDelegator?: boolean
+}
+
+const DelegatorTableRow = ({
+  onClickRow,
+  delegator,
+  isDelegateOwner,
+  isDelegatorOwner,
+  disableRemoveDelegator,
+  onClickRemoveDelegator
+}: DelegatorTableRowProps) => {
+  return (
+    <div className={styles.rowContainer} onClick={() => onClickRow(delegator)}>
+      <UserImage
+        className={clsx(styles.rowCol, styles.colImg)}
+        wallet={delegator.address}
+        alt={'User Profile'}
+      />
+      <UserName
+        className={clsx(styles.rowCol, styles.colAddress)}
+        wallet={delegator.address}
+      />
+      <DisplayAudio
+        className={clsx(styles.rowCol, styles.colAmount)}
+        amount={delegator.amount}
+      />
+      {(isDelegateOwner || (isDelegatorOwner && !disableRemoveDelegator)) && (
+        <div
+          className={clsx(styles.rowCol, styles.trashIconContainer)}
+          onClick={(e: React.MouseEvent) =>
+            onClickRemoveDelegator(e, delegator.address)
+          }
+        >
+          <TrashIcon className={styles.trashIcon} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
   wallet,
   isOpen,
@@ -49,6 +98,7 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
 }: DelegatorsTableProps) => {
   const { delegators } = useDelegators({ wallet })
   const { wallet: accountWallet } = useAccount()
+  const hasPendingDecreaseDelegationResult = useHasPendingDecreaseDelegationTx()
 
   const isOwner = accountWallet === wallet
 
@@ -124,32 +174,20 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
   )
 
   const renderTableRow = (data: Delegator) => {
+    const isDelegatorOwner = data.address === accountWallet
     return (
-      <div className={styles.rowContainer} onClick={() => onRowClick(data)}>
-        <UserImage
-          className={clsx(styles.rowCol, styles.colImg)}
-          wallet={data.address}
-          alt={'User Profile'}
-        />
-        <UserName
-          className={clsx(styles.rowCol, styles.colAddress)}
-          wallet={data.address}
-        />
-        <DisplayAudio
-          className={clsx(styles.rowCol, styles.colAmount)}
-          amount={data.amount}
-        />
-        {(isOwner || data.address === accountWallet) && (
-          <div
-            className={clsx(styles.rowCol, styles.trashIconContainer)}
-            onClick={(e: React.MouseEvent) =>
-              onClickRemoveDelegator(e, data.address)
-            }
-          >
-            <TrashIcon className={styles.trashIcon} />
-          </div>
-        )}
-      </div>
+      <DelegatorTableRow
+        isDelegatorOwner={isDelegatorOwner}
+        delegator={data}
+        isDelegateOwner={isOwner}
+        disableRemoveDelegator={
+          isDelegatorOwner &&
+          (hasPendingDecreaseDelegationResult.status !== Status.Success ||
+            hasPendingDecreaseDelegationResult.hasPendingDecreaseTx)
+        }
+        onClickRow={onRowClick}
+        onClickRemoveDelegator={onClickRemoveDelegator}
+      />
     )
   }
 

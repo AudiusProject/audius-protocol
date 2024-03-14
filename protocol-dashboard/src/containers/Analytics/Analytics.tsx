@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { IconDashboard } from '@audius/harmony'
+import IconChart from 'assets/img/iconChart.svg?react'
 import Page from 'components/Page'
 import PlaysChart from 'components/PlaysChart'
 import TopAlbums from 'components/TopAlbums'
@@ -26,11 +26,7 @@ type AnalyticsProps = OwnProps
 
 const Analytics: React.FC<AnalyticsProps> = () => {
   return (
-    <Page
-      icon={IconDashboard}
-      title={messages.title}
-      className={styles.container}
-    >
+    <Page icon={IconChart} title={messages.title} className={styles.container}>
       <div className={styles.big}>
         <TotalApiCallsChart />
       </div>

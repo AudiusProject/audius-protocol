@@ -134,7 +134,6 @@ const DeregisterServiceModal: React.FC<DeregisterServiceModalProps> = ({
         </div>
       </div>
       <ConfirmTransactionModal
-        showTwoPopupsWarning
         isOpen={isConfirmModalOpen}
         onClose={onCloseConfirm}
         onConfirm={onConfirm}

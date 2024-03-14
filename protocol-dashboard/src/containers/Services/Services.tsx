@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react'
-import { Box, Flex, IconEmbed } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
+import IconNodes from 'assets/img/iconNodes.svg?react'
 import clsx from 'clsx'
 import ContentTable from 'components/ContentTable'
 import DiscoveryTable from 'components/DiscoveryTable'
@@ -9,7 +9,7 @@ import Page from 'components/Page'
 import { RegisterNodeCard } from 'components/RegisterNodeCard/RegisterNodeCard'
 import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCard'
 import TopOperatorsTable from 'components/TopOperatorsTable'
-import React from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useAccount, useAccountUser } from 'store/account/hooks'
 import { Status } from 'types'
 import { createStyles } from 'utils/mobile'
@@ -47,7 +47,7 @@ const Services: React.FC<ServicesProps> = () => {
     userStatus === Status.Success && 'serviceProvider' in accountUser
 
   return (
-    <Page title={messages.title} icon={IconEmbed}>
+    <Page title={messages.title} icon={IconNodes}>
       <Flex direction="column" gap="l">
         {isLoggedIn && accountUser ? (
           <ManageAccountCard wallet={accountUser?.wallet} />

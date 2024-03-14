@@ -266,6 +266,7 @@ const UpdateStakeModal: React.FC<UpdateStakeModalProps> = ({
         </Flex>
       </Flex>
       <ConfirmTransactionModal
+        showTwoPopupsWarning={!stakeChange.isNeg()}
         isOpen={isConfirmModalOpen}
         onClose={onCloseConfirm}
         onConfirm={onConfirm}
