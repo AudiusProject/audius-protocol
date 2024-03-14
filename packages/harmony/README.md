@@ -48,7 +48,9 @@ const App = () => {
 
 In order use emotion yourself, follow their documentation for [setting up the css-prop](https://emotion.sh/docs/css-prop)
 
-If using typescript add an emotion.d.ts file and include the following for access to harmony's theme type
+If using typescript you will need to:
+
+1. Add an emotion.d.ts file and include the following for access to harmony's theme type
 
 ```ts
 import '@emotion/react'
@@ -59,15 +61,26 @@ declare module '@emotion/react' {
 }
 ```
 
+2. Update your tsconfig to specify the jsxImportLocation:
+
+```ts
+{
+  "compilerOptions": {
+    "jsxImportSource": "@emotion/react",
+    ...
+  }
+}
+```
+
 ## Usage
 
 ```tsx
-import { Button, ButtonType, Flex } from '@audius/harmony'
+import { Button, Flex } from '@audius/harmony'
 
 const App = () => {
   return (
     <Flex gap='m'>
-      <Button variant={ButtonType.SECONDARY}>Click This!</Button>
+      <Button variant='secondary'>Click This!</Button>
       <Button>Click That!</Button>
     </Flex>
   )
