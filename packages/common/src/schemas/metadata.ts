@@ -51,10 +51,10 @@ const trackMetadataSchema = {
   license: null,
   isrc: null,
   iswc: null,
-  ddex_release_ids: null,
   download: null,
   is_playlist_upload: false,
   ai_attribution_user_id: null,
+  ddex_release_ids: null,
   ddex_app: null
 }
 
@@ -94,6 +94,7 @@ const collectionMetadataSchema = {
   license: null,
   upc: null,
   description: null,
+  ddex_release_ids: null,
   ddex_app: null
 }
 
