@@ -41,7 +41,7 @@ function* watchUploadStems() {
             parent_track_id: parentId,
             category
           })
-          yield put(recordEvent)
+          yield* put(recordEvent)
         }
       }
 
