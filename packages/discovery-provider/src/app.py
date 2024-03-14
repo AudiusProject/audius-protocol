@@ -367,14 +367,6 @@ def configure_celery(celery, test_config=None):
                 "task": "index_solana_plays",
                 "schedule": timedelta(seconds=5),
             },
-            "index_user_bank": {
-                "task": "index_user_bank",
-                "schedule": timedelta(seconds=1),
-            },
-            "index_payment_router": {
-                "task": "index_payment_router",
-                "schedule": timedelta(seconds=1),
-            },
             "index_challenges": {
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
@@ -543,3 +535,5 @@ def configure_celery(celery, test_config=None):
     # Start tasks that should fire upon startup
     celery.send_task("cache_entity_counts")
     celery.send_task("index_nethermind", queue="index_nethermind")
+    celery.send_task("index_user_bank", queue="index_nethermind")
+    celery.send_task("index_payment_router", queue="index_nethermind")

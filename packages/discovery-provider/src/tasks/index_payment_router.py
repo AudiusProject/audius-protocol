@@ -988,3 +988,6 @@ def index_payment_router(self):
     finally:
         if have_lock:
             update_lock.release()
+        celery.send_task(
+                "index_payment_router", countdown=0.5, queue="index_nethermind"
+            )
