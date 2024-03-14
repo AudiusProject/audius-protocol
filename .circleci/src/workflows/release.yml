@@ -115,8 +115,8 @@ jobs:
       service: relay
       requires:
         - push-pedalboard-relay
-  - push-docker-image:
-      name: push-pedalboard-solana-relay
+  - push-arm-image:
+      name: push-pedalboard-solana-relay-arm
       context: [Vercel, dockerhub, slack-secrets]
       service: solana-relay
       requires:
