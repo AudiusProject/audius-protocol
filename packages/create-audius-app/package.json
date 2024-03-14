@@ -1,0 +1,41 @@
+{
+  "name": "create-audius-app",
+  "version": "1.0.0",
+  "description": "Create an Audius app with one command",
+  "scripts": {
+    "dev": "ncc build ./index.ts -w -o dist/",
+    "prerelease": "node ../../scripts/rm.mjs dist",
+    "release": "ncc build ./index.ts -o ./dist/ --minify --no-cache --no-source-map-register",
+    "prepublishOnly": "cd ../../ && turbo run build",
+    "build": "pnpm release",
+    "lint-fix": "pnpm prettier -w --plugin prettier-plugin-tailwindcss 'templates/*-tw/{ts,js}/{app,pages}/**/*.{js,ts,tsx}'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AudiusProject/audius-protocol.git",
+    "directory": "packages/create-audius-app"
+  },
+  "author": "Tiki Labs",
+  "keywords": [
+    "audius",
+    "music",
+    "decentralized"
+  ],
+  "license": "MIT",
+  "bin": {
+    "create-audius-app": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/prompts": "2.4.2",
+    "@types/tar": "6.1.11",
+    "@types/validate-npm-package-name": "4.0.2",
+    "@vercel/ncc": "0.38.1",
+    "commander": "2.20.0",
+    "prompts": "2.4.2",
+    "tar": "6.2.0",
+    "validate-npm-package-name": "5.0.0"
+  }
+}
