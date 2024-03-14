@@ -1,14 +1,8 @@
 import { IconCloseAlt, IconPlay, Paper, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import {
-  dismissArtistPreviewBanner,
-  setHidePreviewHint
-} from 'common/store/pages/signon/actions'
-import {
-  getHasDismissedArtistPreviewBanner,
-  getHidePreviewHint
-} from 'common/store/pages/signon/selectors'
+import { setHidePreviewHint } from 'common/store/pages/signon/actions'
+import { getHidePreviewHint } from 'common/store/pages/signon/selectors'
 import { useSelector } from 'utils/reducer'
 
 const messages = {
