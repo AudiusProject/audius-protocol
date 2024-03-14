@@ -18,6 +18,11 @@ import { getCurrentUploads } from '../store/stems-upload/selectors'
 const sortByDateAsc = (a: Track, b: Track) =>
   dayjs(a.created_at).diff(dayjs(b.created_at))
 
+/**
+ * Return the stem tracks and the parent track for a given track id
+ * @param {object} object that contains the track id whose stems are to be returned
+ * @returns {object} the stem tracks and the parent track
+ */
 export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
@@ -43,6 +48,11 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
   return { stemTracks, track }
 }
 
+/**
+ * Returns file sizes for given track ids and download quality (mp3 vs lossless)
+ * @param {object} audius sdk, track ids, and download quality
+ * @returns {object} the track ids and their mp3 and lossless file sizes
+ */
 export const useFileSizes = ({
   audiusSdk,
   trackIds,
@@ -107,6 +117,11 @@ export const useFileSizes = ({
   return sizes
 }
 
+/**
+ * Returns an object for the current stem uploads for a given track id
+ * @param {object} object that contains the track id whose stems are to be returned
+ * @returns {object} the currently uploading stems
+ */
 export const useUploadingStems = ({ trackId }: { trackId: ID }) => {
   const currentUploads = useSelector(
     (state: CommonState) => getCurrentUploads(state, trackId),
