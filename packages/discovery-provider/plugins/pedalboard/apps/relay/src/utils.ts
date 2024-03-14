@@ -19,11 +19,6 @@ export const isUserDeactivate = (
   )
 }
 
-export const coerceErrorToString = (e: unknown): string => {
-  if (isString(e)) return e as string
-  return e instanceof Error ? e.message : String(e)
-}
-
-export const isString = (value: unknown): value is string => {
-  return typeof value === 'string';
+export const unknownToError = (e: unknown): Error => {
+  return e instanceof Error ? e : new Error(String(e))
 }

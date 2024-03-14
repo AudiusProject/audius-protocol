@@ -7,7 +7,7 @@ import {
   TransactionRequest,
 } from "@ethersproject/abstract-provider";
 import { NextFunction, Request, Response } from "express";
-import { coerceErrorToString } from "./utils";
+import { unknownToError } from "./utils";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -49,7 +49,7 @@ export const relayTransaction = async (
     logger.info({ requestId, senderWallet: address, nonce, txHash: submit?.hash, blocknumber: receipt.blockNumber }, "transaction confirmation successful")
     res.send({ receipt });
   } catch (e) {
-    logger.error({ requestId, error: coerceErrorToString(e), senderWallet: address, nonce, txHash: submit?.hash }, "transaction confirmation failed")
+    logger.error({ requestId, senderWallet: address, nonce, txHash: submit?.hash }, "transaction confirmation failed")
     internalError(next, e);
     return;
   }

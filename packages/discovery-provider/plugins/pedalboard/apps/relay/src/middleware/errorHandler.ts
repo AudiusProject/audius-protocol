@@ -24,7 +24,7 @@ export const errorHandler = (
 
   // app specific errors caught, safe cast
   const appError = error as AppError;
-  logger.error({ requestId, error: appError, validatedRelayRequest }, "error occured");
+  logger.error({ requestId, error: appError.message.message, errorStack: appError.message.stack, validatedRelayRequest }, "error occured");
   const { name, message, statusCode } = appError;
   let errorMessage = undefined;
   if (statusCode < StatusCodes.INTERNAL_SERVER_ERROR) {
