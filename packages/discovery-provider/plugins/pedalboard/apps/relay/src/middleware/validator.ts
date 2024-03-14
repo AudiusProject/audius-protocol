@@ -52,7 +52,7 @@ export const validator = async (
   }
 
   const operation = getEntityManagerActionKey(encodedABI)
-  logger.info({ requestId, operation })
+  logger.info({ requestId, operation, abi: encodedABI })
 
   // Gather user from input data
   // @ts-ignore, partially populate for now
