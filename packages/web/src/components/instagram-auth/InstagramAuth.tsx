@@ -1,6 +1,5 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import { ErrorLevel } from '@audius/common/models'
 import cn from 'classnames'
 
 import 'url-search-params-polyfill'
@@ -91,10 +90,8 @@ const InstagramAuth = ({
         return onSuccess(profileRespJson.username, igUserProfile)
       } catch (err: any) {
         reportToSentry({
-          level: ErrorLevel.Error,
-          error: 'InstagramAuth getProfile failed',
-          additionalInfo: { error: err },
-          name: 'Sign Up'
+          error: err,
+          name: 'Sign Up: InstagramAuth getProfile failed'
         })
         onFailure((err as Error).message)
       }
@@ -136,10 +133,8 @@ const InstagramAuth = ({
                   'routing library—before Instagram react component could read it.'
               )
               reportToSentry({
-                level: ErrorLevel.Error,
-                error: 'InstagramAuth oauth redirect failed',
-                additionalInfo: { error },
-                name: 'Sign Up'
+                error,
+                name: 'Sign Up: InstagramAuth oauth redirect failed'
               })
               return onFailure(error)
             }
@@ -158,8 +153,7 @@ const InstagramAuth = ({
     await new Promise((resolve) => setTimeout(resolve, 500))
     if (!popup) {
       reportToSentry({
-        level: ErrorLevel.Error,
-        error: 'Unable to open InstagramAuth popup',
+        error: new Error('Unable to open InstagramAuth popup'),
         name: 'Sign Up'
       })
     }
@@ -172,10 +166,8 @@ const InstagramAuth = ({
       }
     } catch (error) {
       reportToSentry({
-        level: ErrorLevel.Error,
-        error: 'InstagramAuth popup polling failed',
-        additionalInfo: { error },
-        name: 'Sign Up'
+        error: error as Error,
+        name: 'Sign Up: InstagramAuth popup polling failed'
       })
       if (popup) popup.close()
       return onFailure(error)

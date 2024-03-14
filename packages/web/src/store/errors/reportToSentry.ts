@@ -27,18 +27,13 @@ const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
 }
 
 export const reportToSentry = async ({
-  level,
+  level = ErrorLevel.Error,
   additionalInfo,
-  error: stringOrError,
+  error,
   name,
   tags
 }: ReportToSentryArgs) => {
   try {
-    const error =
-      typeof stringOrError === 'string'
-        ? new Error(stringOrError)
-        : stringOrError
-
     withScope((scope) => {
       if (level) {
         const sentryLevel = Levels[level]

@@ -1,6 +1,5 @@
 import { MouseEvent, ReactElement, cloneElement, useCallback } from 'react'
 
-import { ErrorLevel } from '@audius/common/models'
 import { TikTokProfile } from '@audius/common/store'
 
 import {
@@ -59,10 +58,8 @@ export const TikTokAuth = ({
           onSuccess(tikTokProfile.open_id, tikTokProfile)
         } catch (e) {
           reportToSentry({
-            level: ErrorLevel.Error,
-            error: 'TikTok auth failed',
-            additionalInfo: { error: e },
-            name: 'Sign Up'
+            error: e as Error,
+            name: 'Sign Up: TikTok auth failed'
           })
         }
       })

@@ -140,10 +140,8 @@ function* fetchDefaultFollowArtists() {
   } catch (e: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'Unable to fetch default follow artists',
-      level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error: e }
+      error: e,
+      name: 'Sign Up: Unable to fetch default follow artists'
     })
   }
 }
@@ -168,10 +166,8 @@ function* fetchAllFollowArtist() {
   } catch (e) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'Unable to fetch sign up follows',
-      level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error: e }
+      error: e as Error,
+      name: 'Sign Up: Unable to fetch sign up follows'
     })
   }
 }
@@ -200,10 +196,9 @@ function* fetchFollowArtistGenre(
   } catch (error: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'fetchFollowArtistGenre failed',
-      level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error }
+      error,
+      name: 'Sign Up: fetchFollowArtistGenre failed',
+      additionalInfo: { genres, defaultFollowUserIds }
     })
     yield* put(signOnActions.fetchFollowArtistsFailed(error))
   }
@@ -238,10 +233,8 @@ function* fetchReferrer(
     } catch (e: any) {
       const reportToSentry = yield* getContext('reportToSentry')
       reportToSentry({
-        error: 'fetchReferrer failed',
-        level: ErrorLevel.Error,
-        name: 'Sign Up',
-        additionalInfo: { error: e }
+        error: e,
+        name: 'Sign Up: fetchReferrer failed'
       })
     }
   }
@@ -360,10 +353,8 @@ function* validateHandle(
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'validateHandle failed',
-      level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error: err }
+      error: err,
+      name: 'Sign Up: validateHandle failed'
     })
     yield* put(signOnActions.validateHandleFailed(err.message))
     if (onValidate) onValidate(true)
@@ -397,14 +388,12 @@ function* checkEmail(action: ReturnType<typeof signOnActions.checkEmail>) {
         yield* call(action.onAvailable)
       }
     }
-  } catch (err) {
+  } catch (error) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'email check failed',
+      error: error as Error,
       level: ErrorLevel.Error,
-      name: 'Sign Up',
-      name: 'Sign Up',
-      additionalInfo: { error: err }
+      name: 'Sign Up: email check failed'
     })
     yield* put(toast({ content: messages.emailCheckFailed }))
     if (action.onError) {
@@ -487,10 +476,17 @@ function* signUp() {
               })
             )
             reportToSentry({
-              error: 'User rate limited',
+              error,
               level: ErrorLevel.Warning,
-              name: 'Sign Up',
-              additionalInfo: { error }
+              name: 'Sign Up: User rate limited',
+              additionalInfo: {
+                handle,
+                email,
+                location,
+                userId,
+                formFields: createUserMetadata,
+                hasWallet: alreadyExisted
+              }
             })
           } else if (blocked) {
             params.message = 'User was blocked'
@@ -503,17 +499,31 @@ function* signUp() {
               })
             )
             reportToSentry({
-              error: 'User was blocked',
+              error,
               level: ErrorLevel.Warning,
-              name: 'Sign Up',
-              additionalInfo: { error }
+              name: 'Sign Up: User was blocked',
+              additionalInfo: {
+                handle,
+                email,
+                location,
+                userId,
+                formFields: createUserMetadata,
+                hasWallet: alreadyExisted
+              }
             })
           } else {
             reportToSentry({
-              error: 'Unknown sign up error',
+              error,
               level: ErrorLevel.Error,
-              name: 'Sign Up',
-              additionalInfo: { error }
+              name: 'Sign Up: Unknown sign up error',
+              additionalInfo: {
+                handle,
+                email,
+                location,
+                userId,
+                formFields: createUserMetadata,
+                hasWallet: alreadyExisted
+              }
             })
           }
           yield* put(signOnActions.signUpFailed(params))
@@ -529,10 +539,8 @@ function* signUp() {
           )
           if (error) {
             reportToSentry({
-              error: 'Error while associating Twitter account',
-              level: ErrorLevel.Error,
-              name: 'Sign Up',
-              additionalInfo: { error }
+              error: new Error(error as string),
+              name: 'Sign Up: Error while associating Twitter account'
             })
             yield* put(signOnActions.setTwitterProfileError(error as string))
           }
@@ -546,10 +554,8 @@ function* signUp() {
           )
           if (error) {
             reportToSentry({
-              error: 'Error while associating Instagram account',
-              level: ErrorLevel.Error,
-              name: 'Sign Up',
-              additionalInfo: { error }
+              error: new Error(error as string),
+              name: 'Sign Up: Error while associating Instagram account'
             })
             yield* put(signOnActions.setInstagramProfileError(error as string))
           }
@@ -564,10 +570,8 @@ function* signUp() {
           )
           if (error) {
             reportToSentry({
-              error: 'Error while associating TikTok account',
-              level: ErrorLevel.Error,
-              name: 'Sign Up',
-              additionalInfo: { error }
+              error: new Error(error as string),
+              name: 'Sign Up: Error while associating TikTok account'
             })
             yield* put(signOnActions.setTikTokProfileError(error as string))
           }
@@ -614,14 +618,17 @@ function* signUp() {
             blockNumber
           )
           if (!confirmed) {
-            const error = new Error(
-              `Could not confirm sign up for user id ${userId}`
-            )
+            const error = new Error(`Could not confirm sign up for user`)
             reportToSentry({
-              error: 'Could not confirm sign up for user',
-              level: ErrorLevel.Error,
+              error,
               name: 'Sign Up',
-              additionalInfo: { error, userId }
+              additionalInfo: {
+                userId,
+                disableSignUpConfirmation,
+                handle,
+                name,
+                email
+              }
             })
             throw error
           }
@@ -641,10 +648,9 @@ function* signUp() {
         if (error) {
           const reportToSentry = yield* getContext('reportToSentry')
           reportToSentry({
-            error: 'Error in signUp saga',
-            level: ErrorLevel.Error,
-            name: 'Sign Up',
-            additionalInfo: { error, message, timeout }
+            error,
+            name: 'Sign Up: Error in signUp saga',
+            additionalInfo: { message, timeout }
           })
         }
         if (message) {
@@ -706,8 +712,7 @@ function* repairSignUp() {
         function* ({ timeout }) {
           const reportToSentry = yield* getContext('reportToSentry')
           reportToSentry({
-            error: 'Failed to repair user',
-            level: ErrorLevel.Error,
+            error: new Error('Failed to repair user'),
             name: 'Sign Up',
             additionalInfo: { userMetadata: metadata, dnUser }
           })
@@ -724,10 +729,8 @@ function* repairSignUp() {
   } catch (e) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'Failed to repair account',
-      level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error: e }
+      error: e as Error,
+      name: 'Sign Up: Failed to repair account'
     })
   }
 }
@@ -848,10 +851,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'SignIn failed',
-      level: ErrorLevel.Error,
-      name: 'Sign In',
-      additionalInfo: { error: err }
+      error: err,
+      name: 'Sign In: unknown error'
     })
     yield* put(signOnActions.signInFailed(err))
   }
@@ -874,10 +875,10 @@ function* followCollections(
   } catch (err) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'Follow collections failed',
+      error: err as Error,
       level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error: err, collectionIds, favoriteSource }
+      name: 'Sign Up: Follow collections failed',
+      additionalInfo: { collectionIds, favoriteSource }
     })
   }
 }
@@ -947,10 +948,13 @@ function* followArtists(
       if (failed) {
         const reportToSentry = yield* getContext('reportToSentry')
         reportToSentry({
-          error: 'Artist follow failed during sign up',
-          level: ErrorLevel.Error,
-          name: 'Sign Up',
-          additionalInfo: { error: failed.error, userId: failed.userId }
+          error: new Error(failed.error),
+          name: 'Sign Up: Artist follow failed during sign up',
+          additionalInfo: {
+            userId: failed.userId,
+            userIdsToFollow,
+            skipDefaultFollows
+          }
         })
       }
       const userIndex = userIdsToFollow.findIndex(
@@ -972,10 +976,8 @@ function* followArtists(
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'Unkown error while following artists on sign up',
-      level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error: err }
+      error: err,
+      name: 'Sign Up: Unkown error while following artists on sign up'
     })
   }
 }
@@ -987,10 +989,8 @@ function* configureMetaMask() {
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
-      error: 'Configure metamask failed',
-      level: ErrorLevel.Error,
-      name: 'Sign Up',
-      additionalInfo: { error: err }
+      error: err,
+      name: 'Sign Up: Configure metamask failed'
     })
   }
 }

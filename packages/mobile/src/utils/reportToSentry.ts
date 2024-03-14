@@ -30,17 +30,13 @@ const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
 }
 
 export const reportToSentry = async ({
-  level,
+  level = ErrorLevel.Error,
   additionalInfo,
-  error: stringOrError,
+  error,
   tags,
   name
 }: ReportToSentryArgs) => {
   try {
-    const error =
-      typeof stringOrError === 'string'
-        ? new Error(stringOrError)
-        : stringOrError
     withScope((scope) => {
       scope.setExtra('mobileClientVersionInclOTA', versionInfo ?? 'unknown')
       if (level) {

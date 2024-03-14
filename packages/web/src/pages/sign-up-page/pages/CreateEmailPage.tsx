@@ -16,6 +16,7 @@ import {
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useEffectOnce } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
@@ -33,6 +34,7 @@ import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import {
   SIGN_IN_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
@@ -65,6 +67,14 @@ export const CreateEmailPage = () => {
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
+
+  useEffectOnce(() => {
+    reportToSentry({
+      error: new Error('Hello World type error'),
+      name: 'Ignore'
+    })
+    console.error('Ignore: Heres another error')
+  })
 
   const {
     isWaitingForSocialLogin,

@@ -39,7 +39,7 @@ export const SocialMediaSignUpButtons = ({
       reportToSentry({
         level: ErrorLevel.Error,
         error: e as Error,
-        name: 'Sign Up',
+        name: 'Sign Up: Social Media Error',
         additionalInfo: { page, platform, ...additionalInfo }
       })
       toast({ content: socialMediaMessages.verificationError, type: 'error' })

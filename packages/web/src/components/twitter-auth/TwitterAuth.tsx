@@ -3,7 +3,6 @@ import { CSSProperties, MouseEventHandler, ReactNode } from 'react'
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
-import { ErrorLevel } from '@audius/common/models'
 import { TwitterProfile } from '@audius/common/store'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -87,10 +86,9 @@ const TwitterAuth = (props: TwitterAuthProps) => {
       .catch((error) => {
         popup?.close()
         reportToSentry({
-          level: ErrorLevel.Error,
-          error: 'Twitter getRequestToken popup failed',
-          additionalInfo: { error, authenticationUrl, screenName },
-          name: 'Sign Up'
+          error: error as Error,
+          additionalInfo: { authenticationUrl, screenName },
+          name: 'Sign Up: Twitter getRequestToken popup failed'
         })
         return onFailure(error)
       })
@@ -140,10 +138,9 @@ const TwitterAuth = (props: TwitterAuthProps) => {
                 'routing library—before Twitter react component could read it.'
             )
             reportToSentry({
-              level: ErrorLevel.Error,
-              error: 'Twitter oauth redirect failed',
-              additionalInfo: { error },
-              name: 'Sign Up'
+              error,
+              additionalInfo: { popupLocation: popup.location },
+              name: 'Sign Up: Twitter oauth redirect failed'
             })
             return onFailure(error)
           }
@@ -173,10 +170,8 @@ const TwitterAuth = (props: TwitterAuthProps) => {
       })
       .catch((error) => {
         reportToSentry({
-          level: ErrorLevel.Error,
-          error: 'Twitter getOauthToken failed',
-          additionalInfo: { error },
-          name: 'Sign Up'
+          error: error as Error,
+          name: 'Sign Up: Twitter getOauthToken failed'
         })
         return onFailure(error)
       })

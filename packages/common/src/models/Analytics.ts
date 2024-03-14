@@ -635,8 +635,8 @@ type CreateAccountSelectGenre = {
 }
 type CreateAccountFollowArtist = {
   eventName: Name.CREATE_ACCOUNT_FOLLOW_ARTIST
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
   artistID: number
   artistName: string
 }
@@ -673,11 +673,6 @@ type CreateAccountOpenFinish = {
   eventName: Name.CREATE_ACCOUNT_FINISH
   emailAddress: string
   handle: string
-}
-type CreateAccountArtistFollow = {
-  eventName: Name.CREATE_ACCOUNT_ARTIST_FOLLOW
-  artistID: number
-  artistName: string
 }
 
 // Sign In
@@ -2373,7 +2368,6 @@ export type AllTrackingEvents =
   | CreateAccountPreviewArtist
   | CreateAccountWelcomeModal
   | CreateAccountWelcomeModalUploadTrack
-  | CreateAccountArtistFollow
   | SignInOpen
   | SignInFinish
   | SignInWithIncompleteAccount
