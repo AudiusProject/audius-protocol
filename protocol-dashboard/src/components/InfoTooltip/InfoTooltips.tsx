@@ -9,6 +9,7 @@ const messages = {
   apiCallsTooltipTitle: 'What are API Calls?',
   apiCallsTooltipBody:
     "API Calls represent the number of requests made to the Audius API. Each call signifies an interaction, such as data retrieval or an update, performed between users' applications and the Audius platform.",
+  apiCallsCtaText: 'Build on Audius',
   globalStakedAudioTooltipTitle: 'What is this?',
   globalStakedAudioTooltipBody:
     'Global Staked $AUDIO is the aggregate sum of all the staked $AUDIO across the entire Audius network.',
@@ -67,7 +68,8 @@ const CTA_HREFS = {
   uniqueUsers:
     'https://help.audius.co/help/How-Are-User-Numbers-Calculated-on-Audius-718e9',
   registerNode:
-    'https://docs.audius.org/token/running-a-node/setup/registration'
+    'https://docs.audius.org/token/running-a-node/setup/registration',
+  apiCalls: 'https://docs.audius.org/developers'
 }
 
 export type AppliedInfoTooltipProps = {
@@ -101,6 +103,8 @@ export const APICallsInfoTooltip = ({
       size={size}
       title={messages.apiCallsTooltipTitle}
       body={messages.apiCallsTooltipBody}
+      ctaText={messages.apiCallsCtaText}
+      ctaHref={CTA_HREFS.apiCalls}
     />
   )
 }

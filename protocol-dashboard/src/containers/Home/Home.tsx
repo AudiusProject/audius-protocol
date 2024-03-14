@@ -3,10 +3,10 @@ import {
   Flex,
   HarmonyTheme,
   IconAudiusLogoHorizontal,
-  IconDrag,
   Text,
   useTheme
 } from '@audius/harmony'
+import IconHouse from 'assets/img/iconHouse.svg?react'
 import ApiCallsStat from 'components/ApiCallsStat'
 import Button, { ButtonType } from 'components/Button'
 import EstimatedAnnualStat from 'components/EstimatedAnnualStat'
@@ -83,7 +83,7 @@ const Home = () => {
   const { typography } = useTheme() as HarmonyTheme // Need to cast because the type from import is incorrect
 
   return (
-    <Page icon={IconDrag} title={messages.title}>
+    <Page icon={IconHouse} title={messages.title}>
       <Flex direction="column" gap="l">
         <Card direction="column" gap="xl" p="xl">
           <Flex

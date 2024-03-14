@@ -48,7 +48,7 @@ const DescriptiveTooltipText: React.FC<{
             <div className={styles.tooltipText} ref={targetRef}>
               {title == null ? null : (
                 <Box mb="m">
-                  <Text variant="title" size="m">
+                  <Text variant="title" size="m" color="staticWhite">
                     {title}
                   </Text>
                 </Box>
@@ -179,7 +179,7 @@ const BaseTooltip: React.FC<TooltipProps> = ({
   )
 
   useEffect(() => {
-    if (isHover && !!height) {
+    if (isHover && (!!height || isBasic)) {
       const tooltipPosition = getPosition()
       setPosition(tooltipPosition)
     }

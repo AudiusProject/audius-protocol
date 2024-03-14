@@ -9,6 +9,7 @@ import { Status } from 'types'
 import { formatNumber, getHumanReadableTime } from 'utils/format'
 import styles from './RewardsTimingCard.module.css'
 import { useAccount } from 'store/account/hooks'
+import { LoadingSpinner } from 'components/LoadingSpinner/LoadingSpinner'
 
 const messages = {
   rewardsTiming: 'Rewards Timing',
@@ -22,6 +23,7 @@ export const RewardsTimingCard = () => {
   const currentBlockNumber = useEthBlockNumber()
   const { status, claimMetadata } = useClaimMetadata()
   const [currentRound, setCurrentRound] = useState<number | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const getCurrentRound = async () => {
     await window.aud.awaitSetup()
@@ -48,6 +50,17 @@ export const RewardsTimingCard = () => {
         !!window.aud?.Claim?.initiateRound
       : false
   const { timeRemaining } = useTimeRemaining(currentBlockNumber, period)
+
+  const handleClickInitiateRound = async () => {
+    setIsSubmitting(true)
+    try {
+      await window.aud?.Claim?.initiateRound()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <Card direction="column">
@@ -116,10 +129,9 @@ export const RewardsTimingCard = () => {
             <Button
               type={canInitiateRound ? ButtonType.PRIMARY : ButtonType.DISABLED}
               text={messages.startNextRound}
-              isDisabled={!canInitiateRound}
-              onClick={() => {
-                window.aud?.Claim?.initiateRound()
-              }}
+              rightIcon={isSubmitting ? <LoadingSpinner /> : undefined}
+              isDisabled={!canInitiateRound || isSubmitting}
+              onClick={handleClickInitiateRound}
             />
           ) : null}
         </Card>

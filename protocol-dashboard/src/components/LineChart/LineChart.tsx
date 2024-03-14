@@ -3,7 +3,7 @@ import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import { formatBucketText } from 'store/cache/analytics/hooks'
 import { Bucket } from 'store/cache/analytics/slice'
@@ -146,6 +146,7 @@ const getOptions = (
     bodyFontColor: '#FFFFFF',
     bodySpacing: 0,
     bodyMarginBottom: 2,
+    zIndex: 1000,
     xPadding: 16,
     yPadding: 11,
     xAlign: 'left',
@@ -197,6 +198,7 @@ const getOptions = (
         window.pageXOffset -
         tooltipEl.offsetWidth / 2 +
         'px'
+      tooltipEl.style.zIndex = '1000'
       tooltipEl.style.top =
         position.y +
         tooltipModel.caretY +
@@ -204,7 +206,7 @@ const getOptions = (
         tooltipEl.offsetHeight -
         42 +
         'px'
-      tooltipEl.style.transition = 'opacity 0.18s ease-in-out'
+      tooltipEl.style.transition = 'opacity 0.09s ease-in-out'
       tooltipEl.style.pointerEvents = 'none'
     },
     callbacks: {
@@ -255,6 +257,8 @@ const LineChart: React.FC<LineChartProps> = ({
   error,
   showLeadingDay = false
 }) => {
+  const [pastFirstDraw, setPastFirstDraw] = useState(false)
+  const [pastSecondDraw, setPastSecondDraw] = useState(false)
   let dateFormatter: DateFormatter
   if (selection === Bucket.ALL_TIME) {
     dateFormatter = DateFormatter.MONTH_AND_YEAR
@@ -272,6 +276,14 @@ const LineChart: React.FC<LineChartProps> = ({
       ? formatNumber(topNumber)
       : topNumber
     : null
+
+  useEffect(() => {
+    if (!pastFirstDraw) {
+      setPastFirstDraw(true)
+    } else {
+      setPastSecondDraw(true)
+    }
+  }, [selection])
 
   if (!tooltipTitle) tooltipTitle = title
 
@@ -312,6 +324,8 @@ const LineChart: React.FC<LineChartProps> = ({
           <Error />
         ) : data && labels ? (
           <Line
+            // On the initial renders the graph will flicker if redraw is `true`. So we only want redraw on once the user actually changes the data set (i.e. the selected time range).
+            redraw={pastSecondDraw}
             data={getData(data, labels, showLeadingDay)}
             options={getOptions(title, dateFormatter, tooltipTitle, size)}
           />

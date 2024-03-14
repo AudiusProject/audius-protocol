@@ -97,7 +97,7 @@ const messages = {
   operatorImage: 'Operator Profile Image',
   undelegateAudio: `Undelegate ${TICKER}`,
   cantUndelegateMultiple:
-    'Cannot undelegate while you have another pending Undelegate transaction.',
+    'Cannot undelegate while you have another pending Undelegate (Decrease Delegation) transaction.',
   cantUndelegatePendingClaim:
     'Cannot undelegate while the operator has an unclaimed reward distribution',
   cantDelegatePendingClaim:
@@ -537,30 +537,36 @@ const ManageService = (props: ManageServiceProps) => {
       </Flex>
       <Flex pv="l" ph="xl" gap="2xl" alignItems="stretch" wrap="wrap">
         <Flex direction="column" alignItems="stretch" gap="s">
-          <ServiceBigStat
-            data={numContentNodes}
-            label={
-              numContentNodes === 1
-                ? messages.contentNodesSingular
-                : messages.contentNodes
-            }
-            tooltipComponent={ContentNodesInfoTooltip}
-            onClick={() => props.onClickContentTable?.()}
-          />
-          <ServiceBigStat
-            data={numDiscoveryNodes}
-            label={
-              numDiscoveryNodes === 1
-                ? messages.discoveryNodesSingular
-                : messages.discoveryNodes
-            }
-            tooltipComponent={DiscoveryNodesInfoTooltip}
-            onClick={() => props.onClickDiscoveryTable?.()}
-          />
-          <Delegators
-            wallet={serviceUser?.wallet}
-            numberDelegators={numDelegators}
-          />
+          {numContentNodes ? (
+            <ServiceBigStat
+              data={numContentNodes}
+              label={
+                numContentNodes === 1
+                  ? messages.contentNodesSingular
+                  : messages.contentNodes
+              }
+              tooltipComponent={ContentNodesInfoTooltip}
+              onClick={() => props.onClickContentTable?.()}
+            />
+          ) : null}
+          {numDiscoveryNodes ? (
+            <ServiceBigStat
+              data={numDiscoveryNodes}
+              label={
+                numDiscoveryNodes === 1
+                  ? messages.discoveryNodesSingular
+                  : messages.discoveryNodes
+              }
+              tooltipComponent={DiscoveryNodesInfoTooltip}
+              onClick={() => props.onClickDiscoveryTable?.()}
+            />
+          ) : null}
+          {numDelegators ? (
+            <Delegators
+              wallet={serviceUser?.wallet}
+              numberDelegators={numDelegators}
+            />
+          ) : null}
         </Flex>
         <Flex direction="column" gap="xl" css={{ flexGrow: 1 }}>
           <Flex direction="column" gap="l">

@@ -327,6 +327,7 @@ const RegisterServiceModal = ({
         onClick={onRegister}
       />
       <ConfirmTransactionModal
+        showTwoPopupsWarning
         isOpen={isConfirmModalOpen}
         onClose={onCloseConfirm}
         onConfirm={onConfirm}

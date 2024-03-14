@@ -9,7 +9,8 @@ import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { Status } from 'types'
 
 const messages = {
-  currentGlobalStaked: 'Current Global Staked $AUDIO'
+  currentGlobalStaked: 'Current Global Staked $AUDIO',
+  audioToken: '$AUDIO'
 }
 
 const TotalStakedChart: React.FC = () => {
@@ -33,6 +34,7 @@ const TotalStakedChart: React.FC = () => {
     <LineChart
       topNumber={topNumber}
       title={messages.currentGlobalStaked}
+      tooltipTitle={messages.audioToken}
       titleTooltipComponent={GlobalStakedInfoTooltip}
       error={error}
       data={data}

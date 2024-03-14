@@ -9,7 +9,7 @@ type OwnProps = {}
 type PlaysChartProps = OwnProps
 
 const PlaysChart: React.FC<PlaysChartProps> = () => {
-  const [bucket, setBucket] = useState(Bucket.YEAR)
+  const [bucket, setBucket] = useState(Bucket.ALL_TIME)
 
   const { plays } = usePlays(bucket)
   let error, data, labels, topNumber: number

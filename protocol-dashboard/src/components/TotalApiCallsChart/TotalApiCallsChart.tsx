@@ -9,7 +9,7 @@ import { isMobile as getIsMobile } from 'utils/mobile'
 type ApiCallsBucket = Bucket.MONTH | Bucket.WEEK | Bucket.ALL_TIME | Bucket.YEAR
 
 const TotalApiCallsChart: React.FC = () => {
-  const [bucket, setBucket] = useState<ApiCallsBucket>(Bucket.MONTH)
+  const [bucket, setBucket] = useState<ApiCallsBucket>(Bucket.ALL_TIME)
   const isMobile = getIsMobile()
 
   const { apiCalls } = useApiCalls(bucket)

@@ -1,7 +1,7 @@
 import React from 'react'
 import Page from 'components/Page'
 import Proposals from 'components/Proposals'
-import { IconUserGroup } from '@audius/harmony'
+import IconGavel from 'assets/img/iconGavel.svg?react'
 
 const messages = {
   title: 'Governance'
@@ -10,7 +10,7 @@ const messages = {
 type GovernanceProps = {}
 const Governance: React.FC<GovernanceProps> = (props: GovernanceProps) => {
   return (
-    <Page icon={IconUserGroup} title={messages.title}>
+    <Page icon={IconGavel} title={messages.title}>
       <Proposals />
     </Page>
   )
