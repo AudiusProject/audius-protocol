@@ -47,7 +47,7 @@ export const reportToSentry = async ({
         scope.setLevel(Levels[level])
       }
       if (additionalInfo) {
-        scope.setExtras(additionalInfo)
+        scope.setContext('additionalInfo', additionalInfo)
       }
       if (name) {
         error.name = `${name}: ${error.name}`
