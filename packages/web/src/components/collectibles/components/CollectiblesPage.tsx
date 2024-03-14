@@ -16,6 +16,7 @@ import {
 } from '@audius/common/store'
 import { getHash } from '@audius/common/utils'
 import {
+  Button as HarmonyButton,
   Modal,
   IconKebabHorizontal,
   IconPencil,
@@ -89,7 +90,12 @@ export const collectibleMessages = {
   videoNotSupported: 'Your browser does not support the video tag.',
   clickCopy: 'Click To Copy',
   copied: 'Copied to Clipboard',
-  done: 'Done'
+  done: 'Done',
+  setAsProfilePic: 'Set As Profile Pic',
+  setAsProfilePicDescription:
+    'Are you sure you want to change your profile picture?',
+  setAsProfilePickCancel: 'Nevermind',
+  setAsProfilePickConfirm: 'Yes'
 }
 
 const dedupe = (list: any[]) => {
@@ -734,13 +740,13 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           )}
 
-          <Button
-            className={styles.editDoneButton}
-            type={ButtonType.PRIMARY_ALT}
-            size={ButtonSize.SMALL}
-            text='Done'
+          <HarmonyButton
+            variant='primary'
+            size='small'
             onClick={handleDoneClick}
-          />
+          >
+            Done
+          </HarmonyButton>
         </div>
       </Modal>
 
@@ -784,13 +790,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   </div>
                 </div>
               </Toast>
-              <Button
-                type={ButtonType.PRIMARY_ALT}
-                onClick={closeEmbedModal}
-                text={collectibleMessages.done}
-                textClassName={styles.embedButtonText}
-                className={styles.embedButton}
-              />
+              <HarmonyButton variant='primary' onClick={closeEmbedModal}>
+                {collectibleMessages.done}
+              </HarmonyButton>
             </div>
           </div>
         </div>

@@ -156,6 +156,23 @@ type NullableBool = *bool
 type NullableString = *string
 type NullableInt = *int
 
+type ReleaseIDs struct {
+	PartyID       string `bson:"party_id,omitempty"`
+	CatalogNumber string `bson:"catalog_number,omitempty"`
+	ICPN          string `bson:"icpn,omitempty"`
+	GRid          string `bson:"grid,omitempty"`
+	ISAN          string `bson:"isan,omitempty"`
+	ISBN          string `bson:"isbn,omitempty"`
+	ISMN          string `bson:"ismn,omitempty"`
+	ISRC          string `bson:"isrc,omitempty"`
+	ISSN          string `bson:"issn,omitempty"`
+	ISTC          string `bson:"istc,omitempty"`
+	ISWC          string `bson:"iswc,omitempty"`
+	MWLI          string `bson:"mwli,omitempty"`
+	SICI          string `bson:"sici,omitempty"`
+	ProprietaryID string `bson:"proprietary_id,omitempty"`
+}
+
 type TrackMetadata struct {
 	Title               string         `bson:"title"`
 	ReleaseDate         time.Time      `bson:"release_date"`
@@ -163,6 +180,7 @@ type TrackMetadata struct {
 	Duration            int            `bson:"duration"`
 	PreviewStartSeconds NullableInt    `bson:"preview_start_seconds,omitempty"`
 	ISRC                NullableString `bson:"isrc,omitempty"`
+	DDEXReleaseIDs      ReleaseIDs     `bson:"ddex_release_ids"`
 
 	// TODO: Handle License from PLineText?
 	License NullableString `bson:"license,omitempty"`
@@ -205,6 +223,7 @@ type CollectionMetadata struct {
 	Genre             Genre          `bson:"genre"`
 	Mood              Mood           `bson:"mood,omitempty"`
 	ReleaseDate       time.Time      `bson:"release_date"`
+	DDEXReleaseIDs    ReleaseIDs     `bson:"ddex_release_ids"`
 
 	// TODO: Handle these fields
 	License NullableString `bson:"license,omitempty"`

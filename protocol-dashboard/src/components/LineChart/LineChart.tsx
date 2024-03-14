@@ -1,8 +1,9 @@
+import { Flex, Text } from '@audius/harmony'
 import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import { formatBucketText } from 'store/cache/analytics/hooks'
 import { Bucket } from 'store/cache/analytics/slice'
@@ -10,7 +11,8 @@ import {
   formatNumber,
   formatShortNumberWithDecimal,
   getShortDate,
-  getShortMonth
+  getShortMonth,
+  getShortMonthAndYear
 } from 'utils/format'
 import { createStyles } from 'utils/mobile'
 
@@ -21,15 +23,17 @@ const styles = createStyles({ desktopStyles, mobileStyles })
 
 export enum DateFormatter {
   DAY_AND_MONTH,
-  MONTH
+  MONTH,
+  MONTH_AND_YEAR
 }
 
 const getData = (data: number[], labels: string[], showLeadingDay: boolean) => {
   const common = {
-    fill: false,
+    responsive: true,
+    fill: true,
     lineTension: 0.2,
-    backgroundColor: 'rgb(145,71,204,1)',
-    borderWidth: 3,
+    backgroundColor: 'rgb(145,71,204,0.5)',
+    borderWidth: 1.5,
     borderColor: 'rgb(145,71,204,1)',
     borderCapStyle: 'round',
     borderDashOffset: 0.0,
@@ -41,7 +45,7 @@ const getData = (data: number[], labels: string[], showLeadingDay: boolean) => {
     pointHoverBackgroundColor: 'rgb(78,79,106,1)',
     pointHoverBorderColor: 'rgb(145,71,204,1)',
     pointHoverBorderWidth: 3,
-    pointRadius: 0,
+    pointRadius: 2,
     pointHitRadius: 8
   }
 
@@ -65,7 +69,8 @@ const getData = (data: number[], labels: string[], showLeadingDay: boolean) => {
 const getOptions = (
   id: string,
   dateFormatter: DateFormatter,
-  tooltipTitle: string
+  tooltipTitle: string,
+  chartSize?: 'large' | 'default'
 ) => ({
   layout: {
     padding: {
@@ -80,18 +85,20 @@ const getOptions = (
           color: 'rgba(90,94,120,1)'
         },
         ticks: {
+          maxTicksLimit: chartSize === 'large' ? 12 : 6,
           padding: 13,
           fontColor: 'rgba(119,124,150,1)',
           fontFamily: 'Avenir Next LT Pro',
           fontSize: 12,
-          fontStyle: 'normal',
+          fontStyle: 'bold',
           callback: (value: any, index: any, values: any) => {
-            if (index === 0 || index === values.length - 1) {
-              return dateFormatter === DateFormatter.DAY_AND_MONTH
-                ? getShortDate(value * 1000)
-                : getShortMonth(value * 1000)
+            if (dateFormatter === DateFormatter.DAY_AND_MONTH) {
+              return getShortDate(value * 1000)
+            } else if (dateFormatter === DateFormatter.MONTH) {
+              return getShortMonth(value * 1000)
+            } else {
+              return getShortMonthAndYear(value * 1000)
             }
-            return ''
           },
           maxRotation: 0,
           minRotation: 0
@@ -100,7 +107,7 @@ const getOptions = (
     ],
     yAxes: [
       {
-        position: 'right',
+        position: 'left',
         gridLines: {
           display: true,
           color: 'rgba(90,94,120,1)',
@@ -139,6 +146,7 @@ const getOptions = (
     bodyFontColor: '#FFFFFF',
     bodySpacing: 0,
     bodyMarginBottom: 2,
+    zIndex: 1000,
     xPadding: 16,
     yPadding: 11,
     xAlign: 'left',
@@ -190,6 +198,7 @@ const getOptions = (
         window.pageXOffset -
         tooltipEl.offsetWidth / 2 +
         'px'
+      tooltipEl.style.zIndex = '1000'
       tooltipEl.style.top =
         position.y +
         tooltipModel.caretY +
@@ -197,7 +206,7 @@ const getOptions = (
         tooltipEl.offsetHeight -
         42 +
         'px'
-      tooltipEl.style.transition = 'opacity 0.18s ease-in-out'
+      tooltipEl.style.transition = 'opacity 0.09s ease-in-out'
       tooltipEl.style.pointerEvents = 'none'
     },
     callbacks: {
@@ -219,6 +228,9 @@ const getOptions = (
 
 type OwnProps = {
   title: string
+  titleTooltipComponent?: React.ComponentType
+  topNumber?: number | string
+  size?: 'default' | 'large'
   tooltipTitle?: string
   data: number[] | null
   labels: string[] | null
@@ -234,6 +246,9 @@ type LineChartProps = OwnProps
 const LineChart: React.FC<LineChartProps> = ({
   title,
   tooltipTitle,
+  titleTooltipComponent,
+  size = 'default',
+  topNumber,
   data,
   labels,
   options,
@@ -242,17 +257,57 @@ const LineChart: React.FC<LineChartProps> = ({
   error,
   showLeadingDay = false
 }) => {
-  const dateFormatter =
-    selection === Bucket.ALL_TIME || selection === Bucket.YEAR
-      ? DateFormatter.MONTH
-      : DateFormatter.DAY_AND_MONTH
+  const [pastFirstDraw, setPastFirstDraw] = useState(false)
+  const [pastSecondDraw, setPastSecondDraw] = useState(false)
+  let dateFormatter: DateFormatter
+  if (selection === Bucket.ALL_TIME) {
+    dateFormatter = DateFormatter.MONTH_AND_YEAR
+  } else if (selection === Bucket.YEAR) {
+    dateFormatter = DateFormatter.MONTH
+  } else {
+    dateFormatter = DateFormatter.DAY_AND_MONTH
+  }
+
+  selection === Bucket.ALL_TIME || selection === Bucket.YEAR
+    ? DateFormatter.MONTH
+    : DateFormatter.DAY_AND_MONTH
+  const formattedTopNumber = topNumber
+    ? typeof topNumber === 'number'
+      ? formatNumber(topNumber)
+      : topNumber
+    : null
+
+  useEffect(() => {
+    if (!pastFirstDraw) {
+      setPastFirstDraw(true)
+    } else {
+      setPastSecondDraw(true)
+    }
+  }, [selection])
 
   if (!tooltipTitle) tooltipTitle = title
+
+  const TitleTooltipComponent = titleTooltipComponent
 
   return (
     <Paper className={styles.chartContainer}>
       <div className={styles.header}>
-        <div className={styles.title}>{title}</div>
+        <div>
+          {formattedTopNumber ? (
+            <Text
+              variant={size === 'large' ? 'display' : 'heading'}
+              size={size === 'large' ? 's' : 'l'}
+              strength="strong"
+              color="accent"
+            >
+              {formattedTopNumber}
+            </Text>
+          ) : null}
+          <Flex inline gap="xs" alignItems="center">
+            <div className={styles.title}>{title}</div>
+            {TitleTooltipComponent == null ? null : <TitleTooltipComponent />}
+          </Flex>
+        </div>
         {options && selection && onSelectOption && (
           <div className={styles.dropdown}>
             <Dropdown
@@ -269,8 +324,10 @@ const LineChart: React.FC<LineChartProps> = ({
           <Error />
         ) : data && labels ? (
           <Line
+            // On the initial renders the graph will flicker if redraw is `true`. So we only want redraw on once the user actually changes the data set (i.e. the selected time range).
+            redraw={pastSecondDraw}
             data={getData(data, labels, showLeadingDay)}
-            options={getOptions(title, dateFormatter, tooltipTitle)}
+            options={getOptions(title, dateFormatter, tooltipTitle, size)}
           />
         ) : (
           <Loading className={styles.loading} />

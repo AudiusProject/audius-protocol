@@ -1,7 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -33,9 +32,9 @@ import {
   IconPlay,
   IconSpecialAccess,
   IconCart,
-  Box
+  Box,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -43,7 +42,6 @@ import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import { DogEar } from 'components/dog-ear'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
@@ -86,25 +84,26 @@ const PlayButton = ({ disabled, playing, onPlay }: PlayButtonProps) => {
   return (
     <Button
       disabled={disabled}
-      type={ButtonType.PRIMARY_ALT}
-      text={playing ? messages.pause : messages.play}
-      leftIcon={playing ? <IconPause /> : <IconPlay />}
+      variant='primary'
+      iconLeft={playing ? IconPause : IconPlay}
       onClick={onPlay}
-      size={ButtonSize.LARGE}
       fullWidth
-    />
+    >
+      {playing ? messages.pause : messages.play}
+    </Button>
   )
 }
 
 const PreviewButton = ({ playing, onPlay }: PlayButtonProps) => {
   return (
     <Button
-      type={ButtonType.SECONDARY}
-      text={playing ? messages.pause : messages.preview}
-      leftIcon={playing ? <IconPause /> : <IconPlay />}
+      variant='secondary'
+      iconLeft={playing ? IconPause : IconPlay}
       onClick={onPlay}
       fullWidth
-    />
+    >
+      {playing ? messages.pause : messages.preview}
+    </Button>
   )
 }
 
@@ -202,9 +201,6 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { getTrack } = cacheTracksSelectors
   const track = useSelector(
@@ -300,22 +296,6 @@ const TrackHeader = ({
           </SearchTag>
         ))}
       </Flex>
-    )
-  }
-
-  const renderDownloadButtons = () => {
-    return (
-      <DownloadButtons
-        className={cn(
-          styles.downloadButtonsContainer,
-          styles.withSectionDivider
-        )}
-        trackId={trackId}
-        isOwner={isOwner}
-        following={isFollowing}
-        hasDownloadAccess={hasDownloadAccess}
-        onDownload={onDownload}
-      />
     )
   }
 
@@ -504,8 +484,7 @@ const TrackHeader = ({
         {renderTrackLabels()}
       </div>
       {renderTags()}
-      {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
-      {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+      {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
           <Suspense>
             <DownloadSection trackId={trackId} />

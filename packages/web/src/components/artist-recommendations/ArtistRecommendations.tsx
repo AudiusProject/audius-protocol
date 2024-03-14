@@ -275,9 +275,9 @@ export const ArtistRecommendations = forwardRef<
         <FollowButton
           isDisabled={isLoading}
           following={isFollowingAll}
-          invertedColor={true}
-          messages={messages}
+          invertedColor
           size='full'
+          messages={messages}
           onFollow={handleFollowAll}
           onUnfollow={handleUnfollowAll}
         />

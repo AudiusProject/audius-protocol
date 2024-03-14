@@ -17,7 +17,6 @@ export const initialState: BasicModalsState = {
   MobileConnectWalletsDrawer: { isOpen: false },
   MobileEditCollectiblesDrawer: { isOpen: false },
   Share: { isOpen: false },
-  ShareSoundToTikTok: { isOpen: false },
   HCaptcha: { isOpen: false },
   BrowserPushPermissionConfirmation: { isOpen: false },
   AudioBreakdown: { isOpen: false },
@@ -62,7 +61,8 @@ export const initialState: BasicModalsState = {
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false },
   CoinflowWithdraw: { isOpen: false },
-  WaitForDownloadModal: { isOpen: false }
+  WaitForDownloadModal: { isOpen: false },
+  ArtistPick: { isOpen: false }
 }
 
 const slice = createSlice({

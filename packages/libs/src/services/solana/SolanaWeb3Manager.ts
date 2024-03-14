@@ -86,10 +86,6 @@ const SOL_PER_LAMPORT = 0.000000001
 // Generous default connection confirmation timeout to better cope with RPC congestion
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
 
-const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice({
-  microLamports: 100000 // micro lamports
-})
-
 export type SolanaWeb3Config = {
   //  the RPC endpoint to make requests against
   solanaClusterEndpoint: string
@@ -592,7 +588,13 @@ export class SolanaWeb3Manager {
     })
 
     return await this.transactionHandler.handleTransaction({
-      instructions: [...instructions, memoInstruction, priorityFeeInstruction],
+      instructions: [
+        ...instructions,
+        memoInstruction,
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: 100000
+        })
+      ],
       skipPreflight: true,
       feePayerOverride: this.feePayerKey
     })
@@ -718,7 +720,9 @@ export class SolanaWeb3Manager {
       transferInstruction,
       paymentRouterInstruction,
       memoInstruction,
-      priorityFeeInstruction
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
     ]
     return instructions
   }
@@ -1016,6 +1020,11 @@ export class SolanaWeb3Manager {
       mintKey: this.mints[mint],
       instructionIndex
     })
-    return instructions
+    return [
+      ...instructions,
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
+    ]
   }
 }

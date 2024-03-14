@@ -89,7 +89,7 @@ export const createSwapUserbankToSolInstructions = async ({
     inputTokenSymbol: tokenSymbol,
     outputTokenSymbol: 'SOL',
     inputAmount: outSolAmount,
-    slippage: slippageBps,
+    slippageBps,
     swapMode: 'ExactOut',
     onlyDirectRoutes: true
   })
@@ -123,7 +123,7 @@ export const createSwapUserbankToSolInstructions = async ({
     inputTokenSymbol: tokenSymbol,
     outputTokenSymbol: 'SOL',
     inputAmount: usdcNeededAmount / 10 ** 6,
-    slippage: slippageBps,
+    slippageBps,
     swapMode: 'ExactIn',
     onlyDirectRoutes: true
   })

@@ -87,6 +87,7 @@ const artistSchema = new mongoose.Schema({
 const trackMetadataSchema = new mongoose.Schema({
   title: { type: String, required: true },
   release_date: { type: Date, required: true },
+  ddex_release_ids: mongoose.Schema.Types.Mixed,
   genre: { type: String, enum: genres, required: true },
   duration: { type: Number, required: true },
   preview_start_seconds: Number,
@@ -120,6 +121,7 @@ const collectionMetadataSchema = new mongoose.Schema({
   playlist_owner_id: { type: String, required: true },
   genre: { type: String, enum: genres, required: true },
   release_date: { type: Date, required: true },
+  ddex_release_ids: mongoose.Schema.Types.Mixed,
   description: String,
   is_album: Boolean,
   is_private: Boolean,

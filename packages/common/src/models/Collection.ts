@@ -61,6 +61,7 @@ export type CollectionMetadata = {
   ddex_app?: string | null
   is_stream_gated: boolean
   stream_conditions: Nullable<AccessConditions>
+  ddex_release_ids?: any | null
 }
 
 export type CollectionDownloadReason = { is_from_favorites: boolean }

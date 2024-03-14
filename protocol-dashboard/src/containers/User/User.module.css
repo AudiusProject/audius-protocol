@@ -2,7 +2,6 @@
   display: inline-flex;
   align-items: stretch;
   width: 100%;
-  margin-bottom: 16px;
 }
 
 .userInfoRow > div {
@@ -30,7 +29,6 @@
   margin-bottom: 16px;
 }
 
-
 /* Rank */
 .rankContainer {
   position: absolute;
@@ -49,7 +47,7 @@
   letter-spacing: 1px;
   text-transform: uppercase;
 
-  color: #777C96;
+  color: #777c96;
 }
 
 .rankValue {
@@ -58,7 +56,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-xl);
 
-  color: #BEC5E0;
+  color: #bec5e0;
 }
 
 .userImg {
@@ -74,21 +72,16 @@
   font-weight: var(--font-regular);
   text-align: center;
 
-  color: #BEC5E0;
-  margin-bottom: 8px
+  color: #bec5e0;
+  margin-bottom: 8px;
 }
 
 .userName {
   font-size: var(--font-2xl);
 }
 
-
 .userWallet {
   font-size: var(--font-s);
-}
-
-.manageService {
-  margin-bottom: 16px;
 }
 
 /* Service Tables */
@@ -96,18 +89,6 @@
   display: inline-flex;
   align-items: flex-start;
   width: 100%;
-}
-
-.delegatorsContainer {
-  margin-bottom: 16px;
-}
-
-.delegatesContainer {
-  margin-bottom: 16px;
-}
-
-.delegateContainer {
-  margin-bottom: 16px;
 }
 
 .serviceTable {

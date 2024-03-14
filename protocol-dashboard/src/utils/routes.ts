@@ -54,7 +54,7 @@ export const SERVICES_ACCOUNT_OPERATOR_TITLE = 'Operator'
 
 // Governance Pages
 export const GOVERNANCE = '/governance'
-export const GOVERNANCE_TITLE = 'All Governance Proposals'
+export const GOVERNANCE_TITLE = 'Governance'
 export const GOVERNANCE_PROPOSAL = '/governance/proposal/:proposalId'
 export const GOVERNANCE_PROPOSAL_TITLE = 'Proposal'
 
@@ -62,8 +62,12 @@ export const NOT_FOUND = '/404'
 
 // External Routes
 export const AUDIUS_API_URL = 'https://audius.org/api'
+export const OAF_URL = 'https://audius.org'
+export const WHITEPAPER_URL = 'https://whitepaper.audius.co'
 export const AUDIUS_DAPP_URL =
   import.meta.env.VITE_AUDIUS_URL || 'https://audius.co'
+export const REGISTER_NODE_DOCS_URL =
+  'https://docs.audius.org/node-operator/setup/overview'
 
 // Get Routes
 export const accountPage = (address: string) => {
@@ -131,7 +135,7 @@ export const navRoutes = [
   {
     baseRoute: SERVICES,
     matchParams: [{ path: `${SERVICES}*` }],
-    text: 'SERVICES'
+    text: 'NODES'
   },
   {
     baseRoute: GOVERNANCE,

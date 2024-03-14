@@ -1,470 +1,720 @@
 import BN from 'bn.js'
-import clsx from 'clsx'
 import DisplayAudio from 'components/DisplayAudio'
 import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
 import OperatorCutModal from 'components/OperatorCutModal'
-import Paper from 'components/Paper'
-import RegisterServiceModal from 'components/RegisterServiceModal'
-import TransactionStatus from 'components/TransactionStatus'
 import UpdateStakeModal from 'components/UpdateStakeModal'
-import React, { useCallback } from 'react'
+import { PropsWithChildren, useCallback } from 'react'
+import AudiusClient from 'services/Audius/AudiusClient'
 import {
   useAccount,
   useAccountUser,
-  useHasPendingDecreaseStakeTx
+  usePendingTransactions
 } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
-import { Address, Operator, Status } from 'types'
+import { Address, Operator, PendingTransactionName, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
-import { accountPage } from 'utils/routes'
 import styles from './ManageService.module.css'
 
 import {
-  IconArrowWhite,
-  IconDeployerCut,
-  IconMinimum,
-  IconUser,
-  IconValidationCheck
-} from '@audius/stems'
+  Box,
+  Divider,
+  Flex,
+  HarmonyTheme,
+  Text,
+  useTheme
+} from '@audius/harmony'
 import Button, { ButtonType } from 'components/Button'
+import { Card } from 'components/Card/Card'
 import ConfirmTransactionModal, {
-  StandaloneBox
+  Delegating,
+  StandaloneBox,
+  ToOperator
 } from 'components/ConfirmTransactionModal'
-import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
-import DelegatesModal from 'components/DelegatesModal'
+import DelegateStakeModal from 'components/DelegateStakeModal'
 import DelegatorsModal from 'components/DelegatorsModal'
+import {
+  AggregateContributionInfoTooltip,
+  AppliedInfoTooltipProps,
+  ContentNodesInfoTooltip,
+  DelegatedAudioInfoTooltip,
+  DelegatorsInfoTooltip,
+  DiscoveryNodesInfoTooltip,
+  EstimatedAudioRewardsPoolInfoTooltip,
+  NodeOperatorInfoTooltip,
+  NodeServiceFeeInfoTooltip,
+  OperatorStakeInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
-import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
+import MyEstimatedRewards from 'components/MyEstimatedRewards'
+import { PlainLink } from 'components/PlainLink/PlainLink'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
+import { TransactionStatusContent } from 'components/TransactionStatus/TransactionStatus'
+import { ManageDelegation } from 'components/UpdateDelegationModal/UpdateDelegationModal'
+import { useSelector } from 'react-redux'
 import { useMakeClaim } from 'store/actions/makeClaim'
+import useUndelegateStake from 'store/actions/undelegateStake'
+import { getDelegatorInfo, useEthBlockNumber } from 'store/cache/protocol/hooks'
+import { useUser, useUserDelegates } from 'store/cache/user/hooks'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import { TICKER } from 'utils/consts'
-import { usePushRoute } from 'utils/effects'
+import { formatShortWallet } from 'utils/format'
+import { RegisterNewServiceBtn } from './RegisterNewServiceBtn'
 
 const messages = {
-  title: 'Manage Your Account & Services',
-  register: 'Register New Service',
+  ownerTitle: 'Your Nodes',
+  nonOwnertitle: 'Operator’s Nodes',
   increase: 'Increase Stake',
   decrease: 'Decrease Stake',
   deployerCut: 'Deployer Cut',
   activeServices: 'Active Services',
   minimunDelegationAmount: 'Minimum Delegation Amount',
+  aggregateContribution: 'Aggregate Contribution',
+  contentNodes: 'Content Nodes',
+  contentNodesSingular: 'Content Node',
+  discoveryNodes: 'Discovery Nodes',
+  discoveryNodesSingular: 'Discovery Node',
+  delegators: 'Delegators',
+  delegatorsSingular: 'Delegator',
   change: 'Change',
   manage: 'Manage',
   view: 'View',
   claim: 'Make Claim',
-  connectAudiusProfile: 'Connect Audius Profile',
-  connectAudiusProfileDescription:
-    'Help other users identify you by connecting your Audius account.',
-  unlinkAudiusProfile: 'Unlink Audius Profile'
+  claimForOperator: 'Claim For Operator',
+  rewardsPool: `Estimated ${TICKER} Rewards Pool`,
+  weekly: 'Weekly',
+  annual: 'Annual',
+  operatorStake: `Operator Stake (${TICKER})`,
+  operatorServiceFee: 'Operator Service Fee',
+  minimumAmount: 'Minimum Delegation Amount',
+  unclaimed: 'Unclaimed',
+  rewardDistribution: 'Reward Distribution',
+  registerNode: 'Register Node',
+  delegatedAudio: `Your Delegated ${TICKER}`,
+  delegatorLimitReached: 'This operator has reached its delegator limit.',
+  delegate: 'Delegate',
+  undelegate: 'Undelegate',
+  operatorName: 'Operator Name',
+  operatorImage: 'Operator Profile Image',
+  undelegateAudio: `Undelegate ${TICKER}`,
+  cantUndelegateMultiple:
+    'Cannot undelegate while you have another pending Undelegate (Decrease Delegation) transaction.',
+  cantUndelegatePendingClaim:
+    'Cannot undelegate while the operator has an unclaimed reward distribution',
+  cantDelegatePendingClaim:
+    'Cannot delegate while the operator has an unclaimed reward distribution',
+  cantDelegateTotalStakeOutOfBounds:
+    "Cannot delegate because the operator's total stake is out of bounds",
+  delegatorCantClaimTotalStakeOutOfBounds:
+    "Cannot claim because the operator's total stake is out of bounds",
+  operatorCantClaimTotalStakeOufOfBounds:
+    'Cannot claim because your total stake is out of bounds.',
+  open: 'Open'
 }
 
 interface ManageServiceProps {
   className?: string
   showViewActiveServices?: boolean
-}
-
-const RegisterNewServiceBtn = () => {
-  const { isOpen, onClick, onClose } = useModalControls()
-  return (
-    <>
-      <Button
-        onClick={onClick}
-        leftIcon={<IconArrowWhite />}
-        type={ButtonType.PRIMARY}
-        text={messages.register}
-        className={clsx(styles.registerBtn)}
-        textClassName={styles.registerBtnText}
-      />
-      <RegisterServiceModal isOpen={isOpen} onClose={onClose} />
-    </>
-  )
-}
-
-type ConnectAudiusProtileBtnProps = {
+  showPendingTransactions?: boolean
   wallet: string
-}
-const ConnectAudiusProfileButton = ({
-  wallet
-}: ConnectAudiusProtileBtnProps) => {
-  const { isOpen, onClick, onClose } = useModalControls()
-  return (
-    <>
-      <Button
-        onClick={onClick}
-        type={ButtonType.PRIMARY}
-        text={messages.connectAudiusProfile}
-        className={styles.registerBtn}
-        textClassName={styles.registerBtnText}
-      />
-      <ConnectAudiusProfileModal
-        wallet={wallet}
-        isOpen={isOpen}
-        onClose={onClose}
-        action="connect"
-      />
-    </>
-  )
-}
-
-type DisconnectAudiusProfileButton = {
-  wallet: string
-}
-const DisconnectAudiusProfileButton = ({
-  wallet
-}: DisconnectAudiusProfileButton) => {
-  const { isOpen, onClick, onClose } = useModalControls()
-
-  return (
-    <>
-      <span className={styles.actionText} onClick={onClick}>
-        {messages.unlinkAudiusProfile}
-      </span>
-      <ConnectAudiusProfileModal
-        wallet={wallet}
-        isOpen={isOpen}
-        onClose={onClose}
-        action="disconnect"
-      />
-    </>
-  )
-}
-
-const DecreaseStake = ({ isDisabled }: { isDisabled: boolean }) => {
-  const { isOpen, onClick, onClose } = useModalControls()
-  const decreaseIcon = <IconArrowWhite className={styles.decreaseIcon} />
-  return (
-    <>
-      <Button
-        type={ButtonType.PRIMARY_ALT}
-        onClick={onClick}
-        leftIcon={decreaseIcon}
-        text={messages.decrease}
-        isDisabled={isDisabled}
-        iconClassName={styles.stakeIcon}
-        textClassName={styles.stakeBtnText}
-        className={clsx(styles.modifyStakeBtn, {
-          [styles.disabledBtn]: isDisabled
-        })}
-      />
-      <UpdateStakeModal isOpen={isOpen} onClose={onClose} isIncrease={false} />
-    </>
-  )
-}
-
-const IncreaseStake = ({ isDisabled }: { isDisabled: boolean }) => {
-  const increaseIcon = <IconArrowWhite className={styles.increaseIcon} />
-  const { isOpen, onClick, onClose } = useModalControls()
-  return (
-    <>
-      <Button
-        onClick={onClick}
-        type={ButtonType.PRIMARY_ALT}
-        leftIcon={increaseIcon}
-        text={messages.increase}
-        isDisabled={isDisabled}
-        iconClassName={styles.stakeIcon}
-        textClassName={styles.stakeBtnText}
-        className={clsx(styles.modifyStakeBtn, styles.increaseBtn, {
-          [styles.disabledBtn]: isDisabled
-        })}
-      />
-      <UpdateStakeModal isOpen={isOpen} onClose={onClose} isIncrease />
-    </>
-  )
-}
-
-const DeployerCut = ({
-  className,
-  cut
-}: {
-  className?: string
-  cut: number
-}) => {
-  const { isOpen, onClick, onClose } = useModalControls()
-  return (
-    <div className={clsx({ [className!]: !!className })}>
-      <div className={clsx(styles.actionIcon, styles.userWrapper)}>
-        <IconDeployerCut className={clsx(styles.deployerCutIcon)} />
-      </div>
-      {`${messages.deployerCut} ${cut}%`}
-      <span className={styles.actionText} onClick={onClick}>
-        {messages.change}
-      </span>
-      <OperatorCutModal cut={cut} isOpen={isOpen} onClose={onClose} />
-    </div>
-  )
-}
-
-const MinimumDelegationAmount = ({
-  className,
-  minimumDelegationAmount
-}: {
-  className?: string
-  minimumDelegationAmount: BN
-}) => {
-  const { isOpen, onClick, onClose } = useModalControls()
-  return (
-    <div className={clsx({ [className!]: !!className })}>
-      <div className={clsx(styles.actionIcon, styles.userWrapper)}>
-        <IconMinimum className={clsx(styles.userIcon)} />
-      </div>
-      {messages.minimunDelegationAmount}
-      <DisplayAudio
-        className={styles.minDelgationAmount}
-        amount={minimumDelegationAmount}
-        label={TICKER}
-      />
-      <span className={styles.actionText} onClick={onClick}>
-        {messages.change}
-      </span>
-      <MinimumDelegationAmountModal
-        minimumDelegationAmount={minimumDelegationAmount}
-        isOpen={isOpen}
-        onClose={onClose}
-      />
-    </div>
-  )
-}
-
-const ActiveServices = ({
-  className,
-  numberServices,
-  showView = true
-}: {
-  className?: string
-  numberServices: number
-  showView?: boolean
-}) => {
-  const pushRoute = usePushRoute()
-  const { wallet } = useAccount()
-  const onClickView = useCallback(
-    () => wallet && pushRoute(accountPage(wallet)),
-    [pushRoute, wallet]
-  )
-  return (
-    <div className={clsx({ [className!]: !!className })}>
-      <IconValidationCheck className={clsx(styles.actionIcon)} />
-      {`${numberServices} ${messages.activeServices}`}
-      {showView && numberServices > 0 && (
-        <span className={styles.actionText} onClick={onClickView}>
-          {'View'}
-        </span>
-      )}
-    </div>
-  )
+  onClickDiscoveryTable?: () => void
+  onClickContentTable?: () => void
 }
 
 const Delegators = ({
-  className,
   wallet,
-  numberDelegators,
-  moreText
+  numberDelegators
 }: {
-  className?: string
   wallet: Address
   numberDelegators: number
-  moreText: string
 }) => {
   const { isOpen, onClick, onClose } = useModalControls()
   return (
-    <div className={clsx({ [className!]: !!className })}>
-      <div className={clsx(styles.actionIcon, styles.userWrapper)}>
-        <IconUser className={styles.userIcon} />
-      </div>
-      {`${numberDelegators} Delegators`}
-      {numberDelegators > 0 && (
-        <span className={styles.actionText} onClick={onClick}>
-          {moreText}
-        </span>
-      )}
+    <>
+      <ServiceBigStat
+        onClick={onClick}
+        data={numberDelegators}
+        label={
+          numberDelegators === 1
+            ? messages.delegatorsSingular
+            : messages.delegators
+        }
+        tooltipComponent={DelegatorsInfoTooltip}
+      />
       <DelegatorsModal wallet={wallet} isOpen={isOpen} onClose={onClose} />
-    </div>
+    </>
   )
 }
 
-const Delegates = ({
-  className,
+type UndelegateSectionProps = {
+  name?: string
+  wallet: string
+  delegates: BN
+  cantUndelegateReason: string
+}
+
+const UndelegateSection = ({
+  name,
   wallet,
-  numberDelegates,
-  moreText
-}: {
-  className?: string
-  wallet: Address
-  numberDelegates: number
-  moreText: string
-}) => {
+  delegates,
+  cantUndelegateReason
+}: UndelegateSectionProps) => {
+  const {
+    isOpen: isUndelegateOpen,
+    onClick: onClickUndelegate,
+    onClose: onCloseUndelegate
+  } = useModalControls()
+
+  const {
+    status: undelegateStatus,
+    error: undelegateError,
+    undelegateStake
+  } = useUndelegateStake()
+
+  const onConfirmUndelegate = useCallback(() => {
+    undelegateStake(wallet, delegates)
+  }, [undelegateStake, delegates, wallet])
+
+  const bottomBox = (
+    <ToOperator
+      name={name || formatShortWallet(wallet ?? '')}
+      wallet={wallet}
+      isFrom
+    />
+  )
+  const undelegateBox = <Delegating isUndelegating amount={delegates} />
+
+  return (
+    <>
+      <BasicTooltip
+        position={Position.TOP}
+        text={cantUndelegateReason}
+        isDisabled={!Boolean(cantUndelegateReason)}
+      >
+        <Button
+          className={styles.undelegateButton}
+          text={messages.undelegate}
+          type={ButtonType.PRIMARY}
+          isDisabled={Boolean(cantUndelegateReason)}
+          onClick={onClickUndelegate}
+        />
+      </BasicTooltip>
+      <ConfirmTransactionModal
+        topBox={undelegateBox}
+        bottomBox={bottomBox}
+        onConfirm={onConfirmUndelegate}
+        onClose={onCloseUndelegate}
+        isOpen={isUndelegateOpen}
+        error={undelegateError}
+        status={undelegateStatus}
+        withArrow={false}
+      />
+    </>
+  )
+}
+
+type ActionPlainLinkProps = PropsWithChildren<{
+  onClick?: () => void
+  disabled?: boolean
+  tooltipText?: string
+  tooltipDisabled?: boolean
+}>
+
+const ActionPlainLink = ({
+  children,
+  onClick,
+  tooltipText,
+  disabled,
+  tooltipDisabled
+}: ActionPlainLinkProps) => {
+  return (
+    <BasicTooltip
+      position={Position.TOP}
+      text={tooltipText}
+      isDisabled={tooltipDisabled || !tooltipText}
+    >
+      <PlainLink onClick={onClick} disabled={disabled}>
+        {children}
+      </PlainLink>
+    </BasicTooltip>
+  )
+}
+
+type ServiceBigStatProps = {
+  data: number | string
+  label: string
+  onClick?: () => void
+  tooltipComponent?: React.ComponentType<AppliedInfoTooltipProps>
+}
+
+const ServiceBigStat = ({
+  data,
+  label,
+  onClick,
+  tooltipComponent
+}: ServiceBigStatProps) => {
+  const { color } = useTheme() as HarmonyTheme
+  const TooltipComponent = tooltipComponent
+  return (
+    <Card
+      ph="l"
+      h="100%"
+      aria-role={onClick ? 'button' : undefined}
+      aria-label={onClick ? `${messages.open} ${label}` : undefined}
+      onClick={onClick}
+      css={{
+        cursor: onClick ? 'pointer' : 'default',
+        backgroundColor: color.background.surface1,
+        '&:hover': {
+          backgroundColor: onClick
+            ? color.background.surface2
+            : color.background.surface1
+        }
+      }}
+    >
+      <Flex gap="s" alignItems="center" h="100%">
+        <Text variant="heading" size="s">
+          {data}
+        </Text>
+        <Flex inline gap="xs" alignItems="center">
+          <Text variant="body" size="l" strength="strong" color="subdued">
+            {label}
+          </Text>
+          <TooltipComponent color="subdued" />
+        </Flex>
+      </Flex>
+    </Card>
+  )
+}
+
+type ServiceSmallStatProps = {
+  data: BN | number | string
+  isAudioAmount?: boolean
+  label: string
+  tooltipComponent?: React.ComponentType<AppliedInfoTooltipProps>
+}
+const ServiceSmallStat = ({
+  data,
+  isAudioAmount,
+  label,
+  tooltipComponent
+}: ServiceSmallStatProps) => {
+  const TooltipComponent = tooltipComponent
+  return (
+    <Flex gap="s">
+      <Text variant="heading" size="s">
+        {isAudioAmount ? (
+          <DisplayAudio amount={data as BN} />
+        ) : (
+          (data as number | string)
+        )}
+      </Text>
+      <Flex inline gap="xs" alignItems="center">
+        <Text variant="body" size="l" strength="strong" color="subdued">
+          {label}
+        </Text>
+        {TooltipComponent == null ? null : <TooltipComponent color="subdued" />}
+      </Flex>
+    </Flex>
+  )
+}
+
+type OperatorServiceFeeProps = {
+  deployerCut: number
+  enableChange?: boolean
+}
+
+const OperatorServiceFee = ({
+  deployerCut,
+  enableChange
+}: OperatorServiceFeeProps) => {
+  const { isOpen, onClick, onClose } = useModalControls()
+
+  return (
+    <Flex gap="l" alignItems="baseline">
+      <ServiceSmallStat
+        data={`${deployerCut}%`}
+        label={messages.operatorServiceFee}
+        tooltipComponent={NodeServiceFeeInfoTooltip}
+      />
+      {enableChange ? (
+        <ActionPlainLink onClick={onClick}>{messages.change}</ActionPlainLink>
+      ) : null}
+      {enableChange ? (
+        <OperatorCutModal cut={deployerCut} isOpen={isOpen} onClose={onClose} />
+      ) : null}
+    </Flex>
+  )
+}
+
+type MinimumDelegationAmountProps = {
+  minimumDelegationAmount: BN
+  enableChange?: boolean
+}
+
+const MinimumDelegationAmount = ({
+  minimumDelegationAmount,
+  enableChange
+}: MinimumDelegationAmountProps) => {
   const { isOpen, onClick, onClose } = useModalControls()
   return (
-    <div className={clsx({ [className!]: !!className })}>
-      <div className={clsx(styles.actionIcon, styles.userWrapper)}>
-        <IconUser className={styles.userIcon} />
-      </div>
-      {`Delegating to ${numberDelegates} Operators`}
-      {numberDelegates > 0 && (
-        <span className={styles.actionText} onClick={onClick}>
-          {moreText}
-        </span>
-      )}
-      <DelegatesModal wallet={wallet} isOpen={isOpen} onClose={onClose} />
-    </div>
+    <Flex gap="l" alignItems="baseline">
+      <ServiceSmallStat
+        data={minimumDelegationAmount}
+        isAudioAmount
+        label={messages.minimunDelegationAmount}
+      />
+      {enableChange ? (
+        <ActionPlainLink onClick={onClick}>{messages.change}</ActionPlainLink>
+      ) : null}
+      {enableChange ? (
+        <MinimumDelegationAmountModal
+          minimumDelegationAmount={minimumDelegationAmount}
+          isOpen={isOpen}
+          onClose={onClose}
+        />
+      ) : null}
+    </Flex>
   )
 }
 
-const ManageService: React.FC<ManageServiceProps> = (
-  props: ManageServiceProps
-) => {
-  const { status: userStatus, user: accountUser } = useAccountUser()
+type StakeProps = {
+  stake: BN
+  enableChange?: boolean
+  disabledReason?: string
+}
+
+const Stake = ({ stake, enableChange, disabledReason }: StakeProps) => {
+  const { isOpen, onClick, onClose } = useModalControls()
+
+  return (
+    <Flex gap="l" alignItems="baseline">
+      <ServiceSmallStat
+        data={stake}
+        label={messages.operatorStake}
+        isAudioAmount
+        tooltipComponent={OperatorStakeInfoTooltip}
+      />
+      {enableChange ? (
+        <ActionPlainLink onClick={onClick}>{messages.change}</ActionPlainLink>
+      ) : null}
+      <UpdateStakeModal isOpen={isOpen} onClose={onClose} />
+    </Flex>
+  )
+}
+
+const ManageService = (props: ManageServiceProps) => {
+  const wallet = props.wallet
+
+  const { isLoggedIn } = useAccount()
+  const { status: accountUserStatus, user: accountUser } = useAccountUser()
+  const { maxDelegators } = useSelector(getDelegatorInfo)
   const {
-    data: audiusProfileData,
-    status: audiusProfileDataStatus
-  } = useDashboardWalletUser(accountUser?.wallet)
-  const hasConnectedAudiusAccount = audiusProfileData != null
+    user: serviceUser,
+    status: serviceUserStatus,
+    audiusProfile: serviceUserAudiusProfile
+  } = useUser({ wallet })
+  const { status: userDelegatesStatus, delegates } = useUserDelegates({
+    wallet
+  })
+  const { color } = useTheme() as HarmonyTheme
+  const activeStake = getActiveStake(serviceUser)
+  const totalActiveDelegated = getTotalActiveDelegatedStake(serviceUser)
+  const pendingTx = usePendingTransactions()
+  const ethBlockNumber = useEthBlockNumber()
+  const pendingClaim = usePendingClaim(wallet)
 
   const isServiceProvider =
-    userStatus === Status.Success && 'serviceProvider' in accountUser
-  const isDelegator =
-    userStatus === Status.Success && 'delegates' in accountUser
+    serviceUserStatus === Status.Success && 'serviceProvider' in serviceUser
+  const aggregateContribution = activeStake.add(totalActiveDelegated)
+  const currentUserHasPendingTx =
+    pendingTx.status === Status.Success &&
+    Array.isArray(pendingTx.transactions) &&
+    pendingTx.transactions?.length !== 0
+  const currentUserHasPendingUndelegateRequest =
+    currentUserHasPendingTx &&
+    pendingTx.transactions.some(
+      tx => tx.name === PendingTransactionName.Undelegate
+    )
 
-  const hasPendingDecreaseTx = useHasPendingDecreaseStakeTx()
-  let increaseStakeDisabled = !isServiceProvider
-  const decreaseStakeDisabled =
-    !isServiceProvider ||
-    (hasPendingDecreaseTx.status === Status.Success &&
-      hasPendingDecreaseTx.hasPendingDecreaseTx)
-  const pendingClaim = usePendingClaim(accountUser?.wallet)
+  const isTotalStakeInBounds =
+    (serviceUser as Operator)?.serviceProvider?.validBounds ?? false
+  const numDiscoveryNodes =
+    isServiceProvider && (serviceUser as Operator).discoveryProviders.length
+  const numContentNodes =
+    isServiceProvider && (serviceUser as Operator).contentNodes.length
+  const numDelegators = isServiceProvider
+    ? (serviceUser as Operator).delegators.length
+    : 0
+  const deployerCut = isServiceProvider
+    ? (serviceUser as Operator)?.serviceProvider?.deployerCut
+    : null
+  const isOwner =
+    accountUserStatus === Status.Success && wallet === accountUser?.wallet
+  const minDelegationAmount = isServiceProvider
+    ? (serviceUser as Operator)?.minDelegationAmount
+    : null
 
-  const deployerStake =
-    (accountUser as Operator)?.serviceProvider?.deployerStake ?? new BN('0')
-  const maxAccountStake =
-    (accountUser as Operator)?.serviceProvider?.maxAccountStake ?? new BN('0')
-  if (deployerStake.isZero() || deployerStake.gte(maxAccountStake))
-    increaseStakeDisabled = true
+  const isDoneLoading =
+    accountUserStatus === Status.Success &&
+    pendingClaim.status === Status.Success &&
+    userDelegatesStatus === Status.Success
+  const showDelegate =
+    isDoneLoading &&
+    (numDiscoveryNodes ?? 0) + (numContentNodes ?? 0) > 0 &&
+    !isOwner &&
+    delegates.isZero()
+  const showUndelegate =
+    isDoneLoading &&
+    !isOwner &&
+    pendingTx.status === Status.Success &&
+    !delegates.isZero()
+  const cantUndelegateReason = pendingClaim.hasClaim
+    ? messages.cantUndelegatePendingClaim
+    : currentUserHasPendingUndelegateRequest
+    ? messages.cantUndelegateMultiple
+    : null
+  const isDelegatorLimitReached =
+    maxDelegators !== undefined &&
+    (serviceUser as Operator)?.delegators?.length >= maxDelegators
+  const cantDelegateReason = isDelegatorLimitReached
+    ? messages.delegatorLimitReached
+    : pendingClaim.hasClaim
+    ? messages.cantDelegatePendingClaim
+    : !isTotalStakeInBounds
+    ? messages.cantDelegateTotalStakeOutOfBounds
+    : null
 
-  const { isOpen, onClick, onClose } = useModalControls()
-  const { status, error, makeClaim } = useMakeClaim()
+  const isClaimDisabled = !isTotalStakeInBounds
+
+  const {
+    isOpen: isClaimModalOpen,
+    onClick: onClickClaimModal,
+    onClose: onCloseClaimModal
+  } = useModalControls()
+
+  const {
+    isOpen: isDelegateOpen,
+    onClick: onClickDelegate,
+    onClose: onCloseDelegate
+  } = useModalControls()
+  const { status: claimStatus, error, makeClaim } = useMakeClaim()
 
   const onConfirm = useCallback(() => {
-    makeClaim(accountUser.wallet)
-  }, [accountUser, makeClaim])
+    makeClaim(serviceUser.wallet)
+  }, [serviceUser?.wallet, makeClaim])
 
   const makeClaimBox = <StandaloneBox> {messages.claim} </StandaloneBox>
 
   return (
-    <Paper
-      className={clsx(styles.container, {
-        [props.className!]: !!props.className
-      })}
-    >
-      <h3 className={styles.title}>{messages.title}</h3>
-      <div className={styles.manageAccountContainer}>
-        {accountUser ? (
-          <>
-            <div className={styles.manageBtns}>
-              {pendingClaim.status !==
-              Status.Success ? null : pendingClaim.hasClaim ? (
-                <div>
-                  <Button
-                    className={styles.btn}
-                    onClick={onClick}
-                    textClassName={styles.btnText}
-                    iconClassName={styles.btnIcon}
-                    text={messages.claim}
-                    type={ButtonType.GREEN}
-                  />
-                  <ConfirmTransactionModal
-                    isOpen={isOpen}
-                    onClose={onClose}
-                    withArrow={false}
-                    topBox={makeClaimBox}
-                    onConfirm={onConfirm}
-                    status={status}
-                    error={error}
-                  />
-                </div>
-              ) : (
-                <div className={styles.btnContainer}>
-                  <RegisterNewServiceBtn />
-                  {isServiceProvider && (
-                    <div>
-                      <IncreaseStake isDisabled={increaseStakeDisabled} />
-                      <DecreaseStake isDisabled={decreaseStakeDisabled} />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            {isServiceProvider && (
-              <div className={styles.actionsContainer}>
-                <ActiveServices
-                  className={styles.accountAction}
-                  showView={props.showViewActiveServices}
-                  numberServices={
-                    (accountUser as Operator).serviceProvider.numberOfEndpoints
-                  }
-                />
-                <DeployerCut
-                  className={styles.accountAction}
-                  cut={(accountUser as Operator).serviceProvider.deployerCut}
-                />
-                <MinimumDelegationAmount
-                  className={styles.accountAction}
-                  minimumDelegationAmount={
-                    (accountUser as Operator).minDelegationAmount
-                  }
-                />
-                {(accountUser as Operator).delegators.length > 0 && (
-                  <Delegators
-                    className={styles.accountAction}
-                    wallet={accountUser.wallet}
-                    moreText={messages.view}
-                    numberDelegators={
-                      (accountUser as Operator).delegators.length
-                    }
-                  />
-                )}
-              </div>
+    <Card direction="column">
+      <Flex
+        pv="l"
+        ph="xl"
+        borderBottom="default"
+        justifyContent="space-between"
+        alignItems="center"
+        w="100%"
+      >
+        <Flex inline gap="xs" alignItems="center">
+          <Text variant="heading" size="s">
+            {isOwner ? messages.ownerTitle : messages.nonOwnertitle}
+          </Text>
+          {isOwner ? null : <NodeOperatorInfoTooltip />}
+        </Flex>
+        <Flex gap="xl" alignItems="center">
+          {isOwner ? (
+            <RegisterNewServiceBtn customText={messages.registerNode} />
+          ) : null}
+          <Box css={{ textAlign: 'end' }}>
+            <Text variant="heading" size="m" color="accent">
+              {AudiusClient.displayShortAud(aggregateContribution)}
+            </Text>
+
+            <Flex inline gap="xs" alignItems="center">
+              <Text variant="body" size="m" strength="strong" color="subdued">
+                {messages.aggregateContribution}
+              </Text>
+              <AggregateContributionInfoTooltip color="subdued" />
+            </Flex>
+          </Box>
+        </Flex>
+      </Flex>
+      <Flex pv="l" ph="xl" gap="2xl" alignItems="stretch" wrap="wrap">
+        <Flex direction="column" alignItems="stretch" gap="s">
+          {numContentNodes ? (
+            <ServiceBigStat
+              data={numContentNodes}
+              label={
+                numContentNodes === 1
+                  ? messages.contentNodesSingular
+                  : messages.contentNodes
+              }
+              tooltipComponent={ContentNodesInfoTooltip}
+              onClick={() => props.onClickContentTable?.()}
+            />
+          ) : null}
+          {numDiscoveryNodes ? (
+            <ServiceBigStat
+              data={numDiscoveryNodes}
+              label={
+                numDiscoveryNodes === 1
+                  ? messages.discoveryNodesSingular
+                  : messages.discoveryNodes
+              }
+              tooltipComponent={DiscoveryNodesInfoTooltip}
+              onClick={() => props.onClickDiscoveryTable?.()}
+            />
+          ) : null}
+          {numDelegators ? (
+            <Delegators
+              wallet={serviceUser?.wallet}
+              numberDelegators={numDelegators}
+            />
+          ) : null}
+        </Flex>
+        <Flex direction="column" gap="xl" css={{ flexGrow: 1 }}>
+          <Flex direction="column" gap="l">
+            <Flex inline gap="xs" alignItems="center">
+              <Text variant="body" size="l" strength="strong" color="subdued">
+                {messages.rewardsPool}
+              </Text>
+              <EstimatedAudioRewardsPoolInfoTooltip color="subdued" />
+            </Flex>
+            <Flex direction="column" gap="m">
+              <MyEstimatedRewards wallet={wallet} />
+            </Flex>
+          </Flex>
+          <Divider css={{ borderColor: color.neutral.n100 }} />
+          <Flex direction="column" gap="m">
+            <Stake stake={activeStake} enableChange={isOwner} />
+            {deployerCut == null ? (
+              <Loading />
+            ) : (
+              <OperatorServiceFee
+                deployerCut={deployerCut}
+                enableChange={isOwner}
+              />
             )}
-            {isDelegator && accountUser.delegates.length > 0 && (
-              <div
-                className={clsx(styles.actionsContainer, {
-                  [styles.isSPDelegate]: isServiceProvider
-                })}
-              >
-                <Delegates
-                  className={styles.accountAction}
-                  numberDelegates={accountUser.delegates.length}
-                  wallet={accountUser.wallet}
-                  moreText={messages.view}
-                />
-              </div>
+            {minDelegationAmount == null ? (
+              <Loading />
+            ) : (
+              <MinimumDelegationAmount
+                minimumDelegationAmount={minDelegationAmount}
+                enableChange={isOwner}
+              />
             )}
-            <TransactionStatus />
-          </>
-        ) : (
-          <div className={styles.loading}>
-            <Loading />
-          </div>
-        )}
-      </div>
-      {!accountUser?.wallet || audiusProfileDataStatus !== 'success' ? null : (
-        <div className={styles.connectProfileContainer}>
-          {!hasConnectedAudiusAccount ? (
-            <>
-              <div className={styles.connectProfileTextContainer}>
-                <h3 className={styles.title}>
-                  {messages.connectAudiusProfile}
-                </h3>
-                <span>{messages.connectAudiusProfileDescription}</span>
-              </div>
-              <div>
-                <ConnectAudiusProfileButton wallet={accountUser.wallet} />
-              </div>
-            </>
-          ) : (
-            <DisconnectAudiusProfileButton wallet={accountUser.wallet} />
-          )}
-        </div>
-      )}
-    </Paper>
+            {pendingClaim.status !== Status.Success ||
+            !pendingClaim.hasClaim ? null : (
+              <>
+                <Flex gap="l" alignItems="baseline">
+                  <Flex gap="s">
+                    <ServiceSmallStat
+                      data={messages.unclaimed}
+                      label={messages.rewardDistribution}
+                    />
+                  </Flex>
+                  {isLoggedIn ? (
+                    <ActionPlainLink
+                      tooltipDisabled={!isClaimDisabled}
+                      tooltipText={
+                        isOwner
+                          ? messages.operatorCantClaimTotalStakeOufOfBounds
+                          : messages.delegatorCantClaimTotalStakeOutOfBounds
+                      }
+                      onClick={onClickClaimModal}
+                      disabled={isClaimDisabled}
+                    >
+                      {isOwner ? messages.claim : messages.claimForOperator}
+                    </ActionPlainLink>
+                  ) : null}
+                </Flex>
+                <ConfirmTransactionModal
+                  isOpen={isClaimModalOpen}
+                  onClose={onCloseClaimModal}
+                  withArrow={false}
+                  topBox={makeClaimBox}
+                  onConfirm={onConfirm}
+                  status={claimStatus}
+                  error={error}
+                />
+              </>
+            )}
+          </Flex>
+        </Flex>
+      </Flex>
+      {!!ethBlockNumber &&
+      props.showPendingTransactions &&
+      currentUserHasPendingTx &&
+      isOwner ? (
+        <Box p="xl" borderTop="default">
+          <TransactionStatusContent
+            ethBlockNumber={ethBlockNumber}
+            transactions={pendingTx.transactions}
+          />
+        </Box>
+      ) : null}
+      {userDelegatesStatus === Status.Success && !delegates.isZero() ? (
+        <Flex
+          alignItems="center"
+          justifyContent="space-between"
+          p="xl"
+          borderTop="default"
+        >
+          <Flex
+            gap="l"
+            alignItems="center"
+            css={{ flexGrow: 1, maxWidth: 226 }}
+          >
+            <ManageDelegation delegates={delegates} wallet={wallet} />
+            {showUndelegate ? (
+              <UndelegateSection
+                cantUndelegateReason={cantUndelegateReason}
+                wallet={serviceUser.wallet}
+                name={serviceUserAudiusProfile?.name || serviceUser.name}
+                delegates={delegates}
+              />
+            ) : null}
+          </Flex>
+          <Flex direction="column" alignItems="flex-end">
+            <Text variant="heading" size="m" color="accent">
+              {AudiusClient.displayShortAud(delegates)}
+            </Text>
+            <Flex inline gap="xs" alignItems="center">
+              <Text variant="body" size="l" color="subdued" strength="strong">
+                {messages.delegatedAudio}
+              </Text>
+              <DelegatedAudioInfoTooltip color="subdued" />
+            </Flex>
+          </Flex>
+        </Flex>
+      ) : null}
+      {showDelegate ? (
+        <Flex
+          alignItems="center"
+          justifyContent="space-between"
+          p="xl"
+          borderTop="default"
+        >
+          <BasicTooltip
+            position={Position.TOP}
+            text={cantDelegateReason}
+            isDisabled={!Boolean(cantDelegateReason)}
+          >
+            <Button
+              text={messages.delegate}
+              type={ButtonType.PRIMARY}
+              isDisabled={Boolean(cantDelegateReason)}
+              onClick={onClickDelegate}
+            />
+          </BasicTooltip>
+          <DelegateStakeModal
+            serviceOperatorWallet={wallet}
+            isOpen={isDelegateOpen}
+            onClose={onCloseDelegate}
+          />
+        </Flex>
+      ) : null}
+    </Card>
   )
 }
 

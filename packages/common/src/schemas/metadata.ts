@@ -53,7 +53,9 @@ const trackMetadataSchema = {
   iswc: null,
   download: null,
   is_playlist_upload: false,
-  ai_attribution_user_id: null
+  ai_attribution_user_id: null,
+  ddex_release_ids: null,
+  ddex_app: null
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
@@ -91,7 +93,9 @@ const collectionMetadataSchema = {
   save_count: null,
   license: null,
   upc: null,
-  description: null
+  description: null,
+  ddex_release_ids: null,
+  ddex_app: null
 }
 
 export const newCollectionMetadata = (fields?: any, validate = false) => {

@@ -43,14 +43,14 @@ def test_tier_change(app):
                 "blocknumber": 13,
                 # Tier change, none -> platinum
                 "previous_balance": 0,
-                "current_balance": 200000 * 1000000000000000000,
+                "current_balance": 20000 * 1000000000000000000,
             },
             {
                 "user_id": 5,
                 "blocknumber": 14,
                 # No tier change, gold -> gold
-                "previous_balance": 12000 * 1000000000000000000,
-                "current_balance": 90000 * 1000000000000000000,
+                "previous_balance": 1200 * 1000000000000000000,
+                "current_balance": 9000 * 1000000000000000000,
             },
         ],
     }
@@ -92,8 +92,8 @@ def test_tier_change(app):
         )
         assert notifications[2].data == {
             "new_tier": "platinum",
-            "new_tier_value": 100000,
-            "current_value": "200000000000000000000000",
+            "new_tier_value": 10000,
+            "current_value": "20000000000000000000000",
         }
 
         session.execute(
@@ -122,7 +122,7 @@ def test_tier_change(app):
         )
         assert notifications[0].data == {
             "new_tier": "platinum",
-            "new_tier_value": 100000,
+            "new_tier_value": 10000,
             "current_value": "9999999000000000000000000",
         }
 

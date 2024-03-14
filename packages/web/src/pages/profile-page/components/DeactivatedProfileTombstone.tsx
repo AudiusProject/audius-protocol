@@ -1,6 +1,8 @@
-import { IconArrowRight } from '@audius/harmony'
-import { ButtonSize, Button, ButtonType } from '@audius/stems'
+import { Button, IconArrowRight } from '@audius/harmony'
 import cn from 'classnames'
+import { Link } from 'react-router-dom'
+
+import { HOME_PAGE } from 'utils/route'
 
 import styles from './DeactivatedProfileTombstone.module.css'
 
@@ -10,23 +12,21 @@ const messages = {
 }
 
 export const DeactivatedProfileTombstone = ({
-  goToRoute,
   isMobile = false
 }: {
-  goToRoute: (route: string) => void
   isMobile?: boolean
 }) => {
   return (
     <div className={cn(styles.deactivated, { [styles.mobile]: isMobile })}>
       <div className={styles.deactivatedText}>{messages.helpText}</div>
       <Button
-        className={styles.deactivatedBackButton}
-        onClick={() => goToRoute('/')}
-        type={ButtonType.PRIMARY_ALT}
-        size={ButtonSize.MEDIUM}
-        text={messages.buttonText}
-        rightIcon={<IconArrowRight color='staticWhite' />}
-      />
+        variant='primary'
+        fullWidth={isMobile}
+        asChild
+        iconRight={IconArrowRight}
+      >
+        <Link to={HOME_PAGE}>{messages.buttonText}</Link>
+      </Button>
     </div>
   )
 }

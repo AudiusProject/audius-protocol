@@ -34,20 +34,6 @@
   color: var(--neutral);
 }
 
-.submit {
-  height: 40px;
-  width: 100%;
-  background-color: var(--accent-red) !important;
-}
-
-.submit .submitText {
-  font-style: normal;
-  font-size: var(--font-m);
-  line-height: 12px;
-  text-align: center;
-  color: var(--white);
-}
-
 .cancel {
   margin-top: 4px;
   padding: 12px;

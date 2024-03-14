@@ -16,9 +16,9 @@ import {
   IconNote,
   IconPlaylists,
   IconPause,
-  IconPlay
+  IconPlay,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import FilterInput from 'components/filter-input/FilterInput'
@@ -169,14 +169,13 @@ const SavedPage = ({
       }}
     >
       <Button
-        className={styles.playAllButton}
-        iconClassName={styles.playAllButtonIcon}
-        textClassName={styles.playAllButtonText}
-        type={ButtonType.PRIMARY_ALT}
-        text={queuedAndPlaying ? 'PAUSE' : 'PLAY'}
-        leftIcon={queuedAndPlaying ? <IconPause /> : <IconPlay />}
+        variant='primary'
+        css={(theme) => ({ marginLeft: theme.spacing.xl })}
+        iconLeft={queuedAndPlaying ? IconPause : IconPlay}
         onClick={onPlay}
-      />
+      >
+        {queuedAndPlaying ? 'Pause' : 'Play'}
+      </Button>
     </div>
   )
 

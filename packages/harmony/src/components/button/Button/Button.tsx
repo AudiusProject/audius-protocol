@@ -144,6 +144,30 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       })
     }
 
+    const commonHoverStyles: CSSObject = {
+      backgroundColor: themeColors.neutral.n25
+    }
+
+    const commonActiveStyles: CSSObject = {
+      backgroundColor: themeColors.neutral.n100
+    }
+
+    const commonStyles: CSSObject = {
+      backgroundColor: themeColors.special.white,
+      color: themeColors.text.default,
+      boxShadow: `0 0 0 1px inset ${themeColors.border.strong}`,
+
+      '&:hover': commonHoverStyles,
+      '&:active': commonActiveStyles,
+
+      ...(_isHovered && commonHoverStyles),
+      ...(_isPressed && commonActiveStyles),
+      ...(isDisabled && {
+        backgroundColor: themeColors.neutral.n150,
+        boxShadow: 'none'
+      })
+    }
+
     const destructiveHoverStyles: CSSObject = {
       backgroundColor: themeColors.special.red,
       color: themeColors.static.white
@@ -195,6 +219,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ? tertiaryStyles
         : variant === 'destructive'
         ? destructiveStyles
+        : variant === 'common'
+        ? commonStyles
         : primaryStyles),
 
       '::before': {
@@ -208,12 +234,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         backgroundColor: 'rgba(0, 0, 0, 0)'
       },
 
-      ...(variant !== 'tertiary' && {
-        ':hover': hoverStyles,
-        ':active': activeStyles,
-        ...(_isHovered && hoverStyles),
-        ...(_isPressed && activeStyles)
-      })
+      ...(variant !== 'tertiary' &&
+        variant !== 'common' && {
+          ':hover': hoverStyles,
+          ':active': activeStyles,
+          ...(_isHovered && hoverStyles),
+          ...(_isPressed && activeStyles)
+        })
     }
 
     const iconCss =

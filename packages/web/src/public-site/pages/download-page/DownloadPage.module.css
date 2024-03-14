@@ -240,6 +240,10 @@
   margin-right: 6px;
 }
 
+.platformIcon path {
+  fill: currentColor;
+}
+
 .isMobile .platformIcon {
   width: 22px;
   height: 22px;

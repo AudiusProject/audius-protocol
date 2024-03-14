@@ -96,6 +96,7 @@ export const createUploadTrackMetadataSchema = () =>
     isrc: z.optional(z.string().nullable()),
     isUnlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
+    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
     license: z.optional(z.string().nullable()),
     mood: z
       .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))

@@ -612,7 +612,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         socialTracksActions.downloadTrack({
           trackIds: [trackId],
-          stemName: category,
           parentTrackId
         })
       )
