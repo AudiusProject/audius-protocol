@@ -42,11 +42,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
   const onSelectTracks = useCallback(
     async (selectedFiles: File[]) => {
       const existing = new Set(
-        tracks.map(({ file }: { file: File | NativeFile }) =>
-          'lastModified' in file
-            ? `${file.name}-${file.lastModified}`
-            : file.name
-        )
+        tracks.map(({ file }) => `${file.name}-${(file as File).lastModified}`)
       )
       selectedFiles = selectedFiles.filter(({ name, lastModified }) => {
         const id = `${name}-${lastModified}`
