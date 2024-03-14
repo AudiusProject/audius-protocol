@@ -26,6 +26,10 @@ const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
   Log: 'log'
 }
 
+/**
+ * Helper fn that reports to sentry while creating a localized scope to contain additional data
+ * Also logs to console with the appropriate level (console.log, console.warn, console.error, etc)
+ */
 export const reportToSentry = async ({
   level = ErrorLevel.Error,
   additionalInfo,
@@ -54,7 +58,7 @@ export const reportToSentry = async ({
       // eslint-disable-next-line no-console
       console[consoleMethod](error, 'More info in console.debug')
       if (additionalInfo || tags) {
-        console.debug('Additional error info:', { additionalInfo, tags })
+        console.debug('Additional error info:', { additionalInfo, tags, level })
       }
       captureException(error)
     })
