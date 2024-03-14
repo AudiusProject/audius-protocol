@@ -21,7 +21,6 @@ import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
 import styles from './AudioRewardsPage.module.css'
 import ChallengeRewardsTile from './ChallengeRewardsTile'
 import Tiers from './Tiers'
-import { BalanceTile, WalletTile } from './Tiles'
 import TrendingRewardsTile from './TrendingRewardsTile'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
@@ -41,16 +40,6 @@ const RewardsContent = () => {
     FeatureFlags.CHALLENGE_REWARDS_UI
   )
 
-  const { isEnabled: isCoinbaseEnabled } = useFlag(
-    FeatureFlags.BUY_AUDIO_COINBASE_ENABLED
-  )
-
-  const { isEnabled: isStripeEnabled } = useFlag(
-    FeatureFlags.BUY_AUDIO_STRIPE_ENABLED
-  )
-
-  const isBuyAudioEnabled = isCoinbaseEnabled || isStripeEnabled
-
   const audioFeaturesDegradedText = useRemoteVar(
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
@@ -67,16 +56,7 @@ const RewardsContent = () => {
           </span>
         </div>
       ) : null}
-      {isBuyAudioEnabled ? (
-        <WalletManagementTile />
-      ) : (
-        <>
-          <div className={wm(styles.cryptoContentContainer)}>
-            <BalanceTile className={wm(styles.balanceTile)} />
-            <WalletTile className={styles.walletTile} />
-          </div>
-        </>
-      )}
+      <WalletManagementTile />
       {isChallengeRewardsEnabled && (
         <ChallengeRewardsTile className={styles.mobile} />
       )}

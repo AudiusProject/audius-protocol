@@ -20,9 +20,10 @@ import {
   IconLink,
   IconTikTok,
   IconTwitter as IconTwitterBird,
-  Flex
+  Flex,
+  Button,
+  IconPencil
 } from '@audius/harmony'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -52,7 +53,7 @@ const messages = {
   playlists: 'Playlists',
   showMore: 'Show More',
   showLess: 'Show Less',
-  editProfile: 'EDIT PROFILE'
+  editProfile: 'Edit Profile'
 }
 
 const LoadingProfileHeader = () => {
@@ -347,13 +348,13 @@ const ProfileHeader = ({
               )}
               {mode === 'owner' ? (
                 <Button
-                  className={styles.editButton}
-                  textClassName={styles.editButtonText}
-                  size={ButtonSize.SMALL}
-                  type={ButtonType.SECONDARY}
-                  text={messages.editProfile}
+                  variant='secondary'
+                  size='small'
                   onClick={switchToEditMode}
-                />
+                  iconLeft={IconPencil}
+                >
+                  {messages.editProfile}
+                </Button>
               ) : (
                 <FollowButton
                   size='small'
