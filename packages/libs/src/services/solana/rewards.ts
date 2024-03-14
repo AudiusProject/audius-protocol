@@ -1,5 +1,6 @@
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
+  ComputeBudgetProgram,
   PublicKey,
   Secp256k1Program,
   SystemProgram,
@@ -240,7 +241,12 @@ export async function submitAttestations({
     bucketedInstructions.map(
       async (i) =>
         await transactionHandler.handleTransaction({
-          instructions: i,
+          instructions: [
+            ...i,
+            ComputeBudgetProgram.setComputeUnitPrice({
+              microLamports: 100000
+            })
+          ],
           errorMapping: RewardsManagerError,
           logger,
           skipPreflight: false,
@@ -316,7 +322,13 @@ export async function createSender({
     signerEthAddresses
   })
 
-  const instructions = [...signerInstructions, createSenderInstruction]
+  const instructions = [
+    ...signerInstructions,
+    createSenderInstruction,
+    ComputeBudgetProgram.setComputeUnitPrice({
+      microLamports: 100000
+    })
+  ]
   return await transactionHandler.handleTransaction({
     instructions,
     errorMapping: RewardsManagerError,
@@ -479,7 +491,12 @@ export const evaluateAttestations = async ({
   })
 
   return await transactionHandler.handleTransaction({
-    instructions: [transferInstruction],
+    instructions: [
+      transferInstruction,
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
+    ],
     errorMapping: RewardsManagerError,
     logger,
     skipPreflight: false,

@@ -5,7 +5,8 @@ import {
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-  Connection
+  Connection,
+  ComputeBudgetProgram
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import { deserialize, serialize } from 'borsh'
@@ -171,7 +172,12 @@ type TransferWAudioBalanceConfig = {
 export async function transferWAudioBalance(args: TransferWAudioBalanceConfig) {
   const instructions = await createTransferInstructions(args)
   return await args.transactionHandler.handleTransaction({
-    instructions,
+    instructions: [
+      ...instructions,
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
+    ],
     errorMapping: ClaimableProgramError,
     feePayerOverride: args.feePayerKey
   })
