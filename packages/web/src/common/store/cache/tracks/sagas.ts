@@ -75,8 +75,8 @@ function* watchAdd() {
   )
 }
 
-type TrackRemixParams = Partial<Pick<Track, 'track_id' | 'title'>> & {
-  remix_of?: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
+type TrackRemixParams = Pick<Track, 'track_id' | 'title'> & {
+  remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
 }
 
 export function* trackNewRemixEvent(remixTrack: TrackRemixParams) {
