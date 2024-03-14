@@ -535,6 +535,7 @@ function* signUp() {
         yield* put(signOnActions.sendWelcomeEmail(name))
         yield* fetchAccountAsync({ isSignUp: true })
         yield* put(signOnActions.followArtists())
+        yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
         yield* put(signOnActions.signUpSucceeded())
       },
       function* ({ timeout, error, message }) {
