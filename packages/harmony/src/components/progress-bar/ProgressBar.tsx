@@ -1,10 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import * as React from 'react'
 
 import BN from 'bn.js'
 import cn from 'classnames'
-
-import { clampBN } from 'utils/bnHelpers'
 
 import styles from './ProgressBar.module.css'
 import { ProgressBarProps, ProgressValue } from './types'
@@ -14,18 +11,23 @@ const getBN = (num: ProgressValue): BN => {
   return new BN(num)
 }
 
-export const ProgressBar: React.FC<ProgressBarProps> = ({
-  className,
-  sliderClassName,
-  sliderBarClassName,
-  min = new BN(0),
-  max = new BN(100),
-  value,
-  showLabels = false,
-  minWrapper: MinWrapper,
-  maxWrapper: MaxWrapper,
-  ...other
-}: ProgressBarProps) => {
+function clampBN(value: BN, min: BN, max: BN): BN {
+  return BN.min(BN.max(value, min), max)
+}
+
+export const ProgressBar = (props: ProgressBarProps) => {
+  const {
+    className,
+    sliderClassName,
+    sliderBarClassName,
+    min = new BN(0),
+    max = new BN(100),
+    value,
+    showLabels = false,
+    minWrapper: MinWrapper,
+    maxWrapper: MaxWrapper,
+    ...other
+  } = props
   const [sliderWidth, setSliderWidth] = useState(0)
 
   const percentage = useMemo(() => {

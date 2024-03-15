@@ -5,7 +5,7 @@
 }
 
 .slider {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
   box-shadow: inset 1px 1px 7px -2px rgba(53, 54, 79, 0.25);
   border-radius: 22px;
   height: 24px;
@@ -14,11 +14,7 @@
 }
 
 .sliderBar {
-  background: linear-gradient(
-    315deg,
-    var(--page-header-gradient-color-1) 2.04%,
-    var(--page-header-gradient-color-2) 100%
-  );
+  background: var(--harmony-gradient);
   bottom: 0;
   left: 0;
   position: absolute;
@@ -28,7 +24,7 @@
 
 .labels {
   display: flex;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   justify-content: space-between;
   margin-top: 8px;
   padding: 0 4px;
@@ -36,6 +32,6 @@
 
 .minLabel,
 .maxLabel {
-  color: var(--neutral-light-4);
-  font-weight: var(--font-bold);
+  color: var(--harmony-text-subdued);
+  font-weight: var(--harmony-font-bold);
 }

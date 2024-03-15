@@ -2,11 +2,11 @@ import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
 import { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common/store'
-import { MarkdownViewer } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import { MarkdownViewer } from 'components/markdown-viewer'
 import { openNotificationModal } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './AnnouncementNotification.module.css'

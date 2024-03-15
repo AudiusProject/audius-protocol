@@ -9,21 +9,9 @@ import './assets/styles/layers.css'
 export * from './styles/colors'
 export * from './utils/styles'
 
-export {
-  PillButton,
-  PillButtonProps,
-  Variant as PillButtonVariant
-} from './components/PillButton'
-
-export { ProgressBar, ProgressBarProps } from './components/ProgressBar'
-export { Scrubber } from './components/Scrubber'
+export { Scrubber } from '../../harmony/src/components/scrubber'
 
 export {
   TokenValueSlider,
   TokenValueSliderProps
 } from './components/TokenValueSlider'
-
-export {
-  MarkdownViewer,
-  MarkdownViewerProps
-} from './components/MarkdownViewer'
