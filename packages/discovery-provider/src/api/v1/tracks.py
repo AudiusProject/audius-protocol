@@ -67,7 +67,7 @@ from src.queries.get_track_signature import (
     get_track_download_signature,
     get_track_stream_signature,
 )
-from src.queries.get_tracks import GetTrackArgs, RouteArgs, get_tracks
+from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_trending import get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
@@ -113,9 +113,8 @@ full_tracks_response = make_full_response(
 
 
 def get_single_track(track_id, current_user_id, endpoint_ns, exclude_gated=True):
-    args: GetTrackArgs = {
+    args = {
         "id": [track_id],
-        "with_users": True,
         "filter_deleted": False,
         "exclude_gated": exclude_gated,
         "current_user_id": current_user_id,

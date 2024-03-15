@@ -58,7 +58,7 @@ class GetTrackArgs(TypedDict):
     sort_direction: Optional[SortDirection]
 
 
-def _get_tracks(session, args: GetTrackArgs):
+def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
     base_query = base_query.filter(TrackWithAggregates.is_current == True)
