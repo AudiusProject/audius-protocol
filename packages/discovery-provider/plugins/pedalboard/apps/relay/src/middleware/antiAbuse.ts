@@ -7,6 +7,7 @@ import { config } from '..'
 import { antiAbuseError, internalError } from '../error'
 import { readAAOState, storeAAOState } from '../redis'
 import { StatusCodes } from 'http-status-codes'
+import { unknownToError } from '../utils'
 
 type AbuseRule = {
   rule: number
@@ -83,11 +84,10 @@ export const detectAbuse = async (
   try {
     rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
   } catch (e) {
+    const aaoError = unknownToError(e)
     logger.error({
-      name: 'INTERNAL_ERROR',
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      message: 'error returned from antiabuse oracle'
-    })
+      handle: user.handle_lc, userId: user.user_id, address: user.wallet, error: aaoError.message, errorStackTrace: aaoError.stack
+    }, "error returned from anti abuse oracle")
     return
   }
   const userAbuseRules = determineAbuseRules(aaoConfig, rules)
