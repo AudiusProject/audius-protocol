@@ -160,40 +160,24 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
                     if playlist_id != playlist["playlist_id"]
                 ]
 
-                print(
-                    f"track.playlists_previously_containing_track REMOVE BEFORE: {track.playlists_previously_containing_track}"
-                )
-                # add to playlists_previously_containing_track if not already there
+                # add to or overwrite existing entry in playlists_previously_containing_track
                 if "playlists" not in track.playlists_previously_containing_track:
                     continue
-                playlists_previously_containing_track = [
-                    playlist_obj
-                    for playlist_obj in track.playlists_previously_containing_track[
-                        "playlists"
+                track.playlists_previously_containing_track = {
+                    "playlists": [
+                        playlist_obj
+                        for playlist_obj in track.playlists_previously_containing_track[
+                            "playlists"
+                        ]
+                        if playlist_obj["playlist_id"] != playlist["playlist_id"]
                     ]
-                ]
-                print(
-                    f"playlists_previously_containing_track REMOVE BEFORE: {playlists_previously_containing_track}"
-                )
-                if playlist["playlist_id"] not in [
-                    playlist_obj["playlist_id"]
-                    for playlist_obj in playlists_previously_containing_track
-                ]:
-                    playlists_previously_containing_track.append(
+                    + [
                         {
                             "time": params.block_integer_time,
                             "playlist_id": playlist["playlist_id"],
                         }
-                    )
-                    track.playlists_previously_containing_track = {
-                        "playlists": playlists_previously_containing_track
-                    }
-                print(
-                    f"playlists_previously_containing_track REMOVE AFTER: {playlists_previously_containing_track}"
-                )
-                print(
-                    f"track.playlists_previously_containing_track REMOVE AFTER: {track.playlists_previously_containing_track}"
-                )
+                    ]
+                }
 
     for track_id in updated_track_ids:
         # add playlist_id to playlists_containing_track and remove from playlists_previously_containing_track
@@ -204,9 +188,6 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
                 set(
                     (track.playlists_containing_track or []) + [playlist["playlist_id"]]
                 )
-            )
-            print(
-                f"track.playlists_previously_containing_track ADD BEFORE: {track.playlists_previously_containing_track}"
             )
             if "playlists" not in track.playlists_previously_containing_track:
                 continue
@@ -219,9 +200,6 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
                     if playlist_obj["playlist_id"] != playlist["playlist_id"]
                 ]
             }
-            print(
-                f"track.playlists_previously_containing_track ADD AFTER: {track.playlists_previously_containing_track}"
-            )
         # add row for each track that is not already in the table
         if track_id not in existing_tracks:
             new_playlist_track = PlaylistTrack(
