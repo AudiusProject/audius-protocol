@@ -66,7 +66,7 @@ def search_es_full(args: dict):
                 user_dsl(search_str, current_user_id),
             ]
         )
-    print("asdf: ", mdsl)
+
     # playlists
     if do_playlists:
         mdsl.extend(
@@ -100,7 +100,6 @@ def search_es_full(args: dict):
     }
 
     if do_tracks:
-        logger.info(f"asdf users: {mfound['responses'][0]['hits']['hits']}")
         response["tracks"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_users:
@@ -376,23 +375,6 @@ def track_dsl(
             {"exists": {"field": "stem_of"}},
         ],
         "should": [
-            #     "match": {
-            #         "user.name.searchable": {
-            #             "query": search_str,
-            #             "fuzziness": "AUTO",
-            #             "boost": 0.5,
-            #         }
-            #     },
-            # },
-            # {
-            #     "multi_match": {
-            #         "query": search_str,
-            #         "fields": ["title", "user.name"],
-            #         "type": "most_fields",
-            #         "operator": "and",
-            #         "boost": 1000,
-            #     }
-            # },
             {"term": {"user.is_verified": {"value": True}}},
         ],
     }
@@ -404,7 +386,6 @@ def track_dsl(
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
-    # return default_function_score(dsl, "repost_count", factor=0.1)
     return default_function_score(dsl, "repost_count")
 
 
@@ -508,8 +489,20 @@ def base_playlist_dsl(search_str, is_album):
                 "bool": {
                     "should": [
                         *base_match(search_str),
+                        {
+                            "multi_match": {
+                                "query": search_str,
+                                "fields": [
+                                    "playlist_name.searchable",
+                                    "user.name.searchable",
+                                ],
+                                "type": "cross_fields",
+                                "operator": "and",
+                                "boost": 2,
+                            }
+                        },
                         *[
-                            {"match": {"tracks.tags": {"query": term, "boost": 0.5}}}
+                            {"match": {"tracks.tags": {"query": term, "boost": 0.1}}}
                             for term in search_str.split()
                         ],
                         *[
@@ -529,16 +522,6 @@ def base_playlist_dsl(search_str, is_album):
             {"term": {"is_album": {"value": is_album}}},
         ],
         "should": [
-            *base_match(search_str, operator="and"),
-            {
-                "match": {
-                    "playlist_name": {
-                        "query": search_str,
-                        "fuzziness": "AUTO",
-                        "boost": 2,
-                    }
-                }
-            },
             {"term": {"user.is_verified": {"value": True}}},
         ],
     }
