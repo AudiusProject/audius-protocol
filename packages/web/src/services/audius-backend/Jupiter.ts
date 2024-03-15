@@ -3,7 +3,6 @@ import { convertBigIntToAmountObject } from '@audius/common/utils'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
 import {
-  ComputeBudgetProgram,
   PublicKey,
   TransactionInstruction
 } from '@solana/web3.js'
