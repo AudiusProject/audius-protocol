@@ -99,37 +99,6 @@
   margin-left: 4px;
 }
 
-.container .successBtn {
-  height: 64px;
-  padding: 0px 56px;
-}
-
-.successBtn .btnText {
-  font-weight: var(--font-bold);
-  font-size: var(--font-l);
-  text-transform: capitalize;
-  color: var(--neutral);
-}
-
-.disabledBtn {
-  background-color: var(--white);
-  border: 1px solid var(--neutral-light-6);
-  opacity: 0.5;
-  height: 64px !important;
-}
-
-.disabledBtn:hover,
-.disabledBtn:active {
-  transform: none !important;
-  background-color: var(--white) !important;
-  border: 1px solid var(--neutral-light-6) !important;
-}
-
-.disabledBtn .disabledBtnText {
-  color: var(--neutral);
-  font-weight: var(--font-demi-bold);
-}
-
 .socialButton {
   width: 100%;
 }

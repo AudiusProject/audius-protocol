@@ -22,9 +22,9 @@ import {
   IconVisibilityHidden,
   IconSpecialAccess,
   IconVisibilityPublic,
-  IconCart
+  IconCart,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { set, get } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -52,7 +52,6 @@ import {
   SpecialAccessType
 } from 'pages/upload-page/fields/types'
 
-import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'
 
 const { getUserId } = accountSelectors
@@ -391,14 +390,15 @@ export const AccessAndSaleTriggerLegacy = (
       renderValue={() => null}
       previewOverride={(toggleMenu) => (
         <Button
-          className={styles.availabilityButton}
-          type={ButtonType.COMMON_ALT}
+          variant='common'
+          size='small'
+          css={(theme) => ({ marginTop: theme.spacing.l })}
           name='availabilityModal'
-          text={availabilityButtonTitle}
-          size={ButtonSize.SMALL}
           onClick={toggleMenu}
-          leftIcon={<AvailabilityIcon />}
-        />
+          iconLeft={AvailabilityIcon}
+        >
+          {availabilityButtonTitle}
+        </Button>
       )}
     />
   )
