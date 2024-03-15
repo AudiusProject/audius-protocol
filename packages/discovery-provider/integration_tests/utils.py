@@ -236,6 +236,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 playlists_containing_track=track_meta.get(
                     "playlists_containing_track", []
                 ),
+                playlists_previously_containing_track=track_meta.get(
+                    "playlists_previously_containing_track", {}
+                ),
             )
             session.add(track)
         for i, track_price_history_meta in enumerate(track_price_history):
