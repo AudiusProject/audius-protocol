@@ -4,17 +4,20 @@
 
 A list of flaky/misbehaving tests that we are currently skipping in order to keep a green baseline
 
-## Current Inmates - [C-3508]
+## Current Inmates 
 
-#### [Upload Track](./uploadTrack.cy.ts)
+#### [Upload Track](./uploadTrack.cy.ts) - [C-3508]
 
 This entire suite is in jail.
 
 The upload flow seems to generally take too long in CI and results in timeouts and consistent failures.
 
-#### [Sign Up](./signUp.cy.ts) - [C-3593]
 
-"should create an account" tests are skipped until they can be updated
+#### [Sign In](./signIn.cy.ts) - [C-4005]
+
+The 'can sign in' test is in jail until we can hard-code an OTP code
+
+
 
 <!-- Template
 

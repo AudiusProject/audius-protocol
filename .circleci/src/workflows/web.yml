@@ -52,10 +52,21 @@ jobs:
         branches:
           only: /(^release.*)$/
 
+  - web-test-staging-essential:
+      context: Audius Client
+      requires:
+        - web-build-staging
+      filters:
+        branches:
+          ignore: /^main$/
+
   - web-test-staging:
       context: Audius Client
       requires:
         - web-build-staging
+      filters:
+        branches:
+          only: /^main$/
 
   - web-test:
       context: Audius Client

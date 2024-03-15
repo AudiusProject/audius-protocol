@@ -6,7 +6,7 @@ function assertOnSignInPage() {
   )
 }
 
-describe('Sign In', () => {
+describe('Sign In @essential', () => {
   beforeEach(() => {
     localStorage.setItem('FeatureFlagOverride:sign_up_redesign', 'enabled')
   })
@@ -40,7 +40,8 @@ describe('Sign In', () => {
     assertOnSignInPage()
   })
 
-  // We need to integrate a hard-coded otp for this user
+  // [TEST JAIL] - C-4005
+  // TODO: We need to integrate a hard-coded otp for this user
   it.skip('can sign in', () => {
     cy.visit('signin')
     assertOnSignInPage()

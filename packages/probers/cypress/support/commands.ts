@@ -2,8 +2,13 @@ import '@testing-library/cypress/add-commands'
 import 'cypress-file-upload'
 import 'cypress-wait-until'
 import 'cypress-plugin-tab'
+import registerCypressGrep from '@cypress/grep/src/support'
 
 import user from '../fixtures/user.json'
+
+// Enable the CLI grep tool
+registerCypressGrep()
+
 const base64Entropy = Buffer.from(user.entropy).toString('base64')
 
 declare global {
