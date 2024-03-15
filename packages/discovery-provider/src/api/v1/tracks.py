@@ -68,7 +68,6 @@ from src.queries.get_track_signature import (
     get_track_stream_signature,
 )
 from src.queries.get_tracks import RouteArgs, get_tracks
-from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_unclaimed_id import get_unclaimed_id
@@ -116,26 +115,12 @@ full_tracks_response = make_full_response(
 def get_single_track(track_id, current_user_id, endpoint_ns, exclude_gated=True):
     args = {
         "id": [track_id],
-        "with_users": True,
         "filter_deleted": False,
         "exclude_gated": exclude_gated,
         "current_user_id": current_user_id,
+        "skip_unlisted_filter": True,
     }
     tracks = get_tracks(args)
-    if not tracks:
-        abort_not_found(track_id, endpoint_ns)
-    single_track = extend_track(tracks[0])
-    return success_response(single_track)
-
-
-def get_unlisted_track(track_id, url_title, handle, current_user_id, endpoint_ns):
-    args = {
-        "identifiers": [{"handle": handle, "url_title": url_title, "id": track_id}],
-        "filter_deleted": False,
-        "with_users": True,
-        "current_user_id": current_user_id,
-    }
-    tracks = get_tracks_including_unlisted(args)
     if not tracks:
         abort_not_found(track_id, endpoint_ns)
     single_track = extend_track(tracks[0])
@@ -168,44 +153,23 @@ class Track(Resource):
         return get_single_track(decoded_id, None, ns)
 
 
-full_track_parser = current_user_parser.copy()
-full_track_parser.add_argument(
-    "handle", description="The User handle of the track owner"
-)
-full_track_parser.add_argument(
-    "url_title", description="The URLized title of the track"
-)
-full_track_parser.add_argument(
-    "show_unlisted",
-    description="Whether or not to show unlisted tracks",
-    type=inputs.boolean,
-)
-
-
 @full_ns.route(TRACK_ROUTE)
 class FullTrack(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get Track""",
-        description="""Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.""",
+        description="""Gets a track by ID.""",
         params={
             "track_id": "A Track ID",
         },
     )
-    @full_ns.expect(full_track_parser)
+    @full_ns.expect(current_user_parser)
     @full_ns.marshal_with(full_track_response)
     @cache(ttl_sec=5)
     def get(self, track_id: str):
-        args = full_track_parser.parse_args()
+        args = current_user_parser.parse_args()
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)
-        if args.get("show_unlisted"):
-            url_title, handle = args.get("url_title"), args.get("handle")
-            if not (url_title and handle):
-                full_ns.abort(400, "Unlisted tracks require url_title and handle")
-            return get_unlisted_track(
-                decoded_id, url_title, handle, current_user_id, full_ns
-            )
 
         return get_single_track(
             track_id=decoded_id,
@@ -285,6 +249,7 @@ class BulkTracks(Resource):
                     "with_users": True,
                     "id": decode_ids_array(ids),
                     "exclude_gated": True,
+                    "skip_unlisted_filter": True,
                 }
             )
         else:
@@ -293,6 +258,7 @@ class BulkTracks(Resource):
                     "with_users": True,
                     "routes": routes_parsed,
                     "exclude_gated": True,
+                    "skip_unlisted_filter": True,
                 }
             )
         if not tracks:
@@ -354,6 +320,7 @@ class FullBulkTracks(Resource):
                     "with_users": True,
                     "id": decode_ids_array(ids),
                     "current_user_id": current_user_id,
+                    "skip_unlisted_filter": True,
                 }
             )
         else:
@@ -362,6 +329,7 @@ class FullBulkTracks(Resource):
                     "with_users": True,
                     "routes": routes_parsed,
                     "current_user_id": current_user_id,
+                    "skip_unlisted_filter": True,
                 }
             )
         if not tracks:
