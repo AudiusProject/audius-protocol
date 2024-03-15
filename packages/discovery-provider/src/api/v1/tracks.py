@@ -158,7 +158,7 @@ class FullTrack(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get Track""",
-        description="""Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.""",
+        description="""Gets a track by ID.""",
         params={
             "track_id": "A Track ID",
         },
