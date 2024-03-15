@@ -129,8 +129,8 @@ const AdvancedWalletActions = () => {
       <div className={styles.subtitle}>{messages.advancedOptions}</div>
       <Flex wrap='wrap' gap='l' w='100%'>
         <Button
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           variant='common'
+          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           disabled={!hasBalance}
           onClick={onClickSend}
           iconLeft={IconSend}
@@ -138,8 +138,8 @@ const AdvancedWalletActions = () => {
           {messages.sendLabel}
         </Button>
         <Button
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           variant='common'
+          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           onClick={onClickReceive}
           iconLeft={IconReceive}
         >
@@ -148,6 +148,7 @@ const AdvancedWalletActions = () => {
         {!isMobile && isTransactionsEnabled && (
           <Button
             variant='common'
+            css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
             onClick={onClickTransactions}
             iconLeft={IconTransaction}
           >
@@ -156,6 +157,7 @@ const AdvancedWalletActions = () => {
         )}
         <Button
           variant='common'
+          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           onClick={onClickConnectWallets}
           iconLeft={IconSettings}
         >
