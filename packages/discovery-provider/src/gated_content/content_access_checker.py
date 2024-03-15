@@ -75,7 +75,6 @@ class ContentAccessChecker:
         content_type: GatedContentType,
         content_entity: Track,
     ) -> ContentAccessResponse:
-
         if content_type != "track" and content_type != "album":
             logger.warn(
                 f"gated_content_access_checker | check_access | gated content type {content_type} is not supported."
