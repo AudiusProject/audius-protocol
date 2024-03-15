@@ -1,29 +1,56 @@
+from sqlalchemy import text
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import desc
 
-from src.models.users.aggregate_user import AggregateUser
-from src.models.users.related_artist import RelatedArtist
 from src.models.users.user import User
 from src.queries.query_helpers import helpers, populate_user_metadata
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import time_method
 
-# Only calculate for users with at least this many followers
-MIN_FOLLOWER_REQUIREMENT = 200
+_genre_based_sql = text(
+    """
+  with inp as (
+    select
+      genre,
+      count(*) as track_count,
+      rank() over (order by count(*) desc) as genre_rank
+    from
+      tracks t
+    where
+      t.is_current is true
+      and t.is_delete is false
+      and t.is_unlisted is false
+      and t.is_available is true
+      and t.stem_of is null
+      and owner_id = :user_id
+    group by
+      genre
+    order by count(*) desc limit 5
+  )
+
+  -- find similar aritst based on similar top genre + follower count
+  select
+    user_id,
+    dominant_genre,
+    follower_count,
+    genre_rank
+  from
+    aggregate_user au
+  join inp on dominant_genre = inp.genre and au.follower_count < (select follower_count * 3 from aggregate_user where user_id = :user_id)   
+  order by genre_rank asc, follower_count desc
+
+  limit :limit
+  offset :offset
+"""
+)
 
 
-def _get_related_artists(session: Session, user_id: int, limit=100, offset=0):
-    related_artists = (
-        session.query(User)
-        .select_from(RelatedArtist)
-        .join(User, User.user_id == RelatedArtist.related_artist_user_id)
-        .filter(RelatedArtist.user_id == user_id, User.is_current)
-        .order_by(desc(RelatedArtist.score))
-        .limit(limit)
-        .offset(offset)
-        .all()
-    )
-    return helpers.query_result_to_list(related_artists)
+def _genre_based_related_artists(session: Session, user_id: int, limit=100, offset=0):
+    result = session.execute(
+        _genre_based_sql, {"user_id": user_id, "limit": limit, "offset": offset}
+    ).fetchall()
+    user_ids = [r["user_id"] for r in result]
+    users = session.query(User).filter(User.user_id.in_(user_ids)).all()
+    return helpers.query_result_to_list(users)
 
 
 @time_method
@@ -33,18 +60,7 @@ def get_related_artists(
     db = get_db_read_replica()
     users = []
     with db.scoped_session() as session:
-        aggregate_user = (
-            session.query(AggregateUser)
-            .filter(AggregateUser.user_id == user_id)
-            .one_or_none()
-        )
-        if (
-            aggregate_user
-            and aggregate_user.track_count > 0
-            and aggregate_user.follower_count >= MIN_FOLLOWER_REQUIREMENT
-        ):
-            users = _get_related_artists(session, user_id, limit, offset)
-
+        users = _genre_based_related_artists(session, user_id, limit, offset)
         user_ids = list(map(lambda user: user["user_id"], users))
         users = populate_user_metadata(session, user_ids, users, current_user_id)
     return users
