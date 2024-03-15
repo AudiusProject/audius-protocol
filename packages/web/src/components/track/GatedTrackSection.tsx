@@ -17,7 +17,8 @@ import {
   usersSocialActions as socialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
-  gatedContentSelectors
+  gatedContentSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
 import {
@@ -95,7 +96,8 @@ const messages = {
 }
 
 type GatedTrackAccessSectionProps = {
-  trackId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
   trackOwner: Nullable<User>
   streamConditions: AccessConditions
   followee: Nullable<User>
@@ -108,7 +110,8 @@ type GatedTrackAccessSectionProps = {
 }
 
 const LockedGatedTrackSection = ({
-  trackId,
+  contentId,
+  contentType,
   streamConditions,
   followee,
   tippedUser,
@@ -136,18 +139,18 @@ const LockedGatedTrackSection = ({
       setLockedContentModalVisibility(false)
     }
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId, contentType },
       { source: ModalSource.TrackDetails }
     )
   }, [
-    trackId,
+    contentId,
     lockedContentModalVisibility,
     openPremiumContentPurchaseModal,
     setLockedContentModalVisibility
   ])
 
   const handleSendTip = useAuthenticatedCallback(() => {
-    dispatch(beginTip({ user: tippedUser, source, trackId }))
+    dispatch(beginTip({ user: tippedUser, source, trackId: contentId }))
 
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
@@ -156,7 +159,7 @@ const LockedGatedTrackSection = ({
     dispatch,
     tippedUser,
     source,
-    trackId,
+    contentId,
     lockedContentModalVisibility,
     setLockedContentModalVisibility
   ])
@@ -167,7 +170,7 @@ const LockedGatedTrackSection = ({
         socialActions.followUser(
           streamConditions.follow_user_id,
           followSource,
-          trackId
+          contentId
         )
       )
     }
@@ -179,7 +182,7 @@ const LockedGatedTrackSection = ({
     dispatch,
     streamConditions,
     followSource,
-    trackId,
+    contentId,
     lockedContentModalVisibility,
     setLockedContentModalVisibility
   ])
@@ -540,7 +543,8 @@ const UnlockedGatedTrackSection = ({
 
 type GatedTrackSectionProps = {
   isLoading: boolean
-  trackId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
   streamConditions: AccessConditions
   hasStreamAccess: boolean
   isOwner: boolean
@@ -552,7 +556,8 @@ type GatedTrackSectionProps = {
 
 export const GatedTrackSection = ({
   isLoading,
-  trackId,
+  contentId,
+  contentType = PurchaseableContentType.TRACK,
   streamConditions,
   hasStreamAccess,
   isOwner,
@@ -563,7 +568,7 @@ export const GatedTrackSection = ({
 }: GatedTrackSectionProps) => {
   const dispatch = useDispatch()
   const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
-  const gatedTrackStatus = gatedTrackStatusMap[trackId] ?? null
+  const gatedTrackStatus = gatedTrackStatusMap[contentId] ?? null
 
   const isFollowGated = isContentFollowGated(streamConditions)
   const isTipGated = isContentTipGated(streamConditions)
@@ -643,7 +648,8 @@ export const GatedTrackSection = ({
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockedGatedTrackSection
-          trackId={trackId}
+          contentId={contentId}
+          contentType={contentType}
           trackOwner={trackOwner}
           streamConditions={streamConditions}
           followee={followee}
@@ -661,7 +667,8 @@ export const GatedTrackSection = ({
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockingGatedTrackSection
-          trackId={trackId}
+          contentId={contentId}
+          contentType={contentType}
           trackOwner={trackOwner}
           streamConditions={streamConditions}
           followee={followee}
@@ -678,7 +685,8 @@ export const GatedTrackSection = ({
   return (
     <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
       <LockedGatedTrackSection
-        trackId={trackId}
+        contentId={contentId}
+        contentType={contentType}
         trackOwner={trackOwner}
         streamConditions={streamConditions}
         followee={followee}

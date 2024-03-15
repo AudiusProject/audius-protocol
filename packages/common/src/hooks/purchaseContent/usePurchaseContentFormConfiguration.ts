@@ -4,10 +4,11 @@ import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
 import {
-  ContentType,
+  PurchaseableContentType,
   PurchaseContentPage,
   isContentPurchaseInProgress,
   purchaseContentActions,
@@ -36,12 +37,12 @@ const {
 } = purchaseContentSelectors
 
 export const usePurchaseContentFormConfiguration = ({
-  track,
+  metadata,
   price,
   presetValues,
   purchaseVendor
 }: {
-  track?: Nullable<UserTrackMetadata>
+  metadata?: Nullable<UserTrackMetadata | UserCollectionMetadata>
   price: number
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
@@ -71,7 +72,11 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseMethod,
       purchaseVendor
     }: PurchaseContentValues) => {
-      if (isUnlocking || !track?.track_id) return
+      const contentId =
+        metadata && 'track_id' in metadata
+          ? metadata.track_id
+          : metadata?.playlist_id ?? null
+      if (isUnlocking || !contentId) return
 
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
@@ -90,13 +95,13 @@ export const usePurchaseContentFormConfiguration = ({
             purchaseVendor,
             extraAmount,
             extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
+            contentId,
+            contentType: PurchaseableContentType.TRACK
           })
         )
       }
     },
-    [isUnlocking, track, page, presetValues, dispatch]
+    [isUnlocking, metadata, page, presetValues, dispatch]
   )
 
   return {

@@ -10,10 +10,12 @@ import {
   PURCHASE_METHOD,
   PURCHASE_VENDOR,
   usePurchaseMethod,
-  isTrackStreamPurchaseable,
-  isTrackDownloadPurchaseable
+  isStreamPurchaseable,
+  isDownloadPurchaseable,
+  PurchaseableContentMetadata,
+  PurchaseableTrackStreamMetadata,
+  PurchaseableTrackDownloadMetadata
 } from '@audius/common/hooks'
-import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
 import type { USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
@@ -233,7 +235,7 @@ const RenderForm = ({
   purchaseConditions
 }: {
   onClose: () => void
-  track: PurchaseableTrackMetadata
+  track: PurchaseableTrackStreamMetadata | PurchaseableTrackDownloadMetadata
   purchaseConditions: USDCPurchaseConditions
 }) => {
   const navigation = useNavigation()
@@ -429,7 +431,8 @@ export const PremiumTrackPurchaseDrawer = () => {
   const isUSDCEnabled = useIsUSDCEnabled()
   const presetValues = usePayExtraPresets()
   const {
-    data: { contentId: trackId },
+    // TODO: album support
+    data: { contentId: trackId, contentType },
     isOpen,
     onClose,
     onClosed
@@ -445,9 +448,10 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
-  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
-  const isValidDownloadGatedTrack =
-    !!track && isTrackDownloadPurchaseable(track)
+  // @ts-ignore TODO
+  const isValidStreamGatedTrack = !!track && isStreamPurchaseable(track)
+  // @ts-ignore TODO
+  const isValidDownloadGatedTrack = !!track && isDownloadPurchaseable(track)
 
   const purchaseConditions = isValidStreamGatedTrack
     ? track.stream_conditions
@@ -458,7 +462,11 @@ export const PremiumTrackPurchaseDrawer = () => {
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 
   const { initialValues, onSubmit, validationSchema } =
-    usePurchaseContentFormConfiguration({ track, presetValues, price })
+    usePurchaseContentFormConfiguration({
+      metadata: track,
+      presetValues,
+      price
+    })
 
   const handleClosed = useCallback(() => {
     onClosed()

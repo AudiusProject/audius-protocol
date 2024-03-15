@@ -13,7 +13,7 @@ import {
   getContext,
   playerSelectors,
   purchaseContentActions,
-  ContentType,
+  PurchaseableContentType,
   SavedPageTrack
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
@@ -148,7 +148,7 @@ function* watchAddToLibrary() {
       if (
         type === purchaseContentActions.purchaseConfirmed.type &&
         'payload' in action &&
-        action.payload.contentType !== ContentType.TRACK
+        action.payload.contentType !== PurchaseableContentType.TRACK
       ) {
         return
       }

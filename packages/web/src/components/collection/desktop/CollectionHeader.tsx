@@ -2,7 +2,10 @@ import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useGetCurrentUserId, useGetPurchases } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import { useEditPlaylistModal } from '@audius/common/store'
+import {
+  PurchaseableContentType,
+  useEditPlaylistModal
+} from '@audius/common/store'
 import { formatSecondsAsText, formatDate } from '@audius/common/utils'
 import {
   Text,
@@ -238,8 +241,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       {isStreamGated && streamConditions ? (
         <GatedTrackSection
           isLoading={hasMorePurchases}
-          // TODO: rename prop
-          trackId={collectionId}
+          contentId={collectionId}
+          contentType={PurchaseableContentType.ALBUM}
           streamConditions={streamConditions}
           hasStreamAccess={isAlbumPurchased}
           isOwner={ownerId === currentUserId}

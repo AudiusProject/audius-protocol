@@ -1,14 +1,19 @@
 import { useCallback, useEffect } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetPlaylistById,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
 import {
   useFeatureFlag,
   usePurchaseContentFormConfiguration,
   usePayExtraPresets,
-  isTrackStreamPurchaseable,
-  isTrackDownloadPurchaseable,
-  PurchaseableTrackMetadata,
-  PURCHASE_METHOD
+  isStreamPurchaseable,
+  isDownloadPurchaseable,
+  PURCHASE_METHOD,
+  PurchaseableContentMetadata
 } from '@audius/common/hooks'
 import {
   PurchaseMethod,
@@ -24,7 +29,8 @@ import {
   purchaseContentSelectors,
   PurchaseContentStage,
   PurchaseContentPage,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -80,16 +86,18 @@ const pageToPageIndex = (page: PurchaseContentPage) => {
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track,
-  purchaseConditions
+  metadata,
+  purchaseConditions,
+  contentType
 }: {
   onClose: () => void
-  track: PurchaseableTrackMetadata
+  metadata: PurchaseableContentMetadata
   purchaseConditions: USDCPurchaseConditions
+  contentType: PurchaseableContentType
 }) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
-  const { permalink } = track
+  const { permalink } = metadata
   const {
     usdc_purchase: { price }
   } = purchaseConditions
@@ -101,8 +109,13 @@ const RenderForm = ({
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
 
+  const isAlbum = 'playlist_id' in metadata
+
   // Reset form on track change
-  useEffect(() => resetForm, [track.track_id, resetForm])
+  useEffect(
+    () => resetForm,
+    [isAlbum ? metadata.playlist_id : metadata.track_id, resetForm]
+  )
 
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
@@ -144,17 +157,19 @@ const RenderForm = ({
           ) : null}
           <Flex p={isMobile ? 'l' : 'xl'}>
             <Flex direction='column' gap='xl' w='100%'>
-              <LockedTrackDetailsTile
-                showLabel={false}
-                track={track as unknown as Track}
-                owner={track.user}
-              />
+              {!isAlbum ? (
+                <LockedTrackDetailsTile
+                  showLabel={false}
+                  track={metadata as unknown as Track}
+                  owner={metadata.user}
+                />
+              ) : null}
               <PurchaseContentFormFields
                 stage={stage}
                 purchaseSummaryValues={purchaseSummaryValues}
                 isUnlocking={isUnlocking}
                 price={price}
-                track={track}
+                track={metadata}
               />
             </Flex>
           </Flex>
@@ -173,7 +188,7 @@ const RenderForm = ({
             onViewTrackClicked={onClose}
             purchaseSummaryValues={purchaseSummaryValues}
             stage={stage}
-            track={track}
+            metadata={metadata}
           />
         ) : null}
       </ModalFooter>
@@ -188,7 +203,7 @@ export const PremiumContentPurchaseModal = () => {
     isOpen,
     onClose,
     onClosed,
-    data: { contentId: trackId }
+    data: { contentId, contentType }
   } = usePremiumContentPurchaseModal()
   const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
     useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
@@ -197,27 +212,47 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets()
+  const { data: currentUserId } = useGetCurrentUserId({})
 
+  const isAlbum = contentType === 'album'
   const { data: track } = useGetTrackById(
-    { id: trackId! },
-    { disabled: !trackId }
+    { id: contentId! },
+    { disabled: isAlbum || !contentId }
   )
 
-  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
-  const isValidDownloadGatedTrack =
-    !!track && isTrackDownloadPurchaseable(track)
+  const { data: album } = useGetPlaylistById(
+    { playlistId: contentId!, currentUserId },
+    { disabled: !isAlbum || !contentId }
+  )
 
-  const purchaseConditions = isValidStreamGatedTrack
-    ? track.stream_conditions
-    : isValidDownloadGatedTrack
-    ? track.download_conditions
+  const { data: user } = useGetUserById(
+    {
+      id: track?.owner_id ?? album?.playlist_owner_id,
+      currentUserId
+    },
+    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
+  )
+  const metadata = {
+    ...(isAlbum ? album : track),
+    user
+  } as PurchaseableContentMetadata
+
+  // @ts-ignore TODO: calculate _cover_art_sizes, or remove the requirement from the arg type
+  const isValidStreamGated = !!metadata && isStreamPurchaseable(metadata)
+  // @ts-ignore TODO: calculate _cover_art_sizes, or remove the requirement from the arg type
+  const isValidDownloadGated = !!metadata && isDownloadPurchaseable(metadata)
+
+  const purchaseConditions = isValidStreamGated
+    ? metadata.stream_conditions
+    : isValidDownloadGated
+    ? metadata.download_conditions
     : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
-      track,
+      metadata,
       price,
       presetValues,
       purchaseVendor: isCoinflowEnabled
@@ -244,9 +279,9 @@ export const PremiumContentPurchaseModal = () => {
   }, [onClosed, dispatch])
 
   if (
-    !track ||
+    !metadata ||
     !purchaseConditions ||
-    !(isValidDownloadGatedTrack || isValidStreamGatedTrack)
+    !(isValidDownloadGated || isValidStreamGated)
   ) {
     console.error('PremiumContentPurchaseModal: Track is not purchasable')
     return null
@@ -271,9 +306,10 @@ export const PremiumContentPurchaseModal = () => {
           onSubmit={onSubmit}
         >
           <RenderForm
-            track={track}
+            metadata={metadata}
             onClose={handleClose}
             purchaseConditions={purchaseConditions}
+            contentType={contentType}
           />
         </Formik>
       ) : null}

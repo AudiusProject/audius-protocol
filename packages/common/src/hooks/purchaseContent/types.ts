@@ -1,3 +1,4 @@
+import { ComputedCollectionProperties, UserCollectionMetadata } from '~/models'
 import {
   USDCPurchaseConditions,
   UserTrackMetadata,
@@ -19,6 +20,11 @@ export enum PayExtraPreset {
   NONE = 'none'
 }
 
+export type PurchaseableAblumStreamMetadata = UserCollectionMetadata &
+  ComputedCollectionProperties & {
+    stream_conditions: USDCPurchaseConditions
+  }
+
 export type PurchaseableTrackStreamMetadata = UserTrackMetadata &
   ComputedTrackProperties & {
     stream_conditions: USDCPurchaseConditions
@@ -29,9 +35,10 @@ export type PurchaseableTrackDownloadMetadata = UserTrackMetadata &
     download_conditions: USDCPurchaseConditions
   }
 
-export type PurchaseableTrackMetadata =
+export type PurchaseableContentMetadata =
   | PurchaseableTrackStreamMetadata
   | PurchaseableTrackDownloadMetadata
+  | PurchaseableAblumStreamMetadata
 
 export type USDCPurchaseConfig = {
   minContentPriceCents: number

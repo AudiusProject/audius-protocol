@@ -68,7 +68,11 @@ import {
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
-import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
+import {
+  PurchaseableContentType,
+  PurchaseContentError,
+  PurchaseErrorCode
+} from './types'
 import { getBalanceNeeded } from './utils'
 
 const { getUserId, getAccountUser } = accountSelectors
@@ -87,11 +91,11 @@ type RaceStatusResult = {
 
 type GetPurchaseConfigArgs = {
   contentId: ID
-  contentType: ContentType
+  contentType: PurchaseableContentType
 }
 
 function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
-  if (contentType !== ContentType.TRACK) {
+  if (contentType !== PurchaseableContentType.TRACK) {
     throw new Error('Only tracks are supported')
   }
 
@@ -205,7 +209,7 @@ function* getCoinflowPurchaseMetadata({
 }
 
 function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
-  if (contentType !== ContentType.TRACK) {
+  if (contentType !== PurchaseableContentType.TRACK) {
     throw new Error('Only tracks are supported')
   }
 
@@ -239,9 +243,9 @@ function* pollForPurchaseConfirmation({
   contentType
 }: {
   contentId: ID
-  contentType: ContentType
+  contentType: PurchaseableContentType
 }) {
-  if (contentType !== ContentType.TRACK) {
+  if (contentType !== PurchaseableContentType.TRACK) {
     throw new Error('Only tracks are supported')
   }
 
@@ -267,7 +271,7 @@ type PurchaseWithCoinflowArgs = {
   extraAmount?: number
   splits: Record<number, number>
   contentId: ID
-  contentType: ContentType
+  contentType: PurchaseableContentType
   purchaserUserId: ID
   /** USDC in dollars */
   price: number
@@ -404,7 +408,7 @@ function* doStartPurchaseContentFlow({
     purchaseMethod,
     purchaseVendor,
     contentId,
-    contentType = ContentType.TRACK
+    contentType = PurchaseableContentType.TRACK
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -542,7 +546,7 @@ function* doStartPurchaseContentFlow({
     yield* pollForPurchaseConfirmation({ contentId, contentType })
 
     // Auto-favorite the purchased item
-    if (contentType === ContentType.TRACK) {
+    if (contentType === PurchaseableContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
 
