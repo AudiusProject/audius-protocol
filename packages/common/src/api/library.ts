@@ -51,9 +51,7 @@ const fetchLibraryCollections = async ({
     query,
     sortMethod,
     sortDirection,
-    type: category,
-    encodedDataMessage: '', // TODO: remove, handled by sdk
-    encodedDataSignature: '' // TODO: remove, handled by sdk
+    type: category
   }
   const { data: rawCollections = [] } =
     collectionType === 'album'

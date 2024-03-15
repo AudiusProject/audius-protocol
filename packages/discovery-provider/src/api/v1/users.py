@@ -11,7 +11,6 @@ from src.api.v1.helpers import (
     abort_bad_request_param,
     abort_forbidden,
     abort_not_found,
-    add_auth_headers_to_parser,
     current_user_parser,
     decode_with_abort,
     extend_activity,
@@ -2121,11 +2120,9 @@ purchases_and_sales_parser.add_argument(
     type=str,
     choices=SortDirection._member_names_,
 )
-add_auth_headers_to_parser(purchases_and_sales_parser)
 
 
 purchases_and_sales_count_parser = current_user_parser.copy()
-add_auth_headers_to_parser(purchases_and_sales_count_parser)
 
 
 purchases_response = make_full_response(
@@ -2243,7 +2240,6 @@ class FullSalesCount(Resource):
 
 
 csv_download_parser = current_user_parser.copy()
-add_auth_headers_to_parser(csv_download_parser)
 
 
 @ns.route("/<string:id>/purchases/download")

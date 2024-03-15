@@ -131,6 +131,12 @@ export interface PlaylistFullWithoutTracks {
     user: UserFull;
     /**
      * 
+     * @type {string}
+     * @memberof PlaylistFullWithoutTracks
+     */
+    ddexApp?: string;
+    /**
+     * 
      * @type {number}
      * @memberof PlaylistFullWithoutTracks
      */
@@ -277,6 +283,7 @@ export function PlaylistFullWithoutTracksFromJSONTyped(json: any, ignoreDiscrimi
         'favoriteCount': json['favorite_count'],
         'totalPlayCount': json['total_play_count'],
         'user': UserFullFromJSON(json['user']),
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -317,6 +324,7 @@ export function PlaylistFullWithoutTracksToJSON(value?: PlaylistFullWithoutTrack
         'favorite_count': value.favoriteCount,
         'total_play_count': value.totalPlayCount,
         'user': UserFullToJSON(value.user),
+        'ddex_app': value.ddexApp,
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),

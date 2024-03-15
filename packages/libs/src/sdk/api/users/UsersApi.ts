@@ -218,50 +218,10 @@ export class UsersApi extends GeneratedUsersApi {
       )
     }
 
-    if (
-      params.encodedDataMessage === null ||
-      params.encodedDataMessage === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataMessage',
-        'Required parameter params.encodedDataMessage was null or undefined when calling downloadSalesAsCSV.'
-      )
-    }
-
-    if (
-      params.encodedDataSignature === null ||
-      params.encodedDataSignature === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataSignature',
-        'Required parameter params.encodedDataSignature was null or undefined when calling downloadSalesAsCSV.'
-      )
-    }
-
     const queryParameters: any = {}
 
     if (params.userId !== undefined) {
       queryParameters.user_id = params.userId
-    }
-
-    const headerParameters: runtime.HTTPHeaders = {}
-
-    if (
-      params.encodedDataMessage !== undefined &&
-      params.encodedDataMessage !== null
-    ) {
-      headerParameters['Encoded-Data-Message'] = String(
-        params.encodedDataMessage
-      )
-    }
-
-    if (
-      params.encodedDataSignature !== undefined &&
-      params.encodedDataSignature !== null
-    ) {
-      headerParameters['Encoded-Data-Signature'] = String(
-        params.encodedDataSignature
-      )
     }
 
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
@@ -271,8 +231,7 @@ export class UsersApi extends GeneratedUsersApi {
     )
     const url = `${host}${BASE_PATH}${path}`
     const response = await fetch(url, {
-      method: 'GET',
-      headers: headerParameters
+      method: 'GET'
     })
     return response.blob()
   }
@@ -290,50 +249,10 @@ export class UsersApi extends GeneratedUsersApi {
       )
     }
 
-    if (
-      params.encodedDataMessage === null ||
-      params.encodedDataMessage === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataMessage',
-        'Required parameter params.encodedDataMessage was null or undefined when calling downloadPurchasesAsCSV.'
-      )
-    }
-
-    if (
-      params.encodedDataSignature === null ||
-      params.encodedDataSignature === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataSignature',
-        'Required parameter params.encodedDataSignature was null or undefined when calling downloadPurchasesAsCSV.'
-      )
-    }
-
     const queryParameters: any = {}
 
     if (params.userId !== undefined) {
       queryParameters.user_id = params.userId
-    }
-
-    const headerParameters: runtime.HTTPHeaders = {}
-
-    if (
-      params.encodedDataMessage !== undefined &&
-      params.encodedDataMessage !== null
-    ) {
-      headerParameters['Encoded-Data-Message'] = String(
-        params.encodedDataMessage
-      )
-    }
-
-    if (
-      params.encodedDataSignature !== undefined &&
-      params.encodedDataSignature !== null
-    ) {
-      headerParameters['Encoded-Data-Signature'] = String(
-        params.encodedDataSignature
-      )
     }
 
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
@@ -343,8 +262,7 @@ export class UsersApi extends GeneratedUsersApi {
     )
     const url = `${host}${BASE_PATH}${path}`
     const response = await fetch(url, {
-      method: 'GET',
-      headers: headerParameters
+      method: 'GET'
     })
     return response.blob()
   }
@@ -362,26 +280,6 @@ export class UsersApi extends GeneratedUsersApi {
       )
     }
 
-    if (
-      params.encodedDataMessage === null ||
-      params.encodedDataMessage === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataMessage',
-        'Required parameter params.encodedDataMessage was null or undefined when calling downloadUSDCWithdrawalsAsCSV.'
-      )
-    }
-
-    if (
-      params.encodedDataSignature === null ||
-      params.encodedDataSignature === undefined
-    ) {
-      throw new runtime.RequiredError(
-        'encodedDataSignature',
-        'Required parameter params.encodedDataSignature was null or undefined when calling downloadUSDCWithdrawalsAsCSV.'
-      )
-    }
-
     const queryParameters: any = {}
 
     if (params.userId !== undefined) {
@@ -389,24 +287,6 @@ export class UsersApi extends GeneratedUsersApi {
     }
 
     const headerParameters: runtime.HTTPHeaders = {}
-
-    if (
-      params.encodedDataMessage !== undefined &&
-      params.encodedDataMessage !== null
-    ) {
-      headerParameters['Encoded-Data-Message'] = String(
-        params.encodedDataMessage
-      )
-    }
-
-    if (
-      params.encodedDataSignature !== undefined &&
-      params.encodedDataSignature !== null
-    ) {
-      headerParameters['Encoded-Data-Signature'] = String(
-        params.encodedDataSignature
-      )
-    }
 
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     const path = `/users/{id}/withdrawals/download`.replace(
