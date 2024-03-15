@@ -117,20 +117,3 @@
   opacity: 0.8;
   text-decoration: underline;
 }
-
-.instagramButton {
-  height: 48px !important;
-}
-
-.twitterButton {
-  height: 48px !important;
-  width: 268px !important;
-}
-
-.mobile .instagramButton {
-  width: 100% !important;
-}
-
-.mobile .twitterButton {
-  width: 100% !important;
-}
