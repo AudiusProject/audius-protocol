@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import Union
 
@@ -439,7 +438,6 @@ def create_playlist(params: ManageEntityParameters):
 
     playlist_id = params.entity_id
     tracks = params.metadata["playlist_contents"].get("track_ids", [])
-    t = params.metadata["playlist_contents"]
     tracks_with_index_time = []
     last_added_to = None
 
