@@ -168,30 +168,55 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 
 	// If there's an album release, the tracks we parsed out are actually part of the album release
 	if len(createAlbumRelease) > 0 {
+		// Copy release IDs from individual track releases to the album's tracks
+		isrcToReleaseIDsMap := make(map[string]common.ReleaseIDs)
+		for _, trackRelease := range createTrackRelease {
+			if trackRelease.Metadata.ISRC != nil {
+				isrcToReleaseIDsMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata.DDEXReleaseIDs
+			}
+		}
+		for i, album := range createAlbumRelease {
+			for j, trackMetadata := range album.Tracks {
+				if trackMetadata.ISRC != nil {
+					if releaseIDs, exists := isrcToReleaseIDsMap[*trackMetadata.ISRC]; exists {
+						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = releaseIDs
+					}
+				}
+			}
+		}
+		// Clear the individual track releases
 		createTrackRelease = []common.CreateTrackRelease{}
 	}
 
-	// Find an ID for each artist name in the release
+	// Find an ID for the first OAuthed display artist in the release
 
 	for i := range createTrackRelease {
 		track := &createTrackRelease[i]
-		artistID, err := artistutils.GetArtistID(track.Metadata.ArtistName, p.UsersColl, p.Ctx)
+		artistID, artistName, warnings, err := artistutils.GetFirstArtistID(track.Metadata.Artists, p.UsersColl, p.Ctx)
+		if warnings != nil {
+			p.Logger.Info("Warnings while finding an artist ID for track release", "track title", track.Metadata.Title, "display artists", track.Metadata.Artists, "warnings", fmt.Sprintf("%+v", warnings))
+		}
 		if err != nil {
-			err = fmt.Errorf("track '%s' failed to find artist ID for '%s': %v", track.Metadata.Title, track.Metadata.ArtistName, err)
+			err = fmt.Errorf("track '%s' failed to find an artist ID from display artists %+v: %v", track.Metadata.Title, track.Metadata.Artists, err)
 			release.ValidationErrors = append(release.ValidationErrors, err.Error())
 			return nil, err
 		}
+		p.Logger.Info("Found artist ID for track release", "artistID", artistID, "artistName", artistName, "track title", track.Metadata.Title, "display artists", track.Metadata.Artists)
 		track.Metadata.ArtistID = artistID
 	}
 
 	for i := range createAlbumRelease {
 		album := &createAlbumRelease[i]
-		artistID, err := artistutils.GetArtistID(album.Metadata.PlaylistOwnerName, p.UsersColl, p.Ctx)
+		artistID, artistName, warnings, err := artistutils.GetFirstArtistID(album.Metadata.Artists, p.UsersColl, p.Ctx)
+		if warnings != nil {
+			p.Logger.Info("Warnings while finding an artist ID for album release", "album title", album.Metadata.PlaylistName, "display artists", album.Metadata.Artists, "warnings", fmt.Sprintf("%+v", warnings))
+		}
 		if err != nil {
-			err = fmt.Errorf("album '%s' failed to find artist ID for '%s': %v", album.Metadata.PlaylistName, album.Metadata.PlaylistOwnerName, err)
+			err = fmt.Errorf("album '%s' failed to find artist ID from display artists '%+v': %v", album.Metadata.PlaylistName, album.Metadata.Artists, err)
 			release.ValidationErrors = append(release.ValidationErrors, err.Error())
 			return nil, err
 		}
+		p.Logger.Info("Found artist ID for album release", "artistID", artistID, "artistName", artistName, "album title", album.Metadata.PlaylistName, "display artists", album.Metadata.Artists)
 		album.Metadata.PlaylistOwnerID = artistID
 	}
 
@@ -302,10 +327,11 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 		// TODO: Support more ID types (GRid is preferred) as we get more examples
 		var releaseID string
 		releaseICPN := safeInnerText(messageInBatch.SelectElement("IncludedReleaseId/ICPN"))
+		releaseGRid := safeInnerText(messageInBatch.SelectElement("IncludedReleaseId/GRid"))
 		if releaseICPN != "" {
 			releaseID = releaseICPN
-			// } else if releaseGRid != "" {
-			// 	releaseID = releaseGRid
+		} else if releaseGRid != "" {
+			releaseID = releaseGRid
 		} else {
 			err := fmt.Errorf("no valid IncludedReleaseId found")
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())

@@ -7,6 +7,7 @@ import { config } from '..'
 import { antiAbuseError, internalError } from '../error'
 import { readAAOState, storeAAOState } from '../redis'
 import { StatusCodes } from 'http-status-codes'
+import { unknownToError } from '../utils'
 
 type AbuseRule = {
   rule: number
@@ -27,10 +28,11 @@ export const antiAbuseMiddleware = async (
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
-  const { ip, recoveredSigner, signerIsApp, createOrDeactivate, isSenderVerifier } = response.locals.ctx
+  const { ip, recoveredSigner, signerIsApp, createOrDeactivate, isSenderVerifier, requestId, validatedRelayRequest } = response.locals.ctx
 
   // no AAO to check and creates / deactivates should always be allowed
   if (signerIsApp || createOrDeactivate || isSenderVerifier) {
+    logger.info({ requestId, signerIsApp, createOrDeactivate, isSenderVerifier }, "antiabuse skipped")
     next()
     return
   }
@@ -42,6 +44,7 @@ export const antiAbuseMiddleware = async (
   })
 
   if (!user.handle) {
+    logger.error({ requestId, user, validatedRelayRequest }, "user found without handle")
     internalError(
       next,
       `user found but without handle, investigate ${JSON.stringify(user)}`
@@ -58,6 +61,7 @@ export const antiAbuseMiddleware = async (
   }
 
   if (userAbuseRules?.blockedFromRelay) {
+    logger.info({ requestId, address: user.wallet, userId: user.user_id, handle: user.handle_lc }, `blocked from relay ${user.handle_lc}`)
     antiAbuseError(next, 'blocked from relay')
     return
   }
@@ -80,11 +84,10 @@ export const detectAbuse = async (
   try {
     rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
   } catch (e) {
+    const aaoError = unknownToError(e)
     logger.error({
-      name: 'INTERNAL_ERROR',
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      message: 'error returned from antiabuse oracle'
-    })
+      handle: user.handle_lc, userId: user.user_id, address: user.wallet, error: aaoError.message, errorStackTrace: aaoError.stack
+    }, "error returned from anti abuse oracle")
     return
   }
   const userAbuseRules = determineAbuseRules(aaoConfig, rules)

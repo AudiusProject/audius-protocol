@@ -1,15 +1,14 @@
 import React, { ReactNode } from 'react'
 
-import Paper from 'components/Paper'
-import styles from './MyEstimatedRewards.module.css'
-import { TICKER } from 'utils/consts'
-import { Address, Status } from 'types'
+import { Flex, Text } from '@audius/harmony'
+import DisplayAudio from 'components/DisplayAudio'
+import Loading from 'components/Loading'
 import {
   useUserAnnualRewardRate,
   useUserWeeklyRewards
 } from 'store/cache/rewards/hooks'
-import Loading from 'components/Loading'
-import DisplayAudio from 'components/DisplayAudio'
+import { Address, Status } from 'types'
+import { TICKER } from 'utils/consts'
 
 const messages = {
   staked: `Staked ${TICKER}`,
@@ -23,10 +22,15 @@ type RowStatProps = {
 }
 const RowStat: React.FC<RowStatProps> = ({ label, value }) => {
   return (
-    <div className={styles.rowContainer}>
-      <div className={styles.label}>{label}</div>
-      <div className={styles.value}>{value}</div>
-    </div>
+    <Flex gap="s" alignItems="center">
+      <Text variant="heading" size="s">
+        {value}
+      </Text>
+
+      <Text variant="body" size="l" strength="strong" color="subdued">
+        {label}
+      </Text>
+    </Flex>
   )
 }
 
@@ -55,7 +59,7 @@ const MyEstimatedRewards: React.FC<MyEstimatedRewardsProps> = ({ wallet }) => {
     ) : null
 
   return (
-    <Paper className={styles.container}>
+    <Flex direction="column">
       {isLoading ? (
         <Loading />
       ) : (
@@ -64,7 +68,7 @@ const MyEstimatedRewards: React.FC<MyEstimatedRewardsProps> = ({ wallet }) => {
           <RowStat label={messages.estWeeklyRewards} value={weekly} />
         </>
       )}
-    </Paper>
+    </Flex>
   )
 }
 

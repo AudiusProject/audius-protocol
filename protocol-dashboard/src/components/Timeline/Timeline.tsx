@@ -11,7 +11,7 @@ import { useModalControls } from 'utils/hooks'
 import TimelineModal from './TimelineModal'
 
 const messages = {
-  title: 'Timeline',
+  title: 'Transaction Timeline',
   emptyTimeline: 'No Events',
   viewAll: 'View All Timeline Events'
 }

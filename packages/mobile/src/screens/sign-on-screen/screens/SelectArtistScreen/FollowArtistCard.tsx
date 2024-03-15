@@ -1,7 +1,7 @@
 import type { ChangeEvent } from 'react'
 import { useCallback, useContext } from 'react'
 
-import type { UserMetadata } from '@audius/common/models'
+import { Name, type UserMetadata } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import {
@@ -61,12 +61,19 @@ export const FollowArtistCard = (props: FollowArtistCardProps) => {
       const { value, checked } = e.target
       const artistId = parseInt(value)
       if (checked) {
+        track(
+          make({
+            eventName: Name.CREATE_ACCOUNT_FOLLOW_ARTIST,
+            artistName: artist.name,
+            artistID: artistId
+          })
+        )
         dispatch(addFollowArtists([artistId]))
       } else {
         dispatch(removeFollowArtists([artistId]))
       }
     },
-    [dispatch]
+    [artist.name, dispatch]
   )
 
   const {

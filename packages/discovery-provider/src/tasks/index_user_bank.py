@@ -1119,3 +1119,6 @@ def index_user_bank(self):
     finally:
         if have_lock:
             update_lock.release()
+        celery.send_task(
+                "index_user_bank", countdown=0.5, queue="index_sol"
+            )

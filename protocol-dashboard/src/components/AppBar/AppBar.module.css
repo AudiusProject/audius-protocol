@@ -11,41 +11,8 @@
 .left {
   display: inline-flex;
   align-items: center;
-}
-
-.currentBlock {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  margin-left: 72px;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.currentBlock.show {
-  opacity: 1;
-}
-
-.currentBlock .title {
-  font-weight: 700;
-  font-size: var(--font-xs);
-  line-height: 15px;
-
-  text-align: center;
-  text-transform: uppercase;
-  color: var(--static-white);
-  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
-  opacity: 0.8;
-}
-
-.currentBlock .block {
-  font-weight: var(--font-heavy);
-  font-size: var(--font-s);
-  line-height: 15px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--static-white);
-  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+  gap: var(--unit-4);
+  justify-content: space-between;
 }
 
 .right {
@@ -56,7 +23,6 @@
 
 .logo {
   width: 120px;
-  margin-right: 20px;
 }
 
 .logo path {
@@ -65,14 +31,6 @@
 
 .name {
   flex-wrap: wrap;
-  width: 110px;
-  font-family: var(--font-family);
-  font-weight: 800;
-  font-size: var(--font-s);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--static-white);
-  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
 }
 
 /* Right Nav */

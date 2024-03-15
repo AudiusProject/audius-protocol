@@ -23,7 +23,7 @@ import { formatAud } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 
 import Bounds from 'components/Bounds'
-import Tooltip, { Position } from 'components/Tooltip'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import UserImage from 'components/UserImage'
 import { getDelegatorInfo } from 'store/cache/protocol/hooks'
 import { createStyles } from 'utils/mobile'
@@ -146,7 +146,7 @@ const UserInfo = ({
     <>
       {showDelegate && (
         <div className={styles.buttonContainer}>
-          <Tooltip
+          <BasicTooltip
             position={Position.TOP}
             text={messages.delegatorLimitReached}
             isDisabled={!isDelegatorLimitReached}
@@ -157,7 +157,7 @@ const UserInfo = ({
               isDisabled={isDelegatorLimitReached}
               onClick={onClick}
             />
-          </Tooltip>
+          </BasicTooltip>
           <DelegateStakeModal
             serviceOperatorWallet={wallet}
             isOpen={isOpen}
@@ -186,7 +186,7 @@ const UserInfo = ({
       )}
       {showClaim && (
         <div className={styles.buttonContainer}>
-          <Tooltip
+          <BasicTooltip
             position={Position.TOP}
             text={messages.claimOutOfBounds}
             isDisabled={!isClaimDisabled}
@@ -206,7 +206,7 @@ const UserInfo = ({
               onConfirm={onConfirmClaim}
               onClose={onClose}
             />
-          </Tooltip>
+          </BasicTooltip>
         </div>
       )}
       {rank && (

@@ -7,6 +7,7 @@ import {
   getAssociatedTokenAddress
 } from '@solana/spl-token'
 import {
+  ComputeBudgetProgram,
   LAMPORTS_PER_SOL,
   PublicKey,
   Transaction,
@@ -238,6 +239,9 @@ export const createTransferToUserBankTransaction = async ({
   const tx = new Transaction()
   tx.add(memoInstruction)
   tx.add(transferInstruction)
+  tx.add(ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: 100000
+  }))
   return tx
 }
 
