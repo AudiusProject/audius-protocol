@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
-import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
-import { tracksSocialActions } from '@audius/common/store'
+import type { PurchaseableContentMetadata } from '@audius/common/hooks'
+import {
+  collectionsSocialActions,
+  tracksSocialActions
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import {
@@ -15,16 +18,14 @@ import {
 } from '@audius/harmony-native'
 import { spacing } from 'app/styles/spacing'
 import { EventNames, RepostSource } from 'app/types/analytics'
-import { getTrackRoute } from 'app/utils/routes'
+import { getCollectionRoute, getTrackRoute } from 'app/utils/routes'
 
 import { TwitterButton } from '../twitter-button'
 
 const messages = {
   success: 'Your Purchase Was Successful!',
-  shareTwitterTextTrack: (trackTitle: string, handle: string) =>
-    `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
-  shareTwitterTextStems: (trackTitle: string, handle: string) =>
-    `I bought the stems for ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
+  shareTwitterText: (contentType: string, trackTitle: string, handle: string) =>
+    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
   viewTrack: 'View Track',
   repost: 'Repost',
   reposted: 'Reposted'
@@ -32,31 +33,34 @@ const messages = {
 
 export const PurchaseSuccess = ({
   onPressViewTrack,
-  track
+  metadata
 }: {
   onPressViewTrack: () => void
-  track: PurchaseableTrackMetadata
+  metadata: PurchaseableContentMetadata
 }) => {
-  const { handle } = track.user
-  const {
-    title,
-    is_download_gated,
-    _stems,
-    has_current_user_reposted: isReposted,
-    track_id: trackId
-  } = track
+  const { handle } = metadata.user
+  const { has_current_user_reposted: isReposted } = metadata
+  const isAlbum = 'playlist_id' in metadata
+  const title = isAlbum ? metadata.playlist_name : metadata.title
+  const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
 
-  const link = getTrackRoute(track, true)
+  const link = isAlbum
+    ? getCollectionRoute(metadata)
+    : getTrackRoute(metadata, true)
 
   const dispatch = useDispatch()
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
       let shareText: string
-      if (is_download_gated && _stems?.length) {
-        shareText = messages.shareTwitterTextStems(title, handle)
+      if (!isAlbum && metadata.is_download_gated && metadata._stems?.length) {
+        shareText = messages.shareTwitterText('stems for', title, handle)
       } else {
-        shareText = messages.shareTwitterTextTrack(title, handle)
+        shareText = messages.shareTwitterText(
+          isAlbum ? 'album' : 'track',
+          title,
+          handle
+        )
       }
       return {
         shareText,
@@ -66,16 +70,23 @@ export const PurchaseSuccess = ({
         } as const
       }
     },
-    [title, is_download_gated, _stems]
+    [isAlbum, metadata, title]
   )
 
   const onRepost = useCallback(() => {
     dispatch(
       isReposted
-        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCHASE)
-        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCHASE)
+        ? (isAlbum
+            ? collectionsSocialActions.undoRepostCollection
+            : tracksSocialActions.undoRepostTrack)(
+            contentId,
+            RepostSource.PURCHASE
+          )
+        : (isAlbum
+            ? collectionsSocialActions.repostCollection
+            : tracksSocialActions.repostTrack)(contentId, RepostSource.PURCHASE)
     )
-  }, [dispatch, isReposted, trackId])
+  }, [contentId, dispatch, isAlbum, isReposted])
 
   return (
     <Flex pt='unitHalf' gap='2xl' alignSelf='center'>

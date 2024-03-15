@@ -5,7 +5,8 @@ import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
-  gatedContentSelectors
+  gatedContentSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import { TouchableOpacity, View } from 'react-native'
@@ -73,7 +74,7 @@ export const LineupTileAccessStatus = ({
   const handlePress = useCallback(() => {
     if (isUSDCPurchase) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId },
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
         { source: ModalSource.TrackTile }
       )
     } else if (trackId) {

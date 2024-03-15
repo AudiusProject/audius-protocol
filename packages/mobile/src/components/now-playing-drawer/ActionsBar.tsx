@@ -20,7 +20,8 @@ import {
   OverflowAction,
   OverflowSource,
   usePremiumContentPurchaseModal,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
@@ -134,7 +135,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
       openPremiumContentPurchaseModal(
-        { contentId: track.track_id },
+        {
+          contentId: track.track_id,
+          contentType: PurchaseableContentType.TRACK
+        },
         { source: ModalSource.NowPlaying }
       )
     }

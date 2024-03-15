@@ -144,6 +144,7 @@ const LockedGatedTrackSection = ({
     )
   }, [
     contentId,
+    contentType,
     lockedContentModalVisibility,
     openPremiumContentPurchaseModal,
     setLockedContentModalVisibility

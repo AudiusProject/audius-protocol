@@ -29,7 +29,8 @@ import {
   playerSelectors,
   playbackRateValueMap,
   gatedContentSelectors,
-  OverflowActionCallbacks
+  OverflowActionCallbacks,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import { IconCaretRight as IconCaret } from '@audius/harmony'
@@ -414,7 +415,8 @@ const NowPlaying = g(
     const onClickPill = useAuthenticatedClickCallback(() => {
       openPremiumContentPurchaseModal(
         {
-          contentId: typeof track_id === 'number' ? track_id : -1
+          contentId: typeof track_id === 'number' ? track_id : -1,
+          contentType: PurchaseableContentType.TRACK
         },
         { source: ModalSource.NowPlaying }
       )

@@ -15,6 +15,7 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,
+  PurchaseableContentType,
   cacheTracksSelectors
 } from '@audius/common/store'
 import {
@@ -416,7 +417,8 @@ const TrackHeader = ({
       {streamConditions && trackId ? (
         <GatedTrackSection
           isLoading={isLoading}
-          trackId={trackId}
+          contentId={trackId}
+          contentType={PurchaseableContentType.TRACK}
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
           isOwner={isOwner}

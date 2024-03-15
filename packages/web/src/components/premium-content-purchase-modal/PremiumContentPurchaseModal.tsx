@@ -16,6 +16,7 @@ import {
   PurchaseableContentMetadata
 } from '@audius/common/hooks'
 import {
+  ID,
   PurchaseMethod,
   PurchaseVendor,
   Track,
@@ -29,8 +30,7 @@ import {
   purchaseContentSelectors,
   PurchaseContentStage,
   PurchaseContentPage,
-  isContentPurchaseInProgress,
-  PurchaseableContentType
+  isContentPurchaseInProgress
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -88,12 +88,12 @@ const RenderForm = ({
   onClose,
   metadata,
   purchaseConditions,
-  contentType
+  contentId
 }: {
   onClose: () => void
   metadata: PurchaseableContentMetadata
   purchaseConditions: USDCPurchaseConditions
-  contentType: PurchaseableContentType
+  contentId: ID
 }) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
@@ -110,12 +110,8 @@ const RenderForm = ({
   const { history } = useHistoryContext()
 
   const isAlbum = 'playlist_id' in metadata
-
   // Reset form on track change
-  useEffect(
-    () => resetForm,
-    [isAlbum ? metadata.playlist_id : metadata.track_id, resetForm]
-  )
+  useEffect(() => resetForm, [contentId, resetForm])
 
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
@@ -169,7 +165,7 @@ const RenderForm = ({
                 purchaseSummaryValues={purchaseSummaryValues}
                 isUnlocking={isUnlocking}
                 price={price}
-                track={metadata}
+                metadata={metadata}
               />
             </Flex>
           </Flex>
@@ -306,10 +302,10 @@ export const PremiumContentPurchaseModal = () => {
           onSubmit={onSubmit}
         >
           <RenderForm
+            contentId={contentId}
             metadata={metadata}
             onClose={handleClose}
             purchaseConditions={purchaseConditions}
-            contentType={contentType}
           />
         </Formik>
       ) : null}

@@ -16,7 +16,8 @@ import {
   usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
-  gatedContentSelectors
+  gatedContentSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
@@ -219,7 +220,7 @@ export const DetailsTileNoAccess = ({
 
   const handlePurchasePress = useCallback(() => {
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.TrackDetails }
     )
   }, [trackId, openPremiumContentPurchaseModal])

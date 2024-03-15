@@ -1,4 +1,4 @@
-import type { UserCollection, User } from '@audius/common/models'
+import type { User, CollectionMetadata } from '@audius/common/models'
 import { encodeUrlName, getHash } from '@audius/common/utils'
 
 import { env } from 'app/env'
@@ -21,7 +21,7 @@ export const getUserRoute = (user: UserHandle, fullUrl = false) => {
 }
 
 export const getCollectionRoute = (
-  collection: UserCollection,
+  collection: CollectionMetadata,
   fullUrl = false
 ) => {
   const { permalink } = collection

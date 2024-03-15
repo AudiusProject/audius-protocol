@@ -5,7 +5,8 @@ import {
   themeSelectors,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  CommonState
+  CommonState,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -59,7 +60,7 @@ export const SocialActions = ({
     usePremiumContentPurchaseModal()
   const onClickPill = useAuthenticatedClickCallback(() => {
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.PlayBar }
     )
   }, [trackId, openPremiumContentPurchaseModal])

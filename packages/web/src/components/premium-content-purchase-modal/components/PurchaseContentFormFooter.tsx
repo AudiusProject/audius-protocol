@@ -8,7 +8,8 @@ import { Name, RepostSource } from '@audius/common/models'
 import {
   PurchaseContentStage,
   PurchaseContentError,
-  tracksSocialActions
+  tracksSocialActions,
+  collectionsSocialActions
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import {
@@ -102,16 +103,23 @@ export const PurchaseContentFormFooter = ({
       })
       return { shareText, analytics }
     },
-    [title]
+    [title, isAlbum]
   )
 
   const onRepost = useCallback(() => {
     dispatch(
       isReposted
-        ? tracksSocialActions.undoRepostTrack(contentId, RepostSource.PURCHASE)
-        : tracksSocialActions.repostTrack(contentId, RepostSource.PURCHASE)
+        ? (isAlbum
+            ? collectionsSocialActions.undoRepostCollection
+            : tracksSocialActions.undoRepostTrack)(
+            contentId,
+            RepostSource.PURCHASE
+          )
+        : (isAlbum
+            ? collectionsSocialActions.repostCollection
+            : tracksSocialActions.repostTrack)(contentId, RepostSource.PURCHASE)
     )
-  }, [contentId, dispatch, isReposted])
+  }, [contentId, dispatch, isAlbum, isReposted])
 
   if (isPurchased) {
     return (

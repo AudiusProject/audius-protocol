@@ -6,8 +6,7 @@ export const getEntityRoute = (entity: EntityType, fullUrl = false) => {
   if ('track_id' in entity) {
     return getTrackRoute(entity, fullUrl)
   } else if (entity.user) {
-    const { user } = entity
-    return getCollectionRoute({ ...entity, user }, fullUrl)
+    return getCollectionRoute(entity, fullUrl)
   }
   return ''
 }

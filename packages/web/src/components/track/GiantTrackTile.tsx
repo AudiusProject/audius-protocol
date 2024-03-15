@@ -12,7 +12,8 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
-  CommonState
+  CommonState,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   Genre,
@@ -660,7 +661,8 @@ export const GiantTrackTile = ({
         {isStreamGated && streamConditions ? (
           <GatedTrackSection
             isLoading={isLoading}
-            trackId={trackId}
+            contentId={trackId}
+            contentType={PurchaseableContentType.TRACK}
             streamConditions={streamConditions}
             hasStreamAccess={hasStreamAccess}
             isOwner={isOwner}

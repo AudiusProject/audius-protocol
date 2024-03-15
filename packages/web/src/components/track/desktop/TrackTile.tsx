@@ -6,7 +6,8 @@ import {
   accountSelectors,
   usePremiumContentPurchaseModal,
   playbackPositionSelectors,
-  CommonState
+  CommonState,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   formatCount,
@@ -184,7 +185,7 @@ const TrackTile = ({
   const onClickPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId },
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
         { source: ModalSource.TrackTile }
       )
     } else if (trackId && !hasStreamAccess && onClickLocked) {

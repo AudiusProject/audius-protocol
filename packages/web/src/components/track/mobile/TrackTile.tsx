@@ -9,7 +9,8 @@ import {
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
-  gatedContentSelectors
+  gatedContentSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   formatCount,
@@ -229,7 +230,7 @@ const TrackTile = (props: CombinedProps) => {
   const onClickPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId },
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
         { source: ModalSource.TrackTile }
       )
     } else if (trackId && !hasStreamAccess) {

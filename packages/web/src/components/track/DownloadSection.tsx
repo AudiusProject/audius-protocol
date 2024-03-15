@@ -19,7 +19,8 @@ import {
   usePremiumContentPurchaseModal,
   CommonState,
   useWaitForDownloadModal,
-  toastActions
+  toastActions,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -122,7 +123,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       setLockedContentModalVisibility(false)
     }
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.TrackDetails }
     )
   }, [])

@@ -1,6 +1,10 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
+import type {
+  PurchaseableTrackStreamMetadata,
+  PurchaseableTrackDownloadMetadata
+} from '@audius/common/hooks'
 import {
   useRemoteVar,
   useUSDCBalance,
@@ -11,10 +15,7 @@ import {
   PURCHASE_VENDOR,
   usePurchaseMethod,
   isStreamPurchaseable,
-  isDownloadPurchaseable,
-  PurchaseableContentMetadata,
-  PurchaseableTrackStreamMetadata,
-  PurchaseableTrackDownloadMetadata
+  isDownloadPurchaseable
 } from '@audius/common/hooks'
 import type { USDCPurchaseConditions } from '@audius/common/models'
 import {
@@ -363,7 +364,7 @@ const RenderForm = ({
               {isIOSDisabled ? (
                 <PurchaseUnavailable />
               ) : isPurchaseSuccessful ? (
-                <PurchaseSuccess onPressViewTrack={onClose} track={track} />
+                <PurchaseSuccess onPressViewTrack={onClose} metadata={track} />
               ) : isUnlocking ? null : (
                 <View>
                   <View style={styles.payToUnlockTitleContainer}>
@@ -432,7 +433,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const presetValues = usePayExtraPresets()
   const {
     // TODO: album support
-    data: { contentId: trackId, contentType },
+    data: { contentId: trackId },
     isOpen,
     onClose,
     onClosed

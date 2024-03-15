@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
-import { gatedContentActions } from '@audius/common/store'
+import {
+  PurchaseableContentType,
+  gatedContentActions
+} from '@audius/common/store'
 import {
   ModalContent,
   ModalHeader,
@@ -64,7 +67,9 @@ export const LockedContentModal = () => {
             <LockedTrackDetailsTile track={track} owner={owner} />
             <GatedTrackSection
               isLoading={false}
-              trackId={track.track_id}
+              // TODO: album support?
+              contentId={track.track_id}
+              contentType={PurchaseableContentType.TRACK}
               streamConditions={track.stream_conditions}
               hasStreamAccess={hasStreamAccess}
               isOwner={false}

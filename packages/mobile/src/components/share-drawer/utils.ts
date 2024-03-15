@@ -21,12 +21,12 @@ export const getContentUrl = (content: ShareContent) => {
       return getUserRoute(profile, true)
     }
     case 'album': {
-      const { album, artist } = content
-      return getCollectionRoute({ ...album, user: artist }, true)
+      const { album } = content
+      return getCollectionRoute(album, true)
     }
     case 'playlist': {
-      const { playlist, creator } = content
-      return getCollectionRoute({ ...playlist, user: creator }, true)
+      const { playlist } = content
+      return getCollectionRoute(playlist, true)
     }
     // TODO: add audioNFTPlaylist link
     case 'audioNftPlaylist': {
