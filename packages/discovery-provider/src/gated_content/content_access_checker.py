@@ -29,12 +29,13 @@ class ContentAccessResponse(TypedDict):
     has_download_access: bool
 
 
-GatedTrackAccessResult = Dict[int, Dict[int, ContentAccessResponse]]
+GatedContentAccessResult = Dict[int, Dict[int, ContentAccessResponse]]
 
 
 class ContentAccessBatchResponse(TypedDict):
     # track : user id -> track id -> access
-    track: GatedTrackAccessResult
+    track: GatedContentAccessResult
+    playlist: GatedContentAccessResult
 
 
 class GatedContentAccessHandler(Protocol):

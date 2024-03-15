@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './Access';
 export * from './Activity';
 export * from './AuthorizedApp';
 export * from './AuthorizedApps';

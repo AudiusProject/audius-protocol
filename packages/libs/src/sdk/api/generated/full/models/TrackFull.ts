@@ -233,6 +233,18 @@ export interface TrackFull {
     isStreamable?: boolean;
     /**
      * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    ddexApp?: string;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TrackFull
+     */
+    playlistsContainingTrack?: Array<number>;
+    /**
+     * 
      * @type {number}
      * @memberof TrackFull
      */
@@ -291,6 +303,12 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     iswc?: string;
+    /**
+     * 
+     * @type {object}
+     * @memberof TrackFull
+     */
+    ddexReleaseIds?: object;
     /**
      * 
      * @type {FieldVisibility}
@@ -506,6 +524,8 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
+        'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
         'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
@@ -516,6 +536,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isrc': !exists(json, 'isrc') ? undefined : json['isrc'],
         'license': !exists(json, 'license') ? undefined : json['license'],
         'iswc': !exists(json, 'iswc') ? undefined : json['iswc'],
+        'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
         'fieldVisibility': !exists(json, 'field_visibility') ? undefined : FieldVisibilityFromJSON(json['field_visibility']),
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
         'hasCurrentUserReposted': json['has_current_user_reposted'],
@@ -577,6 +598,8 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'play_count': value.playCount,
         'permalink': value.permalink,
         'is_streamable': value.isStreamable,
+        'ddex_app': value.ddexApp,
+        'playlists_containing_track': value.playlistsContainingTrack,
         'blocknumber': value.blocknumber,
         'create_date': value.createDate,
         'cover_art_sizes': value.coverArtSizes,
@@ -587,6 +610,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'isrc': value.isrc,
         'license': value.license,
         'iswc': value.iswc,
+        'ddex_release_ids': value.ddexReleaseIds,
         'field_visibility': FieldVisibilityToJSON(value.fieldVisibility),
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
         'has_current_user_reposted': value.hasCurrentUserReposted,

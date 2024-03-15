@@ -7,6 +7,7 @@ apis/TracksApi.ts
 apis/UsersApi.ts
 apis/index.ts
 index.ts
+models/Access.ts
 models/Activity.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
