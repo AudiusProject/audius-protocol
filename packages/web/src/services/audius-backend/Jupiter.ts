@@ -2,11 +2,7 @@ import { TOKEN_LISTING_MAP, JupiterTokenSymbol } from '@audius/common/store'
 import { convertBigIntToAmountObject } from '@audius/common/utils'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
-import {
-  ComputeBudgetProgram,
-  PublicKey,
-  TransactionInstruction
-} from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 let _jup: ReturnType<typeof createJupiterApiClient>
 
@@ -114,6 +110,7 @@ const getSwapInstructions = async ({
       userPublicKey: userPublicKey.toString(),
       destinationTokenAccount: destinationTokenAccount?.toString(),
       wrapAndUnwrapSol,
+      computeUnitPriceMicroLamports: 100000,
       useSharedAccounts
     }
   })
@@ -130,10 +127,7 @@ const getSwapInstructions = async ({
     ...computeBudgetInstructions,
     ...setupInstructions,
     swapInstruction,
-    cleanupInstruction,
-    ComputeBudgetProgram.setComputeUnitPrice({
-      microLamports: 100000
-    })
+    cleanupInstruction
   ]
     .filter((i): i is Instruction => i !== undefined)
     .map((i) => {
