@@ -146,11 +146,12 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
         if playlist_track.track_id not in updated_track_ids:
             playlist_track.is_removed = True
             playlist_track.updated_at = params.block_datetime
-            track = (
+            track_record = (
                 session.query(Track)
                 .filter(Track.track_id == playlist_track.track_id)
                 .first()
             )
+            track = helpers.model_to_dictionary(track_record)
             if track:
                 track.updated_at = params.block_datetime
                 # remove from playlists_containing_track
@@ -181,7 +182,8 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
 
     for track_id in updated_track_ids:
         # add playlist_id to playlists_containing_track and remove from playlists_previously_containing_track
-        track = session.query(Track).filter(Track.track_id == track_id).first()
+        track_record = session.query(Track).filter(Track.track_id == track_id).first()
+        track = helpers.model_to_dictionary(track_record)
         if track:
             track.updated_at = params.block_datetime
             track.playlists_containing_track = list(
