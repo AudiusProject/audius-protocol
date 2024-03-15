@@ -70,9 +70,6 @@ type StemsAndDownloadsFieldProps = {
 export const StemsAndDownloadsField = ({
   closeMenuCallback
 }: StemsAndDownloadsFieldProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
@@ -180,7 +177,7 @@ export const StemsAndDownloadsField = ({
 
       // If download does not inherit from stream conditions,
       // extract the correct download conditions based on the selected availability type.
-      if (isLosslessDownloadsEnabled && !streamConditions) {
+      if (!streamConditions) {
         setIsDownloadGated(false)
         setDownloadConditions(null)
         switch (availabilityType) {
@@ -217,7 +214,6 @@ export const StemsAndDownloadsField = ({
       }
     },
     [
-      isLosslessDownloadsEnabled,
       streamConditions,
       setIsDownloadable,
       setisOriginalAvailable,
@@ -231,10 +227,7 @@ export const StemsAndDownloadsField = ({
   const renderValue = () => {
     let values = []
     if (!streamConditions) {
-      if (
-        isLosslessDownloadsEnabled &&
-        isContentUSDCPurchaseGated(savedDownloadConditions)
-      ) {
+      if (isContentUSDCPurchaseGated(savedDownloadConditions)) {
         values.push({
           label: messages.price(
             savedDownloadConditions.usdc_purchase.price / 100
@@ -249,7 +242,7 @@ export const StemsAndDownloadsField = ({
     if (isDownloadable) {
       values.push(messages.values.allowDownload)
     }
-    if (isLosslessDownloadsEnabled && isOriginalAvailable) {
+    if (isOriginalAvailable) {
       values.push(messages.values.allowOriginal)
     }
     const stemsCategories =
@@ -285,7 +278,6 @@ export const StemsAndDownloadsField = ({
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema({
-          isLosslessDownloadsEnabled: !!isLosslessDownloadsEnabled,
           isUsdcUploadEnabled: !!isUsdcUploadEnabled,
           ...usdcPurchaseConfig
         })

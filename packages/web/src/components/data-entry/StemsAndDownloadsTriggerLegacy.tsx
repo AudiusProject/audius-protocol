@@ -79,9 +79,6 @@ export const StemsAndDownloadsTriggerLegacy = (
     closeMenuCallback
   } = props
 
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
@@ -171,7 +168,7 @@ export const StemsAndDownloadsTriggerLegacy = (
 
       // If download does not inherit from stream conditions,
       // extract the correct download conditions based on the selected availability type.
-      if (isLosslessDownloadsEnabled && !streamConditions) {
+      if (!streamConditions) {
         onChangeField(IS_DOWNLOAD_GATED, false)
         onChangeField(DOWNLOAD_CONDITIONS, null)
         switch (availabilityType) {
@@ -207,12 +204,7 @@ export const StemsAndDownloadsTriggerLegacy = (
         }
       }
     },
-    [
-      isLosslessDownloadsEnabled,
-      onChangeField,
-      setLastGateKeeper,
-      streamConditions
-    ]
+    [onChangeField, setLastGateKeeper, streamConditions]
   )
 
   return (
@@ -224,7 +216,6 @@ export const StemsAndDownloadsTriggerLegacy = (
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(
         stemsAndDownloadsSchema({
-          isLosslessDownloadsEnabled: !!isLosslessDownloadsEnabled,
           isUsdcUploadEnabled: !!isUsdcUploadEnabled,
           ...usdcPurchaseConfig
         })

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   DownloadTrackAvailabilityType,
@@ -8,7 +7,6 @@ import {
   StemUploadWithFile,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { removeNullable, formatPrice, Nullable } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
 import { useField } from 'formik'
@@ -62,13 +60,11 @@ const messages = {
 }
 
 type StemsAndDownloadsSchemaProps = USDCPurchaseRemoteConfig & {
-  isLosslessDownloadsEnabled: boolean
   isUsdcUploadEnabled: boolean
 }
 export const stemsAndDownloadsSchema = ({
   minContentPriceCents,
   maxContentPriceCents,
-  isLosslessDownloadsEnabled,
   isUsdcUploadEnabled
 }: StemsAndDownloadsSchemaProps) =>
   z
@@ -126,11 +122,7 @@ export const stemsAndDownloadsSchema = ({
         const stems = formValues[STEMS]
         const hasStems = stems.length > 0
         const hasDownloadableAssets = isDownloadable || hasStems
-        return (
-          !isLosslessDownloadsEnabled ||
-          !isOriginalAvailable ||
-          hasDownloadableAssets
-        )
+        return !isOriginalAvailable || hasDownloadableAssets
       },
       {
         message: messages.losslessNoDownloadableAssets,
@@ -189,9 +181,6 @@ type StemsAndDownloadsMenuFieldsProps = {
 export const StemsAndDownloadsMenuFields = (
   props: StemsAndDownloadsMenuFieldsProps
 ) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
     useField(IS_DOWNLOADABLE)
   const [, , { setValue: setIsOriginalAvailable }] = useField(
@@ -218,35 +207,25 @@ export const StemsAndDownloadsMenuFields = (
     if (firstTimeDownloadGated) {
       setIsDownloadable(true)
       setIsAvailabilityTouched(true)
-      if (isLosslessDownloadsEnabled) {
-        setIsOriginalAvailable(true)
-      }
+      setIsOriginalAvailable(true)
     }
   }, [
     availabilityType,
     isAvailabilityTouched,
     setIsDownloadable,
-    isLosslessDownloadsEnabled,
     setIsOriginalAvailable
   ])
 
   // Allow lossless files by default if the track is downloadable.
-  // If there are no downloadable assets, set the requires follow switch to false.
-  // (the latter is only relevant until lossless downloads feature is live)
   // Note that the useEffect has been preferred to the corresponding onChange handlers
   // as those seemed to cause unwanted race conditions resulting in errors showing up incorrectly.
   useEffect(() => {
-    if (isLosslessDownloadsEnabled && isDownloadable) {
+    if (isDownloadable) {
       setIsOriginalAvailable(true)
     }
-  }, [
-    isLosslessDownloadsEnabled,
-    isDownloadable,
-    setIsOriginalAvailable,
-    stemsValue.length
-  ])
+  }, [isDownloadable, setIsOriginalAvailable, stemsValue.length])
 
-  // Allow full track download and provide lossless files if additional are uploaded for the first time.
+  // Allow full track download and provide lossless files if additional files are uploaded for the first time.
   useEffect(() => {
     if (
       firstTimeStemsUploaded &&
@@ -256,15 +235,12 @@ export const StemsAndDownloadsMenuFields = (
     ) {
       setFirstTimeStemsUploaded(false)
       setIsDownloadable(true)
-      if (isLosslessDownloadsEnabled) {
-        setIsOriginalAvailable(true)
-      }
+      setIsOriginalAvailable(true)
     }
   }, [
     firstTimeStemsUploaded,
     stemsValue,
     previousStemsValue,
-    isLosslessDownloadsEnabled,
     setIsDownloadable,
     setIsOriginalAvailable
   ])
@@ -331,27 +307,23 @@ export const StemsAndDownloadsMenuFields = (
     <div className={styles.fields}>
       <Text variant='body'>{messages.description}</Text>
       <Divider />
-      {isLosslessDownloadsEnabled ? (
-        <DownloadAvailability
-          isUpload={props.isUpload}
-          initialDownloadConditions={props.initialDownloadConditions}
-          value={availabilityType}
-          setValue={setAvailabilityType}
-        />
-      ) : null}
+      <DownloadAvailability
+        isUpload={props.isUpload}
+        initialDownloadConditions={props.initialDownloadConditions}
+        value={availabilityType}
+        setValue={setAvailabilityType}
+      />
       <SwitchRowField
         name={IS_DOWNLOADABLE}
         header={messages[IS_DOWNLOADABLE].header}
         description={messages[IS_DOWNLOADABLE].description}
       />
       <Divider />
-      {isLosslessDownloadsEnabled ? (
-        <SwitchRowField
-          name={IS_ORIGINAL_AVAILABLE}
-          header={messages[IS_ORIGINAL_AVAILABLE].header}
-          description={messages[IS_ORIGINAL_AVAILABLE].description}
-        />
-      ) : null}
+      <SwitchRowField
+        name={IS_ORIGINAL_AVAILABLE}
+        header={messages[IS_ORIGINAL_AVAILABLE].header}
+        description={messages[IS_ORIGINAL_AVAILABLE].description}
+      />
       <Divider />
       <StemFilesView
         stems={stemsValue}
