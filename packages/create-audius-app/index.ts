@@ -36,7 +36,7 @@ const program = new Commander.Command(packageJson.name)
   .allowUnknownOption()
   .parse(process.argv)
 
-async function run(): Promise<void> {
+async function run() {
   if (typeof projectPath === 'string') {
     projectPath = projectPath.trim()
   }
@@ -126,7 +126,7 @@ async function run(): Promise<void> {
   }
 }
 
-run().catch(async (reason) => {
+run().catch((reason) => {
   console.log()
   console.log('Aborting installation.')
   if (reason.command) {
