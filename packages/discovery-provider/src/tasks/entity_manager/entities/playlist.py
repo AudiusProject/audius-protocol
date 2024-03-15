@@ -153,23 +153,23 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             )
             track = helpers.model_to_dictionary(track_record)
             if track:
-                track.updated_at = params.block_datetime
+                track_record.updated_at = params.block_datetime
                 # remove from playlists_containing_track
-                track.playlists_containing_track = [
+                track_record.playlists_containing_track = [
                     playlist_id
-                    for playlist_id in (track.playlists_containing_track or [])
+                    for playlist_id in track["playlists_containing_track"]
                     if playlist_id != playlist["playlist_id"]
                 ]
 
                 # add to or overwrite existing entry in playlists_previously_containing_track
-                if "playlists" not in track.playlists_previously_containing_track:
+                if "playlists" not in track["playlists_previously_containing_track"]:
                     continue
-                track.playlists_previously_containing_track = {
+                track_record.playlists_previously_containing_track = {
                     "playlists": [
                         playlist_obj
-                        for playlist_obj in track.playlists_previously_containing_track[
-                            "playlists"
-                        ]
+                        for playlist_obj in track[
+                            "playlists_previously_containing_track"
+                        ]["playlists"]
                         if playlist_obj["playlist_id"] != playlist["playlist_id"]
                     ]
                     + [
@@ -185,18 +185,16 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
         track_record = session.query(Track).filter(Track.track_id == track_id).first()
         track = helpers.model_to_dictionary(track_record)
         if track:
-            track.updated_at = params.block_datetime
-            track.playlists_containing_track = list(
-                set(
-                    (track.playlists_containing_track or []) + [playlist["playlist_id"]]
-                )
+            track_record.updated_at = params.block_datetime
+            track_record.playlists_containing_track = list(
+                set((track["playlists_containing_track"]) + [playlist["playlist_id"]])
             )
-            if "playlists" not in track.playlists_previously_containing_track:
+            if "playlists" not in track["playlists_previously_containing_track"]:
                 continue
-            track.playlists_previously_containing_track = {
+            track_record.playlists_previously_containing_track = {
                 "playlists": [
                     playlist_obj
-                    for playlist_obj in track.playlists_previously_containing_track[
+                    for playlist_obj in track["playlists_previously_containing_track"][
                         "playlists"
                     ]
                     if playlist_obj["playlist_id"] != playlist["playlist_id"]
