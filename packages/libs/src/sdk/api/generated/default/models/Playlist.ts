@@ -111,6 +111,12 @@ export interface Playlist {
      * @memberof Playlist
      */
     user: User;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    ddexApp?: string;
 }
 
 /**
@@ -153,6 +159,7 @@ export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'favoriteCount': json['favorite_count'],
         'totalPlayCount': json['total_play_count'],
         'user': UserFromJSON(json['user']),
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
     };
 }
 
@@ -177,6 +184,7 @@ export function PlaylistToJSON(value?: Playlist | null): any {
         'favorite_count': value.favoriteCount,
         'total_play_count': value.totalPlayCount,
         'user': UserToJSON(value.user),
+        'ddex_app': value.ddexApp,
     };
 }
 
