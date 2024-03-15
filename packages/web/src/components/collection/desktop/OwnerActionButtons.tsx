@@ -46,7 +46,7 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
         />
       ) : null}
 
-      {is_private ? (
+      {!is_private ? (
         <OverflowMenuButton collectionId={collectionId} isOwner />
       ) : null}
     </>
