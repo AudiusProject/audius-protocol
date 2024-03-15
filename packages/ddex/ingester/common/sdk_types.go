@@ -200,12 +200,12 @@ type TrackMetadata struct {
 	ArtistName string `bson:"artist_name"`
 
 	// michelle add to sdk ==
-	ResourceContributors         []ResourceContributor `bson:"resource_contributor"`
-	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributor"`
-	RightsController             RightsController      `bson:"rights_controller"`
-	CopyrightLine                Copyright             `bson:"copyright_line"`
-	ProducerCopyrightLine        Copyright             `bson:"producer_copyright_line"`
-	ParentalWarningType          string                `bson:"parental_warning_type"`
+	ResourceContributors         []ResourceContributor `bson:"resource_contributor,omitempty"`
+	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributor,omitempty"`
+	RightsController             RightsController      `bson:"rights_controller,omitempty"`
+	CopyrightLine                Copyright             `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine        Copyright             `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType          string                `bson:"parental_warning_type,omitempty"`
 	// michelle add to sdk ==
 
 	PreviewAudioFileURL         string `bson:"preview_audio_file_url"`
@@ -265,9 +265,9 @@ type CollectionMetadata struct {
 
 	// michelle add to sdk ==
 	Artists               []Artist  `bson:"artists"`
-	CopyrightLine         Copyright `bson:"copyright_line"`
-	ProducerCopyrightLine Copyright `bson:"producer_copyright_line"`
-	ParentalWarningType   string    `bson:"parental_warning_type"`
+	CopyrightLine         Copyright `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine Copyright `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType   string    `bson:"parental_warning_type,omitempty"`
 	// michelle add to sdk ==
 
 	CoverArtURL         string `bson:"cover_art_url"`

@@ -171,6 +171,14 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))
 	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
 	releaseType := safeInnerText(rNode.SelectElement("ReleaseType"))
+	copyright := common.Copyright{
+		Year: safeInnerText(rNode.SelectElement("CLine/Year")),
+		Text: safeInnerText(rNode.SelectElement("CLine/CLineText")),
+	}
+	producerCopyright := common.Copyright{
+		Year: safeInnerText(rNode.SelectElement("PLine/Year")),
+		Text: safeInnerText(rNode.SelectElement("PLine/PLineText")),
+	}
 
 	// Release IDs
 	ddexReleaseIDs := &common.ReleaseIDs{
@@ -220,14 +228,6 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	artistName := safeInnerText(releaseDetails.SelectElement("DisplayArtistName"))
 	genreStr := safeInnerText(releaseDetails.SelectElement("Genre/GenreText"))
 	parentalWarning := safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))
-	copyright := common.Copyright{
-		Year: safeInnerText(releaseDetails.SelectElement("CLine/Year")),
-		Text: safeInnerText(releaseDetails.SelectElement("CLine/PLineText")),
-	}
-	producerCopyright := common.Copyright{
-		Year: safeInnerText(releaseDetails.SelectElement("PLine/Year")),
-		Text: safeInnerText(releaseDetails.SelectElement("PLine/PLineText")),
-	}
 
 	// Parse DisplayArtist nodes
 	var displayArtists []common.Artist
