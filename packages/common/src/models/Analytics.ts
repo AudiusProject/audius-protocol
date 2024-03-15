@@ -91,7 +91,6 @@ export enum Name {
   CREATE_ACCOUNT_WELCOME_MODAL = 'Create Account: Welcome Modal',
   // When the user clicks the "Upload Track" CTA in the welcome modal
   CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
-
   // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
   SIGN_IN_FINISH = 'Sign In: Finish',
@@ -632,8 +631,8 @@ type CreateAccountSelectGenre = {
 }
 type CreateAccountFollowArtist = {
   eventName: Name.CREATE_ACCOUNT_FOLLOW_ARTIST
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
   artistID: number
   artistName: string
 }
