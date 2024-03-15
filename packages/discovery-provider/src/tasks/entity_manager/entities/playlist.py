@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Union
 
@@ -153,13 +154,50 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             )
             if track:
                 track.updated_at = params.block_datetime
+                # remove from playlists_containing_track
                 track.playlists_containing_track = [
-                    collection_id
-                    for collection_id in (track.playlists_containing_track or [])
-                    if collection_id != playlist["playlist_id"]
+                    playlist_id
+                    for playlist_id in track.playlists_containing_track
+                    if playlist_id != playlist["playlist_id"]
                 ]
 
+                # add to playlists_previously_containing_track if not already there
+                playlists_previously_containing_track = list(
+                    track.playlists_previously_containing_track.get("playlists", [])
+                )
+                if playlist["playlist_id"] not in [
+                    playlist_obj["playlist_id"]
+                    for playlist_obj in playlists_previously_containing_track
+                ]:
+                    playlists_previously_containing_track.append(
+                        {
+                            "time": params.block_integer_time,
+                            "playlist_id": playlist["playlist_id"],
+                        }
+                    )
+                    track.playlists_previously_containing_track = {
+                        "playlists": playlists_previously_containing_track
+                    }
+
     for track_id in updated_track_ids:
+        # add playlist_id to playlists_containing_track and remove from playlists_previously_containing_track
+        track = session.query(Track).filter(Track.track_id == track_id).first()
+        if track:
+            track.updated_at = params.block_datetime
+            track.playlists_containing_track = list(
+                set(
+                    (track.playlists_containing_track or []) + [playlist["playlist_id"]]
+                )
+            )
+            track.playlists_previously_containing_track = {
+                "playlists": [
+                    playlist_obj
+                    for playlist_obj in track.playlists_previously_containing_track.get(
+                        "playlists", []
+                    )
+                    if playlist_obj["playlist_id"] != playlist["playlist_id"]
+                ]
+            }
         # add row for each track that is not already in the table
         if track_id not in existing_tracks:
             new_playlist_track = PlaylistTrack(
@@ -171,28 +209,10 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             )
             # upsert to handle duplicates
             session.merge(new_playlist_track)
-            track = session.query(Track).filter(Track.track_id == track_id).first()
-            if track:
-                track.updated_at = params.block_datetime
-                track.playlists_containing_track = list(
-                    set(
-                        (track.playlists_containing_track or [])
-                        + [playlist["playlist_id"]]
-                    )
-                )
         elif existing_tracks[track_id].is_removed:
             # recover deleted relation (track was previously removed then re-added)
             existing_tracks[track_id].is_removed = False
             existing_tracks[track_id].updated_at = params.block_datetime
-            track = session.query(Track).filter(Track.track_id == track_id).first()
-            if track:
-                track.updated_at = params.block_datetime
-                track.playlists_containing_track = list(
-                    set(
-                        (track.playlists_containing_track or [])
-                        + [playlist["playlist_id"]]
-                    )
-                )
 
     params.logger.info(
         f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
@@ -419,6 +439,7 @@ def create_playlist(params: ManageEntityParameters):
 
     playlist_id = params.entity_id
     tracks = params.metadata["playlist_contents"].get("track_ids", [])
+    t = params.metadata["playlist_contents"]
     tracks_with_index_time = []
     last_added_to = None
 

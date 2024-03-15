@@ -310,6 +310,9 @@ def test_remove_track_from_playlist(app, mocker):
             .playlists_containing_track
             == []
         )
+        assert session.query(Track).filter(
+            Track.track_id == 10
+        ).first().playlists_previously_containing_track == {"playlists": []}
         assert (
             session.query(Track)
             .filter(Track.track_id == 20)
@@ -318,8 +321,16 @@ def test_remove_track_from_playlist(app, mocker):
             == []
         )
         assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_previously_containing_track == {
+            "playlists": [{"playlist_id": PLAYLIST_ID_OFFSET, "time": 1585336422}]
+        }
+        assert session.query(Track).filter(
             Track.track_id == 30
         ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_previously_containing_track == {"playlists": []}
         assert (
             session.query(Track)
             .filter(Track.track_id == 40)
@@ -327,9 +338,13 @@ def test_remove_track_from_playlist(app, mocker):
             .playlists_containing_track
             == []
         )
+        assert session.query(Track).filter(
+            Track.track_id == 40
+        ).first().playlists_previously_containing_track == {"playlists": []}
 
 
-# Remove a track from a playlist and then restore it
+# Remove a track from a playlist and then restore it to the same playlist,
+# confirm there are no duplicates in playlists_containing_track
 restore_removed_track_to_playlist_tx_receipts = {
     "UpdatePlaylistTracklistUpdate": [
         {
@@ -415,11 +430,20 @@ def test_restore_removed_track_to_playlist(app, mocker):
             == []
         )
         assert session.query(Track).filter(
+            Track.track_id == 10
+        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert session.query(Track).filter(
             Track.track_id == 20
         ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
         assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert session.query(Track).filter(
             Track.track_id == 30
         ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_previously_containing_track == {"playlists": []}
         assert (
             session.query(Track)
             .filter(Track.track_id == 40)
@@ -427,6 +451,149 @@ def test_restore_removed_track_to_playlist(app, mocker):
             .playlists_containing_track
             == []
         )
+        assert session.query(Track).filter(
+            Track.track_id == 40
+        ).first().playlists_previously_containing_track == {"playlists": []}
+
+
+# Remove a track from a playlist, restore it to same playlist, then remove again
+# and confirm there are no duplicates in playlists_previously_containing_track
+remove_from_playlist_twice_tx_receipts = {
+    "UpdatePlaylistTracklistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RemoveTrackFromPlaylistUpdate": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromPlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RestoreTrackToPlaylist": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["PlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+    "RemoveTrackFromPlaylistUpdate2": [
+        {
+            "args": AttributeDict(
+                {
+                    "_entityId": PLAYLIST_ID_OFFSET,
+                    "_entityType": "Playlist",
+                    "_userId": 1,
+                    "_action": "Update",
+                    "_metadata": f'{{"cid": "PlaylistTracklistUpdate", "data": {json.dumps(test_metadata["RemoveFromPlaylistTracklistUpdate"])}, "timestamp": {datetime.timestamp(now)}}}',
+                    "_signer": "user1wallet",
+                }
+            )
+        }
+    ],
+}
+
+
+def test_remove_from_playlist_twice(app, mocker):
+    db, update_task, entity_manager_txs = setup_db(
+        app, mocker, entities, remove_from_playlist_twice_tx_receipts
+    )
+
+    with db.scoped_session() as session:
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=hex(0),
+        )
+        relations: List[PlaylistTrack] = session.query(PlaylistTrack).all()
+        assert len(relations) == 2
+        for id in [30]:
+            assert any(
+                [
+                    relation.track_id == id and not relation.is_removed
+                    for relation in relations
+                ]
+            )
+        for id in [10, 40]:
+            assert not any(
+                [
+                    relation.track_id == id and relation.is_removed
+                    for relation in relations
+                ]
+            )
+        for id in [20]:
+            assert any(
+                [
+                    relation.track_id == id and relation.is_removed
+                    for relation in relations
+                ]
+            )
+
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert session.query(Track).filter(
+            Track.track_id == 10
+        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 20)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert session.query(Track).filter(
+            Track.track_id == 20
+        ).first().playlists_previously_containing_track == {
+            "playlists": [{"playlist_id": PLAYLIST_ID_OFFSET, "time": 1585336422}]
+        }
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
+        assert session.query(Track).filter(
+            Track.track_id == 30
+        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_containing_track
+            == []
+        )
+        assert session.query(Track).filter(
+            Track.track_id == 40
+        ).first().playlists_previously_containing_track == {"playlists": []}
 
 
 # Create a playlist then reorder the tracks
