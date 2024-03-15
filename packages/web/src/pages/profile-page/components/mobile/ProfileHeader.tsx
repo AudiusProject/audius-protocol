@@ -22,14 +22,14 @@ import {
   IconTwitter as IconTwitterBird,
   Flex,
   Button,
-  IconPencil
+  IconPencil,
+  FollowButton
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { FollowButton } from 'components/follow-button/FollowButton'
 import Skeleton from 'components/skeleton/Skeleton'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
@@ -357,10 +357,10 @@ const ProfileHeader = ({
                 </Button>
               ) : (
                 <FollowButton
-                  size='small'
-                  following={following}
+                  isFollowing={following}
                   onFollow={() => onFollow(userId)}
                   onUnfollow={() => onUnfollow(userId)}
+                  fullWidth={false}
                 />
               )}
             </div>

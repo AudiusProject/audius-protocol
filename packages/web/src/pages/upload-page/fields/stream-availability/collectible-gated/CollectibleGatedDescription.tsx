@@ -1,6 +1,5 @@
 import { collectiblesSelectors } from '@audius/common/store'
 import { Flex, IconExternalLink, Text } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'

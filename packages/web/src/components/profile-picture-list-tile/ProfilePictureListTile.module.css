@@ -6,6 +6,10 @@
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px var(--tile-shadow-1);
   transition: all 0.18s ease-in-out 0s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
 }
 .tileContainer:hover {
   box-shadow: 1px 10px 20px var(--tile-shadow-1-alt),
@@ -25,19 +29,4 @@
 .tileContainer:hover .viewAll path {
   fill: var(--secondary);
   transition: fill 0.07s ease-out;
-}
-.arrowIcon {
-  width: 20px;
-  height: 20px;
-}
-.viewAll path {
-  fill: var(--neutral-light-4);
-}
-.viewAll {
-  display: flex;
-  align-items: center;
-  margin-top: 12px;
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
-  color: var(--neutral-light-4);
 }
