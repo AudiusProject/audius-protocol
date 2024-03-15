@@ -36,7 +36,7 @@ class GetTrackArgs(TypedDict):
     limit: int
     offset: int
     handle: str
-    id: int
+    id: List[int]
     current_user_id: int
     authed_user_id: Optional[int]
     min_block_number: int
@@ -50,12 +50,15 @@ class GetTrackArgs(TypedDict):
     routes: List[RouteArgs]
     filter_tracks: str
 
+    # If true, skips the filtering of unlisted tracks
+    skip_unlisted_filter: Optional[bool]
+
     # Optional sort method for the returned results
     sort_method: Optional[SortMethod]
     sort_direction: Optional[SortDirection]
 
 
-def _get_tracks(session, args):
+def _get_tracks(session, args: GetTrackArgs):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
     base_query = base_query.filter(TrackWithAggregates.is_current == True)
