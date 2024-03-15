@@ -148,9 +148,7 @@ const getSwapInstructions = async ({
       } as TransactionInstruction
     })
   return {
-    instructions: [
-      ...instructionsFlattened
-    ],
+    instructions: instructionsFlattened,
     response,
     lookupTableAddresses: addressLookupTableAddresses
   }
