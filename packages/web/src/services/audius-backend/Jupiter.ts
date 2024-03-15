@@ -114,6 +114,7 @@ const getSwapInstructions = async ({
       userPublicKey: userPublicKey.toString(),
       destinationTokenAccount: destinationTokenAccount?.toString(),
       wrapAndUnwrapSol,
+      computeUnitPriceMicroLamports: 100000,
       useSharedAccounts
     }
   })
@@ -147,12 +148,7 @@ const getSwapInstructions = async ({
       } as TransactionInstruction
     })
   return {
-    instructions: [
-      ...instructionsFlattened,
-      ComputeBudgetProgram.setComputeUnitPrice({
-        microLamports: 100000
-      })
-    ],
+    instructions: instructionsFlattened,
     response,
     lookupTableAddresses: addressLookupTableAddresses
   }
