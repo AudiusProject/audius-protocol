@@ -132,9 +132,11 @@ def get_challenge_type_map(
             .all()
         )
         challenge_type_map_global = {
-            challenge[0]: TransactionType.trending_reward
-            if challenge[1] == ChallengeType.trending
-            else TransactionType.user_reward
+            challenge[0]: (
+                TransactionType.trending_reward
+                if challenge[1] == ChallengeType.trending
+                else TransactionType.user_reward
+            )
             for challenge in challenges
         }
 

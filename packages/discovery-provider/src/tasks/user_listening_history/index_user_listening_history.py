@@ -111,10 +111,10 @@ def update_existing_user_listening_histories(
             )
             track_to_play_count[new_play["track_id"]] += 1
 
-        existing_user_listening_history[
-            i
-        ].listening_history = sort_listening_history_desc_by_timestamp(
-            track_to_latest_timestamp, track_to_play_count
+        existing_user_listening_history[i].listening_history = (
+            sort_listening_history_desc_by_timestamp(
+                track_to_latest_timestamp, track_to_play_count
+            )
         )
 
 

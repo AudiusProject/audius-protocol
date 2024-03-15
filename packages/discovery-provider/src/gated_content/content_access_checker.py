@@ -163,7 +163,7 @@ class ContentAccessChecker:
             session, list(track_access_users.keys())
         )
 
-        track_access_result: GatedTrackAccessResult = {}
+        track_access_result: GatedContentAccessResult = {}
 
         for track_id, track_entity in gated_track_data.items():
             user_ids = track_access_users[track_id]

@@ -674,9 +674,9 @@ def update_summed_unique_metrics(now, ip):
     if this_month_str not in summed_unique_monthly_metrics_obj:
         summed_unique_monthly_metrics_obj[this_month_str] = [ip]
     elif ip not in summed_unique_monthly_metrics_obj[this_month_str]:
-        summed_unique_monthly_metrics_obj[
-            this_month_str
-        ] = summed_unique_monthly_metrics_obj[this_month_str] + [ip]
+        summed_unique_monthly_metrics_obj[this_month_str] = (
+            summed_unique_monthly_metrics_obj[this_month_str] + [ip]
+        )
     summed_unique_monthly_metrics_obj = {
         timestamp: ips
         for timestamp, ips in summed_unique_monthly_metrics_obj.items()

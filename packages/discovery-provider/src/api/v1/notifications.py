@@ -49,9 +49,11 @@ class GetNotifications(Resource):
         parsed_args = notifications_parser.parse_args()
         args = {
             "user_id": decoded_id,
-            "timestamp": datetime.fromtimestamp(parsed_args.get("timestamp"))
-            if parsed_args.get("timestamp")
-            else None,
+            "timestamp": (
+                datetime.fromtimestamp(parsed_args.get("timestamp"))
+                if parsed_args.get("timestamp")
+                else None
+            ),
             "group_id": parsed_args.get("group_id"),
             "limit": parsed_args.get("limit"),
             "valid_types": parsed_args.get("valid_types") or [],

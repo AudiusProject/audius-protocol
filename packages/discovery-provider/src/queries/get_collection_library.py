@@ -190,14 +190,18 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         playlist_ids,
         playlists,
         [
-            RepostType.playlist
-            if collection_type == CollectionType.playlist
-            else RepostType.album
+            (
+                RepostType.playlist
+                if collection_type == CollectionType.playlist
+                else RepostType.album
+            )
         ],
         [
-            SaveType.playlist
-            if collection_type == CollectionType.playlist
-            else SaveType.album
+            (
+                SaveType.playlist
+                if collection_type == CollectionType.playlist
+                else SaveType.album
+            )
         ],
         user_id,
     )

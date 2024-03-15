@@ -108,9 +108,9 @@ def get_undisbursed_challenges(
             args["offset"]
         )
 
-    undisbursed_challenges: List[
-        Tuple[UserChallenge, Challenge, str, str]
-    ] = undisbursed_challenges_query.all()
+    undisbursed_challenges: List[Tuple[UserChallenge, Challenge, str, str]] = (
+        undisbursed_challenges_query.all()
+    )
 
     undisbursed_challenges_response: List[UndisbursedChallengeResponse] = [
         to_challenge_response(user_challenge, challenge, handle, wallet)
