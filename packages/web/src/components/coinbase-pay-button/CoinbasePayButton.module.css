@@ -15,7 +15,7 @@
 }
 
 .payButton:enabled:hover {
-  transform: var(--grow);
+  transform: var(--harmony-grow);
   filter: brightness(1.1);
 }
 

@@ -34,11 +34,7 @@ export default {
         postcssCustomProperties({
           // Preserve var names so they can be overridden
           preserve: true,
-          importFrom: [
-            'src/assets/styles/colors.css',
-            'src/assets/styles/shadows.css',
-            'src/assets/styles/transforms.css'
-          ]
+          importFrom: ['src/assets/styles/colors.css']
         })
       ],
       minimize: true,

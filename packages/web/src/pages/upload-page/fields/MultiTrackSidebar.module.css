@@ -7,7 +7,7 @@
   flex-shrink: 0;
   width: 320px;
   background: var(--background-surface-1);
-  box-shadow: var(--shadow-far);
+  box-shadow: var(--harmony-shadow-far);
 }
 
 .title {

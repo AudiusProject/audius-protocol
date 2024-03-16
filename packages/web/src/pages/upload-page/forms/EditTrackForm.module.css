@@ -4,7 +4,7 @@
   min-width: 640px;
 
   border-radius: 8px;
-  box-shadow: var(--shadow-far);
+  box-shadow: var(--harmony-shadow-far);
 }
 
 .trackEditForm {

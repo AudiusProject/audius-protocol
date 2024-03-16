@@ -102,7 +102,7 @@
 }
 
 .refreshButton:hover .refreshContent {
-  transform: var(--grow-large);
+  transform: var(--harmony-grow-large);
 }
 
 .refreshIcon path {
