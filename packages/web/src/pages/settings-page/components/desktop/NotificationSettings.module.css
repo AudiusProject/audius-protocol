@@ -65,7 +65,7 @@
 
 .permissionDeniedText {
   margin-top: 8px;
-  color: var(--static-accent-red);
+  color: var(--harmony-red);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   line-height: 18px;

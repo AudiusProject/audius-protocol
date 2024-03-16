@@ -20,7 +20,7 @@
 }
 
 .title {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-bold);
   line-height: 140%;

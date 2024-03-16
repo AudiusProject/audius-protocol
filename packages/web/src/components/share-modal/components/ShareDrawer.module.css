@@ -41,10 +41,10 @@
 
 .shareToTwitterAction {
   composes: action;
-  color: var(--static-twitter-blue);
+  color: var(--harmony-blue);
   border-top: none;
 }
 
 .shareToTwitterAction path {
-  fill: var(--static-twitter-blue);
+  fill: var(--harmony-blue);
 }

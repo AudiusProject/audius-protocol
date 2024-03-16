@@ -1,7 +1,7 @@
 .root {
   all: unset;
   border-radius: 4px;
-  background-color: var(--static-twitter-blue);
+  background-color: var(--harmony-blue);
   padding: var(--harmony-unit-2) var(--harmony-unit-6);
   display: inline-flex;
   align-items: center;

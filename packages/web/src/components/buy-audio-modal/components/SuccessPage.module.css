@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--static-accent-green);
+  color: var(--harmony-green);
   font-size: var(--harmony-font-l);
 }
 

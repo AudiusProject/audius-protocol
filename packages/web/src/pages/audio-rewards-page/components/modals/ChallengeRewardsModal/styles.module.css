@@ -142,7 +142,7 @@
   color: var(--harmony-s-200);
 }
 .progressStatus.complete {
-  background-color: var(--static-accent-green-light-1);
+  background-color: var(--harmony-light-green);
 }
 .progressStatus.complete h3 {
   color: var(--harmony-white);

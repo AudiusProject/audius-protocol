@@ -46,7 +46,7 @@
 /* Apply color svg transitions on hover */
 .icon:hover path,
 .icon:active path {
-  fill: var(--static-neutral-light-10) !important;
+  fill: var(--harmony-static-white) !important;
 }
 
 .icon:hover {

@@ -57,7 +57,7 @@ svg.logo.matrixLogo path {
 
 .headerIconWrapper:global(.active) svg path,
 .headerIconWrapper.iconNotification.active svg path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .headerIconWrapper.iconNotification.notificationsOpen,
@@ -69,12 +69,12 @@ svg.logo.matrixLogo path {
 }
 
 .headerIconWrapper.iconNotification.notificationsOpen svg path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .headerIconWrapper:hover svg path,
 .headerIconWrapper:active svg path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .headerIconWrapper svg {

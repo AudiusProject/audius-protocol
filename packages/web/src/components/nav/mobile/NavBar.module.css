@@ -36,7 +36,7 @@
   right: 10px;
   transform: translateX(50%);
   border-radius: 8px;
-  background-color: var(--static-accent-red);
+  background-color: var(--harmony-red);
   color: var(--harmony-static-white);
   font-size: 11px;
   font-weight: bold;

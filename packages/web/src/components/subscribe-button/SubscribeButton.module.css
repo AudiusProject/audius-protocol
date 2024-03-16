@@ -50,7 +50,7 @@
 .container.isSubscribed .icon path,
 .container:active .icon path,
 .container:not(.isMobile):hover .icon path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .container.isMatrix.isSubscribed .icon path,

@@ -59,7 +59,7 @@
   fill: var(--harmony-static-white);
 }
 .invertColors .icon path {
-  fill: var(--static-secondary);
+  fill: var(--harmony-secondary);
 }
 
 /* Center Logo */
@@ -200,7 +200,7 @@
 }
 
 .invertColors .linkContainer {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
 }
 
 .signUp {
@@ -290,7 +290,7 @@
 }
 
 .invertColors path {
-  fill: var(--static-secondary-dark-1);
+  fill: var(--harmony-s-400);
 }
 
 .iconLink {
@@ -336,17 +336,17 @@
 }
 
 .invertColors .iconLinkText {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
 }
 
 .invertColors .linkIcon path {
-  fill: var(--static-secondary);
+  fill: var(--harmony-secondary);
 }
 
 .invertColors .iconLink {
-  text-decoration-color: var(--static-secondary) !important;
+  text-decoration-color: var(--harmony-secondary) !important;
 }
 
 .invertColors .iconLink:hover {
-  text-decoration: underline var(--static-secondary) !important;
+  text-decoration: underline var(--harmony-secondary) !important;
 }

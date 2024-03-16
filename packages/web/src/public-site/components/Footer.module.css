@@ -36,7 +36,7 @@
 .divider {
   flex-shrink: 0;
   width: 100%;
-  border-bottom: 1px solid var(--static-neutral-light-6);
+  border-bottom: 1px solid var(--harmony-n-200);
   margin: 30px 0px 32px;
 }
 
@@ -71,11 +71,11 @@
 }
 
 .siteLink {
-  color: var(--static-neutral) !important;
+  color: var(--harmony-neutral) !important;
   font-weight: 600;
   font-size: var(--harmony-font-m);
   line-height: 20px;
-  text-decoration-color: var(--static-neutral) !important;
+  text-decoration-color: var(--harmony-neutral) !important;
 }
 
 /* Copyright */
@@ -87,7 +87,7 @@
   align-self: baseline;
   margin-left: 16px;
   margin-right: 16px;
-  color: var(--static-neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
   line-height: 20px;
   font-weight: 500;
@@ -135,7 +135,7 @@
 }
 
 .socialIconLink path {
-  fill: var(--static-neutral);
+  fill: var(--harmony-neutral);
 }
 
 /* Bottom Links */
