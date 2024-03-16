@@ -28,7 +28,7 @@
   border-right: none;
 }
 .link:global(.active):before {
-  border-right: 4px solid var(--primary);
+  border-right: 4px solid var(--harmony-primary);
 }
 .link:hover:before,
 .link:global(.active):before {
@@ -48,7 +48,7 @@
   color: var(--nav-column-link-hover);
 }
 .link:global(.active) {
-  color: var(--primary) !important;
+  color: var(--harmony-primary) !important;
   font-weight: var(--harmony-font-medium);
 }
 .link.disabled,
@@ -74,7 +74,7 @@
   bottom: 0;
   opacity: 0;
   border-radius: 2px;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   transition: opacity 0.13s ease-in-out;
 }
 
@@ -87,7 +87,7 @@
 }
 
 .droppableLinkActive > * {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .disabledLink,

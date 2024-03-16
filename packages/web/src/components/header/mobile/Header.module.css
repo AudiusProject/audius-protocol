@@ -12,7 +12,7 @@
   height: 52px;
   display: flex;
   align-items: center;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   z-index: 10;
   min-width: var(--mobile-min-width);
 }

@@ -13,7 +13,7 @@
   right: 16px;
   top: 8px;
   width: 4px;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 .actionButton {
   position: relative;
@@ -22,7 +22,7 @@
   align-items: stretch;
   height: 100%;
   margin-top: -1px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   border: 1px solid var(--neutral-light-8);
   cursor: pointer;
 }
@@ -71,7 +71,7 @@
   background: var(--neutral-light-8);
 }
 .show.actionsSection .actionButton:active path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .iconContainer {
@@ -125,7 +125,7 @@
   fill: var(--neutral-light-4);
 }
 .iconRepost.reposted path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .disabled {
@@ -133,13 +133,13 @@
 }
 .disabled .actionButton:hover,
 .disabled:hover {
-  background-color: var(--white) !important;
+  background-color: var(--harmony-white) !important;
   border-color: var(--neutral-light-8) !important;
   box-shadow: none !important;
 }
 .show .disabled .actionButton:active,
 .disabled:active {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   border-color: var(--neutral-light-8);
   box-shadow: none;
 }

@@ -26,7 +26,7 @@
 }
 
 .title {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: 700;
   font-size: 20px;
   margin-bottom: 8px;
@@ -105,7 +105,7 @@
 }
 
 .activeSlider {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .terms {
@@ -125,7 +125,7 @@
 
 .titleHeader {
   text-align: center;
-  color: var(--white);
+  color: var(--harmony-white);
   line-height: 34px;
 }
 .titleIcon {

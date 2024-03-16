@@ -35,7 +35,7 @@
   font-size: var(--harmony-font-l);
   line-height: 24px;
   text-align: center;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 .text.mobile {
   font-size: var(--harmony-font-m);

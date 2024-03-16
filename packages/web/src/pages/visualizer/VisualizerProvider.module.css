@@ -85,7 +85,7 @@
 
 .trackInfoWrapper {
   margin-top: 20px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .emptyTrackInfoWrapper {
@@ -116,7 +116,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0px 16px;
-  background-color: var(--white) !important;
-  color: var(--secondary) !important;
+  background-color: var(--harmony-white) !important;
+  color: var(--harmony-secondary) !important;
   font-size: var(--harmony-font-s);
 }

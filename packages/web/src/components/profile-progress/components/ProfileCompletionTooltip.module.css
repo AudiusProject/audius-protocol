@@ -13,7 +13,7 @@
   height: 48px;
   background-color: var(--secondary-dark-1);
   border-bottom: solid 1px var(--secondary-light-1);
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .list {

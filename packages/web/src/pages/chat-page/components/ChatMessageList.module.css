@@ -32,7 +32,7 @@
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .spinner {

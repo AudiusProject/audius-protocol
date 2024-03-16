@@ -8,7 +8,7 @@
   width: 100%;
   border-radius: 6px;
   overflow: hidden;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   padding: 16px 24px 24px;
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
@@ -45,7 +45,7 @@
 }
 
 .title {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: 38px;
   font-weight: bold;
   margin-bottom: 12px;
@@ -55,7 +55,7 @@
 }
 
 .title h1 {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .artistWrapper {
@@ -74,14 +74,14 @@
 .artistWrapper .artist {
   display: inline-flex;
   align-items: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-medium);
   padding-left: 4px;
 }
 
 .artistWrapper .artist:hover {
-  color: var(--primary);
+  color: var(--harmony-primary);
   cursor: pointer;
   text-decoration: underline;
 }

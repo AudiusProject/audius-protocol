@@ -15,7 +15,7 @@
   box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
   background-color: var(--neutral-light-10);
   transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
   border: none;
@@ -44,7 +44,7 @@
   width: 100%;
   border-radius: 8px;
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   margin-bottom: 35px;
   padding-bottom: 5px;
   overflow: hidden;
@@ -57,5 +57,5 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }

@@ -1,7 +1,7 @@
 .notificationDot {
   display: block;
   border-radius: 100%;
-  background: var(--secondary);
+  background: var(--harmony-secondary);
 }
 
 .large {

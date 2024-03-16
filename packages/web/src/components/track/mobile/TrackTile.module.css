@@ -4,7 +4,7 @@
   min-height: 152px;
   flex: 1 1 352px;
   border: var(--border-width) solid var(--neutral-light-8);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   display: flex;
@@ -42,7 +42,7 @@
 }
 
 .container .artworkIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .container:active {
@@ -99,11 +99,11 @@
 
 .statItem:active {
   transform: scale(0.93);
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .statItem:active svg path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .disabledStatItem {
@@ -127,7 +127,7 @@
   position: absolute;
   bottom: -3px;
   left: calc(var(--unit) * 20.5);
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-transform: uppercase;
 }
 
@@ -232,7 +232,7 @@
 }
 
 .rankContainer {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   display: flex;
   align-items: center;
   gap: var(--harmony-unit-1);
@@ -242,7 +242,7 @@
 }
 
 .rankContainer path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .isHidden {

@@ -6,7 +6,7 @@
   max-width: 460px;
   min-width: 296px;
   border-radius: 6px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
     0 2px 5px -2px rgba(133, 129, 153, 0.3);
   display: inline-block;
@@ -34,7 +34,7 @@
 }
 
 .description {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: 12px;
   line-height: 18px;

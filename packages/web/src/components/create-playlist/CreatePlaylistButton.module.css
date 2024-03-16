@@ -25,11 +25,11 @@
 }
 
 .createPlaylistButton:hover {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   transform: scale(1.02);
 }
 .createPlaylistButton:hover path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .createPlaylistButton:active {

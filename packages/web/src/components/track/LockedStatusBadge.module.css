@@ -34,10 +34,10 @@
 }
 
 .icon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .text {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   text-decoration: none;
 }

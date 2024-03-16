@@ -6,7 +6,7 @@
   width: 400px;
   border-radius: 20px;
   box-shadow: 0 0;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: flex;
   flex-direction: column;
   padding: 8px;
@@ -41,7 +41,7 @@
 }
 
 .success {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .error {

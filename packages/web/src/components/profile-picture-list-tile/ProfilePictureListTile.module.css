@@ -1,7 +1,7 @@
 .tileContainer {
   margin-top: 12px;
   padding: 16px 8px 8px 12px;
-  background: var(--white);
+  background: var(--harmony-white);
   border-radius: 8px;
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px var(--tile-shadow-1);
@@ -19,10 +19,10 @@
   transform: scale3d(0.99, 0.99, 0.99);
 }
 .tileContainer:hover .viewAll {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   transition: color 0.07s ease-out;
 }
 .tileContainer:hover .viewAll path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
   transition: fill 0.07s ease-out;
 }

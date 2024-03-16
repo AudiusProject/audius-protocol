@@ -73,7 +73,7 @@
 }
 
 .secondaryContainer {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-2xs);
   font-weight: var(--harmony-font-medium);

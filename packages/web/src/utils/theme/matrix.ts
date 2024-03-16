@@ -14,7 +14,7 @@ const theme = {
   '--secondary-light-1': '#184F17',
   '--secondary-light-2': '#184F17',
 
-  '--primary-secondary-text': 'var(--white)',
+  '--primary-secondary-text': 'var(--harmony-white)',
 
   '--neutral': '#21B404',
   '--neutral-dark-1': '#21B404',
@@ -31,7 +31,7 @@ const theme = {
   '--neutral-light-9': '#202A1D',
   '--neutral-light-10': '#1D211B ',
   '--white': '#1F211F',
-  '--darkmode-static-white': 'var(--white)',
+  '--darkmode-static-white': 'var(--harmony-white)',
 
   '--accent-red': '#F9344C',
 
@@ -79,12 +79,12 @@ const theme = {
 
   '--notification-panel-box-shadow': 'rgba(0,0,0,0.25)',
   '--notification-border': 'var(--neutral-light-7)',
-  '--notification-background': 'var(--white)',
+  '--notification-background': 'var(--harmony-white)',
   '--notification-border-hover': 'var(--neutral-light-8)',
   '--notification-background-hover': 'var(--neutral-light-9)',
   '--notification-background-box-shadow': '0 2px 15px -4px rgba(17,17,34,0.2)',
   '--notification-border-active': 'var(--neutral-light-8)',
-  '--notification-background-active': 'var(--white)',
+  '--notification-background-active': 'var(--harmony-white)',
 
   '--notification-unread-border': 'var(--neutral-light-8)',
   '--notification-unread-background': '--var(--neutral-light-8)',
@@ -92,7 +92,7 @@ const theme = {
   '--notification-unread-background-hover': 'var(--neutral-light-7)',
   '--notification-unread-background-box-shadow': 'none',
   '--notification-unread-border-active': 'var(--neutral-light-8)',
-  '--notification-unread-background-active': '--var(--white)',
+  '--notification-unread-background-active': '--var(--harmony-white)',
 
   '--page-header-gradient-1': 'var(--neutral-light-10)',
   '--page-header-gradient-2': 'var(--neutral-light-10)',
@@ -102,7 +102,7 @@ const theme = {
     '0px 0px 5px rgba(225, 255, 234, 0.25), 0px 0px 15px var(--page-header-text-shadow-color)',
 
   '--primary-gradient':
-    'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+    'linear-gradient(135deg, var(--harmony-primary) 0%, var(--harmony-primary) 100%)',
   '--primary-gradient-alt-1': 'var(--primary-gradient)',
   '--next-and-previous-buttons': 'var(--neutral-light-4)',
   '--secondary-gradient': 'linear-gradient(0deg, #2F8B27 0%, #00FF29 95.45%)',
@@ -113,8 +113,8 @@ const theme = {
   '--segmented-progress-bar-segment-5': 'var(--secondary-gradient)',
   '--segmented-progress-bar-segment-6': 'var(--secondary-gradient)',
   '--segmented-progress-bar-segment-7': 'var(--secondary-gradient)',
-  '--play-button-triangle': 'var(--white)',
-  '--action-sheet-text': 'var(--neutral)',
+  '--play-button-triangle': 'var(--harmony-white)',
+  '--action-sheet-text': 'var(--harmony-neutral)',
   '--track-slider-rail':
     'linear-gradient(294.99deg, #4FF069 -8.52%, #09BD51 118.66%)',
   '--track-slider-handle':

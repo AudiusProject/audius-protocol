@@ -11,7 +11,7 @@
 
 .content {
   text-align: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 
   margin: 0 auto;
   padding: 40px;
@@ -20,7 +20,7 @@
   height: 595px;
   min-height: 595px;
   border-radius: 8px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 16px 20px 0 var(--table-shadow);
 
   display: flex;

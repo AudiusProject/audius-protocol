@@ -1,5 +1,5 @@
 .root {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .form {
@@ -14,7 +14,7 @@ button.sendButton {
   height: var(--harmony-unit-8);
   width: var(--harmony-unit-8);
   border-radius: var(--harmony-unit-4);
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
   transform: scale(1);
   transition: all var(--harmony-quick);
 }

@@ -7,14 +7,14 @@
 }
 
 .tabBodyHeader .headerWrapper {
-  background: var(--white);
+  background: var(--harmony-white);
   text-align: left;
   padding: 16px 28px;
   box-shadow: 0 16px 20px -5px var(--table-shadow);
 }
 
 .title {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: var(--harmony-font-xl);
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.25px;
@@ -23,7 +23,7 @@
 
 .description {
   margin-top: 6px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
@@ -78,7 +78,7 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }
 
 .tabContainer {

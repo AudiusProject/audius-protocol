@@ -93,7 +93,7 @@
 }
 
 .active {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 .volumeIcon {
   margin-left: 6px;
@@ -104,7 +104,7 @@
   height: 8px;
 }
 .volumeIcon path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .trackInfoWrapper :global(.ant-skeleton) {
@@ -163,7 +163,7 @@
 .trackNameLink:hover,
 .artistNameLink:hover {
   cursor: pointer;
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }
@@ -176,10 +176,10 @@
 }
 
 .createdBy {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   padding-right: 3px;
 }
 
 .playlistCreator {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }

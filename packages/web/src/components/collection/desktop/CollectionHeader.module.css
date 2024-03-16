@@ -147,7 +147,7 @@
   box-shadow: none !important;
   background-color: var(--neutral-light-10);
   transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
   height: 24px;
@@ -194,7 +194,7 @@
 }
 
 .spinner g path {
-  stroke: var(--white);
+  stroke: var(--harmony-white);
 }
 
 .collectionButtonText {

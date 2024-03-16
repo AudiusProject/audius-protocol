@@ -4,7 +4,7 @@
   width: 100%;
   height: 368px;
   border-radius: 6px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: var(--table-shadow) 0px 16px 20px 0px;
   padding: 23px 24px;
   display: inline-flex;
@@ -20,7 +20,7 @@
 
 .playsTileHeader {
   flex: 1;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: 16px;
   font-weight: bold;
   letter-spacing: 0.75px;
@@ -49,7 +49,7 @@
 }
 
 .iconListens {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 :global(.totalPlaysTooltipContainer) {
@@ -57,14 +57,14 @@
   flex-direction: column;
   align-items: center;
   padding: 10px 16px 12px;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   border-radius: 3px;
   position: relative;
 }
 
 :global(.totalPlaysTooltipTitle) {
   text-transform: uppercase;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-family: var(--harmony-font-family);
   font-size: 10px;
   font-weight: 500;
@@ -85,7 +85,7 @@
 }
 
 :global(.totalPlaysTooltipLabelText) {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-family: var(--harmony-font-family);
   font-size: 14px;
   white-space: nowrap;
@@ -101,5 +101,5 @@
   height: 0px;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 5px solid var(--secondary);
+  border-top: 5px solid var(--harmony-secondary);
 }

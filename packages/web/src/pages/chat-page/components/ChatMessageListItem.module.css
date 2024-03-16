@@ -14,7 +14,7 @@
 }
 
 .bubble {
-  --bubble-color: var(--white);
+  --bubble-color: var(--harmony-white);
   position: relative;
   z-index: 1;
   display: inline-block;
@@ -30,7 +30,7 @@
 }
 
 .text a {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   text-decoration: underline !important;
 }
 
@@ -44,7 +44,7 @@
 }
 
 .isAuthor .text a {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .isAuthor .bubble:hover {
@@ -125,7 +125,7 @@
 }
 
 .reactionsContainer:not(.hasReaction) .reactionsButton {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   border: 1px solid var(--neutral-light-6);
   width: var(--harmony-unit-8);
   height: var(--harmony-unit-8);
@@ -142,7 +142,7 @@
 .reactionsContainer:not(.hasReaction) path {
   width: var(--harmony-unit-6);
   height: var(--harmony-unit-6);
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
   transition: fill var(--harmony-quick);
 }
 
@@ -184,7 +184,7 @@
 }
 
 .hideMessage .tail svg * {
-  fill: var(--white);
+  fill: var(--harmony-white);
   transition: fill var(--harmony-quick);
 }
 

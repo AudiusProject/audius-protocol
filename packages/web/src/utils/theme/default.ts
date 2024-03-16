@@ -14,7 +14,7 @@ const theme = {
   '--secondary-light-1': '#8B32D1',
   '--secondary-light-2': '#9849D6',
 
-  '--primary-secondary-text': 'var(--white)',
+  '--primary-secondary-text': 'var(--harmony-white)',
 
   '--neutral': '#858199',
   '--neutral-dark-1': '#78748A',
@@ -31,7 +31,7 @@ const theme = {
   '--neutral-light-9': '#F7F7F9',
   '--neutral-light-10': '#FCFCFC',
   '--white': '#FFFFFF',
-  '--darkmode-static-white': 'var(--white)',
+  '--darkmode-static-white': 'var(--harmony-white)',
 
   '--accent-red': '#D0021B',
   '--accent-red-dark-1': '#BB0218',
@@ -73,7 +73,7 @@ const theme = {
   '--nav-column-link': 'var(--neutral-dark-2)',
   '--nav-column-link-hover': 'var(--neutral-dark-3)',
 
-  '--slider-handle': 'var(--white)',
+  '--slider-handle': 'var(--harmony-white)',
 
   '--table-shadow': 'rgba(133, 129, 153, 0.15)',
 
@@ -114,7 +114,7 @@ const theme = {
   '--page-header-text-shadow-color': 'rgba(162,47,235,0.2)',
   '--page-header-text-shadow':
     '0px 2px 4px var(--page-header-text-shadow-color)',
-  '--next-and-previous-buttons': 'var(--neutral)',
+  '--next-and-previous-buttons': 'var(--harmony-neutral)',
 
   '--segmented-progress-bar-segment-1':
     'linear-gradient(180deg, #ED75F9 0%, #CC0FE0 100%)',
@@ -130,10 +130,10 @@ const theme = {
     'linear-gradient(180deg, #9C45FF 0%, #5C03C2 100%)',
   '--segmented-progress-bar-segment-7':
     'linear-gradient(180deg, #833BFB 0%, #4600BC 100%)',
-  '--play-button-triangle': 'var(--static-white)',
-  '--action-sheet-text': 'var(--secondary)',
-  '--track-slider-rail': 'var(--neutral)',
-  '--track-slider-handle': 'var(--static-white)'
+  '--play-button-triangle': 'var(--harmony-static-white)',
+  '--action-sheet-text': 'var(--harmony-secondary)',
+  '--track-slider-rail': 'var(--harmony-neutral)',
+  '--track-slider-handle': 'var(--harmony-static-white)'
 }
 
 export default theme

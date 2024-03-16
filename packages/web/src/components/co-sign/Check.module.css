@@ -29,6 +29,6 @@
 }
 
 .iconCoSign rect {
-  stroke: var(--white);
-  fill: var(--static-primary);
+  stroke: var(--harmony-white);
+  fill: var(--harmony-static-primary);
 }

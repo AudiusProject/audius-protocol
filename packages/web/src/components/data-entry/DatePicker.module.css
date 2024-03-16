@@ -9,7 +9,7 @@ svg.iconCalendar {
 }
 
 .iconCalendar path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .datePicker :global(.CalendarMonth_caption) {
@@ -20,7 +20,7 @@ svg.iconCalendar {
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-bold);
   text-transform: uppercase;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .datePicker :global(.SingleDatePickerInput_calendarIcon) {
@@ -40,7 +40,7 @@ svg.iconCalendar {
   border-color: var(--neutral-light-6);
 }
 .datePicker.focused :global(.SingleDatePickerInput) {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 .datePicker.invalid :global(.SingleDatePickerInput) {
   border-color: var(--accent-red);
@@ -52,10 +52,10 @@ svg.iconCalendar {
 .datePicker :global(.CalendarMonth),
 .datePicker :global(.CalendarMonthGrid),
 .datePicker :global(.DayPickerNavigation_button__default) {
-  background: var(--white);
+  background: var(--harmony-white);
 }
 .datePicker :global(.DateInput_fangStroke) {
-  fill: var(--white);
+  fill: var(--harmony-white);
   stroke: var(--neutral-light-6);
 }
 .datePicker :global(.DayPickerNavigation_button__default) {
@@ -63,7 +63,7 @@ svg.iconCalendar {
 }
 
 .datePicker :global(.DayPickerNavigation_button__default) path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .datePicker :global(.DateInput) {
@@ -74,7 +74,7 @@ svg.iconCalendar {
 .datePicker :global(.DateInput_input) {
   background: var(--neutral-light-10);
   border-radius: 6px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
 }
@@ -90,7 +90,7 @@ svg.iconCalendar {
 
 .datePicker :global(.DayPicker_weekHeader) small {
   font-weight: var(--harmony-font-medium);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
 }
 
@@ -99,13 +99,13 @@ svg.iconCalendar {
   vertical-align: middle;
   font-weight: var(--harmony-font-demi-bold);
   border: 1px solid var(--neutral-light-7);
-  background: var(--white);
-  color: var(--neutral);
+  background: var(--harmony-white);
+  color: var(--harmony-neutral);
 }
 
 .datePicker :global(.CalendarDay:hover) {
   background-color: var(--secondary-light-2);
-  color: var(--white);
+  color: var(--harmony-white);
   cursor: pointer;
 }
 
@@ -114,15 +114,15 @@ svg.iconCalendar {
 }
 
 .datePicker :global(.CalendarDay__blocked_out_of_range:hover) {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   color: var(--neutral-light-2);
   cursor: default;
 }
 
 .datePicker :global(.CalendarDay__selected) {
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   border: none;
-  color: var(--white);
+  color: var(--harmony-white);
 }
 
 .datePicker :global(.CalendarDay__selected:hover) {

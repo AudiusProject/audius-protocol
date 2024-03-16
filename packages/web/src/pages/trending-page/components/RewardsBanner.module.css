@@ -5,7 +5,7 @@
   padding: 9px 34px;
   align-items: center;
   background: var(--page-header-gradient);
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   align-items: center;
   transition: all 180ms;
   cursor: pointer;
@@ -25,7 +25,7 @@
 }
 
 .container path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .rewardsText {

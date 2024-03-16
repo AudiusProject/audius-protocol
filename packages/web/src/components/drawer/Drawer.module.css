@@ -4,7 +4,7 @@
   right: 0;
   left: 0;
   top: 100vh;
-  background: var(--white);
+  background: var(--harmony-white);
   margin-bottom: 0px;
   padding-top: 0px;
   overflow: hidden;
@@ -79,6 +79,6 @@
   bottom: -799px;
   left: 0;
   right: 0;
-  background: var(--white);
+  background: var(--harmony-white);
   height: 800px;
 }

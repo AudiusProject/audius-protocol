@@ -13,7 +13,7 @@
   color: var(--neutral-light-4);
 }
 .more.dark {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 .more:hover {
   transform: scale(1.03);
@@ -35,7 +35,7 @@
   fill: var(--neutral-light-4);
 }
 .more.dark .iconArrow path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 .more.light:hover .iconArrow path {
   fill: var(--neutral-light-2);

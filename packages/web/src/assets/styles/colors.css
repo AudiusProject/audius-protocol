@@ -22,7 +22,7 @@
   --secondary-light-2: #9849d6;
 
   /* Text that appears on primary and secondary */
-  --primary-secondary-text: var(--white);
+  --primary-secondary-text: var(--harmony-white);
 
   --neutral: #858199;
   --neutral-dark-1: #78748a;
@@ -41,7 +41,7 @@
   --white: #ffffff;
 
   /* --white everywhere except darkmode, which is static*/
-  --darkmode-static-white: var(--white);
+  --darkmode-static-white: var(--harmony-white);
 
   --accent-blue: #1ba1f1;
 
@@ -65,7 +65,7 @@
   --ai-secondary: #0fc578;
 
   /* Semantic text */
-  --text-default: var(--neutral);
+  --text-default: var(--harmony-neutral);
   --text-subdued: var(--neutral-light-4);
   --text-disabled: var(--neutral-light-7);
 
@@ -77,7 +77,7 @@
   --background-default: var(--background);
   --background-surface-1: var(--neutral-light-10);
   --background-surface-2: var(--neutral-light-9);
-  --background-white: var(--white);
+  --background-white: var(--harmony-white);
 
   --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
   --primary-gradient-alt-1: linear-gradient(135deg, #d63fe6 0%, #a30cb3 100%);
@@ -96,10 +96,10 @@
     var(--accent-red-dark-1) 0%,
     var(--accent-red-light-1) 100%
   );
-  --play-button-triangle: var(--static-white);
-  --action-sheet-text: var(--secondary);
-  --track-slider-rail: var(--neutral);
-  --track-slider-handle: var(--static-white);
+  --play-button-triangle: var(--harmony-static-white);
+  --action-sheet-text: var(--harmony-secondary);
+  --track-slider-rail: var(--harmony-neutral);
+  --track-slider-handle: var(--harmony-static-white);
 }
 
 :root {
@@ -165,7 +165,7 @@
   --page-header-gradient-1: rgb(252, 252, 252);
   --page-header-gradient-2: rgba(252, 252, 252, 0.85);
   --page-header-gradient-2-alt: rgba(252, 252, 252, 0.95);
-  --next-and-previous-buttons: var(--neutral);
+  --next-and-previous-buttons: var(--harmony-neutral);
 
   --segmented-progress-bar-segment-1: linear-gradient(
     180deg,

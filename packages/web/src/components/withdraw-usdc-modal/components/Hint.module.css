@@ -8,7 +8,7 @@
 }
 
 .icon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .text {
@@ -16,11 +16,11 @@
 }
 
 .link {
-  color: var(--primary);
+  color: var(--harmony-primary);
   font-weight: var(--harmony-font-medium);
   text-decoration: underline !important;
 }
 
 .link:hover {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }

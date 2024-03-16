@@ -32,9 +32,9 @@
 }
 
 .actionButton .shareIcon path {
-  fill: var(--secondary) !important;
+  fill: var(--harmony-secondary) !important;
 }
 
 .actionButton .shareActionLabel {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }

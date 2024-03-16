@@ -38,7 +38,7 @@
 }
 
 .focused {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 
 .warning,

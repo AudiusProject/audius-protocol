@@ -40,7 +40,7 @@
   flex: 1;
   flex-direction: column;
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
   overflow: hidden;
 }
@@ -127,7 +127,7 @@
   font-weight: var(--harmony-font-medium);
 }
 .tipContainer .topSupporter {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 .tipContainer .topRankNumber {
   font-weight: var(--harmony-font-bold);
@@ -137,7 +137,7 @@
   font-weight: var(--harmony-font-bold);
 }
 .tipContainer .topSupporter .icon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 .tipContainer .supporter {
   color: var(--neutral-light-4);

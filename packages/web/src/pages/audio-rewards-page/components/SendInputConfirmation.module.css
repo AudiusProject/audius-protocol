@@ -40,5 +40,5 @@
 }
 
 .loadingSpinner g path {
-  stroke: var(--static-white) !important;
+  stroke: var(--harmony-static-white) !important;
 }

@@ -25,7 +25,7 @@
 .trackName:hover:not(:has(.locked)) {
   cursor: pointer;
   transition: color 0.07s ease-out;
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }
@@ -117,7 +117,7 @@
 }
 
 .tableRow.lockedRow {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .locked {
@@ -129,7 +129,7 @@
   border-radius: 80px;
   font-weight: var(--harmony-font-demi-bold);
   font-size: var(--harmony-font-2xs);
-  color: var(--white);
+  color: var(--harmony-white);
 }
 
 .locked:hover {
@@ -143,7 +143,7 @@
 }
 
 .locked svg path {
-  fill: var(--white);
+  fill: var(--harmony-white);
 }
 
 .lockedTrackName {

@@ -13,7 +13,7 @@
   flex-shrink: 0;
   transition: all ease-in-out 0.18s;
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .userInfo {

@@ -29,11 +29,11 @@ That path uses `fill='currentColor'`, allowing us to set `color` here instead of
 }
 
 .artistPick {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .hidden {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .icon {
@@ -45,5 +45,5 @@ That path uses `fill='currentColor'`, allowing us to set `color` here instead of
 }
 
 .icon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }

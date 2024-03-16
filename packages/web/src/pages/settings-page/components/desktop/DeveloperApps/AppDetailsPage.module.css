@@ -5,7 +5,7 @@
 }
 
 .readTheDocs {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   text-decoration: underline !important;
 }
 
@@ -72,7 +72,7 @@
   width: 210px;
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   overflow-wrap: anywhere;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .goBack:active .goBackIcon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .goBackText {
@@ -112,5 +112,5 @@
 }
 
 .goBack:active .goBackText {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }

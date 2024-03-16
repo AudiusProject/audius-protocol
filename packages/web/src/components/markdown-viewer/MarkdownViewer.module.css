@@ -1,6 +1,6 @@
 .root {
   user-select: none;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: 14px;
   font-weight: 500;
@@ -42,7 +42,7 @@
 }
 
 .root a {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .root p {
@@ -71,7 +71,7 @@
 }
 
 .root ol li::before {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-right: 8px;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .root ul li::before {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-right: 8px;
 }
 

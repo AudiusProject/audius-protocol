@@ -1,5 +1,5 @@
 .section {
-  background: var(--white);
+  background: var(--harmony-white);
   padding: 20px 28px 24px;
   border-radius: 8px;
   box-shadow: 0 16px 20px -5px var(--table-shadow);
@@ -9,7 +9,7 @@
 
 .title {
   text-align: left;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: 28px;
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.35px;
@@ -19,7 +19,7 @@
 
 .subtitle {
   text-align: left;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 0;

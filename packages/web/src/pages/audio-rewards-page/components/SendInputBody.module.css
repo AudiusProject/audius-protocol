@@ -37,7 +37,7 @@
   line-height: 17px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   opacity: 0.5;
   margin-right: 8px;
 }
@@ -49,7 +49,7 @@
   font-size: 16px;
   line-height: 20px;
   border: none;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .errorLabel {

@@ -13,7 +13,7 @@
   left: 6px;
   width: 18px;
   height: 18px;
-  box-shadow: 0 0 0 2px var(--white);
+  box-shadow: 0 0 0 2px var(--harmony-white);
   border-radius: 100%;
 }
 .transactionIconMini.stripe {
@@ -33,7 +33,7 @@
 
 .transactionIconMini.sent path,
 .transactionIconMini.received path {
-  fill: var(--white);
+  fill: var(--harmony-white);
 }
 
 .icon {
@@ -43,7 +43,7 @@
   justify-content: center;
   height: 40px;
   width: 40px;
-  background: var(--white);
+  background: var(--harmony-white);
   padding: 8px;
   color: var(--accent-green);
   border: 1px solid rgba(11, 164, 0, 0.3);

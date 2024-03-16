@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-s);
   line-height: 18px;
@@ -23,7 +23,7 @@
 }
 
 .iconRobot path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .description {
@@ -31,13 +31,13 @@
   font-size: var(--harmony-font-s);
   line-height: 17px;
   font-weight: var(--harmony-font-medium);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-bottom: 16px;
   text-align: left;
 }
 
 .link {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: var(--harmony-font-s);
   line-height: 17px;
   font-weight: var(--harmony-font-medium);
@@ -52,11 +52,11 @@
   margin-left: 4px;
   display: flex;
   align-items: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .attributedUser:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   cursor: pointer;
   text-decoration: underline;
 }

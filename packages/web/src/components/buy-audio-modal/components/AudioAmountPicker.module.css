@@ -22,7 +22,7 @@
   gap: 8px;
 
   font-size: var(--harmony-font-2xl);
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .label {

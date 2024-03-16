@@ -4,7 +4,7 @@
 }
 
 .root:hover .icon path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .text {

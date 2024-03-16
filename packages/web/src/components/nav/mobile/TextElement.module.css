@@ -12,11 +12,11 @@
 }
 
 .textElement.isEnabled.primary {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .textElement.isEnabled.secondary {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .textElement.isEnabled:active {

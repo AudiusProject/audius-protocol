@@ -4,7 +4,7 @@
 }
 
 .spinner g path {
-  stroke: var(--static-white);
+  stroke: var(--harmony-static-white);
 }
 
 .button {

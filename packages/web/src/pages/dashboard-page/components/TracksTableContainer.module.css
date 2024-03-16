@@ -1,6 +1,6 @@
 .tableContainer {
   border-radius: 6px;
-  background: var(--white);
+  background: var(--harmony-white);
   box-shadow: var(--table-shadow) 0px var(--harmony-unit-4)
     var(--harmony-unit-5) 0px;
   overflow: hidden;

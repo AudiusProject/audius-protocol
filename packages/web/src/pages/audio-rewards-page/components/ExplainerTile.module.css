@@ -14,7 +14,7 @@
 .explainerTile {
   position: relative;
   height: 331px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: inline-flex;
   flex-wrap: wrap;
   flex-direction: row;
@@ -77,7 +77,7 @@
   font-weight: var(--harmony-font-demi-bold);
   font-size: 20px;
   line-height: 160%;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-bottom: 16px;
   max-width: 640px;
 }
@@ -95,7 +95,7 @@
   line-height: 17px;
   text-align: right;
   letter-spacing: 0.5px;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   margin: 10px 0px 8px;
   cursor: pointer;
 }
@@ -113,7 +113,7 @@
   font-weight: var(--harmony-font-demi-bold);
   font-size: var(--harmony-font-m);
   line-height: 24px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-bottom: 28px;
 }
 

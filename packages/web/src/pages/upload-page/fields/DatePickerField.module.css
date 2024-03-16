@@ -44,7 +44,7 @@
 
 /* New Styles for date picker */
 :global(.CalendarMonth_caption) {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   text-align: center;
   font-family: Avenir Next LT Pro;
   font-size: 20px;
@@ -55,7 +55,7 @@
 :global(.CalendarDay) {
   font-family: var(--harmony-font-family);
   line-height: 38px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-demi-bold);
   border: 1px solid var(--border-strong);
@@ -67,14 +67,14 @@
 }
 
 :global(.CalendarDay__selected) {
-  background-color: var(--secondary);
-  color: var(--static-white);
+  background-color: var(--harmony-secondary);
+  color: var(--harmony-static-white);
   border: 1px solid var(--border-strong);
 }
 
 :global(.CalendarDay__selected):hover {
-  background-color: var(--secondary);
-  color: var(--static-white);
+  background-color: var(--harmony-secondary);
+  color: var(--harmony-static-white);
   border: 1px solid var(--border-strong);
 }
 
@@ -101,5 +101,5 @@
 
 :global(.DayPickerNavigation_svg__horizontal) path {
   stroke-width: 64px;
-  stroke: var(--neutral);
+  stroke: var(--harmony-neutral);
 }

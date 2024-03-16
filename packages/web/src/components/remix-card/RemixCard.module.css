@@ -60,7 +60,7 @@
 
 .by {
   display: inline;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   pointer-events: none;
   text-decoration: none !important;
 }
@@ -78,11 +78,11 @@
 
 .hoverable {
   display: inline;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .hoverable:hover {
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
 }
 

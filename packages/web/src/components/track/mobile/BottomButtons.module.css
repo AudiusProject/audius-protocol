@@ -27,11 +27,11 @@
 }
 
 .button path {
-  fill: var(--neutral) !important;
+  fill: var(--harmony-neutral) !important;
 }
 
 .activeButton path {
-  fill: var(--primary) !important;
+  fill: var(--harmony-primary) !important;
 }
 
 .disabledButton path {
@@ -66,7 +66,7 @@
   align-items: center;
   background-color: var(--accent-blue);
   border-radius: var(--harmony-unit-1);
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   display: flex;
   gap: var(--harmony-unit-1);
   height: var(--harmony-unit-6);
@@ -79,7 +79,7 @@
 }
 
 .gatedContent path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .spinner {
@@ -88,5 +88,5 @@
 }
 
 .spinner g path {
-  stroke: var(--static-white);
+  stroke: var(--harmony-static-white);
 }

@@ -3,7 +3,7 @@
 }
 
 .modalTitle {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 24px;
 }
 
@@ -13,7 +13,7 @@
 }
 
 .modalBody.gradientHeader path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .drawer {
@@ -33,7 +33,7 @@
   font-size: var(--harmony-font-l);
   line-height: 22px;
   text-align: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .drawerGradientTitle {

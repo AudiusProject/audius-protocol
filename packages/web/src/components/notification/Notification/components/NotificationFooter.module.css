@@ -11,9 +11,9 @@
 }
 
 .unreadPill {
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   border-radius: 36px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-xs);
   text-transform: uppercase;
   line-height: 15px;

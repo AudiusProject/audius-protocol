@@ -27,7 +27,7 @@
 }
 
 .activeButton svg path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .disabledButton path {

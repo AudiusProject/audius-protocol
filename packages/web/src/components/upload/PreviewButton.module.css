@@ -27,7 +27,7 @@
 }
 
 .previewButton g path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .previewButton g circle[fill='#FFFFFF'] {

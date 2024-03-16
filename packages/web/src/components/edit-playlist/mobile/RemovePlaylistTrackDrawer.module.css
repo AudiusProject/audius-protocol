@@ -31,7 +31,7 @@
   text-align: center;
   letter-spacing: -0.3px;
   padding: 0px 12px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .cancel {
@@ -41,7 +41,7 @@
   font-size: var(--harmony-font-m);
   line-height: 12px;
   text-align: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .cancel:hover,

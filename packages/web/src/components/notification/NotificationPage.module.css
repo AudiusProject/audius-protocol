@@ -1,5 +1,5 @@
 .notificationContainer {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   padding: 8px 12px;
   width: 100%;
 }
@@ -9,7 +9,7 @@
 }
 
 .backgruond {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .spinnerContainer > div {

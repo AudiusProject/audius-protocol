@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   flex: 1;
   justify-content: flex-start;
   border-radius: 12px;
@@ -116,7 +116,7 @@
 
 .tierContainer.tierContainerActive {
   border: none;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .tierContainerWrapper {
@@ -175,7 +175,7 @@
   top: -35px;
   right: calc(50% - 60px);
   display: flex;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: 900;
   font-size: 16px;
   flex-direction: column;
@@ -186,7 +186,7 @@
 }
 
 .currentTier path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .buttonContainer {
@@ -208,7 +208,7 @@
 }
 
 .tierLevel {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: 700;
   font-size: 14px;
   line-height: 17px;

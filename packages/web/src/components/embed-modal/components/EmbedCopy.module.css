@@ -8,11 +8,11 @@
   min-height: 120px;
   min-width: 400px;
   border: 1px solid var(--neutral-light-6);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 
   padding: 20px 16px;
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   line-height: 20px;

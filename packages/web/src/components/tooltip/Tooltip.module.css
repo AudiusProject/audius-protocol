@@ -4,7 +4,7 @@
 
 .tooltip {
   z-index: 10000;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);

@@ -68,7 +68,7 @@
   height: 16px;
   width: 16px;
   border-radius: 100%;
-  border: 2px solid var(--neutral);
+  border: 2px solid var(--harmony-neutral);
 }
 
 .progressIndicator {

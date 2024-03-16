@@ -1,7 +1,7 @@
 .container {
   --border-width: 1px;
   position: relative;
-  background: var(--white);
+  background: var(--harmony-white);
   border: var(--border-width) solid var(--neutral-light-8);
   border-radius: var(--harmony-unit-2) var(--harmony-unit-2) 0px 0px;
   display: inline-flex;
@@ -247,7 +247,7 @@
   display: flex;
   gap: var(--harmony-unit-1);
   align-items: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .completeIcon {
@@ -256,7 +256,7 @@
 }
 
 .completeIcon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .bottomRight {

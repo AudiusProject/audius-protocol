@@ -29,7 +29,7 @@
 }
 
 .moreTracks {
-  background: var(--white);
+  background: var(--harmony-white);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -4,16 +4,16 @@
   max-width: 448px;
   overflow: hidden;
 
-  background: var(--white);
+  background: var(--harmony-white);
   border-radius: var(--harmony-unit-3) var(--harmony-unit-3) 0 0;
 
   text-align: start;
   line-height: 130%;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .root:hover {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .thumbnail {

@@ -55,13 +55,13 @@
 .tabDesktop:hover:not(.tabDisabled),
 .tab:active:not(.tabDesktop),
 .tabActive {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .tabDesktop:hover:not(.tabDisabled) path,
 .tab:active:not(.tabDesktop) path,
 .tabActive path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .tabDisabled {
@@ -84,7 +84,7 @@
 
 .tabBarContainerMobile {
   height: 48px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   justify-content: space-around;
   align-items: center;
   position: relative;
@@ -120,7 +120,7 @@
 .tabAccent {
   height: 3px;
   border-radius: 0 0 20px 20px;
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
   position: absolute;
   z-index: 9;
 }

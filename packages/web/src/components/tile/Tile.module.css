@@ -5,7 +5,7 @@
   position: relative;
   border: var(--border-width) solid var(--border-default);
   border-radius: var(--harmony-unit-2);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   transition: all var(--harmony-expressive);
 }
 

@@ -16,11 +16,11 @@
 }
 .amount {
   composes: header;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .callToAction {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .loader {

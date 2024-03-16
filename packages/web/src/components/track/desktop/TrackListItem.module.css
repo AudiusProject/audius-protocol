@@ -100,7 +100,7 @@
   overflow: hidden;
   min-width: 0;
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
@@ -130,7 +130,7 @@
 }
 
 .active .artistName {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .trackTitle > span {
@@ -139,7 +139,7 @@
 
 .trackTitle > span:hover {
   text-decoration: underline;
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .disabled .trackTitle > span:hover {
@@ -148,7 +148,7 @@
 }
 
 .active .trackTitle {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .duration {
@@ -157,7 +157,7 @@
 }
 
 .active .duration {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .more {

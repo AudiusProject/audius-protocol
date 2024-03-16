@@ -1,5 +1,5 @@
 .header {
-  background: var(--white);
+  background: var(--harmony-white);
   border-bottom: 1px solid var(--neutral-light-8);
   display: inline-flex;
   justify-content: space-between;
@@ -65,7 +65,7 @@ svg.logo.matrixLogo path {
 .headerIconWrapper.iconNotification.notificationsOpen.active:hover,
 .headerIconWrapper.iconNotification.notificationsOpen:active,
 .headerIconWrapper.iconNotification.notificationsOpen.active:active {
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
 }
 
 .headerIconWrapper.iconNotification.notificationsOpen svg path {
@@ -107,7 +107,7 @@ svg.logo.matrixLogo path {
   position: absolute;
   font-weight: var(--harmony-font-bold);
   top: 34px;
-  color: var(--primary);
+  color: var(--harmony-primary);
   left: 58px;
   letter-spacing: 0.5px;
 }

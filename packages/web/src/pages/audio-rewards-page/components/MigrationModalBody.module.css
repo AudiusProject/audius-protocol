@@ -3,12 +3,12 @@
   text-align: center;
   font-weight: var(--harmony-font-medium);
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin: 24px 0px;
 }
 
 .spinner g path {
-  stroke: var(--secondary);
+  stroke: var(--harmony-secondary);
 }
 
 .warning {

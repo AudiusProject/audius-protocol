@@ -4,7 +4,7 @@
   width: 32px;
   border: 1px solid var(--neutral-light-6);
   border-radius: 4px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,7 +14,7 @@
 
 .container:not(.isMobile):hover {
   border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
 }
 
 .container:active {
@@ -24,12 +24,12 @@
 
 .container.isSubscribed {
   border: none;
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
 }
 
 .container.isSubscribed:hover {
   border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
 }
 
 .container:not(.isMobile).isSubscribed:active {
@@ -43,7 +43,7 @@
 }
 
 .icon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
   transition: all ease-in-out 0.07s;
 }
 

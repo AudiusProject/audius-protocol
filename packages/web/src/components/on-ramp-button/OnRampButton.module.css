@@ -11,7 +11,7 @@
   border: 1px solid var(--brandColor);
 }
 .button .textClassName {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -21,7 +21,7 @@
 }
 .logo path {
   transition: all var(--harmony-quick);
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 /** Hover **/
@@ -34,10 +34,10 @@
   transform: scale3d(0.99, 0.99, 0.99);
 }
 .button:hover:enabled .textClassName {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 .button:hover:enabled .logo path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 /** Disabled **/
@@ -45,8 +45,8 @@
   background: var(--neutral-light-6);
 }
 .button:disabled .textClassName {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 .button:disabled .logo path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }

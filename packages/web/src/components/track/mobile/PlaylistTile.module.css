@@ -2,7 +2,7 @@
   position: relative;
   flex: 1 1 352px;
   border: 1px solid var(--neutral-light-8);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   display: flex;
@@ -38,7 +38,7 @@
 }
 
 .container .artworkIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .mainContent {
@@ -82,11 +82,11 @@
 
 .statItem:active {
   transform: scale(0.93);
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .statItem:active svg path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .readonly .statItem:active {
@@ -160,7 +160,7 @@
 }
 
 .trackItem .trackTitle {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   max-width: 220px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -178,7 +178,7 @@
 .trackItem.activeTrackItem .index,
 .trackItem.activeTrackItem .trackTitle,
 .trackItem.activeTrackItem .byArtist {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .trackItemDivider {

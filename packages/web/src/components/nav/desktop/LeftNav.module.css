@@ -62,7 +62,7 @@ svg.logo path {
   flex: 0 0 48px;
   height: 48px;
   border-radius: 30px;
-  border: 1px solid var(--white);
+  border: 1px solid var(--harmony-white);
   box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
 
   text-align: center;

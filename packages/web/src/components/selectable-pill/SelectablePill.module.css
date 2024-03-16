@@ -36,8 +36,8 @@
 
 .selectedPill {
   color: var(--darkmode-static-white);
-  background-color: var(--secondary);
-  border-color: var(--secondary);
+  background-color: var(--harmony-secondary);
+  border-color: var(--harmony-secondary);
   transform: scale(1);
 }
 

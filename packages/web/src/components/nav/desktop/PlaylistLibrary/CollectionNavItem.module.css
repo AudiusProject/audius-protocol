@@ -23,5 +23,5 @@
 }
 
 :global(.droppableLinkActive) .collectionName {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }

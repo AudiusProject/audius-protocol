@@ -53,7 +53,7 @@
   background-color: var(--search-bar-background);
   transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
   padding: 0 12px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
   border: none;
@@ -63,7 +63,7 @@
   margin-left: 2px;
   background-color: unset !important;
   transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
-  color: var(--neutral) !important;
+  color: var(--harmony-neutral) !important;
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
 }
@@ -112,7 +112,7 @@
   animation-duration: 0.2s !important;
   box-shadow: 0 2px 5px 0 rgba(133, 129, 153, 0.15);
   position: absolute;
-  background: var(--white);
+  background: var(--harmony-white);
   width: 100%;
   top: 32px !important;
   border-radius: 4px;
@@ -173,7 +173,7 @@
   margin-top: 16px;
   margin-left: 16px;
   margin-bottom: 2px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.7px;
@@ -221,7 +221,7 @@
  * otherwise unsetting in hover will unset us everywhere.
  */
 .searchBox :global(.ant-select-item-option.ant-select-item-option-active) {
-  background-color: var(--secondary) !important;
+  background-color: var(--harmony-secondary) !important;
 }
 .searchBox :global(.ant-select-item-option:hover) {
   background-color: unset;
@@ -234,7 +234,7 @@
   > div
   > div
   > .resultText {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .allResultsOptionWrapper {
@@ -248,7 +248,7 @@
 .allResultsOption span {
   cursor: pointer;
   margin-right: 6px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
 }
@@ -258,7 +258,7 @@
   > div
   > div
   > span {
-  color: var(--white);
+  color: var(--harmony-white);
 }
 
 :global(.ant-select-item-option.ant-select-item-option-active)
@@ -267,14 +267,14 @@
   > div
   > .iconArrow
   path {
-  fill: var(--white);
+  fill: var(--harmony-white);
 }
 
 .searchBox
   :global(
     .ant-select-item-option.ant-select-item-option-active
   ).noResultsOption {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .noResults {
@@ -282,7 +282,7 @@
   line-height: 48px;
   width: 100%;
   text-align: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
 }
@@ -291,7 +291,7 @@
   :global(.ant-select-item-option.ant-select-item-option-active)
   .noResultsOption
   span {
-  color: var(--white);
+  color: var(--harmony-white);
 }
 
 /* Overrides for special items.
@@ -325,7 +325,7 @@
   height: 48px;
   width: 280px;
   border-radius: 6px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   font-weight: var(--harmony-font-demi-bold);
   font-size: var(--harmony-font-xs);
   top: 32px;
@@ -337,7 +337,7 @@
 
 .tagSearchPopup > div {
   color: var(--neutral-light-2);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   transition: background-color 0.25s, color 0.25s;
   border-radius: 4px;
   height: 100%;
@@ -354,8 +354,8 @@
 
 .tagSearchPopup > .enabled:hover,
 .tagSearchPopup > .focused {
-  background-color: var(--secondary);
-  color: var(--white);
+  background-color: var(--harmony-secondary);
+  color: var(--harmony-white);
 }
 
 .tagArrow {
@@ -370,5 +370,5 @@
 
 .tagSearchPopup:hover path,
 .focused path {
-  fill: var(--white);
+  fill: var(--harmony-white);
 }

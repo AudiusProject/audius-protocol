@@ -11,7 +11,7 @@
 
   border-radius: var(--harmony-unit-2);
   box-shadow: var(--box-shadow-near);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   text-align: start;
 }
 

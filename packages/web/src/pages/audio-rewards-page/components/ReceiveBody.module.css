@@ -18,7 +18,7 @@
   font-size: var(--harmony-font-m);
   line-height: 24px;
   text-align: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-bottom: 24px;
 }
 
@@ -52,7 +52,7 @@
   height: 28px;
   width: 28px;
   border-radius: 50%;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: flex;
   justify-content: center;
   align-items: center;

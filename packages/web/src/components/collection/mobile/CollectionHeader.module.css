@@ -4,7 +4,7 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .typeLabel {
@@ -38,7 +38,7 @@
 }
 
 .title {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-bold);
@@ -119,7 +119,7 @@
 }
 
 .infoValue {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-demi-bold);

@@ -14,7 +14,7 @@
 
 .collectibleName:hover {
   transition: color 0.07s ease-out;
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }

@@ -14,7 +14,7 @@ const theme = {
   '--secondary-light-1': '#8244B8',
   '--secondary-light-2': '#7440A4',
 
-  '--primary-secondary-text': 'var(--static-white)',
+  '--primary-secondary-text': 'var(--harmony-static-white)',
 
   '--neutral': '#BEC5E0',
   '--neutral-dark-1': '#C4CAE1',
@@ -31,7 +31,7 @@ const theme = {
   '--neutral-light-9': '#393A54',
   '--neutral-light-10': '#35364F',
   '--white': '#32334D',
-  '--darkmode-static-white': 'var(--static-white)',
+  '--darkmode-static-white': 'var(--harmony-static-white)',
 
   '--accent-red': '#F9344C',
   '--accent-red-dark-1': '#C43047',
@@ -103,7 +103,7 @@ const theme = {
   '--page-header-text-shadow-color': 'rgba(162,47,235,0.2)',
   '--page-header-text-shadow':
     '0px 2px 4px var(--page-header-text-shadow-color)',
-  '--next-and-previous-buttons': 'var(--neutral)',
+  '--next-and-previous-buttons': 'var(--harmony-neutral)',
 
   '--segmented-progress-bar-segment-1':
     'linear-gradient(180deg, #ED75F9 0%, #CC0FE0 100%)',
@@ -120,10 +120,10 @@ const theme = {
   '--segmented-progress-bar-segment-7':
     'linear-gradient(180deg, #833BFB 0%, #4600BC 100%)',
 
-  '--play-button-triangle': 'var(--static-white)',
-  '--action-sheet-text': 'var(--secondary)',
-  '--track-slider-rail': 'var(--neutral)',
-  '--track-slider-handle': 'var(--static-white)'
+  '--play-button-triangle': 'var(--harmony-static-white)',
+  '--action-sheet-text': 'var(--harmony-secondary)',
+  '--track-slider-rail': 'var(--harmony-neutral)',
+  '--track-slider-handle': 'var(--harmony-static-white)'
 }
 
 export default theme

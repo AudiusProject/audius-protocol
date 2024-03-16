@@ -19,7 +19,7 @@
 .body {
   padding: var(--harmony-unit-4);
   border-radius: 0px 0px 8px 8px;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .iconError {
@@ -59,7 +59,7 @@
 }
 
 .trackInfo.selected {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .trackInfo.error {
@@ -83,7 +83,7 @@
   position: absolute;
   top: 6px;
   border-radius: 0px 8px 8px 0px;
-  background: var(--secondary);
+  background: var(--harmony-secondary);
 }
 
 .trackIndex {

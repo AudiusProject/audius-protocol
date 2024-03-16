@@ -21,7 +21,7 @@
   align-items: center;
   justify-content: center;
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
 }
@@ -62,7 +62,7 @@
 }
 
 .spinner {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   width: 100%;
   height: 70px;
   padding-bottom: 32px;

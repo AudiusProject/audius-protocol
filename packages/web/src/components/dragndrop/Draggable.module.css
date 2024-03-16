@@ -6,7 +6,7 @@
 }
 
 :global(#ghost > div) {
-  background: var(--secondary);
+  background: var(--harmony-secondary);
   margin-left: 15px;
   margin-top: 2px;
   z-index: 200;
@@ -16,7 +16,7 @@
   padding: 4px 8px;
   height: 26px;
   border-radius: 6px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 0.1px;

@@ -2,7 +2,7 @@
   height: 100%;
   min-height: 600px;
   border-radius: 8px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 2px 5px -2px var(--table-shadow);
   cursor: pointer !important;
   text-align: center;
@@ -41,7 +41,7 @@
 }
 
 .iconUpload path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .text {
@@ -54,7 +54,7 @@
 }
 
 .text > span:hover {
-  border-bottom: 1px solid var(--primary);
+  border-bottom: 1px solid var(--harmony-primary);
 }
 
 .iconUpload,

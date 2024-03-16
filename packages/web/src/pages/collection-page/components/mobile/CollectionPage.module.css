@@ -1,5 +1,5 @@
 .collectionContent {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   border: 1px solid var(--neutral-light-8);
   border-radius: 6px;
   overflow: hidden;
@@ -21,7 +21,7 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);

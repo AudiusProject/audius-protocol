@@ -5,7 +5,7 @@
 
 .profilePicture {
   border-radius: 50%;
-  border: 2px solid var(--white);
+  border: 2px solid var(--harmony-white);
   background-color: var(--default-profile-picture-background);
   background-size: cover;
   background-position: center;

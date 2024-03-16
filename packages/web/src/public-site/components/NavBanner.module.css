@@ -56,7 +56,7 @@
 
 .icon path {
   transition: fill 0.07s ease-in-out;
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 .invertColors .icon path {
   fill: var(--static-secondary);
@@ -89,7 +89,7 @@
   display: inline-flex;
   align-items: center;
   gap: 32px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .resources {
@@ -108,7 +108,7 @@
 }
 
 .resourcesIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .resourcesMenu {
@@ -133,7 +133,7 @@
   padding: 16px;
   cursor: pointer;
   border-radius: 6px;
-  border: 1px solid var(--static-white);
+  border: 1px solid var(--harmony-static-white);
 }
 
 .menuItemContainer:hover {
@@ -158,12 +158,12 @@
 }
 
 .menuItemIcon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .menuItemIconStroke path {
   fill: none;
-  stroke: var(--secondary);
+  stroke: var(--harmony-secondary);
 }
 
 .popup {
@@ -216,7 +216,7 @@
   text-align: center;
   padding: 11px 26px 10px;
   border-radius: 4px;
-  background-color: var(--static-white);
+  background-color: var(--harmony-static-white);
   transform: scale3d(1, 1, 1);
   transition: all 0.15s ease-in-out;
 }
@@ -239,7 +239,7 @@
 }
 
 .invertColors .signUp:hover {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   background-color: #dc19f0;
   box-shadow: 0 10px 20px -2px rgba(253, 0, 254, 0.5);
   border: none;
@@ -286,7 +286,7 @@
 
 .kebabMenu path,
 .trendingIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .invertColors path {
@@ -299,7 +299,7 @@
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   transform: scale3d(1, 1, 1);
-  text-decoration-color: var(--static-white) !important;
+  text-decoration-color: var(--harmony-static-white) !important;
 }
 
 .iconLink:not(:last-child) {
@@ -307,7 +307,7 @@
 }
 
 .iconLink:hover {
-  text-decoration: underline var(--static-white) !important;
+  text-decoration: underline var(--harmony-static-white) !important;
   opacity: 0.8;
   transform: scale3d(1.03, 1.03, 1.03);
 }
@@ -324,11 +324,11 @@
 }
 
 .linkIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .iconLinkText {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;

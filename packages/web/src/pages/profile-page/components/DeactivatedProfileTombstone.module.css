@@ -1,5 +1,5 @@
 .deactivated {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
   text-align: center;
@@ -21,7 +21,7 @@
 .mobile.deactivated {
   margin: 0;
   padding: 24px 12px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 .mobile .deactivatedText {
   margin: 24px 0 12px;

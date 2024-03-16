@@ -97,7 +97,7 @@
 .wrapper .dropdownInput :global(.ant-select-selection-search input) {
   height: calc(100% - 2px) !important;
   font-weight: 500;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 .wrapper.large .dropdownInput :global(.ant-select-selection-search input) {
   line-height: 48px;
@@ -123,14 +123,14 @@
   box-shadow: none !important;
 }
 .alternative .dropdownInput :global(.ant-select-selector) {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .wrapper .dropdownInput:hover :global(.ant-select-selector) {
   border-color: var(--neutral-light-6) !important;
 }
 .wrapper.focused .dropdownInput :global(.ant-select-selector) {
-  border-color: var(--secondary) !important;
+  border-color: var(--harmony-secondary) !important;
 }
 .wrapper.error .dropdownInput :global(.ant-select-selector) {
   border-color: var(--accent-red) !important;
@@ -183,7 +183,7 @@
      ant relies on being able to inline style the component to display: none.
   */
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-weight: 500;
 }
 .wrapper.large .dropdownInput :global(.ant-select-selection-item) {
@@ -208,21 +208,21 @@
   padding: 0 8px;
 }
 :global(.ant-select-dropdown) {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
     0 2px 5px -2px rgba(133, 129, 153, 0.3);
   animation-duration: 0.18s;
 }
 .select,
 .select > div {
-  background: var(--white);
+  background: var(--harmony-white);
 }
 :global(.ant-select-dropdown) {
   z-index: var(--harmony-layer-popup);
   padding: 8px 0;
   margin-top: 4px;
   text-align: left;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 .select :global(.ant-select-item) {
   min-height: unset;
@@ -231,7 +231,7 @@
   border-radius: 4px;
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   transition: all ease-in-out 0.04s;
 }
 
@@ -245,7 +245,7 @@
 .select :global(.ant-select-item-option-active),
 .select
   :global(.ant-select-item-option-selected.ant-select-item-option-active) {
-  background: var(--secondary);
+  background: var(--harmony-secondary);
   color: var(--darkmode-static-white);
 }
 
@@ -259,5 +259,5 @@
   margin: 0 -8px;
   padding: 0px !important;
   background-color: unset;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }

@@ -31,8 +31,8 @@
 .tileHeader {
   flex: 0;
   align-self: flex-end;
-  background: var(--static-white);
-  color: var(--secondary);
+  background: var(--harmony-static-white);
+  color: var(--harmony-secondary);
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-m);
   padding: 2px 4px;
@@ -53,7 +53,7 @@
   margin-right: 4px;
 }
 .tileHeader .trophyIcon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 .tileHeader .tipIcon {
   width: 14px;
@@ -84,7 +84,7 @@
 .profilePicture {
   height: 32px;
   border-radius: 32px;
-  border: 1px solid var(--static-white);
+  border: 1px solid var(--harmony-static-white);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -92,7 +92,7 @@
 }
 
 .name {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-s);
   line-height: 120%; /* identical to box height, or 17px */

@@ -33,11 +33,11 @@
 }
 
 .showNonEmpty:hover * {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .showNonEmpty:hover path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .text {

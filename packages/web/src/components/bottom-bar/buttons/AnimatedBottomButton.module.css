@@ -24,7 +24,7 @@
   background: linear-gradient(
     180deg,
     var(--neutral-light-8) 0%,
-    var(--white) 100%
+    var(--harmony-white) 100%
   );
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
@@ -41,9 +41,9 @@
 }
 
 .animatedButton path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .activeButton path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }

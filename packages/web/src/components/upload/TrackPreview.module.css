@@ -1,5 +1,5 @@
 .trackPreview {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 
   display: flex;
   justify-content: space-between;
@@ -29,7 +29,7 @@
 
 .trackTitle {
   flex: 1;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: 14px;
   font-weight: 600;
@@ -39,7 +39,7 @@
 }
 
 .fileSize {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);

@@ -87,7 +87,7 @@
 }
 
 .infoSection .numberOfListens {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-l);
   font-weight: bold;
 }
@@ -165,7 +165,7 @@
 .gatedContentSection {
   margin: 0 var(--harmony-unit-6) var(--harmony-unit-6) var(--harmony-unit-6);
   padding: var(--harmony-unit-4);
-  background: var(--white);
+  background: var(--harmony-white);
   border: 1px solid var(--neutral-light-7);
   border-radius: var(--harmony-unit-2);
 }
@@ -222,11 +222,11 @@
 }
 
 .collectibleName {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .collectibleName:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   cursor: pointer;
   text-decoration: underline;
 }
@@ -242,7 +242,7 @@
 }
 
 .gatedContentIcon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .badges {
@@ -370,7 +370,7 @@
 .collectionChainIcon {
   position: relative;
   left: -8px;
-  background: var(--white);
+  background: var(--harmony-white);
   padding: var(--harmony-unit-1);
   width: var(--harmony-unit-5);
   height: var(--harmony-unit-5);
@@ -381,11 +381,11 @@
 .gatedTrackOwner {
   display: inline-flex;
   align-items: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .gatedTrackOwner:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   cursor: pointer;
   text-decoration: underline;
 }

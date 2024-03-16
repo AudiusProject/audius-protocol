@@ -1,7 +1,7 @@
 .container {
   cursor: pointer;
   border-radius: 4px;
-  background: var(--secondary);
+  background: var(--harmony-secondary);
   transition: all 0.07s ease-in-out;
   display: inline-flex;
   align-items: center;

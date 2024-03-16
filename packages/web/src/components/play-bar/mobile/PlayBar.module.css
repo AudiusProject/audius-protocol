@@ -4,7 +4,7 @@
   display: flex;
   width: 100%;
   flex-direction: column;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .controls {
@@ -70,7 +70,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   margin-left: 8px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-bold);
 }
@@ -81,7 +81,7 @@
   text-overflow: ellipsis;
   line-height: normal;
   max-width: calc(33% - 12px);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
 }
@@ -116,5 +116,5 @@
 }
 
 .iconLock path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }

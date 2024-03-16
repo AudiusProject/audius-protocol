@@ -3,7 +3,7 @@
   display: inline-flex;
   flex-direction: column;
   border-radius: 8px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   padding: 0px;
 }
 
@@ -12,7 +12,7 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   border-bottom: 2px solid var(--secondary-dark-2);
   border-radius: 8px 8px 0px 0px;
   padding: var(--harmony-unit-2);
@@ -26,7 +26,7 @@
 
 .title {
   user-select: none;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-l);
   line-height: 18px;
   font-weight: var(--harmony-font-heavy);
@@ -36,7 +36,7 @@
 
 .scrollContent {
   max-height: calc(100vh - 333px);
-  background: var(--white);
+  background: var(--harmony-white);
   border-radius: 0px 0px 8px 8px;
 }
 

@@ -1,7 +1,7 @@
 .row {
   display: flex;
   justify-content: center;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .item {

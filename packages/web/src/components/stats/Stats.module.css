@@ -30,7 +30,7 @@
 }
 
 .stats.medium > .stat > .number {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: 18px;
   line-height: 13px;
@@ -52,5 +52,5 @@
   cursor: pointer;
 }
 .stat.clickable:hover > .number {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }

@@ -23,7 +23,7 @@
   background: transparent;
   border: 0;
   padding: 0;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-weight: var(--harmony-font-medium);
   line-height: 150%;
   overflow: visible;
@@ -33,7 +33,7 @@
 }
 /* Using .focus class since Firefox doesn't support :has() */
 .root.focus {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 
 .root.error,

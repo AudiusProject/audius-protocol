@@ -34,7 +34,7 @@
   border-radius: 6px;
   padding: 4px 16px;
   background-color: var(--neutral-light-10);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-weight: 500;
   gap: 8px;
 
@@ -61,16 +61,16 @@
   border-color: var(--neutral-light-6);
 }
 .wrapper.focused .tagInput {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 
 .flash {
-  background-color: var(--white);
-  color: var(--neutral);
+  background-color: var(--harmony-white);
+  color: var(--harmony-neutral);
 }
 
 .flash g path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .newTagInput {

@@ -14,7 +14,7 @@
   font-weight: var(--harmony-font-heavy);
   font-size: 48px;
   text-align: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   line-height: normal;
 }
 
@@ -49,7 +49,7 @@
 .sectionTitle {
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-2xl);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .mobile .sectionTitle {
@@ -62,7 +62,7 @@
   font-size: var(--harmony-font-2xl);
   line-height: normal;
 
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .mobile.container .sectionAmount {

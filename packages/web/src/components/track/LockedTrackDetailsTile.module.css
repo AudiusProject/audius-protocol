@@ -63,7 +63,7 @@
 
 .trackOwnerName {
   margin: 0 var(--harmony-unit-1);
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .badgeIcon {

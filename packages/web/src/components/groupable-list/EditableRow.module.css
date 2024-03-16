@@ -4,12 +4,12 @@
 }
 
 .editableRow path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .left {
   min-width: 100px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   text-align: left;
@@ -30,14 +30,14 @@
 
 .input,
 .textarea {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   border: none;
   outline: none;
   width: 100%;
   padding: 0;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .isDisabled .input,

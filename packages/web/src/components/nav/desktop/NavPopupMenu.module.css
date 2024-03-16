@@ -89,19 +89,19 @@
   position: absolute;
   width: 14px;
   height: 14px;
-  border: 2px solid var(--white);
+  border: 2px solid var(--harmony-white);
   transform: translate(92%, -200%);
 }
 
 .item:hover .innerNotificationDot {
-  background: var(--white);
-  border-color: var(--secondary);
+  background: var(--harmony-white);
+  border-color: var(--harmony-secondary);
 }
 
 .item:hover .usdcPill,
 .item:hover .audioPill {
-  color: var(--secondary);
-  background: var(--white);
+  color: var(--harmony-secondary);
+  background: var(--harmony-white);
 }
 
 .item:hover .usdcPill path {

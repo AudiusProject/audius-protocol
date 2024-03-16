@@ -4,11 +4,11 @@
 
 .activeRow td {
   background-color: var(--neutral-light-9) !important;
-  color: var(--primary) !important;
+  color: var(--harmony-primary) !important;
 }
 
 .collectibleName:hover {
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }

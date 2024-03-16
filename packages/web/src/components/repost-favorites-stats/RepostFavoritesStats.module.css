@@ -22,7 +22,7 @@
 }
 
 .statItem > span {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   transition: 0.11s all ease-in-out;
 }
 
@@ -65,13 +65,13 @@
 }
 
 .statItem:hover {
-  color: var(--primary) !important;
+  color: var(--harmony-primary) !important;
 }
 
 .statItem:hover > span {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .statItem:hover path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }

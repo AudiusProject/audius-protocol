@@ -71,8 +71,8 @@
   align-items: center;
   border: 2px solid var(--neutral-light-8);
   padding: 8px;
-  background: var(--white);
-  color: var(--neutral);
+  background: var(--harmony-white);
+  color: var(--harmony-neutral);
   font-weight: var(--harmony-font-bold);
 }
 
@@ -118,21 +118,21 @@
   left: 12px;
   z-index: 10000;
   font-size: var(--harmony-font-2xs);
-  color: var(--white);
+  color: var(--harmony-white);
 }
 
 .created {
   padding: var(--harmony-unit-1) var(--harmony-unit-2);
   border-radius: 50px;
-  border: 1px solid var(--white);
-  background: var(--primary);
+  border: 1px solid var(--harmony-white);
+  background: var(--harmony-primary);
 }
 
 .owned {
   padding: var(--harmony-unit-1) var(--harmony-unit-2);
   border-radius: 50px;
-  border: 1px solid var(--white);
-  background: var(--secondary);
+  border: 1px solid var(--harmony-white);
+  background: var(--harmony-secondary);
 }
 
 .nftTitle {
@@ -171,7 +171,7 @@
   margin-bottom: 20px;
   font-size: var(--harmony-font-xs);
   line-height: 15px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   gap: var(--harmony-unit-2);
 }
 
@@ -197,14 +197,14 @@
 .link {
   display: flex;
   align-items: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: var(--harmony-font-demi-bold);
   text-decoration: underline !important;
   margin-bottom: var(--harmony-unit-6);
 }
 
 .link:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .linkIcon {
@@ -214,7 +214,7 @@
 }
 
 .linkIcon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .volumeIcon {
@@ -239,7 +239,7 @@
 }
 
 .modalTitle {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: 22px;
 }
 
@@ -430,7 +430,7 @@
 
 .editStamp {
   font-size: var(--harmony-font-2xs);
-  color: var(--white);
+  color: var(--harmony-white);
 }
 
 .editHidden {
@@ -483,7 +483,7 @@
 
 .drag:hover path,
 .drag:active path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .editDrawer {
@@ -512,7 +512,7 @@
 }
 
 .editDrawerContent {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-2xl);
   line-height: 28px;
 }
@@ -558,7 +558,7 @@
   font-size: var(--harmony-font-l);
   line-height: 22px;
   font-weight: var(--harmony-font-demi-bold);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .embedTextPanel {
@@ -581,9 +581,9 @@
   min-height: 120px;
   min-width: 400px;
   border: 1px solid var(--neutral-light-6);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   padding: 1.25rem 1rem;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   line-height: 20px;
@@ -613,7 +613,7 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }
 
 .chainIcon {

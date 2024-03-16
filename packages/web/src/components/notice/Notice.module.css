@@ -35,7 +35,7 @@
   padding: 12px 64px;
   box-shadow: 0px 16px 20px rgba(133, 129, 153, 0.15);
   border-radius: 8px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-m);
   line-height: 22px;
   text-align: center;
@@ -53,7 +53,7 @@
 }
 
 .iconRemove path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .content i {

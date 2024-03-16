@@ -11,11 +11,11 @@
 
 .countContainer:active .count {
   transform: scale(0.93);
-  color: var(--primary) !important;
+  color: var(--harmony-primary) !important;
 }
 
 .countContainer:active svg path {
-  fill: var(--primary) !important;
+  fill: var(--harmony-primary) !important;
 }
 
 .listenCount {
@@ -23,7 +23,7 @@
 }
 
 .count {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-bold);

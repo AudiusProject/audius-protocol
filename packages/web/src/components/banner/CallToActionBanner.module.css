@@ -29,7 +29,7 @@
 }
 
 .ctaBanner:hover .contentSelection {
-  border-bottom: 1px solid var(--white);
+  border-bottom: 1px solid var(--harmony-white);
 }
 
 .pill {
@@ -40,11 +40,11 @@
 .pill .pillText {
   padding-top: 1px;
   text-transform: uppercase;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .text {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-bold);
   line-height: 130%;
@@ -76,5 +76,5 @@
 }
 
 .arrow path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }

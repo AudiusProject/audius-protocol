@@ -14,10 +14,10 @@
   background: none;
   transition: border ease-in-out 0.1s;
   font-weight: 500;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 .input > input:-webkit-autofill {
-  -webkit-text-fill-color: var(--neutral);
+  -webkit-text-fill-color: var(--harmony-neutral);
   box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
   -webkit-box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
 }
@@ -61,7 +61,7 @@
   border-color: var(--neutral-light-6);
 }
 .input.focused > input {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 .input.elevatedPlaceholder.data > input {
   padding-top: 20px;

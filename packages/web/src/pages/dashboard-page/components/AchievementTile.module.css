@@ -3,7 +3,7 @@
   width: 240px;
   margin-left: 16px;
   border-radius: 6px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: var(--table-shadow) 0px 16px 20px 0px;
   display: inline-flex;
   align-items: center;
@@ -17,7 +17,7 @@
 .achievementMetric {
   display: flex;
   align-items: flex-start;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: bold;
   margin-bottom: 4px;
 }
@@ -44,5 +44,5 @@
 }
 
 .achievementTrophy path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }

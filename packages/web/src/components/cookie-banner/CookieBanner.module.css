@@ -5,7 +5,7 @@
   opacity: 1;
   border: 1px solid #fafafa;
   border-radius: 4px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.1),
     0 16px 20px -5px rgba(133, 129, 153, 0.15);
   display: inline-flex;
@@ -18,7 +18,7 @@
 .description {
   padding: 13px 0px 13px 15px;
   max-width: 255px;
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   line-height: 19px;
 }
@@ -26,7 +26,7 @@
 .link {
   cursor: pointer;
   margin-left: 3px;
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .iconContainer {
@@ -53,7 +53,7 @@
 }
 
 .iconRemove:hover path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .iconRemove:active {

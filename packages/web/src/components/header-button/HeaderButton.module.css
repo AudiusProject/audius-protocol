@@ -1,6 +1,6 @@
 .container {
   height: 24px;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   border-radius: 6px;
   display: flex;
   flex-direction: row;

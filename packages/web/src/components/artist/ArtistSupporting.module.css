@@ -22,7 +22,7 @@
 .supportingTitleContainer {
   display: flex;
   align-items: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-s);
 }
@@ -34,7 +34,7 @@
   height: 20px;
 }
 .supportingIcon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .line {

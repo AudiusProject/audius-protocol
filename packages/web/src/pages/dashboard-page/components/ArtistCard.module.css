@@ -4,7 +4,7 @@
   flex-direction: column;
   flex-grow: 1;
   border-radius: var(--harmony-unit-3);
-  background: var(--white);
+  background: var(--harmony-white);
   overflow: hidden;
   box-shadow: var(--table-shadow) 0px var(--harmony-unit-4)
     var(--harmony-unit-5) 0px;

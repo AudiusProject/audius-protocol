@@ -12,7 +12,7 @@
   margin: 0px 12px;
   height: 16px;
   width: 16px;
-  border: 2px solid var(--neutral);
+  border: 2px solid var(--harmony-neutral);
   border-radius: 50%;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .label {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
   user-select: none;
   display: flex;

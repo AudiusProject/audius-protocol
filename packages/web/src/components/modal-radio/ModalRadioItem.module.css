@@ -32,15 +32,15 @@
 }
 
 .root:has(.input:checked) .optionTitle {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .optionTitle path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .root:has(.input:checked) .optionTitle path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .collapsibleContainer {

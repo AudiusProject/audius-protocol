@@ -13,7 +13,7 @@
 }
 
 .headerWrapper h2 {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
@@ -28,12 +28,12 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }
 
 .userName:hover {
   cursor: pointer;
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }

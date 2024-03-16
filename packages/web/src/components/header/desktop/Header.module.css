@@ -37,7 +37,7 @@
 }
 
 .header.main {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: var(--harmony-font-heavy);
   font-size: var(--harmony-font-4xl);
 
@@ -71,18 +71,18 @@
 
 .header.section {
   display: inline-block;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-2xl);
   font-weight: var(--harmony-font-bold);
-  text-shadow: 0 2px 6px 0 var(--neutral);
+  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
 }
 
 .header.page {
   display: inline-block;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-2xl);
   font-weight: var(--harmony-font-bold);
-  text-shadow: 0 2px 6px 0 var(--neutral);
+  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
   background-image: var(--page-header-gradient);
 }
 

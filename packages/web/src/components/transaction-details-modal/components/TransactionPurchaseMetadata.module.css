@@ -14,10 +14,10 @@
   fill: var(--neutral-light-4);
 }
 .link:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 .link:hover svg path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .amount,

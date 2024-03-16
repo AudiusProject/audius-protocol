@@ -7,10 +7,10 @@
 .link {
   font-size: inherit;
   font-weight: inherit;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .link:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   text-decoration: underline !important;
 }

@@ -13,7 +13,7 @@
 }
 
 .titleIcon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .title {
@@ -32,11 +32,11 @@
 
 .copyLinkAction {
   composes: action;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .copyLinkAction svg path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .shareToTwitterAction {

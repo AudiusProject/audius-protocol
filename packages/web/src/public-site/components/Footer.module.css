@@ -98,18 +98,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: 16px;
   line-height: 20px;
   font-weight: 600;
 }
 
 .socialIconLinkContainer:hover {
-  color: var(--secondary) !important;
+  color: var(--harmony-secondary) !important;
 }
 
 .socialIconLinkContainer:hover .socialIconLink path {
-  fill: var(--secondary) !important;
+  fill: var(--harmony-secondary) !important;
 }
 
 .socialIconLink {
@@ -163,7 +163,7 @@
 
 .link:hover {
   text-decoration: none;
-  color: var(--secondary) !important;
+  color: var(--harmony-secondary) !important;
 }
 
 /* Mobile */

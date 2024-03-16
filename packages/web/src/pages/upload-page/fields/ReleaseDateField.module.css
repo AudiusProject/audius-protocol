@@ -70,13 +70,13 @@
 }
 
 .datePicker:focus-within {
-  border: 1px solid var(--secondary);
+  border: 1px solid var(--harmony-secondary);
 }
 
 .datePicker :global(.DateInput_input) {
   background-color: var(--neutral-light-10);
   border: none;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-weight: var(--harmony-font-medium);
   font-size: var(--harmony-font-l);
   line-height: 18px;

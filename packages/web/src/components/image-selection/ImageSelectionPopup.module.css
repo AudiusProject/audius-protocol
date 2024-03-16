@@ -19,7 +19,7 @@
 }
 
 .dropzone {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
   line-height: 20px;
@@ -58,7 +58,7 @@
 
 .query > input {
   width: 100%;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   padding-left: 32px;
   font-size: var(--harmony-font-s);
   height: 34px;
@@ -71,7 +71,7 @@
 }
 
 .query > input::placeholder {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .query > .iconSearch {
@@ -102,7 +102,7 @@
 }
 
 .terms {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .terms .term {
@@ -112,7 +112,7 @@
 }
 
 .terms .term:hover {
-  border-bottom: 1px solid var(--secondary);
+  border-bottom: 1px solid var(--harmony-secondary);
 }
 
 .terms .comma {

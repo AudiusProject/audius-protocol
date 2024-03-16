@@ -5,7 +5,7 @@
   padding: 0px;
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0px
     env(safe-area-inset-left, 0px);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   border-bottom: 1px solid var(--neutral-light-7);
   width: 100%;
   align-items: stretch;
@@ -37,7 +37,7 @@
   transform: translateX(50%);
   border-radius: 8px;
   background-color: var(--static-accent-red);
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 0.07px;
@@ -136,7 +136,7 @@
   padding: 0;
   border: none;
   color: white;
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
   margin-right: auto;
   height: 24px;
   border-radius: 6px;
@@ -164,7 +164,7 @@
   font-size: 10px;
   position: absolute;
   font-weight: var(--harmony-font-bold);
-  color: var(--primary);
+  color: var(--harmony-primary);
   letter-spacing: 0.5px;
   left: 30px;
   top: 18px;

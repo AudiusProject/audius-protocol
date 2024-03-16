@@ -4,7 +4,7 @@
 }
 
 .profilePictureBackground {
-  background: var(--white);
+  background: var(--harmony-white);
   width: 208px;
   height: 208px;
   border-radius: 50%;

@@ -54,7 +54,7 @@
   line-height: var(--harmony-font-2xs);
   letter-spacing: 0.15px;
   text-transform: uppercase;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   padding: var(--harmony-unit-2) var(--harmony-unit-2) var(--unit);
 }
 
@@ -73,7 +73,7 @@
   outline: none;
 }
 .noAnimation path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .animation {
@@ -89,7 +89,7 @@
 
 .playButton :global(#primaryBG) path,
 .playButton :global(#Primary) path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .playButton :global(#playpause1) path,

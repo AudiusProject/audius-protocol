@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: var(--harmony-unit-2);
   padding: var(--harmony-unit-4) var(--harmony-unit-6);
-  background: var(--white);
+  background: var(--harmony-white);
   border-bottom: 1px solid var(--neutral-light-8);
 }
 

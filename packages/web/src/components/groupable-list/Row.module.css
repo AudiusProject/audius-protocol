@@ -1,5 +1,5 @@
 .row {
-  background: var(--white);
+  background: var(--harmony-white);
   padding: 12px 20px;
   display: flex;
   align-items: center;
@@ -40,7 +40,7 @@
   align-items: center;
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .title i {

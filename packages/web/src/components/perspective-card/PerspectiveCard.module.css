@@ -79,7 +79,7 @@
 }
 
 .textInterior .title {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 26px;
   font-weight: var(--harmony-font-heavy);
   text-transform: uppercase;
@@ -89,7 +89,7 @@
 }
 
 .textInterior .subtitle {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 0.2px;
@@ -108,7 +108,7 @@
 }
 
 .emojiInterior .title {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: var(--harmony-font-xl);
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.25px;
