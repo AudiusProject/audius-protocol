@@ -1,41 +1,5 @@
 const theme = {
-  '--background': '#1A1818',
-
-  '--primary': '#0CF10C',
-  '--primary-dark-1': '#0CF10C',
-  '--primary-dark-2': '#0CF10C',
-  '--primary-light-1': '#0CF10C',
-  '--primary-light-2': '#0CF10C',
-
-  '--secondary': '#184F17',
-  '--secondary-transparent': '#184F17',
-  '--secondary-dark-1': '#184F17',
-  '--secondary-dark-2': '#184F17',
-  '--secondary-light-1': '#184F17',
-  '--secondary-light-2': '#184F17',
-
-  '--primary-secondary-text': 'var(--harmony-white)',
-
-  '--neutral': '#21B404',
-  '--neutral-dark-1': '#21B404',
-  '--neutral-dark-2': '#21B404',
-  '--neutral-dark-3': '#21B404',
-  '--neutral-light-1': '#20A406',
-  '--neutral-light-2': '#1F9508',
-  '--neutral-light-3': '#1F850A',
-  '--neutral-light-4': '#1D660E',
-  '--neutral-light-5': '#1D5E0F',
-  '--neutral-light-6': '#1C5610',
-  '--neutral-light-7': '#1B3714',
-  '--neutral-light-8': '#1A2F15',
-  '--neutral-light-9': '#202A1D',
-  '--neutral-light-10': '#1D211B ',
-  '--white': '#1F211F',
   '--darkmode-static-white': 'var(--harmony-white)',
-
-  '--accent-red': '#F9344C',
-
-  '--special-green': '#6cdf44',
 
   '--page-header-gradient-color-1': '#4FF069',
   '--page-header-gradient-color-2': '#09BD51',
@@ -58,10 +22,6 @@ const theme = {
   '--search-bar-expanded': 'var(--harmony-n-50)',
   '--search-bar-border': 'rgba(143,149,152,0.1)',
   '--search-bar-shadow': 'rgba(36,36,56,0.2)',
-
-  '--nav-column-group-header': 'var(--harmony-n-200)',
-  '--nav-column-link': 'var(--harmony-n-600)',
-  '--nav-column-link-hover': 'var(--harmony-n-700)',
 
   '--slider-handle': 'var(--harmony-n-950)',
 

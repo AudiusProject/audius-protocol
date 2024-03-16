@@ -31,7 +31,7 @@
 }
 
 .body {
-  font-size: var(--harmony-font-4xl);
+  font-size: var(--harmony-font-5xl);
   font-weight: var(--harmony-font-bold);
   line-height: 52px;
 }

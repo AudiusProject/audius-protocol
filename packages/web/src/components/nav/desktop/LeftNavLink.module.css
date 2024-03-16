@@ -9,7 +9,7 @@
   margin-left: -16px;
   /* left padding is visibly (32px + -16px margin =) 16px to match the left padding of .groupHeader */
   padding: 5px 0 5px 32px;
-  color: var(--nav-column-link);
+  color: var(--harmony-neutral);
   transition: color 0.07s ease-in-out;
 
   white-space: nowrap;
@@ -45,7 +45,7 @@
 }
 .link:hover {
   cursor: pointer;
-  color: var(--nav-column-link-hover);
+  color: var(--harmony-n-950);
 }
 .link:global(.active) {
   color: var(--harmony-primary) !important;

@@ -83,7 +83,7 @@ export const CoinbaseBuyAudioButton = () => {
       className={styles.tooltip}
       text={messages.belowSolThreshold}
       disabled={!belowSolThreshold}
-      color={'--secondary'}
+      color='secondary'
       shouldWrapContent={false}
     >
       <div>

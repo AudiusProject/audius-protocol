@@ -3,13 +3,8 @@ import { Theme } from '@audius/common/models'
 import DarkTheme from './dark'
 import DefaultTheme from './default'
 import MatrixTheme from './matrix'
-
 const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
-
-export type ThemeColor = keyof typeof DefaultTheme &
-  keyof typeof DarkTheme &
-  keyof typeof MatrixTheme
 
 const getThemeNameKey = (theme: Theme) => {
   switch (theme) {
@@ -80,11 +75,6 @@ export const getTheme = (): Theme | null => {
     return theme as Theme
   }
   return null
-}
-
-export const getCurrentThemeColors = () => {
-  const theme = getTheme()
-  return getThemeColors(theme)
 }
 
 export const isDarkMode = () => shouldShowDark(getTheme())

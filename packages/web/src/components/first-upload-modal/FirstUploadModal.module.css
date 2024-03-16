@@ -6,7 +6,7 @@
 .title {
   color: var(--harmony-secondary);
   font-weight: var(--harmony-font-heavy);
-  font-size: var(--harmony-font-4xl);
+  font-size: var(--harmony-font-5xl);
 
   user-select: none;
   background-image: var(--harmony-gradient);

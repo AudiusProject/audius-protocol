@@ -1,1 +1,1 @@
-import './assets/styles/colors.css'
+export {}

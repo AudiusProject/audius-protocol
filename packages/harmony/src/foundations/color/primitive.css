@@ -54,11 +54,7 @@
   --harmony-primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
   --harmony-gradient-color-1: #5b23e1;
   --harmony-gradient-color-2: #a22feb;
-  --harmony-gradient: linear-gradient(
-    315deg,
-    var(--gradient-color-1) 0%,
-    var(--gradient-color-2) 100%
-  );
+  --harmony-gradient: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
 }
 
 /* Day Theme */
@@ -104,6 +100,8 @@ html[data-theme='day'] {
   --harmony-dark-red: #bb0218;
   --harmony-green: #0f9e48;
   --harmony-light-green: #13c65a;
+  --harmony-gradient-color-1: #5b23e1;
+  --harmony-gradient-color-2: #a22feb;
   --harmony-gradient: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
 }
 
@@ -150,6 +148,8 @@ html[data-theme='dark'] {
   --harmony-dark-red: #c43047;
   --harmony-green: #6cdf44;
   --harmony-light-green: #13c65a;
+  --harmony-gradient-color-1: #7652cc;
+  --harmony-gradient-color-2: #b05ce6;
   --harmony-gradient: linear-gradient(315deg, #7652cc 0%, #b05ce6 100%);
 }
 
@@ -196,5 +196,7 @@ html[data-theme='matrix'] {
   --harmony-dark-red: #bb0218;
   --harmony-green: #6cdf44;
   --harmony-light-green: #13c65a;
+  --harmony-gradient-color-1: #7652cc;
+  --harmony-gradient-color-2: #b05ce6;
   --harmony-gradient: linear-gradient(315deg, #7652cc 0%, #b05ce6 100%);
 }

@@ -52,10 +52,6 @@
   --search-bar-border: rgba(143, 149, 152, 0.1);
   --search-bar-shadow: rgba(133, 129, 153, 0.15);
 
-  --nav-column-group-header: var(--harmony-n-400);
-  --nav-column-link: var(--harmony-n-950);
-  --nav-column-link-hover: var(--harmony-n-950);
-
   --scrubber-hover: var(--primary-gradient-alt-1);
   --stems-token-value-slider-background: var(--harmony-gradient);
   --stems-token-value-slider-background-error: var(--accent-red-gradient);
