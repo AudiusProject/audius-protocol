@@ -290,10 +290,10 @@
   width: 252px;
 }
 .button:hover {
-  background: var(--primary-light-1) !important;
+  background: var(--harmony-p-200) !important;
 }
 .button:not(.disabled):active {
-  background: var(--primary-dark-1) !important;
+  background: var(--harmony-p-300) !important;
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
 }
 .buttonContainer .disabled:hover {

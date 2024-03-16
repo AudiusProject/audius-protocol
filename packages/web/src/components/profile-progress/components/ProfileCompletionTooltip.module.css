@@ -11,8 +11,8 @@
   font-weight: 900;
   letter-spacing: 0.63px;
   height: 48px;
-  background-color: var(--secondary-dark-1);
-  border-bottom: solid 1px var(--secondary-light-1);
+  background-color: var(--harmony-s-400);
+  border-bottom: solid 1px var(--harmony-s-200);
   color: var(--harmony-static-white);
 }
 

@@ -40,7 +40,7 @@
 }
 
 .isAuthor .bubble {
-  --bubble-color: var(--secondary-light-2);
+  --bubble-color: var(--harmony-s-100);
 }
 
 .isAuthor .text a {
@@ -48,7 +48,7 @@
 }
 
 .isAuthor .bubble:hover {
-  --bubble-color: var(--secondary-light-1);
+  --bubble-color: var(--harmony-s-200);
 }
 
 .unfurl {
@@ -60,7 +60,7 @@
 }
 
 .isAuthor .bubble .unfurl:not(:last-child) {
-  border-bottom: 1px solid var(--secondary-dark-1);
+  border-bottom: 1px solid var(--harmony-s-400);
 }
 
 .text {
@@ -151,7 +151,7 @@
 }
 
 .reactionsContainer:not(.hasReaction):hover .reactionsButton path {
-  fill: var(--secondary-dark-2);
+  fill: var(--harmony-s-500);
 }
 
 .reactionsContainer:not(.hasReaction):active .reactionsButton {

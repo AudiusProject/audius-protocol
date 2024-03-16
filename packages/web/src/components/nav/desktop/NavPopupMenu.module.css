@@ -59,7 +59,7 @@
 
 .icon:global(.active),
 .icon:hover {
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
 }
 
 .crownIcon svg {

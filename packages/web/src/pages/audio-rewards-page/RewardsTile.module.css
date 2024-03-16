@@ -113,7 +113,7 @@
   border-width: 1px;
   border-color: var(--neutral-light-9);
   border-style: solid;
-  background-color: var(--background);
+  background-color: var(--harmony-background);
 }
 
 .newChallengePill {

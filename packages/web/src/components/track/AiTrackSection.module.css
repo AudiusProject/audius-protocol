@@ -62,7 +62,7 @@
 }
 
 .attributedUser:active {
-  color: var(--secondary-dark-2);
+  color: var(--harmony-s-500);
 }
 
 .badgeIcon {

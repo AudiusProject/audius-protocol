@@ -74,7 +74,7 @@
   --border-strong: var(--neutral-light-7);
 
   /* Semantic Background */
-  --background-default: var(--background);
+  --background-default: var(--harmony-background);
   --background-surface-1: var(--neutral-light-10);
   --background-surface-2: var(--neutral-light-9);
   --background-white: var(--harmony-white);

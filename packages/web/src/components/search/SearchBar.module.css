@@ -155,7 +155,7 @@
 .searchBox
   :global(.ant-select-item-option.ant-select-item-option-active)
   .allResultsOption {
-  border-top: 1px solid var(--secondary-dark-1) !important;
+  border-top: 1px solid var(--harmony-s-400) !important;
 }
 
 .searchBox

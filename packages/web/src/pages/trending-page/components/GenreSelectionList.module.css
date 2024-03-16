@@ -36,9 +36,9 @@
 }
 
 :not(.isMobile).genreButton:hover {
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
   color: var(--harmony-static-white);
-  border: 1px solid var(--secondary-light-2);
+  border: 1px solid var(--harmony-s-100);
 }
 
 .genreButton.selected {

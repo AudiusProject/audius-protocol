@@ -206,7 +206,7 @@
 
 /* Loading Skeleton Styles */
 .loading {
-  background-color: var(--background);
+  background-color: var(--harmony-background);
 }
 
 .loadingSkeleton {

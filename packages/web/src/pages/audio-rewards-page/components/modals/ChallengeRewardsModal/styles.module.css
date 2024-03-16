@@ -139,7 +139,7 @@
   background-color: var(--neutral-light-9);
 }
 .progressStatus.inProgress h3 {
-  color: var(--secondary-light-1);
+  color: var(--harmony-s-200);
 }
 .progressStatus.complete {
   background-color: var(--static-accent-green-light-1);

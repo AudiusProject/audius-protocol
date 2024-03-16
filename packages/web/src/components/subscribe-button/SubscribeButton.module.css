@@ -13,13 +13,13 @@
 }
 
 .container:not(.isMobile):hover {
-  border: 1px solid var(--primary-dark-2);
+  border: 1px solid var(--harmony-p-500);
   background-color: var(--harmony-primary);
 }
 
 .container:active {
-  border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary-dark-1);
+  border: 1px solid var(--harmony-p-500);
+  background-color: var(--harmony-p-300);
 }
 
 .container.isSubscribed {
@@ -28,13 +28,13 @@
 }
 
 .container.isSubscribed:hover {
-  border: 1px solid var(--primary-dark-2);
+  border: 1px solid var(--harmony-p-500);
   background-color: var(--harmony-primary);
 }
 
 .container:not(.isMobile).isSubscribed:active {
-  border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary-dark-1);
+  border: 1px solid var(--harmony-p-500);
+  background-color: var(--harmony-p-300);
 }
 
 .icon {

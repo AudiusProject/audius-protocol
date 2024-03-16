@@ -20,7 +20,7 @@ h6 {
 }
 
 body {
-  background: var(--background);
+  background: var(--harmony-background);
   backface-visibility: hidden;
   /** Turn off user select so the web app behaves more like "an app" */
   user-select: none;

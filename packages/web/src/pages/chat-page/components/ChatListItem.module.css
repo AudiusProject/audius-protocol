@@ -22,7 +22,7 @@
   height: 100%;
   top: 0;
   left: 0;
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
 }
 
 .root.active:hover::before {

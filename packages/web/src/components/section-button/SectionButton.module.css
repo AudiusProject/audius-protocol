@@ -14,7 +14,7 @@
 }
 
 .container:hover {
-  background: var(--secondary-dark-2);
+  background: var(--harmony-s-500);
   transform: scale(1.03);
 }
 

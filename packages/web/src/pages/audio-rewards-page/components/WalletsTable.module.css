@@ -86,7 +86,7 @@
 
 .loading svg path {
   fill: var(--secondary-light);
-  stroke: var(--secondary-light-1);
+  stroke: var(--harmony-s-200);
 }
 
 :global(#bitski-dialog-container) {

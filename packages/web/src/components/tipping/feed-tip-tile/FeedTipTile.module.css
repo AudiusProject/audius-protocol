@@ -62,8 +62,8 @@
   cursor: pointer;
   color: var(--harmony-primary);
   text-decoration: underline;
-  -webkit-text-decoration-color: var(--primary-light-2);
-  text-decoration-color: var(--primary-light-2);
+  -webkit-text-decoration-color: var(--harmony-p-100);
+  text-decoration-color: var(--harmony-p-100);
 }
 .badge {
   height: 12px;

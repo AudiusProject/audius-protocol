@@ -104,7 +104,7 @@ svg.iconCalendar {
 }
 
 .datePicker :global(.CalendarDay:hover) {
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
   color: var(--harmony-white);
   cursor: pointer;
 }
@@ -126,5 +126,5 @@ svg.iconCalendar {
 }
 
 .datePicker :global(.CalendarDay__selected:hover) {
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
 }

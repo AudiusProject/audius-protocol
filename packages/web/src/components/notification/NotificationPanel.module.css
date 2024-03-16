@@ -13,7 +13,7 @@
   justify-content: center;
   align-items: center;
   background-color: var(--harmony-secondary);
-  border-bottom: 2px solid var(--secondary-dark-2);
+  border-bottom: 2px solid var(--harmony-s-500);
   border-radius: 8px 8px 0px 0px;
   padding: var(--harmony-unit-2);
 }

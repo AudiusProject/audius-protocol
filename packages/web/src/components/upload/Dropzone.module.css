@@ -50,7 +50,7 @@
 }
 
 .text > span {
-  color: var(--primary-dark-2);
+  color: var(--harmony-p-500);
 }
 
 .text > span:hover {

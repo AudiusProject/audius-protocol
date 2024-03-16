@@ -17,7 +17,7 @@
 
 .container:active {
   transition: none;
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
 }
 
 .text {

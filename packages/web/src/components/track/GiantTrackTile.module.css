@@ -232,7 +232,7 @@
 }
 
 .collectibleName:active {
-  color: var(--secondary-dark-2);
+  color: var(--harmony-s-500);
 }
 
 .gatedContentIcon {
@@ -391,7 +391,7 @@
 }
 
 .gatedTrackOwner:active {
-  color: var(--secondary-dark-2);
+  color: var(--harmony-s-500);
 }
 
 @media screen and (max-width: 1148px) {

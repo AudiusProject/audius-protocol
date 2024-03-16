@@ -21,11 +21,11 @@ button.sendButton {
 
 button.sendButton:not(:disabled):hover {
   transform: scale(1.05);
-  background-color: var(--primary-light-2);
+  background-color: var(--harmony-p-100);
 }
 
 button.sendButton:not(:disabled):active {
-  background-color: var(--primary-dark-2);
+  background-color: var(--harmony-p-500);
   transform: scale(0.95);
 }
 
