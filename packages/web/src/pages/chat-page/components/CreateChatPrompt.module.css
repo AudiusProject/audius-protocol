@@ -2,14 +2,14 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 
-  width: calc(100% - var(--unit-24));
+  width: calc(100% - var(--harmony-unit-24));
   max-width: 700px;
-  margin: var(--unit-12) auto;
-  padding: var(--unit-6);
+  margin: var(--harmony-unit-12) auto;
+  padding: var(--harmony-unit-6);
 
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
   box-shadow: var(--box-shadow-near);
   background-color: var(--white);
   text-align: start;
@@ -18,7 +18,7 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .title {

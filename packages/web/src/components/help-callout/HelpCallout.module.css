@@ -1,17 +1,17 @@
 .root {
   display: flex;
   align-items: flex-start;
-  gap: var(--unit-4);
-  padding: var(--unit-3) var(--unit-4);
+  gap: var(--harmony-unit-4);
+  padding: var(--harmony-unit-3) var(--harmony-unit-4);
   background: var(--neutral-light-9);
   border: 1px solid var(--neutral-light-7);
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
 }
 
 .icon,
 .icon svg {
-  width: var(--unit-6);
-  height: var(--unit-6);
+  width: var(--harmony-unit-6);
+  height: var(--harmony-unit-6);
 }
 
 .icon path {

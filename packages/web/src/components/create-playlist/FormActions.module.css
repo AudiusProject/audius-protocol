@@ -10,7 +10,7 @@
 
 .buttonsRight {
   display: inline-flex;
-  column-gap: var(--unit-4);
+  column-gap: var(--harmony-unit-4);
 }
 
 .deleteButton {

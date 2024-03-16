@@ -1,7 +1,7 @@
 .fields {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .fields :global(.ant-divider) {
@@ -11,8 +11,8 @@
 /* TrackInfo */
 .track {
   display: flex;
-  padding: var(--unit-2);
-  gap: var(--unit-1);
+  padding: var(--harmony-unit-2);
+  gap: var(--harmony-unit-1);
   align-items: center;
   align-self: stretch;
   border-radius: 2px;
@@ -47,12 +47,12 @@
 .selectedValue {
   display: flex;
   flex-direction: column;
-  row-gap: var(--unit-4);
+  row-gap: var(--harmony-unit-4);
 }
 
 .remixOfValue {
   display: flex;
   flex-direction: column;
-  row-gap: var(--unit-2);
+  row-gap: var(--harmony-unit-2);
   align-items: flex-start;
 }

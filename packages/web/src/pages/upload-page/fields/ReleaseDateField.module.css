@@ -13,7 +13,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .valueDisplay {
@@ -25,8 +25,8 @@
   background: var(--neutral-light-8);
   border: 1px solid var(--border-strong);
   border-radius: 2px;
-  margin-top: var(--unit-2);
-  gap: var(--unit-2);
+  margin-top: var(--harmony-unit-2);
+  gap: var(--harmony-unit-2);
 
   font-family: 'Avenir Next LT Pro';
   font-weight: var(--font-demi-bold);
@@ -48,7 +48,7 @@
 }
 
 .modalHeading {
-  margin-bottom: var(--unit-2);
+  margin-bottom: var(--harmony-unit-2);
 }
 
 .titleIcon {
@@ -61,7 +61,7 @@
   border: 1px solid var(--neutral-light-9);
   border-radius: 4px;
   width: 100%;
-  padding: var(--unit-3) var(--unit-4);
+  padding: var(--harmony-unit-3) var(--harmony-unit-4);
   transition: border ease-in-out 0.1s;
 }
 

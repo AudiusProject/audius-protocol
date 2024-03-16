@@ -1,16 +1,16 @@
 .container {
   align-items: center;
   justify-content: center;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   background-color: var(--neutral-light-4);
-  border-radius: var(--unit-20);
+  border-radius: var(--harmony-unit-20);
   display: flex;
-  height: var(--unit-4);
-  padding: var(--unit-half) var(--unit-2);
+  height: var(--harmony-unit-4);
+  padding: var(--harmony-unit-half) var(--harmony-unit-2);
 }
 
 .container.hasText {
-  padding: var(--unit-1) var(--unit-2);
+  padding: var(--harmony-unit-1) var(--harmony-unit-2);
 }
 
 .unlocked.gated,

@@ -8,7 +8,7 @@
 
 .search {
   max-width: 100%;
-  padding: var(--unit-6);
+  padding: var(--harmony-unit-6);
   border-bottom: 1px solid var(--neutral-light-8);
 }
 
@@ -17,7 +17,7 @@
 }
 
 .spinner {
-  width: var(--unit-12);
-  height: var(--unit-12);
-  margin: var(--unit-4) auto;
+  width: var(--harmony-unit-12);
+  height: var(--harmony-unit-12);
+  margin: var(--harmony-unit-4) auto;
 }

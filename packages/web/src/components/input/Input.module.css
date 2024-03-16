@@ -63,8 +63,8 @@
   padding-right: 6px;
 }
 .inputSuffix svg {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
 }
 .inputSuffix svg g path {
   fill: var(--neutral-light-4);

@@ -10,7 +10,7 @@
 }
 
 .header {
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .droppableLink {

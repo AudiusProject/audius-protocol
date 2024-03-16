@@ -1,7 +1,7 @@
 .root {
   display: flex;
   align-items: flex-start;
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   border-bottom: 1px solid var(--neutral-light-8);
 }
 
@@ -13,18 +13,18 @@
 .notPermitted {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   width: fit-content;
-  padding: var(--unit-2) var(--unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
   background: var(--neutral-light-9);
   border: 1px solid var(--neutral-light-7);
-  border-radius: var(--unit-1);
+  border-radius: var(--harmony-unit-1);
 
   font-weight: var(--font-bold);
   line-height: 120%;
 }
 
 .notPermitted .icon {
-  width: var(--unit-4);
-  height: var(--unit-4);
+  width: var(--harmony-unit-4);
+  height: var(--harmony-unit-4);
 }

@@ -1,7 +1,7 @@
 .usdcContainer {
   width: 100%;
   flex-direction: column;
-  border-radius: var(--unit-3);
+  border-radius: var(--harmony-unit-3);
   background: var(--white);
   overflow: hidden;
   box-shadow: var(--table-shadow) 0px 16px 20px 0px;
@@ -13,8 +13,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  gap: var(--unit-4);
-  padding: var(--unit-6);
+  gap: var(--harmony-unit-4);
+  padding: var(--harmony-unit-6);
   background: linear-gradient(
       315deg,
       rgba(0, 0, 0, 0.1) 0%,
@@ -34,7 +34,7 @@
 .usdcTitle {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .usdc {
@@ -44,12 +44,12 @@
 .balance {
   display: inline-flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .spinner {
-  height: var(--unit-8);
-  width: var(--unit-8);
+  height: var(--harmony-unit-8);
+  width: var(--harmony-unit-8);
   align-self: center;
 }
 
@@ -71,8 +71,8 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: var(--unit-6);
-  gap: var(--unit-2);
+  padding: var(--harmony-unit-6);
+  gap: var(--harmony-unit-2);
 }
 
 .withdrawButton {

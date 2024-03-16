@@ -1,10 +1,10 @@
 .root {
-  padding: var(--unit-3) var(--unit-4);
+  padding: var(--harmony-unit-3) var(--harmony-unit-4);
   display: flex;
   border-radius: 8px;
   border: 1px solid var(--border-strong);
   background: var(--neutral-light-9);
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .icon path {

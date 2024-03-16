@@ -1,6 +1,6 @@
 .root {
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   width: 100%;
 }
 
@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   min-width: 0;
 }
 
@@ -20,7 +20,7 @@
 .nameAndBadge {
   display: flex;
   align-items: center;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   font-weight: var(--font-bold);
   font-size: var(--font-l);
   line-height: 130%;
@@ -39,6 +39,6 @@
 }
 
 .profilePicture {
-  width: var(--unit-12);
-  height: var(--unit-12);
+  width: var(--harmony-unit-12);
+  height: var(--harmony-unit-12);
 }

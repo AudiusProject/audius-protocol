@@ -1,6 +1,6 @@
 .invalidFileType {
   max-width: 320px;
-  padding: var(--unit-2) var(--unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
   border-radius: 8px;
   background-color: var(--accent-red);
   color: var(--white);

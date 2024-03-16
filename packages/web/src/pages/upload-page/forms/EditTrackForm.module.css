@@ -8,17 +8,17 @@
 }
 
 .trackEditForm {
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
 }
 
 .advancedOptions {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .continue {
-  margin-top: var(--unit-6);
+  margin-top: var(--harmony-unit-6);
   text-align: right;
 }
 
@@ -28,14 +28,14 @@
 }
 
 .multiTrackHeader {
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   border-radius: 8px 8px 0px 0px;
   border-bottom: 1px solid var(--border-strong);
   background: var(--background-surface-1);
 }
 
 .multiTrackFooter {
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   border-radius: 0px 0px 8px 8px;
   border-top: 1px solid var(--border-strong);
   background: var(--background-surface-1);

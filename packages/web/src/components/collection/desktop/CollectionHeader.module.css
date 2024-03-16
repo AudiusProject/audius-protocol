@@ -45,15 +45,15 @@
 .typeLabel {
   display: flex;
   align-items: center;
-  column-gap: var(--unit-2);
+  column-gap: var(--harmony-unit-2);
   user-select: none;
-  padding-top: var(--unit-4);
-  padding-bottom: var(--unit-4);
+  padding-top: var(--harmony-unit-4);
+  padding-bottom: var(--harmony-unit-4);
 }
 
 .labelIcon {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
 }
 
 .labelIcon path {
@@ -72,8 +72,8 @@
   all: unset;
   display: inline-flex;
   align-items: center;
-  column-gap: var(--unit-2);
-  margin-bottom: var(--unit-1);
+  column-gap: var(--harmony-unit-2);
+  margin-bottom: var(--harmony-unit-1);
   position: relative;
 }
 
@@ -103,10 +103,10 @@
 }
 
 .actionButtons {
-  margin-top: var(--unit-4);
+  margin-top: var(--harmony-unit-4);
   display: flex;
   align-items: center;
-  column-gap: var(--unit-2);
+  column-gap: var(--harmony-unit-2);
 }
 
 .infoLabelsSection {
@@ -124,8 +124,8 @@
 }
 
 .description {
-  margin-top: var(--unit-3);
-  margin-bottom: var(--unit-2);
+  margin-top: var(--harmony-unit-3);
+  margin-bottom: var(--harmony-unit-2);
 }
 
 /* Filter Input */
@@ -180,7 +180,7 @@
   opacity: 0;
   transition: opacity var(--harmony-expressive);
   position: absolute;
-  bottom: var(--unit-4);
+  bottom: var(--harmony-unit-4);
 }
 
 .coverArtWrapper:hover .imageEditButtonWrapper {
@@ -189,8 +189,8 @@
 
 .spinner {
   display: block;
-  height: var(--unit-5);
-  width: var(--unit-5);
+  height: var(--harmony-unit-5);
+  width: var(--harmony-unit-5);
 }
 
 .spinner g path {
@@ -203,5 +203,5 @@
 }
 
 .collectionButtonIcon {
-  margin-right: var(--unit-2) !important;
+  margin-right: var(--harmony-unit-2) !important;
 }

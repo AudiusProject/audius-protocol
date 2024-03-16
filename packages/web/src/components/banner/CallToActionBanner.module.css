@@ -11,12 +11,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--unit-4);
-  padding: var(--unit-4) 0;
+  gap: var(--harmony-unit-4);
+  padding: var(--harmony-unit-4) 0;
 }
 
 .ctaBanner.isMobile .content {
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .ctaBanner .contentSelection {
@@ -25,7 +25,7 @@
   justify-content: center;
   transition: all ease-in-out 0.07s;
   border-bottom: 1px solid rgba(0, 0, 0, 0);
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .ctaBanner:hover .contentSelection {
@@ -60,19 +60,19 @@
 }
 
 .arrow {
-  height: var(--unit-5);
-  width: var(--unit-5);
+  height: var(--harmony-unit-5);
+  width: var(--harmony-unit-5);
   flex-shrink: 0;
 }
 
 .arrow.small {
-  height: var(--unit-3);
-  width: var(--unit-3);
+  height: var(--harmony-unit-3);
+  width: var(--harmony-unit-3);
 }
 
 .isMobile .arrow {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
 }
 
 .arrow path {

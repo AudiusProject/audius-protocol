@@ -7,10 +7,10 @@
 .inputRoot {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
-  padding: 0 var(--unit-4);
+  gap: var(--harmony-unit-2);
+  padding: 0 var(--harmony-unit-4);
   border: 1px solid var(--neutral-light-8);
-  border-radius: var(--unit-1);
+  border-radius: var(--harmony-unit-1);
   background-color: var(--neutral-light-10);
   transition: border ease-in-out 0.1s;
 }
@@ -28,7 +28,7 @@
 }
 
 .large {
-  --gap: var(--unit-1);
+  --gap: var(--harmony-unit-1);
   --font-size: var(--font-xl);
   height: 66px;
 }
@@ -126,7 +126,7 @@
 /** Make a container for the character count... **/
 .characterCount {
   position: relative;
-  padding-top: var(--unit-2);
+  padding-top: var(--harmony-unit-2);
   align-self: flex-start;
   color: var(--neutral-light-4);
   font-size: var(--font-xs);

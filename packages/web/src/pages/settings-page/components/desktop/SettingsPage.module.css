@@ -14,7 +14,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .version {
@@ -58,5 +58,5 @@
 }
 
 .showPrivateKey {
-  line-height: var(--unit-5);
+  line-height: var(--harmony-unit-5);
 }

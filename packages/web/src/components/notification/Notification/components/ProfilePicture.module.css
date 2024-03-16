@@ -1,6 +1,6 @@
 .profilePictureWrapper {
-  height: var(--unit-10);
-  width: var(--unit-10);
+  height: var(--harmony-unit-10);
+  width: var(--harmony-unit-10);
 }
 
 .profilePicture {

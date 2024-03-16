@@ -3,9 +3,9 @@
   top: 0;
   left: 0;
   z-index: 10;
-  border-radius: var(--unit-2) 0px 0px 0px;
-  width: var(--unit-12);
-  height: var(--unit-12);
+  border-radius: var(--harmony-unit-2) 0px 0px 0px;
+  width: var(--harmony-unit-12);
+  height: var(--harmony-unit-12);
   pointer-events: none;
   overflow: hidden;
 }
@@ -38,10 +38,10 @@ That path uses `fill='currentColor'`, allowing us to set `color` here instead of
 
 .icon {
   position: absolute;
-  top: var(--unit-1);
-  left: var(--unit-1);
-  width: var(--unit-4);
-  height: var(--unit-4);
+  top: var(--harmony-unit-1);
+  left: var(--harmony-unit-1);
+  width: var(--harmony-unit-4);
+  height: var(--harmony-unit-4);
 }
 
 .icon path {

@@ -9,7 +9,7 @@
 .walletContainer {
   display: inline-flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .walletContainer:not(.disabled) {

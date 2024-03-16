@@ -1,14 +1,14 @@
 .root {
   display: flex;
   align-items: center;
-  column-gap: var(--unit-2);
+  column-gap: var(--harmony-unit-2);
 }
 
 .label {
   display: flex;
   align-items: center;
   color: var(--text-subdued);
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   letter-spacing: 2px;
   user-select: none;
   text-transform: uppercase;

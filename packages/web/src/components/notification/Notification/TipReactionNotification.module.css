@@ -5,7 +5,7 @@
 
 .profileLink {
   font-weight: var(--font-bold) !important;
-  margin-right: var(--unit-1);
+  margin-right: var(--harmony-unit-1);
 }
 
 .reactionRoot {

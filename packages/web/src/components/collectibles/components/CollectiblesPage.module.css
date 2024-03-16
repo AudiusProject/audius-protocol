@@ -122,14 +122,14 @@
 }
 
 .created {
-  padding: var(--unit-1) var(--unit-2);
+  padding: var(--harmony-unit-1) var(--harmony-unit-2);
   border-radius: 50px;
   border: 1px solid var(--white);
   background: var(--primary);
 }
 
 .owned {
-  padding: var(--unit-1) var(--unit-2);
+  padding: var(--harmony-unit-1) var(--harmony-unit-2);
   border-radius: 50px;
   border: 1px solid var(--white);
   background: var(--secondary);
@@ -172,7 +172,7 @@
   font-size: var(--font-xs);
   line-height: 15px;
   color: var(--static-white);
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .date {
@@ -187,7 +187,7 @@
 }
 
 .detailsDescription {
-  margin: var(--unit-6) 0;
+  margin: var(--harmony-unit-6) 0;
   color: var(--neutral-light-2);
   font-weight: var(--font-medium);
   line-height: 18px;
@@ -200,7 +200,7 @@
   color: var(--secondary);
   font-weight: var(--font-demi-bold);
   text-decoration: underline !important;
-  margin-bottom: var(--unit-6);
+  margin-bottom: var(--harmony-unit-6);
 }
 
 .link:hover {
@@ -233,8 +233,8 @@
 }
 
 .modalHeader {
-  margin: 0 var(--unit-6);
-  padding: var(--unit-6);
+  margin: 0 var(--harmony-unit-6);
+  padding: var(--harmony-unit-6);
   border-bottom: 1px solid var(--neutral-light-8);
 }
 

@@ -92,7 +92,7 @@
   margin: 0px 56px;
   max-width: 1080px;
   align-items: center;
-  column-gap: var(--unit-10);
+  column-gap: var(--harmony-unit-10);
 }
 
 .rightDecorator {

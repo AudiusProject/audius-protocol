@@ -4,7 +4,7 @@
 }
 
 .root {
-  padding: var(--unit-6) 0;
+  padding: var(--harmony-unit-6) 0;
   border-top: 1px solid var(--neutral-light-7);
   cursor: pointer;
 }
@@ -12,7 +12,7 @@
 .optionTitle {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .tag {

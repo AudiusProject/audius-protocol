@@ -105,7 +105,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   margin: 0px 16px 4px;
 }
 
@@ -160,7 +160,7 @@
   width: 352px;
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .playButton {
@@ -184,5 +184,5 @@
 }
 
 .premiumPill {
-  height: var(--unit-12);
+  height: var(--harmony-unit-12);
 }

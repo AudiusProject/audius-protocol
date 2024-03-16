@@ -1,7 +1,7 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   align-items: flex-start;
 }
 
@@ -10,7 +10,7 @@
 }
 
 .root.hasReaction {
-  margin-bottom: var(--unit-2);
+  margin-bottom: var(--harmony-unit-2);
 }
 
 .bubble {
@@ -25,7 +25,7 @@
 }
 
 .bubbleCorners {
-  border-radius: var(--unit-3);
+  border-radius: var(--harmony-unit-3);
   overflow: hidden;
 }
 
@@ -64,7 +64,7 @@
 }
 
 .text {
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   white-space: pre-wrap;
   word-break: break-word;
   text-align: left;
@@ -76,7 +76,7 @@
 .meta {
   font-size: var(--font-xs);
   color: var(--neutral-light-2);
-  margin-bottom: var(--unit-4);
+  margin-bottom: var(--harmony-unit-4);
 }
 
 /* Reactions positioning */
@@ -127,8 +127,8 @@
 .reactionsContainer:not(.hasReaction) .reactionsButton {
   background-color: var(--white);
   border: 1px solid var(--neutral-light-6);
-  width: var(--unit-8);
-  height: var(--unit-8);
+  width: var(--harmony-unit-8);
+  height: var(--harmony-unit-8);
   border-radius: 50%;
 }
 
@@ -140,8 +140,8 @@
 }
 
 .reactionsContainer:not(.hasReaction) path {
-  width: var(--unit-6);
-  height: var(--unit-6);
+  width: var(--harmony-unit-6);
+  height: var(--harmony-unit-6);
   fill: var(--secondary);
   transition: fill var(--harmony-quick);
 }
@@ -200,7 +200,7 @@
 .error {
   display: flex;
   align-items: center;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
 
   color: var(--accent-red);
 }
@@ -210,8 +210,8 @@
 }
 
 .error svg {
-  width: var(--unit-3);
-  height: var(--unit-3);
+  width: var(--harmony-unit-3);
+  height: var(--harmony-unit-3);
 }
 
 .error svg path {

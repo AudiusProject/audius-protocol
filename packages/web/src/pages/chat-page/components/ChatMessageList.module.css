@@ -18,8 +18,8 @@
   align-items: center;
   justify-content: center;
   height: 0;
-  margin: var(--unit-8) 0;
-  scroll-margin: var(--unit-8) 0;
+  margin: var(--harmony-unit-8) 0;
+  scroll-margin: var(--harmony-unit-8) 0;
   border-bottom: 1px solid var(--neutral-light-5);
 }
 
@@ -37,5 +37,5 @@
 
 .spinner {
   margin: auto;
-  width: var(--unit-8);
+  width: var(--harmony-unit-8);
 }

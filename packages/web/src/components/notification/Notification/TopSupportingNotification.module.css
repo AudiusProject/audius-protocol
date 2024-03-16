@@ -9,7 +9,7 @@
 }
 
 .profilePicture {
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .userNameLink {
@@ -19,11 +19,11 @@
 .trending {
   display: inline-flex;
   align-items: center;
-  margin-top: var(--unit-3);
+  margin-top: var(--harmony-unit-3);
 }
 
 .trendingIcon {
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
   height: 18px;
   width: 20px;
 }

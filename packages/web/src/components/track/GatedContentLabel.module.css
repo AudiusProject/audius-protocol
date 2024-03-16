@@ -7,8 +7,8 @@
 }
 
 .icon {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
 }
 
 .icon path {

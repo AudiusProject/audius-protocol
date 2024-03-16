@@ -110,7 +110,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  column-gap: var(--unit-6);
+  column-gap: var(--harmony-unit-6);
 }
 
 .releaseButton {

@@ -9,9 +9,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--unit-2);
-  margin-top: var(--unit-10);
-  padding: var(--unit-6);
+  gap: var(--harmony-unit-2);
+  margin-top: var(--harmony-unit-10);
+  padding: var(--harmony-unit-6);
 }
 
 .header {
@@ -26,6 +26,6 @@
 
 .spinner {
   margin: auto;
-  width: var(--unit-8);
+  width: var(--harmony-unit-8);
   height: 100px;
 }

@@ -8,7 +8,7 @@
   display: flex;
   align-items: flex-end;
   width: 400px;
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   border-right: 1px solid var(--neutral-light-8);
 }
 
@@ -16,7 +16,7 @@
   margin-left: auto;
   padding-bottom: 5px; /* fix for line-height on header causing vertical misalignment */
   display: flex;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .header {
@@ -42,7 +42,7 @@
   flex: 1;
   display: flex;
   align-items: flex-end;
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
 }
 
 @media (max-width: 1080px) {

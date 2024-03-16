@@ -2,7 +2,7 @@
   all: unset;
   border-radius: 4px;
   background-color: var(--static-twitter-blue);
-  padding: var(--unit-2) var(--unit-6);
+  padding: var(--harmony-unit-2) var(--harmony-unit-6);
   display: inline-flex;
   align-items: center;
 
@@ -10,11 +10,11 @@
   font-size: var(--font-s);
   font-weight: var(--font-demi-bold);
   line-height: 18px;
-  margin-top: var(--unit-3);
+  margin-top: var(--harmony-unit-3);
 }
 
 .icon {
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .icon.hideText {

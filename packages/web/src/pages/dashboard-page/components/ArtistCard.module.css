@@ -3,10 +3,11 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  border-radius: var(--unit-3);
+  border-radius: var(--harmony-unit-3);
   background: var(--white);
   overflow: hidden;
-  box-shadow: var(--table-shadow) 0px var(--unit-4) var(--unit-5) 0px;
+  box-shadow: var(--table-shadow) 0px var(--harmony-unit-4)
+    var(--harmony-unit-5) 0px;
   cursor: pointer;
   min-width: 400px;
 }
@@ -22,7 +23,7 @@
 
 .details {
   display: flex;
-  padding: var(--unit-6);
+  padding: var(--harmony-unit-6);
   align-items: center;
 }
 
@@ -36,14 +37,14 @@
   border-radius: 50%;
   border: 1px solid var(--border-default);
   overflow: hidden;
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .info {
   display: flex;
   flex-direction: column;
   text-align: left;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .name {

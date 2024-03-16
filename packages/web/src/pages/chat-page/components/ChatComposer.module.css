@@ -3,17 +3,17 @@
 }
 
 .form {
-  margin: var(--unit-4);
-  padding: var(--unit-2) var(--unit-4);
+  margin: var(--harmony-unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
 }
 
 button.sendButton {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: var(--unit-8);
-  width: var(--unit-8);
-  border-radius: var(--unit-4);
+  height: var(--harmony-unit-8);
+  width: var(--harmony-unit-8);
+  border-radius: var(--harmony-unit-4);
   background-color: var(--primary);
   transform: scale(1);
   transition: all var(--harmony-quick);

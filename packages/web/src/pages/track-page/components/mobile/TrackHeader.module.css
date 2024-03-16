@@ -1,15 +1,15 @@
 .trackHeader {
   --border-width: 1px;
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   position: relative;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
   align-items: center;
   background: var(--white);
   border: var(--border-width) solid var(--neutral-light-8);
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   text-align: left;
@@ -61,7 +61,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--unit-3);
+  gap: var(--harmony-unit-3);
 }
 
 .buttonContainer {
@@ -87,7 +87,7 @@
 
 .withSectionDivider {
   width: 100%;
-  padding-top: var(--unit-4);
+  padding-top: var(--harmony-unit-4);
   border-top: 1px solid var(--neutral-light-9);
 }
 
@@ -110,7 +110,7 @@
 /* Info Section */
 .infoSection {
   display: flex;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
   flex-wrap: wrap;
   width: 100%;
 }
@@ -118,7 +118,7 @@
 .infoFact {
   flex: 1;
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   text-align: left;
   width: 50%;
 }
@@ -197,7 +197,7 @@
 .gatedContentLabel {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .gatedContentLabel svg {
@@ -217,7 +217,7 @@
 
 .gatedTrackSection {
   flex-direction: column;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .gatedTrackSectionButton {

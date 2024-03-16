@@ -11,10 +11,10 @@
   flex-direction: row;
   flex-wrap: wrap;
   position: relative;
-  border-radius: var(--unit-3) var(--unit-3) 0px 0px;
+  border-radius: var(--harmony-unit-3) var(--harmony-unit-3) 0px 0px;
   background-color: var(--neutral-light-10);
 
-  padding: var(--unit-6);
+  padding: var(--harmony-unit-6);
 }
 
 .infoSection {
@@ -27,7 +27,7 @@
   overflow-x: hidden;
   overflow-y: hidden;
   overflow-wrap: break-word;
-  padding-bottom: var(--unit-1);
+  padding-bottom: var(--harmony-unit-1);
   margin-bottom: -4px;
 }
 
@@ -41,7 +41,7 @@
   display: flex;
   align-items: center;
   color: var(--text-subdued);
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   letter-spacing: 3.5px;
   text-transform: uppercase;
   user-select: none;
@@ -61,7 +61,7 @@
 }
 
 .title {
-  margin-bottom: var(--unit-3);
+  margin-bottom: var(--harmony-unit-3);
   width: 100%;
   position: relative;
   min-height: 38px;
@@ -70,7 +70,7 @@
 .trackLength {
   padding-left: 18px;
   color: var(--neutral-light-4);
-  font-size: var(--unit-3);
+  font-size: var(--harmony-unit-3);
   font-weight: 600;
 }
 
@@ -78,12 +78,12 @@
   margin-top: 7px;
   display: flex;
   align-items: center;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
   flex-wrap: wrap;
 }
 
 .playSection > * {
-  margin-top: var(--unit-4);
+  margin-top: var(--harmony-unit-4);
 }
 
 .infoSection .numberOfListens {
@@ -96,7 +96,7 @@
   color: var(--neutral-light-5);
   font-size: var(--font-l);
   font-weight: bold;
-  padding-left: var(--unit-2);
+  padding-left: var(--harmony-unit-2);
 }
 
 .infoSection .firstListen {
@@ -119,14 +119,14 @@
 }
 
 .progressTextSlider {
-  height: var(--unit-1);
+  height: var(--harmony-unit-1);
   width: 140px;
 }
 
 .completeText {
   display: flex;
   align-items: center;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
 }
 
 .completeTextIcon {
@@ -140,8 +140,8 @@
 .actionButtons {
   display: flex;
   align-items: center;
-  column-gap: var(--unit-2);
-  margin-top: var(--unit-4);
+  column-gap: var(--harmony-unit-2);
+  margin-top: var(--harmony-unit-4);
 }
 
 .commonButtonSection {
@@ -152,7 +152,7 @@
 }
 
 .commonButtonSection > * {
-  margin-right: var(--unit-4);
+  margin-right: var(--harmony-unit-4);
 }
 
 .menuKebabContainer {
@@ -163,25 +163,25 @@
 }
 
 .gatedContentSection {
-  margin: 0 var(--unit-6) var(--unit-6) var(--unit-6);
-  padding: var(--unit-4);
+  margin: 0 var(--harmony-unit-6) var(--harmony-unit-6) var(--harmony-unit-6);
+  padding: var(--harmony-unit-4);
   background: var(--white);
   border: 1px solid var(--neutral-light-7);
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
 }
 
 .gatedContentSectionLocked {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .gatedContentSectionTitle {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
-  margin-bottom: var(--unit-2);
+  gap: var(--harmony-unit-2);
+  margin-bottom: var(--harmony-unit-2);
 }
 
 .gatedContentSectionDescription {
@@ -194,10 +194,10 @@
 }
 
 .collectibleImage {
-  width: var(--unit-8);
-  height: var(--unit-8);
+  width: var(--harmony-unit-8);
+  height: var(--harmony-unit-8);
   border: 1px solid var(--neutral-light-7);
-  border-radius: var(--unit-1);
+  border-radius: var(--harmony-unit-1);
 }
 
 .gatedContentDescriptionContainer {
@@ -208,7 +208,7 @@
 .gatedContentSectionCollection {
   display: flex;
   align-items: center;
-  margin-top: var(--unit-2);
+  margin-top: var(--harmony-unit-2);
   width: fit-content;
 }
 
@@ -236,9 +236,9 @@
 }
 
 .gatedContentIcon {
-  margin-right: var(--unit-2);
-  width: var(--unit-4);
-  height: var(--unit-4);
+  margin-right: var(--harmony-unit-2);
+  width: var(--harmony-unit-4);
+  height: var(--harmony-unit-4);
 }
 
 .gatedContentIcon path {
@@ -248,12 +248,12 @@
 .badges {
   display: flex;
   position: absolute;
-  right: var(--unit-6);
+  right: var(--harmony-unit-6);
   justify-content: flex-end;
 }
 
 .badgeIcon {
-  margin-left: var(--unit-1);
+  margin-left: var(--harmony-unit-1);
 }
 
 .badgeIcon svg {
@@ -271,15 +271,15 @@
       var(--ai-secondary) 100%
     ),
     var(--ai-primary);
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .suffix {
-  margin-left: var(--unit-1);
+  margin-left: var(--harmony-unit-1);
 }
 
 .bottomSection {
-  padding: var(--unit-5) var(--unit-6) var(--unit-5);
+  padding: var(--harmony-unit-5) var(--harmony-unit-6) var(--harmony-unit-5);
   border-top: 1px solid var(--neutral-light-8);
 }
 
@@ -290,16 +290,16 @@
 
 .infoLabelsSection .infoLabelPlacement {
   display: inline-block;
-  padding-right: var(--unit-6);
+  padding-right: var(--harmony-unit-6);
 }
 
 .description {
-  padding-top: var(--unit-3);
+  padding-top: var(--harmony-unit-3);
   line-height: 26px;
 }
 
 .verified {
-  margin-left: var(--unit-2);
+  margin-left: var(--harmony-unit-2);
   display: inline-block;
   position: relative;
   top: 2px;
@@ -311,7 +311,7 @@
 }
 
 .headerContainer {
-  padding-top: var(--unit-5);
+  padding-top: var(--harmony-unit-5);
   padding-bottom: 22px;
   display: flex;
 }
@@ -337,15 +337,15 @@
 }
 
 .statsSection {
-  margin-top: var(--unit-5);
+  margin-top: var(--harmony-unit-5);
   min-height: 26px;
   display: flex;
   align-items: center;
 }
 
 .spinner {
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--harmony-unit-6);
+  width: var(--harmony-unit-6);
 }
 
 .spinner path {
@@ -359,7 +359,7 @@
 }
 
 .collectibleGatedDescription {
-  margin-left: var(--unit-8);
+  margin-left: var(--harmony-unit-8);
 }
 
 .collectionIconsContainer {
@@ -371,9 +371,9 @@
   position: relative;
   left: -8px;
   background: var(--white);
-  padding: var(--unit-1);
-  width: var(--unit-5);
-  height: var(--unit-5);
+  padding: var(--harmony-unit-1);
+  width: var(--harmony-unit-5);
+  height: var(--harmony-unit-5);
   border: 1px solid var(--neutral-light-7);
   border-radius: 50%;
 }

@@ -3,19 +3,19 @@
 }
 
 .pageContent {
-  max-width: calc(1080px + var(--unit-4)) !important;
+  max-width: calc(1080px + var(--harmony-unit-4)) !important;
 }
 
 /* Body Content Wrapper */
 .bodyWrapper {
   min-width: 774px;
-  margin-bottom: var(--unit-10);
+  margin-bottom: var(--harmony-unit-10);
   overflow: hidden;
 }
 
 /* Empty Page Section Wrapper */
 .emptyWrapper {
-  padding: var(--unit-10);
+  padding: var(--harmony-unit-10);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -69,5 +69,5 @@
 }
 
 .tileDivider {
-  margin-bottom: var(--unit-10);
+  margin-bottom: var(--harmony-unit-10);
 }

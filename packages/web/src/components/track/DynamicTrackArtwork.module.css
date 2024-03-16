@@ -1,6 +1,6 @@
 .container {
-  --border-radius: var(--unit-1);
-  --size: var(--unit-16);
+  --border-radius: var(--harmony-unit-1);
+  --size: var(--harmony-unit-16);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-default);
   overflow: hidden;
@@ -10,9 +10,9 @@
 }
 
 .small {
-  --size: var(--unit-10);
+  --size: var(--harmony-unit-10);
 }
 
 .default {
-  --size: var(--unit-16);
+  --size: var(--harmony-unit-16);
 }

@@ -1,12 +1,12 @@
 .container {
   display: flex;
   align-items: center;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   background: var(--neutral-light-10);
   border: 1px solid var(--neutral-light-8);
   padding: 2px;
-  padding-right: var(--unit-2);
-  border-radius: var(--unit-12);
+  padding-right: var(--harmony-unit-2);
+  border-radius: var(--harmony-unit-12);
 }
 
 .amount {
@@ -16,7 +16,7 @@
 }
 
 .skeleton {
-  width: var(--unit-8);
+  width: var(--harmony-unit-8);
   height: 18px;
 }
 

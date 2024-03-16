@@ -1,14 +1,14 @@
 .container {
   display: inline-flex;
   align-items: center;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
   max-width: 100%;
 }
 
 .artwork {
-  height: var(--unit-10);
-  width: var(--unit-10);
-  border-radius: var(--unit-1);
+  height: var(--harmony-unit-10);
+  width: var(--harmony-unit-10);
+  border-radius: var(--harmony-unit-1);
   border: 1px solid var(--border-default);
   overflow: hidden;
 }

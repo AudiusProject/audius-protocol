@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--unit-10);
+  padding: 0 var(--harmony-unit-10);
 }
 
 .banner.isElectron {
@@ -15,15 +15,15 @@
 }
 
 .banner.isElectron .iconRemove {
-  left: calc(240px + var(--unit-4));
+  left: calc(240px + var(--harmony-unit-4));
 }
 
 .iconRemove {
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--harmony-unit-6);
+  width: var(--harmony-unit-6);
   position: absolute;
-  top: var(--unit-4);
-  left: var(--unit-4);
+  top: var(--harmony-unit-4);
+  left: var(--harmony-unit-4);
   cursor: pointer;
 }
 .iconRemove:hover {
@@ -38,6 +38,6 @@
 }
 
 .isMobile .iconRemove {
-  top: var(--unit-2);
-  left: var(--unit-2);
+  top: var(--harmony-unit-2);
+  left: var(--harmony-unit-2);
 }

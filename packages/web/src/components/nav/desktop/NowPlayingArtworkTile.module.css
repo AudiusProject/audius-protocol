@@ -9,7 +9,7 @@
   --border-width: 1px;
   border: var(--border-width) solid var(--currently-playing-border);
   box-shadow: 0 1px 20px -3px var(--currently-playing-default-shadow);
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
   overflow: hidden;
   transition: opacity 0.07s ease-in-out;
   cursor: pointer;

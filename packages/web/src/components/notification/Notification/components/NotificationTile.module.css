@@ -1,8 +1,8 @@
 .root {
   background-color: var(--neutral-light-10);
   border: 1px solid var(--neutral-light-6);
-  border-radius: var(--unit-2);
-  padding: var(--unit-4);
+  border-radius: var(--harmony-unit-2);
+  padding: var(--harmony-unit-4);
   transition: all 0.12s ease-in-out;
 }
 

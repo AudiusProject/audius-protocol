@@ -39,7 +39,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
   color: var(--static-white);
@@ -48,8 +48,8 @@
     var(--page-header-gradient-color-1) 0%,
     var(--page-header-gradient-color-2) 100%
   );
-  border-radius: var(--unit-2);
-  margin-bottom: var(--unit-6);
+  border-radius: var(--harmony-unit-2);
+  margin-bottom: var(--harmony-unit-6);
   box-shadow: var(--box-shadow-near);
 }
 

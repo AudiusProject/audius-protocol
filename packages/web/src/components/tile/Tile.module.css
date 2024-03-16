@@ -4,7 +4,7 @@
   flex-direction: column;
   position: relative;
   border: var(--border-width) solid var(--border-default);
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
   background-color: var(--white);
   transition: all var(--harmony-expressive);
 }
@@ -63,5 +63,5 @@
 }
 
 .large {
-  border-radius: var(--unit-3);
+  border-radius: var(--harmony-unit-3);
 }

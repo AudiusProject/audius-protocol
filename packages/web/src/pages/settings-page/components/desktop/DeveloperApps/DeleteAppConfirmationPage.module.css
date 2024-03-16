@@ -3,7 +3,7 @@
   font-weight: var(--font-bold);
   line-height: 20px;
   text-align: center;
-  margin-bottom: var(--unit-2);
+  margin-bottom: var(--harmony-unit-2);
 }
 
 .confirmation {
@@ -16,6 +16,6 @@
 
 .deleteAppFooter {
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   padding-bottom: 0;
 }

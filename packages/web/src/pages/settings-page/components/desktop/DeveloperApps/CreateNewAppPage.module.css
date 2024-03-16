@@ -1,12 +1,12 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .actionsContainer {
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .errorContainer {

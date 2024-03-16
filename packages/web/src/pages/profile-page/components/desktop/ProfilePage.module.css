@@ -104,7 +104,7 @@
 }
 
 .description {
-  margin-bottom: var(--unit-4);
+  margin-bottom: var(--harmony-unit-4);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -123,8 +123,8 @@
 .socials {
   display: flex;
   flex-direction: column;
-  row-gap: var(--unit-4);
-  padding-bottom: var(--unit-2);
+  row-gap: var(--harmony-unit-4);
+  padding-bottom: var(--harmony-unit-2);
 }
 .info .socialsTruncated {
   display: flex;

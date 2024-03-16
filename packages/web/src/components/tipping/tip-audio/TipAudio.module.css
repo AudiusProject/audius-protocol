@@ -34,7 +34,7 @@
 
 .container {
   width: 100%;
-  padding: 0 var(--unit-6);
+  padding: 0 var(--harmony-unit-6);
 }
 .containerFill {
   height: 100%;

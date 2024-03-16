@@ -55,7 +55,7 @@
   letter-spacing: 0.15px;
   text-transform: uppercase;
   color: var(--neutral);
-  padding: var(--unit-2) var(--unit-2) var(--unit);
+  padding: var(--harmony-unit-2) var(--harmony-unit-2) var(--unit);
 }
 
 .centeredItem {

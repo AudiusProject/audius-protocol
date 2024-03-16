@@ -3,7 +3,7 @@
   position: relative;
   background: var(--white);
   border: var(--border-width) solid var(--neutral-light-8);
-  border-radius: var(--unit-2) var(--unit-2) 0px 0px;
+  border-radius: var(--harmony-unit-2) var(--harmony-unit-2) 0px 0px;
   display: inline-flex;
   width: 100%;
   cursor: pointer;
@@ -12,7 +12,7 @@
 
 .container.standalone {
   transform: scale3d(1, 1, 1);
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px rgba(133, 129, 153, 0.1);
 }
@@ -29,11 +29,11 @@
 }
 
 .container.large.standalone {
-  margin-bottom: var(--unit-4);
+  margin-bottom: var(--harmony-unit-4);
 }
 
 .container.small.standalone {
-  margin-bottom: var(--unit-3);
+  margin-bottom: var(--harmony-unit-3);
 }
 
 .container.large {
@@ -51,7 +51,7 @@
 }
 
 .order {
-  flex: 0 0 var(--unit-8);
+  flex: 0 0 var(--harmony-unit-8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -64,7 +64,7 @@
 
 .crownContainer {
   position: absolute;
-  top: var(--unit-12);
+  top: var(--harmony-unit-12);
 }
 
 .crownContainer svg {
@@ -79,23 +79,23 @@
 .large .imageContainer {
   flex: 0 0 128px;
   height: 128px;
-  margin: var(--unit-2) 0px;
+  margin: var(--harmony-unit-2) 0px;
 }
 
 /* If the ordering is not present, add extra space to the left */
 .large .imageContainer.leftSpacing {
-  margin-left: var(--unit-2);
+  margin-left: var(--harmony-unit-2);
 }
 
 .small .imageContainer {
   flex: 0 0 108px;
   height: 108px;
-  margin: var(--unit-2) 0px;
+  margin: var(--harmony-unit-2) 0px;
 }
 
 /* If the ordering is not present, add extra space to the left */
 .small .imageContainer.leftSpacing {
-  margin-left: var(--unit-2);
+  margin-left: var(--harmony-unit-2);
 }
 
 .container:hover .artworkIcon {
@@ -111,7 +111,8 @@
   flex-direction: column;
   overflow: hidden;
   flex: 1 1 auto;
-  padding: var(--unit-2) var(--unit-3) var(--unit-2) 18px;
+  padding: var(--harmony-unit-2) var(--harmony-unit-3) var(--harmony-unit-2)
+    18px;
 }
 
 .text {
@@ -121,8 +122,9 @@
 }
 
 .container .gatedDogEarContainer {
-  box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
-    inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 0px var(--harmony-unit-2) rgba(0, 0, 0, 0.25),
+    inset var(--harmony-unit-1) var(--harmony-unit-1) var(--harmony-unit-2)
+      rgba(255, 255, 255, 0.2);
 }
 
 .volumeIcon {
@@ -135,11 +137,11 @@
 
 .socialsRow {
   display: flex;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .large .socialsRow .skeleton {
-  height: var(--unit-6);
+  height: var(--harmony-unit-6);
 }
 
 .small .socialsRow .skeleton {
@@ -147,13 +149,13 @@
 }
 
 .large .socialsRow {
-  height: var(--unit-6);
+  height: var(--harmony-unit-6);
   margin-right: 80px;
 }
 
 .small .socialsRow {
   height: 18px;
-  margin-right: var(--unit-20);
+  margin-right: var(--harmony-unit-20);
 }
 
 .small .bottomRight {
@@ -172,13 +174,13 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   color: var(--neutral-light-4);
 }
 
 .artistPickIcon {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
 }
 
 .artistPickIcon path {
@@ -192,7 +194,7 @@
   right: 0;
   display: flex;
   align-items: center;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .duration {
@@ -204,8 +206,8 @@
 }
 
 .topRightIcon {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
   margin-right: 6px;
 }
 
@@ -223,12 +225,12 @@
 
 .large .topRight {
   /* Matches header row height for large tile variant */
-  line-height: var(--unit-3);
+  line-height: var(--harmony-unit-3);
 }
 
 .progressTextContainer {
   display: flex;
-  gap: var(--unit-3);
+  gap: var(--harmony-unit-3);
   align-items: center;
 }
 
@@ -237,20 +239,20 @@
 }
 
 .progressTextSlider {
-  height: var(--unit-1);
+  height: var(--harmony-unit-1);
   width: 128px;
 }
 
 .completeText {
   display: flex;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   align-items: center;
   color: var(--secondary);
 }
 
 .completeIcon {
-  height: var(--unit-3);
-  width: var(--unit-3);
+  height: var(--harmony-unit-3);
+  width: var(--harmony-unit-3);
 }
 
 .completeIcon path {
@@ -279,16 +281,16 @@
 }
 
 .large .divider {
-  margin: var(--unit-2) 10px var(--unit-2) 0px;
+  margin: var(--harmony-unit-2) 10px var(--harmony-unit-2) 0px;
 }
 
 /* If Header (Playlist or Album) is not present, add more spacing up top */
 .large .withoutHeader .divider {
-  margin: var(--unit-2) 10px var(--unit-2) 0px;
+  margin: var(--harmony-unit-2) 10px var(--harmony-unit-2) 0px;
 }
 
 .small .divider {
-  margin: var(--unit-2) 13px 6px 0px;
+  margin: var(--harmony-unit-2) 13px 6px 0px;
 }
 
 /* Bottom Row Track TIle */
@@ -301,7 +303,7 @@
 
 .bottomRow .iconButtons {
   display: flex;
-  gap: var(--unit-8);
+  gap: var(--harmony-unit-8);
 }
 
 .bottomRow .iconButtonContainer {
@@ -310,8 +312,8 @@
 
 .bottomRow .iconButton {
   display: flex;
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--harmony-unit-6);
+  width: var(--harmony-unit-6);
   align-items: center;
   transform: scale3d(1, 1, 1);
   transition: all 0.12s ease-in-out !important;
@@ -334,14 +336,14 @@
 }
 
 .iconShareContainer {
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--harmony-unit-6);
+  width: var(--harmony-unit-6);
 }
 
 /* Make the icon buttons a larger click target */
 .bottomRow .iconButton:after {
   content: '';
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   position: absolute;
   left: var(--negative-unit);
   top: var(--negative-unit);
@@ -356,7 +358,7 @@
   transition: all 0.07s ease-in-out !important;
   display: flex;
   align-items: center;
-  height: var(--unit-6);
+  height: var(--harmony-unit-6);
 }
 
 .menuContainer:hover {

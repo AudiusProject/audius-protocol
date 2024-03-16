@@ -11,13 +11,13 @@
 }
 
 .title {
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   border-radius: 8px 8px 0px 0px;
   border-bottom: 1px solid var(--border-strong);
 }
 
 .body {
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
   border-radius: 0px 0px 8px 8px;
   background: var(--white);
 }
@@ -33,7 +33,7 @@
 
 /* Track */
 .tracks {
-  margin: 0 calc(-1 * var(--unit-4));
+  margin: 0 calc(-1 * var(--harmony-unit-4));
 }
 
 .track {
@@ -55,7 +55,7 @@
 
 .trackInfo {
   width: 100%;
-  padding: var(--unit-2) var(--unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
 }
 
 .trackInfo.selected {
@@ -87,7 +87,7 @@
 }
 
 .trackIndex {
-  padding: var(--unit-2);
+  padding: var(--harmony-unit-2);
 }
 
 .artwork {
@@ -102,7 +102,7 @@
 .trackInfo .iconError {
   height: 16px;
   width: 16px;
-  margin: var(--unit-1);
+  margin: var(--harmony-unit-1);
 }
 
 .iconRemove {

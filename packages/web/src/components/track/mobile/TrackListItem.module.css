@@ -177,7 +177,7 @@
 .locked {
   display: flex;
   align-items: center;
-  padding: 2px var(--unit-2);
+  padding: 2px var(--harmony-unit-2);
   background: var(--accent-blue);
   border-radius: 80px;
   font-weight: var(--font-demi-bold);

@@ -45,14 +45,14 @@
 }
 
 .disableInfo {
-  margin-bottom: var(--unit-6);
+  margin-bottom: var(--harmony-unit-6);
 }
 
 .toggleRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--unit-4);
+  margin-bottom: var(--harmony-unit-4);
   font-weight: var(--font-bold);
   font-size: 22px;
 }
@@ -62,7 +62,7 @@
 }
 
 .subtext {
-  margin-bottom: var(--unit-4);
+  margin-bottom: var(--harmony-unit-4);
   font-weight: var(--font-medium);
   font-size: 18px;
 }
@@ -70,5 +70,5 @@
 .divider {
   height: 1px;
   background: var(--neutral-light-8);
-  margin: var(--unit-6) 0;
+  margin: var(--harmony-unit-6) 0;
 }

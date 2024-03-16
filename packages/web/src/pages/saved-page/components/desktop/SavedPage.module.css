@@ -40,7 +40,7 @@
 
 .filterContainer {
   transition: all 0.5s;
-  padding-bottom: var(--unit-5);
+  padding-bottom: var(--harmony-unit-5);
 }
 
 /* Body Content Wrapper */
@@ -62,8 +62,8 @@
 
 /* Albums */
 .cardsContainer {
-  gap: var(--unit-6) var(--unit-4);
-  margin-bottom: var(--unit-4);
+  gap: var(--harmony-unit-6) var(--harmony-unit-4);
+  margin-bottom: var(--harmony-unit-4);
 }
 
 .playButtonContainer {
@@ -81,7 +81,7 @@
 .createPlaylistCard {
   display: flex;
   flex-direction: column;
-  row-gap: var(--unit-2);
+  row-gap: var(--harmony-unit-2);
   align-items: center;
   justify-content: center;
 }
@@ -93,8 +93,8 @@
 }
 
 .createPlaylistIcon {
-  height: var(--unit-5);
-  width: var(--unit-5);
+  height: var(--harmony-unit-5);
+  width: var(--harmony-unit-5);
 }
 
 .createPlaylistIcon circle {

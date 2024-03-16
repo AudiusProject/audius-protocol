@@ -1,15 +1,15 @@
 .settingsCard {
-  flex: 1 1 calc(50% - var(--unit-3)); /* Leave room for gap */
+  flex: 1 1 calc(50% - var(--harmony-unit-3)); /* Leave room for gap */
   min-width: 340px;
   border-radius: 6px;
   background-color: var(--white);
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
-  padding: var(--unit-6) var(--unit-4);
+  padding: var(--harmony-unit-6) var(--harmony-unit-4);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
   user-select: none;
   text-align: left;
 }
@@ -17,13 +17,13 @@
 .title {
   display: inline-flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   color: var(--secondary);
   font-family: var(--font-family);
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   letter-spacing: 1px;
-  margin-bottom: var(--unit-3);
+  margin-bottom: var(--harmony-unit-3);
   text-transform: uppercase;
 }
 

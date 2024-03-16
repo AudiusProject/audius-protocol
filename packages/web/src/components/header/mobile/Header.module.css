@@ -3,8 +3,8 @@
 }
 
 .container {
-  padding-left: var(--unit-3);
-  padding-right: var(--unit-3);
+  padding-left: var(--harmony-unit-3);
+  padding-right: var(--harmony-unit-3);
   position: fixed;
   width: 100%;
   top: 40px;

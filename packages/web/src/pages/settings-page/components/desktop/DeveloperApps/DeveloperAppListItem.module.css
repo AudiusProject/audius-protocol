@@ -2,10 +2,10 @@
   display: flex;
   align-items: center;
   background-color: var(--neutral-light-10);
-  border-radius: var(--unit-1);
+  border-radius: var(--harmony-unit-1);
   border: 1px solid var(--neutral-light-8);
-  gap: var(--unit-6);
-  padding: var(--unit-4) var(--unit-6);
+  gap: var(--harmony-unit-6);
+  padding: var(--harmony-unit-4) var(--harmony-unit-6);
 }
 
 .listItemIndex {
@@ -16,7 +16,7 @@
 }
 
 .listItemDivider {
-  margin: calc(var(--unit-4) * -1) 0;
+  margin: calc(var(--harmony-unit-4) * -1) 0;
   flex-grow: 0;
   border-width: 0px thin 0px 0px;
   border-style: solid;

@@ -18,9 +18,9 @@
 }
 
 .subHeader {
-  padding: var(--unit-3) var(--unit-6);
+  padding: var(--harmony-unit-3) var(--harmony-unit-6);
   text-align: left;
-  margin: 0px calc(var(--unit-3) * -1);
+  margin: 0px calc(var(--harmony-unit-3) * -1);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

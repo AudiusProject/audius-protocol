@@ -66,7 +66,7 @@
 
 .trackTitleContainer {
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   width: 180px;
 }
 

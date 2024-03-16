@@ -36,7 +36,7 @@
 .track:before {
   content: '';
   position: absolute;
-  border-radius: var(--unit-half);
+  border-radius: var(--harmony-unit-half);
   background: var(--scrubber-hover);
   width: 100%;
   height: 100%;
@@ -66,8 +66,8 @@
 
 .handle {
   margin-left: var(--negative-unit);
-  height: var(--unit-2);
-  width: var(--unit-2);
+  height: var(--harmony-unit-2);
+  width: var(--harmony-unit-2);
   border-radius: 50%;
   background: var(--white);
   box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.5),
@@ -78,8 +78,8 @@
 }
 
 .slider.isMobile .handle {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
   margin-left: var(--negative-unit-2);
 }
 

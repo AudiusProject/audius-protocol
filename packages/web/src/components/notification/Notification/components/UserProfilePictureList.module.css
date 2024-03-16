@@ -18,7 +18,7 @@
 
 .profilePicture {
   composes: profilePictureBase;
-  margin-right: calc(var(--unit-2) * -1);
+  margin-right: calc(var(--harmony-unit-2) * -1);
 }
 
 .profilePicture > div {

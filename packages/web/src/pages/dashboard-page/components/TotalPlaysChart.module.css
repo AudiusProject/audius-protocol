@@ -9,7 +9,7 @@
   padding: 23px 24px;
   display: inline-flex;
   flex-direction: column;
-  margin-bottom: var(--unit-6);
+  margin-bottom: var(--harmony-unit-6);
 }
 
 .playsTileHeading {

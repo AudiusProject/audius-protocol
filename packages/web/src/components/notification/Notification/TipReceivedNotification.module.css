@@ -9,11 +9,11 @@
 }
 
 .profilePicture {
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .sayThanks {
-  margin-top: var(--unit-3);
+  margin-top: var(--harmony-unit-3);
   font-size: var(--font-large);
   color: var(--neutral-light-4);
 }

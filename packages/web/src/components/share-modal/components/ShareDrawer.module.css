@@ -3,13 +3,13 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: var(--unit-2) 0px var(--unit-4);
+  padding: var(--harmony-unit-2) 0px var(--harmony-unit-4);
 }
 
 .titleIcon {
-  height: var(--unit-8);
-  width: var(--unit-8);
-  margin-right: var(--unit-2);
+  height: var(--harmony-unit-8);
+  width: var(--harmony-unit-8);
+  margin-right: var(--harmony-unit-2);
 }
 
 .titleIcon path {

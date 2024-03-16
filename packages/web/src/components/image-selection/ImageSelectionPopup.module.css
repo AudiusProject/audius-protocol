@@ -1,13 +1,13 @@
 .popup {
   width: 416px;
-  padding: var(--unit-8);
+  padding: var(--harmony-unit-8);
   text-align: center;
-  border-radius: var(--unit-3);
+  border-radius: var(--harmony-unit-3);
 }
 
 .slider {
   width: 100%;
-  margin-top: var(--unit-4);
+  margin-top: var(--harmony-unit-4);
 }
 
 /* Dropzone page */
@@ -53,7 +53,7 @@
 .query {
   position: relative;
   width: 100%;
-  margin: var(--unit-6) auto var(--unit-2);
+  margin: var(--harmony-unit-6) auto var(--harmony-unit-2);
 }
 
 .query > input {
@@ -85,7 +85,7 @@
 
 .buttonWrapper {
   width: 100%;
-  margin: 0 auto var(--unit-6);
+  margin: 0 auto var(--harmony-unit-6);
 }
 
 .suggestion {
@@ -98,7 +98,7 @@
   text-transform: uppercase;
   font-weight: var(--font-bold);
   color: var(--neutral-light-4);
-  margin-bottom: var(--unit-2);
+  margin-bottom: var(--harmony-unit-2);
 }
 
 .terms {
@@ -120,7 +120,7 @@
 }
 
 .credit {
-  margin-top: var(--unit-2);
+  margin-top: var(--harmony-unit-2);
   font-size: var(--font-xs);
   color: var(--neutral-light-4);
   line-height: 15px;
@@ -129,7 +129,7 @@
 .collection {
   display: block;
   position: relative;
-  margin-top: var(--unit-6);
+  margin-top: var(--harmony-unit-6);
 }
 
 .collectiblesContainer {
@@ -161,7 +161,7 @@
 .collectiblesControls {
   display: flex;
   justify-content: space-between;
-  margin-top: var(--unit-2);
+  margin-top: var(--harmony-unit-2);
   color: var(--neutral-light-4);
   font-size: var(--font-xs);
   font-weight: var(--font-bold);

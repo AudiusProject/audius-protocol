@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: var(--unit-3);
+  margin-top: var(--harmony-unit-3);
 }
 .timeLabel {
   color: var(--neutral-light-4);

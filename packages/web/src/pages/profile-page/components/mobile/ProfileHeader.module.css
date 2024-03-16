@@ -181,7 +181,7 @@
   overflow: hidden;
   text-align: left;
   width: 100%;
-  margin-top: var(--unit-2);
+  margin-top: var(--harmony-unit-2);
   transition: all 0.07s ease-in-out;
 }
 
@@ -260,7 +260,7 @@
   font-weight: var(--font-medium);
   letter-spacing: 0.5px;
   line-height: 19px;
-  gap: var(--unit-3);
+  gap: var(--harmony-unit-3);
 }
 
 .website {

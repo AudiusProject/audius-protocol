@@ -5,11 +5,11 @@
 }
 
 .large {
-  width: var(--unit-3);
-  height: var(--unit-3);
+  width: var(--harmony-unit-3);
+  height: var(--harmony-unit-3);
 }
 
 .small {
-  width: var(--unit-2);
-  height: var(--unit-2);
+  width: var(--harmony-unit-2);
+  height: var(--harmony-unit-2);
 }

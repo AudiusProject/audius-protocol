@@ -5,14 +5,14 @@
   width: 100%;
   border: 1px solid var(--neutral-light-8);
   background-color: var(--neutral-light-10);
-  border-radius: var(--unit-1);
+  border-radius: var(--harmony-unit-1);
   transition: border ease-in-out 0.1s;
 }
 .root.medium {
   font-size: var(--font-m);
 }
 .root.small {
-  padding: 6px 0 6px var(--unit-2);
+  padding: 6px 0 6px var(--harmony-unit-2);
   font-size: var(--font-xs);
 }
 .root textarea {
@@ -61,7 +61,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: var(--unit-2) var(--unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
 }
 
 .characterCount {
@@ -69,8 +69,8 @@
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   align-self: flex-end;
-  padding-right: var(--unit-4);
-  padding-bottom: var(--unit-2);
+  padding-right: var(--harmony-unit-4);
+  padding-bottom: var(--harmony-unit-2);
 }
 
 .characterCount.nearLimit {
@@ -86,13 +86,13 @@
   right: 0;
   top: 0;
   bottom: 0;
-  padding-left: var(--unit-1);
+  padding-left: var(--harmony-unit-1);
 }
 .bottomRight {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
 }
 
 .children {

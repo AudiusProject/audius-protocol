@@ -17,7 +17,7 @@
 .spinner {
   height: 40px;
   width: 40px;
-  margin: var(--unit-18) auto 0;
+  margin: var(--harmony-unit-18) auto 0;
 }
 
 .spinner g path {
@@ -120,7 +120,7 @@
 }
 
 .cardsContainer {
-  gap: var(--unit-6) var(--unit-4);
+  gap: var(--harmony-unit-6) var(--harmony-unit-4);
   margin-top: 16px;
   padding: 0px 11px;
 }
