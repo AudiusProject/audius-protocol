@@ -12,9 +12,10 @@ import {
   Text,
   Switch,
   IconRemove,
-  IconButton
+  IconButton,
+  Button,
+  Box
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { Divider } from 'components/divider'
@@ -295,13 +296,11 @@ export const StemFilesModal = ({
         onSelectCategory={onSelectCategory}
         onDeleteStem={onDeleteStem}
       />
-      <Button
-        className={styles.doneButton}
-        text={messages.done}
-        size={ButtonSize.TINY}
-        type={ButtonType.SECONDARY}
-        onClick={onClose}
-      />
+      <Box m='l'>
+        <Button variant='secondary' size='small' onClick={onClose}>
+          {messages.done}
+        </Button>
+      </Box>
     </Modal>
   )
 }

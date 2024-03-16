@@ -111,29 +111,29 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickTwitter}
             onSuccess={props.onTwitterLogin}
             onFailure={props.onFailure}
-            className={styles.socialButton}
-            containerClassName={styles.socialButton}
-            text={messages.twitterVerify}
-          />
+            fullWidth
+          >
+            {messages.twitterVerify}
+          </TwitterAuthButton>
         ) : null}
         {isInstagramEnabled ? (
           <InstagramAuthButton
             onClick={handleClickInstagram}
             onSuccess={props.onInstagramLogin}
             onFailure={props.onFailure}
-            text={messages.instagramVerify}
-            className={styles.socialButton}
-            containerClassName={styles.socialButton}
-          />
+            fullWidth
+          >
+            {messages.instagramVerify}
+          </InstagramAuthButton>
         ) : null}
         {isTikTokEnabled ? (
           <TikTokAuthButton
             onClick={handleClickTikTok}
             onFailure={props.onFailure}
             onSuccess={props.onTikTokLogin}
-            text={messages.tiktokVerify}
-            className={styles.socialButton}
-          />
+          >
+            {messages.tiktokVerify}
+          </TikTokAuthButton>
         ) : null}
       </div>
       {props.error && (

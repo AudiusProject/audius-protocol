@@ -3,13 +3,13 @@ import {
   TOP_SUPPORTERS_USER_LIST_TAG,
   SUPPORTING_USER_LIST_TAG
 } from '@audius/common/store'
+import { FollowButton } from '@audius/harmony'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import ArtistChip from 'components/artist/ArtistChip'
-import { FollowButton } from 'components/follow-button/FollowButton'
 import { MountPlacement } from 'components/types'
 
 import styles from './UserList.module.css'
@@ -73,11 +73,10 @@ const UserList = (props: UserListProps) => {
             {user.user_id !== props.userId ? (
               <FollowButton
                 size='small'
-                following={user.does_current_user_follow}
+                isFollowing={user.does_current_user_follow}
                 onFollow={() => props.onFollow(user.user_id)}
                 onUnfollow={() => props.onUnfollow(user.user_id)}
-                showIcon
-                stopPropagation
+                fullWidth={false}
               />
             ) : null}
           </div>

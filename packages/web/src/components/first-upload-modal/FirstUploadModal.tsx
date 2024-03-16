@@ -106,11 +106,9 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
             <div className={styles.text}>{messages.first}</div>
             <div className={styles.text}>{messages.deal}</div>
             <div className={styles.text}>{messages.share}</div>
-            <TwitterButton
-              onClick={onShare}
-              className={styles.tweetButton}
-              text={messages.shareButton}
-            />
+            <TwitterButton onClick={onShare} className={styles.tweetButton}>
+              {messages.shareButton}
+            </TwitterButton>
           </div>
         </div>
       </Modal>
