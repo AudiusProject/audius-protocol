@@ -52,7 +52,7 @@
 }
 
 .aiAttributionEnabled {
-  color: var(--accent-green);
+  color: var(--harmony-green);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
 }

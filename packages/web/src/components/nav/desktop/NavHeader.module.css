@@ -47,12 +47,12 @@ svg.logo.matrixLogo path {
 }
 
 .headerIconWrapper.iconNotification.active {
-  background-color: var(--accent-orange-light-1);
+  background-color: var(--harmony-orange);
 }
 
 .headerIconWrapper.iconNotification.active:hover,
 .headerIconWrapper.iconNotification.active:active {
-  background-color: var(--accent-orange);
+  background-color: var(--harmony-orange);
 }
 
 .headerIconWrapper:global(.active) svg path,

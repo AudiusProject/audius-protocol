@@ -202,7 +202,7 @@
   align-items: center;
   gap: var(--harmony-unit-1);
 
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }
 
 .error:hover {
@@ -215,5 +215,5 @@
 }
 
 .error svg path {
-  fill: var(--accent-red);
+  fill: var(--harmony-red);
 }

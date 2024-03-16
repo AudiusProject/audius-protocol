@@ -21,11 +21,11 @@
 /* Note: dogEarRectangle has multiple `path` elements, but we only want to fill one of them.
 That path uses `fill='currentColor'`, allowing us to set `color` here instead of `fill` */
 .gated {
-  color: var(--accent-blue);
+  color: var(--harmony-blue);
 }
 
 .purchase {
-  color: var(--special-light-green);
+  color: var(--harmony-light-green);
 }
 
 .artistPick {

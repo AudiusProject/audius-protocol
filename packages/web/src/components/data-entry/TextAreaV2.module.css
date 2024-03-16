@@ -38,12 +38,12 @@
 
 .root.error,
 .root.error.focused {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 
 .root.error:hover,
 .root.error:hover.focused {
-  border-color: var(--accent-red-dark-1);
+  border-color: var(--harmony-dark-red);
 }
 
 .root textarea::placeholder {
@@ -74,7 +74,7 @@
 }
 
 .characterCount.nearLimit {
-  color: var(--accent-orange);
+  color: var(--harmony-orange);
   font-weight: var(--harmony-font-bold);
 }
 

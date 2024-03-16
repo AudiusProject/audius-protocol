@@ -15,12 +15,12 @@
 
 .unlocked.gated,
 .coloredWhenLocked.gated {
-  background-color: var(--accent-blue);
+  background-color: var(--harmony-blue);
 }
 
 .unlocked.premium,
 .coloredWhenLocked.premium {
-  background-color: var(--special-light-green);
+  background-color: var(--harmony-light-green);
 }
 
 .icon.medium {

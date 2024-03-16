@@ -33,7 +33,7 @@
 }
 
 .error {
-  color: var(--accent-red);
+  color: var(--harmony-red);
   font-weight: var(--harmony-font-medium);
   font-size: var(--harmony-font-m);
   width: 100%;

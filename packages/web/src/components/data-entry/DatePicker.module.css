@@ -43,7 +43,7 @@ svg.iconCalendar {
   border-color: var(--harmony-secondary);
 }
 .datePicker.invalid :global(.SingleDatePickerInput) {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 
 :global(.DayPicker),

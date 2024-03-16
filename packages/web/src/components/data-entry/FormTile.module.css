@@ -171,11 +171,11 @@
 }
 
 .error {
-  border-color: var(--accent-red) !important;
+  border-color: var(--harmony-red) !important;
 }
 
 .error:hover {
-  border-color: var(--accent-red-dark-1) !important;
+  border-color: var(--harmony-dark-red) !important;
 }
 
 .trackAvailabilityButton .trackAvailabilityButtonText {

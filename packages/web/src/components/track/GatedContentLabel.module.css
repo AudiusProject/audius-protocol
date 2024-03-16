@@ -16,17 +16,17 @@
 }
 
 .gatedContent {
-  color: var(--accent-blue);
+  color: var(--harmony-blue);
 }
 
 .gatedContent .icon path {
-  fill: var(--accent-blue);
+  fill: var(--harmony-blue);
 }
 
 .premiumContent {
-  color: var(--special-light-green);
+  color: var(--harmony-light-green);
 }
 
 .premiumContent .icon path {
-  fill: var(--special-light-green);
+  fill: var(--harmony-light-green);
 }

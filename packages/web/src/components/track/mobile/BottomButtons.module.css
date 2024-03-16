@@ -64,7 +64,7 @@
 
 .gatedContent {
   align-items: center;
-  background-color: var(--accent-blue);
+  background-color: var(--harmony-blue);
   border-radius: var(--harmony-unit-1);
   color: var(--harmony-static-white);
   display: flex;

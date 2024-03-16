@@ -135,7 +135,7 @@
 }
 
 .removeButton:hover svg path {
-  fill: var(--accent-red);
+  fill: var(--harmony-red);
 }
 
 .iconsContainer {

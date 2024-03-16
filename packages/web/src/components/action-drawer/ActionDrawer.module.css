@@ -47,10 +47,10 @@
 }
 
 .destructiveAction {
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }
 .darkAction.destructiveAction {
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }
 
 .darkAction {

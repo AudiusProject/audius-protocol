@@ -116,10 +116,10 @@
   border-color: var(--harmony-secondary) !important;
 }
 .wrapper.error .dropdownInput :global(.ant-select-selector) {
-  border-color: var(--accent-red) !important;
+  border-color: var(--harmony-red) !important;
 }
 .wrapper.error .dropdownInput :global(.ant-select-selector:hover) {
-  border-color: var(--accent-red-dark-1) !important;
+  border-color: var(--harmony-dark-red) !important;
 }
 .wrapper.disabled .dropdownInput :global(.ant-select-selector) {
   background-color: var(--harmony-n-100);

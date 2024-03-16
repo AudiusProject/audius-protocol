@@ -28,7 +28,7 @@
 }
 
 .iconError path {
-  fill: var(--accent-red);
+  fill: var(--harmony-red);
 }
 
 /* Track */
@@ -63,7 +63,7 @@
 }
 
 .trackInfo.error {
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }
 
 .trackTitleContainer {

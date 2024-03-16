@@ -14,9 +14,9 @@
 }
 
 .deleteButton {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 
 .deleteButton .deleteButtonText {
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }

@@ -18,11 +18,11 @@
 }
 
 .uploadArtwork.error .artworkWrapper {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 
 .uploadArtwork.error:hover .artworkWrapper {
-  border-color: var(--accent-red-dark-1);
+  border-color: var(--harmony-dark-red);
 }
 
 .button {

@@ -2,7 +2,7 @@
   max-width: 320px;
   padding: var(--harmony-unit-2) var(--harmony-unit-4);
   border-radius: 8px;
-  background-color: var(--accent-red);
+  background-color: var(--harmony-red);
   color: var(--harmony-white);
   display: inline-flex;
   justify-content: center;

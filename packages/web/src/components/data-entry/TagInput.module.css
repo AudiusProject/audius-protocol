@@ -96,6 +96,6 @@
   font-weight: 500;
 }
 .tagCount.nearLimit {
-  color: var(--accent-orange);
+  color: var(--harmony-orange);
   font-weight: var(--harmony-font-bold);
 }

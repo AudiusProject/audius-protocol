@@ -28,10 +28,10 @@
 }
 
 .change {
-  color: var(--accent-green);
+  color: var(--harmony-green);
 }
 .change.negative {
-  color: var(--accent-orange);
+  color: var(--harmony-orange);
 }
 
 .name {

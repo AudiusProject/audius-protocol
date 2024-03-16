@@ -15,6 +15,6 @@
   font-size: var(--harmony-font-xl);
   text-align: center;
   font-weight: var(--harmony-font-medium);
-  color: var(--accent-red);
+  color: var(--harmony-red);
   margin: 24px 0px;
 }

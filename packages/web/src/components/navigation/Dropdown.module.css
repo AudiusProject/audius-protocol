@@ -58,7 +58,7 @@
   fill: var(--harmony-n-400);
 }
 .dropdown.error.border {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 
 .selector {

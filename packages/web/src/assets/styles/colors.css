@@ -93,8 +93,8 @@
   --page-header-text-shadow: 0px 2px 4px var(--page-header-text-shadow-color);
   --accent-red-gradient: linear-gradient(
     315deg,
-    var(--accent-red-dark-1) 0%,
-    var(--accent-red-light-1) 100%
+    var(--harmony-dark-red) 0%,
+    var(--harmony-red) 100%
   );
   --play-button-triangle: var(--harmony-static-white);
   --action-sheet-text: var(--harmony-secondary);

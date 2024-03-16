@@ -239,7 +239,7 @@
 
 .errorText {
   font-weight: var(--harmony-font-bold);
-  color: var(--accent-red);
+  color: var(--harmony-red);
   font-size: var(--harmony-font-m);
   line-height: 120%;
 }
