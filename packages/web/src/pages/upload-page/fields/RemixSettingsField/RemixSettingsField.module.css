@@ -16,7 +16,7 @@
   align-items: center;
   align-self: stretch;
   border-radius: 2px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
   background-color: var(--harmony-n-100);
 
   color: var(--harmony-neutral);

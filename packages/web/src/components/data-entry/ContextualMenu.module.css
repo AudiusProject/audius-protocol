@@ -43,7 +43,7 @@
   align-items: center;
   gap: var(--harmony-unit-1);
   border-radius: 2px;
-  border: 1px solid var(---border-strong);
+  border: 1px solid var(---harmony-border-strong);
   background: var(--harmony-n-100);
 }
 

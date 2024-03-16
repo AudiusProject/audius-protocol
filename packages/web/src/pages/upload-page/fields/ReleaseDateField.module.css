@@ -23,7 +23,7 @@
   align-items: center;
   padding: 8px;
   background: var(--harmony-n-100);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
   border-radius: 2px;
   margin-top: var(--harmony-unit-2);
   gap: var(--harmony-unit-2);

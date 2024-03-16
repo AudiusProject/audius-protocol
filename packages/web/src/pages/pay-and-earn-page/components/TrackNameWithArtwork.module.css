@@ -9,7 +9,7 @@
   height: var(--harmony-unit-10);
   width: var(--harmony-unit-10);
   border-radius: var(--harmony-unit-1);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--harmony-border-default);
   overflow: hidden;
 }
 

@@ -87,12 +87,6 @@ root {
   --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
   --page-header-gradient-color-1: #5b23e1;
   --page-header-gradient-color-2: #a22feb;
-
-  --image-shadow: rgba(10, 10, 10, 0.35);
-  --tile-shadow-1: rgba(133, 129, 153, 0.1);
-  --tile-shadow-2: #e3e3e3;
-  --tile-shadow-3: rgba(133, 129, 153, 0.25);
-  --tile-shadow-1-alt: rgba(133, 129, 153, 0.2);
 }
 
 /**

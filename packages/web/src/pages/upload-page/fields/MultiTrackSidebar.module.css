@@ -6,14 +6,14 @@
 
   flex-shrink: 0;
   width: 320px;
-  background: var(--background-surface-1);
+  background: var(--harmony-bg-surface-1);
   box-shadow: var(--harmony-shadow-far);
 }
 
 .title {
   padding: var(--harmony-unit-4);
   border-radius: 8px 8px 0px 0px;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--harmony-border-strong);
 }
 
 .body {
@@ -49,8 +49,8 @@
 
 .trackRoot:hover {
   background: var(--harmony-n-50);
-  border-top: 1px solid var(--border-strong);
-  border-bottom: 1px solid var(--border-strong);
+  border-top: 1px solid var(--harmony-border-strong);
+  border-bottom: 1px solid var(--harmony-border-strong);
 }
 
 .trackInfo {
@@ -94,7 +94,7 @@
   width: 40px;
   height: 40px;
   border-radius: 4px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
   background: lightgray 50% / cover no-repeat;
   transition: border ease-in-out 0.1s;
 }

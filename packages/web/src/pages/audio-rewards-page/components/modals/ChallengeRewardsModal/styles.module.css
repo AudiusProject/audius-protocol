@@ -47,7 +47,7 @@
 .header {
   padding-bottom: 20px;
   text-align: center;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--harmony-border-strong);
   margin: 0 24px;
 }
 
@@ -67,7 +67,7 @@
   display: flex;
   flex: 1 1 0%;
   flex-direction: column;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -100,7 +100,7 @@
 .progressReward {
   padding: var(--harmony-unit-4);
   text-align: center;
-  border-left: 1px solid var(--border-strong);
+  border-left: 1px solid var(--harmony-border-strong);
   max-width: 200px;
 }
 .progressReward.mobile {
@@ -109,13 +109,13 @@
 }
 
 .progressBarSection {
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--harmony-border-strong);
   padding: 24px 72px;
 }
 .progressBarSection.mobile {
   flex: 1 1 0%;
   border-top: none;
-  border-left: 1px solid var(--border-strong);
+  border-left: 1px solid var(--harmony-border-strong);
   padding: 0 16px;
 }
 .progressBar.mobile {
@@ -378,7 +378,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--harmony-border-strong);
   padding: var(--harmony-unit-4) var(--harmony-unit-6);
-  background-color: var(--background-surface-2);
+  background-color: var(--harmony-bg-surface-2);
 }

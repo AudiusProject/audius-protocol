@@ -206,7 +206,7 @@
 }
 
 .gatedContentLabel path {
-  fill: var(--text-subdued);
+  fill: var(--harmony-text-subdued);
 }
 
 .gatedTrackSectionWrapper {

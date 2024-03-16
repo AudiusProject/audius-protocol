@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  border: var(--border-width) solid var(--border-default);
+  border: var(--border-width) solid var(--harmony-border-default);
   border-radius: var(--harmony-unit-2);
   background-color: var(--harmony-white);
   transition: all var(--harmony-expressive);
@@ -16,13 +16,13 @@
 }
 
 .flat:hover {
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
   background: var(--harmony-n-50);
 }
 
 .flat:active {
   border-radius: 8px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
   background: var(--harmony-n-100);
 }
 

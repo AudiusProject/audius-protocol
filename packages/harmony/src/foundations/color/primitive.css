@@ -52,7 +52,13 @@
   --harmony-green: #0f9e48;
   --harmony-light-green: #13c65a;
   --harmony-primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
-  --harmony-gradient: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
+  --harmony-gradient-color-1: #5b23e1;
+  --harmony-gradient-color-2: #a22feb;
+  --harmony-gradient: linear-gradient(
+    315deg,
+    var(--gradient-color-1) 0%,
+    var(--gradient-color-2) 100%
+  );
 }
 
 /* Day Theme */

@@ -2,10 +2,10 @@
   padding: var(--harmony-unit-4);
 
   border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background: var(--background-surface-1);
+  border: 1px solid var(--harmony-border-strong);
+  background: var(--harmony-bg-surface-1);
 }
 
 .inputRoot {
-  background: var(--background-white);
+  background: var(--harmony-bg-white);
 }

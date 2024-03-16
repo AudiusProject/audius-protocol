@@ -40,7 +40,7 @@ const theme = {
   '--page-header-gradient-color-1': '#4FF069',
   '--page-header-gradient-color-2': '#09BD51',
   '--page-header-gradient':
-    'linear-gradient(323.08deg, var(--page-header-gradient-color-1) 36.13%, var(--page-header-gradient-color-2) 133.51%)',
+    'linear-gradient(323.08deg, var(--harmony-gradient-color-1) 36.13%, var(--harmony-gradient-color-2) 133.51%)',
 
   '--tile-shadow-1': 'rgba(0, 0, 0, 0.1)',
   '--tile-shadow-2': '#000000',
@@ -103,16 +103,16 @@ const theme = {
 
   '--primary-gradient':
     'linear-gradient(135deg, var(--harmony-primary) 0%, var(--harmony-primary) 100%)',
-  '--primary-gradient-alt-1': 'var(--primary-gradient)',
+  '--primary-gradient-alt-1': 'var(--harmony-primary-gradient)',
   '--next-and-previous-buttons': 'var(--harmony-n-400)',
   '--secondary-gradient': 'linear-gradient(0deg, #2F8B27 0%, #00FF29 95.45%)',
-  '--segmented-progress-bar-segment-1': 'var(--secondary-gradient)',
-  '--segmented-progress-bar-segment-2': 'var(--secondary-gradient)',
-  '--segmented-progress-bar-segment-3': 'var(--secondary-gradient)',
-  '--segmented-progress-bar-segment-4': 'var(--secondary-gradient)',
-  '--segmented-progress-bar-segment-5': 'var(--secondary-gradient)',
-  '--segmented-progress-bar-segment-6': 'var(--secondary-gradient)',
-  '--segmented-progress-bar-segment-7': 'var(--secondary-gradient)',
+  '--segmented-progress-bar-segment-1': 'var(--harmony-gradient)',
+  '--segmented-progress-bar-segment-2': 'var(--harmony-gradient)',
+  '--segmented-progress-bar-segment-3': 'var(--harmony-gradient)',
+  '--segmented-progress-bar-segment-4': 'var(--harmony-gradient)',
+  '--segmented-progress-bar-segment-5': 'var(--harmony-gradient)',
+  '--segmented-progress-bar-segment-6': 'var(--harmony-gradient)',
+  '--segmented-progress-bar-segment-7': 'var(--harmony-gradient)',
   '--play-button-triangle': 'var(--harmony-white)',
   '--action-sheet-text': 'var(--harmony-neutral)',
   '--track-slider-rail':

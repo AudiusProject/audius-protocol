@@ -2,7 +2,7 @@
   padding: var(--harmony-unit-3) var(--harmony-unit-4);
   display: flex;
   border-radius: 8px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
   background: var(--harmony-n-50);
   gap: var(--harmony-unit-4);
 }

@@ -30,15 +30,15 @@
 .multiTrackHeader {
   padding: var(--harmony-unit-4);
   border-radius: 8px 8px 0px 0px;
-  border-bottom: 1px solid var(--border-strong);
-  background: var(--background-surface-1);
+  border-bottom: 1px solid var(--harmony-border-strong);
+  background: var(--harmony-bg-surface-1);
 }
 
 .multiTrackFooter {
   padding: var(--harmony-unit-4);
   border-radius: 0px 0px 8px 8px;
-  border-top: 1px solid var(--border-strong);
-  background: var(--background-surface-1);
+  border-top: 1px solid var(--harmony-border-strong);
+  background: var(--harmony-bg-surface-1);
   justify-content: space-between;
 }
 

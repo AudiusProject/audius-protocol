@@ -138,12 +138,12 @@
   padding-top: var(--harmony-unit-2);
   padding-bottom: var(--harmony-unit-2);
   border-top: none;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--harmony-border-default);
 }
 .stemPreview:last-child {
   border-bottom: none;
 }
 .stemPreview:hover {
-  background: var(--background-surface-1);
+  background: var(--harmony-bg-surface-1);
   border-top: none;
 }

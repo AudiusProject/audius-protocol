@@ -1,7 +1,7 @@
 .root {
   padding: var(--harmony-unit-4);
-  background: var(--background-surface-1);
-  border: 1px solid var(--border-strong);
+  background: var(--harmony-bg-surface-1);
+  border: 1px solid var(--harmony-border-strong);
   border-radius: var(--harmony-unit-2);
 }
 

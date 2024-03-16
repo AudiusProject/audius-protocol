@@ -118,7 +118,7 @@
 
 .newChallengePill {
   background: linear-gradient(125deg, #19cca2 0%, #61fa66 100%);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--harmony-border-default);
   border-radius: var(--harmony-unit-3);
   align-items: center;
   display: flex;

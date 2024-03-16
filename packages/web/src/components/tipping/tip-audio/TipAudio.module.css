@@ -72,8 +72,8 @@
   color: var(--harmony-static-white);
   background: linear-gradient(
     315deg,
-    var(--page-header-gradient-color-1) 0%,
-    var(--page-header-gradient-color-2) 100%
+    var(--harmony-gradient-color-1) 0%,
+    var(--harmony-gradient-color-2) 100%
   );
   border-radius: 4px;
 }

@@ -95,7 +95,7 @@ const theme = {
   '--notification-unread-background-active': '#363751',
 
   '--page-header-gradient':
-    'linear-gradient(-22deg, var(--page-header-gradient-color-1) 0%, var(--page-header-gradient-color-2) 100%)',
+    'linear-gradient(-22deg, var(--harmony-gradient-color-1) 0%, var(--harmony-gradient-color-2) 100%)',
   '--secondary-gradient': 'linear-gradient(315deg, #6B0FB3 0%, #7E1BCC 100%)',
   '--page-header-gradient-1': 'rgb(53,54,79)',
   '--page-header-gradient-2': 'rgba(53,54,79,0.85)',

@@ -2,7 +2,7 @@
   --border-radius: var(--harmony-unit-1);
   --size: var(--harmony-unit-16);
   border-radius: var(--border-radius);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--harmony-border-default);
   overflow: hidden;
   width: var(--size);
   height: var(--size);

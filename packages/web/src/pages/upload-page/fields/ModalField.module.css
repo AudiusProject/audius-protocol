@@ -7,7 +7,7 @@
   padding: var(--harmony-unit-4) var(--harmony-unit-6);
   gap: var(--harmony-unit-4);
 
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--harmony-border-default);
   border-radius: 8px;
 }
 

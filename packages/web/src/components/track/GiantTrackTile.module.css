@@ -40,7 +40,7 @@
 .typeLabel {
   display: flex;
   align-items: center;
-  color: var(--text-subdued);
+  color: var(--harmony-text-subdued);
   gap: var(--harmony-unit-2);
   letter-spacing: 3.5px;
   text-transform: uppercase;
@@ -57,7 +57,7 @@
 }
 
 .gatedContentLabel path {
-  fill: var(--text-subdued);
+  fill: var(--harmony-text-subdued);
 }
 
 .title {

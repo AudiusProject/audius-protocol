@@ -19,8 +19,8 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background-color: var(--background-surface-1);
-  border-bottom: 1px solid var(--border-strong);
+  background-color: var(--harmony-bg-surface-1);
+  border-bottom: 1px solid var(--harmony-border-strong);
 }
 
 .headerInfo {
@@ -39,8 +39,8 @@
   display: flex;
   justify-content: space-between;
   padding: 16px;
-  background-color: var(--background-surface-1);
-  border-top: 1px solid var(--border-strong);
+  background-color: var(--harmony-bg-surface-1);
+  border-top: 1px solid var(--harmony-border-strong);
 }
 
 .uploadTrackList {
@@ -61,7 +61,7 @@
   width: 40px;
   border-radius: 4px;
   overflow: hidden;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--harmony-border-strong);
 }
 
 .emptyProgressIndicator {

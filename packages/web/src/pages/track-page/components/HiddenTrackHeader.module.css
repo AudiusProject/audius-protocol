@@ -7,7 +7,7 @@
 .label {
   display: flex;
   align-items: center;
-  color: var(--text-subdued);
+  color: var(--harmony-text-subdued);
   gap: var(--harmony-unit-2);
   letter-spacing: 2px;
   user-select: none;
@@ -20,5 +20,5 @@
 }
 
 .icon path {
-  fill: var(--text-subdued);
+  fill: var(--harmony-text-subdued);
 }
