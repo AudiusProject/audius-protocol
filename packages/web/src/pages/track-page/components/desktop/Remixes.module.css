@@ -18,7 +18,7 @@
   font-size: var(--harmony-font-3xl);
 
   user-select: none;
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
@@ -28,7 +28,7 @@
 
 /** Safari doesn't do a good job persisting the title font styles to nested content */
 .header > * {
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;

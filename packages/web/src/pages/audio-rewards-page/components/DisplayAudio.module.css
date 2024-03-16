@@ -3,7 +3,7 @@
   font-size: var(--harmony-font-3xl);
   line-height: 39px;
 
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
 }

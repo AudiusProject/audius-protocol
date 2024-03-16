@@ -52,7 +52,7 @@
   font-weight: 800;
   font-size: 40px;
   line-height: 49px;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

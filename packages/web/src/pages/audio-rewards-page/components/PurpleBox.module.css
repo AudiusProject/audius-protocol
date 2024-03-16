@@ -1,5 +1,5 @@
 .container {
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   box-shadow: 0px 4px 20px -2px rgba(100, 17, 166, 0.2);
   border-radius: 6px;
   min-height: 98px;

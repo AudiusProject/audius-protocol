@@ -53,7 +53,7 @@
 }
 
 .verified {
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
   font-weight: var(--harmony-font-heavy);

@@ -4,7 +4,7 @@
   border-radius: 8px;
   padding: 9px 34px;
   align-items: center;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   color: var(--harmony-static-white);
   align-items: center;
   transition: all 180ms;

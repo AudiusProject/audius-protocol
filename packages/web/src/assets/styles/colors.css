@@ -57,7 +57,7 @@
   --nav-column-link-hover: var(--harmony-n-950);
 
   --scrubber-hover: var(--primary-gradient-alt-1);
-  --stems-token-value-slider-background: var(--page-header-gradient);
+  --stems-token-value-slider-background: var(--harmony-gradient);
   --stems-token-value-slider-background-error: var(--accent-red-gradient);
 
   --table-shadow: rgba(133, 129, 153, 0.15);

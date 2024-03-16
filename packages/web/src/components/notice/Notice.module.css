@@ -31,7 +31,7 @@
   pointer-events: none;
   margin: 0 20px;
   position: relative;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   padding: 12px 64px;
   box-shadow: 0px 16px 20px rgba(133, 129, 153, 0.15);
   border-radius: 8px;

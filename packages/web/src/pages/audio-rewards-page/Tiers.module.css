@@ -12,7 +12,7 @@
 }
 
 .title {
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -134,7 +134,7 @@
 .tierContainerWrapper.tierContainerActive {
   border-radius: 20px;
   padding: 4px;
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
   box-shadow: 0px 6px 15px var(--page-header-text-shadow-color);
 }
 

@@ -16,7 +16,7 @@
 
 .balanceContainer {
   width: 100%;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   padding: 24px;
 }
 .spinner {
@@ -97,7 +97,7 @@
   line-height: 49px;
   text-transform: uppercase;
 
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

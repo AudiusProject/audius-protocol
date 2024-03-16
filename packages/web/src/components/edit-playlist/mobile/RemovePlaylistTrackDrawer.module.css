@@ -14,9 +14,9 @@
   line-height: 34px;
   text-align: center;
 
-  color: var(--page-header-gradient);
+  color: var(--harmony-gradient);
   user-select: none;
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
   margin: 0px 0px 8px;
