@@ -339,27 +339,6 @@ def parse_metadata(metadata: str, action: str, entity_type: str):
         cid = data["cid"]
         metadata_json = data["data"]
 
-        # Handle old client compatibility for gated fields until clients are updated
-        # todo: remove once clients are updated with new stream and gated fields
-        is_old_client_track = "premium_conditions" in metadata_json
-        if is_old_client_track:
-            download = (
-                metadata_json["download"] if metadata_json.get("download") else {}
-            )
-            is_downloadable = download.get("is_downloadable") is True
-            metadata_json["is_downloadable"] = is_downloadable
-            metadata_json["is_stream_gated"] = metadata_json["is_premium"]
-            metadata_json["stream_conditions"] = metadata_json["premium_conditions"]
-            metadata_json["is_download_gated"] = (
-                metadata_json["is_premium"] if is_downloadable else False
-            )
-            metadata_json["download_conditions"] = (
-                metadata_json["premium_conditions"] if is_downloadable else False
-            )
-            metadata_json["is_original_available"] = False
-            metadata_json["orgi_file_cid"] = None
-            metadata_json["orig_filename"] = None
-
         # Don't format metadata for UPDATEs
         # This is to support partial updates
         # Individual entities are responsible for updating existing records with metadata
