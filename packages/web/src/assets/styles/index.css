@@ -7,7 +7,7 @@
 
 #root *,
 body * {
-  font-family: var(--font-family) !important;
+  font-family: var(--harmony-font-family) !important;
 }
 
 body,

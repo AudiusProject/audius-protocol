@@ -35,7 +35,7 @@
 
 .description {
   color: var(--neutral);
-  font-family: var(--font-family);
+  font-family: var(--harmony-font-family);
   font-size: 12px;
   line-height: 18px;
   margin-bottom: 14px;

@@ -38,8 +38,8 @@
 
 .header.main {
   color: var(--secondary);
-  font-weight: var(--font-heavy);
-  font-size: var(--font-4xl);
+  font-weight: var(--harmony-font-heavy);
+  font-size: var(--harmony-font-4xl);
 
   user-select: none;
   background-image: var(--page-header-gradient);
@@ -64,24 +64,24 @@
   /* Padding top to align baseline with main. */
   padding-top: 12px;
   color: var(--neutral-light-4);
-  font-size: var(--font-2xl);
-  font-weight: var(--font-heavy);
+  font-size: var(--harmony-font-2xl);
+  font-weight: var(--harmony-font-heavy);
   user-select: none;
 }
 
 .header.section {
   display: inline-block;
   color: var(--neutral);
-  font-size: var(--font-2xl);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-2xl);
+  font-weight: var(--harmony-font-bold);
   text-shadow: 0 2px 6px 0 var(--neutral);
 }
 
 .header.page {
   display: inline-block;
   color: var(--neutral);
-  font-size: var(--font-2xl);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-2xl);
+  font-weight: var(--harmony-font-bold);
   text-shadow: 0 2px 6px 0 var(--neutral);
   background-image: var(--page-header-gradient);
 }

@@ -56,8 +56,8 @@
   justify-content: center;
   align-items: center;
 
-  font-weight: var(--font-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-m);
   color: var(--neutral-light-2);
   position: relative;
 }

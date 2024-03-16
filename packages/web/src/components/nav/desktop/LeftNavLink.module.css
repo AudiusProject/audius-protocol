@@ -1,6 +1,6 @@
 .link {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   position: relative;
   display: table;
   min-width: 100px;
@@ -49,7 +49,7 @@
 }
 .link:global(.active) {
   color: var(--primary) !important;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 .link.disabled,
 .link.disabled:hover {

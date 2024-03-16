@@ -4,10 +4,10 @@
   line-height: 18px;
 }
 .textarea.medium {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .textarea.small {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 .textarea > textarea {
   width: 100%;
@@ -60,5 +60,5 @@
 }
 .characterCount.nearLimit {
   color: var(--accent-orange);
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }

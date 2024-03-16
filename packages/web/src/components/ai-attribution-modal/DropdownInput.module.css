@@ -26,16 +26,16 @@
   top: 16px;
   left: 19px;
   margin-bottom: 4px;
-  font-size: var(--font-l);
+  font-size: var(--harmony-font-l);
   line-height: 18px;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   color: var(--neutral-light-4);
   transition: all 0.3s ease;
 }
 
 .labelFocus {
   transform: translate(-3px, -8px);
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   line-height: 14px;
 }
 
@@ -61,13 +61,13 @@
   height: 24px;
 }
 .wrapper.large > .dropdownInput > :global(.ant-select) {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .wrapper.medium > .dropdownInput > :global(.ant-select) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 .wrapper.small > .dropdownInput > :global(.ant-select) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 .wrapper > .dropdownInput :global(.ant-select-selection-item),
@@ -151,15 +151,15 @@
 
 .wrapper.large .placeholder {
   line-height: 48px;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .wrapper.medium .placeholder {
   line-height: 32px;
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 .wrapper.small .placeholder {
   line-height: 22px;
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 .arrow {
@@ -187,13 +187,13 @@
   font-weight: 500;
 }
 .wrapper.large .dropdownInput :global(.ant-select-selection-item) {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .wrapper.medium .dropdownInput :global(.ant-select-selection-item) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 .wrapper.small .dropdownInput :global(.ant-select-selection-item) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 /* Dropdown */
@@ -229,8 +229,8 @@
   text-align: left;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   color: var(--neutral);
   transition: all ease-in-out 0.04s;
 }
@@ -250,7 +250,7 @@
 }
 
 .large.select :global(.ant-select-item) {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 28px;
 }
 

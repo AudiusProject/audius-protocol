@@ -9,8 +9,8 @@
     0 2px 5px -2px var(--tile-shadow-3);
 
   color: var(--neutral-light-2);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.17px;
   text-align: center;
 

@@ -140,17 +140,17 @@
   margin-right: auto;
   height: 24px;
   border-radius: 6px;
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-demi-bold);
   margin-left: 6px;
   cursor: pointer;
 }
 
 .centerText {
   color: var(--neutral-light-5);
-  font-size: var(--font-l);
-  font-weight: var(--font-heavy);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-heavy);
   text-align: center;
   position: absolute;
   display: flex;
@@ -163,7 +163,7 @@
 .earlyAccess {
   font-size: 10px;
   position: absolute;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   color: var(--primary);
   letter-spacing: 0.5px;
   left: 30px;

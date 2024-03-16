@@ -38,8 +38,8 @@
 .title {
   display: flex;
   align-items: center;
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   color: var(--neutral);
 }
 
@@ -53,8 +53,8 @@
 
 .body {
   color: var(--neutral-light-2);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   text-align: left;
   line-height: 19px;
 

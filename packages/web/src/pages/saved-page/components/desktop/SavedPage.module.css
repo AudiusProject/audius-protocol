@@ -22,8 +22,8 @@
   background-color: var(--neutral-light-10);
   transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
   color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   border: none;
 
   padding-top: 1px;
@@ -87,8 +87,8 @@
 }
 
 .createPlaylistText {
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-bold);
   color: var(--neutral-light-2);
 }
 

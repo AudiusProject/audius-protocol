@@ -14,8 +14,8 @@
 
   text-transform: uppercase;
   color: var(--secondary);
-  font-weight: var(--font-heavy);
-  font-size: var(--font-3xl);
+  font-weight: var(--harmony-font-heavy);
+  font-size: var(--harmony-font-3xl);
 
   user-select: none;
   background-image: var(--page-header-gradient);

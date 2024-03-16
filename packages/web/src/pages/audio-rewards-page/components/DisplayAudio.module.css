@@ -1,6 +1,6 @@
 .amount {
   font-weight: 800;
-  font-size: var(--font-3xl);
+  font-size: var(--harmony-font-3xl);
   line-height: 39px;
 
   background: var(--page-header-gradient);
@@ -9,8 +9,8 @@
 }
 
 .label {
-  font-weight: var(--font-bold);
-  font-size: var(--font-3xl);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-3xl);
   line-height: 39px;
   letter-spacing: 1px;
   text-transform: uppercase;

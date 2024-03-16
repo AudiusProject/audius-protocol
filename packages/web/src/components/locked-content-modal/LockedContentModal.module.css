@@ -3,7 +3,7 @@
 }
 
 .modalHeader {
-  font-weight: var(--font-heavy);
+  font-weight: var(--harmony-font-heavy);
   color: var(--neutral-light-2);
 }
 
@@ -15,7 +15,7 @@
 
 .modalHeader h2 {
   color: var(--neutral-light-2);
-  font-weight: var(--font-heavy);
+  font-weight: var(--harmony-font-heavy);
 }
 
 .modalHeaderDismissButton {

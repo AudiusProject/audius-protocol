@@ -9,7 +9,7 @@
 .name {
   color: #fafafa;
   font-size: 42px;
-  font-weight: var(--font-heavy);
+  font-weight: var(--harmony-font-heavy);
   letter-spacing: 0.5px;
   text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
   height: 52px;

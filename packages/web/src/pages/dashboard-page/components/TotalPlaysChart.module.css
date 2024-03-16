@@ -65,7 +65,7 @@
 :global(.totalPlaysTooltipTitle) {
   text-transform: uppercase;
   color: var(--static-white);
-  font-family: var(--font-family);
+  font-family: var(--harmony-font-family);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.63px;
@@ -86,7 +86,7 @@
 
 :global(.totalPlaysTooltipLabelText) {
   color: var(--static-white);
-  font-family: var(--font-family);
+  font-family: var(--harmony-font-family);
   font-size: 14px;
   white-space: nowrap;
   font-weight: bold;

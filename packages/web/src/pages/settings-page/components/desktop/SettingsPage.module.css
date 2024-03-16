@@ -26,8 +26,8 @@
   flex-direction: column;
   justify-content: flex-end;
   color: var(--neutral-light-5);
-  font-family: var(--font-family);
-  font-size: var(--font-xs);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-xs);
   text-align: center;
 }
 
@@ -53,8 +53,8 @@
 
 .aiAttributionEnabled {
   color: var(--accent-green);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
 }
 
 .showPrivateKey {

@@ -54,8 +54,8 @@
   transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
   padding: 0 12px;
   color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   border: none;
 }
 .searchBar :global(.ant-select-auto-complete.ant-select .ant-input) {
@@ -64,8 +64,8 @@
   background-color: unset !important;
   transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
   color: var(--neutral) !important;
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
 }
 
 .searchBar :global(.ant-select-auto-complete) {
@@ -174,8 +174,8 @@
   margin-left: 16px;
   margin-bottom: 2px;
   color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.7px;
   line-height: 14px;
   text-transform: uppercase;
@@ -249,8 +249,8 @@
   cursor: pointer;
   margin-right: 6px;
   color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
 }
 
 :global(.ant-select-item-option.ant-select-item-option-active)
@@ -283,8 +283,8 @@
   width: 100%;
   text-align: center;
   color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
 }
 
 .searchBox
@@ -326,8 +326,8 @@
   width: 280px;
   border-radius: 6px;
   background-color: var(--white);
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-xs);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-xs);
   top: 32px;
   box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.2),
     0 2px 3px 0 rgba(133, 129, 153, 0.15);

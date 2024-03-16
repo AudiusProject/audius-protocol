@@ -3,20 +3,20 @@
 }
 
 .trackTitle.extraLarge {
-  font-size: var(--font-xl);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-demi-bold);
   padding-bottom: 5px;
 }
 .trackTitle.large {
   font-size: 15px;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   line-height: normal;
   padding-bottom: 5px;
 }
 .trackTitle.medium {
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   line-height: normal;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   padding-bottom: 2px;
 }
 
@@ -25,33 +25,33 @@
 }
 
 .trackTitle.small {
-  font-size: var(--font-xs);
-  font-weight: var(--font-regular);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-regular);
   line-height: normal;
   padding-bottom: 3px;
 }
 .trackTitle.tiny {
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   line-height: normal;
 }
 .trackTitle.miniscule {
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
   line-height: normal;
   padding-bottom: 2px;
 }
 
 .artistName.extraLarge,
 .artistName.large {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: normal;
   padding-bottom: 2px;
 }
 .artistName.medium {
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   line-height: normal;
   padding-bottom: 7px;
 }
@@ -60,13 +60,13 @@
 }
 .artistName.small,
 .artistName.miniscule {
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   line-height: normal;
 }
 .artistName.tiny {
-  font-size: var(--font-xs);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-demi-bold);
 }
 
 .trackTitle,

@@ -27,7 +27,7 @@
 
 .list {
   user-select: none;
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
   background-color: var(--white);
 }
 
@@ -36,8 +36,8 @@
   align-items: center;
   padding: 8px 16px;
   border-radius: 4px;
-  font-size: var(--font-l);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-demi-bold);
   color: var(--neutral);
 }
 

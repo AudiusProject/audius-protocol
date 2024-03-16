@@ -36,8 +36,6 @@ export default {
           preserve: true,
           importFrom: [
             'src/assets/styles/colors.css',
-            'src/assets/styles/fonts.css',
-            'src/assets/styles/sizes.css',
             'src/assets/styles/shadows.css',
             'src/assets/styles/transforms.css'
           ]

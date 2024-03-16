@@ -14,8 +14,8 @@
 
 .headerWrapper h2 {
   color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
   margin-top: 5px;
   margin-bottom: 10px;

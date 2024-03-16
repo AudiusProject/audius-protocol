@@ -30,7 +30,7 @@
 
 .description {
   font-weight: 600;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 24px;
   text-align: center;
   color: var(--neutral);

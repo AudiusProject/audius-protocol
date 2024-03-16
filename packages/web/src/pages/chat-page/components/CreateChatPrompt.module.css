@@ -22,13 +22,13 @@
 }
 
 .title {
-  font-weight: var(--font-bold);
-  font-size: var(--font-2xl);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-2xl);
   line-height: 130%;
 }
 
 .subtitle {
-  font-weight: var(--font-medium);
-  font-size: var(--font-l);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-l);
   line-height: 130%;
 }

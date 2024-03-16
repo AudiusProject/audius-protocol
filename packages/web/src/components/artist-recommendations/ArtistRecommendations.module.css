@@ -7,7 +7,7 @@
 
 .content {
   text-align: center;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
 }
 .contentItem {
   margin: 16px;
@@ -43,7 +43,7 @@
 .artistLink {
   display: inline-block;
   color: var(--secondary);
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   margin-bottom: 4px;
   cursor: pointer;
   line-height: normal;

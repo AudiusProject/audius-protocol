@@ -9,8 +9,8 @@
 }
 .title {
   margin-left: 6px;
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
 }
 .line {
   flex-grow: 1;

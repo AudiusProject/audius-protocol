@@ -101,8 +101,8 @@
 }
 
 .walletsHeaderItem {
-  font-weight: var(--font-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-m);
   text-transform: uppercase;
   color: var(--neutral-light-4);
 }
@@ -187,14 +187,14 @@
 }
 
 .walletText {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
   color: var(--neutral);
 }
 
 .mobile .walletText {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-s);
   color: var(--neutral);
 }
 
@@ -203,8 +203,8 @@
 }
 
 .copyContainer .balanceContainer .balance {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
   line-height: normal;
   text-align: right;
   color: var(--neutral);

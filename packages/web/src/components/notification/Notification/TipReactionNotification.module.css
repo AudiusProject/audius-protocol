@@ -4,7 +4,7 @@
 }
 
 .profileLink {
-  font-weight: var(--font-bold) !important;
+  font-weight: var(--harmony-font-bold) !important;
   margin-right: var(--harmony-unit-1);
 }
 

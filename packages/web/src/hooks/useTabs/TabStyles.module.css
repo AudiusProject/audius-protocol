@@ -18,8 +18,8 @@
 }
 
 .tabMobile {
-  font-weight: var(--font-bold);
-  font-size: var(--font-2xs);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-2xs);
   text-transform: uppercase;
   letter-spacing: 0.15px;
   line-height: 13px;
@@ -34,8 +34,8 @@
   flex-direction: row;
   justify-content: center;
   margin-right: 16px;
-  font-size: var(--font-s);
-  font-weight: var(--font-heavy);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-heavy);
   color: var(--neutral-light-4);
   padding: 0px 8px 4px;
   min-height: 32px;

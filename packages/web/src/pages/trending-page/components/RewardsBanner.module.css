@@ -29,8 +29,8 @@
 }
 
 .rewardsText {
-  font-size: var(--font-xl);
-  font-weight: var(--font-heavy);
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-heavy);
   margin-right: auto;
   display: flex;
   align-items: center;
@@ -52,14 +52,14 @@
 }
 
 .descriptionText {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   white-space: nowrap;
 }
 
 .learnMore {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   margin-left: auto;
   display: flex;
   align-items: center;

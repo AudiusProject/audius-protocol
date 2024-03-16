@@ -20,8 +20,8 @@
 
 .dropzone {
   color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 20px;
   min-height: unset;
   border-radius: 0px;
@@ -60,9 +60,9 @@
   width: 100%;
   color: var(--neutral);
   padding-left: 32px;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   height: 34px;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   border: none;
 
   border-radius: 4px;
@@ -89,14 +89,14 @@
 }
 
 .suggestion {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: 18px;
 }
 
 .suggestionHeader {
   text-transform: uppercase;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   color: var(--neutral-light-4);
   margin-bottom: var(--harmony-unit-2);
 }
@@ -121,7 +121,7 @@
 
 .credit {
   margin-top: var(--harmony-unit-2);
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
   color: var(--neutral-light-4);
   line-height: 15px;
 }
@@ -163,8 +163,8 @@
   justify-content: space-between;
   margin-top: var(--harmony-unit-2);
   color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
 }
 .collectiblesControls > div {
   flex: 1 1 0;
@@ -175,7 +175,7 @@
   cursor: pointer;
 }
 .pageLabel {
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 .nextLabel {
   text-align: right;

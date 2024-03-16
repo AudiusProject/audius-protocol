@@ -24,8 +24,8 @@
 
 .text {
   color: var(--darkmode-static-white);
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
   text-transform: uppercase;
   letter-spacing: 0.43px;
   line-height: 12px;

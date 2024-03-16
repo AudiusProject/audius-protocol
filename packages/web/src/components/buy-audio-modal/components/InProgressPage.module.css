@@ -6,8 +6,8 @@
 }
 
 .header {
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-bold);
   color: var(--neutral-light-4);
 }
 .headerCaps {
@@ -83,6 +83,6 @@
   white-space: pre-line;
   color: var(--accent-red);
   text-align: center;
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--harmony-font-demi-bold);
   line-height: 150%;
 }

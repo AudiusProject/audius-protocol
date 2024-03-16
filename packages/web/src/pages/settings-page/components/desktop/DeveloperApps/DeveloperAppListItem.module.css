@@ -10,8 +10,8 @@
 
 .listItemIndex {
   flex-grow: 0;
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   color: var(--neutral-light-2);
 }
 
@@ -27,8 +27,8 @@
 
 .listItemAppName {
   flex-grow: 1;
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   color: var(--neutral);
   overflow: hidden;
   text-overflow: ellipsis;

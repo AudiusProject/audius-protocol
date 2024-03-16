@@ -178,8 +178,8 @@
 
 .rightLink {
   cursor: pointer;
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   line-height: 19px;
   text-align: center;
@@ -210,8 +210,8 @@
   align-items: center;
   justify-content: center;
   color: #7e1bcc;
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   text-align: center;
   padding: 11px 26px 10px;
@@ -329,8 +329,8 @@
 
 .iconLinkText {
   color: var(--static-white);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   white-space: nowrap;
 }

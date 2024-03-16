@@ -50,8 +50,8 @@
 }
 
 .popupTitle {
-  font-size: var(--font-2xs);
-  line-height: var(--font-2xs);
+  font-size: var(--harmony-font-2xs);
+  line-height: var(--harmony-font-2xs);
   letter-spacing: 0.15px;
   text-transform: uppercase;
   color: var(--neutral);

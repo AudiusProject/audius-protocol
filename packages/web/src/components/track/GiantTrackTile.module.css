@@ -88,33 +88,33 @@
 
 .infoSection .numberOfListens {
   color: var(--neutral);
-  font-size: var(--font-l);
+  font-size: var(--harmony-font-l);
   font-weight: bold;
 }
 
 .infoSection .listenText {
   color: var(--neutral-light-5);
-  font-size: var(--font-l);
+  font-size: var(--harmony-font-l);
   font-weight: bold;
   padding-left: var(--harmony-unit-2);
 }
 
 .infoSection .firstListen {
   color: var(--neutral-light-4);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
 }
 
 .statsSection .numberOfListens,
 .statsSection .listenText,
 .statsSection .firstListen {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 
 .progressText,
 .completeText {
   color: var(--neutral-light-4);
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   font-weight: bold;
 }
 

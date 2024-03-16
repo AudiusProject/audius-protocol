@@ -22,8 +22,8 @@
 .header {
   text-align: left;
   color: var(--secondary);
-  font-weight: var(--font-heavy);
-  font-size: var(--font-4xl);
+  font-weight: var(--harmony-font-heavy);
+  font-size: var(--harmony-font-4xl);
 
   user-select: none;
   background-image: var(--page-header-gradient);

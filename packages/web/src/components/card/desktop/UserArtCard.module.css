@@ -13,8 +13,8 @@
 
 .userName {
   color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   line-height: 20px;
   text-align: center;
@@ -27,7 +27,7 @@
 .followerCount {
   color: var(--neutral);
   font-size: 16px;
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--harmony-font-demi-bold);
   letter-spacing: 0.2px;
   line-height: 20px;
   text-align: center;

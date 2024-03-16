@@ -23,8 +23,8 @@
   display: flex;
   align-items: center;
   color: var(--neutral);
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
 }
 .supportingTitle {
   margin-left: 8px;

@@ -40,7 +40,7 @@
 }
 
 .item {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 
 /* Apply color svg transitions on hover */

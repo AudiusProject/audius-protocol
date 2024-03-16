@@ -28,8 +28,8 @@
   background: var(--neutral-light-5);
   border-radius: 2px;
 
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--static-white);

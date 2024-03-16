@@ -51,7 +51,7 @@
 }
 
 .small.statsRow span {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
   color: var(--neutral-light-4);
 }
 

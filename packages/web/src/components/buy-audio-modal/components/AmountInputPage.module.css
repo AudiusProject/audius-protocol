@@ -10,8 +10,8 @@
   text-transform: uppercase;
   text-align: center;
   line-height: 150%;
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
   color: var(--neutral-light-4);
   border-top: 1px solid var(--neutral-light-8);
   background: var(--neutral-light-10);

@@ -36,10 +36,10 @@
   box-shadow: 0px 16px 20px rgba(133, 129, 153, 0.15);
   border-radius: 8px;
   color: var(--static-white);
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 22px;
   text-align: center;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 
 .contentShow {

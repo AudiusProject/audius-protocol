@@ -34,7 +34,7 @@
 
 .label {
   color: var(--neutral);
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   user-select: none;
   display: flex;
   align-items: center;

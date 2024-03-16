@@ -41,7 +41,7 @@
   flex-direction: column;
 
   color: var(--neutral);
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   overflow: hidden;
 }
 .text > .identity {
@@ -65,13 +65,13 @@
   flex: 0 0 15px;
 }
 .text > .identity .name {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
   margin-bottom: 4px;
 }
 .text > .identity .handle {
-  font-weight: var(--font-medium);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-s);
 }
 .text .icon {
   margin-right: 4px;
@@ -91,7 +91,7 @@
 .tipContainer .amount {
   display: flex;
   align-items: center;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   color: var(--neutral-light-4) !important;
 }
 .followersContainer .followers {
@@ -101,7 +101,7 @@
 .followersContainer .value,
 .tipContainer .value {
   margin-right: 4px;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 .followersContainer .followsYou {
   box-shadow: none;
@@ -123,18 +123,18 @@
 .tipContainer .supporter {
   display: flex;
   align-items: center;
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
 }
 .tipContainer .topSupporter {
   color: var(--secondary);
 }
 .tipContainer .topRankNumber {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   margin-right: 4px;
 }
 .tipContainer .rankNumber {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 .tipContainer .topSupporter .icon path {
   fill: var(--secondary);
@@ -143,7 +143,7 @@
   color: var(--neutral-light-4);
 }
 .tipContainer .amount {
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
 }
 .tipContainer {
   margin-top: 8px;

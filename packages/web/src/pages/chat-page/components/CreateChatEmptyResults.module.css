@@ -22,8 +22,8 @@
 }
 
 .header {
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-bold);
 }
 
 .content {

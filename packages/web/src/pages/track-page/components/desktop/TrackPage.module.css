@@ -42,14 +42,14 @@
   text-transform: uppercase;
 
   color: var(--neutral-light-4);
-  font-size: var(--font-medium);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-medium);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 1px;
   margin-bottom: 16px;
 }
 
 .moreByArtistLineupWrapper .lineupHeader.large {
-  font-size: var(--font-xl);
+  font-size: var(--harmony-font-xl);
 }
 
 .originalTrackDelineator > *:first-child {

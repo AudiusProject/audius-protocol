@@ -5,8 +5,8 @@
 
 .title {
   color: var(--secondary);
-  font-weight: var(--font-heavy);
-  font-size: var(--font-4xl);
+  font-weight: var(--harmony-font-heavy);
+  font-size: var(--harmony-font-4xl);
 
   user-select: none;
   background-image: var(--page-header-gradient);
@@ -55,8 +55,8 @@
 .name {
   margin-top: 11px;
   color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   line-height: 20px;
   text-align: center;
@@ -80,8 +80,8 @@
 
 .handle {
   color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-demi-bold);
   letter-spacing: 0.2px;
   line-height: 20px;
   text-align: center;
@@ -101,8 +101,8 @@
 
 .text {
   color: var(--neutral);
-  font-size: var(--font-l);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
   line-height: 34px;
   text-align: center;

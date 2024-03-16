@@ -37,8 +37,8 @@
   background: var(--secondary);
   border-radius: 2px;
 
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--static-white);

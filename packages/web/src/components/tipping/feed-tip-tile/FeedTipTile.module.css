@@ -32,7 +32,7 @@
 .usersContainer {
   display: flex;
   align-items: center;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   column-gap: 10px;
 }
 .recipientContainer {
@@ -54,7 +54,7 @@
   display: flex;
   align-items: center;
   margin-left: 8px;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   color: var(--neutral);
   white-space: nowrap;
 }
@@ -84,7 +84,7 @@
 .wasTippedByText {
   margin-left: 6px;
   color: var(--neutral-light-4);
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   white-space: nowrap;
 }
 
@@ -101,7 +101,7 @@
 .tipperName {
   display: flex;
   align-items: center;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 .tipperName > span {
   white-space: nowrap;
@@ -111,7 +111,7 @@
 }
 .andOthers {
   margin-left: 4px;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   white-space: nowrap;
 }
 

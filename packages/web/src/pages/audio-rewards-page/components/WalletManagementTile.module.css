@@ -45,8 +45,8 @@
   opacity: 1;
   transition: opacity 0.07s ease-in-out;
   margin-top: 10px;
-  font-weight: var(--font-bold);
-  font-size: var(--font-2xl);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-2xl);
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -103,7 +103,7 @@
   background-clip: text;
 }
 .subtitle {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   font-size: 16px;
   line-height: 20px;
   text-transform: uppercase;
@@ -154,6 +154,6 @@
 .tooltip :global(.ant-tooltip-inner) {
   border-radius: 8px;
   padding: 12px 24px;
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-demi-bold);
 }

@@ -16,8 +16,8 @@
   background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
 
   color: var(--static-white);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   line-height: 23px;
   text-align: center;
   text-shadow: 0 1px 2px rgba(39, 31, 71, 0.25);
@@ -34,15 +34,15 @@
 }
 
 .title {
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
 }
 
 .body {
   margin: 0 auto;
   color: #858199;
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 28px;
 
   text-align: left;

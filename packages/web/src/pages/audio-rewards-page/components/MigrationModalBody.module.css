@@ -1,7 +1,7 @@
 .description {
-  font-size: var(--font-xl);
+  font-size: var(--harmony-font-xl);
   text-align: center;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 
   color: var(--neutral);
   margin: 24px 0px;
@@ -12,9 +12,9 @@
 }
 
 .warning {
-  font-size: var(--font-xl);
+  font-size: var(--harmony-font-xl);
   text-align: center;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   color: var(--accent-red);
   margin: 24px 0px;
 }

@@ -17,19 +17,19 @@
 
 .small {
   --gap: -4px;
-  --font-size: var(--font-s);
+  --harmony-font-size: var(--harmony-font-s);
   height: 34px;
 }
 
 .medium {
   --gap: 0px;
-  --font-size: var(--font-m);
+  --harmony-font-size: var(--harmony-font-m);
   height: 50px;
 }
 
 .large {
   --gap: var(--harmony-unit-1);
-  --font-size: var(--font-xl);
+  --harmony-font-size: var(--harmony-font-xl);
   height: 66px;
 }
 
@@ -67,14 +67,14 @@
   outline: 0;
   border: 0;
   background: none;
-  font-size: var(--font-size);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-size);
+  font-weight: var(--harmony-font-medium);
 }
 
 .textInput::placeholder,
 .label {
   color: var(--neutral-light-4);
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 
 .inputRow {
@@ -96,7 +96,7 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  font-size: var(--font-size);
+  font-size: var(--harmony-font-size);
 }
 
 /** Add the "*" to required fields, but have it disappear when elevated **/
@@ -106,7 +106,7 @@
 
 /** Push the input down a bit to make room for the elevated placeholder **/
 .elevatedLabel .inputRow {
-  padding-top: calc(var(--font-xs));
+  padding-top: calc(var(--harmony-font-xs));
 }
 
 /** Position the elevated label absoutely on top of the input **/
@@ -120,7 +120,7 @@
 .focused .elevatedLabel .label,
 .hasValue {
   transform: translate(0px, calc(-1em - var(--gap)));
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 /** Make a container for the character count... **/
@@ -129,8 +129,8 @@
   padding-top: var(--harmony-unit-2);
   align-self: flex-start;
   color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
 }
 
 /** ... then position the actual count absolutely relative to that **/

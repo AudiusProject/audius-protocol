@@ -105,7 +105,7 @@ svg.logo.matrixLogo path {
 .earlyAccess {
   font-size: 10px;
   position: absolute;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   top: 34px;
   color: var(--primary);
   left: 58px;

@@ -17,8 +17,8 @@
 }
 
 .title {
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-bold);
 }
 
 .actionItem {
@@ -27,7 +27,7 @@
 }
 
 .action {
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--harmony-font-demi-bold);
 }
 
 .copyLinkAction {

@@ -97,5 +97,5 @@
 }
 .tagCount.nearLimit {
   color: var(--accent-orange);
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
