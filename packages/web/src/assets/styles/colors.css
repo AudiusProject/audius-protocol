@@ -14,11 +14,13 @@
   --ai-primary: #1fd187;
   --ai-secondary: #0fc578;
 
+  --page-header-gradient-color-1: #5b23e1;
+  --page-header-gradient-color-2: #a22feb;
   --primary-gradient-alt-1: linear-gradient(135deg, #d63fe6 0%, #a30cb3 100%);
   --page-header-gradient: linear-gradient(
     -22deg,
-    var(--harmony-gradient-color-1) 0%,
-    var(--harmony-gradient-color-2) 100%
+    var(--page-header-gradient-color-1) 0%,
+    var(--page-header-gradient-color-2) 100%
   );
   --page-header-text-shadow-color: rgba(162, 47, 235, 0.2);
   --page-header-text-shadow: 0px 2px 4px var(--page-header-text-shadow-color);
@@ -95,6 +97,86 @@
   --next-and-previous-buttons: var(--harmony-neutral);
 
   --segmented-progress-bar-segment-1: linear-gradient(
+    180deg; #ed75f9 0%; #cc0fe0 100%
+  );
+  --segmented-progress-bar-segment-2: linear-gradient(
+    180deg; #e477fb 0%; #b815db 100%
+  );
+  --segmented-progress-bar-segment-3: linear-gradient(
+    180deg; #d069f5 0%; #9f0ad4 100%
+  );
+  --segmented-progress-bar-segment-4: linear-gradient(
+    180deg; #cc75fa 0%; #8908ce 100%
+  );
+  --segmented-progress-bar-segment-5: linear-gradient(
+    180deg; #af4dff 0%; #7305c8 100%
+  );
+  --segmented-progress-bar-segment-6: linear-gradient(
+    180deg; #9c45ff 0%; #5c03c2 100%
+  );
+  --segmented-progress-bar-segment-7: linear-gradient(
+    180deg; #833bfb 0%; #4600bc 100%
+  );
+}
+
+html[data-theme='dark'] {
+  --darkmode-static-white: var(--harmony-static-white);
+  --page-header-gradient-color-1: #7652cc;
+  --page-header-gradient-color-2: #b05ce6;
+  --tile-shadow-1: rgba(17, 17, 34, 0.1);
+  --tile-shadow-2: #35364f;
+  --tile-shadow-3: rgba(17, 17, 34, 0.25);
+  --tile-shadow-1-alt: rgba(17, 17, 34, 0.2);
+  --currently-playing-border: none;
+  --currently-playing-default-shadow: rgba(17, 17, 17, 0.1);
+  --card-image-shadow: rgba(17, 17, 17, 0.25);
+  --input-background: rgba(76, 80, 107, 0.8);
+  --search-bar-background: rgba(76, 80, 107, 0.8);
+  --search-bar-expanded: rgba(76, 80, 107, 1);
+  --search-bar-border: rgba(143, 149, 152, 0.1);
+  --search-bar-shadow: rgba(36, 36, 56, 0.2);
+  --slider-handle: var(--harmony-n-950);
+  --table-shadow: rgba(17, 17, 34, 0.15);
+  --mask: rgba(36, 36, 52, 0.7);
+  --skeleton-gradient: linear-gradient(
+    90deg,
+    #393a54 25%,
+    #35364f 37%,
+    #393a54 63%
+  );
+  --skeleton: var(--harmony-n-50);
+  --skeleton-highlight: var(--harmony-n-100);
+  --profile-completion-shadow-1: rgba(0, 0, 0, 0);
+  --profile-completion-shadow-2: rgba(17, 17, 34, 0.15);
+  --default-profile-picture-background: var(--harmony-n-200);
+  --notification-panel-box-shadow: rgba(0, 0, 0, 0.25);
+  --notification-border: rgba(133, 129, 153, 0.2);
+  --notification-background: #32334d;
+  --notification-border-hover: rgba(133, 129, 153, 0.2);
+  --notification-background-hover: #32334d;
+  --notification-background-box-shadow: 0 2px 15px -4px rgba(17, 17, 34, 0.2);
+  --notification-border-active: #4e4f6a;
+  --notification-background-active: #2f3048;
+  --notification-unread-border: #4e4f6a;
+  --notification-unread-background: #3f415b;
+  --notification-unread-border-hover: #4e4f6a;
+  --notification-unread-background-hover: #3f415b;
+  --notification-unread-background-box-shadow: none;
+  --notification-unread-border-active: #4e4f6a;
+  --notification-unread-background-active: #363751;
+  --page-header-gradient: linear-gradient(
+    -22deg,
+    var(--page-header-gradient-color-1) 0%,
+    var(--page-header-gradient-color-2) 100%
+  );
+  --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
+  --page-header-gradient-1: rgb(53, 54, 79);
+  --page-header-gradient-2: rgba(53, 54, 79, 0.85);
+  --page-header-gradient-2-alt: rgba(53, 54, 79, 0.95);
+  --page-header-text-shadow-color: rgba(162, 47, 235, 0.2);
+  --page-header-text-shadow: 0px 2px 4px var(--page-header-text-shadow-color);
+  --next-and-previous-buttons: var(--harmony-neutral);
+  --segmented-progress-bar-segment-1: linear-gradient(
     180deg,
     #ed75f9 0%,
     #cc0fe0 100%
@@ -128,5 +210,90 @@
     180deg,
     #833bfb 0%,
     #4600bc 100%
+  );
+  --play-button-triangle: var(--harmony-static-white);
+  --action-sheet-text: var(--harmony-secondary);
+  --track-slider-rail: var(--harmony-neutral);
+  --track-slider-handle: var(--harmony-static-white);
+}
+
+html[data-theme='matrix'] {
+  --darkmode-static-white: var(--harmony-white);
+  --page-header-gradient-color-1: #4ff069;
+  --page-header-gradient-color-2: #09bd51;
+  --page-header-gradient: linear-gradient(-22deg, #4ff069 0%, #09bd51 100%);
+  --tile-shadow-1: rgba(0, 0, 0, 0.1);
+  --tile-shadow-2: #000000;
+  --tile-shadow-3: rgba(0, 0, 0, 0.25);
+  --tile-shadow-1-alt: rgba(17, 17, 34, 0.2);
+  --currently-playing-border: none;
+  --currently-playing-default-shadow: rgba(17, 17, 17, 0.1);
+  --card-image-shadow: rgba(17, 17, 17, 0.25);
+  --input-background: var(--harmony-n-50);
+  --search-bar-background: var(--harmony-n-50);
+  --search-bar-expanded: var(--harmony-n-50);
+  --search-bar-border: rgba(143, 149, 152, 0.1);
+  --search-bar-shadow: rgba(36, 36, 56, 0.2);
+  --slider-handle: var(--harmony-n-950);
+  --table-shadow: rgba(17, 17, 34, 0.15);
+  --mask: rgba(36, 36, 52, 0.7);
+  --skeleton-gradient: linear-gradient(
+    90deg,
+    #393a54 25%,
+    #35364f 37%,
+    #393a54 63%
+  );
+  --skeleton: var(--harmony-n-150);
+  --skeleton-highlight: var(--harmony-n-200);
+  --profile-completion-shadow-1: rgba(0, 0, 0, 0);
+  --profile-completion-shadow-2: rgba(17, 17, 34, 0.15);
+  --default-profile-picture-background: var(--harmony-n-200);
+  --notification-panel-box-shadow: rgba(0, 0, 0, 0.25);
+  --notification-border: var(--harmony-n-150);
+  --notification-background: var(--harmony-white);
+  --notification-border-hover: var(--harmony-n-100);
+  --notification-background-hover: var(--harmony-n-50);
+  --notification-background-box-shadow: 0 2px 15px -4px rgba(17, 17, 34, 0.2);
+  --notification-border-active: var(--harmony-n-100);
+  --notification-background-active: var(--harmony-white);
+  --notification-unread-border: var(--harmony-n-100);
+  --notification-unread-background: --var(--harmony-n-100);
+  --notification-unread-border-hover: var(--harmony-n-200);
+  --notification-unread-background-hover: var(--harmony-n-150);
+  --notification-unread-background-box-shadow: none;
+  --notification-unread-border-active: var(--harmony-n-100);
+  --notification-unread-background-active: --var(--harmony-white);
+  --page-header-gradient-1: var(--harmony-n-25);
+  --page-header-gradient-2: var(--harmony-n-25);
+  --page-header-gradient-2-alt: var(--harmony-n-25);
+  --page-header-text-shadow-color: rgba(20, 255, 0, 0.25);
+  --page-header-text-shadow: 0px 0px 5px rgba(225, 255, 234, 0.25),
+    0px 0px 15px var(--page-header-text-shadow-color);
+  --primary-gradient: linear-gradient(
+    135deg,
+    var(--harmony-primary) 0%,
+    var(--harmony-primary) 100%
+  );
+  --primary-gradient-alt-1: var(--harmony-primary-gradient);
+  --next-and-previous-buttons: var(--harmony-n-400);
+  --secondary-gradient: linear-gradient(0deg, #2f8b27 0%, #00ff29 95.45%);
+  --segmented-progress-bar-segment-1: var(--harmony-gradient);
+  --segmented-progress-bar-segment-2: var(--harmony-gradient);
+  --segmented-progress-bar-segment-3: var(--harmony-gradient);
+  --segmented-progress-bar-segment-4: var(--harmony-gradient);
+  --segmented-progress-bar-segment-5: var(--harmony-gradient);
+  --segmented-progress-bar-segment-6: var(--harmony-gradient);
+  --segmented-progress-bar-segment-7: var(--harmony-gradient);
+  --play-button-triangle: var(--harmony-white);
+  --action-sheet-text: var(--harmony-neutral);
+  --track-slider-rail: linear-gradient(
+    294.99deg,
+    #4ff069 -8.52%,
+    #09bd51 118.66%
+  );
+  --track-slider-handle: linear-gradient(
+    323.08deg,
+    #4ff069 36.13%,
+    #09bd51 133.51%
   );
 }

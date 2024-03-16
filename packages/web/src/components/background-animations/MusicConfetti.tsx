@@ -64,7 +64,9 @@ export const MusicConfetti = ({
       const confetti = new Confetti(
         node,
         isMatrix ? undefined : PATHS,
-        isMatrix ? undefined : [color.primary, color.secondary],
+        isMatrix
+          ? undefined
+          : [color.primary.primary, color.secondary.secondary],
         false,
         isMatrix ? (isMobile ? 200 : 500) : DEFAULTS.limit,
         DEFAULTS.friction,

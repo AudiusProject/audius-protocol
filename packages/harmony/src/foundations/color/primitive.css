@@ -196,7 +196,7 @@ html[data-theme='matrix'] {
   --harmony-dark-red: #bb0218;
   --harmony-green: #6cdf44;
   --harmony-light-green: #13c65a;
-  --harmony-gradient-color-1: #7652cc;
-  --harmony-gradient-color-2: #b05ce6;
-  --harmony-gradient: linear-gradient(315deg, #7652cc 0%, #b05ce6 100%);
+  --harmony-gradient-color-1: #4ff069;
+  --harmony-gradient-color-2: #09bd51;
+  --harmony-gradient: linear-gradient(315deg, #4ff069 0%, #09bd51 100%);
 }
