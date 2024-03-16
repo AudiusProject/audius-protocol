@@ -1,3 +1,4 @@
+import { UniqueUsersInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
 import { useIndividualServiceApiCalls } from 'store/cache/analytics/hooks'
@@ -28,6 +29,7 @@ const IndividualServiceUniqueUsersChart: React.FC<IndividualServiceUniqueUsersCh
     <LineChart
       title="Unique Users"
       tooltipTitle="Unique Users"
+      titleTooltipComponent={UniqueUsersInfoTooltip}
       error={error}
       data={data}
       labels={labels}

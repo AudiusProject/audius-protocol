@@ -1,7 +1,14 @@
 import { useCallback } from 'react'
 
-import { Modal } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import {
+  Button,
+  Flex,
+  Modal,
+  ModalContent,
+  ModalContentText,
+  ModalHeader,
+  ModalTitle
+} from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -9,8 +16,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { useProfileTier } from 'hooks/wallet'
 import { Tier } from 'pages/audio-rewards-page/Tiers'
 import { AUDIO_PAGE } from 'utils/route'
-
-import styles from './TierExplainerModal.module.css'
 
 export const messages = {
   title: '$AUDIO VIP Tiers',
@@ -39,33 +44,30 @@ const TierExplainerModal = () => {
     <Modal
       isOpen={isOpen}
       onClose={handleDismiss}
-      bodyClassName={styles.modalBody}
-      showTitleHeader
-      title={messages.title}
-      showDismissButton
       dismissOnClickOutside
-      contentHorizontalPadding={48}
+      size='medium'
     >
-      <div className={styles.container}>
-        <div className={styles.left}>
-          <div className={styles.textContainer}>
-            {messages.desc1}
-            <br />
-            <br />
-            {messages.desc2}
-          </div>
-          <Button
-            type={ButtonType.PRIMARY_ALT}
-            size={ButtonSize.MEDIUM}
-            text={messages.learnMore}
-            className={styles.button}
-            onClick={onClickLearnMore}
-          />
-        </div>
-        <div className={styles.tierWrapper}>
-          <Tier isCompact tier={tier} />
-        </div>
-      </div>
+      <ModalHeader>
+        <ModalTitle title={messages.title} />
+      </ModalHeader>
+      <ModalContent>
+        <Flex alignItems='center'>
+          <Flex direction='column' gap='l' alignItems='flex-start' flex={3}>
+            <ModalContentText>
+              {messages.desc1}
+              <br />
+              <br />
+              {messages.desc2}
+            </ModalContentText>
+            <Button variant='primary' onClick={onClickLearnMore}>
+              {messages.learnMore}
+            </Button>
+          </Flex>
+          <Flex flex={2}>
+            <Tier isCompact tier={tier} />
+          </Flex>
+        </Flex>
+      </ModalContent>
     </Modal>
   )
 }

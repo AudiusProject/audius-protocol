@@ -1,8 +1,7 @@
 import { Theme } from '@audius/common/models'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
+import { Button } from '@audius/harmony'
 
 import tileBackground from 'assets/img/notFoundTiledBackround.png'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './RequiresUpdate.module.css'
@@ -36,17 +35,9 @@ const SomethingWrong = ({
     >
       <div className={styles.title}>{messages.title}</div>
       <div className={styles.subtitle}>{messages.subtitle}</div>
-      <div className={styles.button}>
-        <Button
-          type={ButtonType.PRIMARY_ALT}
-          rightIcon={
-            isUpdating ? <LoadingSpinner className={styles.spinner} /> : null
-          }
-          text={isUpdating ? messages.buttonIsUpdating : messages.buttonUpdate}
-          size={ButtonSize.MEDIUM}
-          onClick={onUpdate}
-        />
-      </div>
+      <Button variant='primary' isLoading={isUpdating} onClick={onUpdate}>
+        {isUpdating ? messages.buttonIsUpdating : messages.buttonUpdate}
+      </Button>
     </div>
   </div>
 )

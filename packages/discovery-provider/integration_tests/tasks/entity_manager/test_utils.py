@@ -151,6 +151,7 @@ def test_valid_parse_metadata(app):
                 "license": "All rights reserved",
                 "isrc": None,
                 "iswc": None,
+                "ddex_release_ids": None,
                 "track_segments": [
                     {
                         "duration": 6.016,

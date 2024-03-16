@@ -47,6 +47,9 @@ const Root = () => (
 const App = () => {
   //  If the client fails, set it to the backup client
   const [apolloClient, setApolloClient] = useState(client)
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'dark')
+  }, [])
   const didClientError = useSelector(getDidGraphError)
   useEffect(() => {
     if (didClientError) {

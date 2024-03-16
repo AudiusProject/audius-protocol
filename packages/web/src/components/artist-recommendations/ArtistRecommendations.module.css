@@ -4,21 +4,6 @@
   margin-top: 0;
   text-align: start;
 }
-.icon {
-  padding: 2px;
-  margin: -6px;
-  box-sizing: content-box;
-  position: relative;
-  transition: all 0.17s ease-in-out !important;
-}
-
-.closeButton {
-  width: 16px;
-  margin-right: 16px;
-}
-.closeButton:hover {
-  cursor: pointer;
-}
 
 .content {
   text-align: center;

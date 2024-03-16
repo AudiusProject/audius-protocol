@@ -1,7 +1,8 @@
 .mobileNav {
   position: absolute;
-  left: 24px;
-  top: 20px;
+  left: 12px;
+  top: 14px;
+  z-index: 100;
 }
 
 .mobileNav path {
@@ -25,7 +26,7 @@
   left: 0;
   right: 0;
   bottom: 140px;
-  height: 140px;
+  height: 450px;
   z-index: -1;
   background: url(../../assets/img/headerImg@2x.jpg);
   background-position: center;

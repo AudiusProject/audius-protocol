@@ -34,12 +34,12 @@ export type BaseButtonProps = {
   /**
    * Optional icon element to include on the left side of the button
    */
-  iconLeft?: IconComponent
+  iconLeft?: IconComponent | null
 
   /**
    * Optional icon element to include on the right side of the button
    */
-  iconRight?: IconComponent
+  iconRight?: IconComponent | null
 
   /**
    * When true, do not override icon's fill colors

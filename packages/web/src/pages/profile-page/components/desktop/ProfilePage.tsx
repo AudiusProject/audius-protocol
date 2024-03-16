@@ -783,7 +783,7 @@ const ProfilePage = ({
             />
             <div className={styles.content}>
               {profile && profile.is_deactivated ? (
-                <DeactivatedProfileTombstone goToRoute={goToRoute} />
+                <DeactivatedProfileTombstone />
               ) : (
                 body
               )}

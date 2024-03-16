@@ -8,14 +8,13 @@ import {
 } from '@audius/common/api'
 import { Name, Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { TextAreaField, TextField } from 'components/form-fields'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useSelector } from 'utils/reducer'
 
 import styles from './CreateNewAppPage.module.css'
@@ -112,24 +111,22 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
           />
           <div className={styles.actionsContainer}>
             <Button
-              buttonType='button'
-              text={messages.cancel}
+              variant='secondary'
+              type='button'
               fullWidth
-              type={ButtonType.COMMON_ALT}
               disabled={isSubmitting}
               onClick={() => setPage(CreateAppsPages.YOUR_APPS)}
-            />
+            >
+              {messages.cancel}
+            </Button>
             <Button
-              buttonType='submit'
-              text={isSubmitting ? messages.creating : messages.create}
+              variant='primary'
+              type='submit'
               fullWidth
-              rightIcon={
-                isSubmitting ? (
-                  <LoadingSpinner className={styles.creatingSpinner} />
-                ) : undefined
-              }
-              disabled={isSubmitting}
-            />
+              isLoading={isSubmitting}
+            >
+              {isSubmitting ? messages.creating : messages.create}
+            </Button>
           </div>
           {submitError == null ? null : (
             <div className={styles.errorContainer}>

@@ -11,9 +11,9 @@ import {
   Text as HarmonyText,
   IconCaretRight,
   Text,
-  IconComponent
+  IconComponent,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import {
   Form,
   Formik,
@@ -96,12 +96,9 @@ const MenuForm = (props: MenuFormProps) => {
             </HarmonyText>
           </Box>
         ) : null}
-        <Button
-          form={label}
-          type={ButtonType.PRIMARY}
-          text={messages.save}
-          buttonType='submit'
-        />
+        <Button variant='primary' form={label} type='submit'>
+          {messages.save}
+        </Button>
       </ModalFooter>
     </Modal>
   )

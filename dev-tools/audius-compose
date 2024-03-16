@@ -177,7 +177,9 @@ def generate_env(
 @click.pass_context
 def cli(ctx, protocol_dir):
     if protocol_dir is None:
-        protocol_dir = pathlib.Path(os.path.dirname(os.path.realpath(__file__))).resolve()
+        protocol_dir = pathlib.Path(
+            os.path.dirname(os.path.realpath(__file__))
+        ).resolve()
         while (
             protocol_dir.name != ""
             and not (protocol_dir / "dev-tools/compose/docker-compose.yml").exists()
@@ -293,21 +295,58 @@ def push(ctx, services, prod):
             base_tag = f"{protocol_dir.name}-{service}"
 
             if service == "dashboard" and prod:
-                subprocess.run(["docker", "tag", f"{base_tag}:dev", f"audius/{service}:{git_commit}-dev"], check=True)
-                subprocess.run(["docker", "tag", f"{base_tag}:stage", f"audius/{service}:{git_commit}-stage"], check=True)
-                subprocess.run(["docker", "tag", f"{base_tag}:prod", f"audius/{service}:{git_commit}-prod"], check=True)
+                subprocess.run(
+                    [
+                        "docker",
+                        "tag",
+                        f"{base_tag}:dev",
+                        f"audius/{service}:{git_commit}-dev",
+                    ],
+                    check=True,
+                )
+                subprocess.run(
+                    [
+                        "docker",
+                        "tag",
+                        f"{base_tag}:stage",
+                        f"audius/{service}:{git_commit}-stage",
+                    ],
+                    check=True,
+                )
+                subprocess.run(
+                    [
+                        "docker",
+                        "tag",
+                        f"{base_tag}:prod",
+                        f"audius/{service}:{git_commit}-prod",
+                    ],
+                    check=True,
+                )
 
-            subprocess.run(["docker", "tag", base_tag, f"audius/{service}:{git_commit}"], check=True)
-            subprocess.run(["docker", "push", f"audius/{service}:{git_commit}"], check=True)
+            subprocess.run(
+                ["docker", "tag", base_tag, f"audius/{service}:{git_commit}"],
+                check=True,
+            )
+            subprocess.run(
+                ["docker", "push", f"audius/{service}:{git_commit}"], check=True
+            )
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to tag images")
 
     try:
         for service in services:
             if service == "dashboard" and prod:
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-dev"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-stage"], check=True)
-                subprocess.run(["docker", "push", f"audius/{service}:{git_commit}-prod"], check=True)
+                subprocess.run(
+                    ["docker", "push", f"audius/{service}:{git_commit}-dev"], check=True
+                )
+                subprocess.run(
+                    ["docker", "push", f"audius/{service}:{git_commit}-stage"],
+                    check=True,
+                )
+                subprocess.run(
+                    ["docker", "push", f"audius/{service}:{git_commit}-prod"],
+                    check=True,
+                )
 
             subprocess.run(
                 ["docker", "push", f"audius/{service}:{git_commit}"],
@@ -433,7 +472,9 @@ def load_env(protocol_dir, service, environment):
 @click.option("-e", "--elasticsearch-replicas", default=1, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
-@click.option("--dashboard", is_flag=True, help="Bring up the protocol dashboard container")
+@click.option(
+    "--dashboard", is_flag=True, help="Bring up the protocol dashboard container"
+)
 @click.option(
     "-n",
     "--notifs",
@@ -446,7 +487,6 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up the pedalboard containers",
 )
-@click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("--ddex-only", is_flag=True, help="Bring up only ddex containers")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
@@ -467,7 +507,6 @@ def up(
     dashboard,
     notifs,
     pedalboard,
-    comms,
     ddex_only,
     args,
     prod,
@@ -481,23 +520,31 @@ def up(
         generate_ddex_mongo_key(protocol_dir)
         profiles = ["--profile=ddex"]
     else:
-        AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
-        os.environ['MEDIORUM_ENV_TYPE'] = 'dev'  # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
+        AAO_DIR = pathlib.Path(
+            os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle")
+        )
+        os.environ["MEDIORUM_ENV_TYPE"] = (
+            "dev"  # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
+        )
         profiles = (
             *(["--profile=block-explorer"] if block_explorer else []),
             *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
             *(["--profile=notifications"] if notifs else []),
             *(["--profile=pedalboard"] if pedalboard else []),
-            *(["--profile=comms"] if comms else []),
             *(["--profile=dashboard"] if dashboard else []),
             "--profile=storage",
             "--profile=libs",
             "--profile=solana",
             "--profile=identity",
             "--profile=discovery",
+            "--profile=comms",
             "--profile=chain",
             "--profile=healthz",
-            *(["--file=" + str(AAO_DIR / 'audius-compose.yml')] if anti_abuse_oracle else []),
+            *(
+                ["--file=" + str(AAO_DIR / "audius-compose.yml")]
+                if anti_abuse_oracle
+                else []
+            ),
         )
 
     ctx.invoke(pull)
@@ -589,12 +636,10 @@ def test_build(protocol_dir):
 
 
 def generate_ddex_mongo_key(protocol_dir):
-    keyfile_path = (protocol_dir / "packages/ddex/mongo-keyfile")
+    keyfile_path = protocol_dir / "packages/ddex/mongo-keyfile"
     if not keyfile_path.exists():
         result = subprocess.run(
-            ["openssl", "rand", "-base64", "756"],
-            capture_output=True,
-            text=True
+            ["openssl", "rand", "-base64", "756"], capture_output=True, text=True
         )
         key_content = result.stdout
 
@@ -602,8 +647,9 @@ def generate_ddex_mongo_key(protocol_dir):
             keyfile.write(key_content)
 
         subprocess.run(
-              ["chmod", "400", "packages/ddex/mongo-keyfile"],
+            ["chmod", "400", "packages/ddex/mongo-keyfile"],
         )
+
 
 @test.command(name="run", default_command=True)
 @click.argument("service")
@@ -620,24 +666,44 @@ def test_run(protocol_dir, service, args):
         env["COMPOSE_PROFILES"] = "ddex"
         generate_ddex_mongo_key(protocol_dir)
 
-    sys.exit(
-        subprocess.run(
-            [
-                "docker",
-                "compose",
-                f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-                f"--project-name={protocol_dir.name}-test",
-                f"--project-directory={protocol_dir / 'dev-tools/compose'}",
-                "run",
-                "--rm",
-                "--build",
-                f"test-{service}",
-                "test",
-                *args,
-            ],
-            env=env
-        ).returncode
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
+            f"--project-name={protocol_dir.name}-test",
+            f"--project-directory={protocol_dir / 'dev-tools/compose'}",
+            "run",
+            "--rm",
+            "--build",
+            f"test-{service}",
+            "test",
+            *args,
+        ],
+        env=env,
     )
+
+    if result.returncode != 0 and service.startswith("ddex"):
+        containers = (
+            ["ddex-crawler-release-by-release", "ddex-parser-release-by-release"]
+            if service.endswith("release")
+            else ["ddex-crawler-batched", "ddex-parser-batched"]
+        )
+        for container in containers:
+            logs_result = subprocess.run(
+                f"docker logs {container}",
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            if logs_result.returncode == 0:
+                print(f"\nLogs for {container}:\n")
+                print(logs_result.stdout.decode("utf-8"))
+            else:
+                print(f"\nFailed to retrieve logs for {container}\n")
+                print(logs_result.stderr.decode("utf-8"))
+
+    sys.exit(result.returncode)
 
 
 @test.command(name="up")

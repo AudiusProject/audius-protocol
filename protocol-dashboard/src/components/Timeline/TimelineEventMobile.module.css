@@ -1,9 +1,10 @@
 .container {
   width: 100%;
-  border-top: 1px solid #3F415B;
+  border-top: 1px solid #3f415b;
   padding: 12px 20px;
   box-sizing: border-box;
   color: var(--neutral);
+  overflow: scroll;
 }
 
 .titleContainer {

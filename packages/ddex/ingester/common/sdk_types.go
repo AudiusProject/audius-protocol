@@ -156,6 +156,23 @@ type NullableBool = *bool
 type NullableString = *string
 type NullableInt = *int
 
+type ReleaseIDs struct {
+	PartyID       string `bson:"party_id,omitempty"`
+	CatalogNumber string `bson:"catalog_number,omitempty"`
+	ICPN          string `bson:"icpn,omitempty"`
+	GRid          string `bson:"grid,omitempty"`
+	ISAN          string `bson:"isan,omitempty"`
+	ISBN          string `bson:"isbn,omitempty"`
+	ISMN          string `bson:"ismn,omitempty"`
+	ISRC          string `bson:"isrc,omitempty"`
+	ISSN          string `bson:"issn,omitempty"`
+	ISTC          string `bson:"istc,omitempty"`
+	ISWC          string `bson:"iswc,omitempty"`
+	MWLI          string `bson:"mwli,omitempty"`
+	SICI          string `bson:"sici,omitempty"`
+	ProprietaryID string `bson:"proprietary_id,omitempty"`
+}
+
 type TrackMetadata struct {
 	Title               string         `bson:"title"`
 	ReleaseDate         time.Time      `bson:"release_date"`
@@ -163,6 +180,7 @@ type TrackMetadata struct {
 	Duration            int            `bson:"duration"`
 	PreviewStartSeconds NullableInt    `bson:"preview_start_seconds,omitempty"`
 	ISRC                NullableString `bson:"isrc,omitempty"`
+	DDEXReleaseIDs      ReleaseIDs     `bson:"ddex_release_ids"`
 
 	// TODO: Handle License from PLineText?
 	License NullableString `bson:"license,omitempty"`
@@ -173,25 +191,57 @@ type TrackMetadata struct {
 	Tags        NullableString `bson:"tags,omitempty"`
 
 	// Extra fields (not in SDK)
-	Artists                     []Artist `bson:"artists"`
-	ArtistID                    string   `bson:"artist_id"`
-	ArtistName                  string   `bson:"artist_name"`
-	Copyright                   string   `bson:"copyright"`
-	PreviewAudioFileURL         string   `bson:"preview_audio_file_url"`
-	PreviewAudioFileURLHash     string   `bson:"preview_audio_file_url_hash"`
-	PreviewAudioFileURLHashAlgo string   `bson:"preview_audio_file_url_hash_algo"`
-	AudioFileURL                string   `bson:"audio_file_url"`
-	AudioFileURLHash            string   `bson:"audio_file_url_hash"`
-	AudioFileURLHashAlgo        string   `bson:"audio_file_url_hash_algo"`
-	CoverArtURL                 string   `bson:"cover_art_url"`
-	CoverArtURLHash             string   `bson:"cover_art_url_hash"`
-	CoverArtURLHashAlgo         string   `bson:"cover_art_url_hash_algo"`
+
+	// michelle add to sdk ==
+	Artists []Artist `bson:"artists"`
+	// michelle add to sdk ==
+
+	ArtistID   string `bson:"artist_id"`
+	ArtistName string `bson:"artist_name"`
+
+	// michelle add to sdk ==
+	ResourceContributors         []ResourceContributor `bson:"resource_contributor,omitempty"`
+	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributor,omitempty"`
+	RightsController             RightsController      `bson:"rights_controller,omitempty"`
+	CopyrightLine                Copyright             `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine        Copyright             `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType          string                `bson:"parental_warning_type,omitempty"`
+	// michelle add to sdk ==
+
+	PreviewAudioFileURL         string `bson:"preview_audio_file_url"`
+	PreviewAudioFileURLHash     string `bson:"preview_audio_file_url_hash"`
+	PreviewAudioFileURLHashAlgo string `bson:"preview_audio_file_url_hash_algo"`
+	AudioFileURL                string `bson:"audio_file_url"`
+	AudioFileURLHash            string `bson:"audio_file_url_hash"`
+	AudioFileURLHashAlgo        string `bson:"audio_file_url_hash_algo"`
+	CoverArtURL                 string `bson:"cover_art_url"`
+	CoverArtURLHash             string `bson:"cover_art_url_hash"`
+	CoverArtURLHashAlgo         string `bson:"cover_art_url_hash_algo"`
 }
 
 // Not part of SDK
 type Artist struct {
-	Name  string   `bson:"name"`
-	Roles []string `bson:"roles"`
+	Name           string   `bson:"name"`
+	Roles          []string `bson:"roles"`
+	SequenceNumber int      `bson:"sequence_number"`
+}
+
+type Copyright struct {
+	Year string
+	Text string
+}
+
+// ResourceContributor represents a contributor to the sound recording
+type ResourceContributor struct {
+	Name           string
+	Roles          []string
+	SequenceNumber int `bson:"sequence_number"`
+}
+
+type RightsController struct {
+	Name               string
+	Roles              []string
+	RightsShareUnknown string
 }
 
 type CollectionMetadata struct {
@@ -205,12 +255,21 @@ type CollectionMetadata struct {
 	Genre             Genre          `bson:"genre"`
 	Mood              Mood           `bson:"mood,omitempty"`
 	ReleaseDate       time.Time      `bson:"release_date"`
+	DDEXReleaseIDs    ReleaseIDs     `bson:"ddex_release_ids"`
 
 	// TODO: Handle these fields
 	License NullableString `bson:"license,omitempty"`
 	UPC     NullableString `bson:"upc,omitempty"`
 
 	// Extra fields (not in SDK)
+
+	// michelle add to sdk ==
+	Artists               []Artist  `bson:"artists"`
+	CopyrightLine         Copyright `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine Copyright `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType   string    `bson:"parental_warning_type,omitempty"`
+	// michelle add to sdk ==
+
 	CoverArtURL         string `bson:"cover_art_url"`
 	CoverArtURLHash     string `bson:"cover_art_url_hash"`
 	CoverArtURLHashAlgo string `bson:"cover_art_url_hash_algo"`

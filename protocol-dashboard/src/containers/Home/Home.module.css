@@ -33,7 +33,6 @@
 .proposals {
   flex-direction: column;
   box-sizing: border-box;
-  margin: 0px 0px 16px;
 }
 
 .loading {
@@ -58,22 +57,20 @@
   justify-content: center;
   align-items: center;
   padding: 16px 0px;
-
   font-family: var(--font-family);
-  
   font-weight: var(--font-bold);
   font-size: var(--font-s);
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #777C96;
-  border-top: 1px solid #3F415B;
+  color: #777c96;
+  border-top: 1px solid #3f415b;
   user-select: none;
 }
 
 .moreText:hover,
 .moreText:active {
-  background: #393A54;
+  background: #393a54;
   cursor: pointer;
 }
 
@@ -81,7 +78,6 @@
   user-select: none;
   position: relative;
   background: none;
-  margin: 16px 0;
   padding: 32px;
   width: 100%;
   box-sizing: border-box;
@@ -107,7 +103,7 @@
 
 .wtf .bg {
   position: absolute;
-  z-index: -1;
+  z-index: -2;
   top: 0;
   left: 0;
   width: 100%;
@@ -118,25 +114,15 @@
   background-repeat: no-repeat;
 }
 
-.wtf .wtfIs {
-  font-family: Avenir Next LT Pro;
-  font-weight: 800;
-  font-size: 48px;
-  line-height: 59px;
-  color: var(--static-white);
-}
-
-.wtf .body {
-  font-weight: var(--font-regular);
-  font-weight: 500;
-  font-size: var(--font-l);
-  line-height: 22px;
-  color: var(--static-white);
-}
-
-.wtf .topRow {
-  display: inline-flex;
-  width: 100%;
-  justify-content: space-between;
-  margin-bottom: 16px;
+.wtf .bgImage {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 57%;
+  width: 68%;
+  height: 100%;
+  background-image: url(../../assets/img/ImageAudiusApp@2x.webp);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }

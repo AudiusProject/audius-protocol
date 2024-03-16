@@ -46,13 +46,11 @@
 
 .icon {
   position: absolute;
-  top: -30px;
-  right: -45px;
+  top: 0px;
+  right: -6px;
 }
 
 .icon svg {
-  width: 260px;
-  height: 260px;
   opacity: 0.3;
   mix-blend-mode: overlay;
 }

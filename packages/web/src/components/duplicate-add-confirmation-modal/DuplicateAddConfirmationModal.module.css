@@ -1,9 +1,0 @@
-.modalButton {
-  font-size: var(--font-l) !important;
-  font-weight: var(--font-bold) !important;
-}
-
-.modalFooter {
-  column-gap: var(--unit-2);
-  padding: var(--unit-6);
-}

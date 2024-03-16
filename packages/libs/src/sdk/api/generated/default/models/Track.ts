@@ -177,6 +177,18 @@ export interface Track {
      * @memberof Track
      */
     isStreamable?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof Track
+     */
+    ddexApp?: string;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof Track
+     */
+    playlistsContainingTrack?: Array<number>;
 }
 
 /**
@@ -228,6 +240,8 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
+        'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
     };
 }
 
@@ -263,6 +277,8 @@ export function TrackToJSON(value?: Track | null): any {
         'play_count': value.playCount,
         'permalink': value.permalink,
         'is_streamable': value.isStreamable,
+        'ddex_app': value.ddexApp,
+        'playlists_containing_track': value.playlistsContainingTrack,
     };
 }
 

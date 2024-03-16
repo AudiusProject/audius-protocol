@@ -10,13 +10,13 @@ import {
   IconPencil,
   IconKebabHorizontal,
   IconMessage,
-  PopupMenu
+  PopupMenu,
+  Button,
+  FollowButton
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
-import { FollowButton } from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -112,11 +112,10 @@ const StatsPopupMenu = ({
       renderTrigger={(anchorRef, triggerPopup) => (
         <Button
           ref={anchorRef}
-          type={ButtonType.COMMON}
-          size={ButtonSize.SMALL}
-          className={cn(styles.iconButton, styles.statButton)}
+          variant='secondary'
+          size='small'
           aria-label={messages.more}
-          text={<IconKebabHorizontal />}
+          iconLeft={IconKebabHorizontal}
           onClick={() => triggerPopup()}
         />
       )}
@@ -159,14 +158,14 @@ export const StatBanner = (props: StatsBannerProps) => {
 
   const shareButton = (
     <Button
-      type={ButtonType.COMMON}
-      size={ButtonSize.SMALL}
-      className={cn(styles.statButton)}
-      text={messages.share}
-      leftIcon={<IconShare />}
+      variant='secondary'
+      size='small'
+      iconLeft={IconShare}
       onClick={onShare}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
-    />
+    >
+      {messages.share}
+    </Button>
   )
 
   switch (mode) {
@@ -175,34 +174,31 @@ export const StatBanner = (props: StatsBannerProps) => {
         <>
           {shareButton}
           <Button
-            className={cn(styles.buttonTwo, styles.statButton)}
-            size={ButtonSize.SMALL}
-            type={ButtonType.SECONDARY}
-            text={messages.edit}
-            leftIcon={<IconPencil />}
+            variant='secondary'
+            size='small'
+            iconLeft={IconPencil}
             onClick={onEdit}
             widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          />
+          >
+            {messages.edit}
+          </Button>
         </>
       )
       break
     case 'editing':
       buttons = (
         <>
+          <Button variant='secondary' size='small' onClick={onCancel}>
+            {messages.cancel}
+          </Button>
           <Button
-            className={styles.statButton}
-            size={ButtonSize.SMALL}
-            type={ButtonType.COMMON}
-            text={messages.cancel}
-            onClick={onCancel}
-          />
-          <Button
+            variant='primary'
+            size='small'
             className={cn(styles.buttonTwo, styles.statButton)}
-            size={ButtonSize.SMALL}
-            type={ButtonType.PRIMARY_ALT}
-            text={messages.save}
             onClick={onSave}
-          />
+          >
+            {messages.save}
+          </Button>
         </>
       )
       break
@@ -220,13 +216,11 @@ export const StatBanner = (props: StatsBannerProps) => {
               />
               {onMessage ? (
                 <Button
-                  type={ButtonType.COMMON}
-                  size={ButtonSize.SMALL}
-                  className={cn(styles.iconButton, styles.statButton, {
-                    [styles.disabled]: !canCreateChat
-                  })}
+                  variant='secondary'
+                  size='small'
+                  disabled={!canCreateChat}
                   aria-label={messages.message}
-                  text={canCreateChat ? <IconMessage /> : <IconMessageLocked />}
+                  iconLeft={canCreateChat ? IconMessage : IconMessageLocked}
                   onClick={onMessage}
                 />
               ) : null}
@@ -246,11 +240,9 @@ export const StatBanner = (props: StatsBannerProps) => {
             ) : null}
             <FollowButton
               ref={followButtonRef}
-              following={following}
+              isFollowing={following}
               onFollow={onFollow}
               onUnfollow={onUnfollow}
-              widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-              className={styles.statButton}
             />
             <ArtistRecommendationsPopup
               anchorRef={followButtonRef}

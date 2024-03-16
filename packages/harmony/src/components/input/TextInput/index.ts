@@ -1,2 +1,2 @@
 export * from './TextInput'
-export { TextInputProps } from './types'
+export { TextInputProps, TextInputSize } from './types'

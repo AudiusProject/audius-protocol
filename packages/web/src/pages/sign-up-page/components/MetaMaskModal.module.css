@@ -1,0 +1,113 @@
+.container {
+  background-color: rgba(17, 17, 17, 0.5);
+  position: absolute;
+  width: 100vw;
+  min-height: 100vh;
+  height: 100%;
+  display: flex;
+  top: 0px;
+  left: 0px;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  user-select: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.modal {
+  height: 424px;
+  width: 720px;
+  padding: 37px 33px 38px;
+  overflow-y: scroll;
+  border-radius: 8px;
+  background-color: var(--white);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25);
+  display: inline-flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.header {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.title {
+  color: var(--secondary);
+  font-size: 22px;
+  font-weight: var(--font-bold);
+  margin-top: 4px;
+}
+
+.sub {
+  margin: 8px 0px 4px;
+  color: var(--secondary);
+  font-size: var(--font-s);
+}
+
+.bodyContainer {
+  margin-top: 33px;
+  height: 87px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bodyText {
+  text-align: center;
+  max-width: 630px;
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: 22px;
+}
+
+/* Guide button */
+
+.guideContainer {
+  margin-top: 33px;
+}
+
+/* Configure MetaMask popup */
+.configOverlay {
+  margin-top: -10px;
+}
+
+.configOverlay :global(.ant-tooltip-inner) {
+  background-color: rgba(0, 0, 0, 0);
+  box-shadow: none;
+}
+
+.configOverlay :global(.ant-tooltip-arrow) {
+  border-top-color: #7e1bcc;
+  bottom: 1px;
+  border-width: 7px 6px 0px;
+  margin-left: -6px;
+}
+
+.configOverlay :global(.ant-tooltip-inner) {
+  background-color: #7e1bcc;
+  /* padding: 0px */
+}
+
+.configMetaMask {
+  height: 32px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  width: 183px;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Bottom Buttons */
+
+.actionContainer {
+  margin-top: 37px;
+  position: 'relative';
+  display: inline-flex;
+}

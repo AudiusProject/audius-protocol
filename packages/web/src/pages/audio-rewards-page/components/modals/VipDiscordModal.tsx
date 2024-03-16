@@ -1,6 +1,5 @@
 import { vipDiscordModalSelectors } from '@audius/common/store'
-import { IconDiscord } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconDiscord } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -65,12 +64,13 @@ export const VipDiscordModal = () => {
           />
         ) : null}
         <Button
-          className={styles.btn}
-          text={messages.launch}
+          variant='primary'
+          css={(theme) => ({ marginTop: theme.spacing['2xl'] })}
           onClick={handleClick}
-          type={ButtonType.PRIMARY_ALT}
-          leftIcon={<IconDiscord />}
-        />
+          iconLeft={IconDiscord}
+        >
+          {messages.launch}
+        </Button>
       </div>
     </ModalDrawer>
   )

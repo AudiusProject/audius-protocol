@@ -7,6 +7,7 @@ import {
   TikTokButtonProps
 } from 'components/social-button/tiktok-button/TikTokButton'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 type TikTokAuthButtonProps = {
   onFailure: (e: Error) => void
@@ -56,7 +57,10 @@ export const TikTokAuth = ({
           const tikTokProfile = resultJson.data.user
           onSuccess(tikTokProfile.open_id, tikTokProfile)
         } catch (e) {
-          console.error(e)
+          reportToSentry({
+            error: e as Error,
+            name: 'Sign Up: TikTok auth failed'
+          })
         }
       })
     },

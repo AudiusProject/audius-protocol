@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -61,12 +61,12 @@ export const SomethingWrong = () => {
         </div>
         <div className={styles.cta}>
           <Button
-            className={styles.buttonFormatting}
-            textClassName={styles.buttonText}
-            type={ButtonType.PRIMARY_ALT}
-            text={messages.cta}
+            variant='primary'
+            fullWidth={isMobile}
             onClick={handleClickRetry}
-          />
+          >
+            {messages.cta}
+          </Button>
         </div>
       </div>
     </div>

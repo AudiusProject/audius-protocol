@@ -1,35 +1,42 @@
-import React, { ReactNode } from 'react'
-import clsx from 'clsx'
-import SimpleBar from 'simplebar-react'
 import BN from 'bn.js'
+import clsx from 'clsx'
+import React, { ReactNode } from 'react'
+import SimpleBar from 'simplebar-react'
 
-import AudiusClient from 'services/Audius'
-import { IconArrow, ButtonType } from '@audius/stems'
-import Modal from 'components/Modal'
+import { Box as HarmonyBox, Text } from '@audius/harmony'
+import { ButtonType, IconArrow } from '@audius/stems'
 import Button from 'components/Button'
-import styles from './ConfirmTransactionModal.module.css'
-import { BigNumber, ServiceType, Address, Status } from 'types'
+import DisplayAudio from 'components/DisplayAudio'
 import Loading from 'components/Loading'
-import { TICKER } from 'utils/consts'
+import Modal from 'components/Modal'
 import UserImage from 'components/UserImage'
+import AudiusClient from 'services/Audius'
+import { Address, BigNumber, ServiceType, Status } from 'types'
+import { TICKER } from 'utils/consts'
+import styles from './ConfirmTransactionModal.module.css'
 
 const messages = {
   title: 'Confirm Transaction',
   metamask: 'Confirm With MetaMask',
   error: 'An Error Has Occured',
   okay: 'OKAY',
+  twoPopupsWarning: '2 MetaMask Pop-Ups Will Appear',
   discoveryProvider: 'Discovery Node',
   contentNode: 'Content Node',
   stakingAmount: `Staking Amount ${TICKER}`,
   newService: 'NEW SERVICES',
-  delegateOwnerWallet: 'Delegate Owner Wallet',
+  delegateOwnerWallet: 'Node Wallet Address',
   oldStake: `Old Stake ${TICKER}`,
   newStake: `New Stake ${TICKER}`,
   delegatingAmount: `DELEGATING ${TICKER}`,
+  undelegating: `UNDELEGATING ${TICKER}`,
   errorTitle: 'An Error Has Occured',
   errorHeader:
     'There was an error in executing the transaction. Please try again.',
-  errorBtn: 'OKAY'
+  errorBtn: 'OKAY',
+  from: 'From',
+  to: 'To',
+  operator: 'Operator'
 }
 
 type OperatorStakingProps = {
@@ -54,7 +61,7 @@ export const OperatorStaking: React.FC<OperatorStakingProps> = props => {
         {messages.stakingAmount}
       </div>
       <div className={styles.boxValue}>
-        {AudiusClient.displayAud(props.amount)}
+        <DisplayAudio amount={props.amount} />
       </div>
     </Box>
   )
@@ -139,13 +146,18 @@ export const NewStake: React.FC<NewStakeProps> = props => {
 type DelegatingProps = {
   className?: string
   amount: BigNumber
+  isUndelegating?: boolean
 }
 export const Delegating: React.FC<DelegatingProps> = props => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}
     >
-      <div>{messages.delegatingAmount}</div>
+      <div>
+        {props.isUndelegating
+          ? messages.undelegating
+          : messages.delegatingAmount}
+      </div>
       <div className={styles.delegatingAmount}>
         {AudiusClient.displayAud(props.amount)}
       </div>
@@ -171,9 +183,9 @@ export const StandaloneBox = ({ className, children }: StandaloneBoxProps) => {
 
 type ToOperatorProps = {
   className?: string
-  image: string
   name: string
   wallet: Address
+  isFrom?: boolean
 }
 export const ToOperator = (props: ToOperatorProps) => {
   return (
@@ -182,14 +194,18 @@ export const ToOperator = (props: ToOperatorProps) => {
         [props.className!]: !!props.className
       })}
     >
-      <div>To Operator</div>
+      <HarmonyBox mb="m" css={{ textTransform: 'uppercase' }}>
+        {props.isFrom ? messages.from : messages.to} {messages.operator}
+      </HarmonyBox>
       <UserImage
         alt={'User Profile'}
         wallet={props.wallet}
         className={clsx(styles.boxImage, styles.toOperatorImg)}
       />
       <div className={styles.toOperatorName}>{props.name}</div>
-      <div className={styles.toOperatorWallet}>{props.wallet}</div>
+      {props.wallet !== props.name ? (
+        <div className={styles.toOperatorWallet}>{props.wallet}</div>
+      ) : null}
     </Box>
   )
 }
@@ -215,6 +231,7 @@ type OwnProps = {
   withArrow?: boolean
   status?: Status
   error?: string
+  showTwoPopupsWarning?: boolean
 }
 
 type ConfirmTransactionModalProps = OwnProps
@@ -227,7 +244,8 @@ const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
   withArrow = true,
   bottomBox,
   status,
-  error
+  error,
+  showTwoPopupsWarning
 }: ConfirmTransactionModalProps) => {
   const formattedError = error.includes('\n') ? error.split('\n')[0] : error
   return (
@@ -242,6 +260,13 @@ const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
     >
       {status !== Status.Failure ? (
         <>
+          {!showTwoPopupsWarning ? null : (
+            <HarmonyBox mt="xl">
+              <Text variant="heading" size="s" color="warning">
+                {messages.twoPopupsWarning}
+              </Text>
+            </HarmonyBox>
+          )}
           {topBox}
           {withArrow && <IconArrow className={styles.arrowDown} />}
           {bottomBox}

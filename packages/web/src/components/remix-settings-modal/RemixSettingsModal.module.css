@@ -1,66 +1,3 @@
-.modalContainer {
-  max-width: 536px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.modalHeader {
-  margin: 0px 16px;
-  padding-bottom: 8px;
-}
-
-.remixSettingsModalContainer > div {
-  max-width: 720px;
-  width: 100%;
-}
-
-.remixSettingsModalHeader {
-  font-weight: var(--font-heavy);
-  color: var(--neutral-light-2);
-}
-
-.remixSettingsModalHeader h2 {
-  color: var(--neutral-light-2);
-  font-weight: var(--font-heavy);
-}
-
-.remixSettingsModalHeaderDismissButton {
-  color: var(--neutral-light-2);
-}
-
-.remixSettingsModalTitleIcon {
-  width: var(--unit-5);
-  height: var(--unit-5);
-}
-
-.modalTitle {
-  color: var(--neutral);
-  font-size: var(--font-l);
-  font-weight: var(--font-heavy);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  line-height: 23px;
-  margin-bottom: 7px;
-}
-
-.modalSubtitle {
-  color: var(--neutral-light-4);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  letter-spacing: 0;
-  line-height: 18px;
-}
-
-.content {
-  padding: 16px 16px 0px;
-  color: var(--neutral);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  letter-spacing: 0;
-  line-height: 18px;
-}
-
 .info {
   margin-bottom: 8px;
 }
@@ -105,21 +42,6 @@
 .artistName {
   display: inline-flex;
   align-items: center;
-}
-
-.doneButton {
-  align-self: flex-end;
-  margin: 16px;
-}
-
-.doneButtonContainer {
-  display: flex;
-  justify-content: center;
-  padding-top: var(--unit-2);
-}
-
-.doneButtonContainer .doneButton2 {
-  font-size: var(--font-l);
 }
 
 .disableInfo {

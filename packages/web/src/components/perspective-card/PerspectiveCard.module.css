@@ -68,7 +68,6 @@
 }
 
 .perspectiveCard .backgroundIcon path {
-  fill: var(--neutral-light-10);
   opacity: 0.3;
 }
 

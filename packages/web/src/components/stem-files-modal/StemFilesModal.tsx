@@ -12,9 +12,10 @@ import {
   Text,
   Switch,
   IconRemove,
-  IconButton
+  IconButton,
+  Button,
+  Box
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import { Divider } from 'components/divider'
@@ -30,16 +31,12 @@ const MAX_ROWS = 20
 const messages = {
   title: 'STEMS & DOWNLOADS',
   additionalFiles: 'UPLOAD ADDITIONAL FILES',
-  description:
-    'Upload your stems and source files to allow fans to remix your track. This does not affect users ability to listen offline.',
   allowDownloads: 'Allow Full Track Download',
   allowDownloadsDescription:
     'Allow your fans to download a copy of your full track.',
   requireFollowToDownload: 'Require Follow to Download',
   done: 'DONE',
-  maxCapacity: 'Reached upload limit of 20 files.',
-  stemTypeHeader: 'Select Stem Type',
-  stemTypeDescription: 'Please select a stem type for each of your files.'
+  maxCapacity: 'Reached upload limit of 20 files.'
 }
 
 const defaultDownloadSettings: Download = {
@@ -299,13 +296,11 @@ export const StemFilesModal = ({
         onSelectCategory={onSelectCategory}
         onDeleteStem={onDeleteStem}
       />
-      <Button
-        className={styles.doneButton}
-        text={messages.done}
-        size={ButtonSize.TINY}
-        type={ButtonType.SECONDARY}
-        onClick={onClose}
-      />
+      <Box m='l'>
+        <Button variant='secondary' size='small' onClick={onClose}>
+          {messages.done}
+        </Button>
+      </Box>
     </Modal>
   )
 }

@@ -16,20 +16,3 @@
   margin-left: auto;
   margin-right: auto;
 }
-
-.button {
-  height: auto !important;
-  margin-inline-end: 24px;
-  padding: 12px 24px !important;
-}
-.button.buttonDanger,
-.button.buttonDanger:hover {
-  background-color: var(--accent-red);
-}
-.button.buttonDanger:active {
-  background-color: var(--accent-red-dark-1);
-}
-
-.button > span {
-  font-size: var(--font-m) !important;
-}

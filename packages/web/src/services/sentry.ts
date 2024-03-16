@@ -50,19 +50,6 @@ export const initializeSentry = () => {
         }
       }
       return breadCrumb
-    },
-    beforeSend: (event, hint) => {
-      // This code manually adds the exceptionName to the event Fingerprint,
-      // which controls how Sentry groups events into issues.
-      // More background:
-      // https://docs.sentry.io/data-management/event-grouping/sdk-fingerprinting/?platform=javascript
-      const exception = hint ? hint.originalException : undefined
-      if (!exception) return event
-
-      const exceptionName = exception.toString()
-      event.fingerprint = [exceptionName]
-
-      return event
     }
   })
 }

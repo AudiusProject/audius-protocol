@@ -55,22 +55,10 @@
 }
 
 .menuButton {
-  height: 28px !important;
   padding: 0px 10px;
-}
-.menuButton .menuButtonText {
-  font-size: var(--font-xs);
-  font-weight: var(--font-demi-bold);
-}
-.menuButton .menuButtonIcon {
-  margin-right: 4px !important;
 }
 .advancedButton {
   margin-left: 24px;
-}
-.menuButtonIcon svg {
-  width: 16px;
-  height: 16px;
 }
 
 .remixSwitch {

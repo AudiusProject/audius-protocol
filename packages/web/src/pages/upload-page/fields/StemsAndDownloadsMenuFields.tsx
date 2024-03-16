@@ -354,7 +354,7 @@ export const StemsAndDownloadsMenuFields = (
 
   return (
     <div className={styles.fields}>
-      <Text>{messages.description}</Text>
+      <Text variant='body'>{messages.description}</Text>
       <Divider />
       {isLosslessDownloadsEnabled ? (
         <DownloadAvailability

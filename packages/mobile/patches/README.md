@@ -21,3 +21,7 @@ Patch to support full screen swipe gestures in native stack. and navigation draw
 ## react-native-code-push+8.1.1.patch
 
 Patch to fix code-push with latest react native https://github.com/microsoft/react-native-code-push/issues/2626
+
+## @react-native-community/datepicker
+
+Patch to fix issue with xcode 15.3: https://github.com/react-native-datetimepicker/datetimepicker/issues/866

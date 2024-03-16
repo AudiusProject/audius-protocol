@@ -29,16 +29,16 @@ import {
   IconSpecialAccess,
   IconLogoCircleETH,
   IconLogoCircleSOL,
-  useTheme
+  useTheme,
+  Button,
+  IconUserFollow
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import { FollowButton } from 'components/follow-button/FollowButton'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconTip } from 'components/notification/Notification/components/icons'
@@ -253,56 +253,55 @@ const LockedGatedTrackSection = ({
     if (isContentCollectibleGated(streamConditions)) {
       return (
         <Button
-          color='accentBlue'
-          text={messages.goToCollection}
+          variant='primary'
+          color='blue'
           onClick={goToCollection}
-          rightIcon={<IconExternalLink />}
-          type={ButtonType.PRIMARY}
-          iconClassName={styles.buttonIcon}
-          textClassName={styles.buttonText}
-        />
+          iconRight={IconExternalLink}
+          fullWidth
+        >
+          {messages.goToCollection}
+        </Button>
       )
     }
 
     if (isContentFollowGated(streamConditions)) {
       return (
-        <FollowButton
-          color='accentBlue'
-          className={styles.followButton}
-          messages={{
-            follow: messages.followArtist,
-            unfollow: '',
-            following: ''
-          }}
-          onFollow={handleFollow}
-          invertedColor
-        />
+        <Button
+          variant='primary'
+          color='blue'
+          onClick={handleFollow}
+          iconLeft={IconUserFollow}
+          fullWidth
+        >
+          {messages.followArtist}
+        </Button>
       )
     }
 
     if (isContentTipGated(streamConditions)) {
       return (
         <Button
-          color='accentBlue'
-          text={messages.sendTip}
+          variant='primary'
+          color='blue'
           onClick={handleSendTip}
-          rightIcon={<IconTip />}
-          type={ButtonType.PRIMARY}
-          iconClassName={styles.buttonIcon}
-          textClassName={styles.buttonText}
-        />
+          iconRight={IconTip}
+          fullWidth
+        >
+          {messages.sendTip}
+        </Button>
       )
     }
 
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <Button
-          color='specialLightGreen'
-          text={messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+          variant='primary'
+          color='lightGreen'
           onClick={handlePurchase}
-          type={ButtonType.PRIMARY}
-          textClassName={styles.buttonText}
-        />
+          fullWidth
+        >
+          {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+        </Button>
       )
     }
 

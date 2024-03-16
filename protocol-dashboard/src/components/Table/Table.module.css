@@ -3,8 +3,8 @@
 }
 
 .titleContainer {
-  padding: 28px 32px;
-  border-bottom: 1px solid #3F415B;
+  padding: var(--unit-6);
+  border-bottom: 1px solid #3f415b;
   display: inline-flex;
   width: 100%;
   justify-content: space-between;
@@ -32,7 +32,7 @@
   display: inline-flex;
   padding: 16px 32px;
   font-family: var(--font-family);
-  
+
   font-weight: var(--font-bold);
   font-size: var(--font-s);
   letter-spacing: 1px;
@@ -45,12 +45,12 @@
 
 .rowContainer {
   padding: 0px 32px;
-  border-top: 1px solid #3F415B;
+  border-top: 1px solid #3f415b;
 }
 
 .rowContainer:hover,
 .rowContainer:active {
-  background: #393A54;
+  background: #393a54;
   cursor: pointer;
 }
 
@@ -62,20 +62,20 @@
   padding: 16px 0px;
 
   font-family: var(--font-family);
-  
+
   font-weight: var(--font-bold);
   font-size: var(--font-s);
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--neutral-light-4);
-  border-top: 1px solid #3F415B;
+  border-top: 1px solid #3f415b;
   user-select: none;
 }
 
 .moreText:hover,
 .moreText:active {
-  background: #393A54;
+  background: #393a54;
   cursor: pointer;
 }
 
