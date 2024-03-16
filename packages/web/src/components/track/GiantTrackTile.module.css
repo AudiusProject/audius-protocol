@@ -52,8 +52,8 @@
 }
 
 .gatedContentLabel svg {
-  width: calc(var(--unit) * 4.5);
-  height: calc(var(--unit) * 4.5);
+  width: calc(var(--harmony-unit) * 4.5);
+  height: calc(var(--harmony-unit) * 4.5);
 }
 
 .gatedContentLabel path {

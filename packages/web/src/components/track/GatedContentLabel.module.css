@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: var(--unit);
+  gap: var(--harmony-unit);
   color: var(--harmony-n-400);
 }
 

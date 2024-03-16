@@ -126,7 +126,7 @@
 .coSignLabel {
   position: absolute;
   bottom: -3px;
-  left: calc(var(--unit) * 20.5);
+  left: calc(var(--harmony-unit) * 20.5);
   color: var(--harmony-primary);
   text-transform: uppercase;
 }
@@ -137,7 +137,7 @@
   display: flex;
   justify-content: flex-start;
   gap: var(--harmony-unit-1);
-  line-height: calc(var(--unit) * 3.5);
+  line-height: calc(var(--harmony-unit) * 3.5);
   margin-top: var(--harmony-unit-2);
 }
 
@@ -209,8 +209,8 @@
 }
 
 .favoriteButton {
-  height: calc(var(--unit) * 3.5);
-  width: calc(var(--unit) * 3.5);
+  height: calc(var(--harmony-unit) * 3.5);
+  width: calc(var(--harmony-unit) * 3.5);
 }
 
 .readonly .repostButtonWrapper:hover {

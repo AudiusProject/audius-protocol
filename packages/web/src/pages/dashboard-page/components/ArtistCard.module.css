@@ -50,5 +50,5 @@
 .name {
   display: flex;
   align-items: center;
-  gap: var(--unit);
+  gap: var(--harmony-unit);
 }
