@@ -461,7 +461,8 @@ export function* handleUploads({
     console.debug(
       `${stemIndex === null && kind !== 'stems' ? 'Track' : 'Stem'} ${
         metadata.title
-      } published`
+      } published`,
+      { trackId }
     )
 
     // Mark progress as complete
