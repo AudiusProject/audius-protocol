@@ -174,6 +174,23 @@ export type SolCollectionMap = {
 
 export type GatedTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
 
+export type ResourceContributor = {
+  name: string
+  roles: [string]
+  sequence_number: number
+}
+
+export type RightsController = {
+  name: string
+  roles: [string]
+  rights_share_unknown?: string
+}
+
+export type Copyright = {
+  year: string
+  text: string
+}
+
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
   blocknumber: number
@@ -221,6 +238,14 @@ export type TrackMetadata = {
   is_downloadable: boolean
   is_original_available: boolean
   ddex_app?: Nullable<string>
+  ddex_release_ids?: any | null
+  artists?: [ResourceContributor] | null
+  resource_contributors?: [ResourceContributor] | null
+  indirect_resource_contributors?: [ResourceContributor] | null
+  rights_controller?: RightsController | null
+  copyright_line?: Copyright | null
+  producer_copyright_line?: Copyright | null
+  parental_warning_type?: string | null
 
   // Optional Fields
   is_playlist_upload?: boolean

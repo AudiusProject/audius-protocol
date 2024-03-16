@@ -148,7 +148,6 @@ track_full = ns.clone(
         "isrc": fields.String,
         "license": fields.String,
         "iswc": fields.String,
-        "ddex_release_ids": fields.Raw(allow_null=True),
         "field_visibility": fields.Nested(field_visibility),
         "followee_reposts": fields.List(fields.Nested(repost), required=True),
         "has_current_user_reposted": fields.Boolean(required=True),
@@ -182,6 +181,14 @@ track_full = ns.clone(
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
+        # DDEX fields
+        "ddex_release_ids": fields.Raw(allow_null=True),
+        "artists": fields.Raw(allow_null=True),
+        "resource_contributors": fields.Raw(allow_null=True),
+        "indirect_resource_contributors": fields.Raw(allow_null=True),
+        "copyright_line": fields.Raw(allow_null=True),
+        "producer_copyright_line": fields.Raw(allow_null=True),
+        "parental_warning_type": fields.String,
     },
 )
 

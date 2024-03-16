@@ -79,9 +79,21 @@ const moods = [
   'Other',
 ]
 
-const artistSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+const resourceContributorSchema = new mongoose.Schema({
+  name: String,
   roles: [String],
+  sequence_number: Number,
+})
+
+const rightsControllerSchema = new mongoose.Schema({
+  name: String,
+  roles: [String],
+  rights_share_unknown: String,
+})
+
+const copyrightSchema = new mongoose.Schema({
+  year: String,
+  text: String,
 })
 
 const trackMetadataSchema = new mongoose.Schema({
@@ -96,8 +108,6 @@ const trackMetadataSchema = new mongoose.Schema({
   description: String,
   mood: { type: String, enum: moods },
   tags: String,
-  artists: [artistSchema],
-  copyright: String,
   preview_audio_file_url: String,
   preview_audio_file_url_hash: String,
   preview_audio_file_url_hash_algo: String,
@@ -108,6 +118,13 @@ const trackMetadataSchema = new mongoose.Schema({
   // Required if it's a standalone track. Uses playlist_owner_id and playlist's cover_art_url if it's part of an album
   artist_id: { type: String, required: true },
   artist_name: { type: String, required: true },
+  artists: [resourceContributorSchema],
+  resource_contributors: [resourceContributorSchema],
+  indirect_resource_contributors: [resourceContributorSchema],
+  rights_controller: rightsControllerSchema,
+  copyright_line: copyrightSchema,
+  producer_copyright_line: copyrightSchema,
+  parental_warning_type: String,
   cover_art_url: { type: String, required: true },
   cover_art_url_hash: { type: String, required: true },
   cover_art_url_hash_algo: { type: String, required: true },
@@ -119,6 +136,7 @@ const collectionMetadataSchema = new mongoose.Schema({
   playlist_name: { type: String, required: true },
   playlist_owner_name: { type: String, required: true },
   playlist_owner_id: { type: String, required: true },
+  artists: [resourceContributorSchema],
   genre: { type: String, enum: genres, required: true },
   release_date: { type: Date, required: true },
   ddex_release_ids: mongoose.Schema.Types.Mixed,
@@ -132,6 +150,9 @@ const collectionMetadataSchema = new mongoose.Schema({
   cover_art_url: { type: String, required: true },
   cover_art_url_hash: { type: String, required: true },
   cover_art_url_hash_algo: { type: String, required: true },
+  copyright_line: copyrightSchema,
+  producer_copyright_line: copyrightSchema,
+  parental_warning_type: String,
 })
 
 export type CollectionMetadata = mongoose.InferSchemaType<

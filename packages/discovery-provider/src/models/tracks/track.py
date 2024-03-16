@@ -64,14 +64,12 @@ class Track(Base, RepresentableMixin):
     description = Column(String)
     isrc = Column(String)
     iswc = Column(String)
-    ddex_release_ids = Column(JSONB())
     license = Column(String)
     updated_at = Column(DateTime, nullable=False)
     cover_art_sizes = Column(String)
     download = Column(JSONB())
     is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
-    ddex_app = Column(String)
     field_visibility = Column(JSONB(True))
     route_id = Column(String)
     stem_of = Column(JSONB(True))
@@ -94,6 +92,17 @@ class Track(Base, RepresentableMixin):
     )
     ai_attribution_user_id = Column(Integer, nullable=True)
     placement_hosts = Column(String, nullable=True)
+
+    # From DDEX
+    ddex_release_ids = Column(JSONB())
+    ddex_app = Column(String)
+    artists = Column(ARRAY(JSONB()))
+    resource_contributors = Column(ARRAY(JSONB()))
+    indirect_resource_contributors = Column(ARRAY(JSONB()))
+    rights_controller = Column(JSONB())
+    copyright_line = Column(JSONB())
+    producer_copyright_line = Column(JSONB())
+    parental_warning_type = Column(String)
 
     block1 = relationship(  # type: ignore
         "Block", primaryjoin="Track.blocknumber == Block.number"

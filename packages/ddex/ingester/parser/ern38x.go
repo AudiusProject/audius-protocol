@@ -21,7 +21,7 @@ type SoundRecording struct {
 	Title                        string
 	LanguageOfPerformance        string
 	Duration                     string
-	Artists                      []common.Artist
+	Artists                      []common.ResourceContributor
 	ResourceContributors         []common.ResourceContributor
 	IndirectResourceContributors []common.ResourceContributor
 	LabelName                    string
@@ -230,7 +230,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	parentalWarning := safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))
 
 	// Parse DisplayArtist nodes
-	var displayArtists []common.Artist
+	var displayArtists []common.ResourceContributor
 	for _, artistNode := range xmlquery.Find(releaseDetails, "DisplayArtist") {
 		name := safeInnerText(artistNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(artistNode.SelectAttr("SequenceNumber"))
@@ -238,7 +238,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
 			return
 		}
-		artist := common.Artist{
+		artist := common.ResourceContributor{
 			Name:           name,
 			SequenceNumber: seqNo,
 		}
@@ -573,7 +573,7 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
 			return
 		}
-		artist := common.Artist{
+		artist := common.ResourceContributor{
 			Name:           name,
 			SequenceNumber: seqNo,
 		}
