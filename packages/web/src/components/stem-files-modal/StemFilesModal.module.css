@@ -20,7 +20,7 @@
 }
 
 .modalTitle {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-heavy);
   text-transform: uppercase;
@@ -30,7 +30,7 @@
 }
 
 .modalSubtitle {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
@@ -38,7 +38,7 @@
 }
 
 .downloadSettings {
-  border-bottom: 1px solid var(--neutral-light-6);
+  border-bottom: 1px solid var(--harmony-n-200);
   margin: 0px 16px;
   padding: 24px 91px 0px;
   display: flex;
@@ -67,7 +67,7 @@
 .dropzoneTitle {
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-heavy);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .stemRowContainer {
@@ -101,7 +101,7 @@
 }
 
 .dropzoneIcon g path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .deleteButton {
@@ -128,10 +128,10 @@
 }
 
 .dropzoneDisabled {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 .dropzoneDisabled path {
-  fill: var(--neutral-light-4) !important;
+  fill: var(--harmony-n-400) !important;
 }
 
 .stemPreview {

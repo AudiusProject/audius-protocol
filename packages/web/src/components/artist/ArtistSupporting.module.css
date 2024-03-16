@@ -12,7 +12,7 @@
 .supportingContainer {
   margin-bottom: 8px;
   padding: 8px;
-  border: 1px solid var(--neutral-light-7);
+  border: 1px solid var(--harmony-n-150);
   border-radius: 4px;
 }
 .supportingContainer:hover {
@@ -40,7 +40,7 @@
 .line {
   width: 100%;
   height: 1px;
-  background: var(--neutral-light-7);
+  background: var(--harmony-n-150);
   margin: 6px 0 8px;
 }
 

@@ -12,7 +12,7 @@
   width: 688px;
   padding: 19px 0px 13px;
   margin: 0px 16px;
-  border-bottom: 1px solid var(--neutral-light-7);
+  border-bottom: 1px solid var(--harmony-n-150);
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -33,7 +33,7 @@
 }
 
 .header .iconRemove path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .header .iconRemove:hover {

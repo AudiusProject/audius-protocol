@@ -2,7 +2,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--harmony-unit-1);
-  background-color: var(--neutral-light-4);
+  background-color: var(--harmony-n-400);
   border-radius: var(--harmony-unit-20);
   display: flex;
   height: var(--harmony-unit-4);

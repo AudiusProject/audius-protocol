@@ -32,7 +32,7 @@
   box-sizing: border-box;
   height: 26px;
   width: 26px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
 }
 
 .image {

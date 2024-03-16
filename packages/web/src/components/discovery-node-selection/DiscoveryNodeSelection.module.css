@@ -11,7 +11,7 @@
   flex-direction: column;
   padding: 8px;
   text-align: center;
-  border: 1px solid var(--neutral-light-6);
+  border: 1px solid var(--harmony-n-200);
 }
 
 .current {
@@ -37,7 +37,7 @@
   width: 80%;
   padding: 4px;
   margin-bottom: 10px;
-  border: 2px solid var(--neutral-light-7);
+  border: 2px solid var(--harmony-n-150);
 }
 
 .success {

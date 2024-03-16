@@ -14,7 +14,7 @@
 
 .isCompact {
   border-radius: 8px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   justify-content: center;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .tierNumber {
-  color: var(--neutral-light-6);
+  color: var(--harmony-n-200);
   font-weight: 700;
   font-size: font-s;
   line-height: 14px;
@@ -69,7 +69,7 @@
 }
 
 .divider {
-  background-color: var(--neutral-light-6);
+  background-color: var(--harmony-n-200);
   width: 1px;
   height: 32px;
   margin: 0px 6px;

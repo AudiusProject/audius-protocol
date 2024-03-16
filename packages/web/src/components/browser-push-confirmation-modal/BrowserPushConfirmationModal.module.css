@@ -5,7 +5,7 @@
 }
 
 .title {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-l);
   letter-spacing: 0.5px;
   line-height: 28px;
@@ -48,5 +48,5 @@
 
 .headerContainerClassName {
   padding: 14px 0px 6px !important;
-  border-bottom-color: var(--neutral-light-8);
+  border-bottom-color: var(--harmony-n-100);
 }

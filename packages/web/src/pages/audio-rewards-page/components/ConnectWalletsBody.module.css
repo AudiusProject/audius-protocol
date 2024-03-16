@@ -39,14 +39,14 @@
 .connectBtn.disabled:hover,
 .connectBtn.disabled:active {
   transform: scale3d(1, 1, 1) !important;
-  background-color: var(--neutral-light-7);
+  background-color: var(--harmony-n-150);
 }
 
 .limit {
   font-weight: var(--harmony-font-medium);
   font-size: var(--harmony-font-m);
   text-align: center;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-bottom: 32px;
 }
 

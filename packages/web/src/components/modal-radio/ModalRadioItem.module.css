@@ -5,7 +5,7 @@
 
 .root {
   padding: var(--harmony-unit-6) 0;
-  border-top: 1px solid var(--neutral-light-7);
+  border-top: 1px solid var(--harmony-n-150);
   cursor: pointer;
 }
 

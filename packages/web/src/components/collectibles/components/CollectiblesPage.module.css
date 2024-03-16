@@ -6,10 +6,10 @@
   padding: 24px 0;
   margin-top: 4px;
   max-width: 1080px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 8px;
   box-shadow: 0 16px 20px -5px var(--table-shadow);
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
   text-align: left;
 }
 
@@ -53,7 +53,7 @@
 
 .noVisibleCollectible {
   font-weight: var(--harmony-font-bold);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-m);
   margin: 32px 0 16px;
   text-align: center;
@@ -69,7 +69,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  border: 2px solid var(--neutral-light-8);
+  border: 2px solid var(--harmony-n-100);
   padding: 8px;
   background: var(--harmony-white);
   color: var(--harmony-neutral);
@@ -82,7 +82,7 @@
   justify-content: center;
   border-radius: 8px;
   box-sizing: border-box;
-  border: 4px solid var(--neutral-light-10);
+  border: 4px solid var(--harmony-n-25);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -188,7 +188,7 @@
 
 .detailsDescription {
   margin: var(--harmony-unit-6) 0;
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   font-weight: var(--harmony-font-medium);
   line-height: 18px;
   overflow-wrap: break-word;
@@ -224,18 +224,18 @@
   width: 32px;
   height: 32px;
   padding: 6px;
-  border: 2px solid var(--neutral-light-5);
+  border: 2px solid var(--harmony-n-300);
   border-radius: 100%;
 }
 
 .volumeIcon path {
-  fill: var(--neutral-light-5);
+  fill: var(--harmony-n-300);
 }
 
 .modalHeader {
   margin: 0 var(--harmony-unit-6);
   padding: var(--harmony-unit-6);
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .modalTitle {
@@ -247,7 +247,7 @@
   width: 100%;
   max-width: fit-content;
   border-radius: 12px;
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   overflow-y: scroll;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -286,12 +286,12 @@
 }
 
 .dateTitle {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .date {
   margin: 0 8px;
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 
 .nftModal {
@@ -380,9 +380,9 @@
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-right: 1px solid var(--neutral-light-7);
-  border-bottom: 1px solid var(--neutral-light-7);
-  border-left: 1px solid var(--neutral-light-7);
+  border-right: 1px solid var(--harmony-n-150);
+  border-bottom: 1px solid var(--harmony-n-150);
+  border-left: 1px solid var(--harmony-n-150);
   font-size: var(--harmony-font-xs);
   animation: fadeInVisible 0.5s;
 }
@@ -400,7 +400,7 @@
 .editRow:first-child {
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
-  border-top: 1px solid var(--neutral-light-7);
+  border-top: 1px solid var(--harmony-n-150);
 }
 
 .editRow:last-child {
@@ -469,7 +469,7 @@
 }
 
 .verticalDivider {
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
   width: 1px;
   height: 20px;
   margin: 0 8px;
@@ -477,7 +477,7 @@
 }
 
 .drag path {
-  fill: var(--neutral-light-6);
+  fill: var(--harmony-n-200);
   transition: all 0.07s ease-in-out;
 }
 
@@ -524,12 +524,12 @@
   text-align: center;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .embedModalHeader {
   padding: 1.5rem 0;
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .embedContainer {
@@ -542,7 +542,7 @@
 
 .embedFrame {
   width: 100%;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 0.75rem;
 }
 
@@ -580,7 +580,7 @@
 .embedCopyContainer {
   min-height: 120px;
   min-width: 400px;
-  border: 1px solid var(--neutral-light-6);
+  border: 1px solid var(--harmony-n-200);
   background-color: var(--harmony-white);
   padding: 1.25rem 1rem;
   color: var(--harmony-neutral);
@@ -598,7 +598,7 @@
   font-weight: normal;
   font-size: 12px;
   line-height: 15px;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .spinnerContainer {
@@ -617,7 +617,7 @@
 }
 
 .chainIcon {
-  border: 1px solid var(--neutral-light-7);
+  border: 1px solid var(--harmony-n-150);
   border-radius: 50%;
   padding: 2px;
   margin-left: 8px;

@@ -1,5 +1,5 @@
 .header {
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .lineupContainer {
@@ -60,7 +60,7 @@
 }
 
 .noResults span {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-l);
 }
 

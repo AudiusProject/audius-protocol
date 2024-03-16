@@ -6,13 +6,13 @@
   cursor: pointer;
 }
 .user:hover {
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
 }
 .user:active {
-  background: var(--neutral-light-9);
+  background: var(--harmony-n-50);
 }
 .user.notLastUser {
-  border-bottom: 1px solid var(--neutral-light-7);
+  border-bottom: 1px solid var(--harmony-n-150);
 }
 
 .content {
@@ -41,7 +41,7 @@
   max-width: 24px;
 }
 .loadingAnimation g path {
-  stroke: var(--neutral-light-3) !important;
+  stroke: var(--harmony-n-500) !important;
 }
 
 .spacer {

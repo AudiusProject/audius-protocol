@@ -69,9 +69,9 @@ const theme = {
   '--search-bar-border': 'rgba(143,149,152,0.1)',
   '--search-bar-shadow': 'rgba(133,129,153,0.15)',
 
-  '--nav-column-group-header': 'var(--neutral-light-4)',
-  '--nav-column-link': 'var(--neutral-dark-2)',
-  '--nav-column-link-hover': 'var(--neutral-dark-3)',
+  '--nav-column-group-header': 'var(--harmony-n-400)',
+  '--nav-column-link': 'var(--harmony-n-950)',
+  '--nav-column-link-hover': 'var(--harmony-n-950)',
 
   '--slider-handle': 'var(--harmony-white)',
 
@@ -80,12 +80,12 @@ const theme = {
   '--mask': 'rgba(243, 240, 247, .5)',
   '--skeleton-gradient':
     'linear-gradient(90deg, #F7F7F9 25%, #F2F2F4 37%, #F7F7F9 63%)',
-  '--skeleton': 'var(--neutral-light-9)',
-  '--skeleton-highlight': 'var(--neutral-light-8)',
+  '--skeleton': 'var(--harmony-n-50)',
+  '--skeleton-highlight': 'var(--harmony-n-100)',
   '--profile-completion-shadow-1': 'rgba(126,27,204,0.05)',
   '--profile-completion-shadow-2': 'rgba(133,129,153,0.2)',
 
-  '--default-profile-picture-background': 'var(--neutral-light-4)',
+  '--default-profile-picture-background': 'var(--harmony-n-400)',
 
   '--notification-border': 'rgba(133,129,153,0.2)',
   '--notification-background': '#FFFFFF',

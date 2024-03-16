@@ -5,14 +5,14 @@
   gap: var(--harmony-unit-2);
   padding: var(--harmony-unit-4) var(--harmony-unit-6);
   background-color: var(--harmony-white);
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 
   cursor: pointer;
   position: relative;
 }
 
 .root:hover {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .root.active::before {

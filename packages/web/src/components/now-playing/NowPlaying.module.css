@@ -28,7 +28,7 @@
   position: relative;
   text-align: center;
 
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-heavy);
   line-height: 23px;
@@ -62,7 +62,7 @@
 }
 
 .iconCaret path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .artwork {
@@ -79,7 +79,7 @@
   border: var(--border-width) solid var(--harmony-white);
   border-radius: 8px;
   box-shadow: 0 3px 20px -2px rgba(105, 73, 78, 0.5);
-  background-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-100);
   cursor: pointer;
   overflow: hidden;
 }
@@ -125,7 +125,7 @@
 }
 
 .artist {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-medium);
   line-height: 23px;

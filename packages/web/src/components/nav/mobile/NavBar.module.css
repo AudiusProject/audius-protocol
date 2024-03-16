@@ -6,7 +6,7 @@
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0px
     env(safe-area-inset-left, 0px);
   background-color: var(--harmony-white);
-  border-bottom: 1px solid var(--neutral-light-7);
+  border-bottom: 1px solid var(--harmony-n-150);
   width: 100%;
   align-items: stretch;
   justify-content: center;
@@ -148,7 +148,7 @@
 }
 
 .centerText {
-  color: var(--neutral-light-5);
+  color: var(--harmony-n-300);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-heavy);
   text-align: center;

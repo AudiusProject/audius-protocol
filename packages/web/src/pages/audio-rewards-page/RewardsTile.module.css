@@ -49,7 +49,7 @@
   padding: 0px 20px 32px;
   flex: 0 0 calc(50% - 16px);
   min-width: 340px;
-  border: 2px solid var(--neutral-light-7);
+  border: 2px solid var(--harmony-n-150);
   border-radius: 8px;
   margin: 8px;
   cursor: pointer;
@@ -91,7 +91,7 @@
 }
 
 .disbursed {
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
 }
 
 .pillContainer {
@@ -111,7 +111,7 @@
   color: var(--harmony-secondary);
   border-radius: 12px;
   border-width: 1px;
-  border-color: var(--neutral-light-9);
+  border-color: var(--harmony-n-50);
   border-style: solid;
   background-color: var(--harmony-background);
 }
@@ -166,7 +166,7 @@
 }
 
 .rewardProgressLabel {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: var(--harmony-font-heavy);
   line-height: 20px;
   font-size: var(--harmony-font-m);
@@ -187,5 +187,5 @@
   margin-right: 10px;
 }
 .iconCheck path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }

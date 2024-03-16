@@ -9,7 +9,7 @@
   align-items: flex-end;
   width: 400px;
   padding: var(--harmony-unit-4);
-  border-right: 1px solid var(--neutral-light-8);
+  border-right: 1px solid var(--harmony-n-100);
 }
 
 .left .options {

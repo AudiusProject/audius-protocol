@@ -23,7 +23,7 @@
   height: 100%;
   margin-top: -1px;
   background-color: var(--harmony-white);
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   cursor: pointer;
 }
 
@@ -62,13 +62,13 @@
 }
 
 .show.actionsSection .actionButton:hover {
-  background: var(--neutral-light-9);
-  border-color: var(--neutral-light-7);
+  background: var(--harmony-n-50);
+  border-color: var(--harmony-n-150);
 }
 .show.actionsSection .actionButton:active {
-  box-shadow: inset 1px 1px 0 0 var(--neutral-light-7);
-  border-color: var(--neutral-light-7);
-  background: var(--neutral-light-8);
+  box-shadow: inset 1px 1px 0 0 var(--harmony-n-150);
+  border-color: var(--harmony-n-150);
+  background: var(--harmony-n-100);
 }
 .show.actionsSection .actionButton:active path {
   fill: var(--harmony-neutral);
@@ -122,7 +122,7 @@
 .iconShare path,
 .iconKebabHorizontal path,
 .iconListens path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 .iconRepost.reposted path {
   fill: var(--harmony-primary);
@@ -134,20 +134,20 @@
 .disabled .actionButton:hover,
 .disabled:hover {
   background-color: var(--harmony-white) !important;
-  border-color: var(--neutral-light-8) !important;
+  border-color: var(--harmony-n-100) !important;
   box-shadow: none !important;
 }
 .show .disabled .actionButton:active,
 .disabled:active {
   background-color: var(--harmony-white);
-  border-color: var(--neutral-light-8);
+  border-color: var(--harmony-n-100);
   box-shadow: none;
 }
 
 .disabled .iconRepost path,
 .disabled .iconKebabHorizontal path,
 .disabled .iconShare path {
-  fill: var(--neutral-light-8) !important;
+  fill: var(--harmony-n-100) !important;
 }
 
 .disabled .actionButton:hover svg,

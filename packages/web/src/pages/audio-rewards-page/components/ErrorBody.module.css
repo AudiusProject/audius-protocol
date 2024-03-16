@@ -15,8 +15,8 @@
   margin: 0px auto 24px;
   padding: 24px 20px;
   color: var(--harmony-neutral);
-  background: var(--neutral-light-9);
-  border: 1px solid var(--neutral-light-8);
+  background: var(--harmony-n-50);
+  border: 1px solid var(--harmony-n-100);
   box-sizing: border-box;
   border-radius: 8px;
 }

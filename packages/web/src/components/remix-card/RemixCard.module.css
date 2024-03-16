@@ -28,7 +28,7 @@
   width: 121px;
   height: 121px;
   box-sizing: border-box;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -42,7 +42,7 @@
   box-sizing: border-box;
   height: 36px;
   width: 36px;
-  border: 2px solid var(--neutral-light-8);
+  border: 2px solid var(--harmony-n-100);
   border-radius: 50%;
 }
 

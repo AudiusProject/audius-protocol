@@ -35,18 +35,18 @@
   text-align: center;
   text-transform: uppercase;
 
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 
 .modalTitle :global(*) {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
 .caret {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   height: 14px;
   width: 14px;
 }

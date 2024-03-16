@@ -5,9 +5,9 @@
   padding: var(--harmony-unit-6);
   margin: var(--harmony-unit-6);
 
-  border: 1px solid var(--neutral-light-7);
+  border: 1px solid var(--harmony-n-150);
   border-radius: var(--harmony-unit-2);
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
 }
 
 .image {

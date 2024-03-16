@@ -3,7 +3,7 @@
   position: relative;
   min-height: 152px;
   flex: 1 1 352px;
-  border: var(--border-width) solid var(--neutral-light-8);
+  border: var(--border-width) solid var(--harmony-n-100);
   background-color: var(--harmony-white);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
@@ -86,7 +86,7 @@
 }
 
 .topRightIcon svg path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .statItem {
@@ -133,7 +133,7 @@
 
 .coSignText {
   align-items: center;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   display: flex;
   justify-content: flex-start;
   gap: var(--harmony-unit-1);
@@ -149,7 +149,7 @@
 
 .statsRow {
   align-items: center;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   display: flex;
   gap: var(--harmony-unit-4);
   height: var(--harmony-unit-4);
@@ -162,7 +162,7 @@
   align-items: center;
   flex: 0 0 auto;
   gap: var(--harmony-unit-1);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .artistPickIcon {
@@ -170,7 +170,7 @@
   width: var(--harmony-unit-4);
 }
 .artistPickIcon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .stats {
@@ -187,7 +187,7 @@
 }
 
 .stats path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .albumArt {

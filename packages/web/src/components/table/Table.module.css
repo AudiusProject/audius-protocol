@@ -28,7 +28,7 @@
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .tableHeadRow {
@@ -68,7 +68,7 @@
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  background-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-100);
 }
 
 .textCell {
@@ -92,7 +92,7 @@
 }
 
 .sortCaret path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .pageButtonContainer {
@@ -113,7 +113,7 @@
   border-radius: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   cursor: pointer;
 }
 
@@ -135,7 +135,7 @@
 }
 
 .pageCaret path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .pageCaret:not(.disabled):hover path {
@@ -147,7 +147,7 @@
 }
 
 .pageCaret.disabled path {
-  fill: var(--neutral-light-7);
+  fill: var(--harmony-n-150);
 }
 
 .showMoreContainer {
@@ -156,8 +156,8 @@
   justify-content: center;
   gap: 4px;
   padding: 15px 0;
-  background-color: var(--neutral-light-10);
-  border-top: 1px solid var(--neutral-light-8);
+  background-color: var(--harmony-n-25);
+  border-top: 1px solid var(--harmony-n-100);
   cursor: pointer;
 }
 
@@ -172,7 +172,7 @@
 .showMoreText {
   font-size: 14px;
   font-weight: 700;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   transition: all 0.07s ease-in-out;
 }
 
@@ -183,13 +183,13 @@
 
 .showMoreCaret path {
   transition: all 0.07s ease-in-out;
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .tableBody {
   display: block;
   overflow: hidden;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow {
@@ -215,21 +215,20 @@
 .tableRow:hover:not(.skeletonRow),
 .tableRow:hover > .tableCell {
   z-index: 3;
-  box-shadow: 0 1px 0 0 var(--neutral-light-8),
-    0 -1px 0 0 var(--neutral-light-8);
+  box-shadow: 0 1px 0 0 var(--harmony-n-100), 0 -1px 0 0 var(--harmony-n-100);
   transition: all 0.07s ease-in-out;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow.disabled {
   cursor: default;
-  color: var(--neutral-light-4);
-  background-color: var(--neutral-light-9);
+  color: var(--harmony-n-400);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow.disabled:hover {
   box-shadow: none;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .tableCell {

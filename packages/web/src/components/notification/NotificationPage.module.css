@@ -26,6 +26,6 @@
 }
 
 .spinnerContainer g path {
-  stroke: var(--neutral-light-5) !important;
+  stroke: var(--harmony-n-300) !important;
   stroke-width: 3px;
 }

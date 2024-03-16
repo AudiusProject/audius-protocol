@@ -8,7 +8,7 @@
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-bold);
   text-transform: uppercase;
-  color: var(--neutral-light-5);
+  color: var(--harmony-n-300);
   line-height: 140%;
 }
 
@@ -31,5 +31,5 @@
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-bold);
   text-transform: uppercase;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }

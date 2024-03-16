@@ -67,7 +67,7 @@
 }
 
 .hoverBoundingBox:hover .iconUpload path {
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }
 
 .hoverBoundingBox:active .iconUpload {

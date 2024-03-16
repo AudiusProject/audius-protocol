@@ -1,7 +1,7 @@
 .root {
   overflow-y: auto;
-  background-color: var(--neutral-light-9);
-  border-right: 1px solid var(--neutral-light-7);
+  background-color: var(--harmony-n-50);
+  border-right: 1px solid var(--harmony-n-150);
 }
 
 .empty {

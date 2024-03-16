@@ -3,8 +3,8 @@
   align-items: flex-start;
   gap: var(--harmony-unit-4);
   padding: var(--harmony-unit-3) var(--harmony-unit-4);
-  background: var(--neutral-light-9);
-  border: 1px solid var(--neutral-light-7);
+  background: var(--harmony-n-50);
+  border: 1px solid var(--harmony-n-150);
   border-radius: var(--harmony-unit-2);
 }
 

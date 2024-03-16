@@ -48,7 +48,7 @@
 .moreInfo {
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-s);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .iconCaretRight {

@@ -66,8 +66,8 @@
   border: none;
 
   border-radius: 4px;
-  background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  background-color: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
 }
 
 .query > input::placeholder {
@@ -97,7 +97,7 @@
 .suggestionHeader {
   text-transform: uppercase;
   font-weight: var(--harmony-font-bold);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-bottom: var(--harmony-unit-2);
 }
 
@@ -122,7 +122,7 @@
 .credit {
   margin-top: var(--harmony-unit-2);
   font-size: var(--harmony-font-xs);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   line-height: 15px;
 }
 
@@ -145,7 +145,7 @@
   border-radius: 2px;
   transition: 0.07s ease-in-out;
   opacity: 0;
-  border: 1px solid var(--neutral-light-9);
+  border: 1px solid var(--harmony-n-50);
 }
 .fadeIn {
   animation: fadeIn 0.5s forwards;
@@ -162,7 +162,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: var(--harmony-unit-2);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-bold);
 }

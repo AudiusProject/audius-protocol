@@ -19,7 +19,7 @@
   height: 72px;
   width: 72px;
   flex: 0 0 72px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 50%;
 
   background-size: cover;
@@ -79,7 +79,7 @@
   height: 16px;
 }
 .text .icon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .followersContainer,
@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   font-weight: var(--harmony-font-medium);
-  color: var(--neutral-light-4) !important;
+  color: var(--harmony-n-400) !important;
 }
 .followersContainer .followers {
   width: 136px !important;
@@ -105,14 +105,14 @@
 }
 .followersContainer .followsYou {
   box-shadow: none;
-  border: 1px solid var(--neutral-light-4);
-  color: var(--neutral-light-4);
+  border: 1px solid var(--harmony-n-400);
+  color: var(--harmony-n-400);
 }
 
 .followersContainer .followsYou.darkMode {
   box-shadow: none;
-  border: 1px solid var(--neutral-light-4);
-  color: var(--neutral-light-4);
+  border: 1px solid var(--harmony-n-400);
+  color: var(--harmony-n-400);
   background: none;
 }
 
@@ -140,7 +140,7 @@
   fill: var(--harmony-secondary);
 }
 .tipContainer .supporter {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 .tipContainer .amount {
   font-size: var(--harmony-font-s);

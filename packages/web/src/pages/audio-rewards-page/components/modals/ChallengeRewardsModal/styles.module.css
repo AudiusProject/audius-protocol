@@ -14,7 +14,7 @@
   -webkit-text-fill-color: transparent;
 }
 .container h3 {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: var(--harmony-font-heavy);
   line-height: 20px;
   font-size: var(--harmony-font-m);
@@ -22,7 +22,7 @@
   margin-bottom: 8px;
 }
 .container h4 {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: var(--harmony-font-heavy);
   line-height: 16px;
   font-size: var(--harmony-font-xs);
@@ -130,13 +130,13 @@
   margin-bottom: 0px;
 }
 .progressStatus.incomplete {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 .progressStatus.incomplete h3 {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 .progressStatus.inProgress {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 .progressStatus.inProgress h3 {
   color: var(--harmony-s-200);
@@ -272,7 +272,7 @@
   height: 16px;
   width: 16px;
   border-radius: 8px;
-  border: 1px solid var(--neutral-light-4);
+  border: 1px solid var(--harmony-n-400);
 }
 
 .completeText {
@@ -315,7 +315,7 @@
   margin-top: 16px;
   text-align: center;
   text-transform: uppercase;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: var(--harmony-font-heavy);
   font-size: var(--harmony-font-s);
 }

@@ -25,7 +25,7 @@
   height: 34px;
   width: 34px;
   box-sizing: border-box;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 3.33px;
   overflow: hidden;
   margin-right: 8px;
@@ -58,7 +58,7 @@
 }
 
 .remixDisabled {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .subtext {
@@ -69,6 +69,6 @@
 
 .divider {
   height: 1px;
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
   margin: var(--harmony-unit-6) 0;
 }

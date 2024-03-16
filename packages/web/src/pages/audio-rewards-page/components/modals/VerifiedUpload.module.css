@@ -26,7 +26,7 @@
 }
 .mobile .subtitle {
   font-size: 14px;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .verifyButtons {
@@ -48,7 +48,7 @@
 }
 
 .divider {
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
   height: 1px;
   width: 448px;
   margin: 32px 0px;
@@ -73,7 +73,7 @@
   display: flex;
   align-items: center;
   font-weight: 700;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .ctaContainer:nth-child(2) {
@@ -91,7 +91,7 @@
 }
 
 .ctaContainer path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .ctaRight {

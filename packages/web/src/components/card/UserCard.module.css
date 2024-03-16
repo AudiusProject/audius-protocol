@@ -2,7 +2,7 @@
   height: 192px;
   width: 168px;
   border-radius: 8px;
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
   box-shadow: 0 0 3px 0px rgba(106, 103, 122, 0.2),
     0 2px 8px -2px rgba(133, 129, 153, 0.1);
   transition: all 0.25s ease;
@@ -60,7 +60,7 @@
 .coverArt {
   height: 100%;
   width: 100%;
-  border: 2px solid var(--neutral-light-8);
+  border: 2px solid var(--harmony-n-100);
   border-radius: 50%;
   background-size: cover;
   background-position: center;

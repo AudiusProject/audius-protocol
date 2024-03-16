@@ -1,6 +1,6 @@
 .collectionContent {
   background-color: var(--harmony-white);
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   overflow: hidden;
   margin: 14px 12px 0px;
@@ -10,7 +10,7 @@
 }
 
 .divider {
-  border-bottom: 1px solid var(--neutral-light-7);
+  border-bottom: 1px solid var(--harmony-n-150);
   margin: 0px 24px;
 }
 

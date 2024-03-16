@@ -43,7 +43,7 @@
 }
 
 .type {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-s);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 3.5px;
@@ -68,7 +68,7 @@
 }
 
 .artistWrapper {
-  color: var(--neutral-light-5);
+  color: var(--harmony-n-300);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-bold);
   display: flex;
@@ -106,7 +106,7 @@
   text-align: center;
   text-transform: uppercase;
 
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-medium);
   font-weight: var(--harmony-font-bold);
   letter-spacing: 1px;

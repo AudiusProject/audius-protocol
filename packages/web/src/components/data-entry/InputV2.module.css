@@ -9,9 +9,9 @@
   align-items: center;
   gap: var(--harmony-unit-2);
   padding: 0 var(--harmony-unit-4);
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: var(--harmony-unit-1);
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   transition: border ease-in-out 0.1s;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .root:hover {
-  border-color: var(--neutral-light-6);
+  border-color: var(--harmony-n-200);
 }
 
 .focused {
@@ -57,8 +57,8 @@
 }
 
 .disabled {
-  background-color: var(--neutral-light-9);
-  border-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-50);
+  border-color: var(--harmony-n-100);
 }
 
 .textInput {
@@ -73,7 +73,7 @@
 
 .textInput::placeholder,
 .label {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: var(--harmony-font-medium);
 }
 
@@ -128,7 +128,7 @@
   position: relative;
   padding-top: var(--harmony-unit-2);
   align-self: flex-start;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-bold);
 }

@@ -20,12 +20,12 @@
   height: 0;
   margin: var(--harmony-unit-8) 0;
   scroll-margin: var(--harmony-unit-8) 0;
-  border-bottom: 1px solid var(--neutral-light-5);
+  border-bottom: 1px solid var(--harmony-n-300);
 }
 
 .separator .tag {
   padding: 3.5px 8px;
-  background: var(--neutral-light-5);
+  background: var(--harmony-n-300);
   border-radius: 2px;
 
   font-size: var(--harmony-font-xs);

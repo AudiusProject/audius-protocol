@@ -42,7 +42,7 @@
 
 /** Disabled **/
 .button:disabled {
-  background: var(--neutral-light-6);
+  background: var(--harmony-n-200);
 }
 .button:disabled .textClassName {
   color: var(--harmony-static-white);

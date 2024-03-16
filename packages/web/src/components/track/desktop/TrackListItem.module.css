@@ -23,8 +23,8 @@
 
 .playlistTrack.deleted:hover,
 .playlistTrack.deleted {
-  background-color: var(--neutral-light-9);
-  color: var(--neutral-light-4);
+  background-color: var(--harmony-n-50);
+  color: var(--harmony-n-400);
 }
 
 .large.playlistTrack,
@@ -34,7 +34,7 @@
 }
 
 .playlistTrack:not(.disabled):hover {
-  background: var(--neutral-light-9);
+  background: var(--harmony-n-50);
 }
 
 .playlistTrack:not(.disabled):hover .more {
@@ -79,7 +79,7 @@
 }
 
 .trackNumber {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   flex: 0 0 21px;
   text-align: right;
   margin-right: 11px;
@@ -114,14 +114,14 @@
 
 .artistName {
   display: flex;
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
 }
 
 .disabled .artistName :global(.ant-popover-open):hover {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   text-decoration: none;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .duration {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   flex: 0 1 auto;
 }
 

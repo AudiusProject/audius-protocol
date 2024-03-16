@@ -52,7 +52,7 @@
 }
 
 .tierNumberText {
-  color: var(--neutral-light-6);
+  color: var(--harmony-n-200);
   font-weight: 700;
   font-size: 16px;
   line-height: 17.6px;
@@ -66,7 +66,7 @@
 .divider {
   height: 1px;
   width: 80px;
-  background-color: var(--neutral-light-6);
+  background-color: var(--harmony-n-200);
   margin: 24px 0px;
 }
 
@@ -105,8 +105,8 @@
   min-height: 547px;
   padding: 40px 18px 14px;
   border-radius: 16px;
-  border: 2px solid var(--neutral-light-7);
-  background-color: var(--neutral-light-10);
+  border: 2px solid var(--harmony-n-150);
+  background-color: var(--harmony-n-25);
 }
 
 .tierContainer.compact {
@@ -139,7 +139,7 @@
 }
 
 .unlocks {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: 900;
   font-size: 16px;
   margin-bottom: 16px;

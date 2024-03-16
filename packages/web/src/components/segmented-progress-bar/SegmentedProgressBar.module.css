@@ -2,13 +2,13 @@
   background-color: var(--harmony-white);
 
   border-radius: 12px;
-  border: 4px solid var(--neutral-light-2);
+  border: 4px solid var(--harmony-n-600);
   height: 52px;
 }
 
 .containerCompact {
   border-radius: 8px;
-  border: 2px solid var(--neutral-light-2);
+  border: 2px solid var(--harmony-n-600);
   width: 152px;
   height: 32px;
 }

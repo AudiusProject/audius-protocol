@@ -19,7 +19,7 @@
 }
 
 .iconPlus circle {
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }
 
 .iconUpload {
@@ -27,11 +27,11 @@
 }
 
 .iconUpload path {
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }
 
 .text {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 
 /* card */

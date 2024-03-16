@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   gap: var(--harmony-unit-1);
-  background: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  background: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
   padding: 2px;
   padding-right: var(--harmony-unit-2);
   border-radius: var(--harmony-unit-12);

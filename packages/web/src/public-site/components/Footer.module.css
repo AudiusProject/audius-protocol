@@ -67,7 +67,7 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .siteLink {
@@ -145,7 +145,7 @@
 }
 
 .bottomLink {
-  color: var(--neutral-light-4) !important;
+  color: var(--harmony-n-400) !important;
   font-size: var(--harmony-font-s);
 }
 
@@ -154,7 +154,7 @@
 }
 
 .bottomLink:hover {
-  text-decoration: underline var(--neutral-light-4) !important;
+  text-decoration: underline var(--harmony-n-400) !important;
 }
 
 .link {

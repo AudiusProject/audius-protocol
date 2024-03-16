@@ -137,8 +137,8 @@
 }
 
 .menuItemContainer:hover {
-  background: var(--neutral-light-9);
-  border: 1px solid var(--neutral-light-7);
+  background: var(--harmony-n-50);
+  border: 1px solid var(--harmony-n-150);
 }
 
 .menuItemContent {
@@ -168,7 +168,7 @@
 
 .popup {
   border-radius: 12px !important;
-  border: 1px solid var(--neutral-light-7) !important;
+  border: 1px solid var(--harmony-n-150) !important;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04) !important;
   padding: 0 !important;
@@ -235,7 +235,7 @@
 }
 
 .invertColors .signUp {
-  border: 1px solid var(--neutral-light-7);
+  border: 1px solid var(--harmony-n-150);
 }
 
 .invertColors .signUp:hover {

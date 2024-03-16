@@ -3,7 +3,7 @@
 }
 
 .header {
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
   flex-wrap: wrap;
   height: 76px;
 }
@@ -64,7 +64,7 @@
   margin: 12px;
   width: calc(100% - 24px);
   padding: 11px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   background-color: var(--harmony-white);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
@@ -78,7 +78,7 @@
   display: inline-flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 4px;
   background-color: var(--notification-background-active);
 }
@@ -106,12 +106,12 @@
 }
 
 .iconFilter path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .trackListContainer {
   margin: 16px 12px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   overflow: hidden;
   border-radius: 6px;
   background-color: var(--harmony-white);
@@ -129,7 +129,7 @@
 .emptyTab {
   margin: 126px 11px 8px;
   padding: 34px 24px 32px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   background-color: var(--harmony-white);
   box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.1), 0 1px 0 0 #e3e3e3,

@@ -25,12 +25,12 @@
 .line {
   height: 2px;
   flex-grow: 1;
-  background-color: var(--neutral-light-7);
+  background-color: var(--harmony-n-150);
 }
 
 .box {
   border-radius: 4px;
-  background-color: var(--neutral-light-6);
+  background-color: var(--harmony-n-200);
   display: flex;
   align-items: center;
   height: 16px;

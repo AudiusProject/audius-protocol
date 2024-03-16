@@ -7,7 +7,7 @@
   -webkit-appearance: none;
   position: relative;
   width: 100%;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   outline: none;
   padding-left: 18px;
@@ -18,8 +18,8 @@
 }
 .input > input:-webkit-autofill {
   -webkit-text-fill-color: var(--harmony-neutral);
-  box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
-  -webkit-box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
+  box-shadow: 0 0 0px 1000px var(--harmony-n-50) inset;
+  -webkit-box-shadow: 0 0 0px 1000px var(--harmony-n-50) inset;
 }
 .input.shaded {
   background-color: #e9e4f0;
@@ -42,10 +42,10 @@
 
 .input.disabled {
   cursor: default !important;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 .input.disabled {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .input.error > input,
@@ -58,7 +58,7 @@
 }
 
 .input:hover > input {
-  border-color: var(--neutral-light-6);
+  border-color: var(--harmony-n-200);
 }
 .input.focused > input {
   border-color: var(--harmony-secondary);
@@ -67,12 +67,12 @@
   padding-top: 20px;
 }
 .input {
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   border-radius: 6px;
 }
 
 .input > input::placeholder {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .placeholder {
@@ -80,7 +80,7 @@
   top: 17px;
   left: 19px;
   font-weight: var(--harmony-font-medium);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-s);
   transition: all 0.3s ease;
 }
@@ -89,7 +89,7 @@
   /* Z-index of 2 here to be on top of password managers */
   z-index: 2;
   pointer-events: none;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: 13px !important;
   font-weight: var(--harmony-font-medium);
   line-height: 12px;

@@ -42,7 +42,7 @@
 
 .isDisabled .input,
 .isDisabled .textArea {
-  color: var(--neutral-light-3) !important;
+  color: var(--harmony-n-500) !important;
 }
 
 .input {
@@ -62,7 +62,7 @@
 }
 
 .isDisabled .prefix {
-  color: var(--neutral-light-3) !important;
+  color: var(--harmony-n-500) !important;
 }
 
 .textarea {
@@ -73,5 +73,5 @@
 
 .input::placeholder,
 .textarea::placeholder {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }

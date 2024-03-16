@@ -7,10 +7,10 @@
 .exchangeInfo {
   margin: 0 -24px;
   padding: 16px 24px;
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
   border-width: 1px 0 1px 0;
   border-style: solid;
-  border-color: var(--neutral-light-8);
+  border-color: var(--harmony-n-100);
 }
 
 .exchangeInfo,
@@ -20,7 +20,7 @@
 }
 
 .tokenLabel {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .caret {
@@ -30,7 +30,7 @@
 }
 
 .caret path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .dollarEstimate {

@@ -3,7 +3,7 @@
 }
 
 .activeRow td {
-  background-color: var(--neutral-light-9) !important;
+  background-color: var(--harmony-n-50) !important;
   color: var(--harmony-primary) !important;
 }
 

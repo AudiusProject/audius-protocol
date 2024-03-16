@@ -1,6 +1,6 @@
 .bodyClassName {
   max-width: 404px;
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   box-shadow: 0 16px 20px -5px var(--search-bar-shadow);
 }
 
@@ -16,7 +16,7 @@
 }
 
 .divider {
-  border-bottom: 1px solid var(--neutral-light-6);
+  border-bottom: 1px solid var(--harmony-n-200);
   margin: 16px 0px;
 }
 
@@ -27,11 +27,11 @@
 }
 
 .iconRemove path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .title {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-l);
   font-weight: var(--harmony-font-heavy);
   letter-spacing: 0.5px;

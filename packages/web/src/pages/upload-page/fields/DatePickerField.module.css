@@ -8,7 +8,7 @@
 }
 
 .label {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-s);
   line-height: 14px;
   margin-bottom: var(--harmony-unit-1);
@@ -63,7 +63,7 @@
 }
 
 :global(.CalendarDay):hover {
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
 }
 
 :global(.CalendarDay__selected) {
@@ -79,11 +79,11 @@
 }
 
 :global(.CalendarDay__blocked_out_of_range) {
-  color: var(--neutral-light-7);
+  color: var(--harmony-n-150);
 }
 
 :global(.CalendarDay__blocked_out_of_range):hover {
-  color: var(--neutral-light-7);
+  color: var(--harmony-n-150);
   background: #fff;
 }
 

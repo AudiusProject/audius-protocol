@@ -1,7 +1,7 @@
 .statsRow {
   display: flex;
   align-items: center;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: bold;
 }
 
@@ -18,7 +18,7 @@
 }
 
 .statItem path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .statItem > span {
@@ -52,7 +52,7 @@
 
 .small.statsRow span {
   font-size: var(--harmony-font-xs);
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .small.statsRow svg {
@@ -61,7 +61,7 @@
 }
 
 .small.statsRow path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .statItem:hover {

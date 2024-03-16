@@ -33,7 +33,7 @@
 .copyContainer {
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
   align-items: center;
   height: 57px;
   width: 100%;
@@ -53,8 +53,8 @@
   align-items: center;
   width: 48px;
   height: 40px;
-  background: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  background: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   cursor: pointer;
   transition: all ease-in-out 0.07s;
@@ -104,7 +104,7 @@
   font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-m);
   text-transform: uppercase;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .headerWallet {

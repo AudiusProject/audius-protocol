@@ -10,7 +10,7 @@
   transition: all 0.07s ease-in-out;
 }
 .more.light {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 .more.dark {
   color: var(--harmony-neutral);
@@ -19,10 +19,10 @@
   transform: scale(1.03);
 }
 .more.light:hover {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 .more.dark:hover {
-  color: var(--neutral-light-1);
+  color: var(--harmony-n-700);
 }
 .more:active {
   transform: scale(0.98);
@@ -32,14 +32,14 @@
   width: 9px;
 }
 .more.light .iconArrow path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 .more.dark .iconArrow path {
   fill: var(--harmony-neutral);
 }
 .more.light:hover .iconArrow path {
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }
 .more.dark:hover .iconArrow path {
-  fill: var(--neutral-light-1);
+  fill: var(--harmony-n-700);
 }

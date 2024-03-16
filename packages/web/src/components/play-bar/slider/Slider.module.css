@@ -11,7 +11,7 @@
   width: 100%;
   height: 9px;
   border-radius: 4px;
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
   overflow: hidden;
   /** Fixes Safari bug where overflow doesn't work with border radius during animation */
   mask-image: -webkit-radial-gradient(white, black);

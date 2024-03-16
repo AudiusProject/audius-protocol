@@ -78,7 +78,7 @@
 }
 
 .hiddenIcon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .tableRow:hover .tablePlayButton,
@@ -93,18 +93,18 @@
 
 .tableRow.disabled {
   cursor: default;
-  color: var(--neutral-light-4);
-  background-color: var(--neutral-light-9);
+  color: var(--harmony-n-400);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow.disabled * {
-  color: var(--neutral-light-4);
-  background-color: var(--neutral-light-9);
+  color: var(--harmony-n-400);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow.disabled:hover {
   box-shadow: none;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow.disabled:hover .tablePlayButton {

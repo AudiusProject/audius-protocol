@@ -1,6 +1,6 @@
 .bottomButtons {
   align-items: center;
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
   display: flex;
   height: var(--harmony-unit-32);
   justify-content: space-between;
@@ -35,11 +35,11 @@
 }
 
 .disabledButton path {
-  fill: var(--neutral-light-8) !important;
+  fill: var(--harmony-n-100) !important;
 }
 
 .tinted path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .share {

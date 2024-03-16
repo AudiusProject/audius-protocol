@@ -8,10 +8,10 @@
   height: 24px;
   padding: 0px 12px;
   border-radius: 8px;
-  color: var(--neutral-light-2);
-  background-color: var(--neutral-light-10);
+  color: var(--harmony-n-600);
+  background-color: var(--harmony-n-25);
   font-size: 15px;
-  border: 1px solid var(--neutral-light-4);
+  border: 1px solid var(--harmony-n-400);
   font-weight: var(--harmony-font-demi-bold);
   margin-left: 8px;
   line-height: 24px;
@@ -21,7 +21,7 @@
 }
 
 .pill path {
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }
 
 .pill:hover:not(.selectedPill):not(.isMobile) {

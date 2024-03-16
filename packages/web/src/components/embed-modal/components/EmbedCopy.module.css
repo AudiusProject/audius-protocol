@@ -7,7 +7,7 @@
 .box {
   min-height: 120px;
   min-width: 400px;
-  border: 1px solid var(--neutral-light-6);
+  border: 1px solid var(--harmony-n-200);
   background-color: var(--harmony-white);
 
   padding: 20px 16px;
@@ -21,7 +21,7 @@
 }
 
 .click {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
   line-height: 15px;

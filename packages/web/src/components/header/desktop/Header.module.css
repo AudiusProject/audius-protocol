@@ -63,7 +63,7 @@
 .header.mini {
   /* Padding top to align baseline with main. */
   padding-top: 12px;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-2xl);
   font-weight: var(--harmony-font-heavy);
   user-select: none;

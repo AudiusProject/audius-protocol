@@ -4,7 +4,7 @@
 
 .modalHeader {
   font-weight: var(--harmony-font-heavy);
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 
 .modalHeader.mobile {
@@ -14,12 +14,12 @@
 }
 
 .modalHeader h2 {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   font-weight: var(--harmony-font-heavy);
 }
 
 .modalHeaderDismissButton {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 
 .modalTitleIcon {

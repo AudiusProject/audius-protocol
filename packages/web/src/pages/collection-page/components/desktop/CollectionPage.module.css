@@ -33,7 +33,7 @@
 
 /* Top Header Section Wrapper */
 .bodyWrapper .topSectionWrapper {
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 }
@@ -45,7 +45,7 @@
 }
 
 .bodyWrapper .tableWrapper {
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   width: 100%;
 }
 

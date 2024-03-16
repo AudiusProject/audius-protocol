@@ -23,7 +23,7 @@
   font-size: var(--harmony-font-2xl);
   text-align: center;
   text-transform: uppercase;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-bottom: 24px;
 }
 
@@ -39,8 +39,8 @@
   align-items: center;
   padding: 24px 0px;
 
-  background: var(--neutral-light-10);
-  border: 2px solid var(--neutral-light-7);
+  background: var(--harmony-n-25);
+  border: 2px solid var(--harmony-n-150);
   border-radius: 16px;
   width: 100%;
   margin-bottom: 24px;
@@ -80,7 +80,7 @@
   text-transform: uppercase;
 
   /* Neutral Light 4 [day] */
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-top: 12px;
 }
 
@@ -104,7 +104,7 @@
 }
 
 .iconInfo path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .tooltip {

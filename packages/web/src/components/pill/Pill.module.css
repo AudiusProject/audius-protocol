@@ -4,7 +4,7 @@
   height: 18px;
   padding: 7px;
   border-radius: 8px;
-  background-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-100);
 
   display: inline-flex;
   align-items: center;
@@ -18,16 +18,16 @@
 
 .pill.clickable:hover {
   transform: perspective(1px) scale3d(1.05, 1.05, 1.05);
-  background-color: var(--neutral-light-7);
+  background-color: var(--harmony-n-150);
 }
 
 .pill.clickable:active {
   transform: perspective(1px) scale3d(0.98, 0.98, 0.98);
-  background-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-100);
 }
 
 .pill .text {
-  color: var(--neutral-light-3);
+  color: var(--harmony-n-500);
   font-size: 11px;
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.5px;

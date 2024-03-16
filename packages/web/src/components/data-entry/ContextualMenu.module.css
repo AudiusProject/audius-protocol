@@ -44,7 +44,7 @@
   gap: var(--harmony-unit-1);
   border-radius: 2px;
   border: 1px solid var(---border-strong);
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
 }
 
 .footer {

@@ -5,7 +5,7 @@
 .addressWrapper {
   display: flex;
   flex-direction: column;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);
   align-items: center;
@@ -19,7 +19,7 @@
 }
 
 .arrow path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .buttonWrapper {

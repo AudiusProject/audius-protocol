@@ -3,7 +3,7 @@
   display: flex;
   border-radius: 8px;
   border: 1px solid var(--border-strong);
-  background: var(--neutral-light-9);
+  background: var(--harmony-n-50);
   gap: var(--harmony-unit-4);
 }
 

@@ -22,7 +22,7 @@
 }
 
 .link:hover:before {
-  border-right: 4px solid var(--neutral-light-4);
+  border-right: 4px solid var(--harmony-n-400);
 }
 .link.disabled:hover {
   border-right: none;
@@ -53,7 +53,7 @@
 }
 .link.disabled,
 .link.disabled:hover {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   pointer-events: none;
 }
 

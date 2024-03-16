@@ -139,7 +139,7 @@
 }
 .divider > .border {
   flex: 1 auto;
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
 }
 
 .licenseMenus {

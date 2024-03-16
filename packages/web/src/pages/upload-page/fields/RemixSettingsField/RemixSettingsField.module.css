@@ -17,7 +17,7 @@
   align-self: stretch;
   border-radius: 2px;
   border: 1px solid var(--border-strong);
-  background-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-100);
 
   color: var(--harmony-neutral);
   font-size: var(--harmony-font-s);
@@ -27,12 +27,12 @@
 .artwork {
   height: 20px;
   width: 20px;
-  border: 1px solid var(--neutral-light-9);
+  border: 1px solid var(--harmony-n-50);
   border-radius: 2px;
 }
 
 .by {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }
 
 .iconVerified {

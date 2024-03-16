@@ -23,7 +23,7 @@
 
 .coverArt {
   box-sizing: border-box;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
@@ -41,7 +41,7 @@
   margin-top: 16px;
   height: 202px;
   width: 202px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   margin-bottom: 4px;
 }
@@ -51,7 +51,7 @@
   width: 218px;
   margin-top: 16px;
   margin-bottom: 4px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
 }
 
 .userCardImage {

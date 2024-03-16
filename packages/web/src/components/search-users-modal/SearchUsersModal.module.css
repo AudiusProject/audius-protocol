@@ -9,7 +9,7 @@
 .search {
   max-width: 100%;
   padding: var(--harmony-unit-6);
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .results {

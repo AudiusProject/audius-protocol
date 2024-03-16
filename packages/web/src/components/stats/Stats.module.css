@@ -14,7 +14,7 @@
 }
 
 .stats.large > .stat > .number {
-  color: var(--neutral-light-1);
+  color: var(--harmony-n-700);
   font-size: 22px;
   font-weight: var(--harmony-font-heavy);
   letter-spacing: 0.7px;
@@ -22,7 +22,7 @@
   transition: all ease-in-out 0.18s;
 }
 .stats.large > .stat > .title {
-  color: var(--neutral-light-5);
+  color: var(--harmony-n-300);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-heavy);
   letter-spacing: 0.75px;
@@ -39,7 +39,7 @@
   transition: all ease-in-out 0.18s;
 }
 .stats.medium > .stat > .title {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-family: var(--harmony-font-family);
   font-size: 10px;
   font-weight: 900;
