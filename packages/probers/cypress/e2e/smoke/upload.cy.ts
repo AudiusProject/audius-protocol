@@ -1,5 +1,5 @@
 import user from '../../fixtures/user.json'
-describe('Smoke test -- upload page', () => {
+describe('Smoke test -- upload page @essential', () => {
   beforeEach(() => {
     localStorage.setItem('HAS_REQUESTED_BROWSER_PUSH_PERMISSION', 'true')
   })

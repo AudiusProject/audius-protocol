@@ -1,4 +1,4 @@
-describe('Play Track', () => {
+describe('Play Track @essential', () => {
   it('should play a trending track', () => {
     cy.visit('trending')
     cy.findByRole('list', { name: /weekly trending tracks/i }).within(() => {

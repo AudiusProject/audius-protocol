@@ -132,7 +132,7 @@ function testSignUp({ isMobile = false }) {
   })
 }
 
-describe('Sign Up', () => {
+describe('Sign Up @essential', () => {
   beforeEach(() => {
     localStorage.setItem('FeatureFlagOverride:sign_up_redesign', 'enabled')
   })

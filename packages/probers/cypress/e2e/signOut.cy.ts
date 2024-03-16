@@ -1,6 +1,6 @@
 import user from '../fixtures/user.json'
 
-describe('Sign Out', () => {
+describe('Sign Out @essential', () => {
   beforeEach(() => {
     localStorage.setItem('HAS_REQUESTED_BROWSER_PUSH_PERMISSION', 'true')
   })

@@ -8,6 +8,7 @@
     "cypress:open-stage": "cypress open --env configFile=stage",
     "cypress:open-rc-stage": "cypress open --env configFile=rc-stage",
     "cypress:run": "cypress run",
+    "cypress:run:essential": "cypress run --env grep='@essential'",
     "cypress:run-stage": "cypress run --env configFile=stage",
     "cypress:run-rc-stage": "cypress run --env configFile=rc-stage",
     "test:target": "env-cmd -f .env jest --runInBand",
@@ -21,6 +22,7 @@
   "dependencies": {
     "@testing-library/cypress": "^9.0.0",
     "cypress": "^12.17.2",
+    "@cypress/grep": "4.0.1",
     "cypress-file-upload": "^5.0.8",
     "cypress-wait-until": "^1.7.2",
     "dayjs": "^1.11.6",
