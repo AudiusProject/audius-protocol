@@ -60,7 +60,7 @@
 }
 
 .link {
-  transition: color var(--quick);
+  transition: color var(--harmony-quick);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -71,7 +71,7 @@
   height: 1em;
 }
 .link svg path {
-  transition: fill var(--quick);
+  transition: fill var(--harmony-quick);
   fill: var(--neutral-light-4);
 }
 .link:hover {

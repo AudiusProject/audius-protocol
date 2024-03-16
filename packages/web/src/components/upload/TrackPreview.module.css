@@ -87,7 +87,7 @@
   align-items: center;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
-  transition: var(--hover);
+  transition: var(--harmony-hover);
 }
 
 .trackPreviewNew:hover {
@@ -124,7 +124,7 @@
 
 .fileSizeText {
   display: flex;
-  transition: var(--hover);
+  transition: var(--harmony-hover);
   width: 60px;
   justify-content: flex-end;
 }

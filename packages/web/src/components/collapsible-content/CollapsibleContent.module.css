@@ -4,5 +4,5 @@
   /** Hack to hide horizontal scrollbars **/
   padding: 0 150px;
   margin: 0 -150px;
-  transition: height var(--quick);
+  transition: height var(--harmony-quick);
 }

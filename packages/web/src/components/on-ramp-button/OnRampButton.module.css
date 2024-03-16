@@ -20,7 +20,7 @@
   text-transform: none;
 }
 .logo path {
-  transition: all var(--quick);
+  transition: all var(--harmony-quick);
   fill: var(--static-white);
 }
 

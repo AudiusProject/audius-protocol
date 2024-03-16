@@ -4,7 +4,7 @@
 
 .show {
   opacity: 1;
-  transition: opacity var(--calm);
+  transition: opacity var(--harmony-calm);
 }
 
 .collectionHeader {
@@ -82,7 +82,7 @@
 }
 
 .titleHeader {
-  transition: opacity var(--calm), color var(--quick);
+  transition: opacity var(--harmony-calm), color var(--harmony-quick);
 }
 
 .editableTitle:hover .titleHeader {
@@ -91,7 +91,7 @@
 
 .editIcon {
   opacity: 0;
-  transition: opacity var(--quick);
+  transition: opacity var(--harmony-quick);
 }
 
 .editIcon path {
@@ -178,7 +178,7 @@
 
 .imageEditButtonWrapper {
   opacity: 0;
-  transition: opacity var(--expressive);
+  transition: opacity var(--harmony-expressive);
   position: absolute;
   bottom: var(--unit-4);
 }

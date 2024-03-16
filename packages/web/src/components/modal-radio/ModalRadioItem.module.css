@@ -46,7 +46,7 @@
 .collapsibleContainer {
   /** Unfortunately, this calculates to overflow: auto hidden; */
   overflow: visible hidden;
-  transition: height var(--quick);
+  transition: height var(--harmony-quick);
 }
 
 .collapsibleContainer.collapsed {

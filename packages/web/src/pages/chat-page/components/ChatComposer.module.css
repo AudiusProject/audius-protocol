@@ -16,7 +16,7 @@ button.sendButton {
   border-radius: var(--unit-4);
   background-color: var(--primary);
   transform: scale(1);
-  transition: all var(--quick);
+  transition: all var(--harmony-quick);
 }
 
 button.sendButton:not(:disabled):hover {

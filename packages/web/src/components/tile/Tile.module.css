@@ -6,7 +6,7 @@
   border: var(--border-width) solid var(--border-default);
   border-radius: var(--unit-2);
   background-color: var(--white);
-  transition: all var(--expressive);
+  transition: all var(--harmony-expressive);
 }
 
 .borderOffset {

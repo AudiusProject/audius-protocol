@@ -20,7 +20,8 @@
   display: inline-block;
   max-width: 448px;
   filter: var(--drop-shadow-near);
-  transition: background-color var(--expressive), filter var(--expressive);
+  transition: background-color var(--harmony-expressive),
+    filter var(--harmony-expressive);
 }
 
 .bubbleCorners {
@@ -120,7 +121,7 @@
   justify-content: center;
   opacity: 0;
   /* transform looks better if it only eases-out */
-  transition: opacity var(--quick), transform 0.07s ease-out;
+  transition: opacity var(--harmony-quick), transform 0.07s ease-out;
 }
 
 .reactionsContainer:not(.hasReaction) .reactionsButton {
@@ -142,7 +143,7 @@
   width: var(--unit-6);
   height: var(--unit-6);
   fill: var(--secondary);
-  transition: fill var(--quick);
+  transition: fill var(--harmony-quick);
 }
 
 .reactionsContainer:not(.hasReaction):hover .reactionsButton {
@@ -179,12 +180,12 @@
 
 :not(.hideMessage) .tail svg * {
   fill: var(--bubble-color);
-  transition: fill var(--quick);
+  transition: fill var(--harmony-quick);
 }
 
 .hideMessage .tail svg * {
   fill: var(--white);
-  transition: fill var(--quick);
+  transition: fill var(--harmony-quick);
 }
 
 .root:not(.isAuthor) .tail {
