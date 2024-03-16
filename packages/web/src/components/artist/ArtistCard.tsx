@@ -5,7 +5,6 @@ import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { FollowButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-// import { FollowButton } from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
 
 import styles from './ArtistCard.module.css'

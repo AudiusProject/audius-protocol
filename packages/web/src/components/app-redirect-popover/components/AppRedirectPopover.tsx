@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect } from 'react'
 
+import { Button } from '@audius/harmony'
 import { matchPath } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useTransition } from 'react-spring'
@@ -11,7 +12,6 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { APP_REDIRECT, getPathname, SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'
-import { Button } from '@audius/harmony'
 
 const messages = {
   openInApp: 'Open in Audius App',
@@ -127,8 +127,6 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
     springProps.element
   )
   const drawerTransitions = useTransition(shouldShow, null, springProps.drawer)
-
-  console.log({ shouldShow })
 
   const onClick = () => {
     onBeforeClickApp()

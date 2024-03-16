@@ -17,7 +17,6 @@ import {
 import cn from 'classnames'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
-// import { FollowButton } from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import { useFlag } from 'hooks/useRemoteConfig'
