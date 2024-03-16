@@ -75,7 +75,6 @@ jobs:
             - ./packages/mobile/node_modules
             - ./packages/probers/node_modules
             - ./packages/embed/node_modules
-            - ./packages/stems/node_modules
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
@@ -463,7 +462,6 @@ workflows:
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
-            .circleci/.* run-stems-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
             package-lock.json run-sdk-workflow true
@@ -478,13 +476,10 @@ workflows:
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
-            packages/stems/.* run-stems-workflow true
-            packages/stems/.* run-web-workflow true
             packages/harmony/.* run-harmony-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
-            packages/eslint-config-audius/.* run-stems-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
             packages/libs/.* run-creator-workflow true
             packages/libs/.* run-identity-workflow true
@@ -516,7 +511,6 @@ workflows:
             .* run-contracts-workflow true
             .* run-release-workflow false
             .* run-sdk-workflow true
-            .* run-stems-workflow true
             .* run-harmony-workflow true
             .* run-probers-workflow true
             .* run-ddex-stage-workflow true
@@ -572,7 +566,6 @@ workflows:
           mapping: |
             .* run-web-workflow true
             .* run-mobile-workflow true
-            .* run-stems-workflow true
             .* run-harmony-workflow true
             .* run-probers-workflow false
             .* run-protocol-dashboard-workflow true
