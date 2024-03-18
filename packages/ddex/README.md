@@ -80,7 +80,9 @@ For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
     aws configure set aws_secret_access_key test && \
     aws configure set region us-west-2
     ```
-3. To use the DDEX webapp as an admin, add your decoded user ID to `extra-env.DDEX_ADMIN_ALLOWLIST` in `../../dev-tools/config.json`. Note that this requires a restart if the app is already running (`audius-compose down && audius-compose up -ddex-only`)
+3. To use the DDEX webapp as an admin, add your decoded staging user ID to `extra-env.DDEX_ADMIN_ALLOWLIST` in `../../dev-tools/config.json`
+  - Find your user ID by going to `https://discoveryprovider.staging.audius.co/v1/full/users/handle/<your staging handle>`, searching for `id`, and then decoding it by pasting it into the "Encoded" textbox [here](https://healthz.audius.co/#/utils/id) and copying the "Integer" value
+  - Note that this requires a restart if the app is already running (`audius-compose down && audius-compose up -ddex-only`)
 
 
 ### Bring up the ddex stack locally
