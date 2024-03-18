@@ -543,7 +543,7 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				},
 				ResourceContributors: []common.ResourceContributor{
 					{
-						Name:           "Theo Random &amp; Thato Saul",
+						Name:           "Theo Random & Thato Saul",
 						Roles:          []string{"AssociatedPerformer"},
 						SequenceNumber: 1,
 					},

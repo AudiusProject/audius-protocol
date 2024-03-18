@@ -26,6 +26,8 @@ type SoundRecording struct {
 	IndirectResourceContributors []common.ResourceContributor
 	LabelName                    string
 	Genre                        string
+	CopyrightLine                common.Copyright
+	ProducerCopyrightLine        common.Copyright
 	ParentalWarningType          string
 	TechnicalDetails             []TechnicalSoundRecordingDetails
 	RightsController             common.RightsController
@@ -482,6 +484,9 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 		ResourceContributors:         ci.SoundRecording.ResourceContributors,
 		IndirectResourceContributors: ci.SoundRecording.IndirectResourceContributors,
 		RightsController:             ci.SoundRecording.RightsController,
+		CopyrightLine:                ci.SoundRecording.CopyrightLine,
+		ProducerCopyrightLine:        ci.SoundRecording.ProducerCopyrightLine,
+		ParentalWarningType:          ci.SoundRecording.ParentalWarningType,
 		PreviewAudioFileURL:          previewAudioFileURL,
 		PreviewAudioFileURLHash:      previewAudioFileURLHash,
 		PreviewAudioFileURLHashAlgo:  previewAudioFileURLHashAlgo,
@@ -552,6 +557,15 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		return
 	}
 
+	copyright := common.Copyright{
+		Year: safeInnerText(details.SelectElement("CLine/Year")),
+		Text: safeInnerText(details.SelectElement("CLine/CLineText")),
+	}
+	producerCopyright := common.Copyright{
+		Year: safeInnerText(details.SelectElement("PLine/Year")),
+		Text: safeInnerText(details.SelectElement("PLine/PLineText")),
+	}
+
 	recording = &SoundRecording{
 		Type:                  safeInnerText(sNode.SelectElement("SoundRecordingType")),
 		ISRC:                  safeInnerText(sNode.SelectElement("SoundRecordingId/ISRC")),
@@ -562,6 +576,8 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		Duration:              safeInnerText(sNode.SelectElement("Duration")),
 		LabelName:             safeInnerText(details.SelectElement("LabelName")),
 		Genre:                 safeInnerText(details.SelectElement("Genre/GenreText")),
+		CopyrightLine:         copyright,
+		ProducerCopyrightLine: producerCopyright,
 		ParentalWarningType:   safeInnerText(details.SelectElement("ParentalWarningType")),
 	}
 
