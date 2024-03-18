@@ -65,13 +65,12 @@ const completeUpload = () => {
   }).should('exist')
 }
 
-// TODO [C-3420]: This suite is in test jail due to upload flows taking too long and timing out
-describe('Upload', () => {
+describe('Upload Track', () => {
   beforeEach(() => {
     localStorage.setItem('HAS_REQUESTED_BROWSER_PUSH_PERMISSION', 'true')
   })
 
-  it('user should be able to upload a single track', () => {
+  it('should upload a single track that is a remix and ai attributed', () => {
     visitUpload()
 
     // Select track
@@ -153,22 +152,25 @@ describe('Upload', () => {
     cy.findByRole('dialog', { name: /attribution/i }).within(() => {
       cy.findByRole('textbox', { name: /isrc/i }).type('US-123-45-67890')
       cy.findByRole('textbox', { name: /iswc/i }).type('T-123456789-0')
-      // TODO Fix
-      // cy.findByRole('radiogroup', { name: /allow attribution/i }).within(() => {
-      //   cy.findByRole('radio', { name: /allow attribution/i }).click()
-      // })
+      cy.findByRole('radiogroup', { name: /allow attribution/i }).within(() => {
+        cy.findByRole('radio', { name: /allow attribution/i }).click({
+          force: true // segmented controls overlap inputs
+        })
+      })
 
-      // cy.findByRole('radiogroup', { name: /commercial use/i }).within(() => {
-      //   cy.findByRole('radio', { name: /^commercial use/i }).click()
-      // })
+      cy.findByRole('radiogroup', { name: /commercial use/i }).within(() => {
+        cy.findByRole('radio', { name: /^commercial use/i }).click({
+          force: true // segmented controls overlap inputs
+        })
+      })
 
-      // cy.findByRole('radiogroup', { name: /derivative works/i }).within(() => {
-      //   cy.findByRole('radio', { name: /share-alike/i }).click()
-      // })
+      cy.findByRole('radiogroup', { name: /derivative works/i }).within(() => {
+        cy.findByRole('radio', { name: /share-alike/i }).click({ force: true })
+      })
 
-      // cy.findByRole('heading', {
-      //   name: 'Attribution ShareAlike CC BY-SA'
-      // }).should('exist')
+      cy.findByRole('heading', {
+        name: 'Attribution ShareAlike CC BY-SA'
+      }).should('exist')
 
       cy.findByRole('button', { name: /save/i }).click()
     })
@@ -179,7 +181,7 @@ describe('Upload', () => {
     cy.findByRole('heading', { name: /track/i, level: 1 }).should('exist')
   })
 
-  it('user should be able to upload a single track with stems', () => {
+  it('should upload a single track with a single stem', () => {
     visitUpload()
 
     // Select track
@@ -219,7 +221,7 @@ describe('Upload', () => {
     })
     // Listbox is outside the dialog
     cy.findByRole('listbox', { name: /select type/i }).within(() => {
-      cy.findByText(/instrumental/i).should('exist')
+      cy.findByText(/instrumental/i).click()
     })
 
     // Re-enter the dialog and save
@@ -230,9 +232,13 @@ describe('Upload', () => {
 
     cy.findByRole('link', { name: /visit track page/i }).click()
     cy.findByRole('heading', { name: /track/i, level: 1 }).should('exist')
+    cy.findByRole('button', { name: /stems & downloads/i }).click()
+    cy.findByText(/full track/i).should('exist')
+    cy.findByText(/track-small.mp3/i).should('exist')
+    cy.findByText(/instrumental/i).should('exist')
   })
 
-  it('user should be able to a single track with a pay-gate', () => {
+  it('should upload a single track with a pay-gate', () => {
     visitUpload()
 
     // Select track
