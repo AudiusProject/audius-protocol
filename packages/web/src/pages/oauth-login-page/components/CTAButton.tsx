@@ -1,15 +1,27 @@
-import { Button, ButtonProps, IconArrowRight } from '@audius/harmony'
+import { IconArrowRight } from '@audius/harmony'
+import { Button, ButtonProps } from '@audius/stems'
+
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from '../OAuthLoginPage.module.css'
 
-export const CTAButton = (props: ButtonProps) => {
+export const CTAButton = ({
+  isSubmitting,
+  isDisabled,
+  ...restProps
+}: { isSubmitting: boolean } & ButtonProps) => {
   return (
     <Button
-      variant='primary'
-      fullWidth
-      iconRight={IconArrowRight}
+      isDisabled={isSubmitting || isDisabled}
+      rightIcon={
+        isSubmitting ? (
+          <LoadingSpinner className={styles.buttonLoadingSpinner} />
+        ) : (
+          <IconArrowRight />
+        )
+      }
       className={styles.ctaButton}
-      {...props}
+      {...restProps}
     />
   )
 }

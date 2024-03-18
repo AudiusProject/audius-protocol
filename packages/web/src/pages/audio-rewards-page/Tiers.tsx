@@ -16,10 +16,9 @@ import {
   IconTokenGold,
   IconTokenPlatinum,
   IconTokenSilver,
-  IconDiscord,
-  Button,
-  Box
+  IconDiscord
 } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -41,11 +40,11 @@ const messages = {
   badgeType: (badge: string) => `${badge} Badge`,
   badgeRole: (badge: string) => `${badge} Discord Role`,
   moreSoon: 'More Coming Soon!',
-  updateRole: 'Update Role',
+  updateRole: 'UPDATE ROLE',
   tierNumber: (tier: number) => `TIER ${tier}`,
   currentTier: 'CURRENT TIER',
-  learnMore: 'Learn more',
-  launchDiscord: 'Launch the VIP Discord',
+  learnMore: 'LEARN MORE',
+  launchDiscord: 'LAUNCH THE VIP DISCORD',
   tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+ $AUDIO`,
   matrixMode: 'Matrix Mode',
   collectibles: 'NFT Collectibles'
@@ -191,17 +190,14 @@ export const Tier = ({
                 </span>
               )}
               {isActive && (
-                <Box mb='s' w='100%'>
-                  <Button
-                    variant='secondary'
-                    size='small'
-                    iconLeft={IconDiscord}
-                    onClick={onClickDiscord}
-                    fullWidth
-                  >
-                    {messages.updateRole}
-                  </Button>
-                </Box>
+                <Button
+                  text={messages.updateRole}
+                  type={ButtonType.GLASS}
+                  leftIcon={<IconDiscord className={styles.iconDiscord} />}
+                  className={cn(styles.discordButton, styles.updateRole)}
+                  textClassName={styles.discordButtonText}
+                  onClick={onClickDiscord}
+                />
               )}
               <span className={styles.sparkles}>
                 <i className='emoji large sparkles' />
@@ -258,16 +254,21 @@ const Tiers = () => {
         ))}
       </div>
       <div className={wm(styles.buttonContainer)}>
-        <Button variant='secondary' onClick={onClickExplainMore}>
-          {messages.learnMore}
-        </Button>
         <Button
-          variant='secondary'
-          iconLeft={IconDiscord}
+          text={messages.learnMore}
+          type={ButtonType.GLASS}
+          className={styles.discordButton}
+          textClassName={styles.discordButtonText}
+          onClick={onClickExplainMore}
+        />
+        <Button
+          text={messages.launchDiscord}
+          type={ButtonType.GLASS}
+          leftIcon={<IconDiscord className={styles.iconDiscord} />}
+          className={styles.discordButton}
+          textClassName={styles.discordButtonText}
           onClick={onClickDiscord}
-        >
-          {messages.launchDiscord}
-        </Button>
+        />
       </div>
     </div>
   )

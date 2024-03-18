@@ -239,11 +239,9 @@ export const createTransferToUserBankTransaction = async ({
   const tx = new Transaction()
   tx.add(memoInstruction)
   tx.add(transferInstruction)
-  tx.add(
-    ComputeBudgetProgram.setComputeUnitPrice({
-      microLamports: 100000
-    })
-  )
+  tx.add(ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: 100000
+  }))
   return tx
 }
 

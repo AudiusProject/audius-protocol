@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--harmony-spacing-m);
+  padding: 32px 24px 24px;
 }
 .container h2 {
   font-weight: 900;

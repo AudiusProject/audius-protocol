@@ -1,7 +1,18 @@
-import { SocialButton, SocialButtonProps } from '@audius/harmony'
+import { IconTwitter } from '@audius/harmony'
+import cn from 'classnames'
 
-export type TwitterButtonProps = Partial<SocialButtonProps>
+import { SocialButton, SocialButtonProps } from '../SocialButton'
+
+import styles from './TwitterButton.module.css'
+
+export type TwitterButtonProps = SocialButtonProps
 
 export const TwitterButton = (props: TwitterButtonProps) => {
-  return <SocialButton socialType='twitter' {...props} />
+  return (
+    <SocialButton
+      leftIcon={<IconTwitter />}
+      {...props}
+      className={cn(styles.button, props.className)}
+    />
+  )
 }

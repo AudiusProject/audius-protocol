@@ -417,3 +417,14 @@
     margin-left: 0;
   }
 }
+
+.gatedContentSectionButton .followButton {
+  width: 100%;
+  flex: unset;
+  max-width: none;
+  height: 46px;
+}
+
+.gatedContentSectionButton .followButton > span {
+  font-size: var(--font-l);
+}

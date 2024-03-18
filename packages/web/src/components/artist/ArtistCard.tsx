@@ -2,9 +2,9 @@ import { MouseEventHandler, useCallback, useMemo } from 'react'
 
 import { FollowSource, User } from '@audius/common/models'
 import { profilePageActions, usersSocialActions } from '@audius/common/store'
-import { FollowButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { FollowButton } from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
 
 import styles from './ArtistCard.module.css'
@@ -98,9 +98,11 @@ export const ArtistCard = (props: ArtistCardProps) => {
             <ArtistSupporting artist={artist} onNavigateAway={onNavigateAway} />
             <div className={styles.description}>{bio}</div>
             <FollowButton
-              isFollowing={does_current_user_follow}
+              className={styles.followButton}
+              following={does_current_user_follow}
               onFollow={handleFollow}
               onUnfollow={handleUnfollow}
+              stopPropagation
             />
           </div>
         </div>

@@ -1,10 +1,13 @@
 import { collectiblesSelectors } from '@audius/common/store'
-import { Flex, IconExternalLink, Text } from '@audius/harmony'
+import { IconExternalLink, Text } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { ExternalLink } from 'components/link'
 import { AUDIUS_GATED_CONTENT_BLOG_LINK } from 'utils/route'
+
+import styles from './CollectibleGatedDescription.module.css'
 
 const { getHasUnsupportedCollection } = collectiblesSelectors
 const messages = {
@@ -39,14 +42,21 @@ export const CollectibleGatedDescription = (
   )
 
   return (
-    <Flex gap='xl' direction='column'>
+    <div className={styles.innerDescription}>
       <Text variant='body'>{messages.collectibleGatedSubtitle}</Text>
       {!hasCollectibles && isUpload ? (
         <HelpCallout content={helpContent} />
       ) : null}
-      <ExternalLink to={AUDIUS_GATED_CONTENT_BLOG_LINK} textVariant='body'>
-        {messages.learnMore} <IconExternalLink size='s' color='default' />
-      </ExternalLink>
-    </Flex>
+      <Button
+        as={ExternalLink}
+        to={AUDIUS_GATED_CONTENT_BLOG_LINK}
+        strength='strong'
+        type={ButtonType.TEXT}
+        className={styles.learnMoreButton}
+        text={messages.learnMore}
+        iconClassName={styles.learnMoreArrow}
+        rightIcon={<IconExternalLink />}
+      />
+    </div>
   )
 }

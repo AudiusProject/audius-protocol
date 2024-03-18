@@ -147,3 +147,8 @@
   background: var(--background-surface-1);
   border-top: none;
 }
+
+.doneButton {
+  align-self: flex-end;
+  margin: 16px;
+}

@@ -80,6 +80,17 @@
   margin-right: 6px;
 }
 
+.titleContainer .right button {
+  width: 110px;
+}
+
+.titleContainer .right svg {
+  width: 20px !important;
+  height: 20px !important;
+  position: relative;
+  top: -1px;
+}
+
 .artistName {
   color: var(--neutral);
   font-family: var(--font-family);
@@ -243,6 +254,10 @@
 
 .loadingShortName {
   width: 80px;
+}
+
+.editButton .editButtonText {
+  font-size: var(--font-xs) !important;
 }
 
 .sites {

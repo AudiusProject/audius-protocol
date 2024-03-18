@@ -68,3 +68,33 @@
 .badgeIcon {
   margin-left: 4px;
 }
+
+.button {
+  padding: 0px;
+}
+
+.buttonText {
+  font-size: var(--font-s);
+}
+
+.iconArrow {
+  width: 10px !important;
+  height: 10px !important;
+  margin-left: 4px;
+}
+
+.iconArrow path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.button:hover .iconArrow path {
+  fill: var(--secondary) !important;
+}
+
+.buttonText {
+  color: var(--neutral-light-4);
+}
+
+.button:hover .buttonText {
+  color: var(--secondary);
+}

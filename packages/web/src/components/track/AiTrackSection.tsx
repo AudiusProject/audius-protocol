@@ -2,11 +2,8 @@ import { useCallback, useEffect } from 'react'
 
 import { ID, User } from '@audius/common/models'
 import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
-import {
-  IconArrowRight as IconArrow,
-  IconRobot,
-  PlainButton
-} from '@audius/harmony'
+import { IconArrowRight as IconArrow, IconRobot } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -88,9 +85,13 @@ export const AiTrackSection = ({
         {messages.description}
         {user ? renderArtist(user) : null}
       </div>
-      <PlainButton iconRight={IconArrow} onClick={handleClickViewMore}>
-        {messages.viewMore}
-      </PlainButton>
+      <Button
+        className={styles.button}
+        type={ButtonType.TEXT}
+        rightIcon={<IconArrow className={styles.iconArrow} />}
+        text={<div className={styles.buttonText}>{messages.viewMore}</div>}
+        onClick={handleClickViewMore}
+      />
     </div>
   )
 }

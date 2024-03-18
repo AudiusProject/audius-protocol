@@ -11,12 +11,12 @@ import {
   IconKebabHorizontal,
   IconMessage,
   PopupMenu,
-  Button,
-  FollowButton
+  Button
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
+import { FollowButton } from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -240,9 +240,11 @@ export const StatBanner = (props: StatsBannerProps) => {
             ) : null}
             <FollowButton
               ref={followButtonRef}
-              isFollowing={following}
+              following={following}
               onFollow={onFollow}
               onUnfollow={onUnfollow}
+              widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+              className={styles.statButton}
             />
             <ArtistRecommendationsPopup
               anchorRef={followButtonRef}

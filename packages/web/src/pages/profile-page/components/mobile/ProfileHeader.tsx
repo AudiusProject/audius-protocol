@@ -20,16 +20,15 @@ import {
   IconLink,
   IconTikTok,
   IconTwitter as IconTwitterBird,
-  Flex,
-  Button,
-  IconPencil,
-  FollowButton
+  Flex
 } from '@audius/harmony'
+import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { FollowButton } from 'components/follow-button/FollowButton'
 import Skeleton from 'components/skeleton/Skeleton'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
@@ -53,7 +52,7 @@ const messages = {
   playlists: 'Playlists',
   showMore: 'Show More',
   showLess: 'Show Less',
-  editProfile: 'Edit Profile'
+  editProfile: 'EDIT PROFILE'
 }
 
 const LoadingProfileHeader = () => {
@@ -348,19 +347,19 @@ const ProfileHeader = ({
               )}
               {mode === 'owner' ? (
                 <Button
-                  variant='secondary'
-                  size='small'
+                  className={styles.editButton}
+                  textClassName={styles.editButtonText}
+                  size={ButtonSize.SMALL}
+                  type={ButtonType.SECONDARY}
+                  text={messages.editProfile}
                   onClick={switchToEditMode}
-                  iconLeft={IconPencil}
-                >
-                  {messages.editProfile}
-                </Button>
+                />
               ) : (
                 <FollowButton
-                  isFollowing={following}
+                  size='small'
+                  following={following}
                   onFollow={() => onFollow(userId)}
                   onUnfollow={() => onUnfollow(userId)}
-                  fullWidth={false}
                 />
               )}
             </div>

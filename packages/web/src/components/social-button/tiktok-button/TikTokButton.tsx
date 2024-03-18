@@ -1,7 +1,18 @@
-import { SocialButton, SocialButtonProps } from '@audius/harmony'
+import { IconTikTok } from '@audius/harmony'
+import cn from 'classnames'
 
-export type TikTokButtonProps = Partial<SocialButtonProps>
+import { SocialButton, SocialButtonProps } from '../SocialButton'
+
+import styles from './TikTokButton.module.css'
+
+export type TikTokButtonProps = SocialButtonProps
 
 export const TikTokButton = (props: TikTokButtonProps) => {
-  return <SocialButton socialType='tiktok' {...props} />
+  return (
+    <SocialButton
+      leftIcon={<IconTikTok color='staticWhite' />}
+      {...props}
+      className={cn(styles.button, props.className)}
+    />
+  )
 }

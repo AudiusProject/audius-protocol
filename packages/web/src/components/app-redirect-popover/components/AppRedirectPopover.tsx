@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from 'react'
 
-import { Button } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import { matchPath } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useTransition } from 'react-spring'
@@ -194,15 +194,11 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
                                   style={props}
                                 >
                                   <Button
-                                    variant='common'
-                                    css={(theme) => ({
-                                      borderRadius: theme.cornerRadius['2xl'],
-                                      color: theme.color.secondary.secondary
-                                    })}
+                                    className={styles.mainButton}
+                                    type={ButtonType.WHITE}
+                                    text={messages.openInApp}
                                     onClick={onClick}
-                                  >
-                                    {messages.openInApp}
-                                  </Button>
+                                  />
                                 </animated.div>
                               )}
                               {newItem && (

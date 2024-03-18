@@ -15,7 +15,7 @@ import {
   relatedArtistsUIActions,
   CommonState
 } from '@audius/common/store'
-import { FollowButton, IconButton, IconClose } from '@audius/harmony'
+import { IconClose } from '@audius/harmony'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { FollowButton } from 'components/follow-button/FollowButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -255,21 +256,27 @@ export const ArtistRecommendations = forwardRef<
   return (
     <div className={cn(styles.content, className)} ref={ref}>
       <div className={cn(styles.headerBar, styles.contentItem, itemClassName)}>
-        <IconButton
-          icon={IconClose}
+        <div
+          role='button'
+          title='Dismiss'
+          className={styles.closeButton}
           onClick={onClose}
-          aria-label='Dismiss'
-          color='subdued'
-          size='m'
-        />
+        >
+          <IconClose
+            color='subdued'
+            className={cn(styles.icon, styles.remove)}
+          />
+        </div>
         {renderHeader()}
       </div>
       {renderSubheader && renderSubheader()}
       {renderMainContent()}
       <div className={cn(styles.contentItem, itemClassName)}>
         <FollowButton
-          disabled={isLoading}
-          isFollowing={isFollowingAll}
+          isDisabled={isLoading}
+          following={isFollowingAll}
+          invertedColor
+          size='full'
           messages={messages}
           onFollow={handleFollowAll}
           onUnfollow={handleUnfollowAll}

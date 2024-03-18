@@ -1,4 +1,6 @@
-import { Flex, IconArrowRight, PlainButton } from '@audius/harmony'
+import React from 'react'
+
+import { IconArrowRight } from '@audius/harmony'
 
 import {
   UserProfileListProps,
@@ -26,13 +28,7 @@ export const ProfilePictureListTile = ({
   profilePictureClassname
 }: ProfilePictureListTileProps) => {
   return (
-    <Flex
-      direction='column'
-      gap='m'
-      alignItems='flex-start'
-      className={styles.tileContainer}
-      onClick={onClick}
-    >
+    <div className={styles.tileContainer} onClick={onClick}>
       <UserProfilePictureList
         users={users}
         totalUserCount={totalUserCount}
@@ -42,7 +38,10 @@ export const ProfilePictureListTile = ({
         stopPropagation={stopPropagation}
         profilePictureClassname={profilePictureClassname}
       />
-      <PlainButton iconRight={IconArrowRight}>{messages.viewAll}</PlainButton>
-    </Flex>
+      <div className={styles.viewAll}>
+        <span>{messages.viewAll}</span>
+        <IconArrowRight className={styles.arrowIcon} />
+      </div>
+    </div>
   )
 }

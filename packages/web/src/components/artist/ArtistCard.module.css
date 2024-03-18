@@ -43,3 +43,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.followButton {
+  margin: 0 auto;
+}

@@ -16,11 +16,11 @@ import {
   IconSettings,
   IconTokenGold,
   IconTransaction,
-  IconInfo,
-  Button,
-  Flex
+  IconInfo
 } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import BN from 'bn.js'
+import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -127,46 +127,54 @@ const AdvancedWalletActions = () => {
   return (
     <div className={styles.moreOptionsSection}>
       <div className={styles.subtitle}>{messages.advancedOptions}</div>
-      <Flex wrap='wrap' gap='l' w='100%'>
+      <div className={styles.advancedOptions}>
         <Button
-          variant='common'
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
-          disabled={!hasBalance}
+          className={cn(styles.advancedButton, {
+            [styles.disabled]: !hasBalance
+          })}
+          text={messages.sendLabel}
+          isDisabled={!hasBalance}
+          includeHoverAnimations={hasBalance}
+          textClassName={styles.textClassName}
           onClick={onClickSend}
-          iconLeft={IconSend}
-        >
-          {messages.sendLabel}
-        </Button>
+          leftIcon={<IconSend className={styles.iconStyle} />}
+          type={ButtonType.GLASS}
+          minWidth={200}
+        />
         <Button
-          variant='common'
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+          className={cn(styles.advancedButton)}
+          text={messages.receiveLabel}
+          textClassName={styles.textClassName}
           onClick={onClickReceive}
-          iconLeft={IconReceive}
-        >
-          {messages.receiveLabel}
-        </Button>
+          leftIcon={<IconReceive className={styles.iconStyle} />}
+          type={ButtonType.GLASS}
+          minWidth={200}
+        />
         {!isMobile && isTransactionsEnabled && (
           <Button
-            variant='common'
-            css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+            className={cn(styles.advancedButton)}
+            text={messages.transactionsLabel}
+            textClassName={styles.textClassName}
             onClick={onClickTransactions}
-            iconLeft={IconTransaction}
-          >
-            {messages.transactionsLabel}
-          </Button>
+            leftIcon={<IconTransaction className={styles.iconStyle} />}
+            type={ButtonType.GLASS}
+            minWidth={200}
+          />
         )}
         <Button
-          variant='common'
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+          className={cn(styles.advancedButton, styles.manageWalletsButton)}
+          text={messages.manageWallets}
+          includeHoverAnimations
+          textClassName={styles.textClassName}
           onClick={onClickConnectWallets}
-          iconLeft={IconSettings}
-        >
-          {messages.manageWallets}
-        </Button>
+          type={ButtonType.GLASS}
+          leftIcon={<IconSettings className={styles.iconStyle} />}
+          minWidth={200}
+        />
         {isMobile && (
           <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
         )}
-      </Flex>
+      </div>
     </div>
   )
 }

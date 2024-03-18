@@ -170,6 +170,31 @@
   margin-right: 8px;
 }
 
+.discordButton {
+  background: transparent !important;
+  border: 1px solid var(--neutral-light-6);
+}
+
+.updateRole {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.discordButton .iconDiscord {
+  height: 24px;
+  width: 24px;
+}
+
+.discordButton .iconDiscord path {
+  fill: var(--neutral);
+}
+
+.discordButton .discordButtonText {
+  color: var(--neutral) !important;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .currentTier {
   position: absolute;
   top: -35px;

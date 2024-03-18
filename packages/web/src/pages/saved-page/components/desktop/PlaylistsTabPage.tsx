@@ -92,7 +92,7 @@ export const PlaylistsTabPage = () => {
         primaryText={emptyPlaylistsHeader}
         secondaryText={messages.emptyPlaylistsBody}
         buttonLabel={messages.createPlaylist}
-        buttonIcon={IconPlus}
+        buttonIcon={<IconPlus />}
         onClick={handleCreatePlaylist}
       />
     )

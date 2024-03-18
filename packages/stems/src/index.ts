@@ -10,6 +10,13 @@ export * from './styles/colors'
 export * from './utils/styles'
 
 export {
+  Button,
+  ButtonProps,
+  Type as ButtonType,
+  Size as ButtonSize
+} from './components/Button'
+
+export {
   PillButton,
   PillButtonProps,
   Variant as PillButtonVariant

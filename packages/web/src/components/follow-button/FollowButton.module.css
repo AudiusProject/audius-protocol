@@ -1,0 +1,29 @@
+.followButton {
+  display: flex;
+  justify-content: center;
+  flex: 0 0 132px;
+  padding: 0 16px;
+}
+
+.followButton.full {
+  width: 100%;
+  height: 36px;
+}
+
+.followButton.medium {
+  max-width: 144px;
+}
+
+.followButton.small {
+  width: 132px;
+}
+
+.followButton.small .followButtonText {
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.3px;
+}
+
+.followButton .followButtonIcon {
+  margin-right: 4px !important;
+}

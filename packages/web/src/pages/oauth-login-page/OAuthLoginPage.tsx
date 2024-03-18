@@ -304,14 +304,15 @@ export const OAuthLoginPage = () => {
               </button>
             </div>
             <CTAButton
-              isLoading={isSubmitting}
-              disabled={isSubmitDisabled}
+              isSubmitting={isSubmitting}
+              isDisabled={isSubmitDisabled}
+              text={
+                userAlreadyWriteAuthorized
+                  ? messages.continueButton
+                  : messages.authorizeButton
+              }
               onClick={handleAlreadySignedInAuthorizeSubmit}
-            >
-              {userAlreadyWriteAuthorized
-                ? messages.continueButton
-                : messages.authorizeButton}
-            </CTAButton>
+            />
           </div>
         ) : (
           <div className={styles.signInFormContainer}>
@@ -362,9 +363,12 @@ export const OAuthLoginPage = () => {
                   className={cn(styles.otpInput)}
                 />
               ) : null}
-              <CTAButton type='submit' isLoading={isSubmitting}>
-                {messages.signInButton}
-              </CTAButton>
+              <CTAButton
+                isSubmitting={isSubmitting}
+                text={messages.signInButton}
+                buttonType='submit'
+                isDisabled={isSubmitDisabled}
+              />
             </form>
             <div className={styles.signUpButtonContainer}>
               <a

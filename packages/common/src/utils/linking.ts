@@ -4,7 +4,6 @@ export const externalLinkAllowList = new Set([
   'tiktok.com',
   'twitter.com',
   'x.com',
-  'blog.audius.co',
   'audius.co',
   'discord.gg',
   'solscan.io'

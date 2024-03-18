@@ -14,7 +14,7 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
-import { Modal, IconValidationX, IconNote, Flex } from '@audius/harmony'
+import { Modal, IconValidationX, IconNote } from '@audius/harmony'
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -108,16 +108,16 @@ const VerifyBody = (props: VerifyBodyProps) => {
     <div className={styles.container}>
       <p className={styles.text}>{messages.description}</p>
       <div className={cn(styles.text, styles.warning)}>{messages.warning}</div>
-      <Flex direction='column' w='100%' mt='xl' gap='s'>
+      <div className={styles.btnContainer}>
         {isTwitterEnabled ? (
           <TwitterAuthButton
             onClick={handleClickTwitter}
             onFailure={props.onFailure}
             onSuccess={props.onTwitterLogin}
-            fullWidth
-          >
-            {messages.twitterVerify}
-          </TwitterAuthButton>
+            text={messages.twitterVerify}
+            className={styles.socialButton}
+            containerClassName={styles.socialButton}
+          />
         ) : null}
 
         {isInstagramEnabled ? (
@@ -125,10 +125,10 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickInstagram}
             onFailure={props.onFailure}
             onSuccess={props.onInstagramLogin}
-            fullWidth
-          >
-            {messages.instagramVerify}
-          </InstagramAuthButton>
+            text={messages.instagramVerify}
+            className={styles.socialButton}
+            containerClassName={styles.socialButton}
+          />
         ) : null}
 
         {isTikTokEnabled ? (
@@ -136,11 +136,11 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickTikTok}
             onFailure={props.onFailure}
             onSuccess={props.onTikTokLogin}
-          >
-            {messages.tiktokVerify}
-          </TikTokAuthButton>
+            text={messages.tiktokVerify}
+            className={styles.socialButton}
+          />
         ) : null}
-      </Flex>
+      </div>
       {props.error && (
         <div className={styles.error}>
           <IconValidationX className={styles.validationIcon} />

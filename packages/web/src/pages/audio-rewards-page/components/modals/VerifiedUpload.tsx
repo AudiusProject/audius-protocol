@@ -68,15 +68,16 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <span className={styles.title}>{messages.step1Title}</span>
       <span className={styles.subtitle}>{messages.step1Subtitle}</span>
       <div className={styles.verifyButtons}>
-        <TwitterButton onClick={onClickVerify}>
-          {messages.verifyTwitterButton}
-        </TwitterButton>
+        <TwitterButton
+          text={messages.verifyTwitterButton}
+          className={styles.twitterButton}
+          onClick={onClickVerify}
+        />
         <InstagramButton
           className={styles.instagramButton}
+          text={messages.verifyIGButton}
           onClick={onClickVerify}
-        >
-          {messages.verifyIGButton}
-        </InstagramButton>
+        />
       </div>
       <Divider />
       <span className={styles.title}>{messages.step2Title}</span>

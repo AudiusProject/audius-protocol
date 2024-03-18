@@ -26,3 +26,18 @@
   fill: var(--secondary);
   transition: fill 0.07s ease-out;
 }
+.arrowIcon {
+  width: 20px;
+  height: 20px;
+}
+.viewAll path {
+  fill: var(--neutral-light-4);
+}
+.viewAll {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+}
