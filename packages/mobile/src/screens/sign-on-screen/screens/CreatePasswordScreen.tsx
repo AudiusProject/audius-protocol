@@ -4,11 +4,12 @@ import { createPasswordPageMessages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
+import { Dimensions, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex } from '@audius/harmony-native'
-import { KeyboardAvoidingView } from 'app/components/core'
+import { ScrollView, KeyboardAvoidingView } from 'app/components/core'
 import { PasswordField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -59,30 +60,33 @@ export const CreatePasswordScreen = () => {
       validationSchema={passwordFormikSchema}
     >
       <Page>
-        <KeyboardAvoidingView keyboardShowingOffset={220}>
-          <Flex direction='column' h='100%' gap='l'>
-            <Heading
-              heading={createPasswordPageMessages.createYourPassword}
-              description={createPasswordPageMessages.description}
-            />
-            <ReadOnlyField
-              label={createPasswordPageMessages.yourEmail}
-              value={email}
-            />
-            <PasswordField
-              name='password'
-              clearErrorOnChange={false}
-              label={createPasswordPageMessages.passwordLabel}
-            />
-            <PasswordField
-              name='confirmPassword'
-              clearErrorOnChange={false}
-              label={createPasswordPageMessages.confirmPasswordLabel}
-            />
-            <PasswordCompletionChecklist />
-          </Flex>
-        </KeyboardAvoidingView>
-        <PageFooter prefix={<SignUpAgreementText />} />
+        <ScrollView>
+          <KeyboardAvoidingView keyboardShowingOffset={220}>
+            <Flex direction='column' h='100%' gap='l'>
+              <Heading
+                heading={createPasswordPageMessages.createYourPassword}
+                description={createPasswordPageMessages.description}
+              />
+              <ReadOnlyField
+                label={createPasswordPageMessages.yourEmail}
+                value={email}
+              />
+              <PasswordField
+                name='password'
+                clearErrorOnChange={false}
+                label={createPasswordPageMessages.passwordLabel}
+              />
+              <PasswordField
+                name='confirmPassword'
+                clearErrorOnChange={false}
+                label={createPasswordPageMessages.confirmPasswordLabel}
+              />
+              <PasswordCompletionChecklist />
+              <SignUpAgreementText />
+            </Flex>
+          </KeyboardAvoidingView>
+        </ScrollView>
+        <PageFooter />
       </Page>
     </Formik>
   )
