@@ -11,6 +11,7 @@ const BITSKI_CALLBACK_URL = env.BITSKI_CALLBACK_URL
 const WEB3_NETWORK_ID = parseInt(env.ETH_NETWORK_ID || '')
 const ETH_PROVIDER_URLS = (env.ETH_PROVIDER_URL || '').split(',')
 
+// here
 type Config = {
   isBitSkiEnabled: boolean
   isWalletConnectEnabled: boolean

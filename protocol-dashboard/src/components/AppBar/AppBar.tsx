@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import Button from 'components/Button'
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
+import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5/react'
 import UserImage from 'components/UserImage'
 import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
@@ -30,6 +31,51 @@ import mobileStyles from './AppBarMobile.module.css'
 
 const env = import.meta.env.VITE_ENVIRONMENT
 const styles = createStyles({ desktopStyles, mobileStyles })
+let ethProviderUrl =
+  import.meta.env.VITE_ETH_PROVIDER_URL || 'ws://0.0.0.0:8546' //
+
+ethProviderUrl = ethProviderUrl.split(',')[0]
+
+// 1. Get projectId
+const projectId = '0416e7e9c027fb75dc5a365384683fdb'
+
+// 2. Set chains
+const mainnet = {
+  chainId: 1,
+  name: 'Ethereum',
+  currency: 'ETH',
+  explorerUrl: 'https://etherscan.io',
+  rpcUrl: ethProviderUrl
+}
+
+// 3. Create a metadata object
+const metadata = {
+  name: 'Audius',
+  description: 'The Audius Protocol Dashboard',
+  url: 'https://dashboard.audius.org', // origin must match your domain & subdomain
+  icons: ['https://avatars.mywebsite.com/']
+}
+
+// 4. Create Ethers config
+const ethersConfig = defaultConfig({
+  /*Required*/
+  metadata,
+
+  /*Optional*/
+  enableEIP6963: true, // true by default
+  enableInjected: true, // true by default
+  enableCoinbase: true, // true by default
+  rpcUrl: ethProviderUrl, // used for the Coinbase SDK
+  defaultChainId: 1 // used for the Coinbase SDK
+})
+
+// 5. Create a Web3Modal instance
+createWeb3Modal({
+  ethersConfig,
+  chains: [mainnet],
+  projectId,
+  enableAnalytics: false // Optional - defaults to your Cloud configuration
+})
 
 const messages = {
   title: 'AUDIUS',
@@ -59,7 +105,7 @@ const Misconfigured = ({ isMisconfigured }: MisconfiguredProps) => {
 
   return (
     <>
-      <div
+      {/* <div
         onClick={onClick}
         className={clsx(styles.connectMetaMaskContainer, styles.cursorPointer)}
       >
@@ -69,12 +115,13 @@ const Misconfigured = ({ isMisconfigured }: MisconfiguredProps) => {
             ? messages.metaMaskMisconfigured
             : messages.connectMetaMask}
         </div>
-      </div>
-      <ConnectMetaMaskModal
+      </div> */}
+      <w3m-button />
+      {/* <ConnectMetaMaskModal
         isMisconfigured={isMisconfigured}
         isOpen={isOpen}
         onClose={onClose}
-      />
+      /> */}
     </>
   )
 }
