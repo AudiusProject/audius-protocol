@@ -13,11 +13,7 @@ import Page from 'components/Page'
 import { Address, ServiceType, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { createStyles } from 'utils/mobile'
-import {
-  NODES_DISCOVERY_NODE,
-  NOT_FOUND,
-  SERVICES_DISCOVERY_PROVIDER_NODE
-} from 'utils/routes'
+import { NODES_DISCOVERY_NODE, NOT_FOUND } from 'utils/routes'
 import desktopStyles from './Node.module.css'
 import mobileStyles from './NodeMobile.module.css'
 
@@ -123,9 +119,7 @@ const Node = () => {
   const { spID: spIDParam } = useParams<{ spID: string }>()
   const spID = parseInt(spIDParam, 10)
   const { wallet: accountWallet } = useAccount()
-  const isDiscovery =
-    !!useMatch(SERVICES_DISCOVERY_PROVIDER_NODE) ||
-    !!useMatch(NODES_DISCOVERY_NODE)
+  const isDiscovery = !!useMatch(NODES_DISCOVERY_NODE)
 
   return (
     <Page

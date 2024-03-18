@@ -215,7 +215,12 @@ const BaseTooltip: React.FC<TooltipProps> = ({
       onMouseLeave={() => setHover(false)}
     >
       {isHover ? ReactDOM.createPortal(tooltip, rootDomNode) : null}
-      {children}
+      {!isBasic && React.isValidElement(children)
+        ? React.cloneElement(children, {
+            // @ts-expect-error
+            isActive: isHover
+          })
+        : children}
     </span>
   )
 }

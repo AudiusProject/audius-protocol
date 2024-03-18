@@ -1,4 +1,4 @@
-import { IconColors, IconInfo } from '@audius/harmony'
+import { IconColors, IconInfo, IconProps } from '@audius/harmony'
 import Tooltip from 'components/Tooltip'
 
 type InfoTooltipProps = {
@@ -9,6 +9,22 @@ type InfoTooltipProps = {
   size?: 'default' | 'large'
   color?: IconColors
 }
+
+type TooltipIconProps = IconProps & {
+  isActive?: boolean
+}
+const TooltipIcon = ({ isActive, size, color }: TooltipIconProps) => {
+  return (
+    <IconInfo
+      size={size}
+      color={color}
+      css={{
+        opacity: isActive ? 1 : 0.7
+      }}
+    />
+  )
+}
+
 export const InfoTooltip = ({
   title,
   body,
@@ -19,7 +35,7 @@ export const InfoTooltip = ({
 }: InfoTooltipProps) => {
   return (
     <Tooltip title={title} body={body} ctaText={ctaText} ctaHref={ctaHref}>
-      <IconInfo size={size === 'large' ? 'm' : 's'} color={color} />
+      <TooltipIcon size={size === 'large' ? 'm' : 's'} color={color} />
     </Tooltip>
   )
 }
