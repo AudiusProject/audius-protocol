@@ -12,7 +12,12 @@ import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Operator, Status, User } from 'types'
 import { useReplaceRoute } from 'utils/effects'
-import { SERVICES_ACCOUNT_USER, accountPage, operatorPage } from 'utils/routes'
+import {
+  NODES_ACCOUNT_USER,
+  SERVICES_ACCOUNT_USER,
+  accountPage,
+  operatorPage
+} from 'utils/routes'
 
 import { ConnectAudiusProfileCard } from 'components/ConnectAudiusProfileCard/ConnectAudiusProfileCard'
 import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
@@ -67,7 +72,9 @@ const UserPage = () => {
   // Check if on user or operator page
   useEffect(() => {
     if (status !== Status.Success) return
-    const isUserPath = !!matchPath(pathname, SERVICES_ACCOUNT_USER)
+    const isUserPath =
+      !!matchPath(pathname, SERVICES_ACCOUNT_USER) ||
+      !!matchPath(pathname, NODES_ACCOUNT_USER)
     if (isServiceProvider && isUserPath) replaceRoute(operatorPage(wallet))
     else if (!isServiceProvider && !isUserPath)
       replaceRoute(accountPage(wallet))

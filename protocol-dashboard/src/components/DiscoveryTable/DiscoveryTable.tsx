@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react'
 import { useDiscoveryProviders } from 'store/cache/discoveryProvider/hooks'
 
-import { DiscoveryProvider, Address, Status } from 'types'
-import { SERVICES_DISCOVERY_PROVIDER, discoveryNodePage } from 'utils/routes'
+import { Address, DiscoveryProvider, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
+import { NODES_DISCOVERY, discoveryNodePage } from 'utils/routes'
 
 import ServiceTable from 'components/ServiceTable'
 
@@ -30,7 +30,7 @@ const DiscoveryTable: React.FC<DiscoveryTableProps> = ({
   const pushRoute = usePushRoute()
 
   const onClickMore = useCallback(() => {
-    pushRoute(SERVICES_DISCOVERY_PROVIDER)
+    pushRoute(NODES_DISCOVERY)
   }, [pushRoute])
 
   const onRowClick = useCallback(

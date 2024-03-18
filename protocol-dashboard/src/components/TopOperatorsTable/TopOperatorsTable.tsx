@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import React, { useCallback } from 'react'
-import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
+import { NODES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 
 import Table from 'components/Table'
 import styles from './TopOperatorsTable.module.css'
@@ -47,7 +47,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   const isMobile = useIsMobile()
   const pushRoute = usePushRoute()
   const onClickMore = useCallback(() => {
-    pushRoute(SERVICES_SERVICE_PROVIDERS)
+    pushRoute(NODES_SERVICE_PROVIDERS)
   }, [pushRoute])
 
   const onRowClick = useCallback(

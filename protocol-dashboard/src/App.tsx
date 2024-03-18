@@ -69,14 +69,27 @@ const App = () => {
               <div className={styles.appContent}>
                 <Routes>
                   <Route path={routes.HOME} element={<Home />} />
+                  <Route path={routes.NODES} element={<Services />} />
                   <Route path={routes.SERVICES} element={<Services />} />
                   <Route
                     path={routes.SERVICES_UNREGISTERED_DISCOVERY_NODE}
                     element={<UnregisteredNode />}
                   />
                   <Route
+                    path={routes.NODES_UNREGISTERED_DISCOVERY_NODE}
+                    element={<UnregisteredNode />}
+                  />
+                  <Route
+                    path={routes.NODES_DISCOVERY}
+                    element={<DiscoveryProviders />}
+                  />
+                  <Route
                     path={routes.SERVICES_DISCOVERY_PROVIDER}
                     element={<DiscoveryProviders />}
+                  />
+                  <Route
+                    path={routes.NODES_DISCOVERY_NODE}
+                    element={<Node />}
                   />
                   <Route
                     path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
@@ -87,27 +100,46 @@ const App = () => {
                     element={<UnregisteredNode />}
                   />
                   <Route
+                    path={routes.NODES_UNREGISTERED_CONTENT_NODE}
+                    element={<UnregisteredNode />}
+                  />
+                  <Route
                     path={routes.SERVICES_CONTENT}
+                    element={<ContentNodes />}
+                  />
+                  <Route
+                    path={routes.NODES_CONTENT}
                     element={<ContentNodes />}
                   />
                   <Route
                     path={routes.SERVICES_CONTENT_NODE}
                     element={<Node />}
                   />
+                  <Route path={routes.NODES_CONTENT_NODE} element={<Node />} />
                   <Route
                     path={routes.SERVICES_SERVICE_PROVIDERS}
+                    element={<ServiceOperators />}
+                  />
+                  <Route
+                    path={routes.NODES_SERVICE_PROVIDERS}
                     element={<ServiceOperators />}
                   />
                   <Route
                     path={routes.SERVICES_USERS}
                     element={<ServiceUsers />}
                   />
+                  <Route path={routes.NODES_USERS} element={<ServiceUsers />} />
                   <Route
                     path={routes.SERVICES_ACCOUNT_USER}
                     element={<User />}
                   />
+                  <Route path={routes.NODES_ACCOUNT_USER} element={<User />} />
                   <Route
                     path={routes.SERVICES_ACCOUNT_OPERATOR}
+                    element={<User />}
+                  />
+                  <Route
+                    path={routes.NODES_ACCOUNT_OPERATOR}
                     element={<User />}
                   />
                   <Route path={routes.GOVERNANCE} element={<Governance />} />
