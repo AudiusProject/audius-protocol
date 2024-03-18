@@ -1,3 +1,4 @@
 {
-  "baseUrl": "https://release-candidate.staging.audius.co/"
+  "baseUrl": "https://release-candidate.staging.audius.co/",
+  "video": true
 }

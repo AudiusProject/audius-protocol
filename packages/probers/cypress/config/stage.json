@@ -1,3 +1,4 @@
 {
-  "baseUrl": "https://staging.audius.co"
+  "baseUrl": "https://staging.audius.co",
+  "video": true
 }
