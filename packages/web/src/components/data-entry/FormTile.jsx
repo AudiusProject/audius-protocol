@@ -8,7 +8,8 @@ import {
   GENRES,
   convertGenreLabelToValue
 } from '@audius/common/utils'
-import { Button, Switch, IconIndent } from '@audius/harmony'
+import { Switch, IconIndent } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
@@ -275,15 +276,15 @@ const BasicForm = (props) => {
   const renderAdvancedButton = () => {
     return (
       <Button
-        variant='common'
-        size='small'
         className={cn(styles.menuButton, styles.advancedButton)}
+        textClassName={styles.menuButtonText}
+        iconClassName={styles.menuButtonIcon}
+        type={ButtonType.COMMON_ALT}
         name={props.advancedShow ? 'showAdvanced' : 'hideAdvanced'}
-        iconLeft={IconIndent}
+        text={props.advancedShow ? 'Hide Advanced' : 'Show Advanced'}
+        leftIcon={<IconIndent />}
         onClick={props.toggleAdvanced}
-      >
-        {props.advancedShow ? 'Hide Advanced' : 'Show Advanced'}
-      </Button>
+      />
     )
   }
 

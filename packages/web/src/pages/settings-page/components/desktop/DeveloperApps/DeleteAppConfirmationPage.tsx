@@ -3,10 +3,12 @@ import { useCallback, useEffect } from 'react'
 import { useDeleteDeveloperApp } from '@audius/common/api'
 import { Name, Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { Button, ModalFooter } from '@audius/harmony'
+import { ModalFooter } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './DeleteAppConfirmationPage.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
@@ -77,23 +79,26 @@ export const DeleteAppConfirmationPage = (
     <div>
       <h4 className={styles.header}>{name}</h4>
       <p className={styles.confirmation}>{messages.confirmation}</p>
-      <ModalFooter css={{ paddingBottom: `0 !important` }}>
+      <ModalFooter className={styles.deleteAppFooter}>
         <Button
-          variant='secondary'
+          type={ButtonType.COMMON_ALT}
+          text={messages.cancel}
+          fullWidth
           onClick={handleCancel}
           disabled={isDeleting}
-          fullWidth
-        >
-          {messages.cancel}
-        </Button>
+        />
         <Button
-          variant='destructive'
+          type={ButtonType.DESTRUCTIVE}
+          text={isDeleting ? messages.deletingApp : messages.deleteApp}
           fullWidth
           onClick={handleDelete}
-          isLoading={isDeleting}
-        >
-          {isDeleting ? messages.deletingApp : messages.deleteApp}
-        </Button>
+          rightIcon={
+            isDeleting ? (
+              <LoadingSpinner className={styles.deletingSpinner} />
+            ) : undefined
+          }
+          disabled={isDeleting}
+        />
       </ModalFooter>
     </div>
   )

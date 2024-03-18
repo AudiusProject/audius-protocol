@@ -1,0 +1,25 @@
+.root {
+  max-width: 488px;
+}
+
+.button {
+  flex: 1;
+}
+
+.button > .buttonText {
+  font-size: var(--font-l);
+}
+
+.content {
+  line-height: 150%;
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  text-align: center;
+  white-space: pre-line;
+}
+
+.footer {
+  display: flex;
+  gap: var(--unit-4);
+  padding: 0 var(--unit-6) var(--unit-6) var(--unit-6);
+}

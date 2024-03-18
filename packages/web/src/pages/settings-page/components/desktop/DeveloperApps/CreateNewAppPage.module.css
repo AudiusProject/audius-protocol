@@ -4,6 +4,16 @@
   gap: var(--unit-6);
 }
 
+.creatingSpinner {
+  height: var(--unit-6);
+  width: var(--unit-6);
+  color: var(--white);
+}
+
+.creatingSpinner g path {
+  stroke: var(--white);
+}
+
 .actionsContainer {
   display: flex;
   gap: var(--unit-2);

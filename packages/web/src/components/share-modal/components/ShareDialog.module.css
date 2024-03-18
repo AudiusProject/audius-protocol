@@ -1,3 +1,30 @@
+.headerContainer {
+  border-bottom-color: var(--neutral-light-8);
+}
+
+.modalBody {
+  display: flex;
+  overflow: hidden;
+  max-width: 528px;
+  width: 100%;
+  flex-direction: column;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+
+.titleIcon {
+  height: var(--unit-8);
+  width: var(--unit-8);
+  margin-right: var(--unit-2);
+}
+
+.title {
+  font-size: var(--font-xl);
+}
+
 .modalContent {
   display: flex;
   flex-direction: column;
@@ -7,6 +34,12 @@
   height: 100%;
   justify-content: space-around;
   font-weight: var(--font-bold);
+}
+
+.description {
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  line-height: 1.5;
 }
 
 .actionList {

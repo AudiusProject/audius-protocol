@@ -44,3 +44,33 @@
   display: inline-flex;
   justify-content: flex-end;
 }
+
+.deleteButton {
+  border-color: var(--accent-red);
+}
+
+.deleteButton .deleteButtonText {
+  color: var(--accent-red);
+}
+
+.deleteButton:hover {
+  border-color: var(--accent-red);
+  background-color: var(--accent-red);
+}
+
+.deleteButton:hover .deleteButtonText {
+  color: var(--white);
+}
+
+.deleteButton:active .deleteButtonText {
+  color: var(--white);
+}
+
+.deleteButton:active {
+  border-color: var(--accent-red-dark-1);
+  background-color: var(--accent-red-dark-1);
+}
+
+.saveChangesButton {
+  margin-left: 24px;
+}

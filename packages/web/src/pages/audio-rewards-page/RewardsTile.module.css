@@ -177,6 +177,31 @@
   flex: 1 1 0;
 }
 
+.panelButton {
+  height: var(--unit-8) !important;
+  width: 100%;
+  padding: 8px;
+  padding-left: 12px;
+}
+.panelButton.mobile {
+  height: var(--unit-8);
+  width: 100%;
+}
+.panelButton svg {
+  height: 20px;
+  width: 20px;
+}
+
+.panelButton .panelButtonText {
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+}
+
+.buttonIcon {
+  margin: 0 2px 0 0px !important;
+}
+
 .loadingRewardsTile.mobile {
   height: 48px;
   width: 48px;

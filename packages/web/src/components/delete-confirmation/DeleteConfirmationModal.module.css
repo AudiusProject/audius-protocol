@@ -1,0 +1,55 @@
+.header {
+  width: 452px;
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  text-align: center;
+  margin: 8px auto;
+}
+
+.description {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.buttons {
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.deleteButton {
+  cursor: pointer;
+  margin-right: 31px;
+  text-transform: uppercase;
+  border-color: var(--accent-red);
+}
+
+.deleteButton .deleteButtonText {
+  color: var(--accent-red);
+}
+
+.deleteButton:hover {
+  border-color: var(--accent-red);
+  color: var(--white);
+  background-color: var(--accent-red);
+}
+
+.deleteButton:active .deleteButtonText {
+  color: var(--white);
+}
+
+.deleteButton:active {
+  border-color: var(--accent-red-dark-1);
+  background-color: var(--accent-red-dark-1);
+}
+
+.nevermindButton {
+  cursor: pointer;
+  text-transform: uppercase;
+}

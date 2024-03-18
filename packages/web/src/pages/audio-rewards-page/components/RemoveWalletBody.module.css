@@ -19,3 +19,30 @@
   color: var(--neutral);
   margin-bottom: 32px;
 }
+
+.btnContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.removeBtn,
+.removeBtn:hover,
+.removeBtn:active {
+  background: var(--accent-red) !important;
+}
+
+.removeBtn .removeBtnText {
+  color: var(--white);
+}
+
+.btn .btnText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+}
+
+.ignoreBtn {
+}
+
+.btn {
+  margin: 0px 12px;
+}

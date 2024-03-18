@@ -97,6 +97,10 @@
   text-decoration: underline;
 }
 
+.buttonText {
+  text-transform: uppercase;
+}
+
 .lineupWrapper {
   width: 720px;
   margin: auto;

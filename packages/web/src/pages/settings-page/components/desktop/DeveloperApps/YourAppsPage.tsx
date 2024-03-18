@@ -1,7 +1,8 @@
 import { useGetDeveloperApps } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { ModalContentText, IconPlus, Button } from '@audius/harmony'
+import { ModalContentText, IconPlus } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -37,14 +38,16 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
 
   let createAppButton = (
     <Button
-      variant='secondary'
-      size='small'
-      iconLeft={IconPlus}
+      type={ButtonType.COMMON_ALT}
+      size={ButtonSize.SMALL}
+      className={styles.newAppButton}
+      textClassName={styles.newAppButtonText}
+      iconClassName={styles.newAppButtonIcon}
+      text={messages.newAppButton}
+      leftIcon={<IconPlus />}
       onClick={() => setPage(CreateAppsPages.NEW_APP)}
       disabled={status !== Status.SUCCESS || hasMaxAllowedApps}
-    >
-      {messages.newAppButton}
-    </Button>
+    />
   )
 
   if (hasMaxAllowedApps) {

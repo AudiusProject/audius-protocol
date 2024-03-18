@@ -14,7 +14,8 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
-import { Modal, IconValidationX, IconNote, Button, Flex } from '@audius/harmony'
+import { Modal, IconValidationX, IconNote, Flex } from '@audius/harmony'
+import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -207,9 +208,15 @@ const SuccessBody = ({
         />
       </div>
       <div className={styles.handle}>{`@${handle}`}</div>
-      <Button variant='primary' onClick={onClick} iconRight={IconNote}>
-        {messages.backToMusic}
-      </Button>
+      <Button
+        type={ButtonType.COMMON_ALT}
+        className={styles.successBtn}
+        textClassName={styles.btnText}
+        size={ButtonSize.MEDIUM}
+        text={messages.backToMusic}
+        onClick={onClick}
+        rightIcon={<IconNote className={styles.noteIcon} />}
+      />
     </div>
   )
 }
@@ -349,13 +356,22 @@ const VerificationModal = (props: VerificationModalProps) => {
   return (
     <>
       {props.isVerified ? (
-        <Button variant='common' disabled>
-          {messages.verifiedBtn}
-        </Button>
+        <Button
+          isDisabled={true}
+          text={messages.verifiedBtn}
+          className={styles.disabledBtn}
+          textClassName={styles.disabledBtnText}
+          type={ButtonType.COMMON_ALT}
+        />
       ) : (
-        <Button variant='common' onClick={onOpen}>
-          {messages.buttonText}
-        </Button>
+        <Button
+          text={messages.buttonText}
+          onClick={onOpen}
+          className={styles.btn}
+          textClassName={styles.btnText}
+          size={ButtonSize.MEDIUM}
+          type={ButtonType.COMMON_ALT}
+        />
       )}
       <Modal
         isOpen={isOpen}

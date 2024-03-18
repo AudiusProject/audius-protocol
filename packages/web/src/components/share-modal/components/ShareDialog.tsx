@@ -7,27 +7,30 @@ import {
   IconLink,
   IconMessage,
   IconShare,
-  IconTwitter as IconTwitterBird,
-  ButtonProps,
-  Button,
-  ModalContentText
+  IconTwitter as IconTwitterBird
 } from '@audius/harmony'
+import { Button, ButtonProps, ButtonType } from '@audius/stems'
+import cn from 'classnames'
 
 import { messages } from '../messages'
 import { ShareProps } from '../types'
 
 import styles from './ShareDialog.module.css'
 
+const iconProps = { height: 24, width: 24 }
+
 type ShareActionListItemProps = ButtonProps
 
-const ShareActionListItem = (props: ShareActionListItemProps) => {
+const ShareActionListItem = ({
+  textClassName,
+  ...props
+}: ShareActionListItemProps) => {
   return (
     <li className={styles.actionListItem}>
       <Button
-        variant='common'
-        fullWidth
-        css={(theme) => ({ color: theme.color.secondary.secondary })}
         className={styles.actionButton}
+        type={ButtonType.COMMON_ALT}
+        textClassName={cn(styles.actionButtonLabel, textClassName)}
         {...props}
       />
     </li>
@@ -48,40 +51,57 @@ export const ShareDialog = ({
   isPrivate
 }: ShareDialogProps) => {
   return (
-    <Modal size='small' isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
+    <Modal
+      allowScroll={false}
+      bodyClassName={styles.modalBody}
+      headerContainerClassName={styles.headerContainer}
+      isOpen={isOpen}
+      onClose={onClose}
+      onClosed={onClosed}
+    >
       <ModalHeader onClose={onClose}>
         <ModalTitle
-          icon={<IconShare />}
+          icon={<IconShare className={styles.titleIcon} />}
           title={messages.modalTitle(shareType)}
         />
       </ModalHeader>
       <ModalContent>
         <div className={styles.modalContent}>
-          <ModalContentText>
+          <p className={styles.description}>
             {shareType === 'playlist' && isPrivate
               ? messages.hiddenPlaylistShareDescription
               : messages.shareDescription}
-          </ModalContentText>
+          </p>
           <ul className={styles.actionList}>
             <ShareActionListItem
-              iconLeft={IconMessage}
+              leftIcon={<IconMessage {...iconProps} />}
+              text={messages.directMessage}
               onClick={onShareToDirectMessage}
-            >
-              {messages.directMessage}
-            </ShareActionListItem>
+              iconClassName={styles.shareIcon}
+              textClassName={styles.shareActionLabel}
+            />
             <ShareActionListItem
-              iconLeft={IconTwitterBird}
+              leftIcon={<IconTwitterBird {...iconProps} />}
+              text={messages.twitter}
               onClick={onShareToTwitter}
-            >
-              {messages.twitter}
-            </ShareActionListItem>
-            <ShareActionListItem iconLeft={IconLink} onClick={onCopyLink}>
-              {messages.copyLink}
-            </ShareActionListItem>
+              iconClassName={styles.shareIcon}
+              textClassName={styles.shareActionLabel}
+            />
+            <ShareActionListItem
+              leftIcon={<IconLink {...iconProps} />}
+              iconClassName={styles.shareIcon}
+              text={messages.copyLink}
+              textClassName={styles.shareActionLabel}
+              onClick={onCopyLink}
+            />
             {onEmbed ? (
-              <ShareActionListItem iconLeft={IconEmbed} onClick={onEmbed}>
-                {messages.embed}
-              </ShareActionListItem>
+              <ShareActionListItem
+                leftIcon={<IconEmbed {...iconProps} />}
+                iconClassName={styles.shareIcon}
+                text={messages.embed}
+                textClassName={styles.shareActionLabel}
+                onClick={onEmbed}
+              />
             ) : null}
           </ul>
         </div>

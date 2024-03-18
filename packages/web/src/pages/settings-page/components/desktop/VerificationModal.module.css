@@ -47,6 +47,31 @@
   align-items: center;
 }
 
+.btn {
+  height: 52px !important;
+  width: 100%;
+}
+/** Breakpoint for settings card **/
+@media (max-width: 780px) {
+  .btn {
+    margin: 8px auto;
+  }
+}
+
+/** Verified icon should always be primary/white */
+.disabledBtn .btnIcon path:first-child,
+.btn .btnIcon path:first-child {
+  fill: #cc0fe0 !important;
+}
+.disabledBtn .btnIcon path:nth-child(2),
+.btn .btnIcon path:nth-child(2) {
+  fill: white !important;
+}
+
+.btn .btnText {
+  font-size: var(--font-l);
+}
+
 .error {
   color: var(--accent-red);
   font-weight: var(--font-demi-bold);
@@ -107,4 +132,39 @@
 
 .iconVerified {
   margin-left: 4px;
+}
+
+.container .successBtn {
+  height: 64px !important;
+  padding: 0px 56px;
+}
+
+.successBtn .btnText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  text-transform: capitalize;
+  color: var(--neutral);
+}
+
+.disabledBtn {
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-6);
+  opacity: 0.5;
+}
+
+.disabledBtn:hover,
+.disabledBtn:active {
+  transform: none !important;
+  background-color: var(--white) !important;
+  border: 1px solid var(--neutral-light-6) !important;
+}
+
+.disabledBtn .disabledBtnText {
+  color: var(--neutral);
+  font-weight: var(--font-demi-bold);
+}
+
+.socialButton {
+  width: 100%;
+  margin-bottom: 4px;
 }

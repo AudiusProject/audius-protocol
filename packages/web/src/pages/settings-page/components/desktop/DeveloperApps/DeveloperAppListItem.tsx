@@ -67,9 +67,9 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
             // @ts-ignore
             ref={ref}
             {...triggerProps}
+            className={styles.listItemActions}
             aria-label={messages.appActionsLabel}
             color='default'
-            size='m'
             icon={IconKebabHorizontal}
             onClick={() => onClick()}
           />

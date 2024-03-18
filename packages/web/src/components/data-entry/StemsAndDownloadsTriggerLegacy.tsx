@@ -14,7 +14,8 @@ import {
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
-import { Button, IconCloudDownload, IconReceive } from '@audius/harmony'
+import { IconCloudDownload, IconReceive } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { FormikErrors } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -286,15 +287,16 @@ export const StemsAndDownloadsTriggerLegacy = (
       renderValue={() => null}
       previewOverride={(toggleMenu) => (
         <Button
-          variant='common'
-          size='small'
           className={styles.menuButton}
+          textClassName={styles.menuButtonText}
+          iconClassName={styles.menuButtonIcon}
+          type={ButtonType.COMMON_ALT}
           name='stemsModal'
+          text={messages.title}
+          size={ButtonSize.SMALL}
           onClick={toggleMenu}
-          iconLeft={IconCloudDownload}
-        >
-          {messages.title}
-        </Button>
+          leftIcon={<IconCloudDownload />}
+        />
       )}
     />
   )

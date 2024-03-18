@@ -19,6 +19,10 @@
   padding: 0 24px;
 }
 
+.header button {
+  min-width: 82px;
+}
+
 .headerText {
   display: flex;
   flex-direction: column;
@@ -292,6 +296,33 @@
 .date {
   margin: 0 8px;
   color: var(--neutral-light-2);
+}
+
+.detailsButtonContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.detailsButton {
+  padding: 0 var(--unit-4);
+}
+.detailsButton .detailsButtonText {
+  color: var(--neutral-light-4);
+  font-size: var(--font-m);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.detailsButton .detailsButtonIcon {
+  margin-right: var(--unit-1) !important;
+}
+.detailsButton .detailsButtonIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.detailsButton.mobileDetailsButton {
+  width: 100%;
+  height: var(--unit-9);
 }
 
 .nftModal {
@@ -637,6 +668,10 @@
   margin-bottom: 16px;
 }
 
+.mobile .header button {
+  width: 100%;
+}
+
 .mobile .content {
   padding: 0 12px;
 }
@@ -683,6 +718,16 @@
 
 .mobileContent {
   padding: 0 12px;
+}
+
+.mobileButtonContainer {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.mobileButtonContainer .detailsButton {
+  flex: 1 1 0;
 }
 
 @keyframes fadeInVisible {

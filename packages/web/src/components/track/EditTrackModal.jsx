@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
 import { newTrackMetadata } from '@audius/common/schemas'
-import { Button, Modal, Flex } from '@audius/harmony'
+import { Modal } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { mapValues } from 'lodash'
 import PropTypes from 'prop-types'
 
@@ -124,23 +125,35 @@ const EditTrackModal = ({
           onCloseArtworkPopup={onCloseArtworkPopup}
           trackLength={metadata ? metadata.duration : null}
         />
-        <Flex justifyContent='space-between' ph='m' pv='s' flex={1}>
-          <Flex inline>
+        <div className={styles.buttons}>
+          <div className={styles.buttonsLeft}>
             {onDelete ? (
-              <Button variant='destructive' size='small' onClick={onDelete}>
-                Delete Track
-              </Button>
+              <Button
+                text='DELETE TRACK'
+                size={ButtonSize.TINY}
+                type={ButtonType.SECONDARY}
+                onClick={onDelete}
+                textClassName={styles.deleteButtonText}
+                className={styles.deleteButton}
+              />
             ) : null}
-          </Flex>
-          <Flex inline gap='xl'>
-            <Button variant='secondary' size='small' onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button variant='primary' size='small' onClick={onClickSave}>
-              Save Changes
-            </Button>
-          </Flex>
-        </Flex>
+          </div>
+          <div className={styles.buttonsLeft}>
+            <Button
+              text='CANCEL'
+              size={ButtonSize.TINY}
+              type={ButtonType.COMMON}
+              onClick={onCancel}
+            />
+            <Button
+              className={styles.saveChangesButton}
+              text='SAVE CHANGES'
+              size={ButtonSize.TINY}
+              type={ButtonType.SECONDARY}
+              onClick={onClickSave}
+            />
+          </div>
+        </div>
       </div>
     </Modal>
   )

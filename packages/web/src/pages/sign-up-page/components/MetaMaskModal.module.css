@@ -72,6 +72,22 @@
   margin-top: 33px;
 }
 
+.guideButton {
+  height: 48px;
+  border-radius: 4px;
+}
+
+.guideButton .guideButtonText {
+  height: 10px;
+  width: 313px;
+  color: var(--static-white);
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  line-height: 10px;
+  text-transform: uppercase;
+}
+
 /* Configure MetaMask popup */
 .configOverlay {
   margin-top: -10px;
@@ -110,4 +126,29 @@
   margin-top: 37px;
   position: 'relative';
   display: inline-flex;
+}
+
+.actionButton {
+  margin: 0px 16px;
+  padding-left: 22px !important;
+  padding-right: 22px !important;
+}
+
+.actionButton .actionButtonText {
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.continueButton .actionButtonText {
+  color: var(--neutral);
+}
+
+.continueButton.continueDisabled .actionButtonText {
+  color: var(--white);
+}
+
+.stopButton .actionButtonText {
+  color: var(--white);
 }

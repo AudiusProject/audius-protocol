@@ -33,3 +33,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.listItemActions {
+  flex-grow: 0;
+}

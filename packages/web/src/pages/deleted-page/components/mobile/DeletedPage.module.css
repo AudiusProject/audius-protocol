@@ -86,6 +86,10 @@
   text-decoration: underline;
 }
 
+.buttonText {
+  text-transform: uppercase;
+}
+
 .lineupWrapper {
   margin: auto;
 }

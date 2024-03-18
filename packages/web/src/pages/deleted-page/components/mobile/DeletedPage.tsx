@@ -7,7 +7,8 @@ import {
   User
 } from '@audius/common/models'
 import { NestedNonNullable } from '@audius/common/utils'
-import { Button, IconUser } from '@audius/harmony'
+import { IconUser } from '@audius/harmony'
+import { Button, ButtonType } from '@audius/stems'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -141,12 +142,12 @@ const DeletedPage = g(
             </ArtistPopover>
           </div>
           <Button
-            variant='secondary'
-            iconLeft={IconUser}
+            textClassName={styles.buttonText}
+            text={messages.checkOut(user.name)}
+            type={ButtonType.COMMON}
+            leftIcon={<IconUser />}
             onClick={goToArtistPage}
-          >
-            {messages.checkOut(user.name)}
-          </Button>
+          />
         </div>
       )
     }

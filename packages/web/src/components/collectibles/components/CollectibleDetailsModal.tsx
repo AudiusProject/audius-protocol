@@ -17,7 +17,7 @@ import {
 } from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
-  Button,
+  Button as HarmonyButton,
   ModalContent,
   ModalContentText,
   ModalFooter,
@@ -31,9 +31,9 @@ import {
   IconLink,
   IconShare,
   IconLogoCircleSOL,
-  IconLogoCircleETH,
-  Flex
+  IconLogoCircleETH
 } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -289,7 +289,7 @@ const CollectibleDetailsModal = ({
               </a>
             )}
 
-            <Flex gap='m' wrap='wrap'>
+            <div className={styles.detailsButtonContainer}>
               <Toast
                 text={collectibleMessages.copied}
                 fillParent={false}
@@ -299,40 +299,46 @@ const CollectibleDetailsModal = ({
                 tooltipClassName={styles.shareTooltip}
               >
                 <Button
-                  variant='common'
-                  size='small'
+                  className={styles.detailsButton}
+                  textClassName={styles.detailsButtonText}
+                  iconClassName={styles.detailsButtonIcon}
                   onClick={() => copyToClipboard(shareUrl)}
-                  iconLeft={IconShare}
-                >
-                  Share
-                </Button>
+                  text='Share'
+                  type={ButtonType.COMMON_ALT}
+                  size={ButtonSize.SMALL}
+                  leftIcon={<IconShare />}
+                />
               </Toast>
 
               <Button
-                variant='common'
-                size='small'
+                className={styles.detailsButton}
+                textClassName={styles.detailsButtonText}
+                iconClassName={styles.detailsButtonIcon}
                 onClick={() => setIsEmbedModalOpen?.(true)}
-                iconLeft={IconEmbed}
-              >
-                Embed
-              </Button>
+                text='Embed'
+                type={ButtonType.COMMON_ALT}
+                size={ButtonSize.SMALL}
+                leftIcon={<IconEmbed />}
+              />
 
               {isCollectibleOptionEnabled &&
                 isUserOnTheirProfile &&
                 collectible.mediaType === CollectibleMediaType.IMAGE && (
                   <Button
-                    variant='common'
-                    size='small'
+                    className={styles.detailsButton}
+                    textClassName={styles.detailsButtonText}
+                    iconClassName={styles.detailsButtonIcon}
                     onClick={() => {
                       setIsModalOpen(false)
                       setIsPicConfirmaModalOpen(true)
                     }}
-                    iconLeft={IconImage}
-                  >
-                    Set As Profile Pic
-                  </Button>
+                    text='Set As Profile Pic'
+                    type={ButtonType.COMMON_ALT}
+                    size={ButtonSize.SMALL}
+                    leftIcon={<IconImage />}
+                  />
                 )}
-            </Flex>
+            </div>
           </div>
         </div>
       </Modal>
@@ -354,16 +360,20 @@ const CollectibleDetailsModal = ({
         </ModalContent>
 
         <ModalFooter>
-          <Button
+          <HarmonyButton
             variant='secondary'
             onClick={() => setIsPicConfirmaModalOpen(false)}
             fullWidth
           >
             {collectibleMessages.setAsProfilePickCancel}
-          </Button>
-          <Button variant='primary' onClick={onClickProfPicUpload} fullWidth>
+          </HarmonyButton>
+          <HarmonyButton
+            variant='primary'
+            onClick={onClickProfPicUpload}
+            fullWidth
+          >
             {collectibleMessages.setAsProfilePickConfirm}
-          </Button>
+          </HarmonyButton>
         </ModalFooter>
       </Modal>
 
@@ -448,13 +458,15 @@ const CollectibleDetailsModal = ({
             )}
 
             <Button
-              variant='common'
-              size='small'
+              className={cn(styles.detailsButton, styles.mobileDetailsButton)}
+              textClassName={styles.detailsButtonText}
+              iconClassName={styles.detailsButtonIcon}
               onClick={handleMobileShareClick}
-              iconLeft={IconShare}
-            >
-              Share
-            </Button>
+              text='Share'
+              type={ButtonType.COMMON_ALT}
+              size={ButtonSize.SMALL}
+              leftIcon={<IconShare />}
+            />
           </div>
         </div>
       </Drawer>

@@ -22,10 +22,9 @@ import {
   IconPencil,
   IconShare,
   PopupMenu,
-  PopupMenuItem,
-  Button,
-  Flex
+  PopupMenuItem
 } from '@audius/harmony'
+import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import {
   DragDropContext,
@@ -96,8 +95,7 @@ export const collectibleMessages = {
   setAsProfilePicDescription:
     'Are you sure you want to change your profile picture?',
   setAsProfilePickCancel: 'Nevermind',
-  setAsProfilePickConfirm: 'Yes',
-  collectibleOptions: 'Collectible Options'
+  setAsProfilePickConfirm: 'Yes'
 }
 
 const dedupe = (list: any[]) => {
@@ -584,40 +582,42 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
           </div>
 
           {isMobile ? (
-            <Flex gap='s' w='100%'>
+            <div className={styles.mobileButtonContainer}>
               {isUserOnTheirProfile && (
                 <Button
-                  variant='common'
-                  size='small'
+                  className={styles.detailsButton}
+                  textClassName={styles.detailsButtonText}
+                  iconClassName={styles.detailsButtonIcon}
                   onClick={handleEditClick}
-                  iconLeft={IconPencil}
-                  fullWidth
-                >
-                  Edit
-                </Button>
+                  text='Edit'
+                  type={ButtonType.COMMON_ALT}
+                  size={ButtonSize.SMALL}
+                  leftIcon={<IconPencil />}
+                />
               )}
               <Button
-                variant='common'
-                size='small'
+                className={styles.detailsButton}
+                textClassName={styles.detailsButtonText}
+                iconClassName={styles.detailsButtonIcon}
                 onClick={handleShareClick}
-                iconLeft={IconShare}
-                fullWidth
-              >
-                Share
-              </Button>
-            </Flex>
+                text='Share'
+                type={ButtonType.COMMON_ALT}
+                size={ButtonSize.SMALL}
+                leftIcon={<IconShare />}
+              />
+            </div>
           ) : (
             <PopupMenu
               items={overflowMenuItems}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
               renderTrigger={(anchorRef, triggerPopup) => (
                 <Button
-                  variant='secondary'
-                  size='small'
-                  iconLeft={IconKebabHorizontal}
-                  aria-label={collectibleMessages.collectibleOptions}
+                  leftIcon={<IconKebabHorizontal />}
                   ref={anchorRef}
                   onClick={() => triggerPopup()}
+                  text={null}
+                  size={ButtonSize.SMALL}
+                  type={ButtonType.COMMON}
                 />
               )}
               zIndex={zIndex.NAVIGATOR_POPUP}
