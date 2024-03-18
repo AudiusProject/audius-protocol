@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { css } from '@emotion/native'
 import { useFormikContext } from 'formik'
-import { Dimensions, Platform, View, ScrollView } from 'react-native'
+import { Dimensions, Platform, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type {

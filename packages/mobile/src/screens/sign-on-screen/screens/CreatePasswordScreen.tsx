@@ -4,7 +4,6 @@ import { createPasswordPageMessages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
-import { Dimensions, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
