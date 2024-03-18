@@ -301,6 +301,7 @@ def be_followed(current_user_id):
                 "id": str(current_user_id),
                 "path": "following_ids",
             },
+            "boost": 150,
         }
     }
 
@@ -319,11 +320,24 @@ def default_function_score(dsl, ranking_field, factor=0.1):
         "query": {
             "function_score": {
                 "query": {"bool": dsl},
-                "field_value_factor": {
-                    "field": ranking_field,
-                    "factor": factor,
-                    "modifier": "ln2p",
-                },
+                "functions": [
+                    {
+                        "filter": {"term": {"is_verified": True}},
+                        "field_value_factor": {
+                            "field": ranking_field,
+                            "factor": 1000000,
+                            "modifier": "ln1p",
+                        },
+                    },
+                    {
+                        "filter": {"term": {"is_verified": False}},
+                        "field_value_factor": {
+                            "field": ranking_field,
+                            "factor": 0.01,
+                            "modifier": "ln1p",
+                        },
+                    },
+                ],
                 "boost_mode": "multiply",
             }
         }
@@ -400,38 +414,36 @@ def user_dsl(search_str, current_user_id, must_saved=False):
                         *base_match(
                             search_str,
                             extra_fields=["handle.searchable", "name.searchable"],
+                            boost=0.1,
                         ),
                         {
                             "match": {
                                 "name.searchable": {
                                     "query": search_str,
                                     "fuzziness": "AUTO",
+                                    "boost": len(search_str) * 0.01,
                                 }
                             }
                         },
-                        {
-                            "match": {
-                                "handle.searchable": {
-                                    "query": search_str,
-                                    "fuzziness": "AUTO",
+                        (
+                            {
+                                "term": {
+                                    "name": {
+                                        "value": search_str.replace(" ", ""),
+                                        "boost": len(search_str) * 0.5,
+                                    }
                                 }
                             }
-                        },
+                        ),
                         {
-                            "term": {
-                                "name": {
-                                    "value": search_str.replace(" ", ""),
-                                    "boost": 3,
+                            "term": (
+                                {
+                                    "handle": {
+                                        "value": search_str.replace(" ", ""),
+                                        "boost": len(search_str) * 0.5,
+                                    }
                                 }
-                            }
-                        },
-                        {
-                            "term": {
-                                "handle": {
-                                    "value": search_str.replace(" ", ""),
-                                    "boost": 3,
-                                }
-                            }
+                            )
                         },
                         *[
                             {
@@ -444,14 +456,20 @@ def user_dsl(search_str, current_user_id, must_saved=False):
                             for term in search_str.split()
                         ],
                         *[
-                            {"match": {"tracks.tags": {"query": term, "boost": 0.1}}}
-                            for term in search_str.split()
+                            {
+                                "match": {
+                                    "tracks.tags": {
+                                        "query": search_str.replace(" ", ""),
+                                        "boost": 0.1,
+                                    }
+                                }
+                            }
                         ],
                         *[
                             {
                                 "match": {
                                     "tracks.mood": {
-                                        "query": term.title(),
+                                        "query": search_str.replace(" ", ""),
                                     }
                                 }
                             }
@@ -465,11 +483,12 @@ def user_dsl(search_str, current_user_id, must_saved=False):
         "must_not": [],
         "should": [
             *base_match(
-                search_str, operator="and", extra_fields=["handle", "name"], boost=4
+                search_str,
+                operator="and",
+                extra_fields=["handle", "name"],
+                boost=len(search_str) * 12,
             ),
-            {"term": {"handle": {"value": search_str, "boost": 4}}},
-            {"term": {"name": {"value": search_str, "boost": 4}}},
-            {"term": {"is_verified": {"value": True, "boost": 3}}},
+            {"term": {"name": {"value": search_str, "boost": len(search_str) * 2}}},
         ],
     }
 
@@ -479,7 +498,8 @@ def user_dsl(search_str, current_user_id, must_saved=False):
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))
 
-    return default_function_score(dsl, "follower_count")
+    return default_function_score(dsl, "follower_count", factor=10)
+    # return {"query": {"bool": dsl}}
 
 
 def base_playlist_dsl(search_str, is_album):
@@ -546,12 +566,15 @@ def drop_copycats(users):
     """
     reserved = set()
     for user in users:
+        logger.info(f"asdf user: {user}")
         if user["is_verified"]:
             reserved.add(lower_ascii_name(user["name"]))
 
     filtered = []
     for user in users:
         if not user["is_verified"] and lower_ascii_name(user["name"]) in reserved:
+            continue
+        if not user["profile_picture_sizes"]:
             continue
         filtered.append(user)
     return filtered
