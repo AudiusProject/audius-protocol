@@ -495,6 +495,7 @@ workflows:
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
             packages/libs/.* run-embed-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
           requires:
             - generate-config
             - init
@@ -537,6 +538,7 @@ workflows:
             packages/embed/.* run-embed-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:

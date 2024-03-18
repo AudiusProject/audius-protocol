@@ -3,10 +3,13 @@
   "version": "1.0.1",
   "description": "Create an Audius app with one command",
   "scripts": {
-    "dev": "tsup ./index.ts --watch",
-    "prepublishOnly": "rm -rf dist && npm run build",
     "build": "tsup ./index.ts",
-    "test": "vitest"
+    "dev": "tsup ./index.ts --watch",
+    "lint": "eslint",
+    "prepublishOnly": "rm -rf dist && npm run build",
+    "test": "vitest",
+    "typecheck": "tsc",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
   },
   "repository": {
     "type": "git",
