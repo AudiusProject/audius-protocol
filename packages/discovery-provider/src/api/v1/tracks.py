@@ -488,18 +488,6 @@ stream_parser.add_argument(
     required=False,
     default=False,
 )
-# todo: remove after clients are updated to use /download
-stream_parser.add_argument(
-    "filename",
-    description="""(DEPRECATED) Optional - name of file to download. Redirects to /download if provided.""",
-    type=str,
-)
-# todo: remove after clients are updated to use 'nft_access_signature'
-stream_parser.add_argument(
-    "premium_content_signature",
-    description="""(DEPRECATED) Optional - same as 'nft_access_signature'. Temporarily leaving it here for backwards compatibility.""",
-    type=str,
-)
 
 
 @ns.route("/<string:track_id>/stream")
@@ -530,17 +518,8 @@ class TrackStream(Resource):
         is_preview = request_args.get("preview")
         user_data = request_args.get("user_data")
         user_signature = request_args.get("user_signature")
-        nft_access_signature = request_args.get(
-            "nft_access_signature"
-        ) or request_args.get("premium_content_signature")
+        nft_access_signature = request_args.get("nft_access_signature")
         decoded_id = decode_with_abort(track_id, ns)
-
-        # redirect to /download if filename is provided
-        # this will be removed once clients are updated to use /download
-        filename = request_args.get("filename")
-        if filename:
-            redirect_path = f"/v1/tracks/{track_id}/download?user_data={user_data}&user_signature={user_signature}&filename={filename}&nft_access_signature={nft_access_signature}"
-            return redirect_path
 
         info = get_track_access_info(decoded_id)
         track = info.get("track")

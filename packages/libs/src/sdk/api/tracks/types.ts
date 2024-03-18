@@ -67,16 +67,6 @@ export const createUploadTrackMetadataSchema = () =>
   z.object({
     aiAttributionUserId: z.optional(HashId),
     description: z.optional(z.string().max(1000)),
-    download: z.optional(
-      z
-        .object({
-          cid: z.string(),
-          isDownloadable: z.boolean(),
-          requiresFollow: z.boolean()
-        })
-        .strict()
-        .nullable()
-    ),
     fieldVisibility: z.optional(
       z.object({
         mood: z.optional(z.boolean()),

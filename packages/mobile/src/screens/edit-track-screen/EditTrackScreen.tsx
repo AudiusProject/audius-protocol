@@ -1,10 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
-import {
-  isContentFollowGated,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { UploadTrack } from '@audius/common/store'
 import { creativeCommons, formatPrice } from '@audius/common/utils'
 import { Formik } from 'formik'
@@ -282,14 +279,6 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       if (streamConditions) {
         metadata.download_conditions = streamConditions
         metadata.is_download_gated = true
-      }
-
-      // set the redundant download json field for consistency
-      // this will be cleaned up soon
-      metadata.download = {
-        is_downloadable: isDownloadable,
-        requires_follow: isContentFollowGated(metadata.download_conditions),
-        cid: null
       }
 
       // submit the metadata
