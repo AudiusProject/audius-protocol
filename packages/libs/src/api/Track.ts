@@ -640,7 +640,16 @@ export class Track extends Base {
       download_conditions: trackMetadata.download_conditions,
       permalink: trackMetadata.permalink,
       preview_start_seconds: trackMetadata.preview_start_seconds,
-      duration: trackMetadata.duration
+      duration: trackMetadata.duration,
+      is_invalid: trackMetadata.is_invalid,
+      stem_of: trackMetadata.stem_of,
+      ddex_app: trackMetadata.ddex_app,
+      is_playlist_upload: trackMetadata.is_playlist_upload,
+      audio_upload_id: trackMetadata.audio_upload_id,
+      track_cid: trackMetadata.track_cid,
+      orig_file_cid: trackMetadata.orig_file_cid,
+      orig_filename: trackMetadata.orig_filename,
+      preview_cid: trackMetadata.preview_cid
     }
   }
 }
