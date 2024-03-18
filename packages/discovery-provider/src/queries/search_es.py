@@ -301,7 +301,7 @@ def be_followed(current_user_id):
                 "id": str(current_user_id),
                 "path": "following_ids",
             },
-            "boost": 150,
+            "boost": 500,
         }
     }
 
@@ -320,24 +320,11 @@ def default_function_score(dsl, ranking_field, factor=0.1):
         "query": {
             "function_score": {
                 "query": {"bool": dsl},
-                "functions": [
-                    {
-                        "filter": {"term": {"is_verified": True}},
-                        "field_value_factor": {
-                            "field": ranking_field,
-                            "factor": 1000000,
-                            "modifier": "ln1p",
-                        },
-                    },
-                    {
-                        "filter": {"term": {"is_verified": False}},
-                        "field_value_factor": {
-                            "field": ranking_field,
-                            "factor": 0.01,
-                            "modifier": "ln1p",
-                        },
-                    },
-                ],
+                "field_value_factor": {
+                    "field": ranking_field,
+                    "factor": factor,
+                    "modifier": "ln2p",
+                },
                 "boost_mode": "multiply",
             }
         }
@@ -360,12 +347,21 @@ def track_dsl(
                     "should": [
                         *base_match(search_str),
                         {
-                            "multi_match": {
-                                "query": search_str,
-                                "fields": ["title.searchable", "user.name.searchable"],
-                                "type": "cross_fields",
-                                "operator": "and",
-                                "boost": 4,
+                            "match": {
+                                "title.searchable": {
+                                    "query": search_str,
+                                    "boost": 4,
+                                    "fuzziness": "AUTO",
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "user.name.searchable": {
+                                    "query": search_str,
+                                    "boost": 4,
+                                    "fuzziness": "AUTO",
+                                }
                             }
                         },
                         *[
@@ -389,6 +385,7 @@ def track_dsl(
             {"exists": {"field": "stem_of"}},
         ],
         "should": [
+            *base_match(search_str, operator="and"),
             {"term": {"user.is_verified": {"value": True}}},
         ],
     }
@@ -488,7 +485,7 @@ def user_dsl(search_str, current_user_id, must_saved=False):
                 extra_fields=["handle", "name"],
                 boost=len(search_str) * 12,
             ),
-            {"term": {"name": {"value": search_str, "boost": len(search_str) * 2}}},
+            {"term": {"name": {"value": search_str, "boost": len(search_str) * 10}}},
         ],
     }
 
@@ -498,8 +495,32 @@ def user_dsl(search_str, current_user_id, must_saved=False):
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))
 
-    return default_function_score(dsl, "follower_count", factor=10)
-    # return {"query": {"bool": dsl}}
+    return {
+        "query": {
+            "function_score": {
+                "query": {"bool": dsl},
+                "functions": [
+                    {
+                        "filter": {"term": {"is_verified": True}},
+                        "field_value_factor": {
+                            "field": "follower_count",
+                            "factor": 1000000,
+                            "modifier": "ln1p",
+                        },
+                    },
+                    {
+                        "filter": {"term": {"is_verified": False}},
+                        "field_value_factor": {
+                            "field": "follower_count",
+                            "factor": 0.01,
+                            "modifier": "ln1p",
+                        },
+                    },
+                ],
+                "boost_mode": "multiply",
+            }
+        }
+    }
 
 
 def base_playlist_dsl(search_str, is_album):
