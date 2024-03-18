@@ -7,5 +7,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "exclude": ["dist"]
+  "exclude": ["dist", "examples", "*.test.ts"]
 }

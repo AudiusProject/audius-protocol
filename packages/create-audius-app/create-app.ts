@@ -1,13 +1,12 @@
-import retry from 'async-retry'
 import { red, green, cyan } from 'picocolors'
 import fs from 'fs'
 import path from 'path'
-import { downloadAndExtractExample, existsInRepo } from './helpers/examples'
+import { ExampleType, exampleExists, installExample } from './helpers/examples'
 import { tryGitInit } from './helpers/git'
 import { install } from './helpers/install'
 import { isFolderEmpty } from './helpers/is-folder-empty'
-import { getOnline } from './helpers/is-online'
 import { isWriteable } from './helpers/is-writeable'
+import { getOnline } from './helpers/is-online'
 
 export class DownloadError extends Error {}
 
@@ -16,10 +15,10 @@ export async function createApp({
   example
 }: {
   appPath: string
-  example: string
+  example: ExampleType
 }): Promise<void> {
   if (example) {
-    const found = await existsInRepo(example)
+    const found = await exampleExists(example)
 
     if (!found) {
       console.error(
@@ -28,7 +27,7 @@ export async function createApp({
         )}. It could be due to the following:\n`,
         `1. Your spelling of example ${red(
           `"${example}"`
-        )} might be incorrect. \n\n Double check that the example exists in https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs/src/sdk/examples\n`
+        )} might be incorrect. \n\n Double check that the example exists in https://github.com/AudiusProject/audius-protocol/tree/main/packages/create-audius-app/examples\n`
       )
       process.exit(1)
     }
@@ -61,19 +60,12 @@ export async function createApp({
 
   process.chdir(root)
 
-  /**
-   * If an example repository is provided, clone it.
-   */
   try {
     console.log(
-      `Downloading files for example ${cyan(
-        example
-      )}. This might take a moment.`
+      `Copying files for example ${cyan(example)}. This might take a moment.`
     )
     console.log()
-    await retry(() => downloadAndExtractExample(root, example), {
-      retries: 3
-    })
+    installExample({ appName, root, isOnline, example })
   } catch (reason) {
     function isErrorLike(err: unknown): err is { message: string } {
       return (

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "ncc build ./index.ts -w -o dist/",
     "prepublishOnly": "rm -rf dist && npm run build",
-    "build": "ncc build ./index.ts -o ./dist/ --minify --no-cache --no-source-map-register"
+    "build": "ncc build ./index.ts -o ./dist/ --minify --no-cache --no-source-map-register",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -31,8 +32,10 @@
     "@types/validate-npm-package-name": "4.0.2",
     "@vercel/ncc": "0.38.1",
     "commander": "2.20.0",
+    "execa": "2.0.3",
     "prompts": "2.4.2",
     "tar": "6.2.0",
-    "validate-npm-package-name": "5.0.0"
+    "validate-npm-package-name": "5.0.0",
+    "vitest": "1.3.0"
   }
 }
