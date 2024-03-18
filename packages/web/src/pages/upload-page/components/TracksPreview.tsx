@@ -57,6 +57,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
           {messages.releaseType}
         </Text>
         <SegmentedControl
+          label={messages.releaseType}
           onSelectOption={handleOptionSelect}
           selected={String(uploadType)}
           options={[
