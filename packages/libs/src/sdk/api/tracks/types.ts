@@ -4,6 +4,7 @@ import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
+import { DDEXResourceContributor, DDEXCopyright, DDEXRightsController } from '../../types/DDEX'
 
 const messages = {
   titleRequiredError: 'Your track must have a name',
@@ -86,7 +87,6 @@ export const createUploadTrackMetadataSchema = () =>
     isrc: z.optional(z.string().nullable()),
     isUnlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
-    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
     license: z.optional(z.string().nullable()),
     mood: z
       .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
@@ -139,7 +139,15 @@ export const createUploadTrackMetadataSchema = () =>
     origFileCid: z.optional(z.string()),
     origFilename: z.optional(z.string()),
     isDownloadable: z.optional(z.string()),
-    isOriginalAvailable: z.optional(z.string())
+    isOriginalAvailable: z.optional(z.string()),
+    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+    artists: z.optional(z.array(DDEXResourceContributor)),
+    resourceContributors: z.optional(z.array(DDEXResourceContributor)),
+    indirectResourceContributors: z.optional(z.array(DDEXResourceContributor)),
+    rightsController: z.optional(DDEXRightsController),
+    copyrightLine: z.optional(DDEXCopyright),
+    producerCopyrightLine: z.optional(DDEXCopyright),
+    parentalWarningType: z.optional(z.string())
   })
 
 export type TrackMetadata = z.input<
