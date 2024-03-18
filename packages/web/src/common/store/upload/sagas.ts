@@ -1001,26 +1001,26 @@ export function* uploadTracksAsync(
     }
   })()
 
-  const recordEvent = make(Name.TRACK_UPLOAD_START_UPLOADING, {
-    count: payload.tracks.length,
-    kind
-  })
-  yield* put(recordEvent)
-
-  const tracks = payload.tracks
-
-  // Prep the USDC purchase conditions
-  for (const trackUpload of tracks) {
-    trackUpload.metadata = yield* call(
-      processTrackForUpload<TrackMetadataForUpload>,
-      trackUpload.metadata
-    )
-  }
-
-  // Upload content.
-  const isAlbum = payload.uploadType === UploadType.ALBUM
-  const isCollection = payload.uploadType === UploadType.PLAYLIST || isAlbum
   try {
+    const recordEvent = make(Name.TRACK_UPLOAD_START_UPLOADING, {
+      count: payload.tracks.length,
+      kind
+    })
+    yield* put(recordEvent)
+
+    const tracks = payload.tracks
+
+    // Prep the USDC purchase conditions
+    for (const trackUpload of tracks) {
+      trackUpload.metadata = yield* call(
+        processTrackForUpload<TrackMetadataForUpload>,
+        trackUpload.metadata
+      )
+    }
+
+    // Upload content.
+    const isAlbum = payload.uploadType === UploadType.ALBUM
+    const isCollection = payload.uploadType === UploadType.PLAYLIST || isAlbum
     if (isCollection) {
       yield* call(uploadCollection, tracks, payload.metadata, isAlbum)
     } else {
