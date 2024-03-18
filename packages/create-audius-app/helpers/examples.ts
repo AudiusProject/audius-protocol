@@ -1,5 +1,4 @@
 import fs from 'fs'
-import { install } from '../helpers/install'
 import { copy } from '../helpers/copy'
 
 import path from 'path'
@@ -15,7 +14,6 @@ export interface InstallExampleArgs {
   example: ExampleType
   appName: string
   root: string
-  isOnline: boolean
 }
 
 export const exampleExists = (example: string) => {
@@ -30,11 +28,7 @@ export const getExampleFile = ({
   return path.join(__dirname, example, file)
 }
 
-export const installExample = async ({
-  root,
-  isOnline,
-  example
-}: InstallExampleArgs) => {
+export const installExample = async ({ root, example }: InstallExampleArgs) => {
   /**
    * Copy the example files to the target directory.
    */
@@ -45,8 +39,4 @@ export const installExample = async ({
     parents: true,
     cwd: examplePath
   })
-
-  console.log('\nInstalling dependencies:')
-
-  await install(isOnline)
 }
