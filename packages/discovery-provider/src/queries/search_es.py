@@ -323,7 +323,7 @@ def default_function_score(dsl, ranking_field, factor=0.1):
                 "field_value_factor": {
                     "field": ranking_field,
                     "factor": factor,
-                    "modifier": "ln1p",
+                    "modifier": "ln2p",
                 },
                 "boost_mode": "multiply",
             }
@@ -496,8 +496,17 @@ def user_dsl(search_str, current_user_id, must_saved=False):
                 extra_fields=["name"],
                 boost=len(search_str) * 12,
             ),
-            {"term": {"name": {"value": search_str, "boost": len(search_str) * 10}}},
-            {"term": {"is_verified": {"value": True, "boost": 3}}},
+            (
+                {
+                    "term": {
+                        "name": {
+                            "value": search_str,
+                            "boost": (len(search_str) * 0.1) ** 2,
+                        }
+                    }
+                }
+            ),
+            {"term": {"is_verified": {"value": True, "boost": 5}}},
         ],
     }
 
@@ -517,15 +526,15 @@ def user_dsl(search_str, current_user_id, must_saved=False):
                         "field_value_factor": {
                             "field": "follower_count",
                             "factor": 10,
-                            "modifier": "ln1p",
+                            "modifier": "ln2p",
                         },
                     },
                     {
                         "filter": {"term": {"is_verified": False}},
                         "field_value_factor": {
                             "field": "follower_count",
-                            "factor": 0.01,
-                            "modifier": "ln1p",
+                            "factor": 0.1,
+                            "modifier": "ln2p",
                         },
                     },
                 ],
@@ -551,7 +560,7 @@ def base_playlist_dsl(search_str, is_album):
                                     "user.name.searchable",
                                 ],
                                 "type": "cross_fields",
-                                "operator": "and",
+                                "operator": "or",
                                 "boost": len(search_str) * 0.5,
                             }
                         },
@@ -587,7 +596,7 @@ def base_playlist_dsl(search_str, is_album):
             {"term": {"is_album": {"value": is_album}}},
         ],
         "should": [
-            *base_match(search_str, operator="and", boost=len(search_str)),
+            *base_match(search_str, operator="and", boost=len(search_str) * 10),
             {"term": {"user.is_verified": {"value": True, "boost": 3}}},
         ],
     }
@@ -596,13 +605,13 @@ def base_playlist_dsl(search_str, is_album):
 def playlist_dsl(search_str, current_user_id, must_saved=False):
     dsl = base_playlist_dsl(search_str, False)
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count")
+    return default_function_score(dsl, "repost_count", factor=1000)
 
 
 def album_dsl(search_str, current_user_id, must_saved=False):
     dsl = base_playlist_dsl(search_str, True)
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count")
+    return default_function_score(dsl, "repost_count", factor=1000)
 
 
 def reorder_users(users):
@@ -614,7 +623,6 @@ def reorder_users(users):
     """
     reserved = set()
     for user in users:
-        logger.info(f"asdf user: {user}")
         if user["is_verified"]:
             reserved.add(lower_ascii_name(user["name"]))
 
