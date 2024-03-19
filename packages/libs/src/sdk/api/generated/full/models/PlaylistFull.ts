@@ -131,6 +131,12 @@ export interface PlaylistFull {
     user: UserFull;
     /**
      * 
+     * @type {string}
+     * @memberof PlaylistFull
+     */
+    ddexApp?: string;
+    /**
+     * 
      * @type {number}
      * @memberof PlaylistFull
      */
@@ -278,6 +284,7 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'favoriteCount': json['favorite_count'],
         'totalPlayCount': json['total_play_count'],
         'user': UserFullFromJSON(json['user']),
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -318,6 +325,7 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'favorite_count': value.favoriteCount,
         'total_play_count': value.totalPlayCount,
         'user': UserFullToJSON(value.user),
+        'ddex_app': value.ddexApp,
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),

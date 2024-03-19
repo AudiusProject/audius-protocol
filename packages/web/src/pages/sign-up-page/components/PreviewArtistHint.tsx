@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { IconCloseAlt, IconPlay, Paper, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -12,11 +10,10 @@ const messages = {
 }
 
 export const PreviewArtistHint = () => {
-  const [isOpen, setIsOpen] = useState(true)
   const hidePreviewHint = useSelector(getHidePreviewHint)
   const dispatch = useDispatch()
 
-  if (!isOpen || hidePreviewHint) return null
+  if (hidePreviewHint) return null
 
   return (
     <Paper
@@ -37,7 +34,6 @@ export const PreviewArtistHint = () => {
         color='staticWhite'
         size='m'
         onClick={() => {
-          setIsOpen(false)
           dispatch(setHidePreviewHint())
         }}
       />

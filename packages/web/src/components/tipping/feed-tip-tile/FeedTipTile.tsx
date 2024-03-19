@@ -10,9 +10,9 @@ import {
 import {
   IconClose as IconRemove,
   IconTipping as IconTip,
-  IconButton
+  IconButton,
+  Button
 } from '@audius/harmony'
-import { PillButton } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -45,7 +45,7 @@ const getAccountUser = accountSelectors.getAccountUser
 const messages = {
   wasTippedBy: 'Was Tipped By',
   andOthers: (num: number) => `& ${num} ${num > 1 ? 'others' : 'other'}`,
-  sendTipToPrefix: 'SEND TIP TO ',
+  sendTipToPrefix: 'Send Tip to ',
   sendTip: 'SEND TIP',
   dismissButton: 'Dismiss tip tile'
 }
@@ -145,12 +145,9 @@ const SendTipButton = ({ user, hideName = false }: SendTipButtonProps) => {
     )
 
   return (
-    <PillButton
-      className={styles.sendTipButton}
-      textClassName={styles.sendTipButtonText}
-      text={renderSendTipButtonTitle()}
-      onClick={handleClick}
-    />
+    <Button variant='secondary' size='small' onClick={handleClick}>
+      {renderSendTipButtonTitle()}
+    </Button>
   )
 }
 

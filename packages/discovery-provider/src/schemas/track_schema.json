@@ -208,18 +208,6 @@
             "remixes": true
           }
         },
-        "download": {
-          "type": [
-            "object",
-            "null"
-          ],
-          "$ref": "#/definitions/Download",
-          "default": {
-            "cid": null,
-            "is_downloadable": false,
-            "requires_follow": false
-          }
-        },
         "stem_of": {
           "type": [
             "object",
@@ -310,7 +298,6 @@
         "create_date",
         "credits_splits",
         "description",
-        "download",
         "field_visibility",
         "file_type",
         "genre",
@@ -364,33 +351,6 @@
         "parent_track_id"
       ],
       "title": "TrackElement"
-    },
-    "Download": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "cid": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "is_downloadable": {
-          "type": "boolean"
-        },
-        "requires_follow": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "cid",
-        "is_downloadable",
-        "requires_follow"
-      ],
-      "title": "Download"
     },
     "FieldVisibility": {
       "type": "object",

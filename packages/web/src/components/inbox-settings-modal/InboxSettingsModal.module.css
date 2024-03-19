@@ -7,23 +7,8 @@
   flex-direction: column;
 }
 
-.saveButton {
-  margin: auto;
-}
-
 .error {
   margin: var(--unit-6) auto 0;
   font-weight: var(--font-demi-bold);
   color: var(--accent-red);
-}
-
-.spinner {
-  display: block;
-  height: 18px;
-  width: 18px;
-  margin: 3px;
-}
-
-.spinner g path {
-  stroke: var(--white) !important;
 }

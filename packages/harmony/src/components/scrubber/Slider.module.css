@@ -1,0 +1,118 @@
+.slider {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0 var(--harmony-unit-3);
+}
+
+.slider.isMobile {
+  margin: 0 var(--harmony-unit-4);
+}
+
+.slider.isDisabled {
+  cursor: default;
+}
+
+/* Use a psuedo-element to "increase" the clickable area of the scrubber. */
+.slider.expandedTargets:after {
+  position: absolute;
+  opacity: 0;
+  border-radius: var(--harmony-unit-half);
+  content: '';
+  width: 100%;
+  height: 500%;
+  top: -300%;
+  left: 0;
+}
+
+.rail {
+  position: relative;
+  width: 100%;
+  height: var(--harmony-unit);
+  border-radius: var(--harmony-unit-half);
+  background: var(--harmony-n-100);
+  overflow: hidden;
+  /** Fixes Safari bug where overflow doesn't work with border radius during animation */
+  mask-image: -webkit-radial-gradient(white, black);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  transition: transform 0.18s ease-in-out;
+}
+
+.trackWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  right: 100%;
+}
+
+.track {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--harmony-neutral);
+}
+
+.track:before {
+  content: '';
+  position: absolute;
+  border-radius: var(--harmony-unit-half);
+  background: var(--harmony-primary-gradient);
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.slider:hover .track:before {
+  opacity: 1;
+}
+
+.handleWrapper {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  left: 0;
+}
+
+.handleContainer {
+  padding: 6px;
+}
+
+.handle {
+  margin-left: var(--harmony-negative-unit);
+  height: var(--harmony-unit-2);
+  width: var(--harmony-unit-2);
+  border-radius: 50%;
+  background: var(--harmony-white);
+  box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.5),
+    0 2px 5px -1px rgba(133, 129, 153, 0.5);
+  transition: transform 0.18s ease-in-out, opacity 0.18s ease-in-out;
+  opacity: 0;
+  transform: scale(0);
+}
+
+.slider.isMobile .handle {
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
+  margin-left: calc(var(--harmony-negative-unit) * 2);
+}
+
+.showHandle .handle,
+.slider:not(.showHandle):hover .handle {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.slider:not(.isDisabled).slider:not(.showHandle):hover .rail {
+  transform: scaleY(1.5);
+}
+
+.slider:not(.isDisabled):not(.isMobile):hover .handle {
+  transform: scale(1.5);
+}

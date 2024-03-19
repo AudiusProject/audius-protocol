@@ -155,12 +155,6 @@ export interface Track {
     isDownloadable?: boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof Track
-     */
-    downloadable?: boolean;
-    /**
-     * 
      * @type {number}
      * @memberof Track
      */
@@ -177,6 +171,18 @@ export interface Track {
      * @memberof Track
      */
     isStreamable?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof Track
+     */
+    ddexApp?: string;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof Track
+     */
+    playlistsContainingTrack?: Array<number>;
 }
 
 /**
@@ -224,10 +230,11 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'user': UserFromJSON(json['user']),
         'duration': json['duration'],
         'isDownloadable': !exists(json, 'is_downloadable') ? undefined : json['is_downloadable'],
-        'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
+        'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
     };
 }
 
@@ -259,10 +266,11 @@ export function TrackToJSON(value?: Track | null): any {
         'user': UserToJSON(value.user),
         'duration': value.duration,
         'is_downloadable': value.isDownloadable,
-        'downloadable': value.downloadable,
         'play_count': value.playCount,
         'permalink': value.permalink,
         'is_streamable': value.isStreamable,
+        'ddex_app': value.ddexApp,
+        'playlists_containing_track': value.playlistsContainingTrack,
     };
 }
 

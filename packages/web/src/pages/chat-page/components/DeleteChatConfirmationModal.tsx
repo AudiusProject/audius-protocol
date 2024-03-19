@@ -7,12 +7,11 @@ import {
   ModalHeader,
   ModalTitle,
   ModalFooter,
-  IconTrash
+  IconTrash,
+  Button,
+  ModalContentText
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
-
-import styles from './DeleteChatConfirmationModal.module.css'
 
 const { deleteChat } = chatActions
 
@@ -44,25 +43,20 @@ export const DeleteChatConfirmationModal = ({
     onClose()
   }, [dispatch, onClose, chatId])
   return (
-    <Modal bodyClassName={styles.root} isOpen={isVisible} onClose={onClose}>
+    <Modal size='small' isOpen={isVisible} onClose={onClose}>
       <ModalHeader>
         <ModalTitle title={messages.title} icon={<IconTrash />} />
       </ModalHeader>
-      <ModalContent className={styles.content}>{messages.content}</ModalContent>
-      <ModalFooter className={styles.footer}>
-        <Button
-          className={styles.button}
-          textClassName={styles.buttonText}
-          type={ButtonType.COMMON_ALT}
-          text={messages.cancel}
-          onClick={onClose}
-        />
-        <Button
-          className={styles.button}
-          type={ButtonType.DESTRUCTIVE}
-          text={messages.confirm}
-          onClick={handleConfirmClicked}
-        />
+      <ModalContent>
+        <ModalContentText>{messages.content}</ModalContentText>
+      </ModalContent>
+      <ModalFooter>
+        <Button variant='secondary' onClick={onClose} fullWidth>
+          {messages.cancel}
+        </Button>
+        <Button variant='destructive' onClick={handleConfirmClicked} fullWidth>
+          {messages.confirm}
+        </Button>
       </ModalFooter>
     </Modal>
   )

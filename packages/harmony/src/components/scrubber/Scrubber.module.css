@@ -1,0 +1,27 @@
+.scrubber {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.timestampStart,
+.timestampEnd {
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-2xs);
+  line-height: 12px;
+  font-family: var(--harmony-font-family);
+  min-width: 40px;
+}
+
+.timestampStart {
+  text-align: right;
+}
+
+.timestampEnd {
+  text-align: left;
+}
+
+.scrubber.isMobile .timestampStart,
+.scrubber.isMobile .timestampEnd {
+  font-size: var(--harmony-font-xs);
+}

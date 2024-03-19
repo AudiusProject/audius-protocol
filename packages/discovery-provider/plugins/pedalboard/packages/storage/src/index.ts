@@ -964,7 +964,6 @@ export type Tracks = {
   license: string | null;
   updated_at: Date;
   cover_art_sizes: string | null;
-  download: unknown | null;
   is_unlisted: boolean;
   field_visibility: unknown | null;
   route_id: string | null;

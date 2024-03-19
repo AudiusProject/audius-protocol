@@ -145,6 +145,20 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				ICPN: "721620118165",
 			},
 			CoverArtURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T7_007.jpg",
+			Artists: []common.Artist{{
+				Name:           "Monkey Claw",
+				Roles:          []string{"MainArtist"},
+				SequenceNumber: 1,
+			}},
+			CopyrightLine: common.Copyright{
+				Year: "2010",
+				Text: "(C) 2010 Iron Crown Music",
+			},
+			ProducerCopyrightLine: common.Copyright{
+				Year: "2010",
+				Text: "(C) 2010 Iron Crown Music",
+			},
+			ParentalWarningType: "NotExplicit",
 		},
 		DDEXReleaseRef: "R0",
 		Tracks: []common.TrackMetadata{
@@ -164,7 +178,26 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 						Roles: []string{"MainArtist"},
 					},
 				},
+				ResourceContributors: []common.ResourceContributor{{
+					Name:           "Steve Albino",
+					Roles:          []string{"Producer"},
+					SequenceNumber: 1,
+				}},
+				IndirectResourceContributors: []common.ResourceContributor{{
+					Name:           "Bob Black",
+					Roles:          []string{"Composer"},
+					SequenceNumber: 1,
+				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
+				CopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ParentalWarningType: "NotExplicit",
 			},
 			{
 				Title:       "Red top mountain, blown sky high",
@@ -182,7 +215,26 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 						Roles: []string{"MainArtist"},
 					},
 				},
+				ResourceContributors: []common.ResourceContributor{{
+					Name:           "Steve Albino",
+					Roles:          []string{"Producer"},
+					SequenceNumber: 1,
+				}},
+				IndirectResourceContributors: []common.ResourceContributor{{
+					Name:           "Bob Black",
+					Roles:          []string{"Composer"},
+					SequenceNumber: 1,
+				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
+				CopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ParentalWarningType: "NotExplicit",
 			},
 			{
 				Title:       "Seige of Antioch",
@@ -200,7 +252,26 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 						Roles: []string{"MainArtist"},
 					},
 				},
+				ResourceContributors: []common.ResourceContributor{{
+					Name:           "Steve Albino",
+					Roles:          []string{"Producer"},
+					SequenceNumber: 1,
+				}},
+				IndirectResourceContributors: []common.ResourceContributor{{
+					Name:           "Bob Black",
+					Roles:          []string{"Composer"},
+					SequenceNumber: 1,
+				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T3_003.wav",
+				CopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ParentalWarningType: "NotExplicit",
 			},
 			{
 				Title:       "Warhammer",
@@ -218,7 +289,26 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 						Roles: []string{"MainArtist"},
 					},
 				},
+				ResourceContributors: []common.ResourceContributor{{
+					Name:           "Steve Albino",
+					Roles:          []string{"Producer"},
+					SequenceNumber: 1,
+				}},
+				IndirectResourceContributors: []common.ResourceContributor{{
+					Name:           "Bob Black",
+					Roles:          []string{"Composer"},
+					SequenceNumber: 1,
+				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T4_004.wav",
+				CopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ParentalWarningType: "NotExplicit",
 			},
 			{
 				Title:       "Iron Horse",
@@ -236,7 +326,26 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 						Roles: []string{"MainArtist"},
 					},
 				},
+				ResourceContributors: []common.ResourceContributor{{
+					Name:           "Steve Albino",
+					Roles:          []string{"Producer"},
+					SequenceNumber: 1,
+				}},
+				IndirectResourceContributors: []common.ResourceContributor{{
+					Name:           "Bob Black",
+					Roles:          []string{"Composer"},
+					SequenceNumber: 1,
+				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T5_005.wav",
+				CopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ParentalWarningType: "NotExplicit",
 			},
 			{
 				Title:       "Yes... I can feel the Monkey Claw!",
@@ -254,7 +363,26 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 						Roles: []string{"MainArtist"},
 					},
 				},
+				ResourceContributors: []common.ResourceContributor{{
+					Name:           "Steve Albino",
+					Roles:          []string{"Producer"},
+					SequenceNumber: 1,
+				}},
+				IndirectResourceContributors: []common.ResourceContributor{{
+					Name:           "Bob Black",
+					Roles:          []string{"Composer"},
+					SequenceNumber: 1,
+				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T6_006.wav",
+				CopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2010",
+					Text: "(C) 2010 Iron Crown Music",
+				},
+				ParentalWarningType: "NotExplicit",
 			},
 		},
 	}, pendingRelease.CreateAlbumRelease, "Album release doesn't match expected")
@@ -322,6 +450,16 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 			CoverArtURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1027024165547_Image.jpg", pendingRelease.ReleaseID),
 			CoverArtURLHash:     "582fb410615167205e8741580cf77e71",
 			CoverArtURLHashAlgo: "MD5",
+			Artists: []common.Artist{{
+				Name:           "Theo Random",
+				Roles:          []string{"MainArtist"},
+				SequenceNumber: 1,
+			}},
+			ProducerCopyrightLine: common.Copyright{
+				Year: "2023",
+				Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
+			},
+			ParentalWarningType: "Explicit",
 		},
 		Tracks: []common.TrackMetadata{
 			{
@@ -329,10 +467,46 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				ReleaseDate: time.Time{},
 				Genre:       common.HipHopRap,
 				Duration:    279,
-				Artists:     []common.Artist{{Name: "Theo Random", Roles: []string{"AssociatedPerformer", "MainArtist"}}},
-				ArtistID:    "",
-				ArtistName:  "",
-				ISRC:        stringPtr("ZAA012300131"),
+				Artists: []common.Artist{{
+					Name:           "Theo Random",
+					Roles:          []string{"AssociatedPerformer", "MainArtist"},
+					SequenceNumber: 1,
+				}},
+				ResourceContributors: []common.ResourceContributor{
+					{
+						Name:           "Thabiso Moya",
+						Roles:          []string{"Composer", "Lyricist"},
+						SequenceNumber: 1,
+					},
+					{
+						Name:           "Melange",
+						Roles:          []string{"Producer"},
+						SequenceNumber: 2,
+					},
+					{
+						Name:           "Neo Ndungane",
+						Roles:          []string{"Composer", "Lyricist"},
+						SequenceNumber: 3,
+					},
+					{
+						Name:           "Feziekk",
+						Roles:          []string{"Producer"},
+						SequenceNumber: 4,
+					},
+					{
+						Name:           "Regaugetsue Refenyeditswe Leshabane",
+						Roles:          []string{"Composer", "Lyricist"},
+						SequenceNumber: 5,
+					},
+					{
+						Name:           "Gabe Archibald Horowitz",
+						Roles:          []string{"Composer", "Lyricist"},
+						SequenceNumber: 6,
+					},
+				},
+				ArtistID:   "",
+				ArtistName: "",
+				ISRC:       stringPtr("ZAA012300131"),
 				DDEXReleaseIDs: common.ReleaseIDs{
 					GRid: "A10328E0010879163O",
 					ISRC: "ZAA012300131",
@@ -342,6 +516,11 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				AudioFileURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.m4a", pendingRelease.ReleaseID),
 				AudioFileURLHash:     "8bb2ce119257314a8fcb215a49f14b33",
 				AudioFileURLHashAlgo: "MD5",
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2023",
+					Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
+				},
+				ParentalWarningType: "Explicit",
 			},
 			{
 				Title:       "No Comment.",
@@ -350,8 +529,46 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				Duration:    142,
 				ArtistID:    "",
 				ArtistName:  "",
-				Artists:     []common.Artist{{Name: "Theo Random", Roles: []string{"AssociatedPerformer", "MainArtist"}}, {Name: "Thato Saul", Roles: []string{"AssociatedPerformer", "MainArtist"}}},
-				ISRC:        stringPtr("ZAA012300128"),
+				Artists: []common.Artist{
+					{
+						Name:           "Theo Random",
+						Roles:          []string{"AssociatedPerformer", "MainArtist"},
+						SequenceNumber: 1,
+					},
+					{
+						Name:           "Thato Saul",
+						Roles:          []string{"AssociatedPerformer", "MainArtist"},
+						SequenceNumber: 2,
+					},
+				},
+				ResourceContributors: []common.ResourceContributor{
+					{
+						Name:           "Theo Random &amp; Thato Saul",
+						Roles:          []string{"AssociatedPerformer"},
+						SequenceNumber: 1,
+					},
+					{
+						Name:           "Thabiso Moya",
+						Roles:          []string{"Composer", "Lyricist"},
+						SequenceNumber: 2,
+					},
+					{
+						Name:           "Melange",
+						Roles:          []string{"Producer"},
+						SequenceNumber: 3,
+					},
+					{
+						Name:           "Thato Matlebyane",
+						Roles:          []string{"Composer", "Lyricist"},
+						SequenceNumber: 4,
+					},
+					{
+						Name:           "Neo Ndungane",
+						Roles:          []string{"Composer", "Lyricist"},
+						SequenceNumber: 5,
+					},
+				},
+				ISRC: stringPtr("ZAA012300128"),
 				DDEXReleaseIDs: common.ReleaseIDs{
 					GRid: "A10328E0010879164M",
 					ISRC: "ZAA012300128",
@@ -361,6 +578,11 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				AudioFileURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.m4a", pendingRelease.ReleaseID),
 				AudioFileURLHash:     "1e9183898a4f6b45f895e45cd18ba162",
 				AudioFileURLHashAlgo: "MD5",
+				ProducerCopyrightLine: common.Copyright{
+					Year: "2023",
+					Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
+				},
+				ParentalWarningType: "Explicit",
 			},
 		},
 	}, pendingRelease.CreateAlbumRelease, "Album release doesn't match expected")

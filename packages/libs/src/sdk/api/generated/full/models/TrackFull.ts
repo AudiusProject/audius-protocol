@@ -26,12 +26,6 @@ import {
     CoverArtFromJSONTyped,
     CoverArtToJSON,
 } from './CoverArt';
-import type { DownloadMetadata } from './DownloadMetadata';
-import {
-    DownloadMetadataFromJSON,
-    DownloadMetadataFromJSONTyped,
-    DownloadMetadataToJSON,
-} from './DownloadMetadata';
 import type { Favorite } from './Favorite';
 import {
     FavoriteFromJSON,
@@ -50,12 +44,6 @@ import {
     FullRemixParentFromJSONTyped,
     FullRemixParentToJSON,
 } from './FullRemixParent';
-import type { PremiumContentSignature } from './PremiumContentSignature';
-import {
-    PremiumContentSignatureFromJSON,
-    PremiumContentSignatureFromJSONTyped,
-    PremiumContentSignatureToJSON,
-} from './PremiumContentSignature';
 import type { Repost } from './Repost';
 import {
     RepostFromJSON,
@@ -209,12 +197,6 @@ export interface TrackFull {
     isDownloadable?: boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof TrackFull
-     */
-    downloadable?: boolean;
-    /**
-     * 
      * @type {number}
      * @memberof TrackFull
      */
@@ -231,6 +213,18 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     isStreamable?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    ddexApp?: string;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof TrackFull
+     */
+    playlistsContainingTrack?: Array<number>;
     /**
      * 
      * @type {number}
@@ -269,12 +263,6 @@ export interface TrackFull {
     creditsSplits?: string;
     /**
      * 
-     * @type {DownloadMetadata}
-     * @memberof TrackFull
-     */
-    download?: DownloadMetadata;
-    /**
-     * 
      * @type {string}
      * @memberof TrackFull
      */
@@ -291,6 +279,12 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     iswc?: string;
+    /**
+     * 
+     * @type {object}
+     * @memberof TrackFull
+     */
+    ddexReleaseIds?: object;
     /**
      * 
      * @type {FieldVisibility}
@@ -395,12 +389,6 @@ export interface TrackFull {
     premiumConditions?: object;
     /**
      * 
-     * @type {PremiumContentSignature}
-     * @memberof TrackFull
-     */
-    premiumContentSignature?: PremiumContentSignature;
-    /**
-     * 
      * @type {boolean}
      * @memberof TrackFull
      */
@@ -502,20 +490,21 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'user': UserFullFromJSON(json['user']),
         'duration': json['duration'],
         'isDownloadable': !exists(json, 'is_downloadable') ? undefined : json['is_downloadable'],
-        'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+        'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
+        'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
         'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : CoverArtFromJSON(json['cover_art_cids']),
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'creditsSplits': !exists(json, 'credits_splits') ? undefined : json['credits_splits'],
-        'download': !exists(json, 'download') ? undefined : DownloadMetadataFromJSON(json['download']),
         'isrc': !exists(json, 'isrc') ? undefined : json['isrc'],
         'license': !exists(json, 'license') ? undefined : json['license'],
         'iswc': !exists(json, 'iswc') ? undefined : json['iswc'],
+        'ddexReleaseIds': !exists(json, 'ddex_release_ids') ? undefined : json['ddex_release_ids'],
         'fieldVisibility': !exists(json, 'field_visibility') ? undefined : FieldVisibilityFromJSON(json['field_visibility']),
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
         'hasCurrentUserReposted': json['has_current_user_reposted'],
@@ -533,7 +522,6 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isAvailable': !exists(json, 'is_available') ? undefined : json['is_available'],
         'isPremium': !exists(json, 'is_premium') ? undefined : json['is_premium'],
         'premiumConditions': !exists(json, 'premium_conditions') ? undefined : json['premium_conditions'],
-        'premiumContentSignature': !exists(json, 'premium_content_signature') ? undefined : PremiumContentSignatureFromJSON(json['premium_content_signature']),
         'isStreamGated': !exists(json, 'is_stream_gated') ? undefined : json['is_stream_gated'],
         'streamConditions': !exists(json, 'stream_conditions') ? undefined : json['stream_conditions'],
         'isDownloadGated': !exists(json, 'is_download_gated') ? undefined : json['is_download_gated'],
@@ -573,20 +561,21 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'user': UserFullToJSON(value.user),
         'duration': value.duration,
         'is_downloadable': value.isDownloadable,
-        'downloadable': value.downloadable,
         'play_count': value.playCount,
         'permalink': value.permalink,
         'is_streamable': value.isStreamable,
+        'ddex_app': value.ddexApp,
+        'playlists_containing_track': value.playlistsContainingTrack,
         'blocknumber': value.blocknumber,
         'create_date': value.createDate,
         'cover_art_sizes': value.coverArtSizes,
         'cover_art_cids': CoverArtToJSON(value.coverArtCids),
         'created_at': value.createdAt,
         'credits_splits': value.creditsSplits,
-        'download': DownloadMetadataToJSON(value.download),
         'isrc': value.isrc,
         'license': value.license,
         'iswc': value.iswc,
+        'ddex_release_ids': value.ddexReleaseIds,
         'field_visibility': FieldVisibilityToJSON(value.fieldVisibility),
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
         'has_current_user_reposted': value.hasCurrentUserReposted,
@@ -604,7 +593,6 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_available': value.isAvailable,
         'is_premium': value.isPremium,
         'premium_conditions': value.premiumConditions,
-        'premium_content_signature': PremiumContentSignatureToJSON(value.premiumContentSignature),
         'is_stream_gated': value.isStreamGated,
         'stream_conditions': value.streamConditions,
         'is_download_gated': value.isDownloadGated,
