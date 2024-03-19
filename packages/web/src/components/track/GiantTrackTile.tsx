@@ -552,6 +552,7 @@ export const GiantTrackTile = ({
           trackId={trackId}
           coverArtSizes={coverArtSizes}
           coSign={coSign}
+          cid={track?.cover_art_sizes ?? null}
           callback={onArtworkLoad}
         />
         <div className={styles.infoSection}>
