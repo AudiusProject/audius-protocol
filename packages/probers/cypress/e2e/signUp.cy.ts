@@ -36,10 +36,13 @@ function assertOnCreatePasswordPage(user: User) {
   cy.findByText(user.email).should('exist')
 }
 
-function testSignUp({ isMobile = false }) {
-  const testUser = generateTestUser()
+function testSignUp({
+  isMobile = false,
+  testUser = generateTestUser(),
+  signUpUrl = 'signup'
+}) {
   const { email, password, handle, name } = testUser
-  cy.visit('signup')
+  cy.visit(signUpUrl)
   cy.findByRole('textbox', { name: /email/i }).type(email)
   cy.findByRole('button', { name: /sign up free/i }).click()
 
@@ -162,9 +165,23 @@ describe('Sign Up', () => {
       cy.findByRole('link', { name: /sign up/i }).click()
       assertOnSignUpPage()
     })
-
-    it('should create an account', () => {
-      testSignUp({ isMobile: false })
+    describe.only('create an account & refer accordingly', () => {
+      const testUser = generateTestUser()
+      it('should create an account', () => {
+        testSignUp({ isMobile: false, testUser })
+      })
+      it('should sign up with a referral', () => {
+        // TODO: replace this with a sign-in instead of a full sign-up (once we can bypass OTP)
+        testSignUp({
+          isMobile: true,
+          testUser,
+          signUpUrl: `/signup?ref=${testUser.handle}`
+        })
+        // TODO: check if following the referree
+        cy.findByRole('button', { name: /open settings menu/i }).click()
+        cy.findByRole('menuitem', { name: /rewards/i }).click()
+        cy.findByText(/you accepted an invite/i).should('exist')
+      })
     })
   })
 
@@ -199,8 +216,23 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it('should create an account', () => {
-      testSignUp({ isMobile: true })
+    describe('create an account & refer accordingly', () => {
+      const testUser = generateTestUser()
+      it('should create an account', () => {
+        testSignUp({ isMobile: true, testUser })
+      })
+      it('should sign up with a referral', () => {
+        // TODO: replace this with a sign-in instead of a full sign-up (once we can bypass OTP)
+        testSignUp({
+          isMobile: true,
+          testUser,
+          signUpUrl: `/signup?ref=${testUser.handle}`
+        })
+        // TODO: check if following the referree
+        cy.findByRole('button', { name: /open settings menu/i }).click()
+        cy.findByRole('menuitem', { name: /rewards/i }).click()
+        cy.findByText(/you accepted an invite/i).should('exist')
+      })
     })
   })
 })

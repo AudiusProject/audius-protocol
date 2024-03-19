@@ -154,6 +154,8 @@ const NavPopupMenu = () => {
                 className={styles.icon}
                 ref={anchorRef}
                 onClick={() => triggerPopup()}
+                role='button'
+                aria-label='Open settings menu'
               >
                 <IconKebabHorizontal size='s' />
               </div>
@@ -167,6 +169,7 @@ const NavPopupMenu = () => {
           )
         }}
         zIndex={zIndex.NAVIGATOR_POPUP}
+        aria-label='Open settings menu'
       />
     </div>
   )
