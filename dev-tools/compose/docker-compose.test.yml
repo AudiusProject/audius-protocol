@@ -524,7 +524,7 @@ services:
   ddex-crawler-batched:
     extends:
       file: docker-compose.yml
-      service: ddex-crawler
+      service: ddex-crawler-batched
     container_name: ddex-crawler-batched
     logging: *default-logging
     environment:
@@ -540,7 +540,7 @@ services:
   ddex-parser-batched:
     extends:
       file: docker-compose.yml
-      service: ddex-parser
+      service: ddex-parser-batched
     container_name: ddex-parser-batched
     logging: *default-logging
     environment:
@@ -555,7 +555,7 @@ services:
   ddex-publisher-batched:
     extends:
       file: docker-compose.yml
-      service: ddex-publisher
+      service: ddex-publisher-batched
     container_name: ddex-publisher-batched
     logging: *default-logging
     environment:
