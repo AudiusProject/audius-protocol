@@ -221,5 +221,4 @@ export type UploadTrackMetadata = Omit<
   | 'audio_upload_id'
   | 'orig_file_cid'
   | 'orig_filename'
-> &
-  Partial<TrackMetadata>
+>

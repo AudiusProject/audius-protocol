@@ -479,7 +479,7 @@ export class Track extends Base {
 
     if (!trackId) trackId = await this.generateTrackId()
     // Prevent extra fields from being added to metadata
-    const parsedTrackMetadata = Track._parseTrackUpload(trackMetadata)
+    const parsedTrackMetadata = Track._parseTrackMetadata(trackMetadata)
     const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
       parsedTrackMetadata
     )
@@ -602,9 +602,7 @@ export class Track extends Base {
   /**
    * Prevents additional fields from being included in metadata
    */
-  static _parseTrackUpload(
-    trackMetadata: UploadTrackMetadata
-  ): UploadTrackMetadata {
+  static _parseTrackMetadata(trackMetadata: TrackMetadata): TrackMetadata {
     return {
       blocknumber: trackMetadata.blocknumber,
       is_delete: trackMetadata.is_delete,
@@ -649,7 +647,8 @@ export class Track extends Base {
       track_cid: trackMetadata.track_cid,
       orig_file_cid: trackMetadata.orig_file_cid,
       orig_filename: trackMetadata.orig_filename,
-      preview_cid: trackMetadata.preview_cid
+      preview_cid: trackMetadata.preview_cid,
+      dateListened: trackMetadata.dateListened
     }
   }
 }
