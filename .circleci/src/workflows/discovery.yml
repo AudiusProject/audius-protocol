@@ -41,7 +41,7 @@ jobs:
       service: solana-relay
       filters:
         branches:
-          only: as/fix-solana-relay-build
+          only: main
   - push-docker-image:
       name: push-pedalboard-sla-auditor
       context: [Vercel, dockerhub]
@@ -175,7 +175,7 @@ jobs:
       service: solana-relay
       filters:
         branches:
-          only: as/fix-solana-relay-build
+          only: main
       requires:
         - push-pedalboard-solana-relay
 
