@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import * as React from 'react'
 
+import BN from 'bn.js'
 import cn from 'classnames'
-
-import { getBNPercentage } from 'utils/bnHelpers'
 
 import styles from './TokenValueSlider.module.css'
 import { TokenValueSliderProps } from './types'
@@ -12,6 +11,14 @@ const messages = {
   min: 'MIN',
   max: 'MAX',
   current: 'CURRENT'
+}
+
+export function getBNPercentage(n1: BN, n2: BN): number {
+  if (n2.isZero()) return 0
+  const thousand = new BN('1000')
+  const num = n1.mul(thousand).div(n2)
+  if (num.gte(thousand)) return 1
+  return num.toNumber() / 1000
 }
 
 export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({

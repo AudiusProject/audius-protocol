@@ -24,9 +24,9 @@ import {
   Button,
   IconArrowRight as IconArrow,
   IconCheck,
+  ProgressBar,
   Text
 } from '@audius/harmony'
-import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 

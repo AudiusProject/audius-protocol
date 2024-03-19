@@ -1,6 +1,15 @@
-:root, root {
-  --stems-token-value-slider-background: linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%);
-  --stems-token-value-slider-background-error: linear-gradient(180deg, #F15064 0%, #C03A4B 100%);
+:root,
+root {
+  --token-value-slider-background: linear-gradient(
+    315deg,
+    #7652cc 2.04%,
+    #b05ce6 100%
+  );
+  --token-value-slider-background-error: linear-gradient(
+    180deg,
+    #f15064 0%,
+    #c03a4b 100%
+  );
 }
 
 .container {
@@ -10,13 +19,13 @@
   width: 576px;
 
   /* Text styles */
-  font-family: var(--font-family);
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
+  font-family: var(--harmony-font-family);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
   line-height: 17px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #BEC5E0;
+  color: var(--harmony-neutral);
 }
 
 .slider {
@@ -31,20 +40,20 @@
 
 .newValueSlider {
   position: absolute;
-  background: var(--stems-token-value-slider-background);
+  background: var(--token-value-slider-background);
   height: 100%;
   transition: width 0.2s ease-in-out;
 }
 
 .initialValueSlider {
   position: absolute;
-  background: var(--stems-token-value-slider-background);
+  background: var(--token-value-slider-background);
   height: 100%;
   transition: width 0.2s ease-in-out;
 }
 
 .invalid {
-  background: var(--stems-token-value-slider-background-error);
+  background: var(--token-value-slider-background-error);
   z-index: 1;
 }
 
@@ -58,16 +67,16 @@
   display: inline-flex;
   justify-content: space-between;
   margin-bottom: 8px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .minLabel {
-  color: var(--neutral-light-4);
+  color: var(--harmony-text-subdued);
   padding-right: 4px;
 }
 
 .maxLabel {
-  color: var(--neutral-light-4);
+  color: var(--harmony-text-subdued);
   padding-left: 4px;
 }
 

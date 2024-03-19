@@ -120,15 +120,6 @@
   align-items: center;
 }
 
-.sendTipButton {
-  margin-left: 8px;
-}
-.sendTipButtonTextContainer {
-  display: flex;
-}
-.sendTipButtonText {
-  color: var(--neutral-light-4) !important;
-}
 .sendTipName {
   margin-left: 2.5px;
   max-width: 302px;

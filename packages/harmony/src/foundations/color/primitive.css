@@ -51,6 +51,7 @@
   --harmony-dark-red: #bb0218;
   --harmony-green: #0f9e48;
   --harmony-light-green: #13c65a;
+  --harmony-primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
   --harmony-gradient: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
 }
 
