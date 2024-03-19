@@ -48,7 +48,6 @@ const emptyMetadata: TrackMetadataForUpload = {
   genre: '',
   has_current_user_reposted: false,
   has_current_user_saved: false,
-  download: null,
   license: null,
   mood: null,
   play_count: 0,
