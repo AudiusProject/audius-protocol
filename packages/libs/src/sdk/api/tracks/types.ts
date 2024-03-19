@@ -20,7 +20,7 @@ export const EthCollectibleGatedConditions = z
     name: z.string(),
     slug: z.string(),
     imageUrl: z.optional(z.string()),
-    externalLink: z.optional(z.string())
+    externalLink: z.optional(z.string()).nullable()
   })
   .strict()
 
@@ -30,7 +30,7 @@ export const SolCollectibleGatedConditions = z
     address: z.string(),
     name: z.string(),
     imageUrl: z.optional(z.string()),
-    externalLink: z.optional(z.string())
+    externalLink: z.optional(z.string()).nullable()
   })
   .strict()
 

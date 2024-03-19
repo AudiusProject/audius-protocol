@@ -12,26 +12,15 @@ type AssetContract = {
   owner: Nullable<number>
   schema_name: TokenStandard
   symbol: string
-  total_supply: number
   description: Nullable<string>
   external_link: Nullable<string>
   image_url: Nullable<string>
-  default_to_fiat: boolean
-  dev_buyer_fee_basis_points: number
-  dev_seller_fee_basis_points: number
-  only_proxied_transfers: boolean
-  opensea_buyer_fee_basis_points: number
-  opensea_seller_fee_basis_points: number
-  buyer_fee_basis_points: number
-  seller_fee_basis_points: number
-  payout_address: Nullable<string>
 }
 
 export type OpenSeaCollection = {
   collection: string
   name: string
   description: string
-  project_url: string
   image_url: string
 }
 
@@ -71,7 +60,7 @@ export type OpenSeaNft = {
   identifier: string
   collection: string
   contract: string
-  token_standard: string
+  token_standard: TokenStandard
   name: string
   description: string
   image_url: string
