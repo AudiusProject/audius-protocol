@@ -27,7 +27,8 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Paper, useTheme, Text } from '@audius/harmony-native'
+import { Paper, useTheme, Text, Flex } from '@audius/harmony-native'
+import { ScrollView } from 'app/components/core'
 import { HarmonyTextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
@@ -90,25 +91,29 @@ export const FinishProfileScreen = () => {
       validationSchema={finishProfileFormikSchema}
     >
       <Page>
-        <Heading
-          heading={finishProfilePageMessages.header}
-          description={finishProfilePageMessages.description}
-        />
-        <Paper>
-          <AccountHeaderField />
-          <HarmonyTextField
-            name='displayName'
-            label={finishProfilePageMessages.displayName}
-            placeholder={finishProfilePageMessages.inputPlaceholder}
-            maxLength={MAX_DISPLAY_NAME_LENGTH}
-            autoComplete='off'
-            onChange={saveDisplayName}
-            style={css({
-              padding: spacing.l,
-              paddingTop: spacing.unit10
-            })}
-          />
-        </Paper>
+        <ScrollView>
+          <Flex gap='2xl'>
+            <Heading
+              heading={finishProfilePageMessages.header}
+              description={finishProfilePageMessages.description}
+            />
+            <Paper>
+              <AccountHeaderField />
+              <HarmonyTextField
+                name='displayName'
+                label={finishProfilePageMessages.displayName}
+                placeholder={finishProfilePageMessages.inputPlaceholder}
+                maxLength={MAX_DISPLAY_NAME_LENGTH}
+                autoComplete='off'
+                onChange={saveDisplayName}
+                style={css({
+                  padding: spacing.l,
+                  paddingTop: spacing.unit10
+                })}
+              />
+            </Paper>
+          </Flex>
+        </ScrollView>
         <PageFooter prefix={<UploadProfilePhotoHelperText />} />
       </Page>
     </Formik>
