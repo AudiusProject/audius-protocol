@@ -23,7 +23,7 @@ def search_es_full(args: dict):
     if not esclient:
         raise Exception("esclient is None")
 
-    search_str = args.get("query").strip()
+    search_str = args.get("query", "").strip()
     current_user_id = args.get("current_user_id")
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
