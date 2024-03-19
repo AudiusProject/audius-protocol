@@ -63,29 +63,6 @@ const MoodSchema = z
   .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
   .nullable()
 
-const DDEXResourceContributor = z
-  .object({
-    name: z.string(),
-    roles: z.array(z.string()),
-    sequence_number: z.number().positive()
-  })
-  .strict()
-
-const DDEXCopyright = z
-  .object({
-    year: z.string(),
-    text: z.string()
-  })
-  .strict()
-
-const DDEXRightsController = z
-  .object({
-    name: z.string(),
-    roles: z.array(z.string()),
-    rights_share_unknown: z.optional(z.string())
-  })
-  .strict()
-
 // TODO: KJ - Need to update the schema in sdk and then import here
 const createSdkSchema = () =>
   z.object({
@@ -106,6 +83,7 @@ const createSdkSchema = () =>
     is_scheduled_release: z.optional(z.boolean()),
     is_unlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
+    ddex_release_ids: z.optional(z.record(z.string()).nullable()),
     license: z.optional(z.string().nullable()),
     mood: MoodSchema,
     is_stream_gated: z.optional(z.boolean()),
@@ -154,15 +132,7 @@ const createSdkSchema = () =>
     orig_file_cid: z.optional(z.string()),
     orig_filename: z.optional(z.string()),
     is_downloadable: z.optional(z.boolean()),
-    is_original_available: z.optional(z.boolean()),
-    ddex_release_ids: z.optional(z.record(z.string()).nullable()),
-    artists: z.optional(z.array(DDEXResourceContributor)),
-    resourceContributors: z.optional(z.array(DDEXResourceContributor)),
-    indirectResourceContributors: z.optional(z.array(DDEXResourceContributor)),
-    rightsController: z.optional(DDEXRightsController),
-    copyrightLine: z.optional(DDEXCopyright),
-    producerCopyrightLine: z.optional(DDEXCopyright),
-    parentalWarningType: z.optional(z.string())
+    is_original_available: z.optional(z.boolean())
   })
 
 export const TrackMetadataSchema = createSdkSchema().merge(
@@ -216,12 +186,7 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       tags: z.optional(z.string())
     }),
     is_album: z.literal(collectionType === 'album'),
-    tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
-    ddex_release_ids: z.optional(z.record(z.string()).nullable()),
-    artists: z.optional(z.array(DDEXResourceContributor)),
-    copyrightLine: z.optional(DDEXCopyright),
-    producerCopyrightLine: z.optional(DDEXCopyright),
-    parentalWarningType: z.optional(z.string())
+    tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema }))
   })
 
 export const PlaylistSchema = createCollectionSchema('playlist')

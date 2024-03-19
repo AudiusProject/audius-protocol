@@ -174,20 +174,13 @@ type ReleaseIDs struct {
 }
 
 type TrackMetadata struct {
-	Title                        string                `bson:"title"`
-	ReleaseDate                  time.Time             `bson:"release_date"`
-	Genre                        Genre                 `bson:"genre"`
-	Duration                     int                   `bson:"duration"`
-	PreviewStartSeconds          NullableInt           `bson:"preview_start_seconds,omitempty"`
-	ISRC                         NullableString        `bson:"isrc,omitempty"`
-	DDEXReleaseIDs               ReleaseIDs            `bson:"ddex_release_ids"`
-	Artists                      []ResourceContributor `bson:"artists"`
-	ResourceContributors         []ResourceContributor `bson:"resource_contributors,omitempty"`
-	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributors,omitempty"`
-	RightsController             RightsController      `bson:"rights_controller,omitempty"`
-	CopyrightLine                Copyright             `bson:"copyright_line,omitempty"`
-	ProducerCopyrightLine        Copyright             `bson:"producer_copyright_line,omitempty"`
-	ParentalWarningType          string                `bson:"parental_warning_type,omitempty"`
+	Title               string         `bson:"title"`
+	ReleaseDate         time.Time      `bson:"release_date"`
+	Genre               Genre          `bson:"genre"`
+	Duration            int            `bson:"duration"`
+	PreviewStartSeconds NullableInt    `bson:"preview_start_seconds,omitempty"`
+	ISRC                NullableString `bson:"isrc,omitempty"`
+	DDEXReleaseIDs      ReleaseIDs     `bson:"ddex_release_ids"`
 
 	// TODO: Handle License from PLineText?
 	License NullableString `bson:"license,omitempty"`
@@ -198,8 +191,23 @@ type TrackMetadata struct {
 	Tags        NullableString `bson:"tags,omitempty"`
 
 	// Extra fields (not in SDK)
-	ArtistID                    string `bson:"artist_id"`
-	ArtistName                  string `bson:"artist_name"`
+
+	// michelle add to sdk ==
+	Artists []Artist `bson:"artists"`
+	// michelle add to sdk ==
+
+	ArtistID   string `bson:"artist_id"`
+	ArtistName string `bson:"artist_name"`
+
+	// michelle add to sdk ==
+	ResourceContributors         []ResourceContributor `bson:"resource_contributor,omitempty"`
+	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributor,omitempty"`
+	RightsController             RightsController      `bson:"rights_controller,omitempty"`
+	CopyrightLine                Copyright             `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine        Copyright             `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType          string                `bson:"parental_warning_type,omitempty"`
+	// michelle add to sdk ==
+
 	PreviewAudioFileURL         string `bson:"preview_audio_file_url"`
 	PreviewAudioFileURLHash     string `bson:"preview_audio_file_url_hash"`
 	PreviewAudioFileURLHashAlgo string `bson:"preview_audio_file_url_hash_algo"`
@@ -212,47 +220,56 @@ type TrackMetadata struct {
 }
 
 // Not part of SDK
-
-type Copyright struct {
-	Year string `bson:"year"`
-	Text string `bson:"text"`
-}
-
-// ResourceContributor represents a contributor to the sound recording
-type ResourceContributor struct {
+type Artist struct {
 	Name           string   `bson:"name"`
 	Roles          []string `bson:"roles"`
 	SequenceNumber int      `bson:"sequence_number"`
 }
 
+type Copyright struct {
+	Year string
+	Text string
+}
+
+// ResourceContributor represents a contributor to the sound recording
+type ResourceContributor struct {
+	Name           string
+	Roles          []string
+	SequenceNumber int `bson:"sequence_number"`
+}
+
 type RightsController struct {
-	Name               string   `bson:"name"`
-	Roles              []string `bson:"roles"`
-	RightsShareUnknown string   `bson:"rights_share_unknown,omitempty"`
+	Name               string
+	Roles              []string
+	RightsShareUnknown string
 }
 
 type CollectionMetadata struct {
-	PlaylistName          string                `bson:"playlist_name"`
-	PlaylistOwnerID       string                `bson:"playlist_owner_id"`
-	PlaylistOwnerName     string                `bson:"playlist_owner_name"`
-	Description           NullableString        `bson:"description,omitempty"`
-	IsAlbum               bool                  `bson:"is_album"`
-	IsPrivate             bool                  `bson:"is_private"`
-	Tags                  NullableString        `bson:"tags,omitempty"`
-	Genre                 Genre                 `bson:"genre"`
-	Mood                  Mood                  `bson:"mood,omitempty"`
-	ReleaseDate           time.Time             `bson:"release_date"`
-	DDEXReleaseIDs        ReleaseIDs            `bson:"ddex_release_ids"`
-	Artists               []ResourceContributor `bson:"artists"`
-	CopyrightLine         Copyright             `bson:"copyright_line,omitempty"`
-	ProducerCopyrightLine Copyright             `bson:"producer_copyright_line,omitempty"`
-	ParentalWarningType   string                `bson:"parental_warning_type,omitempty"`
+	PlaylistName      string         `bson:"playlist_name"`
+	PlaylistOwnerID   string         `bson:"playlist_owner_id"`
+	PlaylistOwnerName string         `bson:"playlist_owner_name"`
+	Description       NullableString `bson:"description,omitempty"`
+	IsAlbum           bool           `bson:"is_album"`
+	IsPrivate         bool           `bson:"is_private"`
+	Tags              NullableString `bson:"tags,omitempty"`
+	Genre             Genre          `bson:"genre"`
+	Mood              Mood           `bson:"mood,omitempty"`
+	ReleaseDate       time.Time      `bson:"release_date"`
+	DDEXReleaseIDs    ReleaseIDs     `bson:"ddex_release_ids"`
 
 	// TODO: Handle these fields
 	License NullableString `bson:"license,omitempty"`
 	UPC     NullableString `bson:"upc,omitempty"`
 
 	// Extra fields (not in SDK)
+
+	// michelle add to sdk ==
+	Artists               []Artist  `bson:"artists"`
+	CopyrightLine         Copyright `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine Copyright `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType   string    `bson:"parental_warning_type,omitempty"`
+	// michelle add to sdk ==
+
 	CoverArtURL         string `bson:"cover_art_url"`
 	CoverArtURLHash     string `bson:"cover_art_url_hash"`
 	CoverArtURLHashAlgo string `bson:"cover_art_url_hash_algo"`
