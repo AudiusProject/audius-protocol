@@ -158,11 +158,6 @@ def test_valid_parse_metadata(app):
                         "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
                     }
                 ],
-                "download": {
-                    "cid": None,
-                    "is_downloadable": False,
-                    "requires_follow": False,
-                },
                 "remix_of": {"tracks": [{"parent_track_id": 75808}]},
                 "is_scheduled_release": False,
                 "is_unlisted": False,
@@ -304,11 +299,6 @@ def test_invalid_parse_metadata(app):
                     "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
                 }
             ],
-            "download": {
-                "cid": None,
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
             "remix_of": {"tracks": [{"parent_track_id": 75808}]},
             "is_scheduled_release": False,
             "is_unlisted": False,

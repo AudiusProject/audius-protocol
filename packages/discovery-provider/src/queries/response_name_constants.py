@@ -13,9 +13,6 @@ followee_reposts = "followee_reposts"
 followee_saves = "followee_saves"
 # json - determines stream and download access for current user
 access = "access"
-# represents the signature for track access
-# todo: remove once clients catch up and no longer use this field
-premium_content_signature = "premium_content_signature"
 
 # remix track specific
 remix_of = "remix_of"  # dictionary - contains an array of parent track ids

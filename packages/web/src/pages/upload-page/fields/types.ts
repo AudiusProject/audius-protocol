@@ -39,8 +39,6 @@ export const DOWNLOAD_CONDITIONS = 'download_conditions'
 export const DOWNLOAD_PRICE = 'download_conditions.usdc_purchase.price'
 export const DOWNLOAD_PRICE_HUMANIZED = 'download_price_humanized'
 export const STEMS = 'stems'
-export const DOWNLOAD_REQUIRES_FOLLOW = 'download_requires_follow'
-export const CID = 'download.cid'
 export const SPECIAL_ACCESS_TYPE = 'special_access_type'
 export const IS_UNLISTED = 'is_unlisted'
 export const FIELD_VISIBILITY = 'field_visibility'
@@ -61,9 +59,7 @@ export type AccessAndSaleFormValues = {
 export type StemsAndDownloadsFormValues = {
   [IS_DOWNLOADABLE]: boolean
   [IS_ORIGINAL_AVAILABLE]: boolean
-  [DOWNLOAD_REQUIRES_FOLLOW]: boolean
   [STEMS]: StemUpload[]
-  [CID]: Nullable<string>
   [IS_DOWNLOAD_GATED]: boolean
   [DOWNLOAD_CONDITIONS]: Nullable<AccessConditions>
   [STREAM_CONDITIONS]: Nullable<AccessConditions>

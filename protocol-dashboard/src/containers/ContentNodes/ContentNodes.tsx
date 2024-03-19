@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useReplaceRoute } from 'utils/effects'
 import {
-  SERVICES_CONTENT_NODE,
-  SERVICES_UNREGISTERED_CONTENT_NODE
+  NODES_CONTENT_NODE,
+  NODES_UNREGISTERED_CONTENT_NODE
 } from 'utils/routes'
 import styles from './ContentNodes.module.css'
 
@@ -43,9 +43,9 @@ const ContentNodes = () => {
 
     let path = ''
     if (spId === 0) {
-      path = `${SERVICES_UNREGISTERED_CONTENT_NODE}?endpoint=${endpoint}`
+      path = `${NODES_UNREGISTERED_CONTENT_NODE}?endpoint=${endpoint}`
     } else {
-      path = SERVICES_CONTENT_NODE.replace(':spID', spId.toString())
+      path = NODES_CONTENT_NODE.replace(':spID', spId.toString())
     }
     replaceRoute(path)
   }, [spId, endpoint, replaceRoute])

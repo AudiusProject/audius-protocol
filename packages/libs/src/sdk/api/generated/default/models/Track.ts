@@ -155,12 +155,6 @@ export interface Track {
     isDownloadable?: boolean;
     /**
      * 
-     * @type {boolean}
-     * @memberof Track
-     */
-    downloadable?: boolean;
-    /**
-     * 
      * @type {number}
      * @memberof Track
      */
@@ -236,7 +230,6 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'user': UserFromJSON(json['user']),
         'duration': json['duration'],
         'isDownloadable': !exists(json, 'is_downloadable') ? undefined : json['is_downloadable'],
-        'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
         'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
@@ -273,7 +266,6 @@ export function TrackToJSON(value?: Track | null): any {
         'user': UserToJSON(value.user),
         'duration': value.duration,
         'is_downloadable': value.isDownloadable,
-        'downloadable': value.downloadable,
         'play_count': value.playCount,
         'permalink': value.permalink,
         'is_streamable': value.isStreamable,

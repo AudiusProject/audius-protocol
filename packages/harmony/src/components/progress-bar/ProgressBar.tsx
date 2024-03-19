@@ -15,6 +15,7 @@ function clampBN(value: BN, min: BN, max: BN): BN {
   return BN.min(BN.max(value, min), max)
 }
 
+// @beta - This component was directly ported from stems and subject to change
 export const ProgressBar = (props: ProgressBarProps) => {
   const {
     className,

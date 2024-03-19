@@ -68,7 +68,6 @@ class Track(Base, RepresentableMixin):
     license = Column(String)
     updated_at = Column(DateTime, nullable=False)
     cover_art_sizes = Column(String)
-    download = Column(JSONB())
     is_scheduled_release = Column(Boolean, nullable=False, server_default=text("false"))
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
     ddex_app = Column(String)

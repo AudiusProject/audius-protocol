@@ -25,7 +25,7 @@ root {
   line-height: 17px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #bec5e0;
+  color: var(--harmony-neutral);
 }
 
 .slider {

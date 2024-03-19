@@ -55,11 +55,6 @@ export type SearchTrack = TrackImage & {
   create_date: null
   created_at: string
   credits_splits: null
-  download: {
-    cid: null
-    is_downloadable: false
-    requires_follow: false
-  }
   isrc: null
   license: null
   iswc: null

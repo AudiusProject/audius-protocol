@@ -3,12 +3,6 @@ from typing import Any, List, Optional, TypedDict
 # Required format for track metadata retrieved from the content system
 
 
-class TrackDownload(TypedDict):
-    cid: Optional[str]
-    is_downloadable: bool
-    requires_follow: bool
-
-
 class TrackParent(TypedDict):
     parent_track_id: int
 
@@ -64,7 +58,6 @@ class TrackMetadata(TypedDict):
     iswc: Optional[str]
     ddex_release_ids: Optional[Any]
     track_segments: List[TrackSegment]
-    download: Any
     remix_of: Optional[TrackRemix]
     is_scheduled_release: bool
     is_unlisted: bool
@@ -109,11 +102,6 @@ track_metadata_format: TrackMetadata = {
     "iswc": None,
     "ddex_release_ids": None,
     "track_segments": [],
-    "download": {
-        "is_downloadable": False,
-        "requires_follow": False,
-        "cid": None,
-    },
     "remix_of": None,
     "is_scheduled_release": False,
     "is_unlisted": False,
