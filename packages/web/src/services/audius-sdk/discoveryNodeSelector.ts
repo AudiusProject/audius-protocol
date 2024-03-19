@@ -15,7 +15,10 @@ type CachedDiscoveryNodeTimestamp =
   | undefined
 
 const getCachedDiscoveryNode = () => {
-  const cached = "https://isaac.sandbox.audius.co"
+  const cached =
+    typeof localStorage !== 'undefined'
+      ? localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
+      : null
   if (cached) {
     try {
       const cachedDiscoveryNodeTimestamp = JSON.parse(
@@ -50,7 +53,7 @@ const getCachedDiscoveryNode = () => {
 
 const updateCachedDiscoveryNode = (endpoint: string) => {
   const newTimestamp: CachedDiscoveryNodeTimestamp = {
-    endpoint: "https://isaac.sandbox.audius.co",
+    endpoint,
     timestamp: new Date().getTime()
   }
   console.debug(

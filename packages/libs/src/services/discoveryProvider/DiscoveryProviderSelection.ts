@@ -95,7 +95,26 @@ export class DiscoveryProviderSelection extends ServiceSelection {
   async getCached() {
     if (this.localStorage) {
       try {
-        return 'isaac.sandbox.audius.co'
+        const discProvTimestamp = await this.localStorage.getItem(
+          DISCOVERY_PROVIDER_TIMESTAMP
+        )
+        if (discProvTimestamp) {
+          const { endpoint: latestEndpoint, timestamp } =
+            JSON.parse(discProvTimestamp)
+
+          const inWhitelist =
+            !this.whitelist || this.whitelist.has(latestEndpoint)
+
+          const timeout = this.reselectTimeout
+            ? this.reselectTimeout
+            : DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+          const isExpired = Date.now() - timestamp > timeout
+          if (!inWhitelist || isExpired) {
+            this.clearCached()
+          } else {
+            return latestEndpoint
+          }
+        }
       } catch (e) {
         console.error(
           'Could not retrieve cached discovery endpoint from localStorage',

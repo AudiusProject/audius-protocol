@@ -39,11 +39,11 @@ export const getCollections = (
   }
 ) => {
   if (props && props.ids) {
-    const collections: Collection[] = []
+    const collections: { [id: number]: Collection } = {}
     props.ids.forEach((id) => {
       const collection = getCollection(state, { id })
       if (collection) {
-        collections.push(collection)
+        collections[id] = collection
       }
     })
     return collections

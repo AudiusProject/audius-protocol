@@ -248,7 +248,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   public async getSelectedEndpoint() {
     if (this.selectedNode !== null) {
-      return 'https://isaac.sandbox.audius.co'
+      return this.selectedNode
     }
     return await this.select(null)
   }
