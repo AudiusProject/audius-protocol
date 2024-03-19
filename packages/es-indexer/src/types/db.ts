@@ -423,12 +423,8 @@ export interface PlaylistRow {
   'txhash': string;
   'upc': string | null;
   'updated_at': Date;
-  'ddex_app'?: string | null;
-  'ddex_release_ids'?: any | null;
-  'artists'?: any | null;
-  'copyright_line'?: any | null;
-  'producer_copyright_line'?: any | null;
-  'parental_warning_type'?: string | null;
+  'ddex_app': string | null;
+  'ddex_release_ids': any | null;
 }
 export interface PlayRow {
   'city': string | null;
@@ -686,6 +682,7 @@ export interface TrackRow {
   'download_conditions': any | null;
   'isrc': string | null;
   'iswc': string | null;
+  'ddex_release_ids': any | null;
   'license': string | null;
   'metadata_multihash': string | null;
   'mood': string | null;
@@ -708,15 +705,7 @@ export interface TrackRow {
   'track_segments': any;
   'txhash': string;
   'updated_at': Date;
-  'ddex_app'?: string | null;
-  'ddex_release_ids'?: any | null;
-  'artists'?: any | null;
-  'resource_contributors'?: any | null;
-  'indirect_resource_contributors'?: any | null;
-  'rights_controller'?: any | null;
-  'copyright_line'?: any | null;
-  'producer_copyright_line'?: any | null;
-  'parental_warning_type'?: string | null;
+  'ddex_app': string | null;
 }
 export interface TrendingParamRow {
   'genre': string | null;

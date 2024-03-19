@@ -32,8 +32,7 @@ import {
   OverflowActionCallbacks
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
-import { IconCaretRight as IconCaret } from '@audius/harmony'
-import { Scrubber } from '@audius/stems'
+import { IconCaretRight as IconCaret, Scrubber } from '@audius/harmony'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'

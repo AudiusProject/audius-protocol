@@ -4,11 +4,12 @@
   width: 100%;
 }
 
-.timestampStart, .timestampEnd {
-  color: var(--neutral);
-  font-size: var(--font-2xs);
+.timestampStart,
+.timestampEnd {
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-2xs);
   line-height: 12px;
-  font-family: var(--font-family);
+  font-family: var(--harmony-font-family);
   min-width: 40px;
 }
 
@@ -22,5 +23,5 @@
 
 .scrubber.isMobile .timestampStart,
 .scrubber.isMobile .timestampEnd {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
