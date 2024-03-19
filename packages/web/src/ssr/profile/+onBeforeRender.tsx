@@ -4,19 +4,20 @@ import type { PageContextServer } from 'vike/types'
 
 import { audiusSdk } from 'ssr/util'
 
-export type TrackPageProps = {
-  track: Maybe<FullSdk.TrackFull>
+export type ProfilePageProps = {
+  user: Maybe<FullSdk.UserFull>
 }
 
 export async function onBeforeRender(pageContext: PageContextServer) {
-  const { handle, slug } = pageContext.routeParams
+  const { handle } = pageContext.routeParams
 
   try {
-    const { data: tracks } = await audiusSdk.full.tracks.getBulkTracks({
-      permalink: [`${handle}/${slug}`]
+    const { data: users } = await audiusSdk.full.users.getUserByHandle({
+      handle
     })
+    const user = users?.[0]
 
-    const pageProps = { track: tracks?.[0] }
+    const pageProps = { user }
 
     return {
       pageContext: {
@@ -25,11 +26,9 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     }
   } catch (e) {
     console.error(
-      'Error fetching track for track page SSR',
+      'Error fetching user for profile page SSR',
       'handle',
       handle,
-      'slug',
-      slug,
       'error',
       e
     )

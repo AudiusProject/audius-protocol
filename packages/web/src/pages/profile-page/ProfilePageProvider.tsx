@@ -56,6 +56,7 @@ import {
 import { ProfileMode } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
+import { SsrContext } from 'ssr/SsrContext'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
@@ -79,7 +80,8 @@ const {
   makeGetProfile,
   getProfileFeedLineup,
   getProfileTracksLineup,
-  getProfileUserId
+  getProfileUserId,
+  getIsInitialFetchAfterSsr
 } = profilePageSelectors
 const { getAccountUser, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
@@ -134,6 +136,8 @@ export const MIN_COLLECTIBLES_TIER: BadgeTier = 'silver'
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   static defaultProps = {}
+  static contextType = SsrContext
+  declare context: React.ContextType<typeof SsrContext>
 
   state: ProfilePageState = {
     activeTab: null,
@@ -299,8 +303,10 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
-        shouldSetLoading
+        shouldSetLoading,
+        this.props.isInitialFetchAfterSsr
       )
+      this.props.setIsInitialFetchAfterSsr(false)
       if (params.tab) {
         this.setState({ activeTab: getTabForRoute(params.tab) })
       }
@@ -1046,6 +1052,7 @@ function makeMapStateToProps() {
       }),
       blockeeList: getBlockees(state),
       blockerList: getBlockers(state),
+      isInitialFetchAfterSsr: getIsInitialFetchAfterSsr(state),
       accountHasTracks
     }
   }
@@ -1063,7 +1070,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
       handle: Nullable<string>,
       userId: ID | null,
       forceUpdate: boolean,
-      shouldSetLoading: boolean
+      shouldSetLoading: boolean,
+      deleteExistingEntry: boolean = false
     ) =>
       dispatch(
         profileActions.fetchProfile(
@@ -1071,9 +1079,12 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           userId,
           forceUpdate,
           shouldSetLoading,
-          /* deleteExistingEntry */ false
+          deleteExistingEntry
         )
       ),
+    setIsInitialFetchAfterSsr: (value: boolean) => {
+      dispatch(profileActions.setIsInitialFetchAfterSsr(value))
+    },
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },
