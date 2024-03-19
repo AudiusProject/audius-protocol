@@ -74,6 +74,7 @@ const initialProfileState = {
   updateError: false,
   topTagsStatus: Status.IDLE,
   topTags: [],
+  collectionIds: [],
   collectionStatus: Status.IDLE,
 
   collectionSortMode: CollectionSortMode.TIMESTAMP,
@@ -358,7 +359,7 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
           ...initialProfileState,
           handle: lowerHandle,
           userId: decodeHashId(user.id)
-        }
+        } as ProfileState
       },
       isInitialFetchAfterSsr: true
     }
@@ -376,7 +377,6 @@ const reducer =
       | LineupActions<Track | Collection>
   ) => {
     if (!state) {
-      // @ts-ignore
       state = buildInitialState(ssrPageProps)
     }
 

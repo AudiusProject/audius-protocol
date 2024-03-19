@@ -1,7 +1,34 @@
+import {
+  sdk,
+  DiscoveryNodeSelector,
+  productionConfig,
+  stagingConfig,
+  developmentConfig
+} from '@audius/sdk'
 import { resolveRoute } from 'vike/routing'
-import { PageContextServer } from 'vike/types'
+import type { PageContextServer } from 'vike/types'
 
 import { staticRoutes } from 'utils/route'
+
+const sdkConfigs = {
+  production: productionConfig,
+  staging: stagingConfig,
+  development: developmentConfig
+}
+
+const discoveryNodeSelector = new DiscoveryNodeSelector({
+  bootstrapServices: (
+    sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
+    productionConfig
+  ).discoveryNodes
+})
+
+export const audiusSdk = sdk({
+  appName: process.env.VITE_PUBLIC_HOSTNAME ?? 'audius.co',
+  services: {
+    discoveryNodeSelector
+  }
+})
 
 const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
 
