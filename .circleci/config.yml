@@ -85,6 +85,7 @@ jobs:
             - ./packages/ddex/webapp/node_modules
             - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
+            - ./packages/create-audius-app/node_modules
             - ./packages/dotenv-linter/bin
 
   generate-release-branch:
@@ -495,6 +496,7 @@ workflows:
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
             packages/libs/.* run-embed-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
           requires:
             - generate-config
             - init
@@ -537,6 +539,7 @@ workflows:
             packages/embed/.* run-embed-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:

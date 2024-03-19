@@ -3,7 +3,7 @@ import { cyan, green, red, bold } from 'picocolors'
 import Commander from 'commander'
 import path from 'path'
 import prompts from 'prompts'
-import { createApp, DownloadError } from './create-app'
+import { createApp } from './create-app'
 import { validateNpmName } from './helpers/validate-pkg'
 import packageJson from './package.json'
 import { isFolderEmpty } from './helpers/is-folder-empty'
@@ -28,7 +28,7 @@ const program = new Commander.Command(packageJson.name)
     `
 
   An example to bootstrap the app with. You can use an example name
-  from the Audius repo. They are found in AudiusProject/audius-protocol/packages/libs/src/sdk/examples
+  from the Audius repo. They are found in AudiusProject/audius-protocol/packages/create-audius-app/examples
   For example: --example react
 `,
     'react'
@@ -109,21 +109,10 @@ async function run() {
 
   const example = program.example.trim()
 
-  try {
-    await createApp({
-      appPath: resolvedProjectPath,
-      example
-    })
-  } catch (reason) {
-    if (!(reason instanceof DownloadError)) {
-      throw reason
-    }
-
-    console.error(
-      `Could not download "${example}" because of a connectivity issue between your machine and GitHub.\n`
-    )
-    process.exit(1)
-  }
+  await createApp({
+    appPath: resolvedProjectPath,
+    example
+  })
 }
 
 run().catch((reason) => {
