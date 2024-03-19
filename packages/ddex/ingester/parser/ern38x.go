@@ -21,11 +21,13 @@ type SoundRecording struct {
 	Title                        string
 	LanguageOfPerformance        string
 	Duration                     string
-	Artists                      []common.Artist
+	Artists                      []common.ResourceContributor
 	ResourceContributors         []common.ResourceContributor
 	IndirectResourceContributors []common.ResourceContributor
 	LabelName                    string
 	Genre                        string
+	CopyrightLine                common.Copyright
+	ProducerCopyrightLine        common.Copyright
 	ParentalWarningType          string
 	TechnicalDetails             []TechnicalSoundRecordingDetails
 	RightsController             common.RightsController
@@ -230,7 +232,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	parentalWarning := safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))
 
 	// Parse DisplayArtist nodes
-	var displayArtists []common.Artist
+	var displayArtists []common.ResourceContributor
 	for _, artistNode := range xmlquery.Find(releaseDetails, "DisplayArtist") {
 		name := safeInnerText(artistNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(artistNode.SelectAttr("SequenceNumber"))
@@ -238,7 +240,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
 			return
 		}
-		artist := common.Artist{
+		artist := common.ResourceContributor{
 			Name:           name,
 			SequenceNumber: seqNo,
 		}
@@ -482,6 +484,9 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 		ResourceContributors:         ci.SoundRecording.ResourceContributors,
 		IndirectResourceContributors: ci.SoundRecording.IndirectResourceContributors,
 		RightsController:             ci.SoundRecording.RightsController,
+		CopyrightLine:                ci.SoundRecording.CopyrightLine,
+		ProducerCopyrightLine:        ci.SoundRecording.ProducerCopyrightLine,
+		ParentalWarningType:          ci.SoundRecording.ParentalWarningType,
 		PreviewAudioFileURL:          previewAudioFileURL,
 		PreviewAudioFileURLHash:      previewAudioFileURLHash,
 		PreviewAudioFileURLHashAlgo:  previewAudioFileURLHashAlgo,
@@ -552,6 +557,15 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		return
 	}
 
+	copyright := common.Copyright{
+		Year: safeInnerText(details.SelectElement("CLine/Year")),
+		Text: safeInnerText(details.SelectElement("CLine/CLineText")),
+	}
+	producerCopyright := common.Copyright{
+		Year: safeInnerText(details.SelectElement("PLine/Year")),
+		Text: safeInnerText(details.SelectElement("PLine/PLineText")),
+	}
+
 	recording = &SoundRecording{
 		Type:                  safeInnerText(sNode.SelectElement("SoundRecordingType")),
 		ISRC:                  safeInnerText(sNode.SelectElement("SoundRecordingId/ISRC")),
@@ -562,6 +576,8 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		Duration:              safeInnerText(sNode.SelectElement("Duration")),
 		LabelName:             safeInnerText(details.SelectElement("LabelName")),
 		Genre:                 safeInnerText(details.SelectElement("Genre/GenreText")),
+		CopyrightLine:         copyright,
+		ProducerCopyrightLine: producerCopyright,
 		ParentalWarningType:   safeInnerText(details.SelectElement("ParentalWarningType")),
 	}
 
@@ -573,7 +589,7 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
 			return
 		}
-		artist := common.Artist{
+		artist := common.ResourceContributor{
 			Name:           name,
 			SequenceNumber: seqNo,
 		}
