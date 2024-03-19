@@ -24,6 +24,7 @@ const formatSeconds = (seconds: number) => {
 }
 
 /**
+ * @beta - This component was directly ported from stems and subject to change
  * Wraps the `<Slider />` component and provides timestamp indicators.
  */
 export const Scrubber = ({
