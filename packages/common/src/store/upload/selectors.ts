@@ -1,8 +1,6 @@
-import { floor, clamp } from 'lodash'
+import { round, clamp } from 'lodash'
 
 import { CommonState } from '../commonStore'
-
-import { ProgressStatus } from './types'
 
 export const getStems = (state: CommonState) => state.upload.stems
 export const getUploadProgress = (state: CommonState) =>
@@ -24,10 +22,7 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const uploadProgress = getUploadProgress(state)
   if (uploadProgress == null) return 0
 
-  const filteredProgress = uploadProgress.filter(
-    (progress) =>
-      key in progress && progress[key].status !== ProgressStatus.ERROR
-  )
+  const filteredProgress = uploadProgress.filter((progress) => key in progress)
   if (filteredProgress.length === 0) return 0
 
   const loaded = filteredProgress.reduce(
@@ -58,7 +53,7 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
 export const getCombinedUploadPercentage = (state: CommonState) => {
   const artProgress = getKeyUploadProgress(state, 'art')
   const audioProgress = getKeyUploadProgress(state, 'audio')
-  const percent = floor(
+  const percent = round(
     100 * (ART_WEIGHT * artProgress + AUDIO_WEIGHT * audioProgress)
   )
   return clamp(percent, 0, 100)

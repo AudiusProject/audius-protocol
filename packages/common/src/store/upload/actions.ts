@@ -1,4 +1,4 @@
-import { StemUploadWithFile } from '../../models'
+import { TrackMetadata } from '../../models'
 
 import {
   ExtendedCollectionMetadata,
@@ -48,7 +48,7 @@ export const uploadTracks = (
   tracks: UploadTrack[],
   metadata?: ExtendedCollectionMetadata,
   uploadType?: UploadType,
-  stems?: StemUploadWithFile[]
+  stems?: TrackMetadata[]
 ) => {
   return { type: UPLOAD_TRACKS, tracks, metadata, uploadType, stems }
 }
@@ -61,7 +61,7 @@ export const uploadTracksRequested = (
   tracks: UploadTrack[],
   metadata?: ExtendedCollectionMetadata,
   uploadType?: UploadType,
-  stems?: StemUploadWithFile[][]
+  stems?: TrackMetadata[]
 ) => {
   return {
     type: UPLOAD_TRACKS_REQUESTED,
