@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"ingester/common"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,42 +26,76 @@ func CreateArtistNameIndex(usersColl *mongo.Collection, ctx context.Context) err
 	return nil
 }
 
-// GetArtistID searches Mongo OAuthed artists for an exact match on artistName (display name) and returns the artist's ID
-func GetArtistID(artistName string, usersColl *mongo.Collection, ctx context.Context) (string, error) {
-	filter := bson.M{"name": artistName}
-	cursor, err := usersColl.Find(ctx, filter)
-	if err != nil {
-		return "", err
-	}
-	defer cursor.Close(ctx)
+// GetFirstArtistID searches Mongo OAuthed artists for the first match on the track's display artists' names
+// and returns that artist's ID
+func GetFirstArtistID(artists []common.ResourceContributor, usersColl *mongo.Collection, ctx context.Context) (string, string, []string, error) {
+	// Sort artists by SequenceNumber (asc)
+	sort.Slice(artists, func(i, j int) bool {
+		return artists[i].SequenceNumber < artists[j].SequenceNumber
+	})
 
-	var results []bson.M
-	if err = cursor.All(ctx, &results); err != nil {
-		return "", err
-	}
-
-	// Fail if multiple artists have their display name set to the same string
-	if len(results) > 1 {
-		var handles []string
-		for _, result := range results {
-			if handle, ok := result["handle"].(string); ok {
-				handles = append(handles, "@"+handle)
-			}
+	artistID := ""
+	artistName := ""
+	var err error
+	var warnings []string
+	for _, artist := range artists {
+		filter := bson.M{"name": artist.Name}
+		cursor, err := usersColl.Find(ctx, filter)
+		if err != nil {
+			return "", "", warnings, err
 		}
-		idsStr := strings.Join(handles, ", ")
-		return "", fmt.Errorf("error: more than one artist found with the same display name: %s", idsStr)
+		defer cursor.Close(ctx)
+
+		var results []bson.M
+		if err = cursor.All(ctx, &results); err != nil {
+			return "", "", warnings, err
+		}
+
+		// Continue to the next display artist if multiple artists have their display name set to this artist.Name
+		if len(results) > 1 {
+			var handles []string
+			for _, result := range results {
+				if handle, ok := result["handle"].(string); ok {
+					handles = append(handles, "@"+handle)
+				}
+			}
+			idsStr := strings.Join(handles, ", ")
+			warnings = append(warnings, fmt.Sprintf("error: more than one artist found with the same display name %s: %s", artist.Name, idsStr))
+			continue
+		}
+
+		// Continue to the next display artist if no artist is found, and use /v1/users/search to display potential
+		// matches in the warnings
+		if len(results) == 0 {
+			id, err := searchArtistOnAudius(artist.Name)
+			if err != nil {
+				warnings = append(warnings, err.Error())
+				continue
+			}
+			// Unreachable for now
+			artistID = id
+			artistName = artist.Name
+			err = nil
+			break
+		}
+
+		id, ok := results[0]["_id"].(string)
+		if !ok {
+			warnings = append(warnings, "error: unable to parse _id from the users collection")
+			continue
+		}
+
+		// Found first OAuthed artist ID
+		artistID = id
+		artistName = artist.Name
+		err = nil
+		break
 	}
 
-	// Fail if no artist is found, and use /v1/users/search to display potential matches in the error message
-	if len(results) == 0 {
-		return searchArtistOnAudius(artistName)
+	if artistID != "" {
+		return artistID, artistName, warnings, nil
 	}
-
-	artistID, ok := results[0]["_id"].(string)
-	if !ok {
-		return "", errors.New("error: unable to parse artist ID")
-	}
-	return artistID, nil
+	return "", "", warnings, err
 }
 
 // searchArtistOnAudius searches Audius (public /v1/users/search endpoint) for an artist by name and returns potential matches.

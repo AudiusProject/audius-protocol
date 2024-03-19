@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { IconCamera } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { IconCamera, Button } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import ReactDropzone from 'react-dropzone'
@@ -79,17 +78,19 @@ const ImageSelectionButton = ({
       {includePopup ? (
         <>
           <Button
+            variant='tertiary'
+            size='small'
             ref={anchorRefProp ? undefined : anchorRefInner}
-            className={cn(styles.button, buttonClassName, {
+            className={cn(buttonClassName, {
               [styles.hide]: showModal
             })}
-            text={buttonText}
-            rightIcon={<IconCamera />}
-            type={ButtonType.WHITE}
+            iconRight={IconCamera}
             onClick={handleClick}
-            buttonType='button'
+            type='button'
             aria-label={label}
-          />
+          >
+            {buttonText}
+          </Button>
           <ImageSelectionPopup
             anchorRef={anchorRefProp ?? anchorRefInner}
             className={styles.popup}
@@ -110,15 +111,17 @@ const ImageSelectionButton = ({
             data-testid='upload-photo-dropzone'
           >
             <Button
-              className={cn(styles.button, styles.noPopup, {
+              variant='tertiary'
+              size='small'
+              className={cn(styles.noPopup, {
                 [styles.hide]: hasImage
               })}
-              text={buttonText}
-              rightIcon={<IconCamera />}
-              type={ButtonType.WHITE}
+              iconRight={IconCamera}
               onClick={handleClick}
-              buttonType='button'
-            />
+              type='button'
+            >
+              {buttonText}
+            </Button>
           </ReactDropzone>
           {error ? (
             <InvalidFileType className={styles.invalidFileType} />

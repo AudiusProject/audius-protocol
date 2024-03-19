@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-import { IconVolume0, IconVolume2 } from '@audius/stems'
+import { IconVolumeLevel0, IconVolumeLevel2 } from '@audius/harmony'
 import cn from 'classnames'
 
 import AudiusLogo from '../../assets/img/audiusLogoHorizontal.svg'
@@ -101,9 +101,9 @@ const CollectibleMedia = ({ collectible, isMuted, toggleMute, isMobile }) => {
           {messages.videoNotSupported}
         </video>
         {isMuted ? (
-          <IconVolume0 className={styles.volumeIcon} />
+          <IconVolumeLevel0 className={styles.volumeIcon} />
         ) : (
-          <IconVolume2 className={styles.volumeIcon} />
+          <IconVolumeLevel2 className={styles.volumeIcon} />
         )}
       </div>
     </div>

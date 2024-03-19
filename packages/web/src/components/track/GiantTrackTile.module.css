@@ -221,30 +221,6 @@
   width: 250px;
 }
 
-.gatedContentSectionButton button {
-  width: 100%;
-}
-
-.gatedContentSectionButton .buttonText {
-  font-size: var(--font-l);
-}
-
-.gatedContentSectionButton .buttonIcon svg {
-  width: var(--unit-4);
-  height: var(--unit-4);
-}
-
-.gatedContentSectionButton .followButton {
-  width: 100%;
-  flex: unset;
-  max-width: none;
-  height: 46px;
-}
-
-.gatedContentSectionButton .followButton > span {
-  font-size: var(--font-l);
-}
-
 .collectibleName {
   color: var(--secondary);
 }
@@ -320,13 +296,6 @@
 .description {
   padding-top: var(--unit-3);
   line-height: 26px;
-}
-
-.downloadButtonsContainer {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 6px;
 }
 
 .verified {

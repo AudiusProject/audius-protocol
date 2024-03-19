@@ -60,23 +60,6 @@
   margin-bottom: 14px;
 }
 
-.playAllButton {
-  width: 100%;
-  height: 40px !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.playAllButton .playAllButtonText {
-  color: var(--darkmode-static-white);
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.71px;
-  line-height: normal;
-  text-align: center;
-}
-
 .buttonContainer {
   flex: 1;
   width: 100%;

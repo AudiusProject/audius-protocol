@@ -43,12 +43,6 @@
   margin-bottom: 14px;
 }
 
-.emptyContainer .btn .btnText {
-  font-family: var(--font-family);
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
-}
-
 .spinner {
   width: 40px;
   height: 40px;

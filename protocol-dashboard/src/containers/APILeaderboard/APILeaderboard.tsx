@@ -17,12 +17,7 @@ type APILeaderboardProps = OwnProps
 
 const APILeaderboard: React.FC<APILeaderboardProps> = () => {
   return (
-    <Page
-      title={messages.title}
-      className={styles.container}
-      defaultPreviousPage={API_TITLE}
-      defaultPreviousPageRoute={API}
-    >
+    <Page title={messages.title} className={styles.container}>
       <RewardsCTABanner className={styles.rewardsCTABanner} />
       <TopAPITable className={styles.topAPITable} />
     </Page>

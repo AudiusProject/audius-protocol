@@ -614,7 +614,6 @@ export class Track extends Base {
       iswc: trackMetadata.iswc,
       credits_splits: trackMetadata.credits_splits,
       description: trackMetadata.description,
-      download: trackMetadata.download,
       genre: trackMetadata.genre,
       has_current_user_reposted: trackMetadata.has_current_user_reposted,
       has_current_user_saved: trackMetadata.has_current_user_saved,

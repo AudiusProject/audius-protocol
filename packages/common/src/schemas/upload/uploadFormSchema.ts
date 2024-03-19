@@ -69,6 +69,29 @@ const MoodSchema = z
   .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
   .nullable()
 
+const DDEXResourceContributor = z
+  .object({
+    name: z.string(),
+    roles: z.array(z.string()),
+    sequence_number: z.number().positive()
+  })
+  .strict()
+
+const DDEXCopyright = z
+  .object({
+    year: z.string(),
+    text: z.string()
+  })
+  .strict()
+
+const DDEXRightsController = z
+  .object({
+    name: z.string(),
+    roles: z.array(z.string()),
+    rights_share_unknown: z.optional(z.string())
+  })
+  .strict()
+
 // TODO: KJ - Need to update the schema in sdk and then import here
 /**
  * Creates a schema for validating tracks to be uploaded.
@@ -147,7 +170,15 @@ const createSdkSchema = () =>
       required_error: messages.track.titleRequiredError
     }),
     is_downloadable: z.optional(z.boolean()),
-    is_original_available: z.optional(z.boolean())
+    is_original_available: z.optional(z.boolean()),
+    ddex_release_ids: z.optional(z.record(z.string()).nullable()),
+    artists: z.optional(z.array(DDEXResourceContributor)),
+    resourceContributors: z.optional(z.array(DDEXResourceContributor)),
+    indirectResourceContributors: z.optional(z.array(DDEXResourceContributor)),
+    rightsController: z.optional(DDEXRightsController),
+    copyrightLine: z.optional(DDEXCopyright),
+    producerCopyrightLine: z.optional(DDEXCopyright),
+    parentalWarningType: z.optional(z.string())
   })
 
 /**
@@ -222,7 +253,12 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       tags: z.optional(z.string())
     }),
     is_album: z.literal(collectionType === 'album'),
-    tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema }))
+    tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
+    ddex_release_ids: z.optional(z.record(z.string()).nullable()),
+    artists: z.optional(z.array(DDEXResourceContributor)),
+    copyrightLine: z.optional(DDEXCopyright),
+    producerCopyrightLine: z.optional(DDEXCopyright),
+    parentalWarningType: z.optional(z.string())
   })
 
 /**

@@ -1,52 +1,56 @@
-import React, { useState, useCallback, useEffect } from 'react'
 import BN from 'bn.js'
-import clsx from 'clsx'
-import { ButtonType } from '@audius/stems'
+import React, { useCallback, useEffect, useState } from 'react'
 
-import { useUpdateStake } from 'store/actions/updateStake'
-import { useAccountUser } from 'store/account/hooks'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './UpdateStakeModal.module.css'
-import { Status, Operator } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import { Box, Flex, Text, TokenAmountInput } from '@audius/harmony'
+import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal, {
-  OldStake,
-  NewStake
+  NewStake,
+  OldStake
 } from 'components/ConfirmTransactionModal'
-import { TICKER } from 'utils/consts'
-import { Position } from 'components/Tooltip'
 import DisplayAudio from 'components/DisplayAudio'
+import Modal from 'components/Modal'
+import { Position } from 'components/Tooltip'
+import AudiusClient from 'services/Audius'
+import {
+  useAccountUser,
+  useHasPendingDecreaseStakeTx
+} from 'store/account/hooks'
+import { useUpdateStake } from 'store/actions/updateStake'
+import { Operator, Status } from 'types'
+import { TICKER } from 'utils/consts'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import styles from './UpdateStakeModal.module.css'
 
 const messages = {
-  increaseTitle: 'Increase Stake',
-  increaseBtn: 'Increase Stake',
-  decreaseTitle: 'Decrease Stake',
-  decreaseBtn: 'Decrease Stake',
+  title: 'Manage Stake',
+  btn: 'Save Changes',
   currentStake: 'Current Stake',
+  minStake: 'Minimum Stake',
   change: 'Change',
-  newStakingAmount: 'New Staking Amount',
+  newStakingAmount: 'New Stake Amount',
   stakingLabel: TICKER,
   oldStakeTitle: `Old Stake ${TICKER}`,
-  newStakeTitle: `New Stake ${TICKER}`
+  newStakeTitle: `New Stake ${TICKER}`,
+  maxAmountExceeded: 'Exceeds maximum amount',
+  minAmountNotMet: 'Will not meet the required minimum stake',
+  enterAmount: 'Enter Amount',
+  decreaseStakeDisabledPendingDecrease:
+    'Cannot decrease stake right now because you have a pending decrease stake transaction',
+  increaseStakeDisabledDeployerStakeTooBig:
+    'Cannot increase stake right now because it is currently at the maximum amount'
 }
 
 type OwnProps = {
   isOpen: boolean
-  isIncrease: boolean
   onClose: () => void
 }
 
-type IncreaseStakeModalProps = OwnProps
+type UpdateStakeModalProps = OwnProps
 
-const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
+const UpdateStakeModal: React.FC<UpdateStakeModalProps> = ({
   isOpen,
-  isIncrease,
   onClose
-}: IncreaseStakeModalProps) => {
+}: UpdateStakeModalProps) => {
   const { status: userStatus, user: accountUser } = useAccountUser()
   if (userStatus === Status.Success && !('serviceProvider' in accountUser)) {
     // This should have never been opened b/c the user is not a service provider
@@ -102,6 +106,12 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
     setIsConfirmModalOpen(true)
   }, [setIsConfirmModalOpen])
 
+  const hasPendingDecreaseTxResult = useHasPendingDecreaseStakeTx()
+
+  const deployerStake =
+    (accountUser as Operator)?.serviceProvider?.deployerStake ?? new BN('0')
+  const isIncrease = stakingBN.gt(deployerStake)
+
   const { status, updateStake, error } = useUpdateStake(
     isIncrease,
     !isConfirmModalOpen
@@ -145,24 +155,41 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
   const bottomBox = (
     <NewStake title={messages.newStakeTitle} stakeAmount={stakingBN} />
   )
-  const deployerStake =
-    (accountUser as Operator)?.serviceProvider?.deployerStake ?? new BN('0')
+
   const totalStakedFor =
     (accountUser as Operator)?.totalStakedFor ?? new BN('0')
 
   const stakeChange = stakingBN.sub(deployerStake)
-  const min = isIncrease
-    ? deployerStake
-    : (accountUser as Operator)?.serviceProvider?.minAccountStake
-  const max = isIncrease
-    ? (accountUser as Operator)?.serviceProvider?.maxAccountStake
-        .sub(totalStakedFor)
-        .add(deployerStake)
-    : deployerStake
+  const minAccountStake = (accountUser as Operator)?.serviceProvider
+    ?.minAccountStake
+  const min = minAccountStake
+  const max = (accountUser as Operator)?.serviceProvider?.maxAccountStake
+    .sub(totalStakedFor)
+    .add(deployerStake)
+
+  const decreaseStakeDisabled =
+    hasPendingDecreaseTxResult.status === Status.Success &&
+    hasPendingDecreaseTxResult.hasPendingDecreaseTx
+  const maxAccountStake =
+    (accountUser as Operator)?.serviceProvider?.maxAccountStake ?? new BN('0')
+  const increaseStakeDisabled =
+    deployerStake.isZero() || deployerStake.gte(maxAccountStake)
+
+  let errorText: string | undefined
+  if (max && stakingBN.gt(max)) {
+    errorText = messages.maxAmountExceeded
+  } else if (min && stakingBN.lt(min)) {
+    errorText = messages.minAmountNotMet
+  } else if (decreaseStakeDisabled && !isIncrease && !stakeChange.isZero()) {
+    errorText = messages.decreaseStakeDisabledPendingDecrease
+  } else if (increaseStakeDisabled && isIncrease) {
+    errorText = messages.increaseStakeDisabledDeployerStakeTooBig
+  }
+  const hasError = !!errorText
 
   return (
     <Modal
-      title={isIncrease ? messages.increaseTitle : messages.decreaseTitle}
+      title={messages.title}
       className={styles.container}
       wrapperClassName={styles.wrapperClassName}
       isOpen={isOpen}
@@ -170,54 +197,76 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
       isCloseable={true}
       dismissOnClickOutside={!isConfirmModalOpen}
     >
-      <div className={styles.content}>
-        <ValueSlider
-          isIncrease={isIncrease}
-          min={min}
-          max={max}
-          value={stakingBN}
-          initialValue={deployerStake}
-          className={styles.slider}
-        />
-        <div className={styles.stakingFieldsContainer}>
-          <TextField
-            value={stakingAmount}
-            isNumeric
+      <Flex direction="column" w="100%" pt="l" css={{ maxWidth: 480 }} gap="l">
+        <Box border="default" borderRadius="s">
+          <Flex
+            pv="m"
+            ph="xl"
+            justifyContent="space-between"
+            backgroundColor="surface1"
+          >
+            <Text variant="title" size="m">
+              {messages.currentStake}
+            </Text>
+            <Text variant="title" size="m">
+              <DisplayAudio amount={oldStakeAmount} />
+            </Text>
+          </Flex>
+          <Flex
+            pv="m"
+            ph="xl"
+            justifyContent="space-between"
+            borderTop="default"
+          >
+            <Text variant="body" size="m">
+              {messages.minStake}
+            </Text>
+            <Text variant="body" size="m">
+              <DisplayAudio amount={minAccountStake} />
+            </Text>
+          </Flex>
+        </Box>
+        <Flex gap="l" alignItems="center">
+          <TokenAmountInput
             label={messages.newStakingAmount}
-            onChange={onUpdateStaking}
-            className={clsx(styles.input, {
-              [styles.invalid]:
-                min && max && (stakingBN.gt(max) || stakingBN.lt(min))
-            })}
-            rightLabel={messages.stakingLabel}
+            isWhole={false}
+            placeholder={messages.enterAmount}
+            tokenLabel={TICKER}
+            decimals={8}
+            value={stakingAmount}
+            error={hasError}
+            onChange={stringValue => {
+              onUpdateStaking(stringValue)
+            }}
+            helperText={errorText}
+            max={max ? AudiusClient.displayShortAud(max) : undefined}
           />
-          <div className={styles.stakingChange}>
-            <div className={styles.stakingRow}>
-              <div className={styles.stakingLabel}>Current Staking:</div>
-              <DisplayAudio
-                className={styles.stakingValue}
-                amount={deployerStake}
-                label={TICKER}
-              />
-            </div>
-            <div className={styles.stakingRow}>
-              <div className={styles.stakingLabel}>Change:</div>
-              <DisplayAudio
-                position={Position.BOTTOM}
-                className={clsx(styles.stakingValue, styles.changeValue)}
-                amount={stakeChange}
-                label={TICKER}
-              />
-            </div>
-          </div>
-        </div>
-        <Button
-          text={isIncrease ? messages.increaseBtn : messages.decreaseBtn}
-          type={ButtonType.PRIMARY}
-          onClick={onSubmit}
-        />
-      </div>
+          <Flex direction="column">
+            <Text variant="heading" size="s">
+              <DisplayAudio position={Position.BOTTOM} amount={stakeChange} />
+            </Text>
+            <Text variant="body" size="m">
+              {messages.change}
+            </Text>
+          </Flex>
+        </Flex>
+        <Flex justifyContent="center">
+          <Button
+            isDisabled={
+              !stakingAmount ||
+              hasError ||
+              stakingBN.isZero() ||
+              isConfirmModalOpen ||
+              stakeChange.isZero()
+            }
+            text={messages.btn}
+            type={ButtonType.PRIMARY}
+            onClick={onSubmit}
+          />
+        </Flex>
+      </Flex>
       <ConfirmTransactionModal
+        showTwoPopupsWarning={!stakeChange.isNeg()}
         isOpen={isConfirmModalOpen}
         onClose={onCloseConfirm}
         onConfirm={onConfirm}
@@ -230,4 +279,4 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
   )
 }
 
-export default IncreaseStakeModal
+export default UpdateStakeModal

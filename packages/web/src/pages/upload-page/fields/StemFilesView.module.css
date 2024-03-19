@@ -21,19 +21,6 @@
   color: var(--neutral-light-4);
 }
 
-.stemListItemContainer {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  margin-bottom: 16px;
-  padding-left: 12px;
-}
-
-.stemListItems {
-  display: flex;
-  flex-direction: column;
-}
-
 .dropZone {
   min-height: 175px;
   margin-bottom: 8px;

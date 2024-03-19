@@ -1,44 +1,80 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import clsx from 'clsx'
-import { ButtonType } from 'components/Button'
 import BN from 'bn.js'
+import { ButtonType } from 'components/Button'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
+import {
+  Box,
+  Divider,
+  Flex,
+  HarmonyTheme,
+  SegmentedControl,
+  Text,
+  TokenAmountInput,
+  useTheme
+} from '@audius/harmony'
 import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
-import styles from './UpdateDelegationModal.module.css'
-import { Status, Address } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
-import ConfirmTransactionModal, {
-  OldStake,
-  NewStake
-} from 'components/ConfirmTransactionModal'
-import { TICKER } from 'utils/consts'
-import { useModalControls } from 'utils/hooks'
-import { useUserDelegation } from 'store/actions/userDelegation'
-import useUpdateDelegation from 'store/actions/updateDelegation'
 import DisplayAudio from 'components/DisplayAudio'
+import ErrorModal from 'components/ErrorModal'
+import {
+  DelegatedAudioInfoTooltip,
+  NodeOperatorInfoTooltip,
+  NodeServiceFeeInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
+import Loading from 'components/Loading'
+import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
+import Modal from 'components/Modal'
+import AudiusClient from 'services/Audius'
+import {
+  useAccountUser,
+  useHasPendingDecreaseDelegationTx
+} from 'store/account/hooks'
+import useUpdateDelegation from 'store/actions/updateDelegation'
+import { useUserDelegation } from 'store/actions/userDelegation'
+import { usePendingClaim } from 'store/cache/claims/hooks'
+import { useUser } from 'store/cache/user/hooks'
+import { Address, Operator, Status } from 'types'
+import { TICKER } from 'utils/consts'
+import { formatWeiNumber } from 'utils/format'
+import { useModalControls } from 'utils/hooks'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import styles from './UpdateDelegationModal.module.css'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 
 const messages = {
+  manageDelegation: 'Manage Delegation',
+  increase: 'Increase by',
+  decrease: 'Decrease by',
+  manage: 'Manage',
+  saveChanges: 'Save Changes',
   increaseTitle: 'Increase Delegation',
   increaseBtn: 'Increase Delegation',
   decreaseTitle: 'Decrease Delegation',
   decreaseBtn: 'Decrease Delegation',
+  twoPopupsWarning: '2 MetaMask Pop-Ups Will Appear',
+  pendingDecreaseDisabled:
+    'Not permitted while you still have a pending Decrease Delegation (Undelegate) transaction.',
+  pendingClaimDisabled:
+    'You cannot change your delegation amount while the operator has an unclaimed reward distribution.',
   currentDelegation: 'Current Delegation',
   change: 'Change',
   newStakingAmount: 'New Delegation Amount',
+  nodeOperator: 'Node Operator',
   stakingLabel: TICKER,
+  operatorFee: 'Operator Fee',
+  enterAmount: 'Enter an amount',
   oldDelegation: `Old  Delegation ${TICKER}`,
-  newDelegation: `New  Delegation ${TICKER}`
+  newDelegation: `New  Delegation ${TICKER}`,
+  max: 'Max',
+  noAudio: `You have no ${TICKER} available to delegate`,
+  balanceExceeded: `Exceeds amount of ${TICKER} in wallet`,
+  maxDelegationExceeded: "Exceeds this node's maximum delegation amount",
+  minDelegationNotMet: "Will not meet this node's minimum delegation amount"
 }
 
 type OwnProps = {
   wallet: Address
   delegates: BN
   isOpen: boolean
-  isIncrease: boolean
   onClose: () => void
 }
 
@@ -47,149 +83,354 @@ type UpdateDelegationModalProps = OwnProps
 const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
   delegates,
   isOpen,
-  isIncrease,
   onClose,
   wallet
 }: UpdateDelegationModalProps) => {
-  const { min, max } = useUserDelegation(wallet)
-  const [stakingBN, setStakingBN] = useState(delegates)
-  const [stakingAmount, setStakingAmount] = useState(
-    AudiusClient.getAud(delegates).toString()
+  const { user: serviceUser } = useUser({ wallet })
+  const { user: accountUser } = useAccountUser()
+  const { color } = useTheme() as HarmonyTheme
+  const [inputValue, setInputValue] = useState('')
+  const [inputNumberValue, setInputNumberValue] = useState(new BN(0))
+  const { min: minDelegation, max: maxDelegation } = useUserDelegation(wallet)
+  const [selectedOption, setSelectedOption] = useState<'increase' | 'decrease'>(
+    'increase'
+  )
+  const isIncrease = selectedOption === 'increase'
+  const reset = () => {
+    setInputValue('')
+    setInputNumberValue(new BN(0))
+    setSelectedOption('increase')
+  }
+  const maxDecrease = delegates.sub(minDelegation)
+  const maxIncrease = BN.min(
+    maxDelegation.sub(delegates),
+    accountUser?.audToken ?? maxDelegation.sub(delegates)
+  )
+
+  const deployerCut =
+    (serviceUser as Operator)?.serviceProvider?.deployerCut ?? null
+
+  const {
+    isOpen: isErrorModalOpen,
+    onClick: openErrorModal,
+    onClose: onCloseErrorModal
+  } = useModalControls()
+  const { status, updateDelegation, error } = useUpdateDelegation(
+    isIncrease,
+    !isErrorModalOpen
   )
 
   useEffect(() => {
-    setStakingBN(delegates)
-    setStakingAmount(AudiusClient.getAud(delegates).toString())
-  }, [setStakingAmount, setStakingBN, delegates])
+    if (!!error) {
+      openErrorModal()
+    }
+  }, [error])
 
-  const onUpdateStaking = useCallback(
-    (value: string) => {
-      setStakingAmount(value)
-      if (checkWeiNumber(value)) {
-        setStakingBN(parseWeiNumber(value)!)
-      }
-    },
-    [setStakingAmount, setStakingBN]
-  )
-
-  const {
-    isOpen: isConfirmOpen,
-    onClick: onClickConfirm,
-    onClose: onCloseConfirm
-  } = useModalControls()
-
-  const { status, updateDelegation, error } = useUpdateDelegation(
-    isIncrease,
-    !isConfirmOpen
-  )
+  const newDelegationAmount = useMemo(() => {
+    if (isIncrease) {
+      return delegates.add(inputNumberValue)
+    } else {
+      return delegates.sub(inputNumberValue)
+    }
+  }, [delegates, isIncrease, inputValue])
 
   const onConfirm = useCallback(() => {
-    if (isIncrease) {
-      updateDelegation(wallet, stakingBN.sub(delegates))
-    } else {
-      updateDelegation(wallet, delegates.sub(stakingBN))
-    }
-  }, [isIncrease, updateDelegation, wallet, delegates, stakingBN])
+    updateDelegation(wallet, inputNumberValue)
+  }, [isIncrease, updateDelegation, wallet, delegates, inputNumberValue])
 
   // Close All modals on success status
   useEffect(() => {
     if (status === Status.Success) {
-      onCloseConfirm()
+      reset()
       onClose()
+      onCloseErrorModal()
     }
-  }, [status, onClose, onCloseConfirm])
+  }, [status, onClose])
 
-  const stakeDiff = delegates
-    ? isIncrease
-      ? stakingBN.sub(delegates)
-      : delegates.sub(stakingBN)
-    : null
+  const hasError =
+    (isIncrease && inputNumberValue.gt(maxIncrease)) ||
+    (!isIncrease && inputNumberValue.gt(maxDecrease))
 
-  const topBox = (
-    <OldStake
-      title={messages.oldDelegation}
-      stakeDiff={stakeDiff}
-      isIncrease={isIncrease}
-      oldStakeAmount={delegates}
-    />
-  )
-  const bottomBox = (
-    <NewStake title={messages.newDelegation} stakeAmount={stakingBN} />
-  )
+  let helperText: string | undefined
+  if (isIncrease) {
+    if (accountUser?.audToken.isZero()) {
+      helperText = messages.noAudio
+    } else if (inputNumberValue.gt(accountUser?.audToken)) {
+      helperText = messages.balanceExceeded
+    } else if (inputNumberValue.gt(maxIncrease)) {
+      helperText = messages.maxDelegationExceeded
+    }
+  } else {
+    if (inputNumberValue.gt(maxDecrease)) {
+      helperText = messages.minDelegationNotMet
+    }
+  }
 
-  const stakeChange = stakingBN.sub(delegates)
+  const handleSelectOption = useCallback((option: 'increase' | 'decrease') => {
+    setSelectedOption(option)
+  }, [])
 
-  const valueSliderMin = isIncrease ? delegates : min
-  const valueSliderMax = isIncrease ? max.add(delegates) : delegates
+  const options = [
+    {
+      key: 'increase',
+      text: messages.increase
+    },
+    {
+      key: 'decrease',
+      text: messages.decrease
+    }
+  ]
+
+  const { hasClaim, status: claimStatus } = usePendingClaim(wallet)
+  const hasPendingDecreaseResult = useHasPendingDecreaseDelegationTx()
+  const isDecreaseDelegationDisabled =
+    hasPendingDecreaseResult.status !== Status.Success ||
+    hasPendingDecreaseResult.hasPendingDecreaseTx ||
+    claimStatus !== Status.Success ||
+    hasClaim
+  const isIncreaseDelegationDisabled =
+    claimStatus !== Status.Success || hasClaim
+  const isDisabled =
+    (isIncrease && maxIncrease.isZero()) ||
+    (!isIncrease && maxDecrease.isZero()) ||
+    (isDecreaseDelegationDisabled && !isIncrease) ||
+    (isIncreaseDelegationDisabled && isIncrease)
+
+  let actionDisabledText = ''
+
+  if (isIncrease && isIncreaseDelegationDisabled) {
+    actionDisabledText = messages.pendingClaimDisabled
+  } else if (!isIncrease && isDecreaseDelegationDisabled) {
+    if (hasPendingDecreaseResult.hasPendingDecreaseTx) {
+      actionDisabledText = messages.pendingDecreaseDisabled
+    } else {
+      actionDisabledText = messages.pendingClaimDisabled
+    }
+  }
+
+  const isLoading =
+    !serviceUser ||
+    !accountUser ||
+    claimStatus === Status.Loading ||
+    hasPendingDecreaseResult.status === Status.Loading
+
+  if (isLoading) {
+    return (
+      <Modal
+        title={messages.manageDelegation}
+        className={styles.container}
+        wrapperClassName={styles.wrapperClassName}
+        isOpen={isOpen}
+        onClose={onClose}
+        isCloseable={true}
+      >
+        <Box mt="xl">
+          <Loading />
+        </Box>
+      </Modal>
+    )
+  }
 
   return (
-    <Modal
-      title={isIncrease ? messages.increaseTitle : messages.decreaseTitle}
-      className={styles.container}
-      wrapperClassName={styles.wrapperClassName}
-      isOpen={isOpen}
-      onClose={onClose}
-      isCloseable={true}
-      dismissOnClickOutside={!isConfirmOpen}
-    >
-      <div className={styles.content}>
-        <ValueSlider
-          isIncrease={isIncrease}
-          min={valueSliderMin}
-          max={valueSliderMax}
-          value={stakingBN}
-          initialValue={delegates}
-          className={styles.slider}
-        />
-        <div className={styles.stakingFieldsContainer}>
-          <TextField
-            value={stakingAmount}
-            isNumeric
-            label={messages.newStakingAmount}
-            onChange={onUpdateStaking}
-            className={clsx(styles.input, {
-              [styles.invalid]:
-                valueSliderMin &&
-                valueSliderMax &&
-                (stakingBN.gt(valueSliderMax) || stakingBN.lt(valueSliderMin))
-            })}
-            rightLabel={messages.stakingLabel}
-          />
-          <div className={styles.stakingChange}>
-            <div className={styles.stakingRow}>
-              <div className={styles.stakingLabel}>Current Staking:</div>
-              <DisplayAudio
-                className={styles.stakingValue}
-                amount={delegates}
-                label={TICKER}
-              />
-            </div>
-            <div className={styles.stakingRow}>
-              <div className={styles.stakingLabel}>Change:</div>
-              <DisplayAudio
-                className={clsx(styles.stakingValue, styles.changeValue)}
-                amount={stakeChange}
-                label={TICKER}
-              />
-            </div>
-          </div>
+    <>
+      <Modal
+        title={messages.manageDelegation}
+        className={styles.container}
+        wrapperClassName={styles.wrapperClassName}
+        isOpen={isOpen}
+        onClose={onClose}
+        isCloseable={status !== Status.Loading}
+        dismissOnClickOutside={status !== Status.Loading}
+      >
+        <div className={styles.content}>
+          <Flex direction="column" gap="l" w="100%">
+            <SegmentedControl
+              options={options}
+              selected={selectedOption}
+              onSelectOption={handleSelectOption}
+              fullWidth
+              disabled={status === Status.Loading}
+            />
+            <Flex justifyContent="space-between" w="100%">
+              <Flex gap="s" direction="column">
+                <Flex inline gap="xs" alignItems="center">
+                  <Text
+                    variant="body"
+                    size="m"
+                    strength="strong"
+                    color="subdued"
+                  >
+                    {messages.nodeOperator}
+                  </Text>
+                  <NodeOperatorInfoTooltip color="subdued" />
+                </Flex>
+                <DelegateInfo clickable={false} wallet={wallet} />
+              </Flex>
+              <Flex gap="s" direction="column" alignItems="flex-end">
+                <Flex inline gap="xs" alignItems="center">
+                  <Text variant="body" size="m" strength="strong">
+                    {messages.operatorFee}
+                  </Text>
+                  <NodeServiceFeeInfoTooltip color="subdued" />
+                </Flex>
+                <Text variant="heading" size="s">
+                  {deployerCut}%
+                </Text>
+              </Flex>
+            </Flex>
+            <Divider css={{ borderColor: color.neutral.n100 }} />
+            {actionDisabledText ? (
+              <Flex justifyContent="center">
+                <Text
+                  variant="body"
+                  size="l"
+                  strength="strong"
+                  textAlign="center"
+                >
+                  {actionDisabledText}
+                </Text>
+              </Flex>
+            ) : (
+              <>
+                <Flex gap="l" alignItems="center">
+                  <TokenAmountInput
+                    label={
+                      selectedOption === 'increase'
+                        ? messages.increase
+                        : messages.decrease
+                    }
+                    isWhole={false}
+                    placeholder={messages.enterAmount}
+                    tokenLabel={TICKER}
+                    decimals={8}
+                    value={inputValue}
+                    error={hasError}
+                    disabled={isDisabled || status === Status.Loading}
+                    onChange={stringValue => {
+                      if (checkWeiNumber(stringValue)) {
+                        setInputNumberValue(parseWeiNumber(stringValue)!)
+                      }
+                      setInputValue(stringValue)
+                    }}
+                    helperText={helperText}
+                    max={
+                      isIncrease
+                        ? AudiusClient.displayShortAud(maxIncrease)
+                        : AudiusClient.displayShortAud(maxDecrease)
+                    }
+                  />
+                  <Button
+                    onClick={() => {
+                      setInputNumberValue(
+                        isIncrease ? maxIncrease : maxDecrease
+                      )
+                      setInputValue(
+                        isIncrease
+                          ? formatWeiNumber(maxIncrease)
+                          : formatWeiNumber(maxDecrease)
+                      )
+                    }}
+                    isDisabled={status === Status.Loading}
+                    className={styles.maxButton}
+                    text={messages.max.toUpperCase()}
+                    type={ButtonType.PRIMARY_ALT}
+                  />
+                </Flex>
+                <Flex direction="column" gap="xs" alignSelf="center" p="l">
+                  <Flex gap="s">
+                    <Text variant="heading" size="s">
+                      <DisplayAudio amount={newDelegationAmount} />
+                    </Text>
+
+                    <Text
+                      variant="heading"
+                      size="s"
+                      color="subdued"
+                      css={{ textDecoration: 'line-through' }}
+                    >
+                      <DisplayAudio amount={delegates} />
+                    </Text>
+                  </Flex>
+                  <Box>
+                    <Flex inline gap="xs" alignItems="center">
+                      <Text
+                        variant="body"
+                        size="m"
+                        strength="strong"
+                        color="subdued"
+                      >
+                        {messages.newStakingAmount}
+                      </Text>
+                      <DelegatedAudioInfoTooltip color="subdued" />
+                    </Flex>
+                  </Box>
+                </Flex>
+                <Flex direction="column" gap="l" alignItems="center">
+                  {status === Status.Loading && isIncrease ? (
+                    <Text variant="heading" size="s" color="warning">
+                      {messages.twoPopupsWarning}
+                    </Text>
+                  ) : null}
+                  {status === Status.Loading ? (
+                    <Loading />
+                  ) : (
+                    <Button
+                      isDisabled={
+                        !inputNumberValue || inputNumberValue.isZero()
+                      }
+                      text={messages.saveChanges}
+                      type={ButtonType.PRIMARY}
+                      onClick={onConfirm}
+                    />
+                  )}
+                </Flex>
+              </>
+            )}
+          </Flex>
         </div>
-        <Button
-          text={isIncrease ? messages.increaseBtn : messages.decreaseBtn}
-          type={ButtonType.PRIMARY}
-          onClick={onClickConfirm}
-        />
-      </div>
-      <ConfirmTransactionModal
-        isOpen={isConfirmOpen}
-        onClose={onCloseConfirm}
-        onConfirm={onConfirm}
-        topBox={topBox}
-        bottomBox={bottomBox}
-        status={status}
-        error={error}
+      </Modal>
+      <ErrorModal
+        isOpen={isErrorModalOpen}
+        onClose={onCloseErrorModal}
+        message={!!error && error.includes('\n') ? error.split('\n')[0] : error}
       />
-    </Modal>
+    </>
+  )
+}
+
+type ManageDelegationProps = {
+  delegates: BN
+  wallet: Address
+  disabledReason?: string | null
+}
+export const ManageDelegation = ({
+  delegates,
+  wallet,
+  disabledReason
+}: ManageDelegationProps) => {
+  const { isOpen, onClick, onClose } = useModalControls()
+  return (
+    <>
+      <BasicTooltip
+        position={Position.TOP}
+        text={disabledReason}
+        isDisabled={!Boolean(disabledReason)}
+      >
+        <Button
+          type={ButtonType.PRIMARY}
+          text={messages.manage}
+          css={{ width: '100%' }}
+          onClick={onClick}
+          isDisabled={Boolean(disabledReason)}
+        />
+      </BasicTooltip>
+      <UpdateDelegationModal
+        wallet={wallet}
+        delegates={delegates}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
+    </>
   )
 }
 

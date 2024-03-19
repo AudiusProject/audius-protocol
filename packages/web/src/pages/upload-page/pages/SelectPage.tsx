@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { newCollectionMetadata } from '@audius/common/schemas'
-import { FeatureFlags } from '@audius/common/services'
 import { UploadType } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
@@ -26,10 +24,6 @@ type SelectPageProps = {
 }
 
 export const SelectPageNew = (props: SelectPageProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
   const { formState, onContinue } = props
 
   const [tracks, setTracks] = useState(formState.tracks ?? [])
@@ -108,11 +102,9 @@ export const SelectPageNew = (props: SelectPageProps) => {
             onDropAccepted={onSelectTracks}
             onDropRejected={onSelectTracks}
           />
-          {isLosslessDownloadsEnabled ? (
-            <Box css={{ top: '-68px' }}>
-              <AudioQuality />
-            </Box>
-          ) : null}
+          <Box css={{ top: '-68px' }}>
+            <AudioQuality />
+          </Box>
           {uploadTrackError ? (
             <InvalidFileType
               reason={uploadTrackError.reason}

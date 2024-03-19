@@ -3,12 +3,6 @@ from typing import Any, List, Optional, TypedDict
 # Required format for track metadata retrieved from the content system
 
 
-class TrackDownload(TypedDict):
-    cid: Optional[str]
-    is_downloadable: bool
-    requires_follow: bool
-
-
 class TrackParent(TypedDict):
     parent_track_id: int
 
@@ -34,6 +28,23 @@ class TrackFieldVisibility(TypedDict):
 class TrackSegment(TypedDict):
     multihash: str
     duration: float
+
+
+class ResourceContributor(TypedDict):
+    name: str
+    roles: List[str]
+    sequence_number: int
+
+
+class RightsController(TypedDict):
+    name: str
+    roles: List[str]
+    rights_share_unknown: Optional[str]
+
+
+class Copyright(TypedDict):
+    Year: str
+    Text: str
 
 
 class TrackMetadata(TypedDict):
@@ -63,7 +74,6 @@ class TrackMetadata(TypedDict):
     isrc: Optional[str]
     iswc: Optional[str]
     track_segments: List[TrackSegment]
-    download: Any
     remix_of: Optional[TrackRemix]
     is_scheduled_release: bool
     is_unlisted: bool
@@ -78,6 +88,14 @@ class TrackMetadata(TypedDict):
     ai_attribution_user_id: Optional[int]
     placement_hosts: Optional[str]
     ddex_app: Optional[str]
+    ddex_release_ids: Optional[Any]
+    artists: Optional[List[ResourceContributor]]
+    resource_contributors: Optional[List[ResourceContributor]]
+    indirect_resource_contributors: Optional[List[ResourceContributor]]
+    rights_controller: Optional[RightsController]
+    copyright_line: Optional[Copyright]
+    producer_copyright_line: Optional[Copyright]
+    parental_warning_type: Optional[str]
 
 
 track_metadata_format: TrackMetadata = {
@@ -107,11 +125,6 @@ track_metadata_format: TrackMetadata = {
     "isrc": None,
     "iswc": None,
     "track_segments": [],
-    "download": {
-        "is_downloadable": False,
-        "requires_follow": False,
-        "cid": None,
-    },
     "remix_of": None,
     "is_scheduled_release": False,
     "is_unlisted": False,
@@ -126,6 +139,14 @@ track_metadata_format: TrackMetadata = {
     "ai_attribution_user_id": None,
     "placement_hosts": None,
     "ddex_app": None,
+    "ddex_release_ids": None,
+    "artists": None,
+    "resource_contributors": None,
+    "indirect_resource_contributors": None,
+    "rights_controller": None,
+    "copyright_line": None,
+    "producer_copyright_line": None,
+    "parental_warning_type": None,
 }
 
 # Required format for user metadata retrieved from the content system

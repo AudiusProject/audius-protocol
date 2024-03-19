@@ -2,7 +2,6 @@ import { useState, useContext, useCallback } from 'react'
 
 import { Name, SquareSizes } from '@audius/common/models'
 import {
-  Modal,
   Button,
   IconVerified,
   IconRecoveryEmail,
@@ -19,9 +18,9 @@ import { debounce } from 'lodash'
 import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import SignOutPage from 'components/nav/mobile/SignOut'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import SignOutModal from 'pages/settings-page/components/mobile/SignOutModal'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
@@ -62,8 +61,7 @@ const messages = {
   signOut:
     'Make sure you have your account recovery email stored somewhere safe before signing out!',
   emailSent: 'Email Sent!',
-  emailNotSent: 'Something broke! Please try again!',
-  holdUp: 'HOLD UP!'
+  emailNotSent: 'Something broke! Please try again!'
 }
 
 type AccountSettingsItemProps = {
@@ -232,17 +230,10 @@ const AccountSettingsPage = ({
           buttonTitle={messages.signOutButtonTitle}
           onClick={() => setShowModalSignOut(true)}
         />
-        <Modal
-          showTitleHeader
-          showDismissButton
-          title={messages.holdUp}
+        <SignOutModal
           isOpen={showModalSignOut}
-          allowScroll={false}
-          bodyClassName={styles.modal}
           onClose={() => setShowModalSignOut(false)}
-        >
-          <SignOutPage onClickBack={() => setShowModalSignOut(false)} />
-        </Modal>
+        />
       </div>
     </MobilePageContainer>
   )

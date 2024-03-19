@@ -11,7 +11,7 @@
   opacity: 1;
   height: 475px;
   z-index: -1;
-  background: url(../../assets/img/apiBanner@2x.png);
+  background: url(../../assets/img/apiBanner@2x.webp);
   background-position: center;
   background-size: cover;
   background-blend-mode: hard-light, multiply, overlay, normal;
@@ -52,8 +52,4 @@
 
 .rewardsCTABanner {
   margin: 32px 0px 24px;
-}
-
-.topAPIAppsChart {
-  
 }

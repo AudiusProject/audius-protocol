@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
-import { IconTwitter, IconCloudUpload, IconInstagram } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import {
+  IconTwitter,
+  IconCloudUpload,
+  IconInstagram,
+  Button
+} from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { InstagramButton, TwitterButton } from 'components/social-button'
@@ -64,16 +68,15 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <span className={styles.title}>{messages.step1Title}</span>
       <span className={styles.subtitle}>{messages.step1Subtitle}</span>
       <div className={styles.verifyButtons}>
-        <TwitterButton
-          text={messages.verifyTwitterButton}
-          className={styles.twitterButton}
-          onClick={onClickVerify}
-        />
+        <TwitterButton onClick={onClickVerify}>
+          {messages.verifyTwitterButton}
+        </TwitterButton>
         <InstagramButton
           className={styles.instagramButton}
-          text={messages.verifyIGButton}
           onClick={onClickVerify}
-        />
+        >
+          {messages.verifyIGButton}
+        </InstagramButton>
       </div>
       <Divider />
       <span className={styles.title}>{messages.step2Title}</span>
@@ -83,13 +86,14 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
           : messages.step2SubtitleDesktop}
       </span>
       <Button
+        variant='primary'
+        css={(theme) => ({ marginTop: theme.spacing['2xl'] })}
         className={styles.uploadButton}
-        text={messages.uploadButton}
-        rightIcon={<IconCloudUpload />}
-        type={ButtonType.PRIMARY_ALT}
+        iconRight={IconCloudUpload}
         onClick={onClickUpload}
-        textClassName={styles.uploadText}
-      />
+      >
+        {messages.uploadButton}
+      </Button>
       <Divider />
       <span className={styles.title}>{messages.step3Title}</span>
       <span className={styles.subtitle}>{messages.step3Subtitle}</span>

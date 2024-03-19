@@ -99,18 +99,15 @@ export const downloadTrack = createCustomAction(
   ({
     trackIds,
     parentTrackId,
-    original,
-    stemName
+    original
   }: {
     trackIds: ID[]
     parentTrackId?: ID
     original?: boolean
-    stemName?: string
   }) => ({
     trackIds,
     parentTrackId,
-    original,
-    stemName
+    original
   })
 )
 

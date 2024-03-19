@@ -13,8 +13,7 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
-import { IconValidationX, IconNote } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
@@ -112,29 +111,29 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickTwitter}
             onSuccess={props.onTwitterLogin}
             onFailure={props.onFailure}
-            className={styles.socialButton}
-            containerClassName={styles.socialButton}
-            text={messages.twitterVerify}
-          />
+            fullWidth
+          >
+            {messages.twitterVerify}
+          </TwitterAuthButton>
         ) : null}
         {isInstagramEnabled ? (
           <InstagramAuthButton
             onClick={handleClickInstagram}
             onSuccess={props.onInstagramLogin}
             onFailure={props.onFailure}
-            text={messages.instagramVerify}
-            className={styles.socialButton}
-            containerClassName={styles.socialButton}
-          />
+            fullWidth
+          >
+            {messages.instagramVerify}
+          </InstagramAuthButton>
         ) : null}
         {isTikTokEnabled ? (
           <TikTokAuthButton
             onClick={handleClickTikTok}
             onFailure={props.onFailure}
             onSuccess={props.onTikTokLogin}
-            text={messages.tiktokVerify}
-            className={styles.socialButton}
-          />
+          >
+            {messages.tiktokVerify}
+          </TikTokAuthButton>
         ) : null}
       </div>
       {props.error && (
@@ -202,15 +201,9 @@ const SuccessBody = ({
         />
       </div>
       <div className={styles.handle}>{`@${handle}`}</div>
-      <Button
-        type={ButtonType.COMMON_ALT}
-        className={styles.successBtn}
-        textClassName={styles.btnText}
-        size={ButtonSize.MEDIUM}
-        text={messages.backToMusic}
-        onClick={onClick}
-        rightIcon={<IconNote className={styles.noteIcon} />}
-      />
+      <Button variant='secondary' onClick={onClick} iconRight={IconNote}>
+        {messages.backToMusic}
+      </Button>
     </div>
   )
 }

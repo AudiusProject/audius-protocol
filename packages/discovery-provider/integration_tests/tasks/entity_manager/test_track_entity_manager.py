@@ -81,11 +81,6 @@ def test_index_valid_track(app, mocker):
             "license": "All rights reserved",
             "isrc": None,
             "iswc": None,
-            "download": {
-                "cid": None,
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
             "track_id": 77955,
             "stem_of": None,
             "ai_attribution_user_id": 2,
@@ -536,11 +531,6 @@ def test_index_invalid_tracks(app, mocker):
             "license": "All rights reserved",
             "isrc": None,
             "iswc": None,
-            "download": {
-                "cid": None,
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
             "track_id": 77955,
             "stem_of": None,
             "is_playlist_upload": False,
@@ -985,11 +975,6 @@ def test_invalid_track_description(app, mocker):
             "license": "All rights reserved",
             "isrc": None,
             "iswc": None,
-            "download": {
-                "cid": None,
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
             "track_id": 77955,
             "stem_of": None,
             "ai_attribution_user_id": None,
@@ -1118,11 +1103,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": False,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
         },
         "InvalidStreamGatedMultipleConditions": {
             **default_metadata,
@@ -1135,11 +1115,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": False,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
         },
         "InvalidStreamGatedNotDownloadGated": {
             **default_metadata,
@@ -1152,11 +1127,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidStreamGatedDifferentDownloadConditions": {
             **default_metadata,
@@ -1169,11 +1139,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"follow_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidDownloadGatedNoConditions": {
             **default_metadata,
@@ -1186,11 +1151,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": None,
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidDownloadGatedMultipleConditions": {
             **default_metadata,
@@ -1203,11 +1163,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1, "follow_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidStemTrack": {
             **default_metadata,
@@ -1220,11 +1175,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
             "stem_of": {"parent_track_id": 1},
         },
         "ValidGated": {
@@ -1238,11 +1188,6 @@ def test_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
     }
 
@@ -1369,11 +1314,6 @@ def test_update_access_conditions(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "CreateTrack2Gated": {
             **default_metadata,
@@ -1386,11 +1326,6 @@ def test_update_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "CreateTrack3PurchaseGated": {
             **default_metadata,
@@ -1407,11 +1342,6 @@ def test_update_access_conditions(app, mocker):
                 "usdc_purchase": {"price": 100, "splits": {"user-bank": 1000000}}
             },
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidUpdateTrack1StreamGated": {
             **default_metadata,
@@ -1424,11 +1354,6 @@ def test_update_access_conditions(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidUpdateTrack1DownloadGated": {
             **default_metadata,
@@ -1441,11 +1366,6 @@ def test_update_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidUpdateTrack2DifferentStreamConditionsNotPurchaseGated": {
             **default_metadata,
@@ -1458,11 +1378,6 @@ def test_update_access_conditions(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "InvalidUpdateTrack2DifferentDownloadConditionsNotPurchaseGated": {
             **default_metadata,
@@ -1475,11 +1390,6 @@ def test_update_access_conditions(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"follow_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "ValidUpdateTrack2NotGated": {
             **default_metadata,
@@ -1492,11 +1402,6 @@ def test_update_access_conditions(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": False,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
         },
         "ValidUpdateTrack3DifferentConditionsPurchaseGated": {
             **default_metadata,
@@ -1513,11 +1418,6 @@ def test_update_access_conditions(app, mocker):
                 "usdc_purchase": {"price": 200, "splits": {"user-bank": 2000000}}
             },
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
     }
 
@@ -1791,11 +1691,6 @@ def test_remixability(app, mocker):
             "is_download_gated": True,
             "download_conditions": {"tip_user_id": 1},
             "is_downloadable": True,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": True,
-                "requires_follow": False,
-            },
         },
         "ParentTrack2": {
             **default_metadata,
@@ -1808,11 +1703,6 @@ def test_remixability(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": False,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
         },
         "RemixTrack1": {
             **default_metadata,
@@ -1825,11 +1715,6 @@ def test_remixability(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": False,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
             "remix_of": {"tracks": [{"parent_track_id": TRACK_ID_OFFSET}]},
         },
         "RemixTrack2": {
@@ -1843,11 +1728,6 @@ def test_remixability(app, mocker):
             "is_download_gated": False,
             "download_conditions": None,
             "is_downloadable": False,
-            "download": {
-                "cid": "some-track-cid",
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
             "remix_of": {"tracks": [{"parent_track_id": TRACK_ID_OFFSET + 1}]},
         },
     }

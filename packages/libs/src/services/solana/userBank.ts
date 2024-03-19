@@ -1,4 +1,5 @@
 import {
+  ComputeBudgetProgram,
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -148,6 +149,9 @@ export const createUserBankFrom = async ({
       keys: accounts,
       programId: claimableTokenProgramKey.toString() as unknown as PublicKey,
       data: Buffer.from(serializedInstructionEnum)
+    }),
+    ComputeBudgetProgram.setComputeUnitPrice({
+      microLamports: 100000
     })
   ]
 

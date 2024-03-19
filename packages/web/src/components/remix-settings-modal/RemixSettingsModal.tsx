@@ -16,9 +16,10 @@ import {
   ModalHeader,
   ModalTitle,
   Switch,
-  IconRemix
+  IconRemix,
+  ModalFooter,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
@@ -35,9 +36,8 @@ import styles from './RemixSettingsModal.module.css'
 const INPUT_DEBOUNCE_MS = 1000
 
 const messages = {
-  done: 'DONE',
-  done2: 'Done',
-  title: 'REMIX SETTINGS',
+  done: 'Done',
+  title: 'Remix Settings',
   subtitle: 'Specify what track you remixed here',
   remixOf: 'This is a Remix of: (Paste Audius Track URL)',
   error: 'Please paste a valid Audius track URL',
@@ -171,21 +171,13 @@ const RemixSettingsModal = ({
 
   return (
     <Modal
+      size='medium'
       isOpen={isOpen}
       onClose={onCloseModal}
-      wrapperClassName={styles.remixSettingsModalContainer}
       dismissOnClickOutside
     >
-      <ModalHeader
-        className={styles.remixSettingsModalHeader}
-        onClose={onCloseModal}
-        showDismissButton
-        dismissButtonClassName={styles.remixSettingsModalHeaderDismissButton}
-      >
-        <ModalTitle
-          title={messages.title}
-          icon={<IconRemix className={styles.remixSettingsModalTitleIcon} />}
-        />
+      <ModalHeader onClose={onCloseModal}>
+        <ModalTitle title={messages.title} icon={<IconRemix />} />
       </ModalHeader>
       <ModalContent>
         {isStreamGated ? (
@@ -264,16 +256,12 @@ const RemixSettingsModal = ({
         >
           {messages.preventOtherRemixes}
         </div>
-
-        <div className={styles.doneButtonContainer}>
-          <Button
-            textClassName={styles.doneButton2}
-            text={messages.done2}
-            type={ButtonType.PRIMARY_ALT}
-            onClick={onCloseModal}
-          />
-        </div>
       </ModalContent>
+      <ModalFooter>
+        <Button variant='primary' onClick={onCloseModal}>
+          {messages.done}
+        </Button>
+      </ModalFooter>
     </Modal>
   )
 }

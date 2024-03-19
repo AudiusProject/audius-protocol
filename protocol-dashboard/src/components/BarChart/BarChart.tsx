@@ -8,12 +8,13 @@ import { formatShortNumber } from 'utils/format'
 // Custom draw fn
 import './draw'
 
+import { Flex } from '@audius/harmony'
+import Error from 'components/Error'
+import { formatBucketText } from 'store/cache/analytics/hooks'
+import { useIsMobile } from 'utils/hooks'
+import { createStyles } from 'utils/mobile'
 import desktopStyles from './BarChart.module.css'
 import mobileStyles from './BarChartMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import { useIsMobile } from 'utils/hooks'
-import { formatBucketText } from 'store/cache/analytics/hooks'
-import Error from 'components/Error'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -127,6 +128,7 @@ const getOptions = (id: string, labels: string[], max: number) => ({
 
 type OwnProps = {
   title: string
+  titleTooltipComponent?: React.ComponentType
   column1: string
   column2: string
   labels: string[] | null
@@ -142,6 +144,7 @@ type BarChartProps = OwnProps
 
 const BarChart: React.FC<BarChartProps> = ({
   title,
+  titleTooltipComponent,
   column1,
   column2,
   data,
@@ -153,13 +156,19 @@ const BarChart: React.FC<BarChartProps> = ({
   onClick
 }) => {
   const isMobile = useIsMobile()
+  const TitleTooltipComponent = titleTooltipComponent
+
   return (
     <Paper
       className={clsx(styles.chartContainer, { [styles.onClick]: !!onClick })}
       onClick={onClick}
     >
       <div className={styles.header}>
-        <div className={styles.title}>{title}</div>
+        <Flex inline gap="xs" alignItems="center">
+          <div className={styles.title}>{title}</div>
+          {TitleTooltipComponent == null ? null : <TitleTooltipComponent />}
+        </Flex>
+
         {options && selection && onSelectOption && (
           <div className={styles.dropdown}>
             <Dropdown

@@ -1,6 +1,6 @@
 {
   "name": "@audius/ddex-publisher",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Server that publishes DDEX entities queued for release",
   "main": "index.js",
   "scripts": {

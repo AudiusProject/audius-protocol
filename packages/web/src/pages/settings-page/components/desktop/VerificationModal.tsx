@@ -14,8 +14,7 @@ import {
   TwitterProfile,
   TikTokProfile
 } from '@audius/common/store'
-import { Modal, IconValidationX, IconNote } from '@audius/harmony'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
+import { Modal, IconValidationX, IconNote, Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -108,16 +107,16 @@ const VerifyBody = (props: VerifyBodyProps) => {
     <div className={styles.container}>
       <p className={styles.text}>{messages.description}</p>
       <div className={cn(styles.text, styles.warning)}>{messages.warning}</div>
-      <div className={styles.btnContainer}>
+      <Flex direction='column' w='100%' mt='xl' gap='s'>
         {isTwitterEnabled ? (
           <TwitterAuthButton
             onClick={handleClickTwitter}
             onFailure={props.onFailure}
             onSuccess={props.onTwitterLogin}
-            text={messages.twitterVerify}
-            className={styles.socialButton}
-            containerClassName={styles.socialButton}
-          />
+            fullWidth
+          >
+            {messages.twitterVerify}
+          </TwitterAuthButton>
         ) : null}
 
         {isInstagramEnabled ? (
@@ -125,10 +124,10 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickInstagram}
             onFailure={props.onFailure}
             onSuccess={props.onInstagramLogin}
-            text={messages.instagramVerify}
-            className={styles.socialButton}
-            containerClassName={styles.socialButton}
-          />
+            fullWidth
+          >
+            {messages.instagramVerify}
+          </InstagramAuthButton>
         ) : null}
 
         {isTikTokEnabled ? (
@@ -136,11 +135,11 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickTikTok}
             onFailure={props.onFailure}
             onSuccess={props.onTikTokLogin}
-            text={messages.tiktokVerify}
-            className={styles.socialButton}
-          />
+          >
+            {messages.tiktokVerify}
+          </TikTokAuthButton>
         ) : null}
-      </div>
+      </Flex>
       {props.error && (
         <div className={styles.error}>
           <IconValidationX className={styles.validationIcon} />
@@ -208,15 +207,9 @@ const SuccessBody = ({
         />
       </div>
       <div className={styles.handle}>{`@${handle}`}</div>
-      <Button
-        type={ButtonType.COMMON_ALT}
-        className={styles.successBtn}
-        textClassName={styles.btnText}
-        size={ButtonSize.MEDIUM}
-        text={messages.backToMusic}
-        onClick={onClick}
-        rightIcon={<IconNote className={styles.noteIcon} />}
-      />
+      <Button variant='primary' onClick={onClick} iconRight={IconNote}>
+        {messages.backToMusic}
+      </Button>
     </div>
   )
 }
@@ -356,22 +349,13 @@ const VerificationModal = (props: VerificationModalProps) => {
   return (
     <>
       {props.isVerified ? (
-        <Button
-          isDisabled={true}
-          text={messages.verifiedBtn}
-          className={styles.disabledBtn}
-          textClassName={styles.disabledBtnText}
-          type={ButtonType.COMMON_ALT}
-        />
+        <Button variant='common' disabled>
+          {messages.verifiedBtn}
+        </Button>
       ) : (
-        <Button
-          text={messages.buttonText}
-          onClick={onOpen}
-          className={styles.btn}
-          textClassName={styles.btnText}
-          size={ButtonSize.MEDIUM}
-          type={ButtonType.COMMON_ALT}
-        />
+        <Button variant='common' onClick={onOpen}>
+          {messages.buttonText}
+        </Button>
       )}
       <Modal
         isOpen={isOpen}

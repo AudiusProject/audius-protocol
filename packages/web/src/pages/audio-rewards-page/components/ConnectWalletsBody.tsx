@@ -4,7 +4,7 @@ import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions
 } from '@audius/common/store'
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -61,15 +61,13 @@ const ConnectWalletsBody = ({ className }: ConnectWalletsBodyProps) => {
       <h4 className={styles.title}>{messages.title}</h4>
       <p className={styles.description}>{messages.description}</p>
       <Button
-        className={cn(styles.connectBtn, {
-          [styles.disabled]: isConnectDisabled
-        })}
-        textClassName={styles.connectBtnText}
-        type={ButtonType.PRIMARY_ALT}
-        text={messages.connectBtn}
+        variant='primary'
+        disabled={isConnectDisabled}
         onClick={onConnectWallets}
-        isDisabled={isConnectDisabled}
-      />
+        css={(theme) => ({ marginBottom: theme.spacing['2xl'] })}
+      >
+        {messages.connectBtn}
+      </Button>
       {hasReachedLimit && <p className={styles.limit}>{messages.limit}</p>}
       {(numConnectedWallets > 0 || Boolean(confirmingWallet.wallet)) && (
         <WalletsTable

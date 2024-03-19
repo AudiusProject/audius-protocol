@@ -195,7 +195,6 @@
 
 .ctaButton {
   margin-top: var(--unit-8);
-  width: 100%;
 }
 
 .loadingSpinner {
@@ -222,15 +221,6 @@
 }
 .otpInput > input[type='number'] {
   -moz-appearance: textfield;
-}
-
-.buttonLoadingSpinner {
-  width: var(--font-l);
-  height: var(--font-l);
-}
-
-.buttonLoadingSpinner g path {
-  stroke: var(--white);
 }
 
 .credentialsErrorContainer {

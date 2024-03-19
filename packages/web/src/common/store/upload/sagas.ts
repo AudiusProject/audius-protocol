@@ -3,7 +3,8 @@ import {
   CollectionMetadata,
   ID,
   Kind,
-  Name
+  Name,
+  isContentFollowGated
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
@@ -365,12 +366,11 @@ export function* handleUploads({
         size: track.file.size,
         type: track.file.type,
         name: track.file.name,
-        downloadable:
-          track.metadata.download && track.metadata.download.is_downloadable
-            ? track.metadata.download.requires_follow
-              ? 'follow'
-              : 'yes'
-            : 'no'
+        downloadable: isContentFollowGated(track.metadata.download_conditions)
+          ? 'follow'
+          : track.metadata.is_downloadable
+          ? 'yes'
+          : 'no'
       })
     )
 

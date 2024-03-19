@@ -3,7 +3,6 @@ import { Environment } from '../env'
 /* FeatureFlags must be lowercase snake case */
 export enum FeatureFlags {
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
-  SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok',
   CHALLENGE_REWARDS_UI = 'challenge_rewards_ui',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
@@ -50,16 +49,15 @@ export enum FeatureFlags {
   AUDIO_MATCHING_CHALLENGES = 'audio_matching_challenges',
   NEW_PLAYLIST_ROUTES = 'new_playlist_routes',
   DISCOVERY_RELAY = 'discovery_relay',
-  SIGN_UP_REDESIGN = 'sign_up_redesign',
   FEATURE_FLAG_ACCESS = 'feature_flag_access',
   BUY_USDC_VIA_SOL = 'buy_usdc_via_sol',
   IOS_USDC_PURCHASE_ENABLED = 'ios_usdc_purchase_enabled',
   SCHEDULED_RELEASES = 'scheduled_releases',
   BUY_WITH_COINFLOW = 'buy_with_coinflow',
   EDIT_ALBUMS = 'edit_albums',
-  LOSSLESS_DOWNLOADS_ENABLED = 'lossless_downloads_enabled',
   COINFLOW_OFFRAMP_ENABLED = 'coinflow_offramp_enabled',
-  TIKTOK_NATIVE_AUTH = 'tiktok_native_auth'
+  TIKTOK_NATIVE_AUTH = 'tiktok_native_auth',
+  PREMIUM_ALBUMS_ENABLED = 'premium_albums_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -78,7 +76,6 @@ export const environmentFlagDefaults: Record<
  */
 export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
-  [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
@@ -125,14 +122,13 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.AUDIO_MATCHING_CHALLENGES]: false,
   [FeatureFlags.NEW_PLAYLIST_ROUTES]: false,
   [FeatureFlags.DISCOVERY_RELAY]: false,
-  [FeatureFlags.SIGN_UP_REDESIGN]: false,
   [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
   [FeatureFlags.BUY_USDC_VIA_SOL]: false,
   [FeatureFlags.IOS_USDC_PURCHASE_ENABLED]: true,
   [FeatureFlags.SCHEDULED_RELEASES]: false,
   [FeatureFlags.BUY_WITH_COINFLOW]: false,
   [FeatureFlags.EDIT_ALBUMS]: false,
-  [FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED]: false,
   [FeatureFlags.COINFLOW_OFFRAMP_ENABLED]: false,
-  [FeatureFlags.TIKTOK_NATIVE_AUTH]: true
+  [FeatureFlags.TIKTOK_NATIVE_AUTH]: true,
+  [FeatureFlags.PREMIUM_ALBUMS_ENABLED]: false
 }

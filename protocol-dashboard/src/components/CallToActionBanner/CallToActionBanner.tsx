@@ -1,5 +1,6 @@
 import cn from 'classnames'
 import { PropsWithChildren, ReactNode } from 'react'
+import { isMobile as getIsMobile } from 'utils/mobile'
 
 import styles from './CallToActionBanner.module.css'
 
@@ -24,6 +25,8 @@ export const CallToActionBanner = ({
   pillText,
   href
 }: CallToActionBannerProps) => {
+  const isMobile = getIsMobile()
+
   return (
     <Banner>
       <a
@@ -33,7 +36,7 @@ export const CallToActionBanner = ({
         target="_blank"
       >
         <div className={styles.content}>
-          <Pill>{pillText}</Pill>
+          {isMobile ? null : <Pill>{pillText}</Pill>}
           <div className={styles.contentSelection}>
             <div className={styles.text}>{text}</div>
           </div>
