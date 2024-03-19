@@ -23,8 +23,3 @@
   font-weight: var(--font-bold);
   line-height: 120%;
 }
-
-.notPermitted .icon {
-  width: var(--unit-4);
-  height: var(--unit-4);
-}
