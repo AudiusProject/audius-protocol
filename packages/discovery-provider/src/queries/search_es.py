@@ -178,7 +178,7 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=10, offset=0)
 
 def mdsl_limit_offset(mdsl, limit, offset):
     # add size and limit with some over-fetching
-    # for sake of drop_copycats
+    # for sake of reorder_users
     index_name = ""
     for dsl in mdsl:
         if "index" in dsl:
@@ -248,7 +248,7 @@ def finalize_response(
 
     # users: finalize
     for k in ["users", "followed_users"]:
-        users = drop_copycats(response[k])
+        users = reorder_users(response[k])
         users = users[:limit]
         response[k] = [map_user(user, current_user) for user in users]
 
@@ -323,7 +323,7 @@ def default_function_score(dsl, ranking_field, factor=0.1):
                 "field_value_factor": {
                     "field": ranking_field,
                     "factor": factor,
-                    "modifier": "ln2p",
+                    "modifier": "ln1p",
                 },
                 "boost_mode": "multiply",
             }
@@ -346,13 +346,14 @@ def track_dsl(
                 "bool": {
                     "should": [
                         *base_match(search_str),
+                        {"wildcard": {"title": "*" + search_str + "*"}},
                         {
-                            "match": {
-                                "title.searchable": {
-                                    "query": search_str,
-                                    "boost": 4,
-                                    "fuzziness": "AUTO",
-                                }
+                            "multi_match": {
+                                "query": search_str,
+                                "fields": ["title.searchable", "user.name.searchable"],
+                                "type": "cross_fields",
+                                "operator": "and",
+                                "boost": len(search_str) * 0.5,
                             }
                         },
                         *[
@@ -360,7 +361,7 @@ def track_dsl(
                                 "match": {
                                     "genre": {
                                         "query": search_str.title(),
-                                        "boost": 10,
+                                        "boost": 20,
                                     }
                                 }
                             }
@@ -404,7 +405,7 @@ def track_dsl(
         dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count", factor=0.01)
+    return default_function_score(dsl, "repost_count")
 
 
 def user_dsl(search_str, current_user_id, must_saved=False):
@@ -418,8 +419,17 @@ def user_dsl(search_str, current_user_id, must_saved=False):
                         *base_match(
                             search_str,
                             extra_fields=["handle.searchable", "name.searchable"],
-                            boost=0.1,
+                            boost=len(search_str) * 0.1,
                         ),
+                        {
+                            "wildcard": {
+                                "name": {
+                                    "value": "*" + search_str + "*",
+                                    "boost": 0.01,
+                                    "case_insensitive": True,
+                                }
+                            }
+                        },
                         {
                             "match": {
                                 "name.searchable": {
@@ -487,7 +497,7 @@ def user_dsl(search_str, current_user_id, must_saved=False):
                 boost=len(search_str) * 12,
             ),
             {"term": {"name": {"value": search_str, "boost": len(search_str) * 10}}},
-            {"term": {"is_verified": {"value": True}}},
+            {"term": {"is_verified": {"value": True, "boost": 3}}},
         ],
     }
 
@@ -531,7 +541,8 @@ def base_playlist_dsl(search_str, is_album):
             {
                 "bool": {
                     "should": [
-                        *base_match(search_str, boost=len(search_str) * 0.5),
+                        *base_match(search_str, boost=len(search_str)),
+                        {"wildcard": {"playlist_name": "*" + search_str + "*"}},
                         {
                             "multi_match": {
                                 "query": search_str,
@@ -540,7 +551,7 @@ def base_playlist_dsl(search_str, is_album):
                                     "user.name.searchable",
                                 ],
                                 "type": "cross_fields",
-                                "operator": "or",
+                                "operator": "and",
                                 "boost": len(search_str) * 0.5,
                             }
                         },
@@ -556,6 +567,7 @@ def base_playlist_dsl(search_str, is_album):
                             "match": {
                                 "tracks.genre": {
                                     "query": search_str.title(),
+                                    "boost": 20,
                                 }
                             }
                         },
@@ -575,7 +587,7 @@ def base_playlist_dsl(search_str, is_album):
             {"term": {"is_album": {"value": is_album}}},
         ],
         "should": [
-            *base_match(search_str, operator="and", boost=len(search_str) * 3),
+            *base_match(search_str, operator="and", boost=len(search_str)),
             {"term": {"user.is_verified": {"value": True, "boost": 3}}},
         ],
     }
@@ -584,7 +596,7 @@ def base_playlist_dsl(search_str, is_album):
 def playlist_dsl(search_str, current_user_id, must_saved=False):
     dsl = base_playlist_dsl(search_str, False)
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count", factor=1)
+    return default_function_score(dsl, "repost_count")
 
 
 def album_dsl(search_str, current_user_id, must_saved=False):
@@ -593,10 +605,12 @@ def album_dsl(search_str, current_user_id, must_saved=False):
     return default_function_score(dsl, "repost_count")
 
 
-def drop_copycats(users):
+def reorder_users(users):
     """Filters out users with copy cat names.
     e.g. if a verified deadmau5 is in the result set
     filter out all non-verified users with same name.
+
+    Moves users without profile pictures to the end.
     """
     reserved = set()
     for user in users:
@@ -605,13 +619,16 @@ def drop_copycats(users):
             reserved.add(lower_ascii_name(user["name"]))
 
     filtered = []
+    users_without_photos = []
     for user in users:
         if not user["is_verified"] and lower_ascii_name(user["name"]) in reserved:
             continue
-        if not user["profile_picture_sizes"]:
-            continue
-        filtered.append(user)
-    return filtered
+        if user["profile_picture_sizes"] or user["profile_picture"]:
+            filtered.append(user)
+        else:
+            users_without_photos.append(user)
+
+    return filtered + users_without_photos
 
 
 def lower_ascii_name(name):
