@@ -184,59 +184,187 @@ services:
 
   # DDEX
 
-  ddex-web:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-web
-    <<: *common
-
-  ddex-crawler:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-crawler
-    environment:
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    <<: *common
-
-  ddex-parser:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-parser
-    environment:
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    <<: *common
-
-  ddex-publisher:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-publisher
-    environment:
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    <<: *common
-
   ddex-mongo:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-mongo
     <<: *common
+    profiles:
+      - ddex
+      - ddex-release-by-release
+      - ddex-batched
   
   ddex-mongo-init:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-mongo-init
     <<: *common
-
-  ddex-s3:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-s3
-    <<: *common
+    profiles:
+      - ddex
+      - ddex-release-by-release
+      - ddex-batched
   
   ddex-ingester:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-ingester
     <<: *common
+    profiles:
+      - ddex
+  
+  # DDEX release-by-release (only used locally, not pushed to docker hub)
+
+  ddex-web-release-by-release:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-web
+    container_name: ddex-web-release-by-release
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+    profiles:
+      - ddex-release-by-release
+
+  ddex-crawler-release-by-release:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-crawler
+    container_name: ddex-crawler-release-by-release
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-release-by-release:
+        condition: service_healthy
+    profiles:
+      - ddex-release-by-release
+
+  ddex-parser-release-by-release:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-parser
+    container_name: ddex-parser-release-by-release
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-release-by-release:
+        condition: service_healthy
+    profiles:
+      - ddex-release-by-release
+
+  ddex-publisher-release-by-release:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-publisher
+    container_name: ddex-publisher-release-by-release
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-release-by-release:4566'
+      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-release-by-release:
+        condition: service_healthy
+    profiles:
+      - ddex-release-by-release
+  
+  ddex-s3-release-by-release:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-s3
+    container_name: ddex-s3-release-by-release
+    <<: *common
+    volumes:
+      - "ddex-s3-release-by-release:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    profiles:
+      - ddex-release-by-release
+
+    # DDEX batched (only used locally, not pushed to docker hub)
+
+  ddex-web-batched:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-web
+    container_name: ddex-web-batched
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+    profiles:
+      - ddex-batched
+
+  ddex-crawler-batched:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-crawler
+    container_name: ddex-crawler-batched
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-batched:
+        condition: service_healthy
+    profiles:
+      - ddex-batched
+
+  ddex-parser-batched:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-parser
+    container_name: ddex-parser-batched
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-batched:
+        condition: service_healthy
+    profiles:
+      - ddex-batched
+
+  ddex-publisher-batched:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-publisher
+    container_name: ddex-publisher-batched
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ddex-s3-batched:4566'
+      DDEX_CHOREOGRAPHY: 'ERNBatched'
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3-batched:
+        condition: service_healthy
+    profiles:
+      - ddex-batched
+  
+  ddex-s3-batched:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-s3
+    container_name: ddex-s3-batched
+    <<: *common
+    volumes:
+      - "ddex-s3-batched:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    profiles:
+      - ddex-batched
 
   # Storage (content node)
 
@@ -309,4 +437,5 @@ volumes:
   mediorum:
   legacy_creator_file_storage:
   ddex-mongo-db:
-  ddex-s3:
+  ddex-s3-release-by-release:
+  ddex-s3-batched:

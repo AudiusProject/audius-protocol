@@ -223,7 +223,7 @@ const Upload = () => {
   return (
     <Flex gap='xl' direction='column'>
       <ZipImporter />
-      <Collection collection='uploads' />
+      <Collection collection='deliveries' />
     </Flex>
   )
 }

@@ -3,15 +3,12 @@ import { useState } from 'react'
 import { Text, Button, Box, Flex } from '@audius/harmony'
 import { UseQueryResult } from '@tanstack/react-query'
 
+import { useEnvVars } from 'providers/EnvVarsProvider'
 import { trpc } from 'utils/trpc'
 
 import styles from './Collection.module.css'
 
-type CollectionT =
-  | 'uploads'
-  | 'deliveries'
-  | 'pending_releases'
-  | 'published_releases'
+type CollectionT = 'deliveries' | 'pending_releases' | 'published_releases'
 
 const Table = ({
   collection,
@@ -20,6 +17,8 @@ const Table = ({
   collection: CollectionT
   data: any
 }) => {
+  const { ddexChoreography } = useEnvVars()
+
   const statusStyle = (deliveryStatus: string) => {
     if (deliveryStatus === 'published') {
       return styles.statusSuccess
@@ -33,59 +32,119 @@ const Table = ({
     }
   }
 
+  const DeliveryRow = ({ item }: { item: any }) => {
+    return (
+      <tr key={item._id} className={styles.delivery}>
+        <td>{item._id}</td>
+        <td>{item.zip_file_path}</td>
+        <td className={statusStyle(item.delivery_status)}>
+          {item.delivery_status}
+        </td>
+        <td>{item.created_at}</td>
+        <td>
+          {item.validation_errors && item.validation_errors.length
+            ? item.validation_errors.join(', ')
+            : 'None'}
+        </td>
+        {/* Placeholder cells for alignment, only if needed */}
+        {ddexChoreography === 'ERNBatched' && (
+          <>
+            <td></td>
+            <td></td>
+            <td></td>
+          </>
+        )}
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    )
+  }
+
+  const BatchRow = ({ batch }: { batch: any }) => {
+    return (
+      <>
+        <tr key={batch.batch_id} className={styles.batch}>
+          {/* Placeholder cells for alignment */}
+          <td colSpan={5}></td>
+          <td>{batch.batch_id}</td>
+          <td>{batch.batch_xml_path}</td>
+          <td>
+            {batch.validation_errors && batch.validation_errors.length
+              ? batch.validation_errors.join(', ')
+              : 'None'}
+          </td>
+        </tr>
+        {batch.releases.map((release: any) => (
+          <ReleaseRow key={release.release_id} release={release} />
+        ))}
+      </>
+    )
+  }
+
+  const ReleaseRow = ({ release }: { release: any }) => {
+    return (
+      <tr key={release.release_id} className={styles.release}>
+        {/* Placeholder cells for alignment */}
+        <td colSpan={8}></td>
+        <td>{release.release_id}</td>
+        <td>{release.xml_file_path}</td>
+        <td>
+          {release.validation_errors && release.validation_errors.length
+            ? release.validation_errors.join(', ')
+            : 'None'}
+        </td>
+      </tr>
+    )
+  }
+
   switch (collection) {
-    case 'uploads':
-      return (
-        <table className={styles.styledTable}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Path</th>
-              <th>E-tag</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.items.map((item: any) => (
-              <tr key={item._id}>
-                <td>{item._id}</td>
-                <td>{item.path}</td>
-                <td>{item.upload_etag}</td>
-                <td>{item.created_at}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )
     case 'deliveries':
       return (
         <table className={styles.styledTable}>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Upload E-tag</th>
-              <th>Delivery Status</th>
-              <th>XML Filepath</th>
+              <th colSpan={5}>Delivery</th>
+              {ddexChoreography === 'ERNBatched' && <th colSpan={3}>Batch</th>}
+              <th colSpan={3}>Release</th>
+            </tr>
+            <tr>
+              {' '}
+              {/* Column Headers Below */}
+              <th>Delivery ID</th>
+              <th>ZIP File</th>
+              <th>Status</th>
               <th>Created At</th>
               <th>Errors</th>
+              {/* Batch Headers if applicable */}
+              {ddexChoreography === 'ERNBatched' && (
+                <>
+                  <th>Batch ID</th>
+                  <th>Batch XML Filepath</th>
+                  <th>Batch Errors</th>
+                </>
+              )}
+              {/* Release Headers */}
+              <th>Release ID</th>
+              <th>Release XML Filepath</th>
+              <th>Release Errors</th>
             </tr>
           </thead>
           <tbody>
             {data.items.map((item: any) => (
-              <tr key={item._id}>
-                <td>{item._id}</td>
-                <td>{item.upload_etag}</td>
-                <td className={statusStyle(item.delivery_status)}>
-                  {item.delivery_status}
-                </td>
-                <td>{item.xml_file_path}</td>
-                <td>{item.created_at}</td>
-                <td>
-                  {item.errors && item.errors.length
-                    ? item.errors.join(', ')
-                    : 'None'}
-                </td>
-              </tr>
+              <>
+                <DeliveryRow item={item} />
+                {item.batches &&
+                  ddexChoreography === 'ERNBatched' &&
+                  item.batches.map((batch: any) => (
+                    <BatchRow key={batch.batch_id} batch={batch} />
+                  ))}
+                {item.releases &&
+                  ddexChoreography === 'ERNReleaseByRelease' &&
+                  item.releases.map((release: any) => (
+                    <ReleaseRow key={release.release_id} release={release} />
+                  ))}
+              </>
             ))}
           </tbody>
         </table>
@@ -95,26 +154,22 @@ const Table = ({
         <table className={styles.styledTable}>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Upload E-tag</th>
-              <th>Delivery ID</th>
+              <th>Release ID</th>
               <th>Entity</th>
               <th>Publish Date</th>
               <th>Created At</th>
-              <th>Errors</th>
+              <th>Publish Errors</th>
             </tr>
           </thead>
           <tbody>
             {data.items.map((item: any) => (
               <tr key={item._id}>
                 <td>{item._id}</td>
-                <td>{item.upload_etag}</td>
-                <td>{item.delivery_id}</td>
                 <td>
-                  {item.create_track_release
-                    ? 'track'
-                    : item.create_album_release
-                      ? 'album'
+                  {item.create_album_release?.ddex_release_ref
+                    ? 'album'
+                    : item.create_track_release?.ddex_release_ref
+                      ? 'track'
                       : 'unknown'}
                 </td>
                 <td>{item.publish_date}</td>
@@ -124,7 +179,7 @@ const Table = ({
                     ? (item.failed_after_upload ? '(after uploading) ' : '') +
                       item.failure_count +
                       ': ' +
-                      (item.upload_errors || ['unknown']).join(', ')
+                      (item.publish_errors || ['unknown']).join(', ')
                     : 'None'}
                 </td>
               </tr>
@@ -137,9 +192,7 @@ const Table = ({
         <table className={styles.styledTable}>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Upload E-tag</th>
-              <th>Delivery ID</th>
+              <th>Release ID</th>
               <th>Entity</th>
               <th>Entity ID</th>
               <th>Blockhash</th>
@@ -152,8 +205,6 @@ const Table = ({
             {data.items.map((item: any) => (
               <tr key={item.id}>
                 <td>{item._id}</td>
-                <td>{item.upload_etag}</td>
-                <td>{item.delivery_id}</td>
                 <td>
                   {item.track ? 'track' : item.album ? 'album' : 'unknown'}
                 </td>
@@ -198,9 +249,6 @@ const useCollectionQuery = ({
   // Determine which collection to query
   let queryFunction: QueryFunction
   switch (collection) {
-    case 'uploads':
-      queryFunction = trpc.uploads.listCollection.useQuery
-      break
     case 'deliveries':
       queryFunction = trpc.deliveries.listCollection.useQuery
       break
