@@ -17,9 +17,9 @@ import {
   IconCloudUpload as IconUpload,
   IconValidationCheck,
   Text,
-  PlainButton
+  PlainButton,
+  ProgressBar
 } from '@audius/harmony'
-import { ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
