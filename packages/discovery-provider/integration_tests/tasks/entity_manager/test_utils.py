@@ -151,6 +151,7 @@ def test_valid_parse_metadata(app):
                 "license": "All rights reserved",
                 "isrc": None,
                 "iswc": None,
+                "ddex_release_ids": None,
                 "track_segments": [
                     {
                         "duration": 6.016,
@@ -183,16 +184,8 @@ def test_valid_parse_metadata(app):
                 "preview_start_seconds": None,
                 "audio_upload_id": None,
                 "placement_hosts": None,
-                "playlists_containing_track": None,
                 "ddex_app": None,
-                "ddex_release_ids": None,
-                "artists": None,
-                "resource_contributors": None,
-                "indirect_resource_contributors": None,
-                "rights_controller": None,
-                "copyright_line": None,
-                "producer_copyright_line": None,
-                "parental_warning_type": None
+                "playlists_containing_track": None,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,

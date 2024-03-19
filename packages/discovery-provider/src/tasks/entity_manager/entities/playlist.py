@@ -466,10 +466,6 @@ def create_playlist(params: ManageEntityParameters):
         is_delete=False,
         ddex_app=ddex_app,
         ddex_release_ids=params.metadata.get("ddex_release_ids", None),
-        artists=params.metadata.get("artists", None),
-        copyright_line=params.metadata.get("copyright_line", None),
-        producer_copyright_line=params.metadata.get("producer_copyright_line", None),
-        parental_warning_type=params.metadata.get("parental_warning_type", None),
     )
 
     update_playlist_routes_table(params, playlist_record, True)

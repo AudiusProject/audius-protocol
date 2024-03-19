@@ -145,7 +145,7 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				ICPN: "721620118165",
 			},
 			CoverArtURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T7_007.jpg",
-			Artists: []common.ResourceContributor{{
+			Artists: []common.Artist{{
 				Name:           "Monkey Claw",
 				Roles:          []string{"MainArtist"},
 				SequenceNumber: 1,
@@ -172,7 +172,7 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				Duration:            811,
 				PreviewStartSeconds: intPtr(0),
 				ISRC:                stringPtr("CASE00000001"),
-				Artists: []common.ResourceContributor{
+				Artists: []common.Artist{
 					{
 						Name:  "Monkey Claw",
 						Roles: []string{"MainArtist"},
@@ -209,7 +209,7 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				Duration:            366,
 				PreviewStartSeconds: intPtr(0),
 				ISRC:                stringPtr("CASE00000002"),
-				Artists: []common.ResourceContributor{
+				Artists: []common.Artist{
 					{
 						Name:  "Monkey Claw",
 						Roles: []string{"MainArtist"},
@@ -246,7 +246,7 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				Duration:            1269,
 				PreviewStartSeconds: intPtr(0),
 				ISRC:                stringPtr("CASE00000003"),
-				Artists: []common.ResourceContributor{
+				Artists: []common.Artist{
 					{
 						Name:  "Monkey Claw",
 						Roles: []string{"MainArtist"},
@@ -283,7 +283,7 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				Duration:            165,
 				PreviewStartSeconds: intPtr(0),
 				ISRC:                stringPtr("CASE00000004"),
-				Artists: []common.ResourceContributor{
+				Artists: []common.Artist{
 					{
 						Name:  "Monkey Claw",
 						Roles: []string{"MainArtist"},
@@ -320,7 +320,7 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				Duration:            294,
 				PreviewStartSeconds: intPtr(0),
 				ISRC:                stringPtr("CASE00000005"),
-				Artists: []common.ResourceContributor{
+				Artists: []common.Artist{
 					{
 						Name:  "Monkey Claw",
 						Roles: []string{"MainArtist"},
@@ -357,7 +357,7 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				Duration:            741,
 				PreviewStartSeconds: intPtr(0),
 				ISRC:                stringPtr("CASE00000006"),
-				Artists: []common.ResourceContributor{
+				Artists: []common.Artist{
 					{
 						Name:  "Monkey Claw",
 						Roles: []string{"MainArtist"},
@@ -450,7 +450,7 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 			CoverArtURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1027024165547_Image.jpg", pendingRelease.ReleaseID),
 			CoverArtURLHash:     "582fb410615167205e8741580cf77e71",
 			CoverArtURLHashAlgo: "MD5",
-			Artists: []common.ResourceContributor{{
+			Artists: []common.Artist{{
 				Name:           "Theo Random",
 				Roles:          []string{"MainArtist"},
 				SequenceNumber: 1,
@@ -467,7 +467,7 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				ReleaseDate: time.Time{},
 				Genre:       common.HipHopRap,
 				Duration:    279,
-				Artists: []common.ResourceContributor{{
+				Artists: []common.Artist{{
 					Name:           "Theo Random",
 					Roles:          []string{"AssociatedPerformer", "MainArtist"},
 					SequenceNumber: 1,
@@ -529,7 +529,7 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				Duration:    142,
 				ArtistID:    "",
 				ArtistName:  "",
-				Artists: []common.ResourceContributor{
+				Artists: []common.Artist{
 					{
 						Name:           "Theo Random",
 						Roles:          []string{"AssociatedPerformer", "MainArtist"},
@@ -543,7 +543,7 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				},
 				ResourceContributors: []common.ResourceContributor{
 					{
-						Name:           "Theo Random & Thato Saul",
+						Name:           "Theo Random &amp; Thato Saul",
 						Roles:          []string{"AssociatedPerformer"},
 						SequenceNumber: 1,
 					},

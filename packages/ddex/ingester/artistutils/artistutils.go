@@ -28,7 +28,7 @@ func CreateArtistNameIndex(usersColl *mongo.Collection, ctx context.Context) err
 
 // GetFirstArtistID searches Mongo OAuthed artists for the first match on the track's display artists' names
 // and returns that artist's ID
-func GetFirstArtistID(artists []common.ResourceContributor, usersColl *mongo.Collection, ctx context.Context) (string, string, []string, error) {
+func GetFirstArtistID(artists []common.Artist, usersColl *mongo.Collection, ctx context.Context) (string, string, []string, error) {
 	// Sort artists by SequenceNumber (asc)
 	sort.Slice(artists, func(i, j int) bool {
 		return artists[i].SequenceNumber < artists[j].SequenceNumber
