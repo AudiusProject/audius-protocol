@@ -287,7 +287,6 @@
         "create_date",
         "credits_splits",
         "description",
-        "download",
         "field_visibility",
         "file_type",
         "genre",
@@ -306,6 +305,8 @@
         "stream_conditions",
         "is_download_gated",
         "download_conditions",
+        "is_downloadable",
+        "is_original_available",
         "is_playlist_upload"
       ],
       "title": "Track"
