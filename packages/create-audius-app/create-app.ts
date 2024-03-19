@@ -1,7 +1,12 @@
 import { red, green, cyan } from 'picocolors'
 import fs from 'fs'
 import path from 'path'
-import { ExampleType, exampleExists, installExample } from './helpers/examples'
+import {
+  ExampleType,
+  exampleExists,
+  getExampleFile,
+  installExample
+} from './helpers/examples'
 import { tryGitInit } from './helpers/git'
 import { install } from './helpers/install'
 import { isFolderEmpty } from './helpers/is-folder-empty'
@@ -64,6 +69,11 @@ export async function createApp({
       )
     }
     throw new Error(isErrorLike(reason) ? reason.message : reason + '')
+  }
+  // Copy `.gitignore`, needed because npm doesn't publish .gitignore
+  const ignorePath = path.join(root, '.gitignore')
+  if (!fs.existsSync(ignorePath)) {
+    fs.copyFileSync(getExampleFile({ example, file: 'gitignore' }), ignorePath)
   }
 
   if (process.env.NODE_ENV !== 'test') {

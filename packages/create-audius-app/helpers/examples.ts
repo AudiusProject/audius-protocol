@@ -25,7 +25,7 @@ export const getExampleFile = ({
   example,
   file
 }: GetExampleFileArgs): string => {
-  return path.join(__dirname, example, file)
+  return path.join(__dirname, '../examples', example, file)
 }
 
 export const installExample = async ({ root, example }: InstallExampleArgs) => {
