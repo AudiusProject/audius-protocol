@@ -119,6 +119,7 @@ const ImageSelectionButton = ({
               iconRight={IconCamera}
               onClick={handleClick}
               type='button'
+              aria-label={label}
             >
               {buttonText}
             </Button>
