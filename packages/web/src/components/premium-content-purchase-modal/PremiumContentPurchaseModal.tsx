@@ -153,13 +153,11 @@ const RenderForm = ({
           ) : null}
           <Flex p={isMobile ? 'l' : 'xl'}>
             <Flex direction='column' gap='xl' w='100%'>
-              {!isAlbum ? (
-                <LockedTrackDetailsTile
-                  showLabel={false}
-                  track={metadata as unknown as Track}
-                  owner={metadata.user}
-                />
-              ) : null}
+              <LockedTrackDetailsTile
+                showLabel={false}
+                metadata={metadata}
+                owner={metadata.user}
+              />
               <PurchaseContentFormFields
                 stage={stage}
                 purchaseSummaryValues={purchaseSummaryValues}

@@ -22,39 +22,45 @@ import { UserLink } from 'components/link'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './LockedTrackDetailsTile.module.css'
+import { PurchaseableContentMetadata } from '@audius/common/hooks'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 
 const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
-  premiumTrack: 'PREMIUM TRACK'
+  premiumTrack: (contentType: 'track' | 'album') =>
+    `PREMIUM ${contentType.toUpperCase()}`
 }
 
 export type LockedTrackDetailsTileProps = {
-  trackId: ID
+  metadata: PurchaseableContentMetadata
+  owner: UserMetadata
+  showLabel?: boolean
 }
 
 export const LockedTrackDetailsTile = ({
-  track,
+  metadata,
   owner,
   showLabel = true
-}: {
-  track: Track
-  owner: UserMetadata
-  showLabel?: boolean
-}) => {
-  const {
-    track_id: trackId,
-    title,
-    stream_conditions: streamConditions,
-    download_conditions: downloadConditions,
-    is_download_gated: isDownloadGated
-  } = track
-  const image = useTrackCoverArt(
-    trackId,
-    track._cover_art_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150,
-    ''
+}: LockedTrackDetailsTileProps) => {
+  const { stream_conditions: streamConditions } = metadata
+  const isAlbum = 'playlist_id' in metadata
+  const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
+  const title = isAlbum ? metadata.playlist_name : metadata.title
+  const downloadConditions = !isAlbum ? metadata.download_conditions : null
+  const isDownloadGated = !isAlbum && metadata.is_download_gated
+
+  const trackArt = useTrackCoverArt(
+    contentId,
+    metadata._cover_art_sizes ?? null,
+    SquareSizes.SIZE_150_BY_150
   )
+  const albumArt = useCollectionCoverArt(
+    contentId,
+    metadata._cover_art_sizes ?? null,
+    SquareSizes.SIZE_150_BY_150
+  )
+  const image = isAlbum ? albumArt : trackArt
 
   const dogEarType = getDogEarType({
     streamConditions,
@@ -73,7 +79,7 @@ export const LockedTrackDetailsTile = ({
     message = messages.collectibleGated
   } else if (isUSDCPurchaseGated) {
     IconComponent = IconCart
-    message = messages.premiumTrack
+    message = messages.premiumTrack(isAlbum ? 'album' : 'track')
   } else if (isDownloadGated) {
     IconComponent = null
     message = null
@@ -83,10 +89,10 @@ export const LockedTrackDetailsTile = ({
   }
 
   return (
-    <div className={styles.trackDetails}>
+    <div className={styles.details}>
       <DynamicImage
-        wrapperClassName={styles.trackImageWrapper}
-        className={styles.trackImage}
+        wrapperClassName={styles.imageWrapper}
+        className={styles.image}
         image={image}
         aria-label={label}
       />
@@ -95,7 +101,7 @@ export const LockedTrackDetailsTile = ({
           <DogEar type={dogEarType} />
         </div>
       ) : null}
-      <div className={styles.trackTextWrapper}>
+      <div className={styles.textWrapper}>
         {showLabel && IconComponent && message ? (
           <div
             className={cn(styles.gatedContentLabel, {
@@ -113,10 +119,10 @@ export const LockedTrackDetailsTile = ({
             <span>{message}</span>
           </div>
         ) : null}
-        <p className={styles.trackTitle}>{title}</p>
-        <div className={styles.trackOwner}>
+        <p className={styles.title}>{title}</p>
+        <div className={styles.owner}>
           <span className={styles.by}>By</span>
-          <UserLink userId={owner.user_id} className={styles.trackOwnerName} />
+          <UserLink userId={owner.user_id} className={styles.ownerName} />
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-.trackDetails {
+.details {
   position: relative;
   display: flex;
   align-items: center;
@@ -31,23 +31,23 @@
   left: -1px;
 }
 
-.trackTitle {
+.title {
   margin-bottom: var(--unit-2);
   font-weight: var(--font-bold);
   font-size: var(--font-2xl);
   text-transform: capitalize;
 }
 
-.trackImageWrapper {
+.imageWrapper {
   width: 124px;
   height: 124px;
 }
 
-.trackImage {
+.image {
   border-radius: 4px;
 }
 
-.trackTextWrapper {
+.textWrapper {
   flex: 1;
 }
 
@@ -56,12 +56,12 @@
   color: var(--neutral-light-4);
 }
 
-.trackOwner {
+.owner {
   display: flex;
   align-items: center;
 }
 
-.trackOwnerName {
+.ownerName {
   margin: 0 var(--unit-1);
   color: var(--secondary);
 }
