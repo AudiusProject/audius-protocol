@@ -71,7 +71,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         metadata: values
       })
     },
-    [onContinue, uploadType, tracks]
+    [onContinue, uploadType]
   )
 
   const collectionTypeName =
