@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 import { Sort } from 'mongodb'
 
 export const collections = [
-  'uploads',
   'deliveries',
   'pending_releases',
   'published_releases',

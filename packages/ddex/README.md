@@ -67,8 +67,6 @@ To use stage envs: `cp packages/ddex/.env.stage packages/ddex/.env`
 
 To use dev envs: `cp packages/ddex/.env.dev packages/ddex/.env`
 
-Fill in all missing values. See the `Creating a bucket in S3` section below for how to set up S3.
-
 For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
 
 ### One-time setup
@@ -82,11 +80,11 @@ For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
     ```
 3. To use the DDEX webapp as an admin, add your decoded staging user ID to `extra-env.DDEX_ADMIN_ALLOWLIST` in `../../dev-tools/config.json`
   - Find your user ID by going to `https://discoveryprovider.staging.audius.co/v1/full/users/handle/<your staging handle>`, searching for `id`, and then decoding it by pasting it into the "Encoded" textbox [here](https://healthz.audius.co/#/utils/id) and copying the "Integer" value
-  - Note that this requires a restart if the app is already running (`audius-compose down && audius-compose up -ddex-only`)
+  - Note that this requires a restart if the app is already running (`audius-compose down && audius-compose up -ddex-[release-by-release|batched]`)
 
 
 ### Bring up the ddex stack locally
-Run `audius-compose up -ddex-only` and navigate to `http://localhost:9000` to view the DDEX webapp
+Run `audius-compose up -ddex-release-by-released` (or `audius-compose up --ddex-batched` -- see "Choreography" in Glossary below), and navigate to `http://localhost:9000` to view the DDEX webapp
 
 To upload a delivery to be processed:
   1. Create buckets: `aws --endpoint=http://localhost:4566 s3 mb s3://audius-test-raw && aws --endpoint=http://localhost:4566 s3 mb s3://audius-test-crawled`
@@ -96,7 +94,7 @@ To upload a delivery to be processed:
 To access the ddex db via the mongo shell: `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin`, and then `use ddex`.  
 
 ### Develop with hot reloading
-Each service can be run independently as long as `ddex-mongo` is up (from `audius-compose up --ddex-only` and then optionally stopping individual services). See the respective subdirectories' READMEs.
+Each service can be run independently as long as `ddex-mongo` is up (from `audius-compose up --ddex-[release-by-release|batched]` and then optionally stopping individual services). See the respective subdirectories' READMEs.
 
 ### Running / debugging the e2e test
 * Run `audius-compose test down && audius-compose test run ddex-e2e-release-by-release` to start the ddex stack and run the e2e test for the Release-By-Release choreography. You can replace `ddex-e2e-release-by-release` with `ddex-e2e-batched` to run the e2e test for the Batched choreography.
