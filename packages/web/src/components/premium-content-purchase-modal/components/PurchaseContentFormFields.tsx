@@ -108,7 +108,7 @@ export const PurchaseContentFormFields = ({
   const downloadPurchaseCount =
     'is_download_gated' in metadata &&
     metadata.is_download_gated &&
-    metadata.download?.is_downloadable
+    metadata.is_downloadable
       ? 1
       : 0
   const streamPurchaseCount = metadata.is_stream_gated ? 1 : 0

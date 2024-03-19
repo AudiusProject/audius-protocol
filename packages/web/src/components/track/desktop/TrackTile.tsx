@@ -23,9 +23,9 @@ import {
   IconVisibilityHidden,
   Text,
   Flex,
-  spacing
+  spacing,
+  ProgressBar
 } from '@audius/harmony'
-import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useSelector } from 'react-redux'

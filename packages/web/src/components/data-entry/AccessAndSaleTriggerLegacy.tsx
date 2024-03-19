@@ -12,8 +12,7 @@ import {
   TipGatedConditions,
   USDCPurchaseConditions,
   AccessConditions,
-  Track,
-  Download
+  Track
 } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
@@ -22,9 +21,9 @@ import {
   IconVisibilityHidden,
   IconSpecialAccess,
   IconVisibilityPublic,
-  IconCart
+  IconCart,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import { set, get } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -36,7 +35,6 @@ import { getCombinedDefaultGatedConditionValues } from 'pages/upload-page/fields
 import {
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
-  DOWNLOAD_REQUIRES_FOLLOW,
   FIELD_VISIBILITY,
   GateKeeper,
   IS_DOWNLOADABLE,
@@ -52,7 +50,6 @@ import {
   SpecialAccessType
 } from 'pages/upload-page/fields/types'
 
-import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'
 
 const { getUserId } = accountSelectors
@@ -74,8 +71,7 @@ enum GatedTrackMetadataField {
   PREVIEW = 'preview_start_seconds',
   IS_DOWNLOAD_GATED = 'is_download_gated',
   DOWNLOAD_CONDITIONS = 'download_conditions',
-  IS_DOWNLOADABLE = 'is_downloadable',
-  DOWNLOAD = 'download'
+  IS_DOWNLOADABLE = 'is_downloadable'
 }
 
 enum UnlistedTrackMetadataField {
@@ -95,7 +91,6 @@ type TrackMetadataState = {
   [GatedTrackMetadataField.IS_DOWNLOAD_GATED]: boolean
   [GatedTrackMetadataField.DOWNLOAD_CONDITIONS]: Nullable<AccessConditions>
   [GatedTrackMetadataField.IS_DOWNLOADABLE]: boolean
-  [GatedTrackMetadataField.DOWNLOAD]: Download
   [UnlistedTrackMetadataField.SCHEDULED_RELEASE]: boolean
   [UnlistedTrackMetadataField.UNLISTED]: boolean
   [UnlistedTrackMetadataField.GENRE]: boolean
@@ -143,7 +138,6 @@ export const AccessAndSaleTriggerLegacy = (
     is_download_gated: isDownloadGated,
     download_conditions: downloadConditions,
     is_downloadable: isDownloadable,
-    download,
     ...fieldVisibility
   } = metadataState
 
@@ -176,11 +170,6 @@ export const AccessAndSaleTriggerLegacy = (
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
-    set(
-      initialValues,
-      DOWNLOAD_REQUIRES_FOLLOW,
-      isContentFollowGated(downloadConditions)
-    )
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
@@ -265,7 +254,6 @@ export const AccessAndSaleTriggerLegacy = (
         newState.is_download_gated = true
         newState.download_conditions = conditions
         newState.is_downloadable = true
-        newState.download = { ...download, requires_follow: false }
         const downloadableGateKeeper =
           isDownloadable && lastGateKeeper.downloadable === 'stemsAndDownloads'
             ? 'stemsAndDownloads'
@@ -282,16 +270,10 @@ export const AccessAndSaleTriggerLegacy = (
           const { follow_user_id } = streamConditions as FollowGatedConditions
           newState.stream_conditions = { follow_user_id }
           newState.download_conditions = { follow_user_id }
-          if (isDownloadable) {
-            newState.download = { ...download, requires_follow: true }
-          }
         } else {
           const { tip_user_id } = streamConditions as TipGatedConditions
           newState.stream_conditions = { tip_user_id }
           newState.download_conditions = { tip_user_id }
-          if (isDownloadable) {
-            newState.download = { ...download, requires_follow: false }
-          }
         }
         newState.is_stream_gated = true
         newState.is_download_gated = true
@@ -308,9 +290,6 @@ export const AccessAndSaleTriggerLegacy = (
         newState.stream_conditions = { nft_collection }
         newState.is_download_gated = true
         newState.download_conditions = { nft_collection }
-        if (isDownloadable) {
-          newState.download = { ...download, requires_follow: false }
-        }
         setLastGateKeeper({
           ...lastGateKeeper,
           access: 'accessAndSale'
@@ -391,14 +370,15 @@ export const AccessAndSaleTriggerLegacy = (
       renderValue={() => null}
       previewOverride={(toggleMenu) => (
         <Button
-          className={styles.availabilityButton}
-          type={ButtonType.COMMON_ALT}
+          variant='common'
+          size='small'
+          css={(theme) => ({ marginTop: theme.spacing.l })}
           name='availabilityModal'
-          text={availabilityButtonTitle}
-          size={ButtonSize.SMALL}
           onClick={toggleMenu}
-          leftIcon={<AvailabilityIcon />}
-        />
+          iconLeft={AvailabilityIcon}
+        >
+          {availabilityButtonTitle}
+        </Button>
       )}
     />
   )

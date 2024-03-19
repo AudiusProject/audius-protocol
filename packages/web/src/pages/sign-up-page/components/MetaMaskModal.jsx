@@ -1,8 +1,7 @@
 import { Component } from 'react'
 
 import { BackendUtils as Utils } from '@audius/common/services'
-import { Box, Text } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, Flex, Box, Text } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
@@ -82,7 +81,6 @@ class MetaMaskModal extends Component {
 
   render() {
     const { open, onClickReadConfig, onClickBack } = this.props
-    const { configured } = this.state
     return (
       <div
         className={cn(styles.container, { [styles.hidden]: !open })}
@@ -102,41 +100,30 @@ class MetaMaskModal extends Component {
             <div className={styles.bodyText}>{messages.body2}</div>
           </div>
           <div className={styles.guideContainer}>
-            <Button
-              text={messages.metaMaskGuide}
-              onClick={onClickReadConfig}
-              textClassName={styles.guideButtonText}
-              className={styles.guideButton}
-            />
+            <Button variant='primary' onClick={onClickReadConfig}>
+              {messages.metaMaskGuide}
+            </Button>
           </div>
-          <div className={styles.actionContainer}>
-            <div>
-              <Button
-                type={
-                  this.state.submitting
-                    ? ButtonType.DISABLED
-                    : ButtonType.COMMON
-                }
-                disabled={this.state.submitting}
-                text={messages.continueOption}
-                onClick={this.onClickContinue}
-                textClassName={styles.actionButtonText}
-                className={cn(styles.actionButton, {
-                  [styles.continueButton]: configured
-                })}
-              />
-            </div>
+          <Flex mt='2xl' w='100%' gap='l'>
             <Button
-              type={ButtonType.PRIMARY_ALT}
-              text={messages.stopOption}
+              variant='secondary'
+              isLoading={this.state.submitting}
+              onClick={this.onClickContinue}
+              fullWidth
+            >
+              {messages.continueOption}
+            </Button>
+            <Button
+              variant='primary'
+              fullWidth
               onClick={() => {
                 this.resetState()
                 onClickBack()
               }}
-              textClassName={styles.actionButtonText}
-              className={cn(styles.actionButton, styles.stopButton)}
-            />
-          </div>
+            >
+              {messages.stopOption}
+            </Button>
+          </Flex>
           {this.state.accessError || this.state.configureError ? (
             <Box mt='l'>
               <Text variant='body' color='danger'>

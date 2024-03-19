@@ -1,6 +1,7 @@
 import { AnnouncementNotification } from '@audius/common/store'
 import { Modal, Scrollbar, IconClose as IconRemove } from '@audius/harmony'
-import { MarkdownViewer } from '@audius/stems'
+
+import { MarkdownViewer } from 'components/markdown-viewer'
 
 import { IconAnnouncement } from './Notification/components/icons'
 import styles from './NotificationModal.module.css'

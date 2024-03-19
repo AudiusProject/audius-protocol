@@ -200,7 +200,6 @@ export const makeUserlessTrack = (
     user_id: undefined,
     followee_favorites: undefined,
     artwork: undefined,
-    downloadable: undefined,
     favorite_count: undefined
   }
 
@@ -208,7 +207,6 @@ export const makeUserlessTrack = (
   delete marshalled.user_id
   delete marshalled.followee_favorites
   delete marshalled.artwork
-  delete marshalled.downloadable
   delete marshalled.favorite_count
 
   return marshalled
@@ -281,7 +279,6 @@ export const makeTrack = (
     user_id: undefined,
     followee_favorites: undefined,
     artwork: undefined,
-    downloadable: undefined,
     favorite_count: undefined,
     is_streamable: undefined
   }
@@ -290,7 +287,6 @@ export const makeTrack = (
   delete marshalled.user_id
   delete marshalled.followee_favorites
   delete marshalled.artwork
-  delete marshalled.downloadable
   delete marshalled.favorite_count
   delete marshalled.is_streamable
   return marshalled
@@ -447,11 +443,6 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     genre: '',
     has_current_user_reposted: false,
     has_current_user_saved: false,
-    download: {
-      is_downloadable: true,
-      requires_follow: false,
-      cid: stem.cid
-    },
     license: null,
     mood: null,
     play_count: 0,
@@ -481,10 +472,10 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     is_download_gated: false,
     download_conditions: null,
     access: { stream: true, download: true },
-    track_cid: '',
+    track_cid: stem.cid,
     orig_file_cid: '',
     orig_filename: stem.orig_filename,
-    is_downloadable: false,
+    is_downloadable: true,
     is_original_available: false,
     is_playlist_upload: false
   }

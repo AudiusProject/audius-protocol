@@ -2,7 +2,7 @@ import { memo, useEffect, useCallback, useContext } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { ID, UID, LineupTrack } from '@audius/common/models'
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -94,13 +94,9 @@ const HistoryPage = ({
             <i className='emoji face-with-monocle' />
           </div>
           <div className={styles.secondary}>{messages.empty.secondary}</div>
-          <Button
-            type={ButtonType.SECONDARY}
-            className={styles.btn}
-            textClassName={styles.btnText}
-            onClick={onClickEmpty}
-            text={messages.empty.cta}
-          />
+          <Button variant='primary' onClick={onClickEmpty}>
+            {messages.empty.cta}
+          </Button>
         </div>
       ) : (
         <div className={styles.trackListContainer}>

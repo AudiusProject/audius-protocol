@@ -12,7 +12,6 @@ from sqlalchemy.sql.expression import or_
 from src import exceptions
 from src.api.v1 import helpers as v1Helpers
 from src.gated_content.content_access_checker import content_access_checker
-from src.gated_content.signature import get_gated_content_signature_for_user_wallet
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
@@ -645,18 +644,6 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
                 "stream": True,
                 "download": True,
             }
-            track[
-                response_name_constants.premium_content_signature
-            ] = get_gated_content_signature_for_user_wallet(
-                {
-                    "track_id": track_id,
-                    "track_cid": track["track_cid"],
-                    "type": "track",
-                    "user_wallet": current_user_wallet[0],
-                    "user_id": current_user_id,
-                    "is_gated": False,
-                }
-            )
         else:
             has_stream_access = gated_track_access[track_id].get(
                 "has_stream_access", True
@@ -668,19 +655,6 @@ def _populate_gated_track_metadata(session, tracks, current_user_id):
                 "stream": has_stream_access,
                 "download": has_download_access,
             }
-            if has_stream_access:
-                track[
-                    response_name_constants.premium_content_signature
-                ] = get_gated_content_signature_for_user_wallet(
-                    {
-                        "track_id": track_id,
-                        "track_cid": track["track_cid"],
-                        "type": "track",
-                        "user_wallet": current_user_wallet[0],
-                        "user_id": current_user_id,
-                        "is_gated": True,
-                    }
-                )
 
 
 def get_track_remix_metadata(session, tracks, current_user_id):

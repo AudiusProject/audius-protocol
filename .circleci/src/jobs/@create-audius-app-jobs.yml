@@ -1,0 +1,38 @@
+create-audius-app-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+    - run:
+        name: lint & typecheck
+        command: |
+          npx turbo run verify --filter=create-audius-app
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/create-audius-app/node_modules
+
+create-audius-app-test:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: 'test'
+        command: |
+          npx turbo run test --filter=create-audius-app

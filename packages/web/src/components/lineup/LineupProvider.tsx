@@ -787,7 +787,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               threshold={loadMoreThreshold}
               element='ol'
             >
-              {showFeedTipTile ? <FeedTipTile /> : null}
+              <FeedTipTile />
               {tiles.map((tile, index) => (
                 <li key={index}>{tile}</li>
               ))}

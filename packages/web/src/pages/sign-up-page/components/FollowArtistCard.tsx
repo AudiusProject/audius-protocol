@@ -95,6 +95,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
           )
           togglePreview(user_id)
         }}
+        css={{ cursor: 'pointer' }}
       />
     </Box>
   ))

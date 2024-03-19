@@ -18,7 +18,7 @@ export const RegisterNodeCard = () => {
   return (
     <Card direction="column">
       <Flex
-        pv="2xl"
+        pv="xl"
         ph="xl"
         borderBottom="default"
         justifyContent="space-between"

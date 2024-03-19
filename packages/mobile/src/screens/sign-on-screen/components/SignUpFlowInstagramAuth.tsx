@@ -119,13 +119,6 @@ export const SignUpFlowInstagramAuth = ({
 
   const handleError = (e: Error) => {
     onError?.(e)
-    track(
-      make({
-        eventName: EventNames.CREATE_ACCOUNT_INSTAGRAM_ERROR,
-        page,
-        error: e?.message
-      })
-    )
   }
 
   const handleResponse = async (
@@ -154,7 +147,7 @@ export const SignUpFlowInstagramAuth = ({
           handleError(e)
         }
       } else {
-        handleError(new Error('Unable to retrieve information'))
+        handleError(new Error('No auth code in response from Instagram'))
       }
     } else {
       handleError(new Error(payload.error))

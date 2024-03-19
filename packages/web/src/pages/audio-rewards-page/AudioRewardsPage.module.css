@@ -9,19 +9,6 @@
   margin: -18px 0px 16px;
 }
 
-.cryptoContentContainer {
-  display: flex;
-  margin: -12px -12px 20px -12px;
-  width: calc(100% + 24px);
-  flex-wrap: wrap;
-  justify-content: stretch;
-}
-
-.cryptoContentContainer.mobile {
-  flex-wrap: wrap;
-  margin-top: 22px;
-}
-
 .pageContainer .explainerTile {
   height: auto;
 }

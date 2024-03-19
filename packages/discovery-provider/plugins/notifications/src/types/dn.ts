@@ -609,7 +609,6 @@ export interface TrackRow {
   created_at: Date
   credits_splits?: string | null
   description?: string | null
-  download?: any | null
   duration?: number | null
   field_visibility?: any | null
   file_type?: string | null
