@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { GatedTrackSection } from 'components/track/GatedTrackSection'
-import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
+import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
@@ -64,7 +64,7 @@ export const LockedContentModal = () => {
       <ModalContent>
         {track && track.stream_conditions && owner && (
           <div className={styles.modalContent}>
-            <LockedTrackDetailsTile track={track} owner={owner} />
+            <LockedContentDetailsTile metadata={track} owner={owner} />
             <GatedTrackSection
               isLoading={false}
               // TODO: album support?

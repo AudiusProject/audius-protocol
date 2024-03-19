@@ -48,6 +48,7 @@ export const usePurchaseContentFormConfiguration = ({
   purchaseVendor?: PurchaseVendor
 }) => {
   const dispatch = useDispatch()
+  const isAlbum = metadata && 'playlist_id' in metadata
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const page = useSelector(getPurchaseContentPage)
@@ -72,10 +73,9 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseMethod,
       purchaseVendor
     }: PurchaseContentValues) => {
-      const contentId =
-        metadata && 'track_id' in metadata
-          ? metadata.track_id
-          : metadata?.playlist_id ?? null
+      const contentId = isAlbum
+        ? metadata?.playlist_id ?? null
+        : metadata?.track_id
       if (isUnlocking || !contentId) return
 
       if (
@@ -96,12 +96,14 @@ export const usePurchaseContentFormConfiguration = ({
             extraAmount,
             extraAmountPreset: amountPreset,
             contentId,
-            contentType: PurchaseableContentType.TRACK
+            contentType: isAlbum
+              ? PurchaseableContentType.ALBUM
+              : PurchaseableContentType.TRACK
           })
         )
       }
     },
-    [isUnlocking, metadata, page, presetValues, dispatch]
+    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch]
   )
 
   return {

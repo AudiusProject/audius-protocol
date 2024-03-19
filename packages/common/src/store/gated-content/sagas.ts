@@ -14,13 +14,13 @@ import {
   ID,
   Kind,
   Name,
-  GatedTrackStatus,
   Track,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  NFTAccessSignature
+  NFTAccessSignature,
+  GatedContentStatus
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -41,8 +41,8 @@ const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
 const {
   updateNftAccessSignatures,
   revokeAccess,
-  updateGatedTrackStatus,
-  updateGatedTrackStatuses,
+  updateGatedContentStatus,
+  updateGatedContentStatuses,
   addFolloweeId,
   removeFolloweeId,
   addTippedUserId,
@@ -183,7 +183,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
   const followeeIds = yield* select(getFolloweeIds)
   const tippedUserIds = yield* select(getTippedUserIds)
 
-  const statusMap: { [id: ID]: GatedTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedContentStatus } = {}
 
   const tracksThatNeedSignature = Object.values(tracks).filter((track) => {
     const {
@@ -227,7 +227,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
     return false
   })
 
-  yield* put(updateGatedTrackStatuses(statusMap))
+  yield* put(updateGatedContentStatuses(statusMap))
 
   yield* all(
     tracksThatNeedSignature.map((track) => {
@@ -316,7 +316,7 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
  *   make a request to DN which confirms that user owns the corresponding nft collections by
  *   returning corresponding stream and download signatures.
  */
-function* updateGatedTrackAccess(
+function* updateGatedContentAccess(
   action:
     | ReturnType<typeof updateUserEthCollectibles>
     | ReturnType<typeof updateUserSolCollectibles>
@@ -450,7 +450,9 @@ export function* pollGatedTrack({
           }
         ])
       )
-      yield* put(updateGatedTrackStatus({ trackId, status: 'UNLOCKED' }))
+      yield* put(
+        updateGatedContentStatus({ contentId: trackId, status: 'UNLOCKED' })
+      )
       // note: if necessary, update some ui status to show that the track download is unlocked
       yield* put(removeFolloweeId({ id: track.owner_id }))
       yield* put(removeTippedUserId({ id: track.owner_id }))
@@ -542,7 +544,7 @@ function* updateSpecialAccessTracks(
     yield* put(addTippedUserId({ id: trackOwnerId }))
   }
 
-  const statusMap: { [id: ID]: GatedTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedContentStatus } = {}
   const tracksToPoll: Set<ID> = new Set()
   const cachedTracks = yield* select(getTracks, {})
 
@@ -571,7 +573,7 @@ function* updateSpecialAccessTracks(
     }
   })
 
-  yield* put(updateGatedTrackStatuses(statusMap))
+  yield* put(updateGatedContentStatuses(statusMap))
 
   yield* all(
     Array.from(tracksToPoll).map((trackId) => {
@@ -596,7 +598,7 @@ function* handleUnfollowUser(
   // polling their newly loaded follow gated track signatures.
   yield* put(removeFolloweeId({ id: action.userId }))
 
-  const statusMap: { [id: ID]: GatedTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedContentStatus } = {}
   const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
   const cachedTracks = yield* select(getTracks, {})
 
@@ -619,7 +621,7 @@ function* handleUnfollowUser(
     }
   })
 
-  yield* put(updateGatedTrackStatuses(statusMap))
+  yield* put(updateGatedContentStatuses(statusMap))
   yield* put(revokeAccess({ revokeAccessMap }))
 }
 
@@ -673,7 +675,7 @@ function* watchGatedTracks() {
       updateUserEthCollectibles.type,
       updateUserSolCollectibles.type
     ],
-    updateGatedTrackAccess
+    updateGatedContentAccess
   )
 }
 

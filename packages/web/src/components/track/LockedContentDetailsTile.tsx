@@ -1,10 +1,11 @@
+import { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  ID,
   Track,
-  UserMetadata
+  UserMetadata,
+  Collection
 } from '@audius/common/models'
 import { getDogEarType, Nullable } from '@audius/common/utils'
 import {
@@ -19,11 +20,10 @@ import cn from 'classnames'
 import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
-import styles from './LockedTrackDetailsTile.module.css'
-import { PurchaseableContentMetadata } from '@audius/common/hooks'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import styles from './LockedContentDetailsTile.module.css'
 
 const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
@@ -32,17 +32,17 @@ const messages = {
     `PREMIUM ${contentType.toUpperCase()}`
 }
 
-export type LockedTrackDetailsTileProps = {
-  metadata: PurchaseableContentMetadata
+export type LockedContentDetailsTileProps = {
+  metadata: PurchaseableContentMetadata | Track | Collection
   owner: UserMetadata
   showLabel?: boolean
 }
 
-export const LockedTrackDetailsTile = ({
+export const LockedContentDetailsTile = ({
   metadata,
   owner,
   showLabel = true
-}: LockedTrackDetailsTileProps) => {
+}: LockedContentDetailsTileProps) => {
   const { stream_conditions: streamConditions } = metadata
   const isAlbum = 'playlist_id' in metadata
   const contentId = isAlbum ? metadata.playlist_id : metadata.track_id

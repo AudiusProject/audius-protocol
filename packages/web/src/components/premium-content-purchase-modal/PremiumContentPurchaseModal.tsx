@@ -19,7 +19,6 @@ import {
   ID,
   PurchaseMethod,
   PurchaseVendor,
-  Track,
   USDCPurchaseConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -48,7 +47,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { ModalForm } from 'components/modal-form/ModalForm'
-import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
+import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
@@ -109,7 +108,6 @@ const RenderForm = ({
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
 
-  const isAlbum = 'playlist_id' in metadata
   // Reset form on track change
   useEffect(() => resetForm, [contentId, resetForm])
 
@@ -153,7 +151,7 @@ const RenderForm = ({
           ) : null}
           <Flex p={isMobile ? 'l' : 'xl'}>
             <Flex direction='column' gap='xl' w='100%'>
-              <LockedTrackDetailsTile
+              <LockedContentDetailsTile
                 showLabel={false}
                 metadata={metadata}
                 owner={metadata.user}

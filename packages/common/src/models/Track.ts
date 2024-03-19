@@ -172,8 +172,6 @@ export type SolCollectionMap = {
   }
 }
 
-export type GatedTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
-
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
   blocknumber: number

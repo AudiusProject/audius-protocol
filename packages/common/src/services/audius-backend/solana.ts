@@ -18,6 +18,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
+import { PurchaseableContentType } from '~/store'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import {
@@ -381,7 +382,7 @@ export type PurchaseContentArgs = {
   id: ID
   blocknumber: number
   extraAmount?: number | BN
-  type: 'track'
+  type: PurchaseableContentType
   splits: Record<string, number | BN>
   purchaserUserId: ID
   purchaseAccess: PurchaseAccess
@@ -397,7 +398,7 @@ export const purchaseContent = async (
 
 export type PurchaseContentWithPaymentRouterArgs = {
   id: number
-  type: 'track'
+  type: PurchaseableContentType
   splits: Record<string, number>
   extraAmount?: number
   blocknumber: number

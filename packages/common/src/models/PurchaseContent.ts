@@ -13,3 +13,5 @@ export enum PurchaseAccess {
   STREAM = 'stream',
   DOWNLOAD = 'download'
 }
+
+export type GatedContentStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
