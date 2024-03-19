@@ -168,18 +168,25 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 
 	// If there's an album release, the tracks we parsed out are actually part of the album release
 	if len(createAlbumRelease) > 0 {
-		// Copy release IDs from individual track releases to the album's tracks
-		isrcToReleaseIDsMap := make(map[string]common.ReleaseIDs)
+		// Copy missing fields from individual track releases to the album's tracks,
+		// which currently only have data from the SoundRecordings
+		isrcToMetadataMap := make(map[string]common.TrackMetadata)
 		for _, trackRelease := range createTrackRelease {
 			if trackRelease.Metadata.ISRC != nil {
-				isrcToReleaseIDsMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata.DDEXReleaseIDs
+				isrcToMetadataMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata
 			}
 		}
 		for i, album := range createAlbumRelease {
 			for j, trackMetadata := range album.Tracks {
 				if trackMetadata.ISRC != nil {
-					if releaseIDs, exists := isrcToReleaseIDsMap[*trackMetadata.ISRC]; exists {
-						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = releaseIDs
+					if trackReleaseMetadata, exists := isrcToMetadataMap[*trackMetadata.ISRC]; exists {
+						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = trackReleaseMetadata.DDEXReleaseIDs
+						if trackReleaseMetadata.ProducerCopyrightLine != nil {
+							createAlbumRelease[i].Tracks[j].ProducerCopyrightLine = trackReleaseMetadata.ProducerCopyrightLine
+						}
+						if trackReleaseMetadata.CopyrightLine != nil {
+							createAlbumRelease[i].Tracks[j].CopyrightLine = trackReleaseMetadata.CopyrightLine
+						}
 					}
 				}
 			}
