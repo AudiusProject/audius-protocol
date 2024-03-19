@@ -67,7 +67,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     (values: CollectionValues) => {
       onContinue({
         uploadType,
-        tracks,
+        tracks: values.tracks,
         metadata: values
       })
     },
@@ -103,6 +103,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
               <TextAreaField
                 name='description'
+                aria-label={`${collectionTypeName} ${messages.description}`}
                 placeholder={`${collectionTypeName} ${messages.description}`}
                 maxLength={1000}
                 showMaxLength
