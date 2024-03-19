@@ -174,13 +174,7 @@ export const FinishPage = (props: FinishPageProps) => {
           return upload.tracks?.[0].metadata.permalink
         }
     }
-  }, [
-    upload.completionId,
-    upload.metadata?.playlist_name,
-    upload.tracks,
-    uploadType,
-    user
-  ])
+  }, [upload.completedEntity, upload.tracks, uploadType, user])
 
   const dispatchVisitEvent = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))

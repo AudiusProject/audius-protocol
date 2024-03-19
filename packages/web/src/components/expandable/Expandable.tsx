@@ -1,6 +1,7 @@
+import { ComponentPropsWithoutRef } from 'react'
+
 import { Flex } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
-import { ComponentPropsWithoutRef } from 'react'
 import useMeasure from 'react-use-measure'
 
 export const Expandable = ({
