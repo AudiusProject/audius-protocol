@@ -229,6 +229,51 @@ def test_index_valid_track(app, mocker):
             "is_original_available": False,
             "placement_hosts": "https://host1.com,https://host2.com,https://host3.com,https://host4.com",
         },
+        "QmCreateTrack5": {
+            "owner_id": 2,
+            "track_cid": "some-track-cid-5",
+            "title": "track 5",
+            "cover_art": None,
+            "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
+            "tags": None,
+            "genre": "Rock",
+            "mood": None,
+            "credits_splits": None,
+            "created_at": None,
+            "create_date": None,
+            "updated_at": None,
+            "release_date": None,
+            "file_type": None,
+            "track_segments": [],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_stream_gated": False,
+            "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
+            "field_visibility": {
+                "genre": True,
+                "mood": True,
+                "tags": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": None,
+            "repost_count": 0,
+            "save_count": 0,
+            "description": "",
+            "license": "",
+            "isrc": "",
+            "iswc": "",
+            "is_playlist_upload": False,
+            "orig_file_cid": "original-file-cid-5",
+            "orig_filename": "original-filename-5",
+            "is_downloadable": False,
+            "is_original_available": False,
+            "placement_hosts": "https://host1.com,https://host2.com,https://host3.com,https://host4.com",
+        },
         "QmUpdateTrack1": {
             "title": "track 1 2",
             "description": "updated description",
@@ -240,6 +285,7 @@ def test_index_valid_track(app, mocker):
     create_track2_json = json.dumps(test_metadata["QmCreateTrack2"])
     create_track3_json = json.dumps(test_metadata["QmCreateTrack3"])
     create_track4_json = json.dumps(test_metadata["QmCreateTrack4"])
+    create_track5_json = json.dumps(test_metadata["QmCreateTrack5"])
     update_track1_json = json.dumps(test_metadata["QmUpdateTrack1"])
     update_track2_json = json.dumps(test_metadata["QmUpdateTrack2"])
     tx_receipts = {
@@ -327,7 +373,7 @@ def test_index_valid_track(app, mocker):
                 )
             },
         ],
-        # Delegated track write
+        # Delegated track write (user to app)
         "CreateTrack4Tx": [
             {
                 "args": AttributeDict(
@@ -338,6 +384,21 @@ def test_index_valid_track(app, mocker):
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreateTrack4", "data": {create_track4_json}}}',
                         "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                    }
+                )
+            },
+        ],
+        # Delegated track write (user to user)
+        "CreateTrack5Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 4,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateTrack5", "data": {create_track5_json}}}',
+                        "_signer": "user1wallet",
                     }
                 )
             },
@@ -379,7 +440,9 @@ def test_index_valid_track(app, mocker):
             {
                 "user_id": 2,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-            }
+            },
+            {"user_id": 2, "grantee_address": "user1wallet", "is_approved": True},
+            {"user_id": 1, "grantee_address": "user2wallet", "is_approved": None},
         ],
     }
     populate_mock_db(db, entities)
@@ -397,7 +460,7 @@ def test_index_valid_track(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 4
+        assert len(all_tracks) == 5
 
         track_1: Track = (
             session.query(Track)
@@ -447,6 +510,21 @@ def test_index_valid_track(app, mocker):
         assert track_4.is_delete == False
         assert (
             track_4.placement_hosts
+            == "https://host1.com,https://host2.com,https://host3.com,https://host4.com"
+        )
+
+        track_5: Track = (
+            session.query(Track)
+            .filter(
+                Track.is_current == True,
+                Track.track_id == TRACK_ID_OFFSET + 4,
+            )
+            .first()
+        )
+        assert track_5.title == "track 5"
+        assert track_5.is_delete == False
+        assert (
+            track_5.placement_hosts
             == "https://host1.com,https://host2.com,https://host3.com,https://host4.com"
         )
 
@@ -670,6 +748,20 @@ def test_index_invalid_tracks(app, mocker):
                         "_action": "Create",
                         "_metadata": "",
                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                    }
+                )
+            },
+        ],
+        "CreateTrackInvalidUserGrantNotApproved": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 4,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user2wallet",
                     }
                 )
             },
@@ -909,6 +1001,7 @@ def test_index_invalid_tracks(app, mocker):
                 "user_id": 2,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
             },
+            {"user_id": 1, "grantee_address": "user2wallet", "is_approved": None},
         ],
     }
     populate_mock_db(db, entities)
