@@ -150,15 +150,15 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				Roles:          []string{"MainArtist"},
 				SequenceNumber: 1,
 			}},
-			CopyrightLine: common.Copyright{
+			CopyrightLine: &common.Copyright{
 				Year: "2010",
 				Text: "(C) 2010 Iron Crown Music",
 			},
-			ProducerCopyrightLine: common.Copyright{
+			ProducerCopyrightLine: &common.Copyright{
 				Year: "2010",
-				Text: "(C) 2010 Iron Crown Music",
+				Text: "(P) 2010 Iron Crown Music",
 			},
-			ParentalWarningType: "NotExplicit",
+			ParentalWarningType: stringPtr("NotExplicit"),
 		},
 		DDEXReleaseRef: "R0",
 		Tracks: []common.TrackMetadata{
@@ -168,14 +168,14 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				DDEXReleaseIDs: common.ReleaseIDs{
 					ISRC: "CASE00000001",
 				},
-				Genre:               "Metal",
-				Duration:            811,
-				PreviewStartSeconds: intPtr(0),
-				ISRC:                stringPtr("CASE00000001"),
+				Genre:    "Metal",
+				Duration: 811,
+				ISRC:     stringPtr("CASE00000001"),
 				Artists: []common.ResourceContributor{
 					{
-						Name:  "Monkey Claw",
-						Roles: []string{"MainArtist"},
+						Name:           "Monkey Claw",
+						Roles:          []string{"MainArtist"},
+						SequenceNumber: 1,
 					},
 				},
 				ResourceContributors: []common.ResourceContributor{{
@@ -189,15 +189,15 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 					SequenceNumber: 1,
 				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
-				CopyrightLine: common.Copyright{
+				CopyrightLine: &common.Copyright{
 					Year: "2010",
 					Text: "(C) 2010 Iron Crown Music",
 				},
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2010",
-					Text: "(C) 2010 Iron Crown Music",
+					Text: "(P) 2010 Iron Crown Music",
 				},
-				ParentalWarningType: "NotExplicit",
+				ParentalWarningType: stringPtr("NotExplicit"),
 			},
 			{
 				Title:       "Red top mountain, blown sky high",
@@ -205,14 +205,14 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				DDEXReleaseIDs: common.ReleaseIDs{
 					ISRC: "CASE00000002",
 				},
-				Genre:               "Metal",
-				Duration:            366,
-				PreviewStartSeconds: intPtr(0),
-				ISRC:                stringPtr("CASE00000002"),
+				Genre:    "Metal",
+				Duration: 366,
+				ISRC:     stringPtr("CASE00000002"),
 				Artists: []common.ResourceContributor{
 					{
-						Name:  "Monkey Claw",
-						Roles: []string{"MainArtist"},
+						Name:           "Monkey Claw",
+						Roles:          []string{"MainArtist"},
+						SequenceNumber: 1,
 					},
 				},
 				ResourceContributors: []common.ResourceContributor{{
@@ -226,15 +226,15 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 					SequenceNumber: 1,
 				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
-				CopyrightLine: common.Copyright{
+				CopyrightLine: &common.Copyright{
 					Year: "2010",
 					Text: "(C) 2010 Iron Crown Music",
 				},
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2010",
-					Text: "(C) 2010 Iron Crown Music",
+					Text: "(P) 2010 Iron Crown Music",
 				},
-				ParentalWarningType: "NotExplicit",
+				ParentalWarningType: stringPtr("NotExplicit"),
 			},
 			{
 				Title:       "Seige of Antioch",
@@ -242,14 +242,14 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				DDEXReleaseIDs: common.ReleaseIDs{
 					ISRC: "CASE00000003",
 				},
-				Genre:               "Metal",
-				Duration:            1269,
-				PreviewStartSeconds: intPtr(0),
-				ISRC:                stringPtr("CASE00000003"),
+				Genre:    "Metal",
+				Duration: 1269,
+				ISRC:     stringPtr("CASE00000003"),
 				Artists: []common.ResourceContributor{
 					{
-						Name:  "Monkey Claw",
-						Roles: []string{"MainArtist"},
+						Name:           "Monkey Claw",
+						Roles:          []string{"MainArtist"},
+						SequenceNumber: 1,
 					},
 				},
 				ResourceContributors: []common.ResourceContributor{{
@@ -263,15 +263,15 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 					SequenceNumber: 1,
 				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T3_003.wav",
-				CopyrightLine: common.Copyright{
+				CopyrightLine: &common.Copyright{
 					Year: "2010",
 					Text: "(C) 2010 Iron Crown Music",
 				},
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2010",
-					Text: "(C) 2010 Iron Crown Music",
+					Text: "(P) 2010 Iron Crown Music",
 				},
-				ParentalWarningType: "NotExplicit",
+				ParentalWarningType: stringPtr("NotExplicit"),
 			},
 			{
 				Title:       "Warhammer",
@@ -279,14 +279,14 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				DDEXReleaseIDs: common.ReleaseIDs{
 					ISRC: "CASE00000004",
 				},
-				Genre:               "Metal",
-				Duration:            165,
-				PreviewStartSeconds: intPtr(0),
-				ISRC:                stringPtr("CASE00000004"),
+				Genre:    "Metal",
+				Duration: 165,
+				ISRC:     stringPtr("CASE00000004"),
 				Artists: []common.ResourceContributor{
 					{
-						Name:  "Monkey Claw",
-						Roles: []string{"MainArtist"},
+						Name:           "Monkey Claw",
+						Roles:          []string{"MainArtist"},
+						SequenceNumber: 1,
 					},
 				},
 				ResourceContributors: []common.ResourceContributor{{
@@ -300,15 +300,15 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 					SequenceNumber: 1,
 				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T4_004.wav",
-				CopyrightLine: common.Copyright{
+				CopyrightLine: &common.Copyright{
 					Year: "2010",
 					Text: "(C) 2010 Iron Crown Music",
 				},
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2010",
-					Text: "(C) 2010 Iron Crown Music",
+					Text: "(P) 2010 Iron Crown Music",
 				},
-				ParentalWarningType: "NotExplicit",
+				ParentalWarningType: stringPtr("NotExplicit"),
 			},
 			{
 				Title:       "Iron Horse",
@@ -316,14 +316,14 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				DDEXReleaseIDs: common.ReleaseIDs{
 					ISRC: "CASE00000005",
 				},
-				Genre:               "Metal",
-				Duration:            294,
-				PreviewStartSeconds: intPtr(0),
-				ISRC:                stringPtr("CASE00000005"),
+				Genre:    "Metal",
+				Duration: 294,
+				ISRC:     stringPtr("CASE00000005"),
 				Artists: []common.ResourceContributor{
 					{
-						Name:  "Monkey Claw",
-						Roles: []string{"MainArtist"},
+						Name:           "Monkey Claw",
+						Roles:          []string{"MainArtist"},
+						SequenceNumber: 1,
 					},
 				},
 				ResourceContributors: []common.ResourceContributor{{
@@ -337,15 +337,15 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 					SequenceNumber: 1,
 				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T5_005.wav",
-				CopyrightLine: common.Copyright{
+				CopyrightLine: &common.Copyright{
 					Year: "2010",
 					Text: "(C) 2010 Iron Crown Music",
 				},
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2010",
-					Text: "(C) 2010 Iron Crown Music",
+					Text: "(P) 2010 Iron Crown Music",
 				},
-				ParentalWarningType: "NotExplicit",
+				ParentalWarningType: stringPtr("NotExplicit"),
 			},
 			{
 				Title:       "Yes... I can feel the Monkey Claw!",
@@ -353,14 +353,14 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 				DDEXReleaseIDs: common.ReleaseIDs{
 					ISRC: "CASE00000006",
 				},
-				Genre:               "Metal",
-				Duration:            741,
-				PreviewStartSeconds: intPtr(0),
-				ISRC:                stringPtr("CASE00000006"),
+				Genre:    "Metal",
+				Duration: 741,
+				ISRC:     stringPtr("CASE00000006"),
 				Artists: []common.ResourceContributor{
 					{
-						Name:  "Monkey Claw",
-						Roles: []string{"MainArtist"},
+						Name:           "Monkey Claw",
+						Roles:          []string{"MainArtist"},
+						SequenceNumber: 1,
 					},
 				},
 				ResourceContributors: []common.ResourceContributor{{
@@ -374,15 +374,15 @@ func (e *e2eTest) runERN382Batched(t *testing.T) {
 					SequenceNumber: 1,
 				}},
 				AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T6_006.wav",
-				CopyrightLine: common.Copyright{
+				CopyrightLine: &common.Copyright{
 					Year: "2010",
 					Text: "(C) 2010 Iron Crown Music",
 				},
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2010",
-					Text: "(C) 2010 Iron Crown Music",
+					Text: "(P) 2010 Iron Crown Music",
 				},
-				ParentalWarningType: "NotExplicit",
+				ParentalWarningType: stringPtr("NotExplicit"),
 			},
 		},
 	}, pendingRelease.CreateAlbumRelease, "Album release doesn't match expected")
@@ -455,11 +455,11 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				Roles:          []string{"MainArtist"},
 				SequenceNumber: 1,
 			}},
-			ProducerCopyrightLine: common.Copyright{
+			ProducerCopyrightLine: &common.Copyright{
 				Year: "2023",
 				Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
 			},
-			ParentalWarningType: "Explicit",
+			ParentalWarningType: stringPtr("Explicit"),
 		},
 		Tracks: []common.TrackMetadata{
 			{
@@ -516,11 +516,11 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				AudioFileURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.m4a", pendingRelease.ReleaseID),
 				AudioFileURLHash:     "8bb2ce119257314a8fcb215a49f14b33",
 				AudioFileURLHashAlgo: "MD5",
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2023",
 					Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
 				},
-				ParentalWarningType: "Explicit",
+				ParentalWarningType: stringPtr("Explicit"),
 			},
 			{
 				Title:       "No Comment.",
@@ -578,11 +578,11 @@ func (e *e2eTest) runERN381ReleaseByRelease(t *testing.T) {
 				AudioFileURL:         fmt.Sprintf("s3://audius-test-crawled/%s/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.m4a", pendingRelease.ReleaseID),
 				AudioFileURLHash:     "1e9183898a4f6b45f895e45cd18ba162",
 				AudioFileURLHashAlgo: "MD5",
-				ProducerCopyrightLine: common.Copyright{
+				ProducerCopyrightLine: &common.Copyright{
 					Year: "2023",
 					Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
 				},
-				ParentalWarningType: "Explicit",
+				ParentalWarningType: stringPtr("Explicit"),
 			},
 		},
 	}, pendingRelease.CreateAlbumRelease, "Album release doesn't match expected")
