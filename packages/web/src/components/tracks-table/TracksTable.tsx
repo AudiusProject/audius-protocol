@@ -231,7 +231,7 @@ export const TracksTable = ({
             userId={user.user_id}
             size='s'
             strength='strong'
-            color={index === playingIndex ? 'active' : 'default'}
+            variant={index === playingIndex ? 'visible' : 'default'}
             badgeSize='xs'
             popover
           />

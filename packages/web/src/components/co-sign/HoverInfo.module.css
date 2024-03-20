@@ -7,9 +7,9 @@
 }
 
 .coSign {
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-heavy);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-heavy);
   text-transform: uppercase;
   letter-spacing: 1px;
   line-height: 15px;
@@ -20,9 +20,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--secondary);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-secondary);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
   line-height: 20px;
 }
@@ -44,7 +44,7 @@
 }
 
 .icons path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .text {

@@ -12,7 +12,7 @@
 
 .error {
   width: 100%;
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }
 
 .track {
@@ -25,7 +25,7 @@
   height: 34px;
   width: 34px;
   box-sizing: border-box;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 3.33px;
   overflow: hidden;
   margin-right: 8px;
@@ -45,30 +45,30 @@
 }
 
 .disableInfo {
-  margin-bottom: var(--unit-6);
+  margin-bottom: var(--harmony-unit-6);
 }
 
 .toggleRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--unit-4);
-  font-weight: var(--font-bold);
+  margin-bottom: var(--harmony-unit-4);
+  font-weight: var(--harmony-font-bold);
   font-size: 22px;
 }
 
 .remixDisabled {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .subtext {
-  margin-bottom: var(--unit-4);
-  font-weight: var(--font-medium);
+  margin-bottom: var(--harmony-unit-4);
+  font-weight: var(--harmony-font-medium);
   font-size: 18px;
 }
 
 .divider {
   height: 1px;
-  background: var(--neutral-light-8);
-  margin: var(--unit-6) 0;
+  background: var(--harmony-n-100);
+  margin: var(--harmony-unit-6) 0;
 }

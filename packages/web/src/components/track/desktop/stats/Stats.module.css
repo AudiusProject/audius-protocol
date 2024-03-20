@@ -1,19 +1,19 @@
 .root {
-  max-width: calc(50% - var(--unit-4));
-  margin-right: var(--unit-4);
+  max-width: calc(50% - var(--harmony-unit-4));
+  margin-right: var(--harmony-unit-4);
   display: flex;
   align-items: center;
 }
 
 .large {
-  font-size: var(--font-xs);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-demi-bold);
 }
 
 .medium,
 .small {
-  font-size: var(--font-2xs);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-2xs);
+  font-weight: var(--harmony-font-demi-bold);
   letter-spacing: 0.25px;
 }
 
@@ -33,15 +33,15 @@
 }
 
 .showNonEmpty:hover * {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .showNonEmpty:hover path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .text {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   min-width: 0;
   display: inline-flex;
   align-items: center;

@@ -7,7 +7,7 @@
 
 .content {
   text-align: center;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
 }
 .contentItem {
   margin: 16px;
@@ -31,7 +31,7 @@
   height: 52px;
   width: 52px;
   flex: 0 0 52px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 50%;
 
   background-size: cover;
@@ -42,8 +42,8 @@
 
 .artistLink {
   display: inline-block;
-  color: var(--secondary);
-  font-weight: var(--font-bold);
+  color: var(--harmony-secondary);
+  font-weight: var(--harmony-font-bold);
   margin-bottom: 4px;
   cursor: pointer;
   line-height: normal;

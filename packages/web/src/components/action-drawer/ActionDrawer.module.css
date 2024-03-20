@@ -14,14 +14,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
 }
 
 .title {
   font-size: 16px;
   font-weight: 500;
   line-height: 18px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .row {
@@ -34,11 +34,11 @@
 }
 
 .row:last-child {
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .row:active {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .actionIcon {
@@ -47,12 +47,12 @@
 }
 
 .destructiveAction {
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }
 .darkAction.destructiveAction {
-  color: var(--accent-red);
+  color: var(--harmony-red);
 }
 
 .darkAction {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }

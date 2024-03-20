@@ -1,8 +1,8 @@
 .grouping {
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
   margin-bottom: 24px;
 }
 
 .grouping > * {
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }

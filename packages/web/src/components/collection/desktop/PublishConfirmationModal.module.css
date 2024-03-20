@@ -1,4 +1,4 @@
 .footer {
-  column-gap: var(--unit-4);
-  padding: var(--unit-6);
+  column-gap: var(--harmony-unit-4);
+  padding: var(--harmony-unit-6);
 }

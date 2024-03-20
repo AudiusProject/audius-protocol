@@ -1,6 +1,6 @@
 .formTile {
   width: 100%;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 
   display: flex;
   flex-direction: column;
@@ -67,9 +67,9 @@
   justify-content: flex-start;
   margin-right: 24px;
 
-  color: var(--neutral);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
   line-height: 18px;
 }
@@ -80,13 +80,13 @@
 
 .remixEdit {
   margin-left: 4px;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   cursor: pointer;
   transition: all 0.18s ease-in-out;
 }
 
 .remixEdit:hover {
-  color: var(--secondary-dark-2);
+  color: var(--harmony-s-500);
 }
 
 .advanced {
@@ -110,7 +110,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  column-gap: var(--unit-6);
+  column-gap: var(--harmony-unit-6);
 }
 
 .releaseButton {
@@ -139,7 +139,7 @@
 }
 .divider > .border {
   flex: 1 auto;
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
 }
 
 .licenseMenus {
@@ -166,20 +166,20 @@
 }
 
 .hiddenTrackButton .hiddenTrackButtonText {
-  font-size: var(--font-xs);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-demi-bold);
 }
 
 .error {
-  border-color: var(--accent-red) !important;
+  border-color: var(--harmony-red) !important;
 }
 
 .error:hover {
-  border-color: var(--accent-red-dark-1) !important;
+  border-color: var(--harmony-dark-red) !important;
 }
 
 .trackAvailabilityButton .trackAvailabilityButtonText {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 .datePicker {

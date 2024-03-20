@@ -1,7 +1,7 @@
 .scheduledReleaseLabel {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
 }
 
 .scheduledReleaseLabel path {
-  fill: var(--static-secondary);
+  fill: var(--harmony-secondary);
 }

@@ -4,7 +4,7 @@
   width: 6px;
   height: 6px;
   border-radius: 100%;
-  background: var(--secondary);
+  background: var(--harmony-secondary);
 }
 
 .mobileUpdateDot {
@@ -13,8 +13,8 @@
   left: -4px;
   width: 18px;
   height: 18px;
-  border: 2px solid var(--white);
+  border: 2px solid var(--harmony-white);
   border-radius: 100%;
-  background: var(--secondary);
+  background: var(--harmony-secondary);
   z-index: 100;
 }

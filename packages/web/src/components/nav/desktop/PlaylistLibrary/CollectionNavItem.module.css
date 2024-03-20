@@ -13,7 +13,7 @@
 }
 
 .level1 {
-  margin-left: var(--unit-2);
+  margin-left: var(--harmony-unit-2);
 }
 
 .collectionName {
@@ -23,5 +23,5 @@
 }
 
 :global(.droppableLinkActive) .collectionName {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }

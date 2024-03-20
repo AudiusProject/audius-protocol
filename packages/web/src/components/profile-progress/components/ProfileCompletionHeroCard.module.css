@@ -11,7 +11,7 @@
 }
 
 .leftContainer {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   width: 289px;
   padding: 0 16px;
   height: 182px;
@@ -38,7 +38,7 @@
 }
 
 .completionTextPercentage {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: 52px;
   font-weight: 900;
   letter-spacing: 1.86px;
@@ -47,7 +47,7 @@
 }
 
 .complete {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   font-size: 16px;
   font-weight: 900;
   letter-spacing: 1.14px;
@@ -61,7 +61,7 @@
   right: 12px;
   background-color: transparent;
   border: none;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 12px;
   opacity: 0.5;
   text-align: center;

@@ -12,7 +12,7 @@
 
 .topSection {
   flex-direction: row;
-  gap: var(--unit-8);
+  gap: var(--harmony-unit-8);
   align-items: stretch;
   flex-wrap: wrap;
 }
@@ -37,7 +37,7 @@
   width: 100%;
   height: 72px;
   border-radius: 6px;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   box-shadow: var(--table-shadow) 0px 16px 20px 0px;
   display: flex;
   flex-direction: column;
@@ -49,7 +49,7 @@
 .statValue {
   font-size: 32px;
   font-weight: bold;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   text-shadow: 0 1px 2px rgba(39, 31, 71, 0.25);
   margin-bottom: 4px;
   user-select: none;
@@ -58,7 +58,7 @@
 .statTitle {
   font-size: 12px;
   font-weight: bold;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   opacity: 0.5;
 
   letter-spacing: 1px;
@@ -73,7 +73,7 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }
 
 .chartFallback {

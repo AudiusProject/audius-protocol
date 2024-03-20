@@ -7,19 +7,19 @@
   -webkit-appearance: none;
   position: relative;
   width: 100%;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   outline: none;
   padding-left: 18px;
   background: none;
   transition: border ease-in-out 0.1s;
   font-weight: 500;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 .input > input:-webkit-autofill {
-  -webkit-text-fill-color: var(--neutral);
-  box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
-  -webkit-box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
+  -webkit-text-fill-color: var(--harmony-neutral);
+  box-shadow: 0 0 0px 1000px var(--harmony-n-50) inset;
+  -webkit-box-shadow: 0 0 0px 1000px var(--harmony-n-50) inset;
 }
 .input.shaded {
   background-color: #e9e4f0;
@@ -27,61 +27,61 @@
 .input.small > input,
 .input.small .placeholder {
   height: 34px;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
 }
 .input.medium > input,
 .input.medium .placeholder {
   height: 50px;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .input.large > input,
 .input.large .placeholder {
   height: 66px;
-  font-size: var(--font-xl);
+  font-size: var(--harmony-font-xl);
 }
 
 .input.disabled {
   cursor: default !important;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 .input.disabled {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .input.error > input,
 .input.error .placeholder,
 .input.error.focused > input {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 .input.error:hover > input {
-  border-color: var(--accent-red-dark-1);
+  border-color: var(--harmony-dark-red);
 }
 
 .input:hover > input {
-  border-color: var(--neutral-light-6);
+  border-color: var(--harmony-n-200);
 }
 .input.focused > input {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 .input.elevatedPlaceholder.data > input {
   padding-top: 20px;
 }
 .input {
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   border-radius: 6px;
 }
 
 .input > input::placeholder {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .placeholder {
   position: absolute;
   top: 17px;
   left: 19px;
-  font-weight: var(--font-medium);
-  color: var(--neutral-light-4);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-s);
   transition: all 0.3s ease;
 }
 
@@ -89,23 +89,23 @@
   /* Z-index of 2 here to be on top of password managers */
   z-index: 2;
   pointer-events: none;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: 13px !important;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   line-height: 12px;
   transform: translate(0px, -10px);
   padding: 0px;
 }
 
 .input.warning > input {
-  border-color: var(--accent-orange);
+  border-color: var(--harmony-orange);
 }
 
 .characterCount {
   position: absolute;
   right: 16px;
   top: 10px;
-  color: var(--accent-orange);
+  color: var(--harmony-orange);
   font-size: 12px;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }

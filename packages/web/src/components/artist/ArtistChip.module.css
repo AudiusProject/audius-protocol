@@ -19,7 +19,7 @@
   height: 72px;
   width: 72px;
   flex: 0 0 72px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 50%;
 
   background-size: cover;
@@ -40,8 +40,8 @@
   flex: 1;
   flex-direction: column;
 
-  color: var(--neutral);
-  font-size: var(--font-s);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-s);
   overflow: hidden;
 }
 .text > .identity {
@@ -65,13 +65,13 @@
   flex: 0 0 15px;
 }
 .text > .identity .name {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
   margin-bottom: 4px;
 }
 .text > .identity .handle {
-  font-weight: var(--font-medium);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-s);
 }
 .text .icon {
   margin-right: 4px;
@@ -79,7 +79,7 @@
   height: 16px;
 }
 .text .icon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .followersContainer,
@@ -91,8 +91,8 @@
 .tipContainer .amount {
   display: flex;
   align-items: center;
-  font-weight: var(--font-medium);
-  color: var(--neutral-light-4) !important;
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-n-400) !important;
 }
 .followersContainer .followers {
   width: 136px !important;
@@ -101,18 +101,18 @@
 .followersContainer .value,
 .tipContainer .value {
   margin-right: 4px;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 .followersContainer .followsYou {
   box-shadow: none;
-  border: 1px solid var(--neutral-light-4);
-  color: var(--neutral-light-4);
+  border: 1px solid var(--harmony-n-400);
+  color: var(--harmony-n-400);
 }
 
 .followersContainer .followsYou.darkMode {
   box-shadow: none;
-  border: 1px solid var(--neutral-light-4);
-  color: var(--neutral-light-4);
+  border: 1px solid var(--harmony-n-400);
+  color: var(--harmony-n-400);
   background: none;
 }
 
@@ -123,27 +123,27 @@
 .tipContainer .supporter {
   display: flex;
   align-items: center;
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
 }
 .tipContainer .topSupporter {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 .tipContainer .topRankNumber {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   margin-right: 4px;
 }
 .tipContainer .rankNumber {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 .tipContainer .topSupporter .icon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 .tipContainer .supporter {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 .tipContainer .amount {
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
 }
 .tipContainer {
   margin-top: 8px;

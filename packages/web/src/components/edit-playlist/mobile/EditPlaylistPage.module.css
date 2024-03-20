@@ -36,11 +36,11 @@
 }
 
 .iconCamera path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .text {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  color: var(--secondary);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-secondary);
 }

@@ -8,25 +8,25 @@
   display: flex;
   align-items: flex-end;
   width: 400px;
-  padding: var(--unit-4);
-  border-right: 1px solid var(--neutral-light-8);
+  padding: var(--harmony-unit-4);
+  border-right: 1px solid var(--harmony-n-100);
 }
 
 .left .options {
   margin-left: auto;
   padding-bottom: 5px; /* fix for line-height on header causing vertical misalignment */
   display: flex;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .header {
   text-align: left;
-  color: var(--secondary);
-  font-weight: var(--font-heavy);
-  font-size: var(--font-4xl);
+  color: var(--harmony-secondary);
+  font-weight: var(--harmony-font-heavy);
+  font-size: var(--harmony-font-5xl);
 
   user-select: none;
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
@@ -42,7 +42,7 @@
   flex: 1;
   display: flex;
   align-items: flex-end;
-  padding: var(--unit-4);
+  padding: var(--harmony-unit-4);
 }
 
 @media (max-width: 1080px) {

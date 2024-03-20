@@ -97,7 +97,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
             text={messages.supportersInfo}
             mouseEnterDelay={0.1}
             mount={'parent'}
-            color='--secondary'
+            color='secondary'
           >
             <IconInfo className={styles.icon} />
           </Tooltip>

@@ -56,10 +56,10 @@
 
 .icon path {
   transition: fill 0.07s ease-in-out;
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 .invertColors .icon path {
-  fill: var(--static-secondary);
+  fill: var(--harmony-secondary);
 }
 
 /* Center Logo */
@@ -89,7 +89,7 @@
   display: inline-flex;
   align-items: center;
   gap: 32px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .resources {
@@ -108,7 +108,7 @@
 }
 
 .resourcesIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .resourcesMenu {
@@ -133,12 +133,12 @@
   padding: 16px;
   cursor: pointer;
   border-radius: 6px;
-  border: 1px solid var(--static-white);
+  border: 1px solid var(--harmony-static-white);
 }
 
 .menuItemContainer:hover {
-  background: var(--neutral-light-9);
-  border: 1px solid var(--neutral-light-7);
+  background: var(--harmony-n-50);
+  border: 1px solid var(--harmony-n-150);
 }
 
 .menuItemContent {
@@ -158,17 +158,17 @@
 }
 
 .menuItemIcon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .menuItemIconStroke path {
   fill: none;
-  stroke: var(--secondary);
+  stroke: var(--harmony-secondary);
 }
 
 .popup {
   border-radius: 12px !important;
-  border: 1px solid var(--neutral-light-7) !important;
+  border: 1px solid var(--harmony-n-150) !important;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04) !important;
   padding: 0 !important;
@@ -178,8 +178,8 @@
 
 .rightLink {
   cursor: pointer;
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   line-height: 19px;
   text-align: center;
@@ -200,7 +200,7 @@
 }
 
 .invertColors .linkContainer {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
 }
 
 .signUp {
@@ -210,13 +210,13 @@
   align-items: center;
   justify-content: center;
   color: #7e1bcc;
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   text-align: center;
   padding: 11px 26px 10px;
   border-radius: 4px;
-  background-color: var(--static-white);
+  background-color: var(--harmony-static-white);
   transform: scale3d(1, 1, 1);
   transition: all 0.15s ease-in-out;
 }
@@ -235,11 +235,11 @@
 }
 
 .invertColors .signUp {
-  border: 1px solid var(--neutral-light-7);
+  border: 1px solid var(--harmony-n-150);
 }
 
 .invertColors .signUp:hover {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   background-color: #dc19f0;
   box-shadow: 0 10px 20px -2px rgba(253, 0, 254, 0.5);
   border: none;
@@ -286,11 +286,11 @@
 
 .kebabMenu path,
 .trendingIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .invertColors path {
-  fill: var(--static-secondary-dark-1);
+  fill: var(--harmony-s-400);
 }
 
 .iconLink {
@@ -299,7 +299,7 @@
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   transform: scale3d(1, 1, 1);
-  text-decoration-color: var(--static-white) !important;
+  text-decoration-color: var(--harmony-static-white) !important;
 }
 
 .iconLink:not(:last-child) {
@@ -307,7 +307,7 @@
 }
 
 .iconLink:hover {
-  text-decoration: underline var(--static-white) !important;
+  text-decoration: underline var(--harmony-static-white) !important;
   opacity: 0.8;
   transform: scale3d(1.03, 1.03, 1.03);
 }
@@ -324,29 +324,29 @@
 }
 
 .linkIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .iconLinkText {
-  color: var(--static-white);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  color: var(--harmony-static-white);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.2px;
   white-space: nowrap;
 }
 
 .invertColors .iconLinkText {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
 }
 
 .invertColors .linkIcon path {
-  fill: var(--static-secondary);
+  fill: var(--harmony-secondary);
 }
 
 .invertColors .iconLink {
-  text-decoration-color: var(--static-secondary) !important;
+  text-decoration-color: var(--harmony-secondary) !important;
 }
 
 .invertColors .iconLink:hover {
-  text-decoration: underline var(--static-secondary) !important;
+  text-decoration: underline var(--harmony-secondary) !important;
 }

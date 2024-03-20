@@ -1,21 +1,21 @@
 .container {
   display: flex;
   align-items: center;
-  gap: var(--unit-1);
-  background: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  gap: var(--harmony-unit-1);
+  background: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
   padding: 2px;
-  padding-right: var(--unit-2);
-  border-radius: var(--unit-12);
+  padding-right: var(--harmony-unit-2);
+  border-radius: var(--harmony-unit-12);
 }
 
 .amount {
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.5px;
 }
 
 .skeleton {
-  width: var(--unit-8);
+  width: var(--harmony-unit-8);
   height: 18px;
 }

@@ -4,8 +4,8 @@
 }
 
 .profileLink {
-  font-weight: var(--font-bold) !important;
-  margin-right: var(--unit-1);
+  font-weight: var(--harmony-font-bold) !important;
+  margin-right: var(--harmony-unit-1);
 }
 
 .reactionRoot {

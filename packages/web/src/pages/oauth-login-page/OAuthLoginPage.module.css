@@ -1,5 +1,5 @@
 .bgWhite {
-  background-color: var(--static-white);
+  background-color: var(--harmony-static-white);
 }
 
 .wrapper {
@@ -15,14 +15,14 @@
 }
 
 .titleContainer {
-  margin-top: var(--unit-3);
+  margin-top: var(--harmony-unit-3);
   text-align: center;
 }
 
 .title {
-  color: var(--static-secondary);
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
+  color: var(--harmony-secondary);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-bold);
   line-height: 140%;
   width: 100%;
   overflow: hidden;
@@ -39,18 +39,18 @@
 }
 
 .permsTitleContainer {
-  margin-bottom: var(--unit-2);
-  margin-top: var(--unit-8);
+  margin-bottom: var(--harmony-unit-2);
+  margin-top: var(--harmony-unit-8);
 }
 
 .infoSectionTitle {
-  color: var(--neutral-light-1);
+  color: var(--harmony-n-700);
   line-height: 100%;
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: var(--unit-4);
+  margin-bottom: var(--harmony-unit-4);
 }
 
 .container {
@@ -74,10 +74,10 @@
 }
 
 .tile {
-  background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  background-color: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 8px;
-  padding: var(--unit-4) var(--unit-3);
+  padding: var(--harmony-unit-4) var(--harmony-unit-3);
 }
 
 .permissionContainer {
@@ -104,38 +104,38 @@
 }
 
 .nonFirstPermissionContainer {
-  margin-top: var(--unit-2);
-  padding-top: var(--unit-2);
-  border-top: solid 1px var(--neutral-light-8);
+  margin-top: var(--harmony-unit-2);
+  padding-top: var(--harmony-unit-2);
+  border-top: solid 1px var(--harmony-n-100);
 }
 
 .permissionTextContainer {
   overflow: auto;
-  margin-left: var(--unit-4);
+  margin-left: var(--harmony-unit-4);
 }
 
 .permissionDetailTextContainer {
-  margin-top: var(--unit-2);
+  margin-top: var(--harmony-unit-2);
 }
 
 .permissionText {
-  color: var(--neutral);
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
+  color: var(--harmony-neutral);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-m);
   line-height: 130%;
 }
 
 .permissionDetailText {
-  color: var(--neutral-light-3);
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  color: var(--harmony-n-500);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
   line-height: 180%;
 }
 
 .userInfoContainer,
 .signInFormContainer {
-  padding-bottom: var(--unit-4);
-  margin-top: var(--unit-8);
+  padding-bottom: var(--harmony-unit-4);
+  margin-top: var(--harmony-unit-8);
 }
 
 .userInfo {
@@ -148,23 +148,23 @@
 
 .userInfoDisplayName,
 .userInfoHandle {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   line-height: 120%;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .userInfoHandle {
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 
 .signOutButtonContainer {
-  margin-top: var(--unit-2);
+  margin-top: var(--harmony-unit-2);
 }
 
 .signUpButtonContainer {
   text-align: center;
-  margin-top: var(--unit-4);
+  margin-top: var(--harmony-unit-4);
 }
 
 .linkButton {
@@ -182,35 +182,35 @@
   /* Add padding bottom because Safari has issue where it clips off the bottom of the text otherwise */
   padding-bottom: 2px;
   background: none;
-  color: var(--secondary);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-secondary);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: 100%;
 }
 
 .linkButton:hover,
 .linkButton:active {
-  color: var(--secondary-dark-2);
+  color: var(--harmony-s-500);
 }
 
 .ctaButton {
-  margin-top: var(--unit-8);
+  margin-top: var(--harmony-unit-8);
 }
 
 .loadingSpinner {
-  margin-right: var(--unit-1);
+  margin-right: var(--harmony-unit-1);
   display: inline-block;
-  height: var(--font-s);
-  width: var(--font-s);
+  height: var(--harmony-font-s);
+  width: var(--harmony-font-s);
 }
 
 .permissionTextExtraLight {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .passwordInput,
 .otpInput {
-  margin-top: var(--unit-4);
+  margin-top: var(--harmony-unit-4);
 }
 
 /* Remove buttons on number input */
@@ -226,11 +226,11 @@
 .credentialsErrorContainer {
   display: flex;
   align-items: center;
-  margin-top: var(--unit-4);
+  margin-top: var(--harmony-unit-4);
 }
 
 .credentialsErrorIcon {
-  margin-right: var(--unit-3);
+  margin-right: var(--harmony-unit-3);
 }
 
 .generalErrorContainer {
@@ -238,12 +238,12 @@
 }
 
 .errorText {
-  font-weight: var(--font-bold);
-  color: var(--accent-red);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-red);
+  font-size: var(--harmony-font-m);
   line-height: 120%;
 }
 
 .formArea {
-  padding-bottom: var(--unit-8);
+  padding-bottom: var(--harmony-unit-8);
 }

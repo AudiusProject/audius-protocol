@@ -1,23 +1,23 @@
 .root {
-  font-size: var(--font-medium);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-medium);
+  font-weight: var(--harmony-font-medium);
   line-height: 21px;
 }
 
 .deactivated {
-  color: var(--neutral-light-1);
-  font-size: var(--font-s);
+  color: var(--harmony-n-700);
+  font-size: var(--harmony-font-s);
 }
 
 .link {
   font-size: inherit;
   font-weight: inherit;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   overflow-wrap: break-word;
 }
 
 .badges {
-  margin-left: var(--unit-1);
+  margin-left: var(--harmony-unit-1);
 }
 
 .badgesNoContent {
@@ -25,6 +25,6 @@
 }
 
 .link:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   text-decoration: underline !important;
 }

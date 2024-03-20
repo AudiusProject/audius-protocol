@@ -15,8 +15,8 @@
 .root:hover path,
 .root:active path,
 .root:focus path {
-  color: var(--nav-column-link-hover);
-  fill: var(--nav-column-link-hover);
+  color: var(--harmony-neutral);
+  fill: var(--harmony-n-950);
 }
 
 .visible {

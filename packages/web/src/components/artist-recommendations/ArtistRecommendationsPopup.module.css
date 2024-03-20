@@ -6,9 +6,9 @@
 .headerTitle {
   flex: 1;
   margin-right: 32px;
-  color: var(--secondary);
-  font-weight: var(--font-bold);
-  font-size: var(--font-l);
+  color: var(--harmony-secondary);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-l);
   text-align: center;
 }
 

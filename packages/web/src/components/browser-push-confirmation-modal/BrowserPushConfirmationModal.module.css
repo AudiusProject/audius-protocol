@@ -5,8 +5,8 @@
 }
 
 .title {
-  color: var(--neutral-light-4);
-  font-size: var(--font-l);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-l);
   letter-spacing: 0.5px;
   line-height: 28px;
   text-align: center;
@@ -18,9 +18,9 @@
 }
 
 .textBody {
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 22px;
   text-align: center;
   margin-top: 21px;
@@ -48,5 +48,5 @@
 
 .headerContainerClassName {
   padding: 14px 0px 6px !important;
-  border-bottom-color: var(--neutral-light-8);
+  border-bottom-color: var(--harmony-n-100);
 }

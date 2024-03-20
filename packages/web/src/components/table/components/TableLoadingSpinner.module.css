@@ -1,14 +1,14 @@
 .row {
   display: flex;
   justify-content: center;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .item {
-  padding: var(--unit-6);
+  padding: var(--harmony-unit-6);
 }
 
 .loader {
-  height: var(--unit-8);
-  width: var(--unit-8);
+  height: var(--harmony-unit-8);
+  width: var(--harmony-unit-8);
 }

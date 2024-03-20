@@ -1,6 +1,6 @@
 .walletManagementTile {
   margin-block-end: 32px;
-  background: var(--white);
+  background: var(--harmony-white);
   overflow: hidden;
 
   /* tileContainer */
@@ -16,15 +16,15 @@
 
 .balanceContainer {
   width: 100%;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   padding: 24px;
 }
 .spinner {
-  width: var(--unit-11);
-  height: var(--unit-11);
+  width: var(--harmony-unit-11);
+  height: var(--harmony-unit-11);
   margin: 0 auto;
-  padding-top: var(--unit-2);
-  padding-bottom: var(--unit-2);
+  padding-top: var(--harmony-unit-2);
+  padding-bottom: var(--harmony-unit-2);
 }
 
 .spinner g path {
@@ -35,7 +35,7 @@
   font-weight: 800;
   font-size: 96px;
   text-align: center;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   margin-bottom: 6px;
   opacity: 1;
@@ -45,8 +45,8 @@
   opacity: 1;
   transition: opacity 0.07s ease-in-out;
   margin-top: 10px;
-  font-weight: var(--font-bold);
-  font-size: var(--font-2xl);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-2xl);
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -97,22 +97,22 @@
   line-height: 49px;
   text-transform: uppercase;
 
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .subtitle {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   font-size: 16px;
   line-height: 20px;
   text-transform: uppercase;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   align-self: flex-start;
 }
 
 .toggle {
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
 }
 .toggle .advancedToggle {
   padding-top: 20px;
@@ -125,7 +125,7 @@
   width: 100%;
   padding: 24px;
   gap: 24px;
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 .moreOptionsSection {
   display: flex;
@@ -154,6 +154,6 @@
 .tooltip :global(.ant-tooltip-inner) {
   border-radius: 8px;
   padding: 12px 24px;
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-demi-bold);
 }

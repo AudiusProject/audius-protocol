@@ -3,7 +3,7 @@
   width: 100%;
   border-radius: 8px;
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   overflow: hidden;
   padding-bottom: 5px;
 }
@@ -13,7 +13,7 @@
   overflow: hidden;
   width: 100%;
   min-width: 0px !important;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 
   display: flex;
   flex-direction: column;
@@ -23,12 +23,12 @@
   position: relative;
   display: block;
   padding-top: 24px;
-  background-color: var(--white);
-  color: var(--neutral);
+  background-color: var(--harmony-white);
+  color: var(--harmony-neutral);
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .tableHeadRow {
@@ -37,7 +37,7 @@
   position: relative;
   overflow: hidden;
   min-width: 0px !important;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .cellSection {
@@ -49,7 +49,7 @@
 
 .tableHeader {
   position: relative;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   padding-left: 12px;
   padding-right: 12px;
   line-height: 41px;
@@ -68,7 +68,7 @@
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  background-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-100);
 }
 
 .textCell {
@@ -92,7 +92,7 @@
 }
 
 .sortCaret path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .pageButtonContainer {
@@ -113,17 +113,17 @@
   border-radius: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   cursor: pointer;
 }
 
 .pageButton:not(.active):hover {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .pageButton.active {
-  background-color: var(--secondary);
-  color: var(--static-white);
+  background-color: var(--harmony-secondary);
+  color: var(--harmony-static-white);
   cursor: default;
 }
 
@@ -135,11 +135,11 @@
 }
 
 .pageCaret path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .pageCaret:not(.disabled):hover path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .pageCaret.disabled {
@@ -147,7 +147,7 @@
 }
 
 .pageCaret.disabled path {
-  fill: var(--neutral-light-7);
+  fill: var(--harmony-n-150);
 }
 
 .showMoreContainer {
@@ -156,23 +156,23 @@
   justify-content: center;
   gap: 4px;
   padding: 15px 0;
-  background-color: var(--neutral-light-10);
-  border-top: 1px solid var(--neutral-light-8);
+  background-color: var(--harmony-n-25);
+  border-top: 1px solid var(--harmony-n-100);
   cursor: pointer;
 }
 
 .showMoreContainer:hover .showMoreText {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .showMoreContainer:hover .showMoreCaret path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .showMoreText {
   font-size: 14px;
   font-weight: 700;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   transition: all 0.07s ease-in-out;
 }
 
@@ -183,13 +183,13 @@
 
 .showMoreCaret path {
   transition: all 0.07s ease-in-out;
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .tableBody {
   display: block;
   overflow: hidden;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow {
@@ -197,39 +197,38 @@
   position: relative;
   flex: 1 1 0;
   overflow: hidden;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   min-width: 0px !important;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
 .tableRow > .tableCell {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .tableRow.active {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .tableRow:hover:not(.skeletonRow),
 .tableRow:hover > .tableCell {
   z-index: 3;
-  box-shadow: 0 1px 0 0 var(--neutral-light-8),
-    0 -1px 0 0 var(--neutral-light-8);
+  box-shadow: 0 1px 0 0 var(--harmony-n-100), 0 -1px 0 0 var(--harmony-n-100);
   transition: all 0.07s ease-in-out;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow.disabled {
   cursor: default;
-  color: var(--neutral-light-4);
-  background-color: var(--neutral-light-9);
+  color: var(--harmony-n-400);
+  background-color: var(--harmony-n-50);
 }
 
 .tableRow.disabled:hover {
   box-shadow: none;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .tableCell {
@@ -292,7 +291,7 @@
   left: 0;
   right: 0;
   top: 0;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   opacity: 0;
   z-index: 2;
 }

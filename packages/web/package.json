@@ -65,7 +65,6 @@
     "@audius/common": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
-    "@audius/stems": "*",
     "@audius/fixed-decimal": "*",
     "@audius/trpc-server": "*",
     "@cloudflare/kv-asset-handler": "0.2.0",

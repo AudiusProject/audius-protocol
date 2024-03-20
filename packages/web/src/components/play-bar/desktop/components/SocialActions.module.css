@@ -1,7 +1,7 @@
 .root {
-  margin-left: var(--unit-9);
+  margin-left: var(--harmony-unit-9);
   display: flex;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
   justify-content: center;
   align-items: center;
 }

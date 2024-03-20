@@ -1,16 +1,16 @@
 .button {
-  background: var(--white);
+  background: var(--harmony-white);
   box-sizing: border-box;
   height: 48px;
   width: 256px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 4px;
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
 
-  color: var(--neutral-light-2);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  color: var(--harmony-n-600);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.17px;
   text-align: center;
 
@@ -20,5 +20,5 @@
 
 .button:active {
   transition: none;
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
 }

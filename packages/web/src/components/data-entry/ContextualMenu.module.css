@@ -1,6 +1,6 @@
 .root {
-  gap: var(--unit-4);
-  padding: var(--unit-4) var(--unit-6);
+  gap: var(--harmony-unit-4);
+  padding: var(--harmony-unit-4) var(--harmony-unit-6);
   flex-direction: column;
   cursor: pointer;
 }
@@ -9,14 +9,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .header {
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .title {
@@ -32,19 +32,19 @@
 .value {
   display: inline-flex;
   flex-shrink: 1;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   flex-wrap: wrap;
 }
 
 .selectedValue {
   display: inline-flex;
   align-self: flex-start;
-  padding: var(--unit-2);
+  padding: var(--harmony-unit-2);
   align-items: center;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   border-radius: 2px;
-  border: 1px solid var(---border-strong);
-  background: var(--neutral-light-8);
+  border: 1px solid var(---harmony-border-strong);
+  background: var(--harmony-n-100);
 }
 
 .footer {

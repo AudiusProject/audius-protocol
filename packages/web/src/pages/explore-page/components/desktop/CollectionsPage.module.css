@@ -13,9 +13,9 @@
 }
 
 .headerWrapper h2 {
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
   margin-top: 5px;
   margin-bottom: 10px;
@@ -28,14 +28,14 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }
 
 .userName:hover {
   cursor: pointer;
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
-  text-decoration-color: var(--primary-light-2);
+  text-decoration-color: var(--harmony-p-100);
 }
 
 .cardsContainer {

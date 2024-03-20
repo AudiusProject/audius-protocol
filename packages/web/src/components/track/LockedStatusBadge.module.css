@@ -1,26 +1,26 @@
 .container {
   align-items: center;
   justify-content: center;
-  gap: var(--unit-1);
-  background-color: var(--neutral-light-4);
-  border-radius: var(--unit-20);
+  gap: var(--harmony-unit-1);
+  background-color: var(--harmony-n-400);
+  border-radius: var(--harmony-unit-20);
   display: flex;
-  height: var(--unit-4);
-  padding: var(--unit-half) var(--unit-2);
+  height: var(--harmony-unit-4);
+  padding: var(--harmony-unit-half) var(--harmony-unit-2);
 }
 
 .container.hasText {
-  padding: var(--unit-1) var(--unit-2);
+  padding: var(--harmony-unit-1) var(--harmony-unit-2);
 }
 
 .unlocked.gated,
 .coloredWhenLocked.gated {
-  background-color: var(--accent-blue);
+  background-color: var(--harmony-blue);
 }
 
 .unlocked.premium,
 .coloredWhenLocked.premium {
-  background-color: var(--special-light-green);
+  background-color: var(--harmony-light-green);
 }
 
 .icon.medium {
@@ -34,10 +34,10 @@
 }
 
 .icon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .text {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   text-decoration: none;
 }

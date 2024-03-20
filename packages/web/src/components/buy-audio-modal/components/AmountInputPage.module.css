@@ -10,11 +10,11 @@
   text-transform: uppercase;
   text-align: center;
   line-height: 150%;
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
-  color: var(--neutral-light-4);
-  border-top: 1px solid var(--neutral-light-8);
-  background: var(--neutral-light-10);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
+  color: var(--harmony-n-400);
+  border-top: 1px solid var(--harmony-n-100);
+  background: var(--harmony-n-25);
 }
 
 .buyButtonContainer {

@@ -31,16 +31,16 @@
 .tileHeader {
   flex: 0;
   align-self: flex-end;
-  background: var(--static-white);
-  color: var(--secondary);
-  font-weight: var(--font-bold);
-  font-size: var(--font-m);
+  background: var(--harmony-static-white);
+  color: var(--harmony-secondary);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-m);
   padding: 2px 4px;
   margin: 8px;
   width: fit-content;
   height: 20px;
   border-radius: 16px;
-  border: 1px solid var(--static-neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.15);
   z-index: 1;
 
@@ -53,13 +53,13 @@
   margin-right: 4px;
 }
 .tileHeader .trophyIcon path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 .tileHeader .tipIcon {
   width: 14px;
 }
 .tileHeader .tipIcon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .trophyIcon {
@@ -68,7 +68,7 @@
 }
 
 .rankNumberSymbol {
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   margin-right: 2px;
 }
 
@@ -84,7 +84,7 @@
 .profilePicture {
   height: 32px;
   border-radius: 32px;
-  border: 1px solid var(--static-white);
+  border: 1px solid var(--harmony-static-white);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -92,9 +92,9 @@
 }
 
 .name {
-  color: var(--static-white);
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
+  color: var(--harmony-static-white);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
   line-height: 120%; /* identical to box height, or 17px */
   white-space: nowrap;
   overflow: hidden;

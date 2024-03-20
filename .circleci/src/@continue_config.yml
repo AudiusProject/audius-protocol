@@ -52,9 +52,6 @@ parameters:
   run-mobile-workflow:
     type: boolean
     default: false
-  run-stems-workflow:
-    type: boolean
-    default: false
   run-probers-workflow:
     type: boolean
     default: false

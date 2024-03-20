@@ -4,7 +4,7 @@
   display: flex;
   width: 100%;
   flex-direction: column;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .controls {
@@ -32,7 +32,7 @@
   box-sizing: border-box;
   height: 26px;
   width: 26px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
 }
 
 .image {
@@ -53,7 +53,7 @@
   cursor: pointer;
   height: 100%;
   width: 100%;
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
   user-select: none;
   padding-top: 20px;
   margin-top: -20px;
@@ -70,9 +70,9 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   margin-left: 8px;
-  color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
 }
 
 .artist {
@@ -81,9 +81,9 @@
   text-overflow: ellipsis;
   line-height: normal;
   max-width: calc(33% - 12px);
-  color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
 }
 
 .play {
@@ -116,5 +116,5 @@
 }
 
 .iconLock path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }

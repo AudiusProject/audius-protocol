@@ -30,9 +30,9 @@
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0.57px;
   line-height: 20px;
 }
@@ -43,7 +43,7 @@
 
 .subHeader .track .link {
   margin: 0px 4px;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   display: flex;
   align-items: center;
 }
