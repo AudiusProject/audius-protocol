@@ -12,6 +12,13 @@ export const CreateGrantSchema = z.object({
 
 export type CreateGrantRequest = z.input<typeof CreateGrantSchema>
 
+export const AddManagerSchema = z.object({
+  userId: HashId,
+  managerUserId: HashId
+})
+
+export type AddManagerRequest = z.input<typeof AddManagerSchema>
+
 export const RevokeGrantSchema = z.object({
   userId: HashId,
   appApiKey: z.custom<string>((data: unknown) => {
@@ -20,3 +27,17 @@ export const RevokeGrantSchema = z.object({
 })
 
 export type RevokeGrantRequest = z.input<typeof RevokeGrantSchema>
+
+export const ApproveGrantSchema = z.object({
+  userId: HashId,
+  grantorUserId: HashId
+})
+
+export type ApproveGrantRequest = z.input<typeof ApproveGrantSchema>
+
+export const RejectGrantSchema = z.object({
+  userId: HashId,
+  grantorUserId: HashId
+})
+
+export type RejectGrantRequest = z.input<typeof RejectGrantSchema>

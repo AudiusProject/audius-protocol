@@ -1,9 +1,16 @@
+import type { UsersApi, Configuration, User } from '../../api/generated/default'
 import type { AuthService, EntityManagerService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
+import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
-import type { Configuration } from '../generated/default'
 
 import {
+  ApproveGrantSchema,
+  ApproveGrantRequest,
+  AddManagerRequest,
+  AddManagerSchema,
+  RejectGrantRequest,
+  RejectGrantSchema,
   CreateGrantRequest,
   CreateGrantSchema,
   RevokeGrantRequest,
@@ -15,11 +22,13 @@ export class GrantsApi {
   constructor(
     _config: Configuration,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly usersApi: UsersApi
   ) {}
 
   /**
-   * When user authorizes app to perform actions on their behalf
+   * When user authorizes app to perform actions on their behalf.
+   * For user-to-user grants, use `addManager`.
    */
   async createGrant(params: CreateGrantRequest) {
     const { userId, appApiKey } = await parseParams(
@@ -34,6 +43,43 @@ export class GrantsApi {
       action: Action.CREATE,
       metadata: JSON.stringify({
         grantee_address: `0x${appApiKey}`
+      }),
+      auth: this.auth
+    })
+  }
+
+  /**
+   * When user authorizes another user to perform actions on their behalf.
+   * The grant has to be approved by the proposed manager.
+   */
+  async addManager(params: AddManagerRequest) {
+    const { userId, managerUserId } = await parseParams(
+      'addManager',
+      AddManagerSchema
+    )(params)
+    let managerUser: User | undefined
+    try {
+      managerUser = (
+        await this.usersApi.getUser({
+          id: encodeHashId(managerUserId)!
+        })
+      ).data
+      if (!managerUser) {
+        throw new Error()
+      }
+    } catch (e) {
+      throw new Error(
+        '`managerUserId` passed to `addManager` method is invalid.'
+      )
+    }
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.GRANT,
+      entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        grantee_address: managerUser!.ercWallet
       }),
       auth: this.auth
     })
@@ -55,6 +101,48 @@ export class GrantsApi {
       action: Action.DELETE,
       metadata: JSON.stringify({
         grantee_address: `0x${appApiKey}`
+      }),
+      auth: this.auth
+    })
+  }
+
+  /**
+   * Approve manager request
+   */
+  async approveGrant(params: ApproveGrantRequest) {
+    const { userId, grantorUserId } = await parseParams(
+      'approveGrant',
+      ApproveGrantSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.GRANT,
+      entityId: 0,
+      action: Action.APPROVE,
+      metadata: JSON.stringify({
+        grantor_user_id: grantorUserId
+      }),
+      auth: this.auth
+    })
+  }
+
+  /**
+   * Reject manager request
+   */
+  async rejectGrant(params: RejectGrantRequest) {
+    const { userId, grantorUserId } = await parseParams(
+      'rejectGrant',
+      RejectGrantSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.GRANT,
+      entityId: 0,
+      action: Action.REJECT,
+      metadata: JSON.stringify({
+        grantor_user_id: grantorUserId
       }),
       auth: this.auth
     })
