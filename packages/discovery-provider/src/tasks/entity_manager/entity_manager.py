@@ -938,11 +938,11 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         for grant, _ in grants:
             entities_to_fetch["DeveloperApp"].add(grant.grantee_address.lower())
     # USERS BY WALLET
-    if entities_to_fetch[EntityType.USER_WALLET]:
+    if entities_to_fetch["UserWallet"]:
         users_by_wallet: List[User] = (
             session.query(User)
             .filter(
-                func.lower(User.wallet).in_(entities_to_fetch[EntityType.USER_WALLET]),
+                func.lower(User.wallet).in_(entities_to_fetch["UserWallet"]),
                 User.is_current == True,
             )
             .all()

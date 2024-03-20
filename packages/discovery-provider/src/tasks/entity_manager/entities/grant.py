@@ -17,6 +17,11 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
+class GenericGrantMetadata(TypedDict):
+    grantee_address: Union[str, None]
+    grantor_user_id: Union[str, None]
+
+
 class CreateGrantMetadata(TypedDict):
     grantee_address: Union[str, None]
 
@@ -31,8 +36,8 @@ class ApproveOrRejectGrantMetadata(TypedDict):
 
 def get_grant_metadata_from_raw(
     raw_metadata: Optional[str],
-) -> Optional[Union[CreateGrantMetadata, ApproveOrRejectGrantMetadata]]:
-    metadata: Union[CreateGrantMetadata, ApproveOrRejectGrantMetadata] = {
+) -> Optional[GenericGrantMetadata]:
+    metadata: GenericGrantMetadata = {
         "grantee_address": None,
         "grantor_user_id": None,
     }
@@ -191,7 +196,7 @@ def create_grant(params: ManageEntityParameters):
         )
     grant_key = validate_grant_tx(params, metadata)
     user_id = params.user_id
-    if metadata["grantee_address"] in params.existing_records[EntityType.USER_WALLET]:
+    if metadata["grantee_address"] in params.existing_records["UserWallet"]:
         grantee_type = "user"
     else:
         grantee_type = "app"

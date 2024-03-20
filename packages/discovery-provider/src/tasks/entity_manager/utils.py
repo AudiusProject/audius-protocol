@@ -452,18 +452,24 @@ def validate_signer(params: ManageEntityParameters):
         is_signer_authorized = grant_key in params.existing_records["Grant"]
         if is_signer_authorized:
             grant = params.existing_records["Grant"][grant_key]
-            developer_app = params.existing_records["DeveloperApp"].get(
-                signer, None
+            developer_app = (
+                None
+                if not params.existing_records["DeveloperApp"]
+                else params.existing_records["DeveloperApp"].get(signer, None)
             )  # applicable if user-to-app grant
-            user_grantee = params.existing_records[EntityType.USER_WALLET].get(
-                signer, None
+            user_grantee = (
+                None
+                if not params.existing_records["UserWallet"]
+                else params.existing_records["UserWallet"].get(signer, None)
             )  # applicable if user-to-user grant, e.g. manager mode
             is_valid_developer_app = (
-                developer_app != None and not developer_app.is_delete
+                not not developer_app and not developer_app.is_delete
             )
+
             is_valid_user_grantee = (
-                user_grantee != None and not user_grantee.is_deactivated
+                not not user_grantee and not user_grantee.is_deactivated
             )
+
             is_grant_approved = grant.is_approved == True or is_valid_developer_app
 
             if (
@@ -474,13 +480,17 @@ def validate_signer(params: ManageEntityParameters):
                 raise IndexingValidationError(
                     f"Signer is not authorized to perform action for user {params.user_id}"
                 )
-            if is_valid_developer_app:
+            if (
+                is_valid_developer_app and developer_app
+            ):  # have to include redundant `and developer_app` because mypy can't work properly without it
                 params.logger.set_context("isApp", "true")
                 params.logger.set_context(
                     "appName",
                     developer_app.name,
                 )
-            elif is_valid_user_grantee:
+            elif (
+                is_valid_user_grantee and user_grantee
+            ):  # have to include redundant `and user_grantee` because mypy can't work properly without it
                 params.logger.set_context("isApp", "true - user to user")
                 params.logger.set_context("appName", user_grantee.handle)
             params.logger.set_context(
