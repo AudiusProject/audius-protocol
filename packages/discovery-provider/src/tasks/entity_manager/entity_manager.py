@@ -548,7 +548,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 if raw_grantor_user_id and signer:
                     entities_to_fetch[EntityType.GRANT].add(
                         (signer.lower(), raw_grantor_user_id)
-                    )  # need to change
+                    )  # TODO - Look for grant from user's wallet to grantor user id instead, since signer might not be the user
 
             if entity_type == EntityType.DASHBOARD_WALLET_USER:
                 try:

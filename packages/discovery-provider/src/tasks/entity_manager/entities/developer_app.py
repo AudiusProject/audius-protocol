@@ -118,7 +118,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             f"Programming error while indexing {params.action} Developer App Transaction, user wallet missing"
         )
     validate_signer(params)
-    # TODO: Make sure address is not already a user
+    # TODO (C-4041) - Make sure address is not already a user
     if params.action == Action.DELETE:
         if not address:
             raise IndexingValidationError(

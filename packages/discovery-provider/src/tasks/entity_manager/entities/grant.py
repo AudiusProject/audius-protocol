@@ -154,7 +154,7 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
             )
         if params.action == Action.DELETE:
             # Signer can be either the user in the grant or the grantee (developer app/manager).
-            # TODO - Allow signer to be a grantee of either the user in the grant or the grantee in the grant.
+            # TODO (C-4041) - Allow signer to be a grantee of either the user in the grant or the grantee in the grant.
             if (
                 userWallet != signer
                 and signer != existing_grant.grantee_address.lower()
