@@ -91,21 +91,20 @@ export const LineupTileMetadata = ({
         duration={500}
       >
         <TouchableOpacity style={trackTileStyles.title} onPress={onPressTitle}>
-          <>
-            <Text
-              color={isActive ? 'primary' : 'neutral'}
-              weight='bold'
-              numberOfLines={1}
-            >
-              {title}
-            </Text>
-            {isPlaying ? (
-              <IconVolumeLevel2
-                fill={primary}
-                style={styles.playingIndicator}
-              />
-            ) : null}
-          </>
+          <Text
+            color={isActive ? 'primary' : 'neutral'}
+            weight='bold'
+            numberOfLines={1}
+          >
+            {title}
+          </Text>
+          {isPlaying ? (
+            <IconVolumeLevel2
+              fill={primary}
+              style={styles.playingIndicator}
+              size='m'
+            />
+          ) : null}
         </TouchableOpacity>
         <TouchableOpacity
           style={trackTileStyles.artist}
