@@ -72,21 +72,21 @@ const renderCustomChip = (callToAction: ChatPermissionAction) => {
     case ChatPermissionAction.TIP:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock className={styles.icon} />
+          <IconMessageBlock size='s' color='default' />
           <span>{messages.sendTipRequired}</span>
         </div>
       )
     case ChatPermissionAction.UNBLOCK:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock className={styles.icon} />
+          <IconMessageBlock size='s' color='default' />
           <span>{messages.unblockRequired}</span>
         </div>
       )
     default:
       return (
         <div className={styles.notPermitted}>
-          <IconMessageBlock className={styles.icon} />
+          <IconMessageBlock size='s' color='default' />
           <span>{messages.notPermitted}</span>
         </div>
       )

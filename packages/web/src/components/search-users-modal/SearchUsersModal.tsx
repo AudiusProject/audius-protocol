@@ -165,7 +165,7 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
                 }}
               />
             ) : (
-              <IconSearch className={styles.iconLight} />
+              <IconSearch color='subdued' />
             )}
           </InputV2>
         </div>
