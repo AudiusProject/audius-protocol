@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { css } from '@emotion/native'
 import { useFormikContext } from 'formik'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Platform, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type {
@@ -17,6 +17,7 @@ import {
   Flex,
   Paper,
   Text,
+  spacing,
   useTheme
 } from '@audius/harmony-native'
 import { KeyboardAvoidingView } from 'app/components/core'
@@ -47,6 +48,8 @@ export const Page = (props: PageProps) => {
     backgroundColor: 'white'
   }
 
+  const isAndroid = Platform.OS === 'android'
+
   return (
     <>
       <Divider />
@@ -56,9 +59,12 @@ export const Page = (props: PageProps) => {
         style={[
           css({
             zIndex: 1,
-            minHeight:
-              Dimensions.get('window').height - insets.top - insets.bottom,
-            paddingBottom: insets.bottom
+            minHeight: isAndroid
+              ? Dimensions.get('window').height - insets.top - insets.bottom
+              : 0,
+            // Offset the absolute positioned footer
+            // calc = footer button height (48) + footer padding (2*spacing.l) + extra padding (spacing.xl)
+            paddingBottom: 48 + spacing.l * 2 + spacing.xl
           }),
           style
         ]}
@@ -92,7 +98,7 @@ export const PageFooter = (props: PageFooterProps) => {
       w={Dimensions.get('window').width}
       style={css({
         position: 'absolute',
-        bottom: 0,
+        bottom: insets.bottom === 0 ? spacing.l : 0,
         left: 0
       })}
     >

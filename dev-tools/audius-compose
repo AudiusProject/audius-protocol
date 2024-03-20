@@ -260,6 +260,8 @@ def build(
             "--profile=block-explorer",
             "--profile=uptime",
             "--profile=ddex",
+            "--profile=ddex-release-by-release",
+            "--profile=ddex-batched",
             "build",
             *args,
             *services,
@@ -487,7 +489,8 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up the pedalboard containers",
 )
-@click.option("--ddex-only", is_flag=True, help="Bring up only ddex containers")
+@click.option("--ddex-release-by-release", is_flag=True, help="Bring up only ddex containers (release-by-release choreography)")
+@click.option("--ddex-batched", is_flag=True, help="Bring up only ddex containers (batch choreography)")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
     "--prod",
@@ -507,7 +510,8 @@ def up(
     dashboard,
     notifs,
     pedalboard,
-    ddex_only,
+    ddex_release_by_release,
+    ddex_batched,
     args,
     prod,
     services,
@@ -516,9 +520,9 @@ def up(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
-    if ddex_only:
+    if ddex_release_by_release or ddex_batched:
         generate_ddex_mongo_key(protocol_dir)
-        profiles = ["--profile=ddex"]
+        profiles = [f"--profile=ddex-{'release-by-release' if ddex_release_by_release else 'batched'}"]
     else:
         AAO_DIR = pathlib.Path(
             os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle")

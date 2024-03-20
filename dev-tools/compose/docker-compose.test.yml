@@ -445,7 +445,7 @@ services:
   ddex-crawler-release-by-release:
     extends:
       file: docker-compose.yml
-      service: ddex-crawler
+      service: ddex-crawler-release-by-release
     container_name: ddex-crawler-release-by-release
     logging: *default-logging
     environment:
@@ -461,7 +461,7 @@ services:
   ddex-parser-release-by-release:
     extends:
       file: docker-compose.yml
-      service: ddex-parser
+      service: ddex-parser-release-by-release
     container_name: ddex-parser-release-by-release
     logging: *default-logging
     environment:
@@ -476,7 +476,7 @@ services:
   ddex-publisher-release-by-release:
     extends:
       file: docker-compose.yml
-      service: ddex-publisher
+      service: ddex-publisher-release-by-release
     container_name: ddex-publisher-release-by-release
     logging: *default-logging
     environment:
@@ -488,7 +488,6 @@ services:
       ddex-s3-release-by-release:
         condition: service_healthy
   
-  # It also wouldn't be a bad idea to set CORS and use localstack in the local dev setup (ie audius-compose up --ddex-only)
   ddex-s3-release-by-release:
     container_name: ddex-s3-release-by-release
     image: localstack/localstack:s3-latest
@@ -497,7 +496,7 @@ services:
     networks:
       - ddex-network
     volumes:
-      - "ddex-s3:/var/lib/localstack"
+      - "ddex-s3-release-by-release:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   test-ddex-e2e-release-by-release:
@@ -525,7 +524,7 @@ services:
   ddex-crawler-batched:
     extends:
       file: docker-compose.yml
-      service: ddex-crawler
+      service: ddex-crawler-batched
     container_name: ddex-crawler-batched
     logging: *default-logging
     environment:
@@ -541,7 +540,7 @@ services:
   ddex-parser-batched:
     extends:
       file: docker-compose.yml
-      service: ddex-parser
+      service: ddex-parser-batched
     container_name: ddex-parser-batched
     logging: *default-logging
     environment:
@@ -556,7 +555,7 @@ services:
   ddex-publisher-batched:
     extends:
       file: docker-compose.yml
-      service: ddex-publisher
+      service: ddex-publisher-batched
     container_name: ddex-publisher-batched
     logging: *default-logging
     environment:
@@ -576,7 +575,7 @@ services:
     networks:
       - ddex-network
     volumes:
-      - "ddex-s3:/var/lib/localstack"
+      - "ddex-s3-batched:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   test-ddex-e2e-batched:
@@ -632,4 +631,5 @@ volumes:
   mediorum:
   legacy_creator_file_storage:
   ddex-mongo-db:
-  ddex-s3:
+  ddex-s3-release-by-release:
+  ddex-s3-batched:

@@ -22,8 +22,14 @@
   padding: 12px 15px;
 }
 
+.styledTable tbody tr.delivery,
 .styledTable tbody tr:nth-of-type(even) {
   background-color: var(--harmony-background);
+}
+
+.styledTable tbody tr.batch,
+.styledTable tbody tr.release {
+  background-color: var(--harmony-white);
 }
 
 .styledTable tbody tr:last-of-type {

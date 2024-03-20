@@ -44,6 +44,10 @@
   overflow: hidden;
 }
 
+.cosignImageWrapper {
+  height: 100%
+}
+
 .title {
   color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);

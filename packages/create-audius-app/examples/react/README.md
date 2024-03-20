@@ -17,6 +17,8 @@ npm run dev
 
 For more details, check out the [docs](https://docs.audius.org/developers/sdk/overview)
 
+This example also uses the Audius design system [Harmony](https://www.npmjs.com/package/@audius/harmony)
+
 ## React + TypeScript + Vite Template
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

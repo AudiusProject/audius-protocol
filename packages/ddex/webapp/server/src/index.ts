@@ -26,14 +26,13 @@ const port = process.env.DDEX_PORT || 9000
       process.env.DDEX_MONGODB_URL ||
       'mongodb://mongo:mongo@localhost:27017/ddex?authSource=admin&replicaSet=rs0'
     await dialDb(dbUrl)
-    const sdkService = createSdkService()
+    const sdkService = await createSdkService()
 
     const { app, isAuthedAsAdmin } = createApp(dbUrl, sdkService)
 
     const s3 = createS3()
     const appRouter = router({
       upload: makeUploadRouter(s3),
-      uploads: collectionRouters['uploads'],
       deliveries: collectionRouters['deliveries'],
       pendingReleases: collectionRouters['pending_releases'],
       publishedReleases: collectionRouters['published_releases'],
