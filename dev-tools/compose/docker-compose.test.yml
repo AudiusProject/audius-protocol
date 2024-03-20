@@ -32,14 +32,15 @@ services:
           memory: 3G
 
   poa-ganache:
-    build:
-      context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile
-      args:
-        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
-        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
-        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
-    command: bash /tmp/dev-tools/startup/poa-ganache.sh
+    image: audius/acdc-ganache:latest
+    # build:
+    #   context: ${PROJECT_ROOT}/contracts
+    #   dockerfile: Dockerfile
+    #   args:
+    #     bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
+    #     bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
+    #     bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
+    # command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
@@ -52,12 +53,13 @@ services:
       - poa
 
   eth-ganache:
-    build:
-      context: ${PROJECT_ROOT}/eth-contracts
-      args:
-        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
-        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
-    command: bash /tmp/dev-tools/startup/eth-ganache.sh
+    image: audius/eth-ganache:latest
+    # build:
+    #   context: ${PROJECT_ROOT}/eth-contracts
+    #   args:
+    #     CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
+    #     DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+    # command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
