@@ -94,7 +94,7 @@ web-build-ssr-staging:
           - node_modules/@brillout/vite-plugin-import-build/dist
 
 web-test-staging:
-  working_directory: ~/audius-protocol/packages/probers
+  working_directory: ~/audius-protocol
   resource_class: large
   executor: cypress/default
   steps:
