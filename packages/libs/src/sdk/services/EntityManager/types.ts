@@ -60,7 +60,9 @@ export enum Action {
   SUBSCRIBE = 'Subscribe',
   UNSUBSCRIBE = 'Unsubscribe',
   VIEW = 'View',
-  VIEW_PLAYLIST = 'ViewPlaylist'
+  VIEW_PLAYLIST = 'ViewPlaylist',
+  APPROVE = 'Approve',
+  REJECT = 'Reject'
 }
 
 export enum EntityType {
