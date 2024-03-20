@@ -171,6 +171,11 @@ class ContentAccessChecker:
                 if content_type == "track"
                 else gated_album_data.get(content_id)
             )
+            if not entity:
+                logging.warn(
+                    f"gated_content_access_checker.py | check_access_for_batch | no entity found for {content_type} {content_id}"
+                )
+                continue
             if user_id not in batch_access_result[key_type]:
                 batch_access_result[key_type][user_id] = {}
 
