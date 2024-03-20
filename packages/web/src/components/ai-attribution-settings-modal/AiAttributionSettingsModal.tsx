@@ -12,10 +12,10 @@ import {
   IconRobot,
   Button
 } from '@audius/harmony'
-import { MarkdownViewer } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { MarkdownViewer } from 'components/markdown-viewer'
 import { useSelector } from 'utils/reducer'
 
 import styles from './AiAttributionSettingsModal.module.css'

@@ -245,7 +245,7 @@ export const reducers = (
     explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
-    profile: profileReducer,
+    profile: profileReducer(ssrPageProps),
     smartCollection,
     savedPage: isServerSide
       ? savePageReducer

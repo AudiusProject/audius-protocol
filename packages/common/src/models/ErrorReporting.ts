@@ -10,7 +10,7 @@ export type AdditionalErrorReportInfo = Record<string, unknown>
 
 export type ReportToSentryArgs = {
   /**
-   * The raw JS `Error` to report to sentry. Note: strings are not allowed; 
+   * The raw JS `Error` to report to sentry. Note: strings are not allowed;
    * if you don't have an error object to log just create one via new Error('message')
    */
   error: Error

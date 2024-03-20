@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { setHidePreviewHint } from 'audius-client/src/common/store/pages/signon/actions'
+import { getHidePreviewHint } from 'audius-client/src/common/store/pages/signon/selectors'
+import { useDispatch, useSelector } from 'react-redux'
 
 import {
   IconButton,
@@ -14,10 +16,11 @@ const messages = {
 }
 
 export const PreviewArtistHint = () => {
-  const [isOpen, setIsOpen] = useState(true)
   const { spacing } = useTheme()
+  const hidePreviewHint = useSelector(getHidePreviewHint)
+  const dispatch = useDispatch()
 
-  if (!isOpen) return null
+  if (hidePreviewHint) return null
 
   return (
     <Paper
@@ -41,7 +44,7 @@ export const PreviewArtistHint = () => {
         hitSlop={spacing.l}
         color='staticWhite'
         size='m'
-        onPress={() => setIsOpen(false)}
+        onPress={() => dispatch(setHidePreviewHint())}
       />
     </Paper>
   )

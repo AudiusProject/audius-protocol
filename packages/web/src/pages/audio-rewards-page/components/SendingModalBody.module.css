@@ -5,9 +5,9 @@
 .addressWrapper {
   display: flex;
   flex-direction: column;
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   align-items: center;
 }
 
@@ -19,7 +19,7 @@
 }
 
 .arrow path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .buttonWrapper {
@@ -32,11 +32,11 @@
 }
 
 .message {
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-m);
   line-height: 24px;
   text-align: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   text-align: center;
   margin-bottom: 24px;
 }

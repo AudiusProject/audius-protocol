@@ -2,9 +2,9 @@
   opacity: 1;
   height: 32px;
   width: 32px;
-  border: 1px solid var(--neutral-light-6);
+  border: 1px solid var(--harmony-n-200);
   border-radius: 4px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,28 +13,28 @@
 }
 
 .container:not(.isMobile):hover {
-  border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary);
+  border: 1px solid var(--harmony-p-500);
+  background-color: var(--harmony-primary);
 }
 
 .container:active {
-  border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary-dark-1);
+  border: 1px solid var(--harmony-p-500);
+  background-color: var(--harmony-p-300);
 }
 
 .container.isSubscribed {
   border: none;
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
 }
 
 .container.isSubscribed:hover {
-  border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary);
+  border: 1px solid var(--harmony-p-500);
+  background-color: var(--harmony-primary);
 }
 
 .container:not(.isMobile).isSubscribed:active {
-  border: 1px solid var(--primary-dark-2);
-  background-color: var(--primary-dark-1);
+  border: 1px solid var(--harmony-p-500);
+  background-color: var(--harmony-p-300);
 }
 
 .icon {
@@ -43,14 +43,14 @@
 }
 
 .icon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
   transition: all ease-in-out 0.07s;
 }
 
 .container.isSubscribed .icon path,
 .container:active .icon path,
 .container:not(.isMobile):hover .icon path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .container.isMatrix.isSubscribed .icon path,

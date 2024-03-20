@@ -9,13 +9,12 @@ import {
   ModalTitle,
   ModalFooter,
   IconMessage,
-  RadioGroup
+  RadioGroup,
+  Button
 } from '@audius/harmony'
 import { ChatPermission } from '@audius/sdk'
-import { Button } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { audiusSdk } from 'services/audius-sdk'
 
 import { ModalRadioItem } from '../modal-radio/ModalRadioItem'
@@ -123,15 +122,13 @@ export const InboxSettingsModal = () => {
       </ModalContent>
       <ModalFooter>
         <Button
-          rightIcon={
-            permissionStatus === Status.LOADING && showSpinner ? (
-              <LoadingSpinner className={styles.spinner} />
-            ) : undefined
-          }
-          className={styles.saveButton}
-          text={messages.save}
+          variant='primary'
+          isLoading={permissionStatus === Status.LOADING && showSpinner}
+          fullWidth
           onClick={handleSave}
-        />
+        >
+          {messages.save}
+        </Button>
         {permissionStatus === Status.ERROR ? (
           <span className={styles.error}>{messages.error}</span>
         ) : null}

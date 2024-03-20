@@ -285,7 +285,7 @@ export class TransactionHandler {
       txid = await sendRawTransaction()
     } catch (e) {
       // Rarely, this intiial send will fail
-      logger.warn(`transactionHandler: Initial send failed: ${e}`)
+      logger.error(`transactionHandler: Initial send failed: ${e}`)
       let errorCode = null
       let error = null
       if (e instanceof Error) {
@@ -312,7 +312,7 @@ export class TransactionHandler {
           try {
             sendRawTransaction()
           } catch (e) {
-            logger.warn(
+            logger.error(
               `transactionHandler: error in send loop: ${e} for txId ${txid}`
             )
           }
@@ -336,7 +336,7 @@ export class TransactionHandler {
         errorCode: null
       }
     } catch (e) {
-      logger.warn(
+      logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
         )}, ${txid}`
@@ -368,7 +368,7 @@ export class TransactionHandler {
           }
           done = true
           const message = `transactionHandler: Timed out in await, ${txid}`
-          logger.warn(message)
+          logger.error(message)
           reject(new Error(message))
         }, this.retryTimeoutMs)
 
@@ -381,7 +381,7 @@ export class TransactionHandler {
               done = true
               if (result.err) {
                 const err = JSON.stringify(result.err)
-                logger.warn(
+                logger.error(
                   `transactionHandler: Error in onSignature ${txid}, ${err}`
                 )
                 reject(new Error(err))

@@ -5,49 +5,6 @@ Processes and uploads DDEX releases to Audius.
 ## Production setup
 Use audius-docker-compose to run a production DDEX instance. After you've installed audius-docker-compose, set the following required environment variables in override.env (in the audius-docker-compose repository, not here).
 
-### AWS environment variables:
-Set up your buckets by following the "Creating a bucket in S3" section below. Then, set these environment variables:
-- `AWS_ACCESS_KEY_ID`: the access key for the IAM user you created
-- `AWS_SECRET_ACCESS_KEY`: the secret access key for the IAM user you created
-- `AWS_REGION`: the region where your buckets were created (e.g., 'us-west-2' or 'us-east-1')
-- `AWS_BUCKET_RAW`: the name of the bucket you created (likely the format of `ddex-[dev|staging]-<label/distributor>-raw`)
-- `AWS_BUCKET_CRAWLED`: the name of the bucket you created (likely the format of `ddex-[dev|staging]-<label/distributor>-crawled`)
-
-### App environment variables:
-Create an app by following the 2 steps [here](https://docs.audius.org/developers/sdk/#set-up-your-developer-app), and then set these environment variables:
-- `DDEX_KEY`: the key created for your Audius app
-- `DDEX_SECRET`: the secret created for your Audius app
-- `DDEX_CHOREOGRAPHY`: the type of choreography you're using: "[ERNReleaseByRelease](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/5-release-by-release-profile/5.1-choreography/)" or "[ERNBatched](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/6-batch-profile/6.1-choreography/)." If you want another option, you'll have to implement the code for it
-
-### Auth-related environment variables:
-- `DDEX_ADMIN_ALLOWLIST`: a comma-separated list of **decoded** user IDs that are allowed to act as admins on your DDEX website. You can decode your user ID by going to `https://discoveryprovider.audius.co/v1/full/users/handle/<your audius handle>`, looking at the `id` field, and then decoding it by pasting it into the "Encoded" textbox [here](https://healthz.audius.co/#/utils/id) and copying the "Integer" value
-- `SESSION_SECRET`: enter something random and unique. This is important for the security of user sessions
-
-## Local dev
-DDEX requires these services: `ddex-webapp`, `ddex-crawler`, `ddex-parser`, `ddex-publisher`, `ddex-mongo`.
-
-### Env configuration
-All services read from `packages/ddex/.env`.
-
-To use stage envs: `cp packages/ddex/.env.stage packages/ddex/.env`
-
-To use dev envs: `cp packages/ddex/.env.dev packages/ddex/.env`
-
-Fill in all missing values. See the `Creating a bucket in S3` section below for how to set up S3.
-
-For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
-
-### One-time setup
-`audius-compose connect` to update your `/etc/hosts`
-
-### Bring up the ddex stack subsequently
-`audius-compose up -ddex-only`
-
-To access the ddex db via the mongo shell: `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin` then `use ddex`
-
-### Develop with hot reloading
-Each service can be run independently as long as `ddex-mongo` is up (from `audius-compose up --ddex-only` and then optionally stopping individual services). See the respective subdirectories' READMEs.
-
 ### Creating a bucket in S3
 1. Create a new bucket in the S3 console with the name `ddex-[dev|staging]-<label/distributor>-raw`. Use all the defaults, including "ACLs disabled"
 2. Do the same for a bucket named `ddex-[dev|staging]-<label/distributor>-crawled`. Use all the defaults, including "ACLs disabled"
@@ -82,6 +39,63 @@ Each service can be run independently as long as `ddex-mongo` is up (from `audiu
 ]
 ```
 
+### AWS environment variables:
+Set up your buckets by following the "Creating a bucket in S3" section below. Then, set these environment variables:
+- `AWS_ACCESS_KEY_ID`: the access key for the IAM user you created
+- `AWS_SECRET_ACCESS_KEY`: the secret access key for the IAM user you created
+- `AWS_REGION`: the region where your buckets were created (e.g., 'us-west-2' or 'us-east-1')
+- `AWS_BUCKET_RAW`: the name of the bucket you created (likely the format of `ddex-[dev|staging]-<label/distributor>-raw`)
+- `AWS_BUCKET_CRAWLED`: the name of the bucket you created (likely the format of `ddex-[dev|staging]-<label/distributor>-crawled`)
+
+### App environment variables:
+Create an app by following the 2 steps [here](https://docs.audius.org/developers/sdk/#set-up-your-developer-app), and then set these environment variables:
+- `DDEX_KEY`: the key created for your Audius app
+- `DDEX_SECRET`: the secret created for your Audius app
+- `DDEX_CHOREOGRAPHY`: the type of choreography you're using: "[ERNReleaseByRelease](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/5-release-by-release-profile/5.1-choreography/)" or "[ERNBatched](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/6-batch-profile/6.1-choreography/)." If you want another option, you'll have to implement the code for it
+
+### Auth-related environment variables:
+- `DDEX_ADMIN_ALLOWLIST`: a comma-separated list of **decoded** user IDs that are allowed to act as admins on your DDEX website. You can decode your user ID by going to `https://discoveryprovider.audius.co/v1/full/users/handle/<your audius handle>`, looking at the `id` field, and then decoding it by pasting it into the "Encoded" textbox [here](https://healthz.audius.co/#/utils/id) and copying the "Integer" value
+- `SESSION_SECRET`: enter something random and unique. This is important for the security of user sessions
+
+## Local dev
+DDEX requires these services: `ddex-webapp`, `ddex-crawler`, `ddex-parser`, `ddex-publisher`, `ddex-mongo`.
+
+### Env configuration
+All services read from `packages/ddex/.env`.
+
+To use stage envs: `cp packages/ddex/.env.stage packages/ddex/.env`
+
+To use dev envs: `cp packages/ddex/.env.dev packages/ddex/.env`
+
+For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
+
+### One-time setup
+1. `audius-compose connect` to update your `/etc/hosts`
+2. Install the AWS cli and configure it for local dev:
+    ```sh
+    pip install awscli && \
+    aws configure set aws_access_key_id test && \
+    aws configure set aws_secret_access_key test && \
+    aws configure set region us-west-2
+    ```
+3. To use the DDEX webapp as an admin, add your decoded staging user ID to `extra-env.DDEX_ADMIN_ALLOWLIST` in `../../dev-tools/config.json`
+  - Find your user ID by going to `https://discoveryprovider.staging.audius.co/v1/full/users/handle/<your staging handle>`, searching for `id`, and then decoding it by pasting it into the "Encoded" textbox [here](https://healthz.audius.co/#/utils/id) and copying the "Integer" value
+  - Note that this requires a restart if the app is already running (`audius-compose down && audius-compose up -ddex-[release-by-release|batched]`)
+
+
+### Bring up the ddex stack locally
+Run `audius-compose up -ddex-release-by-released` (or `audius-compose up --ddex-batched` -- see "Choreography" in Glossary below), and navigate to `http://localhost:9000` to view the DDEX webapp
+
+To upload a delivery to be processed:
+  1. Create buckets: `aws --endpoint=http://localhost:4566 s3 mb s3://audius-test-raw && aws --endpoint=http://localhost:4566 s3 mb s3://audius-test-crawled`
+  2. Upload your file: `aws --endpoint=http://localhost:4566 s3 cp <file from your computer> s3://audius-test-raw`. Example: `aws --endpoint=http://localhost:4566 s3 cp ./ingester/e2e_test/fixtures/release_by_release/ern381/sony1.zip s3://audius-test-raw`
+  3. Wait 3 minutes and it'll be processed and display in the UI (localhost:9000)
+
+To access the ddex db via the mongo shell: `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin`, and then `use ddex`.  
+
+### Develop with hot reloading
+Each service can be run independently as long as `ddex-mongo` is up (from `audius-compose up --ddex-[release-by-release|batched]` and then optionally stopping individual services). See the respective subdirectories' READMEs.
+
 ### Running / debugging the e2e test
 * Run `audius-compose test down && audius-compose test run ddex-e2e-release-by-release` to start the ddex stack and run the e2e test for the Release-By-Release choreography. You can replace `ddex-e2e-release-by-release` with `ddex-e2e-batched` to run the e2e test for the Batched choreography.
 * To debug S3:
@@ -96,7 +110,7 @@ Each service can be run independently as long as `ddex-mongo` is up (from `audiu
 3. The Parser app watches for new releases and processes each one into a format that the Publisher app can use to upload to Audius.
 4. When the release date is reached for a release, the Publisher app uploads the release to Audius.
 
-### Glossary
+## Glossary
 - **DDEX**: Digital Data Exchange, a standard for music metadata exchange
 - **ERN**: Electronic Release Notification, a DDEX message that contains metadata about a release
 - **Choreography**: A DDEX term for the way that ERNs are sent and received. There are two main choreographies: Release-By-Release and Batched

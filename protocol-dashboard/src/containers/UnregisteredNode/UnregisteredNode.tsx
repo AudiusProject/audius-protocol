@@ -4,7 +4,7 @@ import { useAccount } from 'store/account/hooks'
 import NodeOverview from 'components/NodeOverview'
 import Page from 'components/Page'
 import { ServiceType } from 'types'
-import { SERVICES_UNREGISTERED_DISCOVERY_NODE } from 'utils/routes'
+import { NODES_UNREGISTERED_DISCOVERY_NODE } from 'utils/routes'
 import styles from './UnregisteredNode.module.css'
 
 const messages = {
@@ -16,7 +16,7 @@ const UnregisteredNode = () => {
   const query = new URLSearchParams(location.search)
   const endpoint = query.get('endpoint')
   const { wallet: accountWallet } = useAccount()
-  const isDiscovery = !!useMatch(SERVICES_UNREGISTERED_DISCOVERY_NODE)
+  const isDiscovery = !!useMatch(NODES_UNREGISTERED_DISCOVERY_NODE)
 
   return (
     <Page title={messages.title} className={styles.container}>

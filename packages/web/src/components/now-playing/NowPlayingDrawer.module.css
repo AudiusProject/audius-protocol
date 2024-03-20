@@ -2,7 +2,7 @@
   position: fixed;
   right: 0;
   left: 0;
-  background: var(--white);
+  background: var(--harmony-white);
   height: 100vh;
   margin-bottom: 0px;
   margin-bottom: env(safe-area-inset-bottom, 0px);
@@ -74,6 +74,6 @@
   bottom: -799px;
   left: 0;
   right: 0;
-  background: var(--white);
+  background: var(--harmony-white);
   height: 800px;
 }

@@ -7,58 +7,58 @@
 .inputRoot {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
-  padding: 0 var(--unit-4);
-  border: 1px solid var(--neutral-light-8);
-  border-radius: var(--unit-1);
-  background-color: var(--neutral-light-10);
+  gap: var(--harmony-unit-2);
+  padding: 0 var(--harmony-unit-4);
+  border: 1px solid var(--harmony-n-100);
+  border-radius: var(--harmony-unit-1);
+  background-color: var(--harmony-n-25);
   transition: border ease-in-out 0.1s;
 }
 
 .small {
   --gap: -4px;
-  --font-size: var(--font-s);
+  --harmony-font-size: var(--harmony-font-s);
   height: 34px;
 }
 
 .medium {
   --gap: 0px;
-  --font-size: var(--font-m);
+  --harmony-font-size: var(--harmony-font-m);
   height: 50px;
 }
 
 .large {
-  --gap: var(--unit-1);
-  --font-size: var(--font-xl);
+  --gap: var(--harmony-unit-1);
+  --harmony-font-size: var(--harmony-font-xl);
   height: 66px;
 }
 
 .root:hover {
-  border-color: var(--neutral-light-6);
+  border-color: var(--harmony-n-200);
 }
 
 .focused {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 
 .warning,
 .warning.focused {
-  border-color: var(--accent-orange);
+  border-color: var(--harmony-orange);
 }
 
 .error,
 .error.focused {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 
 .error:hover,
 .error:hover.focused {
-  border-color: var(--accent-red-dark-1);
+  border-color: var(--harmony-dark-red);
 }
 
 .disabled {
-  background-color: var(--neutral-light-9);
-  border-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-50);
+  border-color: var(--harmony-n-100);
 }
 
 .textInput {
@@ -67,14 +67,14 @@
   outline: 0;
   border: 0;
   background: none;
-  font-size: var(--font-size);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-size);
+  font-weight: var(--harmony-font-medium);
 }
 
 .textInput::placeholder,
 .label {
-  color: var(--neutral-light-4);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-400);
+  font-weight: var(--harmony-font-medium);
 }
 
 .inputRow {
@@ -96,7 +96,7 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  font-size: var(--font-size);
+  font-size: var(--harmony-font-size);
 }
 
 /** Add the "*" to required fields, but have it disappear when elevated **/
@@ -106,7 +106,7 @@
 
 /** Push the input down a bit to make room for the elevated placeholder **/
 .elevatedLabel .inputRow {
-  padding-top: calc(var(--font-xs));
+  padding-top: calc(var(--harmony-font-xs));
 }
 
 /** Position the elevated label absoutely on top of the input **/
@@ -120,17 +120,17 @@
 .focused .elevatedLabel .label,
 .hasValue {
   transform: translate(0px, calc(-1em - var(--gap)));
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 /** Make a container for the character count... **/
 .characterCount {
   position: relative;
-  padding-top: var(--unit-2);
+  padding-top: var(--harmony-unit-2);
   align-self: flex-start;
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
 }
 
 /** ... then position the actual count absolutely relative to that **/

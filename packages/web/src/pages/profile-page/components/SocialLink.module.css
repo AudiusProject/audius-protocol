@@ -1,10 +1,10 @@
 .root {
   display: inline-flex;
-  column-gap: var(--unit-2);
+  column-gap: var(--harmony-unit-2);
 }
 
 .root:hover .icon path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .text {

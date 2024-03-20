@@ -232,9 +232,6 @@ export class CreatorNode {
       updatedMetadata.preview_cid = audioResp.results[previewKey]
     }
     updatedMetadata.audio_upload_id = audioResp.id
-    if (updatedMetadata.download?.is_downloadable) {
-      updatedMetadata.download.cid = updatedMetadata.track_cid
-    }
     if (coverArtResp) updatedMetadata.cover_art_sizes = coverArtResp.id
 
     return updatedMetadata

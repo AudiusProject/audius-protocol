@@ -1,8 +1,8 @@
 .container {
   --border-width: 1px;
   position: relative;
-  background: var(--white);
-  border: var(--border-width) solid var(--neutral-light-8);
+  background: var(--harmony-white);
+  border: var(--border-width) solid var(--harmony-n-100);
   border-radius: 8px 8px 0px 0px;
   display: inline-flex;
   width: 100%;
@@ -17,7 +17,7 @@
 }
 
 .container.standalone:not(.loading):not(.uploading):hover {
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
   box-shadow: 0 1px 5px 1px var(--tile-shadow-1-alt),
     0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
   transform: scale3d(1.005, 1.005, 1.005);
@@ -49,7 +49,7 @@
 }
 
 .active .name {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .socialInfo {
@@ -60,7 +60,7 @@
 }
 
 .iconKebabHorizontal path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .menuContainer {

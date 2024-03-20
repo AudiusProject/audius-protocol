@@ -7,7 +7,6 @@ import {
   CoverPhotoSizes,
   ProfilePictureSizes,
   StemCategory,
-  Download,
   FieldVisibility,
   TrackSegment,
   SolanaWalletAddress,
@@ -115,13 +114,11 @@ export type APITrack = {
   title: string
   user: APIUser
   duration: number
-  downloadable: boolean
   create_date: Nullable<string>
   created_at: string
   credits_splits: Nullable<string>
   cover_art_sizes: string
   cover_art_cids: Nullable<CoverArtSizes>
-  download: Download
   isrc: Nullable<string>
   license: Nullable<License>
   iswc: Nullable<string>

@@ -98,9 +98,6 @@ export interface GetRemixableTracksRequest {
 export interface GetTrackRequest {
     trackId: string;
     userId?: string;
-    handle?: string;
-    urlTitle?: string;
-    showUnlisted?: boolean;
 }
 
 export interface GetTrackRemixParentsRequest {
@@ -537,7 +534,7 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.
+     * Gets a track by ID.
      */
     async getTrackRaw(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
         if (params.trackId === null || params.trackId === undefined) {
@@ -548,18 +545,6 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
-        }
-
-        if (params.handle !== undefined) {
-            queryParameters['handle'] = params.handle;
-        }
-
-        if (params.urlTitle !== undefined) {
-            queryParameters['url_title'] = params.urlTitle;
-        }
-
-        if (params.showUnlisted !== undefined) {
-            queryParameters['show_unlisted'] = params.showUnlisted;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -575,7 +560,7 @@ export class TracksApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.
+     * Gets a track by ID.
      */
     async getTrack(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
         const response = await this.getTrackRaw(params, initOverrides);

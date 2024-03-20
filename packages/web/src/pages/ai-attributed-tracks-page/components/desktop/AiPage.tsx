@@ -1,4 +1,3 @@
-// import { IconRobot, IconRemix } from '@audius/stems'
 import { User } from '@audius/common/models'
 import { IconRobot } from '@audius/harmony'
 import cn from 'classnames'

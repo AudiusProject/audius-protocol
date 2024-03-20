@@ -2,7 +2,7 @@ import BN from 'bn.js'
 import clsx from 'clsx'
 import React, { useCallback } from 'react'
 import Audius from 'services/Audius'
-import { SERVICES_USERS, accountPage } from 'utils/routes'
+import { NODES_USERS, SERVICES_USERS, accountPage } from 'utils/routes'
 
 import Table from 'components/Table'
 import { formatWeight } from 'utils/format'
@@ -49,7 +49,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   const isMobile = useIsMobile()
   const pushRoute = usePushRoute()
   const onClickMore = useCallback(() => {
-    pushRoute(SERVICES_USERS)
+    pushRoute(NODES_USERS)
   }, [pushRoute])
 
   const onRowClick = useCallback(

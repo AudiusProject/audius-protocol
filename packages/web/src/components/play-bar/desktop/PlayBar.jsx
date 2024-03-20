@@ -22,8 +22,7 @@ import {
   playbackRateValueMap
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
-import { removeHotkeys, setupHotkeys } from '@audius/harmony'
-import { Scrubber } from '@audius/stems'
+import { removeHotkeys, setupHotkeys, Scrubber } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 

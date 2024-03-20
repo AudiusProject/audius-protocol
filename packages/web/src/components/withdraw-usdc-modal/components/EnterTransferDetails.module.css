@@ -1,29 +1,29 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .amount {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .amountText {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .destination {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .destinationText {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }

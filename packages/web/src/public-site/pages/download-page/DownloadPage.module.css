@@ -201,7 +201,7 @@
 
 .downloadLink:hover .platformName,
 .downloadLink:active .platformName {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
 }
 
 .isMobile .downloadLink:hover .platformName,

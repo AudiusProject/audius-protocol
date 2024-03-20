@@ -39,7 +39,7 @@ export const useCurrentStems = ({ trackId }: { trackId: ID }) => {
     .filter((t) => !t._marked_deleted && !t.is_delete)
     .sort(sortByDateAsc)
     .map((t) => ({
-      downloadURL: t.download?.cid,
+      downloadURL: t.track_cid,
       category: t.stem_of.category,
       downloadable: true,
       id: t.track_id

@@ -25,9 +25,9 @@ import {
   IconVerified,
   IconTwitter as IconTwitterBird,
   SocialButton,
-  Button
+  Button,
+  ProgressBar
 } from '@audius/harmony'
-import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

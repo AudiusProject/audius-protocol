@@ -30,11 +30,11 @@
 
 .tagInput {
   width: 100%;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   padding: 4px 16px;
-  background-color: var(--neutral-light-10);
-  color: var(--neutral);
+  background-color: var(--harmony-n-25);
+  color: var(--harmony-neutral);
   font-weight: 500;
   gap: 8px;
 
@@ -58,19 +58,19 @@
   max-height: 34px;
 }
 .tagInput:hover {
-  border-color: var(--neutral-light-6);
+  border-color: var(--harmony-n-200);
 }
 .wrapper.focused .tagInput {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 
 .flash {
-  background-color: var(--white);
-  color: var(--neutral);
+  background-color: var(--harmony-white);
+  color: var(--harmony-neutral);
 }
 
 .flash g path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .newTagInput {
@@ -91,11 +91,11 @@
   position: absolute;
   right: 16px;
   bottom: 10px;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-size: 12px;
   font-weight: 500;
 }
 .tagCount.nearLimit {
-  color: var(--accent-orange);
-  font-weight: var(--font-bold);
+  color: var(--harmony-orange);
+  font-weight: var(--harmony-font-bold);
 }

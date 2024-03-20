@@ -288,16 +288,6 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
             ):
                 track_record.remix_of = track_metadata["remix_of"]
 
-        elif key == "download":
-            if "download" in track_metadata:
-                track_record.download = {
-                    "is_downloadable": track_metadata["download"].get("is_downloadable")
-                    == True,
-                    "requires_follow": track_metadata["download"].get("requires_follow")
-                    == True,
-                    "cid": track_metadata["download"].get("cid", None),
-                }
-
         elif key == "route_id":
             if "title" in track_metadata:
                 track_record.route_id = helpers.create_track_route_id(

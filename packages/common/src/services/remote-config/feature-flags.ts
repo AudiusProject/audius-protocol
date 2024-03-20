@@ -55,7 +55,6 @@ export enum FeatureFlags {
   SCHEDULED_RELEASES = 'scheduled_releases',
   BUY_WITH_COINFLOW = 'buy_with_coinflow',
   EDIT_ALBUMS = 'edit_albums',
-  LOSSLESS_DOWNLOADS_ENABLED = 'lossless_downloads_enabled',
   COINFLOW_OFFRAMP_ENABLED = 'coinflow_offramp_enabled',
   TIKTOK_NATIVE_AUTH = 'tiktok_native_auth',
   PREMIUM_ALBUMS_ENABLED = 'premium_albums_enabled'
@@ -129,7 +128,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SCHEDULED_RELEASES]: false,
   [FeatureFlags.BUY_WITH_COINFLOW]: false,
   [FeatureFlags.EDIT_ALBUMS]: false,
-  [FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED]: false,
   [FeatureFlags.COINFLOW_OFFRAMP_ENABLED]: false,
   [FeatureFlags.TIKTOK_NATIVE_AUTH]: true,
   [FeatureFlags.PREMIUM_ALBUMS_ENABLED]: false

@@ -1,7 +1,7 @@
 {
   "name": "@audius/sql-ts",
   "private": true,
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "",
   "scripts": {
     "start": "ts-node src/index.ts"

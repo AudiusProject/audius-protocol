@@ -190,7 +190,7 @@ services:
     build:
       context: ${PROJECT_ROOT}/packages/ddex/ingester
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
-  
+
   ddex-test:
     container_name: ddex-test
     environment:

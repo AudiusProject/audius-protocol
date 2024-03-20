@@ -1,9 +1,7 @@
-import { IconInstagram } from '@audius/harmony'
+import { SocialButton, SocialButtonProps } from '@audius/harmony'
 
-import { SocialButton, SocialButtonProps } from '../SocialButton'
-
-export type InstagramButtonProps = SocialButtonProps
+export type InstagramButtonProps = Omit<SocialButtonProps, 'socialType'>
 
 export const InstagramButton = (props: InstagramButtonProps) => {
-  return <SocialButton leftIcon={<IconInstagram />} {...props} />
+  return <SocialButton socialType='instagram' {...props} />
 }

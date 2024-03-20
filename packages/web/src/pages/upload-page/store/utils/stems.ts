@@ -42,14 +42,6 @@ export const createStemMetadata = ({
   return {
     ...track,
     is_downloadable: true,
-    download: {
-      cid: null,
-      is_downloadable: true,
-      // IMPORTANT: Stems never require a follow to download in their metadata
-      // but should determine their downloadability based on the parent track's
-      // requirements.
-      requires_follow: false
-    },
     stem_of: {
       parent_track_id: parentTrackId,
       category: stemCategory

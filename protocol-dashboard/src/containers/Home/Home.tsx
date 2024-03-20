@@ -24,8 +24,8 @@ import { useProposals } from 'store/cache/proposals/hooks'
 import { TICKER } from 'utils/consts'
 import { usePushRoute } from 'utils/effects'
 import {
-  AUDIUS_API_URL,
   AUDIUS_DAPP_URL,
+  DOCS_URL,
   GOVERNANCE,
   OAF_URL,
   WHITEPAPER_URL
@@ -72,7 +72,7 @@ const messages = {
   developerFriendlyTitle: 'Developer Friendly',
   developerFriendlyDescription:
     'Unlock the potential of music innovation with Audius. Our robust API gives access to hundreds of thousands of songs, offering unparalleled opportunities for creativity.',
-  developerFriendlyCTA: 'API Documentation'
+  developerFriendlyCTA: 'Developer Documentation'
 }
 
 const Home = () => {
@@ -262,7 +262,7 @@ const Home = () => {
           <InfoCard
             title={messages.developerFriendlyTitle}
             description={messages.developerFriendlyDescription}
-            ctaLink={AUDIUS_API_URL}
+            ctaLink={DOCS_URL}
             ctaText={messages.developerFriendlyCTA}
           />
         </Flex>

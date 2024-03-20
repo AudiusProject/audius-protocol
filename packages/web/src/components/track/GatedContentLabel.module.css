@@ -2,31 +2,31 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: var(--unit);
-  color: var(--neutral-light-4);
+  gap: var(--harmony-unit);
+  color: var(--harmony-n-400);
 }
 
 .icon {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
 }
 
 .icon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .gatedContent {
-  color: var(--accent-blue);
+  color: var(--harmony-blue);
 }
 
 .gatedContent .icon path {
-  fill: var(--accent-blue);
+  fill: var(--harmony-blue);
 }
 
 .premiumContent {
-  color: var(--special-light-green);
+  color: var(--harmony-light-green);
 }
 
 .premiumContent .icon path {
-  fill: var(--special-light-green);
+  fill: var(--harmony-light-green);
 }

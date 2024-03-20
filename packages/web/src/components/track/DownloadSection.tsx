@@ -243,7 +243,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     borderRadius='3xl'
                     ph='s'
                     css={{
-                      backgroundColor: 'var(--special-light-green)',
+                      backgroundColor: 'var(--harmony-light-green)',
                       paddingTop: '1px',
                       paddingBottom: '1px'
                     }}

@@ -1,5 +1,5 @@
 .container {
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;

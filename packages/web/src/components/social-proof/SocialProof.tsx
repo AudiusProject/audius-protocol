@@ -116,16 +116,18 @@ const VerifyBody = ({
             onClick={handleClickInstagram}
             onSuccess={onInstagramLogin}
             onFailure={(error: Error) => onFailure('instagram', error)}
-            text={messages.instagramConfirm}
-          />
+          >
+            {messages.instagramConfirm}
+          </InstagramAuthButton>
         )}
         {isTikTokEnabled ? (
           <TikTokAuthButton
             onClick={handleClickTikTok}
             onFailure={(error: Error) => onFailure('tiktok', error)}
             onSuccess={onTikTokLogin}
-            text={messages.tiktokConfirm}
-          />
+          >
+            {messages.tiktokConfirm}
+          </TikTokAuthButton>
         ) : null}
       </div>
       {error && (

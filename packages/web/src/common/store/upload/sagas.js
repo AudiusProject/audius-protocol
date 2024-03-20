@@ -1,4 +1,4 @@
-import { Name, Kind } from '@audius/common/models'
+import { Name, Kind, isContentFollowGated } from '@audius/common/models'
 import {
   accountActions,
   accountSelectors,
@@ -418,12 +418,11 @@ export function* handleUploads({ tracks, isCollection, isAlbum = false }) {
         size: value.track.file.size,
         type: value.track.file.type,
         name: value.track.file.name,
-        downloadable:
-          value.metadata.download && value.metadata.download.is_downloadable
-            ? value.metadata.download.requires_follow
-              ? 'follow'
-              : 'yes'
-            : 'no'
+        downloadable: isContentFollowGated(value.metadata.download_conditions)
+          ? 'follow'
+          : value.metadata.is_downloadable
+          ? 'yes'
+          : 'no'
       })
     )
   }

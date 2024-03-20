@@ -21,7 +21,7 @@ class Grant(Base, RepresentableMixin):
     grantee_address = Column(String, primary_key=True, nullable=False)
     user_id = Column(Integer, primary_key=True, nullable=False)
     is_revoked = Column(Boolean, nullable=False, server_default=text("false"))
-    is_approved = Column(Boolean, nullable=False, server_default=text("false"))
+    is_approved = Column(Boolean, nullable=True)
     is_current = Column(Boolean, primary_key=True, nullable=False)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)

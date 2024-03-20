@@ -35,4 +35,11 @@ export type FollowButtonProps = {
    * Callback for when an unfollow is triggered.
    */
   onUnfollow?: () => void
+
+  fullWidth?: boolean
+  messages?: {
+    follow?: string
+    following?: string
+    unfollow?: string
+  }
 } & InputProps

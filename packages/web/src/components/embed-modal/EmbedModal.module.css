@@ -3,15 +3,15 @@
   min-height: 608px;
   width: 100%;
   max-width: 1008px;
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
 }
 
 .modalTitleStyle {
-  font-size: var(--font-l);
+  font-size: var(--harmony-font-l);
   line-height: 23px;
   letter-spacing: 0.5px;
-  font-weight: var(--font-heavy);
-  color: var(--neutral-light-4);
+  font-weight: var(--harmony-font-heavy);
+  color: var(--harmony-n-400);
   text-transform: uppercase;
 }
 
@@ -56,9 +56,9 @@
 }
 
 .title {
-  color: var(--neutral);
-  font-size: var(--font-l);
-  font-weight: var(--font-demi-bold);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-demi-bold);
   line-height: 23px;
   margin-bottom: 16px;
 }

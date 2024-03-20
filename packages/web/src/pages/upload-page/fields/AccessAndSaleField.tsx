@@ -47,7 +47,6 @@ import { getCombinedDefaultGatedConditionValues } from './helpers'
 import {
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
-  DOWNLOAD_REQUIRES_FOLLOW,
   FIELD_VISIBILITY,
   GateKeeper,
   IS_DOWNLOADABLE,
@@ -248,11 +247,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     )
   const [{ value: isDownloadable }, , { setValue: setIsDownloadable }] =
     useTrackField<boolean>(IS_DOWNLOADABLE)
-  const [
-    { value: downloadRequiresFollow },
-    ,
-    { setValue: setDownloadRequiresFollow }
-  ] = useTrackField<boolean>(DOWNLOAD_REQUIRES_FOLLOW)
   const [{ value: lastGateKeeper }, , { setValue: setLastGateKeeper }] =
     useTrackField<GateKeeper>(LAST_GATE_KEEPER)
 
@@ -285,7 +279,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
-    set(initialValues, DOWNLOAD_REQUIRES_FOLLOW, downloadRequiresFollow)
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
 
     let availabilityType = StreamTrackAvailabilityType.PUBLIC
@@ -325,7 +318,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isDownloadGated,
     downloadConditions,
     isDownloadable,
-    downloadRequiresFollow,
     fieldVisibility,
     preview,
     isScheduledRelease,
@@ -367,7 +359,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsDownloadGated(true)
           setDownloadConditionsValue(conditions)
           setIsDownloadable(true)
-          setDownloadRequiresFollow(false)
           const downloadableGateKeeper =
             isDownloadable &&
             lastGateKeeper.downloadable === 'stemsAndDownloads'
@@ -385,16 +376,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             const { follow_user_id } = streamConditions as FollowGatedConditions
             setStreamConditionsValue({ follow_user_id })
             setDownloadConditionsValue({ follow_user_id })
-            if (isDownloadable) {
-              setDownloadRequiresFollow(true)
-            }
           } else {
             const { tip_user_id } = streamConditions as TipGatedConditions
             setStreamConditionsValue({ tip_user_id })
             setDownloadConditionsValue({ tip_user_id })
-            if (isDownloadable) {
-              setDownloadRequiresFollow(false)
-            }
           }
           setIsStreamGated(true)
           setIsDownloadGated(true)
@@ -411,9 +396,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setStreamConditionsValue({ nft_collection })
           setIsDownloadGated(true)
           setDownloadConditionsValue({ nft_collection })
-          if (isDownloadable) {
-            setDownloadRequiresFollow(false)
-          }
           setLastGateKeeper({
             ...lastGateKeeper,
             access: 'accessAndSale'
@@ -456,7 +438,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsDownloadGated,
       setDownloadConditionsValue,
       setIsDownloadable,
-      setDownloadRequiresFollow,
       setPreviewValue,
       setLastGateKeeper,
       isDownloadable,

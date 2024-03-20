@@ -14,8 +14,12 @@ import {
   UploadType,
   ShareContent
 } from '@audius/common/store'
-import { IconLink, IconTwitter as IconTwitterBird, Text } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import {
+  Button,
+  IconLink,
+  IconTwitter as IconTwitterBird,
+  Text
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
@@ -191,27 +195,21 @@ export const ShareBanner = (props: ShareBannerProps) => {
           </Text>
           <div className={styles.buttonContainer}>
             <Button
+              variant='common'
               fullWidth
-              leftIcon={<IconTwitterBird />}
+              iconLeft={IconTwitterBird}
               onClick={handleTwitterShare}
-              text={
-                <Text variant='title' size='l' color='accent'>
-                  {messages.twitterButtonText}
-                </Text>
-              }
-              type={ButtonType.WHITE}
-            />
+            >
+              {messages.twitterButtonText}
+            </Button>
             <Button
+              variant='common'
               fullWidth
-              leftIcon={<IconLink />}
+              iconLeft={IconLink}
               onClick={handleCopyLink}
-              text={
-                <Text variant='title' size='l' color='accent'>
-                  {messages.copyLinkButtonText}
-                </Text>
-              }
-              type={ButtonType.WHITE}
-            />
+            >
+              {messages.copyLinkButtonText}
+            </Button>
           </div>
         </>
       ) : null}

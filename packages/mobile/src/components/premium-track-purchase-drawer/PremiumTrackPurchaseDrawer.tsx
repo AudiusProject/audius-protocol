@@ -319,7 +319,7 @@ const RenderForm = ({
     ? track._stems?.length ?? 0
     : 0
   const downloadPurchaseCount =
-    track.is_download_gated && track.download?.is_downloadable ? 1 : 0
+    track.is_download_gated && track.is_downloadable ? 1 : 0
   const streamPurchaseCount = track.is_stream_gated ? 1 : 0
 
   return (

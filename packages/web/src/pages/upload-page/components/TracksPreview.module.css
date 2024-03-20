@@ -15,16 +15,16 @@
   gap: 16px;
   width: 100%;
   padding: 16px;
-  background-color: var(--background-surface-1);
+  background-color: var(--harmony-bg-surface-1);
 }
 
 .header {
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--harmony-border-strong);
   border-radius: 8px 8px 0 0;
 }
 
 .footer {
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--harmony-border-strong);
   border-radius: 0 0 8px 8px;
 }
 
@@ -37,5 +37,5 @@
   display: flex;
   padding: 16px 0;
   flex-direction: column;
-  background-color: var(--background-white);
+  background-color: var(--harmony-bg-white);
 }

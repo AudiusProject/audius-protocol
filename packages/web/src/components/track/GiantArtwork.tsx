@@ -6,7 +6,9 @@ import { Nullable } from '@audius/common/utils'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { StaticImage } from 'components/static-image/StaticImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { useSsrContext } from 'ssr/SsrContext'
 
 import styles from './GiantArtwork.module.css'
 
@@ -15,14 +17,17 @@ type GiantArtworkProps = {
   coverArtSizes: Nullable<CoverArtSizes>
   coSign: Nullable<Remix>
   callback: () => void
+  cid: Nullable<string>
 }
 
 const GiantArtwork = ({
+  cid,
   trackId,
   coverArtSizes,
   coSign,
   callback
 }: GiantArtworkProps) => {
+  const { isSsrEnabled } = useSsrContext()
   const image = useTrackCoverArt(
     trackId,
     coverArtSizes,
@@ -32,6 +37,18 @@ const GiantArtwork = ({
   useEffect(() => {
     if (image) callback()
   }, [image, callback])
+
+  const imageElement = isSsrEnabled ? (
+    <StaticImage
+      fullWidth
+      wrapperClassName={styles.imageWrapper}
+      cid={cid}
+      alt='Track Artwork'
+    />
+  ) : (
+    <DynamicImage wrapperClassName={styles.imageWrapper} image={image} />
+  )
+
   return coSign ? (
     <CoSign
       size={Size.XLARGE}
@@ -41,12 +58,10 @@ const GiantArtwork = ({
       className={styles.giantArtwork}
       userId={coSign.user?.user_id}
     >
-      <DynamicImage wrapperClassName={styles.imageWrapper} image={image} />
+      {imageElement}
     </CoSign>
   ) : (
-    <div className={styles.giantArtwork}>
-      <DynamicImage wrapperClassName={styles.imageWrapper} image={image} />
-    </div>
+    <div className={styles.giantArtwork}>{imageElement}</div>
   )
 }
 

@@ -11,7 +11,7 @@ import {
   sdk,
 } from '@audius/sdk'
 
-const createSdkService = (): AudiusSdk => {
+const createSdkService = async (): Promise<AudiusSdk> => {
   const ddexKey = process.env.DDEX_KEY
   const ddexSecret = process.env.DDEX_SECRET
   const env = process.env.NODE_ENV || 'development'
@@ -31,6 +31,23 @@ const createSdkService = (): AudiusSdk => {
     } else if (env === 'stage') {
       config = stagingConfig as ServicesConfig
       initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
+    } else {
+      let useStaging = true
+      try {
+        const response = await fetch(`${initialSelectedNode}/health_check`)
+        if (response.ok) {
+          useStaging = false
+        }
+      } catch (_) {
+        /* ignored */
+      }
+      if (useStaging) {
+        console.warn(
+          'Falling back to staging config in dev environment because dev Discovery Node is down'
+        )
+        config = stagingConfig as ServicesConfig
+        initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
+      }
     }
 
     // Init SDK

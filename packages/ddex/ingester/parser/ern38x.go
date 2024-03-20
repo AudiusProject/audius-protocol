@@ -14,25 +14,23 @@ import (
 
 // SoundRecording represents the parsed details of a sound recording.
 type SoundRecording struct {
-	Type                  string
-	ISRC                  string
-	ResourceReference     string
-	TerritoryCode         string
-	Title                 string
-	LanguageOfPerformance string
-	Duration              string
-	Artists               []common.Artist
-	ResourceContributors  []ResourceContributor
-	LabelName             string
-	Genre                 string
-	ParentalWarningType   string
-	TechnicalDetails      []TechnicalSoundRecordingDetails
-}
-
-// ResourceContributor represents a contributor to the sound recording.
-type ResourceContributor struct {
-	Name  string
-	Roles []string
+	Type                         string
+	ISRC                         string
+	ResourceReference            string
+	TerritoryCode                string
+	Title                        string
+	LanguageOfPerformance        string
+	Duration                     string
+	Artists                      []common.ResourceContributor
+	ResourceContributors         []common.ResourceContributor
+	IndirectResourceContributors []common.ResourceContributor
+	RightsController             *common.RightsController
+	CopyrightLine                *common.Copyright
+	ProducerCopyrightLine        *common.Copyright
+	ParentalWarningType          string
+	LabelName                    string
+	Genre                        string
+	TechnicalDetails             []TechnicalSoundRecordingDetails
 }
 
 // TechnicalSoundRecordingDetails represents technical details about the sound recording.
@@ -175,6 +173,18 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))
 	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
 	releaseType := safeInnerText(rNode.SelectElement("ReleaseType"))
+	copyrightYear := safeInnerText(rNode.SelectElement("CLine/Year"))
+	copyrightText := safeInnerText(rNode.SelectElement("CLine/CLineText"))
+	copyright := common.Copyright{
+		Year: copyrightYear,
+		Text: copyrightText,
+	}
+	producerCopyrightYear := safeInnerText(rNode.SelectElement("PLine/Year"))
+	producerCopyrightText := safeInnerText(rNode.SelectElement("PLine/PLineText"))
+	producerCopyright := common.Copyright{
+		Year: producerCopyrightYear,
+		Text: producerCopyrightText,
+	}
 
 	// Release IDs
 	ddexReleaseIDs := &common.ReleaseIDs{
@@ -223,7 +233,26 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	title := safeInnerText(releaseDetails.SelectElement("Title[@TitleType='DisplayTitle']/TitleText")) // TODO: This assumes there aren't multiple titles in different languages (ie, different `LanguageAndScriptCode` attributes)
 	artistName := safeInnerText(releaseDetails.SelectElement("DisplayArtistName"))
 	genreStr := safeInnerText(releaseDetails.SelectElement("Genre/GenreText"))
-	copyright := safeInnerText(releaseDetails.SelectElement("PLine/PLineText"))
+	parentalWarning := safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))
+
+	// Parse DisplayArtist nodes
+	var displayArtists []common.ResourceContributor
+	for _, artistNode := range xmlquery.Find(releaseDetails, "DisplayArtist") {
+		name := safeInnerText(artistNode.SelectElement("PartyName/FullName"))
+		seqNo, seqNoErr := strconv.Atoi(artistNode.SelectAttr("SequenceNumber"))
+		if seqNoErr != nil {
+			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
+			return
+		}
+		artist := common.ResourceContributor{
+			Name:           name,
+			SequenceNumber: seqNo,
+		}
+		for _, roleNode := range xmlquery.Find(artistNode, "ArtistRole") {
+			artist.Roles = append(artist.Roles, safeInnerText(roleNode))
+		}
+		displayArtists = append(displayArtists, artist)
+	}
 
 	// Use <ResourceGroup> to determine the order of tracks, as per the XML schema.
 	// There can be multiple <ResourceGroup>s for each "disk" in the album, but we count them all as one album with no "disk" concept.
@@ -311,7 +340,17 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 				CoverArtURL:         coverArtURL,
 				CoverArtURLHash:     coverArtURLHash,
 				CoverArtURLHashAlgo: coverArtURLHashAlgo,
+				Artists:             displayArtists,
 			},
+		}
+		if parentalWarning != "" {
+			album.Metadata.ParentalWarningType = &parentalWarning
+		}
+		if copyrightYear != "" && copyrightText != "" {
+			album.Metadata.CopyrightLine = &copyright
+		}
+		if producerCopyrightYear != "" && producerCopyrightText != "" {
+			album.Metadata.ProducerCopyrightLine = &producerCopyright
 		}
 		return
 	}
@@ -364,7 +403,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 				err = fmt.Errorf("missing isrc for <ReleaseReference>%s</ReleaseReference>", releaseRef)
 				return
 			}
-			*trackMetadata.ISRC = isrc
+			trackMetadata.ISRC = &isrc
 		} else {
 			if *trackMetadata.ISRC != isrc {
 				// Use the ISRC from the SoundRecording if it differs from the Release ISRC
@@ -393,10 +432,19 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		trackMetadata.ArtistName = artistName
 		trackMetadata.ReleaseDate = releaseDate
 		trackMetadata.DDEXReleaseIDs = *ddexReleaseIDs
-		trackMetadata.Copyright = copyright
 		trackMetadata.CoverArtURL = coverArtURL
 		trackMetadata.CoverArtURLHash = coverArtURLHash
 		trackMetadata.CoverArtURLHashAlgo = coverArtURLHashAlgo
+
+		if parentalWarning != "" {
+			trackMetadata.ParentalWarningType = &parentalWarning
+		}
+		if copyrightYear != "" && copyrightText != "" {
+			trackMetadata.CopyrightLine = &copyright
+		}
+		if producerCopyrightYear != "" && producerCopyrightText != "" {
+			trackMetadata.ProducerCopyrightLine = &producerCopyright
+		}
 
 		track = &common.CreateTrackRelease{
 			DDEXReleaseRef: releaseRef,
@@ -419,46 +467,46 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 		return
 	}
 
-	var audioFileURL, audioFileURLHash, audioFileURLHashAlgo, previewAudioFileURL, previewAudioFileURLHash, previewAudioFileURLHashAlgo string
-	var previewStartSec int
+	duration, _ := parseISODuration(ci.SoundRecording.Duration)
+	metadata = &common.TrackMetadata{
+		Title:                        ci.SoundRecording.Title,
+		Duration:                     int(duration.Seconds()),
+		ISRC:                         &ci.SoundRecording.ISRC,
+		Artists:                      ci.SoundRecording.Artists,
+		ResourceContributors:         ci.SoundRecording.ResourceContributors,
+		IndirectResourceContributors: ci.SoundRecording.IndirectResourceContributors,
+		RightsController:             ci.SoundRecording.RightsController,
+		CopyrightLine:                ci.SoundRecording.CopyrightLine,
+		ProducerCopyrightLine:        ci.SoundRecording.ProducerCopyrightLine,
+	}
 
 	for _, d := range ci.SoundRecording.TechnicalDetails {
 		if d.IsPreview {
-			if previewAudioFileURL == "" {
-				previewAudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
-				previewAudioFileURLHash = d.FileDetails.HashSum
-				previewAudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
-				previewStartSec = d.PreviewDetails.StartPoint
+			if metadata.PreviewAudioFileURL == "" {
+				metadata.PreviewAudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				metadata.PreviewAudioFileURLHash = d.FileDetails.HashSum
+				metadata.PreviewAudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
+				metadata.PreviewStartSeconds = &d.PreviewDetails.StartPoint
 			} else {
 				fmt.Printf("Skipping duplicate audio preview for SoundRecording %s\n", ci.Reference)
 			}
 		} else {
-			if audioFileURL == "" {
-				audioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
-				audioFileURLHash = d.FileDetails.HashSum
-				audioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
+			if metadata.AudioFileURL == "" {
+				metadata.AudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				metadata.AudioFileURLHash = d.FileDetails.HashSum
+				metadata.AudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 			} else {
 				fmt.Printf("Skipping duplicate audio file for SoundRecording %s\n", ci.Reference)
 			}
 		}
 	}
 
-	duration, _ := parseISODuration(ci.SoundRecording.Duration)
-	metadata = &common.TrackMetadata{
-		Title:                       ci.SoundRecording.Title,
-		Duration:                    int(duration.Seconds()),
-		PreviewStartSeconds:         &previewStartSec,
-		ISRC:                        &ci.SoundRecording.ISRC,
-		Artists:                     ci.SoundRecording.Artists,
-		PreviewAudioFileURL:         previewAudioFileURL,
-		PreviewAudioFileURLHash:     previewAudioFileURLHash,
-		PreviewAudioFileURLHashAlgo: previewAudioFileURLHashAlgo,
-		AudioFileURL:                audioFileURL,
-		AudioFileURLHash:            audioFileURLHash,
-		AudioFileURLHashAlgo:        audioFileURLHashAlgo,
-	}
 	if genre, ok := common.ToGenre(ci.SoundRecording.Genre); ok {
 		metadata.Genre = genre
+	}
+
+	if ci.SoundRecording.ParentalWarningType != "" {
+		metadata.ParentalWarningType = &ci.SoundRecording.ParentalWarningType
 	}
 	return
 }
@@ -533,10 +581,35 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		ParentalWarningType:   safeInnerText(details.SelectElement("ParentalWarningType")),
 	}
 
+	// Parse copyrights
+	copyrightYear := safeInnerText(details.SelectElement("CLine/Year"))
+	copyrightText := safeInnerText(details.SelectElement("CLine/CLineText"))
+	if copyrightYear != "" && copyrightText != "" {
+		recording.CopyrightLine = &common.Copyright{
+			Year: copyrightYear,
+			Text: copyrightText,
+		}
+	}
+	producerCopyrightYear := safeInnerText(details.SelectElement("PLine/Year"))
+	producerCopyrightText := safeInnerText(details.SelectElement("PLine/PLineText"))
+	if producerCopyrightYear != "" && producerCopyrightText != "" {
+		recording.ProducerCopyrightLine = &common.Copyright{
+			Year: producerCopyrightYear,
+			Text: producerCopyrightText,
+		}
+	}
+
 	// Parse DisplayArtist nodes
 	for _, artistNode := range xmlquery.Find(details, "DisplayArtist") {
-		artist := common.Artist{
-			Name: safeInnerText(artistNode.SelectElement("PartyName/FullName")),
+		name := safeInnerText(artistNode.SelectElement("PartyName/FullName"))
+		seqNo, seqNoErr := strconv.Atoi(artistNode.SelectAttr("SequenceNumber"))
+		if seqNoErr != nil {
+			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
+			return
+		}
+		artist := common.ResourceContributor{
+			Name:           name,
+			SequenceNumber: seqNo,
 		}
 		for _, roleNode := range xmlquery.Find(artistNode, "ArtistRole") {
 			artist.Roles = append(artist.Roles, safeInnerText(roleNode))
@@ -545,14 +618,64 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 	}
 
 	// Parse ResourceContributor nodes
+	err = nil
 	for _, contributorNode := range xmlquery.Find(details, "ResourceContributor") {
-		contributor := ResourceContributor{
-			Name: safeInnerText(contributorNode.SelectElement("PartyName/FullName")),
+		name := safeInnerText(contributorNode.SelectElement("PartyName/FullName"))
+		seqNo, seqNoErr := strconv.Atoi(contributorNode.SelectAttr("SequenceNumber"))
+		if seqNoErr != nil {
+			err = fmt.Errorf("Error parsing ResourceContributor %s's SequenceNumber", name)
+			return
+		}
+		contributor := common.ResourceContributor{
+			Name:           name,
+			SequenceNumber: seqNo,
 		}
 		for _, roleNode := range xmlquery.Find(contributorNode, "ResourceContributorRole") {
-			contributor.Roles = append(contributor.Roles, safeInnerText(roleNode))
+			role := safeInnerText(roleNode)
+			if role == "UserDefined" {
+				role = roleNode.SelectAttr("UserDefinedValue")
+			}
+			if role != "" {
+				contributor.Roles = append(contributor.Roles, role)
+			}
 		}
 		recording.ResourceContributors = append(recording.ResourceContributors, contributor)
+	}
+
+	// Parse IndirectResourceContributor nodes
+	for _, indirectContributorNode := range xmlquery.Find(details, "IndirectResourceContributor") {
+		name := safeInnerText(indirectContributorNode.SelectElement("PartyName/FullName"))
+		seqNo, seqNoErr := strconv.Atoi(indirectContributorNode.SelectAttr("SequenceNumber"))
+		if seqNoErr != nil {
+			err = fmt.Errorf("Error parsing IndirectResourceContributor %s's SequenceNumber", name)
+			return
+		}
+		contributor := common.ResourceContributor{
+			Name:           name,
+			SequenceNumber: seqNo,
+		}
+		for _, roleNode := range xmlquery.Find(indirectContributorNode, "IndirectResourceContributorRole") {
+			role := safeInnerText(roleNode)
+			if role == "UserDefined" {
+				role = roleNode.SelectAttr("UserDefinedValue")
+			}
+			if role != "" {
+				contributor.Roles = append(contributor.Roles, role)
+			}
+		}
+		recording.IndirectResourceContributors = append(recording.IndirectResourceContributors, contributor)
+	}
+
+	// Parse RightsController
+	if rightsControllerNode := xmlquery.FindOne(details, "RightsController"); rightsControllerNode != nil {
+		controller := common.RightsController{
+			Name:               safeInnerText(rightsControllerNode.SelectElement("PartyName/FullName")),
+			RightsShareUnknown: safeInnerText(rightsControllerNode.SelectElement("RightsShareUnknown")),
+		}
+		for _, roleNode := range xmlquery.Find(rightsControllerNode, "RightsControllerRole") {
+			controller.Roles = append(controller.Roles, safeInnerText(roleNode))
+		}
+		recording.RightsController = &controller
 	}
 
 	// Parse TechnicalSoundRecordingDetails nodes
