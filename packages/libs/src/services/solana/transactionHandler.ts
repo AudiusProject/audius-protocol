@@ -317,7 +317,6 @@ export class TransactionHandler {
               `transactionHandler: retrying txId ${txid} with retryTxId ${retryTxId}, sendCount ${sendCount}`
             )
           } catch (e) {
-            // Retry only after sendRawTransaction throws an error
             logger.error(
               `transactionHandler: error in send loop: ${e} for txId ${txid}`
             )
