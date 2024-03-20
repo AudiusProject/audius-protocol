@@ -63,9 +63,9 @@
   },
   "dependencies": {
     "@audius/common": "*",
+    "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
-    "@audius/fixed-decimal": "*",
     "@audius/trpc-server": "*",
     "@cloudflare/kv-asset-handler": "0.2.0",
     "@coinbase/cbpay-js": "1.2.0",
@@ -208,6 +208,7 @@
     "@electron/notarize": "2.2.0",
     "@esbuild-plugins/node-globals-polyfill": "0.2.3",
     "@pinata/sdk": "1.1.13",
+    "@playwright/test": "^1.42.1",
     "@redux-devtools/extension": "3.2.4",
     "@testing-library/react": "12.0.0",
     "@types/amplitude-js": "8.0.2",
