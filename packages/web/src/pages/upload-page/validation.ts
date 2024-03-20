@@ -156,13 +156,17 @@ const createSdkSchema = () =>
     is_downloadable: z.optional(z.boolean()),
     is_original_available: z.optional(z.boolean()),
     ddex_release_ids: z.optional(z.record(z.string()).nullable()),
-    artists: z.optional(z.array(DDEXResourceContributor)),
-    resourceContributors: z.optional(z.array(DDEXResourceContributor)),
-    indirectResourceContributors: z.optional(z.array(DDEXResourceContributor)),
-    rightsController: z.optional(DDEXRightsController),
-    copyrightLine: z.optional(DDEXCopyright),
-    producerCopyrightLine: z.optional(DDEXCopyright),
-    parentalWarningType: z.optional(z.string())
+    artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+    resourceContributors: z.optional(
+      z.array(DDEXResourceContributor).nullable()
+    ),
+    indirectResourceContributors: z.optional(
+      z.array(DDEXResourceContributor).nullable()
+    ),
+    rightsController: z.optional(DDEXRightsController).nullable(),
+    copyrightLine: z.optional(DDEXCopyright.nullable()),
+    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+    parentalWarningType: z.optional(z.string().nullable())
   })
 
 export const TrackMetadataSchema = createSdkSchema().merge(

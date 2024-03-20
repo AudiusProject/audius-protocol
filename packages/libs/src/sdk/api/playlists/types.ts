@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
+import { DDEXResourceContributor, DDEXCopyright } from '../../types/DDEX'
 import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
-import { DDEXResourceContributor, DDEXCopyright } from '../../types/DDEX'
 
 const CreatePlaylistMetadataSchema = z
   .object({
@@ -75,10 +75,10 @@ const createUploadPlaylistMetadataSchema = () =>
       ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
       tags: z.optional(z.string()),
       upc: z.optional(z.string()),
-      artists: z.optional(z.array(DDEXResourceContributor)),
-      copyrightLine: z.optional(DDEXCopyright),
-      producerCopyrightLine: z.optional(DDEXCopyright),
-      parentalWarningType: z.optional(z.string())
+      artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+      copyrightLine: z.optional(DDEXCopyright.nullable()),
+      producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+      parentalWarningType: z.optional(z.string().nullable())
     })
     .strict()
 

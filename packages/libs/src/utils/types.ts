@@ -130,7 +130,6 @@ type Copyright = {
   text: string
 }
 
-
 export type GatedConditions = {
   nft_collection?: EthCollectibleGatedConditions | SolCollectibleGatedConditions
   follow_user_id?: number
