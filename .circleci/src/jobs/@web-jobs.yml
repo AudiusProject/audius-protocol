@@ -112,6 +112,33 @@ web-test-staging:
     - store_artifacts:
         path: /home/circleci/audius-protocol/packages/probers/cypress/screenshots
 
+playwright-tests:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: mcr.microsoft.com/playwright:v1.42.1-jammy
+  parallelism: 4
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run: npx playwright install --with-deps
+    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
+    - persist_to_workspace:
+        when: always
+        root: ./
+        paths:
+          - packages/web/blob-report
+
+playwright-tests-results:
+  working_directory: ~/audius-protocol
+  executor: cypress/default
+  steps:
+    - attach_workspace:
+        at: ./
+    - run: cd packages/web; npx playwright merge-reports --reporter html ./blob-report
+    - store_artifacts:
+        path: /home/circleci/audius-protocol/packages/web/playwright-report
+
 web-test:
   working_directory: ~/audius-protocol
   docker:
