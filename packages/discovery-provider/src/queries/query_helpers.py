@@ -557,7 +557,9 @@ def populate_track_metadata(
     return tracks
 
 
-def _populate_gated_content_metadata(session, entities, current_user_id, content_type):
+def _populate_gated_content_metadata(
+    session, entities, current_user_id, content_type="track"
+):
     if not entities:
         return
     if not current_user_id:

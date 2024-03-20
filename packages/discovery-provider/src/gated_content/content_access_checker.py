@@ -159,10 +159,11 @@ class ContentAccessChecker:
         ]
         gated_album_data = self._get_gated_album_data_for_batch(session, album_ids)
 
-        batch_access_result: ContentAccessBatchResponse = {}
+        batch_access_result: ContentAccessBatchResponse = {"track": {}, "playlist": {}}
 
         for arg in args:
             content_type = arg["content_type"]
+            key_type = "track" if content_type == "track" else "playlist"
             content_id = arg["content_id"]
             user_id = arg["user_id"]
             entity = (
@@ -170,13 +171,13 @@ class ContentAccessChecker:
                 if content_type == "track"
                 else gated_album_data.get(content_id)
             )
-            if user_id not in batch_access_result:
-                batch_access_result[content_type][user_id] = {}
+            if user_id not in batch_access_result[key_type]:
+                batch_access_result[key_type][user_id] = {}
 
             # content owner has access to their own gated content
             content_owner_id = entity["content_owner_id"]
             if content_owner_id == user_id:
-                batch_access_result[content_type][user_id][content_id] = {
+                batch_access_result[key_type][user_id][content_id] = {
                     "has_stream_access": True,
                     "has_download_access": True,
                 }
@@ -198,7 +199,7 @@ class ContentAccessChecker:
                     if content_type == "track"
                     else True
                 )
-                batch_access_result[content_type][user_id][content_id] = {
+                batch_access_result[key_type][user_id][content_id] = {
                     "has_stream_access": access,
                     "has_download_access": access,
                 }
@@ -213,7 +214,7 @@ class ContentAccessChecker:
                     content_type=content_type,
                     conditions=stream_conditions,
                 )
-                batch_access_result[content_type][user_id][content_id] = {
+                batch_access_result[key_type][user_id][content_id] = {
                     "has_stream_access": has_access,
                     "has_download_access": has_access,
                 }
@@ -228,7 +229,7 @@ class ContentAccessChecker:
                 content_type=content_type,
                 conditions=download_conditions,
             )
-            batch_access_result[content_type][user_id][content_id] = {
+            batch_access_result[key_type][user_id][content_id] = {
                 "has_stream_access": True,
                 "has_download_access": has_download_access,
             }
