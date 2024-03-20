@@ -18,7 +18,7 @@ window.process = { ...processBrowser, env: process.env }
 
 // Set this to false to turn off client hydration
 // Useful for testing the SSR output
-const HYDRATE_CLIENT = false
+const HYDRATE_CLIENT = true
 
 export default async function render(
   pageContext: PageContextClient & { pageProps: { track: FullSdk.TrackFull } }
