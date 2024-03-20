@@ -30,8 +30,6 @@ web-init:
           - node_modules
           - packages/web/node_modules
           - packages/probers/node_modules
-          - packages/stems/node_modules
-          - packages/stems/dist
           - packages/harmony/node_modules
           - packages/harmony/dist
           - packages/common/node_modules

@@ -1,7 +1,7 @@
 .buttonContainer {
   display: flex;
   flex-direction: row;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .buttonContainer.mobile {

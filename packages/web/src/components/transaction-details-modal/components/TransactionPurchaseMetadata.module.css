@@ -1,5 +1,5 @@
 .link {
-  transition: color var(--quick);
+  transition: color var(--harmony-quick);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -10,21 +10,21 @@
   height: 1em;
 }
 .link svg path {
-  transition: fill var(--quick);
-  fill: var(--neutral-light-4);
+  transition: fill var(--harmony-quick);
+  fill: var(--harmony-n-400);
 }
 .link:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 .link:hover svg path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .amount,
 .label {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 
 .label {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }

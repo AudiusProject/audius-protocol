@@ -24,7 +24,7 @@
 }
 
 .loadingSpinner g path {
-  stroke: var(--neutral-light-3) !important;
+  stroke: var(--harmony-n-500) !important;
 }
 
 .premiumTracksBackgroundIcon {

@@ -26,7 +26,7 @@
 }
 
 .title {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: 700;
   font-size: 20px;
   margin-bottom: 8px;
@@ -36,7 +36,7 @@
 }
 
 .subtitle {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: 700;
   font-size: 16px;
 }
@@ -46,7 +46,7 @@
 
 .insetRegion {
   border-radius: 16px;
-  background-color: var(--background);
+  background-color: var(--harmony-background);
   box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -82,7 +82,7 @@
 
 .lastWeek {
   margin-bottom: 16px;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 900;
@@ -105,12 +105,12 @@
 }
 
 .activeSlider {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .terms {
   font-size: 12px;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: 400;
   margin: 12px 0px 24px;
   text-decoration: underline;
@@ -120,12 +120,12 @@
 }
 
 .terms:hover {
-  color: var(--neutral-light-6);
+  color: var(--harmony-n-200);
 }
 
 .titleHeader {
   text-align: center;
-  color: var(--white);
+  color: var(--harmony-white);
   line-height: 34px;
 }
 .titleIcon {

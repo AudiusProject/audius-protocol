@@ -170,6 +170,7 @@ const SavedPage = ({
     >
       <Button
         variant='primary'
+        size='small'
         css={(theme) => ({ marginLeft: theme.spacing.xl })}
         iconLeft={queuedAndPlaying ? IconPause : IconPlay}
         onClick={onPlay}

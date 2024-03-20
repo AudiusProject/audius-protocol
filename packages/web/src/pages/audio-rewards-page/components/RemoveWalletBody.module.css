@@ -9,13 +9,13 @@
 .warning {
   font-weight: 700;
   font-size: 16px;
-  color: var(--accent-red);
+  color: var(--harmony-red);
   margin-bottom: 32px;
 }
 
 .wallet {
   font-size: 16px;
   font-weight: 500;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-bottom: 32px;
 }

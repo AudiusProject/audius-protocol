@@ -10,10 +10,10 @@
 }
 
 .endTitle {
-  color: var(--neutral-light-5);
-  font-family: var(--font-family);
-  font-size: var(--font-xs);
-  font-weight: var(--font-heavy);
+  color: var(--harmony-n-300);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-heavy);
   letter-spacing: 2px;
   text-align: center;
   text-transform: uppercase;
@@ -28,10 +28,10 @@
 }
 
 .endDescription {
-  color: var(--neutral-light-4);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-400);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0.09px;
   text-align: center;
   white-space: nowrap;
@@ -40,6 +40,6 @@
 
 .divider {
   background-color: #e7e6eb;
-  border-top: 1px solid var(--neutral-light-7);
+  border-top: 1px solid var(--harmony-n-150);
   width: 100%;
 }

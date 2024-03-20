@@ -6,11 +6,11 @@
   width: 200px;
   border-radius: 20px;
   box-shadow: 0 0;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: flex;
   flex-direction: column;
   padding: 8px;
-  border: 1px solid var(--neutral-light-6);
+  border: 1px solid var(--harmony-n-200);
 }
 
 .title {

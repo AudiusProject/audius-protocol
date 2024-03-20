@@ -1,7 +1,8 @@
 .tableContainer {
   border-radius: 6px;
-  background: var(--white);
-  box-shadow: var(--table-shadow) 0px var(--unit-4) var(--unit-5) 0px;
+  background: var(--harmony-white);
+  box-shadow: var(--table-shadow) 0px var(--harmony-unit-4)
+    var(--harmony-unit-5) 0px;
   overflow: hidden;
 }
 
@@ -10,36 +11,36 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  margin: var(--unit-3) 0px;
+  margin: var(--harmony-unit-3) 0px;
 }
 
 .header {
   width: 100%;
-  padding: var(--unit-6);
+  padding: var(--harmony-unit-6);
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .pills {
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .filterInput {
   width: 160px;
-  height: var(--unit-6);
-  border-radius: var(--unit-1);
-  border-color: var(--neutral-light-8);
-  background: var(--neutral-light-10);
+  height: var(--harmony-unit-6);
+  border-radius: var(--harmony-unit-1);
+  border-color: var(--harmony-n-100);
+  background: var(--harmony-n-25);
 }
 
 .close {
   cursor: pointer;
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--harmony-unit-6);
+  width: var(--harmony-unit-6);
 }
 
 .trackName {
@@ -55,5 +56,5 @@
       > th.ant-table-column-has-actions.ant-table-column-has-sorters
   ).col:global(.colName),
 .col:global(.colName) {
-  padding-left: var(--unit-6) !important;
+  padding-left: var(--harmony-unit-6) !important;
 }

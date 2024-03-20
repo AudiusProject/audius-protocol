@@ -1,5 +1,5 @@
 .trackPreview {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 
   display: flex;
   justify-content: space-between;
@@ -29,23 +29,23 @@
 
 .trackTitle {
   flex: 1;
-  color: var(--neutral);
-  font-family: var(--font-family);
+  color: var(--harmony-neutral);
+  font-family: var(--harmony-font-family);
   font-size: 14px;
   font-weight: 600;
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-demi-bold);
   line-height: 17px;
 }
 
 .fileSize {
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   margin-right: 8px;
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: 17px;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .remove g path {
-  fill: var(--neutral-light-6);
+  fill: var(--harmony-n-200);
 }
 
 .remove g path {
@@ -73,7 +73,7 @@
 }
 
 .remove:hover g path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .remove:active {
@@ -87,11 +87,11 @@
   align-items: center;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
-  transition: var(--hover);
+  transition: var(--harmony-hover);
 }
 
 .trackPreviewNew:hover {
-  background: var(--neutral-light-9);
+  background: var(--harmony-n-50);
 }
 
 .trackPreviewNew:hover .fileSizeText {
@@ -124,7 +124,7 @@
 
 .fileSizeText {
   display: flex;
-  transition: var(--hover);
+  transition: var(--harmony-hover);
   width: 60px;
   justify-content: flex-end;
 }
@@ -135,7 +135,7 @@
 }
 
 .removeButton:hover svg path {
-  fill: var(--accent-red);
+  fill: var(--harmony-red);
 }
 
 .iconsContainer {

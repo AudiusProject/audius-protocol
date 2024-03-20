@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+import {
+  DDEXResourceContributor,
+  DDEXCopyright,
+  DDEXRightsController
+} from '../../types/DDEX'
 import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
@@ -86,7 +91,6 @@ export const createUploadTrackMetadataSchema = () =>
     isrc: z.optional(z.string().nullable()),
     isUnlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
-    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
     license: z.optional(z.string().nullable()),
     mood: z
       .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
@@ -139,7 +143,19 @@ export const createUploadTrackMetadataSchema = () =>
     origFileCid: z.optional(z.string()),
     origFilename: z.optional(z.string()),
     isDownloadable: z.optional(z.string()),
-    isOriginalAvailable: z.optional(z.string())
+    isOriginalAvailable: z.optional(z.string()),
+    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+    artists: z.optional(z.array(DDEXResourceContributor)).nullable(),
+    resourceContributors: z.optional(
+      z.array(DDEXResourceContributor).nullable()
+    ),
+    indirectResourceContributors: z.optional(
+      z.array(DDEXResourceContributor).nullable()
+    ),
+    rightsController: z.optional(DDEXRightsController.nullable()),
+    copyrightLine: z.optional(DDEXCopyright.nullable()),
+    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+    parentalWarningType: z.optional(z.string().nullable())
   })
 
 export type TrackMetadata = z.input<

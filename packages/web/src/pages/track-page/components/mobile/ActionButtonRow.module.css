@@ -13,7 +13,7 @@
 }
 
 .animatedActionButton svg path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .favoriteButton svg,
@@ -23,19 +23,19 @@
 }
 
 .actionButton path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .activeButton svg path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .disabledButton path {
-  fill: var(--neutral-light-8) !important;
+  fill: var(--harmony-n-100) !important;
 }
 
 .spinner svg path {
-  stroke: var(--neutral-light-4);
+  stroke: var(--harmony-n-400);
 }
 
 .animatedIconWrapper {

@@ -1,6 +1,6 @@
 .header {
-  background: var(--white);
-  border-bottom: 1px solid var(--neutral-light-8);
+  background: var(--harmony-white);
+  border-bottom: 1px solid var(--harmony-n-100);
   display: inline-flex;
   justify-content: space-between;
   align-items: center;
@@ -26,19 +26,19 @@ svg.logo.matrixLogo path {
   cursor: pointer;
   height: 24px;
   width: 24px;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 50%;
   margin-left: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
   transition: all ease-in-out 0.07s;
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .headerIconWrapper:global(.active),
 .headerIconWrapper:hover {
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
   transform: scale3d(1.1, 1.1, 1.1);
 }
 
@@ -47,17 +47,17 @@ svg.logo.matrixLogo path {
 }
 
 .headerIconWrapper.iconNotification.active {
-  background-color: var(--accent-orange-light-1);
+  background-color: var(--harmony-orange);
 }
 
 .headerIconWrapper.iconNotification.active:hover,
 .headerIconWrapper.iconNotification.active:active {
-  background-color: var(--accent-orange);
+  background-color: var(--harmony-orange);
 }
 
 .headerIconWrapper:global(.active) svg path,
 .headerIconWrapper.iconNotification.active svg path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .headerIconWrapper.iconNotification.notificationsOpen,
@@ -65,16 +65,16 @@ svg.logo.matrixLogo path {
 .headerIconWrapper.iconNotification.notificationsOpen.active:hover,
 .headerIconWrapper.iconNotification.notificationsOpen:active,
 .headerIconWrapper.iconNotification.notificationsOpen.active:active {
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
 }
 
 .headerIconWrapper.iconNotification.notificationsOpen svg path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .headerIconWrapper:hover svg path,
 .headerIconWrapper:active svg path {
-  fill: var(--static-neutral-light-10);
+  fill: var(--harmony-static-white);
 }
 
 .headerIconWrapper svg {
@@ -83,7 +83,7 @@ svg.logo.matrixLogo path {
 }
 
 .headerIconWrapper svg path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .iconTag {
@@ -105,9 +105,9 @@ svg.logo.matrixLogo path {
 .earlyAccess {
   font-size: 10px;
   position: absolute;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   top: 34px;
-  color: var(--primary);
+  color: var(--harmony-primary);
   left: 58px;
   letter-spacing: 0.5px;
 }

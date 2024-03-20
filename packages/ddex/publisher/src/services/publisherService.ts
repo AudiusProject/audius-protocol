@@ -34,6 +34,13 @@ const formatTrackMetadata = (
     releaseDate: new Date(metadata.release_date),
     ddexReleaseIds: metadata.ddex_release_ids,
     previewStartSeconds: metadata.preview_start_seconds ?? undefined,
+    artists: metadata.artists,
+    resourceContributors: metadata.resource_contributors,
+    indirectResourceContributors: metadata.indirect_resource_contributors,
+    rightsController: metadata.rights_controller,
+    copyrightLine: metadata.copyright_line,
+    producerCopyrightLine: metadata.producer_copyright_line,
+    parentalWarningType: metadata.parental_warning_type,
     // isUnlisted: // TODO: set visibility
     // iswc:
     // origFilename:
@@ -60,6 +67,10 @@ const formatAlbumMetadata = (
     ddexReleaseIds: metadata.ddex_release_ids,
     tags: metadata.tags || '',
     upc: metadata.upc || '',
+    artists: metadata.artists,
+    copyrightLine: metadata.copyright_line,
+    producerCopyrightLine: metadata.producer_copyright_line,
+    parentalWarningType: metadata.parental_warning_type,
   }
 }
 

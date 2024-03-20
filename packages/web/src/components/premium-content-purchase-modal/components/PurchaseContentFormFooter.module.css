@@ -1,12 +1,12 @@
 .purchaseButtonText {
   align-items: center;
   display: inline-flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .spinner {
-  width: var(--unit-5);
-  height: var(--unit-5);
+  width: var(--harmony-unit-5);
+  height: var(--harmony-unit-5);
 }
 
 .spinner g path {
@@ -15,6 +15,6 @@
 
 .errorContainer {
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   align-items: center;
 }

@@ -1,20 +1,20 @@
 .description {
-  font-size: var(--font-xl);
+  font-size: var(--harmony-font-xl);
   text-align: center;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin: 24px 0px;
 }
 
 .spinner g path {
-  stroke: var(--secondary);
+  stroke: var(--harmony-secondary);
 }
 
 .warning {
-  font-size: var(--font-xl);
+  font-size: var(--harmony-font-xl);
   text-align: center;
-  font-weight: var(--font-medium);
-  color: var(--accent-red);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-red);
   margin: 24px 0px;
 }

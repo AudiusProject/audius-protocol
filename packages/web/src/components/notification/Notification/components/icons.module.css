@@ -1,7 +1,7 @@
 .icon {
   height: 30px;
   width: 30px;
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 .iconFollow {
   composes: icon;
@@ -27,7 +27,7 @@
 }
 
 .iconRewards {
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .iconRewards i {
@@ -39,7 +39,7 @@
 }
 
 .iconTier {
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .iconTier img {

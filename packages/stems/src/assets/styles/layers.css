@@ -1,7 +1,0 @@
-:root,
-root {
-  --layer: 0;
-  --layer-modal: 10000;
-  --layer-popup: 20000;
-  --layer-tooltip: 30000;
-}

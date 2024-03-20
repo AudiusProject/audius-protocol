@@ -8,4 +8,5 @@
 @import '../src/foundations/motion/motion.css';
 @import '../src/foundations/corner-radius/corner-radius.css';
 @import '../src/foundations/shadows/shadows.css';
+@import '../src/foundations/transforms/transforms.css';
 @import '../src/storybook/theme/colors.css';

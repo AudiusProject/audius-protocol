@@ -1,14 +1,8 @@
-# Examples using @audius/sdk
+# Simple examples using @audius/sdk
+
+For examples of using `@audius/sdk` in a full app, please see https://github.com/AudiusProject/audius-protocol/tree/main/packages/create-audius-app/examples
 
 ## Usage
-
-You can use `create-audius-app` to start a project using any of these examples:
-
-```
-  npx create-audius-app --example react
-```
-
-Or you can clone this repo and use the example directly:
 
 ```sh
 cd <path-to-example>

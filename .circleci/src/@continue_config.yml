@@ -52,9 +52,6 @@ parameters:
   run-mobile-workflow:
     type: boolean
     default: false
-  run-stems-workflow:
-    type: boolean
-    default: false
   run-probers-workflow:
     type: boolean
     default: false
@@ -77,6 +74,9 @@ parameters:
     type: boolean
     default: false
   run-ddex-stage-workflow:
+    type: boolean
+    default: false
+  run-create-audius-app-workflow:
     type: boolean
     default: false
 # Can enable recurring probers against stage at some point

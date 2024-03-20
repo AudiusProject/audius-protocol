@@ -4,7 +4,7 @@
 }
 
 .profilePictureBackground {
-  background: var(--white);
+  background: var(--harmony-white);
   width: 208px;
   height: 208px;
   border-radius: 50%;
@@ -14,7 +14,7 @@
 .profilePicture {
   border-radius: 50%;
   box-sizing: border-box;
-  border: 4px solid var(--neutral-light-10);
+  border: 4px solid var(--harmony-n-25);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

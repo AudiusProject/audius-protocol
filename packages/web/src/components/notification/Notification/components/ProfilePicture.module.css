@@ -1,11 +1,11 @@
 .profilePictureWrapper {
-  height: var(--unit-10);
-  width: var(--unit-10);
+  height: var(--harmony-unit-10);
+  width: var(--harmony-unit-10);
 }
 
 .profilePicture {
   border-radius: 50%;
-  border: 2px solid var(--white);
+  border: 2px solid var(--harmony-white);
   background-color: var(--default-profile-picture-background);
   background-size: cover;
   background-position: center;

@@ -14,22 +14,22 @@
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
 }
 
 .dropdown.small {
   height: 24px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 .dropdown.medium {
   height: 34px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 .dropdown.large {
   height: 50px;
-  font-size: var(--font-m);
-  background-color: var(--neutral-light-10);
+  font-size: var(--harmony-font-m);
+  background-color: var(--harmony-n-25);
 }
 
 .dropdown.shadow {
@@ -37,28 +37,28 @@
     0 2px 6px -2px rgba(133, 129, 153, 0.25);
 }
 .dropdown.border {
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
 }
 .dropdown.border:hover {
-  border-color: var(--neutral-light-6);
+  border-color: var(--harmony-n-200);
 }
 .dropdown.border.focused {
-  border-color: var(--secondary);
+  border-color: var(--harmony-secondary);
 }
 .dropdown.disabled {
-  background-color: var(--neutral-light-9);
-  color: var(--neutral-light-4);
+  background-color: var(--harmony-n-50);
+  color: var(--harmony-n-400);
   cursor: default !important;
 }
 .dropdown.disabled:hover {
-  border-color: var(--neutral-light-8);
+  border-color: var(--harmony-n-100);
 }
 .dropdown.disabled path,
 .dropdown.disabled g path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 .dropdown.error.border {
-  border-color: var(--accent-red);
+  border-color: var(--harmony-red);
 }
 
 .selector {
@@ -74,12 +74,12 @@
 }
 
 .iconCaret path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .dropdown :global(.ant-dropdown) {
   border-radius: 4px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
     0 2px 5px -2px rgba(133, 129, 153, 0.3);
   animation-duration: 0.18s;
@@ -87,7 +87,7 @@
 
 .dropdown :global(.ant-dropdown-menu) {
   border-radius: 4px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: none;
   padding: 8px 0;
 }
@@ -95,18 +95,18 @@
   margin: 0 8px;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
-  color: var(--neutral);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-neutral);
   transition: all ease-in-out 0.04s;
 }
 .dropdown :global(.ant-dropdown-menu-item:hover) {
-  background: var(--secondary);
-  color: var(--white);
+  background: var(--harmony-secondary);
+  color: var(--harmony-white);
 }
 
 .dropdown.large :global(.ant-dropdown-menu-item) {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 28px;
   height: 32px;
 }

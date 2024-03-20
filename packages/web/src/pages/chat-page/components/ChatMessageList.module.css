@@ -18,24 +18,24 @@
   align-items: center;
   justify-content: center;
   height: 0;
-  margin: var(--unit-8) 0;
-  scroll-margin: var(--unit-8) 0;
-  border-bottom: 1px solid var(--neutral-light-5);
+  margin: var(--harmony-unit-8) 0;
+  scroll-margin: var(--harmony-unit-8) 0;
+  border-bottom: 1px solid var(--harmony-n-300);
 }
 
 .separator .tag {
   padding: 3.5px 8px;
-  background: var(--neutral-light-5);
+  background: var(--harmony-n-300);
   border-radius: 2px;
 
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
 }
 
 .spinner {
   margin: auto;
-  width: var(--unit-8);
+  width: var(--harmony-unit-8);
 }

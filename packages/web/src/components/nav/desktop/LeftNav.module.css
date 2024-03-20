@@ -3,8 +3,8 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: var(--neutral-light-10);
-  border-right: 1px solid var(--neutral-light-8);
+  background: var(--harmony-n-25);
+  border-right: 1px solid var(--harmony-n-100);
   user-select: none;
   overflow: visible;
 }
@@ -47,7 +47,7 @@
 }
 
 svg.logo path {
-  fill: var(--neutral-light-5);
+  fill: var(--harmony-n-300);
 }
 
 .scrollable {
@@ -62,7 +62,7 @@ svg.logo path {
   flex: 0 0 48px;
   height: 48px;
   border-radius: 30px;
-  border: 1px solid var(--white);
+  border: 1px solid var(--harmony-white);
   box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
 
   text-align: center;
@@ -86,7 +86,7 @@ svg.logo path {
 
 .navAnchor {
   padding-top: 17px;
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
   display: block;
   text-align: center;
 }

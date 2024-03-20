@@ -5,8 +5,8 @@
   padding: 0px;
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0px
     env(safe-area-inset-left, 0px);
-  background-color: var(--white);
-  border-bottom: 1px solid var(--neutral-light-7);
+  background-color: var(--harmony-white);
+  border-bottom: 1px solid var(--harmony-n-150);
   width: 100%;
   align-items: stretch;
   justify-content: center;
@@ -36,8 +36,8 @@
   right: 10px;
   transform: translateX(50%);
   border-radius: 8px;
-  background-color: var(--static-accent-red);
-  color: var(--static-white);
+  background-color: var(--harmony-red);
+  color: var(--harmony-static-white);
   font-size: 11px;
   font-weight: bold;
   letter-spacing: 0.07px;
@@ -136,21 +136,21 @@
   padding: 0;
   border: none;
   color: white;
-  background-color: var(--primary);
+  background-color: var(--harmony-primary);
   margin-right: auto;
   height: 24px;
   border-radius: 6px;
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-demi-bold);
   margin-left: 6px;
   cursor: pointer;
 }
 
 .centerText {
-  color: var(--neutral-light-5);
-  font-size: var(--font-l);
-  font-weight: var(--font-heavy);
+  color: var(--harmony-n-300);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-heavy);
   text-align: center;
   position: absolute;
   display: flex;
@@ -163,8 +163,8 @@
 .earlyAccess {
   font-size: 10px;
   position: absolute;
-  font-weight: var(--font-bold);
-  color: var(--primary);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-primary);
   letter-spacing: 0.5px;
   left: 30px;
   top: 18px;

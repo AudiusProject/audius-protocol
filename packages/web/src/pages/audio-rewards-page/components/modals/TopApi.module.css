@@ -12,7 +12,7 @@
 
 .title {
   margin-bottom: 8px;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-size: 24px;
   font-weight: 700;
 }
@@ -22,13 +22,13 @@
 }
 
 .subtitle {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: 16px;
   font-weight: 700;
   margin-bottom: var(--harmony-spacing-2xl);
 }
 .mobile .subtitle {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-bottom: 24px;
 }
 

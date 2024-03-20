@@ -1,9 +1,9 @@
 .spinner {
-  width: var(--unit-4) !important;
-  height: var(--unit-4) !important;
+  width: var(--harmony-unit-4) !important;
+  height: var(--harmony-unit-4) !important;
   margin: 0 6px;
 }
 
 .spinner path {
-  stroke: var(--neutral) !important;
+  stroke: var(--harmony-neutral) !important;
 }

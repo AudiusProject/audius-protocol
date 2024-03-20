@@ -29,12 +29,12 @@
 }
 
 .dismissButton {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .container {
   width: 100%;
-  padding: 0 var(--unit-6);
+  padding: 0 var(--harmony-unit-6);
 }
 .containerFill {
   height: 100%;
@@ -67,13 +67,13 @@
   align-items: center;
   gap: 6px;
   padding: 0 8px;
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
-  color: var(--static-white);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  color: var(--harmony-static-white);
   background: linear-gradient(
     315deg,
-    var(--page-header-gradient-color-1) 0%,
-    var(--page-header-gradient-color-2) 100%
+    var(--harmony-gradient-color-1) 0%,
+    var(--harmony-gradient-color-2) 100%
   );
   border-radius: 4px;
 }
@@ -84,7 +84,7 @@
   padding: 8px 0;
 }
 .buyAudioButton > .buyAudioButtonText {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .buyAudioButton:hover:enabled {
   transform: scale3d(1.02, 1.02, 1.02) !important;
@@ -94,7 +94,7 @@
 }
 
 .divider {
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .topBannerIcon svg {
@@ -104,7 +104,7 @@
 }
 
 .topBannerIcon svg path {
-  fill: var(--white);
+  fill: var(--harmony-white);
 }
 
 .topBannerText {
@@ -115,7 +115,7 @@
 }
 
 .topBanner .amount {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 
 .amountToSend {
@@ -129,18 +129,18 @@
   align-items: center;
   margin-left: 40px;
   margin-right: 40px;
-  color: var(--neutral-light-4);
-  font-weight: var(--font-heavy);
+  color: var(--harmony-n-400);
+  font-weight: var(--harmony-font-heavy);
 }
 
 .amountAvailableText {
   display: flex;
   align-items: center;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
 }
 
 .amountAvailableText svg path {
-  fill: var(--neutral-light-4) !important;
+  fill: var(--harmony-n-400) !important;
 }
 
 .amountAvailableInfo {
@@ -154,15 +154,15 @@
 
 .amountAvailable {
   margin-left: 4px;
-  font-size: var(--font-s);
-  font-weight: var(--font-heavy);
-  color: var(--neutral-light-4);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-heavy);
+  color: var(--harmony-n-400);
   transition: color 0.07s ease-in-out;
   cursor: pointer;
 }
 
 .buttonText {
-  font-size: var(--font-l) !important;
+  font-size: var(--harmony-font-l) !important;
 }
 
 .wrapperPhoto {
@@ -176,7 +176,7 @@
 .dynamicPhoto {
   height: 78px;
   border-radius: 40px;
-  border: 1px solid var(--white);
+  border: 1px solid var(--harmony-white);
   box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
 
   text-align: center;
@@ -187,8 +187,8 @@
 }
 
 .info {
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-demi-bold);
   text-align: center;
   line-height: 150%;
 }
@@ -203,18 +203,18 @@
 }
 .goBack {
   margin-left: 8px;
-  font-weight: var(--font-bold);
-  font-size: var(--font-l);
-  color: var(--neutral-light-4);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-l);
+  color: var(--harmony-n-400);
 }
 .goBackContainer path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 .goBackContainer:hover .goBack {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 .goBackContainer:hover path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .disabled {
@@ -227,20 +227,20 @@
 }
 
 .loadingSpinner g path {
-  stroke: var(--static-white) !important;
+  stroke: var(--harmony-static-white) !important;
 }
 
 .modalContentHeaderTitle {
-  color: var(--neutral-light-4);
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 0.1em;
 }
 
 .modalContentHeaderSubtitle {
-  font-size: var(--font-3xl);
-  font-weight: var(--font-heavy);
-  color: var(--neutral-light-4);
+  font-size: var(--harmony-font-3xl);
+  font-weight: var(--harmony-font-heavy);
+  color: var(--harmony-n-400);
   padding: 8px 0;
 }
 
@@ -254,12 +254,12 @@
 }
 
 .sendingIcon svg path {
-  fill: var(--neutral-light-4) !important;
+  fill: var(--harmony-n-400) !important;
 }
 
 .sendAmount {
   margin-right: 4px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .sentSuccessfullyIcon {
@@ -272,32 +272,32 @@
 }
 
 .sentSuccessfullyIcon svg path {
-  fill: var(--neutral-light-4) !important;
+  fill: var(--harmony-n-400) !important;
 }
 
 .support {
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-demi-bold);
 }
 
 .error {
-  font-size: var(--font-m);
-  font-weight: var(--font-demi-bold);
-  color: var(--accent-red);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  color: var(--harmony-red);
 }
 
 .confirmButton {
   width: 252px;
 }
 .button:hover {
-  background: var(--primary-light-1) !important;
+  background: var(--harmony-p-200) !important;
 }
 .button:not(.disabled):active {
-  background: var(--primary-dark-1) !important;
+  background: var(--harmony-p-300) !important;
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
 }
 .buttonContainer .disabled:hover {
-  background: var(--neutral-light-7) !important;
+  background: var(--harmony-n-150) !important;
 }
 
 .buttonIcon {
@@ -305,11 +305,11 @@
 }
 
 .iconSuccess path:nth-child(1) {
-  fill: var(--accent-green);
+  fill: var(--harmony-green);
 }
 
 .iconSuccess path:nth-child(2) {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .iconToken path {

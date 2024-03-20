@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   flex: 1;
   justify-content: flex-start;
   border-radius: 12px;
@@ -12,7 +12,7 @@
 }
 
 .title {
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -36,7 +36,7 @@
 }
 
 .subtitle.mobile {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
   line-height: 19px;
   padding: 0px 10px;
 }
@@ -52,7 +52,7 @@
 }
 
 .tierNumberText {
-  color: var(--neutral-light-6);
+  color: var(--harmony-n-200);
   font-weight: 700;
   font-size: 16px;
   line-height: 17.6px;
@@ -66,7 +66,7 @@
 .divider {
   height: 1px;
   width: 80px;
-  background-color: var(--neutral-light-6);
+  background-color: var(--harmony-n-200);
   margin: 24px 0px;
 }
 
@@ -105,8 +105,8 @@
   min-height: 547px;
   padding: 40px 18px 14px;
   border-radius: 16px;
-  border: 2px solid var(--neutral-light-7);
-  background-color: var(--neutral-light-10);
+  border: 2px solid var(--harmony-n-150);
+  background-color: var(--harmony-n-25);
 }
 
 .tierContainer.compact {
@@ -116,7 +116,7 @@
 
 .tierContainer.tierContainerActive {
   border: none;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .tierContainerWrapper {
@@ -134,12 +134,12 @@
 .tierContainerWrapper.tierContainerActive {
   border-radius: 20px;
   padding: 4px;
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
   box-shadow: 0px 6px 15px var(--page-header-text-shadow-color);
 }
 
 .unlocks {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: 900;
   font-size: 16px;
   margin-bottom: 16px;
@@ -175,7 +175,7 @@
   top: -35px;
   right: calc(50% - 60px);
   display: flex;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: 900;
   font-size: 16px;
   flex-direction: column;
@@ -186,7 +186,7 @@
 }
 
 .currentTier path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .buttonContainer {
@@ -208,7 +208,7 @@
 }
 
 .tierLevel {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   font-weight: 700;
   font-size: 14px;
   line-height: 17px;

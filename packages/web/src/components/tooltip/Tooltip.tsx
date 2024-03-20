@@ -1,9 +1,8 @@
 import { useState, useCallback, useRef, CSSProperties } from 'react'
 
+import { useTheme } from '@emotion/react'
 import AntTooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
-
-import { getCurrentThemeColors } from 'utils/theme/theme'
 
 import styles from './Tooltip.module.css'
 import { TooltipProps } from './types'
@@ -11,7 +10,7 @@ import { TooltipProps } from './types'
 export const Tooltip = ({
   children,
   className = '',
-  color = '--secondary-transparent',
+  color = 'secondary',
   disabled = false,
   mount = 'parent',
   getPopupContainer,
@@ -22,12 +21,17 @@ export const Tooltip = ({
   shouldWrapContent = true,
   text = ''
 }: TooltipProps) => {
-  // This is part of the render cycle so that when the theme changes the new
-  // color is applied
-  const themedColor = getCurrentThemeColors()[color]
-
   // Keep track of a hidden state ourselves so we can dismiss the tooltip on click
   const [isHiddenOverride, setIsHiddenOverride] = useState(false)
+
+  const theme = useTheme()
+
+  const themedColor =
+    color === 'primary'
+      ? theme.color.secondary.secondary
+      : color === 'white'
+      ? theme.color.special.white
+      : theme.color.secondary.secondary
 
   // Keep track of whether we are hovering over the tooltip to know when to
   // allow it to become visible again

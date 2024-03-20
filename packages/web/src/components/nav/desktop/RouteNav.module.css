@@ -1,10 +1,10 @@
 .wrapper {
   min-height: 40px;
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
   -webkit-app-region: drag;
 }
 
@@ -20,7 +20,7 @@
 
 .backButton path,
 .forwardButton path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .forwardButton:hover {
@@ -29,7 +29,7 @@
 
 .backButton:hover path,
 .forwardButton:hover path {
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }
 
 .backButton:hover {

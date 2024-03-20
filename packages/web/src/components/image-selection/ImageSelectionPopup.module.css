@@ -1,13 +1,13 @@
 .popup {
   width: 416px;
-  padding: var(--unit-8);
+  padding: var(--harmony-unit-8);
   text-align: center;
-  border-radius: var(--unit-3);
+  border-radius: var(--harmony-unit-3);
 }
 
 .slider {
   width: 100%;
-  margin-top: var(--unit-4);
+  margin-top: var(--harmony-unit-4);
 }
 
 /* Dropzone page */
@@ -19,9 +19,9 @@
 }
 
 .dropzone {
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 20px;
   min-height: unset;
   border-radius: 0px;
@@ -53,25 +53,25 @@
 .query {
   position: relative;
   width: 100%;
-  margin: var(--unit-6) auto var(--unit-2);
+  margin: var(--harmony-unit-6) auto var(--harmony-unit-2);
 }
 
 .query > input {
   width: 100%;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   padding-left: 32px;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   height: 34px;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   border: none;
 
   border-radius: 4px;
-  background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  background-color: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
 }
 
 .query > input::placeholder {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .query > .iconSearch {
@@ -85,24 +85,24 @@
 
 .buttonWrapper {
   width: 100%;
-  margin: 0 auto var(--unit-6);
+  margin: 0 auto var(--harmony-unit-6);
 }
 
 .suggestion {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: 18px;
 }
 
 .suggestionHeader {
   text-transform: uppercase;
-  font-weight: var(--font-bold);
-  color: var(--neutral-light-4);
-  margin-bottom: var(--unit-2);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-n-400);
+  margin-bottom: var(--harmony-unit-2);
 }
 
 .terms {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .terms .term {
@@ -112,7 +112,7 @@
 }
 
 .terms .term:hover {
-  border-bottom: 1px solid var(--secondary);
+  border-bottom: 1px solid var(--harmony-secondary);
 }
 
 .terms .comma {
@@ -120,16 +120,16 @@
 }
 
 .credit {
-  margin-top: var(--unit-2);
-  font-size: var(--font-xs);
-  color: var(--neutral-light-4);
+  margin-top: var(--harmony-unit-2);
+  font-size: var(--harmony-font-xs);
+  color: var(--harmony-n-400);
   line-height: 15px;
 }
 
 .collection {
   display: block;
   position: relative;
-  margin-top: var(--unit-6);
+  margin-top: var(--harmony-unit-6);
 }
 
 .collectiblesContainer {
@@ -145,7 +145,7 @@
   border-radius: 2px;
   transition: 0.07s ease-in-out;
   opacity: 0;
-  border: 1px solid var(--neutral-light-9);
+  border: 1px solid var(--harmony-n-50);
 }
 .fadeIn {
   animation: fadeIn 0.5s forwards;
@@ -161,10 +161,10 @@
 .collectiblesControls {
   display: flex;
   justify-content: space-between;
-  margin-top: var(--unit-2);
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-bold);
+  margin-top: var(--harmony-unit-2);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-bold);
 }
 .collectiblesControls > div {
   flex: 1 1 0;
@@ -175,7 +175,7 @@
   cursor: pointer;
 }
 .pageLabel {
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 .nextLabel {
   text-align: right;

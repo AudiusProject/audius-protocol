@@ -4,8 +4,8 @@
   border-radius: 8px;
   padding: 9px 34px;
   align-items: center;
-  background: var(--page-header-gradient);
-  color: var(--static-white);
+  background: var(--harmony-gradient);
+  color: var(--harmony-static-white);
   align-items: center;
   transition: all 180ms;
   cursor: pointer;
@@ -25,12 +25,12 @@
 }
 
 .container path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .rewardsText {
-  font-size: var(--font-xl);
-  font-weight: var(--font-heavy);
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-heavy);
   margin-right: auto;
   display: flex;
   align-items: center;
@@ -42,8 +42,8 @@
 }
 
 .iconCrown svg {
-  width: var(--unit-5);
-  height: var(--unit-5);
+  width: var(--harmony-unit-5);
+  height: var(--harmony-unit-5);
 }
 
 .rewardsText.mobile {
@@ -52,14 +52,14 @@
 }
 
 .descriptionText {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   white-space: nowrap;
 }
 
 .learnMore {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   margin-left: auto;
   display: flex;
   align-items: center;

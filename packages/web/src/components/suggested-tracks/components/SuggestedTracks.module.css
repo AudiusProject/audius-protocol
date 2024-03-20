@@ -4,8 +4,8 @@
 
 .heading {
   display: flex;
-  padding: var(--unit-4);
-  gap: var(--unit-3);
+  padding: var(--harmony-unit-4);
+  gap: var(--harmony-unit-3);
   align-self: stretch;
   cursor: pointer;
 }
@@ -14,14 +14,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   flex: 1;
 }
 
 .title {
-  font-size: var(--font-l);
-  font-weight: var(--font-heavy);
-  line-height: var(--unit-6);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-heavy);
+  line-height: var(--harmony-unit-6);
   text-transform: uppercase;
 }
 
@@ -32,10 +32,10 @@
 }
 
 .loading {
-  height: var(--unit-10);
-  width: var(--unit-10);
+  height: var(--harmony-unit-10);
+  width: var(--harmony-unit-10);
   width: 100%;
-  margin: var(--unit-8) auto;
+  margin: var(--harmony-unit-8) auto;
 }
 
 .trackDivider {
@@ -47,21 +47,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--unit-4);
-  gap: var(--unit-3);
+  padding: var(--harmony-unit-4);
+  gap: var(--harmony-unit-3);
 }
 
 .trackDetails {
   display: flex;
   align-items: center;
-  gap: var(--unit-3);
+  gap: var(--harmony-unit-3);
 }
 
 .trackArtwork {
-  height: var(--unit-10);
-  width: var(--unit-10);
+  height: var(--harmony-unit-10);
+  width: var(--harmony-unit-10);
   border-radius: 2px;
-  border: 0.5px solid var(--neutral-light-8);
+  border: 0.5px solid var(--harmony-n-100);
 }
 
 .trackInfo {
@@ -72,24 +72,24 @@
 
 .trackName {
   overflow: hidden;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   text-overflow: ellipsis;
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
   line-height: normal;
 }
 
 .artistName {
-  color: var(--neutral-light-4);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
 }
 
 .refreshButton {
   all: unset;
   cursor: pointer;
-  padding-top: var(--unit-4);
-  padding-bottom: var(--unit-4);
+  padding-top: var(--harmony-unit-4);
+  padding-bottom: var(--harmony-unit-4);
   align-self: center;
 }
 
@@ -97,23 +97,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: var(--unit-1);
-  transition: transform var(--quick);
+  gap: var(--harmony-unit-1);
+  transition: transform var(--harmony-quick);
 }
 
 .refreshButton:hover .refreshContent {
-  transform: var(--grow-large);
+  transform: var(--harmony-grow-large);
 }
 
 .refreshIcon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .refreshText {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   text-align: center;
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
   line-height: 16px;
   text-transform: capitalize;
 }

@@ -46,7 +46,7 @@
 .profilePicture {
   height: 72px;
   width: 72px;
-  border: 2px solid var(--white);
+  border: 2px solid var(--harmony-white);
   border-radius: 50%;
   background-size: cover;
   background-position: center;
@@ -66,7 +66,7 @@
 }
 
 .artistName {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 20px;
   font-weight: 900;
   max-width: 300px;
@@ -89,7 +89,7 @@
 
 .artistHandle {
   display: inline-block;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.25px;

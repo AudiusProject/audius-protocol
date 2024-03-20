@@ -1,8 +1,8 @@
 .title {
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 18px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   text-align: center;
   margin: 8px 0 16px;
 }

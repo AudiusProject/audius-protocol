@@ -9,7 +9,7 @@
 .walletContainer {
   display: inline-flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .walletContainer:not(.disabled) {
@@ -33,7 +33,7 @@
 .copyContainer {
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
   align-items: center;
   height: 57px;
   width: 100%;
@@ -53,8 +53,8 @@
   align-items: center;
   width: 48px;
   height: 40px;
-  background: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  background: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 6px;
   cursor: pointer;
   transition: all ease-in-out 0.07s;
@@ -66,11 +66,11 @@
 }
 
 .removeContainer:hover:not(.disabled) {
-  background-color: var(--accent-red);
+  background-color: var(--harmony-red);
 }
 
 .removeContainer:hover:not(.disabled) .iconRemove path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .iconRemove {
@@ -86,7 +86,7 @@
 
 .loading svg path {
   fill: var(--secondary-light);
-  stroke: var(--secondary-light-1);
+  stroke: var(--harmony-s-200);
 }
 
 :global(#bitski-dialog-container) {
@@ -101,10 +101,10 @@
 }
 
 .walletsHeaderItem {
-  font-weight: var(--font-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-m);
   text-transform: uppercase;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .headerWallet {
@@ -187,15 +187,15 @@
 }
 
 .walletText {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
-  color: var(--neutral);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
+  color: var(--harmony-neutral);
 }
 
 .mobile .walletText {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-s);
-  color: var(--neutral);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-s);
+  color: var(--harmony-neutral);
 }
 
 .balanceContainer {
@@ -203,11 +203,11 @@
 }
 
 .copyContainer .balanceContainer .balance {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
   line-height: normal;
   text-align: right;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   background: none;
   -webkit-text-fill-color: initial;
   -webkit-background-clip: initial;

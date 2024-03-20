@@ -6,14 +6,14 @@
 .image {
   height: 24px;
   width: 24px;
-  border: 2px solid var(--white);
+  border: 2px solid var(--harmony-white);
   border-radius: 50%;
   box-sizing: border-box;
 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
 }
 
 .imageSkeleton {

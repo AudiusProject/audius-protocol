@@ -3,13 +3,9 @@ import React from 'react'
 import { Nullable, Maybe } from '@audius/common/utils'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
-import { ThemeColor } from 'utils/theme/theme'
-
 export type TooltipProps = {
   children: React.ReactNode
   className?: string
-  // Color from theme
-  color?: ThemeColor
   // determines if it should display.
   disabled?: boolean
   // Where the tooltip gets mounted.
@@ -26,4 +22,5 @@ export type TooltipProps = {
   shouldWrapContent?: boolean
   // Text to appear in tooltip
   text?: React.ReactNode
+  color?: 'primary' | 'secondary' | 'white'
 }

@@ -4,15 +4,15 @@
 }
 
 .root {
-  padding: var(--unit-6) 0;
-  border-top: 1px solid var(--neutral-light-7);
+  padding: var(--harmony-unit-6) 0;
+  border-top: 1px solid var(--harmony-n-150);
   cursor: pointer;
 }
 
 .optionTitle {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .tag {
@@ -32,21 +32,21 @@
 }
 
 .root:has(.input:checked) .optionTitle {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .optionTitle path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .root:has(.input:checked) .optionTitle path {
-  fill: var(--secondary);
+  fill: var(--harmony-secondary);
 }
 
 .collapsibleContainer {
   /** Unfortunately, this calculates to overflow: auto hidden; */
   overflow: visible hidden;
-  transition: height var(--quick);
+  transition: height var(--harmony-quick);
 }
 
 .collapsibleContainer.collapsed {

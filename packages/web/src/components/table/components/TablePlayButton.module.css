@@ -23,12 +23,12 @@
 
 .tablePlayButton :global(#primaryBG) path,
 .tablePlayButton :global(#Primary) path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .icon g path,
 .icon g rect {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 .tablePlayButton:hover .icon {
   transform: scale3d(1.1, 1.1, 1.1);

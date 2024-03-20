@@ -2,7 +2,7 @@
   width: 100%;
   height: 72px;
   padding: 10px 24px;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
@@ -11,11 +11,11 @@
 }
 
 .trackContainer:active:not(:has(.locked)) {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .trackContainer.isDragging {
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
 }
 
 .artworkContainer {
@@ -89,8 +89,8 @@
 
 /* Deleted Styles */
 .isDeleted {
-  background-color: var(--neutral-light-9);
-  color: var(--neutral-light-4);
+  background-color: var(--harmony-n-50);
+  color: var(--harmony-n-400);
 }
 
 /* Play Button */
@@ -111,11 +111,11 @@
 }
 
 .heartIcon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .heartIcon.isSaved path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .dragIcon {
@@ -123,7 +123,7 @@
 }
 
 .dragIcon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 /* Track & Artist Name */
@@ -138,10 +138,10 @@
 }
 
 .trackTitle {
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
+  color: var(--harmony-neutral);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-demi-bold);
   text-align: left;
   line-height: normal;
 
@@ -152,10 +152,10 @@
 }
 
 .artistName {
-  color: var(--neutral-light-2);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-600);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: normal;
 
   text-align: left;
@@ -171,18 +171,18 @@
 }
 
 .isActive {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
 }
 
 .locked {
   display: flex;
   align-items: center;
-  padding: 2px var(--unit-2);
-  background: var(--accent-blue);
+  padding: 2px var(--harmony-unit-2);
+  background: var(--harmony-blue);
   border-radius: 80px;
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-2xs);
-  color: var(--white);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-2xs);
+  color: var(--harmony-white);
 }
 
 .locked svg {
@@ -192,7 +192,7 @@
 }
 
 .locked svg path {
-  fill: var(--white);
+  fill: var(--harmony-white);
 }
 
 .lockedTrackTitle,

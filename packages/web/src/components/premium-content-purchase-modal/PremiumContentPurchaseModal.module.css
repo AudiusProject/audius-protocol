@@ -19,13 +19,13 @@
 .footer {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-6);
-  padding: 0 var(--unit-6) var(--unit-6);
+  gap: var(--harmony-unit-6);
+  padding: 0 var(--harmony-unit-6) var(--harmony-unit-6);
 }
 
 .spinner {
-  width: var(--unit-10);
-  height: var(--unit-10);
+  width: var(--harmony-unit-10);
+  height: var(--harmony-unit-10);
 }
 
 .mobileWrapper {
