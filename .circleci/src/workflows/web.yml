@@ -57,6 +57,16 @@ jobs:
       requires:
         - web-build-staging
 
+  - playwright-tests:
+      context: Audius Client
+      requires:
+        - web-init
+
+  - playwright-tests-results:
+      context: Audius Client
+      requires:
+        - playwright-tests
+
   - web-test:
       context: Audius Client
       requires:
