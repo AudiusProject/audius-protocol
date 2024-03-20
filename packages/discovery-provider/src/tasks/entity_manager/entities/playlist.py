@@ -445,22 +445,36 @@ def create_playlist(params: ManageEntityParameters):
     ddex_release_ids = params.metadata.get("ddex_release_ids", None)
     ddex_release_ids_json = None
     if ddex_release_ids:
-        ddex_release_ids_json = json.loads(ddex_release_ids)
+        if isinstance(ddex_release_ids, dict):
+            ddex_release_ids_json = ddex_release_ids
+        else:
+            ddex_release_ids_json = json.loads(ddex_release_ids)
 
     artists = params.metadata.get("artists", None)
     artists_json = None
     if artists:
-        artists_json = [json.loads(item) for item in artists]
+        artists_json = []
+        for artist in artists:
+            if isinstance(artist, dict):
+                artists_json.append(artist)
+            else:
+                artists_json.append(json.loads(artist))
 
     copyright_line = params.metadata.get("copyright_line", None)
     copyright_line_json = None
     if copyright_line:
-        copyright_line_json = json.loads(copyright_line)
+        if isinstance(copyright_line, dict):
+            copyright_line_json = copyright_line
+        else:
+            copyright_line_json = json.loads(copyright_line)
 
     producer_copyright_line = params.metadata.get("producer_copyright_line", None)
     producer_copyright_line_json = None
     if producer_copyright_line:
-        producer_copyright_line_json = json.loads(producer_copyright_line)
+        if isinstance(producer_copyright_line, dict):
+            producer_copyright_line_json = producer_copyright_line
+        else:
+            producer_copyright_line_json = json.loads(producer_copyright_line)
 
     playlist_record = Playlist(
         playlist_id=playlist_id,
