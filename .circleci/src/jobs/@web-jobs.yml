@@ -103,6 +103,7 @@ web-test-staging:
         at: ./
     - cypress/install:
         install-command: 'npx cypress install'
+        install-browsers: true
         working-directory: ~/audius-protocol/packages/probers
     - cypress/run-tests:
         cypress-command: 'npx cypress run --browser chrome'
