@@ -10,6 +10,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
     get_address_from_signature,
+    validate_signer,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -116,12 +117,8 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         raise IndexingValidationError(
             f"Programming error while indexing {params.action} Developer App Transaction, user wallet missing"
         )
-
-    wallet = params.existing_records["User"][user_id].wallet
-    if wallet and wallet.lower() != params.signer.lower():
-        raise IndexingValidationError(
-            f"Invalid {params.action} Developer App Transaction, user does not match signer"
-        )
+    validate_signer(params)
+    # TODO (C-4041) - Make sure address is not already a user
     if params.action == Action.DELETE:
         if not address:
             raise IndexingValidationError(
