@@ -193,7 +193,7 @@ services:
       - ddex
       - ddex-release-by-release
       - ddex-batched
-  
+
   ddex-mongo-init:
     extends:
       file: docker-compose.ddex.yml
@@ -203,7 +203,7 @@ services:
       - ddex
       - ddex-release-by-release
       - ddex-batched
-  
+
   ddex-ingester:
     extends:
       file: docker-compose.ddex.yml
@@ -211,7 +211,25 @@ services:
     <<: *common
     profiles:
       - ddex
-  
+
+  ddex-web:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-web
+    container_name: ddex-web
+    <<: *common
+    profiles:
+      - ddex
+
+  ddex-publisher:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-publisher
+    container_name: ddex-publisher
+    <<: *common
+    profiles:
+      - ddex
+
   # DDEX release-by-release (only used locally, not pushed to docker hub)
 
   ddex-web-release-by-release:
@@ -276,7 +294,7 @@ services:
         condition: service_healthy
     profiles:
       - ddex-release-by-release
-  
+
   ddex-s3-release-by-release:
     extends:
       file: docker-compose.ddex.yml
@@ -288,7 +306,6 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     profiles:
       - ddex-release-by-release
-
     # DDEX batched (only used locally, not pushed to docker hub)
 
   ddex-web-batched:
@@ -353,7 +370,7 @@ services:
         condition: service_healthy
     profiles:
       - ddex-batched
-  
+
   ddex-s3-batched:
     extends:
       file: docker-compose.ddex.yml
@@ -427,6 +444,7 @@ services:
 
 networks:
   ddex-network:
+
 
 volumes:
   poa-contracts-abis:
