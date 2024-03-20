@@ -117,15 +117,6 @@ cover_art = ns.model(
     {"150x150": fields.String, "480x480": fields.String, "1000x1000": fields.String},
 )
 
-download = ns.model(
-    "download_metadata",
-    {
-        "cid": fields.String,
-        "is_downloadable": fields.Boolean(required=True),
-        "requires_follow": fields.Boolean(required=True),
-    },
-)
-
 track_full = ns.clone(
     "track_full",
     track,
@@ -136,8 +127,6 @@ track_full = ns.clone(
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
         "created_at": fields.String,
         "credits_splits": fields.String,
-        # todo: remove once clients catch up i.e. no longer use this field
-        "download": fields.Nested(download),
         "isrc": fields.String,
         "license": fields.String,
         "iswc": fields.String,
