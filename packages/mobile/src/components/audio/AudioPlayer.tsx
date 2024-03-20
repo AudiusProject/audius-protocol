@@ -324,6 +324,7 @@ export const AudioPlayer = () => {
     }
 
     if (event.type === Event.PlaybackActiveTrackChanged) {
+      await enqueueTracksJobRef.current
       const playerIndex = await TrackPlayer.getActiveTrackIndex()
       if (playerIndex === undefined) return
 
@@ -621,7 +622,7 @@ export const AudioPlayer = () => {
     ) => {
       let currentPivot = 1
       while (
-        queueIndex - currentPivot > 0 ||
+        queueIndex - currentPivot >= 0 ||
         queueIndex + currentPivot < queueTracks.length
       ) {
         if (abortEnqueueControllerRef.current.signal.aborted) {
@@ -676,10 +677,9 @@ export const AudioPlayer = () => {
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
+    await enqueueTracksJobRef.current
     const playerIdx = await TrackPlayer.getActiveTrackIndex()
     const queue = await TrackPlayer.getQueue()
-
-    await enqueueTracksJobRef.current
 
     if (
       queueIndex !== -1 &&
