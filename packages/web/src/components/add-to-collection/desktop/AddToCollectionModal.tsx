@@ -61,7 +61,6 @@ const AddToCollectionModal = () => {
   const filteredCollections = useMemo(() => {
     return ((isAlbumType ? account?.albums : account?.playlists) ?? []).filter(
       (collection: Collection) =>
-        // Don't allow adding to this collection if already on this collection's page.
         collection.playlist_owner_id === account?.user_id &&
         (searchValue
           ? collection.playlist_name
