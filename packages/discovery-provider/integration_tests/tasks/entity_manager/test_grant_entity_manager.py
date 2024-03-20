@@ -10,8 +10,6 @@ from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
 
-# grant created by artist. approval done by delegate.
-
 new_grants_data = [
     {
         "user_id": 1,
