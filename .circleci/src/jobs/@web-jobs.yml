@@ -94,7 +94,7 @@ web-build-ssr-staging:
           - node_modules/@brillout/vite-plugin-import-build/dist
 
 web-test-staging:
-  working_directory: ~/audius-protocol/packages/probers
+  working_directory: ~/audius-protocol
   resource_class: large
   executor: cypress/default
   steps:
@@ -102,10 +102,12 @@ web-test-staging:
     - attach_workspace:
         at: ./
     - cypress/install:
-        install-command: 'cd /home/circleci/audius-protocol/packages/probers/ && npx cypress install'
+        install-command: 'npx cypress install'
+        working-directory: ~/audius-protocol/packages/probers
     - cypress/run-tests:
-        cypress-command: 'cd /home/circleci/audius-protocol/packages/probers/ && npx cypress run --browser chrome'
-        start-command: 'npx serve -l 3001 -s /home/circleci/audius-protocol/packages/web/build-staging'
+        cypress-command: 'npx cypress run --browser chrome'
+        start-command: 'npx serve -l 3001 -s ../web/build-staging'
+        working-directory: ~/audius-protocol/packages/probers
     - store_artifacts:
         path: /home/circleci/audius-protocol/packages/probers/cypress/videos
     - store_artifacts:
