@@ -102,9 +102,9 @@ web-test-staging:
     - attach_workspace:
         at: ./
     - cypress/install:
-        install-command: 'npx cypress install'
+        install-command: 'cd packages/probers npx cypress install'
     - cypress/run-tests:
-        cypress-command: 'npx cypress run --browser chrome'
+        cypress-command: 'cd packages/probers npx cypress run --browser chrome'
         start-command: 'npx serve -l 3001 -s packages/web/build-staging'
     - store_artifacts:
         path: /home/circleci/audius-protocol/packages/probers/cypress/videos
