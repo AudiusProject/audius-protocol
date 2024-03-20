@@ -26,6 +26,12 @@ export interface Access {
      * @memberof Access
      */
     stream?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Access
+     */
+    download?: boolean;
 }
 
 /**
@@ -48,6 +54,7 @@ export function AccessFromJSONTyped(json: any, ignoreDiscriminator: boolean): Ac
     return {
         
         'stream': !exists(json, 'stream') ? undefined : json['stream'],
+        'download': !exists(json, 'download') ? undefined : json['download'],
     };
 }
 
@@ -61,6 +68,7 @@ export function AccessToJSON(value?: Access | null): any {
     return {
         
         'stream': value.stream,
+        'download': value.download,
     };
 }
 

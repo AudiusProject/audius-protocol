@@ -16,7 +16,7 @@ playlist_artwork = ns.model(
 
 access = ns.model(
     "access",
-    {"stream": fields.Boolean},
+    {"stream": fields.Boolean, "download": fields.Boolean},
 )
 
 playlist_added_timestamp = ns.model(
