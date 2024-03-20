@@ -463,11 +463,11 @@ def validate_signer(params: ManageEntityParameters):
                 else params.existing_records["UserWallet"].get(signer, None)
             )  # applicable if user-to-user grant, e.g. manager mode
             is_valid_developer_app = (
-                not not developer_app and not developer_app.is_delete
+                not (not developer_app) and not developer_app.is_delete
             )
 
             is_valid_user_grantee = (
-                not not user_grantee and not user_grantee.is_deactivated
+                not (not user_grantee) and not user_grantee.is_deactivated
             )
 
             is_grant_approved = grant.is_approved == True or is_valid_developer_app
