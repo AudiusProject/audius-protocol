@@ -53,7 +53,9 @@ jobs:
           only: /(^release.*)$/
 
   - web-test-staging:
-      context: Audius Client
+      context:
+        - Audius Client
+        - Probers
       requires:
         - web-build-staging
 
