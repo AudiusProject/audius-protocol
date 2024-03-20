@@ -14,13 +14,12 @@ import { FilterInput } from 'app/components/filter-input'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
 
+import { fuzzySearch } from '../../utils/fuzzySearch'
 import { TopBarIconButton } from '../app-screen'
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 import { SettingsRowLabel } from '../settings-screen/SettingRowLabel'
 import { SettingsRow } from '../settings-screen/SettingsRow'
 import { SettingsRowContent } from '../settings-screen/SettingsRowContent'
-
-import { fuzzySearch } from './fuzzySearch'
 
 const flags = Object.keys(FeatureFlags) as FeatureFlags[]
 
