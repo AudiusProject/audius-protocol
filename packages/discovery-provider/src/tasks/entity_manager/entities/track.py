@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from typing import Dict, List, Union
 
@@ -327,6 +328,42 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                         datetime.now()
                     )
                 )
+
+        elif key == "ddex_release_ids":
+            if "ddex_release_ids" in track_metadata and track_metadata["ddex_release_ids"]:
+                ddex_release_ids_json = json.loads(track_metadata["ddex_release_ids"])
+                track_record.ddex_release_ids = ddex_release_ids_json
+
+        elif key == "artists":
+            if "artists" in track_metadata and track_metadata["artists"]:
+                artists_json = [json.loads(item) for item in track_metadata["artists"]]
+                track_record.artists = artists_json
+
+        elif key == "resource_contributors":
+            if "resource_contributors" in track_metadata and track_metadata["resource_contributors"]:
+                resource_contributors_json = [json.loads(item) for item in track_metadata["resource_contributors"]]
+                track_record.resource_contributors = resource_contributors_json
+
+        elif key == "indirect_resource_contributors":
+            if "indirect_resource_contributors" in track_metadata and track_metadata["indirect_resource_contributors"]:
+                indirect_resource_contributors_json = [json.loads(item) for item in track_metadata["indirect_resource_contributors"]]
+                track_record.indirect_resource_contributors = indirect_resource_contributors_json
+
+        elif key == "rights_controller":
+            if "rights_controller" in track_metadata and track_metadata["rights_controller"]:
+                rights_controller_json = json.loads(track_metadata["rights_controller"])
+                track_record.rights_controller = rights_controller_json
+
+        elif key == "copyright_line":
+            if "copyright_line" in track_metadata and track_metadata["copyright_line"]:
+                copyright_line_json = json.loads(track_metadata["copyright_line"])
+                track_record.copyright_line = copyright_line_json
+
+        elif key == "producer_copyright_line":
+            if "producer_copyright_line" in track_metadata and track_metadata["producer_copyright_line"]:
+                copyright_line_json = json.loads(track_metadata["producer_copyright_line"])
+                track_record.producer_copyright_line = copyright_line_json
+
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata

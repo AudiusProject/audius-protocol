@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Union
 
@@ -440,6 +441,27 @@ def create_playlist(params: ManageEntityParameters):
             }
         )
         last_added_to = params.block_datetime
+
+    ddex_release_ids = params.metadata.get("ddex_release_ids", None)
+    ddex_release_ids_json = None
+    if ddex_release_ids:
+        ddex_release_ids_json = json.loads(ddex_release_ids)
+
+    artists = params.metadata.get("artists", None)
+    artists_json = None
+    if artists:
+        artists_json = [json.loads(item) for item in artists]
+
+    copyright_line = params.metadata.get("copyright_line", None)
+    copyright_line_json = None
+    if copyright_line:
+        copyright_line_json = json.loads(copyright_line)
+
+    producer_copyright_line = params.metadata.get("producer_copyright_line", None)
+    producer_copyright_line_json = None
+    if producer_copyright_line:
+        producer_copyright_line_json = json.loads(producer_copyright_line)
+
     playlist_record = Playlist(
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,
@@ -465,10 +487,10 @@ def create_playlist(params: ManageEntityParameters):
         is_current=False,
         is_delete=False,
         ddex_app=ddex_app,
-        ddex_release_ids=params.metadata.get("ddex_release_ids", None),
-        artists=params.metadata.get("artists", None),
-        copyright_line=params.metadata.get("copyright_line", None),
-        producer_copyright_line=params.metadata.get("producer_copyright_line", None),
+        ddex_release_ids=ddex_release_ids_json,
+        artists=artists_json,
+        copyright_line=copyright_line_json,
+        producer_copyright_line=producer_copyright_line_json,
         parental_warning_type=params.metadata.get("parental_warning_type", None),
     )
 
