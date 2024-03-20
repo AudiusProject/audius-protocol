@@ -28,7 +28,7 @@
     "ios:device:stage": "ENVFILE=.env.stage turbo run ios -- --scheme 'Staging' --mode Staging.Debug --device",
     "ios:prod": "ENVFILE=.env.prod turbo run ios -- --scheme 'AudiusReactNative' --simulator \"iPhone 15 Pro\"",
     "ios:release": "turbo run ios -- --simulator \"iPhone 15 Pro\" --mode Release",
-    "ios:stage": "ENVFILE=.env.stage turbo run ios -- --scheme 'Staging' --mode Staging.Debug --simulator \"iPhone SE (3rd generation)\"",
+    "ios:stage": "ENVFILE=.env.stage turbo run ios -- --scheme 'Staging' --mode Staging.Debug --simulator \"iPhone 15 Pro\"",
     "ios:update-signing-cert": "cd ios && fastlane match development -a co.audius.audiusmusic,co.audius.audiusmusic.staging && cd ..",
     "ios:version-patch": "fastlane run increment_version_number xcodeproj:\"ios/AudiusReactNative.xcodeproj\"",
     "ios": "react-native run-ios",

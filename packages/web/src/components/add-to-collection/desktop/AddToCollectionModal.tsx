@@ -8,7 +8,6 @@ import {
 import {
   accountSelectors,
   cacheCollectionsActions,
-  collectionPageSelectors,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions,
   toastActions
@@ -28,7 +27,6 @@ import { collectionPage } from 'utils/route'
 import styles from './AddToCollectionModal.module.css'
 const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
   addToCollectionUISelectors
-const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
 const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
@@ -54,7 +52,6 @@ const AddToCollectionModal = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
-  const currentCollectionId = useSelector(getCollectionId)
   const isAlbumType = collectionType === 'album'
   const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
   const [searchValue, setSearchValue] = useState('')
@@ -65,7 +62,6 @@ const AddToCollectionModal = () => {
     return ((isAlbumType ? account?.albums : account?.playlists) ?? []).filter(
       (collection: Collection) =>
         // Don't allow adding to this collection if already on this collection's page.
-        collection.playlist_id !== currentCollectionId &&
         collection.playlist_owner_id === account?.user_id &&
         (searchValue
           ? collection.playlist_name
@@ -78,7 +74,6 @@ const AddToCollectionModal = () => {
     account?.albums,
     account?.playlists,
     account?.user_id,
-    currentCollectionId,
     searchValue
   ])
 
