@@ -9,10 +9,6 @@ import type { PageContextClient } from 'vike/types'
 import { isMobile as getIsMobile } from 'utils/clientUtil'
 
 import '../index.css'
-import { HarmonyCacheProvider } from '../HarmonyCacheProvider'
-import { Root } from '../Root'
-
-import { SsrContextProvider } from './SsrContext'
 
 // @ts-ignore
 window.global ||= window
@@ -22,7 +18,7 @@ window.process = { ...processBrowser, env: process.env }
 
 // Set this to false to turn off client hydration
 // Useful for testing the SSR output
-const HYDRATE_CLIENT = true
+const HYDRATE_CLIENT = false
 
 export default async function render(
   pageContext: PageContextClient & { pageProps: { track: FullSdk.TrackFull } }
@@ -32,21 +28,18 @@ export default async function render(
   const isMobile = getIsMobile()
 
   if (HYDRATE_CLIENT) {
+    const { RootWithProviders } = await import('./RootWithProviders')
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
-      <HarmonyCacheProvider>
-        <SsrContextProvider
-          value={{
-            isServerSide: false,
-            isSsrEnabled: true,
-            pageProps,
-            isMobile,
-            history: null
-          }}
-        >
-          <Root />
-        </SsrContextProvider>
-      </HarmonyCacheProvider>
+      <RootWithProviders
+        ssrContextValue={{
+          isServerSide: false,
+          isSsrEnabled: true,
+          pageProps,
+          isMobile,
+          history: null
+        }}
+      />
     )
   }
 }
