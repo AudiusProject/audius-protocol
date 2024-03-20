@@ -12,7 +12,6 @@ from sqlalchemy.sql.expression import or_
 from src import exceptions
 from src.api.v1 import helpers as v1Helpers
 from src.gated_content.content_access_checker import content_access_checker
-from src.gated_content.signature import get_gated_content_signature_for_user_wallet
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
@@ -653,19 +652,6 @@ def _populate_gated_content_metadata(
                 "stream": True,
                 "download": True,
             }
-            if content_type == "track":
-                entity[response_name_constants.premium_content_signature] = (
-                    get_gated_content_signature_for_user_wallet(
-                        {
-                            "track_id": content_id,
-                            "track_cid": entity["track_cid"],
-                            "type": "track",
-                            "user_wallet": current_user_wallet[0],
-                            "user_id": current_user_id,
-                            "is_gated": False,
-                        }
-                    )
-                )
         else:
             has_stream_access = gated_track_access[content_id].get(
                 "has_stream_access", True
@@ -677,19 +663,6 @@ def _populate_gated_content_metadata(
                 "stream": has_stream_access,
                 "download": has_download_access,
             }
-            if has_stream_access and content_type == "track":
-                entity[response_name_constants.premium_content_signature] = (
-                    get_gated_content_signature_for_user_wallet(
-                        {
-                            "track_id": content_id,
-                            "track_cid": entity["track_cid"],
-                            "type": "track",
-                            "user_wallet": current_user_wallet[0],
-                            "user_id": current_user_id,
-                            "is_gated": True,
-                        }
-                    )
-                )
 
 
 def get_track_remix_metadata(session, tracks, current_user_id):
