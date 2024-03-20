@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { DDEXResourceContributor, DDEXCopyright } from '../../types/DDEX'
 import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
@@ -32,7 +33,11 @@ export const createUploadAlbumMetadataSchema = () =>
       ),
       ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
       tags: z.optional(z.string()),
-      upc: z.optional(z.string())
+      upc: z.optional(z.string()),
+      artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+      copyrightLine: z.optional(DDEXCopyright.nullable()),
+      producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+      parentalWarningType: z.optional(z.string().nullable())
     })
     .strict()
 
