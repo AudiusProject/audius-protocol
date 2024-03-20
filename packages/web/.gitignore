@@ -60,3 +60,7 @@ yarn-error.log*
 .idea
 .yalc
 yalc.lock
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
