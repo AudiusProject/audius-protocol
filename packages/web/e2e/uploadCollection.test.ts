@@ -41,8 +41,6 @@ export const completeUpload = async (page: Page) => {
 
 test.describe('upload collection', () => {
   test('should upload a playlist', async ({ page }) => {
-    test.setTimeout(1000 * 60 * 5)
-
     const timestamp = Date.now()
     const playlistName = `Test playlist ${timestamp}`
     const playlistDescription = 'Test description'
