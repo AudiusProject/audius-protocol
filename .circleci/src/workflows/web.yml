@@ -66,8 +66,6 @@ jobs:
 
   - playwright-tests-results:
       context: Audius Client
-      requires:
-        - playwright-tests
 
   - web-test:
       context: Audius Client
