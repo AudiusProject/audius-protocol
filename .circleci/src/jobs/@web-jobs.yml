@@ -135,6 +135,7 @@ playwright-tests-results:
   steps:
     - swissknife/wait_for_job:
         job-name: playwright-tests
+        circleci-api-key: CIRCLE_PERSONAL_API_TOKEN
     - attach_workspace:
         at: ./
     - run: cd packages/web; npx playwright merge-reports --reporter html ./blob-report
