@@ -67,11 +67,10 @@ test.describe('upload track', () => {
     await heading.click({ force: true })
 
     // Add tracks
-    let fileChooserPromise = page.waitForEvent('filechooser')
-    const uploadDropzone = page.getByTestId('upload-dropzone')
-    await uploadDropzone.click()
-    const trackChooser = await fileChooserPromise
-    await trackChooser.setFiles(path.join(__dirname, 'files/track.mp3'))
+    const trackFileInput = page
+      .getByTestId('upload-dropzone')
+      .locator('input[type=file]')
+    await trackFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
     await page.getByRole('button', { name: /continue uploading/i }).click()
 
     await expect(
@@ -79,11 +78,13 @@ test.describe('upload track', () => {
     ).toBeVisible()
 
     // Add art
-    fileChooserPromise = page.waitForEvent('filechooser')
     await page.getByRole('button', { name: /change/i }).click()
-    await uploadDropzone.click()
-    const artChooser = await fileChooserPromise
-    await artChooser.setFiles(path.join(__dirname, 'files/track-artwork.jpeg'))
+    const artFileInput = page
+      .getByTestId('upload-dropzone')
+      .locator('input[type=file]')
+    await artFileInput.setInputFiles(
+      path.join(__dirname, 'files/track-artwork.jpeg')
+    )
 
     // Title
     const titleTextBox = page.getByRole('textbox', { name: /track name/i })
