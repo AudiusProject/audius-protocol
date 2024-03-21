@@ -286,16 +286,18 @@ export class TransactionHandler {
     } catch (e) {
       // Rarely, this intiial send will fail
       logger.error(`transactionHandler: Initial send failed: ${e}`)
-      let errorCode = null
-      let error = null
-      if (e instanceof Error) {
-        error = e.message
-        errorCode = this._parseSolanaErrorCode(error)
-      }
-      return {
-        res: null,
-        error,
-        errorCode
+      if (!retry) {
+        let errorCode = null
+        let error = null
+        if (e instanceof Error) {
+          error = e.message
+          errorCode = this._parseSolanaErrorCode(error)
+        }
+        return {
+          res: null,
+          error,
+          errorCode
+        }
       }
     }
 
@@ -305,17 +307,13 @@ export class TransactionHandler {
     // to send the transaction until it hits a timeout.
     let sendCount = 0
     const startTime = Date.now()
-    let retryTxId
     if (retry) {
       ;(async () => {
         let elapsed = Date.now() - startTime
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
           try {
-            retryTxId = await sendRawTransaction()
-            logger.info(
-              `transactionHandler: retrying txId ${txid} with retryTxId ${retryTxId}, sendCount ${sendCount}`
-            )
+            txid = sendRawTransaction()
           } catch (e) {
             logger.error(
               `transactionHandler: error in send loop: ${e} for txId ${txid}`
@@ -330,6 +328,9 @@ export class TransactionHandler {
 
     // Await for tx confirmation
     try {
+      if (!txid) {
+        throw new Error('transactionHandler: Failed to get txid')
+      }
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       logger.info(
