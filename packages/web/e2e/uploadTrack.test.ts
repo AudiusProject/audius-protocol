@@ -69,7 +69,7 @@ test('should upload a single hidden, AI attributed track remix', async ({
   const trackFileInput = page
     .getByTestId('upload-dropzone')
     .locator('input[type=file]')
-  await trackFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
+  await trackFileInput.setInputFiles(path.join(__dirname, 'files/track.wav'))
 
   const handle = await page
     .locator('input[type=file]')
@@ -272,7 +272,7 @@ test('should upload a premium track', async ({ page }) => {
   const uploadDropzone = page.getByTestId('upload-dropzone')
   await uploadDropzone.click()
   const trackChooser = await fileChooserPromise
-  await trackChooser.setFiles(path.join(__dirname, 'files/track.mp3'))
+  await trackChooser.setFiles(path.join(__dirname, 'files/track.wav'))
 
   const continueButton = page.getByRole('button', {
     name: /continue uploading/i
@@ -363,7 +363,7 @@ test('should upload a single track with stems', async ({ page }) => {
   const uploadDropzone = page.getByTestId('upload-dropzone')
   await uploadDropzone.click()
   const trackChooser = await fileChooserPromise
-  await trackChooser.setFiles(path.join(__dirname, 'files/track.mp3'))
+  await trackChooser.setFiles(path.join(__dirname, 'files/track.wav'))
 
   const continueButton = page.getByRole('button', {
     name: /continue uploading/i
