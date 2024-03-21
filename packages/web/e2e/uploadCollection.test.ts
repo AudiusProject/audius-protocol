@@ -78,10 +78,16 @@ test.describe('upload collection', () => {
     // Move the segemented control into view
     // TODO: Fix this bug
     await page.getByRole('main').evaluate((node) => node.scrollTo(0, 0))
+    await expect(releaseTypeSegmentedControl).toBeVisible()
     await releaseTypeSegmentedControl
       .getByRole('radio', { name: /playlist/i })
       .click({ force: true })
-    await page.getByRole('button', { name: /continue uploading/i }).click()
+
+    const continueButton = page.getByRole('button', {
+      name: /continue uploading/i
+    })
+    await expect(continueButton).toBeVisible()
+    await continueButton.click()
 
     await expect(
       page.getByRole('heading', { name: /complete your playlist/i })

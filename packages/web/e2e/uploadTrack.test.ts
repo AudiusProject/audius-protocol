@@ -71,7 +71,11 @@ test.describe('upload track', () => {
       .getByTestId('upload-dropzone')
       .locator('input[type=file]')
     await trackFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
-    await page.getByRole('button', { name: /continue uploading/i }).click()
+    const continueButton = page.getByRole('button', {
+      name: /continue uploading/i
+    })
+    await expect(continueButton).toBeVisible()
+    await continueButton.click()
 
     await expect(
       page.getByRole('heading', { name: /complete your track/i, level: 1 })
@@ -266,7 +270,12 @@ test.describe('upload track', () => {
     await uploadDropzone.click()
     const trackChooser = await fileChooserPromise
     await trackChooser.setFiles(path.join(__dirname, 'files/track.mp3'))
-    await page.getByRole('button', { name: /continue uploading/i }).click()
+
+    const continueButton = page.getByRole('button', {
+      name: /continue uploading/i
+    })
+    await expect(continueButton).toBeVisible()
+    await continueButton.click()
 
     await expect(
       page.getByRole('heading', { name: /complete your track/i, level: 1 })
@@ -352,7 +361,12 @@ test.describe('upload track', () => {
     await uploadDropzone.click()
     const trackChooser = await fileChooserPromise
     await trackChooser.setFiles(path.join(__dirname, 'files/track.mp3'))
-    await page.getByRole('button', { name: /continue uploading/i }).click()
+
+    const continueButton = page.getByRole('button', {
+      name: /continue uploading/i
+    })
+    await expect(continueButton).toBeVisible()
+    await continueButton.click()
 
     await expect(
       page.getByRole('heading', { name: /complete your track/i, level: 1 })
