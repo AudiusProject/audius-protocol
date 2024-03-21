@@ -1,20 +1,19 @@
 import { test, expect } from '@playwright/test'
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/')
+test('renders', async ({ page }) => {
+  await page.goto('localhost:4173')
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/)
+  await expect(
+    page.getByRole('heading', { name: 'React + @audius/sdk' })
+  ).toBeVisible()
 })
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/')
+test('fetches and renders tracks', async ({ page }) => {
+  await page.goto('localhost:4173')
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click()
+  await page.getByRole('button', { name: 'Get Tracks' }).click()
 
-  // Expects page to have a heading with the name of Installation.
   await expect(
-    page.getByRole('heading', { name: 'Installation' })
+    page.getByRole('button', { name: 'Favorite' }).first()
   ).toBeVisible()
 })
