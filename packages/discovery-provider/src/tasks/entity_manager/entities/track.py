@@ -327,6 +327,35 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                         datetime.now()
                     )
                 )
+
+        elif key == "ddex_release_ids":
+            if "ddex_release_ids" in track_metadata and track_metadata["ddex_release_ids"]:
+                continue
+
+        elif key == "artists":
+            if "artists" in track_metadata and track_metadata["artists"]:
+                continue
+
+        elif key == "resource_contributors":
+            if "resource_contributors" in track_metadata and track_metadata["resource_contributors"]:
+                continue
+
+        elif key == "indirect_resource_contributors":
+            if "indirect_resource_contributors" in track_metadata and track_metadata["indirect_resource_contributors"]:
+                continue
+
+        elif key == "rights_controller":
+            if "rights_controller" in track_metadata and track_metadata["rights_controller"]:
+                continue
+
+        elif key == "copyright_line":
+            if "copyright_line" in track_metadata and track_metadata["copyright_line"]:
+                continue
+
+        elif key == "producer_copyright_line":
+            if "producer_copyright_line" in track_metadata and track_metadata["producer_copyright_line"]:
+                continue
+
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata

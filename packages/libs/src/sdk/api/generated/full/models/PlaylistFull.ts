@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { Access } from './Access';
+import {
+    AccessFromJSON,
+    AccessFromJSONTyped,
+    AccessToJSON,
+} from './Access';
 import type { Favorite } from './Favorite';
 import {
     FavoriteFromJSON,
@@ -135,6 +141,12 @@ export interface PlaylistFull {
      * @memberof PlaylistFull
      */
     ddexApp?: string;
+    /**
+     * 
+     * @type {Access}
+     * @memberof PlaylistFull
+     */
+    access?: Access;
     /**
      * 
      * @type {number}
@@ -285,6 +297,7 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'totalPlayCount': json['total_play_count'],
         'user': UserFullFromJSON(json['user']),
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
+        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -326,6 +339,7 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'total_play_count': value.totalPlayCount,
         'user': UserFullToJSON(value.user),
         'ddex_app': value.ddexApp,
+        'access': AccessToJSON(value.access),
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),

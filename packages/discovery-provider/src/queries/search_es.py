@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 
 from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
-from src.queries.query_helpers import _populate_gated_track_metadata
+from src.queries.query_helpers import _populate_gated_content_metadata
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -292,7 +292,7 @@ def finalize_response(
         # batch populate gated track metadata
         db = get_db_read_replica()
         with db.scoped_session() as session:
-            _populate_gated_track_metadata(session, response[k], current_user_id)
+            _populate_gated_content_metadata(session, response[k], current_user_id)
 
     # users: finalize
     for k in ["users", "followed_users"]:
