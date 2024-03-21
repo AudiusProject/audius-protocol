@@ -7,8 +7,8 @@ import { solanaNFTToCollectible } from './solCollectibleHelpers'
 import { SolanaNFTType } from './types'
 
 type SolanaClientArgs = {
-  solanaClusterEndpoint: string | undefined
-  metadataProgramId: string | undefined
+  solanaClusterEndpoint?: string
+  metadataProgramId?: string
 }
 export class SolanaClient {
   private connection: Connection | null = null
@@ -146,13 +146,10 @@ export class SolanaClient {
         })
       )
 
-      return solanaCollectibles.reduce(
-        (result, collectibles, i) => ({
-          ...result,
-          [wallets[i]]: collectibles
-        }),
-        {} as CollectibleState
-      )
+      return solanaCollectibles.reduce((result, collectibles, i) => {
+        result[wallets[i]] = collectibles
+        return result
+      }, {} as CollectibleState)
     } catch (e) {
       console.error('Unable to get collectibles', e)
       return Promise.resolve({})

@@ -14,6 +14,7 @@ import { AudiusBackend } from '../services/audius-backend'
 import { Env } from '../services/env'
 import { Explore } from '../services/explore'
 import { FingerprintClient } from '../services/fingerprint'
+import { HeliusClient } from '../services/helius-client'
 import { LocalStorage } from '../services/local-storage'
 import { OpenSeaClient } from '../services/opensea-client'
 import { FeatureFlags, RemoteConfigInstance } from '../services/remote-config'
@@ -64,6 +65,7 @@ export type CommonStoreContext = {
   ) => (state: CommonState) => LineupState<Track>
   audioPlayer: AudioPlayer
   solanaClient: SolanaClient
+  heliusClient: HeliusClient
   sentry: {
     setTag: (key: string, value: string) => void
     configureScope: (fn: (scope: { setUser: any }) => void) => void
