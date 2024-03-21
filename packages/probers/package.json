@@ -20,7 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "@testing-library/cypress": "^9.0.0",
-    "cypress": "^12.17.2",
+    "cypress": "^13.0.0",
     "cypress-file-upload": "^5.0.8",
     "cypress-wait-until": "^1.7.2",
     "dayjs": "^1.11.6",

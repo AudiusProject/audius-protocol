@@ -5,11 +5,12 @@ import {
   Kind,
   Track,
   Collection,
-  ID
+  ID,
+  Remix,
+  TrackMetadata
 } from '@audius/common/models'
 import {
   Entry,
-  ExtendedTrackMetadata,
   getContext,
   accountSelectors,
   averageColorActions,
@@ -18,7 +19,8 @@ import {
   cacheUsersSelectors,
   cacheActions,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  TrackMetadataForUpload
 } from '@audius/common/store'
 import {
   formatUrlName,
@@ -33,8 +35,7 @@ import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { processTracksForUpload } from 'common/store/upload/sagaHelpers'
-import { TrackForUpload } from 'pages/upload-page/types'
+import { processTrackForUpload } from 'common/store/upload/sagaHelpers'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -74,11 +75,15 @@ function* watchAdd() {
   )
 }
 
-export function* trackNewRemixEvent(remixTrack: Track) {
+type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
+  remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
+}
+
+export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* waitForAccount()
   const account = yield* select(getAccountUser)
-  if (!remixTrack.remix_of || !account) return
-  const remixParentTrack = remixTrack.remix_of.tracks[0]
+  if (!track.remix_of || !account) return
+  const remixParentTrack = track.remix_of.tracks[0]
   const parentTrack = yield* select(getTrack, {
     id: remixParentTrack.parent_track_id
   })
@@ -87,9 +92,9 @@ export function* trackNewRemixEvent(remixTrack: Track) {
     : null
   yield* put(
     make(Name.REMIX_NEW_REMIX, {
-      id: remixTrack.track_id,
+      id: track.track_id,
       handle: account.handle,
-      title: remixTrack.title,
+      title: track.title,
       parent_track_id: remixParentTrack.parent_track_id,
       parent_track_title: parentTrack ? parentTrack.title : '',
       parent_track_user_handle: parentTrackUser ? parentTrackUser.handle : ''
@@ -118,22 +123,18 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     )
   }
 
-  const [{ metadata: trackForEdit }] = yield* processTracksForUpload([
-    // TODO: this is ok because processTracksForUpload only uses the metadata
-    // but ideally we update it to accept TrackMetadata[] instead
-    { metadata: action.formFields } as TrackForUpload
-  ])
+  const trackForEdit = yield* processTrackForUpload(action.formFields)
 
   yield* call(
     confirmEditTrack,
     action.trackId,
-    trackForEdit as ExtendedTrackMetadata,
+    trackForEdit,
     wasUnlisted,
     isNowListed,
     currentTrack
   )
 
-  const track = { ...trackForEdit } as ExtendedTrackMetadata & Track
+  const track = { ...trackForEdit } as Track & TrackMetadataForUpload
   track.track_id = action.trackId
   if (track.artwork?.file) {
     track._cover_art_sizes = {
@@ -160,7 +161,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
 function* confirmEditTrack(
   trackId: ID,
-  formFields: ExtendedTrackMetadata,
+  formFields: TrackMetadata,
   wasUnlisted: boolean,
   isNowListed: boolean,
   currentTrack: Track
@@ -211,7 +212,7 @@ function* confirmEditTrack(
           /* retry */ false
         )
       },
-      function* (confirmedTrack: ExtendedTrackMetadata & Track) {
+      function* (confirmedTrack: TrackMetadataForUpload & Track) {
         if (wasUnlisted && isNowListed) {
           confirmedTrack._is_publishing = false
         }

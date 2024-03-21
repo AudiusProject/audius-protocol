@@ -198,7 +198,7 @@ export type TrackMetadata = {
   duration: number
 
   is_playlist_upload?: boolean
-  ai_attribution_user_id?: ID
+  ai_attribution_user_id?: Nullable<ID>
 }
 
 export type CollectionMetadata = {
@@ -237,3 +237,16 @@ export type CollectionMetadata = {
   producer_copyright_line?: Nullable<Copyright>
   parental_warning_type?: Nullable<string>
 }
+
+/**
+ * Used for upload functions, as those won't need these fields.
+ * They are populated upon successful upload.
+ */
+export type UploadTrackMetadata = Omit<
+  TrackMetadata,
+  | 'preview_cid'
+  | 'track_cid'
+  | 'audio_upload_id'
+  | 'orig_file_cid'
+  | 'orig_filename'
+>
