@@ -57,7 +57,7 @@ jobs:
         - Audius Client
         - Probers
       requires:
-        - web-build-staging
+        - web-init
 
   - web-test:
       context: Audius Client
