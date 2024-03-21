@@ -37,7 +37,9 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
         <Text tag='label' htmlFor={inputId} variant='title' size='l'>
           {header}
         </Text>
-        <Text id={descriptionId}>{description}</Text>
+        <Text id={descriptionId} variant='body'>
+          {description}
+        </Text>
         {(inverted ? !field.checked : field.checked) ? children : null}
       </div>
       <Switch

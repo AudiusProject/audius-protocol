@@ -4,7 +4,7 @@ import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions
 } from '@audius/common/store'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -39,22 +39,14 @@ const RemoveWalletBody = ({ className }: RemoveWalletBodyProps) => {
     <div className={cn(styles.container, { [className!]: !!className })}>
       <p className={styles.warning}>{messages.warning}</p>
       <p className={styles.wallet}>{wallet}</p>
-      <div className={styles.btnContainer}>
-        <Button
-          className={cn(styles.btn, styles.removeBtn)}
-          textClassName={cn(styles.btnText, styles.removeBtnText)}
-          type={ButtonType.WHITE}
-          text={messages.remove}
-          onClick={onRemove}
-        />
-        <Button
-          className={cn(styles.btn, styles.ignoreBtn)}
-          textClassName={styles.btnText}
-          type={ButtonType.COMMON_ALT}
-          text={messages.ignore}
-          onClick={onIgnore}
-        />
-      </div>
+      <Flex justifyContent='center' gap='l'>
+        <Button variant='destructive' onClick={onRemove}>
+          {messages.remove}
+        </Button>
+        <Button variant='secondary' onClick={onIgnore}>
+          {messages.ignore}
+        </Button>
+      </Flex>
     </div>
   )
 }

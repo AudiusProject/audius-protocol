@@ -18,13 +18,13 @@
   width: 16px;
 }
 .badgeIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .badgeTextLabel {
   display: inline-block;
   margin-top: 1px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 14px;
   font-weight: bold;
   letter-spacing: 0.7px;

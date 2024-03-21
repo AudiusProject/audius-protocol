@@ -1,33 +1,25 @@
-import { useMatch, useParams } from 'react-router-dom'
 import NodeOverview from 'components/NodeOverview'
-import {
-  useDiscoveryProvider,
-  useDiscoveryProviders
-} from 'store/cache/discoveryProvider/hooks'
-import { useContentNode, useContentNodes } from 'store/cache/contentNode/hooks'
+import { useMatch, useParams } from 'react-router-dom'
 import { useAccount } from 'store/account/hooks'
+import { useContentNode } from 'store/cache/contentNode/hooks'
+import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
 
+import { IconEmbed } from '@audius/harmony'
+import clsx from 'clsx'
+import IndividualNodeUptimeChart from 'components/IndividualNodeUptimeChart'
+import IndividualServiceApiCallsChart from 'components/IndividualServiceApiCallsChart'
+import IndividualServiceUniqueUsersChart from 'components/IndividualServiceUniqueUsersChart'
+import Page from 'components/Page'
+import { Address, ServiceType, Status } from 'types'
+import { usePushRoute } from 'utils/effects'
+import { createStyles } from 'utils/mobile'
+import { NODES_DISCOVERY_NODE, NOT_FOUND } from 'utils/routes'
 import desktopStyles from './Node.module.css'
 import mobileStyles from './NodeMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import Page from 'components/Page'
-import { Status, Address, ServiceType } from 'types'
-import { usePushRoute } from 'utils/effects'
-import {
-  SERVICES_DISCOVERY_PROVIDER_NODE,
-  SERVICES_TITLE,
-  SERVICES,
-  NOT_FOUND
-} from 'utils/routes'
-import IndividualServiceApiCallsChart from 'components/IndividualServiceApiCallsChart'
-import clsx from 'clsx'
-import IndividualServiceUniqueUsersChart from 'components/IndividualServiceUniqueUsersChart'
-import IndividualNodeUptimeChart from 'components/IndividualNodeUptimeChart'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
-  title: 'SERVICE',
   discovery: 'Discovery Node',
   content: 'Content Node'
 }
@@ -127,14 +119,13 @@ const Node = () => {
   const { spID: spIDParam } = useParams<{ spID: string }>()
   const spID = parseInt(spIDParam, 10)
   const { wallet: accountWallet } = useAccount()
-  const isDiscovery = !!useMatch(SERVICES_DISCOVERY_PROVIDER_NODE)
+  const isDiscovery = !!useMatch(NODES_DISCOVERY_NODE)
 
   return (
     <Page
-      title={messages.title}
+      icon={IconEmbed}
+      title={isDiscovery ? messages.discovery : messages.content}
       className={styles.container}
-      defaultPreviousPage={SERVICES_TITLE}
-      defaultPreviousPageRoute={SERVICES}
     >
       {isDiscovery ? (
         <DiscoveryNode spID={spID} accountWallet={accountWallet} />

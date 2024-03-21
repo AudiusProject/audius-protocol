@@ -4,9 +4,9 @@
   padding: 0;
   cursor: pointer;
 
-  color: var(--neutral-light-2);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-600);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
 
   display: flex;
   align-items: center;
@@ -21,15 +21,15 @@
 
 .createPlaylistButton path {
   transition: all ease-in-out 0.04s;
-  fill: var(--neutral-light-2);
+  fill: var(--harmony-n-600);
 }
 
 .createPlaylistButton:hover {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   transform: scale(1.02);
 }
 .createPlaylistButton:hover path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .createPlaylistButton:active {

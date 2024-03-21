@@ -61,11 +61,6 @@ function* sendLibraryRequest({
   sortDirection,
   category
 }: LibraryParams) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const { data, signature } = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.signDiscoveryNodeRequest
-  ])
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
@@ -80,8 +75,8 @@ function* sendLibraryRequest({
       sortMethod,
       sortDirection,
       type: category,
-      encodedDataMessage: data,
-      encodedDataSignature: signature
+      encodedDataMessage: '', // TODO: remove, handled by sdk
+      encodedDataSignature: '' // TODO: remove, handled by sdk
     }
   )) as any
   const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]

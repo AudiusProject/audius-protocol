@@ -126,7 +126,7 @@ export const PlainButton = (props: PlainButtonProps) => {
       innerProps={{
         icon: {
           fill: iconColor,
-          size: size === 'large' ? 'l' : 'm'
+          size: size === 'large' ? 'm' : 's'
         }
       }}
       onPressIn={handlePressIn}

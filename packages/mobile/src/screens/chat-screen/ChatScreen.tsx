@@ -35,6 +35,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconKebabHorizontal, IconMessage } from '@audius/harmony-native'
 import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import {
+  HeaderShadow,
   KeyboardAvoidingView,
   Screen,
   ScreenContent,
@@ -59,7 +60,6 @@ import { ChatMessageSeparator } from './ChatMessageSeparator'
 import { ChatTextInput } from './ChatTextInput'
 import { ChatUnavailable } from './ChatUnavailable'
 import { EmptyChatMessages } from './EmptyChatMessages'
-import { HeaderShadow } from './HeaderShadow'
 import { ReactionPopup } from './ReactionPopup'
 import {
   END_REACHED_MIN_MESSAGES,

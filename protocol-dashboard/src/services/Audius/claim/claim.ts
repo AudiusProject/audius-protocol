@@ -4,6 +4,25 @@ import { BlockNumber, Address } from 'types'
 import { ClaimProcessedEvent } from 'models/TimelineEvents'
 import { GetClaimProcessedResponse } from './types'
 
+export interface TransactionReceipt {
+  status: boolean
+  transactionHash: string
+  transactionIndex: number
+  blockHash: string
+  blockNumber: number
+  from: string
+  to: string
+  contractAddress?: string
+  cumulativeGasUsed: number
+  gasUsed: number
+  effectiveGasPrice: number
+  logs: any[]
+  logsBloom: string
+  events?: {
+    [eventName: string]: any
+  }
+}
+
 export default class Claim {
   aud: AudiusClient
 
@@ -78,6 +97,28 @@ export default class Claim {
     await this.aud.hasPermissions()
     const info = await this.getContract().claimPending(address)
     return info
+  }
+
+  // Returns transaction receipt
+  async initiateRound(): Promise<TransactionReceipt> {
+    await this.aud.hasPermissions()
+    await this.getContract().init()
+    const info = await this.getContract().initiateRound()
+    return info
+  }
+
+  async getCurrentRound() {
+    await this.aud.hasPermissions()
+    await this.getContract().init()
+    const contractAddress = this.getContract()._contractAddress
+    const latestFundedBlockNumber = await this.getLastFundedBlock()
+    const logs = await this.aud.libs.ethWeb3Manager.getWeb3().eth.getPastLogs({
+      address: contractAddress,
+      fromBlock: latestFundedBlockNumber,
+      toBlock: latestFundedBlockNumber
+    })
+    const roundNumber = logs?.[1].topics?.[2]
+    return roundNumber ? parseInt(roundNumber, 16) : null
   }
 
   async getClaimProcessedEvents(

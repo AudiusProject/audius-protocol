@@ -40,9 +40,6 @@ const useSyles = makeStyles(({ palette, spacing }) => ({
     fontSize: 14
   },
   copyIcon: {
-    lineHeight: 16,
-    marginBottom: 2,
-    color: palette.neutralLight4,
     marginLeft: 10
   }
 }))
@@ -77,7 +74,7 @@ export const Wallet = (props: WalletProps) => {
             <Text style={styles.walletAddress} weight='demiBold'>
               {displayAddress(address)}
             </Text>
-            <IconCopy style={styles.copyIcon} height={16} width={16} />
+            <IconCopy style={styles.copyIcon} size='s' color='subdued' />
           </View>
         </TouchableWithoutFeedback>
       </Animated.View>

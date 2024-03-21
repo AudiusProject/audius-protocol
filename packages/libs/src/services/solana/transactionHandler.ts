@@ -285,7 +285,7 @@ export class TransactionHandler {
       txid = await sendRawTransaction()
     } catch (e) {
       // Rarely, this intiial send will fail
-      logger.warn(`transactionHandler: Initial send failed: ${e}`)
+      logger.error(`transactionHandler: Initial send failed: ${e}`)
       let errorCode = null
       let error = null
       if (e instanceof Error) {
@@ -301,18 +301,23 @@ export class TransactionHandler {
 
     let done = false
 
-    // Start up resubmission loop
+    // Start up resubmission loop. It will run in the background and continue
+    // to send the transaction until it hits a timeout.
     let sendCount = 0
     const startTime = Date.now()
+    let retryTxId
     if (retry) {
       ;(async () => {
         let elapsed = Date.now() - startTime
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
           try {
-            sendRawTransaction()
+            retryTxId = sendRawTransaction()
+            logger.info(
+              `transactionHandler: retrying txId ${txid} with retryTxId ${retryTxId}, sendCount ${sendCount}`
+            )
           } catch (e) {
-            logger.warn(
+            logger.error(
               `transactionHandler: error in send loop: ${e} for txId ${txid}`
             )
           }
@@ -336,7 +341,7 @@ export class TransactionHandler {
         errorCode: null
       }
     } catch (e) {
-      logger.warn(
+      logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
         )}, ${txid}`
@@ -368,7 +373,7 @@ export class TransactionHandler {
           }
           done = true
           const message = `transactionHandler: Timed out in await, ${txid}`
-          logger.warn(message)
+          logger.error(message)
           reject(new Error(message))
         }, this.retryTimeoutMs)
 
@@ -381,7 +386,7 @@ export class TransactionHandler {
               done = true
               if (result.err) {
                 const err = JSON.stringify(result.err)
-                logger.warn(
+                logger.error(
                   `transactionHandler: Error in onSignature ${txid}, ${err}`
                 )
                 reject(new Error(err))

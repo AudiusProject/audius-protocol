@@ -77,6 +77,9 @@ export type ServicesContainer = {
   antiAbuseOracle: AntiAbuseOracleService
 }
 
+/**
+ * SDK configuration schema that requires API keypairs
+ */
 const DevAppSchema = z.object({
   /**
    * Your app name

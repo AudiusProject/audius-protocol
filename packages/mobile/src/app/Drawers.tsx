@@ -35,7 +35,6 @@ import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
 import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
-import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
 import { SignOutConfirmationDrawer } from 'app/components/sign-out-confirmation-drawer'
 import { StripeOnrampDrawer } from 'app/components/stripe-onramp-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
@@ -102,7 +101,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   MobileEditCollectiblesDrawer: EditCollectiblesDrawer,
   Share: ShareDrawer,
-  ShareSoundToTikTok: ShareToTikTokDrawer,
   CollectibleDetails: CollectibleDetailsDrawer,
   DeactivateAccountConfirmation: DeactivateAccountConfirmationDrawer,
   FeedFilter: FeedFilterDrawer,

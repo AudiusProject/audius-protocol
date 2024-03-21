@@ -17,6 +17,12 @@ import {
 } from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
+  Button,
+  ModalContent,
+  ModalContentText,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
   Modal,
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,
@@ -25,9 +31,9 @@ import {
   IconLink,
   IconShare,
   IconLogoCircleSOL,
-  IconLogoCircleETH
+  IconLogoCircleETH,
+  Flex
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -283,7 +289,7 @@ const CollectibleDetailsModal = ({
               </a>
             )}
 
-            <div className={styles.detailsButtonContainer}>
+            <Flex gap='m' wrap='wrap'>
               <Toast
                 text={collectibleMessages.copied}
                 fillParent={false}
@@ -293,84 +299,72 @@ const CollectibleDetailsModal = ({
                 tooltipClassName={styles.shareTooltip}
               >
                 <Button
-                  className={styles.detailsButton}
-                  textClassName={styles.detailsButtonText}
-                  iconClassName={styles.detailsButtonIcon}
+                  variant='common'
+                  size='small'
                   onClick={() => copyToClipboard(shareUrl)}
-                  text='Share'
-                  type={ButtonType.COMMON_ALT}
-                  size={ButtonSize.SMALL}
-                  leftIcon={<IconShare />}
-                />
+                  iconLeft={IconShare}
+                >
+                  Share
+                </Button>
               </Toast>
 
               <Button
-                className={styles.detailsButton}
-                textClassName={styles.detailsButtonText}
-                iconClassName={styles.detailsButtonIcon}
+                variant='common'
+                size='small'
                 onClick={() => setIsEmbedModalOpen?.(true)}
-                text='Embed'
-                type={ButtonType.COMMON_ALT}
-                size={ButtonSize.SMALL}
-                leftIcon={<IconEmbed />}
-              />
+                iconLeft={IconEmbed}
+              >
+                Embed
+              </Button>
 
               {isCollectibleOptionEnabled &&
                 isUserOnTheirProfile &&
                 collectible.mediaType === CollectibleMediaType.IMAGE && (
                   <Button
-                    className={styles.detailsButton}
-                    textClassName={styles.detailsButtonText}
-                    iconClassName={styles.detailsButtonIcon}
+                    variant='common'
+                    size='small'
                     onClick={() => {
                       setIsModalOpen(false)
                       setIsPicConfirmaModalOpen(true)
                     }}
-                    text='Set As Profile Pic'
-                    type={ButtonType.COMMON_ALT}
-                    size={ButtonSize.SMALL}
-                    leftIcon={<IconImage />}
-                  />
+                    iconLeft={IconImage}
+                  >
+                    Set As Profile Pic
+                  </Button>
                 )}
-            </div>
+            </Flex>
           </div>
         </div>
       </Modal>
 
       <Modal
-        showTitleHeader
-        showDismissButton
-        headerContainerClassName={styles.modalHeader}
         isOpen={isPicConfirmModalOpen}
         onClose={() => setIsPicConfirmaModalOpen(false)}
-        titleClassName={styles.confirmModalTitle}
-        title={
-          <>
-            <IconImage />
-            <span>Set as Profile Pic</span>
-          </>
-        }
       >
-        <div className={styles.confirmModalContainer}>
-          <p className={styles.confirmModalText}>
-            Are you sure you want to change your profile picture?
-          </p>
+        <ModalHeader>
+          <ModalTitle
+            title={collectibleMessages.setAsProfilePic}
+            icon={<IconImage />}
+          />
+        </ModalHeader>
+        <ModalContent>
+          <ModalContentText>
+            {collectibleMessages.setAsProfilePicDescription}
+          </ModalContentText>
+        </ModalContent>
 
-          <div className={styles.confirmButtonContainer}>
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={() => setIsPicConfirmaModalOpen(false)}
-              text='Nevermind'
-              type={ButtonType.COMMON_ALT}
-            />
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={onClickProfPicUpload}
-              text='Yes'
-              type={ButtonType.PRIMARY_ALT}
-            />
-          </div>
-        </div>
+        <ModalFooter>
+          <Button
+            variant='secondary'
+            onClick={() => setIsPicConfirmaModalOpen(false)}
+            fullWidth
+          >
+            {collectibleMessages.setAsProfilePickCancel}
+          </Button>
+          <Button variant='primary' onClick={onClickProfPicUpload} fullWidth>
+            {collectibleMessages.setAsProfilePickConfirm}
+          </Button>
+        </ModalFooter>
       </Modal>
 
       <Drawer
@@ -454,15 +448,13 @@ const CollectibleDetailsModal = ({
             )}
 
             <Button
-              className={cn(styles.detailsButton, styles.mobileDetailsButton)}
-              textClassName={styles.detailsButtonText}
-              iconClassName={styles.detailsButtonIcon}
+              variant='common'
+              size='small'
               onClick={handleMobileShareClick}
-              text='Share'
-              type={ButtonType.COMMON_ALT}
-              size={ButtonSize.SMALL}
-              leftIcon={<IconShare />}
-            />
+              iconLeft={IconShare}
+            >
+              Share
+            </Button>
           </div>
         </div>
       </Drawer>

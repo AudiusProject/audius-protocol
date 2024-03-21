@@ -1,27 +1,30 @@
-import React, { useCallback, useEffect, ReactNode } from 'react'
+import { Box, Flex, Text } from '@audius/harmony'
 import clsx from 'clsx'
+import React, { ReactNode, useCallback, useEffect } from 'react'
 
-import styles from './TransactionStatus.module.css'
+import { IconCheck, IconRemove } from '@audius/stems'
 import Button, { ButtonType } from 'components/Button'
-import { IconRemove, IconCheck } from '@audius/stems'
-import Loading from 'components/Loading'
-import { usePendingTransactions } from 'store/account/hooks'
-import { useCancelTransaction } from 'store/actions/cancelTransaction'
-import {
-  Status,
-  DelayedPendingTransaction,
-  PendingTransactionName
-} from 'types'
-import { useEthBlockNumber } from 'store/cache/protocol/hooks'
-import { useModalControls } from 'utils/hooks'
+import { Card } from 'components/Card/Card'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
-import { useSubmitTransaction } from 'store/actions/submitTransaction'
+import Loading from 'components/Loading'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import AudiusClient from 'services/Audius'
+import { usePendingTransactions } from 'store/account/hooks'
+import { useCancelTransaction } from 'store/actions/cancelTransaction'
+import { useSubmitTransaction } from 'store/actions/submitTransaction'
+import { usePendingClaim } from 'store/cache/claims/hooks'
+import { useEthBlockNumber, useTimeRemaining } from 'store/cache/protocol/hooks'
+import {
+  DelayedPendingTransaction,
+  PendingTransactionName,
+  Status
+} from 'types'
 import { TICKER } from 'utils/consts'
 import { getHumanReadableTime } from 'utils/format'
-import { useTimeRemaining } from 'store/cache/protocol/hooks'
+import { useModalControls } from 'utils/hooks'
+import styles from './TransactionStatus.module.css'
 
 const messages = {
   ready: 'Ready',
@@ -29,7 +32,10 @@ const messages = {
   cancel: 'CANCEL',
   confirm: 'CONFIRM',
   claim: 'MAKE CLAIM',
-  target: 'Target block'
+  target: 'Target block',
+  pendingTransactions: 'Pending Transactions',
+  cantCompleteBecausePendingClaim:
+    'Cannot complete right now because the operator has an unclaimed reward distribution.'
 }
 
 const getMessage = (
@@ -116,28 +122,32 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
         [props.className!]: !!props.className
       })}
     >
-      <Loading className={styles.loading} />
-      <div className={styles.textContainer}>
-        <div className={styles.primaryText}>{`Pending ${props.name}`}</div>
-        {timeRemaining !== null && (
-          <div className={styles.secondaryText}>
-            {`${messages.target} ${
-              props.lockupExpiryBlock
-            } - ${getHumanReadableTime(timeRemaining)} ${
-              messages.timeRemaining
-            }`}
-          </div>
-        )}
-      </div>
-      <Button
-        leftIcon={<IconRemove />}
-        className={styles.btn}
-        onClick={onClick}
-        textClassName={styles.btnText}
-        iconClassName={styles.btnIcon}
-        text={messages.cancel}
-        type={ButtonType.PRIMARY_ALT}
-      />
+      <Flex>
+        <Loading className={styles.loading} />
+        <div className={styles.textContainer}>
+          <div className={styles.primaryText}>{`Pending ${props.name}`}</div>
+          {timeRemaining !== null && (
+            <div className={styles.secondaryText}>
+              {`${messages.target} ${
+                props.lockupExpiryBlock
+              } - ${getHumanReadableTime(timeRemaining)} ${
+                messages.timeRemaining
+              }`}
+            </div>
+          )}
+        </div>
+      </Flex>
+      <Box>
+        <Button
+          leftIcon={<IconRemove />}
+          className={styles.btn}
+          onClick={onClick}
+          textClassName={styles.btnText}
+          iconClassName={styles.btnIcon}
+          text={messages.cancel}
+          type={ButtonType.PRIMARY_ALT}
+        />
+      </Box>
       <ConfirmTransactionModal
         isOpen={isOpen}
         onClose={onCloseModal}
@@ -210,6 +220,14 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
     }
   }, [name, target, cancelTransaction])
 
+  // Disable complete undelegation from operator if operator has a pending claim
+  const { hasClaim, status: claimStatus } = usePendingClaim(
+    props.name === PendingTransactionName.Undelegate ? props.target : ''
+  )
+  const isDisabled =
+    props.name === PendingTransactionName.Undelegate &&
+    (claimStatus !== Status.Success || hasClaim)
+
   return (
     <div
       className={clsx(styles.transactionItemContainer, {
@@ -220,24 +238,32 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
         <div className={styles.primaryText}>{props.name}</div>
         <div className={styles.secondaryText}>{messages.ready}</div>
       </div>
-      <Button
-        leftIcon={<IconRemove />}
-        text={messages.cancel}
-        className={clsx(styles.btn, styles.readyCancelBtn)}
-        textClassName={styles.btnText}
-        iconClassName={styles.btnIcon}
-        onClick={onClickCancel}
-        type={ButtonType.PRIMARY_ALT}
-      />
-      <Button
-        leftIcon={<IconCheck />}
-        text={messages.confirm}
-        className={styles.btn}
-        textClassName={styles.btnText}
-        iconClassName={styles.btnIcon}
-        type={ButtonType.PRIMARY}
-        onClick={onClickSubmit}
-      />
+      <Flex gap="l">
+        <Button
+          leftIcon={<IconRemove />}
+          text={messages.cancel}
+          textClassName={styles.btnText}
+          iconClassName={styles.btnIcon}
+          onClick={onClickCancel}
+          type={ButtonType.PRIMARY_ALT}
+        />
+
+        <BasicTooltip
+          position={Position.LEFT}
+          text={messages.cantCompleteBecausePendingClaim}
+          isDisabled={!isDisabled}
+        >
+          <Button
+            leftIcon={<IconCheck />}
+            text={messages.confirm}
+            isDisabled={isDisabled}
+            textClassName={styles.btnText}
+            iconClassName={styles.btnIcon}
+            type={ButtonType.PRIMARY}
+            onClick={onClickSubmit}
+          />
+        </BasicTooltip>
+      </Flex>
       <ConfirmTransactionModal
         isOpen={isCancelOpen}
         onClose={onCloseCancel}
@@ -264,7 +290,41 @@ interface TransactionStatusProps {
   className?: string
 }
 
-const TransactionStatus: React.FC<TransactionStatusProps> = ({ className }) => {
+type TransactionStatusContentProps = {
+  transactions: DelayedPendingTransaction[]
+  ethBlockNumber: number
+}
+
+export const TransactionStatusContent = ({
+  transactions,
+  ethBlockNumber
+}: TransactionStatusContentProps) => {
+  return (
+    <>
+      <Text variant="heading" size="s">
+        {messages.pendingTransactions}
+      </Text>
+      <div className={styles.container}>
+        {transactions.map((t, idx) => {
+          if (t.lockupExpiryBlock > ethBlockNumber) {
+            return (
+              <div key={idx} className={styles.transactionWrapper}>
+                <WaitingTransaction {...t} ethBlockNumber={ethBlockNumber} />
+              </div>
+            )
+          }
+          return (
+            <div key={idx} className={styles.transactionWrapper}>
+              <ReadyTransaction {...t} />
+            </div>
+          )
+        })}
+      </div>
+    </>
+  )
+}
+
+export const TransactionStatus: React.FC<TransactionStatusProps> = props => {
   const pendingTx = usePendingTransactions()
   const ethBlockNumber = useEthBlockNumber()
   if (
@@ -276,26 +336,13 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({ className }) => {
     return null
   }
   return (
-    <div
-      className={clsx(styles.container, {
-        [className!]: !!className
-      })}
-    >
-      {pendingTx.transactions.map((t, idx) => {
-        if (t.lockupExpiryBlock > ethBlockNumber) {
-          return (
-            <div key={idx} className={styles.transactionWrapper}>
-              <WaitingTransaction {...t} ethBlockNumber={ethBlockNumber} />
-            </div>
-          )
-        }
-        return (
-          <div key={idx} className={styles.transactionWrapper}>
-            <ReadyTransaction {...t} />
-          </div>
-        )
-      })}
-    </div>
+    <Card direction="column" gap="l" p="xl">
+      <TransactionStatusContent
+        transactions={pendingTx.transactions}
+        ethBlockNumber={ethBlockNumber}
+        {...props}
+      />
+    </Card>
   )
 }
 

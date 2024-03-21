@@ -4,7 +4,6 @@ import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { socialMediaMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTwitterProfile } from '@audius/common/services'
-import { useAsync } from 'react-use'
 
 import { SocialButton } from '@audius/harmony-native'
 import { env } from 'app/env'
@@ -23,7 +22,7 @@ type SignUpFlowTwitterAuthProps = Partial<SocialButtonProps> & {
     handle: string
     platform: 'twitter'
   }) => void
-  onError: (e: unknown) => void
+  onError: (e: unknown, additionalInfo?: Record<any, any>) => void
   onStart?: () => void
   onClose?: () => void
   page: 'create-email' | 'pick-handle'
@@ -49,20 +48,15 @@ const getOauthToken = async (
   headers: any,
   credentialsType: CredentialsType
 ) => {
-  try {
-    const response = await fetch(
-      `${loginUrl}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
-      {
-        method: 'POST',
-        credentials: credentialsType,
-        headers
-      }
-    )
-    return response.json()
-  } catch (error) {
-    console.error(error)
-    throw new Error(error.message)
-  }
+  const response = await fetch(
+    `${loginUrl}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
+    {
+      method: 'POST',
+      credentials: credentialsType,
+      headers
+    }
+  )
+  return response.json()
 }
 
 const authenticationUrl = (oauthToken: string | undefined) =>
@@ -124,26 +118,6 @@ const useSetProfileFromTwitter = () => {
   }
 }
 
-const useTwitterAuthToken = () => {
-  const [authToken, setAuthToken] = useState<string | undefined>()
-  useAsync(async () => {
-    // only refresh token if we don't have one already (avoid extra API calls)
-    if (!authToken) {
-      const tokenResp = await fetch(twitterApi.requestTokenUrl, {
-        method: 'POST',
-        credentials: twitterApi.credentialsType,
-        headers: twitterApi.headers
-      })
-      const tokenRespJson = await tokenResp.json()
-      if (tokenRespJson.oauth_token) {
-        setAuthToken(tokenRespJson.oauth_token)
-      }
-    }
-  }, [])
-
-  return authToken
-}
-
 export const SignUpFlowTwitterAuth = ({
   onSuccess,
   onError,
@@ -153,11 +127,25 @@ export const SignUpFlowTwitterAuth = ({
 }: SignUpFlowTwitterAuthProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const setProfileFromTwitter = useSetProfileFromTwitter()
-  const authToken = useTwitterAuthToken()
+  const [authToken, setAuthToken] = useState<string | undefined>()
+  const getOauthToken = async () => {
+    // only refresh token if we don't have one already (avoid extra API calls)
+    const tokenResp = await fetch(twitterApi.requestTokenUrl, {
+      method: 'POST',
+      credentials: twitterApi.credentialsType,
+      headers: twitterApi.headers
+    })
+    const tokenRespJson = await tokenResp.json()
+    if (tokenRespJson.oauth_token) {
+      setAuthToken(tokenRespJson.oauth_token)
+    }
+  }
+
   const authUrl = authenticationUrl(authToken)
 
   const handlePress = async () => {
     onStart?.()
+    getOauthToken()
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_START_TWITTER,
@@ -176,17 +164,6 @@ export const SignUpFlowTwitterAuth = ({
       })
     )
     setIsModalOpen(false)
-  }
-
-  const handleError = (e: Error) => {
-    onError?.(e)
-    track(
-      make({
-        eventName: EventNames.CREATE_ACCOUNT_TWITTER_ERROR,
-        page,
-        error: e?.message
-      })
-    )
   }
 
   const handleResponse = async (payload: any) => {
@@ -210,13 +187,18 @@ export const SignUpFlowTwitterAuth = ({
           )
           onSuccess?.({ handle, requiresReview, platform: 'twitter' })
         } catch (e) {
-          handleError(e)
+          onError?.(e, { oauthVerifier, oauthToken, payload })
         }
       } else {
-        handleError(new Error('Failed oauth'))
+        onError?.(
+          new Error(
+            'No oauthToken/oauthVerifier received from Twitter payload'
+          ),
+          { oauthVerifier, oauthToken }
+        )
       }
     } else {
-      handleError(new Error(payload.error))
+      onError?.(new Error(payload.error))
     }
   }
 

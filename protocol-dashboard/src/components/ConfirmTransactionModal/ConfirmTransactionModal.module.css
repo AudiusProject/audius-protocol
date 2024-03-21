@@ -1,5 +1,5 @@
 .wrapperClassName {
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .container {
@@ -13,9 +13,8 @@
 }
 
 .arrowDown path {
-  fill: #5A5E78;
+  fill: #5a5e78;
 }
-
 
 .topBox {
   margin: 24px auto 18px;
@@ -28,7 +27,7 @@
 /* ---------- Box variation Props ---------- */
 /* operator staking  */
 .operatorStakingImage {
-  margin-bottom: 4px;
+  margin-bottom: var(--unit-3);
 }
 
 .operatorStakingName {
@@ -46,9 +45,8 @@
 }
 
 .newServiceType {
-  margin-bottom: 16px
+  margin-bottom: 16px;
 }
-
 
 /* Stake */
 .stakeHeader {
@@ -57,7 +55,7 @@
   font-size: var(--font-s);
   text-align: center;
   text-transform: uppercase;
-  color: #BEC5E0;
+  color: #bec5e0;
   margin-bottom: 8px;
 }
 
@@ -66,7 +64,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-2xl);
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
 }
 
 .stakeSpacing {
@@ -74,15 +72,15 @@
 }
 
 .increase {
-  color: #6BCF63;
+  color: #6bcf63;
 }
 
 .decrease {
-  color: #F15064;
+  color: #f15064;
 }
 
 .newServiceDelegateWallet {
-  margin-bottom: 4px
+  margin-bottom: 4px;
 }
 
 /* Delegating */
@@ -91,7 +89,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-2xl);
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
   margin-top: 8px;
 }
 
@@ -101,7 +99,8 @@
 }
 
 .toOperatorName {
-  margin-bottom: 4px;
+  font-size: var(--font-s);
+  margin: var(--unit-2) 0;
 }
 
 .toOperatorWallet {
@@ -126,14 +125,14 @@
   font-weight: var(--font-bold);
   font-size: var(--font-m);
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
 }
 
 /* ---------- Box Props ---------- */
 .box {
   width: 480px;
-  background: #393A54;
-  border: 1px solid #3F415B;
+  background: #393a54;
+  border: 1px solid #3f415b;
   box-sizing: border-box;
   border-radius: 8px;
   display: inline-flex;
@@ -145,10 +144,8 @@
   font-weight: var(--font-bold);
   font-size: var(--font-m);
   text-align: center;
-  color: #BEC5E0;
-
+  color: #bec5e0;
 }
-
 
 /* Error Modal */
 .errorHeader {
@@ -156,7 +153,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-m);
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
   margin: 24px auto;
 }
 
@@ -166,10 +163,10 @@
   max-height: 248px;
 
   width: 480px;
-  margin: 0px auto 24px; 
+  margin: 0px auto 24px;
   padding: 24px 20px;
-  background: #393A54;
-  border: 1px solid #3F415B;
+  background: #393a54;
+  border: 1px solid #3f415b;
   box-sizing: border-box;
   border-radius: 8px;
 }
@@ -180,9 +177,7 @@
   opacity: 0.5;
 }
 
-
 /* Loading */
 
 .loading {
-
 }

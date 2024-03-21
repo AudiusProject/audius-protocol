@@ -64,13 +64,13 @@ const actionsMap = {
 }
 
 const buildInitialState = (ssrPageProps?: SsrPageProps) => {
-  // TODO: support user profile page. Only track page supported for now.
-
   // If we have preloaded data from the server, populate the initial
   // cache state with it
-  if (ssrPageProps?.track) {
+  if (ssrPageProps) {
+    const apiUser = ssrPageProps.user ?? ssrPageProps.track?.user ?? null
+
     // @ts-ignore
-    const user = makeUser(snakecaseKeys(ssrPageProps.track.user))
+    const user = apiUser ? makeUser(snakecaseKeys(apiUser)) : null
     if (!user) return initialState
 
     const id = user.user_id
@@ -97,7 +97,7 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
 }
 
 const reducer =
-  (ssrPageProps: SsrPageProps) =>
+  (ssrPageProps?: SsrPageProps) =>
   (state: UsersCacheState, action: AddSuccededAction<User>) => {
     if (!state) {
       // @ts-ignore

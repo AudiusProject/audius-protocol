@@ -1,3 +1,4 @@
+import { APICallsInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
 import { useIndividualServiceApiCalls } from 'store/cache/analytics/hooks'
@@ -27,6 +28,7 @@ const IndividualServiceApiCallsChart: React.FC<IndividualServiceApiCallsChartPro
   return (
     <LineChart
       title="API Calls"
+      titleTooltipComponent={APICallsInfoTooltip}
       tooltipTitle="API Calls"
       error={error}
       data={data}

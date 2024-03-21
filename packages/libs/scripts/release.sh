@@ -83,7 +83,7 @@ function bump-version () {
             && mv "$tmp" package.json
 
         # Build project
-        npm run build
+        npx turbo run build
 
         # Publishing dry run, prior to pushing a branch
         npm publish . --access public --dry-run
@@ -146,7 +146,7 @@ function cleanup () {
 
 # configuration
 STUB=@audius/sdk
-cd ${PROTOCOL_DIR}/packages/libs
+cd "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"  # audius-protocol/packages/libs
 
 # pull in main
 git-reset

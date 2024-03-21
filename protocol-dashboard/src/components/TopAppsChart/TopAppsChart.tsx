@@ -1,4 +1,5 @@
 import BarChart from 'components/BarChart'
+import { TopApiAppsInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import React, { useCallback, useState } from 'react'
 import { useTopApps } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
@@ -30,14 +31,15 @@ const TopAppsChart: React.FC<TopAppsChartProps> = () => {
 
   return (
     <BarChart
-      title="Top 3rd Party Apps"
+      title="Top API Apps"
+      titleTooltipComponent={TopApiAppsInfoTooltip}
       column1="apps"
       column2="requests"
       data={data}
       labels={labels}
       error={error}
       selection={bucket}
-      options={[Bucket.ALL_TIME, Bucket.MONTH, Bucket.WEEK]}
+      options={[Bucket.ALL_TIME, Bucket.YEAR, Bucket.MONTH, Bucket.WEEK]}
       onSelectOption={(option: string) => setBucket(option as Bucket)}
       onClick={goToAPIPage}
     />

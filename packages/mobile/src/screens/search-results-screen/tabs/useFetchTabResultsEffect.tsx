@@ -77,7 +77,7 @@ export const useFetchTabResultsEffect = (searchKind: SearchKind) => {
           make({
             eventName: EventNames.SEARCH_SEARCH,
             term: query,
-            source: 'search results page'
+            source: 'more results page'
           })
         )
       }

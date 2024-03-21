@@ -24,6 +24,9 @@ export const getFundsPerRound = () => (state: AppState) =>
 export const getLastFundedBlock = () => (state: AppState) =>
   state.cache.claims.metadata.lastFundedBlock
 
+export const getClaimMetadata = () => (state: AppState) =>
+  state.cache.claims.metadata
+
 // -------------------------------- Thunk Actions  --------------------------------
 
 export function fetchPendingClaim(
@@ -113,4 +116,33 @@ export const useLastFundedBlock = () => {
   }, [dispatch, lastFundedBlock])
   if (!lastFundedBlock) return { status: Status.Loading }
   return { status: Status.Success, blockNumber: lastFundedBlock }
+}
+
+export const useClaimMetadata = () => {
+  const claimMetadata = useSelector(getClaimMetadata())
+  const {
+    fundsPerRound,
+    lastFundedBlock,
+    fundingRoundBlockDiff,
+    totalClaimedInRound
+  } = claimMetadata
+  const notLoaded =
+    fundsPerRound == null ||
+    lastFundedBlock == null ||
+    fundingRoundBlockDiff == null ||
+    totalClaimedInRound == null
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
+  useEffect(() => {
+    if (notLoaded) {
+      dispatch(setClaimMetadata())
+    }
+  }, [
+    dispatch,
+    fundsPerRound,
+    lastFundedBlock,
+    fundingRoundBlockDiff,
+    totalClaimedInRound
+  ])
+  if (notLoaded) return { status: Status.Loading }
+  return { status: Status.Success, claimMetadata }
 }

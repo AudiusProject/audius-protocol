@@ -10,22 +10,22 @@
 }
 
 .gap1 {
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
 }
 .gap2 {
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 .gap3 {
-  gap: var(--unit-3);
+  gap: var(--harmony-unit-3);
 }
 .gap4 {
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 .gap5 {
-  gap: var(--unit-5);
+  gap: var(--harmony-unit-5);
 }
 .gap6 {
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .gapAuto {

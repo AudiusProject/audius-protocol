@@ -18,11 +18,11 @@
 
 .profilePicture {
   composes: profilePictureBase;
-  margin-right: calc(var(--unit-2) * -1);
+  margin-right: calc(var(--harmony-unit-2) * -1);
 }
 
 .profilePicture > div {
-  border-color: var(--neutral-light-10);
+  border-color: var(--harmony-n-25);
 }
 
 .profilePictureExtraRoot {
@@ -58,8 +58,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--static-white);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  color: var(--harmony-static-white);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }

@@ -4,14 +4,14 @@
 
 ```
 npm install
-npm run init-sdk-docgen
+npm run prepare:translations
 npm start
 ```
 
-To see your changes real-time, run
+To develop on cloudflare pages and test the whole stack, run:
 
 ```
-npm run prepare:translations
+npm run pages:dev
 ```
 
 ## Build
@@ -22,9 +22,13 @@ npm run build
 
 ## Publish
 
+Running the following commands will create a public test site to view your changes.
+
+To deploy to docs.audius.org, ensure the commands are run from the `main` branch.
+
 ```
 npm run build
-npx wrangler publish
+npm run pages:deploy
 ```
 
 ## Translate

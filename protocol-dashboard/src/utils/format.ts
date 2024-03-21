@@ -177,11 +177,18 @@ export const getShortDate = (ms: number) => {
   const date = new Date(ms)
   const month = date.getUTCMonth()
   const day = date.getUTCDate()
-  return `${day} ${months[month]}`
+  return `${months[month]} ${day}`
 }
 
 export const getShortMonth = (ms: number) => {
   const date = new Date(ms)
   const month = date.getUTCMonth()
   return months[month]
+}
+
+export const getShortMonthAndYear = (ms: number) => {
+  const date = new Date(ms)
+  const month = date.getUTCMonth()
+  const year = date.getUTCFullYear()
+  return `${months[month]} ‘${year.toString(10).slice(-2)}`
 }

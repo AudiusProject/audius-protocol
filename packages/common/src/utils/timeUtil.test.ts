@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest'
+
 import dayjs from './dayjs'
 import {
   formatSeconds,

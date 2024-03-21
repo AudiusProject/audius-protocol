@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { css } from '@emotion/native'
 import { useFormikContext } from 'formik'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Platform, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type {
@@ -11,7 +11,15 @@ import type {
   PaperProps,
   ButtonProps
 } from '@audius/harmony-native'
-import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony-native'
+import {
+  Button,
+  Divider,
+  Flex,
+  Paper,
+  Text,
+  spacing,
+  useTheme
+} from '@audius/harmony-native'
 import { KeyboardAvoidingView } from 'app/components/core'
 
 const messages = {
@@ -36,27 +44,35 @@ export const Page = (props: PageProps) => {
     h: '100%',
     gap: '2xl',
     ph: noGutter ? undefined : gutterSize,
-    pv: '2xl',
+    pv: 'xl',
     backgroundColor: 'white'
   }
 
+  const isAndroid = Platform.OS === 'android'
+
   return (
-    // 1 zIndex is to appear below
-    <Flex
-      {...layoutProps}
-      style={[
-        css({
-          zIndex: 1,
-          minHeight:
-            Dimensions.get('window').height - insets.top - insets.bottom,
-          paddingBottom: insets.bottom
-        }),
-        style
-      ]}
-      {...other}
-    >
-      {children}
-    </Flex>
+    <>
+      <Divider />
+      {/* // 1 zIndex is to appear below */}
+      <Flex
+        {...layoutProps}
+        style={[
+          css({
+            zIndex: 1,
+            minHeight: isAndroid
+              ? Dimensions.get('window').height - insets.top - insets.bottom
+              : 0,
+            // Offset the absolute positioned footer
+            // calc = footer button height (48) + footer padding (2*spacing.l) + extra padding (spacing.xl)
+            paddingBottom: 48 + spacing.l * 2 + spacing.xl
+          }),
+          style
+        ]}
+        {...other}
+      >
+        {children}
+      </Flex>
+    </>
   )
 }
 
@@ -82,7 +98,7 @@ export const PageFooter = (props: PageFooterProps) => {
       w={Dimensions.get('window').width}
       style={css({
         position: 'absolute',
-        bottom: 0,
+        bottom: insets.bottom === 0 ? spacing.l : 0,
         left: 0
       })}
     >

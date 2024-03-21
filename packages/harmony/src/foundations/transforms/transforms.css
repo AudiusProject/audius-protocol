@@ -1,0 +1,6 @@
+:root,
+root {
+  --harmony-grow: perspective(1px) scale3d(1.04, 1.04, 1.04);
+  --harmony-grow-large: perspective(1px) scale3d(1.1, 1.1, 1.1);
+  --harmony-shrink: scale(0.95);
+}

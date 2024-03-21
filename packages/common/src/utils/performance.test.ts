@@ -1,9 +1,11 @@
+import { describe, beforeEach, afterEach, it, expect, vitest } from 'vitest'
+
 import { Timer } from './performance'
 
-let sendToAnalytics: ReturnType<typeof jest.fn>
+let sendToAnalytics: ReturnType<typeof vitest.fn>
 
 beforeEach(() => {
-  sendToAnalytics = jest.fn()
+  sendToAnalytics = vitest.fn()
 })
 
 afterEach(() => {
@@ -14,11 +16,11 @@ describe('single value', () => {
   it('records a metric', () => {
     const t = new Timer({ name: 'single_value' }, sendToAnalytics)
 
-    global.Date.now = jest.fn(() => 0)
+    global.Date.now = vitest.fn(() => 0)
 
     const s = t.start()
 
-    global.Date.now = jest.fn(() => 1000)
+    global.Date.now = vitest.fn(() => 1000)
 
     t.end(s)
 
@@ -37,11 +39,11 @@ describe('batches values', () => {
     )
 
     for (let i = 0; i < 5; ++i) {
-      global.Date.now = jest.fn(() => 0)
+      global.Date.now = vitest.fn(() => 0)
 
       const s = t.start()
 
-      global.Date.now = jest.fn(() => 1000)
+      global.Date.now = vitest.fn(() => 1000)
 
       t.end(s)
     }
@@ -59,11 +61,11 @@ describe('batches values', () => {
     )
 
     for (let i = 0; i < 4; ++i) {
-      global.Date.now = jest.fn(() => 0)
+      global.Date.now = vitest.fn(() => 0)
 
       const s = t.start()
 
-      global.Date.now = jest.fn(() => 1000)
+      global.Date.now = vitest.fn(() => 1000)
 
       t.end(s)
     }
@@ -78,11 +80,11 @@ describe('batches values', () => {
     )
 
     for (let i = 0; i < 17; ++i) {
-      global.Date.now = jest.fn(() => 0)
+      global.Date.now = vitest.fn(() => 0)
 
       const s = t.start()
 
-      global.Date.now = jest.fn(() => 1000)
+      global.Date.now = vitest.fn(() => 1000)
 
       t.end(s)
     }

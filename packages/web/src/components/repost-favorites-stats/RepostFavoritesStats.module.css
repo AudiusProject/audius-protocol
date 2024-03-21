@@ -1,7 +1,7 @@
 .statsRow {
   display: flex;
   align-items: center;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: bold;
 }
 
@@ -18,11 +18,11 @@
 }
 
 .statItem path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .statItem > span {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   transition: 0.11s all ease-in-out;
 }
 
@@ -51,8 +51,8 @@
 }
 
 .small.statsRow span {
-  font-size: var(--font-xs);
-  color: var(--neutral-light-4);
+  font-size: var(--harmony-font-xs);
+  color: var(--harmony-n-400);
 }
 
 .small.statsRow svg {
@@ -61,17 +61,17 @@
 }
 
 .small.statsRow path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .statItem:hover {
-  color: var(--primary) !important;
+  color: var(--harmony-primary) !important;
 }
 
 .statItem:hover > span {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .statItem:hover path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }

@@ -3,22 +3,22 @@
   flex-direction: column;
   align-content: center;
   align-items: center;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: var(--unit-2);
+  border-radius: var(--harmony-unit-2);
   transition: all ease-in-out 0.2s;
   margin-bottom: 0px;
   overflow: hidden;
-  padding: var(--unit-10);
+  padding: var(--harmony-unit-10);
 }
 
 .buttonContainer {
   width: 100%;
   max-width: 750px;
   display: flex;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
   align-items: center;
   justify-content: center;
 }

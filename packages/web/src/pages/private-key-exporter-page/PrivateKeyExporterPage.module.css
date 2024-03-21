@@ -9,9 +9,9 @@
 }
 
 .modalCloseIcon {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .modalTitle {
-  font-weight: var(--font-heavy);
+  font-weight: var(--harmony-font-heavy);
 }

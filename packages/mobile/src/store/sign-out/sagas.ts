@@ -41,6 +41,7 @@ function* signOut() {
 
   yield* put(resetAccount())
   yield* put(feedPageLineupActions.reset())
+  yield* put(setTheme({ theme: Theme.DEFAULT }))
 
   yield* put(clearHistory())
   yield* put(resetOAuthState())
@@ -55,7 +56,6 @@ function* signOut() {
   for (const storageKey of storageKeysToRemove) {
     yield* call([localStorage, 'removeItem'], storageKey)
   }
-  yield* put(setTheme({ theme: Theme.DEFAULT }))
   // On web we reload the page to get the app into a state
   // where it is acting like first-load. On mobile, in order to
   // get the same behavior, call to set up the backend again,

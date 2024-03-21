@@ -231,7 +231,7 @@ const Card = ({
           {(ref, triggerPopup: () => void) => (
             <div className={styles.iconContainer} onClick={triggerPopup}>
               <div ref={ref}>
-                <IconKebabHorizontal className={styles.iconKebabHorizontal} />
+                <IconKebabHorizontal color='subdued' size='s' />
               </div>
             </div>
           )}

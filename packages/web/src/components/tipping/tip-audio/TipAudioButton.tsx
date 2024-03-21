@@ -1,13 +1,10 @@
 import { profilePageSelectors, tippingActions } from '@audius/common/store'
-import { IconTokenGold } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
-import cn from 'classnames'
+import { Button, IconTokenGold } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 
-import styles from './TipAudio.module.css'
 const { beginTip } = tippingActions
 const { getProfileUser } = profilePageSelectors
 
@@ -25,15 +22,12 @@ export const TipAudioButton = () => {
 
   return (
     <Button
-      className={cn(styles.button, styles.tipAudioButton)}
-      type={ButtonType.PRIMARY}
-      text={
-        <div className={styles.tipIconTextContainer}>
-          <IconTokenGold size='l' />
-          <span className={styles.tipText}>{messages.tipAudio}</span>
-        </div>
-      }
+      variant='primary'
+      fullWidth
+      iconLeft={IconTokenGold}
       onClick={handleClick}
-    />
+    >
+      {messages.tipAudio}
+    </Button>
   )
 }

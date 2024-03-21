@@ -1,13 +1,15 @@
 import { useCallback } from 'react'
 
 import {
-  IconCopy as IconCopyPlain,
-  IconError as IconWarning,
+  IconCopy,
+  IconError,
   IconCaretRight,
-  IconButton
+  IconButton,
+  Hint
 } from '@audius/harmony'
 
 import { Divider } from 'components/divider'
+import { ExternalLink } from 'components/link'
 import Toast from 'components/toast/Toast'
 import { MountPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -55,20 +57,17 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
   return (
     <div className={styles.root}>
       {!apiSecret ? null : (
-        <div className={styles.secretNotice}>
-          <span className={styles.noticeTextRoot}>
-            <IconWarning className={styles.noticeIcon} />
-            <p className={styles.noticeText}>{messages.secretReminder}</p>
-          </span>
-          <a
-            target='_blank'
-            href={AUDIUS_SDK_LINK}
-            className={styles.readTheDocs}
-            rel='noreferrer'
-          >
-            {messages.readTheDocs}
-          </a>
-        </div>
+        <Hint
+          icon={IconError}
+          actions={
+            // TODO: use variant='visible' when migrated to harmony
+            <ExternalLink to={AUDIUS_SDK_LINK} className={styles.readTheDocs}>
+              {messages.readTheDocs}
+            </ExternalLink>
+          }
+        >
+          {messages.secretReminder}
+        </Hint>
       )}
       <h4 className={styles.appName}>{name}</h4>
       {!description ? null : (
@@ -88,7 +87,7 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
               onClick={copyApiKey}
               aria-label={messages.copyApiKeyLabel}
               color='subdued'
-              icon={IconCopyPlain}
+              icon={IconCopy}
             />
           </Toast>
         </span>
@@ -105,7 +104,7 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
                 onClick={copySecret}
                 aria-label={messages.copyApiKeyLabel}
                 color='subdued'
-                icon={IconCopyPlain}
+                icon={IconCopy}
               />
             </Toast>
           </span>

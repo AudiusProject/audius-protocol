@@ -12,7 +12,6 @@ export const messages = {
   modalTitle: (asset: ShareType) => `Share ${shareTypeMap[asset]}`,
   directMessage: 'Direct Message',
   twitter: 'Twitter',
-  tikTok: 'TikTok',
   copyLink: 'Copy Link',
   embed: 'Embed',
   toast: (asset: ShareType) => `Copied Link to ${shareTypeMap[asset]}`,

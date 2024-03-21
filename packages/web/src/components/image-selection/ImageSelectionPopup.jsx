@@ -4,8 +4,7 @@ import { useSelectTierInfo } from '@audius/common/hooks'
 import { RandomImage } from '@audius/common/services'
 import { accountSelectors, badgeTiers } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { Popup, SegmentedControl, IconSearch } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, Popup, SegmentedControl, IconSearch } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
@@ -95,12 +94,13 @@ const RandomPage = ({ onSelect }) => {
       </div>
       <div className={styles.buttonWrapper}>
         <Button
-          className={styles.button}
-          textClassName={styles.buttonText}
-          type={ButtonType.PRIMARY_ALT}
-          text={searched ? messages.searchAgain : messages.search}
+          variant='primary'
+          size='small'
+          fullWidth
           onClick={() => getRandomPhoto(randomPhotoQuery)}
-        />
+        >
+          {searched ? messages.searchAgain : messages.search}
+        </Button>
       </div>
       <div className={styles.suggestion}>
         <div className={styles.suggestionHeader}>

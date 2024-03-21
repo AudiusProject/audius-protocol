@@ -9,12 +9,15 @@ import {
 interface EnvVars {
   env: string
   ddexKey: string
+  ddexChoreography: 'ERNReleaseByRelease' | 'ERNBatched'
 }
 
 // Local testing sets overrides for env vars that would normally be fetched from the node
 const envVarOverrides = {
   env: (import.meta.env.VITE_ENV_OVERRIDE ?? '') as string,
-  ddexKey: (import.meta.env.VITE_DDEX_KEY_OVERRIDE ?? '') as string
+  ddexKey: (import.meta.env.VITE_DDEX_KEY_OVERRIDE ?? '') as string,
+  ddexChoreography: (import.meta.env.VITE_DDEX_CHOREOGRAPHY_OVERRIDE ??
+    'ERNReleaseByRelease') as 'ERNReleaseByRelease' | 'ERNBatched'
 }
 const endpoint = (import.meta.env.VITE_NODE_URL_OVERRIDE ||
   window.location.origin) as string

@@ -38,14 +38,12 @@ audius-compose connect
 
 Use these CLI tools for Audius dev. Currently there are 3 tools available:
 
-- `audius-cloud`: create a pre-configured GCP VM for dev
 - `audius-compose`: start, stop, and manage Audius service containers
 - `audius-cmd`: perform user actions, e.g. `create-user`, `upload-track`, `repost-playlist`
 
 View all available commands for any of these tools with `--help`, e.g.
 
 ```bash
-> audius-cloud --help
 > audius-compose --help
 > audius-cmd --help
 ```

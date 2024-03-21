@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { MobileOS, Status } from '@audius/common/models'
 import {
   accountSelectors,
   chatActions,
@@ -10,17 +9,17 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
   getHasCompletedAccount,
-  getStartedSignUpProcess
+  getStartedSignUpProcess,
+  getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
+import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
-import { SignOnScreen } from 'app/screens/signon'
 import { SplashScreen } from 'app/screens/splash-screen'
 import {
   UpdateRequiredScreen,
@@ -61,14 +60,12 @@ export const RootScreen = () => {
   const accountStatus = useSelector(getAccountStatus)
   const showHomeStack = useSelector(getHasCompletedAccount)
   const startedSignUp = useSelector(getStartedSignUpProcess)
-  const [welcomeModalShown, setWelcomeModalShown] = useState(false)
+  const welcomeModalShown = useSelector(getWelcomeModalShown)
+  const isAndroid = Platform.OS === MobileOS.ANDROID
+
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
-  const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
-    FeatureFlags.SIGN_UP_REDESIGN
-  )
   const { navigate } = useNavigation()
-
   const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
 
   useAppState(
@@ -105,18 +102,14 @@ export const RootScreen = () => {
   }, [])
 
   useEffect(() => {
-    if (isSignUpRedesignEnabled) {
-      if (showHomeStack && startedSignUp && !welcomeModalShown) {
-        openWelcomeDrawer()
-        setWelcomeModalShown(true)
-        // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
-        if (navigate) {
-          navigate('HomeStack')
-        }
+    if (showHomeStack && startedSignUp && !welcomeModalShown) {
+      openWelcomeDrawer()
+      // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
+      if (navigate) {
+        navigate('HomeStack')
       }
     }
   }, [
-    isSignUpRedesignEnabled,
     openWelcomeDrawer,
     showHomeStack,
     startedSignUp,
@@ -154,9 +147,9 @@ export const RootScreen = () => {
               name='HomeStack'
               component={AppDrawerScreen}
               // animation: none here is a workaround to prevent "white screen of death" on Android
-              options={{ animation: 'none' }}
+              options={isAndroid ? { animation: 'none' } : undefined}
             />
-          ) : isSignUpRedesignEnabled ? (
+          ) : (
             <Stack.Screen name='SignOnStackNew'>
               {() => (
                 <SignOnStack
@@ -164,8 +157,6 @@ export const RootScreen = () => {
                 />
               )}
             </Stack.Screen>
-          ) : (
-            <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}
           <Stack.Screen
             name='ResetPassword'

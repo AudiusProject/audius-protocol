@@ -3,6 +3,8 @@ import {
   useGetFeaturedArtists
 } from '@audius/common/api'
 import type { QueryHookOptions } from '@audius/common/audius-query'
+import type { Genre } from '@audius/common/utils'
+import { convertGenreLabelToValue } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useIsFocused, type RouteProp } from '@react-navigation/native'
 
@@ -28,9 +30,12 @@ export const TopArtistsCardList = (props: Props) => {
   const isFocused = useIsFocused()
   const { spacing } = useTheme()
 
-  const { data: artists } = useGetTopArtists(genre, {
-    disabled: !isFocused
-  })
+  const { data: artists } = useGetTopArtists(
+    convertGenreLabelToValue(genre as Genre),
+    {
+      disabled: !isFocused
+    }
+  )
 
   return (
     <CardList

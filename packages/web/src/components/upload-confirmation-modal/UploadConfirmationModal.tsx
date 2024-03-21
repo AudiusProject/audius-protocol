@@ -8,14 +8,12 @@ import {
   ModalHeader,
   ModalTitle,
   ModalFooter,
-  IconCloudUpload as IconUpload
+  IconCloudUpload as IconUpload,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
-
-import styles from './UploadConfirmationModal.module.css'
 
 const { getConfirmCallback, getHasPublicTracks } =
   uploadConfirmationModalUISelectors
@@ -46,33 +44,22 @@ export const UploadConfirmationModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
-        <ModalTitle
-          icon={<IconUpload className={styles.titleIcon} />}
-          title={messages.title}
-        />
+        <ModalTitle icon={<IconUpload />} title={messages.title} />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText className={styles.modalText}>
+        <ModalContentText>
           {hasPublicTracks
             ? messages.publicDescription
             : messages.hiddenDescription}
         </ModalContentText>
       </ModalContent>
-      <ModalFooter className={styles.modalFooter}>
-        <Button
-          textClassName={styles.modalButton}
-          fullWidth
-          text={messages.cancel}
-          type={ButtonType.COMMON}
-          onClick={onClose}
-        />
-        <Button
-          textClassName={styles.modalButton}
-          fullWidth
-          text={messages.upload}
-          type={ButtonType.PRIMARY}
-          onClick={handleConfirm}
-        />
+      <ModalFooter>
+        <Button variant='secondary' fullWidth onClick={onClose}>
+          {messages.cancel}
+        </Button>
+        <Button variant='primary' fullWidth onClick={handleConfirm}>
+          {messages.upload}
+        </Button>
       </ModalFooter>
     </Modal>
   )

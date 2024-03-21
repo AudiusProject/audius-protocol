@@ -16,23 +16,14 @@
   justify-content: space-between;
 }
 
-.active .title {
-  padding: 18px 32px;
-}
-
 .noProposals {
   border-top: 1px solid var(--neutral-light-8);
-
   text-align: center;
   font-family: var(--font-family);
   font-weight: var(--font-demi-bold);
   font-size: var(--font-m);
   color: var(--neutral);
   padding: 28px 32px;
-}
-
-.list {
-  min-height: 100px;
 }
 
 .loading {

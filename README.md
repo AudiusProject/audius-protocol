@@ -1,8 +1,8 @@
 <p align="center">
   <br/>
-  <a target="_blank" href="https://audius.co">
-    <img src="https://user-images.githubusercontent.com/2731362/90302695-e5ae8a00-de5c-11ea-88b5-24c1408affc6.png" alt="audius-client" width="200">
-  </a>
+  <img src="./packages/web/src/assets/img/audiusLogoColored.png#gh-light-mode-only" alt="audius-client" width="200">
+  <img src="./packages/web/src/assets/img/audiusLogoWhite.png#gh-dark-mode-only" alt="audius-client" width="200">
+
   <br/>
 
   <p align="center">
@@ -42,7 +42,6 @@ For details on operating an Audius service, getting started with the Token and t
 | [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                                        |
 | [`spl`](./packages/spl)                                                                         | Handles Solana instructions for the Audius programs                                                                                                                                   |
 | [`sql-ts`](./packages/sql-ts)                                                                   | A typescript database client                                                                                                                                                          |
-| [`stems`](./packages/stems)                                                                     | The Audius client component library                                                                                                                                                   |
 | [`trpc-server`](./packages/trpc-server)                                                         | tRPC server used for serving data                                                                                                                                                     |
 | [`web`](./packages/web)                                                                         | The Audius reference web and desktop application                                                                                                                                      |
 

@@ -8,19 +8,15 @@ import {
 } from '@audius/common/store'
 import {
   IconCloudUpload as IconUpload,
-  IconUserFollow as IconFollow
+  IconUserFollow as IconFollow,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
-import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { AppState } from 'store/types'
 import { SIGN_UP_PAGE, UPLOAD_PAGE } from 'utils/route'
-
-import styles from './NavButton.module.css'
 
 const { getAccountStatus, getAccountUser } = accountSelectors
 const { resetState: resetUploadState } = uploadActions
@@ -57,70 +53,38 @@ export const NavButton = () => {
 
   let button
   switch (status) {
-    case 'signedOut':
-      button = (
-        <Button
-          as={Link}
-          to={SIGN_UP_PAGE}
-          className={cn(styles.navButton, styles.createAccount)}
-          textClassName={styles.navButtonText}
-          iconClassName={styles.navButtonIcon}
-          type={ButtonType.PRIMARY_ALT}
-          size={ButtonSize.SMALL}
-          text={messages.signUp}
-          leftIcon={<IconFollow />}
-          onClick={handleSignup}
-        />
-      )
-      break
     case 'signedIn':
-      button = (
-        <Button
-          as={Link}
-          to={UPLOAD_PAGE}
-          className={cn(styles.navButton, styles.upload)}
-          textClassName={styles.navButtonText}
-          iconClassName={styles.navButtonIcon}
-          type={ButtonType.COMMON}
-          size={ButtonSize.SMALL}
-          text={messages.uploadTrack}
-          leftIcon={<IconUpload />}
-          onClick={handleUpload}
-        />
-      )
-      break
     case 'uploading':
       button = (
         <Button
-          as={Link}
-          to={UPLOAD_PAGE}
-          className={cn(styles.navButton, styles.upload)}
-          textClassName={styles.navButtonText}
-          iconClassName={styles.navButtonIcon}
-          type={ButtonType.COMMON_ALT}
-          size={ButtonSize.SMALL}
-          text={messages.uploading}
-          leftIcon={<LoadingSpinner className={styles.spinner} />}
+          variant='secondary'
+          size='small'
+          asChild
+          iconLeft={IconUpload}
+          isLoading={status === 'uploading'}
           onClick={handleUpload}
-        />
+        >
+          <Link to={UPLOAD_PAGE}>{messages.uploadTrack}</Link>
+        </Button>
       )
       break
     case 'loading':
       button = null
       break
+    case 'signedOut':
     default:
       button = (
         <Button
-          className={cn(styles.navButton, styles.createAccount)}
-          textClassName={styles.navButtonText}
-          iconClassName={styles.navButtonIcon}
-          type={ButtonType.PRIMARY_ALT}
-          size={ButtonSize.SMALL}
-          text='SIGN UP'
-          leftIcon={<IconFollow />}
+          variant='primary'
+          size='small'
+          asChild
+          iconLeft={IconFollow}
           onClick={handleSignup}
-        />
+        >
+          <Link to={SIGN_UP_PAGE}>{messages.signUp}</Link>
+        </Button>
       )
+      break
   }
 
   return button

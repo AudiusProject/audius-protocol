@@ -1,5 +1,5 @@
 import { newTrackMetadata } from '@audius/common/schemas'
-import type { UploadTrack } from '@audius/common/store'
+import type { TrackForUpload } from '@audius/common/store'
 import {
   ALLOWED_MAX_AUDIO_SIZE_BYTES,
   ALLOWED_AUDIO_FILE_EXTENSIONS,
@@ -35,7 +35,7 @@ const getAudioDuration = async (filePath: string): Promise<number | null> => {
 
 export const processTrackFile = async (
   trackFile: DocumentPickerResponse
-): Promise<UploadTrack> => {
+): Promise<TrackForUpload> => {
   const { name, size, fileCopyUri, uri, type } = trackFile
   if (!size || size <= 0) {
     throw new Error(

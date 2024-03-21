@@ -28,8 +28,13 @@ import {
   QueueItem,
   CommonState
 } from '@audius/common/store'
-import { IconAlbum, IconFilter, IconNote, IconPlaylists } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import {
+  Button,
+  IconAlbum,
+  IconFilter,
+  IconNote,
+  IconPlaylists
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -70,17 +75,14 @@ type EmptyTabProps = {
 }
 
 export const EmptyTab = (props: EmptyTabProps) => {
+  const { message, onClick } = props
   return (
     <div className={styles.emptyTab}>
-      <div className={styles.message}>{props.message}</div>
+      <div className={styles.message}>{message}</div>
       <div className={styles.afterSaved}>{emptyTabMessages.afterSaved}</div>
-      <Button
-        type={ButtonType.PRIMARY_ALT}
-        className={styles.emptyButton}
-        textClassName={styles.emptyButtonText}
-        text={emptyTabMessages.goToTrending}
-        onClick={props.onClick}
-      />
+      <Button variant='primary' onClick={onClick}>
+        {emptyTabMessages.goToTrending}
+      </Button>
     </div>
   )
 }

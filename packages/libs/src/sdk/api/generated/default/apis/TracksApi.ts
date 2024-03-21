@@ -87,8 +87,6 @@ export interface StreamTrackRequest {
     userData?: string;
     nftAccessSignature?: string;
     skipPlayCount?: boolean;
-    filename?: string;
-    premiumContentSignature?: string;
 }
 
 /**
@@ -433,14 +431,6 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.skipPlayCount !== undefined) {
             queryParameters['skip_play_count'] = params.skipPlayCount;
-        }
-
-        if (params.filename !== undefined) {
-            queryParameters['filename'] = params.filename;
-        }
-
-        if (params.premiumContentSignature !== undefined) {
-            queryParameters['premium_content_signature'] = params.premiumContentSignature;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

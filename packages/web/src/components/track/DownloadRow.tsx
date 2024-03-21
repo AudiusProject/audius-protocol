@@ -84,6 +84,7 @@ export const DownloadRow = ({
       justifyContent='space-between'
       w='100%'
       gap='xs'
+      role='row'
     >
       <Flex gap='xl' alignItems='center' w='100%' css={{ overflow: 'hidden' }}>
         <Text variant='body' color='subdued'>
@@ -126,7 +127,7 @@ export const DownloadRow = ({
             {formatBytes(size)}
           </Text>
         ) : null}
-        {!hideDownload ? null : (
+        {hideDownload ? null : (
           <>
             {shouldDisplayDownloadFollowGated ? (
               <Tooltip

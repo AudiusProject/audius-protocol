@@ -84,6 +84,7 @@ export const SEND_WELCOME_EMAIL = 'SIGN_ON/SEND_WELCOME_EMAIL'
 
 export const FETCH_REFERRER = 'SIGN_ON/FETCH_REFERRER'
 export const SET_REFERRER = 'SIGN_ON/SET_REFERRER'
+export const SET_WELCOME_MODAL_SHOWN = 'SIGN_ON/SET_WELCOME_MODAL_SHOWN'
 
 /**
  * Sets the value for a field in the sign on state
@@ -489,6 +490,11 @@ export const fetchReferrer = (handle: string) => ({
 export const setReferrer = (userId: ID) => ({
   type: SET_REFERRER,
   userId
+})
+
+export const setWelcomeModalShown = (newValue: boolean) => ({
+  type: SET_WELCOME_MODAL_SHOWN,
+  value: newValue
 })
 
 /*

@@ -101,7 +101,6 @@ const FULL_ENDPOINT_MAP = {
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
-  getUserTrackHistory: (userId: OpaqueID) => `/users/${userId}/history/tracks`,
   getUserSupporter: (userId: OpaqueID, supporterUserId: OpaqueID) =>
     `/users/${userId}/supporters/${supporterUserId}`,
   getUserSupporting: (userId: OpaqueID, supporterUserId: OpaqueID) =>
@@ -430,14 +429,6 @@ export type GetSocialFeedArgs = QueryParams & {
 }
 
 type GetSocialFeedResponse = {}
-
-type GetUserTrackHistoryArgs = {
-  userId: ID
-  currentUserId: Nullable<ID>
-  limit?: number
-  offset?: number
-  sortMethod?: string
-}
 
 type GetReactionArgs = {
   reactedToIds: string[]
@@ -1625,37 +1616,6 @@ export class AudiusAPIClient {
     )
     if (!response) return null
     return response.data
-  }
-
-  async getUserTrackHistory({
-    currentUserId,
-    userId,
-    offset = 0,
-    limit = 100,
-    sortMethod
-  }: GetUserTrackHistoryArgs) {
-    const encodedUserId = this._encodeOrThrow(userId)
-    const encodedCurrentUserId = encodeHashId(currentUserId)
-    this._assertInitialized()
-    const params = {
-      user_id: encodedCurrentUserId || undefined,
-      limit,
-      offset,
-      sort_method: sortMethod
-    }
-
-    const response = await this._getResponse<APIResponse<APIActivity[]>>(
-      FULL_ENDPOINT_MAP.getUserTrackHistory(encodedUserId),
-      params
-    )
-
-    if (!response) return []
-
-    const adapted = response.data.map(({ item, ...props }) => ({
-      timestamp: props.timestamp,
-      track: adapter.makeTrack(item as APITrack)
-    }))
-    return adapted
   }
 
   async getUserSupporter({

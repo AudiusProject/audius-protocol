@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { IconArrowRight as IconArrow } from '@audius/harmony'
-import { ButtonType, Button } from '@audius/stems'
+import { Button, IconArrowRight as IconArrow } from '@audius/harmony'
 
 import AudiusAPI from 'assets/img/audiusAPI.png'
 import { useModalState } from 'common/hooks/useModalState'
@@ -31,14 +30,12 @@ const TopAPIBody = () => {
       <span className={styles.title}>{messages.title}</span>
       <span className={styles.subtitle}>{messages.description}</span>
       <Button
-        type={ButtonType.PRIMARY_ALT}
-        text={messages.button}
-        className={styles.button}
+        variant='primary'
         onClick={onClickAudiusAPI}
-        textClassName={styles.buttonText}
-        rightIcon={<IconArrow />}
-        iconClassName={styles.buttonIcon}
-      />
+        iconRight={IconArrow}
+      >
+        {messages.button}
+      </Button>
     </div>
   )
 }

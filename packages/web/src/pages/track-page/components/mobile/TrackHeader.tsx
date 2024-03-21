@@ -1,7 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -33,9 +32,9 @@ import {
   IconPlay,
   IconSpecialAccess,
   IconCart,
-  Box
+  Box,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -43,10 +42,10 @@ import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import { DogEar } from 'components/dog-ear'
-import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
+import { StaticImage } from 'components/static-image/StaticImage'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
@@ -54,6 +53,7 @@ import { GatedTrackSection } from 'components/track/GatedTrackSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { useSsrContext } from 'ssr/SsrContext'
 import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
 import { trpc } from 'utils/trpcClientWeb'
@@ -86,25 +86,26 @@ const PlayButton = ({ disabled, playing, onPlay }: PlayButtonProps) => {
   return (
     <Button
       disabled={disabled}
-      type={ButtonType.PRIMARY_ALT}
-      text={playing ? messages.pause : messages.play}
-      leftIcon={playing ? <IconPause /> : <IconPlay />}
+      variant='primary'
+      iconLeft={playing ? IconPause : IconPlay}
       onClick={onPlay}
-      size={ButtonSize.LARGE}
       fullWidth
-    />
+    >
+      {playing ? messages.pause : messages.play}
+    </Button>
   )
 }
 
 const PreviewButton = ({ playing, onPlay }: PlayButtonProps) => {
   return (
     <Button
-      type={ButtonType.SECONDARY}
-      text={playing ? messages.pause : messages.preview}
-      leftIcon={playing ? <IconPause /> : <IconPlay />}
+      variant='secondary'
+      iconLeft={playing ? IconPause : IconPlay}
       onClick={onPlay}
       fullWidth
-    />
+    >
+      {playing ? messages.pause : messages.preview}
+    </Button>
   )
 }
 
@@ -202,11 +203,9 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { getTrack } = cacheTracksSelectors
+  const { isSsrEnabled } = useSsrContext()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
@@ -233,6 +232,7 @@ const TrackHeader = ({
     coverArtSizes,
     SquareSizes.SIZE_480_BY_480
   )
+
   const onSaveHeroTrack = () => {
     if (!isOwner) onSave()
   }
@@ -303,22 +303,6 @@ const TrackHeader = ({
     )
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <DownloadButtons
-        className={cn(
-          styles.downloadButtonsContainer,
-          styles.withSectionDivider
-        )}
-        trackId={trackId}
-        isOwner={isOwner}
-        following={isFollowing}
-        hasDownloadAccess={hasDownloadAccess}
-        onDownload={onDownload}
-      />
-    )
-  }
-
   const renderTrackLabels = () => {
     return trackLabels.map((infoFact) => {
       return (
@@ -338,6 +322,9 @@ const TrackHeader = ({
     goToRepostsPage(trackId)
   }, [goToRepostsPage, trackId])
 
+  const InnerImageElement = isSsrEnabled ? StaticImage : DynamicImage
+  const imageSrc = isSsrEnabled ? track?.cover_art_sizes : image
+
   const imageElement = coSign ? (
     <CoSign
       size={Size.LARGE}
@@ -347,11 +334,18 @@ const TrackHeader = ({
       className={styles.coverArt}
       userId={coSign.user.user_id}
     >
-      <DynamicImage image={image} wrapperClassName={styles.imageWrapper} />
+      <InnerImageElement
+        cid={imageSrc}
+        image={imageSrc ?? undefined}
+        alt='Track Artwork'
+        wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
+      />
     </CoSign>
   ) : (
-    <DynamicImage
-      image={image}
+    <InnerImageElement
+      cid={imageSrc}
+      image={imageSrc ?? undefined}
+      alt='Track Artwork'
       wrapperClassName={cn(styles.coverArt, styles.imageWrapper)}
     />
   )
@@ -421,10 +415,9 @@ const TrackHeader = ({
         <UserLink
           userId={userId}
           color='accent'
-          variant='body'
+          textVariant='body'
           size='l'
-          textAs='h2'
-          badgeSize={16}
+          tag='h2'
         />
       </div>
       {showPlay ? (
@@ -505,8 +498,7 @@ const TrackHeader = ({
         {renderTrackLabels()}
       </div>
       {renderTags()}
-      {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
-      {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
+      {hasDownloadableAssets ? (
         <Box pt='l' w='100%'>
           <Suspense>
             <DownloadSection trackId={trackId} />

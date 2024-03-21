@@ -5,7 +5,7 @@ import { Nullable } from '../utils/typeUtils'
 import { Chain } from './Chain'
 import { Favorite } from './Favorite'
 import { CID, ID, UID } from './Identifiers'
-import { CoverArtSizes } from './ImageSizes'
+import { CoverArtSizes, CoverArtSizesCids } from './ImageSizes'
 import { Repost } from './Repost'
 import { StemCategory } from './Stems'
 import { Timestamped } from './Timestamped'
@@ -22,16 +22,6 @@ export interface Followee extends User {
   is_delete: boolean
   repost_item_id: string
   repost_type: string
-}
-
-export interface Download {
-  // TODO: figure out why
-  // is_downloadable and requires_follow
-  // are randomly null on some tracks
-  // returned from the API
-  is_downloadable: Nullable<boolean>
-  requires_follow: Nullable<boolean>
-  cid: Nullable<string>
 }
 
 export type FieldVisibility = {
@@ -174,6 +164,23 @@ export type SolCollectionMap = {
 
 export type GatedTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
 
+export type ResourceContributor = {
+  name: string
+  roles: [string]
+  sequence_number: number
+}
+
+export type RightsController = {
+  name: string
+  roles: [string]
+  rights_share_unknown?: string
+}
+
+export type Copyright = {
+  year: string
+  text: string
+}
+
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
   blocknumber: number
@@ -190,7 +197,6 @@ export type TrackMetadata = {
   genre: string
   has_current_user_reposted: boolean
   has_current_user_saved: boolean
-  download: Nullable<Download>
   license: Nullable<License>
   mood: Nullable<string>
   play_count: number
@@ -203,7 +209,7 @@ export type TrackMetadata = {
   track_segments: TrackSegment[]
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
-  cover_art_cids?: Nullable<CoverArtSizes>
+  cover_art_cids?: Nullable<CoverArtSizesCids>
   is_scheduled_release: boolean
   is_unlisted: boolean
   is_available: boolean
@@ -220,6 +226,15 @@ export type TrackMetadata = {
   orig_filename: Nullable<string>
   is_downloadable: boolean
   is_original_available: boolean
+  ddex_app?: Nullable<string>
+  ddex_release_ids?: any | null
+  artists?: [ResourceContributor] | null
+  resource_contributors?: [ResourceContributor] | null
+  indirect_resource_contributors?: [ResourceContributor] | null
+  rights_controller?: RightsController | null
+  copyright_line?: Copyright | null
+  producer_copyright_line?: Copyright | null
+  parental_warning_type?: string | null
 
   // Optional Fields
   is_playlist_upload?: boolean

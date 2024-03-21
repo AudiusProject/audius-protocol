@@ -205,7 +205,9 @@ function* downloadTrackCoverArt(track: TrackMetadata) {
     cidMap: cover_art_cids
   })
 
-  const coverArtUris = imageSources.map(({ uri }) => uri).filter(removeNullable)
+  const coverArtUris = imageSources
+    .map((src) => (typeof src === 'object' && 'uri' in src ? src.uri : null))
+    .filter(removeNullable)
   const covertArtFilePath = getLocalTrackCoverArtDestination(track_id)
 
   for (const coverArtUri of coverArtUris) {

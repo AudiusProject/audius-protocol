@@ -17,10 +17,10 @@
 }
 
 .changeCell.increase {
-  color: var(--accent-green);
+  color: var(--harmony-green);
 }
 .changeCell.decrease {
-  color: var(--accent-orange);
+  color: var(--harmony-orange);
 }
 
 .typeText {

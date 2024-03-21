@@ -1,10 +1,10 @@
 import { CID, ID, UID } from '../models/Identifiers'
-import { CoverArtSizes } from '../models/ImageSizes'
+import { CoverArtSizes, CoverArtSizesCids } from '../models/ImageSizes'
 import { Repost } from '../models/Repost'
 import { Nullable } from '../utils/typeUtils'
 
 import { Favorite } from './Favorite'
-import { UserTrackMetadata } from './Track'
+import { UserTrackMetadata, ResourceContributor, Copyright } from './Track'
 import { User, UserMetadata } from './User'
 
 export enum Variant {
@@ -43,7 +43,7 @@ export type CollectionMetadata = {
   playlist_id: ID
   cover_art: CID | null
   cover_art_sizes: Nullable<CID>
-  cover_art_cids?: Nullable<CoverArtSizes>
+  cover_art_cids?: Nullable<CoverArtSizesCids>
   permalink?: string
   playlist_name: string
   playlist_owner_id: ID
@@ -58,6 +58,12 @@ export type CollectionMetadata = {
   offline?: OfflineCollectionMetadata
   local?: boolean
   release_date?: string
+  ddex_app?: string | null
+  ddex_release_ids?: any | null
+  artists?: [ResourceContributor] | null
+  copyright_line?: Copyright | null
+  producer_copyright_line?: Copyright | null
+  parental_warning_type?: string | null
 }
 
 export type CollectionDownloadReason = { is_from_favorites: boolean }
@@ -106,5 +112,5 @@ export type SmartCollection = {
 export type CollectionImage = {
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
-  cover_art_cids?: Nullable<CoverArtSizes>
+  cover_art_cids?: Nullable<CoverArtSizesCids>
 }

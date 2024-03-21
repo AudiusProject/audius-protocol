@@ -10,7 +10,6 @@ import {
 
 import { Maybe } from '@audius/common/utils'
 import {
-  Box,
   BoxProps,
   Button,
   ButtonProps,
@@ -246,14 +245,14 @@ export const ReadOnlyField = (props: ReadOnlyFieldProps) => {
   const { label, value } = props
 
   return (
-    <Box>
+    <Flex direction='column' gap='xs'>
       <Text variant='label' size='xs'>
         {label}
       </Text>
       <Text variant='body' size='m'>
         {value}
       </Text>
-    </Box>
+    </Flex>
   )
 }
 

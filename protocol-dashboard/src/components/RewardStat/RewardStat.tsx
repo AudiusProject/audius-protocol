@@ -1,10 +1,9 @@
 import React, { ReactNode } from 'react'
 
-import Paper from 'components/Paper'
-import styles from './RewardStat.module.css'
-import Loading from 'components/Loading'
+import { Flex, Text } from '@audius/harmony'
 import Error from 'components/Error'
-import clsx from 'clsx'
+import Loading from 'components/Loading'
+import styles from './RewardStat.module.css'
 
 type OwnProps = {
   className?: string
@@ -15,27 +14,39 @@ type OwnProps = {
 
 type RewardStatProps = OwnProps
 
-const RewardStat: React.FC<RewardStatProps> = ({
-  className,
-  stat,
-  label,
-  error
-}) => {
+const RewardStat: React.FC<RewardStatProps> = ({ stat, label, error }) => {
   return (
-    <Paper className={clsx(styles.container, { [className!]: className })}>
+    <Flex gap="s">
       {error ? (
         <div className={styles.stat}>
           <Error />
         </div>
       ) : stat !== null ? (
-        <div className={styles.stat}>{stat}</div>
+        <Text
+          css={{ display: 'inline' }}
+          variant="heading"
+          size="s"
+          strength="default"
+          tag="span"
+        >
+          {stat}
+        </Text>
       ) : (
         <div className={styles.loadingContainer}>
           <Loading className={styles.loading} />
         </div>
       )}
-      <div className={styles.label}>{label}</div>
-    </Paper>
+      <Text
+        css={{ display: 'inline' }}
+        variant="heading"
+        size="s"
+        color="subdued"
+        strength="default"
+        tag="span"
+      >
+        {label}
+      </Text>
+    </Flex>
   )
 }
 

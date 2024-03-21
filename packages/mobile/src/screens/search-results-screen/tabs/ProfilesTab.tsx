@@ -9,6 +9,7 @@ import { spacing } from 'app/styles/spacing'
 import { EmptyResults } from '../EmptyResults'
 
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
+import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
 
 const { getSearchStatus } = searchResultsPageSelectors
 
@@ -22,6 +23,10 @@ const selectSearchUsers = (state: CommonState) => {
 }
 
 export const ProfilesTab = () => {
+  const onSelectSearchResult = useTrackSearchResultSelect(
+    'profile',
+    'more results page'
+  )
   const users = useProxySelector(selectSearchUsers, [])
 
   useFetchTabResultsEffect(SearchKind.USERS)
@@ -29,6 +34,7 @@ export const ProfilesTab = () => {
   return (
     <ProfileList
       style={{ paddingTop: spacing(3) }}
+      onCardPress={onSelectSearchResult}
       isLoading={!users}
       profiles={users}
       ListEmptyComponent={<EmptyResults />}

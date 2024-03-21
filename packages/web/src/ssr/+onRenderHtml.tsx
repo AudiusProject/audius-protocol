@@ -1,16 +1,20 @@
 import { SsrPageProps } from '@audius/common/models'
+import createEmotionServer from '@emotion/server/create-instance'
 import { createMemoryHistory } from 'history'
-import ReactDOMServer from 'react-dom/server'
+import { renderToString } from 'react-dom/server'
 import { Helmet } from 'react-helmet'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import type { PageContextServer } from 'vike/types'
 
 import { isMobileUserAgent } from 'utils/clientUtil'
 
-import { Root } from '../Root'
+import { harmonyCache } from '../HarmonyCacheProvider'
 
-import { SsrContextProvider } from './SsrContext'
+import RootWithProviders from './RootWithProviders'
 import { getIndexHtml } from './getIndexHtml'
+
+const { extractCriticalToChunks, constructStyleTagsFromChunks } =
+  createEmotionServer(harmonyCache)
 
 export default function render(
   pageContext: PageContextServer & {
@@ -26,20 +30,21 @@ export default function render(
     initialEntries: [urlPathname]
   })
 
-  const pageHtml = ReactDOMServer.renderToString(
-    <SsrContextProvider
-      value={{
+  const pageHtml = renderToString(
+    <RootWithProviders
+      ssrContextValue={{
         isServerSide: true,
         isSsrEnabled: true,
         pageProps,
         history,
         isMobile
       }}
-    >
-      <Root />
-    </SsrContextProvider>
+    />
   )
+
   const helmet = Helmet.renderStatic()
+  const chunks = extractCriticalToChunks(pageHtml)
+  const styles = constructStyleTagsFromChunks(chunks)
 
   const html = getIndexHtml()
     .replace(`<div id="root"></div>`, `<div id="root">${pageHtml}</div>`)
@@ -49,6 +54,12 @@ export default function render(
       ${helmet.title.toString()}
       ${helmet.meta.toString()}
       ${helmet.link.toString()}
+      `
+    )
+    .replace(
+      `<style id="emotion"></style>`,
+      `
+      ${styles}
       `
     )
 

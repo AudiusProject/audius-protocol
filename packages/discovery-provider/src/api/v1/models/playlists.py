@@ -14,6 +14,11 @@ playlist_artwork = ns.model(
     },
 )
 
+access = ns.model(
+    "access",
+    {"stream": fields.Boolean, "download": fields.Boolean},
+)
+
 playlist_added_timestamp = ns.model(
     "playlist_added_timestamp",
     {
@@ -39,9 +44,10 @@ playlist_model = ns.model(
         "favorite_count": fields.Integer(required=True),
         "total_play_count": fields.Integer(required=True),
         "user": fields.Nested(user_model, required=True),
+        "ddex_app": fields.String(allow_null=True),
+        "access": fields.Nested(access),
     },
 )
-
 
 full_playlist_without_tracks_model = ns.clone(
     "playlist_full_without_tracks",

@@ -3,12 +3,11 @@ import { MouseEvent, useCallback } from 'react'
 import { Name } from '@audius/common/models'
 import { useLeavingAudiusModal } from '@audius/common/store'
 import { isAllowedExternalLink } from '@audius/common/utils'
+import { TextLink, TextLinkProps } from '@audius/harmony'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 
-import { Link, LinkProps } from './Link'
-
-type ExternalLinkProps = LinkProps & {
+type ExternalLinkProps = Omit<TextLinkProps, 'href'> & {
   source?: 'profile page' | 'track page' | 'collection page'
   ignoreWarning?: boolean
 }
@@ -31,27 +30,13 @@ export const ExternalLink = (props: ExternalLinkProps) => {
           })
         )
       }
-      if (
-        typeof to === 'string' &&
-        !ignoreWarning &&
-        !isAllowedExternalLink(to)
-      ) {
+      if (to && !ignoreWarning && !isAllowedExternalLink(to)) {
         event.preventDefault()
-        openLeavingAudiusModal({ link: to as string })
+        openLeavingAudiusModal({ link: to })
       }
     },
     [onClick, record, source, openLeavingAudiusModal, to, ignoreWarning]
   )
 
-  return (
-    // @ts-expect-error
-    <Link
-      tag='a'
-      href={to as string}
-      onClick={handleClick}
-      {...other}
-      target='_blank'
-      rel='noopener noreferrer'
-    />
-  )
+  return <TextLink isExternal href={to} onClick={handleClick} {...other} />
 }

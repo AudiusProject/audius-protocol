@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-if [[ "$PROTOCOL_DIR" != "" ]]; then
-	cd $PROTOCOL_DIR/dev-tools/compose
-fi
-export COMPOSE_PROJECT_NAME=$(basename $PROTOCOL_DIR)
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"/compose  # audius-protocol/dev-tools/compose
+export COMPOSE_PROJECT_NAME='audius-protocol'
 
 if [[ "$1" == "test" ]]; then
 	docker compose exec audius-cmd npm test

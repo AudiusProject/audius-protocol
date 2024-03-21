@@ -1,6 +1,6 @@
 .container {
   height: 24px;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   border-radius: 6px;
   display: flex;
   flex-direction: row;
@@ -17,7 +17,7 @@
 
 .container:active {
   transition: none;
-  background-color: var(--secondary-light-2);
+  background-color: var(--harmony-s-100);
 }
 
 .text {

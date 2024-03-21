@@ -1,5 +1,6 @@
 import { AUDIO, wAUDIO, USDC, FixedDecimal } from '@audius/fixed-decimal'
 import BN from 'bn.js'
+import { describe, it, expect } from 'vitest'
 
 import { BNWei, BNUSDC } from '~/models/Wallet'
 

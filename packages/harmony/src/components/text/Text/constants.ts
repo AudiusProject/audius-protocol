@@ -10,6 +10,19 @@ export const variantTagMap = {
     l: 'h2',
     m: 'h3',
     s: 'h4'
+  },
+  title: {
+    xl: 'h5',
+    l: 'h5',
+    m: 'h5',
+    s: 'h5'
+  },
+  label: {
+    xl: 'p',
+    l: 'p',
+    m: 'p',
+    s: 'p',
+    xs: 'p'
   }
 }
 

@@ -6,6 +6,7 @@ import {
   IconArrowRight,
   IconCheck,
   IconCloudUpload,
+  IconComponent,
   IconTokenGold
 } from '@audius/harmony'
 
@@ -31,8 +32,8 @@ type LinkButtonType =
 
 type LinkButtonInfo = {
   label: string
-  leftIcon: ReactNode | null
-  rightIcon: ReactNode | null
+  leftIcon: IconComponent | null
+  rightIcon: IconComponent | null
   link: (handle: string | null) => string | null
 }
 
@@ -44,49 +45,49 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   trackUpload: {
     label: 'Upload Tracks',
     leftIcon: null,
-    rightIcon: <IconCloudUpload />,
+    rightIcon: IconCloudUpload,
     link: () => UPLOAD_PAGE
   },
   profile: {
     label: 'Your Profile',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: (handle: Nullable<string>) => (handle ? profilePage(handle) : null)
   },
   verifyAccount: {
     label: 'Verify Your Account',
     leftIcon: null,
-    rightIcon: <IconCheck />,
+    rightIcon: IconCheck,
     link: () => SETTINGS_PAGE
   },
   trendingTracks: {
     label: 'Trending Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => TRENDING_PAGE
   },
   sendFirstTip: {
     label: 'Send a Tip',
     leftIcon: null,
-    rightIcon: <GoldBadgeIconImage />,
+    rightIcon: GoldBadgeIconImage,
     link: () => LIBRARY_PAGE
   },
   firstPlaylist: {
     label: 'Discover Some Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => EXPLORE_PAGE
   },
   [ChallengeName.AudioMatchingSell]: {
     label: 'View Premium Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   },
   [ChallengeName.AudioMatchingBuy]: {
     label: 'View Premium Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   }
 }

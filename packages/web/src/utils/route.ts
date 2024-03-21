@@ -355,7 +355,7 @@ export const fullAlbumPage = (handle: string, title: string, id: ID) => {
 }
 
 export const collectionPage = (
-  handle: string,
+  handle?: string | null,
   playlistName?: string | null,
   playlistId?: ID | null,
   permalink?: string | null,
@@ -364,7 +364,7 @@ export const collectionPage = (
   // Prioritize permalink if available. If not, default to legacy routing
   if (permalink) {
     return permalink
-  } else if (playlistName && playlistId) {
+  } else if (playlistName && playlistId && handle) {
     const collectionType = isAlbum ? 'album' : 'playlist'
     return `/${encodeUrlName(handle)}/${collectionType}/${encodeUrlName(
       playlistName

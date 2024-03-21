@@ -1,11 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import { IconCloudUpload } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, Flex, IconCloudUpload } from '@audius/harmony'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
-
-import styles from './UploadButton.module.css'
 
 const UploadButton = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -18,23 +15,20 @@ const UploadButton = () => {
   }, [setIsDrawerOpen])
 
   return (
-    <>
-      <div className={styles.buttonContainer}>
-        <Button
-          className={styles.button}
-          textClassName={styles.buttonText}
-          onClick={handleClick}
-          text='Upload Track'
-          type={ButtonType.COMMON_ALT}
-          leftIcon={<IconCloudUpload />}
-          iconClassName={styles.icon}
-        />
-      </div>
+    <Flex pv='s' ph='m'>
+      <Button
+        variant='tertiary'
+        onClick={handleClick}
+        iconLeft={IconCloudUpload}
+        fullWidth
+      >
+        Upload Track
+      </Button>
       <DownloadMobileAppDrawer
         isOpen={isDrawerOpen}
         onClose={handleDrawerClose}
       />
-    </>
+    </Flex>
   )
 }
 

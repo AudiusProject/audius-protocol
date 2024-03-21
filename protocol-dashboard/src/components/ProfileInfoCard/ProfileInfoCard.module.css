@@ -1,0 +1,38 @@
+.imageContainer {
+  display: flex;
+}
+
+.userImg {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.userName,
+.userWallet {
+  font-family: var(--font-family);
+  font-weight: var(--font-regular);
+  text-align: center;
+
+  color: #bec5e0;
+}
+
+.userName {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-1);
+  font-size: var(--font-m);
+  min-height: var(--font-m);
+  font-weight: var(--font-medium);
+  margin-bottom: 8px;
+}
+
+.userWallet {
+  font-size: var(--font-s);
+  margin-bottom: 24px;
+}
+
+.disconnectLink {
+  font-size: var(--font-s);
+}

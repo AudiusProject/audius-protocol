@@ -161,6 +161,12 @@ export type LineupProps = {
    * When `true`, add pull-to-refresh capability
    */
   pullToRefresh?: boolean
+
+  /**
+   * Function called when item is pressed
+   */
+  onPressItem?: (id: ID) => void
+
   EndOfLineupComponent?: ComponentType<any> | ReactElement
 } & Pick<
   SectionListProps<unknown>,
@@ -181,6 +187,7 @@ export type LineupItemTileProps = Pick<
   item: LineupItem | LoadingLineupItem
   index: number
   togglePlay: ({ uid, id, source }: TogglePlayConfig) => void
+  onPress?: (id: ID) => void
 }
 
 export type LineupTileViewProps = Omit<LineupItemTileProps, 'item'> & {

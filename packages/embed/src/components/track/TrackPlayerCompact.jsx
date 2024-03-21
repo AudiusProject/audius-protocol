@@ -25,8 +25,7 @@ const TrackPlayerCompact = ({
   backgroundColor,
   streamConditions
 }) => {
-  const isPurchaseable =
-    streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <div

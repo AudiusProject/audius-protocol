@@ -8,7 +8,8 @@ import {
   UploadType,
   ProgressStatus,
   CommonState,
-  ProgressState
+  ProgressState,
+  TrackForUpload
 } from '@audius/common/store'
 import {
   IconArrowRight as IconArrow,
@@ -16,20 +17,20 @@ import {
   IconCloudUpload as IconUpload,
   IconValidationCheck,
   Text,
-  PlainButton
+  PlainButton,
+  ProgressBar
 } from '@audius/harmony'
-import { ProgressBar } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 import { make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { Link } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
 import { collectionPage, profilePage } from 'utils/route'
 
 import { ShareBanner } from '../components/ShareBanner'
-import { CollectionFormState, TrackFormState, TrackForUpload } from '../types'
+import { CollectionFormState, TrackFormState } from '../types'
 
 import styles from './FinishPage.module.css'
 
@@ -69,35 +70,22 @@ type UploadTrackItemProps = {
   displayArtwork?: boolean
   track: TrackForUpload
   trackProgress?: ProgressState
-  hasError: boolean
 }
 
 const UploadTrackItem = (props: UploadTrackItemProps) => {
   const {
     index,
-    hasError,
     track,
     trackProgress,
     displayIndex = false,
     displayArtwork = false,
     ...otherProps
   } = props
-  // @ts-ignore - Artwork exists on track metadata object
-  const artworkUrl = track.metadata.artwork.url
+  const artworkUrl = track.metadata.artwork?.url
 
   return (
     <div className={styles.uploadTrackItem} {...otherProps}>
-      <ProgressIndicator
-        status={
-          hasError
-            ? ProgressStatus.ERROR
-            : trackProgress?.audio?.loaded &&
-              trackProgress?.audio?.total &&
-              trackProgress.audio.loaded >= trackProgress.audio.total
-            ? ProgressStatus.COMPLETE
-            : trackProgress?.audio?.status
-        }
-      />
+      <ProgressIndicator status={trackProgress?.audio?.status} />
       {displayIndex ? <Text size='s'>{index + 1}</Text> : null}
       {displayArtwork ? (
         <DynamicImage
@@ -170,13 +158,15 @@ export const FinishPage = (props: FinishPageProps) => {
         return upload.tracks?.[0].metadata.permalink
       case UploadType.ALBUM:
       case UploadType.PLAYLIST:
-        return collectionPage(
-          user!.handle,
-          upload.metadata?.playlist_name,
-          upload.completionId,
-          null,
-          uploadType === UploadType.ALBUM
-        )
+        return upload.completedEntity
+          ? collectionPage(
+              null,
+              null,
+              null,
+              upload.completedEntity.permalink,
+              uploadType === UploadType.ALBUM
+            )
+          : ''
       default:
         if (!upload.tracks || upload.tracks.length > 1) {
           return profilePage(user!.handle)
@@ -184,13 +174,7 @@ export const FinishPage = (props: FinishPageProps) => {
           return upload.tracks?.[0].metadata.permalink
         }
     }
-  }, [
-    upload.completionId,
-    upload.metadata?.playlist_name,
-    upload.tracks,
-    uploadType,
-    user
-  ])
+  }, [upload.completedEntity, upload.tracks, uploadType, user])
 
   const dispatchVisitEvent = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
@@ -248,9 +232,6 @@ export const FinishPage = (props: FinishPageProps) => {
         <div className={styles.uploadTrackList}>
           {tracks.map((track, idx) => {
             const trackProgress = upload.uploadProgress?.[idx]
-            const trackError = upload.failedTrackIndices.find(
-              (index) => index === idx
-            )
             return (
               <UploadTrackItem
                 key={track.metadata.track_id}
@@ -262,7 +243,6 @@ export const FinishPage = (props: FinishPageProps) => {
                   uploadType === UploadType.INDIVIDUAL_TRACK ||
                   uploadType === UploadType.INDIVIDUAL_TRACKS
                 }
-                hasError={trackError !== undefined}
               />
             )
           })}
@@ -272,13 +252,13 @@ export const FinishPage = (props: FinishPageProps) => {
             <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
               {messages.uploadMore}
             </PlainButton>
-            <Link
-              to={visitButtonPath}
+            <PlainButton
+              asChild
+              iconRight={IconArrow}
               onClick={dispatchVisitEvent}
-              className={styles.visitLink}
             >
-              <PlainButton iconRight={IconArrow}>{visitButtonText}</PlainButton>
-            </Link>
+              <Link to={visitButtonPath}>{visitButtonText}</Link>
+            </PlainButton>
           </div>
         ) : null}
       </Tile>

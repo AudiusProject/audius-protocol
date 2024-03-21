@@ -28,7 +28,7 @@
   width: 121px;
   height: 121px;
   box-sizing: border-box;
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -42,15 +42,15 @@
   box-sizing: border-box;
   height: 36px;
   width: 36px;
-  border: 2px solid var(--neutral-light-8);
+  border: 2px solid var(--harmony-n-100);
   border-radius: 50%;
 }
 
 .artist {
   margin-top: 8px;
   cursor: pointer;
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   letter-spacing: 0;
   line-height: 18px;
   text-align: center;
@@ -60,7 +60,7 @@
 
 .by {
   display: inline;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   pointer-events: none;
   text-decoration: none !important;
 }
@@ -78,11 +78,11 @@
 
 .hoverable {
   display: inline;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .hoverable:hover {
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
 }
 

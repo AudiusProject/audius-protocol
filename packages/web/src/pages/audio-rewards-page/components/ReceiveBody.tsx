@@ -1,8 +1,7 @@
 import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { WalletAddress, SolanaWalletAddress } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { IconSolana as LogoSol } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconSolana as LogoSol } from '@audius/harmony'
 import cn from 'classnames'
 
 import { useLocalStorage } from 'hooks/useLocalStorage'
@@ -103,12 +102,9 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
             address={solWallet}
           />
         ) : (
-          <Button
-            text={messages.understand}
-            onClick={onClickUnderstand}
-            textClassName={styles.understandText}
-            type={ButtonType.PRIMARY_ALT}
-          />
+          <Button variant='primary' onClick={onClickUnderstand}>
+            {messages.understand}
+          </Button>
         )}
       </>
     )

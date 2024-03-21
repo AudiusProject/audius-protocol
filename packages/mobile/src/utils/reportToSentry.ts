@@ -1,4 +1,5 @@
-import type { ErrorLevel, ReportToSentryArgs } from '@audius/common/models'
+import { ErrorLevel } from '@audius/common/models'
+import type { ReportToSentryArgs } from '@audius/common/models'
 import { getErrorMessage } from '@audius/common/utils'
 import { captureException, withScope } from '@sentry/react-native'
 import type { SeverityLevel } from '@sentry/types'
@@ -14,10 +15,29 @@ const Levels: { [level in ErrorLevel]: SeverityLevel } = {
   Log: 'log'
 }
 
+type ConsoleLoggingMethod = keyof Pick<
+  Console,
+  'log' | 'warn' | 'error' | 'info' | 'debug'
+>
+
+const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
+  Warning: 'warn',
+  Fatal: 'error',
+  Debug: 'debug',
+  Error: 'error',
+  Info: 'info',
+  Log: 'log'
+}
+
+/**
+ * Helper fn that reports to sentry while creating a localized scope to contain additional data
+ * Also logs to console with the appropriate level (console.log, console.warn, console.error, etc)
+ */
 export const reportToSentry = async ({
-  level,
+  level = ErrorLevel.Error,
   additionalInfo,
   error,
+  tags,
   name
 }: ReportToSentryArgs) => {
   try {
@@ -27,13 +47,21 @@ export const reportToSentry = async ({
         scope.setLevel(Levels[level])
       }
       if (additionalInfo) {
-        console.debug(
-          `Additional error info: ${JSON.stringify(additionalInfo)}`
-        )
-        scope.setExtras(additionalInfo)
+        scope.setContext('additionalInfo', additionalInfo)
       }
       if (name) {
-        error.name = name
+        error.name = `${name}: ${error.name}`
+      }
+      if (tags) {
+        scope.setTags(tags)
+      }
+      // Call JS console method using the specified level
+      const consoleMethod =
+        jsLoggerMapping[level || ErrorLevel.Log] || jsLoggerMapping.Log
+      // eslint-disable-next-line no-console
+      console[consoleMethod](error, 'More info in console.debug')
+      if (additionalInfo || tags) {
+        console.debug('Additional error info:', { additionalInfo, tags, level })
       }
       captureException(error)
     })

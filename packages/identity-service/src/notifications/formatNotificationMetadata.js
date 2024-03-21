@@ -428,7 +428,7 @@ const challengeInfoMap = {
     amount: 1
   },
   'track-upload': {
-    title: '🎶 Upload 5 Tracks',
+    title: '🎶 Upload 3 Tracks',
     amount: 1
   },
   referrals: {

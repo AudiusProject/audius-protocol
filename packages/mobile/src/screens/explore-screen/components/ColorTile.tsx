@@ -18,7 +18,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { ExploreTabScreenParamList } from 'app/screens/app-screen/ExploreTabScreen'
 import { font, makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
 
 import type { CollectionScreen, MoodScreen } from '../collections'
 import type { SmartCollectionScreen } from '../smartCollections'
@@ -133,7 +132,6 @@ export const ColorTile = ({
   isIncentivized
 }: ColorTileProps) => {
   const styles = useStyles()
-  const white = useColor('white')
   const navigation = useNavigation<ExploreTabScreenParamList>()
   const {
     scale,
@@ -186,7 +184,7 @@ export const ColorTile = ({
                   style={styles.iconSvg}
                   height={260}
                   width={260}
-                  fill={white}
+                  color='staticWhite'
                 />
               </View>
             )}

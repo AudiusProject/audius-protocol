@@ -1,0 +1,17 @@
+{
+  "name": "signed-request",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "@audius/sdk": "*",
+    "prompt-sync": "4.2.0",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.0.2",
+    "web3": "1.8.2"
+  },
+  "devDependencies": {
+    "@types/prompt-sync": "4.2.3"
+  }
+}

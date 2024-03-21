@@ -79,14 +79,43 @@ const moods = [
   'Other',
 ]
 
-const artistSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+interface ResourceContributor {
+  name: string
+  roles: [string]
+  sequence_number: number
+}
+const resourceContributorSchema = new mongoose.Schema<ResourceContributor>({
+  name: String,
   roles: [String],
+  sequence_number: Number,
+})
+
+interface RightsController {
+  name: string
+  roles: [string]
+  rights_share_unknown?: string
+}
+
+const rightsControllerSchema = new mongoose.Schema<RightsController>({
+  name: String,
+  roles: [String],
+  rights_share_unknown: String,
+})
+
+interface Copyright {
+  year: string
+  text: string
+}
+
+const copyrightSchema = new mongoose.Schema<Copyright>({
+  year: String,
+  text: String,
 })
 
 const trackMetadataSchema = new mongoose.Schema({
   title: { type: String, required: true },
   release_date: { type: Date, required: true },
+  ddex_release_ids: mongoose.Schema.Types.Mixed,
   genre: { type: String, enum: genres, required: true },
   duration: { type: Number, required: true },
   preview_start_seconds: Number,
@@ -95,8 +124,6 @@ const trackMetadataSchema = new mongoose.Schema({
   description: String,
   mood: { type: String, enum: moods },
   tags: String,
-  artists: [artistSchema],
-  copyright: String,
   preview_audio_file_url: String,
   preview_audio_file_url_hash: String,
   preview_audio_file_url_hash_algo: String,
@@ -107,6 +134,16 @@ const trackMetadataSchema = new mongoose.Schema({
   // Required if it's a standalone track. Uses playlist_owner_id and playlist's cover_art_url if it's part of an album
   artist_id: { type: String, required: true },
   artist_name: { type: String, required: true },
+  artists: { type: [resourceContributorSchema], default: null },
+  resource_contributors: { type: [resourceContributorSchema], default: null },
+  indirect_resource_contributors: {
+    type: [resourceContributorSchema],
+    default: null,
+  },
+  rights_controller: { type: rightsControllerSchema, default: null },
+  copyright_line: { type: copyrightSchema, default: null },
+  producer_copyright_line: { type: copyrightSchema, default: null },
+  parental_warning_type: { type: String, default: null },
   cover_art_url: { type: String, required: true },
   cover_art_url_hash: { type: String, required: true },
   cover_art_url_hash_algo: { type: String, required: true },
@@ -118,8 +155,10 @@ const collectionMetadataSchema = new mongoose.Schema({
   playlist_name: { type: String, required: true },
   playlist_owner_name: { type: String, required: true },
   playlist_owner_id: { type: String, required: true },
+  artists: { type: [resourceContributorSchema], default: null },
   genre: { type: String, enum: genres, required: true },
   release_date: { type: Date, required: true },
+  ddex_release_ids: mongoose.Schema.Types.Mixed,
   description: String,
   is_album: Boolean,
   is_private: Boolean,
@@ -130,6 +169,9 @@ const collectionMetadataSchema = new mongoose.Schema({
   cover_art_url: { type: String, required: true },
   cover_art_url_hash: { type: String, required: true },
   cover_art_url_hash_algo: { type: String, required: true },
+  copyright_line: { type: copyrightSchema, default: null },
+  producer_copyright_line: { type: copyrightSchema, default: null },
+  parental_warning_type: { type: String, default: null },
 })
 
 export type CollectionMetadata = mongoose.InferSchemaType<

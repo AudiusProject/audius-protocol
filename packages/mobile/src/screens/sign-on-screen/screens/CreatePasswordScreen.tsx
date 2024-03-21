@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex } from '@audius/harmony-native'
+import { ScrollView, KeyboardAvoidingView } from 'app/components/core'
 import { PasswordField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -58,28 +59,33 @@ export const CreatePasswordScreen = () => {
       validationSchema={passwordFormikSchema}
     >
       <Page>
-        <Heading
-          heading={createPasswordPageMessages.createYourPassword}
-          description={createPasswordPageMessages.description}
-        />
-        <Flex direction='column' h='100%' gap='l'>
-          <ReadOnlyField
-            label={createPasswordPageMessages.yourEmail}
-            value={email}
-          />
-          <PasswordField
-            name='password'
-            clearErrorOnChange={false}
-            label={createPasswordPageMessages.passwordLabel}
-          />
-          <PasswordField
-            name='confirmPassword'
-            clearErrorOnChange={false}
-            label={createPasswordPageMessages.confirmPasswordLabel}
-          />
-          <PasswordCompletionChecklist />
-        </Flex>
-        <PageFooter prefix={<SignUpAgreementText />} />
+        <ScrollView>
+          <KeyboardAvoidingView keyboardShowingOffset={220}>
+            <Flex direction='column' h='100%' gap='l'>
+              <Heading
+                heading={createPasswordPageMessages.createYourPassword}
+                description={createPasswordPageMessages.description}
+              />
+              <ReadOnlyField
+                label={createPasswordPageMessages.yourEmail}
+                value={email}
+              />
+              <PasswordField
+                name='password'
+                clearErrorOnChange={false}
+                label={createPasswordPageMessages.passwordLabel}
+              />
+              <PasswordField
+                name='confirmPassword'
+                clearErrorOnChange={false}
+                label={createPasswordPageMessages.confirmPasswordLabel}
+              />
+              <PasswordCompletionChecklist />
+              <SignUpAgreementText />
+            </Flex>
+          </KeyboardAvoidingView>
+        </ScrollView>
+        <PageFooter />
       </Page>
     </Formik>
   )

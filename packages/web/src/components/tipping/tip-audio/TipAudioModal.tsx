@@ -42,7 +42,11 @@ const messages = {
 }
 
 const GoldBadgeIconImage = () => (
-  <IconTokenGold size='l' aria-label='Gold badge' />
+  <IconTokenGold
+    size='l'
+    aria-label='Gold badge'
+    className={styles.iconToken}
+  />
 )
 
 const titleMessagesMap: { [key in TippingSendStatus]?: string } = {

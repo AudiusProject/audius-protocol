@@ -13,11 +13,11 @@ import {
 } from '@solana/web3.js'
 
 import {
+  AppAuth,
   ClaimableTokensClient,
   SolanaRelay,
   SolanaRelayWalletAdapter
 } from '../../services'
-import { Auth } from '../../services/Auth/Auth'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
@@ -60,7 +60,7 @@ jest
 describe('UsersApi', () => {
   let users: UsersApi
 
-  const auth = new Auth()
+  const auth = new AppAuth('key', 'secret')
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({

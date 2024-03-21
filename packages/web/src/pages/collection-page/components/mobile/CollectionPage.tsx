@@ -227,6 +227,9 @@ const CollectionPage = ({
       isLocked
     }
   })
+  const numTracks = trackList.length
+  const areAllTracksDeleted = trackList.every((track) => track.isDeleted)
+  const isPlayable = !areAllTracksDeleted && numTracks > 0
 
   return (
     <MobilePageContainer
@@ -254,7 +257,8 @@ const CollectionPage = ({
             description={description}
             isOwner={isOwner}
             isAlbum={isAlbum}
-            numTracks={trackList.length}
+            numTracks={numTracks}
+            isPlayable={isPlayable}
             modified={lastModified || Date.now()}
             duration={duration}
             isPublished={!isPrivate}

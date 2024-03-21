@@ -6,8 +6,7 @@ const messages = {
 }
 
 const PrimaryLabel = ({ streamConditions }) => {
-  const isPurchaseable =
-    streamConditions && 'usdc_purchase' in streamConditions
+  const isPurchaseable = streamConditions && 'usdc_purchase' in streamConditions
 
   return (
     <Text color='default' variant='heading' size='s'>

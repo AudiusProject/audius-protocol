@@ -1,8 +1,8 @@
 .followText {
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 26px;
   margin-bottom: 24px;
 }
@@ -27,11 +27,4 @@
   width: 100%;
   display: inline-flex;
   justify-content: center;
-}
-
-.button .buttonText {
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: bold;
-  line-height: 12px;
 }

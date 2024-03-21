@@ -12,8 +12,8 @@ const cjsRequire = createRequire(import.meta.url)
 const tspCompiler = cjsRequire('ts-patch/compiler')
 
 const external = [
-  ...Object.keys(pkg.devDependencies),
-  ...Object.keys(pkg.peerDependencies),
+  ...Object.keys(pkg.devDependencies ?? {}),
+  ...Object.keys(pkg.peerDependencies ?? {}),
   '@emotion/react/jsx-runtime',
   '@emotion/cache',
   '@emotion/is-prop-valid',

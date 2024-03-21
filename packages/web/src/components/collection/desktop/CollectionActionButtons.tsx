@@ -18,7 +18,7 @@ type CollectionActionButtonProps = {
   isOwner?: boolean
   onPlay: () => void
   playing: boolean
-  isEmptyPlaylist: boolean
+  isPlayable: boolean
   userId: ID
   tracksLoading: boolean
 }
@@ -30,7 +30,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     collectionId,
     onPlay,
     playing,
-    isEmptyPlaylist,
+    isPlayable,
     userId,
     tracksLoading
   } = props
@@ -61,9 +61,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       role='group'
       aria-label={messages.actionGroupLabel}
     >
-      {isEmptyPlaylist ? null : (
-        <PlayButton onPlay={onPlay} playing={playing} />
-      )}
+      {!isPlayable ? null : <PlayButton onPlay={onPlay} playing={playing} />}
       {actionButtons}
     </div>
   )

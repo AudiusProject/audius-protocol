@@ -40,7 +40,6 @@ export * from './PlaylistArtwork';
 export * from './PlaylistFull';
 export * from './PlaylistFullWithoutTracks';
 export * from './PlaylistLibrary';
-export * from './PremiumContentSignature';
 export * from './ProfilePicture';
 export * from './Purchase';
 export * from './PurchasesCountResponse';

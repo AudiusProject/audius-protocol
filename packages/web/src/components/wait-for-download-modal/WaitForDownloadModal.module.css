@@ -9,8 +9,8 @@
 }
 
 .spinner {
-  width: var(--unit-8);
-  height: var(--unit-8);
+  width: var(--harmony-unit-8);
+  height: var(--harmony-unit-8);
 }
 
 .mobileWrapper {

@@ -35,7 +35,7 @@ export const PayToUnlockInfo = () => {
       <Text className={styles.copy} variant='body'>
         <span>{messages.copyPart1}</span>
         <TextLink
-          variant='visible'
+          variant='secondary'
           isExternal
           href={TERMS_OF_SERVICE}
           onClick={handleClickTOSLink}

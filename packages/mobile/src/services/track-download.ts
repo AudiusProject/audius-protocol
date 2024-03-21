@@ -121,7 +121,8 @@ const downloadMany = async ({
 }) => {
   dedupFilenames(files)
   let responses
-  const tempDir = ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + 'AudiusTemp'
+  const tempDir =
+    ReactNativeBlobUtil.fs.dirs.DownloadDir + '/' + `AudiusTemp_${Date.now()}`
   try {
     const responsePromises = files.map(({ url, filename }) =>
       ReactNativeBlobUtil.config(

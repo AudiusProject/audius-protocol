@@ -20,6 +20,6 @@
     "declarationDir": "dist",
     "noPropertyAccessFromIndexSignature": false
   },
-  "exclude": ["dist"],
+  "exclude": ["dist", "src/sdk/examples"],
   "include": ["src/**/*"]
 }

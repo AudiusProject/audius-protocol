@@ -63,6 +63,7 @@ const getStories = () => {
     '../src/harmony-native/TextInput.stories.tsx': require('../src/harmony-native/components/input/TextInput/TextInput.stories.tsx'),
     '../src/harmony-native/PasswordInput.stories.tsx': require('../src/harmony-native/components/input/PasswordInput/PasswordInput.stories.tsx'),
     '../src/harmony-native/FollowButton.stories.tsx': require('../src/harmony-native/components/Button/FollowButton/FollowButton.stories.tsx'),
+    '../src/harmony-native/EntityActionButton.stories.tsx': require('../src/harmony-native/components/Button/EntityActionButton/EntityActionButton.stories.tsx'),
     '../src/harmony-native/IconButton.stories.tsx': require('../src/harmony-native/components/Button/IconButton/IconButton.stories.tsx'),
     '../src/harmony-native/Button.stories.tsx': require('../src/harmony-native/components/Button/Button/Button.stories.tsx'),
     '../src/harmony-native/SocialButton.stories.tsx': require('../src/harmony-native/components/Button/SocialButton/SocialButton.stories.tsx'),

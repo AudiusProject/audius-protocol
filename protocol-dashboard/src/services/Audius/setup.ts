@@ -52,7 +52,7 @@ export const IS_PRODUCTION =
 
 const IS_STAGING =
   import.meta.env.VITE_ETH_NETWORK_ID &&
-  import.meta.env.VITE_ETH_NETWORK_ID === '5'
+  import.meta.env.VITE_ETH_NETWORK_ID === '11155111'
 
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false

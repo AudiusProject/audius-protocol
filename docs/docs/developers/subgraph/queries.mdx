@@ -4,14 +4,16 @@ title: Queries
 pagination_label: Queries
 sidebar_label: Queries
 description: Audius Protocol Documentation
-
 ---
 
 ## Sample Queries
 
 Below are some sample queries you can use to gather information from the Audius contracts.
 
-You can build your own queries using a [GraphQL Explorer](https://graphiql-online.com/graphiql) and enter your endpoint to limit the data to exactly what you need.
+You can build your own queries using a [GraphQL Explorer](https://graphiql-online.com/graphiql) and
+enter your endpoint to limit the data to exactly what you need.
+
+---
 
 ### User
 
@@ -45,14 +47,15 @@ Description: Get users balance of claimable stake and delegation information.
     }
   }
 }
-
 ```
+
+---
+
 ### Audius Network
 
 Description: Find minimum stake and maximum on delegation
 
 ```graphql
-
 {
   audiusNetworks(first: 5) {
     id
@@ -67,8 +70,4 @@ Description: Find minimum stake and maximum on delegation
     maxStake
   }
 }
-
 ```
-
-
-

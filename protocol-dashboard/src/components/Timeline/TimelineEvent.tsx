@@ -1,21 +1,19 @@
+import clsx from 'clsx'
 import React, { ReactNode, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import clsx from 'clsx'
 
-import { getUser } from 'store/cache/user/hooks'
-import { useProposal } from 'store/cache/proposals/hooks'
 import Proposal from 'components/Proposal'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
+import { useProposal } from 'store/cache/proposals/hooks'
 import { useBlock } from 'store/cache/protocol/hooks'
-import { getDate, formatShortWallet } from 'utils/format'
-import { usePushRoute } from 'utils/effects'
-import { accountPage } from 'utils/routes'
-import { TICKER } from 'utils/consts'
-import Tooltip, { Position } from 'components/Tooltip'
+import { getUser } from 'store/cache/user/hooks'
 import { Address } from 'types'
+import { TICKER } from 'utils/consts'
+import { usePushRoute } from 'utils/effects'
+import { formatShortWallet, getDate } from 'utils/format'
+import { accountPage } from 'utils/routes'
 
-import desktopStyles from './TimelineEvent.module.css'
-import mobileStyles from './TimelineEventMobile.module.css'
-import { createStyles } from 'utils/mobile'
+import DisplayAudio from 'components/DisplayAudio'
 import {
   ClaimProcessedEvent,
   DelegateClaimEvent,
@@ -30,7 +28,9 @@ import {
   ServiceProviderRegisteredEvent,
   TimelineEvent as TimelineEventType
 } from 'models/TimelineEvents'
-import DisplayAudio from 'components/DisplayAudio'
+import { createStyles } from 'utils/mobile'
+import desktopStyles from './TimelineEvent.module.css'
+import mobileStyles from './TimelineEventMobile.module.css'
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const DisplayUser = ({ wallet }: { wallet: Address }) => {
@@ -47,23 +47,23 @@ const DisplayUser = ({ wallet }: { wallet: Address }) => {
 
   if (!user || !user.name || wallet === user.name) {
     return (
-      <Tooltip
+      <BasicTooltip
         position={Position.TOP}
         text={wallet}
         className={clsx(styles.userWalletName)}
       >
         <span onClick={onClick}>{formatShortWallet(wallet)}</span>
-      </Tooltip>
+      </BasicTooltip>
     )
   }
   return (
-    <Tooltip
+    <BasicTooltip
       position={Position.TOP}
       text={wallet}
       className={clsx(styles.userWalletName)}
     >
       <span onClick={onClick}>{user.name}</span>
-    </Tooltip>
+    </BasicTooltip>
   )
 }
 

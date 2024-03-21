@@ -3,7 +3,7 @@ import path from 'path'
 
 import { beforeAll, expect, jest } from '@jest/globals'
 
-import { Auth } from '../../services/Auth/Auth'
+import { DefaultAuth } from '../../services/Auth/DefaultAuth'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
@@ -100,7 +100,7 @@ jest
 describe('AlbumsApi', () => {
   let albums: AlbumsApi
 
-  const auth = new Auth()
+  const auth = new DefaultAuth()
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({

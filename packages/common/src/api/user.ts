@@ -121,8 +121,6 @@ const userApi = createApi({
         }: GetUSDCTransactionListArgs,
         context
       ) => {
-        const { data: encodedDataMessage, signature: encodedDataSignature } =
-          await context.audiusBackend.signDiscoveryNodeRequest()
         const sdk = await context.audiusSdk()
         const { data = [] } = await sdk.full.users.getUSDCTransactions({
           limit,
@@ -132,8 +130,8 @@ const userApi = createApi({
           id: Id.parse(userId!),
           type,
           method,
-          encodedDataMessage,
-          encodedDataSignature
+          encodedDataMessage: '', // TODO: remove, handled by sdk
+          encodedDataSignature: '' // TODO: remove, handled by sdk
         })
 
         return data.map((transaction) => parseTransaction({ transaction }))
@@ -147,17 +145,15 @@ const userApi = createApi({
           type,
           method
         }: Pick<GetUSDCTransactionListArgs, 'userId' | 'type' | 'method'>,
-        { audiusSdk, audiusBackend }
+        { audiusSdk }
       ) => {
-        const { data: encodedDataMessage, signature: encodedDataSignature } =
-          await audiusBackend.signDiscoveryNodeRequest()
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getUSDCTransactionCount({
           id: Id.parse(userId!),
           type,
           method,
-          encodedDataMessage,
-          encodedDataSignature
+          encodedDataMessage: '', // TODO: remove, handled by sdk
+          encodedDataSignature: '' // TODO: remove, handled by sdk
         })
         return data ?? 0
       },

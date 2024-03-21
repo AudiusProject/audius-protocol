@@ -17,7 +17,6 @@ import {
   setTopApps,
   setTrailingTopGenres,
   MetricError,
-  UptimeRecord,
   setIndividualNodeUptime,
   setIndividualServiceApiCalls
 } from './slice'
@@ -71,6 +70,9 @@ export const formatBucketText = (bucket: string) =>
 const getStartTime = (bucket: Bucket, clampDays: boolean = false) => {
   switch (bucket) {
     case Bucket.ALL_TIME:
+      return dayjs('2020-07-01')
+        .startOf('hour')
+        .unix()
     case Bucket.YEAR:
       return dayjs()
         .subtract(1, 'year')
@@ -189,13 +191,14 @@ async function fetchTimeSeries(
     }
     if (node) {
       data = (await fetchWithTimeout(endpoint)).data.slice(1) // Trim off the first day so we don't show partial data
+      metric = data
     } else {
       data = await fetchWithLibs({
         endpoint: `v1/metrics/${route}`,
         queryParams: { bucket_size: bucketSize, start_time: startTime }
       })
+      metric = data.reverse()
     }
-    metric = data.reverse()
   } catch (e) {
     console.error(e)
     error = true
@@ -357,9 +360,9 @@ export function fetchTotalStaked(
   }
 }
 
-const getTrailingAPI = async () => {
+const getTrailingAPI = async (timeRange: 'year' | 'month' | 'week') => {
   const data = (await fetchWithLibs({
-    endpoint: 'v1/metrics/aggregates/routes/trailing/month'
+    endpoint: `v1/metrics/aggregates/routes/trailing/${timeRange}`
   })) as any
   return {
     total_count: data?.total_count ?? 0,
@@ -369,14 +372,14 @@ const getTrailingAPI = async () => {
 }
 
 export function fetchTrailingApiCalls(
-  bucket: Bucket
+  bucket: Bucket.MONTH | Bucket.WEEK | Bucket.YEAR
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, _, aud) => {
     await aud.awaitSetup()
     let error = false
     let metric = {}
     try {
-      metric = await getTrailingAPI()
+      metric = await getTrailingAPI(bucket)
     } catch (e) {
       console.error(e)
       error = true
@@ -609,7 +612,9 @@ export const usePlays = (bucket: Bucket) => {
   return { plays }
 }
 
-export const useTrailingApiCalls = (bucket: Bucket) => {
+export const useTrailingApiCalls = (
+  bucket: Bucket.MONTH | Bucket.WEEK | Bucket.YEAR
+) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
   const apiCalls = useSelector(state =>
     getTrailingApiCalls(state as AppState, { bucket })

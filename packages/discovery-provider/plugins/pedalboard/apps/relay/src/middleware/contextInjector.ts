@@ -14,6 +14,7 @@ export interface RequestContext {
   signerIsApp: boolean
   signerIsUser: boolean
   createOrDeactivate: boolean
+  isSenderVerifier: boolean
 }
 
 declare global {

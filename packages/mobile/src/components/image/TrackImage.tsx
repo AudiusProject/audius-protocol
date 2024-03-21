@@ -12,6 +12,8 @@ import { getTrackDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { useThemeColors } from 'app/utils/theme'
 
+import { primitiveToImageSource } from './primitiveToImageSource'
+
 export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
@@ -51,16 +53,18 @@ const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
 export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
   const cid = track ? track.cover_art_sizes || track.cover_art : null
 
-  const optimisticCoverArt = track?._cover_art_sizes?.OVERRIDE
-
+  const optimisticCoverArt = primitiveToImageSource(
+    track?._cover_art_sizes?.OVERRIDE
+  )
   const localTrackImageUri = useLocalTrackImageUri(track?.track_id)
-  const localSourceUri = optimisticCoverArt || localTrackImageUri
+  const localTrackImageSource = primitiveToImageSource(localTrackImageUri)
+  const localSource = optimisticCoverArt ?? localTrackImageSource
 
   const contentNodeSource = useContentNodeImage({
     cid,
     size,
     fallbackImageSource: imageEmpty,
-    localSource: localSourceUri ? { uri: localSourceUri } : null,
+    localSource,
     cidMap: track?.cover_art_cids
   })
 

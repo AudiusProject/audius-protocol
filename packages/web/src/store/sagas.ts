@@ -81,7 +81,6 @@ import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
 import passwordResetSagas from 'components/password-reset/store/sagas'
-import shareSoundToTikTokModalSagas from 'components/share-sound-to-tiktok-modal/store/sagas'
 import dashboardSagas from 'pages/dashboard-page/store/sagas'
 import deletedSagas from 'pages/deleted-page/store/sagas'
 import settingsSagas from 'pages/settings-page/store/sagas'
@@ -97,6 +96,7 @@ import userListModalSagas from 'store/application/ui/userListModal/sagas'
 import withdrawUSDCSagas from 'store/application/ui/withdraw-usdc/sagas'
 import errorSagas from 'store/errors/sagas'
 import reachabilitySagas from 'store/reachability/sagas'
+import reloadSagas from 'store/reload/sagas'
 import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
@@ -200,7 +200,6 @@ export default function* rootSaga() {
     stripeModalSagas(),
     overflowMenuSagas(),
     toastSagas(),
-    shareSoundToTikTokModalSagas(),
     smartCollectionPageSagas(),
     searchUsersModalSagas(),
     stemUploadSagas(),
@@ -231,7 +230,10 @@ export default function* rootSaga() {
     withdrawUSDCSagas(),
 
     // Error
-    errorSagas()
+    errorSagas(),
+
+    // Version refresh
+    reloadSagas()
   )
   yield all(sagas.map(fork))
 }

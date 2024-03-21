@@ -6,8 +6,7 @@ import {
 } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import { audioRewardsPageActions } from '@audius/common/store'
-import { IconArrowRight } from '@audius/harmony'
-import { ButtonType, Button } from '@audius/stems'
+import { Button, IconArrowRight } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -51,14 +50,14 @@ const RewardPanel = ({
       </span>
       <span className={wm(styles.rewardDescription)}>{description()}</span>
       <Button
-        type={ButtonType.COMMON_ALT}
-        className={wm(styles.panelButton)}
-        text={panelButtonText}
-        rightIcon={<IconArrowRight />}
-        iconClassName={wm(styles.buttonIcon)}
+        variant='common'
+        size='small'
+        iconRight={IconArrowRight}
         onClick={onClickButton}
-        textClassName={styles.panelButtonText}
-      />
+        fullWidth
+      >
+        {panelButtonText}
+      </Button>
     </div>
   )
 }

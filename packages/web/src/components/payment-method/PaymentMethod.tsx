@@ -39,6 +39,7 @@ type PaymentMethodProps = {
   isExistingBalanceDisabled?: boolean
   isCoinflowEnabled?: boolean
   showExistingBalance?: boolean
+  showVendorChoice?: boolean
 }
 
 export const PaymentMethod = ({
@@ -49,7 +50,8 @@ export const PaymentMethod = ({
   balance,
   isExistingBalanceDisabled,
   showExistingBalance,
-  isCoinflowEnabled
+  isCoinflowEnabled,
+  showVendorChoice
 }: PaymentMethodProps) => {
   const isMobile = useIsMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
@@ -93,7 +95,7 @@ export const PaymentMethod = ({
       label: messages.withCard,
       icon: IconCreditCard,
       value:
-        vendorOptions.length > 1 ? (
+        vendorOptions.length > 1 && showVendorChoice ? (
           isMobile ? (
             <MobileFilterButton
               onSelect={handleSelectVendor}
@@ -172,7 +174,9 @@ export const PaymentMethod = ({
                   <Icon color='default' />
                 </Flex>
               ) : null}
-              <Text>{label}</Text>
+              <Text variant='body' strength='default' size='m'>
+                {label}
+              </Text>
             </Flex>
             <Text
               variant='body'

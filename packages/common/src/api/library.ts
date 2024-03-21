@@ -31,7 +31,7 @@ const fetchLibraryCollections = async ({
   context: AudiusQueryContextType
   collectionType: 'album' | 'playlist'
 }) => {
-  const { audiusSdk, audiusBackend } = context
+  const { audiusSdk } = context
   const {
     userId,
     offset,
@@ -42,7 +42,6 @@ const fetchLibraryCollections = async ({
     sortDirection = 'desc'
   } = args
   const sdk = await audiusSdk()
-  const { data, signature } = await audiusBackend.signDiscoveryNodeRequest()
 
   const requestParams = {
     id: encodeHashId(userId),
@@ -53,8 +52,8 @@ const fetchLibraryCollections = async ({
     sortMethod,
     sortDirection,
     type: category,
-    encodedDataMessage: data,
-    encodedDataSignature: signature
+    encodedDataMessage: '', // TODO: remove, handled by sdk
+    encodedDataSignature: '' // TODO: remove, handled by sdk
   }
   const { data: rawCollections = [] } =
     collectionType === 'album'

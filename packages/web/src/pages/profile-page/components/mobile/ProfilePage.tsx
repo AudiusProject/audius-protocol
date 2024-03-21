@@ -636,7 +636,7 @@ const ProfilePage = g(
     if (profile && profile.is_deactivated) {
       content = (
         <div className={styles.contentContainer}>
-          <DeactivatedProfileTombstone goToRoute={goToRoute} isMobile={true} />
+          <DeactivatedProfileTombstone isMobile />
         </div>
       )
     } else if (!isLoading && !isEditing) {

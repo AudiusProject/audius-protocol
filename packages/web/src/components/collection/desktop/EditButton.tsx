@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
 import { useEditPlaylistModal } from '@audius/common/store'
-import { IconPencil } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
-
-import { EntityActionButton } from '../../entity-page/EntityActionButton'
+import { ButtonProps, IconPencil, Button } from '@audius/harmony'
 
 const messages = {
   edit: 'Edit'
@@ -24,12 +21,13 @@ export const EditButton = (props: EditButtonProps) => {
   }, [collectionId, onOpen])
 
   return (
-    <EntityActionButton
-      type={ButtonType.COMMON}
-      text={messages.edit}
-      leftIcon={<IconPencil />}
+    <Button
+      variant='secondary'
+      iconLeft={IconPencil}
       onClick={handleEdit}
       {...other}
-    />
+    >
+      {messages.edit}
+    </Button>
   )
 }

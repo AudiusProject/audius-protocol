@@ -205,7 +205,8 @@ genre_counts as (
   select
     owner_id as user_id,
     genre,
-    count(*) as count
+    count(*) as count,
+    max(created_at) as latest_upload
   from
     tracks t
   where
@@ -222,7 +223,7 @@ ranked_genres as (
     user_id,
     genre,
     count,
-    rank() over (partition by user_id order by count desc) as genre_rank
+    rank() over (partition by user_id order by count desc, latest_upload desc) as genre_rank
   from
     genre_counts
 ),

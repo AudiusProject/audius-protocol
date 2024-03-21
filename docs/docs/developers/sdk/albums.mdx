@@ -4,9 +4,10 @@ title: Albums
 pagination_label: Albums
 sidebar_label: Albums
 description: Audius Protocol Documentation
-
 ---
 
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
 ### getAlbum
 
@@ -16,9 +17,9 @@ Get an album by id.
 
 Example:
 
-```typescript
+```ts
 const { data: album } = await audiusSdk.album.getAlbum({
-  playlistId: 'D7KyD'
+  playlistId: 'D7KyD',
 })
 
 console.log(album)
@@ -26,7 +27,8 @@ console.log(album)
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -34,7 +36,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` contains information about the album as described below.
+Returns a `Promise` containing an object with a `data` field. `data` contains information about the
+album as described below.
 
 ```ts
 {
@@ -103,9 +106,9 @@ Get the tracks in an album.
 
 Example:
 
-```typescript
+```ts
 const { data: tracks } = await audiusSdk.albums.getAlbumTracks({
-  albumId: 'D7KyD'
+  albumId: 'D7KyD',
 })
 
 console.log(tracks)
@@ -113,7 +116,8 @@ console.log(tracks)
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -133,7 +137,7 @@ Upload an album.
 
 Example:
 
-```typescript
+```ts
 import { Mood, Genre } from '@audius/sdk'
 import fs from 'fs'
 
@@ -146,7 +150,7 @@ const { albumId } = await audiusSdk.albums.uploadTrack({
   userId: '7eP5n',
   coverArtFile: {
     buffer: Buffer.from(coverArtBuffer),
-    name: 'coverArt'
+    name: 'coverArt',
   },
   metadata: {
     albumName: 'Songs of the Forest',
@@ -154,48 +158,49 @@ const { albumId } = await audiusSdk.albums.uploadTrack({
     genre: Genre.ELECTRONIC,
     mood: Mood.TENDER,
     tags: 'nature',
-    releaseDate: new Date('2023-07-20') // Cannot be in the future
+    releaseDate: new Date('2023-07-20'), // Cannot be in the future
   },
   trackMetadatas: [
     {
-      title: 'Oak'
+      title: 'Oak',
     },
     {
-      title: 'Sycamore'
+      title: 'Sycamore',
     },
     {
-      title: 'Bush'
-    }
+      title: 'Bush',
+    },
   ],
   trackFiles: [
     {
       buffer: Buffer.from(trackBuffer1),
-      name: 'OakTrack'
+      name: 'OakTrack',
     },
     {
       buffer: Buffer.from(trackBuffer2),
-      name: 'SycamoreTrack'
+      name: 'SycamoreTrack',
     },
     {
       buffer: Buffer.from(trackBuffer3),
-      name: 'BushTrack'
-    }
-  ]
+      name: 'BushTrack',
+    },
+  ],
 })
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
-| Name             | Type                                                         | Description                                                                   | Required?    |
-| :--------------- | :----------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
-| `coverArtFile`   | `File`                                                       | A file that will be used as the cover art for the album                       | _Optional_   |
-| `metadata`       | _see code block below_                                       | An object containing the details of the album                                 | **Required** |
-| `onProgress`     | `(progress: number) => void`                                 | A function that will be called with progress events as the image file uploads | _Optional_   |
-| `trackFiles`     | `Array<File>`                                                | An array of track audio files                                                 | **Required** |
+| Name             | Type                                                           | Description                                                                   | Required?    |
+| :--------------- | :------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `coverArtFile`   | `File`                                                         | A file that will be used as the cover art for the album                       | _Optional_   |
+| `metadata`       | _see code block below_                                         | An object containing the details of the album                                 | **Required** |
+| `onProgress`     | `(progress: number) => void`                                   | A function that will be called with progress events as the image file uploads | _Optional_   |
+| `trackFiles`     | `Array<File>`                                                  | An array of track audio files                                                 | **Required** |
 | `trackMetadatas` | [`UploadTrackMetadata`](/developers/upload-track-metadata)`[]` | An array of track files                                                       | _Optional_   |
-| `userId`         | `string`                                                     | The ID of the user                                                            | **Required** |
+| `userId`         | `string`                                                       | The ID of the user                                                            | **Required** |
 
 ```json title="uploadAlbum metadata payload"
 {
@@ -212,11 +217,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the new album's ID (`albumId`), as well as the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the new album's ID (`albumId`), as well as the block
+hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
 ```ts
 {
@@ -232,11 +239,12 @@ Returns a `Promise` containing an object with the new album's ID (`albumId`), as
 
 #### updateAlbum(`params`, `advancedOptions?`)
 
-Update an album. If cover art or any metadata fields are not provided, their values will be kept the same as before.
+Update an album. If cover art or any metadata fields are not provided, their values will be kept the
+same as before.
 
 Example:
 
-```typescript
+```ts
 import fs from 'fs'
 
 const coverArtBuffer = fs.readFileSync('path/to/updated-cover-art.png')
@@ -245,21 +253,22 @@ const { albumId } = await audiusSdk.albums.updateAlbum({
   albumId: 'x5pJ3Az',
   coverArtFile: {
     buffer: Buffer.from(coverArtBuffer),
-    name: 'coverArt'
+    name: 'coverArt',
   },
   metadata: {
-    description: 'The best tracks for Fido... new cover art!'
+    description: 'The best tracks for Fido... new cover art!',
   },
   onProgress: (progress) => {
     console.log('Progress: ', progress / 100)
   },
-  userId: '7eP5n'
+  userId: '7eP5n',
 })
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name           | Type                         | Description                                                                   | Required?    |
 | :------------- | :--------------------------- | :---------------------------------------------------------------------------- | :----------- |
@@ -284,11 +293,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 
@@ -307,16 +318,17 @@ Delete an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.deleteAlbum({
   albumId: 'x5pJ3Bo',
-  userId: '7eP5n'
+  userId: '7eP5n',
 })
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -325,11 +337,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
@@ -348,16 +362,17 @@ Favorite an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.favoriteAlbum({
   albumId: 'x5pJ3Az',
-  userId: '7eP5n'
+  userId: '7eP5n',
 })
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name       | Type                   | Description                                     | Required?    |
 | :--------- | :--------------------- | :---------------------------------------------- | :----------- |
@@ -373,11 +388,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
@@ -396,16 +413,17 @@ Unfavorite an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.unfavoriteAlbum({
   albumId: 'x5pJ3Az',
-  userId: '7eP5n'
+  userId: '7eP5n',
 })
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -414,11 +432,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
@@ -437,16 +457,17 @@ Repost a album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.repostAlbum({
   albumId: 'x5pJ3Az',
-  userId: '7eP5n'
+  userId: '7eP5n',
 })
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name       | Type                   | Description                                   | Required?    |
 | :--------- | :--------------------- | :-------------------------------------------- | :----------- |
@@ -462,11 +483,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
@@ -485,16 +508,17 @@ Unrepost an album
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.albums.unrepostAlbum({
   albumId: 'x5pJ3Az',
-  userId: '7eP5n'
+  userId: '7eP5n',
 })
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name      | Type     | Description         | Required?    |
 | :-------- | :------- | :------------------ | :----------- |
@@ -503,11 +527,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {

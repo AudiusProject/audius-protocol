@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+import { describe, test, expect } from 'vitest'
 
 import { BNUSDC } from '~/models/Wallet'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
@@ -170,8 +171,8 @@ describe('store/purchase-content/utils', () => {
     `getBalanceNeeded: $description`,
     ({ amountDue, balance, minPurchaseAmountCents, expected }) => {
       expect(
-        getBalanceNeeded(amountDue, balance, minPurchaseAmountCents)
-      ).toEqual(centsToBN(expected))
+        getBalanceNeeded(amountDue, balance, minPurchaseAmountCents).toNumber()
+      ).toBe(centsToBN(expected).toNumber())
     }
   )
 })

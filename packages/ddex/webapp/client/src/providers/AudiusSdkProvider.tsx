@@ -7,7 +7,6 @@ import {
 } from 'react'
 
 import {
-  AppAuth,
   DiscoveryNodeSelector,
   EntityManager,
   Logger,
@@ -15,7 +14,8 @@ import {
   developmentConfig,
   stagingConfig,
   productionConfig,
-  sdk
+  sdk,
+  DefaultAuth
 } from '@audius/sdk'
 import type {
   AudiusSdk as AudiusSdkType,
@@ -94,7 +94,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
       initialSelectedNode
     })
     const storageNodeSelector = new StorageNodeSelector({
-      auth: new AppAuth(envVars.ddexKey),
+      auth: new DefaultAuth(envVars.ddexKey),
       discoveryNodeSelector,
       bootstrapNodes: config.storageNodes,
       logger

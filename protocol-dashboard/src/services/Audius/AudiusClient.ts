@@ -4,7 +4,6 @@ import AudiusToken from './token/audiusToken'
 import Delegate from './delegate/delegate'
 import Governance from './governance/governance'
 import NodeType from './nodeType'
-import Identity from './identity'
 import Claim from './claim/claim'
 
 import { setup } from './setup'
@@ -41,7 +40,6 @@ export class AudiusClient {
     this.Staking = new Staking(this)
     this.Governance = new Governance(this)
     this.Claim = new Claim(this)
-    this.Identity = new Identity(this)
     this.onSetup()
   }
 
@@ -52,7 +50,6 @@ export class AudiusClient {
   Staking: Staking
   Governance: Governance
   Claim: Claim
-  Identity: Identity
 
   libs: any = {}
   setup = setup

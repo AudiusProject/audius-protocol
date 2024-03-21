@@ -1,19 +1,19 @@
-import React from 'react'
 import clsx from 'clsx'
+import React from 'react'
 
-import styles from './Delegate.module.css'
-import Paper from 'components/Paper'
-import BN from 'bn.js'
-import Tooltip, { Position } from 'components/Tooltip'
-import { TICKER } from 'utils/consts'
-import Button, { ButtonType } from 'components/Button'
 import { IconArrowWhite } from '@audius/stems'
-import { useModalControls } from 'utils/hooks'
+import BN from 'bn.js'
+import Button, { ButtonType } from 'components/Button'
+import DisplayAudio from 'components/DisplayAudio'
+import Paper from 'components/Paper'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import UpdateDelegationModal from 'components/UpdateDelegationModal'
-import { Address, Status } from 'types'
 import { useHasPendingDecreaseDelegationTx } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
-import DisplayAudio from 'components/DisplayAudio'
+import { Address, Status } from 'types'
+import { TICKER } from 'utils/consts'
+import { useModalControls } from 'utils/hooks'
+import styles from './Delegate.module.css'
 
 const messages = {
   title: 'Manage Delegation',
@@ -28,13 +28,11 @@ const messages = {
 const DecreaseDelegation = ({
   delegates,
   wallet,
-  isDisabled,
-  className
+  isDisabled
 }: {
   delegates: BN
   wallet: Address
   isDisabled: boolean
-  className?: string
 }) => {
   const { isOpen, onClick, onClose } = useModalControls()
   const decreaseIcon = <IconArrowWhite className={styles.decreaseIcon} />
@@ -57,7 +55,6 @@ const DecreaseDelegation = ({
         delegates={delegates}
         isOpen={isOpen}
         onClose={onClose}
-        isIncrease={false}
       />
     </>
   )
@@ -93,7 +90,6 @@ const IncreaseDelegation = ({
         delegates={delegates}
         isOpen={isOpen}
         onClose={onClose}
-        isIncrease
       />
     </>
   )
@@ -136,7 +132,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
           </div>
         </div>
         <div className={styles.btnContainer}>
-          <Tooltip
+          <BasicTooltip
             position={Position.TOP}
             text={messages.pendingClaimDisabled}
             isDisabled={!isIncreaseDelegationDisabled}
@@ -147,8 +143,8 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
               delegates={delegates}
               isDisabled={isIncreaseDelegationDisabled}
             />
-          </Tooltip>
-          <Tooltip
+          </BasicTooltip>
+          <BasicTooltip
             position={Position.TOP}
             text={
               useHasPendingDecrease.hasPendingDecreaseTx
@@ -162,9 +158,8 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
               wallet={wallet}
               delegates={delegates}
               isDisabled={isDecreaseDelegationDisabled}
-              className={styles.decreaseBtn}
             />
-          </Tooltip>
+          </BasicTooltip>
         </div>
       </div>
     </Paper>

@@ -1,17 +1,21 @@
 import LineChart from 'components/LineChart'
-import React, { useState } from 'react'
+import { useTotalStaked as usedLiveTotalStakedAudio } from 'hooks/useTotalStaked'
+import React from 'react'
 import { useTotalStaked } from 'store/cache/analytics/hooks'
+
+import { GlobalStakedInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
+import AudiusClient from 'services/Audius'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
+import { Status } from 'types'
 
-type OwnProps = {}
+const messages = {
+  currentGlobalStaked: 'Current Global Staked $AUDIO',
+  audioToken: '$AUDIO'
+}
 
-type TotalStakedChartProps = OwnProps
-
-const TotalStakedChart: React.FC<TotalStakedChartProps> = () => {
-  const [bucket, setBucket] = useState(Bucket.MONTH)
-
-  const { totalStaked } = useTotalStaked(bucket)
-  let error, labels, data
+const TotalStakedChart: React.FC = () => {
+  const { totalStaked } = useTotalStaked(Bucket.YEAR)
+  let error, labels, data, topNumber: string
   if (totalStaked === MetricError.ERROR) {
     error = true
     labels = []
@@ -20,15 +24,22 @@ const TotalStakedChart: React.FC<TotalStakedChartProps> = () => {
     labels = totalStaked?.map(s => s.timestamp) ?? null
     data = totalStaked?.map(s => s.count) ?? null
   }
+
+  const { status: trailingTotalStatus, total } = usedLiveTotalStakedAudio()
+  if (total && trailingTotalStatus === Status.Success) {
+    topNumber = AudiusClient.displayShortAud(total)
+  }
+
   return (
     <LineChart
-      title="Total Staked"
+      topNumber={topNumber}
+      title={messages.currentGlobalStaked}
+      tooltipTitle={messages.audioToken}
+      titleTooltipComponent={GlobalStakedInfoTooltip}
       error={error}
       data={data}
       labels={labels}
-      selection={bucket}
-      options={[Bucket.ALL_TIME, Bucket.MONTH, Bucket.WEEK]}
-      onSelectOption={(option: string) => setBucket(option as Bucket)}
+      selection={Bucket.YEAR}
     />
   )
 }

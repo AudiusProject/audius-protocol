@@ -91,6 +91,7 @@ export const AddFundsDrawer = () => {
         <PaymentMethod
           selectedMethod={selectedPurchaseMethod}
           setSelectedMethod={setSelectedPurchaseMethod}
+          showVendorChoice
         />
         <Button
           title={messages.continue}

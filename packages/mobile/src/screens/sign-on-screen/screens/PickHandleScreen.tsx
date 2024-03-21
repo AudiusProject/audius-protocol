@@ -21,6 +21,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony-native'
+import { ScrollView } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { HandleField } from '../components/HandleField'
@@ -99,7 +100,7 @@ export const PickHandleScreen = () => {
     handleStartSocialMediaLogin,
     handleErrorSocialMediaLogin,
     handleCloseSocialMediaLogin,
-    setIsWaitingForSocialLogin
+    handleCompleteSocialMediaLogin
   } = useSocialMediaLoader({
     resetAction: unsetSocialProfile,
     linkedSocialOnThisPagePreviously: alreadyLinkedSocial
@@ -124,7 +125,7 @@ export const PickHandleScreen = () => {
     [dispatch, navigation]
   )
 
-  const handleCompleteSocialMediaLogin = useCallback(
+  const handleSocialMediaLoginSuccess = useCallback(
     ({
       requiresReview,
       handle
@@ -133,7 +134,7 @@ export const PickHandleScreen = () => {
       handle: string
       platform: 'twitter' | 'instagram' | 'tiktok'
     }) => {
-      setIsWaitingForSocialLogin(false)
+      handleCompleteSocialMediaLogin()
       dispatch(setValueField('handle', handle))
       if (requiresReview) {
         navigation.navigate('ReviewHandle')
@@ -141,7 +142,7 @@ export const PickHandleScreen = () => {
         navigation.navigate('FinishProfile')
       }
     },
-    [dispatch, navigation, setIsWaitingForSocialLogin]
+    [dispatch, handleCompleteSocialMediaLogin, navigation]
   )
 
   return (
@@ -155,29 +156,31 @@ export const PickHandleScreen = () => {
         {isWaitingForSocialLogin ? (
           <SocialMediaLoading onClose={handleCloseSocialMediaLogin} hideIcon />
         ) : null}
-        <Heading
-          heading={pickHandlePageMessages.title}
-          description={pickHandlePageMessages.description}
-        />
-        <Flex direction='column' gap='l'>
-          <HandleField />
-          <Divider>
-            <Text
-              variant='body'
-              color='subdued'
-              size='s'
-              style={css({ textTransform: 'uppercase' })}
-            >
-              {pickHandlePageMessages.or}
-            </Text>
-          </Divider>
-          <SocialMediaSection
-            onStart={handleStartSocialMediaLogin}
-            onError={handleErrorSocialMediaLogin}
-            onClose={handleCloseSocialMediaLogin}
-            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-          />
-        </Flex>
+        <ScrollView>
+          <Flex direction='column' gap='l'>
+            <Heading
+              heading={pickHandlePageMessages.title}
+              description={pickHandlePageMessages.description}
+            />
+            <HandleField />
+            <Divider>
+              <Text
+                variant='body'
+                color='subdued'
+                size='s'
+                style={css({ textTransform: 'uppercase' })}
+              >
+                {pickHandlePageMessages.or}
+              </Text>
+            </Divider>
+            <SocialMediaSection
+              onStart={handleStartSocialMediaLogin}
+              onError={handleErrorSocialMediaLogin}
+              onClose={handleCloseSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
+            />
+          </Flex>
+        </ScrollView>
         <PageFooter />
       </Page>
     </Formik>

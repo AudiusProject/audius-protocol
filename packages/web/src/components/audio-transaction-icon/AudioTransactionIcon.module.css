@@ -13,7 +13,7 @@
   left: 6px;
   width: 18px;
   height: 18px;
-  box-shadow: 0 0 0 2px var(--white);
+  box-shadow: 0 0 0 2px var(--harmony-white);
   border-radius: 100%;
 }
 .transactionIconMini.stripe {
@@ -24,16 +24,16 @@
 }
 .transactionIconMini.sent {
   padding: 2px;
-  background-color: var(--accent-orange);
+  background-color: var(--harmony-orange);
 }
 .transactionIconMini.received {
   padding: 2px;
-  background-color: var(--accent-green);
+  background-color: var(--harmony-green);
 }
 
 .transactionIconMini.sent path,
 .transactionIconMini.received path {
-  fill: var(--white);
+  fill: var(--harmony-white);
 }
 
 .icon {
@@ -43,19 +43,19 @@
   justify-content: center;
   height: 40px;
   width: 40px;
-  background: var(--white);
+  background: var(--harmony-white);
   padding: 8px;
-  color: var(--accent-green);
+  color: var(--harmony-green);
   border: 1px solid rgba(11, 164, 0, 0.3);
   border-radius: 8px;
 }
 .icon.received .iconSvg path {
-  fill: var(--accent-green);
+  fill: var(--harmony-green);
 }
 .icon.sent {
-  color: var(--accent-orange);
+  color: var(--harmony-orange);
   border: 1px solid rgba(255, 148, 0, 0.3);
 }
 .icon.sent .iconSvg path {
-  fill: var(--accent-orange);
+  fill: var(--harmony-orange);
 }

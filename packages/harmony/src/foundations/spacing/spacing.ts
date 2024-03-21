@@ -55,3 +55,4 @@ export const iconSizes = {
 
 export type Spacing = typeof spacing
 export type SpacingOptions = keyof Spacing
+export type IconSize = keyof typeof iconSizes

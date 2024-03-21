@@ -75,6 +75,8 @@ import IconNotificationOnSVG from '../assets/icons/NotificationOn.svg'
 import IconPauseSVG from '../assets/icons/Pause.svg'
 import IconPencilSVG from '../assets/icons/Pencil.svg'
 import IconPlaySVG from '../assets/icons/Play.svg'
+import IconPlaybackPauseSVG from '../assets/icons/PlaybackPause.svg'
+import IconPlaybackPlaySVG from '../assets/icons/PlaybackPlay.svg'
 import IconPlaylistsSVG from '../assets/icons/Playlists.svg'
 import IconPlusSVG from '../assets/icons/Plus.svg'
 import IconPodcastBackSVG from '../assets/icons/PodcastBack.svg'
@@ -286,3 +288,5 @@ export const IconWaveForm = IconWaveformSVG as IconComponent
 export const IconFoundation = IconFoundationSVG as IconComponent
 export const IconMerch = IconMerchSVG as IconComponent
 export const IconSupport = IconSupportSVG as IconComponent
+export const IconPlaybackPause = IconPlaybackPauseSVG as IconComponent
+export const IconPlaybackPlay = IconPlaybackPlaySVG as IconComponent

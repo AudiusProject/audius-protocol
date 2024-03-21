@@ -22,7 +22,8 @@ export type Config = {
   rateLimitAllowList: string[]
   rateLimitBlockList: string[]
   finalPoaBlock: number
-  redisUrl: string
+  redisUrl: string,
+  verifierAddress: string
 }
 
 // reads .env file based on environment
@@ -60,7 +61,8 @@ export const readConfig = (): Config => {
     audius_final_poa_block: num({ default: 0 }),
     audius_redis_url: str({
       default: 'redis://audius-protocol-discovery-provider-redis-1:6379/00'
-    })
+    }),
+    audius_contracts_verified_address: str({ default: '' })
   })
   return {
     environment: env.audius_discprov_env,
@@ -75,6 +77,7 @@ export const readConfig = (): Config => {
     rateLimitAllowList: allowListPublicKeys(),
     rateLimitBlockList: blockListPublicKeys(),
     finalPoaBlock: env.audius_final_poa_block,
-    redisUrl: env.audius_redis_url
+    redisUrl: env.audius_redis_url,
+    verifierAddress: env.audius_contracts_verified_address
   }
 }

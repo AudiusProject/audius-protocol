@@ -4,16 +4,13 @@ import Stat from 'components/Stat'
 import { useTrailingApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { formatNumber } from 'utils/format'
-
-const messages = {
-  label: 'API CALLS THIS MONTH'
-}
+import { TextProps } from '@audius/harmony'
 
 type OwnProps = {}
 
-type ApiCallsStatProps = OwnProps
+type ApiCallsStatProps = OwnProps & TextProps
 
-const ApiCallsStat: React.FC<ApiCallsStatProps> = () => {
+const ApiCallsStat: React.FC<ApiCallsStatProps> = textProps => {
   const { apiCalls } = useTrailingApiCalls(Bucket.MONTH)
   let error, stat
   if (apiCalls === MetricError.ERROR) {
@@ -24,9 +21,9 @@ const ApiCallsStat: React.FC<ApiCallsStatProps> = () => {
   }
   return (
     <Stat
-      label={messages.label}
       error={error}
       stat={stat !== null ? formatNumber(stat) : null}
+      {...textProps}
     />
   )
 }

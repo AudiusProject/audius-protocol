@@ -109,7 +109,7 @@ export function useImageSize<
   sizes
 }: BaseUserImageSizeProps<ImageSize, ImageSizes> & {
   onDemand?: boolean
-}): string | undefined | (() => Maybe<string>) {
+}): string | number | undefined | (() => Maybe<string | number>) {
   const [getPreviousId, setPreviousId] = useInstanceVar<number | null>(null)
 
   const getSmallerImage = useMemo(
@@ -122,14 +122,14 @@ export function useImageSize<
   )
 
   const getImageSize = useCallback((): {
-    url: Maybe<URL>
+    url: Maybe<URL | number>
     type: ImageType
   } => {
     if (id === null || id === undefined || typeof id === 'string') {
       return { url: '', type: 'empty' }
     }
 
-    const fallbackImage = (url: URL) => {
+    const fallbackImage = (url: URL | number) => {
       setPreviousId(null)
       return url
     }
@@ -141,7 +141,7 @@ export function useImageSize<
 
     // An override exists
     if (DefaultSizes.OVERRIDE in sizes) {
-      const override: Maybe<URL> = sizes[DefaultSizes.OVERRIDE]
+      const override: Maybe<URL | number> = sizes[DefaultSizes.OVERRIDE]
       if (override) {
         return { url: fallbackImage(override), type: 'override' }
       }
@@ -182,7 +182,7 @@ export function useImageSize<
     setPreviousId
   ])
 
-  let imageUrl: Maybe<URL>
+  let imageUrl: Maybe<URL | number>
   let imageType: Maybe<ImageType>
 
   if (!onDemand) {

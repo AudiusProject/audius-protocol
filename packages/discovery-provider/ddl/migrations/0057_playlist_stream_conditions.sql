@@ -1,4 +1,3 @@
-
 begin;
 
 -- add new columns

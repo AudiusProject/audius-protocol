@@ -37,7 +37,6 @@ import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
 import { NotificationsUIState } from './application/ui/notifications/notificationsUISlice'
 import { ScrollLockState } from './application/ui/scrollLock/types'
-import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
 import { DragnDropState } from './dragndrop/slice'
 const averageColor = averageColorReducer
@@ -69,7 +68,6 @@ export type AppState = CommonState & {
       embedModal: EmbedModalState
       firstUploadModal: FirstUploadModalState
       scrollLock: ScrollLockState
-      setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
       stemsUpload: ReturnType<typeof StemsUploadReducer>
       userListModal: UserListModalState
       visualizer: ReturnType<typeof VisualizerReducer>

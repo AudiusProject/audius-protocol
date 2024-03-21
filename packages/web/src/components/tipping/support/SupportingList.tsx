@@ -67,7 +67,7 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
       {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES && (
         <div className={styles.seeMore} onClick={handleClick}>
           <span>{formatViewAllMessage(profile.supporting_count)}</span>
-          <IconArrow className={styles.arrowIcon} />
+          <IconArrow size='m' />
         </div>
       )}
     </div>

@@ -17,6 +17,12 @@ const MAX_BREADCRUMBS = 300
 export const initializeSentry = () => {
   init({
     dsn: env.SENTRY_DSN,
+    ignoreErrors:
+      typeof navigator !== 'undefined'
+        ? navigator?.userAgent === 'probers'
+          ? [/.*/]
+          : undefined
+        : undefined,
 
     // Need to give Sentry a version so it can
     // associate stacktraces with sourcemaps
@@ -50,19 +56,6 @@ export const initializeSentry = () => {
         }
       }
       return breadCrumb
-    },
-    beforeSend: (event, hint) => {
-      // This code manually adds the exceptionName to the event Fingerprint,
-      // which controls how Sentry groups events into issues.
-      // More background:
-      // https://docs.sentry.io/data-management/event-grouping/sdk-fingerprinting/?platform=javascript
-      const exception = hint ? hint.originalException : undefined
-      if (!exception) return event
-
-      const exceptionName = exception.toString()
-      event.fingerprint = [exceptionName]
-
-      return event
     }
   })
 }

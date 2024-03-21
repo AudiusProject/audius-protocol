@@ -1,13 +1,11 @@
 import { useMemo } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AccessConditions,
   Chain,
   StreamTrackAvailabilityType,
   isContentCollectibleGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { collectiblesSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Box, IconInfo } from '@audius/harmony'
@@ -57,9 +55,6 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     )
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
@@ -180,7 +175,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         footer={renderFooter()}
         disabled={disabled}
       />
-      {isLosslessDownloadsEnabled && downloadConditions ? (
+      {downloadConditions ? (
         <Box mt='l'>
           <HelpCallout
             icon={<IconInfo />}

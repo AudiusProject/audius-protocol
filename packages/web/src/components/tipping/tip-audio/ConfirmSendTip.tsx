@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { tippingSelectors, tippingActions } from '@audius/common/store'
-import { IconCaretLeft, IconSend, IconCheck } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { IconCaretLeft, IconSend, IconCheck, Button } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition, animated } from 'react-spring/renderprops.cjs'
-
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
@@ -139,27 +136,18 @@ export const ConfirmSendTip = () => {
       {!hasError && !isSending && !isConverting ? <ConfirmInfo /> : null}
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
-          type={ButtonType.PRIMARY}
-          text={
-            hasError
-              ? messages.confirmAndTryAgain
-              : !isSending && !isConverting
-              ? messages.confirmTip
-              : ''
-          }
+          variant='primary'
           onClick={handleConfirmSendClick}
-          rightIcon={
-            isSending || isConverting ? (
-              <LoadingSpinner className={styles.loadingSpinner} />
-            ) : (
-              <IconCheck />
-            )
-          }
+          iconRight={IconCheck}
+          isLoading={isSending || isConverting}
           disabled={isDisabled}
-          className={cn(styles.button, styles.confirmButton, {
-            [styles.disabled]: isDisabled
-          })}
-        />
+        >
+          {hasError
+            ? messages.confirmAndTryAgain
+            : !isSending && !isConverting
+            ? messages.confirmTip
+            : ''}
+        </Button>
       </div>
       {!isSending && !isConverting ? (
         <div

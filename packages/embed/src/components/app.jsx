@@ -5,7 +5,6 @@ import cn from 'classnames'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
 
-import '@audius/stems/dist/stems.css'
 import '@audius/harmony/dist/avenir.css'
 import '@audius/harmony/dist/harmony.css'
 
@@ -436,8 +435,8 @@ const App = (props) => {
     const artworkClickURL =
       tracksResponse?.permalink || collectionsResponse?.permalink
         ? stripLeadingSlash(
-          tracksResponse?.permalink || collectionsResponse?.permalink
-        )
+            tracksResponse?.permalink || collectionsResponse?.permalink
+          )
         : null
     const listenOnAudiusURL = artworkClickURL
     const flavor = requestState.playerFlavor

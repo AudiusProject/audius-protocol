@@ -39,7 +39,8 @@ import {
   SET_REFERRER,
   SET_LINKED_SOCIAL_ON_FIRST_PAGE,
   SET_FINISHED_PHASE_1,
-  HIDE_PREVIEW_HINT
+  HIDE_PREVIEW_HINT,
+  SET_WELCOME_MODAL_SHOWN
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
@@ -87,7 +88,8 @@ const initialState = {
     selectedUserIds: []
   },
   genres: [],
-  referrer: null
+  referrer: null,
+  welcomeModalShown: false
 }
 
 const actionsMap = {
@@ -104,7 +106,8 @@ const actionsMap = {
       // even if toggling b/w sign up and sign in redirects to the right place
       routeOnCompletion: state.routeOnCompletion,
       routeOnExit: state.routeOnExit,
-      isMobileSignOnVisible: state.isMobileSignOnVisible
+      isMobileSignOnVisible: state.isMobileSignOnVisible,
+      welcomeModalShown: false
     }
   },
   [OPEN_SIGN_ON](state, action) {
@@ -478,6 +481,12 @@ const actionsMap = {
     return {
       ...state,
       hidePreviewHint: true
+    }
+  },
+  [SET_WELCOME_MODAL_SHOWN](state, action) {
+    return {
+      ...state,
+      welcomeModalShown: action.value
     }
   }
 }

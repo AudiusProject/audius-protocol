@@ -1,22 +1,23 @@
 import Hashids from 'hashids'
+import { describe, afterEach, it, expect, vitest, Mock } from 'vitest'
 
-jest.mock('hashids')
+vitest.mock('hashids')
 
-const mockedHashids = Hashids as jest.Mock
+const mockedHashids = Hashids as Mock
 
 describe('decodeHashId', () => {
   afterEach(() => {
-    jest.resetModules()
+    vitest.resetModules()
   })
 
-  it('can decode a hash id', () => {
+  it('can decode a hash id', async () => {
     mockedHashids.mockImplementationOnce(() => {
       return {
         decode: () => [11845]
       }
     })
 
-    const { decodeHashId } = require('./hashIds')
+    const { decodeHashId } = await import('./hashIds')
 
     const hashed = 'eP9k7'
     const decoded = decodeHashId(hashed)
@@ -24,15 +25,19 @@ describe('decodeHashId', () => {
     expect(typeof decoded).toEqual('number')
   })
 
-  it('can handle an error', () => {
-    const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation()
+  it('can handle an error', async () => {
+    const consoleErrorMock = vitest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
     mockedHashids.mockImplementationOnce(() => {
       return {
-        decode: () => []
+        decode: () => {
+          throw new Error('failed')
+        }
       }
     })
 
-    const { decodeHashId } = require('./hashIds')
+    const { decodeHashId } = await import('./hashIds')
 
     const hashed = 'eP9k7'
     const decoded = decodeHashId(hashed)

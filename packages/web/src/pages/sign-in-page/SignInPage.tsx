@@ -27,8 +27,8 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { ForgotPasswordHelper } from 'pages/sign-on/components/desktop/ForgotPasswordHelper'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
+import { ForgotPasswordModal } from 'pages/sign-up-page/components/ForgotPasswordModal'
 import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_CONFIRM_EMAIL_PAGE, SIGN_UP_PAGE } from 'utils/route'
@@ -131,7 +131,7 @@ export const SignInPage = () => {
               <TextLink
                 variant='visible'
                 textVariant='body'
-                css={{ textAlign: isMobile ? 'center' : undefined }}
+                css={{ alignSelf: isMobile ? 'center' : undefined }}
                 onClick={() => {
                   setShowForgotPassword(true)
                 }}
@@ -147,7 +147,7 @@ export const SignInPage = () => {
           ) : null}
         </ScrollView>
       </Formik>
-      <ForgotPasswordHelper
+      <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}
       />

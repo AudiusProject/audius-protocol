@@ -3,9 +3,12 @@ import { useCallback, useContext } from 'react'
 import {
   ChangePasswordFormValues,
   ChangePasswordPage,
+  useHarmonyField,
   useChangePasswordFormConfiguration
 } from '@audius/common/hooks'
 import {
+  PasswordInput,
+  TextInput,
   Modal,
   ModalContentPages,
   ModalHeader,
@@ -20,8 +23,6 @@ import {
 import { Formik, useFormikContext } from 'formik'
 
 import { VerifyEmailPage } from 'components/change-email/ChangeEmailModal'
-import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
-import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { ToastContext } from 'components/toast/ToastContext'
 import { PasswordCompletionChecklist } from 'pages/sign-up-page/components/PasswordCompletionChecklist'
@@ -43,34 +44,44 @@ const messages = {
 }
 
 export const ConfirmCredentialsPage = () => {
+  const [emailField] = useHarmonyField('email')
+  const [passwordField] = useHarmonyField('password')
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.confirmPasswordHelp}</Text>
-      <HarmonyTextField
-        name='email'
-        autoComplete='email'
+      <TextInput
+        {...emailField}
         label={messages.email}
+        autoComplete='email'
         autoFocus
       />
-      <HarmonyPasswordField name='password' label={messages.currentPassword} />
+      <PasswordInput
+        {...passwordField}
+        label={messages.currentPassword}
+        autoComplete='current-password'
+      />
     </Flex>
   )
 }
 
 export const NewPasswordPage = () => {
+  const [passwordField] = useHarmonyField('password')
+  const [confirmPasswordField] = useHarmonyField('confirmPassword')
   return (
     <Flex direction='column' gap='xl'>
       <Text variant='body'>{messages.passwordCompletionHelp}</Text>
       <Flex direction='column' gap='l'>
-        <HarmonyPasswordField
-          name='password'
+        <PasswordInput
+          {...passwordField}
           label={messages.password}
           helperText={undefined}
+          autoComplete='new-password'
         />
-        <HarmonyPasswordField
-          name='confirmPassword'
+        <PasswordInput
+          {...confirmPasswordField}
           label={messages.confirmPassword}
           helperText={undefined}
+          autoComplete='new-password'
         />
         <PasswordCompletionChecklist />
       </Flex>

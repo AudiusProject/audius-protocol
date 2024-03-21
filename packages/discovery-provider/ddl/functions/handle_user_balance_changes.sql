@@ -8,7 +8,7 @@ declare
 begin
   SELECT label, val into new_tier, new_tier_value
   FROM (
-    VALUES ('bronze', 10::bigint), ('silver', 100::bigint), ('gold', 10000::bigint), ('platinum', 100000::bigint)
+    VALUES ('bronze', 10::bigint), ('silver', 100::bigint), ('gold', 1000::bigint), ('platinum', 10000::bigint)
   ) as tier (label, val)
   WHERE
     substr(new.current_balance, 1, GREATEST(1, length(new.current_balance) - 18))::bigint >= tier.val
@@ -18,7 +18,7 @@ begin
 
   SELECT label, val into previous_tier, previous_tier_value
   FROM (
-    VALUES ('bronze', 10::bigint), ('silver', 100::bigint), ('gold', 10000::bigint), ('platinum', 100000::bigint)
+    VALUES ('bronze', 10::bigint), ('silver', 100::bigint), ('gold', 1000::bigint), ('platinum', 10000::bigint)
   ) as tier (label, val)
   WHERE
     substr(new.previous_balance, 1, GREATEST(1, length(new.previous_balance) - 18))::bigint >= tier.val

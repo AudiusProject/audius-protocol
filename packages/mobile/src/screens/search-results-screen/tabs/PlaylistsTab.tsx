@@ -9,6 +9,7 @@ import { spacing } from 'app/styles/spacing'
 import { EmptyResults } from '../EmptyResults'
 
 import { useFetchTabResultsEffect } from './useFetchTabResultsEffect'
+import { useTrackSearchResultSelect } from './useTrackSearchResultSelect'
 
 const { getSearchStatus } = searchResultsPageSelectors
 
@@ -27,6 +28,10 @@ const selectSearchPlaylists = (state: CommonState) => {
 }
 
 export const PlaylistsTab = () => {
+  const onSelectSearchResult = useTrackSearchResultSelect(
+    'playlist',
+    'more results page'
+  )
   const playlists = useProxySelector(selectSearchPlaylists, [])
   useFetchTabResultsEffect(SearchKind.PLAYLISTS)
 
@@ -36,6 +41,7 @@ export const PlaylistsTab = () => {
       isLoading={!playlists}
       collection={playlists}
       ListEmptyComponent={<EmptyResults />}
+      onCollectionPress={onSelectSearchResult}
     />
   )
 }

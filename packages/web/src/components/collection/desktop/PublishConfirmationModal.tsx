@@ -14,9 +14,9 @@ import {
   ModalTitle,
   ModalProps,
   ModalFooter,
-  IconRocket
+  IconRocket,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import styles from './PublishConfirmationModal.module.css'
@@ -63,19 +63,17 @@ export const PublishConfirmationModal = (
         </ModalContentText>
       </ModalContent>
       <ModalFooter className={styles.footer}>
+        <Button variant='secondary' onClick={onClose} fullWidth>
+          {messages.cancel}
+        </Button>
         <Button
-          fullWidth
-          text={messages.cancel}
-          type={ButtonType.COMMON}
-          onClick={onClose}
-        />
-        <Button
-          fullWidth
-          text={messages.publish}
-          leftIcon={<IconRocket />}
-          type={ButtonType.PRIMARY}
+          variant='primary'
+          iconLeft={IconRocket}
           onClick={handlePublish}
-        />
+          fullWidth
+        >
+          {messages.publish}
+        </Button>
       </ModalFooter>
     </Modal>
   )

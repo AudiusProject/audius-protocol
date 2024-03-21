@@ -6,9 +6,9 @@
 }
 
 .header {
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-  color: var(--neutral-light-4);
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-n-400);
 }
 .headerCaps {
   composes: header;
@@ -16,11 +16,11 @@
 }
 .amount {
   composes: header;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .callToAction {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .loader {
@@ -42,7 +42,7 @@
   align-items: stretch;
 }
 .showMoreToggle:global(.collapsed) {
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
 }
 .showMoreToggle .showMoreToggleButton {
   padding-top: 24px;
@@ -58,8 +58,8 @@
 
   padding: 16px 24px;
 
-  background: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  background: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100);
   border-radius: 8px;
 }
 
@@ -69,7 +69,7 @@
   vertical-align: baseline;
 }
 .caret path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .quote {
@@ -81,8 +81,8 @@
 
 .error {
   white-space: pre-line;
-  color: var(--accent-red);
+  color: var(--harmony-red);
   text-align: center;
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--harmony-font-demi-bold);
   line-height: 150%;
 }

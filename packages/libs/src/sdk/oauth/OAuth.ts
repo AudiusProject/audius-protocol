@@ -17,13 +17,13 @@ export type LoginSuccessCallback = (
   encodedJwt: string
 ) => void
 export type LoginErrorCallback = (errorMessage: string) => void
-export type ButtonOptions = {
+export type ButtonOptions = Partial<{
   size: 'small' | 'medium' | 'large'
   corners: 'default' | 'pill'
   customText: string
   disableHoverGrow: boolean
   fullWidth: boolean
-}
+}>
 
 const CSS = `
 .audiusLoginButton {

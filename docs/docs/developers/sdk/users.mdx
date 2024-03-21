@@ -4,8 +4,10 @@ title: Users
 pagination_label: Users
 sidebar_label: Users
 description: Audius Protocol Documentation
-
 ---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
 ### getUser
 
@@ -15,17 +17,18 @@ Get a user.
 
 Example:
 
-```typescript
+```ts
 const { data: user } = await audiusSdk.users.getUser({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(user);
+console.log(user)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name | Type     | Description        | Required?    |
 | :--- | :------- | :----------------- | :----------- |
@@ -33,7 +36,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` contains information about the user as described below.
+Returns a `Promise` containing an object with a `data` field. `data` contains information about the
+user as described below.
 
 ```ts
 {
@@ -80,18 +84,18 @@ Get the AI generated tracks attributed to a user using the user's handle.
 
 Example:
 
-```typescript
-const { data: tracks } =
-  await audiusSdk.users.getAIAttributedTracksByUserHandle({
-    handle: "skrillex",
-  });
+```ts
+const { data: tracks } = await audiusSdk.users.getAIAttributedTracksByUserHandle({
+  handle: 'skrillex',
+})
 
-console.log(tracks);
+console.log(tracks)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name            | Type                                                                                               | Description                                                                                                                     | Required?    |
 | :-------------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :----------- |
@@ -117,17 +121,18 @@ Get the apps that a user has authorized to write to their account.
 
 Example:
 
-```typescript
+```ts
 const { data: apps } = await audiusSdk.users.getAuthorizedApps({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(apps);
+console.log(apps)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name | Type     | Description        | Required?    |
 | :--- | :------- | :----------------- | :----------- |
@@ -135,7 +140,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the authorized apps as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the authorized apps as described below.
 
 ```ts
 {
@@ -158,17 +164,18 @@ Get a user's connected ERC and SPL wallets.
 
 Example:
 
-```typescript
+```ts
 const { data: wallets } = await audiusSdk.users.getConnectedWallets({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(wallets);
+console.log(wallets)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name | Type     | Description        | Required?    |
 | :--- | :------- | :----------------- | :----------- |
@@ -176,7 +183,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an object containing information about the wallets as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an object containing
+information about the wallets as described below.
 
 ```ts
 {
@@ -195,17 +203,18 @@ Get the developer apps a user owns.
 
 Example:
 
-```typescript
+```ts
 const { data: developerApps } = await audiusSdk.users.getDeveloperApps({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(developerApps);
+console.log(developerApps)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name | Type     | Description        | Required?    |
 | :--- | :------- | :----------------- | :----------- |
@@ -213,7 +222,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the developer apps as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the developer apps as described below.
 
 ```ts
 {
@@ -234,17 +244,18 @@ Get a user's favorites.
 
 Example:
 
-```typescript
+```ts
 const { data: favorites } = await audiusSdk.users.getFavorites({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(favorites);
+console.log(favorites)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name | Type     | Description        | Required?    |
 | :--- | :------- | :----------------- | :----------- |
@@ -252,16 +263,17 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the favorites as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the favorites as described below.
 
 ```ts
 {
-  createdAt: string;
-  favoriteItemId: string; // The ID of the track, playlist, or album
-  favoriteType: string; // The type of favorite ("track", "playlist", or "album")
-  userId: string;
+  createdAt: string
+  favoriteItemId: string // The ID of the track, playlist, or album
+  favoriteType: string // The type of favorite ("track", "playlist", or "album")
+  userId: string
 }
-[];
+;[]
 ```
 
 ---
@@ -274,17 +286,18 @@ Get a user's followers
 
 Example:
 
-```typescript
+```ts
 const { data: followers } = await audiusSdk.users.getFollowers({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(followers);
+console.log(followers)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -294,7 +307,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the followers as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the followers as described below.
 
 ```ts
 {
@@ -341,17 +355,18 @@ Get users that a user is following
 
 Example:
 
-```typescript
+```ts
 const { data: following } = await audiusSdk.users.getFollowing({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(following);
+console.log(following)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -373,17 +388,18 @@ Get a list of users that might be of interest to followers of this user.
 
 Example:
 
-```typescript
+```ts
 const { data: relatedUsers } = await audiusSdk.users.getRelatedUsers({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(relatedUsers);
+console.log(relatedUsers)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -403,17 +419,18 @@ Get a user's reposts.
 
 Example:
 
-```typescript
+```ts
 const { data: reposts } = await audiusSdk.users.getReposts({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(reposts);
+console.log(reposts)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -423,7 +440,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the reposts as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the reposts as described below.
 
 Return type:
 
@@ -447,17 +465,18 @@ Get users that are subscribed to a user.
 
 Example:
 
-```typescript
+```ts
 const { data: subscribers } = await audiusSdk.users.getSubscribers({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(subscribers);
+console.log(subscribers)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -479,17 +498,18 @@ Get users that are supporting a user (they have sent them a tip).
 
 Example:
 
-```typescript
+```ts
 const { data: supporters } = await audiusSdk.users.getSupporters({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(supporters);
+console.log(supporters)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -501,7 +521,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the supporters as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the supporters as described below.
 
 ```ts
 {
@@ -552,17 +573,18 @@ Get users that a user is supporting (they have sent them a tip).
 
 Example:
 
-```typescript
+```ts
 const { data: supportings } = await audiusSdk.users.getSupportings({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(supportings);
+console.log(supportings)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -572,7 +594,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the supportings as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing
+information about the supportings as described below.
 
 ```ts
 {
@@ -623,17 +646,18 @@ Get the most used track tags by a user.
 
 Example:
 
-```typescript
+```ts
 const { data: tags } = await audiusSdk.users.getTopTrackTags({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(tags);
+console.log(tags)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description                                                        | Required?    |
 | :------- | :------- | :----------------------------------------------------------------- | :----------- |
@@ -643,7 +667,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an array of strings representing the tags
+Returns a `Promise` containing an object with a `data` field. `data` is an array of strings
+representing the tags
 
 ```ts
 string[]
@@ -659,17 +684,18 @@ Get a user's tracks.
 
 Example:
 
-```typescript
+```ts
 const { data: tracks } = await audiusSdk.users.getTracksByUser({
-  id: "eAZl3",
-});
+  id: 'eAZl3',
+})
 
-console.log(tracks);
+console.log(tracks)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name            | Type                                                                    | Description                                                                                                 | Required?    |
 | :-------------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- | :----------- |
@@ -695,17 +721,18 @@ Get a user by their handle.
 
 Example:
 
-```typescript
+```ts
 const { data: user } = await audiusSdk.users.getUserByHandle({
-  handle: "skrillex",
-});
+  handle: 'skrillex',
+})
 
-console.log(user);
+console.log(user)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name     | Type     | Description            | Required?    |
 | :------- | :------- | :--------------------- | :----------- |
@@ -725,17 +752,18 @@ Get a user ID by an associated wallet address.
 
 Example:
 
-```typescript
+```ts
 const { data: userId } = await audiusSdk.users.getUserIdByWallet({
-  associatedWallet: "6f229f7e8462f198e5be9139175a0b460a9fa35b",
-});
+  associatedWallet: '6f229f7e8462f198e5be9139175a0b460a9fa35b',
+})
 
-console.log(userId);
+console.log(userId)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name               | Type     | Description                               | Required?    |
 | :----------------- | :------- | :---------------------------------------- | :----------- |
@@ -743,11 +771,12 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an object containing the user id as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an object containing the
+user id as described below.
 
 ```ts
 {
-  userId: string;
+  userId: string
 }
 ```
 
@@ -761,17 +790,18 @@ Search for users.
 
 Example:
 
-```typescript
+```ts
 const { data: users } = await audiusSdk.users.searchUsers({
-  query: "skrillex",
-});
+  query: 'skrillex',
+})
 
-console.log(users);
+console.log(users)
 ```
 
 #### Params
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name    | Type     | Description                   | Required?    |
 | :------ | :------- | :---------------------------- | :----------- |
@@ -791,28 +821,29 @@ Update a user profile.
 
 Example:
 
-```typescript
-import { Mood, Genre } from "@audius/sdk";
-import fs from "fs";
+```ts
+import { Mood, Genre } from '@audius/sdk'
+import fs from 'fs'
 
-const profilePicBuffer = fs.readFileSync("path/to/profile-pic.png");
+const profilePicBuffer = fs.readFileSync('path/to/profile-pic.png')
 
 await audiusSdk.users.updateProfile({
-  userId: "7eP5n",
+  userId: '7eP5n',
   profilePictureFile: {
     buffer: Buffer.from(profilePicBuffer),
-    name: "profilePic",
+    name: 'profilePic',
   },
   metadata: {
-    bio: "up and coming artist from the Bronx",
+    bio: 'up and coming artist from the Bronx',
   },
-  onProgress: (progress) => console.log("Progress: ", progress),
-});
+  onProgress: (progress) => console.log('Progress: ', progress),
+})
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name                 | Type                         | Description                                                                   | Required?    |
 | :------------------- | :--------------------------- | :---------------------------------------------------------------------------- | :----------- |
@@ -834,16 +865,18 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
-  blockHash: string;
-  blockNumber: number;
+  blockHash: string
+  blockNumber: number
 }
 ```
 
@@ -857,16 +890,17 @@ Follow a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.followUser({
-  userId: "7eP5n",
-  followeeUserId: "2kN2a", // User id to follow
-});
+  userId: '7eP5n',
+  followeeUserId: '2kN2a', // User id to follow
+})
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name             | Type     | Description                  | Required?    |
 | :--------------- | :------- | :--------------------------- | :----------- |
@@ -875,16 +909,18 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
-  blockHash: string;
-  blockNumber: number;
+  blockHash: string
+  blockNumber: number
 }
 ```
 
@@ -898,16 +934,17 @@ Unfollow a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.unfollowUser({
-  userId: "7eP5n",
-  followeeUserId: "2kN2a", // User id to unfollow
-});
+  userId: '7eP5n',
+  followeeUserId: '2kN2a', // User id to unfollow
+})
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name             | Type     | Description                    | Required?    |
 | :--------------- | :------- | :----------------------------- | :----------- |
@@ -916,16 +953,18 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
-  blockHash: string;
-  blockNumber: number;
+  blockHash: string
+  blockNumber: number
 }
 ```
 
@@ -939,16 +978,17 @@ Subscribe to a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.subscribeToUser({
-  userId: "7eP5n",
-  subscribeeUserId: "2kN2a", // User id to subscribe to
-});
+  userId: '7eP5n',
+  subscribeeUserId: '2kN2a', // User id to subscribe to
+})
 ```
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name               | Type     | Description                        | Required?    |
 | :----------------- | :------- | :--------------------------------- | :----------- |
@@ -957,16 +997,18 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
-  blockHash: string;
-  blockNumber: number;
+  blockHash: string
+  blockNumber: number
 }
 ```
 
@@ -980,7 +1022,7 @@ Unsubscribe from a user.
 
 Example:
 
-```typescript
+```ts
 await audiusSdk.users.unsubscribeFromUser({
   trackId: 'x5pJ3Az'
   userId: "7eP5n",
@@ -989,7 +1031,8 @@ await audiusSdk.users.unsubscribeFromUser({
 
 #### `params`
 
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
+Create an object with the following fields and pass it as the first argument, as shown in the
+example above.
 
 | Name               | Type     | Description                            | Required?    |
 | :----------------- | :------- | :------------------------------------- | :----------- |
@@ -998,15 +1041,17 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### `advancedOptions`
 
-You can pass an optional [`advancedOptions`](/developers/advanced-options) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/sdk/advanced-options) object as the second
+argument.
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number
+(`blockNumber`) for the transaction.
 
 ```ts
 {
-  blockHash: string;
-  blockNumber: number;
+  blockHash: string
+  blockNumber: number
 }
 ```

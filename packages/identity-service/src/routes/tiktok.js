@@ -26,7 +26,7 @@ module.exports = function (app) {
       let url = 'https://www.tiktok.com/v2/auth/authorize/'
 
       url += `?client_key=${config.get('tikTokAPIKey')}`
-      url += '&scope=user.info.basic'
+      url += '&scope=user.info.basic,user.info.profile'
       url += '&response_type=code'
       url += `&redirect_uri=${config.get('tikTokAuthOrigin')}`
       url += '&state=' + csrfState
@@ -134,6 +134,7 @@ module.exports = function (app) {
 
         return successResponse({ data: accessTokenResponse.data })
       } catch (err) {
+        req.logger.error(`TikTok access_token error`, err)
         return errorResponseBadRequest(err)
       }
     })

@@ -6,6 +6,7 @@
 }
 
 .transactionWrapper {
+  width: 100%;
   margin-top: 24px;
 }
 
@@ -19,6 +20,8 @@
   align-items: center;
   padding: 16px 24px;
   height: 81px;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .textContainer {
@@ -58,7 +61,7 @@
 }
 
 .loading {
-  margin-right: 32px;
+  margin-right: var(--unit-6);
 }
 
 .subtext {

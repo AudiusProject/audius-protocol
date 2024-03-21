@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+import {
+  DDEXResourceContributor,
+  DDEXCopyright,
+  DDEXRightsController
+} from '../../types/DDEX'
 import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
@@ -20,7 +25,7 @@ export const EthCollectibleGatedConditions = z
     name: z.string(),
     slug: z.string(),
     imageUrl: z.optional(z.string()),
-    externalLink: z.optional(z.string())
+    externalLink: z.optional(z.string()).nullable()
   })
   .strict()
 
@@ -30,7 +35,7 @@ export const SolCollectibleGatedConditions = z
     address: z.string(),
     name: z.string(),
     imageUrl: z.optional(z.string()),
-    externalLink: z.optional(z.string())
+    externalLink: z.optional(z.string()).nullable()
   })
   .strict()
 
@@ -67,16 +72,6 @@ export const createUploadTrackMetadataSchema = () =>
   z.object({
     aiAttributionUserId: z.optional(HashId),
     description: z.optional(z.string().max(1000)),
-    download: z.optional(
-      z
-        .object({
-          cid: z.string(),
-          isDownloadable: z.boolean(),
-          requiresFollow: z.boolean()
-        })
-        .strict()
-        .nullable()
-    ),
     fieldVisibility: z.optional(
       z.object({
         mood: z.optional(z.boolean()),
@@ -148,7 +143,19 @@ export const createUploadTrackMetadataSchema = () =>
     origFileCid: z.optional(z.string()),
     origFilename: z.optional(z.string()),
     isDownloadable: z.optional(z.string()),
-    isOriginalAvailable: z.optional(z.string())
+    isOriginalAvailable: z.optional(z.string()),
+    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+    artists: z.optional(z.array(DDEXResourceContributor)).nullable(),
+    resourceContributors: z.optional(
+      z.array(DDEXResourceContributor).nullable()
+    ),
+    indirectResourceContributors: z.optional(
+      z.array(DDEXResourceContributor).nullable()
+    ),
+    rightsController: z.optional(DDEXRightsController.nullable()),
+    copyrightLine: z.optional(DDEXCopyright.nullable()),
+    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+    parentalWarningType: z.optional(z.string().nullable())
   })
 
 export type TrackMetadata = z.input<

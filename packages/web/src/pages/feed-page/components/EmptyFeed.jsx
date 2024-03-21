@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
@@ -53,13 +53,9 @@ const EmptyFeed = (props) => {
                 <i className='emoji small headphone' />
               </div>
               <div className={styles.item}>and much more!</div>
-              <Button
-                text='Sign Up'
-                type={ButtonType.PRIMARY_ALT}
-                size={ButtonSize.SMALL}
-                onClick={props.onClick}
-                className={styles.button}
-              />
+              <Button variant='primary' size='small' onClick={props.onClick}>
+                Sign Up
+              </Button>
             </>
           )}
         </div>

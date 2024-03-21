@@ -1,7 +1,7 @@
 .emptyTab {
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   width: 100%;
   text-align: center;
 

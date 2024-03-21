@@ -16,14 +16,16 @@ import {
 } from '@audius/common/store'
 import { getHash } from '@audius/common/utils'
 import {
+  Button as HarmonyButton,
   Modal,
   IconKebabHorizontal,
   IconPencil,
   IconShare,
   PopupMenu,
-  PopupMenuItem
+  PopupMenuItem,
+  Button,
+  Flex
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import {
   DragDropContext,
@@ -89,7 +91,13 @@ export const collectibleMessages = {
   videoNotSupported: 'Your browser does not support the video tag.',
   clickCopy: 'Click To Copy',
   copied: 'Copied to Clipboard',
-  done: 'Done'
+  done: 'Done',
+  setAsProfilePic: 'Set As Profile Pic',
+  setAsProfilePicDescription:
+    'Are you sure you want to change your profile picture?',
+  setAsProfilePickCancel: 'Nevermind',
+  setAsProfilePickConfirm: 'Yes',
+  collectibleOptions: 'Collectible Options'
 }
 
 const dedupe = (list: any[]) => {
@@ -576,42 +584,40 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
           </div>
 
           {isMobile ? (
-            <div className={styles.mobileButtonContainer}>
+            <Flex gap='s' w='100%'>
               {isUserOnTheirProfile && (
                 <Button
-                  className={styles.detailsButton}
-                  textClassName={styles.detailsButtonText}
-                  iconClassName={styles.detailsButtonIcon}
+                  variant='common'
+                  size='small'
                   onClick={handleEditClick}
-                  text='Edit'
-                  type={ButtonType.COMMON_ALT}
-                  size={ButtonSize.SMALL}
-                  leftIcon={<IconPencil />}
-                />
+                  iconLeft={IconPencil}
+                  fullWidth
+                >
+                  Edit
+                </Button>
               )}
               <Button
-                className={styles.detailsButton}
-                textClassName={styles.detailsButtonText}
-                iconClassName={styles.detailsButtonIcon}
+                variant='common'
+                size='small'
                 onClick={handleShareClick}
-                text='Share'
-                type={ButtonType.COMMON_ALT}
-                size={ButtonSize.SMALL}
-                leftIcon={<IconShare />}
-              />
-            </div>
+                iconLeft={IconShare}
+                fullWidth
+              >
+                Share
+              </Button>
+            </Flex>
           ) : (
             <PopupMenu
               items={overflowMenuItems}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
               renderTrigger={(anchorRef, triggerPopup) => (
                 <Button
-                  leftIcon={<IconKebabHorizontal />}
+                  variant='secondary'
+                  size='small'
+                  iconLeft={IconKebabHorizontal}
+                  aria-label={collectibleMessages.collectibleOptions}
                   ref={anchorRef}
                   onClick={() => triggerPopup()}
-                  text={null}
-                  size={ButtonSize.SMALL}
-                  type={ButtonType.COMMON}
                 />
               )}
               zIndex={zIndex.NAVIGATOR_POPUP}
@@ -734,13 +740,13 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           )}
 
-          <Button
-            className={styles.editDoneButton}
-            type={ButtonType.PRIMARY_ALT}
-            size={ButtonSize.SMALL}
-            text='Done'
+          <HarmonyButton
+            variant='primary'
+            size='small'
             onClick={handleDoneClick}
-          />
+          >
+            Done
+          </HarmonyButton>
         </div>
       </Modal>
 
@@ -784,13 +790,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   </div>
                 </div>
               </Toast>
-              <Button
-                type={ButtonType.PRIMARY_ALT}
-                onClick={closeEmbedModal}
-                text={collectibleMessages.done}
-                textClassName={styles.embedButtonText}
-                className={styles.embedButton}
-              />
+              <HarmonyButton variant='primary' onClick={closeEmbedModal}>
+                {collectibleMessages.done}
+              </HarmonyButton>
             </div>
           </div>
         </div>

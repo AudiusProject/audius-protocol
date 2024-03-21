@@ -1,7 +1,6 @@
 import { ReactNode } from 'react'
 
-import { Scrollbar } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, Scrollbar } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './ErrorBody.module.css'
@@ -21,11 +20,14 @@ const ErrorBody = ({ error, className, onClose }: ErrorBodyProps) => {
     <div className={cn(styles.container, { [className!]: !!className })}>
       <Scrollbar className={styles.scrollableMessage}>{error}</Scrollbar>
       <Button
-        className={styles.btn}
-        text={messages.okay}
-        type={ButtonType.PRIMARY_ALT}
+        variant='primary'
+        css={(theme) => ({
+          marginBottom: theme.spacing.xl
+        })}
         onClick={onClose}
-      />
+      >
+        {messages.okay}
+      </Button>
     </div>
   )
 }

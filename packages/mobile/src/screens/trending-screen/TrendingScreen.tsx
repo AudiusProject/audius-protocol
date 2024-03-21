@@ -60,7 +60,7 @@ export const TrendingScreen = () => {
   useAppTabScreen()
 
   return (
-    <Screen>
+    <Screen url='Trending'>
       <ScreenHeader text='Trending' icon={IconTrending}>
         <TrendingFilterButton />
       </ScreenHeader>

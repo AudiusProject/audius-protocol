@@ -107,7 +107,7 @@ const SignInPasswordField = () => {
   const signInError = useSelector((state: any) =>
     getPasswordField(state)?.error.includes('400')
   )
-  const [, , { setError }] = useField('password')
+  const [, { error }, { setError }] = useField('password')
 
   useEffect(() => {
     if (signInError) {
@@ -120,6 +120,7 @@ const SignInPasswordField = () => {
       name='password'
       label={signInPageMessages.passwordLabel}
       autoComplete='current-password'
+      helperText={error}
     />
   )
 }

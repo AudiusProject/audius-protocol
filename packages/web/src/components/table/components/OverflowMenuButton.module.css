@@ -20,13 +20,13 @@
 }
 
 .icon path {
-  fill: var(--neutral-light-5);
+  fill: var(--harmony-n-300);
 }
 .tableOptionsButton:hover .icon {
   transform: scale3d(1.05, 1.05, 1.05);
 }
 .tableOptionsButton:hover .icon g path {
-  fill: var(--neutral-light-3);
+  fill: var(--harmony-n-500);
 }
 .tableOptionsButton:active .icon {
   transform: scale(0.95);

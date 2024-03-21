@@ -12,13 +12,10 @@ import {
   collectionsSocialActions,
   CommonState
 } from '@audius/common/store'
-import { IconHeart } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { ButtonProps, IconHeart, Button } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
-
-import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
 const { getCollection } = collectionPageSelectors
 const { getAccountCollections } = accountSelectors
@@ -41,7 +38,7 @@ type FavoriteButtonProps = Partial<ButtonProps> & {
 }
 
 export const FavoriteButton = (props: FavoriteButtonProps) => {
-  const { collectionId, isOwner, type, ...other } = props
+  const { collectionId, isOwner, variant, ...other } = props
 
   const userPlaylists = useSelector(getAccountCollections)
 
@@ -83,13 +80,14 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
       disabled={isOwner || saveCount === 0}
       text={isSaved ? messages.unfavorite : messages.favorite}
     >
-      <EntityActionButton
-        type={type ?? (isSaved ? ButtonType.SECONDARY : ButtonType.COMMON)}
-        text={isSaved ? messages.favorited : messages.favorite}
-        leftIcon={<IconHeart />}
+      <Button
+        variant={variant ?? (isSaved ? 'primary' : 'secondary')}
+        iconLeft={IconHeart}
         onClick={handleFavorite}
         {...other}
-      />
+      >
+        {isSaved ? messages.favorited : messages.favorite}
+      </Button>
     </Tooltip>
   )
 }

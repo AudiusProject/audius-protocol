@@ -1,4 +1,4 @@
-import type { Auth } from '../Auth'
+import type { AuthService } from '../Auth'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
@@ -29,7 +29,7 @@ export type StorageNodeSelectorConfig =
     /**
      * The Authentication service, used to get the user's wallet for rendevous calculations
      */
-    auth: Auth
+    auth: AuthService
 
     /**
      * DiscoveryNodeSelector instance being used, so that the node can listen for

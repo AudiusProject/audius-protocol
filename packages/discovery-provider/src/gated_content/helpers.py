@@ -5,6 +5,7 @@ from sqlalchemy.orm.session import Session
 
 from src.gated_content.types import GatedContentType
 from src.models.social.follow import Follow
+from src.models.tracks.track import Track
 from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.models.users.usdc_purchase import USDCPurchase
 
@@ -61,20 +62,54 @@ def does_user_support_artist(
     return True if result else False
 
 
-def has_user_purchased_content(
+def does_user_have_usdc_access(
     session: Session,
     user_id: int,
     content_id: int,
     content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
-    result = (
-        session.query(USDCPurchase)
-        .filter(
-            USDCPurchase.buyer_user_id == user_id,
-            USDCPurchase.content_id == content_id,
-            USDCPurchase.content_type == content_type,
+    if content_type == "track":
+        result = (
+            session.query(USDCPurchase)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id == content_id,
+                USDCPurchase.content_type == "track",
+            )
+            .first()
         )
-        .first()
-    )
-    return True if result else False
+        if result:
+            return True
+
+        track = session.query(Track).filter(Track.track_id == content_id).first()
+
+        # Don't check album purchase if track is download-gated only
+        if (
+            not track
+            or not track.playlists_containing_track
+            or (track.is_download_gated and not track.is_stream_gated)
+        ):
+            return False
+
+        album_purchase = (
+            session.query(USDCPurchase)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id.in_(track.playlists_containing_track),
+                USDCPurchase.content_type == "album",
+            )
+            .first()
+        )
+        return bool(album_purchase)
+    else:
+        result = (
+            session.query(USDCPurchase)
+            .filter(
+                USDCPurchase.buyer_user_id == user_id,
+                USDCPurchase.content_id == content_id,
+                USDCPurchase.content_type == content_type,
+            )
+            .first()
+        )
+        return bool(result)

@@ -5,7 +5,7 @@ RUST_VERSION=1.59.0 # rustc version 1.59.0 (9d1b2106e 2022-02-23)
 SOLANA_CLI_VERSION=v1.9.13
 ANCHOR_CLI_VERSION=v0.24.1
 
-cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+cd "$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"   # audius-protocol/solana-programs/anchor/audius-data
 echo "Installing dev deps for anchor audius-data development..."
 # install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y

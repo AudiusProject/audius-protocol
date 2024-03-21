@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import clsx from 'clsx'
-import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
+import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import { matchPath, useNavigate, useLocation } from 'react-router-dom'
 
 import styles from './MobileNav.module.css'
@@ -73,7 +73,10 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
       </div>
       <div className={styles.inner}>
         <div className={styles.top}>
-          <Logo className={styles.logo} />
+          <IconAudiusLogoHorizontal
+            color="staticWhite"
+            className={styles.logo}
+          />
           <div className={styles.name}>{messages.name}</div>
         </div>
         {navRoutes.map(route => (

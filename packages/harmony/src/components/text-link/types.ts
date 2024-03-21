@@ -2,7 +2,7 @@ import type { HTMLProps } from 'react'
 
 import type { TextProps } from 'components/text/Text'
 
-type TextLinkTextProps = Omit<TextProps, 'variant' | 'color'>
+type TextLinkTextProps = Omit<TextProps<any>, 'variant' | 'color' | 'onClick'>
 
 export type TextLinkProps = TextLinkTextProps &
   Omit<
@@ -20,7 +20,7 @@ export type TextLinkProps = TextLinkTextProps &
      * Which variant to display.
      * @default default
      */
-    variant?: 'default' | 'subdued' | 'visible' | 'inverted'
+    variant?: 'default' | 'subdued' | 'visible' | 'inverted' | 'secondary'
 
     /**
      * Which text variant to display.
@@ -32,6 +32,11 @@ export type TextLinkProps = TextLinkTextProps &
      * a text-link is present when next to other text.
      */
     showUnderline?: boolean
+
+    /**
+     * When `true`, render link in active style (e.g. hover color)
+     */
+    isActive?: boolean
 
     /**
      * Mark as true if the link destination is outside of the app. Causes the

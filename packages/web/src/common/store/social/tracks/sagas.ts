@@ -1,5 +1,5 @@
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
-import { FeatureFlags, QueryParams } from '@audius/common/services'
+import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -647,88 +647,6 @@ export function* watchUnsetArtistPick() {
   })
 }
 
-/* DOWNLOAD TRACK */
-
-function* downloadTrackV1Helper({
-  track,
-  filename,
-  original
-}: {
-  track: Track
-  filename: string
-  original?: boolean
-}) {
-  try {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const apiClient = yield* getContext('apiClient')
-    const trackDownload = yield* getContext('trackDownload')
-    let queryParams: QueryParams = {}
-
-    const trackId = track.track_id
-    const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const nftAccessSignature = original
-      ? nftAccessSignatureMap[trackId]?.original ?? null
-      : nftAccessSignatureMap[trackId]?.mp3 ?? null
-    queryParams = (yield* call(getQueryParams, {
-      audiusBackendInstance,
-      nftAccessSignature
-    })) as unknown as QueryParams
-    queryParams.filename = filename
-    queryParams.original = original
-
-    const encodedTrackId = encodeHashId(trackId)
-    const url = apiClient.makeUrl(
-      `/tracks/${encodedTrackId}/download`,
-      queryParams
-    )
-    yield* call(trackDownload.downloadTracks, { files: [{ url, filename }] })
-  } catch (e) {
-    console.error(
-      `Could not download track ${track.track_id}: ${
-        (e as Error).message
-      }. Error: ${e}`
-    )
-  }
-}
-
-function* downloadTrackV1(
-  action: ReturnType<typeof socialActions.downloadTrack>
-) {
-  yield* call(waitForRead)
-  const {
-    trackIds: [trackId],
-    original,
-    stemName
-  } = action
-
-  // Check if there is a logged in account and if not,
-  // wait for one so we can trigger the download immediately after
-  // logging in.
-  const accountUserId = yield* select(getUserId)
-  if (!accountUserId) {
-    yield* call(waitForValue, getUserId)
-  }
-
-  const track = yield* select(getTrack, { id: trackId })
-  if (!track) return
-
-  const userId = track.owner_id
-  const user = yield* select(getUser, { id: userId })
-  if (!user) return
-
-  let filename
-  if (track.stem_of?.parent_track_id) {
-    const parentTrack = yield* select(getTrack, {
-      id: track.stem_of.parent_track_id
-    })
-    filename = `${parentTrack?.title} - ${stemName} - ${user.name} (Audius).mp3`
-  } else {
-    filename = `${track.title} - ${user.name} (Audius).mp3`
-  }
-
-  yield* call(downloadTrackV1Helper, { track, filename, original })
-}
-
 const getFilename = ({
   track,
   user,
@@ -833,16 +751,6 @@ function* watchDownloadTrack() {
         }
 
         yield* call(waitForRead)
-
-        const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-        const isLosslessDownloadsEnabled = yield* call(
-          getFeatureEnabled,
-          FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-        )
-        if (!isLosslessDownloadsEnabled) {
-          yield* call(downloadTrackV1, action)
-          return
-        }
 
         // Check if there is a logged in account and if not,
         // wait for one so we can trigger the download immediately after

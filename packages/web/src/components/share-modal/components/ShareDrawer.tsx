@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
 import { IconLink, IconShare, IconTwitter } from '@audius/harmony'
-import cn from 'classnames'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
-import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { messages } from '../messages'
 import { ShareProps } from '../types'
 
-import { IconTikTok } from './IconTikTok'
 import styles from './ShareDrawer.module.css'
 
 const iconSize = { height: 26, width: 26 }
@@ -18,11 +15,9 @@ type ShareDrawerProps = ShareProps
 
 export const ShareDrawer = ({
   onShareToTwitter,
-  onShareToTikTok,
   onCopyLink,
   isOpen,
   onClose,
-  showTikTokShareAction,
   shareType
 }: ShareDrawerProps) => {
   const getActions = useCallback(() => {
@@ -33,15 +28,6 @@ export const ShareDrawer = ({
       onClick: onShareToTwitter
     }
 
-    const shareToTikTokAction = {
-      text: messages.tikTok,
-      icon: <IconTikTok {...iconSize} />,
-      className: cn(styles.shareToTikTokAction, {
-        [styles.shareToTikTokActionDark]: isDarkMode() || isMatrix()
-      }),
-      onClick: onShareToTikTok
-    }
-
     const copyLinkAction = {
       text: messages.copyLink,
       icon: <IconLink {...iconSize} />,
@@ -49,10 +35,8 @@ export const ShareDrawer = ({
       onClick: onCopyLink
     }
 
-    return showTikTokShareAction
-      ? [shareToTwitterAction, shareToTikTokAction, copyLinkAction]
-      : [shareToTwitterAction, copyLinkAction]
-  }, [showTikTokShareAction, onShareToTwitter, onShareToTikTok, onCopyLink])
+    return [shareToTwitterAction, copyLinkAction]
+  }, [onShareToTwitter, onCopyLink])
 
   return (
     <ActionDrawer

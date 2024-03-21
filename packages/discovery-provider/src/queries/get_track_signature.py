@@ -134,7 +134,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
         authed_user = get_authed_user(user_data, user_signature)
         authed_user_id = authed_user.get("user_id") if authed_user else None
 
-    # all downloadable and non-download-gated tracks should be publicly available
+    # all non-download-gated tracks should be publicly available
     if not is_download_gated:
         signature = get_gated_content_signature(
             {
