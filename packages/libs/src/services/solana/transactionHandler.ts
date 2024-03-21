@@ -312,7 +312,7 @@ export class TransactionHandler {
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
           try {
-            retryTxId = sendRawTransaction()
+            retryTxId = await sendRawTransaction()
             logger.info(
               `transactionHandler: retrying txId ${txid} with retryTxId ${retryTxId}, sendCount ${sendCount}`
             )
