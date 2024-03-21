@@ -43,8 +43,6 @@ test.describe('upload track', () => {
   test('should upload a single hidden, AI attributed track remix', async ({
     page
   }) => {
-    test.setTimeout(1000 * 60 * 5)
-
     const trackTitle = `Test track ${Date.now()}`
     const trackDescription = 'Test description'
     const genre = 'Alternative'
@@ -247,8 +245,6 @@ test.describe('upload track', () => {
   })
 
   test('should upload a premium track', async ({ page }) => {
-    test.setTimeout(1000 * 60 * 5)
-
     const trackTitle = `Test premium track ${Date.now()}`
     const genre = 'Alternative'
     const price = '1.05'
@@ -337,8 +333,6 @@ test.describe('upload track', () => {
   })
 
   test('should upload a single track with stems', async ({ page }) => {
-    test.setTimeout(1000 * 60 * 5)
-
     const trackTitle = `Test stems track ${Date.now()}`
     const genre = 'Alternative'
 
