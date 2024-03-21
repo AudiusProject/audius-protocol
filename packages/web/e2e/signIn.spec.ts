@@ -1,31 +1,24 @@
 import { test, expect, Page } from '@playwright/test'
 
 import { email, password, name, handle } from './fixtures/user.json'
+import { goToPage } from './utils'
 
 test.describe('Sign In', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/FeatureFlagOverride:sign_up_redesign', (route) => {
-      route.fulfill({ body: 'enabled' })
-    })
-  })
-
   test('can navigate to sign-in from trending screen', async ({ page }) => {
-    await page.goto('trending')
-    await expect(page.getByRole('heading', { name: 'Trending' })).toBeVisible()
-    await expect(page.getByText(/have an account\?/i)).toBeVisible()
+    await goToPage({ page, path: 'trending' })
     await page.getByRole('link', { name: /sign in/i }).click()
     await assertOnSignInPage(page)
   })
 
   test('/signin goes to sign-in', async ({ page }) => {
-    await page.goto('signin')
+    await goToPage({ page, path: 'signin' })
     await expect(
       page.getByRole('heading', { name: 'Sign Into Audius' })
     ).toBeVisible()
   })
 
   test('can navigate to sign-in from sign-up', async ({ page }) => {
-    await page.goto('signup')
+    await goToPage({ page, path: 'signup' })
     await expect(page.getByText(/already have an account?/i)).toBeVisible()
     await page.getByRole('link', { name: /Sign In/ }).click()
     await assertOnSignInPage(page)
@@ -34,7 +27,7 @@ test.describe('Sign In', () => {
   test('can navigate to sign-in after entering email in sign-up', async ({
     page
   }) => {
-    await page.goto('signup')
+    await goToPage({ page, path: 'signup' })
     await page.getByRole('textbox', { name: /email/i }).fill(email)
     await page.getByRole('button', { name: /sign up free/i }).click()
     const signUpModal = page.getByRole('alert')
@@ -42,7 +35,7 @@ test.describe('Sign In', () => {
     await assertOnSignInPage(page)
   })
 
-  // // We need to integrate a hard-coded otp for this user
+  // TODO: need to integrate a hard-coded otp for this user before we can turn this test on
   // test.skip('can sign in', async ({ page }) => {
   //   await page.goto('signin')
   //   await assertOnSignInPage(page)
@@ -56,7 +49,5 @@ test.describe('Sign In', () => {
 })
 
 async function assertOnSignInPage(page: Page) {
-  await expect(page.getByText(/sign into audius/i)).toBeVisible({
-    timeout: 300000
-  })
+  await expect(page.getByText(/sign into audius/i)).toBeVisible()
 }

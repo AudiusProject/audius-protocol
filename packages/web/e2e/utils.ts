@@ -3,6 +3,8 @@ import dayjs from 'dayjs'
 
 type AppPath = 'signup' | 'trending' | 'signin' | '' // blank is the marketing site
 
+const COLD_START_TIMEOUT = 25000
+
 export const goToPage = async ({
   page,
   path
@@ -15,25 +17,25 @@ export const goToPage = async ({
     case '':
       await expect(
         page.getByRole('heading', { name: /artists deserve more/i, level: 1 })
-      ).toBeVisible({ timeout: 25000 })
+      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
       break
 
     case 'signup':
       // Optional debug step
       await expect(
         page.getByRole('heading', { name: /sign up for audius/i, level: 1 })
-      ).toBeVisible({ timeout: 25000 })
+      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
       break
 
     case 'signin':
       await expect(
         page.getByRole('heading', { name: /sign into audius/i })
-      ).toBeVisible({ timeout: 25000 })
+      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
       break
     case 'trending':
       await expect(
         page.getByRole('heading', { name: /trending/i, level: 1 })
-      ).toBeVisible({ timeout: 25000 })
+      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
       break
     default:
       break
