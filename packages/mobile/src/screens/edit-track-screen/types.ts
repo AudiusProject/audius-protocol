@@ -1,10 +1,10 @@
-import type { ExtendedTrackMetadata } from '@audius/common/store'
+import type { TrackMetadataForUpload } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import type { FormikProps } from 'formik'
 
 import type { ScreenProps } from 'app/components/core'
 
-export type FormValues = ExtendedTrackMetadata & {
+export type FormValues = TrackMetadataForUpload & {
   licenseType: {
     allowAttribution: Nullable<boolean>
     commercialUse: Nullable<boolean>
@@ -14,8 +14,8 @@ export type FormValues = ExtendedTrackMetadata & {
 }
 
 export type EditTrackScreenProps = {
-  onSubmit: (values: ExtendedTrackMetadata) => void
-  initialValues: ExtendedTrackMetadata & { trackArtwork?: string }
+  onSubmit: (values: TrackMetadataForUpload) => void
+  initialValues: TrackMetadataForUpload & { trackArtwork?: string }
   doneText?: string
 } & Partial<ScreenProps>
 

@@ -1,6 +1,6 @@
 .bodyClassName {
   max-width: 404px;
-  background-color: var(--neutral-light-10);
+  background-color: var(--harmony-n-25);
   box-shadow: 0 16px 20px -5px var(--search-bar-shadow);
 }
 
@@ -16,7 +16,7 @@
 }
 
 .divider {
-  border-bottom: 1px solid var(--neutral-light-6);
+  border-bottom: 1px solid var(--harmony-n-200);
   margin: 16px 0px;
 }
 
@@ -27,13 +27,13 @@
 }
 
 .iconRemove path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .title {
-  color: var(--neutral-light-4);
-  font-size: var(--font-l);
-  font-weight: var(--font-heavy);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-heavy);
   letter-spacing: 0.5px;
   line-height: 23px;
   text-align: center;
@@ -44,9 +44,9 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 20px;
 }
 
@@ -55,7 +55,7 @@
 }
 
 .toggleContainer.isDisabled {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   opacity: 0.5;
 }
 
@@ -65,8 +65,8 @@
 
 .permissionDeniedText {
   margin-top: 8px;
-  color: var(--static-accent-red);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-red);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: 18px;
 }

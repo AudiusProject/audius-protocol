@@ -1,8 +1,9 @@
+import { ProgressCB } from '../services/creatorNode'
 import {
   Action,
   EntityManagerClient
 } from '../services/dataContracts/EntityManagerClient'
-import { Nullable, TrackMetadata, Utils } from '../utils'
+import { Nullable, TrackMetadata, UploadTrackMetadata, Utils } from '../utils'
 
 import type { BaseConstructorArgs } from './base'
 import { Base, Services } from './base'
@@ -370,7 +371,7 @@ export class Track extends Base {
   async uploadTrackV2AndWriteToChain(
     trackFile: File,
     coverArtFile: File,
-    metadata: TrackMetadata,
+    metadata: UploadTrackMetadata,
     onProgress: () => void,
     trackId?: number
   ) {
@@ -401,9 +402,9 @@ export class Track extends Base {
    */
   async uploadTrackV2(
     trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
-    onProgress: () => void
+    coverArtFile: File | null,
+    metadata: UploadTrackMetadata,
+    onProgress: ProgressCB
   ) {
     // Validate inputs
     this.REQUIRES(Services.CREATOR_NODE)
@@ -477,8 +478,10 @@ export class Track extends Base {
     }
 
     if (!trackId) trackId = await this.generateTrackId()
+    // Prevent extra fields from being added to metadata
+    const parsedTrackMetadata = Track._parseTrackMetadata(trackMetadata)
     const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
-      trackMetadata
+      parsedTrackMetadata
     )
     const { txReceipt } =
       await this.contracts.EntityManagerClient!.manageEntity(
@@ -486,7 +489,10 @@ export class Track extends Base {
         EntityManagerClient.EntityType.TRACK,
         trackId,
         action,
-        JSON.stringify({ cid: metadataCid.toString(), data: trackMetadata })
+        JSON.stringify({
+          cid: metadataCid.toString(),
+          data: parsedTrackMetadata
+        })
       )
     return { trackId, metadataCid, txReceipt }
   }
@@ -588,8 +594,60 @@ export class Track extends Base {
   /* ------- PRIVATE  ------- */
 
   // Throws an error upon validation failure
-  _validateTrackMetadata(metadata: TrackMetadata) {
+  _validateTrackMetadata(metadata: Partial<TrackMetadata>) {
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
     this.creatorNode.validateTrackSchema(metadata)
+  }
+
+  /**
+   * Prevents additional fields from being included in metadata
+   */
+  static _parseTrackMetadata(trackMetadata: TrackMetadata): TrackMetadata {
+    return {
+      blocknumber: trackMetadata.blocknumber,
+      is_delete: trackMetadata.is_delete,
+      track_id: trackMetadata.track_id,
+      is_downloadable: trackMetadata.is_downloadable,
+      is_original_available: trackMetadata.is_original_available,
+      created_at: trackMetadata.created_at,
+      isrc: trackMetadata.isrc,
+      iswc: trackMetadata.iswc,
+      credits_splits: trackMetadata.credits_splits,
+      description: trackMetadata.description,
+      genre: trackMetadata.genre,
+      has_current_user_reposted: trackMetadata.has_current_user_reposted,
+      has_current_user_saved: trackMetadata.has_current_user_saved,
+      license: trackMetadata.license,
+      mood: trackMetadata.mood,
+      play_count: trackMetadata.play_count,
+      owner_id: trackMetadata.owner_id,
+      release_date: trackMetadata.release_date,
+      repost_count: trackMetadata.repost_count,
+      save_count: trackMetadata.save_count,
+      tags: trackMetadata.tags,
+      title: trackMetadata.title,
+      track_segments: trackMetadata.track_segments,
+      cover_art: trackMetadata.cover_art,
+      cover_art_sizes: trackMetadata.cover_art_sizes,
+      is_unlisted: trackMetadata.is_unlisted,
+      is_available: trackMetadata.is_available,
+      is_stream_gated: trackMetadata.is_stream_gated,
+      stream_conditions: trackMetadata.stream_conditions,
+      is_download_gated: trackMetadata.is_download_gated,
+      download_conditions: trackMetadata.download_conditions,
+      permalink: trackMetadata.permalink,
+      preview_start_seconds: trackMetadata.preview_start_seconds,
+      duration: trackMetadata.duration,
+      is_invalid: trackMetadata.is_invalid,
+      stem_of: trackMetadata.stem_of,
+      ddex_app: trackMetadata.ddex_app,
+      is_playlist_upload: trackMetadata.is_playlist_upload,
+      audio_upload_id: trackMetadata.audio_upload_id,
+      track_cid: trackMetadata.track_cid,
+      orig_file_cid: trackMetadata.orig_file_cid,
+      orig_filename: trackMetadata.orig_filename,
+      preview_cid: trackMetadata.preview_cid,
+      dateListened: trackMetadata.dateListened
+    }
   }
 }

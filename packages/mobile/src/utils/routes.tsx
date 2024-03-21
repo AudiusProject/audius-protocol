@@ -21,7 +21,7 @@ export const getUserRoute = (user: UserHandle, fullUrl = false) => {
 }
 
 export const getCollectionRoute = (
-  collection: CollectionMetadata,
+  collection: Pick<UserCollection, 'permalink'>,
   fullUrl = false
 ) => {
   const { permalink } = collection

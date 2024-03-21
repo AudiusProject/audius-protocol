@@ -24,13 +24,19 @@ type ShareProfileContent = {
 
 type ShareAlbumContent = {
   type: 'album'
-  album: Collection
+  album: Pick<
+    Collection,
+    'playlist_name' | 'playlist_id' | 'permalink' | 'is_album' | 'is_private'
+  >
   artist: User
 }
 
 type SharePlaylistContent = {
   type: 'playlist'
-  playlist: Collection
+  playlist: Pick<
+    Collection,
+    'playlist_name' | 'playlist_id' | 'permalink' | 'is_album' | 'is_private'
+  >
   creator: User
 }
 

@@ -16,7 +16,7 @@
 }
 
 .volumeIcon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .volumeIcon:hover {

@@ -4,7 +4,12 @@ import { Repost } from '../models/Repost'
 import { Nullable } from '../utils/typeUtils'
 
 import { Favorite } from './Favorite'
-import { AccessConditions, UserTrackMetadata } from './Track'
+import {
+  AccessConditions,
+  UserTrackMetadata,
+  ResourceContributor,
+  Copyright
+} from './Track'
 import { User, UserMetadata } from './User'
 
 export enum Variant {
@@ -62,6 +67,10 @@ export type CollectionMetadata = {
   is_stream_gated: boolean
   stream_conditions: Nullable<AccessConditions>
   ddex_release_ids?: any | null
+  artists?: [ResourceContributor] | null
+  copyright_line?: Copyright | null
+  producer_copyright_line?: Copyright | null
+  parental_warning_type?: string | null
 }
 
 export type CollectionDownloadReason = { is_from_favorites: boolean }

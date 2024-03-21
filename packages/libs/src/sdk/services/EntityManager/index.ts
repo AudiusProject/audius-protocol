@@ -1,2 +1,2 @@
 export { EntityManager } from './EntityManager'
-export { EntityManagerService } from './types'
+export { EntityManagerService, Action as EntityManagerAction } from './types'

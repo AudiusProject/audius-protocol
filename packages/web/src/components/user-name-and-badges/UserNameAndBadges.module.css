@@ -4,7 +4,7 @@
 
 .nameAndBadge {
   display: inline-flex;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
   cursor: pointer;
   max-width: 100%;
 }

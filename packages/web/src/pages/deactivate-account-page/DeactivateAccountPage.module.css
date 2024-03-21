@@ -3,15 +3,15 @@
   border-radius: 6px;
   box-shadow: 0px 16px 20px var(--table-shadow);
   width: 100%;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   text-align: left;
   padding: 50px;
 }
 
 .header {
-  font-weight: var(--font-bold);
-  font-size: var(--font-2xl);
-  color: var(--secondary);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-2xl);
+  color: var(--harmony-secondary);
   margin: 10px 0;
 }
 
@@ -20,15 +20,15 @@
   line-height: 32px;
   margin-inline-start: 1.5em;
   margin-bottom: 50px;
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--harmony-font-demi-bold);
 }
 .list li:last-child {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }
 
 .error {
-  color: var(--accent-red);
-  font-weight: var(--font-bold);
+  color: var(--harmony-red);
+  font-weight: var(--harmony-font-bold);
   margin-bottom: 24px;
 }
 

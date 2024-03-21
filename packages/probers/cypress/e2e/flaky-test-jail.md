@@ -6,12 +6,6 @@ A list of flaky/misbehaving tests that we are currently skipping in order to kee
 
 ## Current Inmates - [C-3508]
 
-#### [Upload Track](./uploadTrack.cy.ts)
-
-This entire suite is in jail.
-
-The upload flow seems to generally take too long in CI and results in timeouts and consistent failures.
-
 #### [Sign Up](./signUp.cy.ts) - [C-3593]
 
 "should create an account" tests are skipped until they can be updated

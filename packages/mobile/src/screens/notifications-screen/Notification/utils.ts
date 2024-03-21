@@ -8,7 +8,6 @@ export const getEntityRoute = (entity: EntityType, fullUrl = false) => {
   } else if (entity.user) {
     return getCollectionRoute(entity, fullUrl)
   }
-  return ''
 }
 
 export const getEntityScreen = (entity: EntityType) => {

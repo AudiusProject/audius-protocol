@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import type { UploadTrack } from '@audius/common/store'
+import type { TrackForUpload } from '@audius/common/store'
 import { View } from 'react-native'
 
 import { IconImage } from '@audius/harmony-native'
@@ -40,7 +40,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 type UploadingTrackTileProps = {
-  track: UploadTrack
+  track: TrackForUpload
   uploadProgress: number
 }
 export const UploadingTrackTile = (props: UploadingTrackTileProps) => {

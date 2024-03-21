@@ -211,7 +211,7 @@ const OnRampTooltipButton = ({
       disabled={!isDisabled}
       className={styles.tooltip}
       text={disabledText}
-      color={'--secondary'}
+      color='secondary'
       shouldWrapContent={false}
     >
       <div className={styles.onRampButtonTooltipContainer}>

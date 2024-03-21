@@ -1,7 +1,7 @@
 .remixes {
   width: 100%;
   margin: 0 auto;
-  background: var(--white);
+  background: var(--harmony-white);
   border-radius: 12px;
   box-shadow: 0 16px 20px -5px var(--table-shadow);
   padding: 28px 0px;
@@ -13,12 +13,12 @@
   justify-content: center;
 
   text-transform: uppercase;
-  color: var(--secondary);
-  font-weight: var(--font-heavy);
-  font-size: var(--font-2xl);
+  color: var(--harmony-secondary);
+  font-weight: var(--harmony-font-heavy);
+  font-size: var(--harmony-font-2xl);
 
   user-select: none;
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
@@ -28,7 +28,7 @@
 
 /** iOS Safari doesn't do a good job persisting the title font styles to nested content */
 .header > * {
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;

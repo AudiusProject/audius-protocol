@@ -6,21 +6,21 @@
 }
 
 .title {
-  font-weight: var(--font-bold);
-  font-size: var(--font-2xl);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-2xl);
   line-height: 29px;
   text-align: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
   margin: 32px 0px 16px;
 }
 
 .description {
   width: 508px;
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
   line-height: 22px;
   text-align: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-bottom: 32px;
 }
 
@@ -31,22 +31,22 @@
 }
 
 .connectBtn .connectBtnText {
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
-  color: var(--white);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-white);
 }
 
 .connectBtn.disabled:hover,
 .connectBtn.disabled:active {
   transform: scale3d(1, 1, 1) !important;
-  background-color: var(--neutral-light-7);
+  background-color: var(--harmony-n-150);
 }
 
 .limit {
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-m);
   text-align: center;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-bottom: 32px;
 }
 
@@ -64,7 +64,7 @@
 .error {
   text-align: center;
   margin: 0px 0px 32px;
-  color: var(--accent-red);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-red);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
 }

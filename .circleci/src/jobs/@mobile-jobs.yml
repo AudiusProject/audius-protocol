@@ -33,8 +33,6 @@ mobile-init:
           - node_modules
           - packages/web/node_modules
           - packages/mobile/node_modules
-          - packages/stems/node_modules
-          - packages/stems/dist
           - packages/common/node_modules
           - packages/libs/node_modules
           - packages/libs/dist

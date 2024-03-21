@@ -440,6 +440,7 @@ def create_playlist(params: ManageEntityParameters):
             }
         )
         last_added_to = params.block_datetime
+
     playlist_record = Playlist(
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,
@@ -465,7 +466,7 @@ def create_playlist(params: ManageEntityParameters):
         is_current=False,
         is_delete=False,
         ddex_app=ddex_app,
-        ddex_release_ids=params.metadata.get("ddex_release_ids", None),
+        parental_warning_type=params.metadata.get("parental_warning_type", None),
     )
 
     update_playlist_routes_table(params, playlist_record, True)

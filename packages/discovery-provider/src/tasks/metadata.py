@@ -30,6 +30,23 @@ class TrackSegment(TypedDict):
     duration: float
 
 
+class ResourceContributor(TypedDict):
+    name: str
+    roles: List[str]
+    sequence_number: int
+
+
+class RightsController(TypedDict):
+    name: str
+    roles: List[str]
+    rights_share_unknown: Optional[str]
+
+
+class Copyright(TypedDict):
+    Year: str
+    Text: str
+
+
 class TrackMetadata(TypedDict):
     track_cid: Optional[str]
     preview_cid: Optional[str]
@@ -56,7 +73,6 @@ class TrackMetadata(TypedDict):
     license: Optional[str]
     isrc: Optional[str]
     iswc: Optional[str]
-    ddex_release_ids: Optional[Any]
     track_segments: List[TrackSegment]
     remix_of: Optional[TrackRemix]
     is_scheduled_release: bool
@@ -72,6 +88,14 @@ class TrackMetadata(TypedDict):
     ai_attribution_user_id: Optional[int]
     placement_hosts: Optional[str]
     ddex_app: Optional[str]
+    ddex_release_ids: Optional[Any]
+    artists: Optional[List[ResourceContributor]]
+    resource_contributors: Optional[List[ResourceContributor]]
+    indirect_resource_contributors: Optional[List[ResourceContributor]]
+    rights_controller: Optional[RightsController]
+    copyright_line: Optional[Copyright]
+    producer_copyright_line: Optional[Copyright]
+    parental_warning_type: Optional[str]
 
 
 track_metadata_format: TrackMetadata = {
@@ -100,7 +124,6 @@ track_metadata_format: TrackMetadata = {
     "license": None,
     "isrc": None,
     "iswc": None,
-    "ddex_release_ids": None,
     "track_segments": [],
     "remix_of": None,
     "is_scheduled_release": False,
@@ -116,6 +139,14 @@ track_metadata_format: TrackMetadata = {
     "ai_attribution_user_id": None,
     "placement_hosts": None,
     "ddex_app": None,
+    "ddex_release_ids": None,
+    "artists": None,
+    "resource_contributors": None,
+    "indirect_resource_contributors": None,
+    "rights_controller": None,
+    "copyright_line": None,
+    "producer_copyright_line": None,
+    "parental_warning_type": None,
 }
 
 # Required format for user metadata retrieved from the content system

@@ -1,13 +1,12 @@
 @import './colors.css';
 @import './sizing.css';
-@import './type.css';
 @import './emoji.css';
 @import './ant-overrides.css';
 @import './shadows.css';
 
 #root *,
 body * {
-  font-family: var(--font-family) !important;
+  font-family: var(--harmony-font-family) !important;
 }
 
 body,
@@ -17,11 +16,11 @@ h3,
 h4,
 h5,
 h6 {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 body {
-  background: var(--background);
+  background: var(--harmony-background);
   backface-visibility: hidden;
   /** Turn off user select so the web app behaves more like "an app" */
   user-select: none;

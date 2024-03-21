@@ -1,5 +1,5 @@
 .root {
-  padding-top: var(--unit-2);
+  padding-top: var(--harmony-unit-2);
 }
 
 .dropdown {
@@ -23,8 +23,8 @@
 }
 .dropdownRow > span {
   margin-left: 8px;
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-l);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-l);
 }
 
 .dropdownInput :global(.ant-select-selection-item) {

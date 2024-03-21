@@ -1,24 +1,24 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .amount {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .destination {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .error {
   display: flex;
-  gap: var(--unit-1);
+  gap: var(--harmony-unit-1);
 }
 
 .tryAgain {
@@ -26,5 +26,5 @@
 }
 
 .tryAgain:hover {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
