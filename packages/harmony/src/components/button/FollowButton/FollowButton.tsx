@@ -106,27 +106,60 @@ export const FollowButton = forwardRef(
       text = messages.unfollow
     }
 
-    const { color, cornerRadius } = useTheme()
+    const { color, cornerRadius, motion, shadows } = useTheme()
 
     const textColor =
       checkedValue || isHovering || isPressing
         ? color.static.white
         : color.primary.primary
 
+    const borderRadius =
+      variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s
+
     const rootCss: CSSObject = {
       cursor: 'pointer',
       minWidth: size === 'small' ? 128 : 152,
       width: fullWidth ? '100%' : undefined,
       userSelect: 'none',
-      borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
-      background: isPressing
-        ? color.primary.p500
-        : checkedValue || isHovering
+      borderRadius,
+      backgroundColor: checkedValue
         ? color.primary.primary
-        : color.static.white,
-      border: `1px solid ${
-        isPressing ? color.primary.p500 : color.primary.primary
-      }`
+        : color.special.white,
+      boxShadow: shadows.near,
+      border: `1px solid ${color.primary.primary}`,
+      transition: `
+        transform ${motion.hover},
+        border-color ${motion.hover},
+        background-color ${motion.hover},
+        color ${motion.hover}
+      `,
+      '::before': {
+        zIndex: -1,
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        borderRadius
+      },
+      '&:hover': {
+        backgroundColor: color.primary.primary,
+        borderWidth: 0,
+        boxShadow: shadows.mid,
+        '&::before': {
+          backgroundColor: 'rgba(255, 255, 255, 0.2)'
+        }
+      },
+      '&:active': {
+        backgroundColor: color.primary.primary,
+        borderWidth: 0,
+        boxShadow: 'none',
+        '&::before': {
+          backgroundColor: 'rgba(0, 0, 0, 0.2)'
+        }
+      }
     }
 
     // Handles case where user mouses down, moves cursor, and mouses up
@@ -173,6 +206,7 @@ export const FollowButton = forwardRef(
         <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
         <Text
           variant='label'
+          tag='span'
           size={size === 'small' ? 's' : 'l'}
           strength='default'
           css={{ color: textColor }}

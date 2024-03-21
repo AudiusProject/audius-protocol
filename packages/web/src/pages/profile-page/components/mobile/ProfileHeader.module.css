@@ -70,16 +70,6 @@
   flex-direction: column;
 }
 
-.titleContainer .right {
-  display: flex;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-.subscribeButton {
-  margin-right: 6px;
-}
-
 .artistName {
   color: var(--harmony-neutral);
   font-family: var(--harmony-font-family);

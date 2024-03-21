@@ -275,7 +275,7 @@ const BasicForm = (props) => {
   const renderAdvancedButton = () => {
     return (
       <Button
-        variant='common'
+        variant='secondary'
         size='small'
         className={cn(styles.menuButton, styles.advancedButton)}
         name={props.advancedShow ? 'showAdvanced' : 'hideAdvanced'}

@@ -134,11 +134,7 @@ const RewardPanel = ({
     ? messages.viewDetails
     : panelButtonText
 
-  const buttonVariant = needsDisbursement
-    ? 'primary'
-    : hasDisbursed
-    ? 'secondary'
-    : 'common'
+  const buttonVariant = needsDisbursement ? 'primary' : 'secondary'
 
   return (
     <div

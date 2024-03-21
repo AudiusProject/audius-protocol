@@ -195,7 +195,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
           </Text>
           <div className={styles.buttonContainer}>
             <Button
-              variant='common'
+              variant='secondary'
               fullWidth
               iconLeft={IconTwitterBird}
               onClick={handleTwitterShare}
@@ -203,7 +203,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
               {messages.twitterButtonText}
             </Button>
             <Button
-              variant='common'
+              variant='secondary'
               fullWidth
               iconLeft={IconLink}
               onClick={handleCopyLink}

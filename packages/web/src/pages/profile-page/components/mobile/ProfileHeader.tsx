@@ -337,15 +337,14 @@ const ProfileHeader = ({
                 <FollowsYouBadge userId={userId} />
               </div>
             </div>
-            <div className={styles.right}>
-              {following && (
+            <Flex gap='s' justifyContent='flex-end' flex={1}>
+              {following ? (
                 <SubscribeButton
-                  className={styles.subscribeButton}
                   isSubscribed={isSubscribed}
                   isFollowing={following}
                   onToggleSubscribe={toggleNotificationSubscription}
                 />
-              )}
+              ) : null}
               {mode === 'owner' ? (
                 <Button
                   variant='secondary'
@@ -363,7 +362,7 @@ const ProfileHeader = ({
                   fullWidth={false}
                 />
               )}
-            </div>
+            </Flex>
           </div>
           <div className={styles.artistMetrics}>
             <div className={styles.artistMetric}>
