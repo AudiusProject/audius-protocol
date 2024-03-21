@@ -15,6 +15,7 @@ import { useTransition, animated } from 'react-spring'
 
 import { PlainButton } from 'components/button'
 import { IconClose } from 'icons'
+import { ModalState } from 'utils/modalState'
 
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { getScrollParent } from '../../../utils/getScrollParent'
@@ -210,7 +211,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     fixed
   } = props
   const { spring, shadows } = useTheme()
-  const [popupState, setPopupState] = useState('closed')
+  const [popupState, setPopupState] = useState<ModalState>('closed')
 
   const isVisible = popupState !== 'closed'
 

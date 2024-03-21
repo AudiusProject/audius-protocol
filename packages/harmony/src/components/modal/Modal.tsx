@@ -17,6 +17,8 @@ import ReactDOM from 'react-dom'
 import { animated, useTransition } from 'react-spring'
 import { useEffectOnce } from 'react-use'
 
+import { ModalState } from 'utils/modalState'
+
 import { useHotkeys, useScrollLock, useClickOutside } from '../../hooks'
 import { IconClose } from '../../icons'
 
@@ -162,7 +164,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     }
   })
 
-  const [modalState, setModalState] = useState('closed')
+  const [modalState, setModalState] = useState<ModalState>('closed')
   const isOpen = modalState !== 'closed'
   const isDoneOpening = modalState === 'open'
   const { spring } = useTheme()
