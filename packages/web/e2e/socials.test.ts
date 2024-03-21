@@ -75,52 +75,50 @@ class SocialActions {
   }
 }
 
-test.describe('socials tests', () => {
-  test('should favorite/unfavorite a track', async ({ page }) => {
-    await page.goto(`sebastian12/bachgavotte-1?login=${base64Entropy}`)
-    const heading = page.getByRole('heading', {
-      name: 'probers_track_do_not_delete',
-      level: 1
-    })
-    // Wait for heading
-    await expect(heading).toBeAttached({ timeout: 10000 })
-
-    const socialActions = new SocialActions(page)
-    // Check that it has a favorite or unfavorite button
-    await expect(
-      socialActions.favoriteButton.or(socialActions.unfavoriteButton)
-    ).toBeVisible()
-
-    if (await socialActions.favoriteButton.isVisible()) {
-      await socialActions.favorite()
-      await socialActions.unfavorite()
-    } else {
-      await socialActions.unfavorite()
-      await socialActions.favorite()
-    }
+test('should favorite/unfavorite a track', async ({ page }) => {
+  await page.goto(`sebastian12/bachgavotte-1?login=${base64Entropy}`)
+  const heading = page.getByRole('heading', {
+    name: 'probers_track_do_not_delete',
+    level: 1
   })
+  // Wait for heading
+  await expect(heading).toBeAttached({ timeout: 10000 })
 
-  test('should repost/unrepost a track', async ({ page }) => {
-    await page.goto(`sebastian12/bachgavotte-1?login=${base64Entropy}`)
-    const heading = page.getByRole('heading', {
-      name: 'probers_track_do_not_delete',
-      level: 1
-    })
-    // Wait for heading
-    await expect(heading).toBeAttached({ timeout: 10000 })
+  const socialActions = new SocialActions(page)
+  // Check that it has a favorite or unfavorite button
+  await expect(
+    socialActions.favoriteButton.or(socialActions.unfavoriteButton)
+  ).toBeVisible()
 
-    const socialActions = new SocialActions(page)
-    // Check that it has a favorite or unfavorite button
-    await expect(
-      socialActions.repostButton.or(socialActions.unrepostButton)
-    ).toBeVisible()
+  if (await socialActions.favoriteButton.isVisible()) {
+    await socialActions.favorite()
+    await socialActions.unfavorite()
+  } else {
+    await socialActions.unfavorite()
+    await socialActions.favorite()
+  }
+})
 
-    if (await socialActions.repostButton.isVisible()) {
-      await socialActions.repost()
-      await socialActions.unrepost()
-    } else {
-      await socialActions.unrepost()
-      await socialActions.repost()
-    }
+test('should repost/unrepost a track', async ({ page }) => {
+  await page.goto(`sebastian12/bachgavotte-1?login=${base64Entropy}`)
+  const heading = page.getByRole('heading', {
+    name: 'probers_track_do_not_delete',
+    level: 1
   })
+  // Wait for heading
+  await expect(heading).toBeAttached({ timeout: 10000 })
+
+  const socialActions = new SocialActions(page)
+  // Check that it has a favorite or unfavorite button
+  await expect(
+    socialActions.repostButton.or(socialActions.unrepostButton)
+  ).toBeVisible()
+
+  if (await socialActions.repostButton.isVisible()) {
+    await socialActions.repost()
+    await socialActions.unrepost()
+  } else {
+    await socialActions.unrepost()
+    await socialActions.repost()
+  }
 })
