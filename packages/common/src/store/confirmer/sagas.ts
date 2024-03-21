@@ -14,6 +14,7 @@ import {
   getShouldCancelCurrentCall,
   getAreRequisiteCallsComplete
 } from './selectors'
+import type { RequestConfirmationError } from './types'
 
 enum BlockConfirmation {
   CONFIRMED = 'CONFIRMED',
@@ -124,17 +125,20 @@ function* requestConfirmationAsync(
         success = true
         completionCall = successCall
       } else {
-        result = { error: true, timeout: true }
+        result = {
+          error: new Error('Confirmation timed out'),
+          timeout: true
+        } as RequestConfirmationError
         success = false
         completionCall = failCall
       }
     } catch (err) {
       console.debug('Caught error in confirmer:', err)
       result = {
-        error: true,
+        error: err,
         message: err instanceof Error ? err.message : '',
         timeout: false
-      }
+      } as RequestConfirmationError
       success = false
       completionCall = failCall
     }

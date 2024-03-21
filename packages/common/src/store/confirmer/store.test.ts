@@ -129,11 +129,12 @@ describe('requestConfirmation', () => {
   })
 
   it('makes fail call', async () => {
+    const mockError = new Error('Error Message')
     const consoleDebugMock = vitest
       .spyOn(console, 'debug')
       .mockImplementation(() => {})
     const confirm = vitest.fn((_) => {
-      throw new Error('Error Message')
+      throw mockError
     })
     const success = vitest.fn()
     const fail = vitest.fn()
@@ -153,7 +154,7 @@ describe('requestConfirmation', () => {
         actions._setConfirmationResult(
           '111',
           {
-            error: true,
+            error: mockError,
             message: 'Error Message',
             timeout: false
           },
@@ -163,7 +164,11 @@ describe('requestConfirmation', () => {
       .put(
         actions._addCompletionCall(
           '111',
-          call(fail, { error: true, message: 'Error Message', timeout: false })
+          call(fail, {
+            error: mockError,
+            message: 'Error Message',
+            timeout: false
+          })
         )
       )
       .put(actions._clearComplete('111', 0))
@@ -172,7 +177,7 @@ describe('requestConfirmation', () => {
     expect(storeState.confirmer).toEqual(initialState)
     expect(confirm).toHaveBeenCalled()
     expect(fail).toHaveBeenCalledWith({
-      error: true,
+      error: mockError,
       message: 'Error Message',
       timeout: false
     })
@@ -290,21 +295,15 @@ describe('requestConfirmation timeouts', () => {
       .put(actions._addConfirmationCall('111', confirm2))
       .put(actions._setConfirmationResult('111', 1, 0))
       .put(actions._addCompletionCall('111', call(success1, 1)))
-      .put(
-        actions._setConfirmationResult('111', { error: true, timeout: true }, 1)
-      )
-      .put(
-        actions._addCompletionCall(
-          '111',
-          call(fail2, { error: true, timeout: true })
-        )
-      )
       .put(actions._clearComplete('111', 1))
       .put(actions._clearConfirm('111'))
       .silentRun()
     expect(storeState.confirmer).toEqual(initialState)
     expect(success1).toHaveBeenCalledWith(1)
-    expect(fail2).toHaveBeenCalled()
+    expect(fail2).toHaveBeenCalledWith({
+      error: new Error('Confirmation timed out'),
+      timeout: true
+    })
   })
 })
 
