@@ -7,6 +7,7 @@
     "dev": "tsup ./index.ts --watch",
     "lint": "eslint",
     "prepublishOnly": "rm -rf dist && npm run build",
+    "setup-test-env": "./tests/e2e/setup-test-env.sh",
     "test": "vitest tests/integration",
     "test:e2e": "playwright test tests/e2e",
     "typecheck": "tsc",
