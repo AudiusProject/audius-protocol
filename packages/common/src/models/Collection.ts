@@ -8,7 +8,8 @@ import {
   AccessConditions,
   UserTrackMetadata,
   ResourceContributor,
-  Copyright
+  Copyright,
+  AccessPermissions
 } from './Track'
 import { User, UserMetadata } from './User'
 
@@ -66,6 +67,7 @@ export type CollectionMetadata = {
   ddex_app?: string | null
   is_stream_gated: boolean
   stream_conditions: Nullable<AccessConditions>
+  access: AccessPermissions
   ddex_release_ids?: any | null
   artists?: [ResourceContributor] | null
   copyright_line?: Copyright | null

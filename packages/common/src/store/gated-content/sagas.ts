@@ -20,7 +20,8 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   NFTAccessSignature,
-  GatedContentStatus
+  GatedContentStatus,
+  GatedContentType
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -32,6 +33,10 @@ import { musicConfettiActions } from '~/store/music-confetti'
 import { usersSocialActions } from '~/store/social'
 import { tippingActions } from '~/store/tipping'
 import { Nullable } from '~/utils/typeUtils'
+
+import { getCollection } from '../cache/collections/selectors'
+import { getTrack } from '../cache/tracks/selectors'
+import { PurchaseableContentType } from '../purchase-content'
 
 import * as gatedContentSelectors from './selectors'
 import { actions as gatedContentActions } from './slice'
@@ -232,7 +237,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
   yield* all(
     tracksThatNeedSignature.map((track) => {
       const trackId = track.track_id
-      return call(pollGatedTrack, {
+      return call(pollGatedContent, {
         trackId,
         currentUserId,
         isSourceTrack: false
@@ -405,14 +410,16 @@ function* updateGatedContentAccess(
   yield* call(updateCollectibleGatedTracks, trackMap)
 }
 
-export function* pollGatedTrack({
-  trackId,
+export function* pollGatedContent({
+  contentId,
+  contentType,
   currentUserId,
   isSourceTrack
 }: {
-  trackId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
   currentUserId: number
-  isSourceTrack: boolean
+  isSourceTrack?: boolean
 }) {
   const analytics = yield* getContext('analytics')
   const apiClient = yield* getContext('apiClient')
@@ -423,17 +430,19 @@ export function* pollGatedTrack({
     DEFAULT_GATED_TRACK_POLL_INTERVAL_MS
 
   // get initial track metadata to determine whether we are polling for stream or download access
-  const cachedTracks = yield* select(getTracks, {
-    ids: [trackId]
-  })
-  const initialTrack = cachedTracks[trackId]
-  const initiallyHadNoStreamAccess = !initialTrack?.access.stream
-  const initiallyHadNoDownloadAccess = !initialTrack?.access.download
+  const isAlbum = contentType === 'album'
+  const cachedEntity = isAlbum
+    ? yield* select(getCollection, { id: contentId })
+    : yield* select(getTrack, {
+        id: contentId
+      })
+  const initiallyHadNoStreamAccess = !cachedEntity?.access.stream
+  const initiallyHadNoDownloadAccess = !cachedEntity?.access.download
 
   // poll for access until it is granted
   while (true) {
     const track = yield* call([apiClient, 'getTrack'], {
-      id: trackId,
+      id: contentId,
       currentUserId
     })
     const currentlyHasStreamAccess = !!track?.access?.stream
@@ -443,16 +452,14 @@ export function* pollGatedTrack({
       yield* put(
         cacheActions.update(Kind.TRACKS, [
           {
-            id: trackId,
+            id: contentId,
             metadata: {
               access: track.access
             }
           }
         ])
       )
-      yield* put(
-        updateGatedContentStatus({ contentId: trackId, status: 'UNLOCKED' })
-      )
+      yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKED' }))
       // note: if necessary, update some ui status to show that the track download is unlocked
       yield* put(removeFolloweeId({ id: track.owner_id }))
       yield* put(removeTippedUserId({ id: track.owner_id }))
@@ -476,7 +483,7 @@ export function* pollGatedTrack({
         analytics.track({
           eventName,
           properties: {
-            trackId
+            contentId
           }
         })
       }
@@ -485,7 +492,7 @@ export function* pollGatedTrack({
       yield* put(
         cacheActions.update(Kind.TRACKS, [
           {
-            id: trackId,
+            id: contentId,
             metadata: {
               access: track.access
             }
@@ -512,7 +519,7 @@ export function* pollGatedTrack({
         analytics.track({
           eventName,
           properties: {
-            trackId
+            contentId
           }
         })
       }
@@ -577,7 +584,7 @@ function* updateSpecialAccessTracks(
 
   yield* all(
     Array.from(tracksToPoll).map((trackId) => {
-      return call(pollGatedTrack, {
+      return call(pollGatedContent, {
         trackId,
         currentUserId,
         isSourceTrack: sourceTrackId === trackId

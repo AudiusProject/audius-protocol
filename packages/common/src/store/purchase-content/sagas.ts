@@ -59,7 +59,7 @@ import {
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { pollGatedTrack } from '../gated-content/sagas'
+import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { saveCollection } from '../social/collections/actions'
 
@@ -294,7 +294,7 @@ function* pollForPurchaseConfirmation({
   yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKING' }))
 
   // TODO: poll purchased albums
-  yield* pollGatedTrack({
+  yield* pollGatedContent({
     trackId: contentId,
     currentUserId,
     isSourceTrack: true
