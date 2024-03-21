@@ -4,7 +4,7 @@ import { test, expect, Page } from '@playwright/test'
 
 const base64Entropy = 'YmRhYmE4MjRiNmUwMmFiNzg2OGM1YTJkZmRmYzdlOWY'
 
-const completeUpload = async (page: Page) => {
+export const completeUpload = async (page: Page) => {
   await page.getByRole('button', { name: /complete upload/i }).click()
   const confirmUploadModal = page.getByRole('dialog', {
     name: /confirm upload/i
@@ -64,8 +64,11 @@ test.describe('upload track', () => {
       level: 1
     })
     await expect(heading).toBeVisible({ timeout: 10000 })
+
+    // Dismiss push notifs modal
     await heading.click({ force: true })
 
+    // Add tracks
     let fileChooserPromise = page.waitForEvent('filechooser')
     const uploadDropzone = page.getByTestId('upload-dropzone')
     await uploadDropzone.click()
@@ -257,6 +260,8 @@ test.describe('upload track', () => {
       level: 1
     })
     await expect(heading).toBeVisible({ timeout: 10000 })
+
+    // Dismiss push notifs modal
     await heading.click({ force: true })
 
     let fileChooserPromise = page.waitForEvent('filechooser')
@@ -343,6 +348,8 @@ test.describe('upload track', () => {
       level: 1
     })
     await expect(heading).toBeVisible({ timeout: 10000 })
+
+    // Dismiss push notifs modal
     await heading.click({ force: true })
 
     let fileChooserPromise = page.waitForEvent('filechooser')
