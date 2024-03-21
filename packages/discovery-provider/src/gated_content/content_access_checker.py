@@ -30,12 +30,14 @@ class ContentAccessResponse(TypedDict):
     has_download_access: bool
 
 
+# user id -> content_id -> access
 GatedContentAccessResult = Dict[int, Dict[int, ContentAccessResponse]]
 
 
 class ContentAccessBatchResponse(TypedDict):
     # track : user id -> track id -> access
     track: GatedContentAccessResult
+    # playlist : user id -> playlist id -> access
     playlist: GatedContentAccessResult
 
 
@@ -188,10 +190,11 @@ class ContentAccessChecker:
                 }
                 continue
 
-            # if not gated on either stream or download,
-            # then check if track is a stem track and check parent track access,
+            # if entity is not gated on either stream or download,
+            # then check if entity is a stem track and check parent track access,
             # otherwise, user has access to stream and download.
             # note that stem tracks do not have stream/download conditions.
+            # also note that albums only support stream_conditions.
             stream_conditions = entity["stream_conditions"]
             download_conditions = entity["download_conditions"]
             if not stream_conditions and not download_conditions:
