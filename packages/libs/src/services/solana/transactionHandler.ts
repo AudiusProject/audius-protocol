@@ -309,6 +309,7 @@ export class TransactionHandler {
     if (retry) {
       ;(async () => {
         let elapsed = Date.now() - startTime
+
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
           try {
