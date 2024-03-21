@@ -14,9 +14,6 @@ services:
       - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     ports:
       - "9000:9000"
     networks:
@@ -32,9 +29,6 @@ services:
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     entrypoint: ./ingester --service crawler
     healthcheck:
       test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
@@ -54,9 +48,6 @@ services:
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     entrypoint: ./ingester --service parser
     healthcheck:
       test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
@@ -80,9 +71,6 @@ services:
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     ports:
       - "9001:9001"
     healthcheck:
