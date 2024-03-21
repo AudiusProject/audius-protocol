@@ -1,5 +1,10 @@
 import { useCallback } from 'react'
 
+import {
+  AlbumSchema,
+  CollectionValues,
+  PlaylistSchema
+} from '@audius/common/schemas'
 import { UploadType } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -20,7 +25,6 @@ import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
 import { CollectionFormState } from '../types'
-import { AlbumSchema, CollectionValues, PlaylistSchema } from '../validation'
 
 import styles from './EditCollectionForm.module.css'
 
@@ -61,14 +65,10 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      const { tracks, trackDetails, ...collectionMetadata } = values
-
       onContinue({
         uploadType,
-        // @ts-expect-error more issues with tracks
-        tracks,
-        // @ts-expect-error more issues with tracks
-        metadata: { ...collectionMetadata, ...trackDetails }
+        tracks: values.tracks,
+        metadata: values
       })
     },
     [onContinue, uploadType]
@@ -84,7 +84,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      // @ts-ignore
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
       <Form className={styles.root}>
@@ -104,6 +103,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
               <TextAreaField
                 name='description'
+                aria-label={`${collectionTypeName} ${messages.description}`}
                 placeholder={`${collectionTypeName} ${messages.description}`}
                 maxLength={1000}
                 showMaxLength

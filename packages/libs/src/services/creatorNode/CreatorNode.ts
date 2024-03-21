@@ -8,6 +8,7 @@ import {
   GatedConditions,
   Nullable,
   TrackMetadata,
+  UploadTrackMetadata,
   UserMetadata,
   Utils,
   uuid
@@ -145,7 +146,7 @@ export class CreatorNode {
   }
 
   // Throws an error upon validation failure
-  validateTrackSchema(metadata: TrackMetadata) {
+  validateTrackSchema(metadata: Partial<TrackMetadata>) {
     this.schemas?.[trackSchemaType].validate?.(metadata)
   }
 
@@ -187,13 +188,20 @@ export class CreatorNode {
 
   async uploadTrackAudioAndCoverArtV2(
     trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
+    coverArtFile: File | null,
+    metadata: UploadTrackMetadata,
     onProgress: ProgressCB
   ): Promise<TrackMetadata> {
-    const updatedMetadata = { ...metadata }
+    const updatedMetadata: TrackMetadata = {
+      track_cid: '',
+      preview_cid: null,
+      audio_upload_id: null,
+      orig_file_cid: '',
+      orig_filename: '',
+      ...metadata
+    }
     const audioUploadOpts: { [key: string]: string } = {}
-    if (updatedMetadata.preview_start_seconds != null) {
+    if (updatedMetadata.preview_start_seconds !== null) {
       audioUploadOpts.previewStartSeconds =
         updatedMetadata.preview_start_seconds.toString()
     }
@@ -227,7 +235,7 @@ export class CreatorNode {
     updatedMetadata.track_cid = audioResp.results['320']
     updatedMetadata.orig_file_cid = audioResp.orig_file_cid
     updatedMetadata.orig_filename = audioResp.orig_filename
-    if (updatedMetadata.preview_start_seconds != null) {
+    if (updatedMetadata.preview_start_seconds !== null) {
       const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`
       updatedMetadata.preview_cid = audioResp.results[previewKey]
     }

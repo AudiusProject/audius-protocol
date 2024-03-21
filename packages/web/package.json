@@ -144,6 +144,7 @@
     "linkifyjs": "4.1.0",
     "localforage": "1.10.0",
     "lodash": "4.17.21",
+    "markdown-to-jsx": "7.4.3",
     "numeral": "2.0.6",
     "orbit-controls": "0.0.1",
     "perspective-camera": "2.0.1",

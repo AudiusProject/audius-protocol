@@ -184,10 +184,10 @@ type TrackMetadata struct {
 	Artists                      []ResourceContributor `bson:"artists"`
 	ResourceContributors         []ResourceContributor `bson:"resource_contributors,omitempty"`
 	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributors,omitempty"`
-	RightsController             RightsController      `bson:"rights_controller,omitempty"`
-	CopyrightLine                Copyright             `bson:"copyright_line,omitempty"`
-	ProducerCopyrightLine        Copyright             `bson:"producer_copyright_line,omitempty"`
-	ParentalWarningType          string                `bson:"parental_warning_type,omitempty"`
+	RightsController             *RightsController     `bson:"rights_controller,omitempty"`
+	CopyrightLine                *Copyright            `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine        *Copyright            `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType          NullableString        `bson:"parental_warning_type,omitempty"`
 
 	// TODO: Handle License from PLineText?
 	License NullableString `bson:"license,omitempty"`
@@ -244,9 +244,9 @@ type CollectionMetadata struct {
 	ReleaseDate           time.Time             `bson:"release_date"`
 	DDEXReleaseIDs        ReleaseIDs            `bson:"ddex_release_ids"`
 	Artists               []ResourceContributor `bson:"artists"`
-	CopyrightLine         Copyright             `bson:"copyright_line,omitempty"`
-	ProducerCopyrightLine Copyright             `bson:"producer_copyright_line,omitempty"`
-	ParentalWarningType   string                `bson:"parental_warning_type,omitempty"`
+	CopyrightLine         *Copyright            `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine *Copyright            `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType   NullableString        `bson:"parental_warning_type,omitempty"`
 
 	// TODO: Handle these fields
 	License NullableString `bson:"license,omitempty"`

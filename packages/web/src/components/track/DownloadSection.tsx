@@ -212,6 +212,9 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
           css={{
             cursor: 'pointer'
           }}
+          role='button'
+          aria-expanded={expanded}
+          aria-controls='download-section'
         >
           <Flex
             justifyContent='space-between'
@@ -278,7 +281,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             </Text>
           </Flex>
         ) : null}
-        <Expandable expanded={expanded}>
+        <Expandable expanded={expanded} id='downloads-section'>
           <Box>
             {track?.is_original_available ? (
               <Flex
