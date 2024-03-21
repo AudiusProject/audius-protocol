@@ -63,6 +63,7 @@ import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
+import { ManagerModeSettingsCard } from './ManagerMode/ManagerModeSettingsCard'
 
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
@@ -452,6 +453,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
           </SettingsCard>
         ) : null}
         {areDeveloperAppsEnabled ? <DeveloperAppsSettingsCard /> : null}
+        <ManagerModeSettingsCard />
       </div>
       <div className={styles.version}>
         <Button

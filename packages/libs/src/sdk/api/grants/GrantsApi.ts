@@ -86,6 +86,42 @@ export class GrantsApi {
   }
 
   /**
+   * Revokes another user's manager access
+   */
+  async removeManager(params: AddManagerRequest) {
+    const { userId, managerUserId } = await parseParams(
+      'addManager',
+      AddManagerSchema
+    )(params)
+    let managerUser: User | undefined
+    try {
+      managerUser = (
+        await this.usersApi.getUser({
+          id: encodeHashId(managerUserId)!
+        })
+      ).data
+      if (!managerUser) {
+        throw new Error()
+      }
+    } catch (e) {
+      throw new Error(
+        '`managerUserId` passed to `removeManager` method is invalid.'
+      )
+    }
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.GRANT,
+      entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
+      action: Action.DELETE,
+      metadata: JSON.stringify({
+        grantee_address: managerUser!.ercWallet
+      }),
+      auth: this.auth
+    })
+  }
+
+  /**
    * When user revokes an app's authorization to perform actions on their behalf
    */
   async revokeGrant(params: RevokeGrantRequest) {

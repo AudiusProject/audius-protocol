@@ -13,6 +13,7 @@ import type { TransactionReceipt } from 'web3-core'
 import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
+import type { LocalStorage } from '../../utils/localStorage'
 import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
 
@@ -95,6 +96,17 @@ type DiscoveryNodeChallenge = {
   disbursed_amount: number
 }
 
+const getUserIdOverride = async (localStorage?: LocalStorage) => {
+  try {
+    const userIdOverride = await localStorage?.getItem(
+      '@audius/user-id-override'
+    )
+    return userIdOverride == null ? undefined : userIdOverride
+  } catch {
+    return undefined
+  }
+}
+
 export type DiscoveryRelayBody = {
   contractRegistryKey?: string | null
   contractAddress?: string | null
@@ -144,6 +156,7 @@ export class DiscoveryProvider {
   discoveryNodeSelector?: DiscoveryNodeSelector
   discoveryNodeMiddleware?: Middleware
   selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
+  localStorage?: LocalStorage
 
   constructor({
     whitelist,
@@ -167,6 +180,7 @@ export class DiscoveryProvider {
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
     this.selectionCallback = selectionCallback
+    this.localStorage = localStorage
 
     this.unhealthyBlockDiff = unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection(
@@ -820,8 +834,19 @@ export class DiscoveryProvider {
    * Return user collections (saved & uploaded) along w/ users for those collections
    */
   async getUserAccount(wallet: string) {
-    const req = Requests.getUserAccount(wallet)
-    return await this._makeRequest<CurrentUser>(req)
+    const userIdOverride = await getUserIdOverride(this.localStorage)
+    // If override is used, fetch that account instead
+    if (userIdOverride) {
+      const req = Requests.getUsers(1, 0, [parseInt(userIdOverride)])
+      const res = await this._makeRequest<CurrentUser[]>(req)
+      if (res && res.length > 0 && res[0]) {
+        return { ...res[0], playlists: [] } as CurrentUser
+      }
+      return null
+    } else {
+      const req = Requests.getUserAccount(wallet)
+      return await this._makeRequest<CurrentUser>(req)
+    }
   }
 
   /**
