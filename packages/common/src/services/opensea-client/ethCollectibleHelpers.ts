@@ -7,7 +7,7 @@ import {
   OpenSeaNftExtended,
   OpenSeaEvent,
   OpenSeaEventExtended,
-  TokenStandard
+  EthTokenStandard
 } from '../../models'
 
 const fetchWithTimeout = async (
@@ -374,13 +374,12 @@ export const assetToCollectible = async (
     externalLink: asset.external_url ?? null,
     permaLink: asset.opensea_url,
     assetContractAddress: asset.contract,
-    standard: (asset.token_standard?.toUpperCase() as TokenStandard) ?? null,
+    standard: (asset.token_standard?.toUpperCase() as EthTokenStandard) ?? null,
     collectionSlug: asset.collection ?? null,
     collectionName: asset.collectionMetadata?.name ?? null,
     collectionImageUrl: asset.collectionMetadata?.image_url ?? null,
     chain: Chain.Eth,
-    wallet: asset.wallet,
-    solanaChainMetadata: null
+    wallet: asset.wallet
   }
 }
 

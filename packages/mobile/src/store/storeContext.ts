@@ -1,4 +1,8 @@
-import { OpenSeaClient, SolanaClient } from '@audius/common/services'
+import {
+  OpenSeaClient,
+  SolanaClient,
+  HeliusClient
+} from '@audius/common/services'
 import type { CommonStoreContext } from '@audius/common/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
@@ -39,6 +43,11 @@ export const storeContext: CommonStoreContext = {
   env,
   explore,
   solanaClient: new SolanaClient({
+    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: env.METADATA_PROGRAM_ID
+  }),
+  heliusClient: new HeliusClient({
+    apiUrl: env.HELIUS_DAS_API_URL,
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: env.METADATA_PROGRAM_ID
   }),

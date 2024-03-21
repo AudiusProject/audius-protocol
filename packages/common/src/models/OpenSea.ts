@@ -1,6 +1,6 @@
 import { Nullable } from '../utils/typeUtils'
 
-import { TokenStandard } from './Track'
+import { EthTokenStandard } from './Track'
 
 type AssetContract = {
   address: Nullable<string>
@@ -10,7 +10,7 @@ type AssetContract = {
   nft_version: string
   opensea_version: Nullable<string>
   owner: Nullable<number>
-  schema_name: TokenStandard
+  schema_name: EthTokenStandard
   symbol: string
   description: Nullable<string>
   external_link: Nullable<string>
@@ -60,7 +60,7 @@ export type OpenSeaNft = {
   identifier: string
   collection: string
   contract: string
-  token_standard: TokenStandard
+  token_standard: EthTokenStandard
   name: string
   description: string
   image_url: string

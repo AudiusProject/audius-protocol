@@ -1,7 +1,8 @@
 import {
   FeatureFlags,
   OpenSeaClient,
-  SolanaClient
+  SolanaClient,
+  HeliusClient
 } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
 import { setTag, configureScope } from '@sentry/browser'
@@ -57,6 +58,11 @@ export const buildStoreContext = ({
   getLineupSelectorForRoute,
   audioPlayer: audioPlayer!,
   solanaClient: new SolanaClient({
+    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: env.METADATA_PROGRAM_ID
+  }),
+  heliusClient: new HeliusClient({
+    apiUrl: env.HELIUS_DAS_API_URL,
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: env.METADATA_PROGRAM_ID
   }),

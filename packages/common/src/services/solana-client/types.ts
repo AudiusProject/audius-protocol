@@ -1,8 +1,10 @@
 import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
 import { Nullable } from '../../utils/typeUtils'
+import { HeliusNFT } from '../helius-client/types'
 
 export enum SolanaNFTType {
+  HELIUS = 'HELIUS',
   METAPLEX = 'METAPLEX',
   STAR_ATLAS = 'STAR_ATLAS'
 }
@@ -19,9 +21,9 @@ export type MetaplexNFTPropertiesFile = {
 }
 
 type MetaplexNFTProperties = {
-  category: string
   files: (string | MetaplexNFTPropertiesFile)[]
   creators: MetaplexNFTCreator[]
+  category?: string
 }
 
 // may live outside arweave and still have this format
@@ -38,7 +40,6 @@ export type MetaplexNFT = {
   animation_url: Nullable<string>
   external_url: Nullable<string>
   properties: Nullable<MetaplexNFTProperties>
-  solanaChainMetadata: Metadata
 }
 
 // example: https://galaxy.staratlas.com/nfts/2iMhgB4pbdKvwJHVyitpvX5z1NBNypFonUgaSAt9dtDt
@@ -56,4 +57,4 @@ export type StarAtlasNFT = {
   solanaChainMetadata: Metadata
 }
 
-export type SolanaNFT = MetaplexNFT | StarAtlasNFT
+export type SolanaNFT = HeliusNFT | MetaplexNFT | StarAtlasNFT
