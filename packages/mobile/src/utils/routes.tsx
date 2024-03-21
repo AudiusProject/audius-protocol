@@ -1,4 +1,4 @@
-import type { User, CollectionMetadata } from '@audius/common/models'
+import type { User, UserCollectionMetadata } from '@audius/common/models'
 import { encodeUrlName, getHash } from '@audius/common/utils'
 
 import { env } from 'app/env'
@@ -21,12 +21,13 @@ export const getUserRoute = (user: UserHandle, fullUrl = false) => {
 }
 
 export const getCollectionRoute = (
-  collection: Pick<UserCollection, 'permalink'>,
+  collection: Pick<UserCollectionMetadata, 'permalink'>,
   fullUrl = false
 ) => {
   const { permalink } = collection
+  if (!permalink) return ''
 
-  return fullUrl ? `${AUDIUS_URL}${permalink}` : permalink || ''
+  return fullUrl ? `${AUDIUS_URL}${permalink}` : permalink
 }
 
 export const getSearchRoute = (query: string, fullUrl = false) => {
