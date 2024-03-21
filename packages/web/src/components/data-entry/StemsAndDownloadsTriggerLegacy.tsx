@@ -238,7 +238,7 @@ export const StemsAndDownloadsTriggerLegacy = (
       renderValue={() => null}
       previewOverride={(toggleMenu) => (
         <Button
-          variant='common'
+          variant='secondary'
           size='small'
           className={styles.menuButton}
           name='stemsModal'

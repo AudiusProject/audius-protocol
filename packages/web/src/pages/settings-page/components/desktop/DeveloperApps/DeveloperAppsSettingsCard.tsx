@@ -30,7 +30,7 @@ export const DeveloperAppsSettingsCard = () => {
         title={messages.title}
         description={messages.description}
       >
-        <Button variant='common' onClick={handleOpen} fullWidth>
+        <Button variant='secondary' onClick={handleOpen} fullWidth>
           {messages.buttonText}
         </Button>
       </SettingsCard>
