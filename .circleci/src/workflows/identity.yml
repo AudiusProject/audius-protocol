@@ -11,7 +11,7 @@ jobs:
         - identity-init
       filters:
         branches:
-          only: main
+          only: rt-relay
 
   - test:
       name: test-identity-service
@@ -29,7 +29,6 @@ jobs:
           only: main
       requires:
         - push-identity-service
-
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
