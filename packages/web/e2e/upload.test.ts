@@ -128,19 +128,19 @@ test.describe('upload', () => {
     const getProgress = async () =>
       Number(await progressBar.getAttribute('aria-valuenow'))
     await expect.poll(getProgress).toBeGreaterThan(10)
-    await expect
-      .poll(getProgress, { timeout: 60 * 1000 * 5 })
-      .toBeGreaterThan(50)
+    await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(25)
+    await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(50)
+    await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(75)
 
     // Assert finalizing
     const finalizing = page.getByText(/finalizing upload/i)
-    await expect(finalizing).toBeAttached({ timeout: 1000 * 60 * 8 })
+    await expect(finalizing).toBeAttached({ timeout: 1000 * 60 })
 
     // Assert success
     const successHeading = page.getByRole('heading', {
       name: /your upload is complete/i
     })
-    await expect(successHeading).toBeAttached({ timeout: 1000 * 60 * 8 })
+    await expect(successHeading).toBeAttached({ timeout: 1000 * 60 })
 
     // Vist track page
     await page.getByRole('link', { name: /visit track page/i }).click()
