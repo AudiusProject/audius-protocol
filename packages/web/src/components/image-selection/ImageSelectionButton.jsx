@@ -24,6 +24,7 @@ const ImageSelectionButton = ({
   buttonClassName,
   hasImage,
   imageName,
+  showImageName = true,
   error,
   includePopup,
   onOpenPopup,
@@ -69,7 +70,8 @@ const ImageSelectionButton = ({
       : hasImage
       ? messages.change
       : messages.add
-  if (imageName) buttonText += ` ${imageName}`
+  const label = `${buttonText} ${imageName}`
+  if (imageName && showImageName) buttonText += ` ${imageName}`
 
   return (
     <div className={cn(styles.wrapper, wrapperClassName)}>
@@ -85,6 +87,7 @@ const ImageSelectionButton = ({
             iconRight={IconCamera}
             onClick={handleClick}
             type='button'
+            aria-label={label}
           >
             {buttonText}
           </Button>
@@ -116,6 +119,7 @@ const ImageSelectionButton = ({
               iconRight={IconCamera}
               onClick={handleClick}
               type='button'
+              aria-label={label}
             >
               {buttonText}
             </Button>
@@ -136,6 +140,7 @@ ImageSelectionButton.propTypes = {
   hasImage: PropTypes.bool.isRequired,
   // The name of the image (e.g. render the button as Add "Artwork" or Add "Cover Photo")
   imageName: PropTypes.string,
+  showImageName: PropTypes.boolean,
   // Whether or not to show the image selection modal. Otherwise, the
   // button itself is the dropzone.
   includePopup: PropTypes.bool,

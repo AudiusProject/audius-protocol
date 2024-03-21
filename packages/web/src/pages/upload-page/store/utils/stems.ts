@@ -1,32 +1,20 @@
-import {
-  StemCategory,
-  ID,
-  StemUpload,
-  Track,
-  StemTrack
-} from '@audius/common/models'
+import { StemCategory, ID, StemUploadWithFile } from '@audius/common/models'
+import { TrackForUpload } from '@audius/common/store'
 
-export const updateAndFlattenStems = (
-  stems: StemUpload[][],
-  parentTrackIds: ID[]
+export const prepareStemsForUpload = (
+  stems: StemUploadWithFile[],
+  parentTrackId: ID
 ) => {
-  return stems.flatMap((stemList, i) => {
-    const parentTrackId = parentTrackIds[i]
-
-    return stemList.map((stem) => {
-      const metadata = createStemMetadata({
-        parentTrackId,
-        track: stem.metadata,
-        stemCategory: stem.category ?? StemCategory.OTHER
-      })
-      return {
-        metadata,
-        track: {
-          ...stem,
-          metadata
-        }
-      }
+  return stems.map((stem) => {
+    const metadata = createStemMetadata({
+      parentTrackId,
+      track: stem.metadata,
+      stemCategory: stem.category ?? StemCategory.OTHER
     })
+    return {
+      ...stem,
+      metadata
+    }
   })
 }
 
@@ -36,9 +24,9 @@ export const createStemMetadata = ({
   stemCategory
 }: {
   parentTrackId: ID
-  track: Track
+  track: TrackForUpload['metadata']
   stemCategory: StemCategory
-}): StemTrack => {
+}): TrackForUpload['metadata'] => {
   return {
     ...track,
     is_downloadable: true,

@@ -6,7 +6,8 @@ import {
   CollectibleMediaType,
   OpenSeaNftExtended,
   OpenSeaEvent,
-  OpenSeaEventExtended
+  OpenSeaEventExtended,
+  TokenStandard
 } from '../../models'
 
 const fetchWithTimeout = async (
@@ -287,9 +288,7 @@ export const assetToCollectible = async (
         }
       } catch (e) {
         console.error(
-          `Could not fetch url metadata at ${ipfsProtocolUrl} for asset contract address ${
-            asset.asset_contract?.address ?? '(n/a)'
-          } and asset token id ${asset.token_id}`
+          `Could not fetch url metadata at ${ipfsProtocolUrl} for asset contract address ${asset.contract} and asset token id ${asset.token_id}`
         )
         mediaType = CollectibleMediaType.IMAGE
         frameUrl = imageUrls.find((url) => !!url)!
@@ -324,9 +323,7 @@ export const assetToCollectible = async (
         }
       } catch (e) {
         console.error(
-          `Could not fetch url metadata at ${arweaveProtocolUrl} for asset contract address ${
-            asset.asset_contract?.address ?? '(n/a)'
-          } and asset token id ${asset.token_id}`
+          `Could not fetch url metadata at ${arweaveProtocolUrl} for asset contract address ${asset.contract} and asset token id ${asset.token_id}`
         )
         mediaType = CollectibleMediaType.IMAGE
         frameUrl = imageUrls.find((url) => !!url)!
@@ -376,8 +373,8 @@ export const assetToCollectible = async (
     dateLastTransferred: null,
     externalLink: asset.external_url ?? null,
     permaLink: asset.opensea_url,
-    assetContractAddress: asset.asset_contract?.address ?? null,
-    standard: asset.asset_contract?.schema_name ?? null,
+    assetContractAddress: asset.contract,
+    standard: (asset.token_standard?.toUpperCase() as TokenStandard) ?? null,
     collectionSlug: asset.collection ?? null,
     collectionName: asset.collectionMetadata?.name ?? null,
     collectionImageUrl: asset.collectionMetadata?.image_url ?? null,

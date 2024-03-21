@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
-import type { UploadTrack } from '@audius/common/store'
+import type { TrackForUpload } from '@audius/common/store'
 import { Keyboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
@@ -59,7 +59,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export type EditTrackParams = UploadTrack
+export type EditTrackParams = TrackForUpload
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
   const {

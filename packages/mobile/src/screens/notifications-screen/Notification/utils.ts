@@ -5,11 +5,9 @@ import { getCollectionRoute, getTrackRoute } from 'app/utils/routes'
 export const getEntityRoute = (entity: EntityType, fullUrl = false) => {
   if ('track_id' in entity) {
     return getTrackRoute(entity, fullUrl)
-  } else if (entity.user) {
-    const { user } = entity
-    return getCollectionRoute({ ...entity, user }, fullUrl)
+  } else {
+    return getCollectionRoute(entity, fullUrl)
   }
-  return ''
 }
 
 export const getEntityScreen = (entity: EntityType) => {

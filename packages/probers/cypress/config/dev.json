@@ -1,6 +1,8 @@
 {
   "defaultCommandTimeout": 30000,
   "baseUrl": "http://localhost:3001",
+  "experimentalMemoryManagement": true,
+  "numTestsKeptInMemory": 0,
   "env": {
     "initialLoadTimeout": 30000
   }
