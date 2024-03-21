@@ -23,14 +23,15 @@ test('should play a trending track', async ({ page }) => {
   const items = trendingList.getByRole('listitem')
   const playButton = page.getByRole('button', { name: /play track/i })
   const pauseButton = page.getByRole('button', { name: /pause track/i })
+  const playHoverIcon = items.first().getByRole('img', { name: 'Play' })
 
   const isPlayingWatcher = page.waitForFunction(() => !window.audio.paused)
   const isPausedWatcher = page.waitForFunction(() => window.audio.paused)
 
   await expect(skeletons).toHaveCount(0, { timeout: 10000 })
-  await items.first().getByRole('img', { name: 'Play' }).hover()
-  await expect(items.first().getByRole('img', { name: 'Play' })).toBeVisible()
-  await items.first().getByRole('img', { name: 'Play ' }).click()
+  await playHoverIcon.hover()
+  await expect(playHoverIcon).toBeVisible()
+  await playHoverIcon.click()
   await expect(pauseButton).toBeAttached({ timeout: 5000 })
   await isPlayingWatcher
   await pauseButton.click()
