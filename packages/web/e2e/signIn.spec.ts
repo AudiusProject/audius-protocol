@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test'
 
-import { email, password, name, handle } from '../cypress/fixtures/user.json'
+import { email, password, name, handle } from './fixtures/user.json'
 
 test.describe('Sign In', () => {
   test.beforeEach(async ({ page }) => {
