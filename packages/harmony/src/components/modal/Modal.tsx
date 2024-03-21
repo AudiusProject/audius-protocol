@@ -47,7 +47,7 @@ const getOffset = (anchor: Anchor, verticalAnchorOffset: number) => {
   return { [anchorPropertyMap[anchor]]: verticalAnchorOffset }
 }
 
-const useModalRoot = (id: string, zIndex?: number) => {
+const useModalRoot = (id: string, isOpen: boolean, zIndex?: number) => {
   const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null)
   const [modalBg, setModalBg] = useState<HTMLElement | null>(null)
 
@@ -58,6 +58,21 @@ const useModalRoot = (id: string, zIndex?: number) => {
     let el = document.getElementById(uniqueRootId)
     let bgEl = document.getElementById(uniqueBgId)
     let container = document.getElementById(uniqueRootContainerId)
+
+    if (!isOpen) {
+      if (bgEl) {
+        document.body.removeChild(bgEl)
+      }
+      if (el && container) {
+        container.removeChild(el)
+      }
+
+      if (container) {
+        document.body.removeChild(container)
+      }
+
+      return
+    }
 
     if (!bgEl) {
       bgEl = document.createElement('div')
@@ -88,7 +103,7 @@ const useModalRoot = (id: string, zIndex?: number) => {
 
     setModalRoot(el)
     setModalBg(bgEl)
-  }, [id, zIndex])
+  }, [id, zIndex, isOpen])
 
   return [modalRoot, modalBg]
 }
@@ -101,7 +116,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     children,
     onClose,
     onClosed,
-    isOpen,
+    isOpen: isOpenProp,
     wrapperClassName,
     bodyClassName,
     titleClassName,
@@ -147,11 +162,13 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     }
   })
 
+  const [modalState, setModalState] = useState('closed')
+  const isOpen = modalState !== 'closed'
+  const isDoneOpening = modalState === 'open'
   const { spring } = useTheme()
   const id = useMemo(() => modalKey || uniqueId('modal-'), [modalKey])
   const titleId = ariaLabelledbyProp || `${id}-title`
   const subtitleId = ariaDescribedbyProp || `${id}-subtitle`
-  const [isDoneOpening, setIsDoneOpening] = useState(false)
   const modalContextValue = useMemo(() => {
     return { titleId, subtitleId, onClose, isDoneOpening }
   }, [titleId, subtitleId, onClose, isDoneOpening])
@@ -163,14 +180,17 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     [allowScroll]
   )
 
-  const [modalRoot, bgModal] = useModalRoot(id, zIndex)
-  const [isDestroyed, setIsDestroyed] = useState(isOpen)
+  const [modalRoot, bgModal] = useModalRoot(id, isOpen, zIndex)
   const { incrementScrollCount, decrementScrollCount } = useModalScrollCount()
-  useScrollLock(isDestroyed, incrementScrollCount, decrementScrollCount)
+  useScrollLock(isOpen, incrementScrollCount, decrementScrollCount)
 
   useEffect(() => {
-    if (isOpen) setIsDestroyed(true)
-  }, [isOpen])
+    if (modalState === 'closed' && isOpenProp) {
+      setModalState('opening')
+    } else if (modalState === 'open' && !isOpenProp) {
+      setModalState('closing')
+    }
+  }, [isOpenProp, modalState])
 
   useEffect(() => {
     if (isOpen) {
@@ -191,29 +211,23 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     return () => {}
   }, [isOpen, bgModal, onTouchMove, modalRoot])
 
-  const transition = useTransition(isOpen, null, {
+  const transition = useTransition(isOpenProp, null, {
     from: { transform: 'scale(0)', opacity: 0 },
     // @ts-ignore function is a valid value for enter, but the types don't acknowledge that
     enter:
-      (item: boolean) =>
+      () =>
       async (
         next: (props: { transform: string; opacity: number }) => Promise<void>
       ) => {
         await next({ transform: 'scale(1)', opacity: 1 })
-        if (item) {
-          setImmediate(() => setIsDoneOpening(true))
-        }
       },
     leave: { transform: 'scale(0)', opacity: 0 },
     unique: true,
     config: spring.standard,
-    onDestroyed: () => {
-      if (!isOpen) {
-        setIsDestroyed(false)
-        setIsDoneOpening(false)
-        if (onClosed) {
-          onClosed()
-        }
+    onDestroyed: (isDestroyed) => {
+      setModalState(isDestroyed ? 'closed' : 'open')
+      if (isDestroyed) {
+        onClosed?.()
       }
     }
   })
@@ -309,72 +323,77 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   const handleModalContentClicked: MouseEventHandler = () => {
     modalContentClickedRef.current = true
   }
+
   return (
     <>
-      {modalRoot &&
-        ReactDOM.createPortal(
-          <>
-            {transition.map(
-              ({ item, props, key }) =>
-                item && (
-                  <animated.div
-                    className={wrapperClassNames}
-                    style={{
-                      ...wrapperStyle,
-                      opacity: props.opacity,
-                      height,
-                      minHeight: height
-                    }}
-                    key={key}
-                    ref={ref}
-                  >
+      {modalRoot && isOpen
+        ? ReactDOM.createPortal(
+            <>
+              {transition.map(
+                ({ item, props, key }) =>
+                  item && (
                     <animated.div
-                      ref={dismissOnClickOutside ? outsideClickRef : null}
-                      className={bodyClassNames}
-                      style={{ ...props, ...bodyOffset, ...bodyStyle }}
-                      role='dialog'
-                      aria-labelledby={titleId}
-                      aria-describedby={subtitleId}
-                      onClick={handleModalContentClicked}
+                      className={wrapperClassNames}
+                      style={{
+                        ...wrapperStyle,
+                        opacity: props.opacity,
+                        height,
+                        minHeight: height
+                      }}
+                      key={key}
+                      ref={ref}
                     >
-                      <>
-                        {/** Begin @deprecated section (moved to ModalHeader and ModalTitle sub-components)  */}
-                        {showTitleHeader && (
-                          <div className={headerContainerClassNames}>
-                            {showDismissButton && (
+                      <animated.div
+                        ref={dismissOnClickOutside ? outsideClickRef : null}
+                        className={bodyClassNames}
+                        style={{ ...props, ...bodyOffset, ...bodyStyle }}
+                        role='dialog'
+                        aria-labelledby={titleId}
+                        aria-describedby={subtitleId}
+                        onClick={handleModalContentClicked}
+                      >
+                        <>
+                          {/** Begin @deprecated section (moved to ModalHeader and ModalTitle sub-components)  */}
+                          {showTitleHeader && (
+                            <div className={headerContainerClassNames}>
+                              {showDismissButton && (
+                                <div
+                                  className={styles.dismissButton}
+                                  onClick={onClose}
+                                >
+                                  <IconClose color='subdued' size='s' />
+                                </div>
+                              )}
                               <div
-                                className={styles.dismissButton}
-                                onClick={onClose}
+                                id={titleId}
+                                className={cn(styles.header, titleClassName)}
                               >
-                                <IconClose color='subdued' size='s' />
+                                {title}
                               </div>
-                            )}
-                            <div
-                              id={titleId}
-                              className={cn(styles.header, titleClassName)}
-                            >
-                              {title}
+                              <div
+                                id={subtitleId}
+                                className={cn(
+                                  styles.subtitle,
+                                  subtitleClassName
+                                )}
+                              >
+                                {subtitle}
+                              </div>
                             </div>
-                            <div
-                              id={subtitleId}
-                              className={cn(styles.subtitle, subtitleClassName)}
-                            >
-                              {subtitle}
-                            </div>
-                          </div>
-                        )}
-                        {/** End @deprecated section  */}
-                        <ModalContext.Provider value={modalContextValue}>
-                          {children}
-                        </ModalContext.Provider>
-                      </>
+                          )}
+                          {/** End @deprecated section  */}
+                          <ModalContext.Provider value={modalContextValue}>
+                            {children}
+                          </ModalContext.Provider>
+                        </>
+                      </animated.div>
                     </animated.div>
-                  </animated.div>
-                )
-            )}
-          </>,
-          modalRoot
-        )}
+                  )
+              )}
+            </>,
+            modalRoot
+          )
+        : null}
     </>
   )
 })
