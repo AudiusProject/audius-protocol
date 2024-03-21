@@ -133,6 +133,8 @@ playwright-tests-results:
   working_directory: ~/audius-protocol
   executor: cypress/default
   steps:
+    - swissknife/wait_for_job:
+        job-name: playwright-tests
     - attach_workspace:
         at: ./
     - run: cd packages/web; npx playwright merge-reports --reporter html ./blob-report
