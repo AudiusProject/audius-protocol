@@ -222,10 +222,10 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
     is_album: z.literal(collectionType === 'album'),
     tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
     ddex_release_ids: z.optional(z.record(z.string()).nullable()),
-    artists: z.optional(z.array(DDEXResourceContributor)),
-    copyrightLine: z.optional(DDEXCopyright),
-    producerCopyrightLine: z.optional(DDEXCopyright),
-    parentalWarningType: z.optional(z.string())
+    artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+    copyrightLine: z.optional(DDEXCopyright.nullable()),
+    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+    parentalWarningType: z.optional(z.string().nullable())
   })
 
 export const PlaylistSchema = createCollectionSchema('playlist')
