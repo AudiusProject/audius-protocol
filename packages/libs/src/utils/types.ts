@@ -186,6 +186,11 @@ export type TrackMetadata = {
   copyright_line?: Nullable<Copyright>
   producer_copyright_line?: Nullable<Copyright>
   parental_warning_type?: Nullable<string>
+  remix_of: Nullable<{
+    tracks: Array<{
+      parent_track_id: ID
+    }>
+  }>
 
   // Optional Fields
   is_invalid?: boolean
