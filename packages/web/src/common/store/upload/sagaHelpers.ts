@@ -110,9 +110,9 @@ export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
 
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-  const ownerUserbank = yield* call(getUSDCUserBank, wallet)
 
   if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+    const ownerUserbank = yield* call(getUSDCUserBank, wallet)
     const priceCents = track.stream_conditions.usdc_purchase.price
     const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
     track.stream_conditions.usdc_purchase = {
@@ -123,6 +123,7 @@ export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
     }
   }
   if (isContentUSDCPurchaseGated(track.download_conditions)) {
+    const ownerUserbank = yield* call(getUSDCUserBank, wallet)
     const priceCents = track.download_conditions.usdc_purchase.price
     const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
     track.download_conditions.usdc_purchase = {
