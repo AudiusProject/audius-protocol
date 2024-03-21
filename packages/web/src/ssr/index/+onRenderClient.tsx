@@ -9,10 +9,7 @@ import processBrowser from 'process/browser'
 import { createRoot } from 'react-dom/client'
 
 import '../../index.css'
-import { SsrContextProvider } from 'ssr/SsrContext'
-
-import { HarmonyCacheProvider } from '../../HarmonyCacheProvider'
-import { Root } from '../../Root'
+import RootWithProviders from 'ssr/RootWithProviders'
 
 // @ts-ignore
 window.global ||= window
@@ -25,19 +22,15 @@ export function render() {
   if (container) {
     const root = createRoot(container)
     root.render(
-      <HarmonyCacheProvider>
-        <SsrContextProvider
-          value={{
-            isServerSide: false,
-            isSsrEnabled: false,
-            pageProps: {},
-            isMobile: false,
-            history: null
-          }}
-        >
-          <Root />
-        </SsrContextProvider>
-      </HarmonyCacheProvider>
+      <RootWithProviders
+        ssrContextValue={{
+          isServerSide: false,
+          isSsrEnabled: false,
+          pageProps: {},
+          isMobile: false,
+          history: null
+        }}
+      />
     )
   }
 }
