@@ -209,7 +209,7 @@ async function testSignUp({
 }
 
 test.describe('Sign Up', () => {
-  test.describe.only('desktop', () => {
+  test.describe('desktop', () => {
     test('can navigate to signup from trending', async ({ page }) => {
       await goToPage({ page, path: 'trending' })
       await expect(page.getByText(/have an account\?/i)).toBeVisible()
@@ -235,10 +235,10 @@ test.describe('Sign Up', () => {
       await assertOnSignUpPage(page)
     })
 
-    test.describe.only('create an account & refer accordingly', () => {
+    test.describe('create an account & refer accordingly', () => {
       const testUser = generateTestUser()
 
-      test.only('should create an account', async ({ page }) => {
+      test('should create an account', async ({ page }) => {
         await testSignUp({
           isMobile: false,
           testUser,
