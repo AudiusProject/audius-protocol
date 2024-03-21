@@ -124,7 +124,7 @@ playwright-tests:
     - run: npx playwright install --with-deps
     - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
     - store_test_results:
-        path: packages/web/results.xml
+        path: packages/web/playwright-report/results.xml
         when: always
     - store_artifacts:
         path: /home/circleci/audius-protocol/packages/web/playwright-report

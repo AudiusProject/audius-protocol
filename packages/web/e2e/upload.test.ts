@@ -1,11 +1,12 @@
-import { test, expect } from '@playwright/test'
 import path from 'path'
+
+import { test, expect } from '@playwright/test'
 
 const base64Entropy = 'YmRhYmE4MjRiNmUwMmFiNzg2OGM1YTJkZmRmYzdlOWY'
 
 test.describe('upload', () => {
   test('should upload a track', async ({ page }) => {
-    test.setTimeout(1000 * 60 * 20)
+    test.setTimeout(1000 * 60 * 5)
     await page.goto(`upload?login=${base64Entropy}`)
     const heading = page.getByRole('heading', {
       name: 'Upload Your Music',
@@ -164,6 +165,7 @@ test.describe('upload', () => {
     await expect(tag1).toBeVisible()
     const tag2 = page.getByRole('link', { name: /tag2/i })
     await expect(tag1).toBeVisible()
+    await expect(tag2).toBeVisible()
 
     // Assert description
     const description = page.getByRole('heading', {
