@@ -114,8 +114,8 @@ web-test-staging:
 
 playwright-tests:
   working_directory: ~/audius-protocol
-  docker:
-    - image: mcr.microsoft.com/playwright:v1.42.1-jammy
+  resource_class: medium
+  executor: cypress/default
   parallelism: 4
   steps:
     - checkout

@@ -70,6 +70,12 @@ test('should upload a single hidden, AI attributed track remix', async ({
     .getByTestId('upload-dropzone')
     .locator('input[type=file]')
   await trackFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
+
+  const handle = await page
+    .locator('input[type=file]')
+    .evaluateHandle((node: HTMLInputElement) => node.files)
+  console.log(handle, await handle.jsonValue())
+
   const continueButton = page.getByRole('button', {
     name: /continue uploading/i
   })
