@@ -346,7 +346,15 @@ def track_dsl(
                 "bool": {
                     "should": [
                         *base_match(search_str),
-                        {"wildcard": {"title": "*" + search_str + "*"}},
+                        {
+                            "wildcard": {
+                                "title": {
+                                    "value": "*" + search_str + "*",
+                                    "boost": 0.01,
+                                    "case_insensitive": True,
+                                }
+                            }
+                        },
                         {
                             "multi_match": {
                                 "query": search_str,
@@ -551,7 +559,15 @@ def base_playlist_dsl(search_str, is_album):
                 "bool": {
                     "should": [
                         *base_match(search_str, boost=len(search_str)),
-                        {"wildcard": {"playlist_name": "*" + search_str + "*"}},
+                        {
+                            "wildcard": {
+                                "playlist_name": {
+                                    "value": "*" + search_str + "*",
+                                    "boost": 0.01,
+                                    "case_insensitive": True,
+                                }
+                            }
+                        },
                         {
                             "multi_match": {
                                 "query": search_str,
