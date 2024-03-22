@@ -3,7 +3,8 @@ import {
   InstagramProfile,
   TwitterProfile,
   TikTokProfile,
-  Image
+  Image,
+  toastActions
 } from '@audius/common/store'
 import { createCustomAction } from 'typesafe-actions'
 
@@ -437,10 +438,11 @@ export const clearToast = () => ({
   text: null
 })
 
-export const showRequiresAccountModal = () => ({
-  type: SET_TOAST,
-  text: 'Oops, it looks like you need an account to do that!'
-})
+export const showRequiresAccountModal = () =>
+  toastActions.toast({
+    content: 'Oops, it looks like you need an account to do that!',
+    timeout: 300000
+  })
 
 /**
  * Opens the signin/up modal in mobile and routes to the page on desktop
