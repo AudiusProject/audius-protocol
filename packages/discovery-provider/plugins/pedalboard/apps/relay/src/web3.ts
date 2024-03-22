@@ -35,13 +35,13 @@ export const connectWeb3 = async (config: Config): Promise<Web3Result> => {
   return { web3, chainId: chainId.toString() };
 };
 
-export const confirm = async (txHash: string | undefined, retries = 24): Promise<any> => {
+export const confirm = async (txHash: string | undefined, retries = 128): Promise<any> => {
   if (txHash === undefined) throw new Error("transaction hash not defined")
   let tries = 0;
   while (tries !== retries) {
     const receipt = await web3js.eth.getTransactionReceipt(txHash);
     if (receipt !== null && receipt.status) return receipt;
-    await delay(250);
+    await delay(500);
     tries += 1;
   }
   throw new Error(`transaction ${txHash} could not be confirmed`);
