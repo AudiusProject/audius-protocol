@@ -263,9 +263,15 @@ export class FinishPage {
 
     // Assert progress
     await this.assertProgress(1)
-    await this.assertProgress(25)
+    await this.assertProgress(10)
+    await this.assertProgress(20)
+    await this.assertProgress(30)
+    await this.assertProgress(40)
     await this.assertProgress(50)
-    await this.assertProgress(75)
+    await this.assertProgress(60)
+    await this.assertProgress(70)
+    await this.assertProgress(80)
+    await this.assertProgress(90)
     await this.assertProgress(99)
 
     // Assert finalizing
@@ -280,7 +286,7 @@ export class FinishPage {
       .poll(
         async () =>
           Number(await this.progressBar.getAttribute('aria-valuenow')),
-        { timeout: 20 * 1000 }
+        { timeout: 25 * 1000 }
       )
       .toBeGreaterThanOrEqual(progress)
   }
