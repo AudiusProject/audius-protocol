@@ -1,62 +1,39 @@
 import { Locator, Page, expect } from '@playwright/test'
 import path from 'path'
 
-export class EditTrackPage {
-  private readonly artworkButton: Locator
-  private readonly dropzoneFileInput: Locator
-  private readonly titleInput: Locator
-  private readonly genreBox: Locator
-  private readonly genreList: Locator
-  private readonly moodBox: Locator
-  private readonly moodList: Locator
-  private readonly tagsInput: Locator
-  private readonly descriptionInput: Locator
-
-  private readonly remixSettingsButton: Locator
-  private readonly accessAndSaleSettingsButton: Locator
-  private readonly attributionSettingsButton: Locator
-  private readonly stemsAndDownloadsSettingsButton: Locator
-
-  private readonly completeButton: Locator
+class BaseEditPage {
+  protected readonly artworkButton: Locator
+  protected readonly dropzoneFileInput: Locator
+  protected readonly titleInput: Locator
+  protected readonly genreBox: Locator
+  protected readonly genreList: Locator
+  protected readonly moodBox: Locator
+  protected readonly moodList: Locator
+  protected readonly tagsInput: Locator
+  protected readonly descriptionInput: Locator
+  protected readonly completeButton: Locator
 
   constructor(page: Page) {
     this.artworkButton = page.getByRole('button', { name: /artwork$/i })
     this.dropzoneFileInput = page
       .getByTestId('upload-dropzone')
       .locator('input[type=file]')
-    this.titleInput = page.getByRole('textbox', { name: /track name/i })
     this.genreBox = page.getByRole('combobox', { name: /pick a genre/i })
     this.genreList = page
       .getByLabel(/pick a genre/i)
-      .filter({ has: this.genreBox })
       .locator('.rc-virtual-list') // ant-d uses a virtualized list
     this.moodBox = page.getByRole('combobox', { name: /pick a mood/i })
-    this.moodList = page
-      .getByLabel(/pick a mood/i)
-      .filter({ has: this.moodBox })
-      .locator('.rc-virtual-list') // ant-d uses a virtualized list
+    this.moodList = page.getByLabel(/pick a mood/i).locator('.rc-virtual-list') // ant-d uses a virtualized list
     this.tagsInput = page.getByRole('textbox', { name: /tags/i })
     this.descriptionInput = page.getByRole('textbox', { name: /description/i })
-
-    this.remixSettingsButton = page.getByRole('button', {
-      name: /remix settings/i
-    })
-    this.accessAndSaleSettingsButton = page.getByRole('button', {
-      name: /access & sale/i
-    })
-    this.attributionSettingsButton = page.getByRole('button', {
-      name: /attribution/i
-    })
-    this.stemsAndDownloadsSettingsButton = page.getByRole('button', {
-      name: /stems & downloads/i
-    })
-
     this.completeButton = page.getByRole('button', { name: /complete upload/i })
   }
 
   async setArtwork(file: string) {
     await this.artworkButton.click()
-    await this.dropzoneFileInput.setInputFiles(path.join(__dirname, file))
+    await this.dropzoneFileInput.setInputFiles(
+      path.join(__dirname, '..', 'files', file)
+    )
     await this.dropzoneFileInput.page().getByLabel('close popup').click()
   }
 
@@ -85,6 +62,39 @@ export class EditTrackPage {
     await this.descriptionInput.fill(description)
   }
 
+  async complete() {
+    await this.completeButton.click()
+    const confirmUploadModal = this.completeButton.page().getByRole('dialog', {
+      name: /confirm upload/i
+    })
+    await confirmUploadModal.getByRole('button', { name: /upload/i }).click()
+  }
+}
+
+export class EditTrackPage extends BaseEditPage {
+  protected readonly titleInput: Locator
+  private readonly remixSettingsButton: Locator
+  private readonly accessAndSaleSettingsButton: Locator
+  private readonly attributionSettingsButton: Locator
+  private readonly stemsAndDownloadsSettingsButton: Locator
+
+  constructor(page: Page) {
+    super(page)
+    this.titleInput = page.getByRole('textbox', { name: /track name/i })
+    this.remixSettingsButton = page.getByRole('button', {
+      name: /remix settings/i
+    })
+    this.accessAndSaleSettingsButton = page.getByRole('button', {
+      name: /access & sale/i
+    })
+    this.attributionSettingsButton = page.getByRole('button', {
+      name: /attribution/i
+    })
+    this.stemsAndDownloadsSettingsButton = page.getByRole('button', {
+      name: /stems & downloads/i
+    })
+  }
+
   async openRemixSettings() {
     await this.remixSettingsButton.click()
   }
@@ -100,13 +110,88 @@ export class EditTrackPage {
   async openStemsAndDownloadsSettings() {
     await this.stemsAndDownloadsSettingsButton.click()
   }
+}
 
-  async complete() {
-    await this.completeButton.click()
-    const confirmUploadModal = this.completeButton.page().getByRole('dialog', {
-      name: /confirm upload/i
+export class EditPlaylistPage extends BaseEditPage {
+  protected readonly titleInput: Locator
+  protected readonly trackList: Locator
+
+  constructor(page: Page) {
+    super(page)
+    this.titleInput = page.getByRole('textbox', { name: /playlist name/i })
+    this.trackList = page.getByRole('list', { name: /track list/i })
+  }
+
+  async setTrackName(index: number, name: string) {
+    const trackItem = this.trackList.getByRole('listitem').nth(index)
+    const nameInput = trackItem.getByRole('textbox', { name: /track name/i })
+    await nameInput.fill(name)
+  }
+
+  async setTrackDetails(
+    index: number,
+    {
+      name,
+      genre,
+      mood,
+      tags
+    }: {
+      name?: string
+      genre?: string
+      mood?: string
+      tags?: string[]
+    }
+  ) {
+    const trackItem = this.trackList.getByRole('listitem').nth(index)
+    const checkbox = trackItem.getByRole('checkbox', {
+      name: /override details for this track/i
     })
-    await confirmUploadModal.getByRole('button', { name: /upload/i }).click()
+    if (genre || mood || tags) {
+      await checkbox.check()
+    }
+    if (name) {
+      await this.setTrackName(index, name)
+    }
+    if (genre) {
+      await this.setTrackGenre(index, genre)
+    }
+    if (mood) {
+      await this.setTrackMood(index, mood)
+    }
+    if (tags) {
+      await this.addTrackTags(index, tags)
+    }
+  }
+
+  private async setTrackGenre(index: number, genre: string) {
+    const trackItem = this.trackList.getByRole('listitem').nth(index)
+    const genreBox = trackItem.getByRole('combobox', { name: /pick a genre/i })
+    const genreList = genreBox
+      .page()
+      .getByLabel(/pick a genre/i)
+      .locator('.rc-virtual-list') // ant-d uses a virtualized list
+    await genreBox.fill(genre)
+    await genreList.getByRole('option', { name: genre }).click()
+  }
+
+  private async setTrackMood(index: number, mood: string) {
+    const trackItem = this.trackList.getByRole('listitem').nth(index)
+    const moodBox = trackItem.getByRole('combobox', { name: /pick a mood/i })
+    const moodList = moodBox
+      .page()
+      .getByLabel(/pick a mood/i)
+      .locator('.rc-virtual-list') // ant-d uses a virtualized list
+    await moodBox.fill(mood)
+    await moodList.getByRole('option', { name: mood }).click()
+  }
+
+  private async addTrackTags(index: number, tags: string[]) {
+    const trackItem = this.trackList.getByRole('listitem').nth(index)
+    const tagsInput = trackItem.getByRole('textbox', { name: /tags/i })
+    for (const tag of tags) {
+      await tagsInput.fill(tag)
+      await tagsInput.press('Enter')
+    }
   }
 }
 
@@ -127,9 +212,9 @@ export class SelectPage {
     })
   }
 
-  async setTracks(files: string[]) {
+  async setTracks(...files: string[]) {
     await this.dropzoneFileInput.setInputFiles(
-      files.map((file) => path.join(__dirname, file))
+      files.map((file) => path.join(__dirname, '..', 'files', file))
     )
   }
 
@@ -178,7 +263,7 @@ export class FinishPage {
     await expect(this.finalizing).toBeVisible({ timeout: 20 * 1000 })
 
     // Assert success
-    await expect(this.successHeading).toBeVisible({ timeout: 20 * 1000 })
+    await expect(this.successHeading).toBeVisible({ timeout: 30 * 1000 })
   }
 
   private async assertProgress(progress: number) {

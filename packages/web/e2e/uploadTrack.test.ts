@@ -26,7 +26,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   await page.goto('upload', { waitUntil: 'load' })
 
   const selectPage = new SelectPage(page)
-  await selectPage.setTracks(['files/track.mp3'])
+  await selectPage.setTracks('files/track.mp3')
   await selectPage.continue()
 
   await expect(
@@ -135,7 +135,7 @@ test('should upload a premium track', async ({ page }) => {
   await page.goto('upload', { waitUntil: 'load' })
 
   const selectPage = new SelectPage(page)
-  await selectPage.setTracks(['files/track.mp3'])
+  await selectPage.setTracks('files/track.mp3')
   await selectPage.continue()
 
   const editPage = new EditTrackPage(page)
@@ -181,7 +181,7 @@ test('should upload a track with free stems', async ({ page }) => {
   await page.goto('upload', { waitUntil: 'load' })
 
   const selectPage = new SelectPage(page)
-  await selectPage.setTracks(['files/track.mp3'])
+  await selectPage.setTracks('files/track.mp3')
   await selectPage.continue()
 
   const editPage = new EditTrackPage(page)
