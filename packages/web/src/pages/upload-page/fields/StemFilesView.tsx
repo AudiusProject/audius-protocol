@@ -106,6 +106,7 @@ export const StemFilesView = ({
           </Box>
         </Flex>
         <Flex
+          role='list'
           direction='column'
           borderRadius='m'
           border='default'
@@ -113,6 +114,7 @@ export const StemFilesView = ({
         >
           {stems.map((stem, i) => (
             <TrackPreview
+              role='listitem'
               className={styles.stemPreview}
               index={i}
               displayIndex={stems.length > 1}

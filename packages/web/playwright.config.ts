@@ -34,16 +34,28 @@ export default defineConfig({
     baseURL: 'http://localhost:3001',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry'
+    trace: 'on-first-retry',
+
+    /* Set the default timeout for actions like "click" */
+    actionTimeout: 10 * 1000
   },
 
+  /* Total timeout for individual tests */
   timeout: 1000 * 60 * 5,
 
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup.ts/
+    },
+    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json'
+      }
     }
 
     // {

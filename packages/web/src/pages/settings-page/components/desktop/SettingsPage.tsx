@@ -350,7 +350,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
             title={messages.inboxSettingsCardTitle}
             description={messages.inboxSettingsCardDescription}
           >
-            <Button variant='common' onClick={openInboxSettingsModal} fullWidth>
+            <Button
+              variant='secondary'
+              onClick={openInboxSettingsModal}
+              fullWidth
+            >
               {messages.inboxSettingsButtonText}
             </Button>
           </SettingsCard>
@@ -360,7 +364,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
           title={messages.notificationsCardTitle}
           description={messages.notificationsCardDescription}
         >
-          <Button variant='common' onClick={openNotificationSettings} fullWidth>
+          <Button
+            variant='secondary'
+            onClick={openNotificationSettings}
+            fullWidth
+          >
             {messages.notificationsButtonText}
           </Button>
         </SettingsCard>
@@ -376,7 +384,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             placement={ComponentPlacement.BOTTOM}
             fillParent={false}
           >
-            <Button onClick={showEmailToast} variant='common' fullWidth>
+            <Button onClick={showEmailToast} variant='secondary' fullWidth>
               {messages.accountRecoveryButtonText}
             </Button>
           </Toast>
@@ -386,7 +394,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
           title={messages.changeEmailCardTitle}
           description={messages.changeEmailCardDescription}
         >
-          <Button onClick={openChangeEmailModal} variant='common' fullWidth>
+          <Button onClick={openChangeEmailModal} variant='secondary' fullWidth>
             {messages.changeEmailButtonText}
           </Button>
         </SettingsCard>
@@ -395,7 +403,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
           title={messages.changePasswordCardTitle}
           description={messages.changePasswordCardDescription}
         >
-          <Button onClick={openChangePasswordModal} variant='common' fullWidth>
+          <Button
+            onClick={openChangePasswordModal}
+            variant='secondary'
+            fullWidth
+          >
             {messages.changePasswordButtonText}
           </Button>
         </SettingsCard>
@@ -412,7 +424,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             ) : null}
             <Button
               onClick={openAiAttributionSettingsModal}
-              variant='common'
+              variant='secondary'
               fullWidth
             >
               {messages.aiGeneratedButtonText}
@@ -444,7 +456,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
           >
             <Button
               onClick={handleDownloadDesktopAppClicked}
-              variant='common'
+              variant='secondary'
               fullWidth
             >
               {messages.desktopAppButtonText}
@@ -455,7 +467,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
       </div>
       <div className={styles.version}>
         <Button
-          variant='common'
+          variant='secondary'
           iconLeft={IconSignOut}
           onClick={openSignOutModal}
           css={(theme) => ({ marginBottom: theme.spacing.l })}

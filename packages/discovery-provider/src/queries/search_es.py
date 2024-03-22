@@ -23,7 +23,7 @@ def search_es_full(args: dict):
     if not esclient:
         raise Exception("esclient is None")
 
-    search_str = args.get("query")
+    search_str = args.get("query", "").strip()
     current_user_id = args.get("current_user_id")
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
@@ -58,21 +58,6 @@ def search_es_full(args: dict):
             ]
         )
 
-        # saved tracks
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_TRACKS},
-                    track_dsl(
-                        search_str=search_str,
-                        current_user_id=current_user_id,
-                        must_saved=True,
-                        only_downloadable=only_downloadable,
-                        include_purchaseable=include_purchaseable,
-                    ),
-                ]
-            )
-
     # users
     if do_users:
         mdsl.extend(
@@ -81,13 +66,6 @@ def search_es_full(args: dict):
                 user_dsl(search_str, current_user_id),
             ]
         )
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_USERS},
-                    user_dsl(search_str, current_user_id, True),
-                ]
-            )
 
     # playlists
     if do_playlists:
@@ -98,15 +76,6 @@ def search_es_full(args: dict):
             ]
         )
 
-        # saved playlists
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_PLAYLISTS},
-                    playlist_dsl(search_str, current_user_id, True),
-                ]
-            )
-
     # albums
     if do_albums:
         mdsl.extend(
@@ -115,14 +84,6 @@ def search_es_full(args: dict):
                 album_dsl(search_str, current_user_id),
             ]
         )
-        # saved albums
-        if current_user_id:
-            mdsl.extend(
-                [
-                    {"index": ES_PLAYLISTS},
-                    album_dsl(search_str, current_user_id, True),
-                ]
-            )
 
     mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
@@ -140,24 +101,15 @@ def search_es_full(args: dict):
 
     if do_tracks:
         response["tracks"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["saved_tracks"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_users:
         response["users"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_playlists:
         response["playlists"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["saved_playlists"] = pluck_hits(mfound["responses"].pop(0))
 
     if do_albums:
         response["albums"] = pluck_hits(mfound["responses"].pop(0))
-        if current_user_id:
-            response["saved_albums"] = pluck_hits(mfound["responses"].pop(0))
-
     finalize_response(
         response, limit, current_user_id, is_auto_complete=is_auto_complete
     )
@@ -226,7 +178,7 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=10, offset=0)
 
 def mdsl_limit_offset(mdsl, limit, offset):
     # add size and limit with some over-fetching
-    # for sake of drop_copycats
+    # for sake of reorder_users
     index_name = ""
     for dsl in mdsl:
         if "index" in dsl:
@@ -296,7 +248,7 @@ def finalize_response(
 
     # users: finalize
     for k in ["users", "followed_users"]:
-        users = drop_copycats(response[k])
+        users = reorder_users(response[k])
         users = users[:limit]
         response[k] = [map_user(user, current_user) for user in users]
 
@@ -313,7 +265,7 @@ def finalize_response(
     return response
 
 
-def base_match(search_str: str, operator="or", extra_fields=[]):
+def base_match(search_str: str, operator="or", extra_fields=[], boost=1):
     return [
         {
             "multi_match": {
@@ -327,17 +279,18 @@ def base_match(search_str: str, operator="or", extra_fields=[]):
                 "operator": operator,
                 "type": "bool_prefix",
                 "fuzziness": "AUTO",
+                "boost": boost,
             }
         }
     ]
 
 
 def be_saved(current_user_id):
-    return {"term": {"saved_by": {"value": current_user_id, "boost": 1.2}}}
+    return {"term": {"saved_by": {"value": current_user_id, "boost": 4}}}
 
 
 def be_reposted(current_user_id):
-    return {"term": {"reposted_by": {"value": current_user_id, "boost": 1.2}}}
+    return {"term": {"reposted_by": {"value": current_user_id, "boost": 4}}}
 
 
 def be_followed(current_user_id):
@@ -348,6 +301,7 @@ def be_followed(current_user_id):
                 "id": str(current_user_id),
                 "path": "following_ids",
             },
+            "boost": 500,
         }
     }
 
@@ -361,14 +315,14 @@ def personalize_dsl(dsl, current_user_id, must_saved):
         dsl["should"].append(be_reposted(current_user_id))
 
 
-def default_function_score(dsl, ranking_field):
+def default_function_score(dsl, ranking_field, factor=0.1):
     return {
         "query": {
             "function_score": {
                 "query": {"bool": dsl},
                 "field_value_factor": {
                     "field": ranking_field,
-                    "factor": 20,
+                    "factor": factor,
                     "modifier": "ln2p",
                 },
                 "boost_mode": "multiply",
@@ -386,23 +340,69 @@ def track_dsl(
 ):
     dsl = {
         "must": [
-            *base_match(search_str),
             {"term": {"is_unlisted": {"value": False}}},
             {"term": {"is_delete": False}},
+            {
+                "bool": {
+                    "should": [
+                        *base_match(search_str),
+                        {
+                            "wildcard": {
+                                "title": {
+                                    "value": "*" + search_str + "*",
+                                    "boost": 0.01,
+                                    "case_insensitive": True,
+                                }
+                            }
+                        },
+                        {
+                            "multi_match": {
+                                "query": search_str,
+                                "fields": ["title.searchable", "user.name.searchable"],
+                                "type": "cross_fields",
+                                "operator": "and",
+                                "boost": len(search_str) * 0.5,
+                            }
+                        },
+                        *[
+                            {
+                                "match": {
+                                    "genre": {
+                                        "query": search_str.title(),
+                                        "boost": 20,
+                                    }
+                                }
+                            }
+                        ],
+                        {
+                            "match": {
+                                "tag_list": {
+                                    "query": search_str.replace(" ", ""),
+                                    "boost": 0.1,
+                                }
+                            }
+                        },
+                        *[
+                            {
+                                "match": {
+                                    "mood": {
+                                        "query": search_str.title(),
+                                        "boost": 0.5,
+                                    }
+                                }
+                            }
+                        ],
+                    ],
+                    "minimum_should_match": 1,
+                }
+            },
         ],
         "must_not": [
             {"exists": {"field": "stem_of"}},
         ],
         "should": [
-            *base_match(search_str, operator="and"),
-            {
-                "match": {
-                    "title.searchable": {
-                        "query": search_str,
-                        "minimum_should_match": "100%",
-                    },
-                }
-            },
+            *base_match(search_str, operator="and", boost=len(search_str)),
+            {"term": {"user.is_verified": {"value": True}}},
         ],
     }
 
@@ -420,15 +420,101 @@ def user_dsl(search_str, current_user_id, must_saved=False):
     # must_search_str = search_str + " " + search_str.replace(" ", "")
     dsl = {
         "must": [
-            *base_match(search_str, extra_fields=["handle"]),
             {"term": {"is_deactivated": {"value": False}}},
+            {
+                "bool": {
+                    "should": [
+                        *base_match(
+                            search_str,
+                            extra_fields=["handle.searchable", "name.searchable"],
+                            boost=len(search_str) * 0.1,
+                        ),
+                        {
+                            "wildcard": {
+                                "name": {
+                                    "value": "*" + search_str + "*",
+                                    "boost": 0.01,
+                                    "case_insensitive": True,
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "name.searchable": {
+                                    "query": search_str,
+                                    "fuzziness": "AUTO",
+                                    "boost": len(search_str) * 0.01,
+                                }
+                            }
+                        },
+                        (
+                            {
+                                "term": {
+                                    "name": {
+                                        "value": search_str.replace(" ", ""),
+                                        "boost": len(search_str) * 0.5,
+                                    }
+                                }
+                            }
+                        ),
+                        {
+                            "term": (
+                                {
+                                    "handle": {
+                                        "value": search_str.replace(" ", ""),
+                                        "boost": len(search_str) * 0.5,
+                                    }
+                                }
+                            )
+                        },
+                        {
+                            "match": {
+                                "tracks.genre": {
+                                    "query": search_str.title(),
+                                    "boost": 12,
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "tracks.tags": {
+                                    "query": search_str.replace(" ", ""),
+                                    "boost": 0.1,
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "tracks.mood": {
+                                    "query": search_str.title(),
+                                    "boost": 12,
+                                }
+                            }
+                        },
+                    ],
+                    "minimum_should_match": 1,
+                }
+            },
         ],
         "must_not": [],
         "should": [
-            *base_match(search_str, operator="and", extra_fields=["handle"]),
-            {"term": {"handle": {"value": search_str, "boost": 0.2}}},
-            {"term": {"name": {"value": search_str, "boost": 0.2}}},
-            {"term": {"is_verified": {"value": True, "boost": 1.5}}},
+            *base_match(
+                search_str,
+                operator="and",
+                extra_fields=["name"],
+                boost=len(search_str) * 12,
+            ),
+            (
+                {
+                    "term": {
+                        "name": {
+                            "value": search_str,
+                            "boost": (len(search_str) * 0.1) ** 2,
+                        }
+                    }
+                }
+            ),
+            {"term": {"is_verified": {"value": True, "boost": 5}}},
         ],
     }
 
@@ -438,20 +524,96 @@ def user_dsl(search_str, current_user_id, must_saved=False):
     if current_user_id:
         dsl["should"].append(be_followed(current_user_id))
 
-    return default_function_score(dsl, "follower_count")
+    return {
+        "query": {
+            "function_score": {
+                "query": {"bool": dsl},
+                "functions": [
+                    {
+                        "filter": {"term": {"is_verified": True}},
+                        "field_value_factor": {
+                            "field": "follower_count",
+                            "factor": 10,
+                            "modifier": "ln2p",
+                        },
+                    },
+                    {
+                        "filter": {"term": {"is_verified": False}},
+                        "field_value_factor": {
+                            "field": "follower_count",
+                            "factor": 0.1,
+                            "modifier": "ln2p",
+                        },
+                    },
+                ],
+                "boost_mode": "multiply",
+            }
+        }
+    }
 
 
 def base_playlist_dsl(search_str, is_album):
     return {
         "must": [
-            *base_match(search_str),
+            {
+                "bool": {
+                    "should": [
+                        *base_match(search_str, boost=len(search_str)),
+                        {
+                            "wildcard": {
+                                "playlist_name": {
+                                    "value": "*" + search_str + "*",
+                                    "boost": 0.01,
+                                    "case_insensitive": True,
+                                }
+                            }
+                        },
+                        {
+                            "multi_match": {
+                                "query": search_str,
+                                "fields": [
+                                    "playlist_name.searchable",
+                                    "user.name.searchable",
+                                ],
+                                "type": "cross_fields",
+                                "operator": "or",
+                                "boost": len(search_str) * 0.5,
+                            }
+                        },
+                        {
+                            "match": {
+                                "tracks.tags": {
+                                    "query": search_str.replace(" ", ""),
+                                    "boost": 0.01,
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "tracks.genre": {
+                                    "query": search_str.title(),
+                                    "boost": 20,
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "tracks.mood": {
+                                    "query": search_str.title(),
+                                }
+                            }
+                        },
+                    ],
+                    "minimum_should_match": 1,
+                }
+            },
             {"term": {"is_private": {"value": False}}},
             {"term": {"is_delete": False}},
             {"term": {"is_album": {"value": is_album}}},
         ],
         "should": [
-            *base_match(search_str, operator="and"),
-            {"term": {"is_verified": {"value": True}}},
+            *base_match(search_str, operator="and", boost=len(search_str) * 10),
+            {"term": {"user.is_verified": {"value": True, "boost": 3}}},
         ],
     }
 
@@ -459,19 +621,21 @@ def base_playlist_dsl(search_str, is_album):
 def playlist_dsl(search_str, current_user_id, must_saved=False):
     dsl = base_playlist_dsl(search_str, False)
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count")
+    return default_function_score(dsl, "repost_count", factor=1000)
 
 
 def album_dsl(search_str, current_user_id, must_saved=False):
     dsl = base_playlist_dsl(search_str, True)
     personalize_dsl(dsl, current_user_id, must_saved)
-    return default_function_score(dsl, "repost_count")
+    return default_function_score(dsl, "repost_count", factor=1000)
 
 
-def drop_copycats(users):
+def reorder_users(users):
     """Filters out users with copy cat names.
     e.g. if a verified deadmau5 is in the result set
     filter out all non-verified users with same name.
+
+    Moves users without profile pictures to the end.
     """
     reserved = set()
     for user in users:
@@ -479,11 +643,16 @@ def drop_copycats(users):
             reserved.add(lower_ascii_name(user["name"]))
 
     filtered = []
+    users_without_photos = []
     for user in users:
         if not user["is_verified"] and lower_ascii_name(user["name"]) in reserved:
             continue
-        filtered.append(user)
-    return filtered
+        if user["profile_picture_sizes"] or user["profile_picture"]:
+            filtered.append(user)
+        else:
+            users_without_photos.append(user)
+
+    return filtered + users_without_photos
 
 
 def lower_ascii_name(name):
