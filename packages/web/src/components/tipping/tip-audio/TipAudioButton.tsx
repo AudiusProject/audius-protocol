@@ -23,8 +23,9 @@ export const TipAudioButton = () => {
   return (
     <Button
       variant='primary'
-      fullWidth
+      css={{ width: '100%' }}
       iconLeft={IconTokenGold}
+      isStaticIcon
       onClick={handleClick}
     >
       {messages.tipAudio}

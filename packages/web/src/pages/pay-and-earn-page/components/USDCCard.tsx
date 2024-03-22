@@ -17,7 +17,8 @@ import {
   IconQuestionCircle,
   Flex,
   IconLogoCircleUSDC as LogoUSDC,
-  Text
+  Text,
+  Paper
 } from '@audius/harmony'
 import BN from 'bn.js'
 
@@ -76,11 +77,14 @@ export const USDCCard = () => {
   }
 
   return (
-    <div className={styles.usdcContainer}>
+    <Paper direction='column' shadow='far' borderRadius='l'>
       <div className={styles.backgroundBlueGradient}>
         <div className={styles.usdcTitleContainer}>
           <div className={styles.usdcTitle}>
-            <LogoUSDC size='3xl' color='staticWhite' />
+            <LogoUSDC
+              size='3xl'
+              css={(theme) => ({ path: { fill: theme.color.static.white } })}
+            />
             <div className={styles.usdc}>
               <Text
                 variant='heading'
@@ -141,6 +145,6 @@ export const USDCCard = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </Paper>
   )
 }

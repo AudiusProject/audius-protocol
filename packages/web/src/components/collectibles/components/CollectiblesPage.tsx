@@ -587,7 +587,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             <Flex gap='s' w='100%'>
               {isUserOnTheirProfile && (
                 <Button
-                  variant='common'
+                  variant='secondary'
                   size='small'
                   onClick={handleEditClick}
                   iconLeft={IconPencil}
@@ -597,7 +597,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 </Button>
               )}
               <Button
-                variant='common'
+                variant='secondary'
                 size='small'
                 onClick={handleShareClick}
                 iconLeft={IconShare}

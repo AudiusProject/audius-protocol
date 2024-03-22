@@ -4,10 +4,7 @@ import { useRankedSupportingForUser } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
 import { profilePageSelectors } from '@audius/common/store'
 import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
-import {
-  IconTipping as IconTip,
-  IconArrowRight as IconArrow
-} from '@audius/harmony'
+import { IconTipping, IconArrowRight, PlainButton, Flex } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -21,7 +18,6 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-import styles from './SupportingList.module.css'
 import { SupportingTile } from './SupportingTile'
 const { getProfileUser } = profilePageSelectors
 
@@ -38,7 +34,7 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
   const dispatch = useDispatch()
   const rankedSupportingList = useRankedSupportingForUser(profile.user_id)
 
-  const handleClick = useCallback(() => {
+  const handleClickSeeMore = useCallback(() => {
     if (profile) {
       dispatch(
         setUsers({
@@ -52,25 +48,26 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
   }, [profile, dispatch])
 
   return profile && rankedSupportingList.length > 0 ? (
-    <div className={styles.container}>
+    <Flex direction='column' mt='2xl' gap='l'>
       <ProfilePageNavSectionTitle
         title={messages.supporting}
-        titleIcon={<IconTip className={styles.tipIcon} />}
+        titleIcon={<IconTipping color='default' size='m' />}
       />
       {rankedSupportingList
         .slice(0, MAX_PROFILE_SUPPORTING_TILES)
-        .map((supporting, index) => (
-          <div key={`supporting-${index}`} className={styles.tile}>
-            <SupportingTile supporting={supporting} />
-          </div>
+        .map((supporting) => (
+          <SupportingTile key={supporting.rank} supporting={supporting} />
         ))}
-      {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES && (
-        <div className={styles.seeMore} onClick={handleClick}>
-          <span>{formatViewAllMessage(profile.supporting_count)}</span>
-          <IconArrow size='m' />
-        </div>
-      )}
-    </div>
+      {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES ? (
+        <PlainButton
+          iconRight={IconArrowRight}
+          css={{ alignSelf: 'flex-start' }}
+          onClick={handleClickSeeMore}
+        >
+          {formatViewAllMessage(profile.supporting_count)}
+        </PlainButton>
+      ) : null}
+    </Flex>
   ) : null
 }
 

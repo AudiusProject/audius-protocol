@@ -12,7 +12,8 @@ import {
   IconMessage,
   PopupMenu,
   Button,
-  FollowButton
+  FollowButton,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -229,10 +230,9 @@ export const StatBanner = (props: StatsBannerProps) => {
             shareButton
           )}
 
-          <div className={styles.followContainer}>
+          <>
             {onToggleSubscribe ? (
               <SubscribeButton
-                className={styles.subscribeButton}
                 isSubscribed={isSubscribed!}
                 isFollowing={following!}
                 onToggleSubscribe={onToggleSubscribe}
@@ -250,7 +250,7 @@ export const StatBanner = (props: StatsBannerProps) => {
               isVisible={areArtistRecommendationsVisible}
               onClose={onCloseArtistRecommendations!}
             />
-          </div>
+          </>
         </>
       )
       break
@@ -263,7 +263,14 @@ export const StatBanner = (props: StatsBannerProps) => {
           <div className={styles.stats}>
             <Stats clickable userId={profileId!} stats={stats} size='large' />
           </div>
-          <div className={styles.buttons}>{buttons}</div>
+          <Flex
+            justifyContent='flex-end'
+            gap='s'
+            alignItems='center'
+            css={{ zIndex: 3 }}
+          >
+            {buttons}
+          </Flex>
         </div>
       ) : null}
     </div>
