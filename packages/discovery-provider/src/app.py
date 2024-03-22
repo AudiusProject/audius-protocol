@@ -362,14 +362,6 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_trending_playlists",
                 "schedule": timedelta(minutes=30),
             },
-            "index_solana_plays": {
-                "task": "index_solana_plays",
-                "schedule": timedelta(seconds=5),
-            },
-            "index_challenges": {
-                "task": "index_challenges",
-                "schedule": timedelta(seconds=5),
-            },
             "index_eth": {
                 "task": "index_eth",
                 "schedule": timedelta(seconds=30),
@@ -377,10 +369,6 @@ def configure_celery(celery, test_config=None):
             "index_oracles": {
                 "task": "index_oracles",
                 "schedule": timedelta(minutes=5),
-            },
-            "index_rewards_manager": {
-                "task": "index_rewards_manager",
-                "schedule": timedelta(seconds=5),
             },
             "index_aggregate_monthly_plays": {
                 "task": "index_aggregate_monthly_plays",
@@ -413,10 +401,6 @@ def configure_celery(celery, test_config=None):
             "update_aggregates": {
                 "task": "update_aggregates",
                 "schedule": timedelta(minutes=10),
-            },
-            "index_latest_block": {
-                "task": "index_latest_block",
-                "schedule": timedelta(seconds=5),
             },
             "publish_scheduled_releases": {
                 "task": "publish_scheduled_releases",
@@ -519,6 +503,7 @@ def configure_celery(celery, test_config=None):
 
     celery.finalize()
 
+    # purge all existing tasks and start fresh
     celery.control.purge()
 
     # Start tasks that should fire upon startup
@@ -528,3 +513,7 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_payment_router", queue="index_sol")
     celery.send_task("index_user_listening_history")
     celery.send_task("index_spl_token")
+    celery.send_task("index_solana_plays")
+    celery.send_task("index_rewards_manager")
+    celery.send_task("index_latest_block")
+    celery.send_task("index_challenges")
