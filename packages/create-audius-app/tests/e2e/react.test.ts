@@ -38,10 +38,29 @@ test('auths, fetches tracks, and favorites a track', async ({
     }
   })
 
-  // TODO: handle favorite/unfavorite
-  await page.getByRole('button', { name: 'Favorite' }).first().click()
+  const favoriteButton = page
+    .getByRole('button', { name: 'Favorite', exact: true })
+    .first()
+  const unfavoriteButton = page
+    .getByRole('button', { name: 'Unfavorite', exact: true })
+    .first()
 
-  // Confirm track is favorited
-  await expect(page.getByText('Favorited!')).toBeVisible()
+  // Either favorite or unfavorite the track
+  const favoriteButtonExists = await Promise.any([
+    favoriteButton.waitFor().then(() => true),
+    unfavoriteButton.waitFor().then(() => false)
+  ]).catch(() => {
+    throw 'Missing button'
+  })
+
+  if (favoriteButtonExists) {
+    await favoriteButton.click()
+    await expect(unfavoriteButton).toBeVisible()
+  } else {
+    await unfavoriteButton.click()
+    await expect(favoriteButton).toBeVisible()
+  }
+
+  // Confirm track is updated
   await responsePromise
 })
