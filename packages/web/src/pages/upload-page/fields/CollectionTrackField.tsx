@@ -76,10 +76,10 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         </div>
       ) : null}
       <div className={styles.overrideRow}>
-        <div className={styles.overrideSwitch}>
+        <label className={styles.overrideSwitch}>
           <SwitchField name={`tracks.${index}.override`} />
           <Text>{messages.overrideLabel}</Text>
-        </div>
+        </label>
         <div className={styles.actions}>
           <PreviewButton index={index} />
           <PlainButton
