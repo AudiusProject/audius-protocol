@@ -1,15 +1,16 @@
 import { ReactElement } from 'react'
 
 import { removeNullable } from '@audius/common/utils'
-import {
-  IconButton,
-  PopupMenu,
-  IconSort as SortIcon,
-  useTheme
-} from '@audius/harmony'
+import { Button, PopupMenu, IconSort as SortIcon } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './NavBanner.module.css'
+
+const messages = {
+  sortByRecent: 'Sort by Recent',
+  sortByPopular: 'Sort by Popular',
+  openSortButton: 'Toggle sort mode'
+}
 
 type NavBannerProps = {
   tabs?: ReactElement
@@ -34,18 +35,16 @@ const NavBanner = (props: NavBannerProps) => {
     empty
   } = props
 
-  const { cornerRadius, color } = useTheme()
-
   const menuItems = [
     onSortByRecent
       ? {
-          text: 'Sort by Recent',
+          text: messages.sortByRecent,
           onClick: onSortByRecent
         }
       : null,
     onSortByPopular
       ? {
-          text: 'Sort by Popular',
+          text: messages.sortByPopular,
           onClick: onSortByPopular
         }
       : null
@@ -69,21 +68,12 @@ const NavBanner = (props: NavBannerProps) => {
                   items={menuItems}
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                   renderTrigger={(ref, triggerPopup) => (
-                    <IconButton
-                      aria-label='open'
+                    <Button
                       ref={ref}
-                      css={{
-                        borderRadius: cornerRadius.s,
-                        backgroundColor: color.background.white,
-                        '&:hover': {
-                          backgroundColor: color.secondary.secondary,
-                          path: {
-                            fill: color.icon.staticWhite
-                          }
-                        }
-                      }}
-                      icon={SortIcon}
-                      color='subdued'
+                      size='small'
+                      variant='secondary'
+                      iconLeft={SortIcon}
+                      aria-label={messages.openSortButton}
                       onClick={() => triggerPopup()}
                     />
                   )}
