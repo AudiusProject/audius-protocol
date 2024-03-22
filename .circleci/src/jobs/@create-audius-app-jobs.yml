@@ -51,8 +51,10 @@ create-audius-app-test-e2e:
           npx playwright install --with-deps
           cd packages/create-audius-app
           npm run setup-test-env
+          cd examples/react
           npm run build
           npm run start
+          cd ../../
           npm run test:e2e
     - store_test_results:
         path: packages/create-audius-app/report.xml
