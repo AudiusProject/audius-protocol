@@ -46,7 +46,7 @@ export class StemsAndDownloadsModal {
       }
       await this.locator
         .getByRole('listitem')
-        .filter({ hasText: file.filename.split('/')[1] })
+        .filter({ hasText: file.filename })
         .getByRole('button', { name: /select type/i })
         .click()
       await this.locator
