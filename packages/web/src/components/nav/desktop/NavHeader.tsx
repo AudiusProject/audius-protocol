@@ -91,6 +91,8 @@ export const NavHeader = () => {
               [styles.active]: notificationCount > 0,
               [styles.notificationsOpen]: notificationPanelIsOpen
             })}
+            role='button'
+            aria-label='Open notifications menu'
           >
             <IconNotification />
           </div>

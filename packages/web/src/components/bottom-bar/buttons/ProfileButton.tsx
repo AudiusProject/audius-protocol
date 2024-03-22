@@ -19,6 +19,7 @@ const ProfileButton = ({
       isMatrix={isMatrixMode}
       onClick={onClick}
       href={href}
+      aria-label='Profile Page'
       iconLightJSON={() =>
         import('../../../assets/animations/iconProfileLight.json')
       }
