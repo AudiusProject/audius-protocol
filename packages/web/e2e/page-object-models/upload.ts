@@ -195,6 +195,15 @@ export class EditPlaylistPage extends BaseEditPage {
   }
 }
 
+export class EditAlbumPage extends EditPlaylistPage {
+  protected readonly titleInput: Locator
+
+  constructor(page: Page) {
+    super(page)
+    this.titleInput = page.getByRole('textbox', { name: /album name/i })
+  }
+}
+
 export class SelectPage {
   private readonly dropzoneFileInput: Locator
   private readonly releaseType: Locator
