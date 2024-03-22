@@ -32,7 +32,12 @@ export class StemsAndDownloadsModal {
   async setStems(files: Array<{ filename: string; type?: string } | string>) {
     await this.dropzoneFileInput.setInputFiles(
       files.map((file) =>
-        path.join(__dirname, typeof file === 'string' ? file : file.filename)
+        path.join(
+          __dirname,
+          '..',
+          'files',
+          typeof file === 'string' ? file : file.filename
+        )
       )
     )
     for (const file of files) {
