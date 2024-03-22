@@ -2,9 +2,7 @@ import path from 'path'
 
 import { test, expect, Page } from '@playwright/test'
 
-const base64Entropy = 'YmRhYmE4MjRiNmUwMmFiNzg2OGM1YTJkZmRmYzdlOWY'
-
-export const completeUpload = async (page: Page) => {
+const completeUpload = async (page: Page) => {
   await page.getByRole('button', { name: /complete upload/i }).click()
   const confirmUploadModal = page.getByRole('dialog', {
     name: /confirm upload/i
@@ -55,15 +53,7 @@ test('should upload a single hidden, AI attributed track remix', async ({
   const isrc = 'US-123-45-67890'
   const iswc = 'T-123456789-0'
 
-  await page.goto(`upload?login=${base64Entropy}`, {
-    waitUntil: 'load'
-  })
-
-  // Dismiss push notifs modal
-  const heading = page.getByRole('heading', {
-    level: 1
-  })
-  await heading.click({ force: true })
+  await page.goto('upload', { waitUntil: 'load' })
 
   // Add track
   const dropzoneFileInput = page
@@ -250,7 +240,7 @@ test('should upload a premium track', async ({ page }) => {
   const price = '1.05'
   const preview = '15'
 
-  await page.goto(`upload?login=${base64Entropy}`, { waitUntil: 'load' })
+  await page.goto('upload', { waitUntil: 'load' })
 
   // Dismiss push notifs modal
   const heading = page.getByRole('heading', {
@@ -338,7 +328,7 @@ test('should upload a single track with stems', async ({ page }) => {
   const trackTitle = `Test stems track ${Date.now()}`
   const genre = 'Alternative'
 
-  await page.goto(`upload?login=${base64Entropy}`, { waitUntil: 'load' })
+  await page.goto('upload', { waitUntil: 'load' })
 
   // Dismiss push notifs modal
   const heading = page.getByRole('heading', {
