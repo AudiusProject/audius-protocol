@@ -8,7 +8,8 @@ const ProfileButton = ({
   onClick,
   href,
   isActive,
-  isMatrixMode
+  isMatrixMode,
+  ...buttonProps
 }: ButtonProps) => {
   return (
     <AnimatedBottomButton
@@ -24,6 +25,7 @@ const ProfileButton = ({
       iconDarkJSON={() =>
         import('../../../assets/animations/iconProfileDark.json')
       }
+      {...buttonProps}
     />
   )
 }

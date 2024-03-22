@@ -51,7 +51,9 @@ const AnimatedButton = ({
   disabledClassName = '',
   wrapperClassName = '',
   stopPropagation = false,
-  disableAnimationOnMount = true
+  disableAnimationOnMount = true,
+  uniqueKey,
+  ...buttonProps
 }: AnimatedButtonProps) => {
   const [isPaused, setIsPaused] = useState(true)
   const [getDidMount, setDidMount] = useInstanceVar(false)
@@ -122,7 +124,7 @@ const AnimatedButton = ({
   }
 
   return href ? (
-    <SeoLink to={href} {...rootProps}>
+    <SeoLink to={href} {...rootProps} {...buttonProps}>
       {buttonElement}
     </SeoLink>
   ) : (
