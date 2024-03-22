@@ -21,7 +21,12 @@ export const CollectionTrackFieldArray = () => {
         >
           <Droppable droppableId='tracks'>
             {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef}>
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                role='list'
+                aria-label='Track List'
+              >
                 {tracks.map((track, index) => (
                   <Draggable
                     key={track.file.name}
@@ -33,6 +38,7 @@ export const CollectionTrackFieldArray = () => {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        role='listitem'
                       >
                         <CollectionTrackField
                           index={index}
