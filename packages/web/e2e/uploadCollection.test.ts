@@ -1,44 +1,9 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import {
   EditPlaylistPage,
   FinishPage,
   SelectPage
 } from './page-object-models/upload'
-
-export const completeUpload = async (page: Page) => {
-  await page.getByRole('button', { name: /complete upload/i }).click()
-  const confirmUploadModal = page.getByRole('dialog', {
-    name: /confirm upload/i
-  })
-  await confirmUploadModal.getByRole('button', { name: /upload/i }).click()
-
-  // Assert uploading
-  const uploadingHeading = page.getByRole('heading', {
-    name: /uploading your.*/i
-  })
-  await expect(uploadingHeading).toBeVisible()
-
-  // Assert progress
-  const progressBar = page.getByRole('progressbar', {
-    name: /upload in progress/i
-  })
-  const getProgress = async () =>
-    Number(await progressBar.getAttribute('aria-valuenow'))
-  await expect.poll(getProgress).toBeGreaterThan(10)
-  await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(25)
-  await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(50)
-  await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(75)
-
-  // Assert finalizing
-  const finalizing = page.getByText(/finalizing upload/i)
-  await expect(finalizing).toBeAttached({ timeout: 1000 * 60 })
-
-  // Assert success
-  const successHeading = page.getByRole('heading', {
-    name: /your upload is complete/i
-  })
-  await expect(successHeading).toBeAttached({ timeout: 1000 * 60 })
-}
 
 test('should upload a playlist', async ({ page }) => {
   const timestamp = Date.now()
