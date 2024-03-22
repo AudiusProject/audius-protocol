@@ -111,6 +111,8 @@ async function testSignUp({
   ).toBeVisible()
 
   // upload cover & profile photo
+
+  // TODO: whats the best file upload method?
   const coverPhotoChooserPromise = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: /select cover photo/i }).click()
   const coverPhotoChooser = await coverPhotoChooserPromise
@@ -118,24 +120,12 @@ async function testSignUp({
     path.join(__dirname, 'files/cover-photo.jpeg')
   )
 
-  await dragAndDropFile(
-    page,
-    page.getByTestId('profileImage-dropzone'),
-    path.join(__dirname, 'files/profile-picture.jpeg'),
-    'files/profile-picture.jpeg',
-    'image/jpeg'
-  )
-  //   const profilePicChooserPromise = page.waitForEvent('filechooser')
-  //   await page.getByTestId('profileImage-dropzone').click()
-  //   const profilePicChooser = await profilePicChooserPromise
-  //   await profilePicChooser.setFiles(path.join(__dirname, 'profile-picture.jpeg'))
-
-  // TODO: remove this
+  const profilePicChooserPromise = page.waitForEvent('filechooser')
+  await page.getByTestId('profileImage-dropzone').click()
+  const profilePicChooser = await profilePicChooserPromise
+  await profilePicChooser.setFiles(path.join(__dirname, 'profile-picture.jpeg'))
 
   await page.getByRole('textbox', { name: /display name/i }).fill(name)
-  await page.waitForTimeout(5000)
-  return
-
   await page.getByRole('button', { name: /continue/i }).click()
 
   // --> Select Genres Page
@@ -235,30 +225,24 @@ test.describe('Sign Up', () => {
       await assertOnSignUpPage(page)
     })
 
-    test.describe('create an account & refer accordingly', () => {
-      const testUser = generateTestUser()
-
-      test('should create an account', async ({ page }) => {
-        await testSignUp({
-          isMobile: false,
-          testUser,
-          page,
-          signUpUrl: 'signup'
-        })
+    test('should create an account', async ({ page }) => {
+      await testSignUp({
+        isMobile: false,
+        page,
+        signUpUrl: 'signup'
       })
+    })
 
-      test('should sign up with a referral', async ({ page }) => {
-        // TODO: replace this with a sign-in instead of a full sign-up (once we can bypass OTP)
-        await testSignUp({
-          isMobile: true,
-          testUser,
-          signUpUrl: `/signup?ref=dejayjdstaging`,
-          page
-        })
-        await page.getByRole('button', { name: /open settings menu/i }).click()
-        await page.getByRole('menuitem', { name: /rewards/i }).click()
-        await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
+    test('should sign up with a referral', async ({ page }) => {
+      // TODO: replace this with a sign-in instead of a full sign-up (once we can bypass OTP)
+      await testSignUp({
+        isMobile: true,
+        signUpUrl: `/signup?ref=dejayjdstaging`,
+        page
       })
+      await page.getByRole('button', { name: /open settings menu/i }).click()
+      await page.getByRole('menuitem', { name: /rewards/i }).click()
+      await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
     })
   })
 
@@ -290,27 +274,25 @@ test.describe('Sign Up', () => {
 
       await assertOnSignUpPage(page)
     })
+    test('should create an account', async ({ page }) => {
+      await testSignUp({ isMobile: true, page })
+    })
+    test('should create an account from a referral', async ({ page }) => {
+      await testSignUp({
+        isMobile: true,
+        signUpUrl: `/signup?ref=dejayjdstaging`,
+        page
+      })
+      // TODO: this is the desktop flow, need to figure out how to get mobile view to properly show
+      await page.getByRole('button', { name: /open settings menu/i }).click()
+      await page.getByRole('menuitem', { name: /rewards/i }).click()
+      await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
 
-    test.describe('create an account & refer accordingly', () => {
-      const testUser = generateTestUser()
-      test('should create an account', async ({ page }) => {
-        await testSignUp({ isMobile: true, testUser, page })
-      })
-      test('should create an account from a referral', async ({ page }) => {
-        await testSignUp({
-          isMobile: true,
-          signUpUrl: `/signup?ref=dejayjdstaging`,
-          page
-        })
-        // TODO: this is the desktop flow, need to figure out how to get mobile view to properly show
-        await page.getByRole('button', { name: /open settings menu/i }).click()
-        await page.getByRole('menuitem', { name: /rewards/i }).click()
-        await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
-        // await page.getByRole('link', { name: /profile page/i }).click()
-        // await page.getByRole('button', { name: /audio rewards/i }).click()
-        // await page.getByText(/you accepted an invite/i).scrollIntoViewIfNeeded()
-        // await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
-      })
+      // TODO: this is the mobile flow that we would expect to use
+      // await page.getByRole('link', { name: /profile page/i }).click()
+      // await page.getByRole('button', { name: /audio rewards/i }).click()
+      // await page.getByText(/you accepted an invite/i).scrollIntoViewIfNeeded()
+      // await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
     })
   })
 })
