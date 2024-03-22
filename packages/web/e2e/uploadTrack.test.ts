@@ -26,7 +26,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   await page.goto('upload', { waitUntil: 'load' })
 
   const selectPage = new SelectPage(page)
-  await selectPage.setTracks('files/track.mp3')
+  await selectPage.setTracks('track.mp3')
   await selectPage.continue()
 
   await expect(
@@ -34,7 +34,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   ).toBeVisible()
 
   const editPage = new EditTrackPage(page)
-  await editPage.setArtwork('files/track-artwork.jpeg')
+  await editPage.setArtwork('track-artwork.jpeg')
   await editPage.setTitle(trackTitle)
   await editPage.setDescription(trackDescription)
   await editPage.setGenre(genre)
@@ -135,11 +135,11 @@ test('should upload a premium track', async ({ page }) => {
   await page.goto('upload', { waitUntil: 'load' })
 
   const selectPage = new SelectPage(page)
-  await selectPage.setTracks('files/track.mp3')
+  await selectPage.setTracks('track.mp3')
   await selectPage.continue()
 
   const editPage = new EditTrackPage(page)
-  await editPage.setArtwork('files/track-artwork.jpeg')
+  await editPage.setArtwork('track-artwork.jpeg')
   await editPage.setTitle(trackTitle)
   await editPage.setGenre(genre)
 
@@ -181,11 +181,11 @@ test('should upload a track with free stems', async ({ page }) => {
   await page.goto('upload', { waitUntil: 'load' })
 
   const selectPage = new SelectPage(page)
-  await selectPage.setTracks('files/track.mp3')
+  await selectPage.setTracks('track.mp3')
   await selectPage.continue()
 
   const editPage = new EditTrackPage(page)
-  await editPage.setArtwork('files/track-artwork.jpeg')
+  await editPage.setArtwork('track-artwork.jpeg')
   await editPage.setTitle(trackTitle)
   await editPage.setGenre(genre)
 
@@ -193,8 +193,8 @@ test('should upload a track with free stems', async ({ page }) => {
   const stemsAndDownloadsModal = new StemsAndDownloadsModal(page)
   await stemsAndDownloadsModal.setAllowTrackDownload(true)
   await stemsAndDownloadsModal.setStems([
-    { filename: 'files/stem-1.mp3', type: 'Instrumental' },
-    { filename: 'files/stem-2.mp3', type: 'Lead Vocals' }
+    { filename: 'stem-1.mp3', type: 'Instrumental' },
+    { filename: 'stem-2.mp3', type: 'Lead Vocals' }
   ])
   await stemsAndDownloadsModal.save()
 
