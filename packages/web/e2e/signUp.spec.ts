@@ -1,41 +1,12 @@
-import { readFileSync } from 'fs'
 import path from 'path'
 
-import { test, Page, expect, devices, Locator } from '@playwright/test'
+import { test, Page, expect, devices } from '@playwright/test'
 
+import { resetAuthState } from './auth.setup'
 import { generateTestUser, goToPage } from './utils'
 
 type User = {
   email: string
-}
-
-const dragAndDropFile = async (
-  page: Page,
-  locator: Locator,
-  filePath: string,
-  fileName: string,
-  fileType: string // TODO: is there a standard mime type to go here?
-) => {
-  const buffer = readFileSync(filePath).toString('base64')
-
-  const dataTransfer = await page.evaluateHandle(
-    async ({ bufferData, localFileName, localFileType }) => {
-      const dt = new DataTransfer()
-
-      const blobData = await fetch(bufferData).then((res) => res.blob())
-
-      const file = new File([blobData], localFileName, { type: localFileType })
-      dt.items.add(file)
-      return dt
-    },
-    {
-      bufferData: `data:application/octet-stream;base64,${buffer}`,
-      localFileName: fileName,
-      localFileType: fileType
-    }
-  )
-
-  await locator.dispatchEvent('drop', { dataTransfer })
 }
 
 async function assertOnSignUpPage(page: Page) {
@@ -123,7 +94,9 @@ async function testSignUp({
   const profilePicChooserPromise = page.waitForEvent('filechooser')
   await page.getByTestId('profileImage-dropzone').click()
   const profilePicChooser = await profilePicChooserPromise
-  await profilePicChooser.setFiles(path.join(__dirname, 'profile-picture.jpeg'))
+  await profilePicChooser.setFiles(
+    path.join(__dirname, 'files/profile-picture.jpeg')
+  )
 
   await page.getByRole('textbox', { name: /display name/i }).fill(name)
   await page.getByRole('button', { name: /continue/i }).click()
@@ -199,6 +172,8 @@ async function testSignUp({
 }
 
 test.describe('Sign Up', () => {
+  // Resets auth state for this suite so we aren't already signed in
+  test.use(resetAuthState)
   test.describe('desktop', () => {
     test('can navigate to signup from trending', async ({ page }) => {
       await goToPage({ page, path: 'trending' })
@@ -225,15 +200,14 @@ test.describe('Sign Up', () => {
       await assertOnSignUpPage(page)
     })
 
-    test('should create an account', async ({ page }) => {
+    test('should go through whole sign up flow', async ({ page }) => {
       await testSignUp({
         isMobile: false,
-        page,
-        signUpUrl: 'signup'
+        page
       })
     })
 
-    test('should sign up with a referral', async ({ page }) => {
+    test('should sign up from a referral', async ({ page }) => {
       // TODO: replace this with a sign-in instead of a full sign-up (once we can bypass OTP)
       await testSignUp({
         isMobile: true,
@@ -274,10 +248,10 @@ test.describe('Sign Up', () => {
 
       await assertOnSignUpPage(page)
     })
-    test('should create an account', async ({ page }) => {
+    test('should go through whole sign up flow', async ({ page }) => {
       await testSignUp({ isMobile: true, page })
     })
-    test('should create an account from a referral', async ({ page }) => {
+    test('should sign up from a referral', async ({ page }) => {
       await testSignUp({
         isMobile: true,
         signUpUrl: `/signup?ref=dejayjdstaging`,

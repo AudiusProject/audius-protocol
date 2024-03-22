@@ -12,3 +12,5 @@ setup('authenticate', async ({ page }) => {
   })
   await page.context().storageState({ path: authFile })
 })
+
+export const resetAuthState = { storageState: { cookies: [], origins: [] } }

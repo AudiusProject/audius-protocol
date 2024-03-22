@@ -1,9 +1,13 @@
 import { test, expect, Page } from '@playwright/test'
 
+import { resetAuthState } from './auth.setup'
 import { email, password, name, handle } from './fixtures/user.json'
 import { goToPage } from './utils'
 
 test.describe('Sign In', () => {
+  // Resets auth state for this suite so we aren't already signed in
+  test.use(resetAuthState)
+
   test('can navigate to sign-in from trending screen', async ({ page }) => {
     await goToPage({ page, path: 'trending' })
     await page.getByRole('link', { name: /sign in/i }).click()

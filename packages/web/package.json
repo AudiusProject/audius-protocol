@@ -39,6 +39,8 @@
     "worker-ssr:dev": "npx wrangler dev --env test --config ./src/ssr/wrangler.toml",
     "worker:dev": "npx wrangler dev --env test",
     "write-sha": "./scripts/writeSHA.sh",
+    "pw-ui": "npx playwright test --ui",
+    "pw": "npx playwright test",
     "ELECTRON========================================": "",
     "dist-publish-production": "npm run dist -- --mac --win --linux --publish always --env production",
     "dist-publish": "npm run dist -- --mac --win --linux --publish always",
