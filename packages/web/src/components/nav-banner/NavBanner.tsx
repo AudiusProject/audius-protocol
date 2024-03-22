@@ -1,8 +1,10 @@
 import { ReactElement } from 'react'
 
 import { removeNullable } from '@audius/common/utils'
-import { Button, PopupMenu, IconSort as SortIcon } from '@audius/harmony'
+import { Flex, Button, PopupMenu, IconSort as SortIcon } from '@audius/harmony'
 import cn from 'classnames'
+
+import { ClientOnly } from 'components/client-only/ClientOnly'
 
 import styles from './NavBanner.module.css'
 
@@ -51,7 +53,7 @@ const NavBanner = (props: NavBannerProps) => {
   ].filter(removeNullable)
 
   return (
-    <div className={styles.wrapper}>
+    <Flex h={48} w='100%' justifyContent='center'>
       <div className={styles.background} />
       {!empty ? (
         <div
@@ -63,27 +65,29 @@ const NavBanner = (props: NavBannerProps) => {
 
           {isArtist && (
             <div className={styles.dropdown}>
-              {!dropdownDisabled ? (
-                <PopupMenu
-                  items={menuItems}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                  renderTrigger={(ref, triggerPopup) => (
-                    <Button
-                      ref={ref}
-                      size='small'
-                      variant='secondary'
-                      iconLeft={SortIcon}
-                      aria-label={messages.openSortButton}
-                      onClick={() => triggerPopup()}
-                    />
-                  )}
-                />
-              ) : null}
+              <ClientOnly>
+                {!dropdownDisabled ? (
+                  <PopupMenu
+                    items={menuItems}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                    renderTrigger={(ref, triggerPopup) => (
+                      <Button
+                        ref={ref}
+                        size='small'
+                        variant='secondary'
+                        iconLeft={SortIcon}
+                        aria-label={messages.openSortButton}
+                        onClick={() => triggerPopup()}
+                      />
+                    )}
+                  />
+                ) : null}
+              </ClientOnly>
             </div>
           )}
         </div>
       ) : null}
-    </div>
+    </Flex>
   )
 }
 
