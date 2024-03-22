@@ -20,8 +20,10 @@ export const relayTransaction = async (
   next: NextFunction
 ) => {
   // pull info from validated request
-  const { validatedRelayRequest, requestId } = res.locals.ctx;
+  const { validatedRelayRequest, requestId, recoveredSigner } = res.locals.ctx;
   const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest;
+
+  const userAddress = 'wallet' in recoveredSigner ? recoveredSigner.wallet : recoveredSigner.address
 
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();
@@ -39,17 +41,17 @@ export const relayTransaction = async (
     const transaction = { nonce, gasLimit, to, value, data };
     await senderWallet.signTransaction(transaction);
 
-    logger.info({ requestId, senderWallet: address, nonce }, "submitting transaction")
+    logger.info({ requestId, senderWallet: address, address: userAddress, nonce }, "submitting transaction")
 
     submit = await senderWallet.sendTransaction(transaction);
 
     // query chain until tx is mined
     const receipt = await confirm(submit.hash);
     receipt.blockNumber += config.finalPoaBlock
-    logger.info({ requestId, senderWallet: address, nonce, txHash: submit?.hash, blocknumber: receipt.blockNumber }, "transaction confirmation successful")
+    logger.info({ requestId, senderWallet: address, address: userAddress, nonce, txHash: submit?.hash, blocknumber: receipt.blockNumber }, "transaction confirmation successful")
     res.send({ receipt });
   } catch (e) {
-    logger.error({ requestId, senderWallet: address, nonce, txHash: submit?.hash }, "transaction confirmation failed")
+    logger.error({ requestId, senderWallet: address, address: userAddress, nonce, txHash: submit?.hash }, "transaction confirmation failed")
     internalError(next, e);
     return;
   }

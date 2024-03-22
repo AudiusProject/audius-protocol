@@ -141,7 +141,12 @@ export const SignInPage = () => {
             </Flex>
           </Flex>
           {!isMobile ? (
-            <Button variant='secondary' asChild fullWidth>
+            <Button
+              variant='secondary'
+              asChild
+              fullWidth
+              style={{ flexShrink: 0 }}
+            >
               <Link to={SIGN_UP_PAGE}>{signInPageMessages.createAccount}</Link>
             </Button>
           ) : null}
