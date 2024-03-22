@@ -1,5 +1,5 @@
 .header {
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-bottom: 1px solid var(--harmony-n-100);
 }
 
 .lineupContainer {
@@ -39,13 +39,13 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }
 
 .noResults {
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   max-width: 305px;
   padding: 25px 35px;
   display: flex;
@@ -60,8 +60,8 @@
 }
 
 .noResults span {
-  color: var(--neutral-light-4);
-  font-size: var(--font-l);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-l);
 }
 
 .noResults > * {

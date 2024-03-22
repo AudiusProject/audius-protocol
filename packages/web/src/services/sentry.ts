@@ -17,6 +17,12 @@ const MAX_BREADCRUMBS = 300
 export const initializeSentry = () => {
   init({
     dsn: env.SENTRY_DSN,
+    ignoreErrors:
+      typeof navigator !== 'undefined'
+        ? navigator?.userAgent === 'probers'
+          ? [/.*/]
+          : undefined
+        : undefined,
 
     // Need to give Sentry a version so it can
     // associate stacktraces with sourcemaps

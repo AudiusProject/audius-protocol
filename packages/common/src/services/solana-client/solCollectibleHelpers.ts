@@ -68,7 +68,7 @@ const nftThreeDWithFrame = async (
 ): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties?.files ?? []
   const objFile = files.find(
-    (file: any) => typeof file === 'object' && file.type.includes('glb')
+    (file: any) => typeof file === 'object' && file.type?.includes('glb')
   ) as MetaplexNFTPropertiesFile
   const objUrl = files.find(
     (file: any) => typeof file === 'string' && file.endsWith('glb')
@@ -84,7 +84,7 @@ const nftThreeDWithFrame = async (
       frameUrl = nft.image
     } else {
       const imageFile = files?.find(
-        (file: any) => typeof file === 'object' && file.type.includes('image')
+        (file: any) => typeof file === 'object' && file.type?.includes('image')
       ) as MetaplexNFTPropertiesFile
       if (imageFile) {
         frameUrl = imageFile.uri
@@ -130,8 +130,8 @@ const nftVideo = async (
   const videoFile = files.find(
     (file: any) =>
       typeof file === 'object' &&
-      file.type.includes('video') &&
-      !file.type.endsWith('glb')
+      file.type?.includes('video') &&
+      !file.type?.endsWith('glb')
   ) as MetaplexNFTPropertiesFile
   const videoUrl = files.find(
     (file: any) =>
@@ -186,7 +186,7 @@ const nftImage = async (
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L316
   const imageFile = files.find(
-    (file: any) => typeof file === 'object' && file.type.includes('image')
+    (file: any) => typeof file === 'object' && file.type?.includes('image')
   ) as MetaplexNFTPropertiesFile
   const isImage =
     nft.properties?.category === 'image' || nft.image.length || imageFile

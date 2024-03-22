@@ -129,7 +129,7 @@ const AdvancedWalletActions = () => {
       <div className={styles.subtitle}>{messages.advancedOptions}</div>
       <Flex wrap='wrap' gap='l' w='100%'>
         <Button
-          variant='common'
+          variant='secondary'
           css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           disabled={!hasBalance}
           onClick={onClickSend}
@@ -138,7 +138,7 @@ const AdvancedWalletActions = () => {
           {messages.sendLabel}
         </Button>
         <Button
-          variant='common'
+          variant='secondary'
           css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           onClick={onClickReceive}
           iconLeft={IconReceive}
@@ -147,7 +147,7 @@ const AdvancedWalletActions = () => {
         </Button>
         {!isMobile && isTransactionsEnabled && (
           <Button
-            variant='common'
+            variant='secondary'
             css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
             onClick={onClickTransactions}
             iconLeft={IconTransaction}
@@ -156,7 +156,7 @@ const AdvancedWalletActions = () => {
           </Button>
         )}
         <Button
-          variant='common'
+          variant='secondary'
           css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
           onClick={onClickConnectWallets}
           iconLeft={IconSettings}
@@ -211,7 +211,7 @@ const OnRampTooltipButton = ({
       disabled={!isDisabled}
       className={styles.tooltip}
       text={disabledText}
-      color={'--secondary'}
+      color='secondary'
       shouldWrapContent={false}
     >
       <div className={styles.onRampButtonTooltipContainer}>

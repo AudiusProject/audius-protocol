@@ -23,7 +23,7 @@
   align-items: center;
   margin-bottom: 16px;
   padding: 6px 10px;
-  background: var(--white);
+  background: var(--harmony-white);
   border-radius: 8px;
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px var(--tile-shadow-1);
@@ -32,7 +32,7 @@
 .usersContainer {
   display: flex;
   align-items: center;
-  font-size: var(--font-s);
+  font-size: var(--harmony-font-s);
   column-gap: 10px;
 }
 .recipientContainer {
@@ -48,22 +48,22 @@
   cursor: pointer;
 }
 .profilePicture {
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--harmony-n-100);
 }
 .name {
   display: flex;
   align-items: center;
   margin-left: 8px;
-  font-weight: var(--font-bold);
-  color: var(--neutral);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-neutral);
   white-space: nowrap;
 }
 .name > span:hover {
   cursor: pointer;
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
-  -webkit-text-decoration-color: var(--primary-light-2);
-  text-decoration-color: var(--primary-light-2);
+  -webkit-text-decoration-color: var(--harmony-p-100);
+  text-decoration-color: var(--harmony-p-100);
 }
 .badge {
   height: 12px;
@@ -79,12 +79,12 @@
   height: 14px;
 }
 .wasTippedByIcon path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 .wasTippedByText {
   margin-left: 6px;
-  color: var(--neutral-light-4);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-400);
+  font-weight: var(--harmony-font-medium);
   white-space: nowrap;
 }
 
@@ -92,16 +92,16 @@
   display: flex;
   align-items: center;
   margin-left: 4px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 .tippers:hover {
   cursor: pointer;
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 .tipperName {
   display: flex;
   align-items: center;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 .tipperName > span {
   white-space: nowrap;
@@ -111,7 +111,7 @@
 }
 .andOthers {
   margin-left: 4px;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
   white-space: nowrap;
 }
 

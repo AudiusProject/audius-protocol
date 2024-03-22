@@ -20,7 +20,6 @@ export const EditPage = (props: EditPageProps) => {
 
   switch (formState.uploadType) {
     case UploadType.INDIVIDUAL_TRACK:
-      return <EditTrackForm formState={formState} onContinue={onContinue} />
     case UploadType.INDIVIDUAL_TRACKS:
       return <EditTrackForm formState={formState} onContinue={onContinue} />
     case UploadType.ALBUM:

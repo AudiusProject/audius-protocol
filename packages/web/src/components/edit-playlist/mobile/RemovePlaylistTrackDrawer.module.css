@@ -9,39 +9,39 @@
 
 .title {
   font-style: normal;
-  font-weight: var(--font-heavy);
+  font-weight: var(--harmony-font-heavy);
   font-size: 28px;
   line-height: 34px;
   text-align: center;
 
-  color: var(--page-header-gradient);
+  color: var(--harmony-gradient);
   user-select: none;
-  background-image: var(--page-header-gradient);
+  background-image: var(--harmony-gradient);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
   margin: 0px 0px 8px;
 }
 
 .description {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-xl);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-xl);
   min-height: 102px;
   margin-bottom: 16px;
   line-height: 150%;
   text-align: center;
   letter-spacing: -0.3px;
   padding: 0px 12px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .cancel {
   margin-top: 4px;
   padding: 12px;
   font-style: normal;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 12px;
   text-align: center;
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .cancel:hover,

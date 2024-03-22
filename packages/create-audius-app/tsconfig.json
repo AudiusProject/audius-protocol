@@ -5,7 +5,8 @@
     "strict": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   },
-  "exclude": ["dist"]
+  "exclude": ["dist", "examples", "*.test.ts"]
 }

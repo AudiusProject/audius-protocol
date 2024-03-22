@@ -6,7 +6,7 @@
 }
 
 .warning {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   font-weight: 800;
   line-height: 24px;
   text-align: center;
@@ -14,11 +14,11 @@
 }
 
 .description {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-demi-bold);
+  font-size: var(--harmony-font-m);
   line-height: 24px;
   text-align: center;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   margin-bottom: 24px;
 }
 
@@ -52,12 +52,12 @@
   height: 28px;
   width: 28px;
   border-radius: 50%;
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   display: flex;
   justify-content: center;
   align-items: center;
   margin-right: 8px;
-  border: 1.16667px solid var(--neutral-light-7);
+  border: 1.16667px solid var(--harmony-n-150);
 
   /* Light/Track Tile Shadow */
   box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
@@ -76,5 +76,5 @@
 }
 
 .audio {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
 }

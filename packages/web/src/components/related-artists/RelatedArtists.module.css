@@ -1,5 +1,5 @@
 .container {
-  margin-top: var(--unit-8);
+  margin-top: var(--harmony-unit-8);
 }
 
 .userGroupIcon {
@@ -8,5 +8,5 @@
 }
 
 .userGroupIcon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }

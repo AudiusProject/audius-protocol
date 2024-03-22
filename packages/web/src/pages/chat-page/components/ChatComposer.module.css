@@ -1,31 +1,31 @@
 .root {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .form {
-  margin: var(--unit-4);
-  padding: var(--unit-2) var(--unit-4);
+  margin: var(--harmony-unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
 }
 
 button.sendButton {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: var(--unit-8);
-  width: var(--unit-8);
-  border-radius: var(--unit-4);
-  background-color: var(--primary);
+  height: var(--harmony-unit-8);
+  width: var(--harmony-unit-8);
+  border-radius: var(--harmony-unit-4);
+  background-color: var(--harmony-primary);
   transform: scale(1);
-  transition: all var(--quick);
+  transition: all var(--harmony-quick);
 }
 
 button.sendButton:not(:disabled):hover {
   transform: scale(1.05);
-  background-color: var(--primary-light-2);
+  background-color: var(--harmony-p-100);
 }
 
 button.sendButton:not(:disabled):active {
-  background-color: var(--primary-dark-2);
+  background-color: var(--harmony-p-500);
   transform: scale(0.95);
 }
 

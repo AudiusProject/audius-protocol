@@ -1,35 +1,35 @@
 .listItem {
   display: flex;
   align-items: center;
-  background-color: var(--neutral-light-10);
-  border-radius: var(--unit-1);
-  border: 1px solid var(--neutral-light-8);
-  gap: var(--unit-6);
-  padding: var(--unit-4) var(--unit-6);
+  background-color: var(--harmony-n-25);
+  border-radius: var(--harmony-unit-1);
+  border: 1px solid var(--harmony-n-100);
+  gap: var(--harmony-unit-6);
+  padding: var(--harmony-unit-4) var(--harmony-unit-6);
 }
 
 .listItemIndex {
   flex-grow: 0;
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
-  color: var(--neutral-light-2);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-n-600);
 }
 
 .listItemDivider {
-  margin: calc(var(--unit-4) * -1) 0;
+  margin: calc(var(--harmony-unit-4) * -1) 0;
   flex-grow: 0;
   border-width: 0px thin 0px 0px;
   border-style: solid;
-  border-color: var(--neutral-light-8);
+  border-color: var(--harmony-n-100);
   height: auto;
   align-self: stretch;
 }
 
 .listItemAppName {
   flex-grow: 1;
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
-  color: var(--neutral);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-neutral);
   overflow: hidden;
   text-overflow: ellipsis;
 }
