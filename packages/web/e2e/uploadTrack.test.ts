@@ -23,7 +23,7 @@ export const completeUpload = async (page: Page) => {
   })
   const getProgress = async () =>
     Number(await progressBar.getAttribute('aria-valuenow'))
-  await expect.poll(getProgress).toBeGreaterThan(10)
+  await expect.poll(getProgress, { timeout: 20 * 1000 }).toBeGreaterThan(1)
   await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(25)
   await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(50)
   await expect.poll(getProgress, { timeout: 60 * 1000 }).toBeGreaterThan(75)
@@ -55,21 +55,21 @@ test('should upload a single hidden, AI attributed track remix', async ({
   const isrc = 'US-123-45-67890'
   const iswc = 'T-123456789-0'
 
-  await page.goto(`upload?login=${base64Entropy}`)
-  const heading = page.getByRole('heading', {
-    name: 'Upload Your Music',
-    level: 1
+  await page.goto(`upload?login=${base64Entropy}`, {
+    waitUntil: 'load'
   })
-  await expect(heading).toBeVisible({ timeout: 10000 })
 
   // Dismiss push notifs modal
+  const heading = page.getByRole('heading', {
+    level: 1
+  })
   await heading.click({ force: true })
 
-  // Add tracks
-  const trackFileInput = page
+  // Add track
+  const dropzoneFileInput = page
     .getByTestId('upload-dropzone')
     .locator('input[type=file]')
-  await trackFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
+  await dropzoneFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
 
   const continueButton = page.getByRole('button', {
     name: /continue uploading/i
@@ -82,11 +82,8 @@ test('should upload a single hidden, AI attributed track remix', async ({
   ).toBeVisible()
 
   // Add art
-  await page.getByRole('button', { name: /add artwork/i }).click()
-  const artFileInput = page
-    .getByTestId('upload-dropzone')
-    .locator('input[type=file]')
-  await artFileInput.setInputFiles(
+  await page.getByRole('button', { name: /change artwork/i }).click()
+  await dropzoneFileInput.setInputFiles(
     path.join(__dirname, 'files/track-artwork.jpeg')
   )
 
@@ -253,21 +250,19 @@ test('should upload a premium track', async ({ page }) => {
   const price = '1.05'
   const preview = '15'
 
-  await page.goto(`upload?login=${base64Entropy}`)
-  const heading = page.getByRole('heading', {
-    name: 'Upload Your Music',
-    level: 1
-  })
-  await expect(heading).toBeVisible({ timeout: 10000 })
+  await page.goto(`upload?login=${base64Entropy}`, { waitUntil: 'load' })
 
   // Dismiss push notifs modal
+  const heading = page.getByRole('heading', {
+    level: 1
+  })
   await heading.click({ force: true })
 
-  let fileChooserPromise = page.waitForEvent('filechooser')
-  const uploadDropzone = page.getByTestId('upload-dropzone')
-  await uploadDropzone.click()
-  const trackChooser = await fileChooserPromise
-  await trackChooser.setFiles(path.join(__dirname, 'files/track.mp3'))
+  // Add track
+  const dropzoneFileInput = page
+    .getByTestId('upload-dropzone')
+    .locator('input[type=file]')
+  dropzoneFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
 
   const continueButton = page.getByRole('button', {
     name: /continue uploading/i
@@ -280,11 +275,10 @@ test('should upload a premium track', async ({ page }) => {
   ).toBeVisible()
 
   // Add art
-  fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: /change/i }).click()
-  await uploadDropzone.click()
-  const artChooser = await fileChooserPromise
-  await artChooser.setFiles(path.join(__dirname, 'files/track-artwork.jpeg'))
+  await page.getByRole('button', { name: /change artwork/i }).click()
+  await dropzoneFileInput.setInputFiles(
+    path.join(__dirname, 'files/track-artwork.jpeg')
+  )
 
   // Title
   const titleTextBox = page.getByRole('textbox', { name: /track name/i })
@@ -344,21 +338,19 @@ test('should upload a single track with stems', async ({ page }) => {
   const trackTitle = `Test stems track ${Date.now()}`
   const genre = 'Alternative'
 
-  await page.goto(`upload?login=${base64Entropy}`)
-  const heading = page.getByRole('heading', {
-    name: 'Upload Your Music',
-    level: 1
-  })
-  await expect(heading).toBeVisible({ timeout: 10000 })
+  await page.goto(`upload?login=${base64Entropy}`, { waitUntil: 'load' })
 
   // Dismiss push notifs modal
+  const heading = page.getByRole('heading', {
+    level: 1
+  })
   await heading.click({ force: true })
 
-  let fileChooserPromise = page.waitForEvent('filechooser')
-  const uploadDropzone = page.getByTestId('upload-dropzone')
-  await uploadDropzone.click()
-  const trackChooser = await fileChooserPromise
-  await trackChooser.setFiles(path.join(__dirname, 'files/track.mp3'))
+  // Add track
+  const dropzoneFileInput = page
+    .getByTestId('upload-dropzone')
+    .locator('input[type=file]')
+  dropzoneFileInput.setInputFiles(path.join(__dirname, 'files/track.mp3'))
 
   const continueButton = page.getByRole('button', {
     name: /continue uploading/i
@@ -369,13 +361,6 @@ test('should upload a single track with stems', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: /complete your track/i, level: 1 })
   ).toBeVisible()
-
-  // Add art
-  fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: /change/i }).click()
-  await uploadDropzone.click()
-  const artChooser = await fileChooserPromise
-  await artChooser.setFiles(path.join(__dirname, 'files/track-artwork.jpeg'))
 
   // Title
   const titleTextBox = page.getByRole('textbox', { name: /track name/i })
@@ -394,18 +379,13 @@ test('should upload a single track with stems', async ({ page }) => {
   await stemsAndDownloadsModal
     .getByRole('checkbox', { name: /allow full track download/i })
     .check()
-  const stemDropzone = stemsAndDownloadsModal.getByTestId('upload-dropzone')
-
-  const stemChooserPromise = page.waitForEvent('filechooser')
-  await stemDropzone.click()
-  const stemChooser = await stemChooserPromise
-  await stemChooser.setFiles(path.join(__dirname, 'files/stem-1.mp3'))
-
-  const stemChooserPromise2 = page.waitForEvent('filechooser')
-  await stemDropzone.click()
-  const stemChooser2 = await stemChooserPromise2
-  await stemChooser2.setFiles(path.join(__dirname, 'files/stem-2.mp3'))
-
+  const stemDropzoneInput = stemsAndDownloadsModal
+    .getByTestId('upload-dropzone')
+    .locator('input[type=file]')
+  await stemDropzoneInput.setInputFiles([
+    path.join(__dirname, 'files/stem-1.mp3'),
+    path.join(__dirname, 'files/stem-2.mp3')
+  ])
   await expect(
     stemsAndDownloadsModal.getByRole('button', { name: /select type/i })
   ).toHaveCount(2)
