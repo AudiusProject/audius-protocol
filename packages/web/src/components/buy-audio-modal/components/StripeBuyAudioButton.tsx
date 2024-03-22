@@ -72,7 +72,6 @@ export const StripeBuyAudioButton = () => {
       <div>
         <OnRampButton
           disabled={belowThreshold}
-          className={styles.button}
           provider={OnRampProvider.STRIPE}
           onClick={handleClick}
         />

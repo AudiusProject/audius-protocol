@@ -38,8 +38,8 @@ import { AccountDetails } from './AccountDetails'
 import { ConnectInstagram } from './ConnectInstagram'
 import { GroupHeader } from './GroupHeader'
 import styles from './LeftNav.module.css'
+import { LeftNavCTA } from './LeftNavCTA'
 import { LeftNavDroppable, LeftNavLink } from './LeftNavLink'
-import { NavButton } from './NavButton'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import { PlaylistLibrary } from './PlaylistLibrary'
@@ -211,7 +211,7 @@ const LeftNav = (props: NavColumnProps) => {
         </div>
         <div className={styles.navAnchor}>
           {profileCompletionMeter}
-          <NavButton />
+          <LeftNavCTA />
           <NowPlayingArtworkTile />
         </div>
       </ClientOnly>

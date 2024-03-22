@@ -33,9 +33,11 @@ import {
 } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
-import styles from './NavPopupMenu.module.css'
+import { NavHeaderButton } from './NavHeaderButton'
+import styles from './NavMenuButton.module.css'
 
 const messages = {
+  buttonLabel: 'Toggle Navigation Menu',
   settings: 'Settings',
   dashboard: 'Artist Dashboard',
   payAndEarn: 'Pay & Earn',
@@ -43,7 +45,7 @@ const messages = {
   messages: 'Messages'
 }
 
-const NavPopupMenu = () => {
+export const NavMenuButton = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
@@ -141,35 +143,30 @@ const NavPopupMenu = () => {
   ].filter(removeNullable)
 
   return (
-    <div className={styles.headerIconWrapper}>
-      <PopupMenu
-        items={menuItems}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        className={styles.popupMenu}
-        renderTrigger={(anchorRef, triggerPopup) => {
-          return (
-            <div className={styles.container}>
-              <div
-                className={styles.icon}
-                ref={anchorRef}
-                onClick={() => triggerPopup()}
-              >
-                <IconKebabHorizontal size='s' />
-              </div>
-              {showNotificationBubble ? (
-                <NotificationDot
-                  variant='large'
-                  className={styles.notificationDot}
-                />
-              ) : undefined}
-            </div>
-          )
-        }}
-        zIndex={zIndex.NAVIGATOR_POPUP}
-      />
-    </div>
+    <PopupMenu
+      items={menuItems}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      className={styles.popupMenu}
+      renderTrigger={(anchorRef, triggerPopup, props) => {
+        return (
+          <NavHeaderButton
+            icon={IconKebabHorizontal}
+            aria-label={messages.buttonLabel}
+            ref={anchorRef}
+            onClick={() => triggerPopup()}
+            isActive={props['aria-expanded'] === 'true'}
+          >
+            {showNotificationBubble ? (
+              <NotificationDot
+                variant='large'
+                className={styles.notificationDot}
+              />
+            ) : null}
+          </NavHeaderButton>
+        )
+      }}
+      zIndex={zIndex.NAVIGATOR_POPUP}
+    />
   )
 }
-
-export default NavPopupMenu
