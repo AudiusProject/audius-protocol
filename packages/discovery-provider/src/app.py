@@ -390,10 +390,6 @@ def configure_celery(celery, test_config=None):
                 "task": "prune_plays",
                 "schedule": timedelta(seconds=30),
             },
-            "index_spl_token": {
-                "task": "index_spl_token",
-                "schedule": timedelta(seconds=5),
-            },
             "index_aggregate_tips": {
                 "task": "index_aggregate_tips",
                 "schedule": timedelta(seconds=5),
@@ -523,9 +519,12 @@ def configure_celery(celery, test_config=None):
 
     celery.finalize()
 
+    celery.control.purge()
+
     # Start tasks that should fire upon startup
     celery.send_task("cache_entity_counts")
     celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
     celery.send_task("index_user_listening_history")
+    celery.send_task("index_spl_token")

@@ -193,7 +193,7 @@ def index_user_listening_history(self):
     finally:
         end_time = time.time()
         elapsed = end_time - start_time
-        time_left = int(max(0, interval.total_seconds() - elapsed))
+        time_left = max(0, interval.total_seconds() - elapsed)
         logger.info(
             {
                 "task_name": self.name,
