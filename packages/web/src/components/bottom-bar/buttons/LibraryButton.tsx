@@ -8,7 +8,8 @@ const LibraryButton = ({
   onClick,
   href,
   isActive,
-  isMatrixMode
+  isMatrixMode,
+  ...buttonProps
 }: ButtonProps) => {
   return (
     <AnimatedBottomButton
@@ -24,6 +25,7 @@ const LibraryButton = ({
       iconDarkJSON={() =>
         import('../../../assets/animations/iconFavoriteDark.json')
       }
+      {...buttonProps}
     />
   )
 }

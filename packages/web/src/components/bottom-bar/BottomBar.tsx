@@ -74,6 +74,7 @@ const BottomBar = ({
         onClick={onClick(onClickFeed, FEED_PAGE)}
         href={FEED_PAGE}
         isMatrixMode={isMatrixMode}
+        aria-label='Feed Page'
       />
       <TrendingButton
         isActive={tempCurrentPage === TRENDING_PAGE}
@@ -81,6 +82,7 @@ const BottomBar = ({
         onClick={onClick(onClickTrending, TRENDING_PAGE)}
         href={TRENDING_PAGE}
         isMatrixMode={isMatrixMode}
+        aria-label='Trending Page'
       />
       <ExploreButton
         isActive={tempCurrentPage === EXPLORE_PAGE}
@@ -88,6 +90,7 @@ const BottomBar = ({
         onClick={onClick(onClickExplore, EXPLORE_PAGE)}
         href={EXPLORE_PAGE}
         isMatrixMode={isMatrixMode}
+        aria-label='Explore Page'
       />
       <LibraryButton
         isActive={
@@ -97,6 +100,7 @@ const BottomBar = ({
         onClick={onClick(onClickLibrary, LIBRARY_PAGE)}
         href={LIBRARY_PAGE}
         isMatrixMode={isMatrixMode}
+        aria-label='Library Page'
       />
       <ProfileButton
         isActive={tempCurrentPage === userProfilePageRoute}
@@ -104,6 +108,7 @@ const BottomBar = ({
         onClick={onClick(onClickProfile, userProfilePageRoute)}
         href={userProfilePageRoute || undefined}
         isMatrixMode={isMatrixMode}
+        aria-label='Profile Page'
       />
     </div>
   )
