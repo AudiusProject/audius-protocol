@@ -36,3 +36,28 @@ create-audius-app-test:
         name: 'test'
         command: |
           npx turbo run test --filter=create-audius-app
+
+create-audius-app-test-e2e:
+  working_directory: ~/audius-protocol
+  resource_class: medium
+  executor: cypress/default
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: 'test-e2e'
+        command: |
+          npx playwright install --with-deps
+          cd packages/create-audius-app
+          npm run setup-test-env
+          npm run build
+          npm run start
+          npm run test:e2e
+    - store_test_results:
+        path: packages/create-audius-app/report.xml
+        when: always
+    - store_artifacts:
+        path: packages/create-audius-app/playwright-report
+    - store_artifacts:
+        path: packages/create-audius-app/blob-report
