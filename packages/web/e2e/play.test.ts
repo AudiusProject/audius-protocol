@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { navigate } from './helpers'
 
 declare global {
   interface Window {
@@ -9,12 +10,7 @@ declare global {
 }
 
 test('should play a trending track', async ({ page }) => {
-  await page.goto('trending')
-  const heading = page.getByRole('heading', {
-    name: 'Trending',
-    level: 1
-  })
-  await expect(heading).toBeVisible({ timeout: 10000 })
+  await navigate(page, 'trending')
 
   const trendingList = page.getByRole('list', {
     name: /weekly trending tracks/i
@@ -28,13 +24,13 @@ test('should play a trending track', async ({ page }) => {
   const isPlayingWatcher = page.waitForFunction(() => !window.audio.paused)
   const isPausedWatcher = page.waitForFunction(() => window.audio.paused)
 
-  await expect(skeletons).toHaveCount(0, { timeout: 10000 })
+  await expect(skeletons).toHaveCount(0)
   await playHoverIcon.hover()
   await expect(playHoverIcon).toBeVisible()
   await playHoverIcon.click()
-  await expect(pauseButton).toBeAttached({ timeout: 5000 })
+  await expect(pauseButton).toBeVisible()
   await isPlayingWatcher
   await pauseButton.click()
-  await expect(playButton).toBeAttached()
+  await expect(playButton).toBeVisible()
   await isPausedWatcher
 })

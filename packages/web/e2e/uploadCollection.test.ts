@@ -5,6 +5,7 @@ import {
   FinishPage,
   SelectPage
 } from './page-object-models/upload'
+import { navigate } from './helpers'
 
 test('should upload a playlist', async ({ page }) => {
   const timestamp = Date.now()
@@ -22,7 +23,7 @@ test('should upload a playlist', async ({ page }) => {
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await navigate(page, 'upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
@@ -113,7 +114,7 @@ test('should upload an album', async ({ page }) => {
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await navigate(page, 'upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')

@@ -10,6 +10,7 @@ import {
   AttributionModal,
   StemsAndDownloadsModal
 } from './page-object-models/modals'
+import { navigate } from './helpers'
 
 test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const trackTitle = `Test track ${Date.now()}`
@@ -23,7 +24,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const isrc = 'US-123-45-67890'
   const iswc = 'T-123456789-0'
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await navigate(page, 'upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3')
@@ -132,7 +133,7 @@ test('should upload a premium track', async ({ page }) => {
   const price = '1.05'
   const previewSeconds = '15'
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await navigate(page, 'upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3')
@@ -178,7 +179,7 @@ test('should upload a track with free stems', async ({ page }) => {
   const trackTitle = `Test stems track ${Date.now()}`
   const genre = 'Alternative'
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await navigate(page, 'upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3')

@@ -44,7 +44,11 @@ export default defineConfig({
   },
 
   /* Total timeout for individual tests */
-  timeout: 1000 * 60 * 5,
+  timeout: 5 * 60 * 1000,
+
+  expect: {
+    timeout: 10 * 1000
+  },
 
   /* Configure projects for major browsers */
   projects: [
@@ -55,6 +59,7 @@ export default defineConfig({
     {
       name: 'chromium',
       dependencies: authFileExists ? undefined : ['setup'],
+      testIgnore: /.*\.setup.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json'
