@@ -31,6 +31,7 @@
     "start": "npm run write-sha && npm run publish-scripts && env-cmd ./env/.env.git vite",
     "stylelint:fix": "npm run stylelint -- --fix",
     "stylelint": "stylelint 'src/**/*.css'",
+    "test:e2e": "npx playwright test",
     "test:coverage": "vitest --resetMocks=false --coverage --watchAll=false",
     "test": "vitest",
     "typecheck:watch": "tsc --watch",

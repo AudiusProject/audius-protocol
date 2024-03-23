@@ -29,7 +29,6 @@ web-init:
         paths:
           - node_modules
           - packages/web/node_modules
-          - packages/probers/node_modules
           - packages/harmony/node_modules
           - packages/harmony/dist
           - packages/common/node_modules

@@ -51,9 +51,6 @@ parameters:
   run-mobile-workflow:
     type: boolean
     default: false
-  run-probers-workflow:
-    type: boolean
-    default: false
   run-embed-workflow:
     type: boolean
     default: false
@@ -78,16 +75,3 @@ parameters:
   run-create-audius-app-workflow:
     type: boolean
     default: false
-# Can enable recurring probers against stage at some point
-# workflows:
-#   version: 2.1
-#   hourly:
-#     triggers:
-#       - schedule:
-#           cron: '17 * * * *'
-#           filters:
-#             branches:
-#               only:
-#                 - main
-#     jobs:
-#       - probers-test-stage
