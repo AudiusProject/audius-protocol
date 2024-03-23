@@ -52,13 +52,6 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - web-test-staging:
-      context:
-        - Audius Client
-        - Probers
-      requires:
-        - web-init
-
   - web-test:
       context: Audius Client
       requires:
