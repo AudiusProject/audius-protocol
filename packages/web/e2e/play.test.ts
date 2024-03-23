@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test'
-import { navigate } from './helpers'
+import { expect } from '@playwright/test'
+import { test } from './test'
 
 declare global {
   interface Window {
@@ -10,7 +10,7 @@ declare global {
 }
 
 test('should play a trending track', async ({ page }) => {
-  await navigate(page, 'trending')
+  await page.goto('trending')
 
   const trendingList = page.getByRole('list', {
     name: /weekly trending tracks/i

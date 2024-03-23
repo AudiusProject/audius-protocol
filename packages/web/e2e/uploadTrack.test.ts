@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect } from '@playwright/test'
 import {
   EditTrackPage,
   FinishPage,
@@ -10,7 +10,7 @@ import {
   AttributionModal,
   StemsAndDownloadsModal
 } from './page-object-models/modals'
-import { navigate } from './helpers'
+import { test } from './test'
 
 test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const trackTitle = `Test track ${Date.now()}`
@@ -24,7 +24,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const isrc = 'US-123-45-67890'
   const iswc = 'T-123456789-0'
 
-  await navigate(page, 'upload')
+  await page.goto('upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3')
@@ -133,7 +133,7 @@ test('should upload a premium track', async ({ page }) => {
   const price = '1.05'
   const previewSeconds = '15'
 
-  await navigate(page, 'upload')
+  await page.goto('upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3')
@@ -179,7 +179,7 @@ test('should upload a track with free stems', async ({ page }) => {
   const trackTitle = `Test stems track ${Date.now()}`
   const genre = 'Alternative'
 
-  await navigate(page, 'upload')
+  await page.goto('upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3')

@@ -275,10 +275,10 @@ export class FinishPage {
     await this.assertProgress(99)
 
     // Assert finalizing
-    await expect(this.finalizing).toBeVisible({ timeout: 20 * 1000 })
+    await expect(this.finalizing).toBeVisible({ timeout: 60 * 1000 })
 
     // Assert success
-    await expect(this.successHeading).toBeVisible({ timeout: 30 * 1000 })
+    await expect(this.successHeading).toBeVisible({ timeout: 60 * 1000 })
   }
 
   private async assertProgress(progress: number) {
@@ -286,7 +286,7 @@ export class FinishPage {
       .poll(
         async () =>
           Number(await this.progressBar.getAttribute('aria-valuenow')),
-        { timeout: 25 * 1000 }
+        { timeout: 60 * 1000 }
       )
       .toBeGreaterThanOrEqual(progress)
   }

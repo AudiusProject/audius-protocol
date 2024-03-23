@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test'
+import { expect } from '@playwright/test'
 import {
   EditAlbumPage,
   EditPlaylistPage,
   FinishPage,
   SelectPage
 } from './page-object-models/upload'
-import { navigate } from './helpers'
+import { test } from './test'
 
 test('should upload a playlist', async ({ page }) => {
   const timestamp = Date.now()
@@ -23,7 +23,7 @@ test('should upload a playlist', async ({ page }) => {
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
 
-  await navigate(page, 'upload')
+  await page.goto('upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
@@ -114,7 +114,7 @@ test('should upload an album', async ({ page }) => {
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
 
-  await navigate(page, 'upload')
+  await page.goto('upload')
 
   const selectPage = new SelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
