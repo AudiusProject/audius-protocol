@@ -491,6 +491,7 @@ workflows:
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
             packages/libs/.* run-embed-workflow true
+            packages/libs/.* run-create-audius-app-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
           requires:
             - generate-config
@@ -526,6 +527,7 @@ workflows:
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
+            packages/libs/.* run-create-audius-app-workflow true
             packages/harmony/.* run-web-workflow true
             packages/harmony/.* run-mobile-workflow true
             packages/mobile/.* run-mobile-workflow true
