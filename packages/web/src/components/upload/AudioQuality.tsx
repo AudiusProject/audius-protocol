@@ -13,12 +13,7 @@ export const AudioQuality = () => {
     <Flex justifyContent='center' alignItems='center' mh='3xl'>
       <Text variant='body'>
         {messages.lossless}
-        <TextLink
-          href={AUDIO_FILE_FORMATS_LINK}
-          target='_blank'
-          isExternal
-          css={{ color: '#a30cb3' }}
-        >
+        <TextLink variant='visible' href={AUDIO_FILE_FORMATS_LINK} isExternal>
           {messages.learnMore}
         </TextLink>
       </Text>

@@ -28,7 +28,7 @@ const messages = {
   uploading: 'Uploading...'
 }
 
-export const NavButton = () => {
+export const LeftNavCTA = () => {
   const dispatch = useDispatch()
   const record = useRecord()
   const isSignedIn = useSelector((state: AppState) => !!getAccountUser(state))
