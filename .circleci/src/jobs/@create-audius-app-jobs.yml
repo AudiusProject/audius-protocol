@@ -49,9 +49,9 @@ create-audius-app-test-e2e:
         name: 'test-e2e'
         command: |
           npx playwright install --with-deps
-          cd packages/create-audius-app
-          npm run setup-test-env
-          cd examples/react
+          npm run setup-test-env -w create-audius-app
+          cd packages/create-audius-app/examples/react
+          npm i
           npm run build
           npm run start
           cd ../../
