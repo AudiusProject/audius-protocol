@@ -16,6 +16,7 @@ import {
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useMedia as useMediaQuery, useWindowSize } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
@@ -46,12 +47,16 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
+const smallDesktopWindowHeight = 900
+
 export type SignUpEmailValues = {
   email: string
 }
 
 export const CreateEmailPage = () => {
   const { isMobile } = useMedia()
+  const { height: windowHeight } = useWindowSize()
+  const isSmallDesktop = windowHeight < smallDesktopWindowHeight
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const existingEmailValue = useSelector(getEmailField)
@@ -117,8 +122,8 @@ export const CreateEmailPage = () => {
     >
       {({ isSubmitting }) => (
         <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
-          <Box alignSelf='center'>
-            {isMobile ? (
+          <Box alignSelf={isSmallDesktop ? 'flex-start' : 'center'}>
+            {isMobile || isSmallDesktop ? (
               <IconAudiusLogoHorizontalColor />
             ) : (
               <PreloadImage
@@ -134,12 +139,6 @@ export const CreateEmailPage = () => {
           </Box>
           <Heading
             heading={createEmailPageMessages.title}
-            description={
-              <>
-                {createEmailPageMessages.subHeader.line1}
-                <br /> {createEmailPageMessages.subHeader.line2}
-              </>
-            }
             tag='h1'
             centered={isMobile}
           />
