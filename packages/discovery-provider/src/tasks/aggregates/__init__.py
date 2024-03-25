@@ -1,7 +1,7 @@
 import datetime
 import logging
+import time
 from inspect import currentframe
-from time import time
 from typing import Any, Callable, Optional
 
 from redis import Redis
