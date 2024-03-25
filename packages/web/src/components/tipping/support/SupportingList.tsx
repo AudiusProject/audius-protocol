@@ -47,7 +47,7 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
     }
   }, [profile, dispatch])
 
-  return profile && rankedSupportingList.length > 0 ? (
+  return rankedSupportingList.length > 0 ? (
     <Flex direction='column' mt='2xl' gap='l'>
       <ProfilePageNavSectionTitle
         title={messages.supporting}
