@@ -9,12 +9,14 @@ import {
   TextLink,
   useTheme
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
-import { useEffectOnce, useMeasure } from 'react-use'
+import { useEffectOnce, useLocation, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
+import { fetchReferrer } from 'common/store/pages/signon/actions'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
@@ -264,6 +266,16 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
+  const location = useLocation()
+  const dispatch = useDispatch()
+
+  useEffectOnce(() => {
+    // Check for referrals and set them in the store
+    const referrerHandle = new URLSearchParams(location.search).get('ref')
+    if (referrerHandle) {
+      dispatch(fetchReferrer(referrerHandle))
+    }
+  })
 
   const [isLoaded, setIsLoaded] = useState(false)
   const SignOnRoot = isMobile ? MobileSignOnRoot : DesktopSignOnRoot

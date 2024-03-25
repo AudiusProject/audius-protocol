@@ -56,7 +56,7 @@ const messages = {
 }
 
 type NotificationPanelProps = {
-  anchorRef: RefObject<HTMLDivElement>
+  anchorRef: RefObject<HTMLButtonElement>
 }
 
 // The threshold of distance from the bottom of the scroll container in the

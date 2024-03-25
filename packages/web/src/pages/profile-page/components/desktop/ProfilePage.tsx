@@ -20,6 +20,8 @@ import {
   ProfileUser
 } from '@audius/common/store'
 import {
+  Box,
+  Flex,
   IconAlbum,
   IconCollectible as IconCollectibles,
   IconNote,
@@ -28,6 +30,7 @@ import {
 } from '@audius/harmony'
 
 import Card from 'components/card/desktop/Card'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import CardLineup from 'components/lineup/CardLineup'
@@ -684,12 +687,14 @@ const ProfilePage = ({
     elements,
     pathname: profilePage(handle)
   })
+
   const {
     title = '',
     description = '',
     canonicalUrl = '',
     structuredData
   } = getUserPageSEOFields({ handle, userName: name, bio })
+
   return (
     <Page
       title={title}
@@ -699,8 +704,9 @@ const ProfilePage = ({
       variant='flush'
       contentClassName={styles.profilePageWrapper}
       scrollableSearch
+      fromOpacity={1}
     >
-      <div className={styles.headerWrapper}>
+      <Box w='100%'>
         <ProfileWrapping
           userId={userId}
           isDeactivated={!!profile?.is_deactivated}
@@ -769,7 +775,7 @@ const ProfilePage = ({
             onBlock={onBlock}
             onUnblock={onUnblock}
           />
-          <div className={styles.inset}>
+          <Flex direction='column'>
             <NavBanner
               empty={!profile || profile.is_deactivated}
               tabs={tabs}
@@ -781,30 +787,35 @@ const ProfilePage = ({
               onSortByPopular={onSortByPopular}
               shouldMaskContent={shouldMaskContent}
             />
-            <div className={styles.content}>
-              {profile && profile.is_deactivated ? (
-                <DeactivatedProfileTombstone />
-              ) : (
-                body
-              )}
-            </div>
-          </div>
+            <ClientOnly>
+              <div className={styles.content}>
+                {profile && profile.is_deactivated ? (
+                  <DeactivatedProfileTombstone />
+                ) : (
+                  body
+                )}
+              </div>
+            </ClientOnly>
+          </Flex>
         </Mask>
-      </div>
-      {profile ? (
-        <>
-          <BlockUserConfirmationModal
-            user={profile}
-            isVisible={showBlockUserConfirmationModal}
-            onClose={onCloseBlockUserConfirmationModal}
-          />
-          <UnblockUserConfirmationModal
-            user={profile}
-            isVisible={showUnblockUserConfirmationModal}
-            onClose={onCloseUnblockUserConfirmationModal}
-          />
-        </>
-      ) : null}
+      </Box>
+      {/* NOTE: KJ - This ClientOnly might not be necessary, but helps keep server computation down */}
+      <ClientOnly>
+        {profile ? (
+          <>
+            <BlockUserConfirmationModal
+              user={profile}
+              isVisible={showBlockUserConfirmationModal}
+              onClose={onCloseBlockUserConfirmationModal}
+            />
+            <UnblockUserConfirmationModal
+              user={profile}
+              isVisible={showUnblockUserConfirmationModal}
+              onClose={onCloseUnblockUserConfirmationModal}
+            />
+          </>
+        ) : null}
+      </ClientOnly>
     </Page>
   )
 }

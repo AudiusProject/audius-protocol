@@ -1,8 +1,9 @@
+import { ProgressCB } from '../services/creatorNode'
 import {
   Action,
   EntityManagerClient
 } from '../services/dataContracts/EntityManagerClient'
-import { Nullable, TrackMetadata, Utils } from '../utils'
+import { Nullable, TrackMetadata, UploadTrackMetadata, Utils } from '../utils'
 
 import type { BaseConstructorArgs } from './base'
 import { Base, Services } from './base'
@@ -370,7 +371,7 @@ export class Track extends Base {
   async uploadTrackV2AndWriteToChain(
     trackFile: File,
     coverArtFile: File,
-    metadata: TrackMetadata,
+    metadata: UploadTrackMetadata,
     onProgress: () => void,
     trackId?: number
   ) {
@@ -401,9 +402,9 @@ export class Track extends Base {
    */
   async uploadTrackV2(
     trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
-    onProgress: () => void
+    coverArtFile: File | null,
+    metadata: UploadTrackMetadata,
+    onProgress: ProgressCB
   ) {
     // Validate inputs
     this.REQUIRES(Services.CREATOR_NODE)
@@ -477,8 +478,10 @@ export class Track extends Base {
     }
 
     if (!trackId) trackId = await this.generateTrackId()
+    // Prevent extra fields from being added to metadata
+    const parsedTrackMetadata = Track._parseTrackMetadata(trackMetadata)
     const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
-      trackMetadata
+      parsedTrackMetadata
     )
     const { txReceipt } =
       await this.contracts.EntityManagerClient!.manageEntity(
@@ -486,7 +489,10 @@ export class Track extends Base {
         EntityManagerClient.EntityType.TRACK,
         trackId,
         action,
-        JSON.stringify({ cid: metadataCid.toString(), data: trackMetadata })
+        JSON.stringify({
+          cid: metadataCid.toString(),
+          data: parsedTrackMetadata
+        })
       )
     return { trackId, metadataCid, txReceipt }
   }
@@ -588,8 +594,114 @@ export class Track extends Base {
   /* ------- PRIVATE  ------- */
 
   // Throws an error upon validation failure
-  _validateTrackMetadata(metadata: TrackMetadata) {
+  _validateTrackMetadata(metadata: Partial<TrackMetadata>) {
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
     this.creatorNode.validateTrackSchema(metadata)
+  }
+
+  /**
+   * Prevents additional fields from being included in metadata
+   */
+  static _parseTrackMetadata(trackMetadata: TrackMetadata): TrackMetadata {
+    const {
+      blocknumber,
+      is_delete,
+      track_id,
+      is_downloadable,
+      is_original_available,
+      created_at,
+      isrc,
+      iswc,
+      credits_splits,
+      description,
+      genre,
+      has_current_user_reposted,
+      has_current_user_saved,
+      license,
+      mood,
+      play_count,
+      owner_id,
+      release_date,
+      repost_count,
+      save_count,
+      tags,
+      title,
+      track_segments,
+      cover_art,
+      cover_art_sizes,
+      is_unlisted,
+      is_available,
+      is_stream_gated,
+      stream_conditions,
+      is_download_gated,
+      download_conditions,
+      permalink,
+      preview_start_seconds,
+      duration,
+      is_invalid,
+      stem_of,
+      ddex_app,
+      is_playlist_upload,
+      audio_upload_id,
+      track_cid,
+      orig_file_cid,
+      orig_filename,
+      preview_cid,
+      dateListened,
+      remix_of,
+      ai_attribution_user_id,
+      ...other
+    } = trackMetadata
+    if (typeof other !== 'undefined') {
+      console.warn('Unknown keys in upload metadata:', Object.keys(other))
+    }
+    return {
+      blocknumber,
+      is_delete,
+      track_id,
+      is_downloadable,
+      is_original_available,
+      created_at,
+      isrc,
+      iswc,
+      credits_splits,
+      description,
+      genre,
+      has_current_user_reposted,
+      has_current_user_saved,
+      license,
+      mood,
+      play_count,
+      owner_id,
+      release_date,
+      repost_count,
+      save_count,
+      tags,
+      title,
+      track_segments,
+      cover_art,
+      cover_art_sizes,
+      is_unlisted,
+      is_available,
+      is_stream_gated,
+      stream_conditions,
+      is_download_gated,
+      download_conditions,
+      permalink,
+      preview_start_seconds,
+      duration,
+      is_invalid,
+      stem_of,
+      ddex_app,
+      is_playlist_upload,
+      audio_upload_id,
+      track_cid,
+      orig_file_cid,
+      orig_filename,
+      preview_cid,
+      dateListened,
+      remix_of,
+      ai_attribution_user_id
+    }
   }
 }

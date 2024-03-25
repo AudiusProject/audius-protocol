@@ -29,6 +29,7 @@ import {
 import cn from 'classnames'
 
 import Card from 'components/card/mobile/Card'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
@@ -42,6 +43,7 @@ import NavContext, {
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
+import { useSsrContext } from 'ssr/SsrContext'
 import { collectionPage, profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
@@ -300,6 +302,7 @@ const ProfilePage = g(
     onCloseArtistRecommendations
   }) => {
     const { setHeader } = useContext(HeaderContext)
+    const { isSsrEnabled } = useSsrContext()
     useEffect(() => {
       setHeader(null)
     }, [setHeader])
@@ -308,7 +311,7 @@ const ProfilePage = g(
     let content
     let profileTabs
     let profileElements
-    const isLoading = status === Status.LOADING
+    const isLoading = status === Status.LOADING && !isSsrEnabled
     const isEditing = mode === 'editing'
 
     // Set Nav-Bar Menu
@@ -643,7 +646,7 @@ const ProfilePage = g(
       content = (
         <div className={styles.contentContainer}>
           <div className={styles.tabs}>{tabs}</div>
-          {body}
+          <ClientOnly>{body}</ClientOnly>
         </div>
       )
     }
@@ -666,6 +669,7 @@ const ProfilePage = g(
         >
           <ProfileHeader
             isDeactivated={profile?.is_deactivated}
+            profile={profile}
             name={name}
             handle={handle}
             isArtist={isArtist}
@@ -707,7 +711,9 @@ const ProfilePage = g(
           />
           {content}
         </MobilePageContainer>
-        <TierExplainerDrawer />
+        <ClientOnly>
+          <TierExplainerDrawer />
+        </ClientOnly>
       </>
     )
   }

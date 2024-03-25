@@ -3,7 +3,8 @@ import {
   InstagramProfile,
   TwitterProfile,
   TikTokProfile,
-  Image
+  Image,
+  toastActions
 } from '@audius/common/store'
 import { createCustomAction } from 'typesafe-actions'
 
@@ -65,7 +66,6 @@ export const NEXT_PAGE = 'SIGN_ON/NEXT_PAGE'
 export const PREVIOUS_PAGE = 'SIGN_ON/PREVIOUS_PAGE'
 export const GO_TO_PAGE = 'SIGN_ON/GO_TO_PAGE'
 
-export const SET_TOAST = 'SIGN_ON/SET_TOAST'
 export const UPDATE_ROUTE_ON_COMPLETION = 'SIGN_ON/UPDATE_ROUTE_ON_COMPLETION'
 export const UPDATE_ROUTE_ON_EXIT = 'SIGN_ON/UPDATE_ROUTE_ON_EXIT'
 
@@ -421,26 +421,11 @@ export function removeFollowArtists(userIds: ID[]) {
   return { type: REMOVE_FOLLOW_ARTISTS, userIds }
 }
 
-/**
- * Sets a toast appearing over signon
- */
-export const showToast = (text: string) => ({
-  type: SET_TOAST,
-  text
-})
-
-/**
- * Clears a toast appearing over signon
- */
-export const clearToast = () => ({
-  type: SET_TOAST,
-  text: null
-})
-
-export const showRequiresAccountModal = () => ({
-  type: SET_TOAST,
-  text: 'Oops, it looks like you need an account to do that!'
-})
+export const showRequiresAccountModal = () =>
+  toastActions.toast({
+    content: 'Oops, it looks like you need an account to do that!',
+    timeout: 300000
+  })
 
 /**
  * Opens the signin/up modal in mobile and routes to the page on desktop

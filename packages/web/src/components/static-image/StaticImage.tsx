@@ -1,6 +1,6 @@
 import { ComponentPropsWithoutRef } from 'react'
 
-import { SquareSizes } from '@audius/common/models'
+import { WidthSizes, SquareSizes } from '@audius/common/models'
 import { Box, Flex } from '@audius/harmony'
 import {
   DiscoveryNodeSelector,
@@ -17,11 +17,15 @@ export type StaticImageProps = {
   // Image CID
   cid?: string | null
   // Size of image to select
-  size?: SquareSizes
+  size?: SquareSizes | WidthSizes
+  // Override image url. Used for updated profile picture and things
+  imageUrl?: string
   // Set height and width of wrapper container to 100%
   fullWidth?: boolean
   // Classes to apply to the wrapper
   wrapperClassName?: string
+  // Whether or not to blur the background image
+  useBlur?: boolean
 } & ComponentPropsWithoutRef<'img'>
 
 const sdkConfigs = {
@@ -50,9 +54,11 @@ export const StaticImage = (props: StaticImageProps) => {
   const {
     cid,
     size = SquareSizes.SIZE_1000_BY_1000,
+    imageUrl,
     fullWidth = false,
     wrapperClassName,
     children,
+    useBlur,
     ...other
   } = props
 
@@ -70,14 +76,35 @@ export const StaticImage = (props: StaticImageProps) => {
       className={wrapperClassName}
       css={{ overflow: 'hidden' }}
     >
-      <img height='100%' width='100%' src={url} {...other} />
+      <img
+        css={{
+          height: '100%',
+          width: '100%',
+          maxWidth: '100%',
+          objectFit: 'cover'
+        }}
+        src={imageUrl ?? url}
+        {...other}
+      />
+
+      {useBlur ? (
+        <Box
+          css={{
+            position: 'absolute',
+            height: '100%',
+            width: '100%',
+            backdropFilter: 'blur(25px)',
+            zIndex: 3
+          }}
+        />
+      ) : null}
       {children ? (
         <Flex
           h='100%'
           w='100%'
           alignItems='center'
           justifyContent='center'
-          css={{ zIndex: 3 }}
+          css={{ position: 'absolute', top: 0, left: 0, zIndex: 3 }}
         >
           {children}
         </Flex>

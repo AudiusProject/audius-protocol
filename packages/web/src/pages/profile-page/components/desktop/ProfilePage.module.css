@@ -4,11 +4,6 @@
   min-width: 788px;
 }
 
-.headerWrapper {
-  position: relative;
-  width: 100%;
-}
-
 /* Style for static profile wrapper content */
 
 .mask {
@@ -66,7 +61,8 @@
 .nameWrapper .editableName {
   max-width: 440px;
 }
-.nameWrapper .name {
+.nameWrapper .name,
+.nameWrapper .editableName {
   margin-top: -8px;
 }
 
@@ -202,12 +198,6 @@
 }
 
 /* Style for content section */
-
-.inset {
-  display: flex;
-  flex-direction: column;
-}
-
 .content {
   max-width: 753px;
   padding-left: 229px;
@@ -246,30 +236,6 @@
 
 .badge {
   margin-bottom: 16px !important;
-}
-
-.truncateContainer {
-  width: fit-content;
-  display: flex;
-  align-items: center;
-  font-weight: var(--harmony-font-bold);
-  font-size: var(--harmony-font-s);
-  color: var(--harmony-n-400);
-  margin-top: 16px;
-}
-.truncateContainer:hover {
-  cursor: pointer;
-}
-.truncateContainer svg {
-  margin-left: 8px;
-}
-.truncateContainer:hover span {
-  color: var(--harmony-secondary);
-  transition: color 0.07s ease-out;
-}
-.truncateContainer:hover svg path {
-  fill: var(--harmony-secondary);
-  transition: fill 0.07s ease-out;
 }
 
 .socialsTruncated > * {

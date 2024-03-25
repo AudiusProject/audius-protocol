@@ -24,7 +24,8 @@ import {
   PopupMenu,
   PopupMenuItem,
   Button,
-  Flex
+  Flex,
+  Box
 } from '@audius/harmony'
 import cn from 'classnames'
 import {
@@ -587,7 +588,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             <Flex gap='s' w='100%'>
               {isUserOnTheirProfile && (
                 <Button
-                  variant='common'
+                  variant='secondary'
                   size='small'
                   onClick={handleEditClick}
                   iconLeft={IconPencil}
@@ -597,7 +598,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 </Button>
               )}
               <Button
-                variant='common'
+                variant='secondary'
                 size='small'
                 onClick={handleShareClick}
                 iconLeft={IconShare}
@@ -739,14 +740,11 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
               </div>
             </div>
           )}
-
-          <HarmonyButton
-            variant='primary'
-            size='small'
-            onClick={handleDoneClick}
-          >
-            Done
-          </HarmonyButton>
+          <Box m='l'>
+            <HarmonyButton variant='primary' onClick={handleDoneClick}>
+              Done
+            </HarmonyButton>
+          </Box>
         </div>
       </Modal>
 

@@ -100,7 +100,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
             className={styles.ctaButton}
           >
             {messages.cta}
-            <IconCaretRight className={styles.iconCaretRight} />
+            <IconCaretRight className={styles.iconCaretRight} color='accent' />
           </button>
         </div>
       </div>
@@ -145,7 +145,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
             className={styles.ctaButton}
           >
             {messages.cta}
-            <IconCaretRight className={styles.iconCaretRight} />
+            <IconCaretRight className={styles.iconCaretRight} color='accent' />
           </button>
         </div>
       </div>
