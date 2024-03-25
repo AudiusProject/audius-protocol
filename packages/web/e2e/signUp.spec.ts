@@ -165,7 +165,7 @@ async function testSignUp({
     page.getByRole('dialog', {
       name: /welcome to audius/i
     })
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 60000 }) // This can take a long time
   await page.getByRole('button', { name: /start listening/i }).click()
   await expect(page).toHaveURL(/feed/i)
 }

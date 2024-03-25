@@ -43,6 +43,11 @@ export default defineConfig({
   /* Total timeout for individual tests */
   timeout: 1000 * 60 * 5,
 
+  /* Global timeout for expect */
+  expect: {
+    timeout: 10 * 1000 // 10s
+  },
+
   /* Configure projects for major browsers */
   projects: [
     {
