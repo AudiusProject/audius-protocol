@@ -177,7 +177,7 @@ const RenderForm = ({
           <PurchaseContentFormFooter
             error={error}
             isUnlocking={isUnlocking}
-            onViewTrackClicked={onClose}
+            onViewContentClicked={onClose}
             purchaseSummaryValues={purchaseSummaryValues}
             stage={stage}
             metadata={metadata}

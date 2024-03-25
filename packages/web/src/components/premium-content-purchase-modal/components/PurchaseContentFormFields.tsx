@@ -101,6 +101,7 @@ export const PurchaseContentFormFields = ({
     )
   }
 
+  const isAlbumPurchase = 'playlist_id' in metadata
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
       ? metadata._stems?.length ?? 0
@@ -127,6 +128,7 @@ export const PurchaseContentFormFields = ({
         downloadPurchaseCount={downloadPurchaseCount}
         streamPurchaseCount={streamPurchaseCount}
         totalPriceInCents={totalPriceInCents}
+        isAlbumPurchase={isAlbumPurchase}
       />
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod

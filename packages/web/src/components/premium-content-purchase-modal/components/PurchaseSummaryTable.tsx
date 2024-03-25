@@ -5,6 +5,7 @@ import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 
 const messages = {
   summary: 'Transaction Summary',
+  premiumAlbum: 'Premium Album',
   premiumTrack: 'Premium Track',
   downloadableFiles: 'Downloadable Files',
   payExtra: 'Pay Extra',
@@ -27,6 +28,8 @@ type PurchaseSummaryTableProps = {
   downloadPurchaseCount?: number
   // How many stems are available for purchase
   stemsPurchaseCount?: number
+  // Whether this is an album purchase
+  isAlbumPurchase?: boolean
 }
 
 export const PurchaseSummaryTable = ({
@@ -35,15 +38,24 @@ export const PurchaseSummaryTable = ({
   extraAmount,
   streamPurchaseCount,
   downloadPurchaseCount,
-  stemsPurchaseCount
+  stemsPurchaseCount,
+  isAlbumPurchase
 }: PurchaseSummaryTableProps) => {
   const items: SummaryTableItem[] = []
   if (streamPurchaseCount) {
-    items.push({
-      id: 'premiumTrack',
-      label: messages.premiumTrack,
-      value: messages.price(formatPrice(basePrice))
-    })
+    if (isAlbumPurchase) {
+      items.push({
+        id: 'premiumAlbum',
+        label: messages.premiumAlbum,
+        value: messages.price(formatPrice(basePrice))
+      })
+    } else {
+      items.push({
+        id: 'premiumTrack',
+        label: messages.premiumTrack,
+        value: messages.price(formatPrice(basePrice))
+      })
+    }
   }
   const downloadCount = (stemsPurchaseCount ?? 0) + (downloadPurchaseCount ?? 0)
   if (downloadCount > 0) {

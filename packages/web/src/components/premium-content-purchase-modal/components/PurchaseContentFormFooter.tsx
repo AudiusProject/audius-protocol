@@ -30,14 +30,16 @@ import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
+import { capitalize } from 'lodash'
 
 const messages = {
   buy: 'Buy',
-  viewTrack: 'View Track',
+  viewContent: (contentType: 'track' | 'album') =>
+    `View ${capitalize(contentType)}`,
   purchasing: 'Purchasing',
   shareButtonContent: 'I just purchased a track on Audius!',
-  shareTwitterText: (contentType: string, trackTitle: string, handle: string) =>
-    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
+  shareTwitterText: (contentType: string, title: string, handle: string) =>
+    `I bought the ${contentType} ${title} by ${handle} on @Audius! #AudiusPremium`,
   reposted: 'Reposted',
   repost: 'Repost'
 }
@@ -67,7 +69,7 @@ type PurchaseContentFormFooterProps = Pick<
   'error' | 'isUnlocking' | 'purchaseSummaryValues' | 'stage'
 > & {
   metadata: PurchaseableContentMetadata
-  onViewTrackClicked: () => void
+  onViewContentClicked: () => void
 }
 
 export const PurchaseContentFormFooter = ({
@@ -76,7 +78,7 @@ export const PurchaseContentFormFooter = ({
   isUnlocking,
   purchaseSummaryValues,
   stage,
-  onViewTrackClicked
+  onViewContentClicked: onViewTrackClicked
 }: PurchaseContentFormFooterProps) => {
   const {
     permalink,
@@ -155,7 +157,7 @@ export const PurchaseContentFormFooter = ({
           variant='subdued'
           size='large'
         >
-          {messages.viewTrack}
+          {messages.viewContent(isAlbum ? 'album' : 'track')}
         </PlainButton>
       </Flex>
     )
