@@ -1,5 +1,6 @@
-import { defineConfig, devices } from '@playwright/test'
 import fs from 'fs'
+
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Read environment variables from file.

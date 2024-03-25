@@ -1,27 +1,28 @@
-import { test, expect, Page } from '@playwright/test'
+import { expect, Page } from '@playwright/test'
 
 import { email, password, name, handle } from './fixtures/user.json'
-import { goToPage, resetAuthState } from './utils'
+import { test } from './test'
+import { resetAuthState } from './utils'
 
 test.describe('Sign In', () => {
   // Resets auth state for this suite so we aren't already signed in
   test.use(resetAuthState)
 
   test('can navigate to sign-in from trending screen', async ({ page }) => {
-    await goToPage({ page, path: 'trending' })
+    await page.goto('trending')
     await page.getByRole('link', { name: /sign in/i }).click()
     await assertOnSignInPage(page)
   })
 
   test('/signin goes to sign-in', async ({ page }) => {
-    await goToPage({ page, path: 'signin' })
+    await page.goto('signin')
     await expect(
       page.getByRole('heading', { name: 'Sign Into Audius' })
     ).toBeVisible()
   })
 
   test('can navigate to sign-in from sign-up', async ({ page }) => {
-    await goToPage({ page, path: 'signup' })
+    await page.goto('signup')
     await expect(page.getByText(/already have an account?/i)).toBeVisible()
     await page.getByRole('link', { name: /Sign In/ }).click()
     await assertOnSignInPage(page)
@@ -30,7 +31,7 @@ test.describe('Sign In', () => {
   test('can navigate to sign-in after entering email in sign-up', async ({
     page
   }) => {
-    await goToPage({ page, path: 'signup' })
+    await page.goto('signup')
     await page.getByRole('textbox', { name: /email/i }).fill(email)
     await page.getByRole('button', { name: /sign up free/i }).click()
     const signUpModal = page.getByRole('alert')

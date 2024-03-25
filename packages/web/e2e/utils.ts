@@ -1,48 +1,7 @@
 import { readFileSync } from 'fs'
 
-import { Locator, Page, expect } from '@playwright/test'
+import { Locator, Page } from '@playwright/test'
 import dayjs from 'dayjs'
-
-type AppPath = 'signup' | 'trending' | 'signin' | '' // blank is the marketing site
-
-const COLD_START_TIMEOUT = 25000 // Added timeout buffer for cold starts
-
-export const goToPage = async ({
-  page,
-  path
-}: {
-  page: Page
-  path: AppPath
-}) => {
-  await page.goto(path, { waitUntil: 'load' })
-  switch (path) {
-    case '':
-      await expect(
-        page.getByRole('heading', { name: /artists deserve more/i, level: 1 })
-      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
-      break
-
-    case 'signup':
-      // Optional debug step
-      await expect(
-        page.getByRole('heading', { name: /sign up for audius/i, level: 1 })
-      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
-      break
-
-    case 'signin':
-      await expect(
-        page.getByRole('heading', { name: /sign into audius/i })
-      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
-      break
-    case 'trending':
-      await expect(
-        page.getByRole('heading', { name: /trending/i, level: 1 })
-      ).toBeVisible({ timeout: COLD_START_TIMEOUT })
-      break
-    default:
-      break
-  }
-}
 
 export function generateTestUser() {
   const ts = dayjs().format('YYMMDD_HHmmss')
@@ -64,7 +23,7 @@ export const dragAndDropFile = async (
   target: Locator,
   filePath: string,
   fileName: string,
-  fileType: string // TODO: is there a standard mime type to go here?
+  fileType: string // TODO: is there a standard mime TS type to go here?
 ) => {
   const buffer = readFileSync(filePath).toString('base64')
 

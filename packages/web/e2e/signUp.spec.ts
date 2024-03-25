@@ -1,8 +1,9 @@
 import path from 'path'
 
-import { test, Page, expect, devices } from '@playwright/test'
+import { Page, expect, devices } from '@playwright/test'
 
-import { resetAuthState, generateTestUser, goToPage } from './utils'
+import { test } from './test'
+import { resetAuthState, generateTestUser } from './utils'
 
 type User = {
   email: string
@@ -175,26 +176,26 @@ test.describe('Sign Up', () => {
   test.use(resetAuthState)
   test.describe('desktop', () => {
     test('can navigate to signup from trending', async ({ page }) => {
-      await goToPage({ page, path: 'trending' })
+      await page.goto('trending')
       await expect(page.getByText(/have an account\?/i)).toBeVisible()
       await page.getByRole('link', { name: /sign up/i }).click()
       await assertOnSignUpPage(page)
     })
 
     test('/signup goes to sign-up', async ({ page }) => {
-      await goToPage({ page, path: 'signup' })
+      await page.goto('signup')
       await assertOnSignUpPage(page)
     })
 
     test('can navigate to sign-up from sign-in', async ({ page }) => {
-      await goToPage({ page, path: 'signin' })
+      await page.goto('signin')
       await page.getByRole('link', { name: /create an account/i }).click()
 
       await assertOnSignUpPage(page)
     })
 
     test('can navigate to sign-up from the public site', async ({ page }) => {
-      await goToPage({ page, path: '' })
+      await page.goto('')
       await page.getByRole('link', { name: /sign up/i }).click()
       await assertOnSignUpPage(page)
     })
@@ -223,25 +224,25 @@ test.describe('Sign Up', () => {
     test.use({ viewport: devices['iPhone X'].viewport })
 
     test('can navigate to signup from trending', async ({ page }) => {
-      await goToPage({ page, path: 'trending' })
+      await page.goto('trending')
       await page.getByRole('link', { name: /sign up/i }).click()
       await assertOnSignUpPage(page)
     })
 
     test('/signup goes to sign-up', async ({ page }) => {
-      await goToPage({ page, path: 'signup' })
+      await page.goto('signup')
       await assertOnSignUpPage(page)
     })
 
     test('can navigate to sign-up from sign-in', async ({ page }) => {
-      await goToPage({ page, path: 'signin' })
+      await page.goto('signin')
       await page.getByRole('link', { name: /create an account/i }).click()
 
       await assertOnSignUpPage(page)
     })
 
     test('can navigate to sign-up from the public site', async ({ page }) => {
-      await goToPage({ page, path: '' })
+      await page.goto('')
       await page.getByRole('button', { name: /open nav menu/i }).click()
       await page.getByRole('link', { name: /sign up/i }).click()
 
