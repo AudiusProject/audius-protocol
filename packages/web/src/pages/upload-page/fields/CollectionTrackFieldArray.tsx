@@ -5,6 +5,10 @@ import { CollectionTrackForUpload } from '../types'
 
 import { CollectionTrackField } from './CollectionTrackField'
 
+const messages = {
+  trackList: 'Track List'
+}
+
 export const CollectionTrackFieldArray = () => {
   const [{ value: tracks }] = useField<CollectionTrackForUpload[]>('tracks')
 
@@ -25,7 +29,7 @@ export const CollectionTrackFieldArray = () => {
                 {...provided.droppableProps}
                 ref={provided.innerRef}
                 role='list'
-                aria-label='Track List'
+                aria-label={messages.trackList}
               >
                 {tracks.map((track, index) => (
                   <Draggable
