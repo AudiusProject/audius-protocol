@@ -1,10 +1,4 @@
-import {
-  Flex,
-  Text,
-  TextLink,
-  useTheme,
-  IconCloudUpload as IconUpload
-} from '@audius/harmony'
+import { Flex, Text, TextLink, IconCloudUpload } from '@audius/harmony'
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
@@ -62,7 +56,6 @@ export const Dropzone = ({
   disableClick,
   isTruncated
 }: DropzoneProps) => {
-  const { color } = useTheme()
   const getMessage = () => {
     if (subtitle) return subtitle
     let message
@@ -81,7 +74,7 @@ export const Dropzone = ({
     return (
       <Flex alignItems='center'>
         {isTruncated ? (
-          <IconUpload
+          <IconCloudUpload
             className={cn(styles.iconUpload, iconClassName, {
               [styles.truncated]: isTruncated
             })}
@@ -89,9 +82,7 @@ export const Dropzone = ({
         ) : null}
         <Text variant='body'>
           {message}&nbsp;
-          <TextLink css={{ color: color.primary.p500 }}>
-            {messages.browse}
-          </TextLink>
+          <TextLink variant='visible'>{messages.browse}</TextLink>
         </Text>
       </Flex>
     )
@@ -126,7 +117,9 @@ export const Dropzone = ({
                   {subtextAboveIcon}
                 </Text>
               ) : null}
-              <IconUpload className={cn(styles.iconUpload, iconClassName)} />
+              <IconCloudUpload
+                className={cn(styles.iconUpload, iconClassName)}
+              />
             </>
           ) : null}
           <div className={cn(styles.text, messageClassName)}>

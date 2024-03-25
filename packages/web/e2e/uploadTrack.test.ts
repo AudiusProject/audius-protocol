@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test'
+import { expect } from '@playwright/test'
 import {
   EditTrackPage,
-  FinishPage,
-  SelectPage
+  UploadFinishPage,
+  UploadSelectPage
 } from './page-object-models/upload'
 import {
   RemixSettingsModal,
@@ -10,6 +10,7 @@ import {
   AttributionModal,
   StemsAndDownloadsModal
 } from './page-object-models/modals'
+import { test } from './test'
 
 test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const trackTitle = `Test track ${Date.now()}`
@@ -23,9 +24,9 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const isrc = 'US-123-45-67890'
   const iswc = 'T-123456789-0'
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await page.goto('upload')
 
-  const selectPage = new SelectPage(page)
+  const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3')
   await selectPage.continue()
 
@@ -68,7 +69,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
 
   await editPage.complete()
 
-  const uploadingPage = new FinishPage(page, 'Track')
+  const uploadingPage = new UploadFinishPage(page, 'Track')
   await uploadingPage.assertCompletes()
 
   // Vist track page
@@ -132,9 +133,9 @@ test('should upload a premium track', async ({ page }) => {
   const price = '1.05'
   const previewSeconds = '15'
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await page.goto('upload')
 
-  const selectPage = new SelectPage(page)
+  const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3')
   await selectPage.continue()
 
@@ -150,7 +151,7 @@ test('should upload a premium track', async ({ page }) => {
 
   await editPage.complete()
 
-  const uploadingPage = new FinishPage(page, 'Track')
+  const uploadingPage = new UploadFinishPage(page, 'Track')
   await uploadingPage.assertCompletes()
 
   // Vist track page
@@ -178,9 +179,9 @@ test('should upload a track with free stems', async ({ page }) => {
   const trackTitle = `Test stems track ${Date.now()}`
   const genre = 'Alternative'
 
-  await page.goto('upload', { waitUntil: 'load' })
+  await page.goto('upload')
 
-  const selectPage = new SelectPage(page)
+  const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3')
   await selectPage.continue()
 
@@ -200,7 +201,7 @@ test('should upload a track with free stems', async ({ page }) => {
 
   await editPage.complete()
 
-  const uploadingPage = new FinishPage(page, 'Track')
+  const uploadingPage = new UploadFinishPage(page, 'Track')
   await uploadingPage.assertCompletes()
 
   // Vist track page

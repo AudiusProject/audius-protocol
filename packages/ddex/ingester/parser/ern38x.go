@@ -29,7 +29,7 @@ type SoundRecording struct {
 	ProducerCopyrightLine        *common.Copyright
 	ParentalWarningType          string
 	LabelName                    string
-	Genre                        string
+	Genre                        common.Genre
 	TechnicalDetails             []TechnicalSoundRecordingDetails
 }
 
@@ -232,7 +232,6 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 
 	title := safeInnerText(releaseDetails.SelectElement("Title[@TitleType='DisplayTitle']/TitleText")) // TODO: This assumes there aren't multiple titles in different languages (ie, different `LanguageAndScriptCode` attributes)
 	artistName := safeInnerText(releaseDetails.SelectElement("DisplayArtistName"))
-	genreStr := safeInnerText(releaseDetails.SelectElement("Genre/GenreText"))
 	parentalWarning := safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))
 
 	// Parse DisplayArtist nodes
@@ -289,10 +288,12 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		}
 	}
 
+	genre, genreStrs := getGenres(releaseDetails)
+
 	if releaseType == "Album" {
-		genre, ok := common.ToGenre(genreStr)
-		if !ok {
-			err = fmt.Errorf("unsupported genre %s for <ReleaseReference>%s</ReleaseReference>", genreStr, releaseRef)
+		// Album is required to have a genre in its Release (not just a genre per track)
+		if genre == "" {
+			err = fmt.Errorf("no genre match in list '%v' for <ReleaseReference>%s</ReleaseReference>", genreStrs, releaseRef)
 			return
 		}
 
@@ -411,10 +412,10 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			}
 		}
 
+		// Track could have a genre in its SoundRecording. If not, fall back to the genre in its Release element
 		if trackMetadata.Genre == "" {
-			genre, ok := common.ToGenre(genreStr)
-			if !ok {
-				err = fmt.Errorf("unsupported genre %s for <ReleaseReference>%s</ReleaseReference>", genreStr, releaseRef)
+			if genre == "" {
+				err = fmt.Errorf("no genre match in list '%v' for <ReleaseReference>%s</ReleaseReference>", genreStrs, releaseRef)
 				return
 			}
 			trackMetadata.Genre = genre
@@ -456,7 +457,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	return
 }
 
-// parseTrackMetadata parses the metadata for a sound recording from a ResourceGroupContentItem.
+// parseTrackMetadata parses the metadata for a sound recording from a ResourceGroupContentItem
 func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID string) (metadata *common.TrackMetadata, err error) {
 	if ci.SoundRecording == nil {
 		err = fmt.Errorf("no <SoundRecording> found for <ResourceReference>%s</ResourceReference>", ci.Reference)
@@ -472,6 +473,7 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 		Title:                        ci.SoundRecording.Title,
 		Duration:                     int(duration.Seconds()),
 		ISRC:                         &ci.SoundRecording.ISRC,
+		Genre:                        ci.SoundRecording.Genre,
 		Artists:                      ci.SoundRecording.Artists,
 		ResourceContributors:         ci.SoundRecording.ResourceContributors,
 		IndirectResourceContributors: ci.SoundRecording.IndirectResourceContributors,
@@ -499,10 +501,6 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 				fmt.Printf("Skipping duplicate audio file for SoundRecording %s\n", ci.Reference)
 			}
 		}
-	}
-
-	if genre, ok := common.ToGenre(ci.SoundRecording.Genre); ok {
-		metadata.Genre = genre
 	}
 
 	if ci.SoundRecording.ParentalWarningType != "" {
@@ -568,6 +566,11 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		return
 	}
 
+	genre, genreStrs := getGenres(details)
+	if genre == "" {
+		fmt.Printf("no genre match in list '%v' for <ResourceReference>%s</ResourceReference>\n", genreStrs, resourceRef)
+	}
+
 	recording = &SoundRecording{
 		Type:                  safeInnerText(sNode.SelectElement("SoundRecordingType")),
 		ISRC:                  safeInnerText(sNode.SelectElement("SoundRecordingId/ISRC")),
@@ -577,7 +580,7 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		LanguageOfPerformance: safeInnerText(sNode.SelectElement("LanguageOfPerformance")),
 		Duration:              safeInnerText(sNode.SelectElement("Duration")),
 		LabelName:             safeInnerText(details.SelectElement("LabelName")),
-		Genre:                 safeInnerText(details.SelectElement("Genre/GenreText")),
+		Genre:                 genre,
 		ParentalWarningType:   safeInnerText(details.SelectElement("ParentalWarningType")),
 	}
 
@@ -817,4 +820,25 @@ func parseISODuration(isoDuration string) (time.Duration, error) {
 	totalSeconds := hours*3600 + minutes*60 + seconds
 	duration := time.Duration(totalSeconds) * time.Second
 	return duration, nil
+}
+
+// getGenres returns the first match of Genre for all SubGenre and GenreText elements, along with the ordered slice of strings it tried to match
+func getGenres(node *xmlquery.Node) (genre common.Genre, genreStrs []string) {
+	for _, genreNode := range xmlquery.Find(node, "Genre") {
+		genreStrs = append(genreStrs, safeInnerText(genreNode.SelectElement("SubGenre")))
+	}
+	for _, genreNode := range xmlquery.Find(node, "Genre") {
+		genreStrs = append(genreStrs, safeInnerText(genreNode.SelectElement("GenreText")))
+	}
+
+	var ok bool
+	for _, genreStr := range genreStrs {
+		genre, ok = common.ToGenre(genreStr)
+		if ok {
+			return
+		} else {
+			fmt.Printf("Skipping unsupported genre '%s'\n", genreStr)
+		}
+	}
+	return
 }

@@ -78,33 +78,8 @@
   border-radius: 4px;
 }
 
-.buyAudioButton {
-  width: 100%;
-  height: unset !important;
-  padding: 8px 0;
-}
-.buyAudioButton > .buyAudioButtonText {
-  font-size: var(--harmony-font-m);
-}
-.buyAudioButton:hover:enabled {
-  transform: scale3d(1.02, 1.02, 1.02) !important;
-}
-.buyAudioButton:active:enabled {
-  transform: scale3d(0.98, 0.98, 0.98) !important;
-}
-
 .divider {
   border-bottom: 1px solid var(--harmony-n-100);
-}
-
-.topBannerIcon svg {
-  width: 2em;
-  height: 2em;
-  margin-top: 2px;
-}
-
-.topBannerIcon svg path {
-  fill: var(--harmony-white);
 }
 
 .topBannerText {

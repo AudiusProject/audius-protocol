@@ -198,18 +198,18 @@ export type CreateAlbumRelease = mongoose.InferSchemaType<
 >
 
 export const pendingReleasesSchema = new mongoose.Schema({
-  upload_etag: { type: String, required: true },
-  delivery_id: { type: mongoose.Schema.Types.ObjectId, required: true },
+  _id: { type: String, required: true },
+  delivery_etag: { type: String, required: true },
   publish_date: { type: Date, required: true },
   created_at: { type: Date, required: true },
   create_track_release: createTrackReleaseSchema,
   create_album_release: createAlbumReleaseSchema,
-  upload_errors: [String],
+  publish_errors: [String],
   failure_count: Number,
   failed_after_upload: Boolean,
 })
 
-// Releases parsed from indexed DDEX deliveries that are awaiting publishing
+// Releases awaiting publishing. Releases are parsed from DDEX deliveries
 const PendingReleases = mongoose.model(
   'PendingReleases',
   pendingReleasesSchema,

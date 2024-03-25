@@ -5,7 +5,7 @@
   background-color: var(--harmony-secondary);
   padding: 12px 16px;
   margin: auto;
-  max-width: 80%;
+  max-width: 100%;
 
   color: var(--harmony-static-white);
   font-family: var(--harmony-font-family);

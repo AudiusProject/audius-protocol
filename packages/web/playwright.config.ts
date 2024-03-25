@@ -1,10 +1,13 @@
 import { defineConfig, devices } from '@playwright/test'
+import fs from 'fs'
 
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
 // require('dotenv').config();
+
+const authFileExists = fs.existsSync('playwright/.auth/user.json')
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -41,11 +44,11 @@ export default defineConfig({
   },
 
   /* Total timeout for individual tests */
-  timeout: 1000 * 60 * 5,
+  timeout: 5 * 60 * 1000,
 
-  /* Global timeout for expect */
+  /* Timeout for each assertion */
   expect: {
-    timeout: 10 * 1000 // 10s
+    timeout: 10 * 1000
   },
 
   /* Configure projects for major browsers */
@@ -56,7 +59,8 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      dependencies: ['setup'],
+      dependencies: authFileExists ? undefined : ['setup'],
+      testIgnore: /.*\.setup.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json'

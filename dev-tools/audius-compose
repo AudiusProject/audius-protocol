@@ -260,8 +260,6 @@ def build(
             "--profile=block-explorer",
             "--profile=uptime",
             "--profile=ddex",
-            "--profile=ddex-release-by-release",
-            "--profile=ddex-batched",
             "build",
             *args,
             *services,
@@ -522,7 +520,8 @@ def up(
 
     if ddex_release_by_release or ddex_batched:
         generate_ddex_mongo_key(protocol_dir)
-        profiles = [f"--profile=ddex-{'release-by-release' if ddex_release_by_release else 'batched'}"]
+        profiles = ["--profile=ddex"]
+        os.environ["DDEX_CHOREOGRAPHY"] = "ERNReleaseByRelease" if ddex_release_by_release else "ERNBatched"
     else:
         AAO_DIR = pathlib.Path(
             os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle")
@@ -668,6 +667,7 @@ def test_run(protocol_dir, service, args):
 
     if service.startswith("ddex"):
         env["COMPOSE_PROFILES"] = "ddex"
+        env["DDEX_CHOREOGRAPHY"] = "ERNReleaseByRelease" if service.endswith("release") else "ERNBatched"
         generate_ddex_mongo_key(protocol_dir)
 
     result = subprocess.run(
@@ -688,12 +688,7 @@ def test_run(protocol_dir, service, args):
     )
 
     if result.returncode != 0 and service.startswith("ddex"):
-        containers = (
-            ["ddex-crawler-release-by-release", "ddex-parser-release-by-release"]
-            if service.endswith("release")
-            else ["ddex-crawler-batched", "ddex-parser-batched"]
-        )
-        for container in containers:
+        for container in ["ddex-crawler", "ddex-parser"]:
             logs_result = subprocess.run(
                 f"docker logs {container}",
                 shell=True,

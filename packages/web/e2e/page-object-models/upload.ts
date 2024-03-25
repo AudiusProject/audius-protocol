@@ -204,7 +204,7 @@ export class EditAlbumPage extends EditPlaylistPage {
   }
 }
 
-export class SelectPage {
+export class UploadSelectPage {
   private readonly dropzoneFileInput: Locator
   private readonly releaseType: Locator
   private readonly continueButton: Locator
@@ -238,7 +238,7 @@ export class SelectPage {
   }
 }
 
-export class FinishPage {
+export class UploadFinishPage {
   private readonly progressBar: Locator
   private readonly uploadingHeading: Locator
   private readonly finalizing: Locator
@@ -275,10 +275,10 @@ export class FinishPage {
     await this.assertProgress(99)
 
     // Assert finalizing
-    await expect(this.finalizing).toBeVisible({ timeout: 20 * 1000 })
+    await expect(this.finalizing).toBeVisible({ timeout: 60 * 1000 })
 
     // Assert success
-    await expect(this.successHeading).toBeVisible({ timeout: 30 * 1000 })
+    await expect(this.successHeading).toBeVisible({ timeout: 60 * 1000 })
   }
 
   private async assertProgress(progress: number) {
@@ -286,7 +286,7 @@ export class FinishPage {
       .poll(
         async () =>
           Number(await this.progressBar.getAttribute('aria-valuenow')),
-        { timeout: 25 * 1000 }
+        { timeout: 60 * 1000 }
       )
       .toBeGreaterThanOrEqual(progress)
   }

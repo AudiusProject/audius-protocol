@@ -13,7 +13,10 @@ export type IconButtonProps = {
   'aria-label': string
   iconCss?: CSSObject
 } & Pick<IconProps, 'color' | 'size' | 'shadow' | 'height' | 'width'> &
-  Pick<BaseButtonProps, 'onClick' | 'disabled' | 'className' | 'type'>
+  Pick<
+    BaseButtonProps,
+    'onClick' | 'disabled' | 'className' | 'type' | 'children'
+  >
 
 /**
  * The icon component allows you to pass in an icon and
@@ -30,6 +33,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       height,
       width,
       iconCss,
+      children,
       ...other
     } = props
     const { disabled } = other
@@ -72,6 +76,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           width={width}
           css={iconCss}
         />
+        {children}
       </BaseButton>
     )
   }
