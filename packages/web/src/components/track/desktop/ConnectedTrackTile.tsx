@@ -203,6 +203,7 @@ const ConnectedTrackTile = ({
       extraMenuItems: [],
       handle,
       includeAddToPlaylist: !isStreamGated,
+      includeAddToAlbum: !isStreamGated,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
       includeEmbed: !isStreamGated,
