@@ -13,9 +13,6 @@ export const test = base.extend<{}>({
       options: Parameters<Page['goto']>[1] = {}
     ) => {
       const timeout = options.timeout ?? 60 * 1000
-      console.log(
-        `page.goto overridden, waiting for header (timeout: ${timeout}ms)`
-      )
       const response = await baseGoTo(url, { waitUntil: 'load', ...options })
       await expect(page.getByTestId('app-hydrated')).toBeAttached({
         timeout
