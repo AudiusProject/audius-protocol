@@ -31,7 +31,6 @@ import {
   SIGN_IN_FAILED,
   SIGN_IN_SUCCEEDED,
   CONFIGURE_META_MASK,
-  SET_TOAST,
   UPDATE_ROUTE_ON_COMPLETION,
   UPDATE_ROUTE_ON_EXIT,
   ADD_FOLLOW_ARTISTS,
@@ -74,7 +73,6 @@ const initialState = {
   profileImage: null, // Object with file blob & url
   coverPhoto: null, // Object with file blob & url
   status: 'editing', // 'editing', 'loading', 'success', or 'failure'
-  toastText: null,
   page: Pages.EMAIL,
   startedSignUpProcess: false,
   /** @deprecated */
@@ -407,12 +405,6 @@ const actionsMap = {
         error: action.error
       },
       otp: createTextField()
-    }
-  },
-  [SET_TOAST](state, action) {
-    return {
-      ...state,
-      toastText: action.text
     }
   },
   [UPDATE_ROUTE_ON_COMPLETION](state, action) {

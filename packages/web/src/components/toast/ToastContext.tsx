@@ -28,8 +28,8 @@ const TOAST_SPACING = 40
 // toasts to a valid Y index into [FROM_POSITION, index * toast spacing + ENTER_POSITION]
 const interp = (i: number) => (y: number) =>
   y === FROM_POSITION
-    ? `translate3d(0,${y}px,0)`
-    : `translate3d(0, ${y + i * TOAST_SPACING}px, 0)`
+    ? `translate3d(-50%,${y}px,0)`
+    : `translate3d(-50%, ${y + i * TOAST_SPACING}px, 0)`
 
 type ToastContextProps = {
   toast: (content: string | JSX.Element, timeout?: number) => void
