@@ -88,7 +88,9 @@
 }
 
 .editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .overlay,
-.editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .imageSelectionButton {
+.editMode.hasChanged:not(.modalOpen)
+  .profilePictureBackground:hover
+  .imageSelectionButton {
   opacity: 1;
   pointer-events: all;
 }
