@@ -53,7 +53,6 @@ create-audius-app-test-e2e:
           cd packages/create-audius-app/examples/react
           npm i
           npm run build
-          npm run start
           cd ../../
           npm run test:e2e
     - store_test_results:
