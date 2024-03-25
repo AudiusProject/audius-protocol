@@ -200,7 +200,7 @@ export default function App() {
               <Text>{track.title}</Text>
               <Text>{track.user.name}</Text>
               <Button
-                fullWidth={true}
+                fullWidth
                 onClick={favoriteTrack(track.id, !favorites[track.id])}
                 size='small'
               >
