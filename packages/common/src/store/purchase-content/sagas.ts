@@ -280,7 +280,8 @@ function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
 }
 
 function* pollForPurchaseConfirmation({
-  contentId
+  contentId,
+  contentType
 }: {
   contentId: ID
   contentType: PurchaseableContentType
@@ -295,7 +296,8 @@ function* pollForPurchaseConfirmation({
 
   // TODO: poll purchased albums
   yield* pollGatedContent({
-    trackId: contentId,
+    contentId,
+    contentType,
     currentUserId,
     isSourceTrack: true
   })

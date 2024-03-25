@@ -20,8 +20,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   NFTAccessSignature,
-  GatedContentStatus,
-  GatedContentType
+  GatedContentStatus
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -238,7 +237,8 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
     tracksThatNeedSignature.map((track) => {
       const trackId = track.track_id
       return call(pollGatedContent, {
-        trackId,
+        contentId: trackId,
+        contentType: PurchaseableContentType.TRACK,
         currentUserId,
         isSourceTrack: false
       })
@@ -441,44 +441,58 @@ export function* pollGatedContent({
 
   // poll for access until it is granted
   while (true) {
-    const track = yield* call([apiClient, 'getTrack'], {
-      id: contentId,
-      currentUserId
-    })
-    const currentlyHasStreamAccess = !!track?.access?.stream
-    const currentlyHasDownloadAccess = !!track?.access?.download
+    const apiEntity = isAlbum
+      ? yield* call([apiClient, 'getPlaylist'], {
+          playlistId: contentId,
+          currentUserId
+        })[0]
+      : yield* call([apiClient, 'getTrack'], {
+          id: contentId,
+          currentUserId
+        })
 
-    if (initiallyHadNoStreamAccess && currentlyHasStreamAccess) {
-      yield* put(
-        cacheActions.update(Kind.TRACKS, [
-          {
-            id: contentId,
-            metadata: {
-              access: track.access
-            }
+    if (!apiEntity?.access) {
+      return
+    }
+
+    const currentlyHasStreamAccess = !!apiEntity.access.stream
+    const currentlyHasDownloadAccess = !!apiEntity.access.download
+
+    yield* put(
+      cacheActions.update(isAlbum ? Kind.COLLECTIONS : Kind.TRACKS, [
+        {
+          id: contentId,
+          metadata: {
+            access: apiEntity.access
           }
-        ])
-      )
+        }
+      ])
+    )
+    if (initiallyHadNoStreamAccess && currentlyHasStreamAccess) {
       yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKED' }))
-      // note: if necessary, update some ui status to show that the track download is unlocked
-      yield* put(removeFolloweeId({ id: track.owner_id }))
-      yield* put(removeTippedUserId({ id: track.owner_id }))
+      // note: if necessary, update some ui status to show that the download is unlocked
+      yield* put(removeFolloweeId({ id: apiEntity.owner_id }))
+      yield* put(removeTippedUserId({ id: apiEntity.owner_id }))
 
-      // Show confetti if track is unlocked from the how to unlock section on track page or modal
+      // Show confetti if track is unlocked from the how to unlock section on track/collection page or modal
       if (isSourceTrack) {
         yield* put(showConfetti())
       }
 
-      if (!track.stream_conditions) {
+      if (!apiEntity.stream_conditions) {
         return
       }
-      const eventName = isContentUSDCPurchaseGated(track.stream_conditions)
-        ? Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
-        : isContentFollowGated(track.stream_conditions)
-        ? Name.FOLLOW_GATED_TRACK_UNLOCKED
-        : isContentTipGated(track.stream_conditions)
-        ? Name.TIP_GATED_TRACK_UNLOCKED
-        : null
+
+      // TODO: Add separate analytics names for gated albums
+      const eventName =
+        !isAlbum &&
+        (isContentUSDCPurchaseGated(apiEntity.stream_conditions)
+          ? Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+          : isContentFollowGated(apiEntity.stream_conditions)
+          ? Name.FOLLOW_GATED_TRACK_UNLOCKED
+          : isContentTipGated(apiEntity.stream_conditions)
+          ? Name.TIP_GATED_TRACK_UNLOCKED
+          : null)
       if (eventName) {
         analytics.track({
           eventName,
@@ -489,32 +503,24 @@ export function* pollGatedContent({
       }
       break
     } else if (initiallyHadNoDownloadAccess && currentlyHasDownloadAccess) {
-      yield* put(
-        cacheActions.update(Kind.TRACKS, [
-          {
-            id: contentId,
-            metadata: {
-              access: track.access
-            }
-          }
-        ])
-      )
       // note: if necessary, update some ui status to show that the track download is unlocked
-      yield* put(removeFolloweeId({ id: track.owner_id }))
+      yield* put(removeFolloweeId({ id: apiEntity.owner_id }))
 
       // Show confetti if track is unlocked from the how to unlock section on track page or modal
       if (isSourceTrack) {
         yield* put(showConfetti())
       }
 
-      if (!track.download_conditions) {
+      if (!apiEntity.download_conditions) {
         return
       }
-      const eventName = isContentUSDCPurchaseGated(track.download_conditions)
-        ? Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
-        : isContentFollowGated(track.download_conditions)
-        ? Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
-        : null
+      const eventName =
+        !isAlbum &&
+        (isContentUSDCPurchaseGated(apiEntity.download_conditions)
+          ? Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
+          : isContentFollowGated(apiEntity.download_conditions)
+          ? Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
+          : null)
       if (eventName) {
         analytics.track({
           eventName,
@@ -585,7 +591,8 @@ function* updateSpecialAccessTracks(
   yield* all(
     Array.from(tracksToPoll).map((trackId) => {
       return call(pollGatedContent, {
-        trackId,
+        contentId: trackId,
+        contentType: PurchaseableContentType.TRACK,
         currentUserId,
         isSourceTrack: sourceTrackId === trackId
       })
