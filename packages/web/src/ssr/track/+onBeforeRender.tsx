@@ -1,8 +1,33 @@
 import { Maybe } from '@audius/common/utils'
-import { full as FullSdk } from '@audius/sdk'
+import {
+  sdk,
+  full as FullSdk,
+  DiscoveryNodeSelector,
+  productionConfig,
+  stagingConfig,
+  developmentConfig
+} from '@audius/sdk'
 import type { PageContextServer } from 'vike/types'
 
-import { audiusSdk } from 'ssr/util'
+const sdkConfigs = {
+  production: productionConfig,
+  staging: stagingConfig,
+  development: developmentConfig
+}
+
+const discoveryNodeSelector = new DiscoveryNodeSelector({
+  bootstrapServices: (
+    sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
+    productionConfig
+  ).discoveryNodes
+})
+
+export const audiusSdk = sdk({
+  appName: process.env.VITE_PUBLIC_HOSTNAME ?? 'audius.co',
+  services: {
+    discoveryNodeSelector
+  }
+})
 
 export type TrackPageProps = {
   track: Maybe<FullSdk.TrackFull>
