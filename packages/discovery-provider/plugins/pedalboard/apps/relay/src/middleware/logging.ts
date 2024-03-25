@@ -32,7 +32,7 @@ export const outgoingLog = (request: Request, response: Response) => {
   const path: string = route.path
   if (!path.includes("health")) {
     response.locals.ctx.logger.info(
-      { requestId, path, method, responseTime, statusCode },
+      { responseTime, statusCode },
       "request completed"
     );
   }
