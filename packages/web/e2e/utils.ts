@@ -87,3 +87,5 @@ export const dragAndDropFile = async (
 
   await target.dispatchEvent('drop', { dataTransfer })
 }
+
+export const resetAuthState = { storageState: { cookies: [], origins: [] } }

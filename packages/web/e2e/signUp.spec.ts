@@ -2,8 +2,7 @@ import path from 'path'
 
 import { test, Page, expect, devices } from '@playwright/test'
 
-import { resetAuthState } from './auth.setup'
-import { generateTestUser, goToPage } from './utils'
+import { resetAuthState, generateTestUser, goToPage } from './utils'
 
 type User = {
   email: string

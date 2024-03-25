@@ -1,8 +1,7 @@
 import { test, expect, Page } from '@playwright/test'
 
-import { resetAuthState } from './auth.setup'
 import { email, password, name, handle } from './fixtures/user.json'
-import { goToPage } from './utils'
+import { goToPage, resetAuthState } from './utils'
 
 test.describe('Sign In', () => {
   // Resets auth state for this suite so we aren't already signed in
