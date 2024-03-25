@@ -90,6 +90,25 @@ web-build-ssr-staging:
         paths:
           - node_modules/@brillout/vite-plugin-import-build/dist
 
+playwright-tests:
+  working_directory: ~/audius-protocol
+  resource_class: medium
+  executor: cypress/default
+  parallelism: 4
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run: npx playwright install --with-deps
+    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
+    - store_test_results:
+        path: packages/web/report.xml
+        when: always
+    - store_artifacts:
+        path: packages/web/playwright-report
+    - store_artifacts:
+        path: packages/web/blob-report
+
 web-test:
   working_directory: ~/audius-protocol
   docker:

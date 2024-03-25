@@ -22,7 +22,7 @@ const { getCoinflowState } = withdrawUSDCSelectors
 const messages = {
   holdOn: 'Hold on!',
   preparingTransfer:
-    "We're getting your transfer ready. This could take a few moments, Please don't leave this page."
+    "We're getting your transfer ready. This could take a few moments. Please don't leave this page."
 }
 
 export const PrepareTransfer = () => {

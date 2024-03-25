@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.72",
+  "version": "1.5.73",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -210,6 +210,7 @@
     "@electron/notarize": "2.2.0",
     "@esbuild-plugins/node-globals-polyfill": "0.2.3",
     "@pinata/sdk": "1.1.13",
+    "@playwright/test": "1.42.1",
     "@redux-devtools/extension": "3.2.4",
     "@testing-library/react": "12.0.0",
     "@types/amplitude-js": "8.0.2",

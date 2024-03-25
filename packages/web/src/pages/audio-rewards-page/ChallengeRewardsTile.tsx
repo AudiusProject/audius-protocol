@@ -184,6 +184,7 @@ const RewardPanel = ({
           size='small'
           iconRight={hasDisbursed ? null : IconArrow}
           onClick={openRewardModal}
+          fullWidth
         >
           {buttonMessage}
         </Button>

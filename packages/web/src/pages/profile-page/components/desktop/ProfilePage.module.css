@@ -4,11 +4,6 @@
   min-width: 788px;
 }
 
-.headerWrapper {
-  position: relative;
-  width: 100%;
-}
-
 /* Style for static profile wrapper content */
 
 .mask {
@@ -203,12 +198,6 @@
 }
 
 /* Style for content section */
-
-.inset {
-  display: flex;
-  flex-direction: column;
-}
-
 .content {
   max-width: 753px;
   padding-left: 229px;

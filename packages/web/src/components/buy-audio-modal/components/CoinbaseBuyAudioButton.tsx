@@ -89,7 +89,6 @@ export const CoinbaseBuyAudioButton = () => {
       <div>
         <OnRampButton
           provider={OnRampProvider.COINBASE}
-          className={styles.coinbasePayButton}
           disabled={isDisabled}
           onClick={handleClick}
         />
