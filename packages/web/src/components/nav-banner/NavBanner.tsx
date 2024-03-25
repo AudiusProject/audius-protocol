@@ -9,7 +9,7 @@ import styles from './NavBanner.module.css'
 const messages = {
   sortByRecent: 'Sort by Recent',
   sortByPopular: 'Sort by Popular',
-  openSortButton: 'Toggle sort mode'
+  openSortButton: 'Toggle Sort Mode'
 }
 
 type NavBannerProps = {
