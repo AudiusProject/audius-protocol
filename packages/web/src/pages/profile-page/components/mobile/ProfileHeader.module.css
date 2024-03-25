@@ -20,7 +20,7 @@
 }
 
 .profilePictureWrapper {
-  position: absolute;
+  position: absolute !important;
   top: 37px;
   left: 11px;
   height: 82px;
