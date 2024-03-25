@@ -204,7 +204,7 @@ export class EditAlbumPage extends EditPlaylistPage {
   }
 }
 
-export class SelectPage {
+export class UploadSelectPage {
   private readonly dropzoneFileInput: Locator
   private readonly releaseType: Locator
   private readonly continueButton: Locator
@@ -238,7 +238,7 @@ export class SelectPage {
   }
 }
 
-export class FinishPage {
+export class UploadFinishPage {
   private readonly progressBar: Locator
   private readonly uploadingHeading: Locator
   private readonly finalizing: Locator

@@ -2,8 +2,8 @@ import { expect } from '@playwright/test'
 import {
   EditAlbumPage,
   EditPlaylistPage,
-  FinishPage,
-  SelectPage
+  UploadFinishPage,
+  UploadSelectPage
 } from './page-object-models/upload'
 import { test } from './test'
 
@@ -25,7 +25,7 @@ test('should upload a playlist', async ({ page }) => {
 
   await page.goto('upload')
 
-  const selectPage = new SelectPage(page)
+  const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
   await selectPage.setReleaseType('Playlist')
   await selectPage.continue()
@@ -48,7 +48,7 @@ test('should upload a playlist', async ({ page }) => {
 
   await editPage.complete()
 
-  const finishPage = new FinishPage(page, 'Playlist')
+  const finishPage = new UploadFinishPage(page, 'Playlist')
   await finishPage.assertCompletes()
 
   // Vist collection page
@@ -116,7 +116,7 @@ test('should upload an album', async ({ page }) => {
 
   await page.goto('upload')
 
-  const selectPage = new SelectPage(page)
+  const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
   await selectPage.setReleaseType('Album')
   await selectPage.continue()
@@ -139,7 +139,7 @@ test('should upload an album', async ({ page }) => {
 
   await editPage.complete()
 
-  const finishPage = new FinishPage(page, 'Album')
+  const finishPage = new UploadFinishPage(page, 'Album')
   await finishPage.assertCompletes()
 
   // Vist collection page
