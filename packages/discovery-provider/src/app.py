@@ -8,7 +8,6 @@ import time
 from collections import defaultdict
 from typing import Any, Dict
 
-from celery.schedules import timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
@@ -47,7 +46,6 @@ from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from src.utils.eth_manager import EthManager
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import final_poa_block_redis_key
-from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
