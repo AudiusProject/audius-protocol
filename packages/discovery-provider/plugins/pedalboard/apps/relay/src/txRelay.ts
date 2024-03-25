@@ -1,13 +1,11 @@
 import { config, wallets, web3 } from ".";
 import { internalError } from "./error";
-import { logger } from "./logger";
 import { confirm } from "./web3";
 import {
   TransactionReceipt,
   TransactionRequest,
 } from "@ethersproject/abstract-provider";
 import { NextFunction, Request, Response } from "express";
-import { unknownToError } from "./utils";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -20,10 +18,8 @@ export const relayTransaction = async (
   next: NextFunction
 ) => {
   // pull info from validated request
-  const { validatedRelayRequest, requestId, recoveredSigner } = res.locals.ctx;
+  const { validatedRelayRequest, logger } = res.locals.ctx;
   const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest;
-
-  const userAddress = 'wallet' in recoveredSigner ? recoveredSigner.wallet : recoveredSigner.address
 
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();
@@ -41,17 +37,17 @@ export const relayTransaction = async (
     const transaction = { nonce, gasLimit, to, value, data };
     await senderWallet.signTransaction(transaction);
 
-    logger.info({ requestId, senderWallet: address, address: userAddress, nonce }, "submitting transaction")
+    logger.info({ senderWallet: address, nonce }, "submitting transaction")
 
     submit = await senderWallet.sendTransaction(transaction);
 
     // query chain until tx is mined
     const receipt = await confirm(submit.hash);
     receipt.blockNumber += config.finalPoaBlock
-    logger.info({ requestId, senderWallet: address, address: userAddress, nonce, txHash: submit?.hash, blocknumber: receipt.blockNumber }, "transaction confirmation successful")
+    logger.info({ senderWallet: address, nonce, txHash: submit?.hash, blocknumber: receipt.blockNumber }, "transaction confirmation successful")
     res.send({ receipt });
   } catch (e) {
-    logger.error({ requestId, senderWallet: address, address: userAddress, nonce, txHash: submit?.hash }, "transaction confirmation failed")
+    logger.error({ senderWallet: address, nonce, txHash: submit?.hash }, "transaction confirmation failed")
     internalError(next, e);
     return;
   }
