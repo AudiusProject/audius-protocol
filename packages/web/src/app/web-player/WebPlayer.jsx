@@ -991,7 +991,9 @@ class WebPlayer extends Component {
           </div>
           <PlayBarProvider />
           <ClientOnly>
-            <Modals />
+            <Suspense fallback={null}>
+              <Modals />
+            </Suspense>
             <ConnectedMusicConfetti />
           </ClientOnly>
 

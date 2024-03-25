@@ -37,12 +37,12 @@ import { NavHeaderButton } from './NavHeaderButton'
 import styles from './NavMenuButton.module.css'
 
 const messages = {
-  buttonLabel: 'Toggle Navigation Menu',
   settings: 'Settings',
   dashboard: 'Artist Dashboard',
   payAndEarn: 'Pay & Earn',
   rewards: 'Rewards',
-  messages: 'Messages'
+  messages: 'Messages',
+  buttonLabel: 'Toggle Navigation Menu'
 }
 
 export const NavMenuButton = () => {

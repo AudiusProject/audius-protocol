@@ -36,7 +36,6 @@ func GetFirstArtistID(artists []common.ResourceContributor, usersColl *mongo.Col
 
 	artistID := ""
 	artistName := ""
-	var err error
 	var warnings []string
 	for _, artist := range artists {
 		filter := bson.M{"name": artist.Name}
@@ -95,7 +94,7 @@ func GetFirstArtistID(artists []common.ResourceContributor, usersColl *mongo.Col
 	if artistID != "" {
 		return artistID, artistName, warnings, nil
 	}
-	return "", "", warnings, err
+	return "", "", warnings, errors.New("no artist was found with the given display name - see warning for details")
 }
 
 // searchArtistOnAudius searches Audius (public /v1/users/search endpoint) for an artist by name and returns potential matches.

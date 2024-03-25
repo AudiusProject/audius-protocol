@@ -1,4 +1,6 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useContext } from 'react'
+
+import { SsrContext } from 'ssr/SsrContext'
 
 type ClientOnlyProps = {
   children: ReactNode
@@ -14,12 +16,7 @@ type ClientOnlyProps = {
 export const ClientOnly = (props: ClientOnlyProps) => {
   const { children, fallback = null } = props
 
-  const [isClientSide, setIsClientSide] = useState(false)
+  const { isServerSide } = useContext(SsrContext)
 
-  // useEffect only runs on the client
-  useEffect(() => {
-    setIsClientSide(true)
-  }, [])
-
-  return <>{isClientSide ? children : fallback}</>
+  return <>{isServerSide ? fallback : children}</>
 }
