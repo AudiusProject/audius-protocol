@@ -1,12 +1,14 @@
 import { Locator, Page, expect } from '@playwright/test'
 
 export class SocialActions {
+  private readonly page: Page
   public readonly favoriteButton: Locator
   public readonly unfavoriteButton: Locator
   public readonly repostButton: Locator
   public readonly unrepostButton: Locator
 
   constructor(page: Page) {
+    this.page = page
     const trackActions = page.getByRole('group', {
       name: /track actions/i
     })
@@ -49,11 +51,19 @@ export class SocialActions {
   }
 
   async repost() {
+    // Setup confirmation listener
+    const confirmationPromise = this.page.waitForResponse(async (response) => {
+      if (response.url().includes('block_confirmation')) {
+        const json = await response.json()
+        return json.data.block_passed
+      }
+    })
+
     // Unreposted => Reposted
     await this.repostButton.click()
 
     // Wait for indexing, reload
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await confirmationPromise
     await this.repostButton.page().reload()
 
     // Check that it persists after reload
@@ -61,11 +71,19 @@ export class SocialActions {
   }
 
   async unrepost() {
+    // Setup confirmation listener
+    const confirmationPromise = this.page.waitForResponse(async (response) => {
+      if (response.url().includes('block_confirmation')) {
+        const json = await response.json()
+        return json.data.block_passed
+      }
+    })
+
     // Reposted => Unreposted
     await this.unrepostButton.click()
 
     // Wait for indexing, reload
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await confirmationPromise
     await this.unrepostButton.page().reload()
 
     // Check that it persists after reload
