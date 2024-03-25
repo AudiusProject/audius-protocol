@@ -603,8 +603,7 @@ def _populate_gated_content_metadata(
             else metadata.get("playlist_id")
         )
 
-    # gated track access
-    gated_track_access = {
+    gated_content_access_results = {
         getContentId(metadata): defaultdict() for metadata in entities
     }
     gated_entities = list(
@@ -632,6 +631,7 @@ def _populate_gated_content_metadata(
     for entity in gated_entities:
         content_id = getContentId(entity)
         gated_access = gated_content_access[content_type]
+
         has_stream_access = (
             current_user_id in gated_access
             and content_id in gated_access[current_user_id]
@@ -642,8 +642,8 @@ def _populate_gated_content_metadata(
             and content_id in gated_access[current_user_id]
             and gated_access[current_user_id][content_id]["has_download_access"]
         )
-        gated_track_access[content_id]["has_stream_access"] = has_stream_access
-        gated_track_access[content_id]["has_download_access"] = has_download_access
+        gated_content_access_results[content_id]["has_stream_access"] = has_stream_access
+        gated_content_access_results[content_id]["has_download_access"] = has_download_access
 
     for entity in entities:
         content_id = getContentId(entity)
@@ -653,17 +653,16 @@ def _populate_gated_content_metadata(
                 "download": True,
             }
         else:
-            has_stream_access = gated_track_access[content_id].get(
+            has_stream_access = gated_content_access_results[content_id].get(
                 "has_stream_access", True
             )
-            has_download_access = gated_track_access[content_id].get(
+            has_download_access = gated_content_access_results[content_id].get(
                 "has_download_access", True
             )
             entity[response_name_constants.access] = {
                 "stream": has_stream_access,
                 "download": has_download_access,
             }
-
 
 def get_track_remix_metadata(session, tracks, current_user_id):
     """
@@ -917,6 +916,11 @@ def populate_playlist_metadata(
             followee_playlist_save_dict[playlist_save["save_item_id"]].append(
                 playlist_save
             )
+    
+    # has current user unlocked gated tracks?
+    # if so, also populate corresponding signatures.
+    # if no current user (guest), populate access based on track stream/download conditions
+    _populate_gated_content_metadata(session, playlists, current_user_id, content_type="album")
 
     track_ids = []
     for playlist in playlists:
@@ -960,8 +964,6 @@ def populate_playlist_metadata(
         playlist[response_name_constants.has_current_user_saved] = (
             user_saved_playlist_dict.get(playlist_id, False)
         )
-
-        playlist[response_name_constants.access] = {}
 
     return playlists
 

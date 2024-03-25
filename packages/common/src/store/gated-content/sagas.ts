@@ -442,18 +442,23 @@ export function* pollGatedContent({
   // poll for access until it is granted
   while (true) {
     const apiEntity = isAlbum
-      ? yield* call([apiClient, 'getPlaylist'], {
+      ? (yield* call([apiClient, 'getPlaylist'], {
           playlistId: contentId,
           currentUserId
-        })[0]
+        }))[0]
       : yield* call([apiClient, 'getTrack'], {
           id: contentId,
           currentUserId
         })
 
     if (!apiEntity?.access) {
-      return
+      continue
     }
+
+    const ownerId =
+      'playlist_owner_id' in apiEntity // isAlbum
+        ? apiEntity.playlist_owner_id
+        : apiEntity.owner_id
 
     const currentlyHasStreamAccess = !!apiEntity.access.stream
     const currentlyHasDownloadAccess = !!apiEntity.access.download
@@ -471,8 +476,8 @@ export function* pollGatedContent({
     if (initiallyHadNoStreamAccess && currentlyHasStreamAccess) {
       yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKED' }))
       // note: if necessary, update some ui status to show that the download is unlocked
-      yield* put(removeFolloweeId({ id: apiEntity.owner_id }))
-      yield* put(removeTippedUserId({ id: apiEntity.owner_id }))
+      yield* put(removeFolloweeId({ id: ownerId }))
+      yield* put(removeTippedUserId({ id: ownerId }))
 
       // Show confetti if track is unlocked from the how to unlock section on track/collection page or modal
       if (isSourceTrack) {
@@ -504,14 +509,17 @@ export function* pollGatedContent({
       break
     } else if (initiallyHadNoDownloadAccess && currentlyHasDownloadAccess) {
       // note: if necessary, update some ui status to show that the track download is unlocked
-      yield* put(removeFolloweeId({ id: apiEntity.owner_id }))
+      yield* put(removeFolloweeId({ id: ownerId }))
 
       // Show confetti if track is unlocked from the how to unlock section on track page or modal
       if (isSourceTrack) {
         yield* put(showConfetti())
       }
 
-      if (!apiEntity.download_conditions) {
+      if (
+        !('download_conditions' in apiEntity) ||
+        !apiEntity.download_conditions
+      ) {
         return
       }
       const eventName =
