@@ -826,7 +826,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
           accountAlreadyExisted: true
         })
       )
-      yield* put(signOnActions.showToast(messages.incompleteAccount))
+      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
     } else {
       yield* put(
         signOnActions.signInFailed(
