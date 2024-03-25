@@ -9,11 +9,11 @@
 
 .searchText {
   margin-left: 32px;
-  color: var(--neutral);
-  font-size: var(--font-2xl);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-2xl);
   line-height: 29px;
-  text-shadow: 0 2px 6px 0 var(--neutral);
-  font-weight: var(--font-regular);
+  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
+  font-weight: var(--harmony-font-regular);
 }
 
 .searchResultsSection {
@@ -22,11 +22,11 @@
 }
 
 .searchResultsSection h2 {
-  color: var(--neutral);
-  font-size: var(--font-2xl);
-  font-weight: var(--font-bold);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-2xl);
+  font-weight: var(--harmony-font-bold);
   line-height: 29px;
-  text-shadow: 0 2px 6px 0 var(--neutral);
+  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
 }
 
 .cardsContainer {
@@ -77,7 +77,7 @@
 }
 
 .spinner g path {
-  stroke: var(--secondary) !important;
+  stroke: var(--harmony-secondary) !important;
 }
 
 .noResults {
@@ -92,16 +92,16 @@
 }
 
 .queryText {
-  font-size: var(--font-l);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-medium);
   line-height: 25px;
   text-align: center;
-  text-shadow: 0 2px 6px 0 var(--neutral);
+  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
 }
 
 .helperText {
   margin-top: 24px;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 25px;
-  text-shadow: 0 2px 6px 0 var(--neutral);
+  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
 }

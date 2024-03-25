@@ -1,6 +1,6 @@
 .container {
-  background-color: var(--neutral-light-9);
-  border: 1px solid var(--neutral-light-7);
+  background-color: var(--harmony-n-50);
+  border: 1px solid var(--harmony-n-150);
   height: 96px;
   width: 198px;
   border-radius: 8px;
@@ -20,7 +20,7 @@
 }
 
 .completionText {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
   font-size: 12px;
   font-weight: bold;
   line-height: 15px;
@@ -34,7 +34,7 @@
   font-weight: 500;
   letter-spacing: 0.43px;
   line-height: 15px;
-  color: var(--neutral-light-3);
+  color: var(--harmony-n-500);
   cursor: pointer;
 }
 

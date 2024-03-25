@@ -106,11 +106,11 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
                   onClick={handleMenuItemClick(item)}
                   tabIndex={i === 0 ? 0 : -1}
                 >
-                  {item.icon && (
+                  {item.icon ? (
                     <div className={cn(styles.icon, item.iconClassName)}>
                       {item.icon}
                     </div>
-                  )}
+                  ) : null}
                   {item.text}
                 </li>
               ))}

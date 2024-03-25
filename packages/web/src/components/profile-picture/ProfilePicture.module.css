@@ -4,7 +4,7 @@
 }
 
 .profilePictureBackground {
-  background: var(--white);
+  background: var(--harmony-white);
   width: 208px;
   height: 208px;
   border-radius: 50%;
@@ -14,17 +14,20 @@
 .profilePicture {
   border-radius: 50%;
   box-sizing: border-box;
-  border: 4px solid var(--neutral-light-10);
+  border: 4px solid var(--harmony-n-25);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-color: var(--default-profile-picture-background);
   overflow: hidden;
+  width: 100%;
+  height: 100%;
 
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .profilePictureSkeleton {
   border-radius: 50%;
 }
@@ -85,9 +88,7 @@
 }
 
 .editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .overlay,
-.editMode.hasChanged:not(.modalOpen)
-  .profilePictureBackground:hover
-  .imageSelectionButton {
+.editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .imageSelectionButton {
   opacity: 1;
   pointer-events: all;
 }
@@ -98,6 +99,7 @@
 .loadingSkeleton :global(.ant-skeleton-header) {
   padding: 0 !important;
 }
+
 .profilePictureWrapper .loadingSkeleton :global(.ant-skeleton-avatar) {
   position: absolute;
   top: 0;

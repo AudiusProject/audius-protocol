@@ -11,11 +11,11 @@
 
 .countContainer:active .count {
   transform: scale(0.93);
-  color: var(--primary) !important;
+  color: var(--harmony-primary) !important;
 }
 
 .countContainer:active svg path {
-  fill: var(--primary) !important;
+  fill: var(--harmony-primary) !important;
 }
 
 .listenCount {
@@ -23,20 +23,20 @@
 }
 
 .count {
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
+  color: var(--harmony-neutral);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
   line-height: 15px;
   text-align: center;
   margin-right: 3px;
 }
 
 .countLabel {
-  color: var(--neutral-light-4);
-  font-family: var(--font-family);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-400);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-medium);
   line-height: 15px;
   text-align: center;
 }
@@ -47,7 +47,7 @@
 }
 
 .countContainer svg path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .statsContainer {

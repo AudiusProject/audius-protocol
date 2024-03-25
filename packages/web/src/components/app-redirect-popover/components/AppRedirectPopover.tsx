@@ -194,7 +194,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
                                   style={props}
                                 >
                                   <Button
-                                    variant='common'
+                                    variant='secondary'
                                     css={(theme) => ({
                                       borderRadius: theme.cornerRadius['2xl'],
                                       color: theme.color.secondary.secondary

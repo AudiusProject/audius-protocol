@@ -8,10 +8,9 @@ import type { PageContextServer } from 'vike/types'
 
 import { isMobileUserAgent } from 'utils/clientUtil'
 
-import { HarmonyCacheProvider, harmonyCache } from '../HarmonyCacheProvider'
-import { Root } from '../Root'
+import { harmonyCache } from '../HarmonyCacheProvider'
 
-import { SsrContextProvider } from './SsrContext'
+import RootWithProviders from './RootWithProviders'
 import { getIndexHtml } from './getIndexHtml'
 
 const { extractCriticalToChunks, constructStyleTagsFromChunks } =
@@ -32,20 +31,17 @@ export default function render(
   })
 
   const pageHtml = renderToString(
-    <HarmonyCacheProvider>
-      <SsrContextProvider
-        value={{
-          isServerSide: true,
-          isSsrEnabled: true,
-          pageProps,
-          history,
-          isMobile
-        }}
-      >
-        <Root />
-      </SsrContextProvider>
-    </HarmonyCacheProvider>
+    <RootWithProviders
+      ssrContextValue={{
+        isServerSide: true,
+        isSsrEnabled: true,
+        pageProps,
+        history,
+        isMobile
+      }}
+    />
   )
+
   const helmet = Helmet.renderStatic()
   const chunks = extractCriticalToChunks(pageHtml)
   const styles = constructStyleTagsFromChunks(chunks)

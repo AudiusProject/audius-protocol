@@ -385,9 +385,10 @@ def extend_track(track):
 
     # todo: remove once clients catch up i.e. no longer use this field
     track["download"] = {
-        "cid": track["track_cid"],
-        "is_downloadable": track["is_downloadable"],
-        "requires_follow": track["download_conditions"] is not None and "follow_user_id" in track["download_conditions"],
+        "cid": track.get("track_cid"),
+        "is_downloadable": bool(track.get("is_downloadable")),
+        "requires_follow": track.get("download_conditions") is not None
+        and "follow_user_id" in track.get("download_conditions"),
     }
 
     # TODO: This block is only for legacy tracks that have track_segments instead of duration

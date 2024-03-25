@@ -43,7 +43,7 @@ const CoSignCheck = ({
       text={tooltipText}
       mount='page'
       className={styles.tooltip}
-      color={'--white'}
+      color='white'
     >
       <div>
         <Check size={size} />

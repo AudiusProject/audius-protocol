@@ -1,6 +1,6 @@
 {
   "name": "embed",
-  "version": "1.5.72",
+  "version": "1.5.73",
   "private": true,
   "scripts": {
     "start": "vite",
@@ -37,7 +37,6 @@
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
-    "@audius/stems": "*",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
     "@google/model-viewer": "3.3.0",

@@ -6,12 +6,7 @@ import { BaseButtonProps } from '../BaseButton/types'
 
 export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
 
-export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'tertiary'
-  | 'destructive'
-  | 'common'
+export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive'
 
 export type ButtonSize = 'small' | 'default' | 'large'
 

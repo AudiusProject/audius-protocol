@@ -13,7 +13,7 @@
 
 .icon g path,
 .icon path {
-  fill: var(--accent-purple);
+  fill: var(--harmony-secondary);
 }
 
 .at {
@@ -21,9 +21,9 @@
   left: 34px;
   z-index: 2;
   top: 12px;
-  color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   opacity: 0;
   transition: all 0s;
 }
@@ -35,7 +35,7 @@
 }
 
 .input input {
-  font-size: var(--font-xs) !important;
+  font-size: var(--harmony-font-xs) !important;
   padding-left: 32px;
 }
 
@@ -45,5 +45,5 @@
 }
 
 .disabled input {
-  color: var(--neutral-light-2);
+  color: var(--harmony-n-600);
 }

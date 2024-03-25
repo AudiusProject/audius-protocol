@@ -51,13 +51,13 @@
   height: 24px;
 }
 .wrapper.large > .dropdownInput > :global(.ant-select) {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .wrapper.medium > .dropdownInput > :global(.ant-select) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 .wrapper.small > .dropdownInput > :global(.ant-select) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 .wrapper > .dropdownInput :global(.ant-select-selection-item),
@@ -80,7 +80,7 @@
 .wrapper .dropdownInput :global(.ant-select-selection-search input) {
   height: calc(100% - 2px) !important;
   font-weight: 500;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 .wrapper.large .dropdownInput :global(.ant-select-selection-search input) {
   line-height: 48px;
@@ -98,50 +98,50 @@
 }
 .wrapper .dropdownInput :global(.ant-select-selector) {
   height: 100%;
-  background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8) !important;
+  background-color: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-100) !important;
   border-radius: 4px;
   transition: border ease-in-out 0.1s;
   padding: 0 16px;
   box-shadow: none !important;
 }
 .alternative .dropdownInput :global(.ant-select-selector) {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }
 
 .wrapper .dropdownInput:hover :global(.ant-select-selector) {
-  border-color: var(--neutral-light-6) !important;
+  border-color: var(--harmony-n-200) !important;
 }
 .wrapper.focused .dropdownInput :global(.ant-select-selector) {
-  border-color: var(--secondary) !important;
+  border-color: var(--harmony-secondary) !important;
 }
 .wrapper.error .dropdownInput :global(.ant-select-selector) {
-  border-color: var(--accent-red) !important;
+  border-color: var(--harmony-red) !important;
 }
 .wrapper.error .dropdownInput :global(.ant-select-selector:hover) {
-  border-color: var(--accent-red-dark-1) !important;
+  border-color: var(--harmony-dark-red) !important;
 }
 .wrapper.disabled .dropdownInput :global(.ant-select-selector) {
-  background-color: var(--neutral-light-8);
+  background-color: var(--harmony-n-100);
   cursor: default !important;
 }
 
 .placeholder {
   height: 100%;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   font-weight: 500;
 }
 .wrapper.large .placeholder {
   line-height: 48px;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .wrapper.medium .placeholder {
   line-height: 32px;
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 .wrapper.small .placeholder {
   line-height: 22px;
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 .arrow {
@@ -150,7 +150,7 @@
 }
 
 .arrow path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }
 
 .dropdownInput :global(.ant-select-selection-item) {
@@ -160,17 +160,17 @@
      ant relies on being able to inline style the component to display: none.
   */
 
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-weight: 500;
 }
 .wrapper.large .dropdownInput :global(.ant-select-selection-item) {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 .wrapper.medium .dropdownInput :global(.ant-select-selection-item) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 .wrapper.small .dropdownInput :global(.ant-select-selection-item) {
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
 }
 
 /* Dropdown */
@@ -185,30 +185,30 @@
   padding: 0 8px;
 }
 .select :global(.ant-select-dropdown) {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
   box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
     0 2px 5px -2px rgba(133, 129, 153, 0.3);
   animation-duration: 0.18s;
 }
 .select,
 .select > div {
-  background: var(--white);
+  background: var(--harmony-white);
 }
 .select :global(.ant-select-dropdown) {
-  z-index: var(--layer-popup);
+  z-index: var(--harmony-layer-popup);
   padding: 8px 0;
   margin-top: 4px;
   text-align: left;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 .select :global(.ant-select-item) {
   min-height: unset;
   text-align: left;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
-  color: var(--neutral);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-neutral);
   transition: all ease-in-out 0.04s;
 }
 
@@ -222,12 +222,12 @@
 .select :global(.ant-select-item-option-active),
 .select
   :global(.ant-select-item-option-selected.ant-select-item-option-active) {
-  background: var(--secondary);
+  background: var(--harmony-secondary);
   color: var(--darkmode-static-white);
 }
 
 .large.select :global(.ant-select-item) {
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 28px;
   height: 32px;
 }
@@ -237,5 +237,5 @@
   margin: 0 -8px;
   padding: 0px !important;
   background-color: unset;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }

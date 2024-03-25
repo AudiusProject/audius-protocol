@@ -349,11 +349,11 @@ const VerificationModal = (props: VerificationModalProps) => {
   return (
     <>
       {props.isVerified ? (
-        <Button variant='common' disabled>
+        <Button variant='secondary' disabled fullWidth>
           {messages.verifiedBtn}
         </Button>
       ) : (
-        <Button variant='common' onClick={onOpen}>
+        <Button variant='secondary' fullWidth onClick={onOpen}>
           {messages.buttonText}
         </Button>
       )}

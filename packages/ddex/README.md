@@ -84,12 +84,12 @@ For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
 
 
 ### Bring up the ddex stack locally
-Run `audius-compose up -ddex-release-by-released` (or `audius-compose up --ddex-batched` -- see "Choreography" in Glossary below), and navigate to `http://localhost:9000` to view the DDEX webapp
+Run `audius-compose up -ddex-release-by-release` (or `audius-compose up --ddex-batched` -- see "Choreography" in Glossary below), and navigate to `http://localhost:9000` to view the DDEX webapp
 
 To upload a delivery to be processed:
-  1. Create buckets: `aws --endpoint=http://localhost:4566 s3 mb s3://audius-test-raw && aws --endpoint=http://localhost:4566 s3 mb s3://audius-test-crawled`
-  2. Upload your file: `aws --endpoint=http://localhost:4566 s3 cp <file from your computer> s3://audius-test-raw`. Example: `aws --endpoint=http://localhost:4566 s3 cp ./ingester/e2e_test/fixtures/release_by_release/ern381/sony1.zip s3://audius-test-raw`
-  3. Wait 3 minutes and it'll be processed and display in the UI (localhost:9000)
+  1. Create buckets: `aws --endpoint=http://ingress:4566 s3 mb s3://audius-test-raw && aws --endpoint=http://ingress:4566 s3 mb s3://audius-test-crawled`
+  2. Upload your file: `aws --endpoint=http://ingress:4566 s3 cp <file from your computer> s3://audius-test-raw`. Example: `aws --endpoint=http://ingress:4566 s3 cp ./ingester/e2e_test/fixtures/release_by_release/ern381/sony1.zip s3://audius-test-raw`
+  3. Watch the UI (localhost:9000) for the delivery to be crawled in a few seconds
 
 To access the ddex db via the mongo shell: `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin`, and then `use ddex`.  
 
@@ -97,12 +97,8 @@ To access the ddex db via the mongo shell: `docker exec -it ddex-mongo mongosh -
 Each service can be run independently as long as `ddex-mongo` is up (from `audius-compose up --ddex-[release-by-release|batched]` and then optionally stopping individual services). See the respective subdirectories' READMEs.
 
 ### Running / debugging the e2e test
-* Run `audius-compose test down && audius-compose test run ddex-e2e-release-by-release` to start the ddex stack and run the e2e test for the Release-By-Release choreography. You can replace `ddex-e2e-release-by-release` with `ddex-e2e-batched` to run the e2e test for the Batched choreography.
-* To debug S3:
-  1. Exec into `ddex-s3-release-by-release` (or `ddex-s3-batched`)
-  2. Run `pip install awscli`
-  3. Run `aws configure` and enter `test` as both credentials and `us-west-2` as the region when prompted
-  4. You can now run `aws --endpoint=http://localhost:4566 s3 ls` and other commands to debug the S3 state
+* Run `audius-compose test down && audius-compose test run ddex-e2e-release-by-release` to start the ddex stack and run the e2e test for the Release-By-Release choreography. Or run `audius-compose test run ddex-e2e-batched` to run the e2e test for the Batched choreography.
+* To debug S3, follow the onte-time setup instructions above to update your `/etc/hosts` and install the AWS cli. Then you can run `aws --endpoint=http://localhost:4566 s3 ls` and other commands to debug the S3 state.
 
 ## App architecture and flows
 1. A distributor uploads a ZIP file to the "raw" AWS S3 bucket.

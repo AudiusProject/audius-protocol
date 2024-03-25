@@ -1,9 +1,6 @@
 import mongoose from 'mongoose'
-import Deliveries from '../models/deliveries'
 import PendingReleases from '../models/pendingReleases'
-import PublishedReleases, {
-  PublishedRelease,
-} from '../models/publishedReleases'
+import PublishedReleases from '../models/publishedReleases'
 import type {
   TrackMetadata,
   CollectionMetadata,
@@ -34,6 +31,18 @@ const formatTrackMetadata = (
     releaseDate: new Date(metadata.release_date),
     ddexReleaseIds: metadata.ddex_release_ids,
     previewStartSeconds: metadata.preview_start_seconds ?? undefined,
+    artists: metadata.artists,
+    resourceContributors: metadata.resource_contributors,
+    indirectResourceContributors: metadata.indirect_resource_contributors,
+    rightsController: metadata.rights_controller?.name
+      ? {
+          ...metadata.rights_controller,
+          roles: metadata.rights_controller?.roles ?? [],
+        }
+      : null,
+    copyrightLine: metadata.copyright_line,
+    producerCopyrightLine: metadata.producer_copyright_line,
+    parentalWarningType: metadata.parental_warning_type,
     // isUnlisted: // TODO: set visibility
     // iswc:
     // origFilename:
@@ -55,11 +64,15 @@ const formatAlbumMetadata = (
     albumName: metadata.playlist_name,
     description: metadata.description || '',
     license: metadata.license || '',
-    mood: (metadata.mood || 'Other') as Mood, // TODO: SDK requires mood, but XML doesn't provide one
+    mood: (metadata.mood || 'Other') as Mood, // SDK requires mood, but XML doesn't provide one
     releaseDate: new Date(metadata.release_date),
     ddexReleaseIds: metadata.ddex_release_ids,
     tags: metadata.tags || '',
     upc: metadata.upc || '',
+    artists: metadata.artists,
+    copyrightLine: metadata.copyright_line,
+    producerCopyrightLine: metadata.producer_copyright_line,
+    parentalWarningType: metadata.parental_warning_type,
   }
 }
 
@@ -71,7 +84,7 @@ const uploadTrack = async (
   const userId = pendingTrack.metadata.artist_id
   const metadata = formatTrackMetadata(pendingTrack.metadata)
 
-  const coverArtDownload = await s3Service.downloadFromS3Indexed(
+  const coverArtDownload = await s3Service.downloadFromS3Crawled(
     pendingTrack.metadata.cover_art_url
   )
   // TODO: We can hash and verify against the metadata here
@@ -79,7 +92,7 @@ const uploadTrack = async (
     buffer: coverArtDownload!,
     originalname: pendingTrack.metadata.cover_art_url.split('/').pop(),
   }
-  const trackDownload = await s3Service.downloadFromS3Indexed(
+  const trackDownload = await s3Service.downloadFromS3Crawled(
     pendingTrack.metadata.audio_file_url
   )
   const trackFile = {
@@ -108,7 +121,7 @@ const uploadAlbum = async (
   s3Service: ReturnType<typeof createS3>
 ) => {
   // Fetch cover art from S3
-  const coverArtDownload = await s3Service.downloadFromS3Indexed(
+  const coverArtDownload = await s3Service.downloadFromS3Crawled(
     pendingAlbum.metadata.cover_art_url
   )
   // TODO: We can hash and verify against the metadata here
@@ -119,7 +132,7 @@ const uploadAlbum = async (
 
   // Fetch track audio files from S3
   const trackFilesPromises = pendingAlbum.tracks.map(async (track) => {
-    const trackDownload = await s3Service.downloadFromS3Indexed(
+    const trackDownload = await s3Service.downloadFromS3Crawled(
       track.audio_file_url
     )
     // TODO: We can hash and verify against the metadata here
@@ -157,18 +170,19 @@ async function recordPendingReleaseErr(
 ) {
   let errorMsg = ''
 
+  console.error(error)
+
   if (error instanceof Error) {
     errorMsg = error.message
   } else {
     errorMsg = 'An unknown error occurred'
   }
 
-  console.error(errorMsg)
   try {
     await PendingReleases.updateOne(
       { _id: doc._id },
       {
-        $push: { upload_errors: errorMsg },
+        $push: { publish_errors: errorMsg },
         $inc: { failure_count: 1 },
         $set: { failed_after_upload: failedAfterUpload },
       }
@@ -192,7 +206,7 @@ export const publishReleases = async (
       const currentDate = new Date()
       documents = await PendingReleases.find({
         publish_date: { $lte: currentDate },
-      })
+      }).lean<PendingRelease[]>()
     } catch (error) {
       console.error('Failed to fetch pending releases:', error)
       await new Promise((resolve) => setTimeout(resolve, 10_000))
@@ -200,41 +214,34 @@ export const publishReleases = async (
     }
 
     for (const doc of documents) {
+      const releaseId = doc._id
+
       if (doc.failed_after_upload) {
         console.error(
-          `pending_releases doc with delivery_id ${doc.delivery_id} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
+          `pending_releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
         )
         continue
       }
 
-      const deliveryId = doc.delivery_id
-      let publishedData: PublishedRelease
-
+      let uploadResult: {
+        trackId?: string | null
+        albumId?: string | null
+        blockHash: string
+        blockNumber: number
+      }
       try {
-        if (doc.create_track_release) {
-          const uploadResult = await uploadTrack(
+        if (doc.create_track_release?.ddex_release_ref) {
+          uploadResult = await uploadTrack(
             audiusSdk,
             doc.create_track_release,
             s3
           )
-          publishedData = {
-            track: doc.create_track_release,
-            entity_id: uploadResult.trackId,
-            blockhash: uploadResult.blockHash,
-            blocknumber: uploadResult.blockNumber,
-          }
-        } else if (doc.create_album_release) {
-          const uploadResult = await uploadAlbum(
+        } else if (doc.create_album_release?.ddex_release_ref) {
+          uploadResult = await uploadAlbum(
             audiusSdk,
             doc.create_album_release,
             s3
           )
-          publishedData = {
-            album: doc.create_album_release,
-            entity_id: uploadResult.albumId,
-            blockhash: uploadResult.blockHash,
-            blocknumber: uploadResult.blockNumber,
-          }
         } else {
           recordPendingReleaseErr(
             doc,
@@ -247,11 +254,17 @@ export const publishReleases = async (
         continue
       }
 
-      publishedData = {
-        ...publishedData,
+      const publishedData = {
+        _id: releaseId,
+        track: doc.create_track_release,
+        album: doc.create_album_release,
+        entity_id: doc.create_track_release
+          ? uploadResult.trackId
+          : uploadResult.albumId,
+        blockhash: uploadResult.blockHash,
+        blocknumber: uploadResult.blockNumber,
         publish_date: doc.publish_date,
-        upload_etag: doc.upload_etag,
-        delivery_id: deliveryId,
+        delivery_etag: doc.delivery_etag,
         created_at: new Date(),
       }
       console.log('Published release: ', JSON.stringify(publishedData))
@@ -262,19 +275,8 @@ export const publishReleases = async (
         session.startTransaction()
         const publishedRelease = new PublishedReleases(publishedData)
         await publishedRelease.save({ session })
-        await PendingReleases.deleteOne({ _id: doc._id }).session(session)
+        await PendingReleases.deleteOne({ _id: releaseId }).session(session)
 
-        // Update delivery_status to 'published' once all releases in the delivery are published
-        const remainingCount = await PendingReleases.countDocuments({
-          delivery_id: deliveryId,
-        }).session(session)
-        if (remainingCount === 0) {
-          await Deliveries.updateOne(
-            { _id: deliveryId },
-            { $set: { delivery_status: 'published' } },
-            { session }
-          )
-        }
         await session.commitTransaction()
       } catch (error) {
         await session.abortTransaction()

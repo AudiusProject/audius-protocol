@@ -1,40 +1,40 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
 }
 
 .amount {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-4);
 }
 
 .destination {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .details {
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
-  padding: var(--unit-4);
+  gap: var(--harmony-unit-2);
+  padding: var(--harmony-unit-4);
   border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background: var(--neutral-light-10);
+  border: 1px solid var(--harmony-border-strong);
+  background: var(--harmony-n-25);
 }
 
 .acknowledge {
   display: flex;
-  gap: var(--unit-6);
+  gap: var(--harmony-unit-6);
   align-items: center;
 }
 
 .buttons {
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   align-items: stretch;
 }
 

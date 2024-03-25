@@ -1,7 +1,7 @@
 .title {
   align-items: center;
   display: flex;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   justify-content: center;
   text-transform: uppercase;
 }

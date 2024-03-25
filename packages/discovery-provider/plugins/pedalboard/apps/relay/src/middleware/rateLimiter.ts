@@ -5,7 +5,6 @@ import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { config } from '..'
 import { NextFunction, Request, Response, response } from 'express'
 import { rateLimitError } from '../error'
-import { logger } from '../logger'
 
 const globalRateLimiter = new RelayRateLimiter()
 
@@ -14,7 +13,7 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier, requestId } = res.locals.ctx
+  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier, logger } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
   let signer: string | null
@@ -58,12 +57,12 @@ export const rateLimiterMiddleware = async (
       signer,
       limit
     })
-    logger.info({ requestId, address: signer, operation, limit }, "calculated rate limit")
+    logger.info({ limit }, "calculated rate limit")
     insertReplyHeaders(res, rateLimitData)
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders(res, e as RateLimiterRes)
-      logger.info({ requestId, address: signer, operation, limit }, "rate limit hit")
+      logger.info({ limit }, "rate limit hit")
       rateLimitError(next, 'rate limit hit')
       return
     }

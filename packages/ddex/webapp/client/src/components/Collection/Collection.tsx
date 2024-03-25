@@ -86,7 +86,7 @@ const Table = ({
     return (
       <tr key={release.release_id} className={styles.release}>
         {/* Placeholder cells for alignment */}
-        <td colSpan={8}></td>
+        <td colSpan={ddexChoreography === 'ERNReleaseByRelease' ? 5 : 8}></td>
         <td>{release.release_id}</td>
         <td>{release.xml_file_path}</td>
         <td>

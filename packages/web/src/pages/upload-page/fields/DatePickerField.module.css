@@ -8,16 +8,16 @@
 }
 
 .label {
-  color: var(--neutral-light-4);
-  font-size: var(--font-s);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-s);
   line-height: 14px;
-  margin-bottom: var(--unit-1);
+  margin-bottom: var(--harmony-unit-1);
 }
 
 .iconCalendar {
   height: 20px;
   width: 20px;
-  margin-right: var(--unit-4);
+  margin-right: var(--harmony-unit-4);
 }
 
 .input {
@@ -28,8 +28,8 @@
 }
 
 .displayValue {
-  font-weight: var(--font-medium);
-  font-size: var(--font-l);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-l);
   line-height: 18px;
 }
 
@@ -44,46 +44,46 @@
 
 /* New Styles for date picker */
 :global(.CalendarMonth_caption) {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   text-align: center;
   font-family: Avenir Next LT Pro;
   font-size: 20px;
   font-style: normal;
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--harmony-font-demi-bold);
 }
 
 :global(.CalendarDay) {
-  font-family: var(--font-family);
+  font-family: var(--harmony-font-family);
   line-height: 38px;
-  color: var(--neutral);
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
-  border: 1px solid var(--border-strong);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-demi-bold);
+  border: 1px solid var(--harmony-border-strong);
   background: #fff;
 }
 
 :global(.CalendarDay):hover {
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
 }
 
 :global(.CalendarDay__selected) {
-  background-color: var(--secondary);
-  color: var(--static-white);
-  border: 1px solid var(--border-strong);
+  background-color: var(--harmony-secondary);
+  color: var(--harmony-static-white);
+  border: 1px solid var(--harmony-border-strong);
 }
 
 :global(.CalendarDay__selected):hover {
-  background-color: var(--secondary);
-  color: var(--static-white);
-  border: 1px solid var(--border-strong);
+  background-color: var(--harmony-secondary);
+  color: var(--harmony-static-white);
+  border: 1px solid var(--harmony-border-strong);
 }
 
 :global(.CalendarDay__blocked_out_of_range) {
-  color: var(--neutral-light-7);
+  color: var(--harmony-n-150);
 }
 
 :global(.CalendarDay__blocked_out_of_range):hover {
-  color: var(--neutral-light-7);
+  color: var(--harmony-n-150);
   background: #fff;
 }
 
@@ -101,5 +101,5 @@
 
 :global(.DayPickerNavigation_svg__horizontal) path {
   stroke-width: 64px;
-  stroke: var(--neutral);
+  stroke: var(--harmony-neutral);
 }

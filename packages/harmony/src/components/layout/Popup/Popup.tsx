@@ -15,6 +15,7 @@ import { useTransition, animated } from 'react-spring'
 
 import { PlainButton } from 'components/button'
 import { IconClose } from 'icons'
+import { ModalState } from 'utils/modalState'
 
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { getScrollParent } from '../../../utils/getScrollParent'
@@ -194,7 +195,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     checkIfClickInside,
     children,
     className,
-    isVisible,
+    isVisible: isVisibleProp,
     onAfterClose,
     onClose,
     anchorOrigin: anchorOriginProp = defaultAnchorOrigin,
@@ -210,6 +211,9 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     fixed
   } = props
   const { spring, shadows } = useTheme()
+  const [popupState, setPopupState] = useState<ModalState>('closed')
+
+  const isVisible = popupState !== 'closed'
 
   const handleClose = useCallback(() => {
     onClose?.()
@@ -344,7 +348,15 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     return () => {}
   }, [isVisible, handleClose])
 
-  const transitions = useTransition(isVisible, null, {
+  useEffect(() => {
+    if (popupState === 'closed' && isVisibleProp) {
+      setPopupState('opening')
+    } else if (popupState === 'open' && !isVisibleProp) {
+      setPopupState('closing')
+    }
+  }, [isVisibleProp, popupState])
+
+  const transitions = useTransition(isVisibleProp, null, {
     from: {
       transform: `scale(0)`,
       opacity: 0
@@ -358,7 +370,10 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       opacity: 0
     },
     config: spring.standard,
-    unique: true
+    unique: true,
+    onDestroyed: (isDestroyed) => {
+      setPopupState(isDestroyed ? 'closed' : 'open')
+    }
   })
 
   const rootStyle = { zIndex, position: fixed ? ('fixed' as const) : undefined }
@@ -372,49 +387,51 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   return (
     <>
       {/* Portal the popup out of the dom structure so that it has a separate stacking context */}
-      {ReactDOM.createPortal(
-        <div
-          ref={wrapperRef}
-          className={styles.root}
-          style={rootStyle}
-          onMouseLeave={handleMouseLeave}
-        >
-          {transitions.map(({ item, key, props }) =>
-            item ? (
-              <animated.div
-                className={cn(styles.popup, className)}
-                css={{ boxShadow: shadows[shadow] }}
-                ref={popupRef}
-                key={key}
-                style={{
-                  ...props,
-                  transformOrigin: `${computedTransformOrigin.horizontal} ${computedTransformOrigin.vertical}`
-                }}
-              >
-                {showHeader && (
-                  <div
-                    className={cn(styles.header, {
-                      [styles.noAfter]: hideCloseButton
-                    })}
+      {popupState !== 'closed'
+        ? ReactDOM.createPortal(
+            <div
+              ref={wrapperRef}
+              className={styles.root}
+              style={rootStyle}
+              onMouseLeave={handleMouseLeave}
+            >
+              {transitions.map(({ item, key, props }) =>
+                item ? (
+                  <animated.div
+                    className={cn(styles.popup, className)}
+                    css={{ boxShadow: shadows[shadow] }}
+                    ref={popupRef}
+                    key={key}
+                    style={{
+                      ...props,
+                      transformOrigin: `${computedTransformOrigin.horizontal} ${computedTransformOrigin.vertical}`
+                    }}
                   >
-                    {hideCloseButton ? null : (
-                      <PlainButton
-                        variant='subdued'
-                        aria-label={messages.close}
-                        onClick={handleClose}
-                        iconLeft={IconClose}
-                      />
+                    {showHeader && (
+                      <div
+                        className={cn(styles.header, {
+                          [styles.noAfter]: hideCloseButton
+                        })}
+                      >
+                        {hideCloseButton ? null : (
+                          <PlainButton
+                            variant='subdued'
+                            aria-label={messages.close}
+                            onClick={handleClose}
+                            iconLeft={IconClose}
+                          />
+                        )}
+                        <div className={styles.title}>{title}</div>
+                      </div>
                     )}
-                    <div className={styles.title}>{title}</div>
-                  </div>
-                )}
-                {children}
-              </animated.div>
-            ) : null
-          )}
-        </div>,
-        portalLocation
-      )}
+                    {children}
+                  </animated.div>
+                ) : null
+              )}
+            </div>,
+            portalLocation
+          )
+        : null}
     </>
   )
 })

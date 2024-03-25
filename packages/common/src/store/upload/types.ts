@@ -1,4 +1,13 @@
-import { CollectionMetadata, StemUpload, TrackMetadata } from '../../models'
+import { CollectionValues } from '~/schemas'
+
+import {
+  Collection,
+  CollectionMetadata,
+  StemUpload,
+  StemUploadWithFile,
+  Track,
+  TrackMetadata
+} from '../../models'
 import { Nullable } from '../../utils/typeUtils'
 
 export type NativeFile = {
@@ -17,51 +26,78 @@ export enum UploadType {
   ALBUM = 3
 }
 
-export interface UploadTrack {
+/**
+ * Represents a track file, its metadata prior to upload, and a preview.
+ */
+export interface TrackForUpload {
   file: File | NativeFile
-  preview: any // Basically the Howler.js API, but with underscores.
-  metadata: ExtendedTrackMetadata
+  preview?: any // Basically the Howler.js API, but with underscores.
+  metadata: TrackMetadataForUpload
 }
 
-export interface ExtendedTrackMetadata extends TrackMetadata {
+/**
+ * Unlike normal Track metadata, TrackMetadataForUpload includes additional
+ * files: artwork and a stems field with StemsForUpload.
+ */
+export interface TrackMetadataForUpload extends TrackMetadata {
   artwork: Nullable<{
     file: Blob | NativeFile
     url: string
+    source?: string
   }>
+  stems?: StemUploadWithFile[]
 }
-
-export interface ExtendedCollectionMetadata extends CollectionMetadata {
-  playlist_name: string
+/**
+ * Unlike normal CollectionMetadata, CollectionMetadataForUpload has artwork
+ * and track details to be passed to its descendant tracks.
+ */
+export interface CollectionMetadataForUpload extends CollectionMetadata {
   artwork: {
     file: Blob
     url: string
   }
+  trackDetails: {
+    genre: string
+    mood: string
+    tags: string
+  }
 }
 
 export enum ProgressStatus {
+  /** The file is being uploaded to the storage node. */
   UPLOADING = 'UPLOADING',
+  /** The file is uploaded and being processed by the storage node. (Transcoding) */
   PROCESSING = 'PROCESSING',
+  /** The upload is complete. */
   COMPLETE = 'COMPLETE',
+  /** The upload failed. */
   ERROR = 'ERROR'
 }
 
 export type Progress = {
+  /** The current status of the upload. */
   status: ProgressStatus
+  /** Bytes currently uploaded. */
   loaded?: number
+  /** Total number of bytes. */
   total?: number
+  /** The transcoding progress, from [0, 1]. Used for audio files only. */
   transcode?: number
 }
 
 export type ProgressState = {
+  /** The progress of the artwork upload. */
   art: Progress
+  /** The progress of the audio track upload. */
   audio: Progress
+  /** Nested progress for a track's stems (audio only). */
+  stems: ProgressState[]
 }
 
-export interface UploadState {
+type UploadStateBase = {
   openMultiTrackNotification: boolean
-  tracks: Nullable<UploadTrack[]>
-  metadata: Nullable<ExtendedCollectionMetadata>
-  uploadType: Nullable<UploadType>
+  tracks: Nullable<TrackForUpload[]>
+  metadata: Nullable<CollectionValues>
   uploading: boolean
   uploadProgress: Nullable<ProgressState[]>
   success: boolean
@@ -71,3 +107,16 @@ export interface UploadState {
   stems: StemUpload[][]
   failedTrackIndices: number[]
 }
+
+type UploadStateForTracks = UploadStateBase & {
+  uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS | null
+  completedEntity?: Track
+}
+
+type UploadStateForCollection = UploadStateBase & {
+  uploadType: UploadType.ALBUM | UploadType.PLAYLIST | null
+  completedEntity?: Collection
+}
+
+/** The type for the upload reducer state of the store. */
+export type UploadState = UploadStateForCollection | UploadStateForTracks

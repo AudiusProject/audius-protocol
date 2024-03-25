@@ -301,16 +301,21 @@ export class TransactionHandler {
 
     let done = false
 
-    // Start up resubmission loop
+    // Start up resubmission loop. It will run in the background and continue
+    // to send the transaction until it hits a timeout.
     let sendCount = 0
     const startTime = Date.now()
+    let retryTxId
     if (retry) {
       ;(async () => {
         let elapsed = Date.now() - startTime
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
           try {
-            sendRawTransaction()
+            retryTxId = sendRawTransaction()
+            logger.info(
+              `transactionHandler: retrying txId ${txid} with retryTxId ${retryTxId}, sendCount ${sendCount}`
+            )
           } catch (e) {
             logger.error(
               `transactionHandler: error in send loop: ${e} for txId ${txid}`

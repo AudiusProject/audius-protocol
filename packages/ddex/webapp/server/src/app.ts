@@ -175,7 +175,7 @@ export default function createApp(
         env: process.env.NODE_ENV,
         awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
         awsBucketRaw: process.env.AWS_BUCKET_RAW,
-        awsBucketIndexed: process.env.AWS_BUCKET_INDEXED,
+        awsBucketCrawled: process.env.AWS_BUCKET_CRAWLED,
         ddexKey: process.env.DDEX_KEY,
         ddexChoreography: process.env.DDEX_CHOREOGRAPHY,
       },

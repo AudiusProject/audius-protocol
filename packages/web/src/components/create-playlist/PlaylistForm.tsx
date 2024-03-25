@@ -3,6 +3,7 @@ import {
   CollectionMetadata,
   Collection
 } from '@audius/common/models'
+import { createCollectionSchema } from '@audius/common/schemas'
 import { Nullable } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -10,7 +11,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { createCollectionSchema } from 'pages/upload-page/validation'
 
 import { EditActions } from './FormActions'
 

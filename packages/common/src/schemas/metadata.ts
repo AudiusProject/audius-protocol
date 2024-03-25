@@ -55,7 +55,14 @@ const trackMetadataSchema = {
   is_playlist_upload: false,
   ai_attribution_user_id: null,
   ddex_release_ids: null,
-  ddex_app: null
+  ddex_app: null,
+  artists: null,
+  resource_contributors: null,
+  indirect_resource_contributors: null,
+  rights_controller: null,
+  copyright_line: null,
+  producer_copyright_line: null,
+  parental_warning_type: null
 }
 
 export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
@@ -95,7 +102,11 @@ const collectionMetadataSchema = {
   upc: null,
   description: null,
   ddex_release_ids: null,
-  ddex_app: null
+  ddex_app: null,
+  artists: null,
+  copyright_line: null,
+  producer_copyright_line: null,
+  parental_warning_type: null
 }
 
 export const newCollectionMetadata = (fields?: any, validate = false) => {

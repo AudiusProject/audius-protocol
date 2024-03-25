@@ -18,7 +18,8 @@ import {
   IconTransaction,
   IconInfo,
   Button,
-  Flex
+  Flex,
+  ButtonProps
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { push as pushRoute } from 'connected-react-router'
@@ -81,6 +82,17 @@ const messages = {
   findArtists: 'Find Artists to Support on Trending'
 }
 
+const AdvancedOptionButton = (props: ButtonProps) => {
+  return (
+    <Button
+      variant='secondary'
+      css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+      fullWidth
+      {...props}
+    />
+  )
+}
+
 const AdvancedWalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
   const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
@@ -128,41 +140,30 @@ const AdvancedWalletActions = () => {
     <div className={styles.moreOptionsSection}>
       <div className={styles.subtitle}>{messages.advancedOptions}</div>
       <Flex wrap='wrap' gap='l' w='100%'>
-        <Button
-          variant='common'
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+        <AdvancedOptionButton
           disabled={!hasBalance}
           onClick={onClickSend}
           iconLeft={IconSend}
         >
           {messages.sendLabel}
-        </Button>
-        <Button
-          variant='common'
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
-          onClick={onClickReceive}
-          iconLeft={IconReceive}
-        >
+        </AdvancedOptionButton>
+        <AdvancedOptionButton onClick={onClickReceive} iconLeft={IconReceive}>
           {messages.receiveLabel}
-        </Button>
-        {!isMobile && isTransactionsEnabled && (
-          <Button
-            variant='common'
-            css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+        </AdvancedOptionButton>
+        {!isMobile && isTransactionsEnabled ? (
+          <AdvancedOptionButton
             onClick={onClickTransactions}
             iconLeft={IconTransaction}
           >
             {messages.transactionsLabel}
-          </Button>
-        )}
-        <Button
-          variant='common'
-          css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+          </AdvancedOptionButton>
+        ) : null}
+        <AdvancedOptionButton
           onClick={onClickConnectWallets}
           iconLeft={IconSettings}
         >
           {messages.manageWallets}
-        </Button>
+        </AdvancedOptionButton>
         {isMobile && (
           <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
         )}
@@ -211,13 +212,12 @@ const OnRampTooltipButton = ({
       disabled={!isDisabled}
       className={styles.tooltip}
       text={disabledText}
-      color={'--secondary'}
+      color='secondary'
       shouldWrapContent={false}
     >
       <div className={styles.onRampButtonTooltipContainer}>
         <OnRampButton
           provider={provider}
-          className={styles.onRampButton}
           disabled={isDisabled}
           onClick={onClick}
         />
