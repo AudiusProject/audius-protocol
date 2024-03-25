@@ -1,3 +1,4 @@
+import datetime
 import logging
 from inspect import currentframe
 from time import time
@@ -8,6 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 
 from src.models.indexing.block import Block
+from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
@@ -27,6 +29,10 @@ def init_task_and_acquire_lock(
     blocking_timeout=None,
     lock_name=None,
 ):
+    # all tasks that use this function are 5 seconds
+    interval = datetime.timedelta(seconds=5)
+    start_time = time.time()
+    errored = False
     current_frame = currentframe()
     # get name of the caller function
     task_name = (
@@ -59,11 +65,23 @@ def init_task_and_acquire_lock(
         else:
             logger.info(f"{task_name} | Failed to acquire {lock_name}")
     except Exception as e:
-        logger.error(f"{task_name} | Fatal error in main loop", exc_info=True)
+        logger.error(f"{task_name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": task_name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(task_name, countdown=time_left)
 
 
 def update_aggregate_table(

@@ -325,88 +325,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
         ],
-        beat_schedule={
-            "aggregate_metrics": {
-                "task": "aggregate_metrics",
-                "schedule": timedelta(minutes=METRICS_INTERVAL),
-            },
-            "synchronize_metrics": {
-                "task": "synchronize_metrics",
-                "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
-            },
-            "index_hourly_play_counts": {
-                "task": "index_hourly_play_counts",
-                "schedule": timedelta(seconds=30),
-            },
-            "vacuum_db": {
-                "task": "vacuum_db",
-                "schedule": timedelta(days=1),
-            },
-            "update_clique_signers": {
-                "task": "update_clique_signers",
-                "schedule": timedelta(seconds=10),
-            },
-            "index_trending": {
-                "task": "index_trending",
-                "schedule": timedelta(seconds=10),
-            },
-            "update_user_balances": {
-                "task": "update_user_balances",
-                "schedule": timedelta(seconds=60),
-            },
-            "monitoring_queue": {
-                "task": "monitoring_queue",
-                "schedule": timedelta(seconds=60),
-            },
-            "cache_trending_playlists": {
-                "task": "cache_trending_playlists",
-                "schedule": timedelta(minutes=30),
-            },
-            "index_eth": {
-                "task": "index_eth",
-                "schedule": timedelta(seconds=30),
-            },
-            "index_oracles": {
-                "task": "index_oracles",
-                "schedule": timedelta(minutes=5),
-            },
-            "index_aggregate_monthly_plays": {
-                "task": "index_aggregate_monthly_plays",
-                "schedule": timedelta(minutes=5),
-            },
-            "prune_plays": {
-                "task": "prune_plays",
-                "schedule": timedelta(seconds=30),
-            },
-            "index_aggregate_tips": {
-                "task": "index_aggregate_tips",
-                "schedule": timedelta(seconds=5),
-            },
-            "index_reactions": {
-                "task": "index_reactions",
-                "schedule": timedelta(seconds=5),
-            },
-            "index_profile_challenge_backfill": {
-                "task": "index_profile_challenge_backfill",
-                "schedule": timedelta(minutes=1),
-            },
-            "cache_current_nodes": {
-                "task": "cache_current_nodes",
-                "schedule": timedelta(minutes=2),
-            },
-            "cache_entity_counts": {
-                "task": "cache_entity_counts",
-                "schedule": timedelta(minutes=10),
-            },
-            "update_aggregates": {
-                "task": "update_aggregates",
-                "schedule": timedelta(minutes=10),
-            },
-            "publish_scheduled_releases": {
-                "task": "publish_scheduled_releases",
-                "schedule": timedelta(minutes=1),
-            },
-        },
         task_serializer="json",
         accept_content=["json"],
         broker_url=redis_url,
@@ -517,3 +435,23 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_rewards_manager")
     celery.send_task("index_latest_block")
     celery.send_task("index_challenges")
+    celery.send_task("aggregate_metrics")
+    celery.send_task("synchronize_metrics")
+    celery.send_task("index_hourly_play_counts")
+    celery.send_task("vacuum_db")
+    celery.send_task("update_clique_signers")
+    celery.send_task("index_trending")
+    celery.send_task("update_user_balances")
+    celery.send_task("monitoring_queue")
+    celery.send_task("cache_trending_playlists")
+    celery.send_task("index_eth")
+    celery.send_task("index_oracles")
+    celery.send_task("index_aggregate_monthly_plays")
+    celery.send_task("prune_plays")
+    celery.send_task("index_profile_challenge_backfill")
+    celery.send_task("cache_current_nodes")
+    celery.send_task("cache_entity_counts")
+    celery.send_task("update_aggregates")
+    celery.send_task("publish_scheduled_releases")
+    celery.send_task("index_aggregate_tips")
+    celery.send_task("index_reactions")

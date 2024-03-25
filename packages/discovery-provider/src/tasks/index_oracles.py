@@ -1,4 +1,6 @@
+import datetime
 import logging
+import time
 from typing import List
 
 from src.tasks.celery_app import celery
@@ -49,17 +51,26 @@ def get_oracle_addresses_from_chain(redis) -> List[str]:
 @save_duration_metric(metric_group="celery_task")
 def index_oracles_task(self):
     redis = index_oracles_task.redis
-    have_lock = False
-    update_lock = redis.lock("index_oracles_lock", timeout=60)
+    interval = datetime.timedelta(minutes=5)
+    start_time = time.time()
+    errored = False
     try:
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            get_oracle_addresses_from_chain(redis)
-        else:
-            logger.info("index_oracles.py | Failed to acquire index oracles lock")
+        get_oracle_addresses_from_chain(redis)
     except Exception as e:
-        logger.error("index_oracles.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

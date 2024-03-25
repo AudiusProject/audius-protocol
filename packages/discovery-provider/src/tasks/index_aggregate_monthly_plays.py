@@ -1,3 +1,4 @@
+import datetime
 import logging
 import time
 
@@ -101,36 +102,37 @@ def index_aggregate_monthly_plays(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = index_aggregate_monthly_plays.db
-    redis = index_aggregate_monthly_plays.redis
-    # Define lock acquired boolean
-    have_lock = False
-    # Define redis lock object
-    update_lock = redis.lock("index_aggregate_monthly_plays_lock", timeout=60 * 10)
+    interval = datetime.timedelta(minutes=5)
+    start_time = time.time()
+    errored = False
     try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            start_time = time.time()
-            logger.info(
-                f"index_aggregate_monthly_plays.py | Started updating {AGGREGATE_MONTHLY_PLAYS_TABLE_NAME}"
-            )
-
-            with db.scoped_session() as session:
-                _index_aggregate_monthly_plays(session)
-
-            logger.info(
-                f"index_aggregate_monthly_plays.py | Finished updating \
-                {AGGREGATE_MONTHLY_PLAYS_TABLE_NAME} in: {time.time()-start_time} sec"
-            )
-        else:
-            logger.info(
-                "index_aggregate_monthly_plays.py | Failed to acquire index_aggregate_monthly_plays"
-            )
-    except Exception as e:
-        logger.error(
-            "index_aggregate_monthly_plays.py | Fatal error in main loop", exc_info=True
+        start_time = time.time()
+        logger.info(
+            f"index_aggregate_monthly_plays.py | Started updating {AGGREGATE_MONTHLY_PLAYS_TABLE_NAME}"
         )
+
+        with db.scoped_session() as session:
+            _index_aggregate_monthly_plays(session)
+
+        logger.info(
+            f"index_aggregate_monthly_plays.py | Finished updating \
+                {AGGREGATE_MONTHLY_PLAYS_TABLE_NAME} in: {time.time()-start_time} sec"
+        )
+    except Exception as e:
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

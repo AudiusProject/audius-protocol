@@ -1,4 +1,6 @@
+import datetime
 import logging
+import time
 
 import requests
 
@@ -88,24 +90,28 @@ def update_signers(self, redis):
 @celery.task(name="update_clique_signers", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_clique_signers(self):
-    redis = update_clique_signers.redis
-    have_lock = False
-    update_lock = redis.lock("network_peers_lock", timeout=7200)
+    interval = datetime.timedelta(seconds=10)
+    start_time = time.time()
+    errored = False
     try:
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            # if not os.getenv("audius_discprov_dev_mode"):
-            #     update_signers(self, redis)
-            pass
-        else:
-            logger.info(
-                "update_clique_signers.py | Failed to acquire update_clique_signers"
-            )
+        # if not os.getenv("audius_discprov_dev_mode"):
+        #     update_signers(self, redis)
+        pass
     except Exception as e:
-        logger.error(
-            "update_clique_signers.py | Fatal error in main loop", exc_info=True
-        )
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

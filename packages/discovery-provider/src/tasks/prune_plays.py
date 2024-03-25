@@ -65,29 +65,34 @@ def prune_plays(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = prune_plays.db
-    redis = prune_plays.redis
-    # Define lock acquired boolean
-    have_lock = False
-    # Define redis lock object
-    update_lock = redis.lock("prune_plays_lock", timeout=7200)
+    interval = datetime.timedelta(seconds=30)
+    start_time = time.time()
+    errored = False
     try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            start_time = time.time()
-            logger.info("prune_plays.py | Started pruning plays")
+        start_time = time.time()
+        logger.info("prune_plays.py | Started pruning plays")
 
-            with db.scoped_session() as session:
-                _prune_plays(session)
+        with db.scoped_session() as session:
+            _prune_plays(session)
 
-            logger.info(
-                f"prune_plays.py | Finished pruning in: {time.time()-start_time} sec"
-            )
-        else:
-            logger.info("prune_plays.py | Failed to acquire prune_plays_lock")
+        logger.info(
+            f"prune_plays.py | Finished pruning in: {time.time()-start_time} sec"
+        )
     except Exception as e:
-        logger.error("prune_plays.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

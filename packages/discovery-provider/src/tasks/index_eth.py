@@ -1,3 +1,4 @@
+import datetime
 import logging
 import time
 
@@ -79,32 +80,34 @@ def index_eth(self):
     db = index_eth.db
     redis_inst = index_eth.redis
 
-    # Define lock acquired boolean
-    have_lock = False
-
-    # Define redis lock object
-    update_lock = redis_inst.lock("index_eth_lock")
+    interval = datetime.timedelta(seconds=30)
+    start_time = time.time()
+    errored = False
     try:
-        # Attempt to acquire lock
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            logger.info(f"index_eth.py | {self.request.id} | Acquired index_eth_lock")
+        logger.info(f"index_eth.py | {self.request.id} | Acquired index_eth_lock")
 
-            index_eth_transfer_events(db, redis_inst)
+        index_eth_transfer_events(db, redis_inst)
 
-            end_time = time.time()
-            redis_inst.set(index_eth_last_completion_redis_key, int(end_time))
-            logger.info(
-                f"index_eth.py | {self.request.id} | Processing complete within session"
-            )
-        else:
-            logger.error(
-                f"index_eth.py | {self.request.id} | \
-                    Failed to acquire index_eth_lock"
-            )
+        end_time = time.time()
+        redis_inst.set(index_eth_last_completion_redis_key, int(end_time))
+        logger.info(
+            f"index_eth.py | {self.request.id} | Processing complete within session"
+        )
     except Exception as e:
-        logger.error("Fatal error in main loop of index_eth: %s", e, exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

@@ -494,27 +494,32 @@ def index_trending_task(self):
     db = index_trending_task.db
     redis = index_trending_task.redis
     web3 = get_web3()
-    have_lock = False
-    timeout = 60 * 60 * 2
-    update_lock = redis.lock("index_trending_lock", timeout=timeout)
+    interval = datetime.timedelta(seconds=10)
+    start_time = time.time()
+    errored = False
     try:
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            min_block, min_timestamp = get_should_update_trending(
-                db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
-            )
-            if min_block is not None and min_timestamp is not None:
-                index_trending(self, db, redis, min_timestamp)
-            else:
-                logger.info("index_trending.py | skip indexing: not min block")
+        min_block, min_timestamp = get_should_update_trending(
+            db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
+        )
+        if min_block is not None and min_timestamp is not None:
+            index_trending(self, db, redis, min_timestamp)
         else:
-            logger.info(
-                f"index_trending.py | \
-                skip indexing: without lock {have_lock}"
-            )
+            logger.info("index_trending.py | skip indexing: not min block")
     except Exception as e:
-        logger.error("index_trending.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

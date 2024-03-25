@@ -1,3 +1,6 @@
+import datetime
+import time
+
 from sqlalchemy import func
 
 from src.models.tracks.track import Track
@@ -35,26 +38,29 @@ def _publish_scheduled_releases(session):
 # ####### CELERY TASKS ####### #
 @celery.task(name="publish_scheduled_releases", bind=True)
 def publish_scheduled_releases(self):
-    redis = publish_scheduled_releases.redis
     db = publish_scheduled_releases.db
-
-    # Define lock acquired boolean
-    have_lock = False
-    # Define redis lock object
-    update_lock = redis.lock(
-        "publish_scheduled_releases_lock", blocking_timeout=25, timeout=600
-    )
+    interval = datetime.timedelta(minutes=1)
+    start_time = time.time()
+    errored = False
     try:
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            with db.scoped_session() as session:
-                _publish_scheduled_releases(session)
+        with db.scoped_session() as session:
+            _publish_scheduled_releases(session)
 
-        else:
-            logger.info("Failed to acquire lock")
     except Exception as e:
-        logger.error(f"ERROR caching node info {e}")
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

@@ -1,8 +1,9 @@
+import datetime
 import logging
 import os
+import time
 from typing import Optional
 
-from redis import Redis
 from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
@@ -141,32 +142,32 @@ def get_latest_backfill(session: Session, backfill_blocknumber: int) -> Optional
 @celery.task(name="index_profile_challenge_backfill", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_profile_challenge_backfill(self):
-    redis: Redis = index_profile_challenge_backfill.redis
     db: SessionManager = index_profile_challenge_backfill.db
     challenge_bus: ChallengeEventBus = (
         index_profile_challenge_backfill.challenge_event_bus
     )
-
-    # Define lock acquired boolean
-    have_lock = False
-    # Max duration of lock is 1 hr
-    update_lock = redis.lock("profile_challenge_backfill_lock", timeout=3600)
-
+    interval = datetime.timedelta(minute=1)
+    start_time = time.time()
+    errored = False
     try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            logger.info("index_profile_challenge_backfill.py | Acquired lock")
-            with challenge_bus.use_scoped_dispatch_queue():
-                enqueue_social_rewards_check(db, challenge_bus)
-        else:
-            logger.info("index_profile_challenge_backfill.py | Failed to acquire lock")
+        logger.info("index_profile_challenge_backfill.py | Acquired lock")
+        with challenge_bus.use_scoped_dispatch_queue():
+            enqueue_social_rewards_check(db, challenge_bus)
     except Exception as e:
-        logger.error(
-            "index_profile_challenge_backfill.py | Fatal error in main loop",
-            exc_info=True,
-        )
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)
