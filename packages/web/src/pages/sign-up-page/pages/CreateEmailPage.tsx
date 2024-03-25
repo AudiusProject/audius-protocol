@@ -16,7 +16,7 @@ import {
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { useMedia as useMediaQuery, useWindowSize } from 'react-use'
+import { useWindowSize } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
