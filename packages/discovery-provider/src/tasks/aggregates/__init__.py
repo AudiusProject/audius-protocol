@@ -53,14 +53,14 @@ def init_task_and_acquire_lock(
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            start_time = time()
+            start_time = time.time()
 
             with db.scoped_session() as session:
                 aggregate_func(session, redis)
 
             logger.info(
                 f"{task_name} | Finished updating \
-                {table_name} in: {time()-start_time} sec"
+                {table_name} in: {time.time()-start_time} sec"
             )
         else:
             logger.info(f"{task_name} | Failed to acquire {lock_name}")
