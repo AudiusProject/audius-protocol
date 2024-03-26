@@ -44,7 +44,9 @@ export const storeContext: CommonStoreContext = {
   isElectron: false,
   env,
   explore,
-  ethereumCollectiblesProvider: new EthereumCollectiblesProvider(new OpenSeaClient(env.OPENSEA_API_URL!)),
+  ethereumCollectiblesProvider: new EthereumCollectiblesProvider(
+    new OpenSeaClient(env.OPENSEA_API_URL!)
+  ),
   solanaCollectiblesProvider: new SolanaCollectiblesProvider({
     heliusClient: new HeliusClient(env.HELIUS_DAS_API_URL),
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
