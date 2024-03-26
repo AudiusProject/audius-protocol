@@ -29,7 +29,6 @@ web-init:
         paths:
           - node_modules
           - packages/web/node_modules
-          - packages/probers/node_modules
           - packages/harmony/node_modules
           - packages/harmony/dist
           - packages/common/node_modules
@@ -91,32 +90,12 @@ web-build-ssr-staging:
         paths:
           - node_modules/@brillout/vite-plugin-import-build/dist
 
-web-test-staging:
-  working_directory: ~/audius-protocol
-  resource_class: large
-  executor: cypress/default
-  steps:
-    - checkout
-    - attach_workspace:
-        at: ./
-    - cypress/install:
-        install-command: 'npx cypress install'
-        install-browsers: true
-        working-directory: ~/audius-protocol/packages/probers
-    - cypress/run-tests:
-        cypress-command: 'npx cypress run --browser chrome'
-        start-command: 'cd ../.. ; npm run web:stage'
-        working-directory: ~/audius-protocol/packages/probers
-    - store_artifacts:
-        path: /home/circleci/audius-protocol/packages/probers/cypress/videos
-    - store_artifacts:
-        path: /home/circleci/audius-protocol/packages/probers/cypress/screenshots
-
 playwright-tests:
   working_directory: ~/audius-protocol
   resource_class: medium
-  executor: cypress/default
   parallelism: 4
+  docker:
+    - image: cimg/node:18.17
   steps:
     - checkout
     - attach_workspace:

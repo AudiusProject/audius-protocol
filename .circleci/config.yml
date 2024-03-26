@@ -73,7 +73,6 @@ jobs:
             - ./node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
-            - ./packages/probers/node_modules
             - ./packages/embed/node_modules
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
@@ -472,7 +471,6 @@ workflows:
             packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
-            packages/probers/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
@@ -515,7 +513,6 @@ workflows:
             .* run-release-workflow false
             .* run-sdk-workflow true
             .* run-harmony-workflow true
-            .* run-probers-workflow true
             .* run-ddex-stage-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
@@ -572,7 +569,6 @@ workflows:
             .* run-web-workflow true
             .* run-mobile-workflow true
             .* run-harmony-workflow true
-            .* run-probers-workflow false
             .* run-protocol-dashboard-workflow true
           requires:
             - generate-config
