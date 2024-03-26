@@ -154,6 +154,11 @@ const getArweaveMetadataUrl = (arweaveProtocolUrl: string) => {
     arweavePrefix.length
   )}`
 }
+
+export const getAssetIdentifier = (asset: OpenSeaNftExtended) => {
+  return `${asset.identifier}:::${asset.contract ?? ''}`
+}
+
 /**
  * Returns a collectible given an asset object from the OpenSea API
  *
@@ -358,7 +363,7 @@ export const assetToCollectible = async (
   }
 
   return {
-    id: `${asset.identifier}:::${asset.contract ?? ''}`,
+    id: getAssetIdentifier(asset),
     tokenId: asset.identifier,
     name: (asset.name || asset?.asset_contract?.name) ?? '',
     description: asset.description,
