@@ -13,7 +13,6 @@ import { dedupFilenames } from '~/utils'
 
 import { make, track as trackEvent } from 'app/services/analytics'
 import { dispatch } from 'app/store'
-import { setVisibility } from 'app/store/drawers/slice'
 import { EventNames } from 'app/types/analytics'
 
 import { audiusBackendInstance } from './audius-backend-instance'
