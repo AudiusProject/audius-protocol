@@ -1,7 +1,5 @@
 import { CommonState } from '../commonStore'
 
-export const getDownloadedPercentage = (state: CommonState) =>
-  state.downloads.downloadedPercentage
 export const getFileName = (state: CommonState) => state.downloads.fileName
 export const getFetchCancel = (state: CommonState) =>
   state.downloads.fetchCancel
