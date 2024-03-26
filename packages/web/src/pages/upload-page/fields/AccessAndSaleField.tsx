@@ -187,13 +187,14 @@ export const AccessAndSaleFormSchema = (
 
 type AccessAndSaleFieldProps = {
   isUpload?: boolean
+  isAlbum?: boolean
   trackLength?: number
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload, forceOpen, setForceOpen } = props
+  const { isUpload, isAlbum, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -551,6 +552,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         <AccessAndSaleMenuFields
           isRemix={isRemix}
           isUpload={isUpload}
+          isAlbum={isAlbum}
           streamConditions={tempStreamConditions}
           isScheduledRelease={isScheduledRelease}
         />

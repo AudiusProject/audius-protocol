@@ -114,7 +114,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           <ReleaseDateFieldLegacy />
-          <AccessAndSaleField />
+          <AccessAndSaleField isAlbum />
 
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>

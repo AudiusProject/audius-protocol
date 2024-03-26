@@ -54,6 +54,7 @@ export type AccesAndSaleMenuFieldsProps = {
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
   initialStreamConditions?: AccessConditions | undefined
+  isAlbum?: boolean
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
@@ -62,7 +63,8 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isUpload,
     isInitiallyUnlisted,
     initialStreamConditions,
-    isScheduledRelease
+    isScheduledRelease,
+    isAlbum
   } = props
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
@@ -83,6 +85,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     useAccessAndRemixSettings({
       isUpload: !!isUpload,
       isRemix,
+      isAlbum,
       initialStreamConditions: initialStreamConditions ?? null,
       isInitiallyUnlisted: !!isInitiallyUnlisted,
       isScheduledRelease: !!isScheduledRelease
@@ -108,7 +111,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           />
         ) : null}
 
-        {isSpecialAccessEnabled ? (
+        {isSpecialAccessEnabled && !isAlbum ? (
           <ModalRadioItem
             icon={<IconSpecialAccess />}
             label={messages.specialAccess}
@@ -120,7 +123,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             }
           />
         ) : null}
-        {isCollectibleGatedEnabled ? (
+        {isCollectibleGatedEnabled && !isAlbum ? (
           <CollectibleGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
