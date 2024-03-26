@@ -177,7 +177,9 @@ export default defineConfig(async ({ mode }) => {
     },
     test: {
       environment: 'jsdom',
-      exclude: ['e2e', 'node_modules']
+      exclude: ['e2e', 'node_modules'],
+      minThreads: 1,
+      maxThreads: 3
     }
   }
 })
