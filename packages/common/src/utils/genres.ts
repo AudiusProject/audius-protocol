@@ -119,6 +119,7 @@ export const GENRES = [
   Genre.LATIN,
   Genre.LOFI,
   Genre.HYPERPOP,
+  Genre.DANCEHALL,
   ...Object.values(ELECTRONIC_SUBGENRES)
 ]
 
