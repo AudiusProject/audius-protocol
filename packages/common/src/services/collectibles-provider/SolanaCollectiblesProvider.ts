@@ -4,7 +4,7 @@ import { Collectible, CollectibleState } from '~/models'
 import { allSettled } from '~/utils'
 
 import { HeliusClient } from '../helius'
-import { HeliusResponse } from '../helius/types'
+import { HeliusNFT } from '../helius/types'
 
 import { CollectiblesProvider } from './CollectiblesProvider'
 import { solanaNFTToCollectible } from './solCollectibleHelpers'
@@ -49,7 +49,7 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
         (
           item
         ): item is {
-          result: PromiseFulfilledResult<HeliusResponse>
+          result: PromiseFulfilledResult<HeliusNFT[]>
           wallet: string
         } => {
           const { result, wallet } = item
@@ -62,11 +62,7 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
         }
       )
       .map(({ result, wallet }) => {
-        // const { id, jsonrpc, result: nftResult } = result.value
-        // const { items, limit, page, total } = nftResult
-        const { result: nftResult } = result.value
-        const { items } = nftResult
-        return items.map((nft) => ({ ...nft, wallet }))
+        return result.value.map((nft) => ({ ...nft, wallet }))
       })
 
     const solanaCollectibles = await Promise.all(

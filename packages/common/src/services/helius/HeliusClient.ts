@@ -9,34 +9,52 @@ export class HeliusClient {
     this.apiUrl = apiUrl
   }
 
-  // todo: add pagination
   async getNFTsForWallet(wallet: string): Promise<HeliusNFT[]> {
-    // let res: Response
-    // let json: { next: string | undefined; nfts: HeliusNft[] }
-    // let nfts: HeliusNft[]
-    // let next: string | undefined
-    const response = await fetch(this.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        id: 'test-drive', // todo: what should this be
-        jsonrpc: '2.0',
-        method: 'getAssetsByOwner',
-        params: {
-          ownerAddress: wallet,
-          page: 1,
-          limit: HELIUS_NUM_ASSETS_PER_PAGE_LIMIT,
-          after: '',
-          before: '',
-          displayOptions: {
-            showUnverifiedCollections: false,
-            showCollectionMetadata: true
-          }
+    let nfts: HeliusNFT[] = []
+    try {
+      let page = 1
+      while (true) {
+        const response = await fetch(this.apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: 'test-drive', // todo: what should this be
+            jsonrpc: '2.0',
+            method: 'getAssetsByOwner',
+            params: {
+              ownerAddress: wallet,
+              page,
+              limit: HELIUS_NUM_ASSETS_PER_PAGE_LIMIT,
+              sortBy: {
+                sortBy: 'id',
+                sortDirection: 'asc'
+              },
+              displayOptions: {
+                showUnverifiedCollections: false,
+                showCollectionMetadata: true
+              }
+            }
+          })
+        })
+        const { result } = await response.json()
+        nfts = [...nfts, ...result.items]
+        const isEmptyResult = result.items.length === 0
+        const isResultLengthBelowLimit =
+          result.items.length < HELIUS_NUM_ASSETS_PER_PAGE_LIMIT
+        if (isEmptyResult || isResultLengthBelowLimit) {
+          break
+        } else {
+          page++
         }
-      })
-    })
-    return response.json()
+      }
+      return nfts
+    } catch (e) {
+      console.error(
+        `Encountered error while fetching nfts from Helius for wallet ${wallet}: Returning nfts obtained so far...\nError: ${e}`
+      )
+      return nfts
+    }
   }
 }

@@ -58,14 +58,3 @@ export type HeliusNFT = {
   // Audius added fields
   wallet: string
 }
-
-export type HeliusResponse = {
-  id: string
-  jsonrpc: string
-  result: {
-    total: number
-    limit: number
-    page: number
-    items: HeliusNFT[]
-  }
-}
