@@ -97,6 +97,7 @@ const combineMetadata = (
     // Take collection tags
     metadata.tags = collectionMetadata.trackDetails.tags
   }
+  // TODO: add pricing into here
   return trackMetadata
 }
 
