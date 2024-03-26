@@ -450,20 +450,9 @@ workflows:
             monitoring/healthz/.* run-healthz-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
-            .circleci/.* run-discovery-workflow true
-            .circleci/.* run-creator-workflow true
-            .circleci/.* run-identity-workflow true
-            .circleci/.* run-eth-contracts-workflow true
-            .circleci/.* run-protocol-dashboard-workflow true
-            .circleci/.* run-ddex-webapp-workflow true
-            .circleci/.* run-ddex-publisher-workflow true
-            .circleci/.* run-healthz-workflow true
-            .circleci/.* run-contracts-workflow true
-            .circleci/.* run-sdk-workflow true
+
             .circleci/.* run-web-workflow true
-            .circleci/.* run-mobile-workflow true
-            .circleci/.* run-harmony-workflow true
-            .circleci/.* run-embed-workflow true
+
             package-lock.json run-sdk-workflow true
             package-lock.json run-harmony-workflow true
             .* run-release-workflow false
