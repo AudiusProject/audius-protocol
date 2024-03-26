@@ -9,8 +9,10 @@ import {
 } from '@audius/common/store'
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'
+import { createThumbnail } from 'react-native-create-thumbnail'
 import { SvgUri } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
+import { useAsync } from 'react-use'
 
 import { IconPlay } from '@audius/harmony-native'
 import { ChainLogo, Tile } from 'app/components/core'
@@ -69,7 +71,18 @@ const CollectibleImage = (props: CollectibleImageProps) => {
   const { children, style, uri } = props
 
   const isSvg = uri.match(/.*\.svg$/)
+  const isMp4 = uri.match(/.*\.mp4$/)
   const [size, setSize] = useState(0)
+
+  const { value: mp4ThumbnailUrl } = useAsync(async () => {
+    if (isMp4) {
+      const response = await createThumbnail({
+        url: uri,
+        timeStamp: 10000
+      })
+      return response.path
+    }
+  }, [isMp4])
 
   return isSvg ? (
     <View
@@ -90,7 +103,7 @@ const CollectibleImage = (props: CollectibleImageProps) => {
     <ImageBackground
       style={style}
       source={{
-        uri
+        uri: isMp4 ? mp4ThumbnailUrl : uri
       }}
     >
       {children}
@@ -100,7 +113,7 @@ const CollectibleImage = (props: CollectibleImageProps) => {
 
 export const CollectiblesCard = (props: CollectiblesCardProps) => {
   const { collectible, style, ownerId } = props
-  const { name, frameUrl, mediaType, gifUrl, chain } = collectible
+  const { name, frameUrl, mediaType, gifUrl, videoUrl, chain } = collectible
 
   const styles = useStyles()
 
@@ -118,7 +131,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
     dispatch(setVisibility({ modal: 'CollectibleDetails', visible: true }))
   }, [dispatch, collectible, accountId, ownerId])
 
-  const url = frameUrl ?? gifUrl
+  const url = frameUrl ?? gifUrl ?? videoUrl
 
   return (
     <CollectiblesCardErrorBoundary>
@@ -127,21 +140,19 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
         onPress={handlePress}
       >
         {url ? (
-          <View>
-            <CollectibleImage style={styles.image} uri={url}>
-              {mediaType === 'VIDEO' ? (
-                <View style={styles.iconPlay}>
-                  <IconPlay
-                    height={48}
-                    width={48}
-                    fill='none'
-                    fillSecondary='hsla(0,0%,100%,.6)'
-                  />
-                </View>
-              ) : null}
-              <ChainLogo chain={chain} style={styles.chain} />
-            </CollectibleImage>
-          </View>
+          <CollectibleImage style={styles.image} uri={url}>
+            {mediaType === 'VIDEO' ? (
+              <View style={styles.iconPlay}>
+                <IconPlay
+                  height={48}
+                  width={48}
+                  color='staticWhite'
+                  style={{ opacity: 0.8 }}
+                />
+              </View>
+            ) : null}
+            <ChainLogo chain={chain} style={styles.chain} />
+          </CollectibleImage>
         ) : null}
         <Text style={styles.title}>{name}</Text>
       </Tile>
