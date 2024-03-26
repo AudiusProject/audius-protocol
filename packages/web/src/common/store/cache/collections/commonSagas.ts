@@ -558,11 +558,9 @@ function* deletePlaylistAsync(
 
   const isAlbum = collection.is_album
   if (isAlbum) {
-    const trackIds = collection.playlist_contents.track_ids
-
     const event = make(Name.DELETE, { kind: 'album', id: action.playlistId })
     yield* put(event)
-    yield* call(confirmDeleteAlbum, action.playlistId, trackIds, userId)
+    yield* call(confirmDeleteAlbum, action.playlistId, userId)
   } else {
     const event = make(Name.DELETE, { kind: 'playlist', id: action.playlistId })
     yield* put(event)
@@ -599,11 +597,7 @@ function* deletePlaylistAsync(
   )
 }
 
-function* confirmDeleteAlbum(
-  playlistId: ID,
-  trackIds: PlaylistTrackId[],
-  userId: ID
-) {
+function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
@@ -625,15 +619,6 @@ function* confirmDeleteAlbum(
             ])
           ),
           put(
-            cacheActions.update(
-              Kind.TRACKS,
-              trackIds.map((t) => ({
-                id: t.track,
-                metadata: { _marked_deleted: true }
-              }))
-            )
-          ),
-          put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
           put(
@@ -646,9 +631,8 @@ function* confirmDeleteAlbum(
         ])
 
         const { blockHash, blockNumber, error } = (yield* call(
-          audiusBackendInstance.deleteAlbum,
-          playlistId,
-          trackIds
+          audiusBackendInstance.deletePlaylist,
+          playlistId
         )) as TransactionReceipt & { error?: Error }
         if (error) throw error
 
@@ -683,15 +667,6 @@ function* confirmDeleteAlbum(
             ])
           ),
           put(
-            cacheActions.update(
-              Kind.TRACKS,
-              trackIds.map((t) => ({
-                id: t.track,
-                metadata: { _marked_deleted: false }
-              }))
-            )
-          ),
-          put(
             accountActions.addAccountPlaylist({
               id: playlist.playlist_id,
               name: playlist.playlist_name,
@@ -711,7 +686,7 @@ function* confirmDeleteAlbum(
         yield* put(
           collectionActions.deletePlaylistFailed(
             error,
-            { playlistId, trackIds, userId },
+            { playlistId, userId },
             { error, timeout }
           )
         )
