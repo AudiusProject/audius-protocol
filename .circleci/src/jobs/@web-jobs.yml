@@ -14,15 +14,15 @@ web-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    # - run:
-    #     name: lint & typecheck
-    #     command: |
-    #       npx turbo run verify --filter=audius-client
+    - run:
+        name: lint & typecheck
+        command: |
+          npx turbo run verify --filter=audius-client
 
-    # - run:
-    #     name: stylelint
-    #     command: |
-    #       npm run stylelint -w audius-client
+    - run:
+        name: stylelint
+        command: |
+          npm run stylelint -w audius-client
 
     - persist_to_workspace:
         root: ./
