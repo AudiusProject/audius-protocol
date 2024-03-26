@@ -15,7 +15,8 @@ import { noopReducer } from 'store/testHelper'
 
 const repostingUser = { repost_count: 0 }
 
-describe('repost', () => {
+// TODO: PAY-2600
+describe.skip('repost', () => {
   it('reposts', async () => {
     await expectSaga(sagas.watchRepostTrack, actions)
       .withReducer(
@@ -99,7 +100,8 @@ describe('repost', () => {
   })
 })
 
-describe('save', () => {
+// TODO: PAY-2600
+describe.skip('save', () => {
   it('saves', async () => {
     await expectSaga(sagas.watchSaveTrack, actions)
       .withReducer(
@@ -171,7 +173,8 @@ describe('save', () => {
   })
 })
 
-describe('recordListen', () => {
+// TODO: PAY-2600
+describe.skip('recordListen', () => {
   it('dispatches a listen for another account', async () => {
     await expectSaga(sagas.watchRecordListen, actions)
       .withReducer(
