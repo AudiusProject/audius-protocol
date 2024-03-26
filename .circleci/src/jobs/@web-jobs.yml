@@ -113,10 +113,6 @@ playwright-tests-report:
   docker:
     - image: cimg/node:18.17
   steps:
-    - attach_workspace:
-        at: ./
-    - run:
-        command: cd packages/web; mkdir blob-report
     - swissknife/wait_for_job:
         job-name: playwright-tests
     - swissknife/get-job-number:
@@ -124,8 +120,7 @@ playwright-tests-report:
     - swissknife/get_job_artifacts:
         job-number: SK_JOB_NUM
         file-name-pattern: packages/web/blob-report/.*
-        save-to-directory: packages/web/blob-report
-    - run: cd packages/web; npx playwright merge-reports --reporter html ./blob-report
+    - run: cd packages/web; npx playwright merge-reports --reporter html /tmp/swissknife/job_artifacts
     - store_artifacts:
         path: packages/web/playwright-report
 
