@@ -134,7 +134,6 @@ export const FollowButton = forwardRef(
         color ${motion.hover}
       `,
       '::before': {
-        zIndex: -1,
         content: '""',
         position: 'absolute',
         top: 0,
