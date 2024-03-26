@@ -452,7 +452,9 @@ export function* pollGatedContent({
         })
 
     if (!apiEntity?.access) {
-      continue
+      throw new Error(
+        `Could not retrieve entity with access for ${contentType} ${contentId}`
+      )
     }
 
     const ownerId =

@@ -8,7 +8,8 @@ import {
   PURCHASE_METHOD,
   PURCHASE_VENDOR,
   usePurchaseMethod,
-  PurchaseableContentMetadata
+  PurchaseableContentMetadata,
+  isPurchaseableAlbum
 } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
@@ -101,7 +102,7 @@ export const PurchaseContentFormFields = ({
     )
   }
 
-  const isAlbumPurchase = 'playlist_id' in metadata
+  const isAlbumPurchase = isPurchaseableAlbum(metadata)
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
       ? metadata._stems?.length ?? 0

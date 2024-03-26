@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import type { PurchaseableContentMetadata } from '@audius/common/hooks'
+import {
+  isPurchaseableAlbum,
+  type PurchaseableContentMetadata
+} from '@audius/common/hooks'
 import {
   collectionsSocialActions,
   tracksSocialActions
@@ -40,7 +43,7 @@ export const PurchaseSuccess = ({
 }) => {
   const { handle } = metadata.user
   const { has_current_user_reposted: isReposted } = metadata
-  const isAlbum = 'playlist_id' in metadata
+  const isAlbum = isPurchaseableAlbum(metadata)
   const title = isAlbum ? metadata.playlist_name : metadata.title
   const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
 

@@ -26,7 +26,7 @@ import {
   PURCHASE_VENDOR
 } from './constants'
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
-import { getExtraAmount } from './utils'
+import { getExtraAmount, isPurchaseableAlbum } from './utils'
 import { PurchaseContentSchema, PurchaseContentValues } from './validation'
 
 const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
@@ -48,7 +48,7 @@ export const usePurchaseContentFormConfiguration = ({
   purchaseVendor?: PurchaseVendor
 }) => {
   const dispatch = useDispatch()
-  const isAlbum = metadata && 'playlist_id' in metadata
+  const isAlbum = isPurchaseableAlbum(metadata)
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const page = useSelector(getPurchaseContentPage)

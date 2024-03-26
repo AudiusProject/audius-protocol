@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import {
   PurchaseableContentMetadata,
+  isPurchaseableAlbum,
   usePurchaseContentErrorMessage
 } from '@audius/common/hooks'
 import { Name, RepostSource } from '@audius/common/models'
@@ -88,7 +89,7 @@ export const PurchaseContentFormFooter = ({
   const contentId =
     'track_id' in metadata ? metadata.track_id : metadata.playlist_id
   const title = 'title' in metadata ? metadata.title : metadata.playlist_name
-  const isAlbum = 'playlist_id' in metadata
+  const isAlbum = isPurchaseableAlbum(metadata)
   const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues

@@ -3,7 +3,7 @@ import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
-import { PurchaseableContentMetadata } from '~/hooks'
+import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -180,7 +180,7 @@ const getPurchaseMetadata = (metadata: PurchaseableContentMetadata) => {
     updated_at
   }
 
-  const isAlbum = 'playlist_id' in metadata
+  const isAlbum = isPurchaseableAlbum(metadata)
   if (isAlbum) {
     return {
       ...commonFields,
@@ -294,7 +294,6 @@ function* pollForPurchaseConfirmation({
   }
   yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKING' }))
 
-  // TODO: poll purchased albums
   yield* pollGatedContent({
     contentId,
     contentType,

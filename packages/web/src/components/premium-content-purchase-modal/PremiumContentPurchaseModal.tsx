@@ -11,7 +11,7 @@ import {
   usePurchaseContentFormConfiguration,
   usePayExtraPresets,
   isStreamPurchaseable,
-  isDownloadPurchaseable,
+  isTrackDownloadPurchaseable,
   PURCHASE_METHOD,
   PurchaseableContentMetadata
 } from '@audius/common/hooks'
@@ -232,7 +232,8 @@ export const PremiumContentPurchaseModal = () => {
   // @ts-ignore TODO: calculate _cover_art_sizes, or remove the requirement from the arg type
   const isValidStreamGated = !!metadata && isStreamPurchaseable(metadata)
   // @ts-ignore TODO: calculate _cover_art_sizes, or remove the requirement from the arg type
-  const isValidDownloadGated = !!metadata && isDownloadPurchaseable(metadata)
+  const isValidDownloadGated =
+    !!metadata && isTrackDownloadPurchaseable(metadata)
 
   const purchaseConditions = isValidStreamGated
     ? metadata.stream_conditions

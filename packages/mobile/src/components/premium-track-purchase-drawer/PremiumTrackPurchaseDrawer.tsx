@@ -15,7 +15,7 @@ import {
   PURCHASE_VENDOR,
   usePurchaseMethod,
   isStreamPurchaseable,
-  isDownloadPurchaseable
+  isTrackDownloadPurchaseable
 } from '@audius/common/hooks'
 import type { USDCPurchaseConditions } from '@audius/common/models'
 import {
@@ -452,7 +452,8 @@ export const PremiumTrackPurchaseDrawer = () => {
   // @ts-ignore TODO
   const isValidStreamGatedTrack = !!track && isStreamPurchaseable(track)
   // @ts-ignore TODO
-  const isValidDownloadGatedTrack = !!track && isDownloadPurchaseable(track)
+  const isValidDownloadGatedTrack =
+    !!track && isTrackDownloadPurchaseable(track)
 
   const purchaseConditions = isValidStreamGatedTrack
     ? track.stream_conditions

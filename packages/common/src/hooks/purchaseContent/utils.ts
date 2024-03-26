@@ -3,11 +3,12 @@ import { isContentUSDCPurchaseGated } from '~/models/Track'
 import {
   PayExtraAmountPresetValues,
   PayExtraPreset,
-  PurchaseableAblumStreamMetadata,
+  PurchaseableAlbumStreamMetadata,
   PurchaseableContentMetadata,
   PurchaseableTrackDownloadMetadata,
   PurchaseableTrackStreamMetadata
 } from './types'
+import { is } from 'immer/dist/internal'
 
 type GetExtraAmountArgs = {
   amountPreset: PayExtraPreset
@@ -36,14 +37,21 @@ export const getExtraAmount = ({
   return extraAmount
 }
 
+export const isPurchaseableAlbum = (
+  metadata?: PurchaseableContentMetadata
+): metadata is PurchaseableAlbumStreamMetadata =>
+  !!metadata &&
+  'is_album' in metadata &&
+  isContentUSDCPurchaseGated(metadata.stream_conditions)
+
 export const isStreamPurchaseable = (
   metadata: PurchaseableContentMetadata
 ): metadata is
   | PurchaseableTrackStreamMetadata
-  | PurchaseableAblumStreamMetadata =>
+  | PurchaseableAlbumStreamMetadata =>
   isContentUSDCPurchaseGated(metadata.stream_conditions)
 
-export const isDownloadPurchaseable = (
+export const isTrackDownloadPurchaseable = (
   metadata: PurchaseableContentMetadata
 ): metadata is PurchaseableTrackDownloadMetadata =>
   'download_conditions' in metadata &&
