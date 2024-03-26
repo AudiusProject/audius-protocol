@@ -1,11 +1,14 @@
+import { Connection, PublicKey } from '@solana/web3.js'
+
 import { Collectible, CollectibleState } from '~/models'
-import { CollectiblesProvider } from './CollectiblesProvider'
 import { allSettled } from '~/utils'
+
 import { HeliusClient } from '../helius'
 import { HeliusResponse } from '../helius/types'
-import { Connection, PublicKey } from '@solana/web3.js'
-import { SolanaNFTType } from '../solana-client/types'
 import { solanaNFTToCollectible } from '../solana-client/solCollectibleHelpers'
+import { SolanaNFTType } from '../solana-client/types'
+
+import { CollectiblesProvider } from './CollectiblesProvider'
 
 type SolanaCollectiblesProviderCtorArgs = {
   heliusClient: HeliusClient

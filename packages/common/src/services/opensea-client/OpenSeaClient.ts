@@ -1,10 +1,6 @@
-import {
-  OpenSeaEvent,
-  OpenSeaNft,
-  OpenSeaCollection
-} from '../../models'
-
 import { Nullable } from '~/utils'
+
+import { OpenSeaEvent, OpenSeaNft, OpenSeaCollection } from '../../models'
 
 const OPENSEA_NUM_ASSETS_LIMIT = 50
 
@@ -15,11 +11,11 @@ export class OpenSeaClient {
     this.apiUrl = apiUrl
   }
 
-  async getCollectionMetadata(collection: string): Promise<Nullable<OpenSeaCollection>> {
+  async getCollectionMetadata(
+    collection: string
+  ): Promise<Nullable<OpenSeaCollection>> {
     try {
-      const res = await fetch(
-        `${this.apiUrl}/api/v2/collections/${collection}`
-      )
+      const res = await fetch(`${this.apiUrl}/api/v2/collections/${collection}`)
       return res.json()
     } catch (e) {
       console.error(e)

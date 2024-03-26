@@ -1,8 +1,25 @@
 import dayjs from 'dayjs'
-import { Collectible, CollectibleState, OpenSeaEvent, OpenSeaEventExtended, OpenSeaNft, OpenSeaNftExtended, OpenSeaNftMetadata } from '~/models'
-import { CollectiblesProvider } from './CollectiblesProvider'
-import { OpenSeaClient, assetToCollectible, isAssetValid, isNotFromNullAddress, transferEventToCollectible } from '../opensea-client'
+
+import {
+  Collectible,
+  CollectibleState,
+  OpenSeaEvent,
+  OpenSeaEventExtended,
+  OpenSeaNft,
+  OpenSeaNftExtended,
+  OpenSeaNftMetadata
+} from '~/models'
 import { allSettled } from '~/utils'
+
+import {
+  OpenSeaClient,
+  assetToCollectible,
+  isAssetValid,
+  isNotFromNullAddress,
+  transferEventToCollectible
+} from '../opensea-client'
+
+import { CollectiblesProvider } from './CollectiblesProvider'
 
 export class EthereumCollectiblesProvider implements CollectiblesProvider {
   private readonly openSeaClient: OpenSeaClient
@@ -11,9 +28,7 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
     this.openSeaClient = openSeaClient
   }
 
-  async getNftsForMultipleWallets(
-    wallets: string[]
-  ): Promise<OpenSeaNft[]> {
+  async getNftsForMultipleWallets(wallets: string[]): Promise<OpenSeaNft[]> {
     return allSettled(
       wallets.map((wallet) => this.openSeaClient.getNftsForWallet(wallet))
     ).then((results) =>
@@ -30,7 +45,9 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
     )
   }
 
-  async getNftTransferEventsForMultipleWallets(wallets: string[]): Promise<OpenSeaEvent[]> {
+  async getNftTransferEventsForMultipleWallets(
+    wallets: string[]
+  ): Promise<OpenSeaEvent[]> {
     return allSettled(
       wallets.map((wallet) =>
         this.openSeaClient.getNftTransferEventsForWallet(wallet)
@@ -63,7 +80,9 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
       metadata = undefined
     }
 
-    const collectionMetadata = await this.openSeaClient.getCollectionMetadata(nft.collection)
+    const collectionMetadata = await this.openSeaClient.getCollectionMetadata(
+      nft.collection
+    )
     if (collectionMetadata === null) {
       return { ...nft, ...(metadata ?? {}) }
     }
@@ -86,14 +105,11 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
       )
       const collectiblesMap: {
         [key: string]: Collectible
-      } = collectibles.reduce(
-        (acc, curr) => {
-          acc[curr.id] = curr
-          return acc
-        },
-        {}
-      )
-      
+      } = collectibles.reduce((acc, curr) => {
+        acc[curr.id] = curr
+        return acc
+      }, {})
+
       const ownedCollectibleKeySet = new Set(Object.keys(collectiblesMap))
       const lowercasedWallets = wallets.map((wallet) => wallet.toLowerCase())
 
@@ -178,15 +194,12 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
         })
       )
 
-      return Object.values(collectiblesMap).reduce(
-        (result, collectible) => {
-          result[collectible.wallet] = (result[collectible.wallet] || []).concat([
-            collectible
-          ])
-          return result
-        },
-        {} as CollectibleState
-      )
+      return Object.values(collectiblesMap).reduce((result, collectible) => {
+        result[collectible.wallet] = (result[collectible.wallet] || []).concat([
+          collectible
+        ])
+        return result
+      }, {} as CollectibleState)
     })
   }
 }

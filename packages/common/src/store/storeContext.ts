@@ -2,6 +2,11 @@ import type { AudiusSdk } from '@audius/sdk'
 import { Location } from 'history'
 
 import {
+  EthereumCollectiblesProvider,
+  SolanaCollectiblesProvider
+} from '~/services'
+
+import {
   AllTrackingEvents,
   AnalyticsEvent,
   LineupState,
@@ -21,7 +26,6 @@ import { TrackDownload } from '../services/track-download'
 import { WalletClient } from '../services/wallet-client'
 
 import { CommonState } from './reducers'
-import { EthereumCollectiblesProvider, SolanaCollectiblesProvider } from '~/services'
 
 export type CommonStoreContext = {
   getLocalStorageItem: (key: string) => Promise<string | null>

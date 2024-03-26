@@ -112,8 +112,16 @@ function* fetchProfileCustomizedCollectibles(user) {
 export function* fetchEthereumCollectiblesForWallets(wallets) {
   // const openSeaClient = yield getContext('openSeaClient')
   // return yield call([openSeaClient, openSeaClient.getCollectibles], wallets)
-  const ethereumCollectiblesProvider = yield getContext('ethereumCollectiblesProvider')
-  return yield call([ethereumCollectiblesProvider, ethereumCollectiblesProvider.getCollectibles], wallets)
+  const ethereumCollectiblesProvider = yield getContext(
+    'ethereumCollectiblesProvider'
+  )
+  return yield call(
+    [
+      ethereumCollectiblesProvider,
+      ethereumCollectiblesProvider.getCollectibles
+    ],
+    wallets
+  )
 }
 
 export function* fetchEthereumCollectibles(user) {
@@ -154,9 +162,14 @@ export function* fetchEthereumCollectibles(user) {
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  const solanaCollectiblesProvider = yield getContext('solanaCollectiblesProvider')
+  const solanaCollectiblesProvider = yield getContext(
+    'solanaCollectiblesProvider'
+  )
   yield call(waitForRemoteConfig)
-  return yield call([solanaCollectiblesProvider, solanaCollectiblesProvider.getCollectibles], wallets)
+  return yield call(
+    [solanaCollectiblesProvider, solanaCollectiblesProvider.getCollectibles],
+    wallets
+  )
 }
 
 export function* fetchSolanaCollectibles(user) {
