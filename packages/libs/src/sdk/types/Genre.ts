@@ -29,6 +29,7 @@ export enum Genre {
   LATIN = 'Latin',
   LOFI = 'Lo-Fi',
   HYPERPOP = 'Hyperpop',
+  DANCEHALL = 'Dancehall',
 
   // Electronic Subgenres
   TECHNO = 'Techno',

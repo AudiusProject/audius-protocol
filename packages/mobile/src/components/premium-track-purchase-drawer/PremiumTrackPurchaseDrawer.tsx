@@ -3,7 +3,8 @@ import { useCallback, type ReactNode, useEffect } from 'react'
 import { useGetTrackById } from '@audius/common/api'
 import type {
   PurchaseableTrackStreamMetadata,
-  PurchaseableTrackDownloadMetadata
+  PurchaseableTrackDownloadMetadata,
+  PurchaseableContentMetadata
 } from '@audius/common/hooks'
 import {
   useRemoteVar,
@@ -443,29 +444,31 @@ export const PremiumTrackPurchaseDrawer = () => {
     { id: trackId },
     { disabled: !trackId }
   )
+  const metadata = track as PurchaseableContentMetadata
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
-  // @ts-ignore TODO
-  const isValidStreamGatedTrack = !!track && isStreamPurchaseable(track)
-  // @ts-ignore TODO
+  const isValidStreamGatedTrack = !!metadata && isStreamPurchaseable(metadata)
   const isValidDownloadGatedTrack =
-    !!track && isTrackDownloadPurchaseable(track)
+    !!metadata && isTrackDownloadPurchaseable(metadata)
 
   const purchaseConditions = isValidStreamGatedTrack
-    ? track.stream_conditions
+    ? metadata.stream_conditions
     : isValidDownloadGatedTrack
-    ? track.download_conditions
+    ? metadata.download_conditions
     : null
 
-  const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
+  const price =
+    purchaseConditions && 'usdc_purchase' in purchaseConditions
+      ? purchaseConditions?.usdc_purchase.price
+      : 0
 
   const { initialValues, onSubmit, validationSchema } =
     usePurchaseContentFormConfiguration({
-      metadata: track,
+      metadata,
       presetValues,
       price
     })
@@ -508,7 +511,11 @@ export const PremiumTrackPurchaseDrawer = () => {
           >
             <RenderForm
               onClose={onClose}
-              track={track}
+              track={
+                metadata as
+                  | PurchaseableTrackStreamMetadata
+                  | PurchaseableTrackDownloadMetadata
+              }
               purchaseConditions={purchaseConditions}
             />
           </Formik>
