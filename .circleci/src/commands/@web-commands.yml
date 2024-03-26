@@ -219,3 +219,80 @@ web-deploy-sourcemaps-s3:
     - run:
         name: Deploy to S3
         command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800
+
+get-job-artifacts:
+  description: |
+    This command gets artifacts from a Circle CI job and stores in a directory
+    This requires a Circle CI token be set as $CIRCLE_TOKEN
+
+  parameters:
+    file-name-pattern:
+      description: the pattern of file name to download
+      type: string
+    save-to-directory:
+      description: Where to save the file to
+      type: string
+      default: /tmp/swissknife/job_artifacts
+    file-name:
+      description: The name of the downloaded artifact. If not set, the remote name is used
+      type: string
+      default: 'NA'
+    job-number:
+      description: the job number to pull artifacts from
+      type: env_var_name
+      default: CIRCLE_PREVIOUS_BUILD_NUM
+    vcs-type:
+      description: What is the VCS for this project
+      type: string
+      default: github
+    repo-name:
+      description: The repo from which to get artifacts
+      type: env_var_name
+      default: CIRCLE_PROJECT_REPONAME
+
+  steps:
+    - run:
+        name: Swissknife - Get job artifacts
+        command: |
+          if [ -z "$BASH" ]; then
+            echo Bash not installed.
+            exit 1
+          fi
+          hash jq 2>/dev/null || { echo >&2 "jq is not installed.  Aborting."; exit 1; }
+          if [[ "$CIRCLE_TOKEN" == "" ]]; then
+            echo "CIRCLE_TOKEN not set. Set a token to access the circle API in the env var CIRCLE_TOKEN";
+            exit 1;
+          fi
+
+          JOB_NUM=$<< parameters.job-number >>
+
+          if [[ "$JOB_NUM" == "" || "$JOB_NUM" = "0" ]]; then
+            echo "No job number, exitting!"
+            exit 0;
+          fi
+
+          mkdir -p << parameters.save-to-directory >>
+
+          SLUG="<< parameters.vcs-type >>/${CIRCLE_PROJECT_USERNAME}/$<< parameters.repo-name >>"
+          API_ENDPOINT="project/$SLUG/$JOB_NUM/artifacts"
+
+          echo "Getting artifact from $API_ENDPOINT"
+
+          get_artifact() {
+            ARTIFACTS_URL="https://circleci.com/api/v2/${API_ENDPOINT}?circle-token=${CIRCLE_TOKEN}"
+            curl -f -s $ARTIFACTS_URL > /tmp/swissknife/artifacts.json
+            REQUIRED_ARTIFACT_URLS=$(jq -r '.items[] | select(.path| test("<< parameters.file-name-pattern >>")) | .url' /tmp/swissknife/artifacts.json)
+
+            if [[ "$REQUIRED_ARTIFACT_URLS" == "" ]]; then
+              echo "Artifact URL not found on Circle CI, are you sure it exists?"
+              exit 0;
+            fi
+
+            echo "Path to artifacts $REQUIRED_ARTIFACT_URLS"
+
+            cd << parameters.save-to-directory >>
+            echo $REQUIRED_ARTIFACT_URLS | xargs -L1 curl -L -H "Circle-Token: $CIRCLE_TOKEN" --remote-name
+            echo "File downloaded to << parameters.save-to-directory >>"
+          }
+
+          get_artifact
