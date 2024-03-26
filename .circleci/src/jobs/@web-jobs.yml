@@ -108,7 +108,7 @@ playwright-tests:
     - store_artifacts:
         path: packages/web/blob-report
 
-playwright-tests-results:
+playwright-tests-report:
   working_directory: ~/audius-protocol
   executor: cimg/node:18.17
   steps:

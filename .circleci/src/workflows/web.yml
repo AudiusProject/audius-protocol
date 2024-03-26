@@ -59,6 +59,13 @@ jobs:
       requires:
         - web-init
 
+  - playwright-tests-report:
+      context:
+        - Audius Client
+        - Probers
+      requires:
+        - web-init
+
   - web-test:
       context: Audius Client
       requires:
