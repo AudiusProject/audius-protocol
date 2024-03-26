@@ -146,20 +146,57 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
         if playlist_track.track_id not in updated_track_ids:
             playlist_track.is_removed = True
             playlist_track.updated_at = params.block_datetime
-            track = (
+            track_record = (
                 session.query(Track)
                 .filter(Track.track_id == playlist_track.track_id)
                 .first()
             )
-            if track:
-                track.updated_at = params.block_datetime
-                track.playlists_containing_track = [
-                    collection_id
-                    for collection_id in (track.playlists_containing_track or [])
-                    if collection_id != playlist["playlist_id"]
+            if track_record:
+                current_playlist_id = playlist["playlist_id"]
+                track = helpers.model_to_dictionary(track_record)
+                track_record.updated_at = params.block_datetime
+                # remove from playlists_containing_track
+                track_record.playlists_containing_track = [
+                    playlist_id
+                    for playlist_id in track["playlists_containing_track"]
+                    if playlist_id != current_playlist_id
                 ]
 
+                # add to or overwrite existing entry in playlists_previously_containing_track
+                playlists_previously_containing_track = track[
+                    "playlists_previously_containing_track"
+                ].copy()
+                playlists_previously_containing_track[str(current_playlist_id)] = {
+                    "time": params.block_integer_time
+                }
+                track_record.playlists_previously_containing_track = (
+                    playlists_previously_containing_track
+                )
+
     for track_id in updated_track_ids:
+        # add playlist_id to playlists_containing_track and remove from playlists_previously_containing_track
+        track_record = session.query(Track).filter(Track.track_id == track_id).first()
+        if track_record:
+            current_playlist_id = playlist["playlist_id"]
+            track = helpers.model_to_dictionary(track_record)
+            track_record.updated_at = params.block_datetime
+
+            track_record.playlists_containing_track = list(
+                set((track["playlists_containing_track"]) + [current_playlist_id])
+            )
+
+            if (
+                str(current_playlist_id)
+                in track_record.playlists_previously_containing_track
+            ):
+                playlists_previously_containing_track = track[
+                    "playlists_previously_containing_track"
+                ].copy()
+                del playlists_previously_containing_track[str(current_playlist_id)]
+                track_record.playlists_previously_containing_track = (
+                    playlists_previously_containing_track
+                )
+
         # add row for each track that is not already in the table
         if track_id not in existing_tracks:
             new_playlist_track = PlaylistTrack(
@@ -171,28 +208,10 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             )
             # upsert to handle duplicates
             session.merge(new_playlist_track)
-            track = session.query(Track).filter(Track.track_id == track_id).first()
-            if track:
-                track.updated_at = params.block_datetime
-                track.playlists_containing_track = list(
-                    set(
-                        (track.playlists_containing_track or [])
-                        + [playlist["playlist_id"]]
-                    )
-                )
         elif existing_tracks[track_id].is_removed:
             # recover deleted relation (track was previously removed then re-added)
             existing_tracks[track_id].is_removed = False
             existing_tracks[track_id].updated_at = params.block_datetime
-            track = session.query(Track).filter(Track.track_id == track_id).first()
-            if track:
-                track.updated_at = params.block_datetime
-                track.playlists_containing_track = list(
-                    set(
-                        (track.playlists_containing_track or [])
-                        + [playlist["playlist_id"]]
-                    )
-                )
 
     params.logger.info(
         f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
@@ -466,6 +485,10 @@ def create_playlist(params: ManageEntityParameters):
         is_current=False,
         is_delete=False,
         ddex_app=ddex_app,
+        ddex_release_ids=params.metadata.get("ddex_release_ids", None),
+        artists=params.metadata.get("artists", None),
+        copyright_line=params.metadata.get("copyright_line", None),
+        producer_copyright_line=params.metadata.get("producer_copyright_line", None),
         parental_warning_type=params.metadata.get("parental_warning_type", None),
     )
 

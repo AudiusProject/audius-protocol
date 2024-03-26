@@ -150,15 +150,6 @@ type TrackHeaderProps = {
   onShare: () => void
   onSave: () => void
   onRepost: () => void
-  onDownload: ({
-    trackId,
-    category,
-    parentTrackId
-  }: {
-    trackId: ID
-    category?: string
-    parentTrackId?: ID
-  }) => void
   goToFavoritesPage: (trackId: ID) => void
   goToRepostsPage: (trackId: ID) => void
 }
@@ -199,7 +190,6 @@ const TrackHeader = ({
   onShare,
   onSave,
   onRepost,
-  onDownload,
   onClickMobileOverflow,
   goToFavoritesPage,
   goToRepostsPage

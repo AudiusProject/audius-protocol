@@ -89,15 +89,20 @@ class Track(Base, RepresentableMixin):
     playlists_containing_track = Column(
         ARRAY(Integer()), server_default="ARRAY[]::INTEGER[]"
     )
+    playlists_previously_containing_track = Column(
+        JSONB(True),
+        nullable=False,
+        server_default="json_build_object()",
+    )
     ai_attribution_user_id = Column(Integer, nullable=True)
     placement_hosts = Column(String, nullable=True)
 
     # From DDEX
     ddex_release_ids = Column(JSONB())
     ddex_app = Column(String)
-    artists = Column(ARRAY(JSONB()))
-    resource_contributors = Column(ARRAY(JSONB()))
-    indirect_resource_contributors = Column(ARRAY(JSONB()))
+    artists = Column(JSONB())
+    resource_contributors = Column(JSONB())
+    indirect_resource_contributors = Column(JSONB())
     rights_controller = Column(JSONB())
     copyright_line = Column(JSONB())
     producer_copyright_line = Column(JSONB())

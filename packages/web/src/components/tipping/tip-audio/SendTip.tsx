@@ -31,7 +31,8 @@ import {
   IconTrophy,
   TokenAmountInput,
   TokenAmountInputChangeHandler,
-  Button
+  Button,
+  IconComponent
 } from '@audius/harmony'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -69,12 +70,20 @@ const messages = {
   buyAudioPrefix: 'Buy $AUDIO using '
 }
 
-const TopBanner = ({ icon, text }: { icon?: ReactNode; text: ReactNode }) => (
-  <div className={styles.topBanner}>
-    {icon ? <span className={styles.topBannerIcon}>{icon}</span> : null}
-    <span className={styles.topBannerText}>{text}</span>
-  </div>
-)
+type TopBannerProps = {
+  icon?: IconComponent
+  text: ReactNode
+}
+
+const TopBanner = (props: TopBannerProps) => {
+  const { icon: Icon, text } = props
+  return (
+    <div className={styles.topBanner}>
+      {Icon ? <Icon color='staticWhite' /> : null}
+      <span className={styles.topBannerText}>{text}</span>
+    </div>
+  )
+}
 
 export const SendTip = () => {
   const dispatch = useDispatch()
@@ -192,10 +201,10 @@ export const SendTip = () => {
   const topBanner = audioFeaturesDegradedText ? (
     <TopBanner text={audioFeaturesDegradedText} />
   ) : !hasInsufficientBalance && isFirstSupporter ? (
-    <TopBanner icon={<IconTrophy />} text={messages.becomeFirstSupporter} />
+    <TopBanner icon={IconTrophy} text={messages.becomeFirstSupporter} />
   ) : !hasInsufficientBalance && amountToTipToBecomeTopSupporter ? (
     <TopBanner
-      icon={<IconTrophy />}
+      icon={IconTrophy}
       text={
         <>
           {messages.becomeTopSupporterPrefix}
@@ -211,8 +220,9 @@ export const SendTip = () => {
       <OnRampButton
         buttonPrefix={messages.buyAudioPrefix}
         provider={OnRampProvider.STRIPE}
-        className={styles.buyAudioButton}
-        textClassName={styles.buyAudioButtonText}
+        css={(theme) => ({
+          paddingVertical: theme.spacing.s
+        })}
         onClick={handleBuyWithStripeClicked}
       />
     </div>

@@ -109,7 +109,6 @@ export type GiantTrackTileProps = {
   currentUserId: Nullable<ID>
   description: string
   hasStreamAccess: boolean
-  hasDownloadAccess: boolean
   duration: number
   fieldVisibility: FieldVisibility
   following: boolean
@@ -129,17 +128,6 @@ export type GiantTrackTileProps = {
   mood: string
   onClickFavorites: () => void
   onClickReposts: () => void
-  onDownload: ({
-    trackId,
-    category,
-    original,
-    parentTrackId
-  }: {
-    trackId: ID
-    category?: string
-    original?: boolean
-    parentTrackId?: ID
-  }) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -170,7 +158,6 @@ export const GiantTrackTile = ({
   credits,
   description,
   hasStreamAccess,
-  hasDownloadAccess,
   duration,
   fieldVisibility,
   following,
@@ -189,7 +176,6 @@ export const GiantTrackTile = ({
   mood,
   onClickFavorites,
   onClickReposts,
-  onDownload,
   onFollow,
   onMakePublic,
   onPlay,
@@ -531,7 +517,8 @@ export const GiantTrackTile = ({
       isArtistPick,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToPlaylist: !(isUnlisted || isStreamGated),
+      includeAddToPlaylist: !isStreamGated,
+      includeAddToAlbum: !isStreamGated,
       extraMenuItems: overflowMenuExtraItems
     }
   }

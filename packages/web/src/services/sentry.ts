@@ -18,11 +18,7 @@ export const initializeSentry = () => {
   init({
     dsn: env.SENTRY_DSN,
     ignoreErrors:
-      typeof navigator !== 'undefined'
-        ? navigator?.userAgent === 'probers'
-          ? [/.*/]
-          : undefined
-        : undefined,
+      process.env.VITE_SENTRY_DISABLED === 'true' ? [/.*/] : undefined,
 
     // Need to give Sentry a version so it can
     // associate stacktraces with sourcemaps

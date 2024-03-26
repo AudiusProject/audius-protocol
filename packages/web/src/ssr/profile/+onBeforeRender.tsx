@@ -2,7 +2,7 @@ import { Maybe } from '@audius/common/utils'
 import { full as FullSdk } from '@audius/sdk'
 import type { PageContextServer } from 'vike/types'
 
-import { audiusSdk } from 'ssr/util'
+import { audiusSdk } from '../sdk'
 
 export type ProfilePageProps = {
   user: Maybe<FullSdk.UserFull>

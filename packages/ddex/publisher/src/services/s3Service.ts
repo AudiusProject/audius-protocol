@@ -16,18 +16,18 @@ export default function createS3() {
     config.endpoint = process.env.AWS_ENDPOINT
     config.forcePathStyle = true
   }
-  const indexedBucket = process.env.AWS_BUCKET_INDEXED
+  const crawledBucket = process.env.AWS_BUCKET_CRAWLED
   const client = new S3Client(config)
 
-  const downloadFromS3Indexed = async (key: string) => {
-    if (key.startsWith(`s3://${indexedBucket}/`)) {
-      key = key.slice(`s3://${indexedBucket}/`.length)
+  const downloadFromS3Crawled = async (key: string) => {
+    if (key.startsWith(`s3://${crawledBucket}/`)) {
+      key = key.slice(`s3://${crawledBucket}/`.length)
     } else {
-      throw new Error(`Invalid key ${key} (not in indexed bucket)`)
+      throw new Error(`Invalid key '${key}' (not in crawled bucket)`)
     }
 
     const command = new GetObjectCommand({
-      Bucket: indexedBucket,
+      Bucket: crawledBucket,
       Key: key,
     })
     try {
@@ -41,5 +41,5 @@ export default function createS3() {
     }
   }
 
-  return { downloadFromS3Indexed }
+  return { downloadFromS3Crawled }
 }

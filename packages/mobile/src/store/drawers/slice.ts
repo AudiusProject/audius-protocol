@@ -8,7 +8,6 @@ export type BaseDrawerData = Record<string, unknown>
 export type Drawer =
   | 'EnablePushNotifications'
   | 'DeactivateAccountConfirmation'
-  | 'DownloadTrackProgress'
   | 'ForgotPassword'
   | 'NowPlaying'
   | 'CancelEditTrack'
@@ -36,7 +35,6 @@ export type Drawer =
 export type DrawerData = {
   EnablePushNotifications: undefined
   DeactivateAccountConfirmation: undefined
-  DownloadTrackProgress: undefined
   ForgotPassword: undefined
   NowPlaying: undefined
   CancelEditTrack: undefined
@@ -85,7 +83,6 @@ export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
 const initialState: DrawersState = {
   EnablePushNotifications: false,
   DeactivateAccountConfirmation: false,
-  DownloadTrackProgress: false,
   ForgotPassword: false,
   NowPlaying: false,
   CancelEditTrack: false,

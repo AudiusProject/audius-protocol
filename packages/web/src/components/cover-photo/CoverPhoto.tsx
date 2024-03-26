@@ -104,25 +104,27 @@ const CoverPhoto = ({
         isUrl={false}
         wrapperClassName={styles.photo}
         imageStyle={backgroundStyle}
+        useBlur={shouldBlur}
         usePlaceholder={false}
         immediate={immediate}
-        useBlur={shouldBlur}
       >
         <div className={styles.spinner}>
           {processing ? loadingElement : null}
         </div>
       </DynamicImage>
-      <div className={styles.button}>
-        {edit ? (
-          <ImageSelectionButton
-            imageName={messages.imageName}
-            hasImage={Boolean(image || updatedCoverPhoto)}
-            error={!!error}
-            onSelect={handleDrop}
-            source='CoverPhoto'
-          />
-        ) : null}
-      </div>
+      <ClientOnly>
+        <div className={styles.button}>
+          {edit ? (
+            <ImageSelectionButton
+              imageName={messages.imageName}
+              hasImage={Boolean(image || updatedCoverPhoto)}
+              error={!!error}
+              onSelect={handleDrop}
+              source='CoverPhoto'
+            />
+          ) : null}
+        </div>
+      </ClientOnly>
     </div>
   )
 }

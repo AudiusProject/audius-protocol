@@ -144,13 +144,6 @@
   flex: 1;
 }
 .onRampButtonTooltipContainer,
-.onRampButton {
-  width: 100%;
-}
-.onRampButtons > div:only-child > .onRampButton {
-  transition: all 120ms ease-in-out !important;
-}
-
 .tooltip :global(.ant-tooltip-inner) {
   border-radius: 8px;
   padding: 12px 24px;

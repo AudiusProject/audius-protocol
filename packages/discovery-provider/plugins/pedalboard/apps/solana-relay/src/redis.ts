@@ -33,7 +33,7 @@ export const cacheTransaction = async (
 ) => {
   const redis = await getRedisConnection()
   const key = `solana:transaction:${signature}`
-  await redis.set(key, transaction)
+  await redis.set(key, transaction, { EX: 60 })
 }
 
 export const getCachedDiscoveryNodeEndpoints = async () => {

@@ -20,11 +20,14 @@
   background-repeat: no-repeat;
   background-color: var(--default-profile-picture-background);
   overflow: hidden;
+  width: 100%;
+  height: 100%;
 
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .profilePictureSkeleton {
   border-radius: 50%;
 }
@@ -51,25 +54,10 @@
 
 .imageSelectionButtonWrapper {
   position: absolute;
-  bottom: 48px;
+  bottom: var(--harmony-spacing-2xl);
   right: 0;
   left: 0;
   z-index: 4;
-}
-
-.isMobile .imageSelectionButtonWrapper {
-  bottom: 32px;
-}
-
-.imageSelectionButton {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.editMode .overlay,
-.editMode .imageSelectionButton {
-  opacity: 1;
-  pointer-events: all;
 }
 
 .modalOpen .overlay,
@@ -98,6 +86,7 @@
 .loadingSkeleton :global(.ant-skeleton-header) {
   padding: 0 !important;
 }
+
 .profilePictureWrapper .loadingSkeleton :global(.ant-skeleton-avatar) {
   position: absolute;
   top: 0;

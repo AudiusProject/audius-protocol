@@ -13,7 +13,7 @@ import ImageSelectionPopup from './ImageSelectionPopup'
 import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
 
 const messages = {
-  add: 'Add',
+  add: 'Add Artwork',
   change: 'Change',
   remove: 'Remove'
 }

@@ -44,7 +44,7 @@ export class OpenSeaClient {
     events = json.asset_events
     while (next) {
       res = await fetch(
-        `${this.url}/api/v2/events?account=${wallet}&limit=${limit}&event_type=transfer&chain=ethereum`
+        `${this.url}/api/v2/events?account=${wallet}&limit=${limit}&event_type=transfer&chain=ethereum&next=${next}`
       )
       json = await res.json()
       next = json.next
@@ -92,7 +92,7 @@ export class OpenSeaClient {
     nfts = json.nfts
     while (next) {
       res = await fetch(
-        `${this.url}/api/v2/chain/ethereum/account/${wallet}/nfts`
+        `${this.url}/api/v2/chain/ethereum/account/${wallet}/nfts?next=${next}`
       )
       json = await res.json()
       next = json.next

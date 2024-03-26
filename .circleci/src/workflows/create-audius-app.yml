@@ -9,3 +9,10 @@ jobs:
         - Vercel
       requires:
         - create-audius-app-init
+
+  - create-audius-app-test-e2e:
+      context:
+        - Vercel
+        - create-audius-app
+      requires:
+        - create-audius-app-init

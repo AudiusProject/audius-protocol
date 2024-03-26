@@ -95,7 +95,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 
 		// Create a PendingRelease doc for each parsed release
 		for _, pendingRelease := range pendingReleases {
-			result, err := p.PendingReleasesColl.InsertOne(p.Ctx, pendingRelease)
+			result, err := p.PendingReleasesColl.InsertOne(sessionCtx, pendingRelease)
 			if err != nil {
 				session.AbortTransaction(sessionCtx)
 				return err
@@ -103,7 +103,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
 		}
 
-		delivery.DeliveryStatus = constants.DeliveryStatusSuccess
+		p.DeliveriesColl.UpdateByID(sessionCtx, delivery.ZIPFileETag, bson.M{"$set": bson.M{"delivery_status": constants.DeliveryStatusSuccess}})
 		return session.CommitTransaction(sessionCtx)
 	})
 

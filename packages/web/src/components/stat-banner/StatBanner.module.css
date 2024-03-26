@@ -20,19 +20,3 @@
 .stats {
   width: 330px;
 }
-
-.buttons {
-  z-index: 3;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 6px;
-}
-
-.followContainer {
-  display: flex;
-}
-
-.subscribeButton {
-  margin-right: 6px;
-}

@@ -25,7 +25,8 @@ export const copy = async (
     cwd,
     dot: true,
     absolute: false,
-    stats: false
+    stats: false,
+    ignore: ['node_modules/**']
   })
 
   const destRelativeToCwd = cwd ? path.resolve(cwd, dest) : dest

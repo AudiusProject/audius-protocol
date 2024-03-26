@@ -60,15 +60,6 @@ export type OwnProps = {
   ) => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
-  onDownloadTrack: ({
-    trackId,
-    category,
-    parentTrackId
-  }: {
-    trackId: ID
-    category?: string
-    parentTrackId?: ID
-  }) => void
   // Tracks Lineup Props
   tracks: LineupState<Track>
   currentQueueItem: QueueItem
@@ -97,7 +88,6 @@ const TrackPage = ({
   goToAllRemixesPage,
   goToParentRemixesPage,
   onSaveTrack,
-  onDownloadTrack,
   onHeroRepost,
   onClickMobileOverflow,
 
@@ -201,7 +191,6 @@ const TrackPage = ({
           onSave={onSave}
           onShare={onShare}
           onRepost={onRepost}
-          onDownload={onDownloadTrack}
           isUnlisted={defaults.isUnlisted}
           isStreamGated={defaults.isStreamGated}
           streamConditions={defaults.streamConditions}
