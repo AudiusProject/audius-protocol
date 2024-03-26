@@ -44,7 +44,7 @@ export default defineConfig({
   },
 
   /* Total timeout for individual tests */
-  timeout: 5 * 1000, // TODO CHANGE THIS BACK
+  timeout: 5 * 60 * 1000,
 
   /* Timeout for each assertion */
   expect: {

@@ -57,13 +57,13 @@ jobs:
         - Audius Client
         - Probers
       requires:
-        - web-init
+        - web-build-staging
 
   - playwright-tests-report:
       context:
         - Probers
       requires:
-        - web-init
+        - web-build-staging
 
   - web-test:
       context: Audius Client
