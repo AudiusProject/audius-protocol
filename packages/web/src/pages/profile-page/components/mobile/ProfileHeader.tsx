@@ -495,14 +495,16 @@ const ProfileHeader = ({
               {isDescriptionMinimized ? messages.showMore : messages.showLess}
             </div>
           ) : null}
-          <ArtistRecommendationsDropdown
-            isVisible={areArtistRecommendationsVisible}
-            renderHeader={() => (
-              <p>Here are some accounts that vibe well with {name}</p>
-            )}
-            artistId={userId}
-            onClose={onCloseArtistRecommendations}
-          />
+          <ClientOnly>
+            <ArtistRecommendationsDropdown
+              isVisible={areArtistRecommendationsVisible}
+              renderHeader={() => (
+                <p>Here are some accounts that vibe well with {name}</p>
+              )}
+              artistId={userId}
+              onClose={onCloseArtistRecommendations}
+            />
+          </ClientOnly>
         </div>
       )}
       {mode === 'owner' && !isEditing && <UploadButton />}
