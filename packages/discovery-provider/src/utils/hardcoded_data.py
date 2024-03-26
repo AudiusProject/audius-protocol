@@ -56,6 +56,7 @@ genre_allowlist = {
     "Classical",
     "Comedy",
     "Country",
+    "Dancehall",
     "Deep House",
     "Devotional",
     "Disco",

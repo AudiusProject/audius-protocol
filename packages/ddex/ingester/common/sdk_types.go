@@ -56,6 +56,7 @@ const (
 	JerseyClub       Genre = "Jersey Club"
 	Vaporwave        Genre = "Vaporwave"
 	Moombahton       Genre = "Moombahton"
+	Dancehall        Genre = "Dancehall"
 )
 
 var stringToGenre = map[string]Genre{
@@ -110,6 +111,7 @@ var stringToGenre = map[string]Genre{
 	"Jersey Club":       JerseyClub,
 	"Vaporwave":         Vaporwave,
 	"Moombahton":        Moombahton,
+	"Dancehall":         Dancehall,
 }
 
 func ToGenre(s string) (Genre, bool) {
