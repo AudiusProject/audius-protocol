@@ -5,7 +5,7 @@
 .tracksContainer {
   overflow-y: auto;
   max-height: 240px;
-  background: var(--white);
+  background: var(--harmony-white);
 }
 
 .loading .tracksContainer {
@@ -25,21 +25,21 @@
 }
 
 .trackTile:hover {
-  background: var(--neutral-light-10) !important;
+  background: var(--harmony-n-25) !important;
 }
 
 .container:hover .tracksContainer {
-  background: var(--neutral-light-10);
+  background: var(--harmony-n-25);
 }
 
 .iconKebabHorizontal path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .by {
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
-  color: var(--neutral-light-6);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-m);
+  color: var(--harmony-n-200);
   margin-right: 4px;
 }
 
@@ -49,16 +49,16 @@
 }
 
 .active .name {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .createdBy {
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
+  font-weight: var(--harmony-font-medium);
+  font-size: var(--harmony-font-m);
 
   line-height: normal;
   /* identical to box height, or 100% */
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-right: 4px;
 }
 

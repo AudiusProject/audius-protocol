@@ -22,9 +22,11 @@ declare module 'express-session' {
   }
 }
 
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
+
 export default function createApp(
   dbUrl: string,
-  sdkService: ReturnType<typeof createSdkService>
+  sdkService: UnwrapPromise<ReturnType<typeof createSdkService>>
 ) {
   /*
    * Setup app
@@ -173,8 +175,9 @@ export default function createApp(
         env: process.env.NODE_ENV,
         awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
         awsBucketRaw: process.env.AWS_BUCKET_RAW,
-        awsBucketIndexed: process.env.AWS_BUCKET_INDEXED,
+        awsBucketCrawled: process.env.AWS_BUCKET_CRAWLED,
         ddexKey: process.env.DDEX_KEY,
+        ddexChoreography: process.env.DDEX_CHOREOGRAPHY,
       },
     }
     res.json(envData)

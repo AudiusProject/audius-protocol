@@ -10,6 +10,6 @@
 .error {
   line-height: 150%;
   text-align: center;
-  font-weight: var(--font-demi-bold);
-  color: var(--accent-red);
+  font-weight: var(--harmony-font-demi-bold);
+  color: var(--harmony-red);
 }

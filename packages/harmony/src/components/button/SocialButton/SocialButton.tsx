@@ -8,15 +8,11 @@ import type { ButtonProps } from '../Button/types'
 type SocialMedia = 'tiktok' | 'instagram' | 'twitter'
 
 // Omitting aria-label from original type purely for showing in Storybook
-export type SocialButtonProps = Omit<ButtonProps, 'aria-label'> & {
+export type SocialButtonProps = ButtonProps & {
   /**
    * Which social media.
    */
   socialType: SocialMedia
-  /**
-   * Aria label text. Required since these buttons just have icons
-   */
-  'aria-label': string
 }
 
 const socialLogos = {
@@ -55,8 +51,7 @@ export const SocialButton = (props: SocialButtonProps) => {
         border: 'transparent',
         ...(socialType === 'instagram' && instagramBackgroundCss)
       }}
-    >
-      <SocialLogo color='staticWhite' size='l' />
-    </Button>
+      iconLeft={SocialLogo}
+    />
   )
 }

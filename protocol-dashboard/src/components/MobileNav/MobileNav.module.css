@@ -8,7 +8,8 @@
   justify-content: flex-start;
   align-items: center;
 
-  background: linear-gradient(180deg, rgba(113, 24, 184, 0.2) 0%, #520D89 100%), url(../../assets/img/headerImg@2x.jpg);
+  background: linear-gradient(180deg, rgba(113, 24, 184, 0.2) 0%, #520d89 100%),
+    url(../../assets/img/headerImg@2x.jpg);
   background-blend-mode: multiply;
   /* filter: blur(50px); */
 
@@ -81,8 +82,8 @@
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2) !important;
 }
 
-.btnContainer .navButton:not(.active):hover .navButtonText{
-  color: #6516A3 !important;
+.btnContainer .navButton:not(.active):hover .navButtonText {
+  color: #6516a3 !important;
 }
 
 .navButton .navButtonText {
@@ -94,8 +95,8 @@
   background-color: var(--static-white);
 }
 
-.btnContainer  .navButton.active .navButtonText {
-  color: #6516A3 !important;
+.btnContainer .navButton.active .navButtonText {
+  color: #6516a3 !important;
 }
 
 .launchAppBtn {
@@ -130,13 +131,14 @@
   letter-spacing: 1px;
   text-transform: uppercase;
 
-  color: #9147CC !important;
+  color: #9147cc !important;
 }
 
 .close {
+  z-index: 101;
   position: absolute;
-  left: 24px;
-  top: 20px;
+  left: 12px;
+  top: 14px;
 }
 
 .close path {

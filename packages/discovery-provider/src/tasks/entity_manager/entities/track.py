@@ -288,16 +288,6 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
             ):
                 track_record.remix_of = track_metadata["remix_of"]
 
-        elif key == "download":
-            if "download" in track_metadata:
-                track_record.download = {
-                    "is_downloadable": track_metadata["download"].get("is_downloadable")
-                    == True,
-                    "requires_follow": track_metadata["download"].get("requires_follow")
-                    == True,
-                    "cid": track_metadata["download"].get("cid", None),
-                }
-
         elif key == "route_id":
             if "title" in track_metadata:
                 track_record.route_id = helpers.create_track_route_id(
@@ -337,6 +327,77 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                         datetime.now()
                     )
                 )
+
+        elif key == "ddex_release_ids":
+            if "ddex_release_ids" in track_metadata and (
+                is_valid_json_field(track_metadata, "ddex_release_ids")
+                or track_metadata["ddex_release_ids"] is None
+            ):
+                track_record.ddex_release_ids = track_metadata["ddex_release_ids"]
+
+        elif key == "artists":
+            if "artists" in track_metadata:
+                artists = track_metadata["artists"]
+                if artists and isinstance(artists, list):
+                    valid = True
+                    for artist in artists:
+                        if not isinstance(artist, dict):
+                            valid = False
+                            break
+                    if valid:
+                        track_record.artists = artists
+                elif artists is None:
+                    track_record.artists = artists
+
+        elif key == "resource_contributors":
+            if "resource_contributors" in track_metadata:
+                resource_contributors = track_metadata["resource_contributors"]
+                if resource_contributors and isinstance(resource_contributors, list):
+                    valid = True
+                    for contributor in resource_contributors:
+                        if not isinstance(contributor, dict):
+                            valid = False
+                            break
+                    if valid:
+                        track_record.resource_contributors = resource_contributors
+                elif resource_contributors is None:
+                    track_record.resource_contributors = resource_contributors
+
+        elif key == "indirect_resource_contributors":
+            if "indirect_resource_contributors" in track_metadata:
+                indirect_resource_contributors = track_metadata["indirect_resource_contributors"]
+                if indirect_resource_contributors and isinstance(indirect_resource_contributors, list):
+                    valid = True
+                    for contributor in indirect_resource_contributors:
+                        if not isinstance(contributor, dict):
+                            valid = False
+                            break
+                    if valid:
+                        track_record.indirect_resource_contributors = indirect_resource_contributors
+                elif indirect_resource_contributors is None:
+                    track_record.indirect_resource_contributors = indirect_resource_contributors
+
+        elif key == "rights_controller":
+            if "rights_controller" in track_metadata and (
+                is_valid_json_field(track_metadata, "rights_controller")
+                or track_metadata["rights_controller"] is None
+            ):
+                track_record.rights_controller = track_metadata["rights_controller"]
+
+        elif key == "copyright_line":
+            if "copyright_line" in track_metadata and (
+                is_valid_json_field(track_metadata, "copyright_line")
+                or track_metadata["copyright_line"] is None
+            ):
+                track_record.copyright_line = track_metadata["copyright_line"]
+
+        elif key == "producer_copyright_line":
+            if "producer_copyright_line" in track_metadata and (
+                is_valid_json_field(track_metadata, "producer_copyright_line")
+                or track_metadata["producer_copyright_line"] is None
+            ):
+                track_record.producer_copyright_line = track_metadata["producer_copyright_line"]
+
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata

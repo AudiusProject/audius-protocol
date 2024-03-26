@@ -13,6 +13,7 @@ import {
 import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useWindowSize } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
@@ -37,6 +38,8 @@ import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
 
 const SignInSchema = toFormikValidationSchema(signInSchema)
 
+const smallDesktopWindowHeight = 900
+
 type SignInValues = {
   email: string
   password: string
@@ -45,6 +48,8 @@ type SignInValues = {
 export const SignInPage = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
+  const { height: windowHeight } = useWindowSize()
+  const isSmallDesktop = windowHeight < smallDesktopWindowHeight
   const navigate = useNavigateToPage()
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const { value: existingEmail } = useSelector(getEmailField)
@@ -94,8 +99,8 @@ export const SignInPage = () => {
           gap='l'
         >
           <Flex as={Form} direction='column' gap='2xl'>
-            <Box alignSelf='center'>
-              {isMobile ? (
+            <Box alignSelf={isSmallDesktop ? 'flex-start' : 'center'}>
+              {isMobile || isSmallDesktop ? (
                 <IconAudiusLogoHorizontalColor />
               ) : (
                 <PreloadImage
@@ -141,7 +146,12 @@ export const SignInPage = () => {
             </Flex>
           </Flex>
           {!isMobile ? (
-            <Button variant='secondary' asChild fullWidth>
+            <Button
+              variant='secondary'
+              asChild
+              fullWidth
+              style={{ flexShrink: 0 }}
+            >
               <Link to={SIGN_UP_PAGE}>{signInPageMessages.createAccount}</Link>
             </Button>
           ) : null}

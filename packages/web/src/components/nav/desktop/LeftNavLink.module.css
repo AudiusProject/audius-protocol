@@ -1,6 +1,6 @@
 .link {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   position: relative;
   display: table;
   min-width: 100px;
@@ -9,7 +9,7 @@
   margin-left: -16px;
   /* left padding is visibly (32px + -16px margin =) 16px to match the left padding of .groupHeader */
   padding: 5px 0 5px 32px;
-  color: var(--nav-column-link);
+  color: var(--harmony-neutral);
   transition: color 0.07s ease-in-out;
 
   white-space: nowrap;
@@ -22,13 +22,13 @@
 }
 
 .link:hover:before {
-  border-right: 4px solid var(--neutral-light-4);
+  border-right: 4px solid var(--harmony-n-400);
 }
 .link.disabled:hover {
   border-right: none;
 }
 .link:global(.active):before {
-  border-right: 4px solid var(--primary);
+  border-right: 4px solid var(--harmony-primary);
 }
 .link:hover:before,
 .link:global(.active):before {
@@ -45,15 +45,15 @@
 }
 .link:hover {
   cursor: pointer;
-  color: var(--nav-column-link-hover);
+  color: var(--harmony-n-950);
 }
 .link:global(.active) {
-  color: var(--primary) !important;
-  font-weight: var(--font-medium);
+  color: var(--harmony-primary) !important;
+  font-weight: var(--harmony-font-medium);
 }
 .link.disabled,
 .link.disabled:hover {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   pointer-events: none;
 }
 
@@ -74,7 +74,7 @@
   bottom: 0;
   opacity: 0;
   border-radius: 2px;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   transition: opacity 0.13s ease-in-out;
 }
 
@@ -87,7 +87,7 @@
 }
 
 .droppableLinkActive > * {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .disabledLink,

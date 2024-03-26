@@ -3,7 +3,7 @@
 import path from 'path'
 
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react-swc'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
@@ -127,10 +127,7 @@ export default defineConfig(async ({ mode }) => {
         }
       },
       react({
-        jsxImportSource: '@emotion/react',
-        babel: {
-          plugins: ['@emotion/babel-plugin']
-        }
+        jsxImportSource: '@emotion/react'
       }),
       ...(ssr ? [vike()] : []),
       ...((analyze

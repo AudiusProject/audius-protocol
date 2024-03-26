@@ -66,6 +66,8 @@ class Action(str, Enum):
     UNSUBSCRIBE = "Unsubscribe"
     VIEW = "View"
     VIEW_PLAYLIST = "ViewPlaylist"
+    APPROVE = "Approve"
+    REJECT = "Reject"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -77,6 +79,7 @@ class EntityType(str, Enum):
     USER = "User"
     DASHBOARD_WALLET_USER = "DashboardWalletUser"
     USER_REPLICA_SET = "UserReplicaSet"
+    USER_WALLET = "UserWallet"
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
@@ -109,6 +112,7 @@ EntityTypeLiteral = Literal[
     "DeveloperApp",
     "Grant",
     "DashboardWalletUser",
+    "UserWallet",
 ]
 
 
@@ -131,6 +135,7 @@ class RecordDict(TypedDict):
 class ExistingRecordDict(TypedDict):
     Playlist: Dict[int, Playlist]
     Track: Dict[int, Track]
+    UserWallet: Dict[str, User]
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
@@ -160,6 +165,7 @@ class EntitiesToFetchDict(TypedDict):
     PlaylistRoute: Set[int]
     UserEvent: Set[int]
     AssociatedWallet: Set[int]
+    UserWallet: Set[str]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -285,6 +291,8 @@ def expect_cid_metadata_json(metadata, action, entity_type):
         Action.UNFOLLOW,
         Action.SUBSCRIBE,
         Action.UNSUBSCRIBE,
+        Action.APPROVE,
+        Action.REJECT,
     ]:
         return False
     if not metadata:
@@ -338,27 +346,6 @@ def parse_metadata(metadata: str, action: str, entity_type: str):
 
         cid = data["cid"]
         metadata_json = data["data"]
-
-        # Handle old client compatibility for gated fields until clients are updated
-        # todo: remove once clients are updated with new stream and gated fields
-        is_old_client_track = "premium_conditions" in metadata_json
-        if is_old_client_track:
-            download = (
-                metadata_json["download"] if metadata_json.get("download") else {}
-            )
-            is_downloadable = download.get("is_downloadable") is True
-            metadata_json["is_downloadable"] = is_downloadable
-            metadata_json["is_stream_gated"] = metadata_json["is_premium"]
-            metadata_json["stream_conditions"] = metadata_json["premium_conditions"]
-            metadata_json["is_download_gated"] = (
-                metadata_json["is_premium"] if is_downloadable else False
-            )
-            metadata_json["download_conditions"] = (
-                metadata_json["premium_conditions"] if is_downloadable else False
-            )
-            metadata_json["is_original_available"] = False
-            metadata_json["orgi_file_cid"] = None
-            metadata_json["orig_filename"] = None
 
         # Don't format metadata for UPDATEs
         # This is to support partial updates
@@ -444,16 +431,47 @@ def validate_signer(params: ManageEntityParameters):
         is_signer_authorized = grant_key in params.existing_records["Grant"]
         if is_signer_authorized:
             grant = params.existing_records["Grant"][grant_key]
-            developer_app = params.existing_records["DeveloperApp"][signer]
-            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
+            developer_app = (
+                None
+                if not params.existing_records["DeveloperApp"]
+                else params.existing_records["DeveloperApp"].get(signer, None)
+            )  # applicable if user-to-app grant
+            user_grantee = (
+                None
+                if not params.existing_records["UserWallet"]
+                else params.existing_records["UserWallet"].get(signer, None)
+            )  # applicable if user-to-user grant, e.g. manager mode
+            is_valid_developer_app = (
+                not (not developer_app) and not developer_app.is_delete
+            )
+
+            is_valid_user_grantee = (
+                not (not user_grantee) and not user_grantee.is_deactivated
+            )
+
+            is_grant_approved = grant.is_approved == True or is_valid_developer_app
+
+            if (
+                (not is_valid_developer_app and not is_valid_user_grantee)
+                or grant.is_revoked
+                or not is_grant_approved
+            ):
                 raise IndexingValidationError(
                     f"Signer is not authorized to perform action for user {params.user_id}"
                 )
-            params.logger.set_context("isApp", "true")
-            params.logger.set_context(
-                "appName",
-                params.existing_records["DeveloperApp"][signer].name,
-            )
+            if (
+                is_valid_developer_app and developer_app
+            ):  # have to include redundant `and developer_app` because mypy can't work properly without it
+                params.logger.set_context("isApp", "true")
+                params.logger.set_context(
+                    "appName",
+                    developer_app.name,
+                )
+            elif (
+                is_valid_user_grantee and user_grantee
+            ):  # have to include redundant `and user_grantee` because mypy can't work properly without it
+                params.logger.set_context("isApp", "true - user to user")
+                params.logger.set_context("appName", user_grantee.handle)
             params.logger.set_context(
                 "userHandle",
                 params.existing_records["User"][params.user_id].handle,

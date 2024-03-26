@@ -1,26 +1,26 @@
 .root {
-  padding: var(--unit-4);
-  background: var(--background-surface-1);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--unit-2);
+  padding: var(--harmony-unit-4);
+  background: var(--harmony-bg-surface-1);
+  border: 1px solid var(--harmony-border-strong);
+  border-radius: var(--harmony-unit-2);
 }
 
 .legend {
-  margin-bottom: var(--unit-4);
+  margin-bottom: var(--harmony-unit-4);
 }
 
 .switchContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--unit-2) var(--unit-6);
+  gap: var(--harmony-unit-2) var(--harmony-unit-6);
 }
 
 .switchRow {
-  flex: 1 1 calc(50% - var(--unit-3));
+  flex: 1 1 calc(50% - var(--harmony-unit-3));
   min-width: 200px;
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .switchLabel {
@@ -31,5 +31,5 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }

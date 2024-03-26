@@ -16,11 +16,12 @@ import {
   IconSettings,
   IconTokenGold,
   IconTransaction,
-  IconInfo
+  IconInfo,
+  Button,
+  Flex,
+  ButtonProps
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import BN from 'bn.js'
-import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -81,6 +82,17 @@ const messages = {
   findArtists: 'Find Artists to Support on Trending'
 }
 
+const AdvancedOptionButton = (props: ButtonProps) => {
+  return (
+    <Button
+      variant='secondary'
+      css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
+      fullWidth
+      {...props}
+    />
+  )
+}
+
 const AdvancedWalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
   const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
@@ -127,54 +139,35 @@ const AdvancedWalletActions = () => {
   return (
     <div className={styles.moreOptionsSection}>
       <div className={styles.subtitle}>{messages.advancedOptions}</div>
-      <div className={styles.advancedOptions}>
-        <Button
-          className={cn(styles.advancedButton, {
-            [styles.disabled]: !hasBalance
-          })}
-          text={messages.sendLabel}
-          isDisabled={!hasBalance}
-          includeHoverAnimations={hasBalance}
-          textClassName={styles.textClassName}
+      <Flex wrap='wrap' gap='l' w='100%'>
+        <AdvancedOptionButton
+          disabled={!hasBalance}
           onClick={onClickSend}
-          leftIcon={<IconSend className={styles.iconStyle} />}
-          type={ButtonType.GLASS}
-          minWidth={200}
-        />
-        <Button
-          className={cn(styles.advancedButton)}
-          text={messages.receiveLabel}
-          textClassName={styles.textClassName}
-          onClick={onClickReceive}
-          leftIcon={<IconReceive className={styles.iconStyle} />}
-          type={ButtonType.GLASS}
-          minWidth={200}
-        />
-        {!isMobile && isTransactionsEnabled && (
-          <Button
-            className={cn(styles.advancedButton)}
-            text={messages.transactionsLabel}
-            textClassName={styles.textClassName}
+          iconLeft={IconSend}
+        >
+          {messages.sendLabel}
+        </AdvancedOptionButton>
+        <AdvancedOptionButton onClick={onClickReceive} iconLeft={IconReceive}>
+          {messages.receiveLabel}
+        </AdvancedOptionButton>
+        {!isMobile && isTransactionsEnabled ? (
+          <AdvancedOptionButton
             onClick={onClickTransactions}
-            leftIcon={<IconTransaction className={styles.iconStyle} />}
-            type={ButtonType.GLASS}
-            minWidth={200}
-          />
-        )}
-        <Button
-          className={cn(styles.advancedButton, styles.manageWalletsButton)}
-          text={messages.manageWallets}
-          includeHoverAnimations
-          textClassName={styles.textClassName}
+            iconLeft={IconTransaction}
+          >
+            {messages.transactionsLabel}
+          </AdvancedOptionButton>
+        ) : null}
+        <AdvancedOptionButton
           onClick={onClickConnectWallets}
-          type={ButtonType.GLASS}
-          leftIcon={<IconSettings className={styles.iconStyle} />}
-          minWidth={200}
-        />
+          iconLeft={IconSettings}
+        >
+          {messages.manageWallets}
+        </AdvancedOptionButton>
         {isMobile && (
           <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
         )}
-      </div>
+      </Flex>
     </div>
   )
 }
@@ -219,13 +212,12 @@ const OnRampTooltipButton = ({
       disabled={!isDisabled}
       className={styles.tooltip}
       text={disabledText}
-      color={'--secondary'}
+      color='secondary'
       shouldWrapContent={false}
     >
       <div className={styles.onRampButtonTooltipContainer}>
         <OnRampButton
           provider={provider}
-          className={styles.onRampButton}
           disabled={isDisabled}
           onClick={onClick}
         />

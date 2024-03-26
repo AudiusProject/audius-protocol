@@ -30,7 +30,8 @@ import {
   IconLogoCircleETH,
   IconLogoCircleSOL,
   useTheme,
-  Button
+  Button,
+  IconUserFollow
 } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -38,7 +39,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import { FollowButton } from 'components/follow-button/FollowButton'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconTip } from 'components/notification/Notification/components/icons'
@@ -266,17 +266,15 @@ const LockedGatedTrackSection = ({
 
     if (isContentFollowGated(streamConditions)) {
       return (
-        <FollowButton
-          color='accentBlue'
-          className={styles.followButton}
-          messages={{
-            follow: messages.followArtist,
-            unfollow: '',
-            following: ''
-          }}
-          onFollow={handleFollow}
-          invertedColor
-        />
+        <Button
+          variant='primary'
+          color='blue'
+          onClick={handleFollow}
+          iconLeft={IconUserFollow}
+          fullWidth
+        >
+          {messages.followArtist}
+        </Button>
       )
     }
 

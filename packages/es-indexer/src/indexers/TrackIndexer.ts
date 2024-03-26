@@ -99,7 +99,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         is not null then true
         else false
       end as purchaseable,
-      (tracks.download->>'is_downloadable')::boolean as downloadable,
+      tracks.is_downloadable as downloadable,
       coalesce(aggregate_plays.count, 0) as play_count,
   
       json_build_object(

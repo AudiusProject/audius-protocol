@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { ComponentPropsWithoutRef, useState } from 'react'
 
 import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
@@ -74,7 +74,7 @@ const fileTypeIcon = (type: string) => {
   }
 }
 
-type TrackPreviewProps = {
+type TrackPreviewProps = ComponentPropsWithoutRef<'div'> & {
   index: number
   displayIndex: boolean
   onRemove: () => void
@@ -102,7 +102,8 @@ export const TrackPreview = (props: TrackPreviewProps) => {
     onEditStemCategory,
     allowCategorySwitch = true,
     allowDelete = true,
-    className
+    className,
+    ...divProps
   } = props
   const {
     name: trackTitle,
@@ -127,7 +128,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
   )
 
   return (
-    <div className={cn(styles.trackPreviewNew, className)}>
+    <div className={cn(styles.trackPreviewNew, className)} {...divProps}>
       {displayIndex ? (
         <Text variant='body' className={styles.indexText} size='s'>
           {index + 1}

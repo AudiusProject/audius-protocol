@@ -1,9 +1,4 @@
-.topAddressesTable {
-  margin-top: 16px;
-}
-
 .serviceContainer {
-  margin-top: 16px;
   display: inline-flex;
   align-items: flex-start;
   width: 100%;

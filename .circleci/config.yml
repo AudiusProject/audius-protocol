@@ -73,9 +73,7 @@ jobs:
             - ./node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
-            - ./packages/probers/node_modules
             - ./packages/embed/node_modules
-            - ./packages/stems/node_modules
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
@@ -85,6 +83,7 @@ jobs:
             - ./packages/ddex/webapp/node_modules
             - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
+            - ./packages/create-audius-app/node_modules
             - ./packages/dotenv-linter/bin
 
   generate-release-branch:
@@ -463,7 +462,6 @@ workflows:
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
-            .circleci/.* run-stems-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
             package-lock.json run-sdk-workflow true
@@ -473,18 +471,14 @@ workflows:
             packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
-            packages/probers/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
-            packages/stems/.* run-stems-workflow true
-            packages/stems/.* run-web-workflow true
             packages/harmony/.* run-harmony-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
-            packages/eslint-config-audius/.* run-stems-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
             packages/libs/.* run-creator-workflow true
             packages/libs/.* run-identity-workflow true
@@ -495,6 +489,8 @@ workflows:
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
             packages/libs/.* run-embed-workflow true
+            packages/libs/.* run-create-audius-app-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
           requires:
             - generate-config
             - init
@@ -516,9 +512,7 @@ workflows:
             .* run-contracts-workflow true
             .* run-release-workflow false
             .* run-sdk-workflow true
-            .* run-stems-workflow true
             .* run-harmony-workflow true
-            .* run-probers-workflow true
             .* run-ddex-stage-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
@@ -530,6 +524,7 @@ workflows:
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
+            packages/libs/.* run-create-audius-app-workflow true
             packages/harmony/.* run-web-workflow true
             packages/harmony/.* run-mobile-workflow true
             packages/mobile/.* run-mobile-workflow true
@@ -537,6 +532,7 @@ workflows:
             packages/embed/.* run-embed-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:
@@ -572,9 +568,7 @@ workflows:
           mapping: |
             .* run-web-workflow true
             .* run-mobile-workflow true
-            .* run-stems-workflow true
             .* run-harmony-workflow true
-            .* run-probers-workflow false
             .* run-protocol-dashboard-workflow true
           requires:
             - generate-config

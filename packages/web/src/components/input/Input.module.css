@@ -25,7 +25,7 @@
   box-shadow: none;
 }
 .inputContainer.bordered:hover {
-  border: 1px solid var(--neutral-light-6);
+  border: 1px solid var(--harmony-n-200);
 }
 
 .inputPrefix {
@@ -37,7 +37,7 @@
   width: 12px;
 }
 .inputPrefix svg g path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }
 
 .input {
@@ -48,14 +48,14 @@
   padding: 0 10px 0 6px;
   min-width: 0;
   background-color: transparent;
-  color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   border: none;
   outline: none;
 }
 .input::placeholder {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .inputSuffix {
@@ -63,9 +63,9 @@
   padding-right: 6px;
 }
 .inputSuffix svg {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
 }
 .inputSuffix svg g path {
-  fill: var(--neutral-light-4);
+  fill: var(--harmony-n-400);
 }

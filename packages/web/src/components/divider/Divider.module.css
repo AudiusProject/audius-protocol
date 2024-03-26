@@ -1,11 +1,11 @@
 .default {
-  border-color: var(--neutral-light-5);
+  border-color: var(--harmony-n-300);
 }
 
 .subdued {
-  border-color: var(--neutral-light-8);
+  border-color: var(--harmony-n-100);
 }
 
 .horizontal {
-  margin: var(--unit-3) 0;
+  margin: var(--harmony-unit-3) 0;
 }

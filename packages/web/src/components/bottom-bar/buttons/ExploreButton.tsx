@@ -8,7 +8,8 @@ const ExploreButton = ({
   onClick,
   href,
   isActive,
-  isMatrixMode
+  isMatrixMode,
+  ...buttonProps
 }: ButtonProps) => {
   return (
     <AnimatedBottomButton
@@ -24,6 +25,7 @@ const ExploreButton = ({
       iconDarkJSON={() =>
         import('../../../assets/animations/iconExploreDark.json')
       }
+      {...buttonProps}
     />
   )
 }

@@ -68,7 +68,7 @@ import {
   Notification,
   IdentityNotification,
   PushNotifications,
-  ExtendedTrackMetadata
+  TrackMetadataForUpload
 } from '../../store'
 import { CIDCache } from '../../store/cache/CIDCache'
 import {
@@ -1103,11 +1103,11 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: ExtendedTrackMetadata,
+    metadata: TrackMetadata | TrackMetadataForUpload,
     transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
-    if (metadata.artwork) {
+    if ('artwork' in metadata && metadata.artwork) {
       const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
         metadata.artwork.file,
         () => {}

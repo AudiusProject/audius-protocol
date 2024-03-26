@@ -67,10 +67,6 @@ const ddexRouter = createBrowserRouter(
       <Route path='/admin' element={<AuthedLayout isAdmin />}>
         <Route path='' element={<Upload />} />
         <Route
-          path='deliveries'
-          element={<Collection collection='deliveries' />}
-        />
-        <Route
           path='pending-releases'
           element={<Collection collection='pending_releases' />}
         />

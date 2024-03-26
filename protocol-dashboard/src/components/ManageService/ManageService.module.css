@@ -15,6 +15,11 @@
   justify-content: center;
 }
 
+.smallLoader {
+  height: var(--unit-3);
+  width: var(--unit-3);
+}
+
 .title {
   font-family: var(--font-family);
 

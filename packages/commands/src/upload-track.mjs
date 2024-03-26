@@ -238,11 +238,6 @@ program
             download_conditions: parsedDownloadConditions,
             is_original_available: true,
             is_downloadable: !!isDownloadable,
-            download: {
-              cid: '',
-              is_downloadable: !!isDownloadable,
-              requires_follow: false
-            },
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)

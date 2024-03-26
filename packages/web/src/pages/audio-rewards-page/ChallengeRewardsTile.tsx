@@ -24,9 +24,9 @@ import {
   Button,
   IconArrowRight as IconArrow,
   IconCheck,
+  ProgressBar,
   Text
 } from '@audius/harmony'
-import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -134,11 +134,7 @@ const RewardPanel = ({
     ? messages.viewDetails
     : panelButtonText
 
-  const buttonVariant = needsDisbursement
-    ? 'primary'
-    : hasDisbursed
-    ? 'secondary'
-    : 'common'
+  const buttonVariant = needsDisbursement ? 'primary' : 'secondary'
 
   return (
     <div
@@ -188,6 +184,7 @@ const RewardPanel = ({
           size='small'
           iconRight={hasDisbursed ? null : IconArrow}
           onClick={openRewardModal}
+          fullWidth
         >
           {buttonMessage}
         </Button>

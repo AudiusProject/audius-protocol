@@ -184,59 +184,121 @@ services:
 
   # DDEX
 
-  ddex-web:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-web
-    <<: *common
-
-  ddex-crawler:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-crawler
-    environment:
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    <<: *common
-
-  ddex-parser:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-parser
-    environment:
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    <<: *common
-
-  ddex-publisher:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-publisher
-    environment:
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    <<: *common
-
   ddex-mongo:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-mongo
     <<: *common
-  
+    profiles:
+      - ddex
+
   ddex-mongo-init:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-mongo-init
     <<: *common
+    depends_on:
+      ddex-mongo:
+        condition: service_healthy
+    profiles:
+      - ddex
 
-  ddex-s3:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-s3
-    <<: *common
-  
   ddex-ingester:
     extends:
       file: docker-compose.ddex.yml
       service: ddex-ingester
     <<: *common
+    profiles:
+      - ddex
+
+  ddex-web:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-web
+    container_name: ddex-web
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ingress:4566'
+      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+    profiles:
+      - ddex
+    extra_hosts:
+      - 'ingress:host-gateway'
+
+  ddex-publisher:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-publisher
+    container_name: ddex-publisher
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ingress:4566'
+      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3:
+        condition: service_healthy
+    profiles:
+      - ddex
+    extra_hosts:
+      - 'ingress:host-gateway'
+  
+  ddex-crawler:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-crawler
+    container_name: ddex-crawler
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ingress:4566'
+      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
+      IS_DEV: 'true' # Speed up crawling interval for local dev
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3:
+        condition: service_healthy
+    profiles:
+      - ddex
+    extra_hosts:
+      - 'ingress:host-gateway'
+  
+  ddex-parser:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-parser
+    container_name: ddex-parser
+    <<: *common
+    environment:
+      AWS_ENDPOINT: 'http://ingress:4566'
+      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3:
+        condition: service_healthy
+    profiles:
+      - ddex
+    extra_hosts:
+      - 'ingress:host-gateway'
+
+  ddex-s3:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-s3
+    container_name: ddex-s3
+    <<: *common
+    ports:
+      - "127.0.0.1:4566:4566"
+    volumes:
+      - "ddex-s3:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    profiles:
+      - ddex
 
   # Storage (content node)
 
@@ -299,6 +361,7 @@ services:
 
 networks:
   ddex-network:
+
 
 volumes:
   poa-contracts-abis:

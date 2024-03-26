@@ -208,3 +208,6 @@ packages/identity-service/emailCache
 
 # CloudFlare
 .wrangler
+
+# Playwright
+test-results

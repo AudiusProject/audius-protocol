@@ -5,7 +5,7 @@ import cn from 'classnames'
 
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
-import EditableName from 'pages/profile-page/components/EditableName'
+import { EditableName } from 'pages/profile-page/components/EditableName'
 
 import { ProfileLeftNav } from './ProfileLeftNav'
 import styles from './ProfilePage.module.css'

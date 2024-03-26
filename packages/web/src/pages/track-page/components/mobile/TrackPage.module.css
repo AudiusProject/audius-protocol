@@ -13,9 +13,9 @@
 }
 
 .lineupHeader {
-  color: var(--neutral-light-3);
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  color: var(--harmony-n-500);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
   letter-spacing: 1px;
   margin-bottom: 12px;
   margin-top: 24px;

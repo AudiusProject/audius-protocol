@@ -29,9 +29,6 @@ web-init:
         paths:
           - node_modules
           - packages/web/node_modules
-          - packages/probers/node_modules
-          - packages/stems/node_modules
-          - packages/stems/dist
           - packages/harmony/node_modules
           - packages/harmony/dist
           - packages/common/node_modules
@@ -93,26 +90,52 @@ web-build-ssr-staging:
         paths:
           - node_modules/@brillout/vite-plugin-import-build/dist
 
-web-test-staging:
+playwright-tests:
   working_directory: ~/audius-protocol
-  resource_class: large
-  executor: cypress/default
+  resource_class: medium
+  parallelism: 4
+  docker:
+    - image: cimg/node:18.17
   steps:
     - checkout
     - attach_workspace:
         at: ./
-    - browser-tools/install-browser-tools:
-        chrome-version: 116.0.5845.96 # TODO: remove when chromedriver downloads are fixed
-    - cypress/install:
-        install-command: 'cd packages/probers && npx cypress install'
-        install-browsers: false
-    - cypress/run-tests:
-        cypress-command: 'cd packages/probers && npx cypress run --browser chrome'
-        start-command: 'npx serve -l 3001 -s packages/web/build-staging'
+    - run: npx playwright install --with-deps
+    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
+    - store_test_results:
+        path: packages/web/report.xml
+        when: always
     - store_artifacts:
-        path: /home/circleci/audius-protocol/packages/probers/cypress/videos
+        path: packages/web/blob-report
+
+playwright-tests-report:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - swissknife/wait_for_job:
+        job-name: playwright-tests
+    - swissknife/get-job-number:
+        job-name: playwright-tests
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-1.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-2.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-3.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-4.zip
+        save-to-directory: ./blob-report
+    - run: npx playwright merge-reports --reporter html ./blob-report
     - store_artifacts:
-        path: /home/circleci/audius-protocol/packages/probers/cypress/screenshots
+        path: playwright-report
 
 web-test:
   working_directory: ~/audius-protocol

@@ -3,14 +3,14 @@
 }
 
 .activeRow td {
-  background-color: var(--neutral-light-9) !important;
-  color: var(--primary) !important;
+  background-color: var(--harmony-n-50) !important;
+  color: var(--harmony-primary) !important;
 }
 
 .collectibleName:hover {
-  color: var(--primary);
+  color: var(--harmony-primary);
   text-decoration: underline;
-  text-decoration-color: var(--primary-light-2);
+  text-decoration-color: var(--harmony-p-100);
 }
 
 .playButtonFormatting {

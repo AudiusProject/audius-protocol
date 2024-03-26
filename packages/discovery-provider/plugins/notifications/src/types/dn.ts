@@ -382,6 +382,10 @@ export interface PlaylistRow {
   updated_at: Date
   ddex_app?: string | null
   ddex_release_ids?: any | null
+  artists?: any | null
+  copyright_line?: any | null
+  producer_copyright_line?: any | null
+  parental_warning_type?: any | null
 }
 export interface PlayRow {
   city?: string | null
@@ -609,7 +613,6 @@ export interface TrackRow {
   created_at: Date
   credits_splits?: string | null
   description?: string | null
-  download?: any | null
   duration?: number | null
   field_visibility?: any | null
   file_type?: string | null
@@ -622,7 +625,6 @@ export interface TrackRow {
   is_unlisted?: boolean
   isrc?: string | null
   iswc?: string | null
-  ddex_release_ids?: any | null
   license?: string | null
   metadata_multihash?: string | null
   mood?: string | null
@@ -643,6 +645,14 @@ export interface TrackRow {
   txhash?: string
   updated_at: Date
   ddex_app?: string | null
+  ddex_release_ids?: any | null
+  artists?: any | null
+  resource_contributors?: any | null
+  indirect_resource_contributors?: any | null
+  rights_controller?: any | null
+  copyright_line?: any | null
+  producer_copyright_line?: any | null
+  parental_warning_type?: any | null
 }
 export interface TrendingParamRow {
   genre?: string | null

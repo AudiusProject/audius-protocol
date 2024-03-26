@@ -15,12 +15,7 @@ const AdminNavSidebar = () => {
             <Flex direction='column' gap='xl'>
               <li>
                 <Link to='/admin'>
-                  <PlainButton size='large'>Uploads</PlainButton>
-                </Link>
-              </li>
-              <li>
-                <Link to='/admin/deliveries'>
-                  <PlainButton size='large'>Indexed Deliveries</PlainButton>
+                  <PlainButton size='large'>Deliveries</PlainButton>
                 </Link>
               </li>
               <li>

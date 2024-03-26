@@ -8,14 +8,14 @@
   text-align: center;
 }
 
-.slider {
-  margin-bottom: 24px;
-}
-
 .input {
   width: 480px;
 }
 
 .invalid input {
-  color: #F15064;
+  color: #f15064;
+}
+
+.stakeInput {
+  margin: 0;
 }

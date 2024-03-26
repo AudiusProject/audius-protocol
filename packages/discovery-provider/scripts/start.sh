@@ -60,6 +60,9 @@ else
         # start worker dedicated to indexing ACDC
         audius_service=worker celery -A src.worker.celery worker -Q index_nethermind --loglevel "$audius_discprov_loglevel" --hostname=index_nethermind --concurrency 1 2>&1 | tee >(logger -t index_nethermind_worker) &
 
+        # start worker dedicated to indexing user bank and payment router
+        audius_service=worker celery -A src.worker.celery worker -Q index_sol --loglevel "$audius_discprov_loglevel" --hostname=index_sol --concurrency 1 2>&1 | tee >(logger -t index_sol_worker) &
+
         # start other workers with remaining CPUs
         audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel "$audius_discprov_loglevel" --concurrency=$(($(nproc) - 5)) 2>&1 | tee >(logger -t worker) &
 

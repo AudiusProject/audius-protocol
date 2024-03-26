@@ -3,8 +3,7 @@ import { useCallback } from 'react'
 import { SuggestedTrack } from '@audius/common/api'
 import { SquareSizes, ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import { IconCaretDown, IconRefresh, useTheme } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Button, IconCaretDown, IconRefresh, useTheme } from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import { useToggle } from 'react-use'
 
@@ -60,12 +59,9 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
           ) : null}
         </div>
       </div>
-      <Button
-        type={ButtonType.COMMON}
-        text={messages.addTrack}
-        size={ButtonSize.SMALL}
-        onClick={handleAddTrack}
-      />
+      <Button variant='secondary' size='small' onClick={handleAddTrack}>
+        {messages.addTrack}
+      </Button>
     </div>
   )
 }

@@ -168,6 +168,9 @@ export const getRewardForClaimBlock = async ({
   }
 
   // For each service operator the user delegates to, calculate the expected rewards for delegating
+
+  const delegateToUserRewards: { [address: string]: BN } = {}
+
   for (let delegate of (user as User).delegates) {
     const operator = users.find(u => u.wallet === delegate.wallet) as Operator
     const deployerCut = new BN(operator.serviceProvider.deployerCut.toString())
@@ -186,7 +189,8 @@ export const getRewardForClaimBlock = async ({
       totalActive: operatorActiveStake,
       deployerCut
     })
+    delegateToUserRewards[delegate.wallet] = delegateRewards.delegatorCut
     totalRewards = totalRewards.add(delegateRewards.delegatorCut)
   }
-  return totalRewards
+  return { totalRewards, delegateToUserRewards }
 }

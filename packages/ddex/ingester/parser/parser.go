@@ -95,7 +95,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 
 		// Create a PendingRelease doc for each parsed release
 		for _, pendingRelease := range pendingReleases {
-			result, err := p.PendingReleasesColl.InsertOne(p.Ctx, pendingRelease)
+			result, err := p.PendingReleasesColl.InsertOne(sessionCtx, pendingRelease)
 			if err != nil {
 				session.AbortTransaction(sessionCtx)
 				return err
@@ -103,7 +103,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
 		}
 
-		delivery.DeliveryStatus = constants.DeliveryStatusSuccess
+		p.DeliveriesColl.UpdateByID(sessionCtx, delivery.ZIPFileETag, bson.M{"$set": bson.M{"delivery_status": constants.DeliveryStatusSuccess}})
 		return session.CommitTransaction(sessionCtx)
 	})
 
@@ -168,18 +168,25 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 
 	// If there's an album release, the tracks we parsed out are actually part of the album release
 	if len(createAlbumRelease) > 0 {
-		// Copy release IDs from individual track releases to the album's tracks
-		isrcToReleaseIDsMap := make(map[string]common.ReleaseIDs)
+		// Copy missing fields from individual track releases to the album's tracks,
+		// which currently only have data from the SoundRecordings
+		isrcToMetadataMap := make(map[string]common.TrackMetadata)
 		for _, trackRelease := range createTrackRelease {
 			if trackRelease.Metadata.ISRC != nil {
-				isrcToReleaseIDsMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata.DDEXReleaseIDs
+				isrcToMetadataMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata
 			}
 		}
 		for i, album := range createAlbumRelease {
 			for j, trackMetadata := range album.Tracks {
 				if trackMetadata.ISRC != nil {
-					if releaseIDs, exists := isrcToReleaseIDsMap[*trackMetadata.ISRC]; exists {
-						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = releaseIDs
+					if trackReleaseMetadata, exists := isrcToMetadataMap[*trackMetadata.ISRC]; exists {
+						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = trackReleaseMetadata.DDEXReleaseIDs
+						if trackReleaseMetadata.ProducerCopyrightLine != nil {
+							createAlbumRelease[i].Tracks[j].ProducerCopyrightLine = trackReleaseMetadata.ProducerCopyrightLine
+						}
+						if trackReleaseMetadata.CopyrightLine != nil {
+							createAlbumRelease[i].Tracks[j].CopyrightLine = trackReleaseMetadata.CopyrightLine
+						}
 					}
 				}
 			}
@@ -188,27 +195,35 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 		createTrackRelease = []common.CreateTrackRelease{}
 	}
 
-	// Find an ID for each artist name in the release
+	// Find an ID for the first OAuthed display artist in the release
 
 	for i := range createTrackRelease {
 		track := &createTrackRelease[i]
-		artistID, err := artistutils.GetArtistID(track.Metadata.ArtistName, p.UsersColl, p.Ctx)
+		artistID, artistName, warnings, err := artistutils.GetFirstArtistID(track.Metadata.Artists, p.UsersColl, p.Ctx)
+		if warnings != nil {
+			p.Logger.Info("Warnings while finding an artist ID for track release", "track title", track.Metadata.Title, "display artists", track.Metadata.Artists, "warnings", fmt.Sprintf("%+v", warnings))
+		}
 		if err != nil {
-			err = fmt.Errorf("track '%s' failed to find artist ID for '%s': %v", track.Metadata.Title, track.Metadata.ArtistName, err)
+			err = fmt.Errorf("track '%s' failed to find an artist ID from display artists %+v: %v", track.Metadata.Title, track.Metadata.Artists, err)
 			release.ValidationErrors = append(release.ValidationErrors, err.Error())
 			return nil, err
 		}
+		p.Logger.Info("Found artist ID for track release", "artistID", artistID, "artistName", artistName, "track title", track.Metadata.Title, "display artists", track.Metadata.Artists)
 		track.Metadata.ArtistID = artistID
 	}
 
 	for i := range createAlbumRelease {
 		album := &createAlbumRelease[i]
-		artistID, err := artistutils.GetArtistID(album.Metadata.PlaylistOwnerName, p.UsersColl, p.Ctx)
+		artistID, artistName, warnings, err := artistutils.GetFirstArtistID(album.Metadata.Artists, p.UsersColl, p.Ctx)
+		if warnings != nil {
+			p.Logger.Info("Warnings while finding an artist ID for album release", "album title", album.Metadata.PlaylistName, "display artists", album.Metadata.Artists, "warnings", fmt.Sprintf("%+v", warnings))
+		}
 		if err != nil {
-			err = fmt.Errorf("album '%s' failed to find artist ID for '%s': %v", album.Metadata.PlaylistName, album.Metadata.PlaylistOwnerName, err)
+			err = fmt.Errorf("album '%s' failed to find artist ID from display artists '%+v': %v", album.Metadata.PlaylistName, album.Metadata.Artists, err)
 			release.ValidationErrors = append(release.ValidationErrors, err.Error())
 			return nil, err
 		}
+		p.Logger.Info("Found artist ID for album release", "artistID", artistID, "artistName", artistName, "album title", album.Metadata.PlaylistName, "display artists", album.Metadata.Artists)
 		album.Metadata.PlaylistOwnerID = artistID
 	}
 

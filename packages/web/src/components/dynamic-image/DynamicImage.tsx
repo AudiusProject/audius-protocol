@@ -16,7 +16,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import styles from './DynamicImage.module.css'
 
 const placeholder =
-  'linear-gradient(315deg, var(--neutral-light-8) 0%, var(--neutral-light-9) 100%)'
+  'linear-gradient(315deg, var(--harmony-n-100) 0%, var(--harmony-n-50) 100%)'
 
 export type DynamicImageProps = {
   // Image URL (or style.backgroundImage)
@@ -70,7 +70,7 @@ const fadeIn = (
 
     // Set default background color for static images (transparent background defaults)
     if (image.includes('/static')) {
-      ref.current.style.backgroundColor = 'var(--neutral-light-5)'
+      ref.current.style.backgroundColor = 'var(--harmony-n-300)'
     } else if (
       !image.startsWith('data:image/png') &&
       !image.startsWith('/@fs')

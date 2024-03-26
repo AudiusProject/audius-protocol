@@ -48,7 +48,6 @@ models/PlaylistArtwork.ts
 models/PlaylistFull.ts
 models/PlaylistFullWithoutTracks.ts
 models/PlaylistLibrary.ts
-models/PremiumContentSignature.ts
 models/ProfilePicture.ts
 models/Purchase.ts
 models/PurchasesCountResponse.ts
