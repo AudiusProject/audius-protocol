@@ -1,6 +1,5 @@
 import {
   OpenSeaClient,
-  SolanaClient,
   HeliusClient,
   SolanaCollectiblesProvider,
   EthereumCollectiblesProvider
@@ -49,10 +48,6 @@ export const storeContext: CommonStoreContext = {
   ),
   solanaCollectiblesProvider: new SolanaCollectiblesProvider({
     heliusClient: new HeliusClient(env.HELIUS_DAS_API_URL),
-    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: env.METADATA_PROGRAM_ID
-  }),
-  solanaClient: new SolanaClient({
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: env.METADATA_PROGRAM_ID
   }),

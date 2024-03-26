@@ -1,25 +1,24 @@
 import dayjs from 'dayjs'
 
+import { Collectible, CollectibleState } from '~/models'
+import { allSettled } from '~/utils'
+
+import { OpenSeaClient } from '../opensea'
 import {
-  Collectible,
-  CollectibleState,
   OpenSeaEvent,
   OpenSeaEventExtended,
   OpenSeaNft,
   OpenSeaNftExtended,
   OpenSeaNftMetadata
-} from '~/models'
-import { allSettled } from '~/utils'
+} from '../opensea/types'
 
+import { CollectiblesProvider } from './CollectiblesProvider'
 import {
-  OpenSeaClient,
   assetToCollectible,
   isAssetValid,
   isNotFromNullAddress,
   transferEventToCollectible
-} from '../opensea-client'
-
-import { CollectiblesProvider } from './CollectiblesProvider'
+} from './ethCollectibleHelpers'
 
 export class EthereumCollectiblesProvider implements CollectiblesProvider {
   private readonly openSeaClient: OpenSeaClient

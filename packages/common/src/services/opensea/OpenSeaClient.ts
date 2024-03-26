@@ -1,6 +1,6 @@
 import { Nullable } from '~/utils'
 
-import { OpenSeaEvent, OpenSeaNft, OpenSeaCollection } from '../../models'
+import { OpenSeaCollection, OpenSeaEvent, OpenSeaNft } from './types'
 
 const OPENSEA_NUM_ASSETS_LIMIT = 50
 

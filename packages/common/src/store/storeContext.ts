@@ -21,7 +21,6 @@ import { Explore } from '../services/explore'
 import { FingerprintClient } from '../services/fingerprint'
 import { LocalStorage } from '../services/local-storage'
 import { FeatureFlags, RemoteConfigInstance } from '../services/remote-config'
-import { SolanaClient } from '../services/solana-client'
 import { TrackDownload } from '../services/track-download'
 import { WalletClient } from '../services/wallet-client'
 
@@ -69,7 +68,6 @@ export type CommonStoreContext = {
   audioPlayer: AudioPlayer
   ethereumCollectiblesProvider: EthereumCollectiblesProvider
   solanaCollectiblesProvider: SolanaCollectiblesProvider
-  solanaClient: SolanaClient
   sentry: {
     setTag: (key: string, value: string) => void
     configureScope: (fn: (scope: { setUser: any }) => void) => void

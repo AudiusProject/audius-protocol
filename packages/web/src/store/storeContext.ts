@@ -1,7 +1,6 @@
 import {
   FeatureFlags,
   OpenSeaClient,
-  SolanaClient,
   HeliusClient,
   SolanaCollectiblesProvider,
   EthereumCollectiblesProvider
@@ -67,10 +66,6 @@ export const buildStoreContext = ({
   ethereumCollectiblesProvider: new EthereumCollectiblesProvider(
     new OpenSeaClient(env.OPENSEA_API_URL as string)
   ),
-  solanaClient: new SolanaClient({
-    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: env.METADATA_PROGRAM_ID
-  }),
   sentry: { setTag, configureScope },
   reportToSentry,
   trackDownload,

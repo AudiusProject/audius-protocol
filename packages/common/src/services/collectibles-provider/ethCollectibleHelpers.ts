@@ -1,14 +1,16 @@
-import { Nullable, dayjs } from '~/utils'
-
 import {
   Chain,
   Collectible,
   CollectibleMediaType,
-  OpenSeaNftExtended,
+  EthTokenStandard
+} from '~/models'
+import { Nullable, dayjs } from '~/utils'
+
+import {
   OpenSeaEvent,
   OpenSeaEventExtended,
-  EthTokenStandard
-} from '../../models'
+  OpenSeaNftExtended
+} from '../opensea/types'
 
 const fetchWithTimeout = async (
   resource: RequestInfo,

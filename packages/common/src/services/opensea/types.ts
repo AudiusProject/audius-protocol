@@ -1,6 +1,5 @@
-import { Nullable } from '../utils/typeUtils'
-
-import { EthTokenStandard } from './Track'
+import { EthTokenStandard } from '~/models'
+import { Nullable } from '~/utils'
 
 type AssetContract = {
   address: Nullable<string>
