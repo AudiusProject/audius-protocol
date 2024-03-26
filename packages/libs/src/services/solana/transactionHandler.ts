@@ -8,6 +8,7 @@ import {
   AddressLookupTableAccount,
   VersionedTransaction
 } from '@solana/web3.js'
+import bs58 from 'bs58'
 
 import type { Logger, Nullable } from '../../utils'
 import type { IdentityService, RelayTransactionData } from '../identity'
@@ -214,6 +215,7 @@ export class TransactionHandler {
       recentBlockhash ??
       (await this.connection.getLatestBlockhash('confirmed')).blockhash
     let rawTransaction: Buffer | Uint8Array
+    let txid: string
 
     // Branch on whether to send a legacy or v0 transaction. Some duplicated code
     // unfortunately due to type errors, eg `add` does not exist on VersionedTransaction.
@@ -252,6 +254,8 @@ export class TransactionHandler {
           tx.addSignature(new PublicKey(publicKey), signature)
         })
       }
+      txid = tx.signatures[0]!.toString()
+      logger.info('REED txid in v0 tx', txid)
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction
@@ -267,6 +271,8 @@ export class TransactionHandler {
           tx.addSignature(new PublicKey(publicKey), signature)
         })
       }
+      txid = bs58.encode(tx.signatures[0]!.signature!)
+      logger.info(`REED txid in legacy tx ${txid}`)
       rawTransaction = tx.serialize()
     }
 
@@ -278,16 +284,6 @@ export class TransactionHandler {
         preflightCommitment: 'processed',
         maxRetries: retry ? 0 : undefined
       })
-    }
-
-    const txid = signatures?.[0]?.publicKey
-    if (!txid) {
-      logger.error('transactionHandler: No signature found')
-      return {
-        res: null,
-        error: 'No txid',
-        errorCode: null
-      }
     }
 
     try {
