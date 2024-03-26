@@ -106,9 +106,26 @@ playwright-tests:
         path: packages/web/report.xml
         when: always
     - store_artifacts:
-        path: packages/web/playwright-report
-    - store_artifacts:
         path: packages/web/blob-report
+
+playwright-tests-results:
+  working_directory: ~/audius-protocol
+  executor: cimg/node:18.17
+  steps:
+    - swissknife/wait_for_job:
+        job-name: playwright-tests
+        circleci-api-key: CIRCLE_PERSONAL_API_TOKEN
+    - swissknife/get-job-number:
+        job-name: playwright-tests
+    - swissknife/get_job_artifacts:
+        job-name: playwright-tests
+        job-number: $SK_JOB_NUM
+        save-to-directory: packages/web/blob-report
+    - attach_workspace:
+        at: ./
+    - run: cd packages/web; npx playwright merge-reports --reporter html ./blob-report
+    - store_artifacts:
+        path: packages/web/playwright-report
 
 web-test:
   working_directory: ~/audius-protocol

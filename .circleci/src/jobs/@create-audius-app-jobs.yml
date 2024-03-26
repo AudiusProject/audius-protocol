@@ -40,7 +40,7 @@ create-audius-app-test:
 create-audius-app-test-e2e:
   working_directory: ~/audius-protocol
   resource_class: medium
-  executor: cypress/default
+  executor: cimg/node:18.17
   steps:
     - checkout
     - attach_workspace:
