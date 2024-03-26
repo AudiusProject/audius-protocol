@@ -9,8 +9,9 @@ type User = {
   email: string
 }
 
-async function assertOnSignUpPage(page: Page) {
-  expect(
+async function expectSignUpPage(page: Page) {
+  await page.waitForURL(/signup/i)
+  await expect(
     page.getByRole('heading', { name: /sign up for audius/i, level: 1 })
   ).toBeVisible()
 }
@@ -179,25 +180,25 @@ test.describe('Sign Up', () => {
       await page.goto('trending')
       await expect(page.getByText(/have an account\?/i)).toBeVisible()
       await page.getByRole('link', { name: /sign up/i }).click()
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
 
     test('/signup goes to sign-up', async ({ page }) => {
       await page.goto('signup')
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
 
     test('can navigate to sign-up from sign-in', async ({ page }) => {
       await page.goto('signin')
       await page.getByRole('link', { name: /create an account/i }).click()
 
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
 
     test('can navigate to sign-up from the public site', async ({ page }) => {
       await page.goto('')
       await page.getByRole('link', { name: /sign up/i }).click()
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
 
     test('should go through whole sign up flow', async ({ page }) => {
@@ -228,19 +229,19 @@ test.describe('Sign Up', () => {
     test('can navigate to signup from trending', async ({ page }) => {
       await page.goto('trending')
       await page.getByRole('link', { name: /sign up/i }).click()
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
 
     test('/signup goes to sign-up', async ({ page }) => {
       await page.goto('signup')
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
 
     test('can navigate to sign-up from sign-in', async ({ page }) => {
       await page.goto('signin')
       await page.getByRole('link', { name: /create an account/i }).click()
 
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
 
     test('can navigate to sign-up from the public site', async ({ page }) => {
@@ -248,7 +249,7 @@ test.describe('Sign Up', () => {
       await page.getByRole('button', { name: /open nav menu/i }).click()
       await page.getByRole('link', { name: /sign up/i }).click()
 
-      await assertOnSignUpPage(page)
+      await expectSignUpPage(page)
     })
     test('should go through whole sign up flow', async ({ page }) => {
       await testSignUp({ isMobile: true, page })
