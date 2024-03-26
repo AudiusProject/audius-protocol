@@ -117,9 +117,21 @@ playwright-tests-report:
         job-name: playwright-tests
     - swissknife/get-job-number:
         job-name: playwright-tests
-    - get-job-artifacts:
+    - swissknife/get_job_artifacts:
         job-number: SK_JOB_NUM
-        file-name-pattern: packages/web/blob-report/.*
+        file-name-pattern: packages/web/blob-report/report-1.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-2.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-3.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-4.zip
         save-to-directory: ./blob-report
     - run: cd packages/web; npx playwright merge-reports --reporter html ./blob-report
     - store_artifacts:
