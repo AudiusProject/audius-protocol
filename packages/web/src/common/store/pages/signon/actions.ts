@@ -423,8 +423,7 @@ export function removeFollowArtists(userIds: ID[]) {
 
 export const showRequiresAccountModal = () =>
   toastActions.toast({
-    content: 'Oops, it looks like you need an account to do that!',
-    timeout: 300000
+    content: 'Oops, it looks like you need an account to do that!'
   })
 
 /**
