@@ -8,7 +8,6 @@ import {
   PurchaseableTrackDownloadMetadata,
   PurchaseableTrackStreamMetadata
 } from './types'
-import { is } from 'immer/dist/internal'
 
 type GetExtraAmountArgs = {
   amountPreset: PayExtraPreset

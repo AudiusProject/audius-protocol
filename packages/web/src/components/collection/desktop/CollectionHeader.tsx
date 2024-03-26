@@ -2,6 +2,7 @@ import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useGetCurrentUserId, useGetPurchases } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
+import { USDCContentPurchaseType } from '@audius/common/models'
 import {
   PurchaseableContentType,
   useEditPlaylistModal
@@ -85,7 +86,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const isAlbumPurchased = purchases.some(
     (purchaseDetails) =>
-      purchaseDetails.contentType === 'album' &&
+      purchaseDetails.contentType === USDCContentPurchaseType.ALBUM &&
       purchaseDetails.contentId === collectionId
   )
 

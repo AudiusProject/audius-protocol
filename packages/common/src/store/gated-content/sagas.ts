@@ -430,7 +430,7 @@ export function* pollGatedContent({
     DEFAULT_GATED_TRACK_POLL_INTERVAL_MS
 
   // get initial track metadata to determine whether we are polling for stream or download access
-  const isAlbum = contentType === 'album'
+  const isAlbum = contentType === PurchaseableContentType.ALBUM
   const cachedEntity = isAlbum
     ? yield* select(getCollection, { id: contentId })
     : yield* select(getTrack, {

@@ -29,7 +29,8 @@ import {
   purchaseContentSelectors,
   PurchaseContentStage,
   PurchaseContentPage,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -206,7 +207,7 @@ export const PremiumContentPurchaseModal = () => {
   const presetValues = usePayExtraPresets()
   const { data: currentUserId } = useGetCurrentUserId({})
 
-  const isAlbum = contentType === 'album'
+  const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useGetTrackById(
     { id: contentId! },
     { disabled: isAlbum || !contentId }
@@ -229,9 +230,7 @@ export const PremiumContentPurchaseModal = () => {
     user
   } as PurchaseableContentMetadata
 
-  // @ts-ignore TODO: calculate _cover_art_sizes, or remove the requirement from the arg type
   const isValidStreamGated = !!metadata && isStreamPurchaseable(metadata)
-  // @ts-ignore TODO: calculate _cover_art_sizes, or remove the requirement from the arg type
   const isValidDownloadGated =
     !!metadata && isTrackDownloadPurchaseable(metadata)
 
