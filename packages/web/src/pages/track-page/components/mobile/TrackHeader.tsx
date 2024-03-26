@@ -429,18 +429,20 @@ const TrackHeader = ({
         />
       ) : null}
       {streamConditions && trackId ? (
-        <GatedContentSection
-          isLoading={isLoading}
-          contentId={trackId}
-          contentType={PurchaseableContentType.TRACK}
-          streamConditions={streamConditions}
-          hasStreamAccess={hasStreamAccess}
-          isOwner={isOwner}
-          wrapperClassName={styles.gatedContentSectionWrapper}
-          className={styles.gatedContentSection}
-          buttonClassName={styles.gatedContentSectionButton}
-          ownerId={userId}
-        />
+        <Box mb='xl'>
+          <GatedContentSection
+            isLoading={isLoading}
+            contentId={trackId}
+            contentType={PurchaseableContentType.TRACK}
+            streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
+            isOwner={isOwner}
+            wrapperClassName={styles.gatedContentSectionWrapper}
+            className={styles.gatedContentSection}
+            buttonClassName={styles.gatedContentSectionButton}
+            ownerId={userId}
+          />
+        </Box>
       ) : null}
       {showPreview ? (
         <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />

@@ -163,7 +163,7 @@
 }
 
 .gatedContentSection {
-  margin: 0 var(--harmony-unit-6) var(--harmony-unit-6) var(--harmony-unit-6);
+  margin-inline: var(--harmony-unit-6);
   padding: var(--harmony-unit-4);
   background: var(--harmony-white);
   border: 1px solid var(--harmony-n-150);

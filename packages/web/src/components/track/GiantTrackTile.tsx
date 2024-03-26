@@ -660,15 +660,17 @@ export const GiantTrackTile = ({
 
       <ClientOnly>
         {isStreamGated && streamConditions ? (
-          <GatedContentSection
-            isLoading={isLoading}
-            contentId={trackId}
-            contentType={PurchaseableContentType.TRACK}
-            streamConditions={streamConditions}
-            hasStreamAccess={hasStreamAccess}
-            isOwner={isOwner}
-            ownerId={userId}
-          />
+          <Box mb='xl'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
+              isOwner={isOwner}
+              ownerId={userId}
+            />
+          </Box>
         ) : null}
       </ClientOnly>
 
