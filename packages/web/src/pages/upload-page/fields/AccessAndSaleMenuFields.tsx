@@ -105,6 +105,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
         {isUsdcEnabled ? (
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
+            isAlbum={isAlbum}
             isUpload={isUpload}
             initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}

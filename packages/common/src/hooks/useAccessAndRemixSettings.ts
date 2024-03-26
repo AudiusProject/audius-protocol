@@ -96,7 +96,9 @@ export const useAccessAndRemixSettings = ({
   const noCollectibleGateFields =
     noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
-  const noHidden = isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
+  const noHidden =
+    isAlbum || isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
+
   return {
     noUsdcGate,
     noSpecialAccessGate,
