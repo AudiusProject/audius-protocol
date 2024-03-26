@@ -34,17 +34,17 @@
   gap: var(--harmony-unit-6);
 }
 
-.gatedTrackSectionWrapper {
+.gatedContentSectionWrapper {
   margin: 0;
   padding: 0;
   border: none;
 }
 
-.gatedTrackSection {
+.gatedContentSection {
   flex-direction: column;
   gap: var(--harmony-unit-6);
 }
 
-.gatedTrackSectionButton {
+.gatedContentSectionButton {
   width: 100%;
 }

@@ -50,7 +50,7 @@ import { StaticImage } from 'components/static-image/StaticImage'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
-import { GatedTrackSection } from 'components/track/GatedTrackSection'
+import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -429,16 +429,16 @@ const TrackHeader = ({
         />
       ) : null}
       {streamConditions && trackId ? (
-        <GatedTrackSection
+        <GatedContentSection
           isLoading={isLoading}
           contentId={trackId}
           contentType={PurchaseableContentType.TRACK}
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
           isOwner={isOwner}
-          wrapperClassName={styles.gatedTrackSectionWrapper}
-          className={styles.gatedTrackSection}
-          buttonClassName={styles.gatedTrackSectionButton}
+          wrapperClassName={styles.gatedContentSectionWrapper}
+          className={styles.gatedContentSection}
+          buttonClassName={styles.gatedContentSectionButton}
           ownerId={userId}
         />
       ) : null}

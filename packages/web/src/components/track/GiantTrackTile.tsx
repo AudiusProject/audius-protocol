@@ -60,7 +60,7 @@ import { trpc } from 'utils/trpcClientWeb'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
-import { GatedTrackSection } from './GatedTrackSection'
+import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
@@ -660,7 +660,7 @@ export const GiantTrackTile = ({
 
       <ClientOnly>
         {isStreamGated && streamConditions ? (
-          <GatedTrackSection
+          <GatedContentSection
             isLoading={isLoading}
             contentId={trackId}
             contentType={PurchaseableContentType.TRACK}

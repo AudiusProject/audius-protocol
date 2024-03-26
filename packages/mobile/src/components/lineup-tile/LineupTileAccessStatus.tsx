@@ -21,7 +21,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 const { setLockedContentId } = gatedContentActions
 
 const messages = {
@@ -65,7 +65,7 @@ export const LineupTileAccessStatus = ({
   const isUSDCEnabled = useIsUSDCEnabled()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = gatedTrackStatusMap[trackId]
   const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =

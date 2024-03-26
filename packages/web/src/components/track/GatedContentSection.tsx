@@ -54,9 +54,9 @@ import { LockedStatusBadge } from './LockedStatusBadge'
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 
-const messages = {
+const getMessages = (contentType: PurchaseableContentType) => ({
   howToUnlock: 'HOW TO UNLOCK',
   payToUnlock: 'PAY TO UNLOCK',
   purchasing: 'PURCHASING',
@@ -71,31 +71,28 @@ const messages = {
   exclamationMark: '!',
   ownCollectibleGatedPrefix:
     'Users can unlock access by linking a wallet containing a collectible from ',
-  unlockCollectibleGatedTrack:
-    'To unlock this track, you must link a wallet containing a collectible from ',
+  unlockCollectibleGatedContent: `To unlock this ${contentType}, you must link a wallet containing a collectible from `,
   aCollectibleFrom: 'A Collectible from ',
-  unlockingCollectibleGatedTrackSuffix: 'was found in a linked wallet.',
-  unlockedCollectibleGatedTrackSuffix:
-    'was found in a linked wallet. This track is now available.',
+  unlockingCollectibleGatedContentSuffix: 'was found in a linked wallet.',
+  unlockedCollectibleGatedContentSuffix: `was found in a linked wallet. This ${contentType} is now available.`,
   ownFollowGated: 'Users can unlock access by following your account!',
-  unlockFollowGatedTrackPrefix: 'Follow',
+  unlockFollowGatedContentPrefix: 'Follow',
   thankYouForFollowing: 'Thank you for following',
-  unlockedFollowGatedTrackSuffix: '! This track is now available.',
+  unlockedFollowGatedContentSuffix: `! This ${contentType} is now available.`,
   ownTipGated: 'Users can unlock access by sending you a tip!',
-  unlockTipGatedTrackPrefix: 'Send',
-  unlockTipGatedTrackSuffix: 'a tip.',
+  unlockTipGatedContentPrefix: 'Send',
+  unlockTipGatedContentSuffix: 'a tip.',
   thankYouForSupporting: 'Thank you for supporting',
-  unlockingTipGatedTrackSuffix: 'by sending them a tip!',
-  unlockedTipGatedTrackSuffix:
-    'by sending them a tip! This track is now available.',
-  unlockWithPurchase: 'Unlock this track with a one-time purchase!',
-  purchased: "You've purchased this track.",
+  unlockingTipGatedContentSuffix: 'by sending them a tip!',
+  unlockedTipGatedContentSuffix: `by sending them a tip! This ${contentType} is now available.`,
+  unlockWithPurchase: `Unlock this ${contentType} with a one-time purchase!`,
+  purchased: `You've purchased this ${contentType}.`,
   buy: (price: string) => `Buy $${price}`,
   usersCanPurchase: (price: string) =>
-    `Users can unlock access to this track for a one time purchase of $${price}`
-}
+    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
+})
 
-type GatedTrackAccessSectionProps = {
+type GatedContentAccessSectionProps = {
   contentId: ID
   contentType: PurchaseableContentType
   trackOwner: Nullable<User>
@@ -109,7 +106,7 @@ type GatedTrackAccessSectionProps = {
   buttonClassName?: string
 }
 
-const LockedGatedTrackSection = ({
+const LockedGatedContentSection = ({
   contentId,
   contentType,
   streamConditions,
@@ -119,7 +116,8 @@ const LockedGatedTrackSection = ({
   renderArtist,
   className,
   buttonClassName
-}: GatedTrackAccessSectionProps) => {
+}: GatedContentAccessSectionProps) => {
+  const messages = getMessages(contentType)
   const dispatch = useDispatch()
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
@@ -197,7 +195,7 @@ const LockedGatedTrackSection = ({
       return (
         <Text variant='body' strength='strong'>
           <div className={styles.collectibleGatedDescription}>
-            {messages.unlockCollectibleGatedTrack}
+            {messages.unlockCollectibleGatedContent}
           </div>
           <div
             className={styles.gatedContentSectionCollection}
@@ -222,7 +220,7 @@ const LockedGatedTrackSection = ({
     if (isContentFollowGated(streamConditions) && followee) {
       return (
         <Text variant='body' strength='strong'>
-          {messages.unlockFollowGatedTrackPrefix}&nbsp;
+          {messages.unlockFollowGatedContentPrefix}&nbsp;
           <UserLink userId={followee.user_id} />
           {messages.period}
         </Text>
@@ -232,9 +230,9 @@ const LockedGatedTrackSection = ({
     if (isContentTipGated(streamConditions) && tippedUser) {
       return (
         <Text variant='body' strength='strong'>
-          {messages.unlockTipGatedTrackPrefix}&nbsp;
+          {messages.unlockTipGatedContentPrefix}&nbsp;
           <UserLink userId={tippedUser.user_id} />
-          {messages.unlockTipGatedTrackSuffix}
+          {messages.unlockTipGatedContentSuffix}
         </Text>
       )
     }
@@ -336,14 +334,16 @@ const LockedGatedTrackSection = ({
   )
 }
 
-const UnlockingGatedTrackSection = ({
+const UnlockingGatedContentSection = ({
+  contentType,
   streamConditions,
   followee,
   tippedUser,
   goToCollection,
   renderArtist,
   className
-}: GatedTrackAccessSectionProps) => {
+}: GatedContentAccessSectionProps) => {
+  const messages = getMessages(contentType)
   const renderUnlockingDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
       return (
@@ -352,7 +352,7 @@ const UnlockingGatedTrackSection = ({
           <span className={styles.collectibleName} onClick={goToCollection}>
             &nbsp;{streamConditions.nft_collection?.name}&nbsp;
           </span>
-          <span>{messages.unlockingCollectibleGatedTrackSuffix}</span>
+          <span>{messages.unlockingCollectibleGatedContentSuffix}</span>
         </div>
       )
     }
@@ -373,7 +373,7 @@ const UnlockingGatedTrackSection = ({
           <span>{messages.thankYouForSupporting}&nbsp;</span>
           {renderArtist(tippedUser)}
           <span className={styles.suffix}>
-            {messages.unlockingTipGatedTrackSuffix}
+            {messages.unlockingTipGatedContentSuffix}
           </span>
         </div>
       )
@@ -410,7 +410,8 @@ const UnlockingGatedTrackSection = ({
   )
 }
 
-const UnlockedGatedTrackSection = ({
+const UnlockedGatedContentSection = ({
+  contentType,
   streamConditions,
   followee,
   tippedUser,
@@ -419,7 +420,8 @@ const UnlockedGatedTrackSection = ({
   isOwner,
   trackOwner,
   className
-}: GatedTrackAccessSectionProps) => {
+}: GatedContentAccessSectionProps) => {
+  const messages = getMessages(contentType)
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
       return isOwner ? (
@@ -436,7 +438,7 @@ const UnlockedGatedTrackSection = ({
             {streamConditions.nft_collection?.name}
           </span>
           &nbsp;
-          {messages.unlockedCollectibleGatedTrackSuffix}
+          {messages.unlockedCollectibleGatedContentSuffix}
         </>
       )
     }
@@ -448,7 +450,7 @@ const UnlockedGatedTrackSection = ({
         <>
           {messages.thankYouForFollowing}&nbsp;
           <UserLink userId={followee.user_id} />
-          {messages.unlockedFollowGatedTrackSuffix}
+          {messages.unlockedFollowGatedContentSuffix}
         </>
       )
     }
@@ -460,7 +462,7 @@ const UnlockedGatedTrackSection = ({
         <>
           {messages.thankYouForSupporting}&nbsp;
           <UserLink userId={tippedUser.user_id} />
-          {messages.unlockedTipGatedTrackSuffix}
+          {messages.unlockedTipGatedContentSuffix}
         </>
       )
     }
@@ -475,18 +477,18 @@ const UnlockedGatedTrackSection = ({
           </span>
         </div>
       ) : (
-        <div>
+        <Flex direction='row'>
           <span>{messages.purchased}&nbsp;</span>
           {trackOwner ? (
             <>
-              <span>
+              <Flex direction='row'>
                 {messages.thankYouForSupporting}&nbsp;
                 {renderArtist(trackOwner)}
                 {messages.period}
-              </span>
+              </Flex>
             </>
           ) : null}
-        </div>
+        </Flex>
       )
     }
 
@@ -540,7 +542,7 @@ const UnlockedGatedTrackSection = ({
   )
 }
 
-type GatedTrackSectionProps = {
+type GatedContentSectionProps = {
   isLoading: boolean
   contentId: ID
   contentType: PurchaseableContentType
@@ -553,7 +555,7 @@ type GatedTrackSectionProps = {
   ownerId: ID
 }
 
-export const GatedTrackSection = ({
+export const GatedContentSection = ({
   isLoading,
   contentId,
   contentType = PurchaseableContentType.TRACK,
@@ -564,10 +566,10 @@ export const GatedTrackSection = ({
   className,
   buttonClassName,
   ownerId
-}: GatedTrackSectionProps) => {
+}: GatedContentSectionProps) => {
   const dispatch = useDispatch()
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
-  const gatedTrackStatus = gatedTrackStatusMap[contentId] ?? null
+  const gatedContentStatusMap = useSelector(getGatedContentStatusMap)
+  const gatedContentStatus = gatedContentStatusMap[contentId] ?? null
 
   const isFollowGated = isContentFollowGated(streamConditions)
   const isTipGated = isContentTipGated(streamConditions)
@@ -621,7 +623,7 @@ export const GatedTrackSection = ({
         component='span'
       >
         <h2
-          className={styles.gatedTrackOwner}
+          className={styles.gatedContentOwner}
           onClick={() =>
             dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
           }
@@ -646,7 +648,7 @@ export const GatedTrackSection = ({
   if (hasStreamAccess) {
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
-        <UnlockedGatedTrackSection
+        <UnlockedGatedContentSection
           contentId={contentId}
           contentType={contentType}
           trackOwner={trackOwner}
@@ -662,10 +664,10 @@ export const GatedTrackSection = ({
     )
   }
 
-  if (gatedTrackStatus === 'UNLOCKING') {
+  if (gatedContentStatus === 'UNLOCKING') {
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
-        <UnlockingGatedTrackSection
+        <UnlockingGatedContentSection
           contentId={contentId}
           contentType={contentType}
           trackOwner={trackOwner}
@@ -683,7 +685,7 @@ export const GatedTrackSection = ({
 
   return (
     <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
-      <LockedGatedTrackSection
+      <LockedGatedContentSection
         contentId={contentId}
         contentType={contentType}
         trackOwner={trackOwner}

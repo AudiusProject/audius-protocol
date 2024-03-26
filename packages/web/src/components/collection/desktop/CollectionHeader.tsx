@@ -20,7 +20,7 @@ import { Input } from 'components/input'
 import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
-import { GatedTrackSection } from 'components/track/GatedTrackSection'
+import { GatedContentSection } from 'components/track/GatedContentSection'
 import InfoLabel from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
 
@@ -239,7 +239,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
         ) : null}
       </div>
       {isStreamGated && streamConditions ? (
-        <GatedTrackSection
+        <GatedContentSection
           isLoading={hasMorePurchases}
           contentId={collectionId}
           contentType={PurchaseableContentType.ALBUM}

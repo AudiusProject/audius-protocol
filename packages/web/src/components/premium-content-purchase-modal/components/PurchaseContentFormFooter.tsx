@@ -21,6 +21,7 @@ import {
   IconRepost,
   Flex
 } from '@audius/harmony'
+import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -30,7 +31,6 @@ import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
-import { capitalize } from 'lodash'
 
 const messages = {
   buy: 'Buy',

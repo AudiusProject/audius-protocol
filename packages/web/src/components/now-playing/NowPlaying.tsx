@@ -80,7 +80,7 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
 const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 type OwnProps = {
   onClose: () => void
@@ -405,7 +405,7 @@ const NowPlaying = g(
     const matrix = isMatrix()
     const darkMode = isDarkMode()
 
-    const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+    const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
     const gatedTrackStatus =
       track_id &&
       gatedTrackStatusMap[typeof track_id === 'number' ? track_id : -1]

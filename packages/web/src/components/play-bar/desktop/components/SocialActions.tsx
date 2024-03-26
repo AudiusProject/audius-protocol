@@ -20,7 +20,7 @@ import { shouldShowDark } from 'utils/theme/theme'
 import styles from './SocialActions.module.css'
 
 const { getTheme } = themeSelectors
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 const { getTrack } = cacheTracksSelectors
 
 type SocialActionsProps = {
@@ -54,7 +54,7 @@ export const SocialActions = ({
   const favoriteText = favorited ? messages.unfavorite : messages.favorite
   const repostText = reposted ? messages.reposted : messages.repost
 
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
