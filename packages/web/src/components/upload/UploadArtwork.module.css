@@ -27,7 +27,7 @@
 
 .button {
   position: absolute;
-  bottom: 32px;
+  bottom: var(--harmony-spacing-l);
   left: 0;
   right: 0;
 

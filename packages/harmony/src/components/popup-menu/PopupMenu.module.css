@@ -18,7 +18,7 @@
   color: var(--harmony-neutral);
 }
 
-.item .icon {
+.icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,10 +32,10 @@
 
 .item:hover {
   cursor: pointer;
-  color: var(--harmony-white);
+  color: var(--harmony-static-white);
   background: var(--harmony-secondary);
 }
 
 .item:hover path {
-  fill: var(--harmony-white);
+  fill: var(--harmony-static-white);
 }

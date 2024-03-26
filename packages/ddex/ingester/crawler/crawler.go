@@ -35,6 +35,8 @@ func RunNewCrawler(ctx context.Context) {
 	interval := 3 * time.Minute
 	if os.Getenv("TEST_MODE") == "true" {
 		interval = time.Second
+	} else if os.Getenv("IS_DEV") == "true" {
+		interval = 5 * time.Second
 	}
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()

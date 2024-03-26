@@ -10,7 +10,8 @@ export const incomingRequestLogger = (
   const startTime = new Date(new Date().getTime());
   const requestId = typeof request.headers["X-Request-Id"] === "string" ? request.headers["X-Request-ID"] as string : uuidv4();
   const oldCtx = response.locals.ctx;
-  response.locals.ctx = { ...oldCtx, startTime, requestId };
+  const requestLogger = logger.child({ startTime, requestId })
+  response.locals.ctx = { ...oldCtx, startTime, requestId, logger: requestLogger };
 
   const { route, method } = request;
   const path: string = route.path
@@ -30,8 +31,8 @@ export const outgoingLog = (request: Request, response: Response) => {
   const statusCode = response.statusCode;
   const path: string = route.path
   if (!path.includes("health")) {
-    logger.info(
-      { requestId, path, method, responseTime, statusCode },
+    response.locals.ctx.logger.info(
+      { responseTime, statusCode },
       "request completed"
     );
   }

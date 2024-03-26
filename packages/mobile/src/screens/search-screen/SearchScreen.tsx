@@ -40,7 +40,7 @@ export const SearchScreen = () => {
   )
 
   const renderSearchContent = () => {
-    if (hasResults) {
+    if (hasResults && !searchBarText.startsWith('#')) {
       return <SearchResults />
     }
     if (searchBarText && !hasResults) {

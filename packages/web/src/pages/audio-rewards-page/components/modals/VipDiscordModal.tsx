@@ -65,7 +65,7 @@ export const VipDiscordModal = () => {
         ) : null}
         <Button
           variant='primary'
-          css={(theme) => ({ marginTop: theme.spacing['2xl'] })}
+          css={(theme) => ({ margin: theme.spacing['2xl'] })}
           onClick={handleClick}
           iconLeft={IconDiscord}
         >

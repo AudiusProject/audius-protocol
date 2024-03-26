@@ -8,7 +8,8 @@ const TrendingButton = ({
   onClick,
   href,
   isActive,
-  isMatrixMode
+  isMatrixMode,
+  ...buttonProps
 }: ButtonProps) => {
   return (
     <AnimatedBottomButton
@@ -24,6 +25,7 @@ const TrendingButton = ({
       iconDarkJSON={() =>
         import('../../../assets/animations/iconTrendingDark.json')
       }
+      {...buttonProps}
     />
   )
 }

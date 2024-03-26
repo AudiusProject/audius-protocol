@@ -3,10 +3,8 @@
 Server that publishes DDEX entities queued for release by the DDEX ingester.
 
 ### Local Dev
-Setup:
-Make sure you've configured your `packages/ddex/.env` and S3 buckets according to the toplevel DDEX README.
+The easiest way to test DDEX locally is via `audius-compose up --ddex-[release-by-release|batched]`. If you want to enable hot reloading for the publisher:
 
-Run the server:
-1. Make sure you can connect to mongo at `mongodb://mongo:mongo@localhost:27017/ddex`. See `packages/ddex/README.md` on how to spin up `ddex-mongo` and the other ddex containers.
-2. At the monorepo root: `npm i`
+1. Make sure the DDEX stack is running. See `packages/ddex/README.md` for instructions on how to bring up the DDEX stack locally.
+2. `docker stop ddex-publisher` (assuming it's running as part of the whole DDEX stack)
 3. At `packages/ddex/publisher`: `npm run dev:[dev|stage|prod]`

@@ -1,5 +1,4 @@
 from sqlalchemy import (
-    ARRAY,
     Boolean,
     Column,
     DateTime,
@@ -58,7 +57,7 @@ class Playlist(Base, RepresentableMixin):
     # From DDEX
     ddex_app = Column(String)
     ddex_release_ids = Column(JSONB())
-    artists = Column(ARRAY(JSONB()))
+    artists = Column(JSONB())
     copyright_line = Column(JSONB())
     producer_copyright_line = Column(JSONB())
     parental_warning_type = Column(String)

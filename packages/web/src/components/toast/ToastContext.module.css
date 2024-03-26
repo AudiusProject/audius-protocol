@@ -3,6 +3,8 @@
   align-items: center;
   position: fixed;
   top: 0;
-  width: 100%;
   height: auto !important;
+  width: max-content;
+  max-width: 80%;
+  left: 50%;
 }

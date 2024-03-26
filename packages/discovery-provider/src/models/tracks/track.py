@@ -95,9 +95,9 @@ class Track(Base, RepresentableMixin):
     # From DDEX
     ddex_release_ids = Column(JSONB())
     ddex_app = Column(String)
-    artists = Column(ARRAY(JSONB()))
-    resource_contributors = Column(ARRAY(JSONB()))
-    indirect_resource_contributors = Column(ARRAY(JSONB()))
+    artists = Column(JSONB())
+    resource_contributors = Column(JSONB())
+    indirect_resource_contributors = Column(JSONB())
     rights_controller = Column(JSONB())
     copyright_line = Column(JSONB())
     producer_copyright_line = Column(JSONB())

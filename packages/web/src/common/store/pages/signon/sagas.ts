@@ -813,7 +813,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
           }
         })
       )
-      yield* put(signOnActions.showToast(messages.incompleteAccount))
+      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
 
       const trackEvent = make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
         handle: signInResponse.handle
@@ -826,7 +826,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
           accountAlreadyExisted: true
         })
       )
-      yield* put(signOnActions.showToast(messages.incompleteAccount))
+      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
     } else {
       yield* put(
         signOnActions.signInFailed(
@@ -1038,18 +1038,6 @@ function* watchFollowArtists() {
   yield* takeLatest(signOnActions.FOLLOW_ARTISTS, followArtists)
 }
 
-function* watchShowToast() {
-  yield* takeLatest(
-    signOnActions.SET_TOAST,
-    function* (action: ReturnType<typeof signOnActions.showToast>) {
-      if (action.text) {
-        yield* delay(5000)
-        yield* put(signOnActions.clearToast())
-      }
-    }
-  )
-}
-
 function* watchOpenSignOn() {
   yield* takeLatest(
     signOnActions.OPEN_SIGN_ON,
@@ -1085,7 +1073,6 @@ export default function sagas() {
     watchFollowArtists,
     watchGetArtistsToFollow,
     watchConfigureMetaMask,
-    watchShowToast,
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,

@@ -20,7 +20,7 @@
 }
 
 .profilePictureWrapper {
-  position: absolute;
+  position: absolute !important;
   top: 37px;
   left: 11px;
   height: 82px;
@@ -68,16 +68,6 @@
 .titleContainer .left {
   display: flex;
   flex-direction: column;
-}
-
-.titleContainer .right {
-  display: flex;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-.subscribeButton {
-  margin-right: 6px;
 }
 
 .artistName {

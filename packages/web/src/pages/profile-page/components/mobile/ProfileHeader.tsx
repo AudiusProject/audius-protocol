@@ -12,6 +12,7 @@ import {
   ProfilePictureSizes,
   CoverPhotoSizes
 } from '@audius/common/models'
+import { ProfileUser } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import {
   IconArtistBadge as BadgeArtist,
@@ -29,8 +30,10 @@ import cn from 'classnames'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Skeleton from 'components/skeleton/Skeleton'
+import { StaticImage } from 'components/static-image/StaticImage'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
@@ -38,6 +41,7 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useSsrContext } from 'ssr/SsrContext'
 import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
@@ -81,6 +85,7 @@ const LoadingProfileHeader = () => {
 
 type ProfileHeaderProps = {
   isDeactivated: boolean
+  profile: ProfileUser
   name: string
   handle: string
   isArtist: boolean
@@ -131,6 +136,7 @@ function isEllipsisActive(e: HTMLElement) {
 
 const ProfileHeader = ({
   isDeactivated,
+  profile,
   name,
   handle,
   isArtist,
@@ -167,6 +173,7 @@ const ProfileHeader = ({
 }: ProfileHeaderProps) => {
   const [hasEllipsis, setHasEllipsis] = useState(false)
   const [isDescriptionMinimized, setIsDescriptionMinimized] = useState(true)
+  const { isSsrEnabled } = useSsrContext()
   const bioRef = useRef<HTMLElement | null>(null)
   const isEditing = mode === 'editing'
 
@@ -198,10 +205,7 @@ const ProfileHeader = ({
     }
   }, [website, donation, hasEllipsis, setHasEllipsis])
 
-  let { source: coverPhoto, shouldBlur } = useCoverPhoto(
-    userId,
-    WidthSizes.SIZE_2000
-  )
+  let { source: coverPhoto } = useCoverPhoto(userId, WidthSizes.SIZE_2000)
   coverPhoto = isDeactivated ? imageProfilePicEmpty : coverPhoto
   let coverPhotoStyle = {}
   if (coverPhoto === imageCoverPhotoBlank) {
@@ -288,34 +292,58 @@ const ProfileHeader = ({
 
   // If we're not loading, we know that
   // nullable fields such as userId are valid.
-  if (loading) {
+  if (loading && !isSsrEnabled) {
     return <LoadingProfileHeader />
   }
+
+  const ImageElement = isSsrEnabled ? StaticImage : DynamicImage
+
+  const isUserMissingImage =
+    !profile?.cover_photo_sizes && !profile?.profile_picture_sizes
 
   return (
     <div className={styles.headerContainer}>
       <GrowingCoverPhoto
+        cid={
+          profile?.cover_photo_sizes ?? profile?.profile_picture_sizes ?? null
+        }
+        imageUrl={
+          updatedCoverPhoto ??
+          (isUserMissingImage || isDeactivated
+            ? imageCoverPhotoBlank
+            : undefined)
+        }
         image={updatedCoverPhoto || coverPhoto}
         imageStyle={coverPhotoStyle}
         wrapperClassName={cn(styles.coverPhoto, {
           [styles.isEditing]: isEditing
         })}
-        useBlur={shouldBlur}
+        useBlur={Boolean(
+          !profile?.cover_photo_sizes && profile?.profile_picture_sizes
+        )}
       >
         {isArtist && !isEditing && !isDeactivated ? (
           <BadgeArtist className={styles.badgeArtist} />
         ) : null}
         {isEditing && <UploadStub onChange={onUpdateCoverPhoto} />}
       </GrowingCoverPhoto>
-      <DynamicImage
+      <ImageElement
         image={updatedProfilePicture || profilePicture}
+        cid={profile?.profile_picture_sizes}
+        size={SquareSizes.SIZE_150_BY_150}
+        imageUrl={
+          updatedProfilePicture ||
+          (isUserMissingImage || isDeactivated
+            ? imageProfilePicEmpty
+            : undefined)
+        }
         className={styles.profilePicture}
         wrapperClassName={cn(styles.profilePictureWrapper, {
           [styles.isEditing]: isEditing
         })}
       >
         {isEditing && <UploadStub onChange={onUpdateProfilePicture} />}
-      </DynamicImage>
+      </ImageElement>
       {!isEditing && !isDeactivated && (
         <div className={styles.artistInfo}>
           <div className={styles.titleContainer}>
@@ -337,33 +365,34 @@ const ProfileHeader = ({
                 <FollowsYouBadge userId={userId} />
               </div>
             </div>
-            <div className={styles.right}>
-              {following && (
-                <SubscribeButton
-                  className={styles.subscribeButton}
-                  isSubscribed={isSubscribed}
-                  isFollowing={following}
-                  onToggleSubscribe={toggleNotificationSubscription}
-                />
-              )}
-              {mode === 'owner' ? (
-                <Button
-                  variant='secondary'
-                  size='small'
-                  onClick={switchToEditMode}
-                  iconLeft={IconPencil}
-                >
-                  {messages.editProfile}
-                </Button>
-              ) : (
-                <FollowButton
-                  isFollowing={following}
-                  onFollow={() => onFollow(userId)}
-                  onUnfollow={() => onUnfollow(userId)}
-                  fullWidth={false}
-                />
-              )}
-            </div>
+            <ClientOnly>
+              <Flex gap='s' justifyContent='flex-end' flex={1}>
+                {following ? (
+                  <SubscribeButton
+                    isSubscribed={isSubscribed}
+                    isFollowing={following}
+                    onToggleSubscribe={toggleNotificationSubscription}
+                  />
+                ) : null}
+                {mode === 'owner' ? (
+                  <Button
+                    variant='secondary'
+                    size='small'
+                    onClick={switchToEditMode}
+                    iconLeft={IconPencil}
+                  >
+                    {messages.editProfile}
+                  </Button>
+                ) : (
+                  <FollowButton
+                    isFollowing={following}
+                    onFollow={() => onFollow(userId)}
+                    onUnfollow={() => onUnfollow(userId)}
+                    fullWidth={false}
+                  />
+                )}
+              </Flex>
+            </ClientOnly>
           </div>
           <div className={styles.artistMetrics}>
             <div className={styles.artistMetric}>
@@ -466,14 +495,16 @@ const ProfileHeader = ({
               {isDescriptionMinimized ? messages.showMore : messages.showLess}
             </div>
           ) : null}
-          <ArtistRecommendationsDropdown
-            isVisible={areArtistRecommendationsVisible}
-            renderHeader={() => (
-              <p>Here are some accounts that vibe well with {name}</p>
-            )}
-            artistId={userId}
-            onClose={onCloseArtistRecommendations}
-          />
+          <ClientOnly>
+            <ArtistRecommendationsDropdown
+              isVisible={areArtistRecommendationsVisible}
+              renderHeader={() => (
+                <p>Here are some accounts that vibe well with {name}</p>
+              )}
+              artistId={userId}
+              onClose={onCloseArtistRecommendations}
+            />
+          </ClientOnly>
         </div>
       )}
       {mode === 'owner' && !isEditing && <UploadButton />}

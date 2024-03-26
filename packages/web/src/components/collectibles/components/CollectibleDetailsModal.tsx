@@ -299,7 +299,7 @@ const CollectibleDetailsModal = ({
                 tooltipClassName={styles.shareTooltip}
               >
                 <Button
-                  variant='common'
+                  variant='secondary'
                   size='small'
                   onClick={() => copyToClipboard(shareUrl)}
                   iconLeft={IconShare}
@@ -309,7 +309,7 @@ const CollectibleDetailsModal = ({
               </Toast>
 
               <Button
-                variant='common'
+                variant='secondary'
                 size='small'
                 onClick={() => setIsEmbedModalOpen?.(true)}
                 iconLeft={IconEmbed}
@@ -321,7 +321,7 @@ const CollectibleDetailsModal = ({
                 isUserOnTheirProfile &&
                 collectible.mediaType === CollectibleMediaType.IMAGE && (
                   <Button
-                    variant='common'
+                    variant='secondary'
                     size='small'
                     onClick={() => {
                       setIsModalOpen(false)
@@ -448,7 +448,7 @@ const CollectibleDetailsModal = ({
             )}
 
             <Button
-              variant='common'
+              variant='secondary'
               size='small'
               onClick={handleMobileShareClick}
               iconLeft={IconShare}

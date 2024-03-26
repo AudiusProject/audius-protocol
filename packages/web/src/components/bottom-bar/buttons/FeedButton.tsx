@@ -8,7 +8,8 @@ const FeedButton = ({
   onClick,
   href,
   isActive,
-  isMatrixMode
+  isMatrixMode,
+  ...buttonProps
 }: ButtonProps) => {
   return (
     <AnimatedBottomButton
@@ -24,6 +25,7 @@ const FeedButton = ({
       iconDarkJSON={() =>
         import('../../../assets/animations/iconFeedDark.json')
       }
+      {...buttonProps}
     />
   )
 }

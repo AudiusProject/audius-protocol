@@ -31,7 +31,6 @@ export const getIsMobileSignOnVisible = (state: AppState) =>
   state.signOn.isMobileSignOnVisible
 export const getStatus = (state: AppState) => state.signOn.status
 export const getPage = (state: AppState) => state.signOn.page
-export const getToastText = (state: AppState) => state.signOn.toastText
 export const getRouteOnCompletion = (state: AppState) =>
   state.signOn.routeOnCompletion
 export const getRouteOnExit = (state: AppState) => state.signOn.routeOnExit

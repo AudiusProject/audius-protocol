@@ -24,7 +24,7 @@ const ShareActionListItem = (props: ShareActionListItemProps) => {
   return (
     <li className={styles.actionListItem}>
       <Button
-        variant='common'
+        variant='secondary'
         fullWidth
         css={(theme) => ({ color: theme.color.secondary.secondary })}
         className={styles.actionButton}

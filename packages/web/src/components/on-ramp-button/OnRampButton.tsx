@@ -1,34 +1,24 @@
 import { OnRampProvider } from '@audius/common/store'
-import {
-  Button,
-  ButtonProps,
-  IconLogoLinkByStripe as LogoStripeLink
-} from '@audius/harmony'
-import cn from 'classnames'
+import { Button, ButtonProps, IconLogoLinkByStripe } from '@audius/harmony'
 
 import CoinbasePayLogo from 'assets/img/coinbase-pay/LogoCoinbasePay.svg'
-
-import styles from './OnRampButton.module.css'
 
 const messages = {
   buyWith: 'Buy with',
   buyUsing: 'Buy using'
 }
 
-export const OnRampButton = (
-  props: Omit<ButtonProps, 'text'> & {
-    provider: OnRampProvider
-    buttonPrefix?: string
-    textClassName?: string
-  }
-) => {
-  const {
-    buttonPrefix: buttonPrefixProp,
-    className,
-    textClassName,
-    provider,
-    ...otherProps
-  } = props
+const coinbaseColor = '#0052ff'
+const stripeColor = '#00aaf5'
+
+type OnRampButtonProps = ButtonProps & {
+  provider: OnRampProvider
+  buttonPrefix?: string
+  textClassName?: string
+}
+
+export const OnRampButton = (props: OnRampButtonProps) => {
+  const { buttonPrefix: buttonPrefixProp, provider, ...otherProps } = props
   const isStripe = provider === OnRampProvider.STRIPE
   const isCoinbase = provider === OnRampProvider.COINBASE
   const buttonPrefix =
@@ -37,30 +27,20 @@ export const OnRampButton = (
   return (
     <Button
       aria-label={`${buttonPrefix} ${provider}`}
-      className={cn(
-        styles.button,
-        { [styles.stripeButton]: isStripe },
-        { [styles.coinbaseButton]: isCoinbase },
-        className
-      )}
+      hexColor={isStripe ? stripeColor : isCoinbase ? coinbaseColor : undefined}
+      fullWidth
       {...otherProps}
     >
-      <div className={cn(styles.textClassName, textClassName)}>
-        <span>{buttonPrefix}</span>
-        {isStripe ? (
-          <LogoStripeLink
-            className={styles.logo}
-            width={'6em'}
-            height={'1.33em'}
-          />
-        ) : (
-          <CoinbasePayLogo
-            className={styles.logo}
-            width={'5.75em'}
-            height={'0.75em'}
-          />
-        )}
-      </div>
+      {buttonPrefix}
+      {isStripe ? (
+        <IconLogoLinkByStripe
+          width={'6em'}
+          height={'1.33em'}
+          color='staticWhite'
+        />
+      ) : (
+        <CoinbasePayLogo width={'6em'} height={'1.33em'} color='staticWhite' />
+      )}
     </Button>
   )
 }

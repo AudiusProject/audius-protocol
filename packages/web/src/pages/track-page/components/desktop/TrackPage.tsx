@@ -56,15 +56,6 @@ export type OwnProps = {
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
   makePublic: (trackId: ID) => void
-  onDownloadTrack: ({
-    trackId,
-    category,
-    parentTrackId
-  }: {
-    trackId: ID
-    category?: string
-    parentTrackId?: ID
-  }) => void
   // Tracks Lineup Props
   tracks: LineupState<Track>
   currentQueueItem: QueueItem
@@ -95,7 +86,6 @@ const TrackPage = ({
   onSaveTrack,
   onFollow,
   onUnfollow,
-  onDownloadTrack,
   makePublic,
   onClickReposts,
   onClickFavorites,
@@ -114,7 +104,7 @@ const TrackPage = ({
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
 
-  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
+  const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(heroTrack)
   const loading = !heroTrack || isFetchingNFTAccess
 
@@ -169,7 +159,6 @@ const TrackPage = ({
       isDownloadGated={defaults.isDownloadGated}
       downloadConditions={defaults.downloadConditions}
       hasStreamAccess={hasStreamAccess}
-      hasDownloadAccess={hasDownloadAccess}
       isRemix={!!defaults.remixParentTrackId}
       isPublishing={defaults.isPublishing}
       fieldVisibility={defaults.fieldVisibility}
@@ -183,7 +172,6 @@ const TrackPage = ({
       following={following}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
-      onDownload={onDownloadTrack}
       onMakePublic={makePublic}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
