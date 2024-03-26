@@ -92,7 +92,7 @@ class Track(Base, RepresentableMixin):
     playlists_previously_containing_track = Column(
         JSONB(True),
         nullable=False,
-        server_default="json_build_object('playlists', json_build_array())",
+        server_default="json_build_object()",
     )
     ai_attribution_user_id = Column(Integer, nullable=True)
     placement_hosts = Column(String, nullable=True)

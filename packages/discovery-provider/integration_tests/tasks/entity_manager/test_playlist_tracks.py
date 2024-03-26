@@ -310,9 +310,13 @@ def test_remove_track_from_playlist(app, mocker):
             .playlists_containing_track
             == []
         )
-        assert session.query(Track).filter(
-            Track.track_id == 10
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
         assert (
             session.query(Track)
             .filter(Track.track_id == 20)
@@ -323,14 +327,18 @@ def test_remove_track_from_playlist(app, mocker):
         assert session.query(Track).filter(
             Track.track_id == 20
         ).first().playlists_previously_containing_track == {
-            "playlists": [{"playlist_id": PLAYLIST_ID_OFFSET, "time": 1585336422}]
+            str(PLAYLIST_ID_OFFSET): {"time": 1585336422}
         }
         assert session.query(Track).filter(
             Track.track_id == 30
         ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
-        assert session.query(Track).filter(
-            Track.track_id == 30
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 30)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
         assert (
             session.query(Track)
             .filter(Track.track_id == 40)
@@ -338,9 +346,13 @@ def test_remove_track_from_playlist(app, mocker):
             .playlists_containing_track
             == []
         )
-        assert session.query(Track).filter(
-            Track.track_id == 40
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
 
 
 # Remove a track from a playlist and then restore it to the same playlist,
@@ -429,21 +441,33 @@ def test_restore_removed_track_to_playlist(app, mocker):
             .playlists_containing_track
             == []
         )
-        assert session.query(Track).filter(
-            Track.track_id == 10
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
         assert session.query(Track).filter(
             Track.track_id == 20
         ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
-        assert session.query(Track).filter(
-            Track.track_id == 20
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 20)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
         assert session.query(Track).filter(
             Track.track_id == 30
         ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
-        assert session.query(Track).filter(
-            Track.track_id == 30
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 30)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
         assert (
             session.query(Track)
             .filter(Track.track_id == 40)
@@ -451,9 +475,13 @@ def test_restore_removed_track_to_playlist(app, mocker):
             .playlists_containing_track
             == []
         )
-        assert session.query(Track).filter(
-            Track.track_id == 40
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
 
 
 # Remove a track from a playlist, restore it to same playlist, then remove again
@@ -563,9 +591,13 @@ def test_remove_from_playlist_twice(app, mocker):
             .playlists_containing_track
             == []
         )
-        assert session.query(Track).filter(
-            Track.track_id == 10
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 10)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
         assert (
             session.query(Track)
             .filter(Track.track_id == 20)
@@ -576,14 +608,18 @@ def test_remove_from_playlist_twice(app, mocker):
         assert session.query(Track).filter(
             Track.track_id == 20
         ).first().playlists_previously_containing_track == {
-            "playlists": [{"playlist_id": PLAYLIST_ID_OFFSET, "time": 1585336422}]
+            str(PLAYLIST_ID_OFFSET): {"time": 1585336422}
         }
         assert session.query(Track).filter(
             Track.track_id == 30
         ).first().playlists_containing_track == [PLAYLIST_ID_OFFSET]
-        assert session.query(Track).filter(
-            Track.track_id == 30
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 30)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
         assert (
             session.query(Track)
             .filter(Track.track_id == 40)
@@ -591,9 +627,13 @@ def test_remove_from_playlist_twice(app, mocker):
             .playlists_containing_track
             == []
         )
-        assert session.query(Track).filter(
-            Track.track_id == 40
-        ).first().playlists_previously_containing_track == {"playlists": []}
+        assert (
+            session.query(Track)
+            .filter(Track.track_id == 40)
+            .first()
+            .playlists_previously_containing_track
+            == {}
+        )
 
 
 # Create a playlist then reorder the tracks
