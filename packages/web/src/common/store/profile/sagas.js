@@ -110,8 +110,6 @@ function* fetchProfileCustomizedCollectibles(user) {
 }
 
 export function* fetchEthereumCollectiblesForWallets(wallets) {
-  // const openSeaClient = yield getContext('openSeaClient')
-  // return yield call([openSeaClient, openSeaClient.getCollectibles], wallets)
   const ethereumCollectiblesProvider = yield getContext(
     'ethereumCollectiblesProvider'
   )
