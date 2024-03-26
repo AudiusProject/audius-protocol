@@ -121,6 +121,7 @@ playwright-tests-report:
     - swissknife/get_job_artifacts:
         job-name: playwright-tests
         job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/.*
         save-to-directory: packages/web/blob-report
     - attach_workspace:
         at: ./
