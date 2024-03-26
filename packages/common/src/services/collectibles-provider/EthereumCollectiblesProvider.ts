@@ -5,6 +5,7 @@ import { allSettled } from '~/utils'
 
 import { OpenSeaClient } from '../opensea'
 import {
+  OpenSeaCollection,
   OpenSeaEvent,
   OpenSeaEventExtended,
   OpenSeaNft,
@@ -15,6 +16,7 @@ import {
 import { CollectiblesProvider } from './CollectiblesProvider'
 import {
   assetToCollectible,
+  getAssetIdentifier,
   isAssetValid,
   isNotFromNullAddress,
   transferEventToCollectible
@@ -78,14 +80,25 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
       console.error(e)
       metadata = undefined
     }
+    return { ...nft, ...(metadata ?? {}) }
+  }
 
-    const collectionMetadata = await this.openSeaClient.getCollectionMetadata(
-      nft.collection
+  async getCollectionMetadatas(
+    addresses: string[]
+  ): Promise<{ [address: string]: OpenSeaCollection }> {
+    const collections = await Promise.all(
+      addresses.map((address) => {
+        try {
+          return this.openSeaClient.getCollectionMetadata(address)
+        } catch (e) {
+          return null
+        }
+      })
     )
-    if (collectionMetadata === null) {
-      return { ...nft, ...(metadata ?? {}) }
-    }
-    return { ...nft, ...(metadata ?? {}), collectionMetadata }
+    return collections.reduce((acc, curr, i) => {
+      acc[addresses[i]] = curr
+      return acc
+    }, {})
   }
 
   async getCollectibles(wallets: string[]): Promise<CollectibleState> {
@@ -96,11 +109,41 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
       const assets = await Promise.all(
         nfts.map(async (nft) => this.addNftMetadata(nft))
       )
-      const filteredAssets = assets.filter(
-        (asset) => asset && isAssetValid(asset)
+      const validAssets = assets.filter((asset) => asset && isAssetValid(asset))
+
+      // For assets, build a set of collections to fetch metadata for
+      // and fetch them all at once, making sure to not fetch
+      // the same collection metadata multiple times.
+      const assetCollectionSet = new Set<string>()
+      const idToAssetCollectionMap = validAssets.reduce((acc, curr) => {
+        // Believe it or not, sometimes, rarely, the type of collection is an object
+        // that looks like { name: string, family: string }
+        // and sometimes it's a string. I don't know why.
+        // Wonder if worth changing the 'collection' type and chasing down all the
+        // type errors that would cause just for this irregularity. Probably not for now.
+        const collection =
+          typeof curr.collection === 'object'
+            ? (curr.collection as unknown as any).name ?? ''
+            : curr.collection
+        assetCollectionSet.add(collection)
+        const id = getAssetIdentifier(curr)
+        acc[id] = collection
+        return acc
+      }, {})
+      const assetCollectionMetadatasMap = await this.getCollectionMetadatas(
+        Array.from(assetCollectionSet)
       )
+      validAssets.forEach((asset) => {
+        const id = getAssetIdentifier(asset)
+        const collection = idToAssetCollectionMap[id]
+        const collectionMetadata = assetCollectionMetadatasMap[collection]
+        if (collectionMetadata) {
+          asset.collectionMetadata = collectionMetadata
+        }
+      })
+
       const collectibles = await Promise.all(
-        filteredAssets.map(async (asset) => await assetToCollectible(asset))
+        validAssets.map(async (asset) => await assetToCollectible(asset))
       )
       const collectiblesMap: {
         [key: string]: Collectible
@@ -119,6 +162,42 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
         })
       )
 
+      // For events, build a set of collections to fetch metadata for
+      // and fetch them all at once, making sure to not fetch
+      // the same collection metadata multiple times.
+      const eventCollectionSet = new Set<string>()
+      const idToEventCollectionMap = transferEventsExtended.reduce(
+        (acc, curr) => {
+          // Believe it or not, sometimes, rarely, the type of collection is an object
+          // that looks like { name: string, family: string }
+          // and sometimes it's a string. I don't know why.
+          // Wonder if worth changing the 'collection' type and chasing down all the
+          // type errors that would cause just for this irregularity. Probably not for now.
+          const collection =
+            typeof curr.nft.collection === 'object'
+              ? (curr.nft.collection as unknown as any).name ?? ''
+              : curr.nft.collection
+          if (!assetCollectionMetadatasMap[collection]) {
+            eventCollectionSet.add(collection)
+            const id = getAssetIdentifier(curr.nft)
+            acc[id] = collection
+          }
+          return acc
+        },
+        {}
+      )
+      const eventCollectionMetadatasMap = await this.getCollectionMetadatas(
+        Array.from(eventCollectionSet)
+      )
+      transferEventsExtended.forEach((event) => {
+        const id = getAssetIdentifier(event.nft)
+        const collection = idToEventCollectionMap[id]
+        const collectionMetadata = eventCollectionMetadatasMap[collection]
+        if (collectionMetadata) {
+          event.nft.collectionMetadata = collectionMetadata
+        }
+      })
+
       // Handle transfers from NullAddress as they were created events
       const firstOwnershipTransferEvents = transferEventsExtended
         .filter(
@@ -128,8 +207,7 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
             !isNotFromNullAddress(event)
         )
         .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
-          const { identifier, contract } = curr.nft
-          const id = `${identifier}:::${contract || ''}`
+          const id = getAssetIdentifier(curr.nft)
           if (acc[id] && acc[id].event_timestamp - curr.event_timestamp > 0) {
             return acc
           }
@@ -159,8 +237,7 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
             event?.nft && isAssetValid(event.nft) && isNotFromNullAddress(event)
         )
         .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
-          const { identifier, contract } = curr.nft
-          const id = `${identifier}:::${contract || ''}`
+          const id = getAssetIdentifier(curr.nft)
           if (acc[id] && acc[id].event_timestamp - curr.event_timestamp > 0) {
             return acc
           }
@@ -169,8 +246,7 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
         }, {})
       await Promise.all(
         Object.values(latestTransferEventsMap).map(async (event) => {
-          const { identifier, contract } = event.nft
-          const id = `${identifier}:::${contract || ''}`
+          const id = getAssetIdentifier(event.nft)
           if (ownedCollectibleKeySet.has(id)) {
             // Remove collectible if it was transferred out from
             // one of the user's wallets.
@@ -193,12 +269,16 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
         })
       )
 
-      return Object.values(collectiblesMap).reduce((result, collectible) => {
-        result[collectible.wallet] = (result[collectible.wallet] || []).concat([
-          collectible
-        ])
-        return result
-      }, {} as CollectibleState)
+      const result = Object.values(collectiblesMap).reduce(
+        (result, collectible) => {
+          result[collectible.wallet] = (
+            result[collectible.wallet] || []
+          ).concat([collectible])
+          return result
+        },
+        {}
+      )
+      return result
     })
   }
 }
