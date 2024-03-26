@@ -3,10 +3,6 @@ import { expect } from '@playwright/test'
 import { test } from './test'
 
 test.describe('signOut', () => {
-  test.beforeEach(async ({ page }) => {
-    // await page.context().storageState()
-  })
-
   test('should be able to sign out', async ({ page }) => {
     await page.goto('settings')
 
