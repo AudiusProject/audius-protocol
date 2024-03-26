@@ -1,6 +1,6 @@
 import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
-import { HeliusCollection } from '~/services/helius-client/types'
+import { HeliusCollection } from '~/services/helius/types'
 
 import { Nullable } from '../utils/typeUtils'
 

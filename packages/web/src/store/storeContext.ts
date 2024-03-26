@@ -2,7 +2,9 @@ import {
   FeatureFlags,
   OpenSeaClient,
   SolanaClient,
-  HeliusClient
+  HeliusClient,
+  SolanaCollectiblesProvider,
+  EthereumCollectiblesProvider
 } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
 import { setTag, configureScope } from '@sentry/browser'
@@ -57,12 +59,15 @@ export const buildStoreContext = ({
   // @ts-ignore js file
   getLineupSelectorForRoute,
   audioPlayer: audioPlayer!,
-  solanaClient: new SolanaClient({
+  solanaCollectiblesProvider: new SolanaCollectiblesProvider({
+    heliusClient: new HeliusClient(env.HELIUS_DAS_API_URL),
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: env.METADATA_PROGRAM_ID
   }),
-  heliusClient: new HeliusClient({
-    apiUrl: env.HELIUS_DAS_API_URL,
+  ethereumCollectiblesProvider: new EthereumCollectiblesProvider(
+    new OpenSeaClient(env.OPENSEA_API_URL as string)
+  ),
+  solanaClient: new SolanaClient({
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: env.METADATA_PROGRAM_ID
   }),
@@ -72,7 +77,6 @@ export const buildStoreContext = ({
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
-  openSeaClient: new OpenSeaClient(env.OPENSEA_API_URL as string),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

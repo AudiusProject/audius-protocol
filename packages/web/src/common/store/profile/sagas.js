@@ -109,19 +109,21 @@ function* fetchProfileCustomizedCollectibles(user) {
   }
 }
 
-export function* fetchOpenSeaNftsForWallets(wallets) {
-  const openSeaClient = yield getContext('openSeaClient')
-  return yield call([openSeaClient, openSeaClient.getAllCollectibles], wallets)
+export function* fetchEthereumCollectiblesForWallets(wallets) {
+  // const openSeaClient = yield getContext('openSeaClient')
+  // return yield call([openSeaClient, openSeaClient.getCollectibles], wallets)
+  const ethereumCollectiblesProvider = yield getContext('ethereumCollectiblesProvider')
+  return yield call([ethereumCollectiblesProvider, ethereumCollectiblesProvider.getCollectibles], wallets)
 }
 
-export function* fetchOpenSeaNfts(user) {
+export function* fetchEthereumCollectibles(user) {
   const apiClient = yield getContext('apiClient')
   const associatedWallets = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })
   if (associatedWallets) {
     const { wallets } = associatedWallets
-    const collectiblesMap = yield call(fetchOpenSeaNftsForWallets, [
+    const collectiblesMap = yield call(fetchEthereumCollectiblesForWallets, [
       user.wallet,
       ...wallets
     ])
@@ -152,11 +154,9 @@ export function* fetchOpenSeaNfts(user) {
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  // const solanaClient = yield getContext('solanaClient')
-  const heliusClient = yield getContext('heliusClient')
+  const solanaCollectiblesProvider = yield getContext('solanaCollectiblesProvider')
   yield call(waitForRemoteConfig)
-  // return yield call(solanaClient.getAllCollectibles, wallets)
-  return yield call([heliusClient, heliusClient.getAllCollectibles], wallets)
+  return yield call([solanaCollectiblesProvider, solanaCollectiblesProvider.getCollectibles], wallets)
 }
 
 export function* fetchSolanaCollectibles(user) {
@@ -349,7 +349,7 @@ function* fetchProfileAsync(action) {
     }
 
     yield fork(fetchProfileCustomizedCollectibles, user)
-    yield fork(fetchOpenSeaNfts, user)
+    yield fork(fetchEthereumCollectibles, user)
     yield fork(fetchSolanaCollectibles, user)
 
     // Get current user notification & subscription status
