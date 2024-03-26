@@ -106,9 +106,36 @@ playwright-tests:
         path: packages/web/report.xml
         when: always
     - store_artifacts:
-        path: packages/web/playwright-report
-    - store_artifacts:
         path: packages/web/blob-report
+
+playwright-tests-report:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - swissknife/wait_for_job:
+        job-name: playwright-tests
+    - swissknife/get-job-number:
+        job-name: playwright-tests
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-1.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-2.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-3.zip
+        save-to-directory: ./blob-report
+    - swissknife/get_job_artifacts:
+        job-number: SK_JOB_NUM
+        file-name-pattern: packages/web/blob-report/report-4.zip
+        save-to-directory: ./blob-report
+    - run: npx playwright merge-reports --reporter html ./blob-report
+    - store_artifacts:
+        path: playwright-report
 
 web-test:
   working_directory: ~/audius-protocol
