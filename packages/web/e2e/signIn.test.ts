@@ -1,8 +1,15 @@
 import { expect, Page } from '@playwright/test'
 
-import { email, password, name, handle } from './fixtures/user.json'
 import { test } from './test'
 import { resetAuthState } from './utils'
+
+const sampleUser = {
+  email: 'prober+test@audius.co',
+  password: 'Pa$$w0rdTest',
+  name: 'Prober Test',
+  handle: 'proberTest',
+  entropy: 'bdaba824b6e02ab7868c5a2dfdfc7e9f'
+}
 
 test.describe('Sign In', () => {
   // Resets auth state for this suite so we aren't already signed in
@@ -32,7 +39,7 @@ test.describe('Sign In', () => {
     page
   }) => {
     await page.goto('signup')
-    await page.getByRole('textbox', { name: /email/i }).fill(email)
+    await page.getByRole('textbox', { name: /email/i }).fill(sampleUser.email)
     await page.getByRole('button', { name: /sign up free/i }).click()
     const signUpModal = page.getByRole('alert')
     await signUpModal.getByRole('link', { name: /Sign In/ }).click()
