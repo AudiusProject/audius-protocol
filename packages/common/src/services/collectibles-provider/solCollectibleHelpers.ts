@@ -427,7 +427,7 @@ const heliusNFTToCollectible = async (
   const collectionGroup = grouping.find(
     ({ group_key }) => group_key === 'collection'
   )
-  if (collectionGroup) {
+  if (collectionGroup && collectionGroup.collection_metadata) {
     collectible.heliusCollection = {
       address: collectionGroup.group_value,
       name: collectionGroup.collection_metadata.name,

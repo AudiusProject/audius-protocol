@@ -33,7 +33,7 @@ export type HeliusNFT = {
   grouping: {
     group_key: string
     group_value: string
-    collection_metadata: {
+    collection_metadata?: {
       name: string
       symbol: string
       image: string
