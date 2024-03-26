@@ -174,7 +174,9 @@ export function* fetchSolanaCollectiblesForWallets(wallets) {
 
 export function* fetchSolanaCollectibles(user) {
   const apiClient = yield getContext('apiClient')
-  const solanaClient = yield getContext('solanaClient')
+  const solanaCollectiblesProvider = yield getContext(
+    'solanaCollectiblesProvider'
+  )
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
   const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
@@ -248,7 +250,7 @@ export function* fetchSolanaCollectibles(user) {
   ]
   const nonHeliusCollectionMetadatas = yield all(
     validNonHeliusCollectionMints.map((mint) =>
-      call(solanaClient.getNFTMetadataFromMint, mint)
+      call(solanaCollectiblesProvider.getNftMetadataFromMint, mint)
     )
   )
   const nonHeliusCollectionMetadatasMap = {}

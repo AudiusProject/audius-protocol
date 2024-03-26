@@ -21,10 +21,6 @@ vitest.mock('store/backend/sagas', () => ({
   setupBackend: function* () {},
   waitForBackendSetup: () => true
 }))
-// Mock the solana collectibles client
-vitest.mock('services/solana-client/SolanaClient', () => ({
-  SolanaClient: () => {}
-}))
 
 describe('smoke test', () => {
   it('renders without crashing', () => {

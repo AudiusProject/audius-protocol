@@ -5,10 +5,10 @@ import { allSettled } from '~/utils'
 
 import { HeliusClient } from '../helius'
 import { HeliusResponse } from '../helius/types'
-import { solanaNFTToCollectible } from '../solana-client/solCollectibleHelpers'
-import { SolanaNFTType } from '../solana-client/types'
 
 import { CollectiblesProvider } from './CollectiblesProvider'
+import { solanaNFTToCollectible } from './solCollectibleHelpers'
+import { SolanaNFTType } from './types'
 
 type SolanaCollectiblesProviderCtorArgs = {
   heliusClient: HeliusClient
@@ -125,5 +125,44 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
     )
 
     return collectiblesMap
+  }
+
+  getNftMetadataFromMint = async (mintAddress: string) => {
+    if (this.connection === null) return
+
+    try {
+      const programAddress = (
+        await PublicKey.findProgramAddress(
+          [
+            Buffer.from('metadata'),
+            this.metadataProgramIdPublicKey.toBytes(),
+            new PublicKey(mintAddress).toBytes()
+          ],
+          this.metadataProgramIdPublicKey
+        )
+      )[0]
+
+      const { Metadata } = await import(
+        '@metaplex-foundation/mpl-token-metadata'
+      )
+      const metadata = await Metadata.fromAccountAddress(
+        this.connection,
+        programAddress
+      )
+      const response = await fetch(metadata.data.uri.replaceAll('\x00', ''))
+      const result = (await response.json()) ?? {}
+      const imageUrl = result?.image
+      return {
+        metadata,
+        imageUrl
+      }
+    } catch (e) {
+      console.warn(
+        `Could not get nft metadata for mint address ${mintAddress}, Error: ${
+          (e as Error).message
+        }`
+      )
+      return null
+    }
   }
 }
