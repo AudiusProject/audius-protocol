@@ -144,8 +144,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
             {mediaType === 'VIDEO' ? (
               <View style={styles.iconPlay}>
                 <IconPlay
-                  height={48}
-                  width={48}
+                  size='3xl'
                   color='staticWhite'
                   style={{ opacity: 0.8 }}
                 />
