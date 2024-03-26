@@ -110,7 +110,8 @@ playwright-tests:
 
 playwright-tests-report:
   working_directory: ~/audius-protocol
-  executor: cimg/node:18.17
+  docker:
+    - image: cimg/node:18.17
   steps:
     - swissknife/wait_for_job:
         job-name: playwright-tests
