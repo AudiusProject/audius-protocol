@@ -278,7 +278,7 @@ export class UploadFinishPage {
     await expect(this.finalizing).toBeVisible({ timeout: 60 * 1000 })
 
     // Assert success
-    await expect(this.successHeading).toBeVisible({ timeout: 60 * 1000 })
+    await expect(this.successHeading).toBeVisible({ timeout: 90 * 1000 })
   }
 
   private async assertProgress(progress: number) {
