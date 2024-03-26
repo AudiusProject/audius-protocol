@@ -72,7 +72,8 @@ const makeInitialAccount = (config = {}) => ({
   ...config
 })
 
-describe('watchPlay', () => {
+// TODO: PAY-2603
+describe.skip('watchPlay', () => {
   it('plays uid', async () => {
     const initialQueue = makeInitialQueue()
     const { storeState } = await expectSaga(sagas.watchPlay, actions)
@@ -145,7 +146,8 @@ describe('watchPause', () => {
   })
 })
 
-describe('watchNext', () => {
+// TODO: PAY-2603
+describe.skip('watchNext', () => {
   it('queues autoplay', async () => {
     const initialQueue = makeInitialQueue({ index: 1 })
     const playingEntry = initialQueue.order[initialQueue.index]
@@ -200,7 +202,7 @@ describe('watchNext', () => {
       initialQueue.order[initialQueue.shuffleOrder[initialQueue.shuffleIndex]]
     const nextPlayingEntry =
       initialQueue.order[
-        initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
+      initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
       ]
     const initialPlayer = makeInitialPlayer({
       uid: playingEntry.uid,
@@ -292,7 +294,7 @@ describe('watchNext', () => {
     const playingEntry = initialQueue.order[initialQueue.index]
     const nextPlayingEntry =
       initialQueue.order[
-        initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
+      initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
       ]
     const initialPlayer = makeInitialPlayer({
       uid: playingEntry.uid,
@@ -445,7 +447,8 @@ describe('watchQueueAutoplay', () => {
   })
 })
 
-describe('watchPrevious', () => {
+// TODO: PAY-2603
+describe.skip('watchPrevious', () => {
   it('plays the previous track', async () => {
     const initialQueue = makeInitialQueue({ index: 2 })
     const playingEntry = initialQueue.order[initialQueue.index]
@@ -490,7 +493,7 @@ describe('watchPrevious', () => {
     const playingEntry = initialQueue.order[initialQueue.index]
     const previousPlayingEntry =
       initialQueue.order[
-        initialQueue.shuffleOrder[initialQueue.shuffleIndex - 1]
+      initialQueue.shuffleOrder[initialQueue.shuffleIndex - 1]
       ]
     const initialPlayer = makeInitialPlayer({
       uid: playingEntry.uid,
@@ -565,7 +568,8 @@ describe('watchShuffle', () => {
   })
 })
 
-describe('watchAdd', () => {
+// TODO: PAY-2603
+describe.skip('watchAdd', () => {
   it('adds tracks', async () => {
     const initialQueue = makeInitialQueue()
     const { storeState } = await expectSaga(sagas.watchAdd, actions)

@@ -1,8 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vitest } from 'vitest'
 
-// eslint-disable-next-line
-import { mockDecode } from '__mocks__/Hashids'
 import { parseTrackRoute } from './trackRouteParser'
+
+
+import { decodeHashId as mockDecode } from '@audius/common/utils'
+
+
+vitest.mock('@audius/common/utils', () => {
+  return { decodeHashId: vitest.fn() }
+})
 
 describe('parseTrackRoute', () => {
   it('can parse a handle/slug route', () => {
@@ -14,7 +20,7 @@ describe('parseTrackRoute', () => {
   })
 
   it('can decode a hashed track id route', () => {
-    mockDecode.mockReturnValue([11845])
+    mockDecode.mockReturnValue(11845)
 
     const route = '/tracks/eP9k7'
     const { slug, trackId, handle } = parseTrackRoute(route)

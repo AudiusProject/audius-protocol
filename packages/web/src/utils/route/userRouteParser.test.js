@@ -1,21 +1,13 @@
 import { describe, it, expect, vitest } from 'vitest'
 
-// eslint-disable-next-line
-import { mockDecode } from '__mocks__/Hashids'
 import { parseUserRoute } from './userRouteParser'
-vitest.mock('@audius/common', () => {
-  const originalModule = vitest.requireActual('@audius/common')
 
-  return {
-    __esModule: true,
 
-    ...originalModule,
+import { decodeHashId as mockDecode } from '@audius/common/utils'
 
-    AudiusBackend: {
-      recordTrackListen: vitest.fn(),
-      submitAndEvaluateAttestations: vitest.fn()
-    }
-  }
+
+vitest.mock('@audius/common/utils', () => {
+  return { decodeHashId: vitest.fn() }
 })
 
 describe('parseUserRoute', () => {
@@ -27,7 +19,7 @@ describe('parseUserRoute', () => {
   })
 
   it('can decode a hashed user id route', () => {
-    mockDecode.mockReturnValue([11845])
+    mockDecode.mockReturnValue(11845)
 
     const route = '/users/eP9k7'
     const { userId, handle } = parseUserRoute(route)
@@ -42,7 +34,7 @@ describe('parseUserRoute', () => {
   })
 
   it('returns null for an invalid hash id', () => {
-    mockDecode.mockReturnValue([NaN])
+    mockDecode.mockReturnValue(null)
 
     const route = '/users/asdf'
     const params = parseUserRoute(route)
