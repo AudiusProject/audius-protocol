@@ -214,7 +214,9 @@ test.describe('Sign Up', () => {
         signUpUrl: `/signup?ref=dejayjdstaging`,
         page
       })
-      await page.getByRole('button', { name: /open settings menu/i }).click()
+      await page
+        .getByRole('button', { name: /toggle navigation menu/i })
+        .click()
       await page.getByRole('menuitem', { name: /rewards/i }).click()
       await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
     })
@@ -258,7 +260,9 @@ test.describe('Sign Up', () => {
         page
       })
       // TODO: this is the desktop flow, need to figure out how to get mobile view to properly show
-      await page.getByRole('button', { name: /open settings menu/i }).click()
+      await page
+        .getByRole('button', { name: /toggle navigation menu/i })
+        .click()
       await page.getByRole('menuitem', { name: /rewards/i }).click()
       await expect(page.getByText(/you accepted an invite/i)).toBeVisible()
 
