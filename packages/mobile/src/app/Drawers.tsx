@@ -16,7 +16,6 @@ import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-draw
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
-import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
 import { ReleaseNowConfirmationDrawer } from 'app/components/drawers/ReleaseNowConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
@@ -132,7 +131,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   EnablePushNotifications: EnablePushNotificationsDrawer,
   OfflineListening: OfflineListeningDrawer,
-  DownloadTrackProgress: DownloadTrackProgressDrawer,
   ForgotPassword: ForgotPasswordDrawer,
   DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
   ReleaseNowConfirmation: ReleaseNowConfirmationDrawer,

@@ -13,7 +13,6 @@ import { dedupFilenames } from '~/utils'
 
 import { make, track as trackEvent } from 'app/services/analytics'
 import { dispatch } from 'app/store'
-import { setVisibility } from 'app/store/drawers/slice'
 import { EventNames } from 'app/types/analytics'
 
 import { audiusBackendInstance } from './audius-backend-instance'
@@ -66,15 +65,7 @@ const downloadOne = async ({
     ).fetch('GET', fileUrl)
     fetchTasks = [fetchTask]
 
-    // TODO: The ReactNativeBlobUtil library is currently broken for download progress events on both platforms.
-    // fetchTask.progress({ interval: 250 }, (received, total) => {
-    //   dispatch(setDownloadedPercentage((received / total) * 100))
-    // })
-
     const fetchRes = await fetchTask
-
-    // Do this after download is done
-    dispatch(setVisibility({ drawer: 'DownloadTrackProgress', visible: false }))
 
     await onFetchComplete?.(fetchRes.path())
 
