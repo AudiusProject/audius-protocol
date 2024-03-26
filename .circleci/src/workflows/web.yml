@@ -61,7 +61,6 @@ jobs:
 
   - playwright-tests-report:
       context:
-        - Audius Client
         - Probers
       requires:
         - web-init

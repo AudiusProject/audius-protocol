@@ -115,6 +115,8 @@ playwright-tests-report:
   steps:
     - attach_workspace:
         at: ./
+    - run:
+        command: cd packages/web; mkdir blob-report
     - swissknife/wait_for_job:
         job-name: playwright-tests
     - swissknife/get-job-number:
