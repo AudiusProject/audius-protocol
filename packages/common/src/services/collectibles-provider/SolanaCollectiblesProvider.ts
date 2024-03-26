@@ -1,33 +1,29 @@
+import { Collectible, CollectibleState } from '~/models'
+import { CollectiblesProvider } from './CollectiblesProvider'
+import { allSettled } from '~/utils'
+import { HeliusClient } from '../helius'
+import { HeliusResponse } from '../helius/types'
 import { Connection, PublicKey } from '@solana/web3.js'
-
-import { allSettled } from '~/utils/allSettled'
-
-import { Collectible, CollectibleState } from '../../models'
-import { solanaNFTToCollectible } from '../solana-client/solCollectibleHelpers'
 import { SolanaNFTType } from '../solana-client/types'
+import { solanaNFTToCollectible } from '../solana-client/solCollectibleHelpers'
 
-import { HeliusNFT, HeliusResponse } from './types'
-
-const HELIUS_DAS_API_KEY = '7ff12d25-ca35-4e43-85e7-a0abe2b5f6a8'
-const HELIUS_NUM_ASSETS_PER_PAGE_LIMIT = 1000
-
-type HeliusClientCtorArgs = {
-  apiUrl: string
+type SolanaCollectiblesProviderCtorArgs = {
+  heliusClient: HeliusClient
   solanaClusterEndpoint?: string
   metadataProgramId?: string
 }
 
-export class HeliusClient {
-  private readonly apiUrl: string
-  private connection: Connection | null = null
+export class SolanaCollectiblesProvider implements CollectiblesProvider {
+  private readonly heliusClient: HeliusClient
   private metadataProgramIdPublicKey: PublicKey
+  private connection: Connection | null = null
 
   constructor({
-    apiUrl,
+    heliusClient,
     solanaClusterEndpoint,
     metadataProgramId
-  }: HeliusClientCtorArgs) {
-    this.apiUrl = apiUrl
+  }: SolanaCollectiblesProviderCtorArgs) {
+    this.heliusClient = heliusClient
     this.metadataProgramIdPublicKey = new PublicKey(
       metadataProgramId || 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
     )
@@ -39,41 +35,11 @@ export class HeliusClient {
     }
   }
 
-  // todo: add pagination
-  async getNFTsForWallet(wallet: string): Promise<HeliusNFT[]> {
-    // let res: Response
-    // let json: { next: string | undefined; nfts: HeliusNft[] }
-    // let nfts: HeliusNft[]
-    // let next: string | undefined
-    const response = await fetch(this.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        id: 'test-drive', // todo: what should this be
-        jsonrpc: '2.0',
-        method: 'getAssetsByOwner',
-        params: {
-          ownerAddress: wallet,
-          page: 1,
-          limit: HELIUS_NUM_ASSETS_PER_PAGE_LIMIT,
-          after: '',
-          before: '',
-          displayOptions: {
-            showUnverifiedCollections: false,
-            showCollectionMetadata: true
-          }
-        }
-      })
-    })
-    return response.json()
-  }
-
-  async getAllCollectibles(wallets: string[]): Promise<CollectibleState> {
+  async getCollectibles(wallets: string[]): Promise<CollectibleState> {
     const results = await allSettled(
-      wallets.map((wallet) => this.getNFTsForWallet(wallet))
+      wallets.map((wallet) => this.heliusClient.getNFTsForWallet(wallet))
     )
+
     const nfts = results
       .map((result, i) => ({ result, wallet: wallets[i] }))
       .filter(
@@ -104,7 +70,6 @@ export class HeliusClient {
       nfts.map(async (nftsForWallet) => {
         if (nftsForWallet.length === 0) return []
         const wallet = nftsForWallet[0].wallet
-
         const mintAddresses = nftsForWallet.map((nft) => nft.id)
         const programAddresses = await Promise.all(
           mintAddresses.map(
@@ -132,7 +97,6 @@ export class HeliusClient {
             }
           })
         )
-
         const collectibles = await Promise.all(
           nftsForWallet.map(
             async (nft, i) =>

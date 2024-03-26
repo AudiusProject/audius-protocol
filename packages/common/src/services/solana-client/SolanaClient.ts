@@ -35,7 +35,7 @@ export class SolanaClient {
    * - get the metadata urls from the account infos and fetch the metadatas
    * - transform the nft metadatas to Audius-domain collectibles
    */
-  getAllCollectibles = async (wallets: string[]): Promise<CollectibleState> => {
+  getCollectibles = async (wallets: string[]): Promise<CollectibleState> => {
     try {
       if (this.connection === null) throw new Error('No connection')
       const connection = this.connection

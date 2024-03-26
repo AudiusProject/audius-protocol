@@ -1,7 +1,7 @@
 import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
 import { Nullable } from '../../utils/typeUtils'
-import { HeliusNFT } from '../helius-client/types'
+import { HeliusNFT } from '../helius'
 
 export enum SolanaNFTType {
   HELIUS = 'HELIUS',

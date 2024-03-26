@@ -2,7 +2,6 @@ import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
 import { Chain, Collectible, CollectibleMediaType } from '../../models'
 import { Nullable } from '../../utils/typeUtils'
-import { HeliusNFT } from '../helius-client/types'
 
 import {
   MetaplexNFT,
@@ -11,6 +10,7 @@ import {
   SolanaNFTType,
   StarAtlasNFT
 } from './types'
+import { HeliusNFT } from '../helius'
 
 type SolanaNFTMedia = {
   collectibleMediaType: CollectibleMediaType
