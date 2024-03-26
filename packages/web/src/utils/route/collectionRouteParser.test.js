@@ -1,9 +1,7 @@
+import { decodeHashId as mockDecode } from '@audius/common/utils'
 import { describe, it, expect, vitest } from 'vitest'
 
 import { parseCollectionRoute } from './collectionRouteParser'
-
-import { decodeHashId as mockDecode } from '@audius/common/utils'
-
 
 vitest.mock('@audius/common/utils', () => {
   return { decodeHashId: vitest.fn() }

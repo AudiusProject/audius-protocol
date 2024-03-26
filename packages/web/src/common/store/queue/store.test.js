@@ -202,7 +202,7 @@ describe.skip('watchNext', () => {
       initialQueue.order[initialQueue.shuffleOrder[initialQueue.shuffleIndex]]
     const nextPlayingEntry =
       initialQueue.order[
-      initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
+        initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
       ]
     const initialPlayer = makeInitialPlayer({
       uid: playingEntry.uid,
@@ -294,7 +294,7 @@ describe.skip('watchNext', () => {
     const playingEntry = initialQueue.order[initialQueue.index]
     const nextPlayingEntry =
       initialQueue.order[
-      initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
+        initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
       ]
     const initialPlayer = makeInitialPlayer({
       uid: playingEntry.uid,
@@ -493,7 +493,7 @@ describe.skip('watchPrevious', () => {
     const playingEntry = initialQueue.order[initialQueue.index]
     const previousPlayingEntry =
       initialQueue.order[
-      initialQueue.shuffleOrder[initialQueue.shuffleIndex - 1]
+        initialQueue.shuffleOrder[initialQueue.shuffleIndex - 1]
       ]
     const initialPlayer = makeInitialPlayer({
       uid: playingEntry.uid,

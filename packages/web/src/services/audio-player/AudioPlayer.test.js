@@ -35,7 +35,7 @@ describe.skip('play', () => {
       play
     }))
     const audioStream = new AudioPlayer()
-    audioStream.load(6, () => { })
+    audioStream.load(6, () => {})
     audioStream.play()
 
     expect(play).toHaveBeenCalled()
@@ -55,7 +55,7 @@ describe.skip('pause', () => {
       pause
     }))
     const audioStream = new AudioPlayer()
-    audioStream.load(6, () => { })
+    audioStream.load(6, () => {})
     audioStream.pause()
 
     expect(pause).toHaveBeenCalled()
@@ -73,7 +73,7 @@ describe.skip('stop', () => {
       pause
     }))
     const audioStream = new AudioPlayer()
-    audioStream.load(6, () => { })
+    audioStream.load(6, () => {})
     audioStream.stop()
 
     expect(pause).toHaveBeenCalled()

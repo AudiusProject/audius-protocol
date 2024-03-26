@@ -5,10 +5,9 @@ import {
   cacheReducer
 } from '@audius/common/store'
 import { makeKindId } from '@audius/common/utils'
-/* eslint-disable no-import-assign */
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
-import { describe, it, expect, vitest, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 
 import sagas from 'common/store/cache/sagas'
 import {
@@ -96,7 +95,7 @@ describe.skip('add', () => {
           confirmer: {
             ...initialConfirmerState,
             confirm: {
-              [makeKindId(Kind.TRACKS, 1)]: () => { }
+              [makeKindId(Kind.TRACKS, 1)]: () => {}
             }
           }
         }

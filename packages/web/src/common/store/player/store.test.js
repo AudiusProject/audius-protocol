@@ -50,7 +50,7 @@ describe.skip('watchPlay', () => {
           player: initialPlayer
         }
       )
-      .dispatch(playerActions.play({ uid: '123', trackId: 1, onEnd: () => { } }))
+      .dispatch(playerActions.play({ uid: '123', trackId: 1, onEnd: () => {} }))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: true
