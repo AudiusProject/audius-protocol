@@ -255,11 +255,12 @@ export const isAudioMatchingChallenge = (
 export const isCooldownChallengeClaimable = (
   challenge: UndisbursedUserChallenge
 ) => {
-  return (
+  const res =
     challenge.cooldown_days === undefined ||
     dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >=
       challenge.cooldown_days
-  )
+  console.log('asdf isCooldownChallengeClaimable', challenge, res)
+  return res
 }
 
 /* Filter for only claimable challenges */

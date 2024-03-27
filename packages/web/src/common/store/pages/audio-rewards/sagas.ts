@@ -179,6 +179,7 @@ const getClaimingConfig = (
 function* claimChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
+  console.log('asdf claim challenge rewards')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const env = yield* getContext('env')

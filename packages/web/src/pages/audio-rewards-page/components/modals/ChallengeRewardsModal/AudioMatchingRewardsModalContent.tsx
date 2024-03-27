@@ -49,9 +49,6 @@ const messages = {
   audio: '$AUDIO'
 }
 
-type AudioMatchingChallengeName =
-  | ChallengeName.AudioMatchingBuy
-  | ChallengeName.AudioMatchingSell
 
 type AudioMatchingRewardsModalContentProps = {
   challenge?: OptimisticUserChallenge
@@ -59,20 +56,10 @@ type AudioMatchingRewardsModalContentProps = {
   onClaimRewardClicked: () => void
   claimInProgress?: boolean
   onNavigateAway: () => void
+  onClickProgress: any
+  progressIcon: any
+  progressLabel: any
   errorContent?: ReactNode
-}
-
-const ctaButtonProps: {
-  [k in AudioMatchingChallengeName]: Partial<ButtonProps>
-} = {
-  [ChallengeName.AudioMatchingBuy]: {
-    iconRight: IconArrowRight,
-    children: messages.viewPremiumTracks
-  },
-  [ChallengeName.AudioMatchingSell]: {
-    iconLeft: IconCloudUpload,
-    children: messages.uploadTrack
-  }
 }
 
 // TODO: Migrate to @audius/harmony Button and pass `isLoading`
@@ -87,12 +74,16 @@ export const AudioMatchingRewardsModalContent = ({
   onClaimRewardClicked,
   claimInProgress = false,
   onNavigateAway,
+  onClickProgress,
+  progressIcon,
+  progressLabel,
   errorContent
 }: AudioMatchingRewardsModalContentProps) => {
   const wm = useWithMobileStyle(styles.mobile)
   const isMobile = useIsMobile()
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
+  console.log('asdf onClickProgress: ', onClickProgress)
   const {
     cooldownChallenges,
     claimableAmount,
@@ -100,6 +91,7 @@ export const AudioMatchingRewardsModalContent = ({
     isEmpty: isCooldownChallengesEmpty
   } = useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
+  console.log('asdf userChallenge: ', userChallenge)
 
   const progressDescription = (
     <ProgressDescription
@@ -132,14 +124,16 @@ export const AudioMatchingRewardsModalContent = ({
     ) : null
 
   const handleClickCTA = useCallback(() => {
-    const route =
-      challengeName === ChallengeName.AudioMatchingBuy
-        ? EXPLORE_PREMIUM_TRACKS_PAGE
-        : UPLOAD_PAGE
-    navigateToPage(route)
+    if (challengeName === ChallengeName.AudioMatchingBuy) {
+      navigateToPage(EXPLORE_PREMIUM_TRACKS_PAGE)
+    } else if (challengeName === ChallengeName.AudioMatchingSell) {
+      navigateToPage(UPLOAD_PAGE)
+    } else {
+      onClickProgress()
+    }
     onNavigateAway()
   }, [challengeName, onNavigateAway, navigateToPage])
-
+  console.log('asdf challenge: ', challenge)
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
       {isMobile ? (
@@ -184,7 +178,8 @@ export const AudioMatchingRewardsModalContent = ({
         <Button
           variant='secondary'
           fullWidth
-          {...ctaButtonProps[challengeName]}
+          iconRight={progressIcon}
+          children={progressLabel}
           onClick={handleClickCTA}
         />
       )}

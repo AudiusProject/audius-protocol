@@ -86,14 +86,16 @@
     "type": "boolean",
     "amount": 2,
     "active": true,
-    "starting_block": 0
+    "starting_block": 0,
+    "cooldown_days": 7
   },
   {
     "id": "first-playlist",
     "type": "boolean",
     "amount": 2,
     "active": true,
-    "starting_block": 28350000
+    "starting_block": 28350000,
+    "cooldown_days": 7
   },
   {
     "id": "b",

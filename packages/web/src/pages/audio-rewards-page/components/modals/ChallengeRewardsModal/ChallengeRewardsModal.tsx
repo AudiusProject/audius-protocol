@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
+import { userApiFetch } from '@audius/common/api'
 import {
   accountSelectors,
   challengesSelectors,
@@ -235,7 +236,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
-
+  console.log('asdf userChallenges: ', userChallenges, modalType)
+  console.log('asdf undisbursedUserChallenges: ', undisbursedUserChallenges)
+  if (challenge) {
+    challenge.cooldown_days = undisbursedUserChallenges.find(
+      (challenge) => challenge.challenge_id === modalType
+    )?.cooldown_days
+  }
   const { fullDescription, progressLabel, isVerifiedChallenge } =
     challengeRewardsConfig[modalType]
   const { modalButtonInfo } = getChallengeConfig(modalType)
@@ -251,6 +258,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     linkType = 'incomplete'
   }
   const buttonInfo = modalButtonInfo?.[linkType] ?? null
+  console.log('asdf modalButtonInfo: ', modalButtonInfo)
   const buttonLink = buttonInfo?.link(userHandle)
 
   const goToRoute = useCallback(() => {
@@ -380,8 +388,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     claimStatus === ClaimStatus.ERROR ? (
       <div className={styles.claimError}>{getErrorMessage(aaoErrorCode)}</div>
     ) : null
-
-  return isAudioMatchingChallenge(modalType) ? (
+  console.log('asdf challenge?.cooldown_days: ', challenge)
+  return challenge?.cooldown_days ? (
     <AudioMatchingRewardsModalContent
       errorContent={errorContent}
       onNavigateAway={dismissModal}
@@ -389,6 +397,9 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       claimInProgress={claimInProgress}
       challenge={challenge}
       challengeName={modalType}
+      onClickProgress={goToRoute}
+      progressIcon={buttonInfo?.rightIcon}
+      progressLabel={buttonInfo?.label}
     />
   ) : (
     <div className={wm(styles.container)}>
