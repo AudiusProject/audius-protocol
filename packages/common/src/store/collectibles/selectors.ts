@@ -32,6 +32,9 @@ export const getSupportedUserCollections = createSelector(
   getSolCollections,
   (accountUserId, allUserCollectibles, solCollections) => {
     const getCollectionMintAddress = (collectible: Collectible) => {
+      if (collectible.heliusCollection) {
+        return collectible.heliusCollection.address
+      }
       const key = collectible.solanaChainMetadata?.collection?.key
       if (!key) return null
       return typeof key === 'string' ? key : key.toBase58()
@@ -84,11 +87,13 @@ export const getSupportedUserCollections = createSelector(
 
     // Solana collections
     const solCollectionMap: SolCollectionMap = {}
+    const userSolCollectibles = collectibles[Chain.Sol] ?? []
     const validSolCollectionMints = [
       ...new Set(
-        (collectibles[Chain.Sol] ?? [])
+        userSolCollectibles
           .filter(
             (collectible: Collectible) =>
+              !!collectible.heliusCollection ||
               !!collectible.solanaChainMetadata?.collection?.verified
           )
           .map(getCollectionMintAddress)
@@ -97,7 +102,7 @@ export const getSupportedUserCollections = createSelector(
     ]
     validSolCollectionMints.forEach((mint) => {
       const { data, imageUrl } = solCollections[mint] ?? {}
-      if (!data?.name || solCollectionMap[data.name]) return
+      if (!data?.name || solCollectionMap[mint]) return
       solCollectionMap[mint] = {
         name: data.name.replaceAll('\x00', ''),
         img: imageUrl ?? null,
@@ -108,13 +113,15 @@ export const getSupportedUserCollections = createSelector(
     // Collection images
     const collectionImageMap: { [address: string]: string } = {}
     Object.keys(ethCollectionMap).forEach((slug) => {
-      if (ethCollectionMap[slug].img) {
-        collectionImageMap[slug] = ethCollectionMap[slug].img!
+      const image = ethCollectionMap[slug].img
+      if (image) {
+        collectionImageMap[slug] = image
       }
     })
     Object.keys(solCollectionMap).forEach((mint) => {
-      if (solCollectionMap[mint].img) {
-        collectionImageMap[mint] = solCollectionMap[mint].img!
+      const image = solCollectionMap[mint].img
+      if (image) {
+        collectionImageMap[mint] = image
       }
     })
 

@@ -21,9 +21,8 @@ vitest.mock('store/backend/sagas', () => ({
   setupBackend: function* () {},
   waitForBackendSetup: () => true
 }))
-// Mock the solana collectibles client
-vitest.mock('services/solana-client/SolanaClient', () => ({
-  SolanaClient: () => {}
+vitest.mock('services/audius-sdk', async () => ({
+  audiusSdk: {}
 }))
 
 describe('smoke test', () => {

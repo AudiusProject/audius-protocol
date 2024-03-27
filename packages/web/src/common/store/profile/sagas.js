@@ -109,19 +109,27 @@ function* fetchProfileCustomizedCollectibles(user) {
   }
 }
 
-export function* fetchOpenSeaNftsForWallets(wallets) {
-  const openSeaClient = yield getContext('openSeaClient')
-  return yield call([openSeaClient, openSeaClient.getAllCollectibles], wallets)
+export function* fetchEthereumCollectiblesForWallets(wallets) {
+  const ethereumCollectiblesProvider = yield getContext(
+    'ethereumCollectiblesProvider'
+  )
+  return yield call(
+    [
+      ethereumCollectiblesProvider,
+      ethereumCollectiblesProvider.getCollectibles
+    ],
+    wallets
+  )
 }
 
-export function* fetchOpenSeaNfts(user) {
+export function* fetchEthereumCollectibles(user) {
   const apiClient = yield getContext('apiClient')
   const associatedWallets = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })
   if (associatedWallets) {
     const { wallets } = associatedWallets
-    const collectiblesMap = yield call(fetchOpenSeaNftsForWallets, [
+    const collectiblesMap = yield call(fetchEthereumCollectiblesForWallets, [
       user.wallet,
       ...wallets
     ])
@@ -152,14 +160,21 @@ export function* fetchOpenSeaNfts(user) {
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  const solanaClient = yield getContext('solanaClient')
+  const solanaCollectiblesProvider = yield getContext(
+    'solanaCollectiblesProvider'
+  )
   yield call(waitForRemoteConfig)
-  return yield call(solanaClient.getAllCollectibles, wallets)
+  return yield call(
+    [solanaCollectiblesProvider, solanaCollectiblesProvider.getCollectibles],
+    wallets
+  )
 }
 
 export function* fetchSolanaCollectibles(user) {
   const apiClient = yield getContext('apiClient')
-  const solanaClient = yield getContext('solanaClient')
+  const solanaCollectiblesProvider = yield getContext(
+    'solanaCollectiblesProvider'
+  )
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
   const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
@@ -190,23 +205,40 @@ export function* fetchSolanaCollectibles(user) {
     })
   )
 
-  // Get verified sol collections from the sol collectibles
+  const heliusCollectionMetadatasMap = solanaCollectibleList.reduce(
+    (result, collectible) => {
+      const collection = collectible.heliusCollection
+      if (collection && !result[collection.address]) {
+        result[collection.address] = {
+          data: collection,
+          imageUrl: collection.imageUrl
+        }
+      }
+      return result
+    },
+    {}
+  )
+
+  // Get verified sol collections from the sol collectibles without helius collections
   // and save their metadata in the redux store.
   // Also keep track of whether the user has unsupported
   // sol collections, which is the case if one of the following is true:
-  // - there is a sol nft which has no verified collection metadata
+  // - there is a sol nft which has no helius collection and no verified collection chain metadata
   // - there a verified sol nft collection for which we could not fetch the metadata (this is an edge case e.g. we cannot fetch the metadata this collection mint address B3LDTPm6qoQmSEgar2FHUHLt6KEHEGu9eSGejoMMv5eb)
   let hasUnsupportedCollection = false
-  const validSolCollectionMints = [
+  const collectiblesWithoutHeliusCollections = solanaCollectibleList.filter(
+    (collectible) => !collectible.heliusCollection
+  )
+  const validNonHeliusCollectionMints = [
     ...new Set(
-      solanaCollectibleList
+      collectiblesWithoutHeliusCollections
         .filter((collectible) => {
-          const isFromVeririfedCollection =
+          const isFromVerifiedCollection =
             !!collectible.solanaChainMetadata?.collection?.verified
-          if (!hasUnsupportedCollection && !isFromVeririfedCollection) {
+          if (!hasUnsupportedCollection && !isFromVerifiedCollection) {
             hasUnsupportedCollection = true
           }
-          return isFromVeririfedCollection
+          return isFromVerifiedCollection
         })
         .map((collectible) => {
           const key = collectible.solanaChainMetadata.collection.key
@@ -214,13 +246,13 @@ export function* fetchSolanaCollectibles(user) {
         })
     )
   ]
-  const collectionMetadatas = yield all(
-    validSolCollectionMints.map((mint) =>
-      call(solanaClient.getNFTMetadataFromMint, mint)
+  const nonHeliusCollectionMetadatas = yield all(
+    validNonHeliusCollectionMints.map((mint) =>
+      call(solanaCollectiblesProvider.getNftMetadataFromMint, mint)
     )
   )
-  const collectionMetadatasMap = {}
-  collectionMetadatas.forEach((cm, i) => {
+  const nonHeliusCollectionMetadatasMap = {}
+  nonHeliusCollectionMetadatas.forEach((cm, i) => {
     if (!cm) {
       if (!hasUnsupportedCollection) {
         hasUnsupportedCollection = true
@@ -228,12 +260,19 @@ export function* fetchSolanaCollectibles(user) {
       return
     }
     const { metadata, imageUrl } = cm
-    collectionMetadatasMap[validSolCollectionMints[i]] = {
+    nonHeliusCollectionMetadatasMap[validNonHeliusCollectionMints[i]] = {
       ...metadata.pretty(),
       imageUrl
     }
   })
-  yield put(updateSolCollections({ metadatas: collectionMetadatasMap }))
+  yield put(
+    updateSolCollections({
+      metadatas: {
+        ...heliusCollectionMetadatasMap,
+        ...nonHeliusCollectionMetadatasMap
+      }
+    })
+  )
   if (hasUnsupportedCollection) {
     yield put(setHasUnsupportedCollection(true))
   }
@@ -323,7 +362,7 @@ function* fetchProfileAsync(action) {
     }
 
     yield fork(fetchProfileCustomizedCollectibles, user)
-    yield fork(fetchOpenSeaNfts, user)
+    yield fork(fetchEthereumCollectibles, user)
     yield fork(fetchSolanaCollectibles, user)
 
     // Get current user notification & subscription status
