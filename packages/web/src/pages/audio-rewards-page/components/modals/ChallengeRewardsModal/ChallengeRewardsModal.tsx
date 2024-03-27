@@ -386,11 +386,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
     FeatureFlags.REWARDS_COOLDOWN
   )
-  console.log(
-    'asdf isRewardsCooldownEnabled: ',
-    isRewardsCooldownEnabled,
-    challenge
-  )
   if (isRewardsCooldownEnabled && challenge?.cooldown_days) {
     return (
       <CooldownRewardsModalContent
