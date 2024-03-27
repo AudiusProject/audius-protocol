@@ -1,14 +1,16 @@
-import { Nullable, dayjs } from '~/utils'
-
 import {
   Chain,
   Collectible,
   CollectibleMediaType,
-  OpenSeaNftExtended,
+  EthTokenStandard
+} from '~/models'
+import { Nullable, dayjs } from '~/utils'
+
+import {
   OpenSeaEvent,
   OpenSeaEventExtended,
-  TokenStandard
-} from '../../models'
+  OpenSeaNftExtended
+} from '../opensea/types'
 
 const fetchWithTimeout = async (
   resource: RequestInfo,
@@ -152,6 +154,11 @@ const getArweaveMetadataUrl = (arweaveProtocolUrl: string) => {
     arweavePrefix.length
   )}`
 }
+
+export const getAssetIdentifier = (asset: OpenSeaNftExtended) => {
+  return `${asset.identifier}:::${asset.contract ?? ''}`
+}
+
 /**
  * Returns a collectible given an asset object from the OpenSea API
  *
@@ -356,7 +363,7 @@ export const assetToCollectible = async (
   }
 
   return {
-    id: `${asset.identifier}:::${asset.contract ?? ''}`,
+    id: getAssetIdentifier(asset),
     tokenId: asset.identifier,
     name: (asset.name || asset?.asset_contract?.name) ?? '',
     description: asset.description,
@@ -374,13 +381,12 @@ export const assetToCollectible = async (
     externalLink: asset.external_url ?? null,
     permaLink: asset.opensea_url,
     assetContractAddress: asset.contract,
-    standard: (asset.token_standard?.toUpperCase() as TokenStandard) ?? null,
+    standard: (asset.token_standard?.toUpperCase() as EthTokenStandard) ?? null,
     collectionSlug: asset.collection ?? null,
     collectionName: asset.collectionMetadata?.name ?? null,
     collectionImageUrl: asset.collectionMetadata?.image_url ?? null,
     chain: Chain.Eth,
-    wallet: asset.wallet,
-    solanaChainMetadata: null
+    wallet: asset.wallet
   }
 }
 

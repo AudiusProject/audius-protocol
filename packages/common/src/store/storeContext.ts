@@ -2,6 +2,11 @@ import type { AudiusSdk } from '@audius/sdk'
 import { Location } from 'history'
 
 import {
+  EthereumCollectiblesProvider,
+  SolanaCollectiblesProvider
+} from '~/services'
+
+import {
   AllTrackingEvents,
   AnalyticsEvent,
   LineupState,
@@ -15,9 +20,7 @@ import { Env } from '../services/env'
 import { Explore } from '../services/explore'
 import { FingerprintClient } from '../services/fingerprint'
 import { LocalStorage } from '../services/local-storage'
-import { OpenSeaClient } from '../services/opensea-client'
 import { FeatureFlags, RemoteConfigInstance } from '../services/remote-config'
-import { SolanaClient } from '../services/solana-client'
 import { TrackDownload } from '../services/track-download'
 import { WalletClient } from '../services/wallet-client'
 
@@ -63,7 +66,8 @@ export type CommonStoreContext = {
     location: Location
   ) => (state: CommonState) => LineupState<Track>
   audioPlayer: AudioPlayer
-  solanaClient: SolanaClient
+  ethereumCollectiblesProvider: EthereumCollectiblesProvider
+  solanaCollectiblesProvider: SolanaCollectiblesProvider
   sentry: {
     setTag: (key: string, value: string) => void
     configureScope: (fn: (scope: { setUser: any }) => void) => void
@@ -73,7 +77,6 @@ export type CommonStoreContext = {
   instagramAppId?: string
   instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
-  openSeaClient: OpenSeaClient
   audiusSdk: () => Promise<AudiusSdk>
   imageUtils: {
     generatePlaylistArtwork: (

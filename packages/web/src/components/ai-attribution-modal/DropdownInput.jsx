@@ -78,7 +78,7 @@ class DropdownInput extends Component {
       } else if (item.text && item.el) {
         return (
           <Option
-            key={item.text}
+            key={item.value || item.text}
             value={item.value || item.text}
             query={item.text}
             disabled={item.disabled}
