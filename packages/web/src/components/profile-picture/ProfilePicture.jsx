@@ -106,7 +106,7 @@ const ProfilePicture = ({
             </div>
           )}
         </ImageElement>
-        {(editMode || showEdit) && (
+        {editMode || showEdit ? (
           <ImageSelectionButton
             wrapperClassName={styles.imageSelectionButtonWrapper}
             buttonClassName={styles.imageSelectionButton}
@@ -118,7 +118,7 @@ const ProfilePicture = ({
             hasImage={hasProfilePicture}
             source='ProfilePicture'
           />
-        )}
+        ) : null}
       </div>
     </div>
   )

@@ -83,7 +83,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
             value={SpecialAccessType.FOLLOW}
             disabled={disabled}
           />
-          <Text>{messages.followersOnly}</Text>
+          <Text variant='body'>{messages.followersOnly}</Text>
         </label>
         <label className={cn(styles.row, { [styles.disabled]: disabled })}>
           <Radio
@@ -91,7 +91,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
             value={SpecialAccessType.TIP}
             disabled={disabled}
           />
-          <Text>{messages.supportersOnly}</Text>
+          <Text variant='body'>{messages.supportersOnly}</Text>
           <Tooltip
             className={styles.tooltip}
             text={messages.supportersInfo}

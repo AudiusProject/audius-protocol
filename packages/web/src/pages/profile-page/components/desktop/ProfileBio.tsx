@@ -234,16 +234,18 @@ export const ProfileBio = ({
           render={isCollapsed ? renderCollapsedContent : renderExpandedContent}
           duration={300}
         />
-        <PlainButton
-          iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
-          onClick={handleToggleCollapse}
-          css={(theme) => ({
-            marginTop: theme.spacing.l,
-            paddingLeft: 0
-          })}
-        >
-          {isCollapsed ? messages.seeMore : messages.seeLess}
-        </PlainButton>
+        {isCollapsible ? (
+          <PlainButton
+            iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
+            onClick={handleToggleCollapse}
+            css={(theme) => ({
+              marginTop: theme.spacing.l,
+              paddingLeft: 0
+            })}
+          >
+            {isCollapsed ? messages.seeMore : messages.seeLess}
+          </PlainButton>
+        ) : null}
       </div>
     </div>
   )

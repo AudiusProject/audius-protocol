@@ -94,20 +94,22 @@ export default function App() {
   }
 
   /**
-   * Favorite a track. This requires a user to be authenticated and granted
+   * Favorite or unfavorite a track. This requires a user to be authenticated and granted
    * write permissions to the app
    */
   const favoriteTrack =
-    (trackId: string): MouseEventHandler<HTMLButtonElement> =>
+    (trackId: string, favorite = true): MouseEventHandler<HTMLButtonElement> =>
     async (e) => {
       e.stopPropagation()
       if (user) {
-        setFavorites((prev) => ({ ...prev, [trackId]: true }))
+        setFavorites((prev) => ({ ...prev, [trackId]: favorite }))
         try {
-          await audiusSdk.tracks.favoriteTrack({ userId: user.userId, trackId })
+          await audiusSdk.tracks[
+            favorite ? 'favoriteTrack' : 'unfavoriteTrack'
+          ]({ userId: user.userId, trackId })
         } catch (e) {
           console.error('Failed to favorite track', e)
-          setFavorites((prev) => ({ ...prev, [trackId]: false }))
+          setFavorites((prev) => ({ ...prev, [trackId]: !favorite }))
         }
       } else {
         alert('Please log in with Audius to perform write operations')
@@ -197,17 +199,13 @@ export default function App() {
             <Flex direction='column' m='m' gap='s' css={{ width: '100%' }}>
               <Text>{track.title}</Text>
               <Text>{track.user.name}</Text>
-              {!favorites[track.id] ? (
-                <Button
-                  fullWidth={true}
-                  onClick={favoriteTrack(track.id)}
-                  size='small'
-                >
-                  Favorite
-                </Button>
-              ) : (
-                <Text>Favorited!</Text>
-              )}
+              <Button
+                fullWidth
+                onClick={favoriteTrack(track.id, !favorites[track.id])}
+                size='small'
+              >
+                {!favorites[track.id] ? 'Favorite' : 'Unfavorite'}
+              </Button>
             </Flex>
           </Paper>
         ))}

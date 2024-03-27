@@ -709,7 +709,7 @@ const ProfilePage = g(
             areArtistRecommendationsVisible={areArtistRecommendationsVisible}
             onCloseArtistRecommendations={onCloseArtistRecommendations}
           />
-          {content}
+          <ClientOnly>{content}</ClientOnly>
         </MobilePageContainer>
         <ClientOnly>
           <TierExplainerDrawer />

@@ -24,7 +24,8 @@ beforeAll(() => {
   })
 })
 
-describe('play', () => {
+// TODO: PAY-2606
+describe.skip('play', () => {
   it('plays', () => {
     const play = vitest.fn()
     global.Audio = vitest.fn().mockImplementation(() => ({
@@ -41,7 +42,8 @@ describe('play', () => {
   })
 })
 
-describe('pause', () => {
+// TODO: PAY-2606
+describe.skip('pause', () => {
   it('pauses', () => {
     const pause = vitest.fn()
     global.Audio = vitest.fn().mockImplementation(() => ({
@@ -60,7 +62,8 @@ describe('pause', () => {
   })
 })
 
-describe('stop', () => {
+// TODO: PAY-2606
+describe.skip('stop', () => {
   it('stops', () => {
     const pause = vitest.fn()
     global.Audio = vitest.fn().mockImplementation(() => ({

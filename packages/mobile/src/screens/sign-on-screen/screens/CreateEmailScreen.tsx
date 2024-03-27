@@ -106,17 +106,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
             <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
           ) : null}
           <Flex style={{ zIndex: 1 }} gap='l'>
-            <Heading
-              heading={createEmailPageMessages.title}
-              description={
-                <>
-                  {createEmailPageMessages.subHeader.line1}
-                  {'\n'}
-                  {createEmailPageMessages.subHeader.line2}
-                </>
-              }
-              centered
-            />
+            <Heading heading={createEmailPageMessages.title} centered />
             <Flex direction='column' gap='l'>
               <NewEmailField
                 name='email'

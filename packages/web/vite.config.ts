@@ -176,7 +176,10 @@ export default defineConfig(async ({ mode }) => {
       port
     },
     test: {
-      environment: 'jsdom'
+      environment: 'jsdom',
+      exclude: ['e2e', 'node_modules'],
+      minThreads: 1,
+      maxThreads: 3
     }
   }
 })

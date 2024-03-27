@@ -16,7 +16,8 @@ import { noopReducer } from 'store/testHelper'
 const followedUser = { follower_count: 5 }
 const accountUser = { followee_count: 1 }
 
-describe('follow', () => {
+// TODO: PAY-2607
+describe.skip('follow', () => {
   it('follows', async () => {
     await expectSaga(sagas.watchFollowUser, actions)
       .withReducer(

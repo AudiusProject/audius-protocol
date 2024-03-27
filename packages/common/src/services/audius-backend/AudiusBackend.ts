@@ -36,7 +36,6 @@ import {
   FailureReason,
   ID,
   Name,
-  PlaylistTrackId,
   ProfilePictureSizes,
   SquareSizes,
   StringUSDC,
@@ -1478,34 +1477,6 @@ export const audiusBackend = ({
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber
       }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  async function deleteAlbum(playlistId: ID, trackIds: PlaylistTrackId[]) {
-    try {
-      console.debug(
-        `Deleting Album ${playlistId}, tracks: ${JSON.stringify(
-          trackIds.map((t) => t.track)
-        )}`
-      )
-
-      const trackDeletionPromises = trackIds.map((t) =>
-        audiusLibs.Track.deleteTrack(t.track)
-      )
-      const playlistDeletionPromise =
-        audiusLibs.EntityManager.deletePlaylist(playlistId)
-      const results = await Promise.all(
-        trackDeletionPromises.concat(playlistDeletionPromise)
-      )
-      const deleteTrackReceipts = results.slice(0, -1).map((r) => r.txReceipt)
-      const deletePlaylistReceipt = results.slice(-1)[0].txReceipt
-
-      return getLatestTxReceipt(
-        deleteTrackReceipts.concat(deletePlaylistReceipt)
-      )
     } catch (error) {
       console.error(getErrorMessage(error))
       return { error }
@@ -3265,7 +3236,6 @@ export const audiusBackend = ({
     createPlaylist,
     currentDiscoveryProvider,
     dangerouslySetPlaylistOrder,
-    deleteAlbum,
     deletePlaylist,
     deletePlaylistTrack,
     deleteTrack,
