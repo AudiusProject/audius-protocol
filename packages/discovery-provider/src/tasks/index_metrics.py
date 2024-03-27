@@ -288,19 +288,34 @@ def aggregate_metrics(self):
     db = aggregate_metrics.db
     redis = aggregate_metrics.redis
 
+    # Define lock acquired boolean
+    have_lock = False
+
+    # Define redis lock object
+    update_lock = redis.lock("aggregate_metrics_lock", blocking_timeout=25)
+
     interval = datetime.timedelta(minutes=METRICS_INTERVAL)
     start_time = time.time()
     errored = False
     try:
-        logger.info(
-            f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
-        )
-        metric = PrometheusMetric(PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS)
-        consolidate_metrics_from_other_nodes(self, db, redis)
-        metric.save_time({"task_name": "aggregate_metrics"})
-        logger.info(
-            f"index_metrics.py | aggregate_metrics | {self.request.id} | Processing complete within session"
-        )
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            logger.info(
+                f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
+            )
+            metric = PrometheusMetric(
+                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
+            )
+            consolidate_metrics_from_other_nodes(self, db, redis)
+            metric.save_time({"task_name": "aggregate_metrics"})
+            logger.info(
+                f"index_metrics.py | aggregate_metrics | {self.request.id} | Processing complete within session"
+            )
+        else:
+            logger.error(
+                f"index_metrics.py | aggregate_metrics | {self.request.id} | Failed to acquire aggregate_metrics_lock"
+            )
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -318,6 +333,8 @@ def aggregate_metrics(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)
 
 

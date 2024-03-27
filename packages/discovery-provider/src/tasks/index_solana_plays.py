@@ -709,6 +709,11 @@ def index_solana_plays(self):
     # Custom Task definition can be found in src/app.py
     redis = index_solana_plays.redis
     solana_client_manager = index_solana_plays.solana_client_manager
+    # Define lock acquired boolean
+    have_lock = False
+    # Define redis lock object
+    # Max duration of lock is 4hrs or 14400 seconds
+    update_lock = redis.lock("solana_plays_lock", blocking_timeout=25, timeout=14400)
     interval = datetime.timedelta(seconds=5)
     start_time = time.time()
     errored = False
@@ -720,10 +725,15 @@ def index_solana_plays(self):
             TRACK_LISTEN_PROGRAM,
             latest_sol_play_program_tx_key,
         )
-        logger.info("index_solana_plays.py | Acquired lock")
-        challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
-        with challenge_bus.use_scoped_dispatch_queue():
-            process_solana_plays(solana_client_manager, redis)
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            logger.info("index_solana_plays.py | Acquired lock")
+            challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
+            with challenge_bus.use_scoped_dispatch_queue():
+                process_solana_plays(solana_client_manager, redis)
+        else:
+            logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -741,4 +751,6 @@ def index_solana_plays(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)

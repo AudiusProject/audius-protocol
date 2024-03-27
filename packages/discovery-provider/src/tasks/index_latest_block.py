@@ -37,12 +37,24 @@ def update_latest_block_redis(final_poa_block):
 @celery.task(name="index_latest_block", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
+    redis = update_task.redis
+    # Define lock acquired boolean
+    have_lock = False
+    # Define redis lock object
+    update_lock = redis.lock("index_latest_block_lock", timeout=60 * 10)
+    interval = datetime.timedelta(seconds=30)
     interval = datetime.timedelta(seconds=5)
     start_time = time.time()
     errored = False
     try:
-        final_poa_block = helpers.get_final_poa_block()
-        update_latest_block_redis(final_poa_block)
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            final_poa_block = helpers.get_final_poa_block()
+            update_latest_block_redis(final_poa_block)
+        else:
+            logger.info(
+                "index_latest_block.py | Failed to acquire index_latest_block_lock"
+            )
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -60,4 +72,6 @@ def update_task(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)

@@ -51,11 +51,18 @@ def get_oracle_addresses_from_chain(redis) -> List[str]:
 @save_duration_metric(metric_group="celery_task")
 def index_oracles_task(self):
     redis = index_oracles_task.redis
+    have_lock = False
+    update_lock = redis.lock("index_oracles_lock", timeout=60)
+
     interval = datetime.timedelta(minutes=5)
     start_time = time.time()
     errored = False
     try:
-        get_oracle_addresses_from_chain(redis)
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            get_oracle_addresses_from_chain(redis)
+        else:
+            logger.error("index_oracles.py | Fatal error in main loop", exc_info=True)
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -73,4 +80,6 @@ def index_oracles_task(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)

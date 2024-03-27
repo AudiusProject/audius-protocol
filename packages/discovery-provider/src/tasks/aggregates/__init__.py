@@ -40,16 +40,29 @@ def init_task_and_acquire_lock(
         if current_frame is not None and current_frame.f_back is not None
         else "unknown"
     )
+    # Define lock acquired boolean
+    have_lock = False
+    # Define redis lock object
+    if not lock_name:
+        lock_name = f"update_aggregate_table:{table_name}"
+    update_lock = redis.lock(
+        lock_name, timeout=timeout, blocking_timeout=blocking_timeout
+    )
     try:
-        start_time = time.time()
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            start_time = time.time()
 
-        with db.scoped_session() as session:
-            aggregate_func(session, redis)
+            with db.scoped_session() as session:
+                aggregate_func(session, redis)
 
-        logger.info(
-            f"{task_name} | Finished updating \
-                {table_name} in: {time.time()-start_time} sec"
-        )
+            logger.info(
+                f"{task_name} | Finished updating \
+                    {table_name} in: {time.time()-start_time} sec"
+            )
+        else:
+            logger.info(f"{task_name} | Failed to acquire {lock_name}")
     except Exception as e:
         logger.error(f"{task_name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -67,6 +80,8 @@ def init_task_and_acquire_lock(
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(task_name, countdown=time_left)
 
 

@@ -168,29 +168,38 @@ def cache_trending_playlists(self):
     db = cache_trending_playlists.db_read_replica
     redis = cache_trending_playlists.redis
 
+    have_lock = False
+    update_lock = redis.lock("cache_trending_playlists_lock", timeout=7200)
+
     interval = datetime.timedelta(minutes=30)
     start_time = time.time()
     errored = False
 
     try:
-        trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
-            TrendingType.PLAYLISTS
-        ).keys()
-        for version in trending_playlist_versions:
-            logger.info(
-                f"cache_trending_playlists.py ({version.name} version) | Starting"
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            trending_playlist_versions = (
+                trending_strategy_factory.get_versions_for_type(
+                    TrendingType.PLAYLISTS
+                ).keys()
             )
-            strategy = trending_strategy_factory.get_strategy(
-                TrendingType.PLAYLISTS, version
-            )
-            start_time = time.time()
-            cache_trending(db, redis, strategy)
-            end_time = time.time()
-            logger.info(
-                f"cache_trending_playlists.py ({version.name} version) | \
-                    Finished in {end_time - start_time} seconds"
-            )
-            redis.set(trending_playlists_last_completion_redis_key, int(end_time))
+            for version in trending_playlist_versions:
+                logger.info(
+                    f"cache_trending_playlists.py ({version.name} version) | Starting"
+                )
+                strategy = trending_strategy_factory.get_strategy(
+                    TrendingType.PLAYLISTS, version
+                )
+                start_time = time.time()
+                cache_trending(db, redis, strategy)
+                end_time = time.time()
+                logger.info(
+                    f"cache_trending_playlists.py ({version.name} version) | \
+                        Finished in {end_time - start_time} seconds"
+                )
+                redis.set(trending_playlists_last_completion_redis_key, int(end_time))
+        else:
+            logger.info("cache_trending_playlists.py | Failed to acquire lock")
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -208,4 +217,6 @@ def cache_trending_playlists(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)

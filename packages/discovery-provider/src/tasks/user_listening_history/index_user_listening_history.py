@@ -169,21 +169,34 @@ def index_user_listening_history(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = index_user_listening_history.db
+    redis = index_user_listening_history.redis
+    # Define lock acquired boolean
+    have_lock = False
+    # Define redis lock object
+    update_lock = redis.lock("index_user_listening_history_lock", timeout=60 * 10)
+
     interval = timedelta(seconds=5)
     start_time = time.time()
     errored = False
     try:
-        logger.info(
-            f"index_user_listening_history.py | Updating {USER_LISTENING_HISTORY_TABLE_NAME}"
-        )
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            logger.info(
+                f"index_user_listening_history.py | Updating {USER_LISTENING_HISTORY_TABLE_NAME}"
+            )
 
-        with db.scoped_session() as session:
-            _index_user_listening_history(session)
+            with db.scoped_session() as session:
+                _index_user_listening_history(session)
 
-        logger.info(
-            f"index_user_listening_history.py | Finished updating "
-            f"{USER_LISTENING_HISTORY_TABLE_NAME} in: {time.time()-start_time} sec"
-        )
+            logger.info(
+                f"index_user_listening_history.py | Finished updating "
+                f"{USER_LISTENING_HISTORY_TABLE_NAME} in: {time.time()-start_time} sec"
+            )
+        else:
+            logger.info(
+                "index_user_listening_history.py | Failed to acquire index_user_listening_history_lock"
+            )
     except Exception as e:
         logger.error(
             "index_user_listening_history.py | Fatal error in main loop", exc_info=True
@@ -203,4 +216,6 @@ def index_user_listening_history(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)

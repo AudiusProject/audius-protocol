@@ -639,19 +639,28 @@ def index_spl_token(self):
     solana_client_manager = index_spl_token.solana_client_manager
     db = index_spl_token.db
 
+    # Define lock acquired boolean
+    have_lock = False
+    # Define redis lock object
+    # Max duration of lock is 4hrs or 14400 seconds
+    update_lock = redis.lock(index_spl_token_lock, blocking_timeout=25, timeout=14400)
+
     interval = datetime.timedelta(seconds=5)
     start_time = time.time()
     errored = False
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            solana_client_manager,
-            redis,
-            WAUDIO_MINT,
-            latest_sol_spl_token_program_tx_key,
-        )
-        logger.info("index_spl_token.py | Acquired lock")
-        process_spl_token_tx(solana_client_manager, db, redis)
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            # Cache latest tx outside of lock
+            fetch_and_cache_latest_program_tx_redis(
+                solana_client_manager,
+                redis,
+                WAUDIO_MINT,
+                latest_sol_spl_token_program_tx_key,
+            )
+            logger.info("index_spl_token.py | Acquired lock")
+            process_spl_token_tx(solana_client_manager, db, redis)
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -669,4 +678,6 @@ def index_spl_token(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)

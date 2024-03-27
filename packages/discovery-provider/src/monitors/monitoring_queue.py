@@ -57,25 +57,31 @@ def monitoring_queue_task(self):
     db = monitoring_queue_task.db
     redis = monitoring_queue_task.redis
 
+    have_lock = False
+    update_lock = redis.lock("monitoring_queue_lock", timeout=2000)
+
     interval = datetime.timedelta(seconds=60)
     start_time = time.time()
     errored = False
 
     try:
-        start_time = time.time()
+        have_lock = update_lock.acquire(blocking=False)
 
-        for monitor in MONITORS.values():
-            try:
-                refresh(redis, db, monitor)
-            except Exception as e:
-                logger.warning(
-                    f"monitoring_queue.py | Error computing {monitor['name']} {e}"
-                )
+        if have_lock:
+            for monitor in MONITORS.values():
+                try:
+                    refresh(redis, db, monitor)
+                except Exception as e:
+                    logger.warning(
+                        f"monitoring_queue.py | Error computing {monitor['name']} {e}"
+                    )
 
-        end_time = time.time()
-        logger.info(
-            f"monitoring_queue.py | Finished monitoring_queue in {end_time - start_time} seconds"
-        )
+            end_time = time.time()
+            logger.info(
+                f"monitoring_queue.py | Finished monitoring_queue in {end_time - start_time} seconds"
+            )
+        else:
+            logger.info("monitoring_queue.py | Failed to acquire lock")
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -93,4 +99,6 @@ def monitoring_queue_task(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)

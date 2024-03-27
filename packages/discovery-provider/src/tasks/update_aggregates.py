@@ -309,14 +309,27 @@ def _update_aggregates(session):
 @celery.task(name="update_aggregates", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_aggregates(self):
+    redis = update_aggregates.redis
     db = update_aggregates.db
+
+    # Define lock acquired boolean
+    have_lock = False
+    # Define redis lock object
+    # Max duration of lock is 4hrs or 14400 seconds
+    update_lock = redis.lock(
+        "update_aggregates_lock", blocking_timeout=25, timeout=14400
+    )
+
     interval = datetime.timedelta(minutes=10)
     start_time = time.time()
     errored = False
     try:
-        with db.scoped_session() as session:
-            _update_aggregates(session)
-
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            with db.scoped_session() as session:
+                _update_aggregates(session)
+        else:
+            logger.info("update_aggregates.py | Failed to acquire lock")
     except Exception as e:
         logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
         errored = True
@@ -334,4 +347,6 @@ def update_aggregates(self):
                 "errored": errored,
             },
         )
+        if have_lock:
+            update_lock.release()
         celery.send_task(self.name, countdown=time_left)
