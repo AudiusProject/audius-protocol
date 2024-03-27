@@ -1,6 +1,11 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
 import { useGetTrackById } from '@audius/common/api'
+import type {
+  PurchaseableTrackStreamMetadata,
+  PurchaseableTrackDownloadMetadata,
+  PurchaseableContentMetadata
+} from '@audius/common/hooks'
 import {
   useRemoteVar,
   useUSDCBalance,
@@ -10,10 +15,9 @@ import {
   PURCHASE_METHOD,
   PURCHASE_VENDOR,
   usePurchaseMethod,
-  isTrackStreamPurchaseable,
+  isStreamPurchaseable,
   isTrackDownloadPurchaseable
 } from '@audius/common/hooks'
-import type { PurchaseableTrackMetadata } from '@audius/common/hooks'
 import type { USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
@@ -233,7 +237,7 @@ const RenderForm = ({
   purchaseConditions
 }: {
   onClose: () => void
-  track: PurchaseableTrackMetadata
+  track: PurchaseableTrackStreamMetadata | PurchaseableTrackDownloadMetadata
   purchaseConditions: USDCPurchaseConditions
 }) => {
   const navigation = useNavigation()
@@ -361,7 +365,7 @@ const RenderForm = ({
               {isIOSDisabled ? (
                 <PurchaseUnavailable />
               ) : isPurchaseSuccessful ? (
-                <PurchaseSuccess onPressViewTrack={onClose} track={track} />
+                <PurchaseSuccess onPressViewTrack={onClose} metadata={track} />
               ) : isUnlocking ? null : (
                 <View>
                   <View style={styles.payToUnlockTitleContainer}>
@@ -429,6 +433,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const isUSDCEnabled = useIsUSDCEnabled()
   const presetValues = usePayExtraPresets()
   const {
+    // TODO: album support
     data: { contentId: trackId },
     isOpen,
     onClose,
@@ -439,26 +444,34 @@ export const PremiumTrackPurchaseDrawer = () => {
     { id: trackId },
     { disabled: !trackId }
   )
+  const metadata = track as PurchaseableContentMetadata
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
-  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
+  const isValidStreamGatedTrack = !!metadata && isStreamPurchaseable(metadata)
   const isValidDownloadGatedTrack =
-    !!track && isTrackDownloadPurchaseable(track)
+    !!metadata && isTrackDownloadPurchaseable(metadata)
 
   const purchaseConditions = isValidStreamGatedTrack
-    ? track.stream_conditions
+    ? metadata.stream_conditions
     : isValidDownloadGatedTrack
-    ? track.download_conditions
+    ? metadata.download_conditions
     : null
 
-  const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
+  const price =
+    purchaseConditions && 'usdc_purchase' in purchaseConditions
+      ? purchaseConditions?.usdc_purchase.price
+      : 0
 
   const { initialValues, onSubmit, validationSchema } =
-    usePurchaseContentFormConfiguration({ track, presetValues, price })
+    usePurchaseContentFormConfiguration({
+      metadata,
+      presetValues,
+      price
+    })
 
   const handleClosed = useCallback(() => {
     onClosed()
@@ -498,7 +511,11 @@ export const PremiumTrackPurchaseDrawer = () => {
           >
             <RenderForm
               onClose={onClose}
-              track={track}
+              track={
+                metadata as
+                  | PurchaseableTrackStreamMetadata
+                  | PurchaseableTrackDownloadMetadata
+              }
               purchaseConditions={purchaseConditions}
             />
           </Formik>

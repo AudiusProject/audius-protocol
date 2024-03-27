@@ -132,9 +132,11 @@ def get_challenge_type_map(
             .all()
         )
         challenge_type_map_global = {
-            challenge[0]: TransactionType.trending_reward
-            if challenge[1] == ChallengeType.trending
-            else TransactionType.user_reward
+            challenge[0]: (
+                TransactionType.trending_reward
+                if challenge[1] == ChallengeType.trending
+                else TransactionType.user_reward
+            )
             for challenge in challenges
         }
 
@@ -667,27 +669,42 @@ def index_rewards_manager(self):
     # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock("solana_rewards_manager_lock", timeout=14400)
 
+    interval = datetime.timedelta(seconds=5)
+    start_time = time.time()
+    errored = False
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            solana_client_manager,
-            redis,
-            REWARDS_MANAGER_PROGRAM,
-            latest_sol_rewards_manager_program_tx_key,
-        )
-
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
+            # Cache latest tx outside of lock
+            fetch_and_cache_latest_program_tx_redis(
+                solana_client_manager,
+                redis,
+                REWARDS_MANAGER_PROGRAM,
+                latest_sol_rewards_manager_program_tx_key,
+            )
+
             logger.info("index_rewards_manager.py | Acquired lock")
             process_solana_rewards_manager(solana_client_manager, db, redis)
         else:
             logger.info("index_rewards_manager.py | Failed to acquire lock")
     except Exception as e:
-        logger.error(
-            "index_rewards_manager.py | Fatal error in main loop", exc_info=True
-        )
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
         if have_lock:
             update_lock.release()
+        celery.send_task(self.name, countdown=time_left)

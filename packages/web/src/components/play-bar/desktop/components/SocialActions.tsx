@@ -5,7 +5,8 @@ import {
   themeSelectors,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  CommonState
+  CommonState,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -19,7 +20,7 @@ import { shouldShowDark } from 'utils/theme/theme'
 import styles from './SocialActions.module.css'
 
 const { getTheme } = themeSelectors
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 const { getTrack } = cacheTracksSelectors
 
 type SocialActionsProps = {
@@ -53,13 +54,13 @@ export const SocialActions = ({
   const favoriteText = favorited ? messages.unfavorite : messages.favorite
   const repostText = reposted ? messages.reposted : messages.repost
 
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const onClickPill = useAuthenticatedClickCallback(() => {
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.PlayBar }
     )
   }, [trackId, openPremiumContentPurchaseModal])

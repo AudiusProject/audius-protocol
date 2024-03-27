@@ -1,4 +1,6 @@
+import datetime
 import logging
+import time
 
 from src.tasks.celery_app import celery
 from src.utils.get_all_nodes import (
@@ -20,6 +22,7 @@ logger = logging.getLogger(__name__)
 @save_duration_metric(metric_group="celery_task")
 def cache_current_nodes_task(self):
     redis = cache_current_nodes_task.redis
+
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
@@ -27,6 +30,10 @@ def cache_current_nodes_task(self):
     update_lock = redis.lock(
         "cache_current_nodes_lock", blocking_timeout=25, timeout=14400
     )
+
+    interval = datetime.timedelta(minutes=2)
+    start_time = time.time()
+    errored = False
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
@@ -66,8 +73,22 @@ def cache_current_nodes_task(self):
         else:
             logger.info("cache_current_nodes.py | Failed to acquire lock")
     except Exception as e:
-        logger.error(f"cache_current_nodes.py | ERROR caching node info {e}")
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
         if have_lock:
             update_lock.release()
+        celery.send_task(self.name, countdown=time_left)

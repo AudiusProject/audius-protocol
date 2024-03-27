@@ -16,7 +16,7 @@ import { GatedConditionsPill } from '../GatedConditionsPill'
 
 import styles from './TrackTile.module.css'
 
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 const messages = {
   repostLabel: 'Repost',
@@ -68,7 +68,7 @@ export const BottomRow = ({
   onClickShare,
   onClickPill
 }: BottomRowProps) => {
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
 
   const repostLabel = isReposted ? messages.unrepostLabel : messages.repostLabel
