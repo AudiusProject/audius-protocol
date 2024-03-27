@@ -6,7 +6,7 @@ import {
   Name,
   isContentFollowGated
 } from '@audius/common/models'
-import { CollectionValues } from '@audius/common/schemas'
+import { AlbumValues, CollectionValues } from '@audius/common/schemas'
 import {
   TrackMetadataForUpload,
   LibraryCategory,
@@ -57,7 +57,7 @@ import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
 import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
 
-import { processTrackForUpload, recordGatedTracks } from './sagaHelpers'
+import { processTrackForPremiumUpload, recordGatedTracks } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
 
@@ -716,8 +716,6 @@ export function* uploadCollection(
     }
   })
 
-  console.log({ tracksWithMetadata })
-
   // Upload the tracks
   const trackIds = yield* call(handleUploads, {
     tracks: tracksWithMetadata,
@@ -1017,12 +1015,14 @@ export function* uploadTracksAsync(
     // Prep the USDC purchase conditions
     for (const trackUpload of tracks) {
       trackUpload.metadata = yield* call(
-        processTrackForUpload<TrackMetadataForUpload>,
-        trackUpload.metadata
+        processTrackForPremiumUpload<TrackMetadataForUpload>,
+        {
+          track: trackUpload.metadata,
+          collectionMetadata:
+            'metadata' in payload ? payload.metadata : undefined
+        }
       )
     }
-
-    console.log({ tracks, metadata: payload.metadata })
 
     // Upload content.
     const isAlbum = payload.uploadType === UploadType.ALBUM

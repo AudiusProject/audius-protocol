@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { USDCPurchaseConditions } from '@audius/common/models'
 import {
   AlbumSchema,
   AlbumValues,
@@ -67,46 +68,15 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     tracks: tracks.map((track) => ({ ...track, override: false }))
   }
 
-  // TODO: fix the types here
-  const populateAlbumTrackPrice = (values: AlbumValues) => {
-    const albumTrackPrice =
-      values?.stream_conditions?.usdc_purchase?.albumTrackPrice
-    const trackStreamConditions = {
-      usdc_purchase: {
-        price: albumTrackPrice
-      }
-    }
-    for (const track of values.tracks) {
-      track.metadata = {
-        ...track.metadata,
-        preview_start_seconds: 0,
-        is_stream_gated: true,
-        is_download_gated: true,
-        stream_conditions: trackStreamConditions,
-        download_conditions: trackStreamConditions,
-        last_gate_keeper: {
-          access: 'accessAndSale'
-        }
-      }
-    }
-  }
-
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      // TODO: check for price existing at all
-      if (isAlbum) {
-        populateAlbumTrackPrice(values)
-      }
-
-      console.log('EditCollectionForm submit', { values })
-      // console.log('Refined values', { valuesWithTrackPrices })
       onContinue({
         uploadType,
         tracks: values.tracks,
         metadata: values
       })
     },
-    [isAlbum, onContinue, uploadType]
+    [onContinue, uploadType]
   )
 
   const collectionTypeName =
@@ -114,10 +84,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const validationSchema =
     uploadType === UploadType.ALBUM ? AlbumSchema : PlaylistSchema
-
-  const handleAccessAndSaleSubmit = (values: AccessAndSaleFormValues) => {
-    console.log('Values from submit: ', { values })
-  }
 
   return (
     <Formik
@@ -152,13 +118,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           <ReleaseDateFieldLegacy />
-          {isAlbum ? (
-            <AccessAndSaleField
-              isAlbum
-              isUpload
-              onSubmit={handleAccessAndSaleSubmit}
-            />
-          ) : null}
+          {isAlbum ? <AccessAndSaleField isAlbum isUpload /> : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
             <Text variant='body'>{messages.trackDetails.description}</Text>

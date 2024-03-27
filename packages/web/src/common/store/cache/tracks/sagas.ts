@@ -35,7 +35,7 @@ import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
-import { processTrackForUpload } from 'common/store/upload/sagaHelpers'
+import { processTrackForPremiumUpload } from 'common/store/upload/sagaHelpers'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -123,7 +123,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     )
   }
 
-  const trackForEdit = yield* processTrackForUpload(action.formFields)
+  const trackForEdit = yield* processTrackForPremiumUpload(action.formFields)
 
   yield* call(
     confirmEditTrack,

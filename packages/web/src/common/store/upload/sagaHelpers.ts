@@ -6,6 +6,7 @@ import {
   isContentUSDCPurchaseGated,
   TrackMetadata
 } from '@audius/common/models'
+import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -98,9 +99,16 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 }
 
 /**
+ * Adds relevant metadata
  * Converts prices to WEI and adds splits for USDC purchasable content.
  */
-export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
+export function* processTrackForPremiumUpload<T extends TrackMetadata>({
+  track,
+  collectionMetadata
+}: {
+  track: T
+  collectionMetadata: CollectionValues | undefined
+}) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
@@ -108,12 +116,35 @@ export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
   )
   if (!isUsdcPurchaseEnabled) return track
 
+  // Check for a price set across an entire collection (for albums only atm)
+  const collectionTrackPrice =
+    collectionMetadata?.stream_conditions?.usdc_purchase.albumTrackPrice
+  // Make sure we should be using the price set at the collection level
+  const hasCollectionTrackPrice =
+    collectionTrackPrice !== undefined && collectionMetadata?.is_stream_gated
+
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
 
+  // If the track was added as part of a premium album, need to create/add all the relevant premium track metadata here
+  if (hasCollectionTrackPrice) {
+    track.is_stream_gated = true
+    track.is_download_gated = true
+    track.preview_start_seconds = 0
+    // TODO: make TS happy here :(
+    track.stream_conditions = {
+      usdc_purchase: {}
+    }
+    track.download_conditions = {
+      usdc_purchase: {}
+    }
+  }
+
   if (isContentUSDCPurchaseGated(track.stream_conditions)) {
     const ownerUserbank = yield* call(getUSDCUserBank, wallet)
-    const priceCents = track.stream_conditions.usdc_purchase.price
+    const priceCents = hasCollectionTrackPrice
+      ? collectionTrackPrice
+      : track.stream_conditions.usdc_purchase.price
     const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
     track.stream_conditions.usdc_purchase = {
       price: priceCents,
@@ -124,7 +155,9 @@ export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
   }
   if (isContentUSDCPurchaseGated(track.download_conditions)) {
     const ownerUserbank = yield* call(getUSDCUserBank, wallet)
-    const priceCents = track.download_conditions.usdc_purchase.price
+    const priceCents = hasCollectionTrackPrice
+      ? collectionTrackPrice
+      : track.download_conditions.usdc_purchase.price
     const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
     track.download_conditions.usdc_purchase = {
       price: priceCents,

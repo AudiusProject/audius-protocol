@@ -24,6 +24,7 @@ import {
   IconVisibilityPublic,
   Text
 } from '@audius/harmony'
+import { VoidApiResponse } from '@audius/sdk'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -189,7 +190,6 @@ export const AccessAndSaleFormSchema = (
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        console.log(formValues)
         if (
           formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
           !isAlbum
@@ -226,12 +226,11 @@ type AccessAndSaleFieldProps = {
   isAlbum?: boolean
   trackLength?: number
   forceOpen?: boolean
-  setForceOpen?: (value: boolean) => void
-  onSubmit?: (values: AccessAndSaleFormValues) => void
+  setForceOpen?: (value: boolean) => VoidApiResponse
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload, isAlbum, forceOpen, setForceOpen, onSubmit } = props
+  const { isUpload, isAlbum, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -364,7 +363,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
-      onSubmit?.(values)
       const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
       const preview = get(values, PREVIEW)
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
@@ -544,7 +542,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       }
       const albumTrackPrice =
         savedStreamConditions.usdc_purchase.albumTrackPrice
-      console.log(savedStreamConditions.usdc_purchase)
       if (albumTrackPrice) {
         selectedValues.push({
           label: messages.price(albumTrackPrice / 100),

@@ -92,6 +92,31 @@ const DDEXRightsController = z
   })
   .strict()
 
+const premiumMetadataSchema = z.object({
+  is_stream_gated: z.optional(z.boolean()),
+  stream_conditions: z
+    .optional(
+      z.union([
+        CollectibleGatedConditions,
+        FollowGatedConditionsSchema,
+        TipGatedConditionsSchema,
+        USDCPurchaseConditionsSchema
+      ])
+    )
+    .nullable(),
+  is_download_gated: z.optional(z.boolean()),
+  download_conditions: z
+    .optional(
+      z.union([
+        CollectibleGatedConditions,
+        FollowGatedConditionsSchema,
+        TipGatedConditionsSchema,
+        USDCPurchaseConditionsSchema
+      ])
+    )
+    .nullable()
+})
+
 // TODO: KJ - Need to update the schema in sdk and then import here
 /**
  * Creates a schema for validating tracks to be uploaded.
@@ -108,82 +133,63 @@ const DDEXRightsController = z
  * - No fields that are only knowable after upload.
  */
 const createSdkSchema = () =>
-  z.object({
-    ai_attribution_user_id: z.optional(z.number()).nullable(),
-    description: z.optional(z.string().max(1000)),
-    field_visibility: z.optional(
-      z.object({
-        mood: z.optional(z.boolean()),
-        tags: z.optional(z.boolean()),
-        genre: z.optional(z.boolean()),
-        share: z.optional(z.boolean()),
-        play_count: z.optional(z.boolean()),
-        remixes: z.optional(z.boolean())
-      })
-    ),
-    genre: GenreSchema,
-    isrc: z.optional(z.string().nullable()),
-    is_scheduled_release: z.optional(z.boolean()),
-    is_unlisted: z.optional(z.boolean()),
-    iswc: z.optional(z.string().nullable()),
-    license: z.optional(z.string().nullable()),
-    mood: MoodSchema,
-    is_stream_gated: z.optional(z.boolean()),
-    stream_conditions: z
-      .optional(
-        z.union([
-          CollectibleGatedConditions,
-          FollowGatedConditionsSchema,
-          TipGatedConditionsSchema,
-          USDCPurchaseConditionsSchema
-        ])
-      )
-      .nullable(),
-    is_download_gated: z.optional(z.boolean()),
-    download_conditions: z
-      .optional(
-        z.union([
-          CollectibleGatedConditions,
-          FollowGatedConditionsSchema,
-          TipGatedConditionsSchema,
-          USDCPurchaseConditionsSchema
-        ])
-      )
-      .nullable(),
-    release_date: z.optional(z.string()).nullable(),
-    remix_of: z.optional(
-      z
-        .object({
-          tracks: z
-            .array(
-              z.object({
-                parent_track_id: z.number()
-              })
-            )
-            .min(1)
+  z
+    .object({
+      ai_attribution_user_id: z.optional(z.number()).nullable(),
+      description: z.optional(z.string().max(1000)),
+      field_visibility: z.optional(
+        z.object({
+          mood: z.optional(z.boolean()),
+          tags: z.optional(z.boolean()),
+          genre: z.optional(z.boolean()),
+          share: z.optional(z.boolean()),
+          play_count: z.optional(z.boolean()),
+          remixes: z.optional(z.boolean())
         })
-        .strict()
-        .nullable()
-    ),
-    tags: z.optional(z.string()),
-    title: z.string({
-      required_error: messages.track.titleRequiredError
-    }),
-    is_downloadable: z.optional(z.boolean()),
-    is_original_available: z.optional(z.boolean()),
-    ddex_release_ids: z.optional(z.record(z.string()).nullable()),
-    artists: z.optional(z.array(DDEXResourceContributor).nullable()),
-    resourceContributors: z.optional(
-      z.array(DDEXResourceContributor).nullable()
-    ),
-    indirectResourceContributors: z.optional(
-      z.array(DDEXResourceContributor).nullable()
-    ),
-    rightsController: z.optional(DDEXRightsController).nullable(),
-    copyrightLine: z.optional(DDEXCopyright.nullable()),
-    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-    parentalWarningType: z.optional(z.string().nullable())
-  })
+      ),
+      genre: GenreSchema,
+      isrc: z.optional(z.string().nullable()),
+      is_scheduled_release: z.optional(z.boolean()),
+      is_unlisted: z.optional(z.boolean()),
+      iswc: z.optional(z.string().nullable()),
+      license: z.optional(z.string().nullable()),
+      mood: MoodSchema,
+
+      release_date: z.optional(z.string()).nullable(),
+      remix_of: z.optional(
+        z
+          .object({
+            tracks: z
+              .array(
+                z.object({
+                  parent_track_id: z.number()
+                })
+              )
+              .min(1)
+          })
+          .strict()
+          .nullable()
+      ),
+      tags: z.optional(z.string()),
+      title: z.string({
+        required_error: messages.track.titleRequiredError
+      }),
+      is_downloadable: z.optional(z.boolean()),
+      is_original_available: z.optional(z.boolean()),
+      ddex_release_ids: z.optional(z.record(z.string()).nullable()),
+      artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+      resourceContributors: z.optional(
+        z.array(DDEXResourceContributor).nullable()
+      ),
+      indirectResourceContributors: z.optional(
+        z.array(DDEXResourceContributor).nullable()
+      ),
+      rightsController: z.optional(DDEXRightsController).nullable(),
+      copyrightLine: z.optional(DDEXCopyright.nullable()),
+      producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+      parentalWarningType: z.optional(z.string().nullable())
+    })
+    .merge(premiumMetadataSchema)
 
 /**
  * This is not really used as it is, since we pick out the title only of it
@@ -229,41 +235,54 @@ const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({ title: true })
  * - The release date can be in the future.
  */
 export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
-  z.object({
-    artwork: z
-      .object({
-        url: z.string()
+  z
+    .object({
+      artwork: z
+        .object({
+          url: z.string()
+        })
+        .nullable()
+        .refine(
+          (artwork) => {
+            return (
+              collectionType === 'playlist' ||
+              (artwork !== null && artwork.url !== imageBlank)
+            )
+          },
+          {
+            message: messages.artworkRequiredError
+          }
+        ),
+      playlist_name: z.string({
+        required_error: messages[collectionType].nameRequiredError
+      }),
+      description: z.optional(z.string().max(1000)),
+      release_date: z.optional(z.string()).nullable(),
+      trackDetails: z.object({
+        genre: GenreSchema,
+        mood: MoodSchema,
+        tags: z.optional(z.string())
+      }),
+      is_album: z.literal(collectionType === 'album'),
+      tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
+      ddex_release_ids: z.optional(z.record(z.string()).nullable()),
+      artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+      copyrightLine: z.optional(DDEXCopyright.nullable()),
+      producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+      parentalWarningType: z.optional(z.string().nullable())
+    })
+    .merge(premiumMetadataSchema)
+    .merge(
+      z.object({
+        stream_conditions: z
+          .object({
+            usdc_purchase: z.object({
+              albumTrackPrice: z.number()
+            })
+          })
+          .nullable()
       })
-      .nullable()
-      .refine(
-        (artwork) => {
-          return (
-            collectionType === 'playlist' ||
-            (artwork !== null && artwork.url !== imageBlank)
-          )
-        },
-        {
-          message: messages.artworkRequiredError
-        }
-      ),
-    playlist_name: z.string({
-      required_error: messages[collectionType].nameRequiredError
-    }),
-    description: z.optional(z.string().max(1000)),
-    release_date: z.optional(z.string()).nullable(),
-    trackDetails: z.object({
-      genre: GenreSchema,
-      mood: MoodSchema,
-      tags: z.optional(z.string())
-    }),
-    is_album: z.literal(collectionType === 'album'),
-    tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
-    ddex_release_ids: z.optional(z.record(z.string()).nullable()),
-    artists: z.optional(z.array(DDEXResourceContributor).nullable()),
-    copyrightLine: z.optional(DDEXCopyright.nullable()),
-    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-    parentalWarningType: z.optional(z.string().nullable())
-  })
+    )
 
 /**
  * Extra metadata on the collection that doesn't get validated to

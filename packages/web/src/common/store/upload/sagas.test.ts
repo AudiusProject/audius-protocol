@@ -21,7 +21,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { make } from '../analytics/actions'
 import { retrieveTracks } from '../cache/tracks/utils'
 
-import { processTrackForUpload } from './sagaHelpers'
+import { processTrackForPremiumUpload } from './sagaHelpers'
 import uploadSagas, {
   deleteTracks,
   handleUploads,
@@ -104,11 +104,11 @@ describe('upload', () => {
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
           [call.fn(uploadMultipleTracks), undefined],
-          [call.fn(processTrackForUpload), testTrack]
+          [call.fn(processTrackForPremiumUpload), testTrack]
         ])
         // Assertions
         // Assert that we format the tracks for premium conditions
-        .call.like({ fn: processTrackForUpload })
+        .call.like({ fn: processTrackForPremiumUpload })
         // Ensure that we call uploadMultipleTracks
         .call.like({ fn: uploadMultipleTracks, args: [[testTrack]] })
         // Ensure that this isn't treated as a collection
@@ -146,7 +146,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
-          [call.fn(processTrackForUpload), testTrack.metadata],
+          [call.fn(processTrackForPremiumUpload), testTrack.metadata],
           [
             getContext('audiusBackendInstance'),
             {
@@ -249,7 +249,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [select(accountSelectors.getAccountUser), {}],
-          [call.fn(processTrackForUpload), testTrack.metadata],
+          [call.fn(processTrackForPremiumUpload), testTrack.metadata],
           [
             getContext('audiusBackendInstance'),
             {
@@ -654,7 +654,7 @@ describe('upload', () => {
           [call.fn(confirmTransaction), true],
           [call.fn(waitForAccount), undefined],
           [
-            call.fn(processTrackForUpload),
+            call.fn(processTrackForPremiumUpload),
             dynamic((effect, next) => effect.args[0])
           ],
           [call.fn(retrieveTracks), tracks.map((t) => t.metadata)]
