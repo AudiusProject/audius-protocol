@@ -19,8 +19,8 @@ const batchSchema = new mongoose.Schema({
 
 // DDEX deliveries crawled from the S3 "raw" bucket
 const deliveriesSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  zip_file_path: String,
+  _id: mongoose.Schema.Types.ObjectId, // aka remote path in S3 crawled bucket
+  is_folder: Boolean,
   delivery_status: String,
   created_at: Date,
   releases: [releaseSchema],

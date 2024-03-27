@@ -264,7 +264,7 @@ export const publishReleases = async (
         blockhash: uploadResult.blockHash,
         blocknumber: uploadResult.blockNumber,
         publish_date: doc.publish_date,
-        delivery_etag: doc.delivery_etag,
+        delivery_remote_path: doc.delivery_remote_path,
         created_at: new Date(),
       }
       console.log('Published release: ', JSON.stringify(publishedData))

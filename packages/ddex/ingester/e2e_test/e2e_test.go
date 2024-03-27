@@ -6,6 +6,7 @@ import (
 	"ingester/common"
 	"ingester/constants"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -72,7 +73,6 @@ func TestRunE2E(t *testing.T) {
 
 	type subTest struct {
 		path       string
-		eTag       string
 		expectedD  common.Delivery
 		expectedPR common.PendingRelease
 	}
@@ -80,10 +80,8 @@ func TestRunE2E(t *testing.T) {
 	releaseByReleaseTests := []subTest{
 		{
 			path: "release_by_release/ern381/sony1.zip",
-			eTag: "bed7beaa33eed67bb1ba73353dd51e1d",
 			expectedD: common.Delivery{
-				ZIPFilePath:    "s3://audius-test-raw/sony1.zip",
-				ZIPFileETag:    "bed7beaa33eed67bb1ba73353dd51e1d",
+				RemotePath:     "s3://audius-test-raw/sony1.zip",
 				DeliveryStatus: constants.DeliveryStatusSuccess,
 				Batches:        nil,
 				Releases: []common.UnprocessedRelease{
@@ -97,7 +95,7 @@ func TestRunE2E(t *testing.T) {
 			},
 			expectedPR: common.PendingRelease{
 				ReleaseID:          "A10301A0005108088N",
-				DeliveryETag:       "bed7beaa33eed67bb1ba73353dd51e1d",
+				DeliveryRemotePath: "s3://audius-test-raw/sony1.zip",
 				PublishDate:        time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
 				PublishErrors:      []string{},
 				CreateTrackRelease: common.CreateTrackRelease{},
@@ -261,11 +259,9 @@ func TestRunE2E(t *testing.T) {
 
 	batchedTests := []subTest{
 		{
-			path: "batch/ern382/CPD1.zip",
-			eTag: "5e425b53234b868374c0b02e0b58b1cc",
+			path: "batch/ern382/1_CPD1.zip",
 			expectedD: common.Delivery{
-				ZIPFilePath:    "s3://audius-test-raw/CPD1.zip",
-				ZIPFileETag:    "5e425b53234b868374c0b02e0b58b1cc",
+				RemotePath:     "s3://audius-test-raw/1_CPD1.zip",
 				DeliveryStatus: constants.DeliveryStatusSuccess,
 				Releases:       nil,
 				Batches: []common.UnprocessedBatch{
@@ -286,7 +282,7 @@ func TestRunE2E(t *testing.T) {
 			},
 			expectedPR: common.PendingRelease{
 				ReleaseID:          "721620118165",
-				DeliveryETag:       "5e425b53234b868374c0b02e0b58b1cc",
+				DeliveryRemotePath: "s3://audius-test-raw/1_CPD1.zip",
 				PublishDate:        time.Date(2010, time.October, 1, 0, 0, 0, 0, time.UTC),
 				PublishErrors:      []string{},
 				CreateTrackRelease: common.CreateTrackRelease{},
@@ -546,6 +542,33 @@ func TestRunE2E(t *testing.T) {
 				},
 			},
 		},
+		{
+			path: "batch/fuga/20240305090206405",
+			expectedD: common.Delivery{
+				RemotePath:     "s3://audius-test-raw/20240305090206405",
+				DeliveryStatus: constants.DeliveryStatusSuccess,
+				Releases:       nil,
+				Batches:        []common.UnprocessedBatch{
+					// TODO
+					// {
+					// 	BatchID:      "20161024145603121",
+					// 	BatchXmlPath: "20161024145603121/BatchComplete_20161024145603121.xml",
+					// 	Releases: []common.UnprocessedRelease{
+					// 		{
+					// 			ReleaseID:        "721620118165",
+					// 			XmlFilePath:      "20161024145603121/721620118165/721620118165.xml",
+					// 			ValidationErrors: []string{},
+					// 		},
+					// 	},
+					// 	ValidationErrors: []string{},
+					// },
+				},
+				ValidationErrors: []string(nil),
+			},
+			expectedPR: common.PendingRelease{
+				// TODO
+			},
+		},
 	}
 
 	// Run subtests for release-by-release or batched depending on env var
@@ -561,19 +584,19 @@ func TestRunE2E(t *testing.T) {
 	}
 
 	for _, st := range subTests {
-		uploadFixture(t, bi, st.path)
+		remotePath := uploadFixture(t, bi, st.path)
 
 		// Verify the parser (pending_releases collection)
-		doc, err := waitForDocument(bi.Ctx, bi.PendingReleasesColl, bson.M{"delivery_etag": st.eTag})
+		doc, err := wait1MinForDoc(bi.Ctx, bi.PendingReleasesColl, bson.M{"delivery_remote_path": remotePath})
 		if err != nil {
-			t.Fatalf("Error finding pending release in Mongo: %v", err)
+			t.Fatalf("Error finding pending release for '%s' in Mongo: %v", remotePath, err)
 		}
 		if doc.Err() == mongo.ErrNoDocuments {
-			t.Fatalf("No pending release was found in Mongo: %v", doc.Err())
+			t.Fatalf("No pending release was found for '%s' in Mongo: %v", remotePath, doc.Err())
 		}
 		var pendingRelease common.PendingRelease
 		if err = doc.Decode(&pendingRelease); err != nil {
-			t.Fatalf("Failed to decode pending release from Mongo: %v", err)
+			t.Fatalf("Failed to decode pending release for '%s' from Mongo: %v", remotePath, err)
 		}
 
 		// Ignore CreatedAt because we can't predict the exact time of a Mongo insert
@@ -582,7 +605,7 @@ func TestRunE2E(t *testing.T) {
 		assert.Equal(t, st.expectedPR, pendingRelease)
 
 		// Verify the crawler (deliveries collection)
-		doc, err = waitForDocument(bi.Ctx, bi.DeliveriesColl, bson.M{"_id": st.eTag})
+		doc, err = wait1MinForDoc(bi.Ctx, bi.DeliveriesColl, bson.M{"_id": remotePath})
 		if err != nil {
 			t.Fatalf("Error finding delivery in Mongo: %v", err)
 		}
@@ -645,36 +668,97 @@ func createBucket(s3Client *s3.S3, bucket string) error {
 	return nil
 }
 
-// uploadFixture uploads a test fixture to the S3 "raw" bucket
-func uploadFixture(t *testing.T, bi *common.BaseIngester, filepath string) {
-	filepath = fmt.Sprintf("./fixtures/%s", filepath)
-	file, err := os.Open(filepath)
+// uploadFixture uploads a test fixture (i.e., folder or ZIP file) to the S3 "raw" bucket
+func uploadFixture(t *testing.T, bi *common.BaseIngester, path string) string {
+	fullPath := filepath.Join("fixtures", path)
+	info, err := os.Stat(fullPath)
 	if err != nil {
-		bi.Logger.Error("Failed to open test file", "error", err)
+		t.Fatalf("Error getting file info for '%s': %v", fullPath, err)
+	}
+
+	var s3Path string
+	if info.IsDir() {
+		baseDir := filepath.Base(path) // Now 'baseDir' is 'someFolder' for 'fixtures/myPath/somepath/someFolder'
+		s3Path, err = uploadDirectory(bi, fullPath, baseDir)
+	} else {
+		// If it's a ZIP file, upload directly to the root of the S3 bucket
+		if strings.HasSuffix(path, ".zip") {
+			_, fileName := filepath.Split(path) // Just the file name
+			s3Path, err = uploadFile(bi, fullPath, "", fileName)
+		}
+	}
+	if err != nil {
+		t.Fatalf("Error uploading file or dir '%s': %v", fullPath, err)
+	}
+
+	return fmt.Sprintf("s3://%s/%s", bi.RawBucket, s3Path)
+}
+
+func uploadDirectory(bi *common.BaseIngester, dirPath, baseDir string) (string, error) {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
+	}
+
+	for _, entry := range entries {
+		if entry.Name() == ".DS_Store" {
+			continue
+		}
+
+		fullPath := filepath.Join(dirPath, entry.Name())
+		if entry.IsDir() {
+			_, err = uploadDirectory(bi, fullPath, filepath.Join(baseDir, entry.Name()))
+		} else {
+			_, err = uploadFile(bi, fullPath, baseDir, entry.Name())
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return baseDir, nil
+}
+
+func uploadFile(bi *common.BaseIngester, filePath, baseDir, fileName string) (string, error) {
+	if fileName == ".DS_Store" {
+		return "", nil
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open file '%s': %w", filePath, err)
 	}
 	defer file.Close()
 
+	s3Key := filepath.Join(baseDir, fileName) // Construct S3 key from baseDir and fileName
+
 	_, err = bi.S3Uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(bi.RawBucket),
-		Key:    aws.String(strings.Split(filepath, "/")[len(strings.Split(filepath, "/"))-1]),
+		Key:    aws.String(s3Key),
 		Body:   file,
 	})
 	if err != nil {
-		t.Fatalf("Failed to upload '%s' to S3: %v", filepath, err)
+		return "", fmt.Errorf("failed to upload '%s' to S3: %w", filePath, err)
 	}
+
+	return s3Key, nil
 }
 
-func waitForDocument(ctx context.Context, collection *mongo.Collection, filter bson.M) (*mongo.SingleResult, error) {
+func wait1MinForDoc(ctx context.Context, collection *mongo.Collection, filter bson.M) (*mongo.SingleResult, error) {
 	var doc *mongo.SingleResult
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
+
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ctx.Done():
-			return nil, ctx.Err() // Context was canceled or timed out
+		case <-timeoutCtx.Done():
+			return nil, timeoutCtx.Err() // Context was canceled or timed out
 		case <-ticker.C:
-			doc = collection.FindOne(ctx, filter)
+			doc = collection.FindOne(timeoutCtx, filter)
 			if doc.Err() == nil {
 				return doc, nil // Document found
 			}

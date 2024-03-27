@@ -46,17 +46,17 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 	}
 	delivery := changeDoc.FullDocument
 	if delivery.DeliveryStatus != constants.DeliveryStatusParsing {
-		p.Logger.Info("Skipping delivery", "_id", delivery.ZIPFileETag, "delivery_status", delivery.DeliveryStatus)
+		p.Logger.Info("Skipping delivery", "_id", delivery.RemotePath, "delivery_status", delivery.DeliveryStatus)
 		return
 	}
-	p.Logger.Info("Parsing releases from delivery", "_id", delivery.ZIPFileETag)
+	p.Logger.Info("Parsing releases from delivery", "_id", delivery.RemotePath)
 
 	// Parse the delivery's releases
 	pendingReleases := []*common.PendingRelease{}
 	if p.DDEXChoreography == constants.ERNReleaseByRelease {
 		for i := range delivery.Releases {
 			release := &delivery.Releases[i]
-			morePendingReleases, err := p.parseRelease(release, delivery.ZIPFileETag, "")
+			morePendingReleases, err := p.parseRelease(release, delivery.RemotePath, "")
 			if err == nil {
 				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
@@ -68,7 +68,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 	} else {
 		for i := range delivery.Batches {
 			batch := &delivery.Batches[i]
-			morePendingReleases, err := p.parseBatch(batch, delivery.ZIPFileETag)
+			morePendingReleases, err := p.parseBatch(batch, delivery.RemotePath)
 			if err == nil {
 				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
@@ -103,7 +103,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
 		}
 
-		p.DeliveriesColl.UpdateByID(sessionCtx, delivery.ZIPFileETag, bson.M{"$set": bson.M{"delivery_status": constants.DeliveryStatusSuccess}})
+		p.DeliveriesColl.UpdateByID(sessionCtx, delivery.RemotePath, bson.M{"$set": bson.M{"delivery_status": constants.DeliveryStatusSuccess}})
 		return session.CommitTransaction(sessionCtx)
 	})
 
@@ -115,7 +115,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 }
 
 // parseRelease takes an unprocessed release and turns it into PendingReleases (doesn't insert into Mongo)
-func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFileETag, expectedERNVersion string) ([]*common.PendingRelease, error) {
+func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemotePath, expectedERNVersion string) ([]*common.PendingRelease, error) {
 	xmlData := release.XmlContent.Data
 	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
@@ -232,7 +232,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 	for _, track := range createTrackRelease {
 		pendingRelease := &common.PendingRelease{
 			ReleaseID:          release.ReleaseID,
-			DeliveryETag:       deliveryZipFileETag,
+			DeliveryRemotePath: deliveryRemotePath,
 			CreateTrackRelease: track,
 			PublishDate:        track.Metadata.ReleaseDate,
 			CreatedAt:          time.Now(),
@@ -245,7 +245,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 	for _, album := range createAlbumRelease {
 		pendingRelease := &common.PendingRelease{
 			ReleaseID:          release.ReleaseID,
-			DeliveryETag:       deliveryZipFileETag,
+			DeliveryRemotePath: deliveryRemotePath,
 			CreateAlbumRelease: album,
 			PublishDate:        album.Metadata.ReleaseDate,
 			CreatedAt:          time.Now(),
@@ -260,7 +260,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryZipFil
 }
 
 // parseBatch takes an unprocessed batch and turns it into PendingReleases (doesn't insert into Mongo)
-func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag string) ([]*common.PendingRelease, error) {
+func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath string) ([]*common.PendingRelease, error) {
 	xmlData := batch.BatchXmlContent.Data
 	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
@@ -369,7 +369,7 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 		}
 
 		// Parse the release using parseRelease function
-		pendingRelease, err := p.parseRelease(targetRelease, deliveryZipFileETag, ernVersion)
+		pendingRelease, err := p.parseRelease(targetRelease, deliveryRemotePath, ernVersion)
 		if err != nil {
 			return nil, err
 		}
@@ -380,8 +380,8 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryZipFileETag 
 }
 
 func (p *Parser) replaceDelivery(updatedDelivery *common.Delivery) {
-	_, replaceErr := p.DeliveriesColl.ReplaceOne(p.Ctx, bson.M{"_id": updatedDelivery.ZIPFileETag}, updatedDelivery)
+	_, replaceErr := p.DeliveriesColl.ReplaceOne(p.Ctx, bson.M{"_id": updatedDelivery.RemotePath}, updatedDelivery)
 	if replaceErr != nil {
-		p.Logger.Error("Failed to replace delivery", "_id", updatedDelivery.ZIPFileETag, "error", replaceErr)
+		p.Logger.Error("Failed to replace delivery", "_id", updatedDelivery.RemotePath, "error", replaceErr)
 	}
 }
