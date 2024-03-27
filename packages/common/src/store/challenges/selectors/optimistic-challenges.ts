@@ -96,7 +96,7 @@ const toOptimisticChallenge = (
   if (challenge.challenge_id === 'mobile-install' && isNativeMobile) {
     challengeOverridden.is_complete = true
   }
-
+  const isCooldownChallenge = challenge.cooldown_days > 0
   const state = getUserChallengeState(challengeOverridden)
   // For aggregate challenges, we show the total amount
   // you'd get when completing every step of the challenge
@@ -105,16 +105,15 @@ const toOptimisticChallenge = (
     challenge.challenge_type === 'aggregate'
       ? challenge.amount * challenge.max_steps
       : challenge.amount
-  const claimableAmount =
-    challengeOverridden.challenge_type !== 'aggregate'
-      ? state === 'completed'
-        ? totalAmount
-        : 0
-      : undisbursed.reduce<number>(
-          (acc, val) =>
-            isCooldownChallengeClaimable(val) ? acc + val.amount : acc + 0,
-          0
-        )
+  const claimableAmount = isCooldownChallenge
+    ? undisbursed.reduce<number>(
+        (acc, val) =>
+          isCooldownChallengeClaimable(val) ? acc + val.amount : acc + 0,
+        0
+      )
+    : state === 'completed'
+    ? totalAmount
+    : 0
 
   const undisbursedSpecifiers = undisbursed.reduce(
     (acc, c) => [...acc, { specifier: c.specifier, amount: c.amount }],
@@ -127,7 +126,8 @@ const toOptimisticChallenge = (
     state,
     totalAmount,
     claimableAmount,
-    undisbursedSpecifiers
+    undisbursedSpecifiers,
+    cooldown_days: challenge.cooldown_days
   }
 }
 

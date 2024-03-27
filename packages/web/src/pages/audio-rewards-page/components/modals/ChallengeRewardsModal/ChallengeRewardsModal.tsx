@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   challengesSelectors,
@@ -49,6 +51,7 @@ import PurpleBox from '../../PurpleBox'
 import ModalDrawer from '../ModalDrawer'
 
 import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
+import { CooldownRewardsModalContent } from './CooldownRewardsModalContent'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
@@ -380,113 +383,138 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     claimStatus === ClaimStatus.ERROR ? (
       <div className={styles.claimError}>{getErrorMessage(aaoErrorCode)}</div>
     ) : null
-
-  return isAudioMatchingChallenge(modalType) ? (
-    <AudioMatchingRewardsModalContent
-      errorContent={errorContent}
-      onNavigateAway={dismissModal}
-      onClaimRewardClicked={onClaimRewardClicked}
-      claimInProgress={claimInProgress}
-      challenge={challenge}
-      challengeName={modalType}
-    />
-  ) : (
-    <div className={wm(styles.container)}>
-      {isMobile ? (
-        <>
-          {progressDescription}
-          <div className={wm(styles.progressCard)}>
-            <div className={wm(styles.progressInfo)}>
-              {progressReward}
-              {showProgressBar ? (
-                <div className={wm(styles.progressBarSection)}>
-                  <h3>Progress</h3>
-                  <ProgressBar
-                    className={wm(styles.progressBar)}
-                    value={currentStepCount}
-                    max={challenge?.max_steps}
-                  />
-                </div>
-              ) : null}
+  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
+    FeatureFlags.REWARDS_COOLDOWN
+  )
+  console.log(
+    'asdf isRewardsCooldownEnabled: ',
+    isRewardsCooldownEnabled,
+    challenge
+  )
+  if (isRewardsCooldownEnabled && challenge?.cooldown_days) {
+    return (
+      <CooldownRewardsModalContent
+        errorContent={errorContent}
+        onNavigateAway={dismissModal}
+        onClaimRewardClicked={onClaimRewardClicked}
+        claimInProgress={claimInProgress}
+        challenge={challenge}
+        challengeName={modalType}
+        onClickProgress={goToRoute}
+        progressIcon={buttonInfo?.rightIcon}
+        progressLabel={buttonInfo?.label}
+      />
+    )
+  } else if (!isRewardsCooldownEnabled && isAudioMatchingChallenge(modalType)) {
+    return (
+      <AudioMatchingRewardsModalContent
+        errorContent={errorContent}
+        onNavigateAway={dismissModal}
+        onClaimRewardClicked={onClaimRewardClicked}
+        claimInProgress={claimInProgress}
+        challenge={challenge}
+        challengeName={modalType}
+      />
+    )
+  } else {
+    return (
+      <div className={wm(styles.container)}>
+        {isMobile ? (
+          <>
+            {progressDescription}
+            <div className={wm(styles.progressCard)}>
+              <div className={wm(styles.progressInfo)}>
+                {progressReward}
+                {showProgressBar ? (
+                  <div className={wm(styles.progressBarSection)}>
+                    <h3>Progress</h3>
+                    <ProgressBar
+                      className={wm(styles.progressBar)}
+                      value={currentStepCount}
+                      max={challenge?.max_steps}
+                    />
+                  </div>
+                ) : null}
+              </div>
+              {progressStatusLabel}
             </div>
+            {modalType === 'profile-completion' && <ProfileChecks />}
+          </>
+        ) : (
+          <div className={styles.progressCard}>
+            <div className={styles.progressInfo}>
+              {progressDescription}
+              {progressReward}
+            </div>
+            {showProgressBar && (
+              <div className={wm(styles.progressBarSection)}>
+                {modalType === 'profile-completion' && <ProfileChecks />}
+                <ProgressBar
+                  className={wm(styles.progressBar)}
+                  value={currentStepCount}
+                  max={challenge?.max_steps}
+                />
+              </div>
+            )}
             {progressStatusLabel}
           </div>
-          {modalType === 'profile-completion' && <ProfileChecks />}
-        </>
-      ) : (
-        <div className={styles.progressCard}>
-          <div className={styles.progressInfo}>
-            {progressDescription}
-            {progressReward}
-          </div>
-          {showProgressBar && (
-            <div className={wm(styles.progressBarSection)}>
-              {modalType === 'profile-completion' && <ProfileChecks />}
-              <ProgressBar
-                className={wm(styles.progressBar)}
-                value={currentStepCount}
-                max={challenge?.max_steps}
-              />
-            </div>
-          )}
-          {progressStatusLabel}
-        </div>
-      )}
+        )}
 
-      {userHandle && (modalType === 'referrals' || modalType === 'ref-v') && (
-        <div className={wm(styles.buttonContainer)}>
-          <TwitterShareButton modalType={modalType} inviteLink={inviteLink} />
-          <div className={styles.buttonSpacer} />
-          <InviteLink inviteLink={inviteLink} />
-        </div>
-      )}
-      {modalType === 'mobile-install' && (
-        <div className={wm(styles.qrContainer)}>
-          <img className={styles.qr} src={QRCode} alt='QR Code' />
-          <div className={styles.qrTextContainer}>
-            <h2 className={styles.qrText}>{messages.qrText}</h2>
-            <h3 className={styles.qrSubtext}>{messages.qrSubtext}</h3>
+        {userHandle && (modalType === 'referrals' || modalType === 'ref-v') && (
+          <div className={wm(styles.buttonContainer)}>
+            <TwitterShareButton modalType={modalType} inviteLink={inviteLink} />
+            <div className={styles.buttonSpacer} />
+            <InviteLink inviteLink={inviteLink} />
           </div>
-        </div>
-      )}
-      {buttonLink && challenge?.state !== 'completed' && (
-        <Button
-          variant='primary'
-          fullWidth={isMobile}
-          onClick={goToRoute}
-          iconLeft={buttonInfo?.leftIcon}
-          iconRight={buttonInfo?.rightIcon}
-        >
-          {buttonInfo?.label}
-        </Button>
-      )}
-      <div className={wm(styles.claimRewardWrapper)}>
-        {audioToClaim > 0 ? (
-          <>
-            <div className={styles.claimRewardAmountLabel}>
-              {`${audioToClaim} ${messages.claimAmountLabel}`}
+        )}
+        {modalType === 'mobile-install' && (
+          <div className={wm(styles.qrContainer)}>
+            <img className={styles.qr} src={QRCode} alt='QR Code' />
+            <div className={styles.qrTextContainer}>
+              <h2 className={styles.qrText}>{messages.qrText}</h2>
+              <h3 className={styles.qrSubtext}>{messages.qrSubtext}</h3>
             </div>
-            <Button
-              variant='primary'
-              isLoading={claimInProgress}
-              iconRight={IconCheck}
-              onClick={onClaimRewardClicked}
-            >
-              {messages.claimYourReward}
-            </Button>
-          </>
-        ) : null}
-        {audioClaimedSoFar > 0 && challenge?.state !== 'disbursed' ? (
-          <div className={styles.claimRewardClaimedAmountLabel}>
-            {`(${formatNumberCommas(audioClaimedSoFar)} ${
-              messages.claimedSoFar
-            })`}
           </div>
-        ) : null}
+        )}
+        {buttonLink && challenge?.state !== 'completed' && (
+          <Button
+            variant='primary'
+            fullWidth={isMobile}
+            onClick={goToRoute}
+            iconLeft={buttonInfo?.leftIcon}
+            iconRight={buttonInfo?.rightIcon}
+          >
+            {buttonInfo?.label}
+          </Button>
+        )}
+        <div className={wm(styles.claimRewardWrapper)}>
+          {audioToClaim > 0 ? (
+            <>
+              <div className={styles.claimRewardAmountLabel}>
+                {`${audioToClaim} ${messages.claimAmountLabel}`}
+              </div>
+              <Button
+                variant='primary'
+                isLoading={claimInProgress}
+                iconRight={IconCheck}
+                onClick={onClaimRewardClicked}
+              >
+                {messages.claimYourReward}
+              </Button>
+            </>
+          ) : null}
+          {audioClaimedSoFar > 0 && challenge?.state !== 'disbursed' ? (
+            <div className={styles.claimRewardClaimedAmountLabel}>
+              {`(${formatNumberCommas(audioClaimedSoFar)} ${
+                messages.claimedSoFar
+              })`}
+            </div>
+          ) : null}
+        </div>
+        {errorContent}
       </div>
-      {errorContent}
-    </div>
-  )
+    )
+  }
 }
 
 export const ChallengeRewardsModal = () => {
