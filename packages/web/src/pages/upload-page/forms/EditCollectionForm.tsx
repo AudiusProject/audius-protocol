@@ -116,7 +116,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
-            <Text>{messages.trackDetails.description}</Text>
+            <Text variant='body'>{messages.trackDetails.description}</Text>
             <div className={styles.row}>
               <SelectGenreField name='trackDetails.genre' />
               <SelectMoodField name='trackDetails.mood' />
