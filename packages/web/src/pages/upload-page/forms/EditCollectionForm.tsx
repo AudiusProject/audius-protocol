@@ -81,7 +81,12 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         ...track.metadata,
         preview_start_seconds: 0,
         is_stream_gated: true,
-        stream_conditions: trackStreamConditions
+        is_download_gated: true,
+        stream_conditions: trackStreamConditions,
+        download_conditions: trackStreamConditions,
+        last_gate_keeper: {
+          access: 'accessAndSale'
+        }
       }
     }
   }
