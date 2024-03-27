@@ -76,35 +76,29 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         price: albumTrackPrice
       }
     }
-    console.log({ trackStreamConditions })
-    return {
-      ...values,
-      tracks: values.tracks.map((track) => {
-        return {
-          ...track,
-          metadata: {
-            ...track.metadata,
-            preview_start_seconds: 0,
-            is_stream_gated: true,
-            stream_conditions: trackStreamConditions
-          }
-        }
-      })
+    for (const track of values.tracks) {
+      track.metadata = {
+        ...track.metadata,
+        preview_start_seconds: 0,
+        is_stream_gated: true,
+        stream_conditions: trackStreamConditions
+      }
     }
   }
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      console.log('EditCollectionForm submit', { values })
-      const valuesWithTrackPrices = isAlbum
-        ? populateAlbumTrackPrice(values)
-        : values
+      // TODO: check for price existing at all
+      if (isAlbum) {
+        populateAlbumTrackPrice(values)
+      }
 
-      console.log('Refined values', { valuesWithTrackPrices })
+      console.log('EditCollectionForm submit', { values })
+      // console.log('Refined values', { valuesWithTrackPrices })
       onContinue({
         uploadType,
-        tracks: valuesWithTrackPrices.tracks,
-        metadata: valuesWithTrackPrices
+        tracks: values.tracks,
+        metadata: values
       })
     },
     [isAlbum, onContinue, uploadType]

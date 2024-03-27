@@ -22,7 +22,8 @@ import {
   getContext,
   reformatCollection,
   savedPageActions,
-  uploadActions
+  uploadActions,
+  trackPageReducer
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -1020,6 +1021,8 @@ export function* uploadTracksAsync(
         trackUpload.metadata
       )
     }
+
+    console.log({ tracks, metadata: payload.metadata })
 
     // Upload content.
     const isAlbum = payload.uploadType === UploadType.ALBUM
