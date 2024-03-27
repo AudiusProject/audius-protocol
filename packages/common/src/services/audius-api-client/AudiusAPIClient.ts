@@ -4,7 +4,8 @@ import {
   ID,
   TimeRange,
   StemTrackMetadata,
-  CollectionMetadata
+  CollectionMetadata,
+  UserChallenge
 } from '../../models'
 import { SearchKind } from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
@@ -35,6 +36,7 @@ import {
   SupporterResponse,
   SupportingResponse
 } from './types'
+import { UndisbursedUserChallenge } from '~/store'
 
 // TODO: declare this at the root and use actual audiusLibs type
 declare global {
@@ -1521,7 +1523,7 @@ export class AudiusAPIClient {
         amount: Number(challenge.amount)
       }
     })
-    return challenges
+    return challenges as UserChallenge[]
   }
 
   getUserTags = async ({ userId }: { userId: ID }) => {
@@ -1558,7 +1560,7 @@ export class AudiusAPIClient {
         amount: Number(challenge.amount)
       }
     })
-    return challenges
+    return challenges as UndisbursedUserChallenge[]
   }
 
   async getBlockConfirmation(
