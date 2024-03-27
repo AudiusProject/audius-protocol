@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from datetime import datetime, timedelta
 
 import requests
@@ -20,6 +21,7 @@ from src.utils.prometheus_metric import (
 )
 from src.utils.redis_metrics import (
     METRICS_INTERVAL,
+    SYNCHRONIZE_METRICS_INTERVAL,
     datetime_format_secondary,
     get_summed_unique_metrics,
     merge_app_metrics,
@@ -291,6 +293,10 @@ def aggregate_metrics(self):
 
     # Define redis lock object
     update_lock = redis.lock("aggregate_metrics_lock", blocking_timeout=25)
+
+    interval = timedelta(minutes=METRICS_INTERVAL)
+    start_time = time.time()
+    errored = False
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -311,13 +317,25 @@ def aggregate_metrics(self):
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Failed to acquire aggregate_metrics_lock"
             )
     except Exception as e:
-        logger.error(
-            "Fatal error in main loop of aggregate_metrics: %s", e, exc_info=True
-        )
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
         if have_lock:
             update_lock.release()
+        celery.send_task(self.name, countdown=time_left)
 
 
 @celery.task(name="synchronize_metrics", bind=True)
@@ -333,36 +351,35 @@ def synchronize_metrics(self):
     db = synchronize_metrics.db
     redis = synchronize_metrics.redis
 
-    # Define lock acquired boolean
-    have_lock = False
-
-    # Define redis lock object
-    update_lock = redis.lock("synchronize_metrics_lock", blocking_timeout=25)
+    interval = timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL)
+    start_time = time.time()
+    errored = False
     try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            logger.info(
-                f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
-            )
-            metric = PrometheusMetric(
-                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
-            )
-            synchronize_all_node_metrics(self, db, redis)
-            metric.save_time({"task_name": "synchronize_metrics"})
-            logger.info(
-                f"index_metrics.py | synchronize_metrics | {self.request.id} | Processing complete within session"
-            )
-        else:
-            logger.error(
-                f"index_metrics.py | synchronize_metrics | {self.request.id} | \
-                    Failed to acquire synchronize_metrics_lock"
-            )
-    except Exception as e:
-        logger.error(
-            "Fatal error in main loop of synchronize_metrics: %s", e, exc_info=True
+
+        logger.info(
+            f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
         )
+        metric = PrometheusMetric(PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS)
+        synchronize_all_node_metrics(self, db, redis)
+        metric.save_time({"task_name": "synchronize_metrics"})
+        logger.info(
+            f"index_metrics.py | synchronize_metrics | {self.request.id} | Processing complete within session"
+        )
+    except Exception as e:
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)

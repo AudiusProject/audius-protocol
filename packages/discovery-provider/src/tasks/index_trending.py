@@ -497,6 +497,9 @@ def index_trending_task(self):
     have_lock = False
     timeout = 60 * 60 * 2
     update_lock = redis.lock("index_trending_lock", timeout=timeout)
+    interval = timedelta(seconds=10)
+    start_time = time.time()
+    errored = False
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
@@ -513,8 +516,22 @@ def index_trending_task(self):
                 skip indexing: without lock {have_lock}"
             )
     except Exception as e:
-        logger.error("index_trending.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
         if have_lock:
             update_lock.release()
+        celery.send_task(self.name, countdown=time_left)

@@ -1,3 +1,4 @@
+import datetime
 import logging
 import time
 from typing import Dict, List, Optional, Set, Tuple, TypedDict
@@ -486,36 +487,44 @@ def update_user_balances_task(self):
         self.token_inst = get_token_contract(eth_web3)
     solana_client_manager = update_user_balances_task.solana_client_manager
 
-    have_lock = False
-    update_lock = redis.lock("update_user_balances_lock", timeout=7200)
+    interval = datetime.timedelta(seconds=60)
+    start_time = time.time()
+    errored = False
 
     try:
-        have_lock = update_lock.acquire(blocking=False)
+        start_time = time.time()
 
-        if have_lock:
-            start_time = time.time()
+        waudio_token = get_audio_token(solana_client_manager.get_client())
+        refresh_user_ids(
+            redis,
+            db,
+            self.token_inst,
+            self.delegate_manager_inst,
+            self.staking_inst,
+            eth_web3,
+            waudio_token,
+        )
 
-            waudio_token = get_audio_token(solana_client_manager.get_client())
-            refresh_user_ids(
-                redis,
-                db,
-                self.token_inst,
-                self.delegate_manager_inst,
-                self.staking_inst,
-                eth_web3,
-                waudio_token,
-            )
-
-            end_time = time.time()
-            redis.set(user_balances_refresh_last_completion_redis_key, int(end_time))
-            logger.info(
-                f"cache_user_balance.py | Finished cache_user_balance in {end_time - start_time} seconds"
-            )
-        else:
-            logger.info("cache_user_balance.py | Failed to acquire lock")
+        end_time = time.time()
+        redis.set(user_balances_refresh_last_completion_redis_key, int(end_time))
+        logger.info(
+            f"cache_user_balance.py | Finished cache_user_balance in {end_time - start_time} seconds"
+        )
     except Exception as e:
-        logger.error("cache_user_balance.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
+        celery.send_task(self.name, countdown=time_left)
