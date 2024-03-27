@@ -8,9 +8,8 @@ import {
   ModalTitle,
   ModalFooter,
   Box,
-  Text as HarmonyText,
-  IconCaretRight,
   Text,
+  IconCaretRight,
   IconComponent,
   Button
 } from '@audius/harmony'
@@ -91,9 +90,9 @@ const MenuForm = (props: MenuFormProps) => {
       <ModalFooter className={styles.footer}>
         {errorMessage ? (
           <Box pb='l' ph='xl'>
-            <HarmonyText variant='body' color='danger' size='s'>
+            <Text variant='body' color='danger' size='s'>
               {errorMessage}
-            </HarmonyText>
+            </Text>
           </Box>
         ) : null}
         <Button variant='primary' form={label} type='submit'>

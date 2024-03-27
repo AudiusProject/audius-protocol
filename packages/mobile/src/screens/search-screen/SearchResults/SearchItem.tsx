@@ -47,6 +47,7 @@ type UserSearchResultProps = { item: SearchUser }
 
 const UserSearchResult = (props: UserSearchResultProps) => {
   const { item: user } = props
+  const { name, handle, user_id } = user
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
@@ -55,21 +56,14 @@ const UserSearchResult = (props: UserSearchResultProps) => {
     'autocomplete'
   )
   const handlePress = useCallback(() => {
-    dispatch(addItem({ searchItem: user.name }))
-    navigation.push('Profile', { handle: user.handle })
-    onSearchResultSelect(user.user_id)
-  }, [
-    dispatch,
-    user.name,
-    user.handle,
-    user.user_id,
-    navigation,
-    onSearchResultSelect
-  ])
+    dispatch(addItem({ searchItem: name }))
+    navigation.push('Profile', { handle })
+    onSearchResultSelect(user_id)
+  }, [dispatch, name, handle, user_id, navigation, onSearchResultSelect])
 
   return (
     <SearchResultItem onPress={handlePress}>
-      <ProfilePicture userId={user.user_id} size='medium' strokeWidth='thin' />
+      <ProfilePicture user={user} size='medium' strokeWidth='thin' />
       <UserBadges
         style={styles.badgeContainer}
         nameStyle={styles.name}
