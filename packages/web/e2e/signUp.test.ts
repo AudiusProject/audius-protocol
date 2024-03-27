@@ -83,15 +83,15 @@ async function testSignUp({
   ).toBeVisible()
 
   // upload cover & profile photo
-  const coverPhotoDropzone = page.getByTestId('coverPhoto-dropzone')
-  await coverPhotoDropzone.click()
-  await coverPhotoDropzone
+  await page.getByRole('button', { name: /upload a cover photo/i }).click()
+  await page
+    .getByTestId('coverPhoto-dropzone')
     .locator('input')
     .setInputFiles(path.join(__dirname, 'files/cover-photo.jpeg'))
 
-  const profileImageDropzone = page.getByTestId('profileImage-dropzone')
-  await profileImageDropzone.click()
-  await profileImageDropzone
+  await page.getByRole('button', { name: /upload a profile photo/i }).click()
+  await page
+    .getByTestId('profileImage-dropzone')
     .locator('input')
     .setInputFiles(path.join(__dirname, 'files/profile-picture.jpeg'))
 

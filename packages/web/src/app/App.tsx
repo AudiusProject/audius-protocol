@@ -48,10 +48,6 @@ export const AppInner = () => {
     <>
       <SomethingWrong />
       <Suspense fallback={null}>
-        <ClientOnly>
-          {/* This is used in E2E tests to determine that client-side JS is loaded */}
-          <div data-testid='app-hydrated'></div>
-        </ClientOnly>
         <CoinflowPurchaseProtection
           merchantId={MERCHANT_ID || ''}
           coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}
