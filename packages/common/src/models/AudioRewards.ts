@@ -12,7 +12,7 @@ export type UserChallenge = {
   user_id: string
   amount: number
   disbursed_amount: number
-  cooldown_days?: number
+  cooldown_days: number
 }
 
 export type Specifier = string
@@ -22,8 +22,7 @@ export type Specifier = string
  */
 export enum ChallengeName {
   AudioMatchingBuy = 'b',
-  AudioMatchingSell = 's',
-  FirstPlaylist = 'first-playlist'
+  AudioMatchingSell = 's'
 }
 
 export type ChallengeRewardID =

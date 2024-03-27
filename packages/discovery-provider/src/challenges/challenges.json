@@ -5,7 +5,8 @@
     "amount": 1,
     "active": true,
     "step_count": 7,
-    "starting_block": 0
+    "starting_block": 0,
+    "cooldown_days": 7
   },
   {
     "id": "listen-streak",
@@ -21,7 +22,8 @@
     "amount": 1,
     "active": true,
     "step_count": 3,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "cooldown_days": 7
   },
   {
     "id": "referrals",
@@ -51,14 +53,16 @@
     "type": "boolean",
     "amount": 5,
     "active": true,
-    "starting_block": 0
+    "starting_block": 0,
+    "cooldown_days": 7
   },
   {
     "id": "mobile-install",
     "type": "boolean",
     "amount": 1,
     "active": true,
-    "starting_block": 25346436
+    "starting_block": 25346436,
+    "cooldown_days": 7
   },
   {
     "id": "tt",

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useContext, useMemo } from 'react'
 
-import { userApiFetch } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -37,7 +36,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
-import FeatureFlag from 'components/feature-flag/FeatureFlag'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -45,7 +43,6 @@ import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { openTwitterLink } from 'utils/tweet'
@@ -241,12 +238,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
-  console.log('asdf modalType', modalType, undisbursedUserChallenges, challenge)
-  if (challenge) {
-    challenge.cooldown_days = undisbursedUserChallenges.find(
-      (challenge) => challenge.challenge_id === modalType
-    )?.cooldown_days
-  }
+
   const { fullDescription, progressLabel, isVerifiedChallenge } =
     challengeRewardsConfig[modalType]
   const { modalButtonInfo } = getChallengeConfig(modalType)

@@ -96,9 +96,7 @@ const toOptimisticChallenge = (
   if (challenge.challenge_id === 'mobile-install' && isNativeMobile) {
     challengeOverridden.is_complete = true
   }
-  const isCooldownChallenge =
-    undisbursed[0]?.cooldown_days !== undefined &&
-    undisbursed[0].cooldown_days > 0
+  const isCooldownChallenge = challenge.cooldown_days > 0
   const state = getUserChallengeState(challengeOverridden)
   // For aggregate challenges, we show the total amount
   // you'd get when completing every step of the challenge
