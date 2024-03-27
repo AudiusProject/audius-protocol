@@ -30,7 +30,7 @@ const collectionUrlRegex =
 export const isCollectionUrl = (url: string) =>
   new RegExp(collectionUrlRegex).test(url)
 export const getPathFromPlaylistUrl = (url: string) => {
-  const results = new RegExp(trackUrlRegex).exec(url)
+  const results = new RegExp(collectionUrlRegex).exec(url)
   if (!results) return null
   return results[3]
 }
