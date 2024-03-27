@@ -5,7 +5,6 @@ import { useEffect, Suspense, lazy } from 'react'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
