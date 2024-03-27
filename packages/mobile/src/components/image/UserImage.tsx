@@ -18,9 +18,11 @@ type UseUserImageOptions = {
 
 export const useProfilePicture = (
   userId: Nullable<number>,
-  size: SquareSizes
+  size: SquareSizes,
+  cidOverride?: Nullable<string>
 ): ContentNodeImageSource => {
   const cid = useSelector((state) => {
+    if (cidOverride) return cidOverride
     const user = getUser(state, { id: userId })
     if (!user) return null
     const { profile_picture_sizes, profile_picture } = user

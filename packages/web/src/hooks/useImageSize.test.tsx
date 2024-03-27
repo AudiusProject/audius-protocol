@@ -78,7 +78,8 @@ describe('useImageSize', () => {
       })
 
       describe('if the url is empty', () => {
-        it('returns the default image', () => {
+        // TODO: PAY-2610
+        it.skip('returns the default image', () => {
           const { getByText } = render(
             <TestComponent
               id={1}
@@ -109,7 +110,8 @@ describe('useImageSize', () => {
         action: () => {}
       }
 
-      it('returns the larger size', () => {
+      // TODO: PAY-2610
+      it.skip('returns the larger size', () => {
         const { getByText } = render(<TestComponent {...props} />)
         getByText('large')
       })

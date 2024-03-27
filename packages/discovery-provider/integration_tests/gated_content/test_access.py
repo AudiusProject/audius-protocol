@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, List
 
 from integration_tests.utils import populate_mock_db
@@ -104,6 +105,16 @@ usdc_download_gated_track = {
     "download_conditions": usdc_gate_1,
     "playlists_containing_track": [1],
 }
+usdc_stream_gated_track_previously_purchased_album = {
+    "track_id": 12,
+    "owner_id": 2,
+    "is_stream_gated": True,
+    "stream_conditions": usdc_gate_1,
+    "is_download_gated": True,
+    "download_conditions": usdc_gate_1,
+    "playlists_containing_track": [1],
+    "playlists_previously_containing_track": {"2": {"time": 1711485199}},
+}
 tracks: List[Dict[str, Any]] = [
     non_gated_track,
     stream_gated_track_1,
@@ -114,8 +125,9 @@ tracks: List[Dict[str, Any]] = [
     stem_track_1,
     stem_track_2,
     stem_track_3,
-    usdc_stream_gated_track,  # 9
-    usdc_download_gated_track,
+    usdc_stream_gated_track,
+    usdc_download_gated_track,  # 10
+    usdc_stream_gated_track_previously_purchased_album,
 ]
 track_entities = []
 for track in tracks:
@@ -151,7 +163,22 @@ playlists: List[Dict[str, Any]] = [
         },
         "is_stream_gated": True,
         "stream_conditions": usdc_gate_1,
-    }
+    },
+    {
+        "playlist_id": 2,
+        "playlist_owner_id": 1,
+        "is_album": True,
+        "is_private": False,
+        "playlist_name": "premium album that removed track 12",
+        "playlist_contents": {
+            "tracks": [
+                {"track": 10, "time": 0},
+                {"track": 11, "time": 0},
+            ]
+        },
+        "is_stream_gated": True,
+        "stream_conditions": usdc_gate_1,
+    },
 ]
 playlist_entities = []
 for playlist in playlists:
@@ -174,12 +201,26 @@ usdc_purchases = [
     {"buyer_user_id": 2, "content_id": 10, "content_type": "track"},
     {"buyer_user_id": 2, "content_id": 11, "content_type": "track"},
     {"buyer_user_id": 4, "content_id": 1, "content_type": "album"},
+    {
+        "buyer_user_id": 3,
+        "content_id": 2,
+        "content_type": "album",
+        "created_at": datetime.utcfromtimestamp(1711485198),
+    },
+    {
+        "buyer_user_id": 5,
+        "content_id": 2,
+        "content_type": "album",
+        "created_at": datetime.utcfromtimestamp(1711485200),
+    },
 ]
 user_1 = {"user_id": 1}
 user_2 = {"user_id": 2}
 user_3 = {"user_id": 3}
 user_4 = {"user_id": 4}
-users = [user_1, user_2, user_3, user_4]
+user_5 = {"user_id": 5}
+user_6 = {"user_id": 6}
+users = [user_1, user_2, user_3, user_4, user_5, user_6]
 
 
 def setup_db(app):
@@ -208,7 +249,7 @@ def test_access(app):
             # test non-gated track
             result = content_access_checker.check_access(
                 session=session,
-                user_id=1,
+                user_id=2,
                 content_type="track",
                 content_entity=track_entities[0],
             )
@@ -305,7 +346,7 @@ def test_access(app):
             assert result["has_stream_access"]
             assert result["has_download_access"]
 
-            # test usdc stream-gated track with user who has access
+            # test usdc stream-gated track with user who has purchased the track
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
@@ -315,7 +356,7 @@ def test_access(app):
             assert result["has_stream_access"]
             assert result["has_download_access"]
 
-            # test usdc stream-gated track with user who does not have access
+            # test usdc stream-gated track with user who has not purchased the track
             result = content_access_checker.check_access(
                 session=session,
                 user_id=3,
@@ -335,7 +376,7 @@ def test_access(app):
             assert result["has_stream_access"]
             assert result["has_download_access"]
 
-            # test usdc download-gated track with user who has access
+            # test usdc download-gated track with user who has purchased the track
             result = content_access_checker.check_access(
                 session=session,
                 user_id=2,
@@ -345,7 +386,8 @@ def test_access(app):
             assert result["has_stream_access"]
             assert result["has_download_access"]
 
-            # test usdc download-gated track with user who does not have access
+            # test usdc download-gated track with user who has not purchased the track
+            # (track is free-to-stream)
             result = content_access_checker.check_access(
                 session=session,
                 user_id=3,
@@ -366,6 +408,7 @@ def test_access(app):
             assert result["has_download_access"]
 
             # test usdc download-gated track with user who purchased album including track
+            # (purchasing album does not grant download access if track is download-gated-only)
             result = content_access_checker.check_access(
                 session=session,
                 user_id=4,
@@ -375,24 +418,26 @@ def test_access(app):
             assert result["has_stream_access"]
             assert not result["has_download_access"]
 
-            # test usdc stream-gated track with user who did not purchase album or track
+            # test usdc stream-gated track with user who purchased album that previously contained track
+            # and the purchase occurred before the track was removed from the album
             result = content_access_checker.check_access(
                 session=session,
                 user_id=3,
                 content_type="track",
-                content_entity=track_entities[9],
-            )
-            assert not result["has_stream_access"]
-            assert not result["has_download_access"]
-
-            # test usdc download-gated track with user who did not purchase album or track
-            result = content_access_checker.check_access(
-                session=session,
-                user_id=3,
-                content_type="track",
-                content_entity=track_entities[10],
+                content_entity=track_entities[11],
             )
             assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # test usdc stream-gated track with user who purchased album that previously contained track
+            # but the purchase occurred after the track was removed from the album
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=5,
+                content_type="track",
+                content_entity=track_entities[11],
+            )
+            assert not result["has_stream_access"]
             assert not result["has_download_access"]
 
 
@@ -405,8 +450,8 @@ def test_batch_access(app):
                 session,
                 [
                     {
-                        "user_id": user_1["user_id"],
-                        "content_id": 100,  # non-existant track
+                        "user_id": user_6["user_id"],
+                        "content_id": 100,  # non-existent track
                         "content_type": "track",
                     },
                     {
@@ -420,13 +465,8 @@ def test_batch_access(app):
                         "content_type": "track",
                     },
                     {
-                        "user_id": user_3["user_id"],
+                        "user_id": user_2["user_id"],
                         "content_id": stream_gated_track_2["track_id"],
-                        "content_type": "track",
-                    },
-                    {
-                        "user_id": user_3["user_id"],
-                        "content_id": stream_gated_track_1["track_id"],
                         "content_type": "track",
                     },
                     {
@@ -445,8 +485,43 @@ def test_batch_access(app):
                         "content_type": "track",
                     },
                     {
+                        "user_id": user_2["user_id"],
+                        "content_id": stem_track_1["track_id"],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_2["user_id"],
+                        "content_id": stem_track_2["track_id"],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_2["user_id"],
+                        "content_id": stem_track_3["track_id"],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_1["user_id"],
+                        "content_id": usdc_stream_gated_track["track_id"],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_2["user_id"],
+                        "content_id": usdc_stream_gated_track["track_id"],
+                        "content_type": "track",
+                    },
+                    {
                         "user_id": user_3["user_id"],
                         "content_id": usdc_stream_gated_track["track_id"],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_1["user_id"],
+                        "content_id": usdc_download_gated_track["track_id"],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_2["user_id"],
+                        "content_id": usdc_download_gated_track["track_id"],
                         "content_type": "track",
                     },
                     {
@@ -462,6 +537,20 @@ def test_batch_access(app):
                     {
                         "user_id": user_4["user_id"],
                         "content_id": usdc_download_gated_track["track_id"],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_3["user_id"],
+                        "content_id": usdc_stream_gated_track_previously_purchased_album[
+                            "track_id"
+                        ],
+                        "content_type": "track",
+                    },
+                    {
+                        "user_id": user_5["user_id"],
+                        "content_id": usdc_stream_gated_track_previously_purchased_album[
+                            "track_id"
+                        ],
                         "content_type": "track",
                     },
                 ],
@@ -470,7 +559,7 @@ def test_batch_access(app):
             track_access_result = result["track"]
 
             # test non-existent track
-            assert user_1["user_id"] not in track_access_result
+            assert user_6["user_id"] not in track_access_result
 
             # test non-gated track
             user_2_non_stream_gated_track_access_result = track_access_result[
@@ -480,66 +569,155 @@ def test_batch_access(app):
             assert user_2_non_stream_gated_track_access_result["has_download_access"]
 
             # test stream gated track with user who has no access
-            user_3_stream_gated_track_access_result = track_access_result[
-                user_3["user_id"]
-            ][stream_gated_track_2["track_id"]]
-            assert not user_3_stream_gated_track_access_result["has_stream_access"]
-            assert not user_3_stream_gated_track_access_result["has_download_access"]
+            user_2_stream_gated_track_no_access_result = track_access_result[
+                user_2["user_id"]
+            ][stream_gated_track_1["track_id"]]
+            assert not user_2_stream_gated_track_no_access_result["has_stream_access"]
+            assert not user_2_stream_gated_track_no_access_result["has_download_access"]
 
             # test stream gated track with user who owns the track
-            user_3_stream_gated_track_access_result = track_access_result[
-                user_3["user_id"]
-            ][stream_gated_track_1["track_id"]]
-            assert user_3_stream_gated_track_access_result["has_stream_access"]
-            assert user_3_stream_gated_track_access_result["has_download_access"]
+            user_2_stream_gated_track_access_result = track_access_result[
+                user_2["user_id"]
+            ][stream_gated_track_2["track_id"]]
+            assert user_2_stream_gated_track_access_result["has_stream_access"]
+            assert user_2_stream_gated_track_access_result["has_download_access"]
 
             # test stream gated track with user who has access
-            user_2_stream_gated_track_access_result_2 = track_access_result[
+            user_2_stream_gated_track_no_access_result = track_access_result[
                 user_2["user_id"]
             ][stream_gated_track_3["track_id"]]
-            assert user_2_stream_gated_track_access_result_2["has_stream_access"]
-            assert user_2_stream_gated_track_access_result_2["has_download_access"]
+            assert user_2_stream_gated_track_no_access_result["has_stream_access"]
+            assert user_2_stream_gated_track_no_access_result["has_download_access"]
 
             # test download gated track with user who has no access
-            user_2_download_gated_track_access_result_1 = track_access_result[
+            user_2_download_gated_track_no_access_result = track_access_result[
                 user_2["user_id"]
             ][download_gated_track_1["track_id"]]
-            assert user_2_download_gated_track_access_result_1["has_stream_access"]
-            assert not user_2_download_gated_track_access_result_1[
+            assert user_2_download_gated_track_no_access_result["has_stream_access"]
+            assert not user_2_download_gated_track_no_access_result[
                 "has_download_access"
             ]
 
             # test download gated track with user who has access
-            user_2_download_gated_track_access_result_2 = track_access_result[
+            user_2_download_gated_track_access_result = track_access_result[
                 user_2["user_id"]
             ][download_gated_track_2["track_id"]]
-            assert user_2_download_gated_track_access_result_2["has_stream_access"]
-            assert user_2_download_gated_track_access_result_2["has_download_access"]
+            assert user_2_download_gated_track_access_result["has_stream_access"]
+            assert user_2_download_gated_track_access_result["has_download_access"]
+
+            # test stem access for non-gated parent track
+            user_2_stem_parent_non_gated_track_access_result = track_access_result[
+                user_2["user_id"]
+            ][stem_track_1["track_id"]]
+            assert user_2_stem_parent_non_gated_track_access_result["has_stream_access"]
+            assert user_2_stem_parent_non_gated_track_access_result[
+                "has_download_access"
+            ]
+
+            # test stem access for gated parent track with user who has no access
+            user_2_stem_parent_gated_track_no_access_result = track_access_result[
+                user_2["user_id"]
+            ][stem_track_2["track_id"]]
+            assert user_2_stem_parent_gated_track_no_access_result["has_stream_access"]
+            assert user_2_stem_parent_gated_track_no_access_result[
+                "has_download_access"
+            ]
+
+            # test stem access for gated parent track with user who has access
+            user_2_stem_parent_gated_track_access_result = track_access_result[
+                user_2["user_id"]
+            ][stem_track_3["track_id"]]
+            assert user_2_stem_parent_gated_track_access_result["has_stream_access"]
+            assert user_2_stem_parent_gated_track_access_result["has_download_access"]
+
+            # test usdc stream-gated track with track owner
+            user_1_usdc_stream_gated_track_access_result = track_access_result[
+                user_1["user_id"]
+            ][usdc_stream_gated_track["track_id"]]
+            assert user_1_usdc_stream_gated_track_access_result["has_stream_access"]
+            assert user_1_usdc_stream_gated_track_access_result["has_download_access"]
+
+            # test usdc_stream_gated_track stream-gated track with user who has purchased the track
+            user_2_usdc_stream_gated_track_access_result = track_access_result[
+                user_2["user_id"]
+            ][usdc_stream_gated_track["track_id"]]
+            assert user_2_usdc_stream_gated_track_access_result["has_stream_access"]
+            assert user_2_usdc_stream_gated_track_access_result["has_download_access"]
+
+            # test usdc_stream_gated_track stream-gated track with user who has not purchased the track
+            user_3_usdc_stream_gated_track_access_result = track_access_result[
+                user_3["user_id"]
+            ][usdc_stream_gated_track["track_id"]]
+            assert not user_3_usdc_stream_gated_track_access_result["has_stream_access"]
+            assert not user_3_usdc_stream_gated_track_access_result[
+                "has_download_access"
+            ]
+
+            # test usdc download-gated track with track owner
+            user_1_usdc_download_gated_track_access_result = track_access_result[
+                user_1["user_id"]
+            ][usdc_download_gated_track["track_id"]]
+            assert user_1_usdc_download_gated_track_access_result["has_stream_access"]
+            assert user_1_usdc_download_gated_track_access_result["has_download_access"]
+
+            # test usdc download-gated track with user who has purchased the track
+            user_2_usdc_download_gated_track_access_result = track_access_result[
+                user_2["user_id"]
+            ][usdc_download_gated_track["track_id"]]
+            assert user_2_usdc_download_gated_track_access_result["has_stream_access"]
+            assert user_2_usdc_download_gated_track_access_result["has_download_access"]
+
+            # test usdc download-gated track with user who has not purchased the track
+            # (track is free-to-stream)
+            user_3_usdc_download_gated_track_access_result = track_access_result[
+                user_3["user_id"]
+            ][usdc_download_gated_track["track_id"]]
+            assert user_3_usdc_download_gated_track_access_result["has_stream_access"]
+            assert not user_3_usdc_download_gated_track_access_result[
+                "has_download_access"
+            ]
 
             # test usdc stream-gated track with user who purchased album including track
-            user_4_stream_gated_track_access_result = track_access_result[
+            user_4_usdc_stream_gated_track_access_result = track_access_result[
                 user_4["user_id"]
             ][usdc_stream_gated_track["track_id"]]
-            assert user_4_stream_gated_track_access_result["has_stream_access"]
-            assert user_4_stream_gated_track_access_result["has_download_access"]
+            assert user_4_usdc_stream_gated_track_access_result["has_stream_access"]
+            assert user_4_usdc_stream_gated_track_access_result["has_download_access"]
 
             # test usdc download-gated track with user who purchased album including track
-            user_4_download_gated_track_access_result = track_access_result[
+            # (purchasing album does not grant download access if track is download-gated-only)
+            user_4_usdc_download_gated_track_access_result = track_access_result[
                 user_4["user_id"]
             ][usdc_download_gated_track["track_id"]]
-            assert user_4_download_gated_track_access_result["has_stream_access"]
-            assert not user_4_download_gated_track_access_result["has_download_access"]
+            assert user_4_usdc_download_gated_track_access_result["has_stream_access"]
+            assert not user_4_usdc_download_gated_track_access_result[
+                "has_download_access"
+            ]
 
-            # test usdc stream-gated track with user who did not purchase album or track
-            user_3_stream_gated_track_access_result = track_access_result[
-                user_3["user_id"]
-            ][usdc_stream_gated_track["track_id"]]
-            assert not user_3_stream_gated_track_access_result["has_stream_access"]
-            assert not user_3_stream_gated_track_access_result["has_download_access"]
+            # test usdc stream-gated track with user who purchased album that previously contained track
+            # and the purchase occurred before the track was removed from the album
+            user_3_usdc_stream_gated_track_previously_in_album_access_result = (
+                track_access_result[user_3["user_id"]][
+                    usdc_stream_gated_track_previously_purchased_album["track_id"]
+                ]
+            )
+            assert user_3_usdc_stream_gated_track_previously_in_album_access_result[
+                "has_stream_access"
+            ]
+            assert user_3_usdc_stream_gated_track_previously_in_album_access_result[
+                "has_download_access"
+            ]
 
-            # test usdc download-gated track with user who did not purchase album or track
-            user_3_download_gated_track_access_result = track_access_result[
-                user_3["user_id"]
-            ][usdc_download_gated_track["track_id"]]
-            assert user_3_download_gated_track_access_result["has_stream_access"]
-            assert not user_3_download_gated_track_access_result["has_download_access"]
+            # test usdc stream-gated track with user who purchased album that previously contained track
+            # but the purchase occurred after the track was removed from the album
+            user_5_usdc_stream_gated_track_previously_in_album_access_result = (
+                track_access_result[user_5["user_id"]][
+                    usdc_stream_gated_track_previously_purchased_album["track_id"]
+                ]
+            )
+            assert not user_5_usdc_stream_gated_track_previously_in_album_access_result[
+                "has_stream_access"
+            ]
+            assert not user_5_usdc_stream_gated_track_previously_in_album_access_result[
+                "has_download_access"
+            ]

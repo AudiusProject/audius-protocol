@@ -68,7 +68,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
           // Matches 0.18s entry animation
           forceRefreshAfterMs={180}
         />
-        <Text>{uploadDescriptions[props.uploadType]}</Text>
+        <Text variant='body'>{uploadDescriptions[props.uploadType]}</Text>
       </div>
       <Scrollbar
         className={cn(styles.tracks, {

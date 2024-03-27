@@ -52,19 +52,18 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - web-test-staging:
-      context:
-        - Audius Client
-        - Probers
-      requires:
-        - web-init
-
   - playwright-tests:
       context:
         - Audius Client
         - Probers
       requires:
-        - web-init
+        - web-build-staging
+
+  - playwright-tests-report:
+      context:
+        - Probers
+      requires:
+        - web-build-staging
 
   - web-test:
       context: Audius Client

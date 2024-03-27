@@ -45,11 +45,11 @@ export type RemixOf = {
 }
 
 // Gated content
-export type TokenStandard = 'ERC721' | 'ERC1155'
+export type EthTokenStandard = 'ERC721' | 'ERC1155'
 
 export type AccessConditionsEthNFTCollection = {
   chain: Chain.Eth
-  standard: TokenStandard
+  standard: EthTokenStandard
   address: string
   name: string
   slug: string
@@ -149,7 +149,7 @@ export type EthCollectionMap = {
   [slug: string]: {
     name: string
     address: string
-    standard: TokenStandard
+    standard: EthTokenStandard
     img: Nullable<string>
     externalLink: Nullable<string>
   }

@@ -1,4 +1,4 @@
-import type { ID } from '@audius/common/models'
+import type { ID, User } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
@@ -9,22 +9,34 @@ import { Avatar } from '@audius/harmony-native'
 import { useProfilePicture } from '../image/UserImage'
 const { getUser } = cacheUsersSelectors
 
-export type ProfilePictureProps = Omit<
-  AvatarProps,
-  'source' | 'accessibilityLabel'
-> & {
-  userId: ID
+const messages = {
+  profilePictureFor: 'Profile picture for'
 }
 
-export const ProfilePicture = (props: ProfilePictureProps) => {
-  const { userId, ...other } = props
+type BaseAvatarProps = Omit<AvatarProps, 'source' | 'accessibilityLabel'>
 
-  const userName = useSelector((state) => getUser(state, { id: userId })?.name)
-  const accessibilityLabel = `Profile picture for ${userName}`
+// User should prefer userId, and provide user if it's not in the cache
+type ProfilePictureUserProps =
+  | {
+      userId: ID
+    }
+  | { user: Pick<User, 'user_id' | 'name' | 'profile_picture_sizes'> }
+
+export type ProfilePictureProps = BaseAvatarProps & ProfilePictureUserProps
+
+export const ProfilePicture = (props: ProfilePictureProps) => {
+  const userId = 'user' in props ? props.user.user_id : props.userId
+
+  const accessibilityLabel = useSelector((state) => {
+    const userName =
+      'user' in props ? props.user.name : getUser(state, { id: userId })?.name
+    return `${messages.profilePictureFor} ${userName}`
+  })
 
   const { source, handleError } = useProfilePicture(
     userId,
-    SquareSizes.SIZE_150_BY_150
+    SquareSizes.SIZE_150_BY_150,
+    'user' in props ? props.user.profile_picture_sizes : undefined
   )
 
   return (
@@ -32,7 +44,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       source={source}
       onError={handleError}
       accessibilityLabel={accessibilityLabel}
-      {...other}
+      {...props}
     />
   )
 }

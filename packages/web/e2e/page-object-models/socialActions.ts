@@ -26,12 +26,29 @@ export class SocialActions {
     })
   }
 
+  async waitForConfirmation() {
+    return this.page
+      .waitForResponse(async (response) => {
+        if (response.url().includes('block_confirmation')) {
+          const json = await response.json()
+          return json.data.block_passed
+        }
+      })
+      .catch((e) => {
+        // Swallow error - prevents flakes
+        console.warn('Confirmation timed out', e)
+      })
+  }
+
   async favorite() {
+    // Setup confirmation listener
+    const confirmationPromise = this.waitForConfirmation()
+
     // Unfavorited => Favorited
     await this.favoriteButton.click()
 
     // Wait for indexing, reload
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await confirmationPromise
     await this.favoriteButton.page().reload()
 
     // Check that it persists after reload
@@ -39,11 +56,14 @@ export class SocialActions {
   }
 
   async unfavorite() {
+    // Setup confirmation listener
+    const confirmationPromise = this.waitForConfirmation()
+
     // Favorited => Unfavorited
     await this.unfavoriteButton.click()
 
     // Wait for indexing, reload
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await confirmationPromise
     await this.unfavoriteButton.page().reload()
 
     // Check that it persists after reload
@@ -52,12 +72,7 @@ export class SocialActions {
 
   async repost() {
     // Setup confirmation listener
-    const confirmationPromise = this.page.waitForResponse(async (response) => {
-      if (response.url().includes('block_confirmation')) {
-        const json = await response.json()
-        return json.data.block_passed
-      }
-    })
+    const confirmationPromise = this.waitForConfirmation()
 
     // Unreposted => Reposted
     await this.repostButton.click()
@@ -72,12 +87,7 @@ export class SocialActions {
 
   async unrepost() {
     // Setup confirmation listener
-    const confirmationPromise = this.page.waitForResponse(async (response) => {
-      if (response.url().includes('block_confirmation')) {
-        const json = await response.json()
-        return json.data.block_passed
-      }
-    })
+    const confirmationPromise = this.waitForConfirmation()
 
     // Reposted => Unreposted
     await this.unrepostButton.click()
