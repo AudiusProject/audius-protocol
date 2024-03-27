@@ -71,7 +71,7 @@ def prune_plays(self):
     # Define redis lock object
     update_lock = redis.lock("prune_plays_lock", timeout=7200)
 
-    interval = datetime.timedelta(seconds=30)
+    interval = timedelta(seconds=30)
     start_time = time.time()
     errored = False
     try:

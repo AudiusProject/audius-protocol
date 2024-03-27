@@ -294,7 +294,7 @@ def aggregate_metrics(self):
     # Define redis lock object
     update_lock = redis.lock("aggregate_metrics_lock", blocking_timeout=25)
 
-    interval = datetime.timedelta(minutes=METRICS_INTERVAL)
+    interval = timedelta(minutes=METRICS_INTERVAL)
     start_time = time.time()
     errored = False
     try:
@@ -351,7 +351,7 @@ def synchronize_metrics(self):
     db = synchronize_metrics.db
     redis = synchronize_metrics.redis
 
-    interval = datetime.timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL)
+    interval = timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL)
     start_time = time.time()
     errored = False
     try:

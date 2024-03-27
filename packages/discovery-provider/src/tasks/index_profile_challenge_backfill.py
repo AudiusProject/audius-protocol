@@ -154,7 +154,7 @@ def index_profile_challenge_backfill(self):
     # Max duration of lock is 1 hr
     update_lock = redis.lock("profile_challenge_backfill_lock", timeout=3600)
 
-    interval = datetime.timedelta(minute=1)
+    interval = datetime.timedelta(minutes=1)
     start_time = time.time()
     errored = False
     try:
