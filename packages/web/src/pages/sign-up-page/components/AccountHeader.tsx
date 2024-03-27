@@ -72,7 +72,7 @@ const ProfileImageAvatar = ({
     >
       {isEditing && !imageUrl ? (
         <IconButton
-          aria-label='test'
+          aria-label='Upload Profile Image'
           size='l'
           color='staticWhite'
           shadow='drop'

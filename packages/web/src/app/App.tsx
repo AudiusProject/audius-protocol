@@ -5,6 +5,7 @@ import { useEffect, Suspense, lazy } from 'react'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
@@ -47,6 +48,10 @@ export const AppInner = () => {
     <>
       <SomethingWrong />
       <Suspense fallback={null}>
+        <ClientOnly>
+          {/* This is used in E2E tests to determine that client-side JS is loaded */}
+          <div data-testid='app-hydrated'></div>
+        </ClientOnly>
         <CoinflowPurchaseProtection
           merchantId={MERCHANT_ID || ''}
           coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}

@@ -1,5 +1,6 @@
-import { Locator, Page, expect } from '@playwright/test'
 import path from 'path'
+
+import { Locator, Page, expect } from '@playwright/test'
 
 class BaseEditPage {
   protected readonly artworkButton: Locator

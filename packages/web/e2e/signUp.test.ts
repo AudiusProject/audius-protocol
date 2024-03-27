@@ -83,21 +83,17 @@ async function testSignUp({
   ).toBeVisible()
 
   // upload cover & profile photo
+  const coverPhotoDropzone = page.getByTestId('coverPhoto-dropzone')
+  await coverPhotoDropzone.click()
+  await coverPhotoDropzone
+    .locator('input')
+    .setInputFiles(path.join(__dirname, 'files/cover-photo.jpeg'))
 
-  // TODO: whats the best file upload method?
-  const coverPhotoChooserPromise = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: /select cover photo/i }).click()
-  const coverPhotoChooser = await coverPhotoChooserPromise
-  await coverPhotoChooser.setFiles(
-    path.join(__dirname, 'files/cover-photo.jpeg')
-  )
-
-  const profilePicChooserPromise = page.waitForEvent('filechooser')
-  await page.getByTestId('profileImage-dropzone').click()
-  const profilePicChooser = await profilePicChooserPromise
-  await profilePicChooser.setFiles(
-    path.join(__dirname, 'files/profile-picture.jpeg')
-  )
+  const profileImageDropzone = page.getByTestId('profileImage-dropzone')
+  await profileImageDropzone.click()
+  await profileImageDropzone
+    .locator('input')
+    .setInputFiles(path.join(__dirname, 'files/profile-picture.jpeg'))
 
   await page.getByRole('textbox', { name: /display name/i }).fill(name)
   await page.getByRole('button', { name: /continue/i }).click()
@@ -209,7 +205,6 @@ test.describe('Sign Up', () => {
     })
 
     test('should sign up from a referral', async ({ page }) => {
-      // TODO: replace this with a sign-in instead of a full sign-up (once we can bypass OTP)
       await testSignUp({
         isMobile: true,
         signUpUrl: `/signup?ref=dejayjdstaging`,
