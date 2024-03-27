@@ -51,6 +51,7 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
   if (playlistByPermalinkMatch) {
     const { handle, slug } = playlistByPermalinkMatch.params
     const permalink = `/${handle}/playlist/${slug}`
+    console.log('what5')
     return {
       title: null,
       collectionId: null,
@@ -70,6 +71,7 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
   if (albumByPermalinkMatch) {
     const { handle, slug } = albumByPermalinkMatch.params
     const permalink = `/${handle}/album/${slug}`
+    console.log('what4')
     return {
       title: null,
       collectionId: null,
@@ -86,6 +88,7 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
   if (collectionIdPageMatch) {
     const collectionId = decodeHashId(collectionIdPageMatch.params.id)
     if (collectionId === null) return null
+    console.log('what3')
     return { collectionId, handle: null, collectionType: null, title: null }
   }
 
@@ -102,6 +105,7 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
     const title = nameParts.slice(0, nameParts.length - 1).join('-')
     const collectionId = parseInt(nameParts[nameParts.length - 1], 10)
     if (!collectionId || isNaN(collectionId)) return null
+    console.log('what2')
     return { title, collectionId, handle, collectionType: 'playlist' }
   }
 
@@ -118,6 +122,7 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
     const title = nameParts.slice(0, nameParts.length - 1).join('-')
     const collectionId = parseInt(nameParts[nameParts.length - 1], 10)
     if (!collectionId || isNaN(collectionId)) return null
+    console.log('what')
     return { title, collectionId, handle, collectionType: 'album' }
   }
 
