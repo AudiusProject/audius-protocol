@@ -8,6 +8,7 @@ import {
   AddressLookupTableAccount,
   VersionedTransaction
 } from '@solana/web3.js'
+import bs58 from 'bs58'
 
 import type { Logger, Nullable } from '../../utils'
 import type { IdentityService, RelayTransactionData } from '../identity'
@@ -214,6 +215,7 @@ export class TransactionHandler {
       recentBlockhash ??
       (await this.connection.getLatestBlockhash('confirmed')).blockhash
     let rawTransaction: Buffer | Uint8Array
+    let txid: string
 
     // Branch on whether to send a legacy or v0 transaction. Some duplicated code
     // unfortunately due to type errors, eg `add` does not exist on VersionedTransaction.
@@ -252,6 +254,7 @@ export class TransactionHandler {
           tx.addSignature(new PublicKey(publicKey), signature)
         })
       }
+      txid = bs58.encode(tx.signatures[0]!)
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction
@@ -267,6 +270,7 @@ export class TransactionHandler {
           tx.addSignature(new PublicKey(publicKey), signature)
         })
       }
+      txid = bs58.encode(tx.signatures[0]!.signature!)
       rawTransaction = tx.serialize()
     }
 
@@ -280,23 +284,11 @@ export class TransactionHandler {
       })
     }
 
-    let txid
     try {
-      txid = await sendRawTransaction()
+      await sendRawTransaction()
     } catch (e) {
       // Rarely, this intiial send will fail
       logger.error(`transactionHandler: Initial send failed: ${e}`)
-      let errorCode = null
-      let error = null
-      if (e instanceof Error) {
-        error = e.message
-        errorCode = this._parseSolanaErrorCode(error)
-      }
-      return {
-        res: null,
-        error,
-        errorCode
-      }
     }
 
     let done = false
@@ -305,16 +297,15 @@ export class TransactionHandler {
     // to send the transaction until it hits a timeout.
     let sendCount = 0
     const startTime = Date.now()
-    let retryTxId
     if (retry) {
       ;(async () => {
         let elapsed = Date.now() - startTime
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
           try {
-            retryTxId = sendRawTransaction()
+            sendRawTransaction()
             logger.info(
-              `transactionHandler: retrying txId ${txid} with retryTxId ${retryTxId}, sendCount ${sendCount}`
+              `transactionHandler: retrying txId ${txid}, sendCount ${sendCount}`
             )
           } catch (e) {
             logger.error(
