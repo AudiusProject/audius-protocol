@@ -49,30 +49,16 @@ const messages = {
   audio: '$AUDIO'
 }
 
-type AudioMatchingChallengeName =
-  | ChallengeName.AudioMatchingBuy
-  | ChallengeName.AudioMatchingSell
-
 type AudioMatchingRewardsModalContentProps = {
   challenge?: OptimisticUserChallenge
   challengeName: AudioMatchingChallengeName
   onClaimRewardClicked: () => void
   claimInProgress?: boolean
   onNavigateAway: () => void
+  onClickProgress: any
+  progressIcon: any
+  progressLabel: any
   errorContent?: ReactNode
-}
-
-const ctaButtonProps: {
-  [k in AudioMatchingChallengeName]: Partial<ButtonProps>
-} = {
-  [ChallengeName.AudioMatchingBuy]: {
-    iconRight: IconArrowRight,
-    children: messages.viewPremiumTracks
-  },
-  [ChallengeName.AudioMatchingSell]: {
-    iconLeft: IconCloudUpload,
-    children: messages.uploadTrack
-  }
 }
 
 // TODO: Migrate to @audius/harmony Button and pass `isLoading`
@@ -81,12 +67,15 @@ const ClaimInProgressSpinner = () => (
 )
 
 /** Implements custom ChallengeRewardsContent for the $AUDIO matching challenges */
-export const AudioMatchingRewardsModalContent = ({
+export const CooldownRewardsModalContent = ({
   challenge,
   challengeName,
   onClaimRewardClicked,
   claimInProgress = false,
   onNavigateAway,
+  onClickProgress,
+  progressIcon,
+  progressLabel,
   errorContent
 }: AudioMatchingRewardsModalContentProps) => {
   const wm = useWithMobileStyle(styles.mobile)
@@ -132,14 +121,15 @@ export const AudioMatchingRewardsModalContent = ({
     ) : null
 
   const handleClickCTA = useCallback(() => {
-    const route =
-      challengeName === ChallengeName.AudioMatchingBuy
-        ? EXPLORE_PREMIUM_TRACKS_PAGE
-        : UPLOAD_PAGE
-    navigateToPage(route)
+    if (challengeName === ChallengeName.AudioMatchingBuy) {
+      navigateToPage(EXPLORE_PREMIUM_TRACKS_PAGE)
+    } else if (challengeName === ChallengeName.AudioMatchingSell) {
+      navigateToPage(UPLOAD_PAGE)
+    } else {
+      onClickProgress()
+    }
     onNavigateAway()
   }, [challengeName, onNavigateAway, navigateToPage])
-
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
       {isMobile ? (
@@ -184,7 +174,8 @@ export const AudioMatchingRewardsModalContent = ({
         <Button
           variant='secondary'
           fullWidth
-          {...ctaButtonProps[challengeName]}
+          iconRight={progressIcon}
+          children={progressLabel}
           onClick={handleClickCTA}
         />
       )}

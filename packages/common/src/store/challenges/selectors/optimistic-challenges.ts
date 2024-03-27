@@ -116,14 +116,6 @@ const toOptimisticChallenge = (
     : state === 'completed'
     ? totalAmount
     : 0
-  if (challenge.challenge_id === 'first-playlist') {
-    console.log(
-      'asdf undisbursed: ',
-      undisbursed,
-      claimableAmount,
-      isCooldownChallenge
-    )
-  }
 
   const undisbursedSpecifiers = undisbursed.reduce(
     (acc, c) => [...acc, { specifier: c.specifier, amount: c.amount }],

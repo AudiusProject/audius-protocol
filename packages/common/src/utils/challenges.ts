@@ -259,7 +259,6 @@ export const isCooldownChallengeClaimable = (
     challenge.cooldown_days === undefined ||
     dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >=
       challenge.cooldown_days
-  console.log('asdf isCooldownChallengeClaimable', challenge, res)
   return res
 }
 
