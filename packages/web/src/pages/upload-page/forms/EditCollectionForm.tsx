@@ -84,6 +84,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           ...track,
           metadata: {
             ...track.metadata,
+            preview_start_seconds: 0,
             is_stream_gated: true,
             stream_conditions: trackStreamConditions
           }
