@@ -11,7 +11,7 @@ import {
   formatNumberCommas,
   challengeRewardsConfig
 } from '@audius/common/utils'
-import { Button, IconArrowRight, Text } from '@audius/harmony'
+import { Button, IconArrowRight, IconComponent, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -49,9 +49,9 @@ type CooldownRewardsModalContentProps = {
   onClaimRewardClicked: () => void
   claimInProgress?: boolean
   onNavigateAway: () => void
-  onClickProgress: any
-  progressIcon: any
-  progressLabel: any
+  onClickProgress: () => void
+  progressIcon?: IconComponent | null
+  progressLabel?: string
   errorContent?: ReactNode
 }
 
