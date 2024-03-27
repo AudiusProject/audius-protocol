@@ -9,6 +9,7 @@ import type { ID } from '@audius/common/models'
 import { DownloadQuality, ModalSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
+  PurchaseableContentType,
   cacheTracksSelectors,
   usePremiumContentPurchaseModal,
   useWaitForDownloadModal
@@ -96,7 +97,7 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
 
   const handlePurchasePress = useCallback(() => {
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.TrackDetails }
     )
   }, [trackId, openPremiumContentPurchaseModal])

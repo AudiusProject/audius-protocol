@@ -1,8 +1,10 @@
-import { UserTrackMetadata, isContentUSDCPurchaseGated } from '~/models/Track'
+import { isContentUSDCPurchaseGated } from '~/models/Track'
 
 import {
   PayExtraAmountPresetValues,
   PayExtraPreset,
+  PurchaseableAlbumStreamMetadata,
+  PurchaseableContentMetadata,
   PurchaseableTrackDownloadMetadata,
   PurchaseableTrackStreamMetadata
 } from './types'
@@ -34,12 +36,22 @@ export const getExtraAmount = ({
   return extraAmount
 }
 
-export const isTrackStreamPurchaseable = (
-  track: UserTrackMetadata
-): track is PurchaseableTrackStreamMetadata =>
-  isContentUSDCPurchaseGated(track.stream_conditions)
+export const isPurchaseableAlbum = (
+  metadata?: PurchaseableContentMetadata
+): metadata is PurchaseableAlbumStreamMetadata =>
+  !!metadata &&
+  'is_album' in metadata &&
+  isContentUSDCPurchaseGated(metadata.stream_conditions)
+
+export const isStreamPurchaseable = (
+  metadata: PurchaseableContentMetadata
+): metadata is
+  | PurchaseableTrackStreamMetadata
+  | PurchaseableAlbumStreamMetadata =>
+  isContentUSDCPurchaseGated(metadata.stream_conditions)
 
 export const isTrackDownloadPurchaseable = (
-  track: UserTrackMetadata
-): track is PurchaseableTrackDownloadMetadata =>
-  isContentUSDCPurchaseGated(track.download_conditions)
+  metadata: PurchaseableContentMetadata
+): metadata is PurchaseableTrackDownloadMetadata =>
+  'download_conditions' in metadata &&
+  isContentUSDCPurchaseGated(metadata.download_conditions)

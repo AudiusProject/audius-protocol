@@ -68,17 +68,16 @@ export const getWeiBalanceForUser = (
   return getUserBalance(user)
 }
 
-export const makeGetTierAndVerifiedForUser = () =>
-  createSelector(
-    [getWeiBalanceForUser, getVerifiedForUser],
-    (
-      wei,
-      isVerified
-    ): { tier: BadgeTier; isVerified: boolean; tierNumber: number } => {
-      const { tier, tierNumber } = getTierAndNumberForBalance(wei)
-      return { tier, isVerified, tierNumber }
-    }
-  )
+export const getTierAndVerifiedForUser = createSelector(
+  [getWeiBalanceForUser, getVerifiedForUser],
+  (
+    wei,
+    isVerified
+  ): { tier: BadgeTier; isVerified: boolean; tierNumber: number } => {
+    const { tier, tierNumber } = getTierAndNumberForBalance(wei)
+    return { tier, isVerified, tierNumber }
+  }
+)
 
 // Helpers
 

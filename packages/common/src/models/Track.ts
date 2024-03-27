@@ -162,8 +162,6 @@ export type SolCollectionMap = {
   }
 }
 
-export type GatedTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
-
 export type ResourceContributor = {
   name: string
   roles: [string]

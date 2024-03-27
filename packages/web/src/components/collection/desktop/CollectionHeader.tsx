@@ -1,6 +1,12 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useEditPlaylistModal } from '@audius/common/store'
+import { useGetCurrentUserId, useGetPurchases } from '@audius/common/api'
+import { useAllPaginatedQuery } from '@audius/common/audius-query'
+import { USDCContentPurchaseType } from '@audius/common/models'
+import {
+  PurchaseableContentType,
+  useEditPlaylistModal
+} from '@audius/common/store'
 import { formatSecondsAsText, formatDate } from '@audius/common/utils'
 import {
   Text,
@@ -15,6 +21,7 @@ import { Input } from 'components/input'
 import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
+import { GatedContentSection } from 'components/track/GatedContentSection'
 import InfoLabel from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
 
@@ -32,6 +39,7 @@ type CollectionHeaderProps = any
 export const CollectionHeader = (props: CollectionHeaderProps) => {
   const {
     collectionId,
+    ownerId,
     type,
     title,
     coverArtSizes,
@@ -56,11 +64,31 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     reposts,
     saves,
     onClickReposts,
-    onClickFavorites
+    onClickFavorites,
+    isStreamGated,
+    streamConditions
   } = props
 
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+
+  const { data: purchases, hasMore: hasMorePurchases } = useAllPaginatedQuery(
+    useGetPurchases,
+    {
+      userId: currentUserId
+    },
+    {
+      pageSize: 100
+    }
+  )
+
+  const isAlbumPurchased = purchases.some(
+    (purchaseDetails) =>
+      purchaseDetails.contentType === USDCContentPurchaseType.ALBUM &&
+      purchaseDetails.contentId === collectionId
+  )
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +133,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const TitleComponent = isOwner ? 'button' : 'span'
 
   return (
-    <div className={styles.collectionHeader}>
+    <Flex className={styles.collectionHeader} direction='column' gap='m'>
       <div className={styles.topSection}>
         <Artwork
           collectionId={collectionId}
@@ -211,6 +239,17 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           </div>
         ) : null}
       </div>
-    </div>
+      {isStreamGated && streamConditions ? (
+        <GatedContentSection
+          isLoading={hasMorePurchases}
+          contentId={collectionId}
+          contentType={PurchaseableContentType.ALBUM}
+          streamConditions={streamConditions}
+          hasStreamAccess={isAlbumPurchased}
+          isOwner={ownerId === currentUserId}
+          ownerId={ownerId}
+        />
+      ) : null}
+    </Flex>
   )
 }

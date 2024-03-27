@@ -12,7 +12,8 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
-  CommonState
+  CommonState,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   Genre,
@@ -59,7 +60,7 @@ import { trpc } from 'utils/trpcClientWeb'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
-import { GatedTrackSection } from './GatedTrackSection'
+import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
@@ -646,14 +647,17 @@ export const GiantTrackTile = ({
 
       <ClientOnly>
         {isStreamGated && streamConditions ? (
-          <GatedTrackSection
-            isLoading={isLoading}
-            trackId={trackId}
-            streamConditions={streamConditions}
-            hasStreamAccess={hasStreamAccess}
-            isOwner={isOwner}
-            ownerId={userId}
-          />
+          <Box mb='xl'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
+              isOwner={isOwner}
+              ownerId={userId}
+            />
+          </Box>
         ) : null}
       </ClientOnly>
 

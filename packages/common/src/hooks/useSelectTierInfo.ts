@@ -1,9 +1,7 @@
 import { ID } from '../models'
-import { makeGetTierAndVerifiedForUser } from '../store'
+import { getTierAndVerifiedForUser } from '../store'
 
 import { useProxySelector } from './useProxySelector'
-
-const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
 
 /**
  * Wraps our reselect tier selector in useMemo and useSelector
