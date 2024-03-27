@@ -497,7 +497,7 @@ def index_trending_task(self):
     have_lock = False
     timeout = 60 * 60 * 2
     update_lock = redis.lock("index_trending_lock", timeout=timeout)
-    interval = datetime.timedelta(seconds=10)
+    interval = timedelta(seconds=10)
     start_time = time.time()
     errored = False
     try:

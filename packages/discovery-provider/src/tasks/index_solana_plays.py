@@ -2,7 +2,7 @@ import concurrent.futures
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Tuple, TypedDict, Union, cast
 
 import base58
@@ -714,7 +714,7 @@ def index_solana_plays(self):
     # Define redis lock object
     # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock("solana_plays_lock", blocking_timeout=25, timeout=14400)
-    interval = datetime.timedelta(seconds=5)
+    interval = timedelta(seconds=5)
     start_time = time.time()
     errored = False
     try:

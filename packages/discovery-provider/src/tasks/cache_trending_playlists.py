@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import bindparam, text
 
@@ -171,7 +171,7 @@ def cache_trending_playlists(self):
     have_lock = False
     update_lock = redis.lock("cache_trending_playlists_lock", timeout=7200)
 
-    interval = datetime.timedelta(minutes=30)
+    interval = timedelta(minutes=30)
     start_time = time.time()
     errored = False
 

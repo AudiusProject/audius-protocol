@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
@@ -320,7 +320,7 @@ def update_aggregates(self):
         "update_aggregates_lock", blocking_timeout=25, timeout=14400
     )
 
-    interval = datetime.timedelta(minutes=10)
+    interval = timedelta(minutes=10)
     start_time = time.time()
     errored = False
     try:
