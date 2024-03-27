@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
 import { useGetPurchases, useGetPurchasesCount, Id } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
@@ -6,8 +6,10 @@ import {
   Status,
   statusIsNotFinalized,
   combineStatuses,
-  USDCPurchaseDetails
+  USDCPurchaseDetails,
+  USDCContentPurchaseType
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   useUSDCPurchaseDetailsModal
@@ -18,6 +20,7 @@ import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
@@ -83,6 +86,9 @@ const NoPurchases = () => {
 }
 
 export const usePurchases = () => {
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
@@ -108,6 +114,14 @@ export const usePurchases = () => {
     },
     { disabled: !userId, force: true }
   )
+
+  const filteredPurchases = useMemo(() => {
+    return isPremiumAlbumsEnabled
+      ? purchases
+      : purchases.filter(
+          (purchase) => purchase.contentType !== USDCContentPurchaseType.ALBUM
+        )
+  }, [purchases])
 
   const status = combineStatuses([dataStatus, countStatus])
 
@@ -141,7 +155,7 @@ export const usePurchases = () => {
 
   const isEmpty =
     status === Status.ERROR ||
-    (status === Status.SUCCESS && purchases.length === 0)
+    (status === Status.SUCCESS && filteredPurchases.length === 0)
   const isLoading = statusIsNotFinalized(status)
 
   const downloadCSV = useCallback(async () => {
@@ -161,7 +175,7 @@ export const usePurchases = () => {
 
   return {
     count,
-    data: purchases,
+    data: filteredPurchases,
     fetchMore,
     onSort,
     onClickRow,
