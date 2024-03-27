@@ -64,8 +64,6 @@ export const UsdcPurchaseGatedRadioField = (
   })
   const disabled = noUsdcGate || !isUsdcUploadEnabled
 
-  console.log(noUsdcGate, isUsdcUploadEnabled)
-
   const helpContent = (
     <div className={styles.helpContent}>
       <div>{messages.waitlist}</div>
@@ -91,7 +89,9 @@ export const UsdcPurchaseGatedRadioField = (
       hintIcon={<IconStars />}
       hintContent={!isUsdcUploadEnabled ? helpContent : undefined}
       tag={!isUsdcUploadEnabled ? messages.comingSoon : undefined}
-      checkedContent={<UsdcPurchaseFields disabled={disabled} />}
+      checkedContent={
+        <UsdcPurchaseFields disabled={disabled} isAlbum={isAlbum} />
+      }
     />
   )
 }

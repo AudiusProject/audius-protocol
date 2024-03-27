@@ -82,6 +82,7 @@ export type TipGatedConditions = { tip_user_id: number }
 export type USDCPurchaseConditions = {
   usdc_purchase: {
     price: number
+    albumTrackPrice?: number
     splits: Record<ID, number>
   }
 }

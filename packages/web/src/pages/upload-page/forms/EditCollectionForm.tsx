@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import {
   AlbumSchema,
+  AlbumValues,
   CollectionValues,
   PlaylistSchema
 } from '@audius/common/schemas'
@@ -25,6 +26,7 @@ import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
+import { AccessAndSaleFormValues } from '../fields/types'
 import { CollectionFormState } from '../types'
 
 import styles from './EditCollectionForm.module.css'
@@ -48,10 +50,11 @@ type EditCollectionFormProps = {
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
+  const isAlbum = uploadType === UploadType.ALBUM
 
   const initialValues: CollectionValues = {
     ...metadata,
-    is_album: uploadType === UploadType.ALBUM,
+    is_album: isAlbum,
     artwork: null,
     playlist_name: '',
     description: '',
@@ -64,15 +67,46 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     tracks: tracks.map((track) => ({ ...track, override: false }))
   }
 
+  // TODO: fix the types here
+  const populateAlbumTrackPrice = (values: AlbumValues) => {
+    const albumTrackPrice =
+      values?.stream_conditions?.usdc_purchase?.albumTrackPrice
+    const trackStreamConditions = {
+      usdc_purchase: {
+        price: albumTrackPrice
+      }
+    }
+    console.log({ trackStreamConditions })
+    return {
+      ...values,
+      tracks: values.tracks.map((track) => {
+        return {
+          ...track,
+          metadata: {
+            ...track.metadata,
+            is_stream_gated: true,
+            stream_conditions: trackStreamConditions
+          }
+        }
+      })
+    }
+  }
+
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
+      console.log('EditCollectionForm submit', { values })
+      const valuesWithTrackPrices = isAlbum
+        ? populateAlbumTrackPrice(values)
+        : values
+
+      console.log('Refined values', { valuesWithTrackPrices })
       onContinue({
         uploadType,
-        tracks: values.tracks,
-        metadata: values
+        tracks: valuesWithTrackPrices.tracks,
+        metadata: valuesWithTrackPrices
       })
     },
-    [onContinue, uploadType]
+    [isAlbum, onContinue, uploadType]
   )
 
   const collectionTypeName =
@@ -80,6 +114,10 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const validationSchema =
     uploadType === UploadType.ALBUM ? AlbumSchema : PlaylistSchema
+
+  const handleAccessAndSaleSubmit = (values: AccessAndSaleFormValues) => {
+    console.log('Values from submit: ', { values })
+  }
 
   return (
     <Formik
@@ -114,8 +152,13 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           <ReleaseDateFieldLegacy />
-          <AccessAndSaleField isAlbum isUpload />
-
+          {isAlbum ? (
+            <AccessAndSaleField
+              isAlbum
+              isUpload
+              onSubmit={handleAccessAndSaleSubmit}
+            />
+          ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
             <Text>{messages.trackDetails.description}</Text>

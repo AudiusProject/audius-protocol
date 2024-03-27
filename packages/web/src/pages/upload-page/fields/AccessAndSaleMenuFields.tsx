@@ -51,31 +51,33 @@ export type AccesAndSaleMenuFieldsProps = {
   streamConditions: SingleTrackEditValues[typeof STREAM_CONDITIONS]
   isRemix: boolean
   isUpload?: boolean
+  isAlbum?: boolean
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
   initialStreamConditions?: AccessConditions | undefined
-  isAlbum?: boolean
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const {
     isRemix,
     isUpload,
+    isAlbum,
     isInitiallyUnlisted,
     initialStreamConditions,
-    isScheduledRelease,
-    isAlbum
+    isScheduledRelease
   } = props
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const { isEnabled: isCollectibleGatedEnabled } = useFlag(
+  const { isEnabled: isCollectibleGatedFlagEnabled } = useFlag(
     FeatureFlags.COLLECTIBLE_GATED_ENABLED
   )
-  const { isEnabled: isSpecialAccessEnabled } = useFlag(
+  const { isEnabled: isSpecialAccessFlagEnabled } = useFlag(
     FeatureFlags.SPECIAL_ACCESS_ENABLED
   )
+  const isCollectibleGatedEnabled = !isAlbum && isCollectibleGatedFlagEnabled
+  const isSpecialAccessEnabled = !isAlbum && isSpecialAccessFlagEnabled
 
   const [availabilityField] = useField({
     name: STREAM_AVAILABILITY_TYPE
@@ -105,14 +107,14 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
         {isUsdcEnabled ? (
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
-            isAlbum={isAlbum}
             isUpload={isUpload}
+            isAlbum={isAlbum}
             initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}
 
-        {isSpecialAccessEnabled && !isAlbum ? (
+        {isSpecialAccessEnabled ? (
           <ModalRadioItem
             icon={<IconSpecialAccess />}
             label={messages.specialAccess}
@@ -124,7 +126,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             }
           />
         ) : null}
-        {isCollectibleGatedEnabled && !isAlbum ? (
+        {isCollectibleGatedEnabled ? (
           <CollectibleGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}

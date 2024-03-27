@@ -45,6 +45,7 @@ import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'
 import { REMIX_OF } from './RemixSettingsField'
 import { getCombinedDefaultGatedConditionValues } from './helpers'
 import {
+  ALBUM_TRACK_PRICE,
   AccessAndSaleFormValues,
   DOWNLOAD_CONDITIONS,
   FIELD_VISIBILITY,
@@ -111,9 +112,39 @@ export type USDCPurchaseRemoteConfig = Pick<
   'minContentPriceCents' | 'maxContentPriceCents'
 >
 
+const refineMinPrice =
+  (key: 'price' | 'albumTrackPrice', minContentPriceCents: number) =>
+  (values) => {
+    const formValues = values as AccessAndSaleFormValues
+    const streamConditions = formValues[STREAM_CONDITIONS]
+    if (
+      formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+      isContentUSDCPurchaseGated(streamConditions)
+    ) {
+      const price = streamConditions.usdc_purchase[key]
+      return price !== undefined && price > 0 && price >= minContentPriceCents
+    }
+    return true
+  }
+
+const refineMaxPrice =
+  (key: 'price' | 'albumTrackPrice', maxContentPriceCents: number) =>
+  (values) => {
+    const formValues = values as AccessAndSaleFormValues
+    const streamConditions = formValues[STREAM_CONDITIONS]
+    if (
+      formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+      isContentUSDCPurchaseGated(streamConditions)
+    ) {
+      const price = streamConditions.usdc_purchase[key]
+      return price !== undefined && price <= maxContentPriceCents
+    }
+    return true
+  }
 export const AccessAndSaleFormSchema = (
   trackLength: number,
-  { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig
+  { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig,
+  isAlbum: boolean
 ) =>
   z
     .object({
@@ -123,55 +154,60 @@ export const AccessAndSaleFormSchema = (
       ),
       [STREAM_AVAILABILITY_TYPE]: z.nativeEnum(StreamTrackAvailabilityType)
     })
+    // Check for main price >= min price
+    .refine(refineMinPrice('price', minContentPriceCents), {
+      message: messages.errors.price.tooLow(minContentPriceCents),
+      path: [PRICE]
+    })
+    // Check for albumTrackPrice price >= min price (if applicable)
     .refine(
-      (values) => {
-        const formValues = values as AccessAndSaleFormValues
-        const streamConditions = formValues[STREAM_CONDITIONS]
-        if (
-          formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-          isContentUSDCPurchaseGated(streamConditions)
-        ) {
-          const { price } = streamConditions.usdc_purchase
-          return price > 0 && price >= minContentPriceCents
-        }
-        return true
-      },
+      (values) =>
+        isAlbum
+          ? refineMinPrice('albumTrackPrice', minContentPriceCents)(values)
+          : true,
       {
         message: messages.errors.price.tooLow(minContentPriceCents),
-        path: [PRICE]
+        path: [ALBUM_TRACK_PRICE]
       }
     )
+    // Check for price <= max price
+    .refine(refineMaxPrice('price', maxContentPriceCents), {
+      message: messages.errors.price.tooHigh(maxContentPriceCents),
+      path: [PRICE]
+    })
     .refine(
-      (values) => {
-        const formValues = values as AccessAndSaleFormValues
-        const streamConditions = formValues[STREAM_CONDITIONS]
-        if (
-          formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-          isContentUSDCPurchaseGated(streamConditions)
-        ) {
-          return streamConditions.usdc_purchase.price <= maxContentPriceCents
-        }
-        return true
-      },
+      (values) =>
+        isAlbum
+          ? refineMaxPrice('albumTrackPrice', maxContentPriceCents)(values)
+          : true,
       {
         message: messages.errors.price.tooHigh(maxContentPriceCents),
-        path: [PRICE]
+        path: [ALBUM_TRACK_PRICE]
       }
     )
+    // Check preview start time exists and is >= 0
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        if (formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
+        console.log(formValues)
+        if (
+          formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+          !isAlbum
+        ) {
           return formValues[PREVIEW] !== undefined && formValues[PREVIEW] >= 0
         }
         return true
       },
       { message: messages.errors.preview.tooEarly, path: [PREVIEW] }
     )
+    // Check for preview being >30s before the end of the track
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        if (formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
+        if (
+          formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+          !isAlbum
+        ) {
           return (
             formValues[PREVIEW] === undefined ||
             isNaN(trackLength) ||
@@ -191,10 +227,11 @@ type AccessAndSaleFieldProps = {
   trackLength?: number
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
+  onSubmit?: (values: AccessAndSaleFormValues) => void
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload, isAlbum, forceOpen, setForceOpen } = props
+  const { isUpload, isAlbum, forceOpen, setForceOpen, onSubmit } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -327,6 +364,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
+      onSubmit?.(values)
       const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
       const preview = get(values, PREVIEW)
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
@@ -351,6 +389,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
             usdc_purchase: {
               price: Math.round(
                 (streamConditions as USDCPurchaseConditions).usdc_purchase.price
+              ),
+              albumTrackPrice: Math.round(
+                (streamConditions as USDCPurchaseConditions).usdc_purchase
+                  .albumTrackPrice || 0
               )
             }
           } as USDCPurchaseConditions
@@ -500,6 +542,15 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           icon: IconNote
         })
       }
+      const albumTrackPrice =
+        savedStreamConditions.usdc_purchase.albumTrackPrice
+      console.log(savedStreamConditions.usdc_purchase)
+      if (albumTrackPrice) {
+        selectedValues.push({
+          label: messages.price(albumTrackPrice / 100),
+          icon: IconNote
+        })
+      }
     } else if (isContentFollowGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
@@ -546,7 +597,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig)
+        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig, isAlbum)
       )}
       menuFields={
         <AccessAndSaleMenuFields

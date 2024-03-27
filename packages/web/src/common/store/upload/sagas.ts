@@ -715,6 +715,8 @@ export function* uploadCollection(
     }
   })
 
+  console.log({ tracksWithMetadata })
+
   // Upload the tracks
   const trackIds = yield* call(handleUploads, {
     tracks: tracksWithMetadata,
