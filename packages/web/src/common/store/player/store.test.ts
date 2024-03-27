@@ -1,21 +1,23 @@
-import { playerReducer, playerActions } from '@audius/common/store'
-import { combineReducers } from 'redux'
-import { expectSaga } from 'redux-saga-test-plan'
-import { describe, it, expect, vitest } from 'vitest'
-
-import { noopReducer } from 'store/testHelper'
-
-import * as sagas from './sagas'
-import { PlayerState } from '@audius/common/store/player/slice'
-import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { call, getContext, select } from 'redux-saga-test-plan/matchers'
-import { waitForWrite } from 'utils/sagaHelpers'
 import {
+  playerReducer,
+  playerActions,
   reachabilitySelectors,
   gatedContentSelectors
 } from '@audius/common/store'
 import { getQueryParams } from '@audius/common/utils'
+import { combineReducers } from 'redux'
+import { expectSaga } from 'redux-saga-test-plan'
+import { call, getContext, select } from 'redux-saga-test-plan/matchers'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
+import { describe, it, expect, vitest } from 'vitest'
+
 import { apiClient } from 'services/audius-api-client'
+import { noopReducer } from 'store/testHelper'
+import { waitForWrite } from 'utils/sagaHelpers'
+
+import * as sagas from './sagas'
+
+type PlayerState = ReturnType<typeof playerReducer>
 
 const initialTracks = {
   entries: {

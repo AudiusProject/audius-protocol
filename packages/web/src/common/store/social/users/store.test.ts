@@ -5,14 +5,13 @@ import {
 } from '@audius/common/store'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
+import { call } from 'redux-saga-test-plan/matchers'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { describe, it } from 'vitest'
 
-import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as sagas from 'common/store/social/users/sagas'
 import { noopReducer } from 'store/testHelper'
-import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { call } from 'redux-saga-test-plan/matchers'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const followedUser = { follower_count: 5 }

@@ -1,3 +1,4 @@
+// @ts-nocheck TODO: make type swork
 import { Kind } from '@audius/common/models'
 import {
   accountReducer,
@@ -20,7 +21,8 @@ import { describe, it, expect } from 'vitest'
 import * as sagas from 'common/store/queue/sagas'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
 import { noopReducer } from 'store/testHelper'
-import { PlayerState } from '@audius/common/store/player/slice'
+
+type PlayerState = ReturnType<typeof playerReducer>
 
 const initialTracks = {
   entries: {
@@ -478,7 +480,7 @@ describe.skip('watchPrevious', () => {
       .put(
         actions.play({
           uid: prevPlayingEntry.uid,
-          trackId: prevPlayingEntry.id,
+          trackId: prevPlayingEntry.id as number,
           source: undefined
         })
       )

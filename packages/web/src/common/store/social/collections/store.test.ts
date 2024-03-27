@@ -6,11 +6,11 @@ import {
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import { call } from 'redux-saga-test-plan/matchers'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { describe, it } from 'vitest'
 
 import * as sagas from 'common/store/social/collections/sagas'
 import { noopReducer } from 'store/testHelper'
-import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const repostingUser = { repost_count: 0 }

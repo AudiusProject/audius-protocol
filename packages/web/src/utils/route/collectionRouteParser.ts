@@ -3,8 +3,6 @@ import { decodeHashId } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 
 import {
-  PLAYLIST_PAGE,
-  ALBUM_PAGE,
   PLAYLIST_ID_PAGE,
   PLAYLIST_BY_PERMALINK_PAGE,
   ALBUM_BY_PERMALINK_PAGE

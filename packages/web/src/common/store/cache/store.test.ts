@@ -1,13 +1,11 @@
 import { Kind, Status } from '@audius/common/models'
-import {
-  cacheActions as actions,
-  cacheConfig as config,
-  cacheReducer
-} from '@audius/common/store'
+import { IntKeys } from '@audius/common/services'
+import { cacheActions as actions, cacheReducer } from '@audius/common/store'
 import { makeKindId } from '@audius/common/utils'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import { getContext } from 'redux-saga-test-plan/matchers'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { describe, it, expect, beforeAll, afterAll, vitest } from 'vitest'
 
 import sagas from 'common/store/cache/sagas'
@@ -18,8 +16,6 @@ import {
   takeEverySaga,
   takeSaga
 } from 'store/testHelper'
-import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { IntKeys } from '@audius/common/services'
 const { asCache, initialCacheState } = cacheReducer
 
 const initialConfirmerState = {
@@ -424,6 +420,7 @@ describe('update', () => {
             {
               id: 1,
               kind: Kind.TRACKS,
+              // @ts-ignore TODO: What is this??
               uids: ['111', '222']
             }
           ]

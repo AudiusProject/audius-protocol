@@ -6,15 +6,16 @@ import {
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { describe, it } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as sagas from 'common/store/social/tracks/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { noopReducer } from 'store/testHelper'
-import { watchRecordListen } from './recordListen'
-import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { waitForWrite } from 'utils/sagaHelpers'
+
+import { watchRecordListen } from './recordListen'
 
 const repostingUser = { repost_count: 0 }
 const saveUser = { handle: 'saveUser' }

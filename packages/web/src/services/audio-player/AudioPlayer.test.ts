@@ -3,7 +3,8 @@ import { describe, it, beforeAll, expect, vitest } from 'vitest'
 import { AudioPlayer } from './AudioPlayer'
 
 declare global {
-  namespace NodeJS {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  module NodeJS {
     interface Global {
       AudioContext: any
       URL: any

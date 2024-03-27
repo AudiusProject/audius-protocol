@@ -25,16 +25,16 @@ import { all, fork } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'
 import { call, getContext, select } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
+import { delay } from 'typed-redux-saga'
 import { beforeAll, describe, it, vitest } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-
-import rewardsSagas from './sagas'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { waitForRead } from 'utils/sagaHelpers'
-import { delay } from 'typed-redux-saga'
+
+import rewardsSagas from './sagas'
 
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions
@@ -60,7 +60,7 @@ const {
   setUserChallengesDisbursed,
   showRewardClaimedToast
 } = audioRewardsPageActions
-const { getAccountUser, getUserHandle, getUserId } = accountSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 // Setup mocks
 vitest.mock('services/remote-config/remote-config-instance')
