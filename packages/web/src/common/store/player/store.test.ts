@@ -6,10 +6,20 @@ import { describe, it, expect, vitest } from 'vitest'
 import { noopReducer } from 'store/testHelper'
 
 import * as sagas from './sagas'
+import { PlayerState } from '@audius/common/store/player/slice'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
+import { call, getContext, select } from 'redux-saga-test-plan/matchers'
+import { waitForWrite } from 'utils/sagaHelpers'
+import {
+  reachabilitySelectors,
+  gatedContentSelectors
+} from '@audius/common/store'
+import { getQueryParams } from '@audius/common/utils'
+import { apiClient } from 'services/audius-api-client'
 
 const initialTracks = {
   entries: {
-    1: { metadata: { owner_id: 1, track_segments: {} } }
+    1: { metadata: { owner_id: 1, track_segments: [] } }
   },
   uids: {
     123: 1
@@ -22,46 +32,64 @@ const initialUsers = {
   }
 }
 
-const makeInitialPlayer = (playing) => ({
-  audio: {
-    load: vitest.fn(),
-    play: vitest.fn(),
-    pause: vitest.fn(),
-    stop: vitest.fn(),
-    seek: vitest.fn()
-  },
+const makeInitialPlayer = (playing: boolean) => ({
+  load: vitest.fn(),
+  play: vitest.fn(),
+  pause: vitest.fn(),
+  stop: vitest.fn(),
+  seek: vitest.fn(),
+  getPlaybackRate: vitest.fn(),
+  setPlaybackRate: vitest.fn(),
   playing
 })
 
-// TODO: PAY-2605
-describe.skip('watchPlay', () => {
+vitest.mock('services/audius-api-client')
+
+const defaultProviders: StaticProvider[] = [
+  [call.fn(waitForWrite), undefined],
+  [select(reachabilitySelectors.getIsReachable), true],
+  [select(gatedContentSelectors.getNftAccessSignatureMap), {}],
+  [call.fn(getQueryParams), {}],
+  [getContext('apiClient'), apiClient],
+  [getContext('getFeatureEnabled'), () => false]
+]
+
+describe('watchPlay', () => {
   it('plays uid', async () => {
     const initialPlayer = makeInitialPlayer(false)
-    const { storeState } = await expectSaga(sagas.watchPlay, playerActions)
+    const { storeState } = await expectSaga(sagas.watchPlay)
       .withReducer(
         combineReducers({
+          account: noopReducer(),
           tracks: noopReducer(initialTracks),
           users: noopReducer(initialUsers),
           player: playerReducer
         }),
         {
+          account: {
+            userId: 1
+          },
           tracks: initialTracks,
           users: initialUsers,
-          player: initialPlayer
+          player: initialPlayer as unknown as PlayerState
         }
       )
+      .provide([
+        ...defaultProviders,
+        [getContext('audioPlayer'), initialPlayer]
+      ])
       .dispatch(playerActions.play({ uid: '123', trackId: 1, onEnd: () => {} }))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: true
     })
-    expect(initialPlayer.audio.load).toHaveBeenCalled()
-    expect(initialPlayer.audio.play).toHaveBeenCalled()
+    expect(initialPlayer.load).toHaveBeenCalled()
+    expect(initialPlayer.play).toHaveBeenCalled()
   })
 
   it('plays by resuming', async () => {
     const initialPlayer = makeInitialPlayer(true)
-    const { storeState } = await expectSaga(sagas.watchPlay, playerActions)
+    const { storeState } = await expectSaga(sagas.watchPlay)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
@@ -71,23 +99,26 @@ describe.skip('watchPlay', () => {
         {
           tracks: initialTracks,
           users: initialUsers,
-          player: initialPlayer
+          player: initialPlayer as unknown as PlayerState
         }
       )
+      .provide([
+        ...defaultProviders,
+        [getContext('audioPlayer'), initialPlayer]
+      ])
       .dispatch(playerActions.play({}))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: true
     })
-    expect(initialPlayer.audio.play).toHaveBeenCalled()
+    expect(initialPlayer.play).toHaveBeenCalled()
   })
 })
 
-// TODO: PAY-2605
-describe.skip('watchPause', () => {
+describe('watchPause', () => {
   it('pauses', async () => {
     const initialPlayer = makeInitialPlayer(false)
-    const { storeState } = await expectSaga(sagas.watchPause, playerActions)
+    const { storeState } = await expectSaga(sagas.watchPause)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
@@ -95,23 +126,26 @@ describe.skip('watchPause', () => {
         }),
         {
           tracks: initialTracks,
-          player: initialPlayer
+          player: initialPlayer as unknown as PlayerState
         }
       )
+      .provide([
+        ...defaultProviders,
+        [getContext('audioPlayer'), initialPlayer]
+      ])
       .dispatch(playerActions.pause({}))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: false
     })
-    expect(initialPlayer.audio.pause).toHaveBeenCalled()
+    expect(initialPlayer.pause).toHaveBeenCalled()
   })
 })
 
-// TODO: PAY-2605
-describe.skip('watchStop', () => {
+describe('watchStop', () => {
   it('stops', async () => {
     const initialPlayer = makeInitialPlayer(false)
-    const { storeState } = await expectSaga(sagas.watchStop, playerActions)
+    const { storeState } = await expectSaga(sagas.watchStop)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
@@ -119,23 +153,26 @@ describe.skip('watchStop', () => {
         }),
         {
           tracks: initialTracks,
-          player: initialPlayer
+          player: initialPlayer as unknown as PlayerState
         }
       )
+      .provide([
+        ...defaultProviders,
+        [getContext('audioPlayer'), initialPlayer]
+      ])
       .dispatch(playerActions.stop({}))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: false
     })
-    expect(initialPlayer.audio.stop).toHaveBeenCalled()
+    expect(initialPlayer.stop).toHaveBeenCalled()
   })
 })
 
-// TODO: PAY-2605
-describe.skip('watchSeek', () => {
+describe('watchSeek', () => {
   it('seeks', async () => {
     const initialPlayer = makeInitialPlayer(true)
-    const { storeState } = await expectSaga(sagas.watchSeek, playerActions)
+    const { storeState } = await expectSaga(sagas.watchSeek)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
@@ -143,14 +180,18 @@ describe.skip('watchSeek', () => {
         }),
         {
           tracks: initialTracks,
-          player: initialPlayer
+          player: initialPlayer as unknown as PlayerState
         }
       )
+      .provide([
+        ...defaultProviders,
+        [getContext('audioPlayer'), initialPlayer]
+      ])
       .dispatch(playerActions.seek({ seconds: 30 }))
       .silentRun()
     expect(storeState.player).toMatchObject({
       playing: true
     })
-    expect(initialPlayer.audio.seek).toHaveBeenCalledWith(30)
+    expect(initialPlayer.seek).toHaveBeenCalledWith(30)
   })
 })
