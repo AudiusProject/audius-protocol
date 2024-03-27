@@ -1,25 +1,28 @@
-import { Kind } from '@audius/common/models'
+import { FollowSource, Kind } from '@audius/common/models'
 import {
   cacheActions,
   usersSocialActions as actions
 } from '@audius/common/store'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
-import * as matchers from 'redux-saga-test-plan/matchers'
 import { describe, it } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as sagas from 'common/store/social/users/sagas'
 import { noopReducer } from 'store/testHelper'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
+import { call } from 'redux-saga-test-plan/matchers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 const followedUser = { follower_count: 5 }
 const accountUser = { followee_count: 1 }
 
-// TODO: PAY-2607
-describe.skip('follow', () => {
+const defaultProviders: StaticProvider[] = [[call.fn(waitForWrite), undefined]]
+
+describe('follow', () => {
   it('follows', async () => {
-    await expectSaga(sagas.watchFollowUser, actions)
+    await expectSaga(sagas.watchFollowUser)
       .withReducer(
         combineReducers({
           account: noopReducer(),
@@ -37,8 +40,8 @@ describe.skip('follow', () => {
           }
         }
       )
-      .provide([[matchers.call.fn(waitForBackendSetup), true]])
-      .dispatch(actions.followUser(2))
+      .provide(defaultProviders)
+      .dispatch(actions.followUser(2, FollowSource.PROFILE_PAGE))
       .call(adjustUserField, {
         user: accountUser,
         fieldName: 'followee_count',
@@ -60,7 +63,7 @@ describe.skip('follow', () => {
   })
 
   it('unfollows', async () => {
-    await expectSaga(sagas.watchUnfollowUser, actions)
+    await expectSaga(sagas.watchUnfollowUser)
       .withReducer(
         combineReducers({
           account: noopReducer(),
@@ -78,8 +81,8 @@ describe.skip('follow', () => {
           }
         }
       )
-      .provide([[matchers.call.fn(waitForBackendSetup), true]])
-      .dispatch(actions.unfollowUser(2))
+      .provide(defaultProviders)
+      .dispatch(actions.unfollowUser(2, FollowSource.PROFILE_PAGE))
       .call(sagas.confirmUnfollowUser, 2, 1)
       .put(
         cacheActions.update(Kind.USERS, [
