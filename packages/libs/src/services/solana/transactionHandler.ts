@@ -254,8 +254,7 @@ export class TransactionHandler {
           tx.addSignature(new PublicKey(publicKey), signature)
         })
       }
-      txid = tx.signatures[0]!.toString()
-      logger.info('REED txid in v0 tx', txid)
+      txid = bs58.encode(tx.signatures[0]!)
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction
@@ -272,7 +271,6 @@ export class TransactionHandler {
         })
       }
       txid = bs58.encode(tx.signatures[0]!.signature!)
-      logger.info(`REED txid in legacy tx ${txid}`)
       rawTransaction = tx.serialize()
     }
 
