@@ -78,7 +78,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
       <div className={styles.overrideRow}>
         <div className={styles.overrideSwitch}>
           <SwitchField name={`tracks.${index}.override`} />
-          <Text>{messages.overrideLabel}</Text>
+          <Text variant='body'>{messages.overrideLabel}</Text>
         </div>
         <div className={styles.actions}>
           <PreviewButton index={index} />
