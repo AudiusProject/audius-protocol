@@ -60,7 +60,7 @@ const ClaimInProgressSpinner = () => (
   <LoadingSpinner className={styles.spinner} />
 )
 
-/** Implements custom ChallengeRewardsContent for the $AUDIO matching challenges */
+/** Implements custom ChallengeRewardsContent for the cooldown challenges */
 export const CooldownRewardsModalContent = ({
   challenge,
   challengeName,
