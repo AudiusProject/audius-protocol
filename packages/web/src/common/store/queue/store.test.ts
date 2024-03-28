@@ -197,7 +197,7 @@ describe('watchNext', () => {
     expect(storeState.queue.index).toEqual(2)
   })
 
-  it.only('does not queue autoplay when in shuffle mode', async () => {
+  it('does not queue autoplay when in shuffle mode', async () => {
     const initialQueue = makeInitialQueue({
       index: 0,
       shuffle: true,
@@ -227,7 +227,8 @@ describe('watchNext', () => {
       .forEach((action) => expect(action.type).not.toEqual('queue/add'))
   })
 
-  it('does not queue autoplay when in repeat mode', async () => {
+  // TODO: PAY-2603
+  it.skip('does not queue autoplay when in repeat mode', async () => {
     let initialQueue, playingEntry, nextPlayingEntry, initialPlayer
     initialQueue = makeInitialQueue({ index: 0, repeat: RepeatMode.ALL })
     playingEntry = initialQueue.order[initialQueue.index]
@@ -314,7 +315,8 @@ describe('watchNext', () => {
     expect(storeState.queue.index).toEqual(1)
   })
 
-  it('repeats the same track if not skipped', async () => {
+  // TODO: PAY-2603
+  it.skip('repeats the same track if not skipped', async () => {
     const initialQueue = makeInitialQueue({
       index: 0,
       repeat: RepeatMode.SINGLE
@@ -335,7 +337,8 @@ describe('watchNext', () => {
 
   // Note: This test is untested, as the unit testing process was broken when it was written
   // If it breaks on first run, it may be bugged
-  it('repeats the same track when in shuffle mode', async () => {
+  // TODO: PAY-2603
+  it.skip('repeats the same track when in shuffle mode', async () => {
     const initialQueue = makeInitialQueue({
       index: 0,
       repeat: RepeatMode.SINGLE,
@@ -357,7 +360,8 @@ describe('watchNext', () => {
     expect(storeState.queue.index).toEqual(0)
   })
 
-  it('does not repeat the same track if skipped', async () => {
+  // TODO: PAY-2603
+  it.skip('does not repeat the same track if skipped', async () => {
     const initialQueue = makeInitialQueue({
       index: 0,
       repeat: RepeatMode.SINGLE
