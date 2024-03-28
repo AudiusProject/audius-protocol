@@ -56,6 +56,7 @@ class SearchBar extends Component {
     super(props)
     this.state = {
       open: false,
+      focused: false,
       // State variable set to true when an item has been selected.
       selected: false,
       value: '',
@@ -129,7 +130,7 @@ class SearchBar extends Component {
   }
 
   onFocus = () => {
-    this.setState({ shouldDismissTagPopup: false })
+    this.setState({ shouldDismissTagPopup: false, focused: true })
     this.searchBarRef.current
       .getElementsByClassName('ant-select-selection-search')[0]
       .classList.add('expanded')
@@ -163,7 +164,7 @@ class SearchBar extends Component {
           .getElementsByClassName('ant-select-selection-search')[0]
           .classList.remove('expanded')
       }
-      this.setState({ open: false })
+      this.setState({ open: false, focused: false })
     }
   }
 
@@ -222,6 +223,14 @@ class SearchBar extends Component {
       !isEqual(nextProps.dataSource, this.props.dataSource) &&
       nextProps.resultsCount > 0
     ) {
+      if (
+        !nextState.selected &&
+        !nextState.valueFromParent &&
+        // Only open the suggestions if the search bar is focused
+        nextState.focused
+      ) {
+        this.setState({ open: true })
+      }
       if (nextProps.status === Status.SUCCESS) {
         return true
       }
@@ -233,6 +242,14 @@ class SearchBar extends Component {
       nextProps.resultsCount === 0 &&
       this.state.value !== ''
     ) {
+      if (
+        !nextState.selected &&
+        !nextState.valueFromParent &&
+        // Only open the suggestions if the search bar is focused
+        nextState.focused
+      ) {
+        this.setState({ open: true })
+      }
       return false
     }
     // Close the dropdown if we're searching for '' (deleted text in search).
