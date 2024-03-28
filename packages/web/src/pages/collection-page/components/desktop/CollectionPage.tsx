@@ -15,6 +15,7 @@ import {
   CollectionsPageType,
   CollectionPageTrackRecord
 } from '@audius/common/store'
+import { getDogEarType } from '@audius/common/utils'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import {
@@ -32,7 +33,6 @@ import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
-import { getDogEarType } from '@audius/common/utils'
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   emptyPage: {
@@ -113,7 +113,7 @@ const CollectionPage = ({
   allowReordering,
   playing,
   type,
-  collection: { status, metadata, user },
+  collection,
   tracks,
   userId,
   getFilteredData,
@@ -129,6 +129,7 @@ const CollectionPage = ({
   onClickReposts,
   onClickFavorites
 }: CollectionPageProps) => {
+  const { status, metadata, user } = collection
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
@@ -280,30 +281,31 @@ const CollectionPage = ({
       structuredData={structuredData}
       containerClassName={styles.pageContainer}
       contentClassName={styles.pageContent}
+      fromOpacity={1}
       scrollableSearch
     >
-      <ClientOnly>
-        <Tile
-          className={styles.bodyWrapper}
-          size='large'
-          elevation='mid'
-          dogEar={
-            isPremiumAlbumsEnabled
-              ? dogEarType
-              : isPrivate
-              ? DogEarType.HIDDEN
-              : undefined
-          }
-        >
-          <div className={styles.topSectionWrapper}>{topSection}</div>
-          {!collectionLoading && isEmpty ? (
-            <EmptyPage
-              isOwner={isOwner}
-              isAlbum={isAlbum}
-              text={customEmptyText}
-            />
-          ) : (
-            <div className={styles.tableWrapper}>
+      <Tile
+        className={styles.bodyWrapper}
+        size='large'
+        elevation='mid'
+        dogEar={
+          isPremiumAlbumsEnabled
+            ? dogEarType
+            : isPrivate
+            ? DogEarType.HIDDEN
+            : undefined
+        }
+      >
+        <div className={styles.topSectionWrapper}>{topSection}</div>
+        {!collectionLoading && isEmpty ? (
+          <EmptyPage
+            isOwner={isOwner}
+            isAlbum={isAlbum}
+            text={customEmptyText}
+          />
+        ) : (
+          <div className={styles.tableWrapper}>
+            <ClientOnly>
               <TableComponent
                 // @ts-ignore
                 columns={tracksTableColumns}
@@ -331,9 +333,11 @@ const CollectionPage = ({
                 }`}
                 isAlbumPage={isAlbum}
               />
-            </div>
-          )}
-        </Tile>
+            </ClientOnly>
+          </div>
+        )}
+      </Tile>
+      <ClientOnly>
         {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
           <>
             <Divider variant='default' className={styles.tileDivider} />

@@ -3,6 +3,7 @@ import { ChangeEvent, useCallback, useState } from 'react'
 import { useGetCurrentUserId, useGetPurchases } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { USDCContentPurchaseType } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   PurchaseableContentType,
   useEditPlaylistModal
@@ -17,6 +18,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import { Input } from 'components/input'
 import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -24,12 +26,12 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import InfoLabel from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { useSsrContext } from 'ssr/SsrContext'
 
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
 import styles from './CollectionHeader.module.css'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { FeatureFlags } from '@audius/common/services'
 
 const messages = {
   filter: 'Filter Tracks'
@@ -74,7 +76,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-
+  const { isSsrEnabled } = useSsrContext()
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
 
@@ -129,7 +131,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     )
   }
 
-  const isLoading = loading || artworkLoading
+  const isLoading = !isSsrEnabled && (loading || artworkLoading)
 
   const fadeIn = {
     [styles.show]: !isLoading,
@@ -170,7 +172,9 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             >
               {title}
             </Text>
-            {isOwner ? <IconPencil className={styles.editIcon} /> : null}
+            <ClientOnly>
+              {isOwner ? <IconPencil className={styles.editIcon} /> : null}
+            </ClientOnly>
             {isLoading ? <Skeleton className={styles.skeleton} /> : null}
           </TitleComponent>
           <Flex>
@@ -221,16 +225,18 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           <div className={cn(styles.statsRow, fadeIn)}>
             {renderStatsRow(isLoading)}
           </div>
-          <CollectionActionButtons
-            playing={playing}
-            variant={variant}
-            isOwner={isOwner}
-            userId={userId}
-            collectionId={collectionId}
-            onPlay={onPlay}
-            isPlayable={isPlayable}
-            tracksLoading={tracksLoading}
-          />
+          <ClientOnly>
+            <CollectionActionButtons
+              playing={playing}
+              variant={variant}
+              isOwner={isOwner}
+              userId={userId}
+              collectionId={collectionId}
+              onPlay={onPlay}
+              isPlayable={isPlayable}
+              tracksLoading={tracksLoading}
+            />
+          </ClientOnly>
         </div>
         {onFilterChange ? (
           <div className={styles.inputWrapper}>

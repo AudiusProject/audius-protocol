@@ -122,6 +122,13 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
       },
       statuses: {
         [id]: 'SUCCESS'
+      },
+      permalinks: {
+        ...(collection.permalink
+          ? {
+              [collection.permalink]: collection.playlist_id
+            }
+          : {})
       }
     }
   }

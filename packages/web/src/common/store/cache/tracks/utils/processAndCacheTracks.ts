@@ -13,7 +13,8 @@ import { reformat } from './reformat'
  * caching the tracks.
  */
 export function* processAndCacheTracks<T extends TrackMetadata>(
-  tracks: T[]
+  tracks: T[],
+  isInitialFetchAfterSsr?: boolean
 ): Generator<any, Track[], any> {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -34,8 +35,8 @@ export function* processAndCacheTracks<T extends TrackMetadata>(
         uid: makeUid(Kind.TRACKS, t.track_id),
         metadata: t
       })),
-      false,
-      true
+      /* replace */ isInitialFetchAfterSsr,
+      /* persist */ true
     )
   )
 

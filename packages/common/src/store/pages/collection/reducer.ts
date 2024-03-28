@@ -17,12 +17,14 @@ import {
   FETCH_COLLECTION_FAILED,
   RESET_COLLECTION,
   SET_SMART_COLLECTION,
+  SET_IS_INITIAL_FETCH_AFTER_SSR,
   FetchCollectionSucceededAction,
   FetchCollectionFailedAction,
   CollectionPageAction,
   SetSmartCollectionAction,
   FetchCollectionAction,
-  ResetCollectionAction
+  ResetCollectionAction,
+  SetIsInitialFetchAfterSSRAction
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
 import { CollectionsPageState } from './types'
@@ -34,7 +36,8 @@ export const initialState = {
   status: null,
   smartCollectionVariant: null,
   tracks: initialLineupState,
-  collectionPermalink: null
+  collectionPermalink: null,
+  isInitialFetchAfterSsr: false
 }
 
 const actionsMap = {
@@ -88,6 +91,15 @@ const actionsMap = {
       ...state,
       smartCollectionVariant: action.smartCollectionVariant
     }
+  },
+  [SET_IS_INITIAL_FETCH_AFTER_SSR](
+    state: CollectionsPageState,
+    action: SetIsInitialFetchAfterSSRAction
+  ) {
+    return {
+      ...state,
+      isInitialFetchAfterSsr: action.isInitialFetchAfterSsr
+    }
   }
 }
 
@@ -107,7 +119,8 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
       collectionUid: makeUid(Kind.COLLECTIONS, collection.playlist_id),
       userUid: makeUid(Kind.USERS, collection.user.user_id),
       status: Status.SUCCESS,
-      collectionPermalink: collection.permalink
+      collectionPermalink: collection.permalink,
+      isInitialFetchAfterSsr: true
     }
   }
   return initialState
