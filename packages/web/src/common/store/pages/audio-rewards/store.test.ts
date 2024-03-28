@@ -479,7 +479,8 @@ describe.skip('Rewards Page Sagas', () => {
         challenge_type: 'numeric',
         specifier: '1',
         user_id: '1',
-        disbursed_amount: 7
+        disbursed_amount: 7,
+        cooldown_days: 0
       },
       {
         challenge_id: 'referrals',
@@ -492,7 +493,8 @@ describe.skip('Rewards Page Sagas', () => {
         challenge_type: 'numeric',
         specifier: '1',
         user_id: '1',
-        disbursed_amount: 5
+        disbursed_amount: 5,
+        cooldown_days: 0
       },
       {
         challenge_id: 'track-upload',
@@ -505,7 +507,8 @@ describe.skip('Rewards Page Sagas', () => {
         challenge_type: 'numeric',
         specifier: '1',
         user_id: '1',
-        disbursed_amount: 3
+        disbursed_amount: 3,
+        cooldown_days: 0
       }
     ]
     const fetchUserChallengesProvisions: StaticProvider[] = [
@@ -614,7 +617,8 @@ describe.skip('Rewards Page Sagas', () => {
         challenge_type: 'numeric',
         specifier: '1',
         user_id: '1',
-        disbursed_amount: 7
+        disbursed_amount: 7,
+        cooldown_days: 0
       }
     ]
 
@@ -667,7 +671,8 @@ describe.skip('Rewards Page Sagas', () => {
         challenge_type: 'numeric',
         specifier: '1',
         user_id: '1',
-        disbursed_amount: 2
+        disbursed_amount: 2,
+        cooldown_days: 0
       }
     ]
 
