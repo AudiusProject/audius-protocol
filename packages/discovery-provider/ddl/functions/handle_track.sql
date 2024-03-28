@@ -47,6 +47,8 @@ begin
     delta := 1;
   end if;
 
+  raise NOTICE 'wtf %', new;
+
   update aggregate_user
     set track_count = track_count + delta
   where user_id = new.owner_id
