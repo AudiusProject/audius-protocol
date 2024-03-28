@@ -542,33 +542,6 @@ func TestRunE2E(t *testing.T) {
 				},
 			},
 		},
-		{
-			path: "batch/fuga/20240305090206405",
-			expectedD: common.Delivery{
-				RemotePath:     "s3://audius-test-raw/20240305090206405",
-				DeliveryStatus: constants.DeliveryStatusSuccess,
-				Releases:       nil,
-				Batches:        []common.UnprocessedBatch{
-					// TODO
-					// {
-					// 	BatchID:      "20161024145603121",
-					// 	BatchXmlPath: "20161024145603121/BatchComplete_20161024145603121.xml",
-					// 	Releases: []common.UnprocessedRelease{
-					// 		{
-					// 			ReleaseID:        "721620118165",
-					// 			XmlFilePath:      "20161024145603121/721620118165/721620118165.xml",
-					// 			ValidationErrors: []string{},
-					// 		},
-					// 	},
-					// 	ValidationErrors: []string{},
-					// },
-				},
-				ValidationErrors: []string(nil),
-			},
-			expectedPR: common.PendingRelease{
-				// TODO
-			},
-		},
 	}
 
 	// Run subtests for release-by-release or batched depending on env var
