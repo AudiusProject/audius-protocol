@@ -352,10 +352,7 @@ export const DetailsTileNoAccess = ({
         </>
       )
     }
-    if (
-      isIosGatedContentEnabled &&
-      isContentUSDCPurchaseGated(streamConditions)
-    ) {
+    if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <>
           <View style={styles.descriptionContainer}>
@@ -363,16 +360,18 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          <Button
-            style={[styles.mainButton, styles.buyButton]}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.buy(
-              formatPrice(streamConditions.usdc_purchase.price)
-            )}
-            size='large'
-            onPress={handlePurchasePress}
-            fullWidth
-          />
+          {isIosGatedContentEnabled && (
+            <Button
+              style={[styles.mainButton, styles.buyButton]}
+              styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+              title={messages.buy(
+                formatPrice(streamConditions.usdc_purchase.price)
+              )}
+              size='large'
+              onPress={handlePurchasePress}
+              fullWidth
+            />
+          )}
         </>
       )
     }
