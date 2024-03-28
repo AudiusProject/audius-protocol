@@ -1,12 +1,7 @@
+import { TextInput, TextInputProps } from '@audius/harmony'
 import { useField } from 'formik'
 
-import {
-  InputV2,
-  InputV2Props,
-  InputV2Variant
-} from 'components/data-entry/InputV2'
-
-export type TextFieldProps = InputV2Props & {
+export type TextFieldProps = TextInputProps & {
   name: string
 }
 
@@ -17,8 +12,7 @@ export const TextField = (props: TextFieldProps) => {
   const hasError = Boolean(touched && error)
 
   return (
-    <InputV2
-      variant={InputV2Variant.ELEVATED_PLACEHOLDER}
+    <TextInput
       {...field}
       error={hasError}
       helperText={hasError ? error : undefined}

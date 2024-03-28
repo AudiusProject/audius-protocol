@@ -151,8 +151,8 @@ export const EnterTransferDetails = () => {
           value={humanizedValue}
           onChange={handleAmountChange}
           onBlur={handleAmountBlur}
-          startAdornment={messages.dollars}
-          endAdornment={messages.usdc}
+          startAdornmentText={messages.dollars}
+          endAdornmentText={messages.usdc}
         />
       </div>
       <Divider style={{ margin: 0 }} />

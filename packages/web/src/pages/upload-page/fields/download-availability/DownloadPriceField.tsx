@@ -66,8 +66,8 @@ export const DownloadPriceField = (props: TrackAvailabilityFieldsProps) => {
       label={messages.price.label}
       value={humanizedValue ?? undefined}
       placeholder={messages.price.placeholder}
-      startAdornment={messages.dollars}
-      endAdornment={messages.usdc}
+      startAdornmentText={messages.dollars}
+      endAdornmentText={messages.usdc}
       onChange={handlePriceChange}
       onBlur={handlePriceBlur}
       disabled={disabled}
