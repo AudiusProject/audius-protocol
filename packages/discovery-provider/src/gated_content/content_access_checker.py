@@ -64,13 +64,13 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
 
 
 def is_track(
-    content_type: GatedContentType, entity: Union[Track, Playlist]
+    entity: Union[Track, Playlist], content_type: GatedContentType
 ) -> TypeGuard[Track]:
     return content_type == "track" and isinstance(entity, Track)
 
 
 def is_playlist(
-    content_type: GatedContentType, entity: Union[Track, Playlist]
+    entity: Union[Track, Playlist], content_type: GatedContentType
 ) -> TypeGuard[Playlist]:
     return content_type == "album" and isinstance(entity, Playlist)
 
