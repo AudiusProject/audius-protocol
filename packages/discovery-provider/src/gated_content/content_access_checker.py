@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, List, TypedDict, Union, cast
+from typing import Dict, List, TypedDict, TypeGuard, Union, cast
 
 from sqlalchemy.orm.session import Session
 from typing_extensions import Protocol
@@ -63,6 +63,18 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
 }
 
 
+def is_track(
+    content_type: GatedContentType, entity: Union[Track, Playlist]
+) -> TypeGuard[Track]:
+    return content_type == "track" and isinstance(entity, Track)
+
+
+def is_playlist(
+    content_type: GatedContentType, entity: Union[Track, Playlist]
+) -> TypeGuard[Playlist]:
+    return content_type == "album" and isinstance(entity, Playlist)
+
+
 class ContentAccessChecker:
     # Given a user id, gated content id, and gated content type, and gated content entity,
     # this method checks for access to the gated contents by the users.
@@ -88,15 +100,23 @@ class ContentAccessChecker:
         # Content owner has access to their own gated content
         content_owner_id = (
             content_entity.owner_id
-            if content_type == "track"
-            else content_entity.playlist_owner_id
+            if is_track(content_type, content_entity)
+            else (
+                content_entity.playlist_owner_id
+                if (is_playlist(content_type, content_entity))
+                else None
+            )
         )
         if content_owner_id == user_id:
             return {"has_stream_access": True, "has_download_access": True}
         content_id = (
             content_entity.track_id
-            if content_type == "track"
-            else content_entity.playlist_id
+            if is_track(content_type, content_entity)
+            else (
+                content_entity.playlist_id
+                if is_playlist(content_type, content_entity)
+                else None
+            )
         )
 
         # If not gated on either stream or download,
