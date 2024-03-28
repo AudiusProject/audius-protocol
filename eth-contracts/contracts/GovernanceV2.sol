@@ -1030,7 +1030,7 @@ contract GovernanceV2 is InitializableV2 {
         }
 
         // Swap proposalId to end of array + pop (deletes last elem + decrements array length)
-        inProgressProposals[index] = inProgressProposals[inProgressProposals.length - 1];
+        inProgressProposals[index] = inProgressProposals[inProgressProposals.length.sub(1)];
         inProgressProposals.pop();
     }
 
@@ -1050,7 +1050,7 @@ contract GovernanceV2 is InitializableV2 {
     internal view returns (bool)
     {
         uint256 participation = (
-            (proposal.voteMagnitudeYes + proposal.voteMagnitudeNo)
+            (proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo))
             .mul(100)
             .div(stakingContract.totalStakedAt(proposal.submissionBlockNumber))
         );

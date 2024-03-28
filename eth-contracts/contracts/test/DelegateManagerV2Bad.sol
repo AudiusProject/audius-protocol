@@ -650,7 +650,7 @@ contract DelegateManagerV2Bad is InitializableV2 {
 
         // Update lockup
         removeDelegatorRequests[_serviceProvider][_delegator] = (
-            block.number + removeDelegatorLockupDuration
+            block.number.add(removeDelegatorLockupDuration)
         );
 
         emit RemoveDelegatorRequested(
@@ -1306,7 +1306,7 @@ contract DelegateManagerV2Bad is InitializableV2 {
     function _updateRemoveDelegatorLockupDuration(uint256 _duration) internal {
         Governance governance = Governance(governanceAddress);
         require(
-            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            _duration > (governance.getVotingPeriod().add(governance.getExecutionDelay())),
             "DelegateManager: removeDelegatorLockupDuration duration must be greater than governance votingPeriod + executionDelay"
         );
         removeDelegatorLockupDuration = _duration;
@@ -1319,7 +1319,7 @@ contract DelegateManagerV2Bad is InitializableV2 {
     function _updateUndelegateLockupDuration(uint256 _duration) internal {
         Governance governance = Governance(governanceAddress);
         require(
-            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            _duration > (governance.getVotingPeriod().add(governance.getExecutionDelay())),
             "DelegateManager: undelegateLockupDuration duration must be greater than governance votingPeriod + executionDelay"
         );
         undelegateLockupDuration = _duration;

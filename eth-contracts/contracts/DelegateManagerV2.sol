@@ -650,7 +650,7 @@ contract DelegateManagerV2 is InitializableV2 {
 
         // Update lockup
         removeDelegatorRequests[_serviceProvider][_delegator] = (
-            block.number + removeDelegatorLockupDuration
+            block.number.add(removeDelegatorLockupDuration)
         );
 
         emit RemoveDelegatorRequested(
@@ -1214,8 +1214,8 @@ contract DelegateManagerV2 is InitializableV2 {
         for (uint256 i = 0; i < spDelegateInfo[_serviceProvider].delegators.length; i++) {
             if (spDelegateInfo[_serviceProvider].delegators[i] == _delegator) {
                 // Overwrite and shrink delegators list
-                spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length - 1];
-                spDelegateInfo[_serviceProvider].delegators.length--;
+                spDelegateInfo[_serviceProvider].delegators[i] = spDelegateInfo[_serviceProvider].delegators[spDelegateInfo[_serviceProvider].delegators.length.sub(1)];
+                spDelegateInfo[_serviceProvider].delegators.pop();
                 break;
             }
         }
@@ -1306,7 +1306,7 @@ contract DelegateManagerV2 is InitializableV2 {
     function _updateRemoveDelegatorLockupDuration(uint256 _duration) internal {
         Governance governance = Governance(governanceAddress);
         require(
-            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            _duration > (governance.getVotingPeriod().add(governance.getExecutionDelay())),
             "DelegateManager: removeDelegatorLockupDuration duration must be greater than governance votingPeriod + executionDelay"
         );
         removeDelegatorLockupDuration = _duration;
@@ -1319,7 +1319,7 @@ contract DelegateManagerV2 is InitializableV2 {
     function _updateUndelegateLockupDuration(uint256 _duration) internal {
         Governance governance = Governance(governanceAddress);
         require(
-            _duration > governance.getVotingPeriod() + governance.getExecutionDelay(),
+            _duration > (governance.getVotingPeriod().add(governance.getExecutionDelay())),
             "DelegateManager: undelegateLockupDuration duration must be greater than governance votingPeriod + executionDelay"
         );
         undelegateLockupDuration = _duration;
