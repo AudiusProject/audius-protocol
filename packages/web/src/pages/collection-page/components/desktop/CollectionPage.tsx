@@ -32,6 +32,7 @@ import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
+import { getDogEarType } from '@audius/common/utils'
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   emptyPage: {
@@ -129,6 +130,9 @@ const CollectionPage = ({
   onClickFavorites
 }: CollectionPageProps) => {
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const [dataSource, playingIndex] =
@@ -171,6 +175,11 @@ const CollectionPage = ({
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 
+  const isStreamGated =
+    metadata && 'is_stream_gated' in metadata && metadata?.is_stream_gated
+  const streamConditions =
+    metadata && 'stream_conditions' in metadata && metadata?.stream_conditions
+
   const {
     isEmpty,
     lastModified,
@@ -184,6 +193,15 @@ const CollectionPage = ({
   const numTracks = tracks.entries.length
   const areAllTracksDeleted = tracks.entries.every((track) => track.is_delete)
   const isPlayable = !areAllTracksDeleted && numTracks > 0
+  const dogEarType =
+    (!collectionLoading &&
+      isStreamGated &&
+      streamConditions &&
+      getDogEarType({
+        streamConditions,
+        isUnlisted: isPrivate
+      })) ||
+    undefined
 
   const topSection = (
     <CollectionHeader
@@ -269,7 +287,13 @@ const CollectionPage = ({
           className={styles.bodyWrapper}
           size='large'
           elevation='mid'
-          dogEar={isPrivate ? DogEarType.HIDDEN : undefined}
+          dogEar={
+            isPremiumAlbumsEnabled
+              ? dogEarType
+              : isPrivate
+              ? DogEarType.HIDDEN
+              : undefined
+          }
         >
           <div className={styles.topSectionWrapper}>{topSection}</div>
           {!collectionLoading && isEmpty ? (
