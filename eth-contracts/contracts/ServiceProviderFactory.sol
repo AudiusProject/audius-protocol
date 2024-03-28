@@ -989,6 +989,8 @@ contract ServiceProviderFactory is InitializableV2 {
     function setStakingAddress(address _address) external {
         _requireIsInitialized();
 
+        require(stakingAddress == address(0), "ServiceProviderFactory: Staking address already set");
+        require(_address != address(0x00), "ServiceProviderFactory: Requires non-zero _stakingAddress");
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         stakingAddress = _address;
         emit StakingAddressUpdated(_address);
