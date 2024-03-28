@@ -2,6 +2,8 @@ import { Collection, ID } from '@audius/common/models'
 import { collectionPageSelectors, CommonState } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
+
 import { FavoriteButton } from './FavoriteButton'
 import { OverflowMenuButton } from './OverflowMenuButton'
 import { RepostButton } from './RepostButton'
@@ -39,7 +41,9 @@ export const ViewerActionButtons = (props: ViewerActionButtonsProps) => {
         collectionId={collectionId}
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.fourth}
       />
-      <OverflowMenuButton collectionId={collectionId} />
+      <ClientOnly>
+        <OverflowMenuButton collectionId={collectionId} />
+      </ClientOnly>
     </>
   )
 }
