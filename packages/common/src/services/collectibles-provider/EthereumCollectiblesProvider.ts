@@ -220,7 +220,9 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
           if (ownedCollectibleKeySet.has(id)) {
             collectiblesMap[id] = {
               ...collectiblesMap[id],
-              dateLastTransferred: dayjs(event.event_timestamp).toString()
+              dateLastTransferred: dayjs(
+                event.event_timestamp * 1000
+              ).toString()
             }
           } else {
             ownedCollectibleKeySet.add(id)
@@ -256,7 +258,9 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
             } else {
               collectiblesMap[id] = {
                 ...collectiblesMap[id],
-                dateLastTransferred: dayjs(event.event_timestamp).toString()
+                dateLastTransferred: dayjs(
+                  event.event_timestamp * 1000
+                ).toString()
               }
             }
           } else if (
