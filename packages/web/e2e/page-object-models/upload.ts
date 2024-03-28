@@ -144,6 +144,7 @@ export class EditPlaylistPage extends BaseEditPage {
     }
   ) {
     const trackItem = this.trackList.getByRole('listitem').nth(index)
+    // TODO: This feature is being reworked, this no longer exists
     const checkbox = trackItem.getByRole('checkbox', {
       name: /override details for this track/i
     })
@@ -196,12 +197,58 @@ export class EditPlaylistPage extends BaseEditPage {
   }
 }
 
+type AlbumAccessType = 'public' | 'premium' | 'hidden'
+type AlbumAccessArgs = { albumPrice: number; albumTrackPrice: number }
 export class EditAlbumPage extends EditPlaylistPage {
   protected readonly titleInput: Locator
+  protected readonly accessAndSaleMenu: Locator
+  protected readonly albumPriceInput: Locator
+  protected readonly albumTrackPriceInput: Locator
+  protected readonly accessMenuSaveButton: Locator
+  protected readonly accessPriceDisplay: Locator
+  protected readonly accessTrackPriceDisplay: Locator
+  protected readonly accessAndSaleMenuOptions: {
+    [k in AlbumAccessType]: Locator
+  }
 
   constructor(page: Page) {
     super(page)
     this.titleInput = page.getByRole('textbox', { name: /album name/i })
+    this.accessAndSaleMenu = page.getByRole('heading', {
+      name: /access & sale/i
+    })
+    this.accessAndSaleMenuOptions = {
+      public: page.getByRole('radio', { name: /public/i }),
+      premium: page.getByRole('radio', { name: /premium/i }),
+      hidden: page.getByRole('radio', { name: /hidden/i })
+    }
+    this.albumPriceInput = page.getByRole('textbox', { name: /album price/i })
+    this.albumTrackPriceInput = page.getByRole('textbox', {
+      name: /track price/i
+    })
+    this.accessMenuSaveButton = page.getByRole('button', {
+      name: /save/i
+    })
+    this.accessTrackPriceDisplay = page.getByTestId('track-price-display')
+    this.accessPriceDisplay = page.getByTestId('price-display')
+  }
+
+  async setAlbumAccessType(type: AlbumAccessType, args?: AlbumAccessArgs) {
+    await this.accessAndSaleMenu.click()
+    await this.accessAndSaleMenuOptions[type].click()
+    if (args !== undefined && type === 'premium' && 'albumPrice' in args) {
+      await this.albumPriceInput.fill(args.albumPrice.toString())
+      await this.albumTrackPriceInput.fill(args.albumTrackPrice.toString())
+      await this.accessMenuSaveButton.click()
+      await expect(this.accessPriceDisplay).toContainText(
+        `$${args.albumPrice.toString()}.00`
+      )
+      await expect(this.accessTrackPriceDisplay).toContainText(
+        `$${args.albumTrackPrice.toString()}.00`
+      )
+    } else {
+      await this.accessMenuSaveButton.click()
+    }
   }
 }
 

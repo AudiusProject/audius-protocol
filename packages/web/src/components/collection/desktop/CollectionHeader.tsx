@@ -38,6 +38,7 @@ type CollectionHeaderProps = any
 
 export const CollectionHeader = (props: CollectionHeaderProps) => {
   const {
+    access,
     collectionId,
     ownerId,
     type,
@@ -74,21 +75,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const { data: currentUserId } = useGetCurrentUserId({})
 
-  const { data: purchases, hasMore: hasMorePurchases } = useAllPaginatedQuery(
-    useGetPurchases,
-    {
-      userId: currentUserId
-    },
-    {
-      pageSize: 100
-    }
-  )
-
-  const isAlbumPurchased = purchases.some(
-    (purchaseDetails) =>
-      purchaseDetails.contentType === USDCContentPurchaseType.ALBUM &&
-      purchaseDetails.contentId === collectionId
-  )
+  const hasStreamAccess = access?.stream
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -241,11 +228,11 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       </div>
       {isStreamGated && streamConditions ? (
         <GatedContentSection
-          isLoading={hasMorePurchases}
+          isLoading={isLoading}
           contentId={collectionId}
           contentType={PurchaseableContentType.ALBUM}
           streamConditions={streamConditions}
-          hasStreamAccess={isAlbumPurchased}
+          hasStreamAccess={hasStreamAccess}
           isOwner={ownerId === currentUserId}
           ownerId={ownerId}
         />

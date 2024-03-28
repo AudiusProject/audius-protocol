@@ -110,9 +110,9 @@ type SelectedValueProps = {
 }
 
 export const SelectedValue = (props: SelectedValueProps) => {
-  const { label, icon: Icon, children } = props
+  const { label, icon: Icon, children, ...rest } = props
   return (
-    <span className={styles.selectedValue}>
+    <span className={styles.selectedValue} {...rest}>
       {Icon ? <Icon size='s' color='default' /> : null}
       {label ? (
         <Text variant='body' strength='strong'>

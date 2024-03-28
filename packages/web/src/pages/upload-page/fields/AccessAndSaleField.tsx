@@ -18,6 +18,7 @@ import { formatPrice } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
+  IconComponent,
   IconVisibilityHidden as IconHidden,
   IconNote,
   IconSpecialAccess,
@@ -115,8 +116,8 @@ export type USDCPurchaseRemoteConfig = Pick<
 
 const refineMinPrice =
   (key: 'price' | 'albumTrackPrice', minContentPriceCents: number) =>
-  (values) => {
-    const formValues = values as AccessAndSaleFormValues
+  // TODO: figure out typing here
+  (formValues) => {
     const streamConditions = formValues[STREAM_CONDITIONS]
     if (
       formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
@@ -130,8 +131,8 @@ const refineMinPrice =
 
 const refineMaxPrice =
   (key: 'price' | 'albumTrackPrice', maxContentPriceCents: number) =>
-  (values) => {
-    const formValues = values as AccessAndSaleFormValues
+  // TODO: figure out typing here
+  (formValues) => {
     const streamConditions = formValues[STREAM_CONDITIONS]
     if (
       formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
@@ -145,7 +146,7 @@ const refineMaxPrice =
 export const AccessAndSaleFormSchema = (
   trackLength: number,
   { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig,
-  isAlbum: boolean
+  isAlbum?: boolean
 ) =>
   z
     .object({
@@ -518,7 +519,14 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       )
     }
 
-    let selectedValues = []
+    let selectedValues: (
+      | {
+          label: string
+          icon: IconComponent
+          ['data-testid']?: string
+        }
+      | string
+    )[] = []
 
     const specialAccessValue = {
       label: messages.specialAccess,
@@ -531,7 +539,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           label: messages.price(
             savedStreamConditions.usdc_purchase.price / 100
           ),
-          icon: IconCart
+          icon: IconCart,
+          'data-testid': `price-display`
         }
       ]
       if (preview) {
@@ -545,7 +554,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       if (albumTrackPrice) {
         selectedValues.push({
           label: messages.price(albumTrackPrice / 100),
-          icon: IconNote
+          icon: IconNote,
+          'data-testid': `track-price-display`
         })
       }
     } else if (isContentFollowGated(savedStreamConditions)) {

@@ -70,6 +70,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
+
   const { isEnabled: isCollectibleGatedFlagEnabled } = useFlag(
     FeatureFlags.COLLECTIBLE_GATED_ENABLED
   )

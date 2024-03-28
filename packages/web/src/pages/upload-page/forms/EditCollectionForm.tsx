@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
-import { USDCPurchaseConditions } from '@audius/common/models'
 import {
   AlbumSchema,
-  AlbumValues,
   CollectionValues,
   PlaylistSchema
 } from '@audius/common/schemas'
@@ -27,10 +25,11 @@ import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
-import { AccessAndSaleFormValues } from '../fields/types'
 import { CollectionFormState } from '../types'
 
 import styles from './EditCollectionForm.module.css'
+import { FeatureFlags } from '@audius/common/services'
+import { useFeatureFlag } from '@audius/common/hooks'
 
 const messages = {
   name: 'Name',
@@ -52,6 +51,9 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
   const isAlbum = uploadType === UploadType.ALBUM
+  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
 
   const initialValues: CollectionValues = {
     ...metadata,
@@ -118,7 +120,9 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           <ReleaseDateFieldLegacy />
-          {isAlbum ? <AccessAndSaleField isAlbum isUpload /> : null}
+          {isAlbum && isPremiumAlbumsEnabled ? (
+            <AccessAndSaleField isAlbum isUpload />
+          ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
             <Text variant='body'>{messages.trackDetails.description}</Text>

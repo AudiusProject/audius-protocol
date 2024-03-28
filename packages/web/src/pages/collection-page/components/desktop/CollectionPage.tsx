@@ -168,6 +168,8 @@ const CollectionPage = ({
     metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
   const customEmptyText =
     metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
+  const access =
+    metadata !== null && 'access' in metadata ? metadata?.access : null
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 
@@ -187,6 +189,7 @@ const CollectionPage = ({
 
   const topSection = (
     <CollectionHeader
+      access={access}
       collectionId={playlistId}
       userId={playlistOwnerId}
       loading={isNftPlaylist ? tracksLoading : collectionLoading}
