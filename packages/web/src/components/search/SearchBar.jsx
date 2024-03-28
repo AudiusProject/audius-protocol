@@ -222,6 +222,9 @@ class SearchBar extends Component {
       !isEqual(nextProps.dataSource, this.props.dataSource) &&
       nextProps.resultsCount > 0
     ) {
+      if (!nextState.selected && !nextState.valueFromParent) {
+        this.setState({ open: true })
+      }
       if (nextProps.status === Status.SUCCESS) {
         return true
       }
@@ -233,6 +236,9 @@ class SearchBar extends Component {
       nextProps.resultsCount === 0 &&
       this.state.value !== ''
     ) {
+      if (!nextState.selected && !nextState.valueFromParent) {
+        this.setState({ open: true })
+      }
       return false
     }
     // Close the dropdown if we're searching for '' (deleted text in search).
