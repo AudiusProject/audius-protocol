@@ -28,6 +28,8 @@ import { UserGeneratedText } from 'components/user-generated-text'
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
 import styles from './CollectionHeader.module.css'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { FeatureFlags } from '@audius/common/services'
 
 const messages = {
   filter: 'Filter Tracks'
@@ -68,6 +70,10 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     isStreamGated,
     streamConditions
   } = props
+
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
 
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
@@ -239,7 +245,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           </div>
         ) : null}
       </div>
-      {isStreamGated && streamConditions ? (
+      {isPremiumAlbumsEnabled && isStreamGated && streamConditions ? (
         <GatedContentSection
           isLoading={hasMorePurchases}
           contentId={collectionId}
