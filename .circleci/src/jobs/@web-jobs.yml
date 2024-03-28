@@ -149,7 +149,7 @@ web-test:
     - run:
         name: test
         no_output_timeout: 30m
-        command: npm run web:test -- -- --reporter=junit --outputFile=report.xml
+        command: npm run web:test -- -- run --reporter=default --reporter=junit --outputFile=report.xml
     - store_test_results:
         path: packages/web/report.xml
         when: always

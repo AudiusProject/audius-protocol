@@ -32,7 +32,7 @@ export function* watchFollowUser() {
 export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
 
   const accountId = yield* select(getUserId)
   if (!accountId) {
@@ -159,7 +159,7 @@ export function* unfollowUser(
   action: ReturnType<typeof socialActions.unfollowUser>
 ) {
   /* Make Async Backend Call */
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const accountId = yield* select(getUserId)
   if (!accountId) {
     yield* put(signOnActions.openSignOn(false))
@@ -274,7 +274,7 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
 /* SUBSCRIBE */
 
 export function* subscribeToUserAsync(userId: ID) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
 
   const accountId = yield* select(getUserId)
   if (!accountId) {
@@ -341,7 +341,7 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
 }
 
 export function* unsubscribeFromUserAsync(userId: ID) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
 
   const accountId = yield* select(getUserId)
   if (!accountId) {

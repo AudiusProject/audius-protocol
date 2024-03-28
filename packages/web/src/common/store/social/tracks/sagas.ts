@@ -53,7 +53,7 @@ export function* watchRepostTrack() {
 export function* repostTrackAsync(
   action: ReturnType<typeof socialActions.repostTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -61,13 +61,17 @@ export function* repostTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  if (userId === action.trackId) {
-    return
-  }
 
   // Increment the repost count on the user
   const user = yield* select(getUser, { id: userId })
   if (!user) return
+
+  const track = yield* select(getTrack, { id: action.trackId })
+  if (!track) return
+
+  if (track.owner_id === userId) {
+    return
+  }
 
   yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
 
@@ -77,9 +81,6 @@ export function* repostTrackAsync(
     id: action.trackId
   })
   yield* put(event)
-
-  const track = yield* select(getTrack, { id: action.trackId })
-  if (!track) return
 
   const repostMetadata = action.isFeed
     ? // If we're on the feed, and someone i follow has
@@ -211,15 +212,12 @@ export function* watchUndoRepostTrack() {
 export function* undoRepostTrackAsync(
   action: ReturnType<typeof socialActions.undoRepostTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  if (userId === action.trackId) {
     return
   }
 
@@ -327,7 +325,7 @@ export function* watchSaveTrack() {
 export function* saveTrackAsync(
   action: ReturnType<typeof socialActions.saveTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
@@ -335,10 +333,6 @@ export function* saveTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  if (userId === action.trackId) {
-    return
-  }
-
   const tracks = yield* select(getTracks, { ids: [action.trackId] })
   const track = tracks[action.trackId]
 
@@ -347,6 +341,10 @@ export function* saveTrackAsync(
   // Increment the save count on the user
   const user = yield* select(getUser, { id: userId })
   if (!user) return
+
+  if (track.owner_id === userId) {
+    return
+  }
 
   yield* call(adjustUserField, {
     user,
@@ -480,15 +478,12 @@ export function* watchUnsaveTrack() {
 export function* unsaveTrackAsync(
   action: ReturnType<typeof socialActions.unsaveTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  if (userId === action.trackId) {
     return
   }
 
@@ -600,7 +595,7 @@ export function* watchSetArtistPick() {
   yield* takeEvery(
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
-      yield* waitForWrite()
+      yield* call(waitForWrite)
       const userId: ID | null = yield* select(getUserId)
 
       if (!userId) return
@@ -625,7 +620,7 @@ export function* watchSetArtistPick() {
 
 export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
-    yield* waitForWrite()
+    yield* call(waitForWrite)
     const userId = yield* select(getUserId)
 
     if (!userId) return

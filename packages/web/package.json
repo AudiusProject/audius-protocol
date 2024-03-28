@@ -33,7 +33,7 @@
     "stylelint": "stylelint 'src/**/*.css'",
     "test:e2e": "npx playwright test",
     "test:coverage": "vitest --resetMocks=false --coverage --watchAll=false",
-    "test": "vitest run",
+    "test": "vitest",
     "typecheck:watch": "tsc --watch",
     "typecheck": "tsc",
     "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\" \"npm:lint:env\"",
@@ -279,6 +279,6 @@
     "vite": "4.5.0",
     "vite-plugin-glslify": "2.0.2",
     "vite-plugin-svgr": "4.1.0",
-    "vitest": "0.34.6"
+    "vitest": "1.4.0"
   }
 }

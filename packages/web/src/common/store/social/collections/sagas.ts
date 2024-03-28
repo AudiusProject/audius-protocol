@@ -53,7 +53,7 @@ export function* watchRepostCollection() {
 export function* repostCollectionAsync(
   action: ReturnType<typeof socialActions.repostCollection>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -61,15 +61,11 @@ export function* repostCollectionAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  if (userId === action.collectionId) {
-    return
-  }
 
   // increment the repost count on the user
   const user = yield* select(getUser, { id: userId })
   if (!user) return
 
-  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
   let collection = action.metadata
   if (!collection) {
     const collections = yield* select(getCollections, {
@@ -77,6 +73,12 @@ export function* repostCollectionAsync(
     })
     collection = collections[action.collectionId]
   }
+
+  if (collection.playlist_owner_id === userId) {
+    return
+  }
+
+  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
 
   const event = make(Name.REPOST, {
     kind: collection.is_album ? 'album' : 'playlist',
@@ -177,15 +179,12 @@ export function* watchUndoRepostCollection() {
 export function* undoRepostCollectionAsync(
   action: ReturnType<typeof socialActions.undoRepostCollection>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  if (userId === action.collectionId) {
     return
   }
 
@@ -304,7 +303,7 @@ export function* watchSaveSmartCollection() {
 export function* saveSmartCollection(
   action: ReturnType<typeof socialActions.saveSmartCollection>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
@@ -336,15 +335,12 @@ export function* saveSmartCollection(
 export function* saveCollectionAsync(
   action: ReturnType<typeof socialActions.saveCollection>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  if (userId === action.collectionId) {
     return
   }
 
@@ -354,6 +350,10 @@ export function* saveCollectionAsync(
   const collection = collections[action.collectionId]
   const user = yield* select(getUser, { id: collection.playlist_owner_id })
   if (!user) return
+
+  if (collection.playlist_owner_id === userId) {
+    return
+  }
 
   const event = make(Name.FAVORITE, {
     kind: collection.is_album ? 'album' : 'playlist',
@@ -507,10 +507,7 @@ export function* unsaveCollectionAsync(
   action: ReturnType<typeof socialActions.unsaveCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  if (userId === action.collectionId) {
-    return
-  }
+
   const collections = yield* select(getCollections, {
     ids: [action.collectionId]
   })
