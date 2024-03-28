@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { useGatedContentAccess, useLockedContent } from '@audius/common/hooks'
-import { gatedContentActions } from '@audius/common/store'
+import {
+  PurchaseableContentType,
+  gatedContentActions
+} from '@audius/common/store'
 import {
   ModalContent,
   ModalHeader,
@@ -12,8 +15,8 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { GatedTrackSection } from 'components/track/GatedTrackSection'
-import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
+import { GatedContentSection } from 'components/track/GatedContentSection'
+import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
@@ -61,16 +64,18 @@ export const LockedContentModal = () => {
       <ModalContent>
         {track && track.stream_conditions && owner && (
           <div className={styles.modalContent}>
-            <LockedTrackDetailsTile track={track} owner={owner} />
-            <GatedTrackSection
+            <LockedContentDetailsTile metadata={track} owner={owner} />
+            <GatedContentSection
               isLoading={false}
-              trackId={track.track_id}
+              // TODO: album support?
+              contentId={track.track_id}
+              contentType={PurchaseableContentType.TRACK}
               streamConditions={track.stream_conditions}
               hasStreamAccess={hasStreamAccess}
               isOwner={false}
-              wrapperClassName={styles.gatedTrackSectionWrapper}
-              className={styles.gatedTrackSection}
-              buttonClassName={styles.gatedTrackSectionButton}
+              wrapperClassName={styles.gatedContentSectionWrapper}
+              className={styles.gatedContentSection}
+              buttonClassName={styles.gatedContentSectionButton}
               ownerId={owner.user_id}
             />
           </div>

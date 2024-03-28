@@ -2,8 +2,9 @@ import { BuyCryptoErrorCode } from '~/store/buy-crypto/types'
 
 import { BuyUSDCErrorCode } from '../buy-usdc'
 
-export enum ContentType {
-  TRACK = 'track'
+export enum PurchaseableContentType {
+  TRACK = 'track',
+  ALBUM = 'album'
 }
 
 export enum PurchaseContentStage {

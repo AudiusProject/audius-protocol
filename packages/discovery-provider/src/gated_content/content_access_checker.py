@@ -37,8 +37,8 @@ GatedContentAccessResult = Dict[int, Dict[int, ContentAccessResponse]]
 class ContentAccessBatchResponse(TypedDict):
     # track : user id -> track id -> access
     track: GatedContentAccessResult
-    # playlist : user id -> playlist id -> access
-    playlist: GatedContentAccessResult
+    # album : user id -> playlist id -> access
+    album: GatedContentAccessResult
 
 
 class GatedContentAccessHandler(Protocol):
@@ -150,7 +150,7 @@ class ContentAccessChecker:
         args: List[ContentAccessBatchArgs],
     ) -> ContentAccessBatchResponse:
         if not args:
-            return {"track": {}, "playlist": {}}
+            return {"track": {}, "album": {}}
 
         track_ids = [
             arg["content_id"] for arg in args if arg["content_type"] == "track"
@@ -161,11 +161,11 @@ class ContentAccessChecker:
         ]
         gated_album_data = self._get_gated_album_data_for_batch(session, album_ids)
 
-        batch_access_result: ContentAccessBatchResponse = {"track": {}, "playlist": {}}
+        batch_access_result: ContentAccessBatchResponse = {"track": {}, "album": {}}
 
         for arg in args:
             content_type = arg["content_type"]
-            key_type = "track" if content_type == "track" else "playlist"
+            key_type = "track" if content_type == "track" else "album"
             content_id = arg["content_id"]
             user_id = arg["user_id"]
             entity = (
@@ -196,7 +196,7 @@ class ContentAccessChecker:
             # note that stem tracks do not have stream/download conditions.
             # also note that albums only support stream_conditions.
             stream_conditions = entity["stream_conditions"]
-            download_conditions = entity["download_conditions"]
+            download_conditions = entity.get("download_conditions")
             if not stream_conditions and not download_conditions:
                 access = (
                     self._check_stem_access(
@@ -287,8 +287,6 @@ class ContentAccessChecker:
                 "content_type": "album",
                 "is_stream_gated": album["is_stream_gated"],  # type: ignore
                 "stream_conditions": album["stream_conditions"],  # type: ignore
-                "is_download_gated": album["is_download_gated"],  # type: ignore
-                "download_conditions": album["download_conditions"],  # type: ignore
                 "content_owner_id": album["playlist_owner_id"],  # type: ignore
             }
             for album in albums

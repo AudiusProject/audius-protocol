@@ -70,6 +70,10 @@ def prune_plays(self):
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock("prune_plays_lock", timeout=7200)
+
+    interval = timedelta(seconds=30)
+    start_time = time.time()
+    errored = False
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -86,8 +90,22 @@ def prune_plays(self):
         else:
             logger.info("prune_plays.py | Failed to acquire prune_plays_lock")
     except Exception as e:
-        logger.error("prune_plays.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
         if have_lock:
             update_lock.release()
+        celery.send_task(self.name, countdown=time_left)

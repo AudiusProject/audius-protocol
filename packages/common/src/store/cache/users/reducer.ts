@@ -67,7 +67,11 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
   // If we have preloaded data from the server, populate the initial
   // cache state with it
   if (ssrPageProps) {
-    const apiUser = ssrPageProps.user ?? ssrPageProps.track?.user ?? null
+    const apiUser =
+      ssrPageProps.user ??
+      ssrPageProps.track?.user ??
+      ssrPageProps.collection?.user ??
+      null
 
     // @ts-ignore
     const user = apiUser ? makeUser(snakecaseKeys(apiUser)) : null
@@ -76,7 +80,7 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
     const id = user.user_id
     const uid = makeUid(Kind.USERS, id)
 
-    const initialCacheState = {
+    return {
       ...initialState,
       entries: {
         [id]: {
@@ -91,7 +95,6 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
         [id]: 'SUCCESS'
       }
     }
-    return initialCacheState
   }
   return initialState
 }

@@ -398,7 +398,6 @@ const reducer =
     }
 
     const tracks = tracksLineupReducer(
-      // TODO: KJ - Fix this later, weird never type
       // @ts-ignore
       newEntry.tracks,
       action as LineupActions<Track>

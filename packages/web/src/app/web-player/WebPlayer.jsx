@@ -484,10 +484,6 @@ class WebPlayer extends Component {
         </AppBannerWrapper>
         {this.props.isChatEnabled ? <ChatListener /> : null}
         <USDCBalanceFetcher />
-        <ClientOnly>
-          {/* This is used in E2E tests to determine that client-side JS is loaded */}
-          <div data-testid='app-hydrated'></div>
-        </ClientOnly>
         <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
           <Notice />

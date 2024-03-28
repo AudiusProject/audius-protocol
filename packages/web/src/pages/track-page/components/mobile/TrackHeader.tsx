@@ -15,6 +15,7 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,
+  PurchaseableContentType,
   cacheTracksSelectors
 } from '@audius/common/store'
 import {
@@ -49,7 +50,7 @@ import { StaticImage } from 'components/static-image/StaticImage'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { DownloadSection } from 'components/track/DownloadSection'
-import { GatedTrackSection } from 'components/track/GatedTrackSection'
+import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -418,17 +419,20 @@ const TrackHeader = ({
         />
       ) : null}
       {streamConditions && trackId ? (
-        <GatedTrackSection
-          isLoading={isLoading}
-          trackId={trackId}
-          streamConditions={streamConditions}
-          hasStreamAccess={hasStreamAccess}
-          isOwner={isOwner}
-          wrapperClassName={styles.gatedTrackSectionWrapper}
-          className={styles.gatedTrackSection}
-          buttonClassName={styles.gatedTrackSectionButton}
-          ownerId={userId}
-        />
+        <Box mb='xl'>
+          <GatedContentSection
+            isLoading={isLoading}
+            contentId={trackId}
+            contentType={PurchaseableContentType.TRACK}
+            streamConditions={streamConditions}
+            hasStreamAccess={hasStreamAccess}
+            isOwner={isOwner}
+            wrapperClassName={styles.gatedContentSectionWrapper}
+            className={styles.gatedContentSection}
+            buttonClassName={styles.gatedContentSectionButton}
+            ownerId={userId}
+          />
+        </Box>
       ) : null}
       {showPreview ? (
         <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />

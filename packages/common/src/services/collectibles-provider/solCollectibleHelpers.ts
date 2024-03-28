@@ -2,6 +2,7 @@ import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
 import { Chain, Collectible, CollectibleMediaType } from '../../models'
 import { Nullable } from '../../utils/typeUtils'
+import { HeliusNFT } from '../helius'
 
 import {
   MetaplexNFT,
@@ -37,7 +38,9 @@ const fetchWithTimeout = async (
  * NFT is a gif if it has a file with MIME type image/gif
  * if it's a gif, we compute an image frame from the gif
  */
-const nftGif = async (nft: MetaplexNFT): Promise<Nullable<SolanaNFTMedia>> => {
+const metaplexNftGif = async (
+  nft: MetaplexNFT
+): Promise<Nullable<SolanaNFTMedia>> => {
   const gifFile = (nft.properties?.files ?? []).find(
     (file: any) => typeof file === 'object' && file.type === 'image/gif'
   )
@@ -63,7 +66,7 @@ const nftGif = async (nft: MetaplexNFT): Promise<Nullable<SolanaNFTMedia>> => {
  * - either in the image property, or
  * - the properties files with a type of image
  */
-const nftThreeDWithFrame = async (
+const metaplexNftThreeDWithFrame = async (
   nft: MetaplexNFT
 ): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties?.files ?? []
@@ -80,7 +83,7 @@ const nftThreeDWithFrame = async (
     objUrl
   if (is3DObject) {
     let frameUrl
-    if (!nft.image.endsWith('glb')) {
+    if (!nft.image?.endsWith('glb')) {
       frameUrl = nft.image
     } else {
       const imageFile = files?.find(
@@ -121,7 +124,7 @@ const nftThreeDWithFrame = async (
  * if the video has a poster/thumbnail, it would be in the image property
  * otherwise, we later use the first video frame as the thumbnail
  */
-const nftVideo = async (
+const metaplexNftVideo = async (
   nft: MetaplexNFT
 ): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties?.files ?? []
@@ -179,7 +182,7 @@ const nftVideo = async (
  * - it has a file whose type is image, or
  * - it has an image property
  */
-const nftImage = async (
+const metaplexNftImage = async (
   nft: MetaplexNFT
 ): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties?.files ?? []
@@ -189,10 +192,10 @@ const nftImage = async (
     (file: any) => typeof file === 'object' && file.type?.includes('image')
   ) as MetaplexNFTPropertiesFile
   const isImage =
-    nft.properties?.category === 'image' || nft.image.length || imageFile
+    nft.properties?.category === 'image' || nft.image?.length || imageFile
   if (isImage) {
     let url
-    if (nft.image.length) {
+    if (nft.image?.length) {
       url = nft.image
     } else if (imageFile) {
       url = imageFile.uri
@@ -222,7 +225,7 @@ const nftImage = async (
  * - if video, we later use the first video frame as the thumbnail
  * - if image, the image url is also the frame url
  */
-const nftComputedMedia = async (
+const metaplexNftComputedMedia = async (
   nft: MetaplexNFT
 ): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties?.files ?? []
@@ -259,54 +262,6 @@ const nftComputedMedia = async (
   return null
 }
 
-const metaplexNFTToCollectible = async (
-  nft: MetaplexNFT,
-  solanaChainMetadata: Nullable<Metadata>,
-  address: string
-): Promise<Collectible> => {
-  const identifier = [nft.symbol, nft.name, nft.image]
-    .filter(Boolean)
-    .join(':::')
-
-  const collectible = {
-    id: identifier,
-    tokenId: identifier,
-    name: nft.name,
-    description: nft.description,
-    externalLink: nft.external_url,
-    isOwned: true,
-    chain: Chain.Sol,
-    solanaChainMetadata
-  } as Collectible
-
-  if (
-    (nft.properties?.creators ?? []).some(
-      (creator: any) => creator.address === address
-    )
-  ) {
-    collectible.isOwned = false
-  }
-
-  const { url, frameUrl, collectibleMediaType } = ((await nftGif(nft)) ||
-    (await nftThreeDWithFrame(nft)) ||
-    (await nftVideo(nft)) ||
-    (await nftImage(nft)) ||
-    (await nftComputedMedia(nft))) as SolanaNFTMedia
-  collectible.frameUrl = frameUrl
-  collectible.mediaType = collectibleMediaType
-  if (collectibleMediaType === CollectibleMediaType.GIF) {
-    collectible.gifUrl = url
-  } else if (collectibleMediaType === CollectibleMediaType.THREE_D) {
-    collectible.threeDUrl = url
-  } else if (collectibleMediaType === CollectibleMediaType.VIDEO) {
-    collectible.videoUrl = url
-  } else if (collectibleMediaType === CollectibleMediaType.IMAGE) {
-    collectible.imageUrl = url
-  }
-
-  return collectible
-}
-
 const starAtlasNFTToCollectible = async (
   nft: StarAtlasNFT,
   solanaChainMetadata: Nullable<Metadata>
@@ -339,7 +294,7 @@ const starAtlasNFTToCollectible = async (
   if (is3DObj && hasImageFrame) {
     collectible.mediaType = CollectibleMediaType.THREE_D
     collectible.threeDUrl = ['glb', 'gltf'].some((extension) =>
-      nft.image.endsWith(extension)
+      nft.image?.endsWith(extension)
     )
       ? nft.image
       : nft.media?.thumbnailUrl
@@ -360,18 +315,176 @@ const starAtlasNFTToCollectible = async (
   return collectible
 }
 
+const getMediaInfo = async (
+  nft: MetaplexNFT
+): Promise<Nullable<SolanaNFTMedia>> => {
+  return (
+    (await metaplexNftGif(nft)) ||
+    (await metaplexNftThreeDWithFrame(nft)) ||
+    (await metaplexNftVideo(nft)) ||
+    (await metaplexNftImage(nft)) ||
+    (await metaplexNftComputedMedia(nft))
+  )
+}
+
+const metaplexNFTToCollectible = async (
+  nft: MetaplexNFT,
+  solanaChainMetadata: Nullable<Metadata>,
+  wallet: string
+): Promise<Collectible> => {
+  const identifier = [nft.symbol, nft.name, nft.image]
+    .filter(Boolean)
+    .join(':::')
+
+  const collectible = {
+    id: identifier,
+    tokenId: identifier,
+    name: nft.name,
+    description: nft.description,
+    externalLink: nft.external_url,
+    isOwned: true,
+    chain: Chain.Sol,
+    wallet,
+    solanaChainMetadata
+  } as Collectible
+
+  if (
+    (nft.properties?.creators ?? []).some(
+      (creator: any) => creator.address === wallet
+    )
+  ) {
+    collectible.isOwned = false
+  }
+
+  const mediaInfo = await getMediaInfo(nft)
+  const { url, frameUrl, collectibleMediaType } = (mediaInfo ??
+    {}) as SolanaNFTMedia
+  collectible.frameUrl = frameUrl
+  collectible.mediaType = collectibleMediaType
+  if (collectibleMediaType === CollectibleMediaType.GIF) {
+    collectible.gifUrl = url
+  } else if (collectibleMediaType === CollectibleMediaType.THREE_D) {
+    collectible.threeDUrl = url
+  } else if (collectibleMediaType === CollectibleMediaType.VIDEO) {
+    collectible.videoUrl = url
+  } else if (collectibleMediaType === CollectibleMediaType.IMAGE) {
+    collectible.imageUrl = url
+  }
+
+  return collectible
+}
+
+// Can build the metadata from the helius nft fields, or
+// can fetch it from the json_uri of the helius nft
+const getMetaplexMetadataFromHeliusNFT = async (
+  nft: HeliusNFT,
+  useFetch = false
+): Promise<MetaplexNFT> => {
+  if (useFetch) {
+    const metaplexData = await fetch(nft.content.json_uri)
+    const metaplexJson = await metaplexData.json()
+    return metaplexJson as MetaplexNFT
+  }
+
+  const { metadata, links, files } = nft.content
+  return {
+    ...metadata,
+    ...links,
+    properties: {
+      files: files.map((file: { uri: string; mime: string }) => ({
+        uri: file.uri,
+        type: file.mime
+      })),
+      creators: nft.creators
+    }
+  } as MetaplexNFT
+}
+
+const heliusNFTToCollectible = async (
+  nft: HeliusNFT,
+  solanaChainMetadata: Nullable<Metadata>,
+  wallet: string
+): Promise<Nullable<Collectible>> => {
+  const { id, content, grouping, ownership } = nft
+  const { metadata, links } = content
+  const { name, symbol, description } = metadata
+  const { image, external_url: externalUrl } = links
+
+  const identifier = [id, symbol, name, image].filter(Boolean).join(':::')
+
+  const collectible = {
+    id: identifier,
+    tokenId: id,
+    name,
+    description,
+    externalLink: externalUrl,
+    isOwned: ownership.owner === wallet,
+    chain: Chain.Sol,
+    wallet,
+    solanaChainMetadata
+  } as Collectible
+
+  const collectionGroup = grouping.find(
+    ({ group_key }) => group_key === 'collection'
+  )
+  if (collectionGroup && collectionGroup.collection_metadata) {
+    collectible.heliusCollection = {
+      address: collectionGroup.group_value,
+      name: collectionGroup.collection_metadata.name,
+      imageUrl: collectionGroup.collection_metadata.image,
+      externalLink: collectionGroup.collection_metadata.external_url
+    }
+  }
+
+  let metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft)
+  let mediaInfo = await getMediaInfo(metaplexMetadata)
+  if (!mediaInfo) {
+    console.warn(
+      `Could not get nft media info from Helius fields for nft with id ${nft.id}... Going to fetch from the Helius json_uri field.`
+    )
+    metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft, true)
+    mediaInfo = await getMediaInfo(metaplexMetadata)
+    if (!mediaInfo) {
+      console.error(
+        `Could not get nft media info from Helius json_uri field for nft with id ${nft.id}... Ignoring this nft.`
+      )
+      return null
+    }
+  }
+  const { url, frameUrl, collectibleMediaType } = mediaInfo
+  collectible.frameUrl = frameUrl
+  collectible.mediaType = collectibleMediaType
+  if (collectibleMediaType === CollectibleMediaType.GIF) {
+    collectible.gifUrl = url
+  } else if (collectibleMediaType === CollectibleMediaType.THREE_D) {
+    collectible.threeDUrl = url
+  } else if (collectibleMediaType === CollectibleMediaType.VIDEO) {
+    collectible.videoUrl = url
+  } else if (collectibleMediaType === CollectibleMediaType.IMAGE) {
+    collectible.imageUrl = url
+  }
+
+  return collectible
+}
+
 export const solanaNFTToCollectible = async (
   nft: SolanaNFT,
-  address: string,
+  wallet: string,
   type: SolanaNFTType,
   solanaChainMetadata: Nullable<Metadata>
 ): Promise<Nullable<Collectible>> => {
   switch (type) {
+    case SolanaNFTType.HELIUS:
+      return heliusNFTToCollectible(
+        nft as HeliusNFT,
+        solanaChainMetadata,
+        wallet
+      )
     case SolanaNFTType.METAPLEX:
       return metaplexNFTToCollectible(
         nft as MetaplexNFT,
         solanaChainMetadata,
-        address
+        wallet
       )
     case SolanaNFTType.STAR_ATLAS:
       return starAtlasNFTToCollectible(nft as StarAtlasNFT, solanaChainMetadata)

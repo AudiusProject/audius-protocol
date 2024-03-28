@@ -39,7 +39,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     borderBottomWidth: 1,
     width: '100%'
   },
-  gatedTrackSection: {
+  gatedContentSection: {
     padding: 0,
     borderWidth: 0,
     backgroundColor: 'transparent'
@@ -76,7 +76,7 @@ export const LockedContentDrawer = () => {
         </View>
         <TrackDetailsTile trackId={track.track_id} />
         <DetailsTileGatedAccess
-          style={styles.gatedTrackSection}
+          style={styles.gatedContentSection}
           trackId={track.track_id}
           streamConditions={track.stream_conditions}
           isOwner={false}

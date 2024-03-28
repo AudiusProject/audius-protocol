@@ -16,6 +16,7 @@ import {
   CollectionPageTrackRecord
 } from '@audius/common/store'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import {
   CollectiblesPlaylistTableColumn,
   CollectiblesPlaylistTable
@@ -216,6 +217,17 @@ const CollectionPage = ({
       gradient={gradient}
       icon={icon}
       imageOverride={imageOverride}
+      ownerId={playlistOwnerId}
+      isStreamGated={
+        metadata?.variant === Variant.USER_GENERATED
+          ? metadata?.is_stream_gated
+          : null
+      }
+      streamConditions={
+        metadata?.variant === Variant.USER_GENERATED
+          ? metadata?.stream_conditions
+          : null
+      }
     />
   )
 
@@ -252,57 +264,59 @@ const CollectionPage = ({
       contentClassName={styles.pageContent}
       scrollableSearch
     >
-      <Tile
-        className={styles.bodyWrapper}
-        size='large'
-        elevation='mid'
-        dogEar={isPrivate ? DogEarType.HIDDEN : undefined}
-      >
-        <div className={styles.topSectionWrapper}>{topSection}</div>
-        {!collectionLoading && isEmpty ? (
-          <EmptyPage
-            isOwner={isOwner}
-            isAlbum={isAlbum}
-            text={customEmptyText}
-          />
-        ) : (
-          <div className={styles.tableWrapper}>
-            <TableComponent
-              // @ts-ignore
-              columns={tracksTableColumns}
-              wrapperClassName={styles.tracksTableWrapper}
-              key={playlistName}
-              loading={isNftPlaylist ? collectionLoading : tracksLoading}
-              userId={userId}
-              playing={playing}
-              playingIndex={playingIndex}
-              data={dataSource}
-              onClickRow={onClickRow}
-              onClickFavorite={onClickSave}
-              onClickRemove={isOwner ? onClickRemove : undefined}
-              onClickRepost={onClickRepostTrack}
-              onReorderTracks={onReorderTracks}
-              onSortTracks={onSortTracks}
-              isReorderable={
-                userId !== null &&
-                userId === playlistOwnerId &&
-                allowReordering &&
-                (!isAlbum || isEditAlbumsEnabled)
-              }
-              removeText={`${messages.remove} ${
-                isAlbum ? messages.type.album : messages.type.playlist
-              }`}
-              isAlbumPage={isAlbum}
+      <ClientOnly>
+        <Tile
+          className={styles.bodyWrapper}
+          size='large'
+          elevation='mid'
+          dogEar={isPrivate ? DogEarType.HIDDEN : undefined}
+        >
+          <div className={styles.topSectionWrapper}>{topSection}</div>
+          {!collectionLoading && isEmpty ? (
+            <EmptyPage
+              isOwner={isOwner}
+              isAlbum={isAlbum}
+              text={customEmptyText}
             />
-          </div>
-        )}
-      </Tile>
-      {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
-        <>
-          <Divider variant='default' className={styles.tileDivider} />
-          <SuggestedCollectionTracks collectionId={playlistId} />
-        </>
-      ) : null}
+          ) : (
+            <div className={styles.tableWrapper}>
+              <TableComponent
+                // @ts-ignore
+                columns={tracksTableColumns}
+                wrapperClassName={styles.tracksTableWrapper}
+                key={playlistName}
+                loading={isNftPlaylist ? collectionLoading : tracksLoading}
+                userId={userId}
+                playing={playing}
+                playingIndex={playingIndex}
+                data={dataSource}
+                onClickRow={onClickRow}
+                onClickFavorite={onClickSave}
+                onClickRemove={isOwner ? onClickRemove : undefined}
+                onClickRepost={onClickRepostTrack}
+                onReorderTracks={onReorderTracks}
+                onSortTracks={onSortTracks}
+                isReorderable={
+                  userId !== null &&
+                  userId === playlistOwnerId &&
+                  allowReordering &&
+                  (!isAlbum || isEditAlbumsEnabled)
+                }
+                removeText={`${messages.remove} ${
+                  isAlbum ? messages.type.album : messages.type.playlist
+                }`}
+                isAlbumPage={isAlbum}
+              />
+            </div>
+          )}
+        </Tile>
+        {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
+          <>
+            <Divider variant='default' className={styles.tileDivider} />
+            <SuggestedCollectionTracks collectionId={playlistId} />
+          </>
+        ) : null}
+      </ClientOnly>
     </Page>
   )
 }

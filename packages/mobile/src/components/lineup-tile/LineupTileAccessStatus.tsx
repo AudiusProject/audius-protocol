@@ -5,7 +5,8 @@ import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
-  gatedContentSelectors
+  gatedContentSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import { TouchableOpacity, View } from 'react-native'
@@ -20,7 +21,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 const { setLockedContentId } = gatedContentActions
 
 const messages = {
@@ -64,7 +65,7 @@ export const LineupTileAccessStatus = ({
   const isUSDCEnabled = useIsUSDCEnabled()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = gatedTrackStatusMap[trackId]
   const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =
@@ -73,7 +74,7 @@ export const LineupTileAccessStatus = ({
   const handlePress = useCallback(() => {
     if (isUSDCPurchase) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId },
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
         { source: ModalSource.TrackTile }
       )
     } else if (trackId) {
