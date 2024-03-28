@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
+import { useFeatureFlag } from '@audius/common/hooks'
 
 import { useStreamConditionsEntity } from '@audius/common/hooks'
 import {
@@ -38,6 +39,7 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import { FeatureFlags } from '@audius/common/services'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { followUser } = usersSocialActions
@@ -204,6 +206,9 @@ export const DetailsTileNoAccess = ({
   const gatedTrackStatus = gatedTrackStatusMap[trackId] ?? null
   const { nftCollection, collectionLink, followee, tippedUser } =
     useStreamConditionsEntity(streamConditions)
+  const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
+    FeatureFlags.IOS_GATED_CONTENT_ENABLED
+  )
 
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
@@ -355,16 +360,18 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          <Button
-            style={[styles.mainButton, styles.buyButton]}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.buy(
-              formatPrice(streamConditions.usdc_purchase.price)
-            )}
-            size='large'
-            onPress={handlePurchasePress}
-            fullWidth
-          />
+          {isIosGatedContentEnabled && (
+            <Button
+              style={[styles.mainButton, styles.buyButton]}
+              styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+              title={messages.buy(
+                formatPrice(streamConditions.usdc_purchase.price)
+              )}
+              size='large'
+              onPress={handlePurchasePress}
+              fullWidth
+            />
+          )}
         </>
       )
     }
