@@ -154,7 +154,7 @@ playlists: List[Dict[str, Any]] = [
         "playlist_owner_id": 1,
         "is_album": True,
         "is_private": False,
-        "playlist_name": "some album",
+        "playlist_name": "premium album",
         "playlist_contents": {
             "tracks": [
                 {"track": 10, "time": 0},
@@ -440,6 +440,36 @@ def test_access(app):
             assert not result["has_stream_access"]
             assert not result["has_download_access"]
 
+            # test usdc stream-gated album with owner
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=1,
+                content_type="album",
+                content_entity=playlist_entities[1],
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # test usdc stream-gated album with user who purchased album
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=3,
+                content_type="album",
+                content_entity=playlist_entities[1],
+            )
+            assert result["has_stream_access"]
+            assert result["has_download_access"]
+
+            # test usdc stream-gated album with user who did not purchase album
+            result = content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                content_type="album",
+                content_entity=playlist_entities[1],
+            )
+            assert not result["has_stream_access"]
+            assert not result["has_download_access"]
+
 
 def test_batch_access(app):
     db = setup_db(app)
@@ -552,6 +582,21 @@ def test_batch_access(app):
                             "track_id"
                         ],
                         "content_type": "track",
+                    },
+                    {
+                        "user_id": user_1["user_id"],
+                        "content_id": playlists[1]["playlist_id"],
+                        "content_type": "album",
+                    },
+                    {
+                        "user_id": user_3["user_id"],
+                        "content_id": playlists[1]["playlist_id"],
+                        "content_type": "album",
+                    },
+                    {
+                        "user_id": user_2["user_id"],
+                        "content_id": playlists[1]["playlist_id"],
+                        "content_type": "album",
                     },
                 ],
             )
@@ -719,5 +764,30 @@ def test_batch_access(app):
                 "has_stream_access"
             ]
             assert not user_5_usdc_stream_gated_track_previously_in_album_access_result[
+                "has_download_access"
+            ]
+
+            album_access_result = result["album"]
+
+            # test usdc stream-gated album with owner
+            user_1_usdc_stream_gated_album_access_result = album_access_result[
+                user_1["user_id"]
+            ][playlists[1]["playlist_id"]]
+            assert user_1_usdc_stream_gated_album_access_result["has_stream_access"]
+            assert user_1_usdc_stream_gated_album_access_result["has_download_access"]
+
+            # test usdc stream-gated album with user who purchased album
+            user_3_usdc_stream_gated_album_access_result = album_access_result[
+                user_3["user_id"]
+            ][playlists[1]["playlist_id"]]
+            assert user_3_usdc_stream_gated_album_access_result["has_stream_access"]
+            assert user_3_usdc_stream_gated_album_access_result["has_download_access"]
+
+            # test usdc stream-gated album with user who did not purchase album
+            user_2_usdc_stream_gated_album_access_result = album_access_result[
+                user_2["user_id"]
+            ][playlists[1]["playlist_id"]]
+            assert not user_2_usdc_stream_gated_album_access_result["has_stream_access"]
+            assert not user_2_usdc_stream_gated_album_access_result[
                 "has_download_access"
             ]
