@@ -100,10 +100,10 @@ class ContentAccessChecker:
         # Content owner has access to their own gated content
         content_owner_id = (
             content_entity.owner_id
-            if is_track(content_type, content_entity)
+            if is_track(content_entity, content_type)
             else (
                 content_entity.playlist_owner_id
-                if (is_playlist(content_type, content_entity))
+                if (is_playlist(content_entity, content_type))
                 else None
             )
         )
@@ -111,10 +111,10 @@ class ContentAccessChecker:
             return {"has_stream_access": True, "has_download_access": True}
         content_id = (
             content_entity.track_id
-            if is_track(content_type, content_entity)
+            if is_track(content_entity, content_type)
             else (
                 content_entity.playlist_id
-                if is_playlist(content_type, content_entity)
+                if is_playlist(content_entity, content_type)
                 else None
             )
         )
