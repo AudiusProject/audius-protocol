@@ -17,7 +17,6 @@ import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
 import { fetchReferrer } from 'common/store/pages/signon/actions'
-import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
@@ -50,7 +49,7 @@ type RootProps = {
 
 const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
-  const { spacing, motion } = useTheme()
+  const { spacing, motion, color } = useTheme()
 
   const hideCloseButton = useRouteMatch({
     path: [
@@ -79,7 +78,14 @@ const DesktopSignOnRoot = (props: RootProps) => {
   const isExpanded = !collapsedDesktopPageMatch
 
   return (
-    <Flex w='100%' p='unit14' justifyContent='center'>
+    <Flex
+      w='100%'
+      p='unit14'
+      justifyContent='center'
+      css={{
+        background: `radial-gradient(circle at top left, #B749D6 50%, ${color.secondary.s500} 100%)`
+      }}
+    >
       {!hideCloseButton ? (
         <Link
           to={TRENDING_PAGE}
@@ -93,7 +99,6 @@ const DesktopSignOnRoot = (props: RootProps) => {
           <IconCloseAlt color='staticWhite' />
         </Link>
       ) : null}
-      <BackgroundWaves zIndex={0} />
       <Paper
         w='100%'
         css={{

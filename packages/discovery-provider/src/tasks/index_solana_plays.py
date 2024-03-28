@@ -2,7 +2,7 @@ import concurrent.futures
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Tuple, TypedDict, Union, cast
 
 import base58
@@ -714,7 +714,9 @@ def index_solana_plays(self):
     # Define redis lock object
     # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock("solana_plays_lock", blocking_timeout=25, timeout=14400)
-
+    interval = timedelta(seconds=5)
+    start_time = time.time()
+    errored = False
     try:
         # Cache latest tx outside of lock
         fetch_and_cache_latest_program_tx_redis(
@@ -733,8 +735,22 @@ def index_solana_plays(self):
         else:
             logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
-        logger.error("index_solana_plays.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
         if have_lock:
             update_lock.release()
+        celery.send_task(self.name, countdown=time_left)

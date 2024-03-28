@@ -24,7 +24,7 @@ export type Mapping = {
  * Checks whether the DOM is in a state where a global hotkey press is allowed.
  * For example, even if an anchor tag has focus, it should not prevent global hotkeys
  * from working.
- * @returns {boolean} whether or not a global hotkey press is allowed.
+ * @returns whether or not a global hotkey press is allowed.
  */
 function allowGlobalHotkeyPress() {
   return (
@@ -42,6 +42,10 @@ function isModifierPressed(modifier: ModifierKeys, e: KeyboardEvent) {
   if (modifier === ModifierKeys.SHIFT) return e.shiftKey
   if (modifier === ModifierKeys.ALT) return e.altKey
   return false
+}
+
+function isAnyModifierPressed(e: KeyboardEvent) {
+  return e.metaKey || e.ctrlKey || e.shiftKey || e.altKey
 }
 
 function fireHotkey(
@@ -75,7 +79,9 @@ function fireHotkey(
         cb(e)
       }
     } else {
-      // If no modifier keys are required, fire the callback.
+      // If no modifier keys are required, abort if any are pressed.
+      if (isAnyModifierPressed(e)) return
+      // Otherwise, fire the hotkey.
       if (preventDefault) e.preventDefault()
       ;(mapping[e.keyCode] as Handler)(e)
     }
@@ -84,8 +90,8 @@ function fireHotkey(
 
 /**
  * Sets up hotkeys for a component. Should generally be called in componentDidMount.
- * @param {function|Object} mapping the hotkey mapping keycodes to callback.
- * @param {Number} throttleMs the number of milliseconds to throttle keydown events with.
+ * @param mapping the hotkey mapping keycodes to callback.
+ * @param throttleMs the number of milliseconds to throttle keydown events with.
  * For example:
  *  setupHotkeys({32: this.playMusic})  // fires playMusic() on 'space'
  *
@@ -101,7 +107,7 @@ function fireHotkey(
  *    // fires on 'cmd+ctrl+space'
  *  setupHotkeys({32: {cb: this.playMusic, or: [ALT, CTRL], and: [CMD, SHIFT]})
  *    // fires on 'cmd+shift+alt+space' or 'cmd+shift+ctrl+space'\
- * @returns {function} the event listener function
+ * @returns the event listener function
  */
 export function setupHotkeys(
   mapping: Mapping,

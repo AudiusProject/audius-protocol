@@ -1,3 +1,4 @@
+import datetime
 import logging
 import time
 
@@ -24,6 +25,9 @@ def index_challenges_task(self):
     event_bus = index_challenges_task.challenge_event_bus
     have_lock = False
     update_lock = redis.lock("index_challenges_lock", timeout=7200)
+    interval = datetime.timedelta(seconds=5)
+    start_time = time.time()
+    errored = False
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
@@ -31,8 +35,22 @@ def index_challenges_task(self):
         else:
             logger.info("index_challenges.py | Failed to acquire index challenges lock")
     except Exception as e:
-        logger.error("index_challenges.py | Fatal error in main loop", exc_info=True)
+        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
+        errored = True
         raise e
     finally:
+        end_time = time.time()
+        elapsed = end_time - start_time
+        time_left = max(0, interval.total_seconds() - elapsed)
+        logger.info(
+            {
+                "task_name": self.name,
+                "elapsed": elapsed,
+                "interval": interval.total_seconds(),
+                "time_left": time_left,
+                "errored": errored,
+            },
+        )
         if have_lock:
             update_lock.release()
+        celery.send_task(self.name, countdown=time_left)

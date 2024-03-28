@@ -4,6 +4,8 @@ import { useTheme } from '@emotion/react'
 import AntTooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
 
+import { useSsrContext } from 'ssr/SsrContext'
+
 import styles from './Tooltip.module.css'
 import { TooltipProps } from './types'
 
@@ -23,6 +25,7 @@ export const Tooltip = ({
 }: TooltipProps) => {
   // Keep track of a hidden state ourselves so we can dismiss the tooltip on click
   const [isHiddenOverride, setIsHiddenOverride] = useState(false)
+  const { isServerSide } = useSsrContext()
 
   const theme = useTheme()
 
@@ -89,7 +92,9 @@ export const Tooltip = ({
     visibility: isHiddenOverride ? 'hidden' : 'visible'
   } as CSSProperties
 
-  return (
+  return isServerSide ? (
+    <>{children}</>
+  ) : (
     <AntTooltip
       {...visibleProps}
       overlayStyle={overlayStyle}

@@ -81,7 +81,7 @@ export const ReleaseDateFieldLegacy = () => {
           >
             {messages.title}
           </Text>
-          <Text>{messages.description}</Text>
+          <Text variant='body'>{messages.description}</Text>
           <div className={styles.datePicker}>
             <DatePickerField name={RELEASE_DATE} label={messages.title} />
           </div>

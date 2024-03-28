@@ -109,8 +109,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
     !matchPath(history.location.pathname, { path: '/', exact: true }) &&
     animDelay &&
     !isDismissed &&
-    isMobile &&
-    !(navigator.userAgent === 'probers')
+    isMobile
 
   useEffect(() => {
     shouldShow && incrementScroll()

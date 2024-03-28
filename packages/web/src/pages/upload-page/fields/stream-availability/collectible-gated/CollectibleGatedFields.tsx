@@ -70,12 +70,10 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         text: ethCollectionMap[slug].name,
         el: (
           <div className={styles.dropdownRow}>
-            {ethCollectionMap[slug].img ? (
-              <img
-                src={ethCollectionMap[slug].img!}
-                alt={ethCollectionMap[slug].name}
-              />
-            ) : null}
+            <img
+              src={ethCollectionMap[slug].img ?? undefined}
+              alt={ethCollectionMap[slug].name}
+            />
             <span>{ethCollectionMap[slug].name}</span>
           </div>
         ),
@@ -92,12 +90,10 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         text: solCollectionMap[mint].name,
         el: (
           <div className={styles.dropdownRow}>
-            {solCollectionMap[mint].img ? (
-              <img
-                src={solCollectionMap[mint].img!}
-                alt={solCollectionMap[mint].name}
-              />
-            ) : null}
+            <img
+              src={solCollectionMap[mint].img ?? undefined}
+              alt={solCollectionMap[mint].name}
+            />
             <span>{solCollectionMap[mint].name}</span>
           </div>
         ),

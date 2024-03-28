@@ -326,7 +326,7 @@ export const TrackScreenDetailsTile = ({
     ({ isPreview = false } = {}) => {
       if (isLineupLoading) return
 
-      if (isPlaying && isPreviewing && isPreview) {
+      if (isPlaying && isPlayingId && isPreviewing === isPreview) {
         dispatch(tracksActions.pause())
         recordPlay(track_id, false, true)
       } else if (
@@ -347,6 +347,7 @@ export const TrackScreenDetailsTile = ({
       uid,
       dispatch,
       isPlaying,
+      isPlayingId,
       isPreviewing,
       isLineupLoading
     ]

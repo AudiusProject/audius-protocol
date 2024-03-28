@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { AppError, isAppError } from "../error";
-import { logger } from "../logger";
 import { StatusCodes } from "http-status-codes";
 import { outgoingLog } from "./logging";
 
@@ -10,7 +9,7 @@ export const errorHandler = (
   response: Response,
   next: NextFunction
 ) => {
-  const { requestId, validatedRelayRequest } = response.locals.ctx
+  const { requestId, validatedRelayRequest, logger } = response.locals.ctx
   // if unknown error is thrown somewhere
   if (!isAppError(error)) {
     logger.error({ requestId, error, validatedRelayRequest }, "unhandled error occured");
