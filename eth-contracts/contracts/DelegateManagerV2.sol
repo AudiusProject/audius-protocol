@@ -666,6 +666,7 @@ contract DelegateManagerV2 is InitializableV2 {
      * @param _delegator - address of delegator
      */
     function cancelRemoveDelegatorRequest(address _serviceProvider, address _delegator) external {
+        _requireIsInitialized();
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
             ERROR_ONLY_SP_GOVERNANCE
