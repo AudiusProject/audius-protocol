@@ -178,8 +178,8 @@ export default defineConfig(async ({ mode }) => {
     test: {
       environment: 'jsdom',
       exclude: ['e2e', 'node_modules'],
-      minThreads: 1,
-      maxThreads: 4
+      minWorkers: 1,
+      maxWorkers: 1 // Segfaults if multithreaded
     }
   }
 })
