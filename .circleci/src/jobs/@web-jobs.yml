@@ -149,7 +149,7 @@ web-test:
     - run:
         name: test
         no_output_timeout: 30m
-        command: cd packages/web; vitest run --reporter=junit --outputFile=report.xml
+        command: npm run web:test -- -- run --reporter=junit --outputFile=report.xml
     - store_test_results:
         path: packages/web/report.xml
         when: always
