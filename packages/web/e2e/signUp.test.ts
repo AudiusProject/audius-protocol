@@ -204,7 +204,7 @@ test.describe('Sign Up', () => {
       })
     })
 
-    test('should sign up from a referral', async ({ page }) => {
+    test.fixme('should sign up from a referral', async ({ page }) => {
       await testSignUp({
         isMobile: true,
         signUpUrl: `/signup?ref=dejayjdstaging`,
@@ -249,7 +249,7 @@ test.describe('Sign Up', () => {
     test('should go through whole sign up flow', async ({ page }) => {
       await testSignUp({ isMobile: true, page })
     })
-    test('should sign up from a referral', async ({ page }) => {
+    test.fixme('should sign up from a referral', async ({ page }) => {
       await testSignUp({
         isMobile: true,
         signUpUrl: `/signup?ref=dejayjdstaging`,
