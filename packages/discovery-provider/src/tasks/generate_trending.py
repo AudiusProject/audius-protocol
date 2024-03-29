@@ -211,9 +211,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
         )
 
         # Populate repost counts with respect to time
-        track_entry[
-            response_name_constants.windowed_repost_count
-        ] = track_repost_counts_for_time.get(track_id, 0)
+        track_entry[response_name_constants.windowed_repost_count] = (
+            track_repost_counts_for_time.get(track_id, 0)
+        )
 
         # Populate save counts
         track_entry[response_name_constants.save_count] = track_save_counts.get(
@@ -221,9 +221,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
         )
 
         # Populate save counts with respect to time
-        track_entry[
-            response_name_constants.windowed_save_count
-        ] = track_save_counts_for_time.get(track_id, 0)
+        track_entry[response_name_constants.windowed_save_count] = (
+            track_save_counts_for_time.get(track_id, 0)
+        )
 
         # Populate owner follower count
         owner_id = track_owner_dict[track_id]
