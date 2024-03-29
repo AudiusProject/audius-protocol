@@ -2,7 +2,7 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { ID, UserMetadata } from '~/models'
+import { ID, UserMetadata, userMetadataFromSDK } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'
@@ -11,6 +11,8 @@ import { waitForRead } from '~/utils/sagaHelpers'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { actions as relatedArtistsActions } from './slice'
+import { compareSDKResponse } from '~/utils/sdkMigrationUtils'
+import { Id } from '~/api'
 
 const getUserId = accountSelectors.getUserId
 
@@ -36,12 +38,13 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
     let suggestedFollows = relatedArtists
       .filter((user) => !user.does_current_user_follow)
       .slice(0, 5)
-    if (suggestedFollows.length === 0) {
+    if (suggestedFollows.length !== 0) {
       const showTopArtistRecommendationsPercent =
         remoteConfigInstance.getRemoteVar(
           DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT
         ) || 0
-      const showTopArtists = Math.random() < showTopArtistRecommendationsPercent
+      const showTopArtists =
+        true || Math.random() < showTopArtistRecommendationsPercent
 
       if (showTopArtists) {
         suggestedFollows = yield* call(fetchTopArtists)
@@ -66,11 +69,28 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
 function* fetchTopArtists() {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
+  const sdk = yield* call(yield* getContext('audiusSdk'))
+
   const currentUserId = yield* select(getUserId)
-  const topArtists = yield* call([apiClient, apiClient.getTopArtists], {
+
+  const legacy = yield* call([apiClient, apiClient.getTopArtists], {
     currentUserId,
     limit: 50
   })
+
+  const { data = [] } = yield* call(
+    [sdk.full.users, sdk.full.users.getTopUsers],
+    {
+      limit: 50,
+      userId: Id.parse(currentUserId)
+    }
+  )
+  const migrated = data
+    .map((d) => userMetadataFromSDK(d))
+    .filter(removeNullable)
+
+  compareSDKResponse({ legacy, migrated }, 'getTopArtists')
+  const topArtists = migrated
   const filteredArtists = topArtists.filter(
     (user) => !user.does_current_user_follow && !user.is_deactivated
   )

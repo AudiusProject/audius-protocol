@@ -1,6 +1,7 @@
 import { SmartCollectionVariant } from '~/models/SmartCollectionVariant'
 
 import { ID } from './Identifiers'
+import { full } from '@audius/sdk'
 
 export type PlaylistLibraryID = ID | string | SmartCollectionVariant
 
@@ -42,4 +43,13 @@ export type PlaylistLibraryItem =
 
 export type PlaylistLibrary = {
   contents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[]
+}
+
+export const playlistLibraryFromSDK = (
+  input?: full.PlaylistLibrary
+): PlaylistLibrary | undefined => {
+  if (!input) return undefined
+  return {
+    contents: input.contents as PlaylistLibraryItem[]
+  }
 }

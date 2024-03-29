@@ -5,6 +5,7 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 
 import { userApiFetch } from './user'
+import { compareSDKResponse, unwrapSDKData } from '~/utils/sdkMigrationUtils'
 
 type GetTopArtistsForGenreArgs = {
   genre: string
@@ -18,13 +19,25 @@ const topArtistsApi = createApi({
     getTopArtistsInGenre: {
       async fetch(args: GetTopArtistsForGenreArgs, context) {
         const { genre, limit, offset } = args
-        const { apiClient } = context
+        const { apiClient, audiusSdk } = context
+        const sdk = await audiusSdk()
 
-        return await apiClient.getTopArtistGenres({
-          genres: [genre],
-          limit,
-          offset
-        })
+        const [legacy, migrated] = await Promise.all([
+          apiClient.getTopArtistGenres({
+            genres: [genre],
+            limit,
+            offset
+          }),
+          unwrapSDKData(
+            sdk.full.users.getTopUsersInGenre({
+              genre: [genre],
+              limit,
+              offset
+            })
+          )
+        ])
+
+        return compareSDKResponse({ legacy, migrated }, 'getTopArtistGenres')
       },
       options: { idArgKey: 'genre', kind: Kind.USERS, schemaKey: 'users' }
     },

@@ -1,3 +1,5 @@
+import { full } from '@audius/sdk'
+
 export enum DefaultSizes {
   // Used as a catch-all fallback when no other size data is available.
   OVERRIDE = 'OVERRIDE'
@@ -31,3 +33,13 @@ export type ProfilePictureSizesCids =
 export type ProfilePictureSizes = ImageSizesObject<SquareSizes>
 export type CoverPhotoSizesCids = ImageSizesObjectWithoutOverride<WidthSizes>
 export type CoverPhotoSizes = ImageSizesObject<WidthSizes>
+
+export const coverPhotoSizesCIDsFromSDK = (input?: full.CoverPhoto) => {
+  if (!input) return undefined
+  return input as CoverPhotoSizesCids
+}
+
+export const profilePictureSizesCIDsFromSDK = (input?: full.ProfilePicture) => {
+  if (!input) return undefined
+  return input as ProfilePictureSizesCids
+}

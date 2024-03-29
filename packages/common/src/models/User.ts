@@ -5,14 +5,23 @@ import {
   CoverPhotoSizes,
   CoverPhotoSizesCids,
   ProfilePictureSizes,
-  ProfilePictureSizesCids
+  ProfilePictureSizesCids,
+  coverPhotoSizesCIDsFromSDK,
+  profilePictureSizesCIDsFromSDK
 } from '~/models/ImageSizes'
-import { PlaylistLibrary } from '~/models/PlaylistLibrary'
+import {
+  PlaylistLibrary,
+  playlistLibraryFromSDK
+} from '~/models/PlaylistLibrary'
 import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
 import { Nullable } from '~/utils/typeUtils'
 
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
+import { full } from '@audius/sdk'
+import snakecaseKeys from 'snakecase-keys'
+import { decodeHashId } from '~/utils/hashIds'
+import { omit } from 'lodash'
 
 export type UserMetadata = {
   album_count: number
@@ -20,37 +29,37 @@ export type UserMetadata = {
   artist_pick_track_id: Nullable<number>
   bio: Nullable<string>
   blocknumber: number
+  collectibleList?: Collectible[]
+  collectibles?: CollectiblesMetadata
+  collectiblesOrderUnset?: boolean
+  cover_photo_cids?: Nullable<CoverPhotoSizesCids>
+  cover_photo_sizes: Nullable<CID>
   cover_photo: Nullable<CID>
   creator_node_endpoint: Nullable<string>
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
   does_current_user_subscribe?: boolean
+  erc_wallet: WalletAddress
   followee_count: number
   follower_count: number
-  supporter_count: number
-  supporting_count: number
-  handle: string
   handle_lc: string
+  handle: string
+  has_collectibles: boolean
   is_deactivated: boolean
   is_verified: boolean
   location: Nullable<string>
+  metadata_multihash: Nullable<CID>
   name: string
   playlist_count: number
+  profile_picture_cids?: Nullable<ProfilePictureSizesCids>
+  profile_picture_sizes: Nullable<CID>
   profile_picture: Nullable<CID>
   repost_count: number
-  track_count: number
-  cover_photo_sizes: Nullable<CID>
-  cover_photo_cids?: Nullable<CoverPhotoSizesCids>
-  profile_picture_sizes: Nullable<CID>
-  profile_picture_cids?: Nullable<ProfilePictureSizesCids>
-  metadata_multihash: Nullable<CID>
-  erc_wallet: WalletAddress
-  spl_wallet: Nullable<SolanaWalletAddress>
-  has_collectibles: boolean
-  collectibles?: CollectiblesMetadata
-  collectiblesOrderUnset?: boolean
-  collectibleList?: Collectible[]
   solanaCollectibleList?: Collectible[]
+  spl_wallet: Nullable<SolanaWalletAddress>
+  supporter_count: number
+  supporting_count: number
+  track_count: number
 
   // Only present on the "current" account
   track_save_count?: number
@@ -100,3 +109,51 @@ export type UserMultihash = Pick<
   User,
   'metadata_multihash' | 'creator_node_endpoint'
 >
+
+/** Converts a SDK `full.UserFull` response to a UserMetadata. Note: Will _not_ include the "current user" fields as those aren't returned by the Users API */
+export const userMetadataFromSDK = (
+  input: full.UserFull
+): UserMetadata | undefined => {
+  const user = snakecaseKeys(input)
+  const decodedUserId = decodeHashId(user.id)
+  if (!decodedUserId) {
+    return undefined
+  }
+
+  const newUser: UserMetadata = {
+    // Fields from API that are omitted in this model
+    ...omit(user, ['id', 'cover_photo_legacy', 'profile_picture_legacy']),
+
+    // Conversions
+    artist_pick_track_id: user.artist_pick_track_id
+      ? decodeHashId(user.artist_pick_track_id)
+      : null,
+
+    // Nested Types
+    playlist_library: playlistLibraryFromSDK(user.playlist_library),
+    cover_photo_cids: coverPhotoSizesCIDsFromSDK(user.cover_photo_cids) ?? null,
+    profile_picture_cids:
+      profilePictureSizesCIDsFromSDK(user.profile_picture_cids) ?? null,
+
+    // Re-types
+    balance: user.balance as StringWei,
+    associated_wallets_balance: user.associated_wallets_balance as StringWei,
+    total_balance: user.total_balance as StringWei,
+    user_id: decodedUserId,
+    spl_wallet: user.spl_wallet as SolanaWalletAddress,
+
+    // Legacy Overrides
+    cover_photo: user.cover_photo_legacy ?? null,
+    profile_picture: user.profile_picture_legacy ?? null,
+
+    // Required Nullable fields
+    bio: user.bio ?? null,
+    cover_photo_sizes: user.cover_photo_sizes ?? null,
+    creator_node_endpoint: user.creator_node_endpoint ?? null,
+    location: user.location ?? null,
+    metadata_multihash: user.metadata_multihash ?? null,
+    profile_picture_sizes: user.profile_picture_sizes ?? null
+  }
+
+  return newUser
+}
