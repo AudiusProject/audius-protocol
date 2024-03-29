@@ -118,7 +118,7 @@ class ContentAccessChecker:
                 else None
             )
         )
-        if content_id is None:
+        if content_id == None:
             logger.warn(
                 f"gated_content_access_checker | check_access | failed to get content id for {content_type} with owner {content_owner_id}"
             )
