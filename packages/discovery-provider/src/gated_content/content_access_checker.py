@@ -118,7 +118,7 @@ class ContentAccessChecker:
                 else None
             )
         )
-        if content_id == None:
+        if content_id is None:
             logger.error(
                 f"gated_content_access_checker | check_access | failed to get content id for {content_type} with owner {content_owner_id}, this should never happen"
             )
@@ -148,7 +148,7 @@ class ContentAccessChecker:
             has_access = self._evaluate_conditions(
                 session=session,
                 user_id=user_id,
-                content_id=content_id,
+                content_id=int(content_id),
                 content_type=content_type,
                 conditions=cast(dict, stream_conditions),
             )
@@ -161,7 +161,7 @@ class ContentAccessChecker:
             has_download_access = self._evaluate_conditions(
                 session=session,
                 user_id=user_id,
-                content_id=content_id,
+                content_id=int(content_id),
                 content_type=content_type,
                 conditions=cast(dict, download_conditions),
             )
