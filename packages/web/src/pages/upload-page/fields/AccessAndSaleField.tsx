@@ -531,6 +531,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           label: string
           icon: IconComponent
           ['data-testid']?: string
+          key?: string
         }
       | string
     )[] = []
@@ -562,7 +563,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         selectedValues.push({
           label: messages.price(albumTrackPrice / 100),
           icon: IconNote,
-          'data-testid': `track-price-display`
+          'data-testid': `track-price-display`,
+          key: `price-display-${messages.price(
+            savedStreamConditions.usdc_purchase.price / 100
+          )}`
         })
       }
     } else if (isContentFollowGated(savedStreamConditions)) {
@@ -590,7 +594,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         {selectedValues.map((value) => {
           const valueProps =
             typeof value === 'string' ? { label: value } : value
-          return <SelectedValue key={valueProps.label} {...valueProps} />
+          return (
+            <SelectedValue
+              key={
+                'data-testid' in valueProps
+                  ? valueProps['data-testid']
+                  : valueProps.label
+              }
+              {...valueProps}
+            />
+          )
         })}
       </div>
     )
