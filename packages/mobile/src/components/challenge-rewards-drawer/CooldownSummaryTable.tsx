@@ -18,6 +18,7 @@ export const CooldownSummaryTable = ({
 }) => {
   const { cooldownChallenges, cooldownChallengesSummary, isEmpty } =
     useAudioMatchingChallengeCooldownSchedule(challengeId)
+  console.log('asdf cooldownChallenges: ', cooldownChallenges)
   return !isEmpty ? (
     <SummaryTable
       title={messages.upcomingRewards}
