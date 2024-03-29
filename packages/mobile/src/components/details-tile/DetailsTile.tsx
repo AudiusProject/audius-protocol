@@ -15,24 +15,28 @@ import {
   getDogEarType
 } from '@audius/common/utils'
 import moment from 'moment'
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
-  Text as HarmonyText,
+  Flex,
+  Text,
   IconCalendarMonth,
   IconPause,
   IconPlay,
-  IconRepeatOff
+  IconRepeatOff,
+  Paper,
+  spacing,
+  Button
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { Button, Hyperlink, Tile, DogEar, Text } from 'app/components/core'
+import { Hyperlink, DogEar } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { flexRowCentered, makeStyles } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -41,6 +45,7 @@ import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
 import type { DetailsTileProps } from './types'
+import { css } from '@emotion/native'
 
 const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
@@ -54,25 +59,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  root: {
-    marginBottom: spacing(6)
-  },
-  tileContent: {
-    paddingBottom: spacing(1)
-  },
-  topContent: {
-    paddingHorizontal: spacing(2),
-    paddingTop: spacing(2),
-    width: '100%'
-  },
-  topContentBody: {
-    paddingHorizontal: spacing(2),
-    gap: spacing(4)
-  },
-  typeLabel: {
-    letterSpacing: 3,
-    textAlign: 'center'
-  },
   coverArt: {
     borderWidth: 1,
     borderColor: palette.neutralLight8,
@@ -81,25 +67,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: 195,
     alignSelf: 'center'
   },
-  titleContainer: {
-    gap: spacing(1)
-  },
-  title: {
-    fontSize: typography.fontSize.large,
-    textAlign: 'center'
-  },
-  artistContainer: {
-    ...flexRowCentered(),
-    alignSelf: 'center'
-  },
-  badge: {
-    marginLeft: spacing(1)
-  },
-  descriptionContainer: {
-    width: '100%',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight7
-  },
   description: {
     ...typography.body,
     color: palette.neutralLight2,
@@ -107,53 +74,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: '100%',
     marginBottom: spacing(4)
   },
-  buttonSection: {
-    width: '100%',
-    gap: spacing(4)
-  },
-  playButtonText: {
-    textTransform: 'uppercase'
-  },
-  playButtonIcon: {
-    height: spacing(5),
-    width: spacing(5)
-  },
-  infoSection: {
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    width: '100%'
-  },
-  noStats: {
-    borderWidth: 0
-  },
-  infoFact: {
-    ...flexRowCentered(),
-    flexBasis: '50%',
-    marginBottom: spacing(4)
-  },
-  infoLabel: {
-    ...flexRowCentered(),
-    lineHeight: typography.fontSize.small,
-    marginRight: spacing(2)
-  },
-  infoValue: {
-    flexShrink: 1,
-    fontSize: typography.fontSize.small,
-    lineHeight: typography.fontSize.small
-  },
-  infoIcon: {
-    marginTop: -spacing(1)
-  },
   link: {
     color: palette.primary
-  },
-  releaseContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing(1)
-  },
-  releasesLabel: {
-    paddingTop: 2
   }
 }))
 
@@ -265,24 +187,22 @@ export const DetailsTile = ({
   const renderDetailLabels = () => {
     return detailLabels.map((infoFact) => {
       return (
-        <View key={infoFact.label} style={styles.infoFact}>
-          <Text
-            style={styles.infoLabel}
-            weight='bold'
-            color='neutralLight5'
-            fontSize='small'
-            textTransform='uppercase'
-          >
-            {infoFact.label}
-          </Text>
-          <Text
-            style={[styles.infoValue, infoFact.valueStyle]}
-            weight='demiBold'
-          >
-            {infoFact.value}
-          </Text>
-          <View style={styles.infoIcon}>{infoFact.icon}</View>
-        </View>
+        <Flex
+          direction='row'
+          key={infoFact.label}
+          style={css({ width: '50%' })}
+          mb='l'
+        >
+          <Flex direction='row' gap='s' alignItems='center'>
+            <Text variant='label' color='subdued' textTransform='uppercase'>
+              {infoFact.label}
+            </Text>
+            <Text variant='body' strength='strong'>
+              {infoFact.value}
+            </Text>
+            <Flex>{infoFact.icon}</Flex>
+          </Flex>
+        </Flex>
       )
     })
   }
@@ -317,69 +237,52 @@ export const DetailsTile = ({
 
   const PreviewButton = () => (
     <Button
-      variant='commonAlt'
-      styles={{
-        text: styles.playButtonText,
-        icon: styles.playButtonIcon
-      }}
-      title={isPlayingPreview ? messages.pause : messages.preview}
-      size='large'
-      iconPosition='left'
-      icon={isPlayingPreview ? IconPause : PlayIcon}
+      variant='tertiary'
+      iconLeft={isPlayingPreview ? IconPause : PlayIcon}
       onPress={handlePressPreview}
       disabled={!isPlayable}
-      fullWidth
-    />
+    >
+      {isPlayingPreview ? messages.pause : messages.preview}
+    </Button>
   )
 
   return (
-    <Tile styles={{ root: styles.root, content: styles.tileContent }}>
-      <View style={styles.topContent}>
+    <Paper mb='xl'>
+      <Flex ph='s' pt='s'>
         {renderDogEar()}
         {renderHeader ? (
           renderHeader()
         ) : (
-          <Text
-            style={styles.typeLabel}
-            color='neutralLight4'
-            fontSize='xs'
-            weight='medium'
-            textTransform='uppercase'
-          >
+          <Text variant='body' textTransform='uppercase'>
             {headerText}
           </Text>
         )}
-        <View style={styles.topContentBody}>
+        <Flex gap='l' ph='s'>
           {imageElement}
-          <View style={styles.titleContainer}>
-            <Text style={styles.title} weight='bold'>
+          <Flex gap='s' alignItems='center'>
+            <Text variant='heading' size='s'>
               {title}
             </Text>
             {user ? (
               <TouchableOpacity onPress={handlePressArtistName}>
-                <View style={styles.artistContainer}>
-                  <Text fontSize='large' color='secondary'>
+                <Flex direction='row'>
+                  <Text variant='body' color='accent' size='l'>
                     {user.name}
                   </Text>
-                  <UserBadges
-                    style={styles.badge}
-                    badgeSize={16}
-                    user={user}
-                    hideName
-                  />
-                </View>
+                  <UserBadges badgeSize={spacing.l} user={user} hideName />
+                </Flex>
               </TouchableOpacity>
             ) : null}
-          </View>
+          </Flex>
           {track?.is_delete ? (
             // This is to introduce a gap
-            <View />
+            <Flex />
           ) : (
             <>
               {isLongFormContent && isNewPodcastControlsEnabled ? (
                 <DetailsProgressInfo track={track} />
               ) : null}
-              <View style={styles.buttonSection}>
+              <Flex gap='l'>
                 {!hasStreamAccess &&
                 !isOwner &&
                 streamConditions &&
@@ -391,18 +294,12 @@ export const DetailsTile = ({
                 ) : null}
                 {hasStreamAccess || isOwner ? (
                   <Button
-                    styles={{
-                      text: styles.playButtonText,
-                      icon: styles.playButtonIcon
-                    }}
-                    title={isPlayingFullAccess ? messages.pause : playText}
-                    size='large'
-                    iconPosition='left'
-                    icon={isPlayingFullAccess ? IconPause : PlayIcon}
+                    iconLeft={isPlayingFullAccess ? IconPause : PlayIcon}
                     onPress={handlePressPlay}
                     disabled={!isPlayable}
-                    fullWidth
-                  />
+                  >
+                    {isPlayingFullAccess ? messages.pause : playText}
+                  </Button>
                 ) : null}
                 {(hasStreamAccess || isOwner) && streamConditions ? (
                   <DetailsTileHasAccess
@@ -413,20 +310,15 @@ export const DetailsTile = ({
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
                 {isUnpublishedScheduledRelease && track?.release_date ? (
-                  <View style={styles.releaseContainer}>
+                  <Flex gap='xs' direction='row' alignItems='center'>
                     <IconCalendarMonth color='accent' size='m' />
-                    <HarmonyText
-                      color='accent'
-                      strength='strong'
-                      size='m'
-                      style={styles.releasesLabel}
-                    >
+                    <Text color='accent' strength='strong' size='m'>
                       Releases
                       {' ' +
                         moment(track.release_date).format('M/D/YY @ h:mm A ') +
                         dayjs().format('z')}
-                    </HarmonyText>
-                  </View>
+                    </Text>
+                  </Flex>
                 ) : null}
                 <DetailsTileActionButtons
                   hasReposted={!!hasReposted}
@@ -446,7 +338,7 @@ export const DetailsTile = ({
                   onPressShare={onPressShare}
                   onPressPublish={onPressPublish}
                 />
-              </View>
+              </Flex>
               {isAiGeneratedTracksEnabled && aiAttributionUserId ? (
                 <DetailsTileAiAttribution userId={aiAttributionUserId} />
               ) : null}
@@ -462,7 +354,7 @@ export const DetailsTile = ({
                   repostCount={repostCount}
                 />
               )}
-              <View style={styles.descriptionContainer}>
+              <Flex borderBottom='strong'>
                 {description ? (
                   <Hyperlink
                     source={descriptionLinkPressSource}
@@ -471,23 +363,23 @@ export const DetailsTile = ({
                     text={squashNewLines(description) ?? ''}
                   />
                 ) : null}
-              </View>
-              <View
-                style={[
-                  styles.infoSection,
-                  hideFavoriteCount &&
-                    hideListenCount &&
-                    hideRepostCount &&
-                    styles.noStats
-                ]}
+              </Flex>
+              <Flex
+                wrap='wrap'
+                direction='row'
+                border={
+                  hideFavoriteCount && hideListenCount && hideRepostCount
+                    ? 'strong'
+                    : undefined
+                }
               >
                 {renderDetailLabels()}
-              </View>
+              </Flex>
             </>
           )}
-        </View>
-      </View>
+        </Flex>
+      </Flex>
       {renderBottomContent?.()}
-    </Tile>
+    </Paper>
   )
 }
