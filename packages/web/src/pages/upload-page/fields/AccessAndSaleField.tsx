@@ -11,10 +11,11 @@ import {
   CollectibleGatedConditions,
   FollowGatedConditions,
   TipGatedConditions,
-  USDCPurchaseConditions
+  USDCPurchaseConditions,
+  AccessConditions
 } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import { formatPrice, Nullable } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
@@ -25,7 +26,6 @@ import {
   IconVisibilityPublic,
   Text
 } from '@audius/harmony'
-import { VoidApiResponse } from '@audius/sdk'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -114,10 +114,17 @@ export type USDCPurchaseRemoteConfig = Pick<
   'minContentPriceCents' | 'maxContentPriceCents'
 >
 
+// This type is specific to the AccessAndSaleFormSchema during refinement
+type ZodSchemaValues = {
+  stream_availability_type: StreamTrackAvailabilityType
+  stream_conditions?: Nullable<AccessConditions>
+  preview_start_seconds?: number | null | undefined
+}
+
 const refineMinPrice =
   (key: 'price' | 'albumTrackPrice', minContentPriceCents: number) =>
   // TODO: figure out typing here
-  (formValues) => {
+  (formValues: ZodSchemaValues) => {
     const streamConditions = formValues[STREAM_CONDITIONS]
     if (
       formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
@@ -132,7 +139,7 @@ const refineMinPrice =
 const refineMaxPrice =
   (key: 'price' | 'albumTrackPrice', maxContentPriceCents: number) =>
   // TODO: figure out typing here
-  (formValues) => {
+  (formValues: ZodSchemaValues) => {
     const streamConditions = formValues[STREAM_CONDITIONS]
     if (
       formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
@@ -227,7 +234,7 @@ type AccessAndSaleFieldProps = {
   isAlbum?: boolean
   trackLength?: number
   forceOpen?: boolean
-  setForceOpen?: (value: boolean) => VoidApiResponse
+  setForceOpen?: (value: boolean) => void
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {

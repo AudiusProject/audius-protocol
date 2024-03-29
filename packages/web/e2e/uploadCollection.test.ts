@@ -197,6 +197,8 @@ test('should upload a premium album', async ({ page }) => {
   const genre = 'Electronic - Progressive House'
   const mood = 'Tender'
   const tags = ['TAG1', 'TAG2']
+  const albumPrice = 5
+  const albumTrackPrice = 2
 
   await page.goto('upload')
 
@@ -217,8 +219,8 @@ test('should upload a premium album', async ({ page }) => {
   await editPage.setTags(tags)
   await editPage.setDescription(albumDescription)
   await editPage.setAlbumAccessType('premium', {
-    albumPrice: 5,
-    albumTrackPrice: 2
+    albumPrice,
+    albumTrackPrice
   })
 
   for (let i = 0; i < trackDetails.length; i++) {
@@ -230,7 +232,7 @@ test('should upload a premium album', async ({ page }) => {
   const finishPage = new UploadFinishPage(page, 'Album')
   await finishPage.assertCompletes()
 
-  // Vist collection page
+  // Vist album page
   await page.getByRole('link', { name: /visit album page/i }).click()
 
   // Assert title
@@ -241,6 +243,12 @@ test('should upload a premium album', async ({ page }) => {
   const description = page.getByText(albumDescription)
   await expect(description).toBeVisible()
 
+  // Assert price (& shows as expected to the uploader)
+  const albumPriceText = page.getByText(`$${albumPrice}.00`)
+  await expect(albumPriceText).toBeVisible()
+  const ownerText = page.getByText(/Users can unlock access to this album/i)
+  await expect(ownerText).toBeVisible()
+
   // Assert track list
   const trackTable = page.getByRole('table')
   const trackOne = trackTable.getByRole('cell', { name: trackOneDetails.name })
@@ -250,6 +258,11 @@ test('should upload a premium album', async ({ page }) => {
 
   // Visit track 1
   await trackOne.getByRole('link', { name: trackOneDetails.name }).click()
+
+  // Assert premium track price
+  const track1Price = page.getByText(`$${albumTrackPrice}.00`)
+  await expect(track1Price).toBeVisible()
+  await expect(ownerText).toBeVisible()
 
   // Assert tagged
   const tag1 = page.getByRole('link', { name: tags[0] })
@@ -265,6 +278,17 @@ test('should upload a premium album', async ({ page }) => {
 
   // Visit track 2
   await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
+
+  // Assert tags
   await expect(tag1).toBeVisible()
   await expect(tag2).toBeVisible()
+
+  // Assert genre and mood
+  await expect(page.getByText(genre)).toBeVisible()
+  await expect(page.getByText(mood)).toBeVisible()
+
+  // Assert premium track price
+  const track2Price = page.getByText(`$${albumTrackPrice}.00`)
+  await expect(track2Price).toBeVisible()
+  await expect(ownerText).toBeVisible()
 })
