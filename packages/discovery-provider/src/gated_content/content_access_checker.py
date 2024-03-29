@@ -119,9 +119,10 @@ class ContentAccessChecker:
             )
         )
         if content_id == None:
-            logger.warn(
-                f"gated_content_access_checker | check_access | failed to get content id for {content_type} with owner {content_owner_id}"
+            logger.error(
+                f"gated_content_access_checker | check_access | failed to get content id for {content_type} with owner {content_owner_id}, this should never happen"
             )
+            return {"has_stream_access": True, "has_download_access": True}
 
         # If not gated on either stream or download,
         # then check if content is a stem track and check parent track access,
