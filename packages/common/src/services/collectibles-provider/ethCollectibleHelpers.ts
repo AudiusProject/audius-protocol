@@ -401,7 +401,7 @@ export const transferEventToCollectible = async (
   return {
     ...collectible,
     isOwned,
-    dateLastTransferred: dayjs(event_timestamp).toString()
+    dateLastTransferred: dayjs(event_timestamp * 1000).toString()
   }
 }
 
