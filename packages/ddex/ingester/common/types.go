@@ -29,8 +29,8 @@ type UnprocessedBatch struct {
 
 // Delivery represents crawled upload contents that are ready to be parsed
 type Delivery struct {
-	ZIPFileETag      string    `bson:"_id"`
-	ZIPFilePath      string    `bson:"zip_file_path"`
+	RemotePath       string    `bson:"_id"`
+	IsFolder         bool      `bson:"is_folder"`
 	DeliveryStatus   string    `bson:"delivery_status"`
 	CreatedAt        time.Time `bson:"created_at"`
 	ValidationErrors []string  `bson:"validation_errors"`
@@ -41,12 +41,12 @@ type Delivery struct {
 }
 
 // TODO: When processing a release where a ReleaseID already exists, we can update the existing document and have a field with edit history
-// TODO: We could also just use the ETag or Upload's ID all the way through
+// TODO: We could also just use the RemotePath (Delivery._id) all the way through
 
 // PendingRelease represents a fully formed release that waiting to be uploaded to Audius
 type PendingRelease struct {
 	ReleaseID          string             `bson:"_id"`
-	DeliveryETag       string             `bson:"delivery_etag"` // Matches Delivery._id
+	DeliveryRemotePath string             `bson:"delivery_remote_path"` // aka Delivery._id
 	PublishDate        time.Time          `bson:"publish_date"`
 	CreateTrackRelease CreateTrackRelease `bson:"create_track_release"`
 	CreateAlbumRelease CreateAlbumRelease `bson:"create_album_release"`
@@ -58,15 +58,15 @@ type PendingRelease struct {
 
 // PublishedRelease represents a release that has been successfully uploaded to Audius
 type PublishedRelease struct {
-	ReleaseID    string             `bson:"_id"`
-	DeliveryETag string             `bson:"delivery_etag"`
-	PublishDate  time.Time          `bson:"publish_date"`
-	EntityID     string             `bson:"entity_id"`
-	Blockhash    string             `bson:"blockhash"`
-	Blocknumber  int64              `bson:"blocknumber"`
-	Track        CreateTrackRelease `bson:"create_track_release"`
-	Album        CreateAlbumRelease `bson:"create_album_release"`
-	CreatedAt    time.Time          `bson:"created_at"`
+	ReleaseID          string             `bson:"_id"`
+	DeliveryRemotePath string             `bson:"delivery_remote_path"`
+	PublishDate        time.Time          `bson:"publish_date"`
+	EntityID           string             `bson:"entity_id"`
+	Blockhash          string             `bson:"blockhash"`
+	Blocknumber        int64              `bson:"blocknumber"`
+	Track              CreateTrackRelease `bson:"create_track_release"`
+	Album              CreateAlbumRelease `bson:"create_album_release"`
+	CreatedAt          time.Time          `bson:"created_at"`
 }
 
 // CreateTrackRelease contains everything the publisher app needs in order to upload a single track to Audius
