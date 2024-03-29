@@ -92,7 +92,8 @@ export type AccessConditions =
   | FollowGatedConditions
   | TipGatedConditions
   | USDCPurchaseConditions
-
+  
+  
 export type AccessPermissions = {
   stream: boolean
   download: boolean

@@ -271,16 +271,16 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
       parentalWarningType: z.optional(z.string().nullable())
     })
-    .merge(premiumMetadataSchema)
     .merge(
-      z.object({
-        stream_conditions: z
-          .object({
+      premiumMetadataSchema.extend({
+        stream_conditions: z.intersection(
+          USDCPurchaseConditionsSchema,
+          z.object({
             usdc_purchase: z.object({
-              albumTrackPrice: z.number()
+              albumTrackPrice: z.number() // Albums can set a price for all tracks
             })
           })
-          .nullable()
+        )
       })
     )
 

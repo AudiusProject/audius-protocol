@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AlbumSchema,
   CollectionValues,
   PlaylistSchema
 } from '@audius/common/schemas'
+import { FeatureFlags } from '@audius/common/services'
 import { UploadType } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -28,16 +30,13 @@ import { SelectMoodField } from '../fields/SelectMoodField'
 import { CollectionFormState } from '../types'
 
 import styles from './EditCollectionForm.module.css'
-import { FeatureFlags } from '@audius/common/services'
-import { useFeatureFlag } from '@audius/common/hooks'
 
 const messages = {
   name: 'Name',
   description: 'Description',
   trackDetails: {
     title: 'Track Details',
-    description:
-      "Set defaults for all tracks in this collection. Use 'Override' to personalize individual track details."
+    description: 'Set defaults for all tracks in this collection'
   },
   completeButton: 'Complete Upload'
 }

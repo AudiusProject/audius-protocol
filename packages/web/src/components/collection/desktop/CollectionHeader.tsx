@@ -1,8 +1,6 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useGetCurrentUserId, useGetPurchases } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import { USDCContentPurchaseType } from '@audius/common/models'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { FeatureFlags } from '@audius/common/services'
 import {
   PurchaseableContentType,

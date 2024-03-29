@@ -6,7 +6,7 @@ import {
   Name,
   isContentFollowGated
 } from '@audius/common/models'
-import { AlbumValues, CollectionValues } from '@audius/common/schemas'
+import { CollectionValues } from '@audius/common/schemas'
 import {
   TrackMetadataForUpload,
   LibraryCategory,
@@ -22,8 +22,7 @@ import {
   getContext,
   reformatCollection,
   savedPageActions,
-  uploadActions,
-  trackPageReducer
+  uploadActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -57,7 +56,7 @@ import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
 import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
 
-import { processTrackForPremiumUpload, recordGatedTracks } from './sagaHelpers'
+import { addPremiumMetadata, recordGatedTracks } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
 
@@ -98,7 +97,27 @@ const combineMetadata = (
     // Take collection tags
     metadata.tags = collectionMetadata.trackDetails.tags
   }
-  // TODO: add pricing into here
+
+  // If the tracks were added as part of a premium album, add all the necessary premium track metadata
+  const albumTrackPrice =
+    collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
+  if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
+    // Set up initial values
+    trackMetadata.is_stream_gated = true
+    trackMetadata.is_download_gated = true
+    trackMetadata.preview_start_seconds = 0
+    trackMetadata.stream_conditions = {
+      usdc_purchase: { price: albumTrackPrice, splits: { 0: 0 } }
+    }
+    trackMetadata.download_conditions = {
+      usdc_purchase: {
+        price: albumTrackPrice,
+        splits: { 0: 0 }
+      }
+    }
+    // Add splits
+    addPremiumMetadata(trackMetadata)
+  }
   return trackMetadata
 }
 
@@ -701,6 +720,12 @@ export function* uploadCollection(
   const account = yield* select(accountSelectors.getAccountUser)
   const userId = account!.user_id
 
+  // If the collection is a premium album, this will populate the premium metadata (price/splits/etc)
+  collectionMetadata = yield* call(
+    addPremiumMetadata<CollectionValues>,
+    collectionMetadata
+  )
+
   // First upload album art
   yield* call(
     audiusBackendInstance.uploadImage,
@@ -1015,12 +1040,8 @@ export function* uploadTracksAsync(
     // Prep the USDC purchase conditions
     for (const trackUpload of tracks) {
       trackUpload.metadata = yield* call(
-        processTrackForPremiumUpload<TrackMetadataForUpload>,
-        {
-          track: trackUpload.metadata,
-          collectionMetadata:
-            'metadata' in payload ? payload.metadata : undefined
-        }
+        addPremiumMetadata<TrackMetadataForUpload>,
+        trackUpload.metadata
       )
     }
 
