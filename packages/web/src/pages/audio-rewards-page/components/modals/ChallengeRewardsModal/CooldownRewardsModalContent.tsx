@@ -11,11 +11,10 @@ import {
   formatNumberCommas,
   challengeRewardsConfig
 } from '@audius/common/utils'
-import { Button, IconArrowRight, IconComponent, Text } from '@audius/harmony'
+import { Button, IconComponent, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -54,11 +53,6 @@ type CooldownRewardsModalContentProps = {
   progressLabel?: string
   errorContent?: ReactNode
 }
-
-// TODO: Migrate to @audius/harmony Button and pass `isLoading`
-const ClaimInProgressSpinner = () => (
-  <LoadingSpinner className={styles.spinner} />
-)
 
 /** Implements custom ChallengeRewardsContent for the cooldown challenges */
 export const CooldownRewardsModalContent = ({
@@ -155,8 +149,7 @@ export const CooldownRewardsModalContent = ({
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
         <Button
           fullWidth
-          iconRight={claimInProgress ? ClaimInProgressSpinner : IconArrowRight}
-          disabled={claimInProgress}
+          isLoading={claimInProgress}
           onClick={onClaimRewardClicked}
         >
           {messages.claimAudio(formatNumberCommas(claimableAmount))}
