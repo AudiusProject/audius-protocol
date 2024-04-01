@@ -362,6 +362,11 @@ export const assetToCollectible = async (
     imageUrl = frameUrl
   }
 
+  const collectionSlug =
+    typeof asset.collection === 'object'
+      ? (asset.collection as unknown as any).name ?? null
+      : asset.collection
+
   return {
     id: getAssetIdentifier(asset),
     tokenId: asset.identifier,
@@ -382,7 +387,7 @@ export const assetToCollectible = async (
     permaLink: asset.opensea_url,
     assetContractAddress: asset.contract,
     standard: (asset.token_standard?.toUpperCase() as EthTokenStandard) ?? null,
-    collectionSlug: asset.collection ?? null,
+    collectionSlug: collectionSlug ?? null,
     collectionName: asset.collectionMetadata?.name ?? null,
     collectionImageUrl: asset.collectionMetadata?.image_url ?? null,
     chain: Chain.Eth,
