@@ -194,7 +194,7 @@ export const PickHandlePage = () => {
                 variant='body'
                 color='subdued'
                 size='s'
-                css={{ textTransform: 'uppercase' }}
+                textTransform='uppercase'
               >
                 {pickHandlePageMessages.or}
               </Text>
