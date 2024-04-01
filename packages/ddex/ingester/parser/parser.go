@@ -180,6 +180,14 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 			for j, trackMetadata := range album.Tracks {
 				if trackMetadata.ISRC != nil {
 					if trackReleaseMetadata, exists := isrcToMetadataMap[*trackMetadata.ISRC]; exists {
+						createAlbumRelease[i].Tracks[j].HasDeal = trackReleaseMetadata.HasDeal
+						createAlbumRelease[i].Tracks[j].IsStreamGated = trackReleaseMetadata.IsStreamGated
+						createAlbumRelease[i].Tracks[j].StreamConditions = trackReleaseMetadata.StreamConditions
+						createAlbumRelease[i].Tracks[j].IsDownloadGated = trackReleaseMetadata.IsDownloadGated
+						createAlbumRelease[i].Tracks[j].DownloadConditions = trackReleaseMetadata.DownloadConditions
+						createAlbumRelease[i].Tracks[j].IsStreamFollowGated = trackReleaseMetadata.IsStreamFollowGated
+						createAlbumRelease[i].Tracks[j].IsStreamTipGated = trackReleaseMetadata.IsStreamTipGated
+						createAlbumRelease[i].Tracks[j].IsDownloadFollowGated = trackReleaseMetadata.IsDownloadFollowGated
 						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = trackReleaseMetadata.DDEXReleaseIDs
 						if trackReleaseMetadata.ProducerCopyrightLine != nil {
 							createAlbumRelease[i].Tracks[j].ProducerCopyrightLine = trackReleaseMetadata.ProducerCopyrightLine
@@ -196,8 +204,6 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 	}
 
 	// Find an ID for the first OAuthed display artist in the release
-
-	// TODO (michelle populate tip and follow gate IDs here)
 	for i := range createTrackRelease {
 		track := &createTrackRelease[i]
 		artistID, artistName, warnings, err := artistutils.GetFirstArtistID(track.Metadata.Artists, p.UsersColl, p.Ctx)
@@ -211,6 +217,22 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 		}
 		p.Logger.Info("Found artist ID for track release", "artistID", artistID, "artistName", artistName, "track title", track.Metadata.Title, "display artists", track.Metadata.Artists)
 		track.Metadata.ArtistID = artistID
+		// Use this artist ID in conditions for follow/tip stream/download gates
+		if track.Metadata.IsStreamFollowGated {
+			track.Metadata.StreamConditions = &common.AccessConditions{
+				FollowUserID: artistID,
+			}
+		} else if track.Metadata.IsStreamTipGated {
+			track.Metadata.StreamConditions = &common.AccessConditions{
+				TipUserID: artistID,
+			}
+		}
+
+		if track.Metadata.IsDownloadFollowGated {
+			track.Metadata.DownloadConditions = &common.AccessConditions{
+				FollowUserID: artistID,
+			}
+		}
 	}
 
 	for i := range createAlbumRelease {

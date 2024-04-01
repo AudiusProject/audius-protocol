@@ -43,6 +43,7 @@ const formatTrackMetadata = (
     copyrightLine: metadata.copyright_line,
     producerCopyrightLine: metadata.producer_copyright_line,
     parentalWarningType: metadata.parental_warning_type,
+    isStreamGated: metadata.is_stream_gated,
     // isUnlisted: // TODO: set visibility
     // iswc:
     // origFilename:
