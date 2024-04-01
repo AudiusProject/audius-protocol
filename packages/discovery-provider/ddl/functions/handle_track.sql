@@ -7,54 +7,44 @@ begin
 end
 $$ LANGUAGE plpgsql;
 
+create or replace function track_should_notify(old_track record, new_track record, tg_op varchar) returns boolean as $$
+begin
+  if tg_op = 'UPDATE' and old_track is not null then
+    return not track_is_public(old_track) and track_is_public(new_track);
+  else
+    return new_track.created_at = new_track.updated_at 
+      and tg_op = 'INSERT' 
+      and track_is_public(new_track)
+    ;
+  end if;
+end
+$$ LANGUAGE plpgsql;
+
 create or replace function handle_track() returns trigger as $$
 declare
-  old_row tracks%ROWTYPE;
-  is_new_upload boolean;
-  new_val int;
-  delta int := 0;
   parent_track_owner_id int;
   subscriber_user_ids int[];
 begin
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
-  -- typical "track edits" will mark old row is_current = false and insert a new row
-  -- so find the old_row here:
-  select * into old_row from tracks where track_id = new.track_id and is_current = false order by blocknumber desc limit 1;
-
-  -- but there are some places where we do an "in place" update (like update is_available to false)
-  if TG_OP = 'UPDATE' then
-    old_row := OLD;
-  elsif new.created_at = new.updated_at AND TG_OP = 'INSERT' then
-    is_new_upload := true;
-  end if;
-
-
-  -- update aggregate_user.track_count
-  if old_row.track_id is not null then
-    -- making existing track private: decrement
-    if track_is_public(old_row) and not track_is_public(new) then
-      delta := -1;
-    end if;
-
-    -- making existing track public: increment
-    if not track_is_public(old_row) and track_is_public(new) then
-      delta := 1;
-    end if;
-  elsif is_new_upload and track_is_public(new) then
-    -- new public track added: increment
-    delta := 1;
-  end if;
-
   update aggregate_user
-    set track_count = track_count + delta
+  set track_count = (
+    select count(*)
+    from tracks t
+    where t.is_current is true
+      and t.is_delete is false
+      and t.is_unlisted is false
+      and t.is_available is true
+      and t.stem_of is null
+      and t.owner_id = new.owner_id
+  )
   where user_id = new.owner_id
   ;
 
   -- If new track or newly unlisted track, create notification
   begin
-    if delta = 1 AND new.is_playlist_upload = FALSE THEN
+    if track_should_notify(OLD, new, TG_OP) AND new.is_playlist_upload = FALSE THEN
       select array(
         select subscriber_id
           from subscriptions
@@ -86,7 +76,7 @@ begin
 
   -- If new remix or newly unlisted remix, create notification
   begin
-    if delta = 1 AND new.remix_of is not null THEN
+    if track_should_notify(OLD, new, TG_OP) AND new.remix_of is not null THEN
       select owner_id into parent_track_owner_id from tracks where is_current and track_id = (new.remix_of->'tracks'->0->>'parent_track_id')::int limit 1;
       if parent_track_owner_id is not null then
         insert into notification

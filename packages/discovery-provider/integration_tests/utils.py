@@ -191,10 +191,10 @@ def populate_mock_db(db, entities, block_offset=None):
         for i, track_meta in enumerate(tracks):
             track_id = track_meta.get("track_id", i)
 
-            # mark previous tracks as is_current = False
+            # delete previous tracks
             session.query(Track).filter(Track.is_current == True).filter(
                 Track.track_id == track_id
-            ).update({"is_current": False})
+            ).delete()
             track_created_at = datetime.now()
             track = Track(
                 blockhash=hex(i + block_offset),
