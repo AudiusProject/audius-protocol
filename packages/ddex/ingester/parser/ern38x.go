@@ -194,7 +194,6 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string) (tracks []
 // processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
 func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image, crawledBucket, releaseID string) (track *common.CreateTrackRelease, album *common.CreateAlbumRelease, err error) {
 	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
-	releaseDateStr := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // TODO: This is deprecated. Need to use DealList
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))
 	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
 	releaseType := safeInnerText(rNode.SelectElement("ReleaseType"))
@@ -227,17 +226,6 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		MWLI:          safeInnerText(rNode.SelectElement("ReleaseId/MWLI")),
 		SICI:          safeInnerText(rNode.SelectElement("ReleaseId/SICI")),
 		ProprietaryID: safeInnerText(rNode.SelectElement("ReleaseId/ProprietaryId")),
-	}
-
-	// Convert releaseDate from string of format YYYY-MM-DD to time.Time
-	if releaseDateStr == "" {
-		err = fmt.Errorf("missing release date for <ReleaseReference>%s</ReleaseReference>", releaseRef)
-		return
-	}
-	releaseDate, releaseDateErr := time.Parse("2006-01-02", releaseDateStr)
-	if releaseDateErr != nil {
-		err = fmt.Errorf("failed to parse release date for <ReleaseReference>%s</ReleaseReference>: %s", releaseRef, releaseDateErr)
-		return
 	}
 
 	// Only use release info from the "Worldwide" territory
@@ -358,11 +346,9 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			Metadata: common.CollectionMetadata{
 				PlaylistName:        title,
 				PlaylistOwnerName:   artistName,
-				ReleaseDate:         releaseDate,
 				DDEXReleaseIDs:      *ddexReleaseIDs,
 				Genre:               genre,
 				IsAlbum:             true,
-				IsPrivate:           false, // TODO: Use DealList to determine this. Same with releaseDate because I think the XML element it's reading is deprecated
 				CoverArtURL:         coverArtURL,
 				CoverArtURLHash:     coverArtURLHash,
 				CoverArtURLHashAlgo: coverArtURLHashAlgo,
@@ -456,7 +442,6 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		}
 
 		trackMetadata.ArtistName = artistName
-		trackMetadata.ReleaseDate = releaseDate
 		trackMetadata.DDEXReleaseIDs = *ddexReleaseIDs
 		trackMetadata.CoverArtURL = coverArtURL
 		trackMetadata.CoverArtURLHash = coverArtURLHash
@@ -533,6 +518,9 @@ func processDealNode(dNode *xmlquery.Node, refToTrackReleaseMap map[string]*comm
 				err = fmt.Errorf("error parsing ValidityPeriod/StartDate for <DealReleaseReference>s%v: %s", releaseRefs, validityStartErr)
 				break
 			}
+		} else {
+			err = fmt.Errorf("missing required ValidityPeriod/StartDatea for <DealReleaseReference>s%v", releaseRefs)
+			break
 		}
 
 		// Parse price
@@ -571,12 +559,12 @@ func processDealNode(dNode *xmlquery.Node, refToTrackReleaseMap map[string]*comm
 			if trackDealOk {
 				switch useType {
 				case "Stream", "OnDemandStream":
-					err = addStreamingConditionsToTrackRelease(dealTerms, commercialModelType, useType, &wholesalePricePerUnit, trackPtr)
+					err = addStreamingConditionsToTrackRelease(dealTerms, commercialModelType, useType, &wholesalePricePerUnit, releaseRef, trackPtr)
 					if err != nil {
 						break
 					}
 				case "PermanentDownload":
-					err = addDownloadConditionsToTrackRelease(dealTerms, commercialModelType, useType, &wholesalePricePerUnit, trackPtr)
+					err = addDownloadConditionsToTrackRelease(dealTerms, commercialModelType, useType, &wholesalePricePerUnit, releaseRef, trackPtr)
 					if err != nil {
 						break
 					}
@@ -596,12 +584,16 @@ func processDealNode(dNode *xmlquery.Node, refToTrackReleaseMap map[string]*comm
 				}
 			}
 		}
+
+		if err != nil {
+			break
+		}
 	}
 
 	return err
 }
 
-func addStreamingConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialModelType string, useType string, wholesalePricePerUnit *int, trackPtr *common.CreateTrackRelease) (err error) {
+func addStreamingConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialModelType string, useType string, wholesalePricePerUnit *int, releaseRef string, trackPtr *common.CreateTrackRelease) (err error) {
 	if commercialModelType == "FreeOfChargeModel" {
 		(*trackPtr).Metadata.IsStreamGated = false
 	} else if commercialModelType == "PayAsYouGoModel" {
@@ -668,7 +660,7 @@ func addStreamingConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialMo
 	return nil
 }
 
-func addDownloadConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialModelType string, useType string, wholesalePricePerUnit *int, track *common.CreateTrackRelease) (err error) {
+func addDownloadConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialModelType string, useType string, wholesalePricePerUnit *int, releaseRef string, track *common.CreateTrackRelease) (err error) {
 	if commercialModelType == "FreeOfChargeModel" {
 		(*trackPtr).Metadata.IsDownloadGated = false
 	} else if commercialModelType == "PayAsYouGoModel" {

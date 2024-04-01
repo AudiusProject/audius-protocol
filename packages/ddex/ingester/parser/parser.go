@@ -254,7 +254,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 	pendingReleases := []*common.PendingRelease{}
 	for _, track := range createTrackRelease {
 		if !track.Metadata.HasDeal {
-			p.Logger.Info("track '%s' does not have a corresponding deal. skipping queuing for upload", track.Metadata.Title)
+			p.Logger.Info("track '%s' does not have a corresponding deal. skipping track upload", track.Metadata.Title)
 			continue
 		}
 		pendingRelease := &common.PendingRelease{
@@ -274,7 +274,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 		for _, track := range album.Tracks {
 			if !track.Metadata.HasDeal {
 				allTracksHaveDeals = false
-				p.Logger.Info("track '%s' on album '%s' does not have a corresponding deal. skipping queuing album for upload", track.Metadata.Title, album.Metadata.PlaylistName)
+				p.Logger.Info("track '%s' on album '%s' does not have a corresponding deal. skipping album upload", track.Metadata.Title, album.Metadata.PlaylistName)
 			}
 		}
 		if !allTracksHaveDeals {
