@@ -120,7 +120,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                 (mediaType === CollectibleMediaType.VIDEO && frame)) && (
                 <div className={styles.imageWrapper}>
                   <PreloadImage
-                    asBackground
                     src={frame!}
                     preloaded={true}
                     className={styles.media}
@@ -145,7 +144,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                 mediaType === CollectibleMediaType.THREE_D) && (
                 <div className={styles.imageWrapper}>
                   <PreloadImage
-                    asBackground
                     src={frame!}
                     preloaded={true}
                     className={styles.media}

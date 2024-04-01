@@ -66,7 +66,8 @@ type CollectibleMediaProps = {
 const CollectibleMedia = (props: CollectibleMediaProps) => {
   const { collectible, isMuted, toggleMute, isMobile } = props
 
-  const { mediaType, imageUrl, videoUrl, gifUrl, threeDUrl } = collectible
+  const { mediaType, frameUrl, imageUrl, videoUrl, gifUrl, threeDUrl } =
+    collectible
 
   const [isSvg, setIsSvg] = useState(false)
 
@@ -99,7 +100,14 @@ const CollectibleMedia = (props: CollectibleMediaProps) => {
     </div>
   ) : mediaType === CollectibleMediaType.VIDEO ? (
     <div className={styles.detailsMediaWrapper} onClick={toggleMute}>
-      <video muted={isMuted} autoPlay loop playsInline src={videoUrl!}>
+      <video
+        src={videoUrl!}
+        poster={frameUrl ?? undefined}
+        muted={isMuted}
+        autoPlay
+        loop
+        playsInline
+      >
         {collectibleMessages.videoNotSupported}
       </video>
       {isMuted ? (
