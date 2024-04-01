@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import bindparam, text
 
@@ -171,12 +171,9 @@ def cache_trending_playlists(self):
     have_lock = False
     update_lock = redis.lock("cache_trending_playlists_lock", timeout=7200)
 
-    interval = timedelta(minutes=30)
-    start_time = time.time()
-    errored = False
-
     try:
         have_lock = update_lock.acquire(blocking=False)
+
         if have_lock:
             trending_playlist_versions = (
                 trending_strategy_factory.get_versions_for_type(
@@ -195,28 +192,16 @@ def cache_trending_playlists(self):
                 end_time = time.time()
                 logger.info(
                     f"cache_trending_playlists.py ({version.name} version) | \
-                        Finished in {end_time - start_time} seconds"
+                    Finished in {end_time - start_time} seconds"
                 )
                 redis.set(trending_playlists_last_completion_redis_key, int(end_time))
         else:
             logger.info("cache_trending_playlists.py | Failed to acquire lock")
     except Exception as e:
-        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
-        errored = True
+        logger.error(
+            "cache_trending_playlists.py | Fatal error in main loop", exc_info=True
+        )
         raise e
     finally:
-        end_time = time.time()
-        elapsed = end_time - start_time
-        time_left = max(0, interval.total_seconds() - elapsed)
-        logger.info(
-            {
-                "task_name": self.name,
-                "elapsed": elapsed,
-                "interval": interval.total_seconds(),
-                "time_left": time_left,
-                "errored": errored,
-            },
-        )
         if have_lock:
             update_lock.release()
-        celery.send_task(self.name, countdown=time_left)
