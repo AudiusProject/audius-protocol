@@ -1,5 +1,8 @@
 set -e
 
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
 should_error=false
 
 if ! [ -z $CI ]; then
@@ -9,16 +12,19 @@ fi
 export NVM_DIR=$HOME/.nvm;
 source $NVM_DIR/nvm.sh;
 
-nvm install
-cp .python-version-dev .python-version
-pyenv install -s
-rbenv install -s
+printf "${GREEN}Confirming node, python, and ruby environents...\n${NC}"
+{
+  nvm install
+  cp .python-version-dev .python-version
+  pyenv install -s
+  rbenv install -s
+} > /dev/null
 
 required_node_version=$(<.nvmrc)
 current_node_version=$(node --version)
 
 if [ $current_node_version != $required_node_version ]; then
-  echo "Invalid node version. Expected $required_node_version, got $current_node_version"
+  printf "${RED}Invalid node version. Expected $required_node_version, got $current_node_version\n${NC}"
   should_error=true
 fi
 
@@ -26,7 +32,7 @@ required_ruby_version=$(<'.ruby-version')
 current_ruby_version=$(ruby --version)
 
 if [[ ! $current_ruby_version =~ $required_ruby_version ]]; then
-  echo "Invalid ruby version. Expected $required_ruby_version, got $current_ruby_version"
+  printf "${RED}Invalid ruby version. Expected $required_ruby_version, got $current_ruby_version\n${NC}"
   should_error=true
 fi
 
@@ -34,10 +40,12 @@ required_python_version=$(<'.python-version')
 current_python_version=$(python --version)
 
 if [[ ! $current_python_version =~ $required_python_version ]]; then
-  echo "Invalid python version. Expected $required_python_version, got $current_python_version"
+  printf "${RED}Invalid python version. Expected $required_python_version, got $current_python_version\n${NC}"
   should_error=true
 fi
 
 if [[ $should_error = true ]]; then
   exit 1
 fi
+
+printf "\n${GREEN}Environment correctly set up!\n${NC}"
