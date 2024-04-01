@@ -20,6 +20,10 @@ type GiantArtworkProps = {
   cid: Nullable<string>
 }
 
+const messages = {
+  artworkAltText: 'Track Artwork'
+}
+
 const GiantArtwork = ({
   cid,
   trackId,
@@ -43,7 +47,7 @@ const GiantArtwork = ({
       fullWidth
       wrapperClassName={styles.imageWrapper}
       cid={cid}
-      alt='Track Artwork'
+      alt={messages.artworkAltText}
     />
   ) : (
     <DynamicImage wrapperClassName={styles.imageWrapper} image={image} />
