@@ -74,7 +74,8 @@ const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
   premiumTrack: 'PREMIUM TRACK',
   specialAccess: 'SPECIAL ACCESS',
-  generatedWithAi: 'Generated With AI'
+  generatedWithAi: 'Generated With AI',
+  artworkAltText: 'Track Artwork'
 }
 
 type PlayButtonProps = {
@@ -328,7 +329,7 @@ const TrackHeader = ({
       <InnerImageElement
         cid={imageSrc}
         image={imageSrc ?? undefined}
-        alt='Track Artwork'
+        alt={messages.artworkAltText}
         wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
       />
     </CoSign>
