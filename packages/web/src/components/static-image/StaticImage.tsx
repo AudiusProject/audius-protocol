@@ -20,6 +20,8 @@ export type StaticImageProps = {
   size?: SquareSizes | WidthSizes
   // Override image url. Used for updated profile picture and things
   imageUrl?: string
+  // Fallback image url
+  fallbackImageUrl?: string
   // Set height and width of wrapper container to 100%
   fullWidth?: boolean
   // Classes to apply to the wrapper
@@ -55,6 +57,7 @@ export const StaticImage = (props: StaticImageProps) => {
     cid,
     size = SquareSizes.SIZE_1000_BY_1000,
     imageUrl,
+    fallbackImageUrl,
     fullWidth = false,
     wrapperClassName,
     children,
@@ -83,7 +86,7 @@ export const StaticImage = (props: StaticImageProps) => {
           maxWidth: '100%',
           objectFit: 'cover'
         }}
-        src={imageUrl ?? url}
+        src={imageUrl || url || fallbackImageUrl}
         {...other}
       />
 

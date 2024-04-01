@@ -95,6 +95,7 @@
 		83F735A423C64C950040A4C5 /* AirplayEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayEvent.m; sourceTree = "<group>"; };
 		871B6984E1993EF6CFB9B5A5 /* Pods-AudiusReactNative.staging.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.release.xcconfig"; sourceTree = "<group>"; };
 		8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Light.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Light.otf"; sourceTree = "<group>"; };
+		9E5B39082BB49198009C765B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = "Audius Music.entitlements"; path = "AudiusReactNative/Audius Music.entitlements"; sourceTree = "<group>"; };
 		AA7D27FE2A68C20F008DF4D3 /* library_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = library_dark.riv; path = Assets/library_dark.riv; sourceTree = "<group>"; };
 		AA7D27FF2A68C20F008DF4D3 /* library_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = library_matrix.riv; path = Assets/library_matrix.riv; sourceTree = "<group>"; };
@@ -208,6 +209,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				9E5B39082BB49198009C765B /* PrivacyInfo.xcprivacy */,
 				13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */,
 				13B07FAE1A68108700A75B9A /* AudiusReactNative */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,

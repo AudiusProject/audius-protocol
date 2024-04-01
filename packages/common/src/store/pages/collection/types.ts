@@ -21,6 +21,7 @@ export type CollectionsPageState = {
   tracks: LineupState<CollectionTrack>
   userUid: UID | null
   smartCollectionVariant: SmartCollectionVariant
+  isInitialFetchAfterSsr: boolean
 }
 
 export type CollectionsPageType = 'playlist' | 'album'

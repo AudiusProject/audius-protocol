@@ -5,6 +5,7 @@ import { Nullable } from '../../utils/typeUtils'
 import { HeliusNFT } from '../helius'
 
 import {
+  Blocklist,
   MetaplexNFT,
   MetaplexNFTPropertiesFile,
   SolanaNFT,
@@ -465,6 +466,71 @@ const heliusNFTToCollectible = async (
   }
 
   return collectible
+}
+
+const audiusBlocklistUrls = [
+  '.pro',
+  '.site',
+  '.click',
+  '.fun',
+  'sol-drift.com',
+  'myrovoucher.com',
+  'magiceden.club'
+]
+const audiusBlocklistNames = [
+  '00jup',
+  'airdrop',
+  'voucher',
+  ...audiusBlocklistUrls
+]
+export const isHeliusNFTValid = (nft: HeliusNFT, blocklist: Blocklist) => {
+  const {
+    blocklist: urlBlocklist,
+    nftBlocklist,
+    stringFilters: { nameContains, symbolContains }
+  } = blocklist
+  const {
+    grouping,
+    content: {
+      metadata: { name, symbol },
+      links: { external_url: externalUrl }
+    }
+  } = nft
+  const urlBlocklistExtended = [...urlBlocklist, ...audiusBlocklistUrls]
+  const isExternalUrlBlocked = urlBlocklistExtended.some((item) =>
+    externalUrl?.toLowerCase().includes(item.toLowerCase())
+  )
+  if (isExternalUrlBlocked) {
+    return false
+  }
+  const isNftIdBlocked = nftBlocklist.includes(nft.id)
+  if (isNftIdBlocked) {
+    return false
+  }
+  const nameContainsExtended = [...nameContains, ...audiusBlocklistNames]
+  const isNameBlocked = nameContainsExtended.some((item) =>
+    name?.toLowerCase().includes(item.toLowerCase())
+  )
+  if (isNameBlocked) {
+    return false
+  }
+  const isCollectionNameBlocked = grouping.some((group) =>
+    nameContainsExtended.some((item) =>
+      group.collection_metadata?.name
+        ?.toLowerCase()
+        .includes(item.toLowerCase())
+    )
+  )
+  if (isCollectionNameBlocked) {
+    return false
+  }
+  const isSymbolBlocked = symbolContains.some((item) =>
+    symbol?.toLowerCase().includes(item.toLowerCase())
+  )
+  if (isSymbolBlocked) {
+    return false
+  }
+  return true
 }
 
 export const solanaNFTToCollectible = async (
