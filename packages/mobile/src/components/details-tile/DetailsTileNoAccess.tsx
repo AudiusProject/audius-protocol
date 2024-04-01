@@ -397,6 +397,7 @@ export const DetailsTileNoAccess = ({
     handleFollowArtist,
     tippedUser,
     handleSendTip,
+    isIosGatedContentEnabled,
     handlePurchasePress
   ])
 

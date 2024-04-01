@@ -4,7 +4,7 @@ import {
   CollectibleMediaType,
   EthTokenStandard
 } from '~/models'
-import { Nullable, dayjs } from '~/utils'
+import { Nullable, dayjs, formatDate } from '~/utils'
 
 import {
   OpenSeaEvent,
@@ -401,7 +401,7 @@ export const transferEventToCollectible = async (
   return {
     ...collectible,
     isOwned,
-    dateLastTransferred: dayjs(event_timestamp * 1000).toString()
+    dateLastTransferred: formatDate(dayjs.unix(event_timestamp).toString())
   }
 }
 

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 
 import { Collectible, CollectibleState } from '~/models'
-import { allSettled } from '~/utils'
+import { allSettled, formatDate } from '~/utils'
 
 import { OpenSeaClient } from '../opensea'
 import {
@@ -220,9 +220,9 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
           if (ownedCollectibleKeySet.has(id)) {
             collectiblesMap[id] = {
               ...collectiblesMap[id],
-              dateLastTransferred: dayjs(
-                event.event_timestamp * 1000
-              ).toString()
+              dateLastTransferred: formatDate(
+                dayjs.unix(event.event_timestamp).toString()
+              )
             }
           } else {
             ownedCollectibleKeySet.add(id)
@@ -258,9 +258,9 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
             } else {
               collectiblesMap[id] = {
                 ...collectiblesMap[id],
-                dateLastTransferred: dayjs(
-                  event.event_timestamp * 1000
-                ).toString()
+                dateLastTransferred: formatDate(
+                  dayjs.unix(event.event_timestamp).toString()
+                )
               }
             }
           } else if (
