@@ -77,6 +77,7 @@ export default defineConfig(async ({ mode }) => {
       'process.env': env
     },
     optimizeDeps: {
+      include: ['@audius/fetch-nft'],
       esbuildOptions: {
         define: {
           global: 'globalThis'
