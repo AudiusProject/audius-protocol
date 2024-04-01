@@ -46,7 +46,7 @@ const formatTrackMetadata = (
     isStreamGated: metadata.is_stream_gated,
     streamConditions: metadata.stream_conditions,
     isDownloadGated: metadata.is_download_gated,
-    downloadConditions: metadata.download_conditions
+    downloadConditions: metadata.download_conditions,
     // isUnlisted: // TODO: set visibility
     // iswc:
     // origFilename:

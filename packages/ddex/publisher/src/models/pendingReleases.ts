@@ -112,41 +112,6 @@ const copyrightSchema = new mongoose.Schema<Copyright>({
   text: String,
 })
 
-interface USDCPurchaseConditions {
-  price: number
-  splits?: { [key: string]: number }
-}
-
-const usdcPurchaseConditionsSchema =
-  new mongoose.Schema<USDCPurchaseConditions>({
-    price: String,
-    splits: mongoose.Schema.Types.Mixed,
-  })
-
-interface AccessConditions {
-  usdc_purchase?: USDCPurchaseConditions
-  tip_user_id?: string
-  follow_user_id?: string
-  chain?: string
-  address?: string
-  standard?: string
-  name?: string
-  image_url?: string
-  external_link?: string
-}
-
-const accessConditionsSchema = new mongoose.Schema<AccessConditions>({
-  usdc_purchase: { type: usdcPurchaseConditionsSchema },
-  tip_user_id: String,
-  follow_user_id: String,
-  chain: String,
-  address: String,
-  standard: String,
-  name: String,
-  image_url: String,
-  external_link: String,
-})
-
 const trackMetadataSchema = new mongoose.Schema({
   title: { type: String, required: true },
   release_date: { type: Date, required: true },
@@ -179,10 +144,10 @@ const trackMetadataSchema = new mongoose.Schema({
   copyright_line: { type: copyrightSchema, default: null },
   producer_copyright_line: { type: copyrightSchema, default: null },
   parental_warning_type: { type: String, default: null },
-  is_stream_gated: { type: Boolean },
-  stream_conditions: { type: accessConditionsSchema },
-  is_download_gated: { type: Boolean },
-  download_conditions: { type: accessConditionsSchema },
+  is_stream_gated: { type: Boolean, required: true },
+  stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+  is_download_gated: { type: Boolean, required: true },
+  download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
   cover_art_url: { type: String, required: true },
   cover_art_url_hash: { type: String, required: true },
   cover_art_url_hash_algo: { type: String, required: true },

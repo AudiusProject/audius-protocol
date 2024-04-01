@@ -639,12 +639,14 @@ func addStreamingConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialMo
 
 		(*trackPtr).Metadata.IsStreamGated = true
 		(*trackPtr).Metadata.StreamConditions = &common.AccessConditions{
-			Chain:        chain,
-			Address:      address,
-			Standard:     standard,
-			Name:         name,
-			ImageURL:     imageUrl,
-			ExternalLink: externalLink,
+			NFTCollection: &common.CollectibleGatedConditions{
+				Chain:        chain,
+				Address:      address,
+				Standard:     standard,
+				Name:         name,
+				ImageURL:     imageUrl,
+				ExternalLink: externalLink,
+			},
 		}
 	} else if commercialModelType == "FollowGated" {
 		(*trackPtr).Metadata.IsStreamGated = true

@@ -180,16 +180,21 @@ type USDCPurchaseConditions struct {
 	Splits map[string]int `bson:"splits,omitempty"`
 }
 
+type CollectibleGatedConditions struct {
+	Chain        string `bson:"chain,omitempty"`
+	Address      string `bson:"address,omitempty"`
+	Standard     string `bson:"standard,omitempty"`
+	Name         string `bson:"name,omitempty"`
+	Slug         string `bson:"slug,omitempty"`
+	ImageURL     string `bson:"image_url,omitempty"`
+	ExternalLink string `bson:"external_link,omitempty"`
+}
+
 type AccessConditions struct {
-	USDCPurchase *USDCPurchaseConditions `bson:"usdc_purchase,omitempty"`
-	TipUserID    string                  `bson:"tip_user_id,omitempty"`
-	FollowUserID string                  `bson:"follow_user_id,omitempty"`
-	Chain        string                  `bson:"chain,omitempty"`
-	Address      string                  `bson:"address,omitempty"`
-	Standard     string                  `bson:"standard,omitempty"`
-	Name         string                  `bson:"name,omitempty"`
-	ImageURL     string                  `bson:"image_url,omitempty"`
-	ExternalLink string                  `bson:"external_link,omitempty"`
+	USDCPurchase  *USDCPurchaseConditions     `bson:"usdc_purchase,omitempty"`
+	TipUserID     string                      `bson:"tip_user_id,omitempty"`
+	FollowUserID  string                      `bson:"follow_user_id,omitempty"`
+	NFTCollection *CollectibleGatedConditions `bson:"nft_collection,omitempty"`
 }
 
 type TrackMetadata struct {
