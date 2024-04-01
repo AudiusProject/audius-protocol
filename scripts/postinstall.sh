@@ -1,15 +1,14 @@
+#!/bin/bash
+set -e
+
 GREEN='\033[0;32m'
 NC='\033[0m'
 
 printf "${GREEN}Installing git hooks...\n${NC}"
-{
-  npm run install-hooks
-} > /dev/null
+npm run install-hooks > /dev/null
 
 printf "${GREEN}Applying patches...\n${NC}"
-{
-  npm run patch-package
-} > /dev/null
+npm run patch-package > /dev/null
 
 
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
@@ -45,9 +44,7 @@ fi
 
 if [[ -z "${CI}" ]]; then
   printf "${GREEN}Setting up audius-compose...\n${NC}"
-  {
-    ./dev-tools/setup.sh
-  } > /dev/null
+  ./dev-tools/setup.sh > /dev/null
 fi
 
 printf "\n${GREEN}Audius monorepo ready!\n${NC}"
