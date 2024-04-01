@@ -175,6 +175,23 @@ type ReleaseIDs struct {
 	ProprietaryID string `bson:"proprietary_id,omitempty"`
 }
 
+type USDCPurchaseConditions struct {
+	Price  int            `bson:"price,omitempty"`
+	Splits map[string]int `bson:"splits,omitempty"`
+}
+
+type AccessConditions struct {
+	USDCPurchase *USDCPurchaseConditions `bson:"usdc_purchase,omitempty"`
+	TipUserID    string                  `bson:"tip_user_id,omitempty"`
+	FollowUserID string                  `bson:"follow_user_id,omitempty"`
+	Chain        string                  `bson:"chain,omitempty"`
+	Address      string                  `bson:"address,omitempty"`
+	Standard     string                  `bson:"standard,omitempty"`
+	Name         string                  `bson:"name,omitempty"`
+	ImageURL     string                  `bson:"image_url,omitempty"`
+	ExternalLink string                  `bson:"external_link,omitempty"`
+}
+
 type TrackMetadata struct {
 	Title                        string                `bson:"title"`
 	ReleaseDate                  time.Time             `bson:"release_date"`
@@ -190,6 +207,10 @@ type TrackMetadata struct {
 	CopyrightLine                *Copyright            `bson:"copyright_line,omitempty"`
 	ProducerCopyrightLine        *Copyright            `bson:"producer_copyright_line,omitempty"`
 	ParentalWarningType          NullableString        `bson:"parental_warning_type,omitempty"`
+	IsStreamGated                bool                  `bson:"is_stream_gated,omitempty"`
+	StreamConditions             *AccessConditions     `bson:"stream_conditions,omitempty"`
+	IsDownloadGated              bool                  `bson:"is_download_gated,omitempty"`
+	DownloadConditions           *AccessConditions     `bson:"download_conditions,omitempty"`
 
 	// TODO: Handle License from PLineText?
 	License NullableString `bson:"license,omitempty"`
@@ -202,6 +223,9 @@ type TrackMetadata struct {
 	// Extra fields (not in SDK)
 	ArtistID                    string `bson:"artist_id"`
 	ArtistName                  string `bson:"artist_name"`
+	IsStreamFollowGated         bool   `bson:"is_stream_follow_gated"`
+	IsStreamTipGated            bool   `bson:"is_stream_tip_gated"`
+	IsDownloadFollowGated       bool   `bson:"is_download_follow_gated"`
 	PreviewAudioFileURL         string `bson:"preview_audio_file_url"`
 	PreviewAudioFileURLHash     string `bson:"preview_audio_file_url_hash"`
 	PreviewAudioFileURLHashAlgo string `bson:"preview_audio_file_url_hash_algo"`
@@ -211,6 +235,7 @@ type TrackMetadata struct {
 	CoverArtURL                 string `bson:"cover_art_url"`
 	CoverArtURLHash             string `bson:"cover_art_url_hash"`
 	CoverArtURLHashAlgo         string `bson:"cover_art_url_hash_algo"`
+	HasDeal                     bool   `bson:"has_deal"`
 }
 
 // Not part of SDK

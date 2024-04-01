@@ -197,6 +197,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 
 	// Find an ID for the first OAuthed display artist in the release
 
+	// TODO (michelle populate tip and follow gate IDs here)
 	for i := range createTrackRelease {
 		track := &createTrackRelease[i]
 		artistID, artistName, warnings, err := artistutils.GetFirstArtistID(track.Metadata.Artists, p.UsersColl, p.Ctx)
@@ -230,6 +231,10 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 	// Create (but don't yet insert into Mongo) a PendingRelease for each track and album release
 	pendingReleases := []*common.PendingRelease{}
 	for _, track := range createTrackRelease {
+		if !track.Metadata.HasDeal {
+			p.Logger.Info("track '%s' does not have a corresponding deal. skipping queuing for upload", track.Metadata.Title)
+			continue
+		}
 		pendingRelease := &common.PendingRelease{
 			ReleaseID:          release.ReleaseID,
 			DeliveryRemotePath: deliveryRemotePath,
@@ -243,6 +248,16 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 		pendingReleases = append(pendingReleases, pendingRelease)
 	}
 	for _, album := range createAlbumRelease {
+		allTracksHaveDeals := true
+		for _, track := range album.Tracks {
+			if !track.Metadata.HasDeal {
+				allTracksHaveDeals = false
+				p.Logger.Info("track '%s' on album '%s' does not have a corresponding deal. skipping queuing album for upload", track.Metadata.Title, album.Metadata.PlaylistName)
+			}
+		}
+		if !allTracksHaveDeals {
+			continue
+		}
 		pendingRelease := &common.PendingRelease{
 			ReleaseID:          release.ReleaseID,
 			DeliveryRemotePath: deliveryRemotePath,

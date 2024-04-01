@@ -163,6 +163,31 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string) (tracks []
 		}
 	}
 
+	// Parse <ReleaseDeal>s from <DealList>
+	dealNodes := xmlquery.Find(doc, "//DealList/ReleaseDeal")
+	if len(dealNodes) == 0 {
+		errs = append(errs, fmt.Errorf("no <ReleaseDeal> found"))
+		return
+	}
+
+	refToTrackReleaseMap := make(map[string]*common.CreateTrackRelease)
+	refToAlbumReleaseMap := make(map[string]*common.CreateAlbumRelease)
+	for i := range tracks {
+		release := tracks[i]
+		refToTrackReleaseMap[release.DDEXReleaseRef] = &release
+	}
+	for i := range albums {
+		release := albums[i]
+		refToAlbumReleaseMap[release.DDEXReleaseRef] = &release
+	}
+	for _, dNode := range dealNodes {
+		err := processDealNode(dNode, refToTrackReleaseMap, refToAlbumReleaseMap)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+	}
+
 	return
 }
 
@@ -455,6 +480,215 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	}
 	err = fmt.Errorf("unsupported <ReleaseType>%s</ReleaseType> for <ReleaseReference>%s</ReleaseReference>", releaseType, releaseRef)
 	return
+}
+
+func processDealNode(dNode *xmlquery.Node, refToTrackReleaseMap map[string]*common.CreateTrackRelease, refToAlbumReleaseMap map[string]*common.CreateAlbumRelease) (err error) {
+	releaseRefNodes := dNode.SelectElements("DealReleaseReference")
+	if len(releaseRefNodes) == 0 {
+		err = fmt.Errorf("no <DealReleaseReference>s found")
+		return
+	}
+
+	releaseRefs := []string{}
+	for _, refNode := range releaseRefNodes {
+		ref := safeInnerText(refNode)
+		if ref != "" {
+			releaseRefs = append(releaseRefs, ref)
+		}
+	}
+
+	deals, err := xmlquery.QueryAll(dNode, "Deal")
+	if err != nil {
+		return
+	}
+
+	for _, deal := range deals {
+		dealTerms, err := xmlquery.Query(deal, "DealTerms")
+		if err != nil {
+			err = fmt.Errorf("no <DealTerms> found in deal for <DealReleaseReference>s %v", releaseRefs)
+			break
+		}
+		commercialModelTypeNode := dealTerms.SelectElement("CommercialModelType")
+		commercialModelType := safeInnerText(commercialModelTypeNode)
+		if commercialModelType == "UserDefined" {
+			commercialModelType = commercialModelTypeNode.SelectAttr("UserDefinedValue")
+		}
+		useType := safeInnerText(dealTerms.SelectElement("Usage/UseType"))
+
+		// Parse territory codes
+		territoryCodes := dealTerms.SelectElements("TerritoryCode")
+		if len(territoryCodes) != 0 {
+			if !containsWorldwideTerritoryCode(dealTerms) {
+				err = fmt.Errorf("no Worldwide <TerritoryCode> found for <DealReleaseReference>s%v", releaseRefs)
+				break
+			}
+		}
+
+		// Parse validity start date
+		validityStartStr := safeInnerText(dealTerms.SelectElement("ValidityPeriod/StartDate"))
+		var validityStart time.Time
+		if validityStartStr != "" {
+			validityStart, validityStartErr := time.Parse("2006-01-02", validityStartStr)
+			if validityStartErr != nil {
+				err = fmt.Errorf("error parsing ValidityPeriod/StartDate for <DealReleaseReference>s%v: %s", releaseRefs, validityStartErr)
+				break
+			}
+		}
+
+		// Parse price
+		var wholesalePricePerUnit int
+		var priceCurrencyCode string
+		wholesalePricePerUnitNode := dealTerms.SelectElement("PriceInformation/WholesalePricePerUnit")
+		wholesalePricePerUnitStr := safeInnerText(wholesalePricePerUnitNode)
+		if wholesalePricePerUnitNode != nil {
+			priceCurrencyCode = wholesalePricePerUnitNode.SelectAttr("CurrencyCode")
+		}
+		if wholesalePricePerUnitStr != "" && priceCurrencyCode != "USD" {
+			err = fmt.Errorf("unsupported currency code %s for <WholesalePricePerUnit> for <DealReleaseReference>s%v", priceCurrencyCode, releaseRefs)
+		}
+		if wholesalePricePerUnitStr != "" {
+			wholesalePricePerUnit, wholesalePricePerUnitErr := strconv.Atoi(wholesalePricePerUnitStr)
+			if wholesalePricePerUnitErr != nil {
+				err = fmt.Errorf("Error parsing <WholesalePricePerUnit>%s</WholesalePricePerUnit> for <DealReleaseReference>s%v", wholesalePricePerUnitStr, releaseRefs)
+				break
+			}
+		}
+
+		// Add deal info to each release referenced
+		for _, releaseRef := range releaseRefs {
+			trackPtr, trackDealOk := refToTrackReleaseMap[releaseRef]
+			albumPtr, albumDealOk := refToAlbumReleaseMap[releaseRef]
+			if !trackDealOk && !albumDealOk {
+				err = fmt.Errorf("no release found corresponding to <DealReleaseReference>%s</DealReleaseReference>", releaseRef)
+				break
+			}
+
+			if trackDealOk && albumDealOk {
+				err = fmt.Errorf("multiple releases found corresponding to <DealReleaseReference>%s</DealReleaseReference>", releaseRef)
+				break
+			}
+
+			if trackDealOk {
+				switch useType {
+				case "Stream", "OnDemandStream":
+					err = addStreamingConditionsToTrackRelease(dealTerms, commercialModelType, useType, &wholesalePricePerUnit, trackPtr)
+					if err != nil {
+						break
+					}
+				case "PermanentDownload":
+					err = addDownloadConditionsToTrackRelease(dealTerms, commercialModelType, useType, &wholesalePricePerUnit, trackPtr)
+					if err != nil {
+						break
+					}
+				default:
+					err = fmt.Errorf("unsupported <UseType>%s</UseType> for <DealReleaseReference>%s</DealReleaseReference>", useType, releaseRef)
+					break
+				}
+
+				if validityStartStr != "" {
+					(*trackPtr).Metadata.ReleaseDate = validityStart
+				}
+				(*trackPtr).Metadata.HasDeal = true
+			} else if albumDealOk {
+				// Only parse validity start for album deals. Streaming and downloading terms should be in a deal for each individual track on the album
+				if validityStartStr != "" {
+					(*albumPtr).Metadata.ReleaseDate = validityStart
+				}
+			}
+		}
+	}
+
+	return err
+}
+
+func addStreamingConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialModelType string, useType string, wholesalePricePerUnit *int, trackPtr *common.CreateTrackRelease) (err error) {
+	if commercialModelType == "FreeOfChargeModel" {
+		(*trackPtr).Metadata.IsStreamGated = false
+	} else if commercialModelType == "PayAsYouGoModel" {
+		if wholesalePricePerUnit == nil {
+			err = fmt.Errorf("missing required <WholesalePricePerUnit> for <UseType>%s</UseType> for <DealReleaseReference>%s</DealReleaseReference>", useType, releaseRef)
+			return
+		}
+		(*trackPtr).Metadata.IsStreamGated = true
+		(*trackPtr).Metadata.StreamConditions = &common.AccessConditions{
+			USDCPurchase: &common.USDCPurchaseConditions{
+				Price: *wholesalePricePerUnit,
+			},
+		}
+	} else if commercialModelType == "NFTGated" {
+		conditions, err = xmlquery.Query(dealTerms, "Conditions")
+		if err != nil {
+			err = fmt.Errorf("missing required <Conditions> in <DealTerms> for <DealReleaseReference>%s</DealReleaseReference>", releaseRef)
+			return
+		}
+		chain := safeInnerText(conditions.SelectElement("Chain"))
+		address := safeInnerText(conditions.SelectElement("Address"))
+		standard := safeInnerText(conditions.SelectElement("Standard"))
+		name := safeInnerText(conditions.SelectElement("Name"))
+		slug := safeInnerText(conditions.SelectElement("Slug"))
+		imageUrl := safeInnerText(conditions.SelectElement("ImageUrl"))
+		externalLink := safeInnerText(conditions.SelectElement("ExternalLink"))
+
+		// Validate required fields
+		if chain == "eth" {
+			if address == "" || standard == "" || name == "" || slug == "" {
+				err = fmt.Errorf("missing required eth NFT conditions in <DealTerms> for <DealReleaseReference>%s</DealReleaseReference>")
+				return
+			}
+		} else if chain == "sol" {
+			if address == "" || name == "" {
+				err = fmt.Errorf("missing required sol NFT conditions in <DealTerms> for <DealReleaseReference>%s</DealReleaseReference>")
+				return
+			}
+		} else {
+			err = fmt.Errorf("missing or unsupported <Chain> in NFT conditions in <DealTerms> for <DealReleaseReference>%s</DealReleaseReference>", releaseRef)
+			return
+		}
+
+		(*trackPtr).Metadata.IsStreamGated = true
+		(*trackPtr).Metadata.StreamConditions = &common.AccessConditions{
+			Chain:        chain,
+			Address:      address,
+			Standard:     standard,
+			Name:         name,
+			ImageURL:     imageUrl,
+			ExternalLink: externalLink,
+		}
+	} else if commercialModelType == "FollowGated" {
+		(*trackPtr).Metadata.IsStreamGated = true
+		(*trackPtr).Metadata.IsStreamFollowGated = true
+	} else if commercialModelType == "TipGated" {
+		(*trackPtr).Metadata.IsStreamGated = true
+		(*trackPtr).Metadata.IsStreamTipGated = true
+	} else {
+		err = fmt.Errorf("unsupported <CommercialModelType>%s</CommercialModelType> for <UseType>%s</UseType> for <DealReleaseReference>%s</DealReleaseReference>", commercialModelType, useType, releaseRef)
+		return
+	}
+
+	return nil
+}
+
+func addDownloadConditionsToTrackRelease(dealTerms *xmlquery.Node, commercialModelType string, useType string, wholesalePricePerUnit *int, track *common.CreateTrackRelease) (err error) {
+	if commercialModelType == "FreeOfChargeModel" {
+		(*trackPtr).Metadata.IsDownloadGated = false
+	} else if commercialModelType == "PayAsYouGoModel" {
+		if wholesalePricePerUnit == nil {
+			err = fmt.Errorf("missing required <WholesalePricePerUnit> for <UseType>%s</UseType> for <DealReleaseReference>%s</DealReleaseReference>", useType, releaseRef)
+			return
+		}
+		(*trackPtr).Metadata.IsDownloadGated = true
+		(*trackPtr).Metadata.DownloadConditions = &common.AccessConditions{
+			USDCPurchase: &common.USDCPurchaseConditions{
+				Price: *wholesalePricePerUnit,
+			},
+		}
+	} else if commercialModelType == "FollowGated" {
+		(*trackPtr).Metadata.IsDownloadGated = true
+		(*trackPtr).Metadata.IsDownloadFollowGated = true
+	} else {
+		err = fmt.Errorf("unsupported <CommercialModelType>%s</CommercialModelType> for <UseType>%s</UseType> for <DealReleaseReference>%s</DealReleaseReference>", commercialModelType, useType, releaseRef)
+		return
+	}
 }
 
 // parseTrackMetadata parses the metadata for a sound recording from a ResourceGroupContentItem
@@ -768,13 +1002,19 @@ func safeParseFloat64(s string) float64 {
 	return 0
 }
 
+func containsWorldwideTerritoryCode(node *xmlquery.Node) bool {
+	territoryCodes := xmlquery.Find(node, "TerritoryCode")
+	if slices.ContainsFunc(territoryCodes, func(n *xmlquery.Node) bool {
+		// TODO: "NL" is a temporary workaround for the CPD test. Should be removed
+		return safeInnerText(n) == "Worldwide" || safeInnerText(n) == "NL"
+	}) {
+		return true
+	}
+}
+
 func findTerritoryForDetails(details []*xmlquery.Node) *xmlquery.Node {
 	for _, d := range details {
-		territoryCodes := xmlquery.Find(d, "TerritoryCode")
-		if slices.ContainsFunc(territoryCodes, func(n *xmlquery.Node) bool {
-			// TODO: "NL" is a temporary workaround for the CPD test. Should be removed
-			return safeInnerText(n) == "Worldwide" || safeInnerText(n) == "NL"
-		}) {
+		if containsWorldwideTerritoryCode(d) {
 			return d
 		}
 	}
