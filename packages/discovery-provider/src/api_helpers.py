@@ -112,7 +112,11 @@ def generate_signature(data):
     signed_message = w3.eth.account.sign_message(
         encoded_to_sign, private_key=shared_config["delegate"]["private_key"]
     )
-    return signed_message.signature.hex()
+
+    signature_hex = signed_message.signature.hex()
+    if not signature_hex.startswith("0x"):
+        signature_hex = "0x" + signature_hex
+    return signature_hex
 
 
 # Accepts raw data with timestamp key and relevant fields, converts data to hash, and recovers the wallet
