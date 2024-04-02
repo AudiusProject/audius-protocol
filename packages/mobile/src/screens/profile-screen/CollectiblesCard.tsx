@@ -70,8 +70,10 @@ type CollectibleImageProps = {
 const CollectibleImage = (props: CollectibleImageProps) => {
   const { children, style, uri } = props
 
-  const isSvg = !!uri.match(/.*\.svg$/)
-  const isMp4 = !!uri.match(/.*\.mp4$/)
+  const isUriNumber = typeof uri === 'number'
+  const isSvg = isUriNumber ? false : !!uri.match(/.*\.svg$/)
+  const isMp4 = isUriNumber ? false : !!uri.match(/.*\.mp4$/)
+
   const [size, setSize] = useState(0)
 
   const { value: mp4ThumbnailUrl } = useAsync(async () => {
