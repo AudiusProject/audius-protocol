@@ -122,6 +122,19 @@ export function* fetchEthereumCollectiblesForWallets(wallets) {
   )
 }
 
+export function* fetchEthereumCollectiblesWithCollections(collectibles) {
+  const ethereumCollectiblesProvider = yield getContext(
+    'ethereumCollectiblesProvider'
+  )
+  return yield call(
+    [
+      ethereumCollectiblesProvider,
+      ethereumCollectiblesProvider.getCollectionMetadatasForCollectibles
+    ],
+    collectibles
+  )
+}
+
 export function* fetchEthereumCollectibles(user) {
   const apiClient = yield getContext('apiClient')
   const associatedWallets = yield apiClient.getAssociatedWallets({
@@ -153,6 +166,28 @@ export function* fetchEthereumCollectibles(user) {
       updateUserEthCollectibles({
         userId: user.user_id,
         userCollectibles: collectibleList
+      })
+    )
+
+    // Fetch collections and update state
+    const collectiblesWithCollections = yield call(
+      fetchEthereumCollectiblesWithCollections,
+      collectibleList
+    )
+    yield put(
+      cacheActions.update(Kind.USERS, [
+        {
+          id: user.user_id,
+          metadata: {
+            collectibleList: collectiblesWithCollections
+          }
+        }
+      ])
+    )
+    yield put(
+      updateUserEthCollectibles({
+        userId: user.user_id,
+        userCollectibles: collectiblesWithCollections
       })
     )
   }
