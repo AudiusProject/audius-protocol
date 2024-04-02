@@ -68,6 +68,7 @@ class BaseEditPage {
     const confirmUploadModal = this.completeButton.page().getByRole('dialog', {
       name: /confirm upload/i
     })
+    await expect(confirmUploadModal).toBeVisible()
     await confirmUploadModal.getByRole('button', { name: /upload/i }).click()
   }
 }
