@@ -15,6 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { IconPlay } from '@audius/harmony-native'
+import AudiusAPI from 'app/assets/images/audiusAPI.png'
 import { ChainLogo, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
@@ -104,9 +105,13 @@ const CollectibleImage = (props: CollectibleImageProps) => {
   ) : (
     <ImageBackground
       style={style}
-      source={{
-        uri: isMp4 ? mp4ThumbnailUrl : uri
-      }}
+      source={
+        isUriNumber
+          ? uri
+          : {
+              uri: isMp4 ? mp4ThumbnailUrl : uri
+            }
+      }
     >
       {children}
     </ImageBackground>
