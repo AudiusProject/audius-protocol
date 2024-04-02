@@ -113,17 +113,34 @@ export const CollectiblesTab = () => {
       return allCollectibles
     }
 
-    const collectibleMap: {
-      [key: string]: Collectible
-    } = allCollectibles.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {})
-
-    const collectibleKeySet = new Set(Object.keys(collectibleMap))
-
-    const visible = profile.collectibles.order
-      .filter((id) => collectibleKeySet.has(id))
-      .map((id) => collectibleMap[id])
-
-    return visible || []
+    // Saved collectible ids in user profile metadata
+    const savedProfileCollectibles = profile.collectibles ?? {}
+    const savedProfileCollectibleKeySet = new Set(
+      Object.keys(savedProfileCollectibles)
+    )
+    // Saved collectibles order in user profile metadata
+    const order = profile.collectibles.order
+    const orderSet = new Set(order)
+    // Put the collectibles in the order specified by the profile
+    // and then put the rest of the collectibles at the end
+    const sortedCollectibles = allCollectibles.sort((a, b) => {
+      const aIndex = order.indexOf(a.id)
+      const bIndex = order.indexOf(b.id)
+      if (bIndex === -1) return -1
+      if (aIndex === -1) return 1
+      return aIndex - bIndex
+    })
+    // Show collectibles which are either in the saved order,
+    // or which have not been seen yet
+    const visible: Collectible[] = []
+    for (const collectible of sortedCollectibles) {
+      const seen = savedProfileCollectibleKeySet.has(collectible.id)
+      const inOrder = orderSet.has(collectible.id)
+      if (!seen || inOrder) {
+        visible.push(collectible)
+      }
+    }
+    return visible
   }, [profile])
 
   if (!profile) return null
