@@ -542,7 +542,7 @@ export const solanaNFTToCollectible = async (
   type: SolanaNFTType,
   solanaChainMetadata: Nullable<Metadata>
 ): Promise<Nullable<Collectible>> => {
-  let collectible = null
+  let collectible: Nullable<Collectible> = null
   try {
     switch (type) {
       case SolanaNFTType.HELIUS:
