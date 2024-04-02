@@ -185,7 +185,7 @@ test('should upload a premium track', async ({ page, browser }) => {
   await expect(newPage.getByTestId('app-hydrated')).toBeAttached({
     timeout: SSR_HYDRATE_TIMEOUT
   })
-  await expect(buyButton)
+  await expect(buyButton).toBeVisible()
   await expect(newPage.getByText('$' + price)).toBeVisible()
 })
 
