@@ -1,4 +1,3 @@
-import * as mpl from '@metaplex-foundation/mpl-token-metadata'
 import { Connection, PublicKey } from '@solana/web3.js'
 
 import { Collectible, CollectibleState } from '~/models'
@@ -110,10 +109,10 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
           programAddresses.map(async (address) => {
             try {
               if (!this.connection) return null
-              return await mpl.Metadata.fromAccountAddress(
-                this.connection,
-                address
+              const { Metadata } = await import(
+                '@metaplex-foundation/mpl-token-metadata'
               )
+              return await Metadata.fromAccountAddress(this.connection, address)
             } catch (e) {
               return null
             }
@@ -165,7 +164,10 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
         )
       )[0]
 
-      const metadata = await mpl.Metadata.fromAccountAddress(
+      const { Metadata } = await import(
+        '@metaplex-foundation/mpl-token-metadata'
+      )
+      const metadata = await Metadata.fromAccountAddress(
         this.connection,
         programAddress
       )
