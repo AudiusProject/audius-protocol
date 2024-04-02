@@ -10,6 +10,8 @@ import {
 
 import styles from './PlaylistTile.module.css'
 import TrackTile from './TrackTile'
+import { BottomRow } from './BottomRow'
+import { on } from 'process'
 
 const DefaultTileContainer = ({ children }: { children: ReactNode }) => (
   <>{children}</>
@@ -24,6 +26,7 @@ const PlaylistTile = ({
   isLoading,
   isActive,
   isDisabled,
+  isUnlisted,
   isDarkMode,
   isMatrixMode,
   isPlaying,
@@ -44,11 +47,14 @@ const PlaylistTile = ({
   onClickFavorite,
   onClickShare,
   onTogglePlay,
+  onClickGatedUnlockPill,
   trackList,
   trackCount,
   isTrending,
   showRankIcon,
   href,
+  hasStreamAccess,
+  streamConditions,
   TileTrackContainer = DefaultTileContainer
 }: PlaylistTileProps) => {
   const renderTracks = useCallback(
@@ -120,6 +126,25 @@ const PlaylistTile = ({
       </TileTrackContainer>
       {renderTracks()}
       {renderMoreTracks()}
+      <BottomRow
+        hasStreamAccess={hasStreamAccess}
+        isDisabled={isDisabled}
+        isLoading={isLoading}
+        isFavorited={isFavorited}
+        isReposted={isReposted}
+        rightActions={rightActions}
+        bottomBar={bottomBar}
+        isUnlisted={isUnlisted}
+        isOwner={isOwner}
+        isDarkMode={isDarkMode}
+        isMatrixMode={isMatrixMode}
+        showIconButtons={showIconButtons}
+        onClickRepost={onClickRepost}
+        onClickFavorite={onClickFavorite}
+        onClickShare={onClickShare}
+        onClickGatedUnlockPill={onClickGatedUnlockPill}
+        streamConditions={streamConditions}
+      />
     </div>
   )
 }

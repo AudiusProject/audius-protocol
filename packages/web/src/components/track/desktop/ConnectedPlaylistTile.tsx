@@ -17,7 +17,9 @@ import {
   PlaybackSource,
   ID,
   UID,
-  Track
+  Track,
+  isContentUSDCPurchaseGated,
+  ModalSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -25,7 +27,9 @@ import {
   cacheUsersSelectors,
   collectionsSocialActions,
   shareModalUIActions,
-  playerSelectors
+  playerSelectors,
+  usePremiumContentPurchaseModal,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
@@ -61,6 +65,7 @@ import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getUserFromCollection } = cacheUsersSelectors
@@ -138,7 +143,7 @@ const ConnectedPlaylistTile = ({
     is_album: isAlbum,
     playlist_name: title,
     playlist_id: id,
-    is_private: isPrivate,
+    is_private: isUnlisted,
     _cover_art_sizes: coverArtSizes,
     repost_count: repostCount,
     save_count: saveCount,
@@ -147,7 +152,10 @@ const ConnectedPlaylistTile = ({
     has_current_user_reposted: isReposted,
     has_current_user_saved: isFavorited,
     track_count: trackCount,
-    permalink
+    permalink,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
+    access
   } = getCollectionWithFallback(collection)
 
   const {
@@ -162,6 +170,8 @@ const ConnectedPlaylistTile = ({
   const isActive = useMemo(() => {
     return tracks.some((track: any) => track.uid === playingUid)
   }, [tracks, playingUid])
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
 
   const onTogglePlay = useCallback(
     (e?: MouseEvent /* click event within TrackTile */) => {
@@ -283,7 +293,7 @@ const ConnectedPlaylistTile = ({
       type: isAlbum ? 'album' : 'playlist', // playlist or album
       playlistId: id,
       playlistName: title,
-      isPublic: !isPrivate,
+      isPublic: !isUnlisted,
       isOwner,
       includeEmbed: true,
       includeShare: false,
@@ -382,6 +392,17 @@ const ConnectedPlaylistTile = ({
   const onClickShare = useCallback(() => {
     shareCollection(id)
   }, [shareCollection, id])
+
+  const hasStreamAccess = !!access?.stream
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
+    const isPurchase = isContentUSDCPurchaseGated(streamConditions)
+    if (isPurchase && id) {
+      openPremiumContentPurchaseModal(
+        { contentId: id, contentType: PurchaseableContentType.ALBUM },
+        { source: ModalSource.TrackTile }
+      )
+    }
+  }, [id, openPremiumContentPurchaseModal, hasStreamAccess])
 
   const disableActions = false
 
@@ -489,6 +510,7 @@ const ConnectedPlaylistTile = ({
       isDarkMode={isDarkMode()}
       isMatrixMode={isMatrix()}
       isActive={isActive}
+      isUnlisted={isUnlisted}
       isPlaying={isPlaylistPlaying}
       artwork={artwork}
       rightActions={rightActions}
@@ -500,6 +522,7 @@ const ConnectedPlaylistTile = ({
       onClickRepost={onClickRepost}
       onClickFavorite={onClickFavorite}
       onClickShare={onClickShare}
+      onClickGatedUnlockPill={onClickGatedUnlockPill}
       onTogglePlay={onTogglePlay}
       key={`${index}-${title}`}
       TileTrackContainer={TileTrackContainer}
@@ -521,6 +544,8 @@ const ConnectedPlaylistTile = ({
       isTrending={isTrending}
       showRankIcon={showRankIcon}
       href={href}
+      hasStreamAccess={hasStreamAccess}
+      streamConditions={isStreamGated ? streamConditions : null}
     />
   )
 }

@@ -182,7 +182,7 @@ const TrackTile = ({
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickPill = useAuthenticatedClickCallback(() => {
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -398,9 +398,8 @@ const TrackTile = ({
           onClickRepost={onClickRepost}
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
-          onClickPill={onClickPill}
+          onClickGatedUnlockPill={onClickGatedUnlockPill}
           streamConditions={streamConditions}
-          isTrack={isTrack}
           trackId={trackId}
         />
       </div>
