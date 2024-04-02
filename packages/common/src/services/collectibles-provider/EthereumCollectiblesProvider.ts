@@ -1,13 +1,13 @@
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 
 import { Collectible, CollectibleState } from '~/models'
-import { allSettled, formatDate } from '~/utils'
+import { allSettled /* formatDate */ } from '~/utils'
 
 import { OpenSeaClient } from '../opensea'
 import {
   OpenSeaCollection,
   OpenSeaEvent,
-  OpenSeaEventExtended,
+  // OpenSeaEventExtended,
   OpenSeaNft,
   OpenSeaNftExtended,
   OpenSeaNftMetadata
@@ -17,10 +17,10 @@ import { CollectiblesProvider } from './CollectiblesProvider'
 import {
   assetToCollectible,
   fetchWithTimeout,
-  getAssetIdentifier,
-  isAssetValid,
-  isNotFromNullAddress,
-  transferEventToCollectible
+  // getAssetIdentifier,
+  isAssetValid
+  // isNotFromNullAddress,
+  // transferEventToCollectible
 } from './ethCollectibleHelpers'
 
 export class EthereumCollectiblesProvider implements CollectiblesProvider {
@@ -143,9 +143,9 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
 
   async getCollectibles(wallets: string[]): Promise<CollectibleState> {
     return Promise.all([
-      this.getNftsForMultipleWallets(wallets),
-      this.getNftTransferEventsForMultipleWallets(wallets)
-    ]).then(async ([nfts, transferEvents]) => {
+      this.getNftsForMultipleWallets(wallets)
+      // this.getNftTransferEventsForMultipleWallets(wallets)
+    ]).then(async ([nfts /*, transferEvents */]) => {
       const assets = await Promise.all(
         nfts.map(async (nft) => this.addNftMetadata(nft))
       )
@@ -161,90 +161,92 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
         return acc
       }, {})
 
-      const ownedCollectibleKeySet = new Set(Object.keys(collectiblesMap))
-      const lowercasedWallets = wallets.map((wallet) => wallet.toLowerCase())
+      // TODO: Re-enable transfer events when we have more confidence in fetching speed.
 
-      const transferEventsExtended: OpenSeaEventExtended[] = await Promise.all(
-        transferEvents.map(async (event) => {
-          const nftMetadata = await this.addNftMetadata(event.nft)
-          return { ...event, nft: nftMetadata }
-        })
-      )
+      // const ownedCollectibleKeySet = new Set(Object.keys(collectiblesMap))
+      // const lowercasedWallets = wallets.map((wallet) => wallet.toLowerCase())
 
-      // Handle transfers from NullAddress as they were created events
-      const firstOwnershipTransferEvents = transferEventsExtended
-        .filter(
-          (event) =>
-            event?.nft &&
-            isAssetValid(event.nft) &&
-            !isNotFromNullAddress(event)
-        )
-        .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
-          const id = getAssetIdentifier(curr.nft)
-          if (acc[id] && acc[id].event_timestamp - curr.event_timestamp > 0) {
-            return acc
-          }
-          acc[id] = curr
-          return acc
-        }, {})
-      await Promise.all(
-        Object.entries(firstOwnershipTransferEvents).map(async (entry) => {
-          const [id, event] = entry
-          if (ownedCollectibleKeySet.has(id)) {
-            collectiblesMap[id] = {
-              ...collectiblesMap[id],
-              dateLastTransferred: formatDate(
-                dayjs.unix(event.event_timestamp).toString()
-              )
-            }
-          } else {
-            ownedCollectibleKeySet.add(id)
-            collectiblesMap[id] = await transferEventToCollectible(event, false)
-          }
-          return event
-        })
-      )
+      // const transferEventsExtended: OpenSeaEventExtended[] = await Promise.all(
+      //   transferEvents.map(async (event) => {
+      //     const nftMetadata = await this.addNftMetadata(event.nft)
+      //     return { ...event, nft: nftMetadata }
+      //   })
+      // )
 
-      // Handle transfers
-      const latestTransferEventsMap = transferEvents
-        .filter(
-          (event) =>
-            event?.nft && isAssetValid(event.nft) && isNotFromNullAddress(event)
-        )
-        .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
-          const id = getAssetIdentifier(curr.nft)
-          if (acc[id] && acc[id].event_timestamp - curr.event_timestamp > 0) {
-            return acc
-          }
-          acc[id] = curr
-          return acc
-        }, {})
-      await Promise.all(
-        Object.values(latestTransferEventsMap).map(async (event) => {
-          const id = getAssetIdentifier(event.nft)
-          if (ownedCollectibleKeySet.has(id)) {
-            // Remove collectible if it was transferred out from
-            // one of the user's wallets.
-            if (lowercasedWallets.includes(event.from_address.toLowerCase())) {
-              ownedCollectibleKeySet.delete(id)
-              delete collectiblesMap[id]
-            } else {
-              collectiblesMap[id] = {
-                ...collectiblesMap[id],
-                dateLastTransferred: formatDate(
-                  dayjs.unix(event.event_timestamp).toString()
-                )
-              }
-            }
-          } else if (
-            lowercasedWallets.includes(event.to_address.toLowerCase())
-          ) {
-            ownedCollectibleKeySet.add(id)
-            collectiblesMap[id] = await transferEventToCollectible(event)
-          }
-          return event
-        })
-      )
+      // // Handle transfers from NullAddress as they were created events
+      // const firstOwnershipTransferEvents = transferEventsExtended
+      //   .filter(
+      //     (event) =>
+      //       event?.nft &&
+      //       isAssetValid(event.nft) &&
+      //       !isNotFromNullAddress(event)
+      //   )
+      //   .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
+      //     const id = getAssetIdentifier(curr.nft)
+      //     if (acc[id] && acc[id].event_timestamp - curr.event_timestamp > 0) {
+      //       return acc
+      //     }
+      //     acc[id] = curr
+      //     return acc
+      //   }, {})
+      // await Promise.all(
+      //   Object.entries(firstOwnershipTransferEvents).map(async (entry) => {
+      //     const [id, event] = entry
+      //     if (ownedCollectibleKeySet.has(id)) {
+      //       collectiblesMap[id] = {
+      //         ...collectiblesMap[id],
+      //         dateLastTransferred: formatDate(
+      //           dayjs.unix(event.event_timestamp).toString()
+      //         )
+      //       }
+      //     } else {
+      //       ownedCollectibleKeySet.add(id)
+      //       collectiblesMap[id] = await transferEventToCollectible(event, false)
+      //     }
+      //     return event
+      //   })
+      // )
+
+      // // Handle transfers
+      // const latestTransferEventsMap = transferEvents
+      //   .filter(
+      //     (event) =>
+      //       event?.nft && isAssetValid(event.nft) && isNotFromNullAddress(event)
+      //   )
+      //   .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
+      //     const id = getAssetIdentifier(curr.nft)
+      //     if (acc[id] && acc[id].event_timestamp - curr.event_timestamp > 0) {
+      //       return acc
+      //     }
+      //     acc[id] = curr
+      //     return acc
+      //   }, {})
+      // await Promise.all(
+      //   Object.values(latestTransferEventsMap).map(async (event) => {
+      //     const id = getAssetIdentifier(event.nft)
+      //     if (ownedCollectibleKeySet.has(id)) {
+      //       // Remove collectible if it was transferred out from
+      //       // one of the user's wallets.
+      //       if (lowercasedWallets.includes(event.from_address.toLowerCase())) {
+      //         ownedCollectibleKeySet.delete(id)
+      //         delete collectiblesMap[id]
+      //       } else {
+      //         collectiblesMap[id] = {
+      //           ...collectiblesMap[id],
+      //           dateLastTransferred: formatDate(
+      //             dayjs.unix(event.event_timestamp).toString()
+      //           )
+      //         }
+      //       }
+      //     } else if (
+      //       lowercasedWallets.includes(event.to_address.toLowerCase())
+      //     ) {
+      //       ownedCollectibleKeySet.add(id)
+      //       collectiblesMap[id] = await transferEventToCollectible(event)
+      //     }
+      //     return event
+      //   })
+      // )
 
       const result = Object.values(collectiblesMap).reduce(
         (result, collectible) => {

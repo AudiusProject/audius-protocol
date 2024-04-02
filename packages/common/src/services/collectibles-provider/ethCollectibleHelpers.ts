@@ -6,7 +6,7 @@ import {
 } from '~/models'
 import { Nullable, dayjs, formatDate } from '~/utils'
 
-// import placeholderCoverArt from '../../assets/img/Placeholder@2x.png'
+import placeholderCoverArt from '../../assets/img/Placeholder@2x.png'
 import {
   OpenSeaEvent,
   OpenSeaEventExtended,
@@ -291,8 +291,9 @@ export const assetToCollectible = async (
           isAnimatedWebp = isWebpAnimated(ab)
         }
         if (res.status >= 300) {
-          imageUrl = placeholderCoverArt
-          frameUrl = placeholderCoverArt
+          mediaType = CollectibleMediaType.IMAGE
+          imageUrl = placeholderCoverArt as string
+          frameUrl = placeholderCoverArt as string
         } else if (isAnimatedWebp) {
           mediaType = CollectibleMediaType.ANIMATED_WEBP
           gifUrl = frameUrl
@@ -343,8 +344,9 @@ export const assetToCollectible = async (
           isAnimatedWebp = isWebpAnimated(ab)
         }
         if (res.status >= 300) {
-          imageUrl = placeholderCoverArt
-          frameUrl = placeholderCoverArt
+          mediaType = CollectibleMediaType.IMAGE
+          imageUrl = placeholderCoverArt as string
+          frameUrl = placeholderCoverArt as string
         } else if (isAnimatedWebp) {
           mediaType = CollectibleMediaType.ANIMATED_WEBP
           gifUrl = frameUrl
@@ -379,7 +381,6 @@ export const assetToCollectible = async (
         imageUrl = frameUrl
       }
     } else {
-      mediaType = CollectibleMediaType.IMAGE
       frameUrl = imageUrls.find((url) => !!url)!
       const res = await fetchWithTimeout(frameUrl, {
         headers: { Range: 'bytes=0-100' }
@@ -393,8 +394,9 @@ export const assetToCollectible = async (
         isAnimatedWebp = isWebpAnimated(ab)
       }
       if (res.status >= 300) {
-        imageUrl = placeholderCoverArt
-        frameUrl = placeholderCoverArt
+        mediaType = CollectibleMediaType.IMAGE
+        imageUrl = placeholderCoverArt as string
+        frameUrl = placeholderCoverArt as string
       } else if (isAnimatedWebp) {
         mediaType = CollectibleMediaType.ANIMATED_WEBP
         gifUrl = frameUrl
@@ -410,6 +412,7 @@ export const assetToCollectible = async (
         frameUrl = null
         videoUrl = imageUrls.find((url) => !!url)!
       } else {
+        mediaType = CollectibleMediaType.IMAGE
         imageUrl = imageUrls.find((url) => !!url)!
         frameUrl = imageUrls.find((url) => !!url)!
       }
@@ -417,8 +420,8 @@ export const assetToCollectible = async (
   } catch (e) {
     console.error('Error processing collectible', e)
     mediaType = CollectibleMediaType.IMAGE
-    // imageUrl = placeholderCoverArt
-    // frameUrl = placeholderCoverArt
+    imageUrl = placeholderCoverArt as string
+    frameUrl = placeholderCoverArt as string
   }
 
   const collectionSlug =
@@ -426,7 +429,7 @@ export const assetToCollectible = async (
       ? (asset.collection as unknown as any).name ?? null
       : asset.collection
 
-  return {
+  const collectible = {
     id: getAssetIdentifier(asset),
     tokenId: asset.identifier,
     name: (asset.name || asset?.asset_contract?.name) ?? '',
@@ -452,6 +455,7 @@ export const assetToCollectible = async (
     chain: Chain.Eth,
     wallet: asset.wallet
   }
+  return collectible
 }
 
 export const transferEventToCollectible = async (
