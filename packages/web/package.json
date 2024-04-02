@@ -62,7 +62,8 @@
     "electron:prod": "electron . production",
     "electron:stage": "electron . staging",
     "install-dmg-license": "npm add dmg-license -w audius-client",
-    "pack": "electron-builder --dir"
+    "pack": "electron-builder --dir",
+    "test-ct": "playwright test -c playwright-ct.config.ts"
   },
   "dependencies": {
     "@audius/common": "*",
@@ -211,6 +212,7 @@
     "@electron/notarize": "2.2.0",
     "@esbuild-plugins/node-globals-polyfill": "0.2.3",
     "@pinata/sdk": "1.1.13",
+    "@playwright/experimental-ct-react": "^1.42.1",
     "@playwright/test": "1.42.1",
     "@redux-devtools/extension": "3.2.4",
     "@testing-library/react": "12.0.0",
