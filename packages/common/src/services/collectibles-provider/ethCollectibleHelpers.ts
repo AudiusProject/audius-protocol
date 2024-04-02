@@ -6,7 +6,7 @@ import {
 } from '~/models'
 import { Nullable, dayjs, formatDate } from '~/utils'
 
-import placeholderCoverArt from '../../assets/img/Placeholder@2x.png'
+import placeholderCoverArt from '../../assets/img/Placeholder2x.png'
 import {
   OpenSeaEvent,
   OpenSeaEventExtended,
