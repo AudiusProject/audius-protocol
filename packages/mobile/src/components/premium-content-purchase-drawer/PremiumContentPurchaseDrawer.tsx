@@ -1,6 +1,11 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetPlaylistById,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
 import type {
   PurchaseableTrackStreamMetadata,
   PurchaseableTrackDownloadMetadata,
@@ -31,7 +36,8 @@ import {
   purchaseContentSelectors,
   PurchaseContentStage,
   PurchaseContentPage,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  PurchaseableContentType
 } from '@audius/common/store'
 import type { PurchaseContentError } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
@@ -188,7 +194,7 @@ const RenderError = ({ error: { code } }: { error: PurchaseContentError }) => {
   )
 }
 
-const PremiumTrackPurchaseDrawerHeader = ({
+const PremiumContentPurchaseDrawerHeader = ({
   onClose
 }: {
   onClose: () => void
@@ -234,10 +240,12 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 const RenderForm = ({
   onClose,
   track,
+  contentType,
   purchaseConditions
 }: {
   onClose: () => void
   track: PurchaseableTrackStreamMetadata | PurchaseableTrackDownloadMetadata
+  contentType: PurchaseableContentType
   purchaseConditions: USDCPurchaseConditions
 }) => {
   const navigation = useNavigation()
@@ -344,6 +352,7 @@ const RenderForm = ({
               )}
               <View style={styles.bottomSection}>
                 <PurchaseSummaryTable
+                  contentType={contentType}
                   {...purchaseSummaryValues}
                   stemsPurchaseCount={stemsPurchaseCount}
                   downloadPurchaseCount={downloadPurchaseCount}
@@ -427,24 +436,39 @@ const RenderForm = ({
   )
 }
 
-export const PremiumTrackPurchaseDrawer = () => {
+export const PremiumContentPurchaseDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const presetValues = usePayExtraPresets()
   const {
-    // TODO: album support
-    data: { contentId: trackId },
+    data: { contentId, contentType },
     isOpen,
     onClose,
     onClosed
   } = usePremiumContentPurchaseModal()
-
+  const isAlbum = contentType === PurchaseableContentType.ALBUM
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { data: track, status: trackStatus } = useGetTrackById(
-    { id: trackId },
-    { disabled: !trackId }
+    { id: contentId },
+    { disabled: !contentId }
   )
-  const metadata = track as PurchaseableContentMetadata
+  const { data: album } = useGetPlaylistById(
+    { playlistId: contentId!, currentUserId },
+    { disabled: !isAlbum || !contentId }
+  )
+  const { data: user } = useGetUserById(
+    {
+      id: track?.owner_id ?? album?.playlist_owner_id,
+      currentUserId
+    },
+    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
+  )
+  const metadata = {
+    ...(isAlbum ? album : track),
+    user
+  } as PurchaseableContentMetadata
+
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -461,10 +485,7 @@ export const PremiumTrackPurchaseDrawer = () => {
     ? metadata.download_conditions
     : null
 
-  const price =
-    purchaseConditions && 'usdc_purchase' in purchaseConditions
-      ? purchaseConditions?.usdc_purchase.price
-      : 0
+  const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 
   const { initialValues, onSubmit, validationSchema } =
     usePurchaseContentFormConfiguration({
@@ -479,12 +500,12 @@ export const PremiumTrackPurchaseDrawer = () => {
   }, [onClosed, dispatch])
 
   if (
-    !track ||
+    !metadata ||
     !purchaseConditions ||
     !isUSDCEnabled ||
     !(isValidStreamGatedTrack || isValidDownloadGatedTrack)
   ) {
-    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    console.error('PremiumContentPurchaseModal: Content is not purchasable')
     return null
   }
 
@@ -493,7 +514,7 @@ export const PremiumTrackPurchaseDrawer = () => {
       blockClose={isUnlocking && stage !== PurchaseContentStage.START}
       isOpen={isOpen}
       onClose={onClose}
-      drawerHeader={PremiumTrackPurchaseDrawerHeader}
+      drawerHeader={PremiumContentPurchaseDrawerHeader}
       onClosed={handleClosed}
       isGestureSupported={false}
       isFullscreen
@@ -516,6 +537,7 @@ export const PremiumTrackPurchaseDrawer = () => {
                   | PurchaseableTrackStreamMetadata
                   | PurchaseableTrackDownloadMetadata
               }
+              contentType={contentType}
               purchaseConditions={purchaseConditions}
             />
           </Formik>

@@ -14,7 +14,8 @@ import {
   collectionPageSelectors,
   reachabilitySelectors,
   playerSelectors,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
 import type { Maybe } from '@audius/common/utils'
@@ -290,6 +291,7 @@ export const CollectionScreenDetailsTile = ({
     <DetailsTile
       {...detailsTileProps}
       contentId={numericCollectionId}
+      contentType={PurchaseableContentType.ALBUM}
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}

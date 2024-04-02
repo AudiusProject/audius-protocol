@@ -34,7 +34,8 @@ import {
   favoritesUserListActions,
   RepostType,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   Genre,
@@ -629,6 +630,7 @@ export const TrackScreenDetailsTile = ({
       title={title}
       track={track}
       contentId={trackId}
+      contentType={PurchaseableContentType.TRACK}
     />
   )
 }
