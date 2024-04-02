@@ -226,6 +226,7 @@ def populate_mock_db(db, entities, block_offset=None):
                     else None
                 ),
                 is_unlisted=track_meta.get("is_unlisted", False),
+                is_scheduled_release=track_meta.get("is_scheduled_release", False),
                 is_stream_gated=track_meta.get("is_stream_gated", False),
                 stream_conditions=track_meta.get("stream_conditions", None),
                 is_download_gated=track_meta.get("is_download_gated", False),
