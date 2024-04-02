@@ -23,15 +23,13 @@ import {
 } from '../../types'
 
 import styles from './CollectibleGatedFields.module.css'
+import { imageCollectiblePlaceholder } from '@audius/common/assets'
 
-const { getSupportedUserCollections, getHasUnsupportedCollection } =
+const { getSupportedUserCollections } =
   collectiblesSelectors
 
 const messages = {
   pickACollection: 'Pick a Collection',
-  compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.',
   premiumDownloads:
     'Setting your track to Collectible Gated will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
@@ -59,7 +57,6 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
   )
-  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
 
   const ethCollectibleItems = useMemo(() => {
     return Object.keys(ethCollectionMap)
@@ -71,7 +68,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         el: (
           <div className={styles.dropdownRow}>
             <img
-              src={ethCollectionMap[slug].img ?? undefined}
+              src={ethCollectionMap[slug].img || imageCollectiblePlaceholder}
               alt={ethCollectionMap[slug].name}
             />
             <span>{ethCollectionMap[slug].name}</span>
@@ -91,7 +88,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         el: (
           <div className={styles.dropdownRow}>
             <img
-              src={solCollectionMap[mint].img ?? undefined}
+              src={solCollectionMap[mint].img || imageCollectiblePlaceholder}
               alt={solCollectionMap[mint].name}
             />
             <span>{solCollectionMap[mint].name}</span>
@@ -117,19 +114,6 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     (item) => item.text === defaultCollectionName
   )
   const value = selectedCollection || defaultCollectionName
-  const renderFooter = () => {
-    return hasUnsupportedCollection ? (
-      <HelpCallout
-        className={styles.helpCallout}
-        content={
-          <div>
-            <div>{messages.compatibilityTitle}</div>
-            <div>{messages.compatibilitySubtitle}</div>
-          </div>
-        }
-      />
-    ) : null
-  }
 
   return (
     <div className={styles.root}>
@@ -168,7 +152,6 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         size='large'
         dropdownStyle={styles.dropdown}
         dropdownInputStyle={styles.dropdownInput}
-        footer={renderFooter()}
         disabled={disabled}
       />
       {downloadConditions ? (

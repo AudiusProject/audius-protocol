@@ -32,9 +32,6 @@ const messages = {
   ownersOf: 'Owners Of',
   noCollectibles:
     'No Collectibles found. To enable this option, link a wallet containing a collectible.',
-  compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.'
 }
 
 const LEARN_MORE_URL =
@@ -208,12 +205,7 @@ export const CollectibleGatedAvailability = ({
   }, [navigation])
 
   const renderHelpCalloutContent = useCallback(() => {
-    return hasUnsupportedCollection ? (
-      <View>
-        <Text>{messages.compatibilityTitle}</Text>
-        <Text>{messages.compatibilitySubtitle}</Text>
-      </View>
-    ) : (
+    return hasNoCollectibles ? (
       messages.noCollectibles
     )
   }, [hasUnsupportedCollection])

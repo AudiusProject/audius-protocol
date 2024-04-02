@@ -19,9 +19,6 @@ import { ListSelectionScreen } from './ListSelectionScreen'
 const messages = {
   collections: 'COLLECTIONS',
   searchCollections: 'Search Collections',
-  compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.',
   done: 'Done'
 }
 
