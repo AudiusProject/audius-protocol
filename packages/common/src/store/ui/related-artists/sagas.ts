@@ -1,18 +1,26 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import {
+  SagaGenerator,
+  all,
+  call,
+  put,
+  select,
+  takeEvery
+} from 'typed-redux-saga'
 
-import { ID, UserMetadata, userMetadataFromSDK } from '~/models'
+import { ID, UserMetadata, userMetadataListFromSDK } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'
-import { getContext } from '~/store/effects'
+import { getContext, getSDK } from '~/store/effects'
 import { waitForRead } from '~/utils/sagaHelpers'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { actions as relatedArtistsActions } from './slice'
 import { compareSDKResponse } from '~/utils/sdkMigrationUtils'
 import { Id } from '~/api'
+import { AllEffect, CallEffect } from 'redux-saga/effects'
 
 const getUserId = accountSelectors.getUserId
 
@@ -66,31 +74,48 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
   }
 }
 
+function* checkSDKMigration<T extends object>({
+  legacy: legacyCall,
+  migrated: migratedCall,
+  endpointName
+}: {
+  legacy: SagaGenerator<T, CallEffect<T>>
+  migrated: SagaGenerator<T, CallEffect<T>>
+  endpointName: string
+}) {
+  const [legacy, migrated] = yield* all([
+    legacyCall,
+    migratedCall
+  ]) as SagaGenerator<T[], AllEffect<CallEffect<T>>>
+  compareSDKResponse({ legacy, migrated }, endpointName)
+  return { legacy, migrated }
+}
+
 function* fetchTopArtists() {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
-  const sdk = yield* call(yield* getContext('audiusSdk'))
 
   const currentUserId = yield* select(getUserId)
 
-  const legacy = yield* call([apiClient, apiClient.getTopArtists], {
-    currentUserId,
-    limit: 50
+  const { migrated: topArtists } = yield* checkSDKMigration({
+    endpointName: 'getTopArtists',
+    legacy: call([apiClient, apiClient.getTopArtists], {
+      currentUserId,
+      limit: 50
+    }),
+    migrated: call(function* () {
+      const sdk = yield* getSDK()
+      const { data } = yield* call(
+        [sdk.full.users, sdk.full.users.getTopUsers],
+        {
+          limit: 50,
+          userId: Id.parse(currentUserId)
+        }
+      )
+      return userMetadataListFromSDK(data)
+    })
   })
 
-  const { data = [] } = yield* call(
-    [sdk.full.users, sdk.full.users.getTopUsers],
-    {
-      limit: 50,
-      userId: Id.parse(currentUserId)
-    }
-  )
-  const migrated = data
-    .map((d) => userMetadataFromSDK(d))
-    .filter(removeNullable)
-
-  compareSDKResponse({ legacy, migrated }, 'getTopArtists')
-  const topArtists = migrated
   const filteredArtists = topArtists.filter(
     (user) => !user.does_current_user_follow && !user.is_deactivated
   )

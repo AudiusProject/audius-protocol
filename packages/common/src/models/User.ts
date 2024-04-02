@@ -14,7 +14,7 @@ import {
   playlistLibraryFromSDK
 } from '~/models/PlaylistLibrary'
 import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
-import { Nullable } from '~/utils/typeUtils'
+import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
@@ -157,3 +157,6 @@ export const userMetadataFromSDK = (
 
   return newUser
 }
+
+export const userMetadataListFromSDK = (input?: full.UserFull[]) =>
+  input ? input.map((d) => userMetadataFromSDK(d)).filter(removeNullable) : []
