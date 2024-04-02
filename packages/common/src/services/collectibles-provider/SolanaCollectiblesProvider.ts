@@ -1,3 +1,4 @@
+import * as mpl from '@metaplex-foundation/mpl-token-metadata'
 import { Connection, PublicKey } from '@solana/web3.js'
 
 import { Collectible, CollectibleState } from '~/models'
@@ -109,25 +110,29 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
           programAddresses.map(async (address) => {
             try {
               if (!this.connection) return null
-              const { Metadata } = await import(
-                '@metaplex-foundation/mpl-token-metadata'
+              return await mpl.Metadata.fromAccountAddress(
+                this.connection,
+                address
               )
-              return await Metadata.fromAccountAddress(this.connection, address)
             } catch (e) {
               return null
             }
           })
         )
         const collectibles = await Promise.all(
-          nftsForWallet.map(
-            async (nft, i) =>
-              await solanaNFTToCollectible(
+          nftsForWallet.map(async (nft, i) => {
+            try {
+              const toCollectible = await solanaNFTToCollectible(
                 nft,
                 wallet,
                 SolanaNFTType.HELIUS,
                 chainMetadatas[i]
               )
-          )
+              return toCollectible
+            } catch (e) {
+              return null
+            }
+          })
         )
         return collectibles.filter(Boolean) as Collectible[]
       })
@@ -160,10 +165,7 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
         )
       )[0]
 
-      const { Metadata } = await import(
-        '@metaplex-foundation/mpl-token-metadata'
-      )
-      const metadata = await Metadata.fromAccountAddress(
+      const metadata = await mpl.Metadata.fromAccountAddress(
         this.connection,
         programAddress
       )

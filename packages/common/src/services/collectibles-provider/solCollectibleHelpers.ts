@@ -322,13 +322,17 @@ const starAtlasNFTToCollectible = async (
 const getMediaInfo = async (
   nft: MetaplexNFT
 ): Promise<Nullable<SolanaNFTMedia>> => {
-  return (
-    (await metaplexNftGif(nft)) ||
-    (await metaplexNftThreeDWithFrame(nft)) ||
-    (await metaplexNftVideo(nft)) ||
-    (await metaplexNftImage(nft)) ||
-    (await metaplexNftComputedMedia(nft))
-  )
+  try {
+    const mediaInfo =
+      (await metaplexNftGif(nft)) ||
+      (await metaplexNftThreeDWithFrame(nft)) ||
+      (await metaplexNftVideo(nft)) ||
+      (await metaplexNftImage(nft)) ||
+      (await metaplexNftComputedMedia(nft))
+    return mediaInfo
+  } catch (e) {
+    return null
+  }
 }
 
 const metaplexNFTToCollectible = async (
@@ -383,25 +387,28 @@ const metaplexNFTToCollectible = async (
 const getMetaplexMetadataFromHeliusNFT = async (
   nft: HeliusNFT,
   useFetch = false
-): Promise<MetaplexNFT> => {
-  if (useFetch) {
-    const metaplexData = await fetch(nft.content.json_uri)
-    const metaplexJson = await metaplexData.json()
-    return metaplexJson as MetaplexNFT
-  }
-
-  const { metadata, links, files } = nft.content
-  return {
-    ...metadata,
-    ...links,
-    properties: {
-      files: files.map((file: { uri: string; mime: string }) => ({
-        uri: file.uri,
-        type: file.mime
-      })),
-      creators: nft.creators
+): Promise<Nullable<MetaplexNFT>> => {
+  try {
+    if (useFetch) {
+      const metaplexData = await fetch(nft.content.json_uri)
+      const metaplexJson = await metaplexData.json()
+      return metaplexJson as MetaplexNFT
     }
-  } as MetaplexNFT
+    const { metadata, links, files } = nft.content
+    return {
+      ...metadata,
+      ...links,
+      properties: {
+        files: files.map((file: { uri: string; mime: string }) => ({
+          uri: file.uri,
+          type: file.mime
+        })),
+        creators: nft.creators
+      }
+    } as MetaplexNFT
+  } catch (e) {
+    return null
+  }
 }
 
 const heliusNFTToCollectible = async (
@@ -441,11 +448,11 @@ const heliusNFTToCollectible = async (
   }
 
   const metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft, true)
+  if (!metaplexMetadata) {
+    return null
+  }
   const mediaInfo = await getMediaInfo(metaplexMetadata)
   if (!mediaInfo) {
-    console.error(
-      `Could not get nft media info from Helius json_uri field for nft with id ${nft.id}... Ignoring this nft.`
-    )
     return null
   }
   const { url, frameUrl, collectibleMediaType } = mediaInfo
@@ -535,22 +542,34 @@ export const solanaNFTToCollectible = async (
   type: SolanaNFTType,
   solanaChainMetadata: Nullable<Metadata>
 ): Promise<Nullable<Collectible>> => {
-  switch (type) {
-    case SolanaNFTType.HELIUS:
-      return heliusNFTToCollectible(
-        nft as HeliusNFT,
-        solanaChainMetadata,
-        wallet
-      )
-    case SolanaNFTType.METAPLEX:
-      return metaplexNFTToCollectible(
-        nft as MetaplexNFT,
-        solanaChainMetadata,
-        wallet
-      )
-    case SolanaNFTType.STAR_ATLAS:
-      return starAtlasNFTToCollectible(nft as StarAtlasNFT, solanaChainMetadata)
-    default:
-      return null
+  let collectible = null
+  try {
+    switch (type) {
+      case SolanaNFTType.HELIUS:
+        collectible = await heliusNFTToCollectible(
+          nft as HeliusNFT,
+          solanaChainMetadata,
+          wallet
+        )
+        break
+      case SolanaNFTType.METAPLEX:
+        collectible = await metaplexNFTToCollectible(
+          nft as MetaplexNFT,
+          solanaChainMetadata,
+          wallet
+        )
+        break
+      case SolanaNFTType.STAR_ATLAS:
+        collectible = await starAtlasNFTToCollectible(
+          nft as StarAtlasNFT,
+          solanaChainMetadata
+        )
+        break
+      default:
+        break
+    }
+    return collectible
+  } catch (e) {
+    return null
   }
 }

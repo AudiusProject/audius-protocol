@@ -6,7 +6,7 @@ import {
 } from '~/models'
 import { Nullable, dayjs, formatDate } from '~/utils'
 
-import placeholderCoverArt from '../../assets/img/Placeholder@2x.png'
+// import placeholderCoverArt from '../../assets/img/Placeholder@2x.png'
 import {
   OpenSeaEvent,
   OpenSeaEventExtended,
@@ -351,8 +351,8 @@ export const assetToCollectible = async (
       const isGif = res.headers.get('Content-Type')?.includes('gif')
       const isVideo = res.headers.get('Content-Type')?.includes('video')
       if (res.status !== 200) {
-        imageUrl = placeholderCoverArt
-        frameUrl = placeholderCoverArt
+        // imageUrl = placeholderCoverArt
+        // frameUrl = placeholderCoverArt
       } else if (isGif) {
         mediaType = CollectibleMediaType.GIF
         gifUrl = frameUrl
@@ -370,8 +370,8 @@ export const assetToCollectible = async (
   } catch (e) {
     console.error('Error processing collectible', e)
     mediaType = CollectibleMediaType.IMAGE
-    imageUrl = placeholderCoverArt
-    frameUrl = placeholderCoverArt
+    // imageUrl = placeholderCoverArt
+    // frameUrl = placeholderCoverArt
   }
 
   const collectionSlug =
