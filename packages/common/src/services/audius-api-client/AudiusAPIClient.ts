@@ -36,7 +36,7 @@ import {
   SupporterResponse,
   SupportingResponse
 } from './types'
-import { UndisbursedUserChallenge } from '~/store'
+import { UndisbursedUserChallenge } from '@audius/common/store'
 
 // TODO: declare this at the root and use actual audiusLibs type
 declare global {
