@@ -6,7 +6,7 @@ members = [
 	"cli",
 	"reward-manager/cli",
 	"reward-manager/program",
-	"track_listen_count",
+	"track_listen_count"
 ]
 
 [profile.dev]
