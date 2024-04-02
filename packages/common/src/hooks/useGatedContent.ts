@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { useGetCurrentUserId } from '~/api'
 import { statusIsNotFinalized } from '~/models'
 import { Chain } from '~/models/Chain'
+import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import {
   AccessConditions,
@@ -18,20 +19,27 @@ import { getAccountUser } from '~/store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
-import { Nullable, removeNullable } from '~/utils'
+import {
+  Nullable,
+  isContentCollection,
+  isContentTrack,
+  removeNullable
+} from '~/utils'
 
 const { getTrack } = cacheTracksSelectors
 const { getUser, getUsers } = cacheUsersSelectors
 const { getLockedContentId, getNftAccessSignatureMap } = gatedContentSelectors
 
 // Returns whether user has access to given track.
-export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
+export const useGatedContentAccess = (
+  content: Nullable<Partial<Track | Collection>>
+) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const user = useSelector(getAccountUser)
 
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useMemo(() => {
-      if (!track) {
+      if (!content) {
         return {
           isFetchingNFTAccess: false,
           hasStreamAccess: true,
@@ -39,17 +47,24 @@ export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
         }
       }
 
-      const trackId = track.track_id
-      const {
-        is_stream_gated: isStreamGated,
-        is_download_gated: isDownloadGated
-      } = track
-      const { stream, download } = track.access ?? {}
+      const isTrack = isContentTrack(content)
+      const isCollection = isContentCollection(content)
+      const trackId = isTrack
+        ? content.track_id
+        : isCollection
+        ? content.playlist_id
+        : null
+      const { is_stream_gated: isStreamGated } = content
+      const { is_download_gated: isDownloadGated } = isTrack
+        ? content
+        : { is_download_gated: undefined }
+
+      const { stream, download } = content.access ?? {}
       const hasNftAccessSignature = !!(
         trackId && nftAccessSignatureMap[trackId]
       )
       const isCollectibleGated = isContentCollectibleGated(
-        track.stream_conditions
+        content.stream_conditions
       )
       const isSignatureToBeFetched =
         isCollectibleGated &&
@@ -64,7 +79,7 @@ export const useGatedContentAccess = (track: Nullable<Partial<Track>>) => {
         hasStreamAccess: !isStreamGated || !!stream,
         hasDownloadAccess: !isDownloadGated || !!download
       }
-    }, [track, nftAccessSignatureMap, user])
+    }, [content, nftAccessSignatureMap, user])
 
   return { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess }
 }
