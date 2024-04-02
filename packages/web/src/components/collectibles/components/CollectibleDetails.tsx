@@ -22,7 +22,10 @@ import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { preload } from 'utils/image'
 
-import { getFrameFromGif } from '../ethCollectibleHelpers'
+import {
+  getFrameFromAnimatedWebp,
+  getFrameFromGif
+} from '../ethCollectibleHelpers'
 
 import styles from './CollectiblesPage.module.css'
 const { setCollectible } = collectibleDetailsUIActions
@@ -53,13 +56,10 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
   useEffect(() => {
     const load = async () => {
       let f = frameUrl
-      if (
-        !f &&
-        [CollectibleMediaType.GIF, CollectibleMediaType.THREE_D].includes(
-          mediaType
-        )
-      ) {
-        f = await getFrameFromGif(gifUrl!, name || '')
+      if (!f && mediaType === CollectibleMediaType.GIF) {
+        f = await getFrameFromGif(gifUrl!)
+      } else if (!f && mediaType === CollectibleMediaType.ANIMATED_WEBP) {
+        f = await getFrameFromAnimatedWebp(gifUrl!)
       } else if (!f && mediaType === CollectibleMediaType.VIDEO) {
         setIsLoading(false)
       }
@@ -117,6 +117,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
           ) : (
             <>
               {(mediaType === CollectibleMediaType.GIF ||
+                mediaType === CollectibleMediaType.ANIMATED_WEBP ||
                 (mediaType === CollectibleMediaType.VIDEO && frame)) && (
                 <div className={styles.imageWrapper}>
                   <PreloadImage

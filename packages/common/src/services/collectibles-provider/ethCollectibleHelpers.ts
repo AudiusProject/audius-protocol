@@ -29,6 +29,12 @@ export const fetchWithTimeout = async (
   return response
 }
 
+const isWebpAnimated = (arrayBuffer: ArrayBuffer) => {
+  const decoder = new TextDecoder('utf-8')
+  const text = decoder.decode(arrayBuffer)
+  return text.indexOf('ANMF') !== -1
+}
+
 /**
  * extensions based on OpenSea metadata standards
  * https://docs.opensea.io/docs/metadata-standards
@@ -278,7 +284,21 @@ export const assetToCollectible = async (
         const isGif = res.headers.get('Content-Type')?.includes('gif')
         const isVideo = res.headers.get('Content-Type')?.includes('video')
         const isAudio = res.headers.get('Content-Type')?.includes('audio')
-        if (isGif) {
+        const isWebp = res.headers.get('Content-Type')?.includes('webp')
+        let isAnimatedWebp = false
+        if (isWebp) {
+          const ab = await res.arrayBuffer()
+          isAnimatedWebp = isWebpAnimated(ab)
+        }
+        if (res.status >= 300) {
+          imageUrl = placeholderCoverArt
+          frameUrl = placeholderCoverArt
+        } else if (isAnimatedWebp) {
+          mediaType = CollectibleMediaType.ANIMATED_WEBP
+          gifUrl = frameUrl
+          // frame url for the animated webp is computed later in the collectibles page
+          frameUrl = null
+        } else if (isGif) {
           mediaType = CollectibleMediaType.GIF
           frameUrl = null
           gifUrl = metadataUrl
@@ -316,7 +336,21 @@ export const assetToCollectible = async (
         const isGif = res.headers.get('Content-Type')?.includes('gif')
         const isVideo = res.headers.get('Content-Type')?.includes('video')
         const isAudio = res.headers.get('Content-Type')?.includes('audio')
-        if (isGif) {
+        const isWebp = res.headers.get('Content-Type')?.includes('webp')
+        let isAnimatedWebp = false
+        if (isWebp) {
+          const ab = await res.arrayBuffer()
+          isAnimatedWebp = isWebpAnimated(ab)
+        }
+        if (res.status >= 300) {
+          imageUrl = placeholderCoverArt
+          frameUrl = placeholderCoverArt
+        } else if (isAnimatedWebp) {
+          mediaType = CollectibleMediaType.ANIMATED_WEBP
+          gifUrl = frameUrl
+          // frame url for the animated webp is computed later in the collectibles page
+          frameUrl = null
+        } else if (isGif) {
           mediaType = CollectibleMediaType.GIF
           frameUrl = null
           gifUrl = metadataUrl
@@ -347,12 +381,25 @@ export const assetToCollectible = async (
     } else {
       mediaType = CollectibleMediaType.IMAGE
       frameUrl = imageUrls.find((url) => !!url)!
-      const res = await fetchWithTimeout(frameUrl, { method: 'HEAD' })
+      const res = await fetchWithTimeout(frameUrl, {
+        headers: { Range: 'bytes=0-100' }
+      })
       const isGif = res.headers.get('Content-Type')?.includes('gif')
       const isVideo = res.headers.get('Content-Type')?.includes('video')
-      if (res.status !== 200) {
-        // imageUrl = placeholderCoverArt
-        // frameUrl = placeholderCoverArt
+      const isWebp = res.headers.get('Content-Type')?.includes('webp')
+      let isAnimatedWebp = false
+      if (isWebp) {
+        const ab = await res.arrayBuffer()
+        isAnimatedWebp = isWebpAnimated(ab)
+      }
+      if (res.status >= 300) {
+        imageUrl = placeholderCoverArt
+        frameUrl = placeholderCoverArt
+      } else if (isAnimatedWebp) {
+        mediaType = CollectibleMediaType.ANIMATED_WEBP
+        gifUrl = frameUrl
+        // frame url for the animated webp is computed later in the collectibles page
+        frameUrl = null
       } else if (isGif) {
         mediaType = CollectibleMediaType.GIF
         gifUrl = frameUrl
