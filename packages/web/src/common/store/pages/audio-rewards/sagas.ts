@@ -21,8 +21,7 @@ import {
   walletActions,
   modalsActions,
   getContext,
-  musicConfettiActions,
-  UndisbursedUserChallenge
+  musicConfettiActions
 } from '@audius/common/store'
 import { stringAudioToStringWei, waitForValue } from '@audius/common/utils'
 import {
@@ -413,10 +412,12 @@ function* fetchUserChallengesAsync() {
         userID: currentUserId
       }
     )
-    const undisbursedChallenges: UndisbursedUserChallenge[] | null =
-      yield* call([apiClient, apiClient.getUndisbursedUserChallenges], {
+    const undisbursedChallenges = yield* call(
+      [apiClient, apiClient.getUndisbursedUserChallenges],
+      {
         userID: currentUserId
-      })
+      }
+    )
     yield* put(fetchUserChallengesSucceeded({ userChallenges }))
     yield* put(setUndisbursedChallenges(undisbursedChallenges ?? []))
   } catch (e) {
