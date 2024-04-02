@@ -185,6 +185,7 @@ web-deploy-cloudflare:
         command: |
           cd packages/web
           cp ./robots.txt build
+          cp ./robots.txt build-ssr/client
     - run:
         name: Deploy to Cloudflare
         command: |
