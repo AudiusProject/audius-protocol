@@ -68,7 +68,9 @@ type CollectibleImageProps = {
 const CollectibleImage = (props: CollectibleImageProps) => {
   const { children, style, uri } = props
 
-  const isSvg = uri.match(/.*\.svg$/)
+  const isUriNumber = typeof uri === 'number'
+  const isSvg = isUriNumber ? false : !!uri.match(/.*\.svg$/)
+
   const [size, setSize] = useState(0)
 
   return isSvg ? (
