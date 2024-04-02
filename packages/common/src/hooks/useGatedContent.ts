@@ -55,9 +55,7 @@ export const useGatedContentAccess = (
         ? content.playlist_id
         : null
       const { is_stream_gated: isStreamGated } = content
-      const { is_download_gated: isDownloadGated } = isTrack
-        ? content
-        : { is_download_gated: undefined }
+      const isDownloadGated = isTrack ? content.is_download_gated : undefined
 
       const { stream, download } = content.access ?? {}
       const hasNftAccessSignature = !!(
