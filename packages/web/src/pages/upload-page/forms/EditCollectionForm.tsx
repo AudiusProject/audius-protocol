@@ -30,6 +30,7 @@ import { SelectMoodField } from '../fields/SelectMoodField'
 import { CollectionFormState } from '../types'
 
 import styles from './EditCollectionForm.module.css'
+import { StemsAndDownloadsCollectionField } from '../fields/StemsAndDownloadsCollectionsField'
 
 const messages = {
   name: 'Name',
@@ -57,6 +58,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const initialValues: CollectionValues = {
     ...metadata,
     is_album: isAlbum,
+    are_tracks_downloadable: false,
     artwork: null,
     playlist_name: '',
     description: '',
@@ -130,6 +132,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               <SelectMoodField name='trackDetails.mood' />
             </div>
             <TagField name='trackDetails.tags' />
+            {isAlbum && <StemsAndDownloadsCollectionField />}
           </div>
         </Tile>
         <CollectionTrackFieldArray />

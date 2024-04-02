@@ -102,25 +102,30 @@ const combineMetadata = (
     // Take collection tags
     metadata.tags = collectionMetadata.trackDetails.tags
   }
+  if (collectionMetadata.are_tracks_downloadable) {
+    metadata.is_downloadable = true
+  }
 
   // If the tracks were added as part of a premium album, add all the necessary premium track metadata
   const albumTrackPrice =
     collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
-    // Set up initial values
-    trackMetadata.is_stream_gated = true
-    trackMetadata.is_download_gated = true
-    trackMetadata.preview_start_seconds = 0
-    trackMetadata.stream_conditions = {
-      usdc_purchase: { price: albumTrackPrice, splits: { 0: 0 } }
-    }
-    trackMetadata.download_conditions = {
-      usdc_purchase: {
-        price: albumTrackPrice,
-        splits: { 0: 0 }
+    if (collectionMetadata.are_tracks_downloadable) {
+      metadata.is_download_gated = true
+      metadata.download_conditions = {
+        usdc_purchase: {
+          price: albumTrackPrice,
+          splits: { 0: 0 }
+        }
       }
     }
-    // Add splits
+    // Set up initial stream gating values
+    metadata.is_stream_gated = true
+    metadata.preview_start_seconds = 0
+    metadata.stream_conditions = {
+      usdc_purchase: { price: albumTrackPrice, splits: { 0: 0 } }
+    }
+    // Add splits to stream & download conditions
     addPremiumMetadata(trackMetadata)
   }
   return trackMetadata
