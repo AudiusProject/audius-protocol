@@ -7,7 +7,6 @@ import {
   TrackMetadata,
   USDCPurchaseConditions
 } from '@audius/common/models'
-import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -130,9 +129,6 @@ export function* addPremiumMetadata<T extends TrackMetadata>(
     FeatureFlags.USDC_PURCHASES
   )
   if (!isUsdcPurchaseEnabled) return track
-
-  const ownerAccount = yield* select(getAccountUser)
-  const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
 
   if (isContentUSDCPurchaseGated(track.stream_conditions)) {
     track.stream_conditions = yield* call(
