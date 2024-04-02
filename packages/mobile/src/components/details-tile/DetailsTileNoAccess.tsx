@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
+import { useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,
   ModalSource,
@@ -12,7 +12,6 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   usersSocialActions,
   tippingActions,
