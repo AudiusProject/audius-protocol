@@ -286,7 +286,121 @@ func TestRunE2E(t *testing.T) {
 				PublishErrors:      []string{},
 				Release: common.Release{
 					ReleaseProfile: common.Common14AudioAlbumMusicOnly,
-					PublishDate:    time.Date(2010, time.October, 1, 0, 0, 0, 0, time.UTC),
+					PublishDate:    time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+					SDKUploadMetadata: common.SDKUploadMetadata{
+						ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+						PlaylistName:      stringPtr("A Monkey Claw in a Velvet Glove"),
+						PlaylistOwnerID:   stringPtr("abcdef"),
+						PlaylistOwnerName: stringPtr("Monkey Claw"),
+						Genre:             "Metal",
+						IsAlbum:           boolPtr(true),
+						DDEXReleaseIDs: &common.ReleaseIDs{
+							ICPN: "721620118165",
+						},
+						CopyrightLine: &common.Copyright{
+							Year: "2010",
+							Text: "(C) 2010 Iron Crown Music",
+						},
+						ProducerCopyrightLine: &common.Copyright{
+							Year: "2010",
+							Text: "(P) 2010 Iron Crown Music",
+						},
+						ParentalWarningType: stringPtr("NotExplicit"),
+						Artists: []common.ResourceContributor{
+							{
+								Name:           "Monkey Claw",
+								Roles:          []string{"MainArtist"},
+								SequenceNumber: 1,
+							},
+						},
+						CoverArtURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T7_007.jpg",
+						Tracks: []common.TrackMetadata{
+							{
+								Title:       "Can you feel ...the Monkey Claw!",
+								ArtistName:  "Monkey Claw",
+								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+								Genre:       "Metal",
+								Duration:    811,
+								ISRC:        stringPtr("CASE00000001"),
+								DDEXReleaseIDs: common.ReleaseIDs{
+									ISRC: "CASE00000001",
+								},
+								CopyrightLine: &common.Copyright{
+									Year: "2010",
+									Text: "(C) 2010 Iron Crown Music",
+								},
+								ProducerCopyrightLine: &common.Copyright{
+									Year: "2010",
+									Text: "(P) 2010 Iron Crown Music",
+								},
+								ParentalWarningType: stringPtr("NotExplicit"),
+								ResourceContributors: []common.ResourceContributor{
+									{
+										Name:           "Steve Albino",
+										Roles:          []string{"Producer"},
+										SequenceNumber: 1,
+									},
+								},
+								IndirectResourceContributors: []common.ResourceContributor{
+									{
+										Name:           "Bob Black",
+										Roles:          []string{"Composer"},
+										SequenceNumber: 1,
+									},
+								},
+								Artists: []common.ResourceContributor{
+									{
+										Name:           "Monkey Claw",
+										Roles:          []string{"MainArtist"},
+										SequenceNumber: 1,
+									},
+								},
+								AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
+							},
+							{
+								Title:       "Red top mountain, blown sky high",
+								ArtistName:  "Monkey Claw",
+								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+								Genre:       "Metal",
+								Duration:    366,
+								ISRC:        stringPtr("CASE00000002"),
+								DDEXReleaseIDs: common.ReleaseIDs{
+									ISRC: "CASE00000002",
+								},
+								CopyrightLine: &common.Copyright{
+									Year: "2010",
+									Text: "(C) 2010 Iron Crown Music",
+								},
+								ProducerCopyrightLine: &common.Copyright{
+									Year: "2010",
+									Text: "(P) 2010 Iron Crown Music",
+								},
+								ParentalWarningType: stringPtr("NotExplicit"),
+								ResourceContributors: []common.ResourceContributor{
+									{
+										Name:           "Steve Albino",
+										Roles:          []string{"Producer"},
+										SequenceNumber: 1,
+									},
+								},
+								IndirectResourceContributors: []common.ResourceContributor{
+									{
+										Name:           "Bob Black",
+										Roles:          []string{"Composer"},
+										SequenceNumber: 1,
+									},
+								},
+								Artists: []common.ResourceContributor{
+									{
+										Name:           "Monkey Claw",
+										Roles:          []string{"MainArtist"},
+										SequenceNumber: 1,
+									},
+								},
+								AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -349,14 +463,20 @@ func TestRunE2E(t *testing.T) {
 			t.Fatalf("Failed to decode pending release for '%s' from Mongo: %v", remotePath, err)
 		}
 
-		// Ignore CreatedAt because we can't predict the exact time of a Mongo insert
-		pendingRelease.CreatedAt = time.Time{}
+		assert.Equal(t, st.expectedPR.ReleaseID, pendingRelease.ReleaseID)
+		assert.Equal(t, st.expectedPR.DeliveryRemotePath, pendingRelease.DeliveryRemotePath)
+		assert.Equal(t, st.expectedPR.FailureCount, pendingRelease.FailureCount)
+		assert.Equal(t, st.expectedPR.PublishErrors, pendingRelease.PublishErrors)
+		assert.Equal(t, st.expectedPR.FailedAfterUpload, pendingRelease.FailedAfterUpload)
+		assert.Equal(t, st.expectedPR.Release.ReleaseProfile, pendingRelease.Release.ReleaseProfile)
+		assert.Equal(t, st.expectedPR.Release.PublishDate, pendingRelease.Release.PublishDate)
 
-		// Ignore ParsedReleaseElems because it's too much to paste
-		pendingRelease.Release.ParsedReleaseElems = nil
-		st.expectedPR.Release.ParsedReleaseElems = nil
-
-		assert.Equal(t, st.expectedPR, pendingRelease)
+		// Compare SDKUploadMetadata without tracks (for cleaner diffing), and then compare tracks after
+		expectedTracks, actualTracks := st.expectedPR.Release.SDKUploadMetadata.Tracks, pendingRelease.Release.SDKUploadMetadata.Tracks
+		st.expectedPR.Release.SDKUploadMetadata.Tracks = nil
+		pendingRelease.Release.SDKUploadMetadata.Tracks = nil
+		assert.Equal(t, st.expectedPR.Release.SDKUploadMetadata, pendingRelease.Release.SDKUploadMetadata)
+		assert.Equal(t, expectedTracks, actualTracks)
 
 		// Verify the crawler (deliveries collection)
 		doc, err = wait2MinsForDoc(bi.Ctx, bi.DeliveriesColl, bson.M{"_id": remotePath})
@@ -529,4 +649,8 @@ func stringPtr(s string) *string {
 
 func intPtr(i int) *int {
 	return &i
+}
+
+func boolPtr(b bool) *bool {
+	return &b
 }

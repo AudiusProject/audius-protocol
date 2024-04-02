@@ -188,8 +188,8 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 			errs = append(errs, fmt.Errorf("expected Single release type for main release"))
 			return
 		}
-		if len(release.ParsedReleaseElems) < 2 {
-			errs = append(errs, fmt.Errorf("expected Single to have at least 2 release elements"))
+		if len(release.ParsedReleaseElems) != 2 {
+			errs = append(errs, fmt.Errorf("expected Single to have at exactly 2 release elements, got %d", len(release.ParsedReleaseElems)))
 			return
 		}
 		// TODO: Set release.SDKUploadMetadata for a Single (just use the TrackRelease and ignore the main release which would normally appear as an album with 1 track if Audius supported Singles)
@@ -255,7 +255,6 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 			}
 
 			track := parsedReleaseElem.Resources.Tracks[0]
-			track.DDEXReleaseIDs = mainRelease.ReleaseIDs
 			if track.ArtistID == "" {
 				track.ArtistID = parsedReleaseElem.ArtistID
 			}
@@ -264,6 +263,12 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 			}
 			if track.CopyrightLine == nil {
 				track.CopyrightLine = parsedReleaseElem.CopyrightLine
+			}
+			if track.ProducerCopyrightLine == nil {
+				track.ProducerCopyrightLine = parsedReleaseElem.ProducerCopyrightLine
+			}
+			if track.ParentalWarningType == nil {
+				track.ParentalWarningType = parsedReleaseElem.ParentalWarningType
 			}
 
 			tracks = append(tracks, track)
@@ -291,11 +296,11 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 			Tags:                  nil,
 			DDEXReleaseIDs:        &releaseIDs,
 			CopyrightLine:         mainRelease.CopyrightLine,
-			ProducerCopyrightLine: mainRelease.CopyrightLine,
+			ProducerCopyrightLine: mainRelease.ProducerCopyrightLine,
 			ParentalWarningType:   mainRelease.ParentalWarningType,
 			CoverArtURL:           mainRelease.Resources.Images[0].URL,
-			CoverArtURLHash:       &mainRelease.Resources.Images[0].URLHash,
-			CoverArtURLHashAlgo:   &mainRelease.Resources.Images[0].URLHashAlgo,
+			CoverArtURLHash:       stringPtr(mainRelease.Resources.Images[0].URLHash),
+			CoverArtURLHashAlgo:   stringPtr(mainRelease.Resources.Images[0].URLHashAlgo),
 
 			Tracks:            tracks,
 			PlaylistName:      &mainRelease.DisplayTitle,
@@ -536,9 +541,12 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 
 	duration, _ := parseISODuration(ci.SoundRecording.Duration)
 	metadata = &common.TrackMetadata{
-		Title:                        ci.SoundRecording.Title,
-		Duration:                     int(duration.Seconds()),
-		ISRC:                         &ci.SoundRecording.ISRC,
+		Title:    ci.SoundRecording.Title,
+		Duration: int(duration.Seconds()),
+		ISRC:     &ci.SoundRecording.ISRC,
+		DDEXReleaseIDs: common.ReleaseIDs{
+			ISRC: ci.SoundRecording.ISRC,
+		},
 		Genre:                        ci.SoundRecording.Genre,
 		Artists:                      ci.SoundRecording.Artists,
 		ResourceContributors:         ci.SoundRecording.ResourceContributors,
