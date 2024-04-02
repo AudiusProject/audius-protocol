@@ -4,7 +4,8 @@ import {
   ID,
   Kind,
   Name,
-  isContentFollowGated
+  isContentFollowGated,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
@@ -56,7 +57,11 @@ import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
 import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
 
-import { addPremiumMetadata, recordGatedTracks } from './sagaHelpers'
+import {
+  addPremiumMetadata,
+  getUSDCMetadata,
+  recordGatedTracks
+} from './sagaHelpers'
 
 const { updateProgress } = uploadActions
 
@@ -721,10 +726,15 @@ export function* uploadCollection(
   const userId = account!.user_id
 
   // If the collection is a premium album, this will populate the premium metadata (price/splits/etc)
-  collectionMetadata = yield* call(
-    addPremiumMetadata<CollectionValues>,
-    collectionMetadata
-  )
+  if (
+    isAlbum &&
+    isContentUSDCPurchaseGated(collectionMetadata.stream_conditions)
+  ) {
+    collectionMetadata.stream_conditions = yield* call(
+      getUSDCMetadata,
+      collectionMetadata.stream_conditions
+    )
+  }
 
   // First upload album art
   yield* call(

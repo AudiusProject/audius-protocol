@@ -56,3 +56,9 @@ export type PickRename<
 > = Omit<Type, Key> & {
   [k in RenamedKey]: Type[Key]
 }
+
+export type DeepOmit<T, K> = T extends object
+  ? {
+      [P in keyof T as P extends K ? never : P]: DeepOmit<T[P], K>
+    }
+  : T

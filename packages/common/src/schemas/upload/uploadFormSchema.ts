@@ -277,7 +277,7 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
           USDCPurchaseConditionsSchema,
           z.object({
             usdc_purchase: z.object({
-              albumTrackPrice: z.number() // Albums can set a price for all tracks
+              albumTrackPrice: z.number().optional() // Albums can set a price for all tracks
             })
           })
         )

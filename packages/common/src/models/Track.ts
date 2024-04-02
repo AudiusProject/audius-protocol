@@ -1,6 +1,6 @@
 import { License } from '~/utils/creativeCommons'
 
-import { Nullable } from '../utils/typeUtils'
+import { DeepOmit, Nullable } from '../utils/typeUtils'
 
 import { Chain } from './Chain'
 import { Favorite } from './Favorite'
@@ -92,8 +92,7 @@ export type AccessConditions =
   | FollowGatedConditions
   | TipGatedConditions
   | USDCPurchaseConditions
-  
-  
+
 export type AccessPermissions = {
   stream: boolean
   download: boolean
@@ -132,7 +131,9 @@ export const isContentTipGated = (
   'tip_user_id' in (gatedConditions ?? {})
 
 export const isContentUSDCPurchaseGated = (
-  gatedConditions?: Nullable<AccessConditions>
+  gatedConditions?: Nullable<
+    AccessConditions | DeepOmit<USDCPurchaseConditions, 'splits'>
+  > // data coming from form will not have splits on the type
 ): gatedConditions is USDCPurchaseConditions =>
   'usdc_purchase' in (gatedConditions ?? {})
 

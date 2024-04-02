@@ -4,7 +4,8 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  TrackMetadata
+  TrackMetadata,
+  USDCPurchaseConditions
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
@@ -98,49 +99,54 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   yield* all(events.map((e) => put(e)))
 }
 
-/**
- * Adds relevant premium metadata
- * Converts prices to WEI and adds splits for USDC purchasable content.
- */
-export function* addPremiumMetadata<T extends TrackMetadata | CollectionValues>(
-  entity: T // track or collection
-) {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isUsdcPurchaseEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.USDC_PURCHASES
-  )
-  if (!isUsdcPurchaseEnabled) return entity
-
+export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-
-  // TODO: make TS happy here
-  if (isContentUSDCPurchaseGated(entity.stream_conditions)) {
-    const ownerUserbank = yield* call(getUSDCUserBank, wallet)
-    const priceCents = entity.stream_conditions.usdc_purchase.price
-    const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-    entity.stream_conditions.usdc_purchase = {
-      ...entity.stream_conditions.usdc_purchase,
+  const ownerUserbank = yield* call(getUSDCUserBank, wallet)
+  const priceCents = stream_conditions.usdc_purchase.price
+  const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+  const conditionsWithMetadata: USDCPurchaseConditions = {
+    usdc_purchase: {
+      ...stream_conditions.usdc_purchase,
       price: priceCents,
       splits: {
         [ownerUserbank?.toString() ?? '']: priceWei
       }
     }
   }
-  // TODO: make TS happy here
-  if (isContentUSDCPurchaseGated(entity.download_conditions)) {
-    const ownerUserbank = yield* call(getUSDCUserBank, wallet)
-    const priceCents = entity.download_conditions.usdc_purchase.price
-    const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-    entity.download_conditions.usdc_purchase = {
-      ...entity.download_conditions.usdc_purchase,
-      price: priceCents,
-      splits: {
-        [ownerUserbank.toString()]: priceWei
-      }
-    }
+  return conditionsWithMetadata
+}
+
+/**
+ * Adds relevant premium metadata
+ * Converts prices to WEI and adds splits for USDC purchasable content.
+ */
+export function* addPremiumMetadata<T extends TrackMetadata>(
+  track: T // track or collection
+) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isUsdcPurchaseEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USDC_PURCHASES
+  )
+  if (!isUsdcPurchaseEnabled) return track
+
+  const ownerAccount = yield* select(getAccountUser)
+  const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
+
+  if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+    track.stream_conditions = yield* call(
+      getUSDCMetadata,
+      track.stream_conditions
+    )
   }
 
-  return entity
+  if (isContentUSDCPurchaseGated(track.download_conditions)) {
+    track.download_conditions = yield* call(
+      getUSDCMetadata,
+      track.download_conditions
+    )
+  }
+
+  return track
 }
