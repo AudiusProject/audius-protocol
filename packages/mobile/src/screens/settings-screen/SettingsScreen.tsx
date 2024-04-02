@@ -40,6 +40,10 @@ const messages = {
   about: 'About'
 }
 
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const tmp = 1
+
 const useStyles = makeStyles(({ spacing, palette, type }) => ({
   logo: {
     width: 200,
