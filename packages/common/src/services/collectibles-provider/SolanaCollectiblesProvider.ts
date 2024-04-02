@@ -119,15 +119,19 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
           })
         )
         const collectibles = await Promise.all(
-          nftsForWallet.map(
-            async (nft, i) =>
-              await solanaNFTToCollectible(
+          nftsForWallet.map(async (nft, i) => {
+            try {
+              const toCollectible = await solanaNFTToCollectible(
                 nft,
                 wallet,
                 SolanaNFTType.HELIUS,
                 chainMetadatas[i]
               )
-          )
+              return toCollectible
+            } catch (e) {
+              return null
+            }
+          })
         )
         return collectibles.filter(Boolean) as Collectible[]
       })
