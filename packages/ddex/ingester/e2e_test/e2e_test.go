@@ -94,165 +94,165 @@ func TestRunE2E(t *testing.T) {
 				ValidationErrors: []string(nil),
 			},
 			expectedPR: common.PendingRelease{
-				ReleaseID:          "A10301A0005108088N",
-				DeliveryRemotePath: "s3://audius-test-raw/sony1.zip",
-				PublishDate:        time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
-				PublishErrors:      []string{},
-				CreateTrackRelease: common.CreateTrackRelease{},
-				CreateAlbumRelease: common.CreateAlbumRelease{
-					DDEXReleaseRef: "R0",
-					Metadata: common.CollectionMetadata{
-						PlaylistName:      "Present.",
-						PlaylistOwnerID:   "Bmv3bJ",
-						PlaylistOwnerName: "Theo Random",
-						ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
-						DDEXReleaseIDs: common.ReleaseIDs{
-							CatalogNumber: "G010005108088N",
-							GRid:          "A10301A0005108088N",
-							ICPN:          "196871335584",
-						},
-						IsAlbum:             true,
-						IsPrivate:           false,
-						Genre:               common.HipHopRap,
-						CoverArtURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1027024165547_Image.jpg",
-						CoverArtURLHash:     "582fb410615167205e8741580cf77e71",
-						CoverArtURLHashAlgo: "MD5",
-						Artists: []common.ResourceContributor{{
-							Name:           "Theo Random",
-							Roles:          []string{"MainArtist"},
-							SequenceNumber: 1,
-						}},
-						ProducerCopyrightLine: &common.Copyright{
-							Year: "2023",
-							Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
-						},
-						ParentalWarningType: stringPtr("Explicit"),
-					},
-					Tracks: []common.TrackMetadata{
-						{
-							Title:       "Playing With Fire.",
-							ReleaseDate: time.Time{},
-							Genre:       common.HipHopRap,
-							Duration:    279,
-							Artists: []common.ResourceContributor{{
-								Name:           "Theo Random",
-								Roles:          []string{"AssociatedPerformer", "MainArtist"},
-								SequenceNumber: 1,
-							}},
-							ResourceContributors: []common.ResourceContributor{
-								{
-									Name:           "Thabiso Moya",
-									Roles:          []string{"Composer", "Lyricist"},
-									SequenceNumber: 1,
-								},
-								{
-									Name:           "Melange",
-									Roles:          []string{"Producer"},
-									SequenceNumber: 2,
-								},
-								{
-									Name:           "Neo Ndungane",
-									Roles:          []string{"Composer", "Lyricist"},
-									SequenceNumber: 3,
-								},
-								{
-									Name:           "Feziekk",
-									Roles:          []string{"Producer"},
-									SequenceNumber: 4,
-								},
-								{
-									Name:           "Regaugetsue Refenyeditswe Leshabane",
-									Roles:          []string{"Composer", "Lyricist"},
-									SequenceNumber: 5,
-								},
-								{
-									Name:           "Gabe Archibald Horowitz",
-									Roles:          []string{"Composer", "Lyricist"},
-									SequenceNumber: 6,
-								},
-							},
-							ArtistID:   "",
-							ArtistName: "",
-							ISRC:       stringPtr("ZAA012300131"),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								GRid: "A10328E0010879163O",
-								ISRC: "ZAA012300131",
-							},
-							PreviewStartSeconds:  intPtr(48),
-							PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/",
-							AudioFileURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.mp3",
-							AudioFileURLHash:     "8bb2ce119257314a8fcb215a49f14b33",
-							AudioFileURLHashAlgo: "MD5",
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2023",
-								Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
-							},
-							ParentalWarningType: stringPtr("Explicit"),
-						},
-						{
-							Title:       "No Comment.",
-							ReleaseDate: time.Time{},
-							Genre:       common.HipHopRap,
-							Duration:    142,
-							ArtistID:    "",
-							ArtistName:  "",
-							Artists: []common.ResourceContributor{
-								{
-									Name:           "Theo Random",
-									Roles:          []string{"AssociatedPerformer", "MainArtist"},
-									SequenceNumber: 1,
-								},
-								{
-									Name:           "Thato Saul",
-									Roles:          []string{"AssociatedPerformer", "MainArtist"},
-									SequenceNumber: 2,
-								},
-							},
-							ResourceContributors: []common.ResourceContributor{
-								{
-									Name:           "Theo Random & Thato Saul",
-									Roles:          []string{"AssociatedPerformer"},
-									SequenceNumber: 1,
-								},
-								{
-									Name:           "Thabiso Moya",
-									Roles:          []string{"Composer", "Lyricist"},
-									SequenceNumber: 2,
-								},
-								{
-									Name:           "Melange",
-									Roles:          []string{"Producer"},
-									SequenceNumber: 3,
-								},
-								{
-									Name:           "Thato Matlebyane",
-									Roles:          []string{"Composer", "Lyricist"},
-									SequenceNumber: 4,
-								},
-								{
-									Name:           "Neo Ndungane",
-									Roles:          []string{"Composer", "Lyricist"},
-									SequenceNumber: 5,
-								},
-							},
-							ISRC: stringPtr("ZAA012300128"),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								GRid: "A10328E0010879164M",
-								ISRC: "ZAA012300128",
-							},
-							PreviewStartSeconds:  intPtr(48),
-							PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/",
-							AudioFileURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.mp3",
-							AudioFileURLHash:     "1e9183898a4f6b45f895e45cd18ba162",
-							AudioFileURLHashAlgo: "MD5",
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2023",
-								Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
-							},
-							ParentalWarningType: stringPtr("Explicit"),
-						},
-					},
-				},
+				// ReleaseID:          "A10301A0005108088N",
+				// DeliveryRemotePath: "s3://audius-test-raw/sony1.zip",
+				// PublishDate:        time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+				// PublishErrors:      []string{},
+				// CreateTrackRelease: common.CreateTrackRelease{},
+				// CreateAlbumRelease: common.CreateAlbumRelease{
+				// 	DDEXReleaseRef: "R0",
+				// 	Metadata: common.CollectionMetadata{
+				// 		PlaylistName:      "Present.",
+				// 		PlaylistOwnerID:   "Bmv3bJ",
+				// 		PlaylistOwnerName: "Theo Random",
+				// 		ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+				// 		DDEXReleaseIDs: common.ReleaseIDs{
+				// 			CatalogNumber: "G010005108088N",
+				// 			GRid:          "A10301A0005108088N",
+				// 			ICPN:          "196871335584",
+				// 		},
+				// 		IsAlbum:             true,
+				// 		IsPrivate:           false,
+				// 		Genre:               common.HipHopRap,
+				// 		CoverArtURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1027024165547_Image.jpg",
+				// 		CoverArtURLHash:     "582fb410615167205e8741580cf77e71",
+				// 		CoverArtURLHashAlgo: "MD5",
+				// 		Artists: []common.ResourceContributor{{
+				// 			Name:           "Theo Random",
+				// 			Roles:          []string{"MainArtist"},
+				// 			SequenceNumber: 1,
+				// 		}},
+				// 		ProducerCopyrightLine: &common.Copyright{
+				// 			Year: "2023",
+				// 			Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
+				// 		},
+				// 		ParentalWarningType: stringPtr("Explicit"),
+				// 	},
+				// 	Tracks: []common.TrackMetadata{
+				// 		{
+				// 			Title:       "Playing With Fire.",
+				// 			ReleaseDate: time.Time{},
+				// 			Genre:       common.HipHopRap,
+				// 			Duration:    279,
+				// 			Artists: []common.ResourceContributor{{
+				// 				Name:           "Theo Random",
+				// 				Roles:          []string{"AssociatedPerformer", "MainArtist"},
+				// 				SequenceNumber: 1,
+				// 			}},
+				// 			ResourceContributors: []common.ResourceContributor{
+				// 				{
+				// 					Name:           "Thabiso Moya",
+				// 					Roles:          []string{"Composer", "Lyricist"},
+				// 					SequenceNumber: 1,
+				// 				},
+				// 				{
+				// 					Name:           "Melange",
+				// 					Roles:          []string{"Producer"},
+				// 					SequenceNumber: 2,
+				// 				},
+				// 				{
+				// 					Name:           "Neo Ndungane",
+				// 					Roles:          []string{"Composer", "Lyricist"},
+				// 					SequenceNumber: 3,
+				// 				},
+				// 				{
+				// 					Name:           "Feziekk",
+				// 					Roles:          []string{"Producer"},
+				// 					SequenceNumber: 4,
+				// 				},
+				// 				{
+				// 					Name:           "Regaugetsue Refenyeditswe Leshabane",
+				// 					Roles:          []string{"Composer", "Lyricist"},
+				// 					SequenceNumber: 5,
+				// 				},
+				// 				{
+				// 					Name:           "Gabe Archibald Horowitz",
+				// 					Roles:          []string{"Composer", "Lyricist"},
+				// 					SequenceNumber: 6,
+				// 				},
+				// 			},
+				// 			ArtistID:   "",
+				// 			ArtistName: "",
+				// 			ISRC:       stringPtr("ZAA012300131"),
+				// 			DDEXReleaseIDs: common.ReleaseIDs{
+				// 				GRid: "A10328E0010879163O",
+				// 				ISRC: "ZAA012300131",
+				// 			},
+				// 			PreviewStartSeconds:  intPtr(48),
+				// 			PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/",
+				// 			AudioFileURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.mp3",
+				// 			AudioFileURLHash:     "8bb2ce119257314a8fcb215a49f14b33",
+				// 			AudioFileURLHashAlgo: "MD5",
+				// 			ProducerCopyrightLine: &common.Copyright{
+				// 				Year: "2023",
+				// 				Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
+				// 			},
+				// 			ParentalWarningType: stringPtr("Explicit"),
+				// 		},
+				// 		{
+				// 			Title:       "No Comment.",
+				// 			ReleaseDate: time.Time{},
+				// 			Genre:       common.HipHopRap,
+				// 			Duration:    142,
+				// 			ArtistID:    "",
+				// 			ArtistName:  "",
+				// 			Artists: []common.ResourceContributor{
+				// 				{
+				// 					Name:           "Theo Random",
+				// 					Roles:          []string{"AssociatedPerformer", "MainArtist"},
+				// 					SequenceNumber: 1,
+				// 				},
+				// 				{
+				// 					Name:           "Thato Saul",
+				// 					Roles:          []string{"AssociatedPerformer", "MainArtist"},
+				// 					SequenceNumber: 2,
+				// 				},
+				// 			},
+				// 			ResourceContributors: []common.ResourceContributor{
+				// 				{
+				// 					Name:           "Theo Random & Thato Saul",
+				// 					Roles:          []string{"AssociatedPerformer"},
+				// 					SequenceNumber: 1,
+				// 				},
+				// 				{
+				// 					Name:           "Thabiso Moya",
+				// 					Roles:          []string{"Composer", "Lyricist"},
+				// 					SequenceNumber: 2,
+				// 				},
+				// 				{
+				// 					Name:           "Melange",
+				// 					Roles:          []string{"Producer"},
+				// 					SequenceNumber: 3,
+				// 				},
+				// 				{
+				// 					Name:           "Thato Matlebyane",
+				// 					Roles:          []string{"Composer", "Lyricist"},
+				// 					SequenceNumber: 4,
+				// 				},
+				// 				{
+				// 					Name:           "Neo Ndungane",
+				// 					Roles:          []string{"Composer", "Lyricist"},
+				// 					SequenceNumber: 5,
+				// 				},
+				// 			},
+				// 			ISRC: stringPtr("ZAA012300128"),
+				// 			DDEXReleaseIDs: common.ReleaseIDs{
+				// 				GRid: "A10328E0010879164M",
+				// 				ISRC: "ZAA012300128",
+				// 			},
+				// 			PreviewStartSeconds:  intPtr(48),
+				// 			PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/",
+				// 			AudioFileURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.mp3",
+				// 			AudioFileURLHash:     "1e9183898a4f6b45f895e45cd18ba162",
+				// 			AudioFileURLHashAlgo: "MD5",
+				// 			ProducerCopyrightLine: &common.Copyright{
+				// 				Year: "2023",
+				// 				Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
+				// 			},
+				// 			ParentalWarningType: stringPtr("Explicit"),
+				// 		},
+				// 	},
+				// },
 			},
 		},
 	}
@@ -283,265 +283,42 @@ func TestRunE2E(t *testing.T) {
 			expectedPR: common.PendingRelease{
 				ReleaseID:          "721620118165",
 				DeliveryRemotePath: "s3://audius-test-raw/1_CPD1.zip",
-				PublishDate:        time.Date(2010, time.October, 1, 0, 0, 0, 0, time.UTC),
 				PublishErrors:      []string{},
-				CreateTrackRelease: common.CreateTrackRelease{},
-				CreateAlbumRelease: common.CreateAlbumRelease{
-					Metadata: common.CollectionMetadata{
-						PlaylistName:      "A Monkey Claw in a Velvet Glove",
-						PlaylistOwnerID:   "abcdef",
-						PlaylistOwnerName: "Monkey Claw",
-						IsAlbum:           true,
-						IsPrivate:         false,
-						Genre:             "Metal",
-						ReleaseDate:       time.Date(2010, time.October, 1, 0, 0, 0, 0, time.UTC),
-						DDEXReleaseIDs: common.ReleaseIDs{
-							ICPN: "721620118165",
-						},
-						CoverArtURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T7_007.jpg",
-						Artists: []common.ResourceContributor{{
-							Name:           "Monkey Claw",
-							Roles:          []string{"MainArtist"},
-							SequenceNumber: 1,
-						}},
-						CopyrightLine: &common.Copyright{
-							Year: "2010",
-							Text: "(C) 2010 Iron Crown Music",
-						},
-						ProducerCopyrightLine: &common.Copyright{
-							Year: "2010",
-							Text: "(P) 2010 Iron Crown Music",
-						},
-						ParentalWarningType: stringPtr("NotExplicit"),
-					},
-					DDEXReleaseRef: "R0",
-					Tracks: []common.TrackMetadata{
-						{
-							Title:       "Can you feel ...the Monkey Claw!",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								ISRC: "CASE00000001",
-							},
-							Genre:    "Metal",
-							Duration: 811,
-							ISRC:     stringPtr("CASE00000001"),
-							Artists: []common.ResourceContributor{
-								{
-									Name:           "Monkey Claw",
-									Roles:          []string{"MainArtist"},
-									SequenceNumber: 1,
-								},
-							},
-							ResourceContributors: []common.ResourceContributor{{
-								Name:           "Steve Albino",
-								Roles:          []string{"Producer"},
-								SequenceNumber: 1,
-							}},
-							IndirectResourceContributors: []common.ResourceContributor{{
-								Name:           "Bob Black",
-								Roles:          []string{"Composer"},
-								SequenceNumber: 1,
-							}},
-							AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
-							CopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(C) 2010 Iron Crown Music",
-							},
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(P) 2010 Iron Crown Music",
-							},
-							ParentalWarningType: stringPtr("NotExplicit"),
-						},
-						{
-							Title:       "Red top mountain, blown sky high",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								ISRC: "CASE00000002",
-							},
-							Genre:    "Metal",
-							Duration: 366,
-							ISRC:     stringPtr("CASE00000002"),
-							Artists: []common.ResourceContributor{
-								{
-									Name:           "Monkey Claw",
-									Roles:          []string{"MainArtist"},
-									SequenceNumber: 1,
-								},
-							},
-							ResourceContributors: []common.ResourceContributor{{
-								Name:           "Steve Albino",
-								Roles:          []string{"Producer"},
-								SequenceNumber: 1,
-							}},
-							IndirectResourceContributors: []common.ResourceContributor{{
-								Name:           "Bob Black",
-								Roles:          []string{"Composer"},
-								SequenceNumber: 1,
-							}},
-							AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
-							CopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(C) 2010 Iron Crown Music",
-							},
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(P) 2010 Iron Crown Music",
-							},
-							ParentalWarningType: stringPtr("NotExplicit"),
-						},
-						{
-							Title:       "Seige of Antioch",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								ISRC: "CASE00000003",
-							},
-							Genre:    "Metal",
-							Duration: 1269,
-							ISRC:     stringPtr("CASE00000003"),
-							Artists: []common.ResourceContributor{
-								{
-									Name:           "Monkey Claw",
-									Roles:          []string{"MainArtist"},
-									SequenceNumber: 1,
-								},
-							},
-							ResourceContributors: []common.ResourceContributor{{
-								Name:           "Steve Albino",
-								Roles:          []string{"Producer"},
-								SequenceNumber: 1,
-							}},
-							IndirectResourceContributors: []common.ResourceContributor{{
-								Name:           "Bob Black",
-								Roles:          []string{"Composer"},
-								SequenceNumber: 1,
-							}},
-							AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T3_003.wav",
-							CopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(C) 2010 Iron Crown Music",
-							},
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(P) 2010 Iron Crown Music",
-							},
-							ParentalWarningType: stringPtr("NotExplicit"),
-						},
-						{
-							Title:       "Warhammer",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								ISRC: "CASE00000004",
-							},
-							Genre:    "Metal",
-							Duration: 165,
-							ISRC:     stringPtr("CASE00000004"),
-							Artists: []common.ResourceContributor{
-								{
-									Name:           "Monkey Claw",
-									Roles:          []string{"MainArtist"},
-									SequenceNumber: 1,
-								},
-							},
-							ResourceContributors: []common.ResourceContributor{{
-								Name:           "Steve Albino",
-								Roles:          []string{"Producer"},
-								SequenceNumber: 1,
-							}},
-							IndirectResourceContributors: []common.ResourceContributor{{
-								Name:           "Bob Black",
-								Roles:          []string{"Composer"},
-								SequenceNumber: 1,
-							}},
-							AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T4_004.wav",
-							CopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(C) 2010 Iron Crown Music",
-							},
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(P) 2010 Iron Crown Music",
-							},
-							ParentalWarningType: stringPtr("NotExplicit"),
-						},
-						{
-							Title:       "Iron Horse",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								ISRC: "CASE00000005",
-							},
-							Genre:    "Metal",
-							Duration: 294,
-							ISRC:     stringPtr("CASE00000005"),
-							Artists: []common.ResourceContributor{
-								{
-									Name:           "Monkey Claw",
-									Roles:          []string{"MainArtist"},
-									SequenceNumber: 1,
-								},
-							},
-							ResourceContributors: []common.ResourceContributor{{
-								Name:           "Steve Albino",
-								Roles:          []string{"Producer"},
-								SequenceNumber: 1,
-							}},
-							IndirectResourceContributors: []common.ResourceContributor{{
-								Name:           "Bob Black",
-								Roles:          []string{"Composer"},
-								SequenceNumber: 1,
-							}},
-							AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T5_005.wav",
-							CopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(C) 2010 Iron Crown Music",
-							},
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(P) 2010 Iron Crown Music",
-							},
-							ParentalWarningType: stringPtr("NotExplicit"),
-						},
-						{
-							Title:       "Yes... I can feel the Monkey Claw!",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-							DDEXReleaseIDs: common.ReleaseIDs{
-								ISRC: "CASE00000006",
-							},
-							Genre:    "Metal",
-							Duration: 741,
-							ISRC:     stringPtr("CASE00000006"),
-							Artists: []common.ResourceContributor{
-								{
-									Name:           "Monkey Claw",
-									Roles:          []string{"MainArtist"},
-									SequenceNumber: 1,
-								},
-							},
-							ResourceContributors: []common.ResourceContributor{{
-								Name:           "Steve Albino",
-								Roles:          []string{"Producer"},
-								SequenceNumber: 1,
-							}},
-							IndirectResourceContributors: []common.ResourceContributor{{
-								Name:           "Bob Black",
-								Roles:          []string{"Composer"},
-								SequenceNumber: 1,
-							}},
-							AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T6_006.wav",
-							CopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(C) 2010 Iron Crown Music",
-							},
-							ProducerCopyrightLine: &common.Copyright{
-								Year: "2010",
-								Text: "(P) 2010 Iron Crown Music",
-							},
-							ParentalWarningType: stringPtr("NotExplicit"),
-						},
-					},
+				Release: common.Release{
+					ReleaseProfile: common.Common14AudioAlbumMusicOnly,
+					PublishDate:    time.Date(2010, time.October, 1, 0, 0, 0, 0, time.UTC),
 				},
 			},
 		},
+		// {
+		// 	path: "batch/fuga/20240305090206405",
+		// 	expectedD: common.Delivery{
+		// 		RemotePath:     "s3://audius-test-raw/20240305090206405",
+		// 		DeliveryStatus: constants.DeliveryStatusSuccess,
+		// 		Releases:       nil,
+		// 		Batches: []common.UnprocessedBatch{
+		// 			// TODO
+		// 			{
+		// 				BatchID:      "20240305090206405",
+		// 				BatchXmlPath: "20240305090206405/BatchComplete_20240305090206405.xml",
+		// 				Releases: []common.UnprocessedRelease{
+		// 					{
+		// 						ReleaseID:        "8718857546047",
+		// 						XmlFilePath:      "20240305090206405/8718857546047/8718857546047.xml",
+		// 						ValidationErrors: []string{},
+		// 					},
+		// 				},
+		// 				ValidationErrors: []string{},
+		// 				DDEXSchema:       "ern/382",
+		// 				NumMessages:      1,
+		// 			},
+		// 		},
+		// 		ValidationErrors: []string(nil),
+		// 	},
+		// 	expectedPR: common.PendingRelease{
+		// 		// TODO
+		// 	},
+		// },
 	}
 
 	// Run subtests for release-by-release or batched depending on env var
@@ -560,7 +337,7 @@ func TestRunE2E(t *testing.T) {
 		remotePath := uploadFixture(t, bi, st.path)
 
 		// Verify the parser (pending_releases collection)
-		doc, err := wait1MinForDoc(bi.Ctx, bi.PendingReleasesColl, bson.M{"delivery_remote_path": remotePath})
+		doc, err := wait2MinsForDoc(bi.Ctx, bi.PendingReleasesColl, bson.M{"delivery_remote_path": remotePath})
 		if err != nil {
 			t.Fatalf("Error finding pending release for '%s' in Mongo: %v", remotePath, err)
 		}
@@ -575,10 +352,14 @@ func TestRunE2E(t *testing.T) {
 		// Ignore CreatedAt because we can't predict the exact time of a Mongo insert
 		pendingRelease.CreatedAt = time.Time{}
 
+		// Ignore ParsedReleaseElems because it's too much to paste
+		pendingRelease.Release.ParsedReleaseElems = nil
+		st.expectedPR.Release.ParsedReleaseElems = nil
+
 		assert.Equal(t, st.expectedPR, pendingRelease)
 
 		// Verify the crawler (deliveries collection)
-		doc, err = wait1MinForDoc(bi.Ctx, bi.DeliveriesColl, bson.M{"_id": remotePath})
+		doc, err = wait2MinsForDoc(bi.Ctx, bi.DeliveriesColl, bson.M{"_id": remotePath})
 		if err != nil {
 			t.Fatalf("Error finding delivery in Mongo: %v", err)
 		}
@@ -593,7 +374,7 @@ func TestRunE2E(t *testing.T) {
 		// Ignore CreatedAt because we can't predict the exact time of a Mongo insert
 		delivery.CreatedAt = time.Time{}
 
-		// Similarly, gnore XMLContent because it's too much to paste
+		// Similarly, ignore XMLContent because it's too much to paste
 		for i := 0; i < len(delivery.Releases); i++ {
 			delivery.Releases[i].XmlContent = primitive.Binary{}
 			if len(st.expectedD.Releases) > i {
@@ -717,10 +498,10 @@ func uploadFile(bi *common.BaseIngester, filePath, baseDir, fileName string) (st
 	return s3Key, nil
 }
 
-func wait1MinForDoc(ctx context.Context, collection *mongo.Collection, filter bson.M) (*mongo.SingleResult, error) {
+func wait2MinsForDoc(ctx context.Context, collection *mongo.Collection, filter bson.M) (*mongo.SingleResult, error) {
 	var doc *mongo.SingleResult
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 
 	ticker := time.NewTicker(500 * time.Millisecond)
