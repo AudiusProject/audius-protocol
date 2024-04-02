@@ -16,6 +16,7 @@ import {
 import { CollectiblesProvider } from './CollectiblesProvider'
 import {
   assetToCollectible,
+  fetchWithTimeout,
   getAssetIdentifier,
   isAssetValid,
   isNotFromNullAddress,
@@ -74,7 +75,7 @@ export class EthereumCollectiblesProvider implements CollectiblesProvider {
   async addNftMetadata(nft: OpenSeaNft): Promise<OpenSeaNftExtended> {
     let metadata: OpenSeaNftMetadata | undefined
     try {
-      const res = await fetch(nft.metadata_url)
+      const res = await fetchWithTimeout(nft.metadata_url)
       metadata = await res.json()
     } catch (e) {
       console.error(e)

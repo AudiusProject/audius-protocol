@@ -46,7 +46,10 @@ const metaplexNftGif = async (
     (file: any) => typeof file === 'object' && file.type === 'image/gif'
   )
   if (gifFile) {
-    const url = (gifFile as MetaplexNFTPropertiesFile).uri
+    let url = (gifFile as MetaplexNFTPropertiesFile).uri
+    if (!url) {
+      url = (gifFile as unknown as any).file
+    }
     // frame url for the gif is computed later in the collectibles page
     return {
       collectibleMediaType: CollectibleMediaType.GIF,
@@ -437,20 +440,13 @@ const heliusNFTToCollectible = async (
     }
   }
 
-  let metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft)
-  let mediaInfo = await getMediaInfo(metaplexMetadata)
+  const metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft, true)
+  const mediaInfo = await getMediaInfo(metaplexMetadata)
   if (!mediaInfo) {
-    console.warn(
-      `Could not get nft media info from Helius fields for nft with id ${nft.id}... Going to fetch from the Helius json_uri field.`
+    console.error(
+      `Could not get nft media info from Helius json_uri field for nft with id ${nft.id}... Ignoring this nft.`
     )
-    metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft, true)
-    mediaInfo = await getMediaInfo(metaplexMetadata)
-    if (!mediaInfo) {
-      console.error(
-        `Could not get nft media info from Helius json_uri field for nft with id ${nft.id}... Ignoring this nft.`
-      )
-      return null
-    }
+    return null
   }
   const { url, frameUrl, collectibleMediaType } = mediaInfo
   collectible.frameUrl = frameUrl
