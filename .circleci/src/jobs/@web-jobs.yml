@@ -37,6 +37,11 @@ web-init:
           - packages/trpc-server/node_modules
           - packages/trpc-server/dist
 
+    - slack/notify:
+        channel: 'C06SP746DA7'
+        event: fail
+        template: basic_fail_1
+
 web-build-demo:
   working_directory: ~/audius-protocol
   docker:
