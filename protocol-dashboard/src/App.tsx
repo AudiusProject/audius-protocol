@@ -38,7 +38,7 @@ import { createStyles } from 'utils/mobile'
 import { getDidGraphError } from 'store/api/hooks'
 import UnregisteredNode from 'containers/UnregisteredNode'
 import { RouteHistoryProvider } from './providers/RouteHistoryContext'
-import { useWeb3ModalAccount } from '@web3modal/ethers/react'
+import { useWeb3ModalAccount, useWeb3ModalState } from '@web3modal/ethers/react'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 const store = createStore()
@@ -71,6 +71,8 @@ const App = () => {
   //  If the client fails, set it to the backup client
   const [apolloClient, setApolloClient] = useState(client)
   const [willReload, setWillReload] = useState(false)
+  const { selectedNetworkId } = useWeb3ModalState()
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark')
   }, [])
@@ -90,7 +92,7 @@ const App = () => {
       setWillReload(true)
       window.location.reload()
     }
-  }, [address, chainId])
+  }, [address, chainId, selectedNetworkId])
 
   useEffect(() => {
     if (!isConnected && window.aud.hasValidAccount && !willReload) {

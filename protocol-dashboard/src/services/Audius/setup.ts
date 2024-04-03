@@ -2,7 +2,6 @@ import { libs as AudiusLibs } from '@audius/sdk/dist/web-libs'
 import { Eip1193Provider } from 'ethers'
 import { AudiusClient } from './AudiusClient'
 import { CHAIN_ID, ETH_PROVIDER_URL } from 'utils/eth'
-import { ETH_NETWORK_ID } from 'utils/switchNetwork'
 
 declare global {
   interface Window {
@@ -100,11 +99,6 @@ export async function setup(this: AudiusClient): Promise<void> {
 
   // Wait for user to connect with web3modal:
   const walletProvider = await accountConnectedPromise
-  if ((walletProvider as any).on) {
-    ;(walletProvider as any).on('chainChanged', () => {
-      window.location.reload()
-    })
-  }
 
   let account = null
 
@@ -213,7 +207,7 @@ const configureLibsWithAccount = async ({
   walletProvider: Eip1193Provider
   onMetaMaskAccountLoaded?: (account: string) => void
 }) => {
-  let configuredWeb3 = await configWeb3(walletProvider, ETH_NETWORK_ID)
+  let configuredWeb3 = await configWeb3(walletProvider, CHAIN_ID)
 
   let connectedAccounts: any = await new Promise(resolve => {
     configuredWeb3.externalWeb3Config.web3.eth.getAccounts((...args: any) => {

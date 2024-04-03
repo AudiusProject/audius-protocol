@@ -3,10 +3,8 @@ import Button, { ButtonType } from 'components/Button'
 import Modal from 'components/Modal'
 import React, { useEffect, useState } from 'react'
 import { getWalletChainId } from 'services/Audius/setup'
-import {
-  ETH_NETWORK_ID,
-  decimalNetworkIdToHexNetworkId
-} from 'utils/switchNetwork'
+import { CHAIN_ID } from 'utils/eth'
+import { decimalNetworkIdToHexNetworkId } from 'utils/switchNetwork'
 import styles from './MisconfiguredModal.module.css'
 
 const messages = {
@@ -37,7 +35,7 @@ const MisconfiguredWalletContent = ({ onClose }: ContentProps) => {
   useEffect(() => {
     const checkChainId = async () => {
       const chainId = await getWalletChainId(walletProvider)
-      if (chainId !== ETH_NETWORK_ID) {
+      if (chainId !== CHAIN_ID) {
         setChainMismatched(true)
       }
     }
@@ -50,7 +48,7 @@ const MisconfiguredWalletContent = ({ onClose }: ContentProps) => {
     if (chainMismatched && walletProvider) {
       walletProvider.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: decimalNetworkIdToHexNetworkId(ETH_NETWORK_ID) }]
+        params: [{ chainId: decimalNetworkIdToHexNetworkId(CHAIN_ID) }]
       })
     } else {
       disconnect()
