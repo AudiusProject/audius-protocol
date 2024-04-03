@@ -158,7 +158,7 @@ export default defineConfig(async ({ mode }) => {
         utils: '/src/utils',
         ssr: '/src/ssr',
         '~': path.resolve(__dirname, '../../packages/common/src'),
-        '@audius/test': path.resolve(__dirname, 'test-utils.tsx'),
+        test: '/src/test',
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),
@@ -178,11 +178,11 @@ export default defineConfig(async ({ mode }) => {
     },
     test: {
       environment: 'jsdom',
-      setupFiles: ['./vitest-setup.ts'],
+      setupFiles: ['./src/test/vitest-setup.ts'],
       deps: {
         optimizer: {
           web: {
-            include: ['./vitest-canvas-mock']
+            include: ['./src/test/vitest-canvas-mock']
           }
         }
       },

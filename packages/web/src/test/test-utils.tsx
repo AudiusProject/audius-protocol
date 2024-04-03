@@ -1,6 +1,7 @@
-import React, { ReactElement, ReactNode } from 'react'
-import { render, RenderOptions } from '@testing-library/react'
+import { ReactElement, ReactNode } from 'react'
+
 import { ThemeProvider } from '@audius/harmony'
+import { render, RenderOptions } from '@testing-library/react'
 
 type TestProvidersProps = {
   children: ReactNode
