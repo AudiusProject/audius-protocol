@@ -32,6 +32,7 @@ import { formatShortWallet } from 'utils/format'
 import { useIsMobile, useModalControls } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
 import { accountPage } from 'utils/routes'
+import MisconfiguredModal from '../ConnectMetaMaskModal/MisconfiguredModal'
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
 
@@ -50,8 +51,7 @@ const messages = {
   title: 'AUDIUS',
   name: 'Protocol Dashboard',
   launchApp: 'LAUNCH THE APP',
-  connectMetaMask: 'Connect Metamask',
-  metaMaskMisconfigured: 'Metamask Misconfigured',
+  metaMaskMisconfigured: 'Wallet Misconfigured',
   block: 'Block',
   wallet: 'WALLET',
   staked: 'STAKED',
@@ -69,8 +69,26 @@ type ConnectWalletProps = {
   isMisconfigured: boolean
 }
 const ConnectWallet = ({ isMisconfigured }: ConnectWalletProps) => {
-  // TODO: Show old "Misconfigured" status + modal if misconfigured.
-  return <w3m-connect-button />
+  const [isOpen, setIsOpen] = useState(false)
+  const onClick = useCallback(() => setIsOpen(true), [setIsOpen])
+  const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
+
+  return isMisconfigured ? (
+    <>
+      <div
+        onClick={onClick}
+        className={clsx(styles.connectWalletContainer, styles.cursorPointer)}
+      >
+        <div className={styles.misconfiguredDot}></div>
+        <div className={styles.connectText}>
+          {messages.metaMaskMisconfigured}
+        </div>
+      </div>
+      <MisconfiguredModal isOpen={isOpen} onClose={onClose} />
+    </>
+  ) : (
+    <w3m-connect-button />
+  )
 }
 
 const LoadingAccount = () => {
@@ -220,7 +238,11 @@ const AppBar: React.FC<AppBarProps> = () => {
     (isAudiusClientSetup && (isMisconfigured || isAccountMisconfigured))
   ) {
     isAccountSnippetContentClickable = true
-    accountSnippetContent = <ConnectWallet isMisconfigured={isMisconfigured} />
+    accountSnippetContent = (
+      <ConnectWallet
+        isMisconfigured={isMisconfigured || isAccountMisconfigured}
+      />
+    )
   } else if (isLoggedIn && wallet) {
     isAccountSnippetContentClickable = true
     accountSnippetContent = <UserAccountSnippet wallet={wallet} />

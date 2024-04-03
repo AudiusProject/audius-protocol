@@ -1,7 +1,7 @@
-import { useWeb3Modal, useWeb3ModalProvider } from '@web3modal/ethers/react'
+import { useDisconnect, useWeb3ModalProvider } from '@web3modal/ethers/react'
 import Button, { ButtonType } from 'components/Button'
 import Modal from 'components/Modal'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { getWalletChainId } from 'services/Audius/setup'
 import {
   ETH_NETWORK_ID,
@@ -13,8 +13,10 @@ const messages = {
   misconfiguredTitle: 'Your Wallet is Misconfigured',
   okayBtn: 'OKAY',
   openExtensionBtn: 'Open Wallet',
+  disconnectBtn: 'Disconnect',
   setEthereumMainnet:
-    'Please make sure your wallet network is set to the Ethereum Mainnet.'
+    'Please make sure your wallet network is set to the Ethereum Mainnet.',
+  tryDisconnecting: 'Please try disconnecting and connecting your wallet again.'
 }
 
 type OwnProps = {
@@ -29,23 +31,39 @@ type ContentProps = {
 
 const MisconfiguredWalletContent = ({ onClose }: ContentProps) => {
   const { walletProvider } = useWeb3ModalProvider()
-  const { open } = useWeb3Modal()
+  const { disconnect } = useDisconnect()
+  const [chainMismatched, setChainMismatched] = useState(false)
 
-  const onSwitchNetwork = async () => {
-    const chainId = await getWalletChainId(walletProvider)
-    if (chainId !== ETH_NETWORK_ID && !!walletProvider) {
+  useEffect(() => {
+    const checkChainId = async () => {
+      const chainId = await getWalletChainId(walletProvider)
+      if (chainId !== ETH_NETWORK_ID) {
+        setChainMismatched(true)
+      }
+    }
+    if (walletProvider) {
+      checkChainId()
+    }
+  }, [walletProvider])
+
+  const handleOpenWallet = () => {
+    if (chainMismatched && walletProvider) {
       walletProvider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: decimalNetworkIdToHexNetworkId(ETH_NETWORK_ID) }]
       })
     } else {
-      open()
+      disconnect()
     }
   }
   return (
     <>
       <div className={styles.description}>
-        <p>{messages.setEthereumMainnet}</p>
+        <p>
+          {chainMismatched
+            ? messages.setEthereumMainnet
+            : messages.tryDisconnecting}
+        </p>
       </div>
       <div className={styles.btnContainer}>
         <Button
@@ -56,10 +74,12 @@ const MisconfiguredWalletContent = ({ onClose }: ContentProps) => {
         />
 
         <Button
-          text={messages.openExtensionBtn}
+          text={
+            chainMismatched ? messages.openExtensionBtn : messages.disconnectBtn
+          }
           className={styles.openExtensionBtn}
           type={ButtonType.PRIMARY}
-          onClick={onSwitchNetwork}
+          onClick={handleOpenWallet}
         />
       </div>
     </>

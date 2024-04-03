@@ -80,8 +80,8 @@ const accountConnectedPromise = new Promise<Eip1193Provider>(resolve => {
 
 export async function setup(this: AudiusClient): Promise<void> {
   // Until the user connects, we're in read only mode
-  // Avoid initializing read-only libs if account is already connected from previous session
 
+  // Avoid initializing read-only libs if account is already connected from previous session
   const quickConnectedWalletProvider = await Promise.race([
     accountConnectedPromise,
     new Promise(resolve => {
@@ -100,6 +100,11 @@ export async function setup(this: AudiusClient): Promise<void> {
 
   // Wait for user to connect with web3modal:
   const walletProvider = await accountConnectedPromise
+  if ((walletProvider as any).on) {
+    ;(walletProvider as any).on('chainChanged', () => {
+      window.location.reload()
+    })
+  }
 
   let account = null
 
