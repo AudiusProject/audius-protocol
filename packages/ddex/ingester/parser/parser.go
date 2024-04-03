@@ -267,7 +267,6 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 
 	batch.DDEXSchema = ernVersion
 	batch.NumMessages = numMessages
-	fmt.Printf("theo set schema and num messages %s %d\n", ernVersion, numMessages)
 
 	if numMessages != len(batch.Releases) {
 		err := fmt.Errorf("NumberOfMessages value %d does not match the number of releases %d", numMessages, len(batch.Releases))
