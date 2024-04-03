@@ -188,6 +188,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 						createAlbumRelease[i].Tracks[j].IsStreamFollowGated = trackReleaseMetadata.IsStreamFollowGated
 						createAlbumRelease[i].Tracks[j].IsStreamTipGated = trackReleaseMetadata.IsStreamTipGated
 						createAlbumRelease[i].Tracks[j].IsDownloadFollowGated = trackReleaseMetadata.IsDownloadFollowGated
+						createAlbumRelease[i].Tracks[j].ReleaseDate = trackReleaseMetadata.ReleaseDate
 						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = trackReleaseMetadata.DDEXReleaseIDs
 						if trackReleaseMetadata.ProducerCopyrightLine != nil {
 							createAlbumRelease[i].Tracks[j].ProducerCopyrightLine = trackReleaseMetadata.ProducerCopyrightLine
@@ -254,7 +255,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 	pendingReleases := []*common.PendingRelease{}
 	for _, track := range createTrackRelease {
 		if !track.Metadata.HasDeal {
-			p.Logger.Info("track '%s' does not have a corresponding deal. skipping track upload", track.Metadata.Title)
+			p.Logger.Info("track does not have a corresponding deal. skipping track upload", "release reference", track.DDEXReleaseRef, "track title", track.Metadata.Title)
 			continue
 		}
 		pendingRelease := &common.PendingRelease{
@@ -272,9 +273,9 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 	for _, album := range createAlbumRelease {
 		allTracksHaveDeals := true
 		for _, track := range album.Tracks {
-			if !track.Metadata.HasDeal {
+			if !track.HasDeal {
 				allTracksHaveDeals = false
-				p.Logger.Info("track '%s' on album '%s' does not have a corresponding deal. skipping album upload", track.Metadata.Title, album.Metadata.PlaylistName)
+				p.Logger.Info("album track does not have a corresponding deal. skipping album upload", "release reference", album.DDEXReleaseRef, "track title", track.Title, "album title", album.Metadata.PlaylistName)
 			}
 		}
 		if !allTracksHaveDeals {

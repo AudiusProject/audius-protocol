@@ -96,7 +96,7 @@ func TestRunE2E(t *testing.T) {
 			expectedPR: common.PendingRelease{
 				ReleaseID:          "A10301A0005108088N",
 				DeliveryRemotePath: "s3://audius-test-raw/sony1.zip",
-				PublishDate:        time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+				PublishDate:        time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
 				PublishErrors:      []string{},
 				CreateTrackRelease: common.CreateTrackRelease{},
 				CreateAlbumRelease: common.CreateAlbumRelease{
@@ -105,7 +105,7 @@ func TestRunE2E(t *testing.T) {
 						PlaylistName:      "Present.",
 						PlaylistOwnerID:   "Bmv3bJ",
 						PlaylistOwnerName: "Theo Random",
-						ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+						ReleaseDate:       time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
 						DDEXReleaseIDs: common.ReleaseIDs{
 							CatalogNumber: "G010005108088N",
 							GRid:          "A10301A0005108088N",
@@ -131,7 +131,7 @@ func TestRunE2E(t *testing.T) {
 					Tracks: []common.TrackMetadata{
 						{
 							Title:       "Playing With Fire.",
-							ReleaseDate: time.Time{},
+							ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
 							Genre:       common.HipHopRap,
 							Duration:    279,
 							Artists: []common.ResourceContributor{{
@@ -188,10 +188,13 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
 							},
 							ParentalWarningType: stringPtr("Explicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 						{
 							Title:       "No Comment.",
-							ReleaseDate: time.Time{},
+							ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
 							Genre:       common.HipHopRap,
 							Duration:    142,
 							ArtistID:    "",
@@ -250,6 +253,9 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2023 South Africa - Sony Music Entertainment Africa (Pty) Ltd, under Sound African Recordings a division of Sony Music Entertainment Africa (Pty) Ltd",
 							},
 							ParentalWarningType: stringPtr("Explicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 					},
 				},
