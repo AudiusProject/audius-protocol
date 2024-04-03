@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
-import type { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -163,13 +161,15 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
  * The details shown at the top of the Track Screen and Collection Screen
  */
 export const DetailsTile = ({
-  collectionId,
+  contentId,
   coSign,
   description,
   descriptionLinkPressSource,
   details,
   hasReposted,
   hasSaved,
+  hasStreamAccess,
+  streamConditions,
   hideFavorite,
   hideFavoriteCount,
   hideListenCount,
@@ -204,9 +204,6 @@ export const DetailsTile = ({
   user,
   track
 }: DetailsTileProps) => {
-  const { hasStreamAccess } = useGatedContentAccess(
-    track ? (track as unknown as Track) : null
-  )
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -214,7 +211,6 @@ export const DetailsTile = ({
   const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
-  const { track_id: trackId, stream_conditions: streamConditions } = track ?? {}
 
   const styles = useStyles()
   const navigation = useNavigation()
@@ -302,7 +298,7 @@ export const DetailsTile = ({
   )
 
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId, userId: currentUserId })
+    getTrackPosition(state, { trackId: contentId, userId: currentUserId })
   )
 
   const playText =
@@ -384,9 +380,12 @@ export const DetailsTile = ({
                 <DetailsProgressInfo track={track} />
               ) : null}
               <View style={styles.buttonSection}>
-                {!hasStreamAccess && !isOwner && streamConditions && trackId ? (
+                {!hasStreamAccess &&
+                !isOwner &&
+                streamConditions &&
+                contentId ? (
                   <DetailsTileNoAccess
-                    trackId={trackId}
+                    trackId={contentId}
                     streamConditions={streamConditions}
                   />
                 ) : null}
@@ -438,7 +437,7 @@ export const DetailsTile = ({
                   hideShare={hideShare}
                   isOwner={isOwner}
                   isCollection={isCollection}
-                  collectionId={collectionId}
+                  collectionId={contentId}
                   isPublished={isPublished}
                   onPressEdit={onPressEdit}
                   onPressOverflow={onPressOverflow}
