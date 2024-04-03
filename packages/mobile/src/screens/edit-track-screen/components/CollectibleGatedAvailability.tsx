@@ -204,7 +204,7 @@ export const CollectibleGatedAvailability = ({
 
   const renderHelpCalloutContent = useCallback(() => {
     return hasNoCollectibles ? messages.noCollectibles : null
-  }, [])
+  }, [hasNoCollectibles])
 
   return (
     <View style={styles.root}>
