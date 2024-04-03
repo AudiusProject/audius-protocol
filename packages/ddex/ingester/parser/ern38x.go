@@ -543,16 +543,13 @@ func processDealNode(dNode *xmlquery.Node, refToTrackReleaseMap map[string]*comm
 
 		// Parse validity start date
 		validityStartStr := safeInnerText(dealTerms.SelectElement("ValidityPeriod/StartDate"))
-		var validityStart time.Time
-		if validityStartStr != "" {
-			var validityStartErr error
-			validityStart, validityStartErr = time.Parse("2006-01-02", validityStartStr)
-			if validityStartErr != nil {
-				err = fmt.Errorf("error parsing ValidityPeriod/StartDate for <DealReleaseReference>s%v: %s", releaseRefs, validityStartErr)
-				break
-			}
-		} else {
+		if validityStartStr == "" {
 			err = fmt.Errorf("missing required ValidityPeriod/StartDatea for <DealReleaseReference>s%v", releaseRefs)
+			break
+		}
+		validityStart, validityStartErr := time.Parse("2006-01-02", validityStartStr)
+		if validityStartErr != nil {
+			err = fmt.Errorf("error parsing ValidityPeriod/StartDate for <DealReleaseReference>s%v: %s", releaseRefs, validityStartErr)
 			break
 		}
 

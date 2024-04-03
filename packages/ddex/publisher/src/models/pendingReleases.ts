@@ -148,9 +148,13 @@ const trackMetadataSchema = new mongoose.Schema({
   stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
   is_download_gated: { type: Boolean, required: true },
   download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+  is_stream_follow_gated: Boolean,
+  is_stream_tip_gated: Boolean,
+  is_download_follow_gated: Boolean,
   cover_art_url: { type: String, required: true },
   cover_art_url_hash: { type: String, required: true },
   cover_art_url_hash_algo: { type: String, required: true },
+  has_deal: Boolean,
 })
 
 export type TrackMetadata = mongoose.InferSchemaType<typeof trackMetadataSchema>

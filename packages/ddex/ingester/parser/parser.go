@@ -168,38 +168,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 
 	// If there's an album release, the tracks we parsed out are actually part of the album release
 	if len(createAlbumRelease) > 0 {
-		// Copy missing fields from individual track releases to the album's tracks,
-		// which currently only have data from the SoundRecordings
-		isrcToMetadataMap := make(map[string]common.TrackMetadata)
-		for _, trackRelease := range createTrackRelease {
-			if trackRelease.Metadata.ISRC != nil {
-				isrcToMetadataMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata
-			}
-		}
-		for i, album := range createAlbumRelease {
-			for j, trackMetadata := range album.Tracks {
-				if trackMetadata.ISRC != nil {
-					if trackReleaseMetadata, exists := isrcToMetadataMap[*trackMetadata.ISRC]; exists {
-						createAlbumRelease[i].Tracks[j].HasDeal = trackReleaseMetadata.HasDeal
-						createAlbumRelease[i].Tracks[j].IsStreamGated = trackReleaseMetadata.IsStreamGated
-						createAlbumRelease[i].Tracks[j].StreamConditions = trackReleaseMetadata.StreamConditions
-						createAlbumRelease[i].Tracks[j].IsDownloadGated = trackReleaseMetadata.IsDownloadGated
-						createAlbumRelease[i].Tracks[j].DownloadConditions = trackReleaseMetadata.DownloadConditions
-						createAlbumRelease[i].Tracks[j].IsStreamFollowGated = trackReleaseMetadata.IsStreamFollowGated
-						createAlbumRelease[i].Tracks[j].IsStreamTipGated = trackReleaseMetadata.IsStreamTipGated
-						createAlbumRelease[i].Tracks[j].IsDownloadFollowGated = trackReleaseMetadata.IsDownloadFollowGated
-						createAlbumRelease[i].Tracks[j].ReleaseDate = trackReleaseMetadata.ReleaseDate
-						createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = trackReleaseMetadata.DDEXReleaseIDs
-						if trackReleaseMetadata.ProducerCopyrightLine != nil {
-							createAlbumRelease[i].Tracks[j].ProducerCopyrightLine = trackReleaseMetadata.ProducerCopyrightLine
-						}
-						if trackReleaseMetadata.CopyrightLine != nil {
-							createAlbumRelease[i].Tracks[j].CopyrightLine = trackReleaseMetadata.CopyrightLine
-						}
-					}
-				}
-			}
-		}
+		copyTrackReleaseInfoToAlbum(createAlbumRelease, createTrackRelease)
 		// Clear the individual track releases
 		createTrackRelease = []common.CreateTrackRelease{}
 	}
@@ -255,7 +224,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 	pendingReleases := []*common.PendingRelease{}
 	for _, track := range createTrackRelease {
 		if !track.Metadata.HasDeal {
-			p.Logger.Info("track does not have a corresponding deal. skipping track upload", "release reference", track.DDEXReleaseRef, "track title", track.Metadata.Title)
+			p.Logger.Info("track does not have a corresponding deal. skipping track upload", "DDEX release reference", track.DDEXReleaseRef, "track title", track.Metadata.Title)
 			continue
 		}
 		pendingRelease := &common.PendingRelease{
@@ -275,7 +244,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 		for _, track := range album.Tracks {
 			if !track.HasDeal {
 				allTracksHaveDeals = false
-				p.Logger.Info("album track does not have a corresponding deal. skipping album upload", "release reference", album.DDEXReleaseRef, "track title", track.Title, "album title", album.Metadata.PlaylistName)
+				p.Logger.Info("album track does not have a corresponding deal. skipping album upload", "DDEX release reference", album.DDEXReleaseRef, "track title", track.Title, "album title", album.Metadata.PlaylistName)
 			}
 		}
 		if !allTracksHaveDeals {
@@ -295,6 +264,41 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 	}
 
 	return pendingReleases, nil
+}
+
+func copyTrackReleaseInfoToAlbum(createAlbumRelease []common.CreateAlbumRelease, createTrackRelease []common.CreateTrackRelease) {
+	// Copy missing fields from individual track releases to the album's tracks,
+	// which currently only have data from the SoundRecordings
+	isrcToMetadataMap := make(map[string]common.TrackMetadata)
+	for _, trackRelease := range createTrackRelease {
+		if trackRelease.Metadata.ISRC != nil {
+			isrcToMetadataMap[*trackRelease.Metadata.ISRC] = trackRelease.Metadata
+		}
+	}
+	for i, album := range createAlbumRelease {
+		for j, trackMetadata := range album.Tracks {
+			if trackMetadata.ISRC != nil {
+				if trackReleaseMetadata, exists := isrcToMetadataMap[*trackMetadata.ISRC]; exists {
+					createAlbumRelease[i].Tracks[j].HasDeal = trackReleaseMetadata.HasDeal
+					createAlbumRelease[i].Tracks[j].IsStreamGated = trackReleaseMetadata.IsStreamGated
+					createAlbumRelease[i].Tracks[j].StreamConditions = trackReleaseMetadata.StreamConditions
+					createAlbumRelease[i].Tracks[j].IsDownloadGated = trackReleaseMetadata.IsDownloadGated
+					createAlbumRelease[i].Tracks[j].DownloadConditions = trackReleaseMetadata.DownloadConditions
+					createAlbumRelease[i].Tracks[j].IsStreamFollowGated = trackReleaseMetadata.IsStreamFollowGated
+					createAlbumRelease[i].Tracks[j].IsStreamTipGated = trackReleaseMetadata.IsStreamTipGated
+					createAlbumRelease[i].Tracks[j].IsDownloadFollowGated = trackReleaseMetadata.IsDownloadFollowGated
+					createAlbumRelease[i].Tracks[j].ReleaseDate = trackReleaseMetadata.ReleaseDate
+					createAlbumRelease[i].Tracks[j].DDEXReleaseIDs = trackReleaseMetadata.DDEXReleaseIDs
+					if trackReleaseMetadata.ProducerCopyrightLine != nil {
+						createAlbumRelease[i].Tracks[j].ProducerCopyrightLine = trackReleaseMetadata.ProducerCopyrightLine
+					}
+					if trackReleaseMetadata.CopyrightLine != nil {
+						createAlbumRelease[i].Tracks[j].CopyrightLine = trackReleaseMetadata.CopyrightLine
+					}
+				}
+			}
+		}
+	}
 }
 
 // parseBatch takes an unprocessed batch and turns it into PendingReleases (doesn't insert into Mongo)
