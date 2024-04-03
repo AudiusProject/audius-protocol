@@ -31,14 +31,13 @@ const messages = {
   pickACollection: 'Pick A Collection',
   ownersOf: 'Owners Of',
   noCollectibles:
-    'No Collectibles found. To enable this option, link a wallet containing a collectible.',
+    'No Collectibles found. To enable this option, link a wallet containing a collectible.'
 }
 
 const LEARN_MORE_URL =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 
-const { getSupportedUserCollections, getHasUnsupportedCollection } =
-  collectiblesSelectors
+const { getSupportedUserCollections } = collectiblesSelectors
 
 const screenWidth = Dimensions.get('screen').width
 
@@ -165,7 +164,6 @@ export const CollectibleGatedAvailability = ({
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
   )
-  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length
   const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
@@ -205,10 +203,8 @@ export const CollectibleGatedAvailability = ({
   }, [navigation])
 
   const renderHelpCalloutContent = useCallback(() => {
-    return hasNoCollectibles ? (
-      messages.noCollectibles
-    )
-  }, [hasUnsupportedCollection])
+    return hasNoCollectibles ? messages.noCollectibles : null
+  }, [])
 
   return (
     <View style={styles.root}>

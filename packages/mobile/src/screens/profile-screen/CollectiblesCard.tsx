@@ -16,6 +16,7 @@ import { useAsync } from 'react-use'
 
 import { IconPlay } from '@audius/harmony-native'
 import { ChainLogo, Tile } from 'app/components/core'
+import { Skeleton } from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
 
 import { CollectiblesCardErrorBoundary } from './CollectiblesCardErrorBoundary'
@@ -75,6 +76,7 @@ const CollectibleImage = (props: CollectibleImageProps) => {
   const isMp4 = isUriNumber ? false : !!uri.match(/.*\.mp4$/)
 
   const [size, setSize] = useState(0)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   const { value: mp4ThumbnailUrl } = useAsync(async () => {
     if (isMp4) {
@@ -86,34 +88,61 @@ const CollectibleImage = (props: CollectibleImageProps) => {
     }
   }, [isMp4])
 
-  return isSvg ? (
-    <View
-      onLayout={(e) => {
-        setSize(e.nativeEvent.layout.width)
-      }}
-    >
-      <SvgUri
-        height={size}
-        width={size}
-        uri={uri}
-        style={{ borderRadius: 8, overflow: 'hidden' }}
-      >
-        {children}
-      </SvgUri>
-    </View>
-  ) : (
-    <ImageBackground
-      style={style}
-      source={
-        isUriNumber
-          ? uri
-          : {
-              uri: isMp4 ? mp4ThumbnailUrl : uri
-            }
-      }
-    >
-      {children}
-    </ImageBackground>
+  return (
+    <>
+      {isSvg ? (
+        <View
+          onLayout={(e) => {
+            setSize(e.nativeEvent.layout.width)
+          }}
+        >
+          <SvgUri
+            height={size}
+            width={size}
+            uri={uri}
+            onLoad={() => setHasLoaded(true)}
+            style={{ borderRadius: 8, overflow: 'hidden' }}
+          >
+            {hasLoaded ? (
+              children
+            ) : (
+              <Skeleton
+                width={'100%'}
+                height={100}
+                style={{ position: 'absolute', zIndex: 100 }}
+              />
+            )}
+          </SvgUri>
+        </View>
+      ) : (
+        <ImageBackground
+          style={style}
+          onLoad={() => setHasLoaded(true)}
+          source={
+            isUriNumber
+              ? uri
+              : {
+                  uri: isMp4 ? mp4ThumbnailUrl : uri
+                }
+          }
+        >
+          {hasLoaded ? (
+            children
+          ) : (
+            <Skeleton
+              width={'100%'}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
+            />
+          )}
+        </ImageBackground>
+      )}
+    </>
   )
 }
 
