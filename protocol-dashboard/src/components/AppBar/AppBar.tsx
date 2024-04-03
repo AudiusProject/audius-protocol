@@ -1,26 +1,33 @@
-import { Box, Text, useTheme, HarmonyTheme } from '@audius/harmony'
+import {
+  Box,
+  Flex,
+  HarmonyTheme,
+  IconAudiusLogoHorizontal,
+  PlainButton,
+  Text,
+  useTheme
+} from '@audius/harmony'
 import { IconLink } from '@audius/stems'
-import { IconAudiusLogoHorizontal } from '@audius/harmony'
-import BN from 'bn.js'
 import clsx from 'clsx'
 import Button from 'components/Button'
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
-import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
+
+import {
+  createWeb3Modal,
+  useDisconnect,
+  useWeb3ModalAccount,
+  useWeb3ModalProvider
+} from '@web3modal/ethers/react'
 import UserImage from 'components/UserImage'
 import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+import { resolveAccountConnected } from 'services/Audius/setup'
 import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, Status } from 'types'
-import getActiveStake from 'utils/activeStake'
 import { usePushRoute } from 'utils/effects'
+import { CHAIN_INFO, ETHERS_CONFIG } from 'utils/eth'
 import { formatShortWallet } from 'utils/format'
 import { useIsMobile, useModalControls } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
@@ -28,8 +35,16 @@ import { accountPage } from 'utils/routes'
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
 
-const env = import.meta.env.VITE_ENVIRONMENT
 const styles = createStyles({ desktopStyles, mobileStyles })
+
+const projectId = import.meta.env.VITE_WEB3MODAL_PROJECT_ID
+
+createWeb3Modal({
+  ethersConfig: ETHERS_CONFIG,
+  chains: [CHAIN_INFO],
+  projectId,
+  enableAnalytics: false
+})
 
 const messages = {
   title: 'AUDIUS',
@@ -42,56 +57,57 @@ const messages = {
   staked: 'STAKED',
   profileAlt: 'User Profile',
   connectProfile: 'Connect Audius Profile',
-  loading: 'Loading Account...'
+  loading: 'Loading Account...',
+  disconnect: 'Disconnect'
 }
 
 // TODO:
 // * Replace account img, wallet & tokens from store
 type UserAccountSnippetProps = { wallet: Address }
-type MisconfiguredProps = {
+
+type ConnectWalletProps = {
   isMisconfigured: boolean
 }
-
-const Misconfigured = ({ isMisconfigured }: MisconfiguredProps) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const onClick = useCallback(() => setIsOpen(true), [setIsOpen])
-  const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
-
-  return (
-    <>
-      <div
-        onClick={onClick}
-        className={clsx(styles.connectMetaMaskContainer, styles.cursorPointer)}
-      >
-        <div className={styles.connectMetaMaskDot}></div>
-        <div className={styles.connectMetaMask}>
-          {isMisconfigured
-            ? messages.metaMaskMisconfigured
-            : messages.connectMetaMask}
-        </div>
-      </div>
-      <ConnectMetaMaskModal
-        isMisconfigured={isMisconfigured}
-        isOpen={isOpen}
-        onClose={onClose}
-      />
-    </>
-  )
+const ConnectWallet = ({ isMisconfigured }: ConnectWalletProps) => {
+  // TODO: Show old "Misconfigured" status + modal if misconfigured.
+  return <w3m-connect-button />
 }
 
 const LoadingAccount = () => {
   return (
-    <div className={styles.connectMetaMaskContainer}>
-      <div className={clsx(styles.connectMetaMask, styles.loadingText)}>
+    <div className={styles.connectWalletContainer}>
+      <div className={clsx(styles.connectText, styles.loadingText)}>
         {messages.loading}
       </div>
     </div>
   )
 }
 
+const DisconnectButton = () => {
+  const [isDisconnecting, setIsDisconnecting] = useState(false)
+  const { disconnect } = useDisconnect()
+
+  const handleDisconnect = useCallback(async () => {
+    setIsDisconnecting(true)
+    await disconnect()
+  }, [])
+
+  return (
+    <PlainButton
+      variant="default"
+      css={({ spacing }: HarmonyTheme) => ({
+        marginRight: -spacing['xs']
+      })}
+      onClick={handleDisconnect}
+      disabled={isDisconnecting}
+    >
+      {messages.disconnect}
+    </PlainButton>
+  )
+}
+
 const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   const { user, audiusProfile, status } = useUser({ wallet })
-  const activeStake = user ? getActiveStake(user) : new BN('0')
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {
     if (user) {
@@ -105,32 +121,38 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   if (!user) return null
 
   return (
-    <div className={styles.snippetContainer} onClick={onClickUser}>
-      <div className={styles.user}>
-        <UserImage
-          wallet={user.wallet}
-          imgClassName={styles.snippetImg}
-          alt={messages.profileAlt}
-          useSkeleton={false}
-        />
-        {audiusProfile != null ? null : (
-          <div className={styles.walletText}>
-            {formatShortWallet(user.wallet)}
+    <Flex direction="column" alignItems="flex-end">
+      <div className={styles.snippetContainer} onClick={onClickUser}>
+        <div className={styles.user}>
+          <UserImage
+            wallet={user.wallet}
+            imgClassName={styles.snippetImg}
+            alt={messages.profileAlt}
+            useSkeleton={false}
+          />
+          {audiusProfile != null ? null : (
+            <Flex direction="column" alignItems="flex-end" gap="xs">
+              <div className={styles.walletText}>
+                {formatShortWallet(user.wallet)}
+              </div>
+              <DisconnectButton />
+            </Flex>
+          )}
+        </div>
+        {audiusProfile == null ? null : (
+          <div className={styles.userNameContainer}>
+            <div className={styles.userNameText}>
+              {audiusProfile.name}{' '}
+              <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
+            </div>
+            <div className={styles.walletText}>
+              {formatShortWallet(user.wallet)}
+            </div>
           </div>
         )}
       </div>
-      {audiusProfile == null ? null : (
-        <div className={styles.userNameContainer}>
-          <div className={styles.userNameText}>
-            {audiusProfile.name}{' '}
-            <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
-          </div>
-          <div className={styles.walletText}>
-            {formatShortWallet(user.wallet)}
-          </div>
-        </div>
-      )}
-    </div>
+      {audiusProfile == null ? null : <DisconnectButton />}
+    </Flex>
   )
 }
 
@@ -160,14 +182,10 @@ type AppBarProps = {}
 const AppBar: React.FC<AppBarProps> = () => {
   const isMobile = useIsMobile()
   const { isLoggedIn, wallet } = useAccount()
-  const timeoutIdRef = useRef<NodeJS.Timeout>(null)
   const { spacing, color } = useTheme() as HarmonyTheme // Need to cast because the type from import is incorrect
   const [isAudiusClientSetup, setIsAudiusClientSetup] = useState(false)
   const [isMisconfigured, setIsMisconfigured] = useState(false)
-  const [
-    isRetrievingAccountTimingOut,
-    setIsRetrievingAccountTimingOut
-  ] = useState(false)
+
   const [isAccountMisconfigured, setIsAccountMisconfigured] = useState(false)
   const {
     data: audiusProfileData,
@@ -175,43 +193,38 @@ const AppBar: React.FC<AppBarProps> = () => {
   } = useDashboardWalletUser(wallet)
   const hasConnectedAudiusAccount = audiusProfileData != null
 
-  const waitForSetup = async () => {
-    timeoutIdRef.current = setTimeout(() => {
-      if (!isAudiusClientSetup) {
-        setIsRetrievingAccountTimingOut(true)
-      }
-    }, 11000)
+  const { isConnected } = useWeb3ModalAccount()
+  const { walletProvider } = useWeb3ModalProvider()
 
-    // This will hang forever if an extension is not picked (in the case where user has
-    // both Phantom and MetaMask), hence the `retrievingAccountTimeOut` logic
+  useEffect(() => {
+    if (isConnected) {
+      resolveAccountConnected(walletProvider)
+    }
+  }, [isConnected])
+
+  const waitForSetup = async () => {
     await window.aud.metaMaskAccountLoadedPromise
     setIsAudiusClientSetup(true)
-    setIsRetrievingAccountTimingOut(false)
     setIsMisconfigured(window.aud.isMisconfigured)
     setIsAccountMisconfigured(window.aud.isAccountMisconfigured)
   }
 
   useEffect(() => {
     waitForSetup()
-    return () => {
-      if (timeoutIdRef.current) {
-        clearTimeout(timeoutIdRef.current)
-      }
-    }
   }, [])
 
   let accountSnippetContent: ReactNode
   let isAccountSnippetContentClickable: boolean
   if (
-    (!isAudiusClientSetup && isRetrievingAccountTimingOut) ||
+    !isConnected ||
     (isAudiusClientSetup && (isMisconfigured || isAccountMisconfigured))
   ) {
     isAccountSnippetContentClickable = true
-    accountSnippetContent = <Misconfigured isMisconfigured={isMisconfigured} />
+    accountSnippetContent = <ConnectWallet isMisconfigured={isMisconfigured} />
   } else if (isLoggedIn && wallet) {
     isAccountSnippetContentClickable = true
     accountSnippetContent = <UserAccountSnippet wallet={wallet} />
-  } else if (window.ethereum) {
+  } else if (!isAudiusClientSetup) {
     isAccountSnippetContentClickable = false
     accountSnippetContent = <LoadingAccount />
   } else {

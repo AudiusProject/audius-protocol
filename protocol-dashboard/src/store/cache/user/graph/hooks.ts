@@ -1,16 +1,16 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
-import { Status, User, Operator } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { setLoading, setUsers } from '../slice'
-import { useEffect, useState } from 'react'
-import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
-import { getGraphAPI, useGraphQuery as useQuery } from 'store/api/hooks'
-import { formatUser } from './formatter'
-import { GET_USERS, GET_USER } from './queries'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+import Audius from 'services/Audius'
+import { getGraphAPI, useGraphQuery as useQuery } from 'store/api/hooks'
+import { AppState } from 'store/types'
+import { Operator, Status, User } from 'types'
+import { setLoading, setUsers } from '../slice'
+import { formatUser } from './formatter'
+import { GET_USER, GET_USERS } from './queries'
+import { FullUser, UserData, UserVars, UsersData, UsersVars } from './types'
 
 // Async function to get
 function populateUsers(
@@ -22,7 +22,7 @@ function populateUsers(
       if (setStatus) setStatus(Status.Loading)
       else dispatch(setLoading())
       const formattedUsers = await Promise.all(
-        users.map(user => formatUser(aud, user))
+        users.filter(user => !!user).map(user => formatUser(aud, user))
       )
       dispatch(
         setUsers({
@@ -80,31 +80,34 @@ export const useUser = (
 ) => {
   const [didFetch, setDidFetch] = useState(false)
   const { hasBackupClient, didError } = useSelector(getGraphAPI)
-
+  let userNotFound = false
   const { error: gqlError, data: gqlData } = useQuery<UserData, UserVars>(
     GET_USER,
     {
       variables: { id: wallet.toLowerCase() }
     }
   )
+  if (gqlData && gqlData.user == null) {
+    userNotFound = true
+  }
 
   useEffect(() => {
     setDidFetch(false)
   }, [wallet, setDidFetch])
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
-    if (!didFetch && !hasUser && gqlData) {
+    if (!didFetch && !hasUser && gqlData && gqlData.user) {
       setDidFetch(true)
       dispatch(populateUsers([gqlData.user], setStatus))
     }
   }, [hasUser, gqlData, dispatch, setStatus, didFetch, setDidFetch])
 
   // If there is a fallback, do not return error until the fallback also errors
-  if (hasBackupClient && gqlError && !didError) {
+  if (hasBackupClient && gqlError && !didError && !userNotFound) {
     return { error: null }
   }
 
   return {
-    error: gqlError
+    error: userNotFound ? 'User not found' : gqlError
   }
 }

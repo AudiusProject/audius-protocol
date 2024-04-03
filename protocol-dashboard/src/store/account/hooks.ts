@@ -42,7 +42,7 @@ export function fetchAccount(): ThunkAction<
 > {
   return async (dispatch, getState, aud) => {
     dispatch(setLoading())
-    await aud.awaitSetup()
+    await aud.metaMaskAccountLoadedPromise
     if (aud.hasValidAccount) {
       const wallet = await aud.getEthWallet()
       dispatch(

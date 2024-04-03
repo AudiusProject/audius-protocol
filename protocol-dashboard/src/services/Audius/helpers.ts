@@ -38,9 +38,6 @@ export function onSetupFinished(this: AudiusClient) {
   if (this._setupPromiseResolve) {
     this._setupPromiseResolve()
   }
-  if (!this.isMetaMaskAccountLoaded) {
-    this.onMetaMaskAccountLoaded(null)
-  }
 }
 
 export async function awaitSetup(this: AudiusClient): Promise<void> {

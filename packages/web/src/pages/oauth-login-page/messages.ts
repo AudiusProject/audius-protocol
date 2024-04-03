@@ -51,5 +51,5 @@ export const messages = {
   missingApiKeyError: 'Whoops, this is an invalid link (app API Key missing)',
   invalidApiKeyError: 'Whoops, this is an invalid link (app API Key invalid)',
   approveTxToConnectProfile:
-    'Approve the pending MetaMask transaction to finish connecting your Audius profile.'
+    'Approve the pending transaction in your wallet to finish connecting your Audius profile.'
 }

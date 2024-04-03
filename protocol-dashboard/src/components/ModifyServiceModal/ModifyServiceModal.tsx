@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useModifyService } from 'store/actions/modifyService'
 import { Address, ServiceType, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
+import { sharedMessages } from 'utils/sharedMessages'
 import styles from './ModifyServiceModal.module.css'
 
 const messages = {
@@ -23,7 +24,6 @@ const messages = {
   cancel: 'Cancel',
   save: 'Save Changes',
   deregister: 'Deregister Node',
-  mutipleUpdated: '2 MetaMask Pop-Ups Will Appear',
   updateEndpoint: 'Update Service Endpoint',
   updateWallet: 'Update Delegate Owner Wallet'
 }
@@ -124,7 +124,9 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
   if (endpointUpdated && walletUpdated) {
     topBox = (
       <>
-        <div className={styles.doubleMetaMask}>{messages.mutipleUpdated}</div>
+        <div className={styles.doubleMetaMask}>
+          {sharedMessages.twoPopupsWarning}
+        </div>
         <StandaloneBox className={styles.confirm}>
           <div>{messages.updateEndpoint}</div>
           <div className={styles.subtext}>{endpoint}</div>
