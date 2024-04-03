@@ -564,21 +564,6 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       onClick: handleEditClick
     })
   }
-  const [loadedIndex, setLoadedIndex] = useState(-1)
-  const [concurrentLoads, setConcurrentLoads] = useState(0)
-  const onStartLoad = useCallback(
-    (value: number) => {
-      setConcurrentLoads(concurrentLoads + 1)
-    },
-    [concurrentLoads, setConcurrentLoads]
-  )
-  const onLoaded = useCallback(
-    (value: number) => {
-      setLoadedIndex(Math.max(loadedIndex, value))
-      setConcurrentLoads(concurrentLoads - 1)
-    },
-    [concurrentLoads, loadedIndex, setLoadedIndex, setConcurrentLoads]
-  )
 
   return (
     <div
@@ -658,10 +643,6 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   key={collectible.id}
                   collectible={collectible}
                   onClick={setEmbedCollectibleHash}
-                  canLoad={i <= loadedIndex + 7 && concurrentLoads <= 8}
-                  index={i}
-                  onLoad={onStartLoad}
-                  onLoaded={onLoaded}
                 />
               ))}
             </div>
