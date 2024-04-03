@@ -1,5 +1,7 @@
 import type { AudiusLibs } from '@audius/sdk'
 
+import { UndisbursedUserChallenge } from '@audius/common/store'
+
 import {
   ID,
   TimeRange,
@@ -36,7 +38,6 @@ import {
   SupporterResponse,
   SupportingResponse
 } from './types'
-import { UndisbursedUserChallenge } from '@audius/common/store'
 
 // TODO: declare this at the root and use actual audiusLibs type
 declare global {
@@ -406,6 +407,7 @@ type UserChallengesResponse = [
     amount: string
     disbursed_amount: number
     metadata: object
+    cooldown_days: number
   }
 ]
 
