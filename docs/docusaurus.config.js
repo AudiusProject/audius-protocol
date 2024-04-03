@@ -88,6 +88,11 @@ const config = {
             position: 'right',
           },
           {
+            label: 'Distributors',
+            to: '/distributors/introduction/overview',
+            position: 'right',
+          },
+          {
             label: 'Reference',
             to: '/reference/overview',
             position: 'right',

@@ -74,6 +74,30 @@ module.exports = {
     },
   ],
 
+  distributors: [
+    {
+      type: 'category',
+      label: 'Introduction',
+      items: ['distributors/introduction/overview'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Specification',
+      items: ['distributors/specification/overview', 'distributors/specification/ern3'],
+      collapsed: false,
+    },
+    // {
+    //   type: 'category',
+    //   label: 'Run a DDEX Server',
+    //   items: [
+    //     'distributors/run-a-server/overview',
+    //     'distributors/run-a-server/run-a-ddex-server',
+    //   ],
+    //   collapsed: false,
+    // },
+  ],
+
   node_operators: [
     {
       type: 'category',
