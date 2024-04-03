@@ -1,4 +1,4 @@
-// @ts-nocheck TODO: make type swork
+// @ts-nocheck TODO: PAY-2603 make types work
 import { Kind } from '@audius/common/models'
 import {
   accountReducer,
