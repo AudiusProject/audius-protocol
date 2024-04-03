@@ -38,12 +38,12 @@ export const useAccessAndRemixSettings = ({
   isScheduledRelease = false
 }: UseAccessAndRemixSettingsProps) => {
   const hasNoCollectibles = useSelector((state: CommonState) => {
-    const { ethCollectionMap, solCollectionMap } =
+    const { isLoading, ethCollectionMap, solCollectionMap } =
       getSupportedUserCollections(state)
 
     const numEthCollectibles = Object.keys(ethCollectionMap).length
     const numSolCollectibles = Object.keys(solCollectionMap).length
-    return numEthCollectibles + numSolCollectibles === 0
+    return !isLoading && numEthCollectibles + numSolCollectibles === 0
   })
 
   const isInitiallyPublic =
@@ -97,6 +97,7 @@ export const useAccessAndRemixSettings = ({
     noUsdcGate,
     noSpecialAccessGate,
     noSpecialAccessGateFields,
+    hasNoCollectibles,
     noCollectibleGate,
     noCollectibleGateFields,
     noHidden

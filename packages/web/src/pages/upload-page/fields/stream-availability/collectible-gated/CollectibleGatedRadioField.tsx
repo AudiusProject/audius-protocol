@@ -3,16 +3,12 @@ import {
   StreamTrackAvailabilityType,
   AccessConditions
 } from '@audius/common/models'
-import { collectiblesSelectors } from '@audius/common/store'
 import { IconCollectible } from '@audius/harmony'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useSelector } from 'utils/reducer'
 
 import { CollectibleGatedDescription } from './CollectibleGatedDescription'
 import { CollectibleGatedFields } from './CollectibleGatedFields'
-
-const { getSupportedUserCollections } = collectiblesSelectors
 
 const messages = {
   collectibleGated: 'Collectible Gated',
@@ -33,16 +29,8 @@ export const CollectibleGatedRadioField = (
   const { isRemix, isUpload, initialStreamConditions, isInitiallyUnlisted } =
     props
 
-  const hasCollectibles = useSelector((state) => {
-    const { ethCollectionMap, solCollectionMap } =
-      getSupportedUserCollections(state)
-
-    const numEthCollectibles = Object.keys(ethCollectionMap).length
-    const numSolCollectibles = Object.keys(solCollectionMap).length
-    return numEthCollectibles + numSolCollectibles > 0
-  })
-
   const {
+    hasNoCollectibles,
     noCollectibleGate: disabled,
     noCollectibleGateFields: fieldsDisabled
   } = useAccessAndRemixSettings({
@@ -61,7 +49,7 @@ export const CollectibleGatedRadioField = (
       hintContent={disabled ? messages.noCollectibles : undefined}
       description={
         <CollectibleGatedDescription
-          hasCollectibles={hasCollectibles}
+          hasCollectibles={!hasNoCollectibles}
           isUpload={true}
         />
       }
