@@ -166,7 +166,7 @@ describe('useAccessAndRemixSettings', () => {
     })
   })
   describe('track edit', () => {
-    it('should not only allow changing to hidden for a public track edit', () => {
+    it('public track - should disable all options', () => {
       const actual = useAccessAndRemixSettings({
         isUpload: false,
         isRemix: false,
@@ -181,6 +181,28 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableHidden: true
+      }
+      expect(actual).toEqual(expected)
+    })
+    it('scheduled release - should allow everything except hidden', () => {
+      mockedUseSelector.mockImplementation(
+        mockUseSelector(reduxStateWithCollectibles)
+      )
+      const actual = useAccessAndRemixSettings({
+        isUpload: false,
+        isRemix: false,
+        isAlbum: undefined,
+        initialStreamConditions: null,
+        isInitiallyUnlisted: true,
+        isScheduledRelease: true
+      })
+      const expected = {
+        disableUsdcGate: false,
+        disableSpecialAccessGate: false,
+        disableSpecialAccessGateFields: false,
+        disableCollectibleGate: false,
+        disableCollectibleGateFields: false,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -267,9 +289,31 @@ describe('useAccessAndRemixSettings', () => {
       }
       expect(actual).toEqual(expected)
     })
+    it('initially hidden - should enable everything', () => {
+      mockedUseSelector.mockImplementation(
+        mockUseSelector(reduxStateWithCollectibles)
+      )
+      const actual = useAccessAndRemixSettings({
+        isUpload: false,
+        isRemix: false,
+        isAlbum: undefined,
+        initialStreamConditions: null,
+        isInitiallyUnlisted: true,
+        isScheduledRelease: false
+      })
+      const expected = {
+        disableUsdcGate: false,
+        disableSpecialAccessGate: false,
+        disableSpecialAccessGateFields: false,
+        disableCollectibleGate: false,
+        disableCollectibleGateFields: false,
+        disableHidden: false
+      }
+      expect(actual).toEqual(expected)
+    })
   })
   describe('album upload', () => {
-    it('should only support usdc for album uploads', () => {
+    it('should only allow usdc for album uploads', () => {
       const actual = useAccessAndRemixSettings({
         isUpload: true,
         isRemix: false,

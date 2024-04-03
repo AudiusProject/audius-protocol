@@ -103,8 +103,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isScheduledRelease: !!isScheduledRelease
   })
 
-  console.log({ isScheduledRelease })
-
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       {isRemix ? <HelpCallout content={messages.isRemix} /> : null}

@@ -107,14 +107,6 @@ export const useAccessAndRemixSettings = ({
   const disableHidden =
     isAlbum || isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
 
-  console.log({
-    isUpload,
-    isRemix,
-    isAlbum,
-    initialStreamConditions,
-    isInitiallyUnlisted,
-    isScheduledRelease
-  })
   return {
     disableUsdcGate,
     disableSpecialAccessGate,
