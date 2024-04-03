@@ -124,31 +124,31 @@ type ZodSchemaValues = {
 
 const refineMinPrice =
   (key: 'price' | 'albumTrackPrice', minContentPriceCents: number) =>
-    (formValues: ZodSchemaValues) => {
-      const streamConditions = formValues[STREAM_CONDITIONS]
-      if (
-        formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-        isContentUSDCPurchaseGated(streamConditions)
-      ) {
-        const price = streamConditions.usdc_purchase[key]
-        return price !== undefined && price > 0 && price >= minContentPriceCents
-      }
-      return true
+  (formValues: ZodSchemaValues) => {
+    const streamConditions = formValues[STREAM_CONDITIONS]
+    if (
+      formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+      isContentUSDCPurchaseGated(streamConditions)
+    ) {
+      const price = streamConditions.usdc_purchase[key]
+      return price !== undefined && price > 0 && price >= minContentPriceCents
     }
+    return true
+  }
 
 const refineMaxPrice =
   (key: 'price' | 'albumTrackPrice', maxContentPriceCents: number) =>
-    (formValues: ZodSchemaValues) => {
-      const streamConditions = formValues[STREAM_CONDITIONS]
-      if (
-        formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-        isContentUSDCPurchaseGated(streamConditions)
-      ) {
-        const price = streamConditions.usdc_purchase[key]
-        return price !== undefined && price <= maxContentPriceCents
-      }
-      return true
+  (formValues: ZodSchemaValues) => {
+    const streamConditions = formValues[STREAM_CONDITIONS]
+    if (
+      formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+      isContentUSDCPurchaseGated(streamConditions)
+    ) {
+      const price = streamConditions.usdc_purchase[key]
+      return price !== undefined && price <= maxContentPriceCents
     }
+    return true
+  }
 export const AccessAndSaleFormSchema = (
   trackLength: number,
   { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig,
@@ -409,7 +409,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsDownloadable(true)
           const downloadableGateKeeper =
             isDownloadable &&
-              lastGateKeeper.downloadable === 'stemsAndDownloads'
+            lastGateKeeper.downloadable === 'stemsAndDownloads'
               ? 'stemsAndDownloads'
               : 'accessAndSale'
           setLastGateKeeper({
