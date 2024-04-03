@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import { useStreamConditionsEntity } from '@audius/common/hooks'
+import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,
   ModalSource,
@@ -12,6 +12,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usersSocialActions,
   tippingActions,
@@ -204,6 +205,9 @@ export const DetailsTileNoAccess = ({
   const gatedTrackStatus = gatedTrackStatusMap[trackId] ?? null
   const { nftCollection, collectionLink, followee, tippedUser } =
     useStreamConditionsEntity(streamConditions)
+  const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
+    FeatureFlags.IOS_GATED_CONTENT_ENABLED
+  )
 
   const { onPress: handlePressCollection } = useLink(collectionLink)
 
@@ -355,16 +359,18 @@ export const DetailsTileNoAccess = ({
               {messages.lockedUSDCPurchase}
             </Text>
           </View>
-          <Button
-            style={[styles.mainButton, styles.buyButton]}
-            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
-            title={messages.buy(
-              formatPrice(streamConditions.usdc_purchase.price)
-            )}
-            size='large'
-            onPress={handlePurchasePress}
-            fullWidth
-          />
+          {isIosGatedContentEnabled && (
+            <Button
+              style={[styles.mainButton, styles.buyButton]}
+              styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+              title={messages.buy(
+                formatPrice(streamConditions.usdc_purchase.price)
+              )}
+              size='large'
+              onPress={handlePurchasePress}
+              fullWidth
+            />
+          )}
         </>
       )
     }
@@ -391,6 +397,7 @@ export const DetailsTileNoAccess = ({
     handleFollowArtist,
     tippedUser,
     handleSendTip,
+    isIosGatedContentEnabled,
     handlePurchasePress
   ])
 

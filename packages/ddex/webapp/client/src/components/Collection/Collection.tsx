@@ -36,7 +36,7 @@ const Table = ({
     return (
       <tr key={item._id} className={styles.delivery}>
         <td>{item._id}</td>
-        <td>{item.zip_file_path}</td>
+        <td>{item.remote_path}</td>
         <td className={statusStyle(item.delivery_status)}>
           {item.delivery_status}
         </td>
@@ -112,7 +112,7 @@ const Table = ({
               {' '}
               {/* Column Headers Below */}
               <th>Delivery ID</th>
-              <th>ZIP File</th>
+              <th>File/Folder</th>
               <th>Status</th>
               <th>Created At</th>
               <th>Errors</th>

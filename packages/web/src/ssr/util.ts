@@ -1,11 +1,32 @@
 import { resolveRoute } from 'vike/routing'
 import type { PageContextServer } from 'vike/types'
 
-import { staticRoutes } from 'utils/route'
+import {
+  staticRoutes,
+  PROFILE_PAGE_ALBUMS,
+  PROFILE_PAGE_COLLECTIBLES,
+  PROFILE_PAGE_COLLECTIBLE_DETAILS,
+  PROFILE_PAGE_PLAYLISTS,
+  PROFILE_PAGE_REPOSTS,
+  PROFILE_PAGE_TRACKS,
+  CHANGE_EMAIL_SETTINGS_PAGE,
+  CHANGE_PASSWORD_SETTINGS_PAGE
+} from 'utils/route'
 
 const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
 
 const invalidPaths = new Set(['undefined'])
+
+const nonSsrPaths = [
+  PROFILE_PAGE_TRACKS,
+  PROFILE_PAGE_ALBUMS,
+  PROFILE_PAGE_PLAYLISTS,
+  PROFILE_PAGE_REPOSTS,
+  PROFILE_PAGE_COLLECTIBLES,
+  PROFILE_PAGE_COLLECTIBLE_DETAILS,
+  CHANGE_EMAIL_SETTINGS_PAGE,
+  CHANGE_PASSWORD_SETTINGS_PAGE
+]
 
 export const makePageRoute =
   (routes: string[], pageName?: string) =>
@@ -29,10 +50,32 @@ export const makePageRoute =
       }
 
       const result = resolveRoute(route, urlPathname)
-      if (result.match) {
+      const nonSsrPathResult = nonSsrPaths.some(
+        (path) => resolveRoute(path, urlPathname).match
+      )
+
+      if (result.match && !nonSsrPathResult) {
         console.info(`Rendering ${pageName ?? route}`, urlPathname)
         return result
       }
     }
     return false
   }
+
+export const checkIsBot = (userAgent: string) => {
+  if (!userAgent) {
+    return false
+  }
+  const botTest =
+    /discordbot|facebookexternalhit|gigabot|ia_archiver|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
+  return botTest.test(userAgent)
+}
+
+export const checkIsCrawler = (userAgent: string) => {
+  if (!userAgent) {
+    return false
+  }
+  const crawlerTest =
+    /forcessr|ahrefs(bot|siteaudit)|altavista|baiduspider|bingbot|duckduckbot|googlebot|msnbot|nextgensearchbot|yahoo|yandex/i
+  return crawlerTest.test(userAgent)
+}

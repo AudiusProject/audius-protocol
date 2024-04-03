@@ -5,6 +5,7 @@ import { Nullable } from '../../utils/typeUtils'
 import { HeliusNFT } from '../helius'
 
 import {
+  Blocklist,
   MetaplexNFT,
   MetaplexNFTPropertiesFile,
   SolanaNFT,
@@ -45,7 +46,10 @@ const metaplexNftGif = async (
     (file: any) => typeof file === 'object' && file.type === 'image/gif'
   )
   if (gifFile) {
-    const url = (gifFile as MetaplexNFTPropertiesFile).uri
+    let url = (gifFile as MetaplexNFTPropertiesFile).uri
+    if (!url) {
+      url = (gifFile as unknown as any).file
+    }
     // frame url for the gif is computed later in the collectibles page
     return {
       collectibleMediaType: CollectibleMediaType.GIF,
@@ -318,13 +322,17 @@ const starAtlasNFTToCollectible = async (
 const getMediaInfo = async (
   nft: MetaplexNFT
 ): Promise<Nullable<SolanaNFTMedia>> => {
-  return (
-    (await metaplexNftGif(nft)) ||
-    (await metaplexNftThreeDWithFrame(nft)) ||
-    (await metaplexNftVideo(nft)) ||
-    (await metaplexNftImage(nft)) ||
-    (await metaplexNftComputedMedia(nft))
-  )
+  try {
+    const mediaInfo =
+      (await metaplexNftGif(nft)) ||
+      (await metaplexNftThreeDWithFrame(nft)) ||
+      (await metaplexNftVideo(nft)) ||
+      (await metaplexNftImage(nft)) ||
+      (await metaplexNftComputedMedia(nft))
+    return mediaInfo
+  } catch (e) {
+    return null
+  }
 }
 
 const metaplexNFTToCollectible = async (
@@ -379,25 +387,28 @@ const metaplexNFTToCollectible = async (
 const getMetaplexMetadataFromHeliusNFT = async (
   nft: HeliusNFT,
   useFetch = false
-): Promise<MetaplexNFT> => {
-  if (useFetch) {
-    const metaplexData = await fetch(nft.content.json_uri)
-    const metaplexJson = await metaplexData.json()
-    return metaplexJson as MetaplexNFT
-  }
-
-  const { metadata, links, files } = nft.content
-  return {
-    ...metadata,
-    ...links,
-    properties: {
-      files: files.map((file: { uri: string; mime: string }) => ({
-        uri: file.uri,
-        type: file.mime
-      })),
-      creators: nft.creators
+): Promise<Nullable<MetaplexNFT>> => {
+  try {
+    if (useFetch) {
+      const metaplexData = await fetch(nft.content.json_uri)
+      const metaplexJson = await metaplexData.json()
+      return metaplexJson as MetaplexNFT
     }
-  } as MetaplexNFT
+    const { metadata, links, files } = nft.content
+    return {
+      ...metadata,
+      ...links,
+      properties: {
+        files: files.map((file: { uri: string; mime: string }) => ({
+          uri: file.uri,
+          type: file.mime
+        })),
+        creators: nft.creators
+      }
+    } as MetaplexNFT
+  } catch (e) {
+    return null
+  }
 }
 
 const heliusNFTToCollectible = async (
@@ -436,20 +447,13 @@ const heliusNFTToCollectible = async (
     }
   }
 
-  let metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft)
-  let mediaInfo = await getMediaInfo(metaplexMetadata)
+  const metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft, true)
+  if (!metaplexMetadata) {
+    return null
+  }
+  const mediaInfo = await getMediaInfo(metaplexMetadata)
   if (!mediaInfo) {
-    console.warn(
-      `Could not get nft media info from Helius fields for nft with id ${nft.id}... Going to fetch from the Helius json_uri field.`
-    )
-    metaplexMetadata = await getMetaplexMetadataFromHeliusNFT(nft, true)
-    mediaInfo = await getMediaInfo(metaplexMetadata)
-    if (!mediaInfo) {
-      console.error(
-        `Could not get nft media info from Helius json_uri field for nft with id ${nft.id}... Ignoring this nft.`
-      )
-      return null
-    }
+    return null
   }
   const { url, frameUrl, collectibleMediaType } = mediaInfo
   collectible.frameUrl = frameUrl
@@ -467,28 +471,115 @@ const heliusNFTToCollectible = async (
   return collectible
 }
 
+const audiusBlocklistUrls = [
+  '.pro',
+  '.site',
+  '.click',
+  '.fun',
+  'sol-drift.com',
+  'myrovoucher.com',
+  'magiceden.club',
+  'tensor.markets',
+  'mnde.network',
+  '4000w.io',
+  'juppi.io',
+  'jupdao.com',
+  'jupgem.com',
+  'juptreasure.com',
+  'slerfdrop.com',
+  'airdrop.drift.exchange'
+]
+const audiusBlocklistNames = [
+  '$1000',
+  '00jup',
+  'airdrop',
+  'voucher',
+  ...audiusBlocklistUrls
+]
+export const isHeliusNFTValid = (nft: HeliusNFT, blocklist: Blocklist) => {
+  const {
+    blocklist: urlBlocklist,
+    nftBlocklist,
+    stringFilters: { nameContains, symbolContains }
+  } = blocklist
+  const {
+    grouping,
+    content: {
+      metadata: { name, symbol },
+      links: { external_url: externalUrl }
+    }
+  } = nft
+  const urlBlocklistExtended = [...urlBlocklist, ...audiusBlocklistUrls]
+  const isExternalUrlBlocked = urlBlocklistExtended.some((item) =>
+    externalUrl?.toLowerCase().includes(item.toLowerCase())
+  )
+  if (isExternalUrlBlocked) {
+    return false
+  }
+  const isNftIdBlocked = nftBlocklist.includes(nft.id)
+  if (isNftIdBlocked) {
+    return false
+  }
+  const nameContainsExtended = [...nameContains, ...audiusBlocklistNames]
+  const isNameBlocked = nameContainsExtended.some((item) =>
+    name?.toLowerCase().includes(item.toLowerCase())
+  )
+  if (isNameBlocked) {
+    return false
+  }
+  const isCollectionNameBlocked = grouping.some((group) =>
+    nameContainsExtended.some((item) =>
+      group.collection_metadata?.name
+        ?.toLowerCase()
+        .includes(item.toLowerCase())
+    )
+  )
+  if (isCollectionNameBlocked) {
+    return false
+  }
+  const isSymbolBlocked = symbolContains.some((item) =>
+    symbol?.toLowerCase().includes(item.toLowerCase())
+  )
+  if (isSymbolBlocked) {
+    return false
+  }
+  return true
+}
+
 export const solanaNFTToCollectible = async (
   nft: SolanaNFT,
   wallet: string,
   type: SolanaNFTType,
   solanaChainMetadata: Nullable<Metadata>
 ): Promise<Nullable<Collectible>> => {
-  switch (type) {
-    case SolanaNFTType.HELIUS:
-      return heliusNFTToCollectible(
-        nft as HeliusNFT,
-        solanaChainMetadata,
-        wallet
-      )
-    case SolanaNFTType.METAPLEX:
-      return metaplexNFTToCollectible(
-        nft as MetaplexNFT,
-        solanaChainMetadata,
-        wallet
-      )
-    case SolanaNFTType.STAR_ATLAS:
-      return starAtlasNFTToCollectible(nft as StarAtlasNFT, solanaChainMetadata)
-    default:
-      return null
+  let collectible: Nullable<Collectible> = null
+  try {
+    switch (type) {
+      case SolanaNFTType.HELIUS:
+        collectible = await heliusNFTToCollectible(
+          nft as HeliusNFT,
+          solanaChainMetadata,
+          wallet
+        )
+        break
+      case SolanaNFTType.METAPLEX:
+        collectible = await metaplexNFTToCollectible(
+          nft as MetaplexNFT,
+          solanaChainMetadata,
+          wallet
+        )
+        break
+      case SolanaNFTType.STAR_ATLAS:
+        collectible = await starAtlasNFTToCollectible(
+          nft as StarAtlasNFT,
+          solanaChainMetadata
+        )
+        break
+      default:
+        break
+    }
+    return collectible
+  } catch (e) {
+    return null
   }
 }

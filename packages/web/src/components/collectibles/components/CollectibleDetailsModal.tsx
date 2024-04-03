@@ -7,11 +7,8 @@ import {
   useState
 } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import {
-  accountSelectors,
-  badgeTiers,
   collectibleDetailsUISelectors,
   collectibleDetailsUIActions
 } from '@audius/common/store'
@@ -44,7 +41,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import zIndex from 'utils/zIndex'
 
@@ -59,7 +55,6 @@ const Collectible3D = lazy(() =>
 
 const { setCollectible } = collectibleDetailsUIActions
 const { getCollectibleDetails, getCollectible } = collectibleDetailsUISelectors
-const getAccountUser = accountSelectors.getAccountUser
 
 type CollectibleMediaProps = {
   collectible: Collectible
@@ -71,7 +66,8 @@ type CollectibleMediaProps = {
 const CollectibleMedia = (props: CollectibleMediaProps) => {
   const { collectible, isMuted, toggleMute, isMobile } = props
 
-  const { mediaType, imageUrl, videoUrl, gifUrl, threeDUrl } = collectible
+  const { mediaType, frameUrl, imageUrl, videoUrl, gifUrl, threeDUrl } =
+    collectible
 
   const [isSvg, setIsSvg] = useState(false)
 
@@ -104,7 +100,14 @@ const CollectibleMedia = (props: CollectibleMediaProps) => {
     </div>
   ) : mediaType === CollectibleMediaType.VIDEO ? (
     <div className={styles.detailsMediaWrapper} onClick={toggleMute}>
-      <video muted={isMuted} autoPlay loop playsInline src={videoUrl!}>
+      <video
+        src={videoUrl!}
+        poster={frameUrl ?? undefined}
+        muted={isMuted}
+        autoPlay
+        loop
+        playsInline
+      >
         {collectibleMessages.videoNotSupported}
       </video>
       {isMuted ? (
@@ -153,13 +156,6 @@ const CollectibleDetailsModal = ({
 
   const [isPicConfirmModalOpen, setIsPicConfirmaModalOpen] =
     useState<boolean>(false)
-
-  const accountUser = useSelector(getAccountUser)
-  const userId = accountUser?.user_id ?? 0
-  const { tierNumber } = useSelectTierInfo(userId)
-
-  const isCollectibleOptionEnabled =
-    tierNumber >= badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
 
   const handleClose = useCallback(() => {
     dispatch(setCollectible({ collectible: null }))
@@ -317,8 +313,7 @@ const CollectibleDetailsModal = ({
                 Embed
               </Button>
 
-              {isCollectibleOptionEnabled &&
-                isUserOnTheirProfile &&
+              {isUserOnTheirProfile &&
                 collectible.mediaType === CollectibleMediaType.IMAGE && (
                   <Button
                     variant='secondary'

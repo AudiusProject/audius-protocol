@@ -100,7 +100,7 @@ export function* retrieveTrackByHandleAndSlug({
     idField: 'track_id',
     // If this is the first fetch after server side rendering the track page,
     // force retrieve from source to ensure we have personalized data
-    forceRetrieveFromSource: forceRetrieveFromSource ?? isInitialFetchAfterSsr,
+    forceRetrieveFromSource: forceRetrieveFromSource || isInitialFetchAfterSsr,
     shouldSetLoading: true,
     deleteExistingEntry: isInitialFetchAfterSsr,
     getEntriesTimestamp: function* (ids: ID[]) {

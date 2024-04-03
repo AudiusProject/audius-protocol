@@ -199,7 +199,7 @@ export type CreateAlbumRelease = mongoose.InferSchemaType<
 
 export const pendingReleasesSchema = new mongoose.Schema({
   _id: { type: String, required: true },
-  delivery_etag: { type: String, required: true },
+  delivery_remote_path: { type: String, required: true },
   publish_date: { type: Date, required: true },
   created_at: { type: Date, required: true },
   create_track_release: createTrackReleaseSchema,
