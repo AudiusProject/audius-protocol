@@ -229,7 +229,7 @@ export const DetailsTileNoAccess = ({
       { contentId: trackId, contentType },
       { source: ModalSource.TrackDetails }
     )
-  }, [trackId, openPremiumContentPurchaseModal])
+  }, [trackId, openPremiumContentPurchaseModal, contentType])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {
