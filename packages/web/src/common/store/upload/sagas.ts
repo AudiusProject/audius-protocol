@@ -112,12 +112,12 @@ const combineMetadata = (
     trackMetadata.is_download_gated = true
     trackMetadata.preview_start_seconds = 0
     trackMetadata.stream_conditions = {
-      usdc_purchase: { price: albumTrackPrice, splits: { 0: 0 } }
+      usdc_purchase: { price: albumTrackPrice, splits: { 0: 0 } } // adding splits as a placeholder, the details to be added in addPremiumMetadata
     }
     trackMetadata.download_conditions = {
       usdc_purchase: {
         price: albumTrackPrice,
-        splits: { 0: 0 }
+        splits: { 0: 0 } // adding splits as a placeholder, the details to be added in addPremiumMetadata
       }
     }
     // Add splits

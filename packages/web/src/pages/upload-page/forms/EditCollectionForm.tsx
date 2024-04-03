@@ -51,7 +51,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { tracks, uploadType, metadata } = formState
   const isAlbum = uploadType === UploadType.ALBUM
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+    FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
   const initialValues: CollectionValues = {
