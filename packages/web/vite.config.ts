@@ -158,6 +158,7 @@ export default defineConfig(async ({ mode }) => {
         utils: '/src/utils',
         ssr: '/src/ssr',
         '~': path.resolve(__dirname, '../../packages/common/src'),
+        '@audius/test': path.resolve(__dirname, 'test-utils.tsx'),
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),
@@ -177,6 +178,14 @@ export default defineConfig(async ({ mode }) => {
     },
     test: {
       environment: 'jsdom',
+      setupFiles: ['./vitest-setup.ts'],
+      deps: {
+        optimizer: {
+          web: {
+            include: ['./vitest-canvas-mock']
+          }
+        }
+      },
       exclude: ['e2e', 'node_modules'],
       minThreads: 1,
       maxThreads: 3

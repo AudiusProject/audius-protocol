@@ -23,9 +23,10 @@
     "ignoreDeprecations": "5.0",
     "types": ["vite/client"],
     "paths": {
+      "@audius/test": ["../test-utils.tsx"],
       "@audius/common/*": ["../../common/src/*"],
-      "~/*": ["../../common/src/*"]
+      "~/*": ["../../common/src/*"],
     }
   },
-  "include": ["src", "src/**/*.css"]
+  "include": ["src", "src/**/*.css", "./vitest-setup.ts"],
 }
