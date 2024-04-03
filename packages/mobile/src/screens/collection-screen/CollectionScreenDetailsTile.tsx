@@ -135,6 +135,7 @@ type CollectionScreenDetailsTileProps = {
   | 'onPressPlay'
   | 'onPressPreview'
   | 'collectionId'
+  | 'contentType'
 >
 
 const recordPlay = (id: Maybe<number>, play = true) => {
