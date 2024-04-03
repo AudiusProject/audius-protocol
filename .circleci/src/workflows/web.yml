@@ -26,9 +26,9 @@ jobs:
   - web-build-staging:
       context:
         - Vercel
+        - slack-secrets
       requires:
         - web-init
-        - slack-secrets
 
   - web-build-ssr-staging:
       context:
