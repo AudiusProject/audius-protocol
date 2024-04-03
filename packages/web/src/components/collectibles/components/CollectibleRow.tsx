@@ -28,7 +28,8 @@ export const VisibleCollectibleRow = (props) => {
     handleProps,
     ...otherProps
   } = props
-  const { name, isOwned, dateCreated, type, frameUrl, videoUrl } = collectible
+  const { name, isOwned, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
+    collectible
 
   const dragRef = useRef<HTMLDivElement>(null)
   const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null)
@@ -69,15 +70,15 @@ export const VisibleCollectibleRow = (props) => {
         <IconHide onClick={onHideClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {frameUrl ? (
+      {frameUrl ?? gifUrl ? (
         <div>
           <img
             className={styles.editMedia}
-            src={frameUrl}
+            src={frameUrl ?? gifUrl!}
             alt={collectibleMessages.visibleThumbnail}
           />
         </div>
-      ) : type === CollectibleMediaType.VIDEO ? (
+      ) : mediaType === CollectibleMediaType.VIDEO ? (
         <div>
           <video
             muted={true}
@@ -118,7 +119,7 @@ type HiddenCollectibleRowProps = {
 
 export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
   const { collectible, onShowClick } = props
-  const { name, isOwned, dateCreated, mediaType, frameUrl, videoUrl } =
+  const { name, isOwned, dateCreated, mediaType, frameUrl, gifUrl, videoUrl } =
     collectible
 
   return (
@@ -130,11 +131,11 @@ export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
         <IconShow onClick={onShowClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {frameUrl ? (
+      {frameUrl ?? gifUrl ? (
         <div>
           <img
             className={styles.editMedia}
-            src={frameUrl}
+            src={frameUrl ?? gifUrl!}
             alt={collectibleMessages.hiddenThumbnail}
           />
         </div>

@@ -3,8 +3,6 @@ import { decodeHashId } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 
 import {
-  PLAYLIST_PAGE,
-  ALBUM_PAGE,
   PLAYLIST_ID_PAGE,
   PLAYLIST_BY_PERMALINK_PAGE,
   ALBUM_BY_PERMALINK_PAGE
@@ -87,38 +85,6 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
     const collectionId = decodeHashId(collectionIdPageMatch.params.id)
     if (collectionId === null) return null
     return { collectionId, handle: null, collectionType: null, title: null }
-  }
-
-  const playlistPageMatch = matchPath<{
-    handle: string
-    playlistName: string
-  }>(route, {
-    path: PLAYLIST_PAGE,
-    exact: true
-  })
-  if (playlistPageMatch) {
-    const { handle, playlistName } = playlistPageMatch.params
-    const nameParts = playlistName.split('-')
-    const title = nameParts.slice(0, nameParts.length - 1).join('-')
-    const collectionId = parseInt(nameParts[nameParts.length - 1], 10)
-    if (!collectionId || isNaN(collectionId)) return null
-    return { title, collectionId, handle, collectionType: 'playlist' }
-  }
-
-  const albumPageMatch = matchPath<{
-    handle: string
-    albumName: string
-  }>(route, {
-    path: ALBUM_PAGE,
-    exact: true
-  })
-  if (albumPageMatch) {
-    const { handle, albumName } = albumPageMatch.params
-    const nameParts = albumName.split('-')
-    const title = nameParts.slice(0, nameParts.length - 1).join('-')
-    const collectionId = parseInt(nameParts[nameParts.length - 1], 10)
-    if (!collectionId || isNaN(collectionId)) return null
-    return { title, collectionId, handle, collectionType: 'album' }
   }
 
   return null

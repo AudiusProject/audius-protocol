@@ -1,6 +1,7 @@
 import logging
 from typing import List
 
+from datetime import datetime, timedelta
 from integration_tests.utils import populate_mock_db
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
@@ -194,6 +195,82 @@ def test_aggregate_counters(app):
             agg_playlists[2],
             AggregatePlaylist(
                 playlist_id=3, is_album=True, repost_count=2, save_count=0
+            ),
+        )
+
+
+def test_aggregate_track_count_updates(app):
+    track_created_at = datetime.now()
+    test_track_count_entities = {
+        "users": [
+            {"user_id": 1, "handle": "user1"},
+            {"user_id": 2, "handle": "user1"},
+        ],
+        "tracks": [
+            {"track_id": 1, "owner_id": 1},
+            {
+                "track_id": 1,
+                "owner_id": 1,
+                "is_unlisted": True,
+                "created_at": track_created_at,
+                "updated_at": track_created_at + timedelta(days=1),
+            },
+            {
+                "track_id": 2,
+                "owner_id": 2,
+                "is_unlisted": True,
+            },
+            {
+                "track_id": 2,
+                "owner_id": 2,
+                "is_unlisted": False,
+                "created_at": track_created_at,
+                "updated_at": track_created_at + timedelta(days=1),
+            },
+        ],
+    }
+    with app.app_context():
+        db = get_db()
+
+    populate_mock_db(db, test_track_count_entities)
+
+    with db.scoped_session() as session:
+        agg_users: List[AggregateUser] = (
+            session.query(AggregateUser).order_by(AggregateUser.user_id).all()
+        )
+
+        compare_rows(
+            agg_users[0],
+            AggregateUser(
+                user_id=1,
+                track_count=0,
+                playlist_count=0,
+                album_count=0,
+                follower_count=0,
+                following_count=0,
+                repost_count=0,
+                track_save_count=0,
+                supporter_count=0,
+                supporting_count=0,
+                dominant_genre=None,
+                dominant_genre_count=0,
+            ),
+        )
+        compare_rows(
+            agg_users[1],
+            AggregateUser(
+                user_id=2,
+                track_count=1,
+                playlist_count=0,
+                album_count=0,
+                follower_count=0,
+                following_count=0,
+                repost_count=0,
+                track_save_count=0,
+                supporter_count=0,
+                supporting_count=0,
+                dominant_genre=None,
+                dominant_genre_count=0,
             ),
         )
 

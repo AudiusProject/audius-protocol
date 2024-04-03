@@ -163,6 +163,10 @@
           "default": [],
           "$comment": "default set to empty array to unblock stalling indexing. if set to null, discprov db will reject because of not-NULL constraint"
         },
+        "is_scheduled_release": {
+          "type": "boolean",
+          "default": false
+        },
         "is_unlisted": {
           "type": "boolean",
           "default": false

@@ -94,7 +94,8 @@ const CollectibleMedia = (props: CollectibleMediaProps) => {
         </Suspense>
       ) : null}
     </div>
-  ) : mediaType === CollectibleMediaType.GIF ? (
+  ) : mediaType === CollectibleMediaType.GIF ||
+    mediaType === CollectibleMediaType.ANIMATED_WEBP ? (
     <div className={styles.detailsMediaWrapper}>
       <img src={gifUrl!} alt='Collectible' />
     </div>
