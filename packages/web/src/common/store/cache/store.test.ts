@@ -701,37 +701,4 @@ describe('unsubscribe', () => {
     })
     expect(storeState.collections).toEqual(initialCacheState)
   })
-
-  // TODO: PAY-2602
-  it.skip('removes entries with no subscribers', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()))
-      .provide(defaultProviders)
-      .withReducer(
-        combineReducers({
-          tracks: asCache(noopReducer(), Kind.TRACKS)
-        }),
-        {
-          tracks: {
-            ...initialCacheState,
-            entries: {
-              1: { metadata: { data: 10 } }
-            },
-            uids: {
-              111: 1,
-              222: 1
-            },
-            subscribers: {
-              1: new Set(['111', '222'])
-            }
-          }
-        }
-      )
-      .dispatch(actions.unsubscribe(Kind.TRACKS, [{ uid: '111', id: 1 }]))
-      .put(actions.unsubscribeSucceeded(Kind.TRACKS, [{ uid: '111', id: 1 }]))
-      .dispatch(actions.unsubscribe(Kind.TRACKS, [{ uid: '222', id: 1 }]))
-      .put(actions.unsubscribeSucceeded(Kind.TRACKS, [{ uid: '222', id: 1 }]))
-      .put(actions.remove(Kind.TRACKS, [1]))
-      .silentRun()
-    expect(storeState.tracks).toEqual(initialCacheState)
-  })
 })
