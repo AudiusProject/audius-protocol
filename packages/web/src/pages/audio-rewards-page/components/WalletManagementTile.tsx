@@ -118,23 +118,9 @@ const AdvancedWalletActions = () => {
       dispatch(pressSend())
     }
   }, [isMobile, dispatch, openTransferDrawer])
-  const [, setOpen] = useModalState('MobileConnectWalletsDrawer')
-
   const onClickTransactions = useCallback(() => {
     dispatch(pushRoute(AUDIO_TRANSACTIONS_PAGE))
   }, [dispatch])
-
-  const onClickConnectWallets = useCallback(() => {
-    if (isMobile) {
-      setOpen(true)
-    } else {
-      dispatch(pressConnectWallets())
-    }
-  }, [isMobile, setOpen, dispatch])
-
-  const onCloseConnectWalletsDrawer = useCallback(() => {
-    setOpen(false)
-  }, [setOpen])
 
   return (
     <div className={styles.moreOptionsSection}>
@@ -150,24 +136,17 @@ const AdvancedWalletActions = () => {
         <AdvancedOptionButton onClick={onClickReceive} iconLeft={IconReceive}>
           {messages.receiveLabel}
         </AdvancedOptionButton>
-        {!isMobile && isTransactionsEnabled ? (
-          <AdvancedOptionButton
-            onClick={onClickTransactions}
-            iconLeft={IconTransaction}
-          >
-            {messages.transactionsLabel}
-          </AdvancedOptionButton>
-        ) : null}
-        <AdvancedOptionButton
-          onClick={onClickConnectWallets}
-          iconLeft={IconSettings}
-        >
-          {messages.manageWallets}
-        </AdvancedOptionButton>
-        {isMobile && (
-          <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
-        )}
       </Flex>
+      {!isMobile && isTransactionsEnabled ? (
+        <Button
+          variant='secondary'
+          onClick={onClickTransactions}
+          iconLeft={IconTransaction}
+          fullWidth
+        >
+          {messages.transactionsLabel}
+        </Button>
+      ) : null}
     </div>
   )
 }
@@ -299,6 +278,41 @@ const useOnRampProviderInfo = () => {
   }
 }
 
+const ManageWalletsButton = () => {
+  const dispatch = useDispatch()
+  const isMobile = useIsMobile()
+  const [, setOpenConnectWalletsDrawer] = useModalState(
+    'MobileConnectWalletsDrawer'
+  )
+
+  const onClickConnectWallets = useCallback(() => {
+    if (isMobile) {
+      setOpenConnectWalletsDrawer(true)
+    } else {
+      dispatch(pressConnectWallets())
+    }
+  }, [isMobile, setOpenConnectWalletsDrawer, dispatch])
+
+  const onCloseConnectWalletsDrawer = useCallback(() => {
+    setOpenConnectWalletsDrawer(false)
+  }, [setOpenConnectWalletsDrawer])
+
+  return (
+    <>
+      <Button
+        variant='secondary'
+        onClick={onClickConnectWallets}
+        iconLeft={IconSettings}
+        fullWidth
+      >
+        {messages.manageWallets}
+      </Button>
+      {isMobile && (
+        <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
+      )}
+    </>
+  )
+}
 export const WalletManagementTile = () => {
   const totalBalance = useSelector(getAccountTotalBalance)
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
@@ -385,6 +399,7 @@ export const WalletManagementTile = () => {
             </div>
           </>
         ) : null}
+        <ManageWalletsButton />
         <CollapsibleContent
           id='advanced-wallet-actions'
           className={styles.toggle}
