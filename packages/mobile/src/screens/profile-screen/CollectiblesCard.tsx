@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 
-import type { Collectible, ID } from '@audius/common/models'
+import {
+  CollectibleMediaType,
+  type Collectible,
+  type ID
+} from '@audius/common/models'
 import {
   accountSelectors,
   collectibleDetailsUIActions,
@@ -10,7 +14,7 @@ import {
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'
 import { createThumbnail } from 'react-native-create-thumbnail'
-import { SvgUri } from 'react-native-svg'
+import { SvgUri, SvgXml } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -65,66 +69,44 @@ type CollectiblesCardProps = {
 type CollectibleImageProps = {
   uri: string
   style: StyleProp<ImageStyle>
+  mediaType: CollectibleMediaType
   children?: ReactNode
 }
 
 const CollectibleImage = (props: CollectibleImageProps) => {
-  const { children, style, uri } = props
+  const { children, style, uri, mediaType } = props
 
   const isUriNumber = typeof uri === 'number'
   const isSvg = isUriNumber ? false : !!uri.match(/.*\.svg$/)
-  const isMp4 = isUriNumber ? false : !!uri.match(/.*\.mp4$/)
+  const isSvgXml = isUriNumber ? false : !!uri.match(/data:image\/svg\+xml.*/)
+  const isVideo = isUriNumber ? false : mediaType === CollectibleMediaType.VIDEO
 
   const [size, setSize] = useState(0)
   const [hasLoaded, setHasLoaded] = useState(false)
 
-  const { value: mp4ThumbnailUrl } = useAsync(async () => {
-    if (isMp4) {
+  const { value: videoThumbnailUrl } = useAsync(async () => {
+    if (isVideo) {
       const response = await createThumbnail({
         url: uri,
         timeStamp: 10000
       })
       return response.path
     }
-  }, [isMp4])
+  }, [mediaType])
 
-  return (
-    <>
-      {isSvg ? (
-        <View
-          onLayout={(e) => {
-            setSize(e.nativeEvent.layout.width)
-          }}
-        >
-          <SvgUri
-            height={size}
-            width={size}
-            uri={uri}
-            onLoad={() => setHasLoaded(true)}
-            style={{ borderRadius: 8, overflow: 'hidden' }}
-          >
-            {hasLoaded ? (
-              children
-            ) : (
-              <Skeleton
-                width={'100%'}
-                height={100}
-                style={{ position: 'absolute', zIndex: 100 }}
-              />
-            )}
-          </SvgUri>
-        </View>
-      ) : (
-        <ImageBackground
-          style={style}
+  if (isSvg) {
+    return (
+      <View
+        onLayout={(e) => {
+          setSize(e.nativeEvent.layout.width)
+        }}
+      >
+        <SvgUri
+          height={size}
+          width={size}
+          uri={uri}
+          style={{ borderRadius: 8, overflow: 'hidden' }}
           onLoad={() => setHasLoaded(true)}
-          source={
-            isUriNumber
-              ? uri
-              : {
-                  uri: isMp4 ? mp4ThumbnailUrl : uri
-                }
-          }
         >
           {hasLoaded ? (
             children
@@ -140,9 +122,74 @@ const CollectibleImage = (props: CollectibleImageProps) => {
               }}
             />
           )}
-        </ImageBackground>
+        </SvgUri>
+      </View>
+    )
+  } else if (isSvgXml) {
+    try {
+      const xml = atob(uri)
+      return (
+        <View
+          onLayout={(e) => {
+            setSize(e.nativeEvent.layout.width)
+          }}
+        >
+          <SvgXml
+            height={size}
+            width={size}
+            xml={xml}
+            style={{ borderRadius: 8, overflow: 'hidden' }}
+            onLoad={() => setHasLoaded(true)}
+          >
+            {hasLoaded ? (
+              children
+            ) : (
+              <Skeleton
+                width={'100%'}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0
+                }}
+              />
+            )}
+          </SvgXml>
+        </View>
+      )
+    } catch (e) {
+      return null
+    }
+  }
+
+  return (
+    <ImageBackground
+      style={style}
+      onLoad={() => setHasLoaded(true)}
+      source={
+        isUriNumber
+          ? uri
+          : {
+              uri: isVideo ? videoThumbnailUrl : uri
+            }
+      }
+    >
+      {hasLoaded ? (
+        children
+      ) : (
+        <Skeleton
+          width={'100%'}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+        />
       )}
-    </>
+    </ImageBackground>
   )
 }
 
@@ -168,6 +215,8 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
 
   const url = frameUrl ?? gifUrl ?? videoUrl
 
+  if (!url) return null
+
   return (
     <CollectiblesCardErrorBoundary>
       <Tile
@@ -175,7 +224,11 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
         onPress={handlePress}
       >
         {url ? (
-          <CollectibleImage style={styles.image} uri={url}>
+          <CollectibleImage
+            style={styles.image}
+            uri={url}
+            mediaType={mediaType}
+          >
             {mediaType === 'VIDEO' ? (
               <View style={styles.iconPlay}>
                 <IconPlay
