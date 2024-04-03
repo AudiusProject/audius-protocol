@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { imageCollectiblePlaceholder } from '@audius/common/assets'
 import {
   AccessConditions,
   Chain,
@@ -23,10 +24,8 @@ import {
 } from '../../types'
 
 import styles from './CollectibleGatedFields.module.css'
-import { imageCollectiblePlaceholder } from '@audius/common/assets'
 
-const { getSupportedUserCollections } =
-  collectiblesSelectors
+const { getSupportedUserCollections } = collectiblesSelectors
 
 const messages = {
   pickACollection: 'Pick a Collection',
