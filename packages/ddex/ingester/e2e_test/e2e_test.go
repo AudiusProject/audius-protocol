@@ -324,7 +324,7 @@ func TestRunE2E(t *testing.T) {
 					Tracks: []common.TrackMetadata{
 						{
 							Title:       "Can you feel ...the Monkey Claw!",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+							ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 							DDEXReleaseIDs: common.ReleaseIDs{
 								ISRC: "CASE00000001",
 							},
@@ -358,10 +358,13 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2010 Iron Crown Music",
 							},
 							ParentalWarningType: stringPtr("NotExplicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 						{
 							Title:       "Red top mountain, blown sky high",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+							ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 							DDEXReleaseIDs: common.ReleaseIDs{
 								ISRC: "CASE00000002",
 							},
@@ -395,10 +398,13 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2010 Iron Crown Music",
 							},
 							ParentalWarningType: stringPtr("NotExplicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 						{
 							Title:       "Seige of Antioch",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+							ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 							DDEXReleaseIDs: common.ReleaseIDs{
 								ISRC: "CASE00000003",
 							},
@@ -432,10 +438,13 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2010 Iron Crown Music",
 							},
 							ParentalWarningType: stringPtr("NotExplicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 						{
 							Title:       "Warhammer",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+							ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 							DDEXReleaseIDs: common.ReleaseIDs{
 								ISRC: "CASE00000004",
 							},
@@ -469,10 +478,13 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2010 Iron Crown Music",
 							},
 							ParentalWarningType: stringPtr("NotExplicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 						{
 							Title:       "Iron Horse",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+							ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 							DDEXReleaseIDs: common.ReleaseIDs{
 								ISRC: "CASE00000005",
 							},
@@ -506,10 +518,13 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2010 Iron Crown Music",
 							},
 							ParentalWarningType: stringPtr("NotExplicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 						{
 							Title:       "Yes... I can feel the Monkey Claw!",
-							ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+							ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 							DDEXReleaseIDs: common.ReleaseIDs{
 								ISRC: "CASE00000006",
 							},
@@ -543,6 +558,9 @@ func TestRunE2E(t *testing.T) {
 								Text: "(P) 2010 Iron Crown Music",
 							},
 							ParentalWarningType: stringPtr("NotExplicit"),
+							IsStreamGated:       false,
+							IsDownloadGated:     false,
+							HasDeal:             true,
 						},
 					},
 				},

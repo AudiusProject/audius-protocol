@@ -192,6 +192,7 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string) (tracks []
 // processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
 func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image, crawledBucket, releaseID string) (track *common.CreateTrackRelease, album *common.CreateAlbumRelease, err error) {
 	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
+	releaseDateStr := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate"))
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))
 	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
 	releaseType := safeInnerText(rNode.SelectElement("ReleaseType"))
@@ -224,6 +225,17 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		MWLI:          safeInnerText(rNode.SelectElement("ReleaseId/MWLI")),
 		SICI:          safeInnerText(rNode.SelectElement("ReleaseId/SICI")),
 		ProprietaryID: safeInnerText(rNode.SelectElement("ReleaseId/ProprietaryId")),
+	}
+
+	// Convert releaseDate from string of format YYYY-MM-DD to time.Time
+	var releaseDate time.Time
+	if releaseDateStr != "" {
+		var releaseDateErr error
+		releaseDate, releaseDateErr = time.Parse("2006-01-02", releaseDateStr)
+		if releaseDateErr != nil {
+			err = fmt.Errorf("failed to parse release date for <ReleaseReference>%s</ReleaseReference>: %s", releaseRef, releaseDateErr)
+			return
+		}
 	}
 
 	// Only use release info from the "Worldwide" territory
@@ -344,6 +356,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			Metadata: common.CollectionMetadata{
 				PlaylistName:        title,
 				PlaylistOwnerName:   artistName,
+				ReleaseDate:         releaseDate,
 				DDEXReleaseIDs:      *ddexReleaseIDs,
 				Genre:               genre,
 				IsAlbum:             true,
@@ -440,6 +453,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		}
 
 		trackMetadata.ArtistName = artistName
+		trackMetadata.ReleaseDate = releaseDate
 		trackMetadata.DDEXReleaseIDs = *ddexReleaseIDs
 		trackMetadata.CoverArtURL = coverArtURL
 		trackMetadata.CoverArtURLHash = coverArtURLHash
