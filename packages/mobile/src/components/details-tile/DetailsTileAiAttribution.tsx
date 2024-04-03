@@ -3,11 +3,16 @@ import { useEffect } from 'react'
 import type { ID } from '@audius/common/models'
 import { aiPageActions, aiPageSelectors } from '@audius/common/store'
 import { View } from 'react-native'
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconRobot } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import {
+  IconArrowRight,
+  IconRobot,
+  PlainButton,
+  Text,
+  Flex,
+  TextLink
+} from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -22,7 +27,7 @@ const messages = {
   viewMore: 'View More'
 }
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     gap: spacing(2),
     borderBottomWidth: 1,
@@ -30,34 +35,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingBottom: spacing(4),
     marginBottom: spacing(4)
   },
-  title: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing(2)
-  },
-  titleText: {
-    textTransform: 'uppercase',
-    fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.bold,
-    lineHeight: typography.fontSize.small * 1.3
-  },
-  description: {
-    fontSize: typography.fontSize.small,
-    lineHeight: typography.fontSize.small * 1.3
-  },
-  userBadgeTitle: {
-    fontSize: typography.fontSize.small,
-    lineHeight: typography.fontSize.small * 1.3,
-    fontFamily: typography.fontByWeight.medium,
-    color: palette.secondary
-  },
   badges: {
     paddingTop: spacing(4)
-  },
-  viewMore: {
-    fontSize: typography.fontSize.small,
-    lineHeight: typography.fontSize.small * 1.2,
-    color: palette.secondary
   }
 }))
 
@@ -82,18 +61,25 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
 
   return user ? (
     <View style={styles.root}>
-      <View style={styles.title}>
-        <IconRobot fill={neutral} />
-        <Text style={styles.titleText}>{messages.title}</Text>
-      </View>
-      <Text style={styles.description}>
+      <Flex inline direction='row' alignItems='center' gap='s'>
+        <IconRobot color='default' />
+        <Text variant='label' style={{ marginTop: 2 }}>
+          {messages.title}
+        </Text>
+      </Flex>
+      <Text variant='body' size='s'>
         {messages.description}
-        <Text style={styles.userBadgeTitle}>{user.name}</Text>
+        <TextLink variant='visible'>{user.name}</TextLink>
         <UserBadges user={user} hideName style={styles.badges} badgeSize={12} />
       </Text>
-      <TouchableWithoutFeedback onPress={handleViewMorePress}>
-        <Text style={styles.viewMore}>{messages.viewMore}</Text>
-      </TouchableWithoutFeedback>
+      <PlainButton
+        style={{ alignSelf: 'flex-start' }}
+        variant='subdued'
+        iconRight={IconArrowRight}
+        onPress={handleViewMorePress}
+      >
+        {messages.viewMore}
+      </PlainButton>
     </View>
   ) : null
 }
