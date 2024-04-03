@@ -21,20 +21,22 @@ type UseAccessAndRemixSettingsProps = {
 }
 
 /**
- * Returns a map of booleans that determine whether to show certain access fields are enabled.
+ * Returns a map of booleans that determine whether certain access fields are enabled.
  * This is based on whether the user is uploading a track or editing it.
  *
  * 1. Remixes cannot be gated tracks.
  * 2. During upload, all access options are enabled unless the track is marked as a remix,
  * in which case only Public and Hidden are enabled.
  * 3. During edit, rule of thumb is that gated tracks can only be modified to allow broader access.
- * This means that gated tracks can only be made public.
- * Hidden tracks may be gated or made public.
+ *    This means that gated tracks can only be made public.
+ * 4. Hidden tracks may be gated or made public.
+ *
+ * NOTE: this logic is different from the logic using feature flags. to determine whether options should render or not; just whether or not they should be disabled
  */
 export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
-  isAlbum,
+  isAlbum = false,
   initialStreamConditions,
   isInitiallyUnlisted,
   isScheduledRelease = false
@@ -71,40 +73,54 @@ export const useAccessAndRemixSettings = ({
 
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
-  const noUsdcGate =
+  const disableUsdcGate =
     isRemix ||
     isInitiallyPublic ||
     isInitiallySpecialAccess ||
     isInitiallyCollectibleGated
 
-  const noSpecialAccessGate =
+  const disableSpecialAccessGate =
     isAlbum ||
     isRemix ||
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
     isInitiallyCollectibleGated
-  const noSpecialAccessGateFields =
-    noSpecialAccessGate || (!isUpload && !isInitiallyHidden)
 
-  const noCollectibleGate =
+  // This applies when the parent field is active but we still want to disable sub-options
+  // used for edit flow to not allow increasing permission strictness
+  const disableSpecialAccessGateFields =
+    disableSpecialAccessGate || (!isUpload && !isInitiallyHidden)
+
+  const disableCollectibleGate =
     isAlbum ||
     isRemix ||
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
     isInitiallySpecialAccess ||
     hasNoCollectibles
-  const noCollectibleGateFields =
-    noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
-  const noHidden =
+  // This applies when the parent field is active but we still want to disable sub-options
+  // used for edit flow to not allow increasing permission strictness
+  const disableCollectibleGateFields =
+    disableCollectibleGate || (!isUpload && !isInitiallyHidden)
+
+  const disableHidden =
     isAlbum || isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
 
+  console.log({
+    isUpload,
+    isRemix,
+    isAlbum,
+    initialStreamConditions,
+    isInitiallyUnlisted,
+    isScheduledRelease
+  })
   return {
-    noUsdcGate,
-    noSpecialAccessGate,
-    noSpecialAccessGateFields,
-    noCollectibleGate,
-    noCollectibleGateFields,
-    noHidden
+    disableUsdcGate,
+    disableSpecialAccessGate,
+    disableSpecialAccessGateFields,
+    disableCollectibleGate,
+    disableCollectibleGateFields,
+    disableHidden
   }
 }

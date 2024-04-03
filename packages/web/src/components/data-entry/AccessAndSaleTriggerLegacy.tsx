@@ -345,6 +345,8 @@ export const AccessAndSaleTriggerLegacy = (
     }
   }
 
+  console.log({ isScheduledRelease })
+
   return (
     <ContextualMenu
       label={messages.title}

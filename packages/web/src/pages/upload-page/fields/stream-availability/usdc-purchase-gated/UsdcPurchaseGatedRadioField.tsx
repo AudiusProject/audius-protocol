@@ -55,14 +55,14 @@ export const UsdcPurchaseGatedRadioField = (
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
-  const { noUsdcGate } = useAccessAndRemixSettings({
+  const { disableUsdcGate } = useAccessAndRemixSettings({
     isUpload: !!isUpload,
     isRemix,
     isAlbum,
     initialStreamConditions: initialStreamConditions ?? null,
     isInitiallyUnlisted: !!isInitiallyUnlisted
   })
-  const disabled = noUsdcGate || !isUsdcUploadEnabled
+  const disabled = disableUsdcGate || !isUsdcUploadEnabled
 
   const helpContent = (
     <div className={styles.helpContent}>

@@ -90,15 +90,20 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: STREAM_AVAILABILITY_TYPE
   })
 
-  const { noSpecialAccessGate, noSpecialAccessGateFields, noHidden } =
-    useAccessAndRemixSettings({
-      isUpload: !!isUpload,
-      isRemix,
-      isAlbum,
-      initialStreamConditions: initialStreamConditions ?? null,
-      isInitiallyUnlisted: !!isInitiallyUnlisted,
-      isScheduledRelease: !!isScheduledRelease
-    })
+  const {
+    disableSpecialAccessGate,
+    disableSpecialAccessGateFields,
+    disableHidden
+  } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    isAlbum,
+    initialStreamConditions: initialStreamConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isScheduledRelease: !!isScheduledRelease
+  })
+
+  console.log({ isScheduledRelease })
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -127,9 +132,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={StreamTrackAvailabilityType.SPECIAL_ACCESS}
-            disabled={noSpecialAccessGate}
+            disabled={disableSpecialAccessGate}
             checkedContent={
-              <SpecialAccessFields disabled={noSpecialAccessGateFields} />
+              <SpecialAccessFields disabled={disableSpecialAccessGateFields} />
             }
           />
         ) : null}
@@ -146,7 +151,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           label={messages.hidden}
           value={StreamTrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
-          disabled={noHidden}
+          disabled={disableHidden}
           // isInitiallyUnlisted is undefined on create
           // show hint on scheduled releases that are in create or already unlisted
           hintContent={

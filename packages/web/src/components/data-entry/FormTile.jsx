@@ -363,6 +363,7 @@ const AdvancedForm = (props) => {
       plays: props.defaultFields.field_visibility.play_count
     }
   }
+  console.log(props.defaultFields.is_scheduled_release)
 
   const [hideRemixes, setHideRemixes] = useState(
     !(props.defaultFields?.field_visibility?.remixes ?? true)

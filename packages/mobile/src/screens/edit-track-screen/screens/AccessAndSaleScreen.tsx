@@ -125,12 +125,12 @@ export const AccessAndSaleScreen = () => {
   }, [])
 
   const {
-    noUsdcGate: noUsdcGateOption,
-    noSpecialAccessGate,
-    noSpecialAccessGateFields,
-    noCollectibleGate,
-    noCollectibleGateFields,
-    noHidden
+    disableUsdcGate: disableUsdcGateOption,
+    disableSpecialAccessGate,
+    disableSpecialAccessGateFields,
+    disableCollectibleGate,
+    disableCollectibleGateFields,
+    disableHidden
   } = useAccessAndRemixSettings({
     isUpload,
     isRemix,
@@ -139,7 +139,7 @@ export const AccessAndSaleScreen = () => {
     isScheduledRelease
   })
 
-  const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
+  const disableUsdcGate = disableUsdcGateOption || !isUsdcUploadEnabled
 
   const [availability, setAvailability] =
     useState<StreamTrackAvailabilityType>(initialAvailability)
@@ -155,25 +155,25 @@ export const AccessAndSaleScreen = () => {
     { label: publicAvailability, value: publicAvailability },
     isUsdcEnabled
       ? {
-          label: premiumAvailability,
-          value: premiumAvailability,
-          disabled: noUsdcGate
-        }
+        label: premiumAvailability,
+        value: premiumAvailability,
+        disabled: disableUsdcGate
+      }
       : null,
     {
       label: specialAccessAvailability,
       value: specialAccessAvailability,
-      disabled: noSpecialAccessGate
+      disabled: disableSpecialAccessGate
     },
     {
       label: collectibleGatedAvailability,
       value: collectibleGatedAvailability,
-      disabled: noCollectibleGate
+      disabled: disableCollectibleGate
     },
     {
       label: hiddenAvailability,
       value: hiddenAvailability,
-      disabled: noHidden
+      disabled: disableHidden
     }
   ].filter(removeNullable)
 
@@ -189,8 +189,8 @@ export const AccessAndSaleScreen = () => {
     items[premiumAvailability] = (
       <PremiumRadioField
         selected={availability === StreamTrackAvailabilityType.USDC_PURCHASE}
-        disabled={noUsdcGate}
-        disabledContent={noUsdcGate}
+        disabled={disableUsdcGate}
+        disabledContent={disableUsdcGate}
         previousStreamConditions={previousStreamConditions}
       />
     )
@@ -199,8 +199,8 @@ export const AccessAndSaleScreen = () => {
   items[specialAccessAvailability] = (
     <SpecialAccessAvailability
       selected={availability === StreamTrackAvailabilityType.SPECIAL_ACCESS}
-      disabled={noSpecialAccessGate}
-      disabledContent={noSpecialAccessGateFields}
+      disabled={disableSpecialAccessGate}
+      disabledContent={disableSpecialAccessGateFields}
       previousStreamConditions={previousStreamConditions}
     />
   )
@@ -208,8 +208,8 @@ export const AccessAndSaleScreen = () => {
   items[collectibleGatedAvailability] = (
     <CollectibleGatedAvailability
       selected={availability === StreamTrackAvailabilityType.COLLECTIBLE_GATED}
-      disabled={noCollectibleGate}
-      disabledContent={noCollectibleGateFields}
+      disabled={disableCollectibleGate}
+      disabledContent={disableCollectibleGateFields}
       previousStreamConditions={previousStreamConditions}
     />
   )
@@ -217,7 +217,7 @@ export const AccessAndSaleScreen = () => {
   items[hiddenAvailability] = (
     <HiddenAvailability
       selected={availability === StreamTrackAvailabilityType.HIDDEN}
-      disabled={noHidden}
+      disabled={disableHidden}
       isScheduledRelease={isScheduledRelease}
       isUnlisted={isUnlisted}
     />
