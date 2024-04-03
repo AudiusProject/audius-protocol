@@ -67,9 +67,15 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isScheduledRelease
   } = props
 
-  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
+  const { isEnabled: isUsdcFlagUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
+  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
+  const isUsdcUploadEnabled = isAlbum
+    ? isPremiumAlbumsEnabled && isUsdcFlagUploadEnabled
+    : isUsdcFlagUploadEnabled
 
   const { isEnabled: isCollectibleGatedFlagEnabled } = useFlag(
     FeatureFlags.COLLECTIBLE_GATED_ENABLED
@@ -105,7 +111,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           description={messages.publicSubtitle}
           value={StreamTrackAvailabilityType.PUBLIC}
         />
-        {isUsdcEnabled ? (
+        {isUsdcUploadEnabled ? (
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}

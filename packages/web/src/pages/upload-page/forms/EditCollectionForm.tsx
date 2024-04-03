@@ -51,8 +51,12 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { tracks, uploadType, metadata } = formState
   const isAlbum = uploadType === UploadType.ALBUM
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
+  const { isEnabled: isUSDCUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
+  const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
   const initialValues: CollectionValues = {
     ...metadata,
@@ -119,7 +123,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           <ReleaseDateFieldLegacy />
-          {isAlbum && isPremiumAlbumsEnabled ? (
+          {isAlbum && showPremiumAlbums ? (
             <AccessAndSaleField isAlbum isUpload />
           ) : null}
           <div className={styles.trackDetails}>
