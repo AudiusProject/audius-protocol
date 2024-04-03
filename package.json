@@ -21,6 +21,7 @@
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
     "patch-package": "patch-package && patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
+    "publish-packages": "turbo run build lint test && changeset publish",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
     "turbo-link": "turbo login && turbo link",
@@ -93,11 +94,12 @@
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
-    "vike": "^0.4.150",
     "typescript": "5.0.4",
+    "vike": "^0.4.150",
     "wait-on": "7.2.0"
   },
   "dependencies": {
+    "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
     "pg": "8.8.0"
