@@ -71,13 +71,13 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
 
   useEffect(() => {
     const load = async () => {
+      setHasLoaded(true)
       let f = frameUrl
       if (!f && mediaType === CollectibleMediaType.GIF) {
         f = await getFrameFromGif(gifUrl!)
       } else if (!f && mediaType === CollectibleMediaType.ANIMATED_WEBP) {
         f = await getFrameFromAnimatedWebp(gifUrl!)
       } else if (!f && mediaType === CollectibleMediaType.VIDEO) {
-        setHasLoaded(true)
         setIsLoading(false)
         if (index !== undefined && onLoaded) {
           onLoaded(index)
@@ -88,7 +88,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
       if (f) {
         await preload(f)
         setFrame(f)
-        setHasLoaded(true)
         setIsLoading(false)
         if (index !== undefined && onLoaded) {
           onLoaded(index)
@@ -99,7 +98,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
       if (index !== undefined && onLoad) {
         onLoad(index)
       }
-      setIsLoading(true)
       load()
     }
   }, [
@@ -164,6 +162,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                     src={frame!}
                     preloaded={true}
                     className={styles.media}
+                    asBackground
                   />
                   <IconPlay className={styles.playIcon} />
                   {collectibleChainElement}
@@ -188,6 +187,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                     src={frame!}
                     preloaded={true}
                     className={styles.media}
+                    asBackground
                   />
                   {collectibleChainElement}
                 </div>
