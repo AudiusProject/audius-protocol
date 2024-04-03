@@ -310,15 +310,13 @@ const TrackTile = ({
         </div>
       ) : null}
       <div className={styles.body}>
-        <Flex inline direction='column'>
+        <Flex inline direction='column' h='100%' justifyContent='space-between'>
           {size === TrackTileSize.LARGE ? (
             <Text
               variant='label'
-              size='xs'
-              strength='weak'
+              strength='default'
               textAlign='left'
               color='subdued'
-              css={{ letterSpacing: 2.5, height: spacing.m }}
             >
               {isLoading || !header ? null : header}
             </Text>

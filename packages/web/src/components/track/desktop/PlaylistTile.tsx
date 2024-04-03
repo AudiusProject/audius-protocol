@@ -1,6 +1,6 @@
 import { memo, ReactNode, useCallback } from 'react'
 
-import { Scrollbar, IconArrowRight as IconArrow } from '@audius/harmony'
+import { Scrollbar, IconArrowRight as IconArrow, Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import {
@@ -126,25 +126,37 @@ const PlaylistTile = ({
       </TileTrackContainer>
       {renderTracks()}
       {renderMoreTracks()}
-      <BottomRow
-        hasStreamAccess={hasStreamAccess}
-        isDisabled={isDisabled}
-        isLoading={isLoading}
-        isFavorited={isFavorited}
-        isReposted={isReposted}
-        rightActions={rightActions}
-        bottomBar={bottomBar}
-        isUnlisted={isUnlisted}
-        isOwner={isOwner}
-        isDarkMode={isDarkMode}
-        isMatrixMode={isMatrixMode}
-        showIconButtons={showIconButtons}
-        onClickRepost={onClickRepost}
-        onClickFavorite={onClickFavorite}
-        onClickShare={onClickShare}
-        onClickGatedUnlockPill={onClickGatedUnlockPill}
-        streamConditions={streamConditions}
-      />
+      <Box
+        pv='s'
+        ph='m'
+        backgroundColor='white'
+        borderLeft='default'
+        borderRight='default'
+        borderBottom='default'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+        shadow='midInverted'
+      >
+        <BottomRow
+          hasStreamAccess={hasStreamAccess}
+          isDisabled={isDisabled}
+          isLoading={isLoading}
+          isFavorited={isFavorited}
+          isReposted={isReposted}
+          rightActions={rightActions}
+          bottomBar={bottomBar}
+          isUnlisted={isUnlisted}
+          isOwner={isOwner}
+          isDarkMode={isDarkMode}
+          isMatrixMode={isMatrixMode}
+          showIconButtons={showIconButtons}
+          onClickRepost={onClickRepost}
+          onClickFavorite={onClickFavorite}
+          onClickShare={onClickShare}
+          onClickGatedUnlockPill={onClickGatedUnlockPill}
+          streamConditions={streamConditions}
+        />
+      </Box>
     </div>
   )
 }
