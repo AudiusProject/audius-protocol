@@ -192,13 +192,13 @@ def get_feed_sql(args):
                 oldest_followee_repost_timestamp,
             ) in followee_reposts:
                 if repost_type == RepostType.track:
-                    track_repost_timestamp_dict[
-                        repost_item_id
-                    ] = oldest_followee_repost_timestamp
+                    track_repost_timestamp_dict[repost_item_id] = (
+                        oldest_followee_repost_timestamp
+                    )
                 elif repost_type in (RepostType.playlist, RepostType.album):
-                    playlist_repost_timestamp_dict[
-                        repost_item_id
-                    ] = oldest_followee_repost_timestamp
+                    playlist_repost_timestamp_dict[repost_item_id] = (
+                        oldest_followee_repost_timestamp
+                    )
 
             # extract reposted_track_ids and reposted_playlist_ids
             reposted_track_ids = list(track_repost_timestamp_dict.keys())
@@ -278,18 +278,18 @@ def get_feed_sql(args):
             if track["owner_id"] in followee_user_ids:
                 track[response_name_constants.activity_timestamp] = track["created_at"]
             else:
-                track[
-                    response_name_constants.activity_timestamp
-                ] = track_repost_timestamp_dict[track["track_id"]]
+                track[response_name_constants.activity_timestamp] = (
+                    track_repost_timestamp_dict[track["track_id"]]
+                )
         for playlist in playlists:
             if playlist["playlist_owner_id"] in followee_user_ids:
                 playlist[response_name_constants.activity_timestamp] = playlist[
                     "created_at"
                 ]
             else:
-                playlist[
-                    response_name_constants.activity_timestamp
-                ] = playlist_repost_timestamp_dict[playlist["playlist_id"]]
+                playlist[response_name_constants.activity_timestamp] = (
+                    playlist_repost_timestamp_dict[playlist["playlist_id"]]
+                )
 
         # bundle peripheral info into track and playlist objects
         track_ids = list(map(lambda track: track["track_id"], tracks))

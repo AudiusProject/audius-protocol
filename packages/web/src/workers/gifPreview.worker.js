@@ -12,19 +12,18 @@ export default () => {
     })
       .then((img) => {
         // eslint-disable-next-line
-        self.console.log(imageUrl, img)
         const mimeType = 'image/jpeg'
         img.getBufferAsync(mimeType).then((buffer) => {
           // eslint-disable-next-line
           let convertedBlob = new self.Blob([buffer], { type: mimeType })
           // eslint-disable-next-line
-          postMessage({key, result: convertedBlob})
+          postMessage({ key, result: convertedBlob })
         })
       })
       .catch((err) => {
         console.error(imageUrl, err)
         // eslint-disable-next-line
-        postMessage({key, result: new Blob()})
+        postMessage({ key, result: new Blob() })
       })
   }
 

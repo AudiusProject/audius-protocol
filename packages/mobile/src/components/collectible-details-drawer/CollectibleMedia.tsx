@@ -65,6 +65,12 @@ export const CollectibleMedia = (props: CollectibleMediaProps) => {
         style={styles.container as ImageStyle}
       />
     ),
+    [CollectibleMediaType.ANIMATED_WEBP]: () => (
+      <AutoSizeImage
+        source={{ uri: gifUrl ?? undefined }}
+        style={styles.container as ImageStyle}
+      />
+    ),
     [CollectibleMediaType.VIDEO]: () => (
       <TouchableWithoutFeedback onPress={toggleMute}>
         <View>

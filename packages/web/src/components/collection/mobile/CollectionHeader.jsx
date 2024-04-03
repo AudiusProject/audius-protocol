@@ -35,7 +35,8 @@ const messages = {
   hiddenPlaylist: 'Hidden Playlist',
   publishing: 'Publishing...',
   play: 'PLAY',
-  pause: 'PAUSE'
+  pause: 'PAUSE',
+  coverArtAltText: 'Collection Cover Art'
 }
 
 const Loading = (props) => {
@@ -212,6 +213,7 @@ const CollectionHeader = ({
             cid={collection?.cover_art_sizes}
             size={SquareSizes.SIZE_480_BY_480}
             fallbackImageUrl={imageBlank}
+            alt={messages.coverArtAltText}
             wrapperClassName={styles.coverArt}
             image={gradient || imageOverride || image}
           >

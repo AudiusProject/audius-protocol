@@ -6,7 +6,6 @@ Ported from https://github.com/hareeshnagaraj/py-multihash
 
 """
 
-
 from io import BytesIO
 from typing import Tuple
 

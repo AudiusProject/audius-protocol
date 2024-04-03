@@ -4,6 +4,7 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
+from src.models.tracks.track import Track
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,52 @@ def test_track_create_notification_on_track_update(app):
             session.query(Notification).filter(Notification.type == "create").all()
         )
         assert len(notifications) == 0
+
+
+def test_track_create_notification_on_track_publish(app):
+    with app.app_context():
+        db = get_db()
+
+    entities = {
+        "users": [{"user_id": i + 1} for i in range(5)],
+        "subscriptions": [{"subscriber_id": i, "user_id": 1} for i in range(1, 5)],
+    }
+    populate_mock_db(db, entities)
+    track_20_datetime = datetime.now() - timedelta(days=3)
+    entities = {
+        "tracks": [
+            {
+                "track_id": 20,
+                "owner_id": 1,
+                "is_unlisted": True,
+                "is_scheduled_release": True,
+                "release_date": track_20_datetime + timedelta(days=2),
+                "created_at": track_20_datetime,
+                "updated_at": track_20_datetime + timedelta(days=1),
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        tracks_to_release = (
+            session.query(Track)
+            .filter(
+                Track.is_unlisted == True,
+                Track.is_scheduled_release == True,
+                Track.release_date < datetime.now(),
+            )
+            .all()
+        )
+
+        assert len(tracks_to_release) == 1
+        tracks_to_release[0].is_unlisted = False
+
+        notifications: List[Notification] = (
+            session.query(Notification).filter(Notification.type == "create").all()
+        )
+        assert len(notifications) == 1
+        assert len(notifications[0].user_ids) == 4
 
 
 def test_track_create_notification_on_track_creation(app):

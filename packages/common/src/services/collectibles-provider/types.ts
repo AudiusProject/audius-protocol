@@ -58,3 +58,13 @@ export type StarAtlasNFT = {
 }
 
 export type SolanaNFT = HeliusNFT | MetaplexNFT | StarAtlasNFT
+
+export type Blocklist = {
+  blocklist: string[] // list of urls
+  nftBlocklist: string[] // list of nft ids
+  stringFilters: {
+    nameContains: string[]
+    symbolContains: string[]
+  }
+  contentHash: string
+}

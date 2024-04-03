@@ -1,14 +1,20 @@
 import { Connection, PublicKey } from '@solana/web3.js'
 
 import { Collectible, CollectibleState } from '~/models'
-import { allSettled } from '~/utils'
+import { Nullable, allSettled } from '~/utils'
 
 import { HeliusClient } from '../helius'
 import { HeliusNFT } from '../helius/types'
 
 import { CollectiblesProvider } from './CollectiblesProvider'
-import { solanaNFTToCollectible } from './solCollectibleHelpers'
-import { SolanaNFTType } from './types'
+import {
+  isHeliusNFTValid,
+  solanaNFTToCollectible
+} from './solCollectibleHelpers'
+import { Blocklist, SolanaNFTType } from './types'
+
+const BLOCKLIST_URL =
+  'https://raw.githubusercontent.com/solflare-wallet/blocklist-automation/master/dist/blocklist.json'
 
 type SolanaCollectiblesProviderCtorArgs = {
   heliusClient: HeliusClient
@@ -18,8 +24,9 @@ type SolanaCollectiblesProviderCtorArgs = {
 
 export class SolanaCollectiblesProvider implements CollectiblesProvider {
   private readonly heliusClient: HeliusClient
-  private metadataProgramIdPublicKey: PublicKey
-  private connection: Connection | null = null
+  private readonly metadataProgramIdPublicKey: PublicKey
+  private readonly connection: Nullable<Connection> = null
+  private blocklist: Nullable<Blocklist> = null
 
   constructor({
     heliusClient,
@@ -39,6 +46,15 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
   }
 
   async getCollectibles(wallets: string[]): Promise<CollectibleState> {
+    if (!this.blocklist) {
+      try {
+        const blocklistResponse = await fetch(BLOCKLIST_URL)
+        this.blocklist = await blocklistResponse.json()
+      } catch (e) {
+        console.error('Could not fetch Solana nft blocklist', e)
+      }
+    }
+
     const results = await allSettled(
       wallets.map((wallet) => this.heliusClient.getNFTsForWallet(wallet))
     )
@@ -62,6 +78,12 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
         }
       )
       .map(({ result, wallet }) => {
+        const blocklist = this.blocklist
+        if (blocklist) {
+          return result.value
+            .filter((nft) => isHeliusNFTValid(nft, blocklist))
+            .map((nft) => ({ ...nft, wallet }))
+        }
         return result.value.map((nft) => ({ ...nft, wallet }))
       })
 
@@ -97,15 +119,19 @@ export class SolanaCollectiblesProvider implements CollectiblesProvider {
           })
         )
         const collectibles = await Promise.all(
-          nftsForWallet.map(
-            async (nft, i) =>
-              await solanaNFTToCollectible(
+          nftsForWallet.map(async (nft, i) => {
+            try {
+              const toCollectible = await solanaNFTToCollectible(
                 nft,
                 wallet,
                 SolanaNFTType.HELIUS,
                 chainMetadatas[i]
               )
-          )
+              return toCollectible
+            } catch (e) {
+              return null
+            }
+          })
         )
         return collectibles.filter(Boolean) as Collectible[]
       })

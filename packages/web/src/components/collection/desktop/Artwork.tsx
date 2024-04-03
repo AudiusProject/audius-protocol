@@ -21,7 +21,8 @@ const { getCollection } = cacheCollectionsSelectors
 const messages = {
   addArtwork: 'Add Artwork',
   changeArtwork: 'Change Artwork',
-  removeArtwork: 'Remove Artwork'
+  removeArtwork: 'Remove Artwork',
+  coverArtAltText: 'Collection Cover Art'
 }
 
 type ArtworkProps = {
@@ -82,6 +83,7 @@ export const Artwork = (props: ArtworkProps) => {
       cid={collection?.cover_art_sizes}
       fallbackImageUrl={imageBlank}
       wrapperClassName={styles.coverArtWrapper}
+      alt={messages.coverArtAltText}
       className={styles.coverArt}
       image={gradient || imageOverride || image}
     >
