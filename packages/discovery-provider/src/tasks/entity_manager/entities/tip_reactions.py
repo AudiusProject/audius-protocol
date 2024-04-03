@@ -1,5 +1,6 @@
 from src.exceptions import IndexingValidationError
 from src.models.social.reaction import Reaction
+from src.queries.get_tips import GetTipsArgs, get_tips
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.structured_logger import StructuredLogger
 
@@ -38,9 +39,17 @@ def tip_reaction(params: ManageEntityParameters):
         reacted_to = metadata.get("reactedTo")
         reaction_value = metadata.get("reactionValue")
 
+        logger.info(f"Creating reaction {reaction_value} for reactedTo: {reacted_to}")
+
+        tips_args = GetTipsArgs(tx_signatures=[reacted_to])
+        tips = get_tips(tips_args)
+        if not tips:
+            raise IndexingValidationError(f"tip for {reacted_to} not found")
+        tip = tips[0]
+
         # query solana for remaining info
-        slot = ""
-        sender_wallet = ""
+        slot = tip.get("slot")
+        sender_wallet = tip.get("sender")
         reaction_type = "tip"
 
         reaction = Reaction(
