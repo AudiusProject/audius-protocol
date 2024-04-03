@@ -16,7 +16,6 @@ import {
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
 
 const { fetchAiUser, reset } = aiPageActions
 const { getAiUser } = aiPageSelectors
@@ -42,7 +41,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
   const styles = useStyles()
-  const { neutral } = useThemeColors()
   const navigation = useNavigation()
 
   const dispatch = useDispatch()
@@ -69,7 +67,12 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
       </Flex>
       <Text variant='body' size='s'>
         {messages.description}
-        <TextLink variant='visible'>{user.name}</TextLink>
+        <TextLink
+          variant='visible'
+          to={{ screen: 'Profile', params: { id: user.user_id } }}
+        >
+          {user.name}
+        </TextLink>
         <UserBadges user={user} hideName style={styles.badges} badgeSize={12} />
       </Text>
       <PlainButton
