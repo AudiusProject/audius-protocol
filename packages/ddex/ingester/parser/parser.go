@@ -153,10 +153,7 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 	case string(common.Common14AudioAlbumMusicOnly):
 		releaseProfile = common.Common14AudioAlbumMusicOnly
 	default:
-		// TODO: this isn't supporting the Sony example (empty release profile version ID), but maybe that's fine because the example isn't for us
-		err = fmt.Errorf("unsupported release profile: '%s'", releaseProfileVersionIDStr)
-		unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-		return nil, err
+		releaseProfile = common.UnspecifiedReleaseProfile
 	}
 
 	release := &common.Release{

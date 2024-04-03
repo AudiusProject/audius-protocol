@@ -225,103 +225,111 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 			}
 		*/
 	case common.Common14AudioAlbumMusicOnly:
-		// Verify mainRelease.profile is an album or EP, and find supporting TrackReleases
-		if mainRelease.ReleaseType != common.AlbumReleaseType && mainRelease.ReleaseType != common.EPReleaseType {
-			errs = append(errs, fmt.Errorf("expected Album or EP release type for main release"))
-			return
-		}
-		if len(release.ParsedReleaseElems) < 2 {
-			errs = append(errs, fmt.Errorf("expected Album or EP to have at least 2 release elements"))
-			return
-		}
-
-		// Build slice of TrackMetadata from each TrackRelease in this album
-		tracks := make([]common.TrackMetadata, 0)
-		for _, parsedReleaseElem := range release.ParsedReleaseElems {
-			if parsedReleaseElem.IsMainRelease {
-				continue
-			}
-			if parsedReleaseElem.ReleaseType != common.TrackReleaseType {
-				errs = append(errs, fmt.Errorf("expected TrackRelease release type for release ref %s", parsedReleaseElem.ReleaseRef))
-				return
-			}
-			if parsedReleaseElem.Resources.Tracks == nil || len(parsedReleaseElem.Resources.Tracks) == 0 {
-				errs = append(errs, fmt.Errorf("no tracks found for release %s", parsedReleaseElem.ReleaseRef))
-				return
-			}
-			if len(parsedReleaseElem.Resources.Tracks) > 1 {
-				errs = append(errs, fmt.Errorf("expected only one track for release %s", parsedReleaseElem.ReleaseRef))
-				return
-			}
-
-			track := parsedReleaseElem.Resources.Tracks[0]
-			if track.ArtistID == "" {
-				track.ArtistID = parsedReleaseElem.ArtistID
-			}
-			if track.ArtistName == "" {
-				track.ArtistName = parsedReleaseElem.ArtistName
-			}
-			if track.CopyrightLine == nil {
-				track.CopyrightLine = parsedReleaseElem.CopyrightLine
-			}
-			if track.ProducerCopyrightLine == nil {
-				track.ProducerCopyrightLine = parsedReleaseElem.ProducerCopyrightLine
-			}
-			if track.ParentalWarningType == nil {
-				track.ParentalWarningType = parsedReleaseElem.ParentalWarningType
-			}
-
-			tracks = append(tracks, track)
-		}
-
-		// Album is required to have a genre in its metadata (not just a genre per track)
-		if mainRelease.Genre == "" {
-			errs = append(errs, fmt.Errorf("missing genre for release %s", mainRelease.ReleaseRef))
-			return
-		}
-
-		// Album is required to have a cover art image
-		if mainRelease.Resources.Images == nil || len(mainRelease.Resources.Images) == 0 || mainRelease.Resources.Images[0].URL == "" {
-			errs = append(errs, fmt.Errorf("missing cover art image for release %s", mainRelease.ReleaseRef))
-			return
-		}
-
-		isAlbum := true // Also true for EPs. This could be false in the future if we support playlists
-
-		releaseIDs := mainRelease.ReleaseIDs
-		release.SDKUploadMetadata = common.SDKUploadMetadata{
-			ReleaseDate:           mainRelease.ReleaseDate,
-			Genre:                 mainRelease.Genre,
-			Artists:               mainRelease.Artists,
-			Tags:                  nil,
-			DDEXReleaseIDs:        &releaseIDs,
-			CopyrightLine:         mainRelease.CopyrightLine,
-			ProducerCopyrightLine: mainRelease.ProducerCopyrightLine,
-			ParentalWarningType:   mainRelease.ParentalWarningType,
-			CoverArtURL:           mainRelease.Resources.Images[0].URL,
-			CoverArtURLHash:       stringPtr(mainRelease.Resources.Images[0].URLHash),
-			CoverArtURLHashAlgo:   stringPtr(mainRelease.Resources.Images[0].URLHashAlgo),
-
-			Tracks:            tracks,
-			PlaylistName:      &mainRelease.DisplayTitle,
-			PlaylistOwnerID:   &mainRelease.ArtistID,
-			PlaylistOwnerName: &mainRelease.ArtistName,
-			IsAlbum:           &isAlbum,
-
-			// Fields we don't know the value for (except IsPrivate should come from parsing DealList)
-			// Description:           "",
-			// Mood:                  nil,
-			// License:               nil,
-			// IsPrivate:         nil,
-			// UPC:               nil,
-		}
-
+		buildAlbumMetadata(release, mainRelease, &errs)
 	case common.UnspecifiedReleaseProfile:
-		// TODO: Allow this to work for the Sony example, which doesn't specify a profile
-		errs = append(errs, fmt.Errorf("unsupported release profile: %s", release.ReleaseProfile))
+		// The Sony ZIP example doesn't specify a profile, so we have to infer the type from the main release element
+		if mainRelease.ReleaseType == common.AlbumReleaseType {
+			buildAlbumMetadata(release, mainRelease, &errs)
+		} else {
+			errs = append(errs, fmt.Errorf("only Album is supported when no release profile is specified"))
+			return
+		}
 	}
 
 	return
+}
+
+func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedReleaseElement, errs *[]error) {
+	// Verify mainRelease.profile is an album or EP, and find supporting TrackReleases
+	if mainRelease.ReleaseType != common.AlbumReleaseType && mainRelease.ReleaseType != common.EPReleaseType {
+		*errs = append(*errs, fmt.Errorf("expected Album or EP release type for main release"))
+		return
+	}
+	if len(release.ParsedReleaseElems) < 2 {
+		*errs = append(*errs, fmt.Errorf("expected Album or EP to have at least 2 release elements"))
+		return
+	}
+
+	// Build slice of TrackMetadata from each TrackRelease in this album
+	tracks := make([]common.TrackMetadata, 0)
+	for _, parsedReleaseElem := range release.ParsedReleaseElems {
+		if parsedReleaseElem.IsMainRelease {
+			continue
+		}
+		if parsedReleaseElem.ReleaseType != common.TrackReleaseType {
+			*errs = append(*errs, fmt.Errorf("expected TrackRelease release type for release ref %s", parsedReleaseElem.ReleaseRef))
+			return
+		}
+		if parsedReleaseElem.Resources.Tracks == nil || len(parsedReleaseElem.Resources.Tracks) == 0 {
+			*errs = append(*errs, fmt.Errorf("no tracks found for release %s", parsedReleaseElem.ReleaseRef))
+			return
+		}
+		if len(parsedReleaseElem.Resources.Tracks) > 1 {
+			*errs = append(*errs, fmt.Errorf("expected only one track for release %s", parsedReleaseElem.ReleaseRef))
+			return
+		}
+
+		track := parsedReleaseElem.Resources.Tracks[0]
+		if track.ArtistID == "" {
+			track.ArtistID = parsedReleaseElem.ArtistID
+		}
+		if track.ArtistName == "" {
+			track.ArtistName = parsedReleaseElem.ArtistName
+		}
+		if track.CopyrightLine == nil {
+			track.CopyrightLine = parsedReleaseElem.CopyrightLine
+		}
+		if track.ProducerCopyrightLine == nil {
+			track.ProducerCopyrightLine = parsedReleaseElem.ProducerCopyrightLine
+		}
+		if track.ParentalWarningType == nil {
+			track.ParentalWarningType = parsedReleaseElem.ParentalWarningType
+		}
+
+		tracks = append(tracks, track)
+	}
+
+	// Album is required to have a genre in its metadata (not just a genre per track)
+	if mainRelease.Genre == "" {
+		*errs = append(*errs, fmt.Errorf("missing genre for release %s", mainRelease.ReleaseRef))
+		return
+	}
+
+	// Album is required to have a cover art image
+	if mainRelease.Resources.Images == nil || len(mainRelease.Resources.Images) == 0 || mainRelease.Resources.Images[0].URL == "" {
+		*errs = append(*errs, fmt.Errorf("missing cover art image for release %s", mainRelease.ReleaseRef))
+		return
+	}
+
+	isAlbum := true // Also true for EPs. This could be false in the future if we support playlists
+
+	releaseIDs := mainRelease.ReleaseIDs
+	release.SDKUploadMetadata = common.SDKUploadMetadata{
+		ReleaseDate:           mainRelease.ReleaseDate,
+		Genre:                 mainRelease.Genre,
+		Artists:               mainRelease.Artists,
+		Tags:                  nil,
+		DDEXReleaseIDs:        &releaseIDs,
+		CopyrightLine:         mainRelease.CopyrightLine,
+		ProducerCopyrightLine: mainRelease.ProducerCopyrightLine,
+		ParentalWarningType:   mainRelease.ParentalWarningType,
+		CoverArtURL:           mainRelease.Resources.Images[0].URL,
+		CoverArtURLHash:       stringPtr(mainRelease.Resources.Images[0].URLHash),
+		CoverArtURLHashAlgo:   stringPtr(mainRelease.Resources.Images[0].URLHashAlgo),
+
+		Tracks:            tracks,
+		PlaylistName:      &mainRelease.DisplayTitle,
+		PlaylistOwnerID:   &mainRelease.ArtistID,
+		PlaylistOwnerName: &mainRelease.ArtistName,
+		IsAlbum:           &isAlbum,
+
+		// Fields we don't know the value for (except IsPrivate should come from parsing DealList)
+		// Description:           "",
+		// Mood:                  nil,
+		// License:               nil,
+		// IsPrivate:         nil,
+		// UPC:               nil,
+	}
 }
 
 // processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
