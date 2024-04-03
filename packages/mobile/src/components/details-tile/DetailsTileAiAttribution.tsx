@@ -2,12 +2,10 @@ import { useEffect } from 'react'
 
 import type { ID } from '@audius/common/models'
 import { aiPageActions, aiPageSelectors } from '@audius/common/store'
-import { View } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconRobot } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { Flex, Text, IconRobot } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -23,24 +21,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  root: {
-    gap: spacing(2),
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight7,
-    paddingBottom: spacing(4),
-    marginBottom: spacing(4)
-  },
-  title: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing(2)
-  },
-  titleText: {
-    textTransform: 'uppercase',
-    fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.bold,
-    lineHeight: typography.fontSize.small * 1.3
-  },
   description: {
     fontSize: typography.fontSize.small,
     lineHeight: typography.fontSize.small * 1.3
@@ -81,19 +61,25 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
   }
 
   return user ? (
-    <View style={styles.root}>
-      <View style={styles.title}>
+    <Flex borderBottom='strong' gap='s' pb='l'>
+      <Flex direction='row' alignItems='center' gap='s'>
         <IconRobot fill={neutral} />
-        <Text style={styles.titleText}>{messages.title}</Text>
-      </View>
-      <Text style={styles.description}>
+        <Text variant='label' textTransform='uppercase'>
+          {messages.title}
+        </Text>
+      </Flex>
+      <Text variant='body' size='s'>
         {messages.description}
-        <Text style={styles.userBadgeTitle}>{user.name}</Text>
+        <Text variant='body' color='accent' size='s'>
+          {user.name}
+        </Text>
         <UserBadges user={user} hideName style={styles.badges} badgeSize={12} />
       </Text>
       <TouchableWithoutFeedback onPress={handleViewMorePress}>
-        <Text style={styles.viewMore}>{messages.viewMore}</Text>
+        <Text size='s' color='accent' variant='body'>
+          {messages.viewMore}
+        </Text>
       </TouchableWithoutFeedback>
-    </View>
+    </Flex>
   ) : null
 }
