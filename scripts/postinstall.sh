@@ -16,9 +16,9 @@ npm run patch-package > /dev/null
 
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 
-  mobile_directory="/packages/mobile"
+  mobile_directory="./packages/mobile"
   # packages/mobile won't necessarily exist on installs using `turbo prune`
-  if [ ! -d "$mobile_directory" ]; then
+  if [ -d "$mobile_directory" ]; then
     printf "${GREEN}Installing cocoapods...\n${NC}"
     {
       # Symlink react-native into the mobile package bc npm doesn't
