@@ -236,6 +236,7 @@ type SDKUploadMetadata struct {
 
 	// Only for tracks
 	Title                        NullableString        `bson:"title,omitempty"`
+	ArtistID                     NullableString        `bson:"artist_id,omitempty"`
 	Duration                     int                   `bson:"duration"`
 	PreviewStartSeconds          NullableInt           `bson:"preview_start_seconds,omitempty"`
 	ISRC                         NullableString        `bson:"isrc,omitempty"`
