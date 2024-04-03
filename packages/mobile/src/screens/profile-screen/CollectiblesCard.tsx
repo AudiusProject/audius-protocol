@@ -9,7 +9,7 @@ import {
 } from '@audius/common/store'
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'
-import { SvgUri } from 'react-native-svg'
+import { SvgUri, SvgXml } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconPlay } from '@audius/harmony-native'
@@ -71,45 +71,85 @@ const CollectibleImage = (props: CollectibleImageProps) => {
 
   const isUriNumber = typeof uri === 'number'
   const isSvg = isUriNumber ? false : !!uri.match(/.*\.svg$/)
+  const isSvgXml = isUriNumber ? false : !!uri.match(/data:image\/svg\+xml.*/)
 
   const [size, setSize] = useState(0)
   const [hasLoaded, setHasLoaded] = useState(false)
 
-  return isSvg ? (
-    <View
-      onLayout={(e) => {
-        setSize(e.nativeEvent.layout.width)
-      }}
-    >
-      <SvgUri
-        height={size}
-        width={size}
-        uri={uri}
-        style={{ borderRadius: 8, overflow: 'hidden' }}
-        onLoad={() => setHasLoaded(true)}
+  if (isSvg) {
+    return (
+      <View
+        onLayout={(e) => {
+          setSize(e.nativeEvent.layout.width)
+        }}
       >
-        {hasLoaded ? (
-          children
-        ) : (
-          <Skeleton
-            width={'100%'}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0
-            }}
-          />
-        )}
-      </SvgUri>
-    </View>
-  ) : (
+        <SvgUri
+          height={size}
+          width={size}
+          uri={uri}
+          style={{ borderRadius: 8, overflow: 'hidden' }}
+          onLoad={() => setHasLoaded(true)}
+        >
+          {hasLoaded ? (
+            children
+          ) : (
+            <Skeleton
+              width={'100%'}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
+            />
+          )}
+        </SvgUri>
+      </View>
+    )
+  } else if (isSvgXml) {
+    return (
+      <View
+        onLayout={(e) => {
+          setSize(e.nativeEvent.layout.width)
+        }}
+      >
+        <SvgXml
+          height={size}
+          width={size}
+          xml={atob(uri)}
+          style={{ borderRadius: 8, overflow: 'hidden' }}
+          onLoad={() => setHasLoaded(true)}
+        >
+          {hasLoaded ? (
+            children
+          ) : (
+            <Skeleton
+              width={'100%'}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
+            />
+          )}
+        </SvgXml>
+      </View>
+    )
+  }
+
+  return (
     <ImageBackground
       style={style}
-      source={{
-        uri
-      }}
+      source={
+        isUriNumber
+          ? uri
+          : {
+              uri
+            }
+      }
       onLoad={() => setHasLoaded(true)}
     >
       {hasLoaded ? (
@@ -151,6 +191,8 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
   }, [dispatch, collectible, accountId, ownerId])
 
   const url = frameUrl ?? gifUrl
+
+  if (!url) return null
 
   return (
     <CollectiblesCardErrorBoundary>
