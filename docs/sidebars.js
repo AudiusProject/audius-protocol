@@ -32,6 +32,7 @@ module.exports = {
       label: 'Introduction',
       items: [
         'developers/introduction/overview',
+        'developers/sdk/create-audius-app-react',
         // 'developers/introduction/resources'
       ],
       collapsed: false,
