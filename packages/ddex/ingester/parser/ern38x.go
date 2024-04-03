@@ -84,6 +84,7 @@ type ResourceType string
 
 const ResourceTypeSoundRecording ResourceType = "SoundRecording"
 const ResourceTypeImage ResourceType = "Image"
+const ResourceTypeUnspecified ResourceType = "Unspecified"
 
 var resourceTypes = map[string]ResourceType{
 	"SoundRecording": ResourceTypeSoundRecording,
@@ -183,53 +184,15 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 	// Create metadata to use in the Audius SDK's upload based on release type
 	switch release.ReleaseProfile {
 	case common.Common13AudioSingle:
-		// Verify mainRelease.profile is a single, and find supporting TrackRelease
-		if mainRelease.ReleaseType != common.SingleReleaseType {
-			errs = append(errs, fmt.Errorf("expected Single release type for main release"))
-			return
-		}
-		if len(release.ParsedReleaseElems) != 2 {
-			errs = append(errs, fmt.Errorf("expected Single to have at exactly 2 release elements, got %d", len(release.ParsedReleaseElems)))
-			return
-		}
-		// TODO: Set release.SDKUploadMetadata for a Single (just use the TrackRelease and ignore the main release which would normally appear as an album with 1 track if Audius supported Singles)
-		/**
-		if track.Title == "" {
-				if parsedReleaseElem.DisplayTitle == "" {
-					errs = append(errs, fmt.Errorf("missing title for release %s", parsedReleaseElem.ReleaseRef))
-					return
-				}
-				track.Title = parsedReleaseElem.DisplayTitle
-			}
-
-			if track.ISRC == nil || *track.ISRC == "" {
-				if *parsedReleaseElem.ISRC == "" {
-					errs = append(errs, fmt.Errorf("missing isrc for %s", parsedReleaseElem.ReleaseRef))
-					return
-				}
-				track.ISRC = parsedReleaseElem.ISRC
-			} else {
-				if *track.ISRC != *parsedReleaseElem.ISRC {
-					// Use the ISRC from the SoundRecording if it differs from the Release ISRC
-					track.DDEXReleaseIDs.ISRC = *parsedReleaseElem.ISRC
-				}
-			}
-
-			// Track could have a genre in its SoundRecording. If not, fall back to the genre in its Release element
-			if track.Genre == "" {
-				if parsedReleaseElem.Genre == "" {
-					errs = append(errs, fmt.Errorf("no genre match for", parsedReleaseElem.ReleaseRef))
-					return
-				}
-				track.Genre = parsedReleaseElem.Genre
-			}
-		*/
+		buildSingleMetadata(release, mainRelease, &errs)
 	case common.Common14AudioAlbumMusicOnly:
 		buildAlbumMetadata(release, mainRelease, &errs)
 	case common.UnspecifiedReleaseProfile:
 		// The Sony ZIP example doesn't specify a profile, so we have to infer the type from the main release element
 		if mainRelease.ReleaseType == common.AlbumReleaseType {
 			buildAlbumMetadata(release, mainRelease, &errs)
+		} else if mainRelease.ReleaseType == common.SingleReleaseType {
+			buildSingleMetadata(release, mainRelease, &errs)
 		} else {
 			errs = append(errs, fmt.Errorf("only Album is supported when no release profile is specified"))
 			return
@@ -239,19 +202,17 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 	return
 }
 
-func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedReleaseElement, errs *[]error) {
-	// Verify mainRelease.profile is an album or EP, and find supporting TrackReleases
-	if mainRelease.ReleaseType != common.AlbumReleaseType && mainRelease.ReleaseType != common.EPReleaseType {
-		*errs = append(*errs, fmt.Errorf("expected Album or EP release type for main release"))
+func buildSingleMetadata(release *common.Release, mainRelease *common.ParsedReleaseElement, errs *[]error) {
+	// Verify mainRelease.profile is a single, and find supporting TrackRelease
+	if mainRelease.ReleaseType != common.SingleReleaseType {
+		*errs = append(*errs, fmt.Errorf("expected Single release type for main release"))
 		return
 	}
-	if len(release.ParsedReleaseElems) < 2 {
-		*errs = append(*errs, fmt.Errorf("expected Album or EP to have at least 2 release elements"))
+	if len(release.ParsedReleaseElems) != 2 {
+		*errs = append(*errs, fmt.Errorf("expected Single to have at exactly 2 release elements, got %d", len(release.ParsedReleaseElems)))
 		return
 	}
 
-	// Build slice of TrackMetadata from each TrackRelease in this album
-	tracks := make([]common.TrackMetadata, 0)
 	for _, parsedReleaseElem := range release.ParsedReleaseElems {
 		if parsedReleaseElem.IsMainRelease {
 			continue
@@ -268,25 +229,67 @@ func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedRelea
 			*errs = append(*errs, fmt.Errorf("expected only one track for release %s", parsedReleaseElem.ReleaseRef))
 			return
 		}
+	}
 
-		track := parsedReleaseElem.Resources.Tracks[0]
-		if track.ArtistID == "" {
-			track.ArtistID = parsedReleaseElem.ArtistID
-		}
-		if track.ArtistName == "" {
-			track.ArtistName = parsedReleaseElem.ArtistName
-		}
-		if track.CopyrightLine == nil {
-			track.CopyrightLine = parsedReleaseElem.CopyrightLine
-		}
-		if track.ProducerCopyrightLine == nil {
-			track.ProducerCopyrightLine = parsedReleaseElem.ProducerCopyrightLine
-		}
-		if track.ParentalWarningType == nil {
-			track.ParentalWarningType = parsedReleaseElem.ParentalWarningType
-		}
+	// Single just has one track
+	tracks, err := buildSupportingTracks(release)
+	if err != nil {
+		*errs = append(*errs, err)
+		return
+	}
 
-		tracks = append(tracks, track)
+	releaseIDs := tracks[0].DDEXReleaseIDs
+	release.SDKUploadMetadata = common.SDKUploadMetadata{
+		ReleaseDate:           tracks[0].ReleaseDate,
+		Genre:                 tracks[0].Genre,
+		Artists:               tracks[0].Artists,
+		Tags:                  nil,
+		DDEXReleaseIDs:        &releaseIDs,
+		CopyrightLine:         tracks[0].CopyrightLine,
+		ProducerCopyrightLine: tracks[0].ProducerCopyrightLine,
+		ParentalWarningType:   tracks[0].ParentalWarningType,
+
+		// For singles, we have to use cover art from the main release because the TrackRelease doesn't have cover art
+		CoverArtURL:         mainRelease.Resources.Images[0].URL,
+		CoverArtURLHash:     stringPtr(mainRelease.Resources.Images[0].URLHash),
+		CoverArtURLHashAlgo: stringPtr(mainRelease.Resources.Images[0].URLHashAlgo),
+
+		Title:                        &tracks[0].Title,
+		ArtistID:                     &tracks[0].ArtistID,
+		Duration:                     tracks[0].Duration,
+		PreviewStartSeconds:          tracks[0].PreviewStartSeconds,
+		ISRC:                         tracks[0].ISRC,
+		ResourceContributors:         tracks[0].ResourceContributors,
+		IndirectResourceContributors: tracks[0].IndirectResourceContributors,
+		RightsController:             tracks[0].RightsController,
+		PreviewAudioFileURL:          stringPtr(tracks[0].PreviewAudioFileURL),
+		PreviewAudioFileURLHash:      stringPtr(tracks[0].PreviewAudioFileURLHash),
+		PreviewAudioFileURLHashAlgo:  stringPtr(tracks[0].PreviewAudioFileURLHashAlgo),
+		AudioFileURL:                 stringPtr(tracks[0].AudioFileURL),
+		AudioFileURLHash:             stringPtr(tracks[0].AudioFileURLHash),
+		AudioFileURLHashAlgo:         stringPtr(tracks[0].AudioFileURLHash),
+	}
+
+	if release.SDKUploadMetadata.ReleaseDate.IsZero() {
+		release.SDKUploadMetadata.ReleaseDate = release.PublishDate
+	}
+}
+
+func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedReleaseElement, errs *[]error) {
+	// Verify mainRelease.profile is an album or EP, and find supporting TrackReleases
+	if mainRelease.ReleaseType != common.AlbumReleaseType && mainRelease.ReleaseType != common.EPReleaseType {
+		*errs = append(*errs, fmt.Errorf("expected Album or EP release type for main release"))
+		return
+	}
+	if len(release.ParsedReleaseElems) < 2 {
+		*errs = append(*errs, fmt.Errorf("expected Album or EP to have at least 2 release elements"))
+		return
+	}
+
+	tracks, err := buildSupportingTracks(release)
+	if err != nil {
+		*errs = append(*errs, err)
+		return
 	}
 
 	// Album is required to have a genre in its metadata (not just a genre per track)
@@ -330,6 +333,47 @@ func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedRelea
 		// IsPrivate:         nil,
 		// UPC:               nil,
 	}
+}
+
+// buildSupportingTracks formats and returns (in order) all tracks in the release except the main release
+func buildSupportingTracks(release *common.Release) (tracks []common.TrackMetadata, err error) {
+	for _, parsedReleaseElem := range release.ParsedReleaseElems {
+		if parsedReleaseElem.IsMainRelease {
+			continue
+		}
+		if parsedReleaseElem.ReleaseType != common.TrackReleaseType {
+			err = fmt.Errorf("expected TrackRelease release type for release ref %s", parsedReleaseElem.ReleaseRef)
+			return
+		}
+		if parsedReleaseElem.Resources.Tracks == nil || len(parsedReleaseElem.Resources.Tracks) == 0 {
+			err = fmt.Errorf("no tracks found for release %s", parsedReleaseElem.ReleaseRef)
+			return
+		}
+		if len(parsedReleaseElem.Resources.Tracks) > 1 {
+			err = fmt.Errorf("expected only one track for release %s", parsedReleaseElem.ReleaseRef)
+			return
+		}
+
+		track := parsedReleaseElem.Resources.Tracks[0]
+		if track.ArtistID == "" {
+			track.ArtistID = parsedReleaseElem.ArtistID
+		}
+		if track.ArtistName == "" {
+			track.ArtistName = parsedReleaseElem.ArtistName
+		}
+		if track.CopyrightLine == nil {
+			track.CopyrightLine = parsedReleaseElem.CopyrightLine
+		}
+		if track.ProducerCopyrightLine == nil {
+			track.ProducerCopyrightLine = parsedReleaseElem.ProducerCopyrightLine
+		}
+		if track.ParentalWarningType == nil {
+			track.ParentalWarningType = parsedReleaseElem.ParentalWarningType
+		}
+
+		tracks = append(tracks, track)
+	}
+	return
 }
 
 // processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
@@ -442,6 +486,22 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 			for _, img := range *images {
 				if img.ResourceReference == contentItems[i].Reference {
 					contentItems[i].Image = &img
+					break
+				}
+			}
+		} else {
+			for _, sr := range *soundRecordings {
+				if sr.ResourceReference == contentItems[i].Reference {
+					contentItems[i].SoundRecording = &sr
+					contentItems[i].ResourceType = ResourceTypeSoundRecording
+					break
+				}
+			}
+
+			for _, img := range *images {
+				if img.ResourceReference == contentItems[i].Reference {
+					contentItems[i].Image = &img
+					contentItems[i].ResourceType = ResourceTypeImage
 					break
 				}
 			}
@@ -803,8 +863,7 @@ func processResourceGroup(node *xmlquery.Node, parentSequence int, contentItems 
 		resourceTypeStr := safeInnerText(item.SelectElement("ResourceType"))
 		resourceType, ok := resourceTypes[resourceTypeStr]
 		if !ok {
-			fmt.Printf("Skipping unsupported resource type %s\n", resourceTypeStr)
-			continue
+			resourceType = ResourceTypeUnspecified
 		}
 		ci := ResourceGroupContentItem{
 			GroupSequenceNumber:            currentSequence,

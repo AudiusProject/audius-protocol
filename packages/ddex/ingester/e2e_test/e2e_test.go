@@ -59,6 +59,34 @@ func setupEnv(bi *common.BaseIngester) error {
 		return fmt.Errorf("failed to insert user into Mongo: %v", err)
 	}
 
+	_, err = users.InsertOne(bi.Ctx, bson.M{
+		"_id":             "zyxwvu",
+		"decodedUserId":   "98765",
+		"handle":          "2pec_shakur",
+		"email":           "2pec.shakur@fuga.com",
+		"name":            "2pec Shakur",
+		"verified":        false,
+		"profile_picture": nil,
+		"is_admin":        false,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert user into Mongo: %v", err)
+	}
+
+	_, err = users.InsertOne(bi.Ctx, bson.M{
+		"_id":             "fugarian",
+		"decodedUserId":   "111111",
+		"handle":          "fugarian",
+		"email":           "2pec.shakur@fuga.com",
+		"name":            "FUGARIAN",
+		"verified":        false,
+		"profile_picture": nil,
+		"is_admin":        false,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to insert user into Mongo: %v", err)
+	}
+
 	return nil
 }
 
@@ -243,6 +271,8 @@ func TestRunE2E(t *testing.T) {
 							},
 						},
 						ValidationErrors: []string{},
+						DDEXSchema:       "382",
+						NumMessages:      1,
 					},
 				},
 				ValidationErrors: []string(nil),
@@ -371,35 +401,92 @@ func TestRunE2E(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	path: "batch/fuga/20240305090206405",
-		// 	expectedD: common.Delivery{
-		// 		RemotePath:     "s3://audius-test-raw/20240305090206405",
-		// 		DeliveryStatus: constants.DeliveryStatusSuccess,
-		// 		Releases:       nil,
-		// 		Batches: []common.UnprocessedBatch{
-		// 			// TODO
-		// 			{
-		// 				BatchID:      "20240305090206405",
-		// 				BatchXmlPath: "20240305090206405/BatchComplete_20240305090206405.xml",
-		// 				Releases: []common.UnprocessedRelease{
-		// 					{
-		// 						ReleaseID:        "8718857546047",
-		// 						XmlFilePath:      "20240305090206405/8718857546047/8718857546047.xml",
-		// 						ValidationErrors: []string{},
-		// 					},
-		// 				},
-		// 				ValidationErrors: []string{},
-		// 				DDEXSchema:       "ern/382",
-		// 				NumMessages:      1,
-		// 			},
-		// 		},
-		// 		ValidationErrors: []string(nil),
-		// 	},
-		// 	expectedPR: common.PendingRelease{
-		// 		// TODO
-		// 	},
-		// },
+		{
+			path: "batch/fuga/20240305090206405",
+			expectedD: common.Delivery{
+				RemotePath:     "s3://audius-test-raw/20240305090206405",
+				IsFolder:       true,
+				DeliveryStatus: constants.DeliveryStatusSuccess,
+				Releases:       nil,
+				Batches: []common.UnprocessedBatch{
+					{
+						BatchID:      "20240305090206405",
+						BatchXmlPath: "20240305090206405/BatchComplete_20240305090206405.xml",
+						Releases: []common.UnprocessedRelease{
+							{
+								ReleaseID:        "8718857546047",
+								XmlFilePath:      "20240305090206405/8718857546047/8718857546047.xml",
+								ValidationErrors: []string{},
+							},
+						},
+						ValidationErrors: []string{},
+						DDEXSchema:       "ern/382",
+						NumMessages:      1,
+					},
+				},
+				ValidationErrors: []string(nil),
+			},
+			expectedPR: common.PendingRelease{
+				ReleaseID:          "8718857546047",
+				DeliveryRemotePath: "s3://audius-test-raw/20240305090206405",
+				PublishErrors:      []string{},
+				Release: common.Release{
+					ReleaseProfile: common.Common13AudioSingle,
+					PublishDate:    time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
+					SDKUploadMetadata: common.SDKUploadMetadata{
+						ReleaseDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
+						Genre:       "Blues",
+						DDEXReleaseIDs: &common.ReleaseIDs{
+							ISRC: "NLRD51952976",
+						},
+						Artists: []common.ResourceContributor{
+							{
+								Name:           "FUGARIAN",
+								Roles:          []string{"MainArtist"},
+								SequenceNumber: 1,
+							},
+						},
+						CopyrightLine: &common.Copyright{
+							Year: "2021",
+							Text: "FUGA Records",
+						},
+						ProducerCopyrightLine: &common.Copyright{
+							Year: "2021",
+							Text: "FUGA",
+						},
+						ParentalWarningType: stringPtr("NotExplicit"),
+						CoverArtURL:         "s3://audius-test-crawled/8718857546047/resources/8718857546047_T2_Image.jpg",
+						CoverArtURLHash:     stringPtr("03a3372963d1567ef98f7229c49538e0"),
+						CoverArtURLHashAlgo: stringPtr("MD5"),
+						Title:               stringPtr("All My Single"),
+						ArtistID:            stringPtr(""), // TODO: Shouldn't be empty
+						Duration:            75,
+						ISRC:                stringPtr("NLRD51952976"),
+						ResourceContributors: []common.ResourceContributor{
+							{Name: "Art Tistte", Roles: []string{"Ensemble"}, SequenceNumber: -1},
+							{Name: "Albert Zabel", Roles: []string{"Actor"}, SequenceNumber: -1},
+							{Name: "Mad Max", Roles: []string{"Remixer"}, SequenceNumber: -1},
+						},
+						IndirectResourceContributors: []common.ResourceContributor{
+							{Name: "Deed Deed", Roles: []string{"MusicPublisher"}, SequenceNumber: -1},
+							{Name: "komorebi", Roles: []string{"MusicPublisher"}, SequenceNumber: -1},
+							{Name: "Truly Pubz", Roles: []string{"MusicPublisher"}, SequenceNumber: -1},
+							{Name: "Adele", Roles: []string{"Translator"}, SequenceNumber: -1},
+							{Name: "Albert Zabel", Roles: []string{"Composer"}, SequenceNumber: -1},
+						},
+						RightsController: &common.RightsController{
+							Name:               "Albert Zabel",
+							Roles:              []string{"RightsController"},
+							RightsShareUnknown: "",
+						},
+						AudioFileURL:         stringPtr("s3://audius-test-crawled/8718857546047/resources/8718857546047_T1_0_SoundRecording_001_001.flac"),
+						AudioFileURLHash:     stringPtr("5e2994cdd94f14a197283a00387ca451"),
+						AudioFileURLHashAlgo: stringPtr("5e2994cdd94f14a197283a00387ca451"), // TODO: This isn't right
+						Tracks:               nil,
+					},
+				},
+			},
+		},
 	}
 
 	// Run subtests for release-by-release or batched depending on env var

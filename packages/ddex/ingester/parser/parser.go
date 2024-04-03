@@ -50,6 +50,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		return
 	}
 	p.Logger.Info("Parsing releases from delivery", "_id", delivery.RemotePath)
+	defer p.replaceDelivery(&delivery)
 
 	// Parse the delivery's releases
 	pendingReleases := []*common.PendingRelease{}
@@ -60,8 +61,8 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			if err == nil {
 				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
+				delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
 				p.Logger.Error("Failed to process release", "error", err)
-				p.replaceDelivery(&delivery)
 				return
 			}
 		}
@@ -72,8 +73,8 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			if err == nil {
 				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
+				delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
 				p.Logger.Error("Failed to process batch", "error", err)
-				p.replaceDelivery(&delivery)
 				return
 			}
 		}
@@ -103,7 +104,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
 		}
 
-		p.DeliveriesColl.UpdateByID(sessionCtx, delivery.RemotePath, bson.M{"$set": bson.M{"delivery_status": constants.DeliveryStatusSuccess}})
+		delivery.DeliveryStatus = constants.DeliveryStatusSuccess
 		return session.CommitTransaction(sessionCtx)
 	})
 
@@ -266,6 +267,7 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 
 	batch.DDEXSchema = ernVersion
 	batch.NumMessages = numMessages
+	fmt.Printf("theo set schema and num messages %s %d\n", ernVersion, numMessages)
 
 	if numMessages != len(batch.Releases) {
 		err := fmt.Errorf("NumberOfMessages value %d does not match the number of releases %d", numMessages, len(batch.Releases))
