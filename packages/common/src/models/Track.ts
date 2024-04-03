@@ -133,7 +133,7 @@ export const isContentTipGated = (
 export const isContentUSDCPurchaseGated = (
   gatedConditions?: Nullable<
     AccessConditions | DeepOmit<USDCPurchaseConditions, 'splits'>
-  > // data coming from form will not have splits on the type
+  > // data coming from upload/edit forms will not have splits on the type
 ): gatedConditions is USDCPurchaseConditions =>
   'usdc_purchase' in (gatedConditions ?? {})
 
