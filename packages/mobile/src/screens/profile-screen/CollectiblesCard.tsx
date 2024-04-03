@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 
-import type { Collectible, ID } from '@audius/common/models'
+import {
+  CollectibleMediaType,
+  type Collectible,
+  type ID
+} from '@audius/common/models'
 import {
   accountSelectors,
   collectibleDetailsUIActions,
@@ -65,29 +69,30 @@ type CollectiblesCardProps = {
 type CollectibleImageProps = {
   uri: string
   style: StyleProp<ImageStyle>
+  mediaType: CollectibleMediaType
   children?: ReactNode
 }
 
 const CollectibleImage = (props: CollectibleImageProps) => {
-  const { children, style, uri } = props
+  const { children, style, uri, mediaType } = props
 
   const isUriNumber = typeof uri === 'number'
   const isSvg = isUriNumber ? false : !!uri.match(/.*\.svg$/)
-  const isMp4 = isUriNumber ? false : !!uri.match(/.*\.mp4$/)
   const isSvgXml = isUriNumber ? false : !!uri.match(/data:image\/svg\+xml.*/)
+  const isVideo = isUriNumber ? false : mediaType === CollectibleMediaType.VIDEO
 
   const [size, setSize] = useState(0)
   const [hasLoaded, setHasLoaded] = useState(false)
 
-  const { value: mp4ThumbnailUrl } = useAsync(async () => {
-    if (isMp4) {
+  const { value: videoThumbnailUrl } = useAsync(async () => {
+    if (isVideo) {
       const response = await createThumbnail({
         url: uri,
         timeStamp: 10000
       })
       return response.path
     }
-  }, [isMp4])
+  }, [mediaType])
 
   if (isSvg) {
     return (
@@ -161,7 +166,7 @@ const CollectibleImage = (props: CollectibleImageProps) => {
         isUriNumber
           ? uri
           : {
-              uri: isMp4 ? mp4ThumbnailUrl : uri
+              uri: isVideo ? videoThumbnailUrl : uri
             }
       }
     >
@@ -214,7 +219,11 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
         onPress={handlePress}
       >
         {url ? (
-          <CollectibleImage style={styles.image} uri={url}>
+          <CollectibleImage
+            style={styles.image}
+            uri={url}
+            mediaType={mediaType}
+          >
             {mediaType === 'VIDEO' ? (
               <View style={styles.iconPlay}>
                 <IconPlay
