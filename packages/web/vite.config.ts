@@ -158,6 +158,7 @@ export default defineConfig(async ({ mode }) => {
         utils: '/src/utils',
         ssr: '/src/ssr',
         '~': path.resolve(__dirname, '../../packages/common/src'),
+        test: '/src/test',
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),
@@ -177,6 +178,14 @@ export default defineConfig(async ({ mode }) => {
     },
     test: {
       environment: 'jsdom',
+      setupFiles: ['./src/test/vitest-setup.ts'],
+      deps: {
+        optimizer: {
+          web: {
+            include: ['./src/test/vitest-canvas-mock']
+          }
+        }
+      },
       exclude: ['e2e', 'node_modules'],
       minWorkers: 1,
       maxWorkers: 1 // Segfaults if multithreaded
