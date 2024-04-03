@@ -68,6 +68,7 @@ class Action(str, Enum):
     VIEW_PLAYLIST = "ViewPlaylist"
     APPROVE = "Approve"
     REJECT = "Reject"
+    REACTION = "Reaction"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -95,6 +96,7 @@ class EntityType(str, Enum):
     REMIX = "Remix"
     TRACK_ROUTE = "TrackRoute"
     PLAYLIST_ROUTE = "PlaylistRoute"
+    TIP = "Tip"
 
     def __str__(self) -> str:
         return str.__str__(self)

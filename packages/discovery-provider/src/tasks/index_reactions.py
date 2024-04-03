@@ -80,6 +80,7 @@ def index_identity_reactions(session: Session, redis: Redis):
             session, IDENTITY_INDEXING_CHECKPOINT_NAME
         )
 
+        # convert this to ACDC
         new_reactions: List[ReactionResponse] = fetch_reactions_from_identity(
             last_checkpoint
         )

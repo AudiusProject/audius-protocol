@@ -66,6 +66,7 @@ from src.tasks.entity_manager.entities.social_features import (
     delete_social_action_types,
     delete_social_record,
 )
+from src.tasks.entity_manager.entities.tip_reactions import tip_reaction
 from src.tasks.entity_manager.entities.track import (
     create_track,
     delete_track,
@@ -329,6 +330,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.DASHBOARD_WALLET_USER
                     ):
                         delete_dashboard_wallet_user(params)
+                    elif (
+                        params.action == Action.REACTION
+                        and params.entity_type == EntityType.TIP
+                    ):
+                        tip_reaction(params)
 
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
