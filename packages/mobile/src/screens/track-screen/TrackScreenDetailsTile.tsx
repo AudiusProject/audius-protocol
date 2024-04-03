@@ -199,6 +199,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     width: '100%',
     justifyContent: 'center',
+    alignItems: 'center',
     gap: spacing(2),
     paddingVertical: spacing(2.5),
     borderRadius: spacing(1.5),
