@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconPlay } from '@audius/harmony-native'
 import { ChainLogo, Tile } from 'app/components/core'
+import { Skeleton } from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
 
 import { CollectiblesCardErrorBoundary } from './CollectiblesCardErrorBoundary'
@@ -72,6 +73,7 @@ const CollectibleImage = (props: CollectibleImageProps) => {
   const isSvg = isUriNumber ? false : !!uri.match(/.*\.svg$/)
 
   const [size, setSize] = useState(0)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   return isSvg ? (
     <View
@@ -84,8 +86,22 @@ const CollectibleImage = (props: CollectibleImageProps) => {
         width={size}
         uri={uri}
         style={{ borderRadius: 8, overflow: 'hidden' }}
+        onLoad={() => setHasLoaded(true)}
       >
-        {children}
+        {hasLoaded ? (
+          children
+        ) : (
+          <Skeleton
+            width={'100%'}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0
+            }}
+          />
+        )}
       </SvgUri>
     </View>
   ) : (
@@ -94,8 +110,22 @@ const CollectibleImage = (props: CollectibleImageProps) => {
       source={{
         uri
       }}
+      onLoad={() => setHasLoaded(true)}
     >
-      {children}
+      {hasLoaded ? (
+        children
+      ) : (
+        <Skeleton
+          width={'100%'}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+        />
+      )}
     </ImageBackground>
   )
 }
