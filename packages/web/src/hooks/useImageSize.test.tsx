@@ -4,9 +4,9 @@ import {
   SquareSizes,
   ImageSizesObject
 } from '@audius/common/models'
-import { render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import type { Dispatch } from 'redux'
-import { expect, describe, it, vitest } from 'vitest'
+import { expect, describe, it, vitest, afterEach } from 'vitest'
 
 vitest.mock('react-redux', () => ({
   useDispatch: () => () => {}
@@ -16,6 +16,8 @@ type TestComponentProps = Omit<
   BaseUserImageSizeProps<SquareSizes, ImageSizesObject<SquareSizes>>,
   'dispatch'
 >
+
+afterEach(cleanup)
 
 const TestComponent = (props: TestComponentProps) => {
   const dispatch = (() => {}) as Dispatch<any>
@@ -78,8 +80,7 @@ describe('useImageSize', () => {
       })
 
       describe('if the url is empty', () => {
-        // TODO: PAY-2610
-        it.skip('returns the default image', () => {
+        it('returns the default image', () => {
           const { getByText } = render(
             <TestComponent
               id={1}
@@ -110,8 +111,7 @@ describe('useImageSize', () => {
         action: () => {}
       }
 
-      // TODO: PAY-2610
-      it.skip('returns the larger size', () => {
+      it('returns the larger size', () => {
         const { getByText } = render(<TestComponent {...props} />)
         getByText('large')
       })

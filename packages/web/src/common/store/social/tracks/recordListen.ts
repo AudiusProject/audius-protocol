@@ -19,10 +19,14 @@ function* recordListen(action: { trackId: number }) {
   const { trackId } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   const track = yield* select(getTrack, { id: trackId })
   if (!userId || !track) return
+
+  if (userId === track.owner_id && (track.listenCount ?? 0) > 10) {
+    return
+  }
 
   yield* call(audiusBackendInstance.recordTrackListen, trackId)
 

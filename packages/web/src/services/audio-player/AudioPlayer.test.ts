@@ -1,6 +1,17 @@
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
-import AudioPlayer from './AudioPlayer'
+import { AudioPlayer } from './AudioPlayer'
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  module NodeJS {
+    interface Global {
+      AudioContext: any
+      URL: any
+      Audio: any
+    }
+  }
+}
 
 beforeAll(() => {
   global.AudioContext = vitest.fn().mockImplementation(() => ({
@@ -24,8 +35,7 @@ beforeAll(() => {
   })
 })
 
-// TODO: PAY-2606
-describe.skip('play', () => {
+describe('play', () => {
   it('plays', () => {
     const play = vitest.fn()
     global.Audio = vitest.fn().mockImplementation(() => ({
@@ -42,8 +52,7 @@ describe.skip('play', () => {
   })
 })
 
-// TODO: PAY-2606
-describe.skip('pause', () => {
+describe('pause', () => {
   it('pauses', () => {
     const pause = vitest.fn()
     global.Audio = vitest.fn().mockImplementation(() => ({
@@ -62,8 +71,7 @@ describe.skip('pause', () => {
   })
 })
 
-// TODO: PAY-2606
-describe.skip('stop', () => {
+describe('stop', () => {
   it('stops', () => {
     const pause = vitest.fn()
     global.Audio = vitest.fn().mockImplementation(() => ({
