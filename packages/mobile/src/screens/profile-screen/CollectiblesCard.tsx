@@ -108,36 +108,41 @@ const CollectibleImage = (props: CollectibleImageProps) => {
       </View>
     )
   } else if (isSvgXml) {
-    return (
-      <View
-        onLayout={(e) => {
-          setSize(e.nativeEvent.layout.width)
-        }}
-      >
-        <SvgXml
-          height={size}
-          width={size}
-          xml={atob(uri)}
-          style={{ borderRadius: 8, overflow: 'hidden' }}
-          onLoad={() => setHasLoaded(true)}
+    try {
+      const xml = atob(uri)
+      return (
+        <View
+          onLayout={(e) => {
+            setSize(e.nativeEvent.layout.width)
+          }}
         >
-          {hasLoaded ? (
-            children
-          ) : (
-            <Skeleton
-              width={'100%'}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0
-              }}
-            />
-          )}
-        </SvgXml>
-      </View>
-    )
+          <SvgXml
+            height={size}
+            width={size}
+            xml={xml}
+            style={{ borderRadius: 8, overflow: 'hidden' }}
+            onLoad={() => setHasLoaded(true)}
+          >
+            {hasLoaded ? (
+              children
+            ) : (
+              <Skeleton
+                width={'100%'}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0
+                }}
+              />
+            )}
+          </SvgXml>
+        </View>
+      )
+    } catch (e) {
+      return null
+    }
   }
 
   return (
