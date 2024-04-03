@@ -38,7 +38,7 @@ const PlaylistTile = ({
   duration,
   stats,
   bottomBar,
-  showIconButtons,
+  showIconButtons = true,
   containerClassName,
   tileClassName,
   tracksContainerClassName,

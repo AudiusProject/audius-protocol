@@ -380,28 +380,32 @@ const TrackTile = ({
               : null}
           </Text>
         </Flex>
-        <div className={styles.divider} />
-        <BottomRow
-          hasStreamAccess={hasStreamAccess}
-          isDisabled={isDisabled}
-          isLoading={isLoading}
-          isFavorited={isFavorited}
-          isReposted={isReposted}
-          rightActions={rightActions}
-          bottomBar={bottomBar}
-          isUnlisted={isUnlisted}
-          fieldVisibility={fieldVisibility}
-          isOwner={isOwner}
-          isDarkMode={isDarkMode}
-          isMatrixMode={isMatrixMode}
-          showIconButtons={showIconButtons}
-          onClickRepost={onClickRepost}
-          onClickFavorite={onClickFavorite}
-          onClickShare={onClickShare}
-          onClickGatedUnlockPill={onClickGatedUnlockPill}
-          streamConditions={streamConditions}
-          trackId={trackId}
-        />
+        {isTrack ? (
+          <>
+            <div className={styles.divider} />
+            <BottomRow
+              hasStreamAccess={hasStreamAccess}
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              isFavorited={isFavorited}
+              isReposted={isReposted}
+              rightActions={rightActions}
+              bottomBar={bottomBar}
+              isUnlisted={isUnlisted}
+              fieldVisibility={fieldVisibility}
+              isOwner={isOwner}
+              isDarkMode={isDarkMode}
+              isMatrixMode={isMatrixMode}
+              showIconButtons={showIconButtons}
+              onClickRepost={onClickRepost}
+              onClickFavorite={onClickFavorite}
+              onClickShare={onClickShare}
+              onClickGatedUnlockPill={onClickGatedUnlockPill}
+              streamConditions={streamConditions}
+              trackId={trackId}
+            />
+          </>
+        ) : null}
       </div>
     </div>
   )
