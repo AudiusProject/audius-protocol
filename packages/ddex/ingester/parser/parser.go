@@ -267,8 +267,7 @@ func (p *Parser) parseRelease(release *common.UnprocessedRelease, deliveryRemote
 }
 
 func copyTrackReleaseInfoToAlbum(createAlbumRelease []common.CreateAlbumRelease, createTrackRelease []common.CreateTrackRelease) {
-	// Copy missing fields from individual track releases to the album's tracks,
-	// which currently only have data from the SoundRecordings
+	// Copy missing fields from individual track releases to the album's tracks, which currently only have data from the SoundRecordings
 	isrcToMetadataMap := make(map[string]common.TrackMetadata)
 	for _, trackRelease := range createTrackRelease {
 		if trackRelease.Metadata.ISRC != nil {
