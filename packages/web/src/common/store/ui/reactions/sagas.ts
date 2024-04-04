@@ -37,8 +37,12 @@ const submitReaction = async ({
 }: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
   try {
     if (useDiscoveryReactions) {
+      const account = await audiusBackend.getAccount()
+      if (account === null) {
+        throw new Error('could not submit reaction, user account null')
+      }
       await audiusSdk.users.submitReaction({
-        userId: '',
+        userId: account.user_id.toString(),
         metadata: { reactedTo, reactionValue }
       })
       return { success: true, error: undefined }
