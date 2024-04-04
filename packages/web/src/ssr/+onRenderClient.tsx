@@ -9,6 +9,7 @@ import type { PageContextClient } from 'vike/types'
 import { isMobile as getIsMobile } from 'utils/clientUtil'
 
 import '../index.css'
+import { checkIsCrawler } from './util'
 
 // @ts-ignore
 window.global ||= window
@@ -21,13 +22,16 @@ window.process = { ...processBrowser, env: process.env }
 const HYDRATE_CLIENT = true
 
 export default async function render(
-  pageContext: PageContextClient & { pageProps: { track: FullSdk.TrackFull } }
+  pageContext: PageContextClient & {
+    pageProps: { track: FullSdk.TrackFull }
+    userAgent: string
+  }
 ) {
-  const { pageProps } = pageContext
-
+  const { pageProps, userAgent } = pageContext
+  const isCrawler = checkIsCrawler(userAgent)
   const isMobile = getIsMobile()
 
-  if (HYDRATE_CLIENT) {
+  if (HYDRATE_CLIENT && !isCrawler) {
     const { RootWithProviders } = await import('./RootWithProviders')
     hydrateRoot(
       document.getElementById('root') as HTMLElement,

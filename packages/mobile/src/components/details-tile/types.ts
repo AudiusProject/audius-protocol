@@ -5,8 +5,10 @@ import type {
   SearchUser,
   SearchTrack,
   Track,
-  User
+  User,
+  AccessConditions
 } from '@audius/common/models'
+import type { Nullable } from '@audius/common/utils'
 import type { TextStyle } from 'react-native'
 
 import type { ImageProps } from '@audius/harmony-native'
@@ -22,8 +24,8 @@ export type DetailsTileDetail = {
 }
 
 export type DetailsTileProps = {
-  /** Id of the collection */
-  collectionId?: ID
+  /** Id of the track or collection */
+  contentId?: ID
 
   /** Cosign information */
   coSign?: Track['_co_sign']
@@ -42,6 +44,12 @@ export type DetailsTileProps = {
 
   /** Has the current user saved */
   hasSaved?: boolean
+
+  /** Does the current user have stream access to the track */
+  hasStreamAccess?: boolean
+
+  /** Stream conditions for the track or collection */
+  streamConditions?: Nullable<AccessConditions>
 
   /** Label to be displayed at the top of the tile */
   headerText?: string

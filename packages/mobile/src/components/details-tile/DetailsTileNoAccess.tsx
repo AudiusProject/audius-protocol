@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
-import { useFeatureFlag } from '@audius/common/hooks'
 
-import { useStreamConditionsEntity } from '@audius/common/hooks'
+import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,
   ModalSource,
@@ -13,6 +12,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usersSocialActions,
   tippingActions,
@@ -39,7 +39,6 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { FeatureFlags } from '@audius/common/services'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { followUser } = usersSocialActions
@@ -398,6 +397,7 @@ export const DetailsTileNoAccess = ({
     handleFollowArtist,
     tippedUser,
     handleSendTip,
+    isIosGatedContentEnabled,
     handlePurchasePress
   ])
 

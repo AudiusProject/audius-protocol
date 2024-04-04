@@ -7,7 +7,7 @@ import {
 // DDEX releases that have been published
 const publishedReleasesSchema = new mongoose.Schema({
   _id: { type: String, required: true },
-  delivery_etag: { type: String, required: true },
+  delivery_remote_path: { type: String, required: true },
   publish_date: Date,
   entity_id: String,
   blockhash: String,

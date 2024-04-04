@@ -1,6 +1,5 @@
 import logging
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
@@ -319,34 +318,17 @@ def update_aggregates(self):
     update_lock = redis.lock(
         "update_aggregates_lock", blocking_timeout=25, timeout=14400
     )
-
-    interval = timedelta(minutes=10)
-    start_time = time.time()
-    errored = False
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             with db.scoped_session() as session:
                 _update_aggregates(session)
+
         else:
             logger.info("update_aggregates.py | Failed to acquire lock")
     except Exception as e:
-        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
-        errored = True
+        logger.error(f"update_aggregates.py | ERROR caching node info {e}")
         raise e
     finally:
-        end_time = time.time()
-        elapsed = end_time - start_time
-        time_left = max(0, interval.total_seconds() - elapsed)
-        logger.info(
-            {
-                "task_name": self.name,
-                "elapsed": elapsed,
-                "interval": interval.total_seconds(),
-                "time_left": time_left,
-                "errored": errored,
-            },
-        )
         if have_lock:
             update_lock.release()
-        celery.send_task(self.name, countdown=time_left)

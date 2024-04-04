@@ -1,6 +1,3 @@
-import datetime
-import time
-
 from sqlalchemy import func
 
 from src.models.tracks.track import Track
@@ -47,33 +44,17 @@ def publish_scheduled_releases(self):
     update_lock = redis.lock(
         "publish_scheduled_releases_lock", blocking_timeout=25, timeout=600
     )
-    interval = datetime.timedelta(minutes=1)
-    start_time = time.time()
-    errored = False
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             with db.scoped_session() as session:
                 _publish_scheduled_releases(session)
+
         else:
             logger.info("Failed to acquire lock")
     except Exception as e:
-        logger.error(f"{self.name}.py | Fatal error in main loop", exc_info=True)
-        errored = True
+        logger.error(f"ERROR caching node info {e}")
         raise e
     finally:
-        end_time = time.time()
-        elapsed = end_time - start_time
-        time_left = max(0, interval.total_seconds() - elapsed)
-        logger.info(
-            {
-                "task_name": self.name,
-                "elapsed": elapsed,
-                "interval": interval.total_seconds(),
-                "time_left": time_left,
-                "errored": errored,
-            },
-        )
         if have_lock:
             update_lock.release()
-        celery.send_task(self.name, countdown=time_left)

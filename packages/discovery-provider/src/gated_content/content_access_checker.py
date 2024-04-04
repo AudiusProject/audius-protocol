@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, List, TypedDict, Union, cast
+from typing import Dict, List, TypedDict, TypeGuard, Union, cast
 
 from sqlalchemy.orm.session import Session
 from typing_extensions import Protocol
@@ -63,6 +63,18 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
 }
 
 
+def is_track(
+    entity: Union[Track, Playlist], content_type: GatedContentType
+) -> TypeGuard[Track]:
+    return content_type == "track" and isinstance(entity, Track)
+
+
+def is_playlist(
+    entity: Union[Track, Playlist], content_type: GatedContentType
+) -> TypeGuard[Playlist]:
+    return content_type == "album" and isinstance(entity, Playlist)
+
+
 class ContentAccessChecker:
     # Given a user id, gated content id, and gated content type, and gated content entity,
     # this method checks for access to the gated contents by the users.
@@ -77,7 +89,7 @@ class ContentAccessChecker:
         session: Session,
         user_id: int,
         content_type: GatedContentType,
-        content_entity: Track,
+        content_entity: Union[Track, Playlist],
     ) -> ContentAccessResponse:
         if content_type != "track" and content_type != "album":
             logger.warn(
@@ -85,17 +97,40 @@ class ContentAccessChecker:
             )
             return {"has_stream_access": True, "has_download_access": True}
 
-        # content owner has access to their own gated content
-        content_owner_id = content_entity.owner_id
+        # Content owner has access to their own gated content
+        content_owner_id = (
+            content_entity.owner_id
+            if is_track(content_entity, content_type)
+            else (
+                content_entity.playlist_owner_id
+                if (is_playlist(content_entity, content_type))
+                else None
+            )
+        )
         if content_owner_id == user_id:
             return {"has_stream_access": True, "has_download_access": True}
+        content_id = (
+            content_entity.track_id
+            if is_track(content_entity, content_type)
+            else (
+                content_entity.playlist_id
+                if is_playlist(content_entity, content_type)
+                else None
+            )
+        )
+        if content_id is None:
+            logger.error(
+                f"gated_content_access_checker | check_access | failed to get content id for {content_type} with owner {content_owner_id}, this should never happen"
+            )
+            return {"has_stream_access": True, "has_download_access": True}
 
-        # if not gated on either stream or download,
+        # If not gated on either stream or download,
         # then check if content is a stem track and check parent track access,
         # otherwise, user has access to stream and download.
-        # note that stem tracks do not have stream/download conditions.
-        stream_conditions = content_entity.stream_conditions
-        download_conditions = content_entity.download_conditions
+        # Note that stem tracks do not have stream/download conditions.
+        content_entity_dict = helpers.model_to_dictionary(content_entity)
+        stream_conditions = content_entity_dict.get("stream_conditions")
+        download_conditions = content_entity_dict.get("download_conditions")
         if (
             content_type == "track"
             and not stream_conditions
@@ -108,27 +143,34 @@ class ContentAccessChecker:
             )
             return {"has_stream_access": access, "has_download_access": access}
 
-        # if stream gated, check stream access which also determines download access
+        # If stream gated, check stream access which also determines download access
         if stream_conditions:
             has_access = self._evaluate_conditions(
                 session=session,
                 user_id=user_id,
-                content_id=content_entity.track_id,
-                content_type="track",
+                content_id=int(content_id),
+                content_type=content_type,
                 conditions=cast(dict, stream_conditions),
             )
             return {"has_stream_access": has_access, "has_download_access": has_access}
 
-        # if we reach here, it means that the
-        # content is download gated and not stream gated
-        has_download_access = self._evaluate_conditions(
-            session=session,
-            user_id=user_id,
-            content_id=content_entity.track_id,
-            content_type="track",
-            conditions=cast(dict, download_conditions),
-        )
-        return {"has_stream_access": True, "has_download_access": has_download_access}
+        # If we reach here, it means that the
+        # content is download gated and not stream gated.
+        # Currently only tracks support download-gating.
+        if download_conditions:
+            has_download_access = self._evaluate_conditions(
+                session=session,
+                user_id=user_id,
+                content_id=int(content_id),
+                content_type=content_type,
+                conditions=cast(dict, download_conditions),
+            )
+            return {
+                "has_stream_access": True,
+                "has_download_access": has_download_access,
+            }
+
+        return {"has_stream_access": True, "has_download_access": True}
 
     # Given a list of objects, each with a user id, gated content id, and gated content type,
     # this method checks for access to the gated contents by the users.
@@ -165,7 +207,7 @@ class ContentAccessChecker:
 
         for arg in args:
             content_type = arg["content_type"]
-            key_type = "track" if content_type == "track" else "album"
+            key_type: GatedContentType = "track" if content_type == "track" else "album"
             content_id = arg["content_id"]
             user_id = arg["user_id"]
             entity = (
@@ -195,7 +237,7 @@ class ContentAccessChecker:
             # otherwise, user has access to stream and download.
             # note that stem tracks do not have stream/download conditions.
             # also note that albums only support stream_conditions.
-            stream_conditions = entity["stream_conditions"]
+            stream_conditions = entity.get("stream_conditions")
             download_conditions = entity.get("download_conditions")
             if not stream_conditions and not download_conditions:
                 access = (
@@ -230,16 +272,23 @@ class ContentAccessChecker:
 
             # if we reach here, it means that the
             # content is download gated and not stream gated
-            has_download_access = self._evaluate_conditions(
-                session=session,
-                user_id=user_id,
-                content_id=content_id,
-                content_type=content_type,
-                conditions=download_conditions,
-            )
+            if download_conditions:
+                has_download_access = self._evaluate_conditions(
+                    session=session,
+                    user_id=user_id,
+                    content_id=content_id,
+                    content_type=content_type,
+                    conditions=download_conditions,
+                )
+                batch_access_result[key_type][user_id][content_id] = {
+                    "has_stream_access": True,
+                    "has_download_access": has_download_access,
+                }
+                continue
+
             batch_access_result[key_type][user_id][content_id] = {
                 "has_stream_access": True,
-                "has_download_access": has_download_access,
+                "has_download_access": True,
             }
 
         return batch_access_result

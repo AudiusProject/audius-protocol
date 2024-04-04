@@ -12,6 +12,7 @@ export type UserChallenge = {
   user_id: string
   amount: number
   disbursed_amount: number
+  cooldown_days: number
 }
 
 export type Specifier = string

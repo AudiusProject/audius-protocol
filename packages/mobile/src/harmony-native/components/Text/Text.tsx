@@ -11,6 +11,7 @@ import { useTheme } from '../../foundations/theme'
 export type TextProps = NativeTextProps &
   Omit<BaseTextProps, 'textAlign'> & {
     textAlign?: TextStyle['textAlign']
+    textTransform?: TextStyle['textTransform']
   }
 
 export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
@@ -21,6 +22,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     style: styleProp,
     color: colorProp = 'default',
     textAlign,
+    textTransform,
     shadow,
     ...other
   } = props
@@ -46,6 +48,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     ...(color && { color }),
     ...(shadow && t.shadow[shadow]),
     textAlign,
+    textTransform,
     // Fixes demiBold text misalignment on iOS
     ...(fontWeight === 'demiBold' && Platform.OS === 'ios'
       ? { marginTop: 2 }

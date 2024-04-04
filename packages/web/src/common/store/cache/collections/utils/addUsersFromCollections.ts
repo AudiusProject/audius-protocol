@@ -19,7 +19,8 @@ const getAccountUser = accountSelectors.getAccountUser
  * @param metadataArray
  */
 export function* addUsersFromCollections(
-  metadataArray: Array<UserCollectionMetadata>
+  metadataArray: Array<UserCollectionMetadata>,
+  isInitialFetchAfterSsr?: boolean
 ) {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -36,6 +37,11 @@ export function* addUsersFromCollections(
   users = users.filter((user) => !(currentUserId && user.id === currentUserId))
 
   yield put(
-    cacheActions.add(Kind.USERS, users, /* replace */ false, /* persist */ true)
+    cacheActions.add(
+      Kind.USERS,
+      users,
+      /* replace */ isInitialFetchAfterSsr,
+      /* persist */ true
+    )
   )
 }

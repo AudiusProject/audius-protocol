@@ -37,3 +37,30 @@ export type QueueItem = {
   track: Track | null
   user: User | null
 }
+
+export type QueueState = {
+  order: Queueable[]
+
+  // Maps track UIDs to the index
+  positions: { [uid: string]: number }
+
+  // Active index
+  index: number
+
+  repeat: RepeatMode
+
+  shuffle: boolean
+  shuffleIndex: number
+  // Ordering of the indexes of the queue to shuffle through
+  shuffleOrder: number[]
+
+  // Whether or not a `next` was fired on the queue that overshoots
+  // the length of the queue (`next` from the last track).
+  // Reset to false on the next play.
+  overshot: boolean
+
+  // Whether or not a `previous` was fired on the queue that undershoots
+  // the length of the queue (`previous` from the first track).
+  // Reset to false on the next play.
+  undershot: boolean
+}

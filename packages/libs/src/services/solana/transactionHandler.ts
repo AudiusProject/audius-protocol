@@ -288,7 +288,9 @@ export class TransactionHandler {
       await sendRawTransaction()
     } catch (e) {
       // Rarely, this intiial send will fail
-      logger.error(`transactionHandler: Initial send failed: ${e}`)
+      logger.error(
+        `transactionHandler: Initial send failed for txId ${txid}: ${e}`
+      )
     }
 
     let done = false
@@ -304,9 +306,6 @@ export class TransactionHandler {
         while (!done && elapsed < this.retryTimeoutMs) {
           try {
             sendRawTransaction()
-            logger.info(
-              `transactionHandler: retrying txId ${txid}, sendCount ${sendCount}`
-            )
           } catch (e) {
             logger.error(
               `transactionHandler: error in send loop: ${e} for txId ${txid}`

@@ -1,7 +1,6 @@
-import datetime
 import logging
-import time
 from inspect import currentframe
+from time import time
 from typing import Any, Callable, Optional
 
 from redis import Redis
@@ -9,7 +8,6 @@ from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 
 from src.models.indexing.block import Block
-from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
@@ -29,10 +27,6 @@ def init_task_and_acquire_lock(
     blocking_timeout=None,
     lock_name=None,
 ):
-    # all tasks that use this function are 5 seconds
-    interval = datetime.timedelta(seconds=5)
-    start_time = time.time()
-    errored = False
     current_frame = currentframe()
     # get name of the caller function
     task_name = (
@@ -40,6 +34,7 @@ def init_task_and_acquire_lock(
         if current_frame is not None and current_frame.f_back is not None
         else "unknown"
     )
+
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
@@ -52,37 +47,23 @@ def init_task_and_acquire_lock(
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            start_time = time.time()
+            start_time = time()
 
             with db.scoped_session() as session:
                 aggregate_func(session, redis)
 
             logger.info(
                 f"{task_name} | Finished updating \
-                    {table_name} in: {time.time()-start_time} sec"
+                {table_name} in: {time()-start_time} sec"
             )
         else:
             logger.info(f"{task_name} | Failed to acquire {lock_name}")
     except Exception as e:
-        logger.error(f"{task_name}.py | Fatal error in main loop", exc_info=True)
-        errored = True
+        logger.error(f"{task_name} | Fatal error in main loop", exc_info=True)
         raise e
     finally:
-        end_time = time.time()
-        elapsed = end_time - start_time
-        time_left = max(0, interval.total_seconds() - elapsed)
-        logger.info(
-            {
-                "task_name": task_name,
-                "elapsed": elapsed,
-                "interval": interval.total_seconds(),
-                "time_left": time_left,
-                "errored": errored,
-            },
-        )
         if have_lock:
             update_lock.release()
-        celery.send_task(task_name, countdown=time_left)
 
 
 def update_aggregate_table(
