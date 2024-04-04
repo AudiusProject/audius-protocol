@@ -486,6 +486,7 @@ jobs:
       - slack/notify:
           channel: 'C06SP746DA7'
           template: PIPELINE_STATUS_TEMPLATE
+          debug: true
 
 workflows:
   setup:
