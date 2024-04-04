@@ -439,7 +439,7 @@ jobs:
                   -H "Circle-Token: ${CIRCLE_TOKEN}" \
                   > workflows.json
               echo "Pipeline workflows fetched..."
-              PIPELINE_PENDING=$(jq '.items | map(select(.id != "$CIRCLE_WORKFLOW_ID") | .status == "running" or "status" == "failing" ) | any' < workflows.json)
+              PIPELINE_PENDING=$(jq ".items | map(select(.id != \"${CIRCLE_WORKFLOW_ID}\") | .status == "running" or "status" == "failing" ) | any" < workflows.json)
               if [[ "$PIPELINE_PENDING" == "true" ]]; then
                 echo "Pipeline still has pending workflows. Sleeping for 30s..."
                 sleep 30
@@ -455,7 +455,7 @@ jobs:
             PIPELINE_STATUS_HEADER=$(jq 'if .items | map(.status == "failed") | any then ":x: Pipeline Failed" else ":white_check_mark: Pipeline Succeeded" end' < workflows.json)
             echo "export PIPELINE_STATUS_HEADER=${PIPELINE_STATUS_HEADER}" >> "$BASH_ENV"
 
-            COMMIT_MESSAGE=$(git log -1 --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-docker-compose/commit/%H|%h>]' --abbrev-commit HEAD)
+            COMMIT_MESSAGE=$(git log -1 --pretty=format:'[<https://github.com/AudiusProject/audius-docker-compose/commit/%H|%h>] %s - %an' --abbrev-commit HEAD)
             echo "export COMMIT_MESSAGE=\"${COMMIT_MESSAGE}\"" >> "$BASH_ENV"
 
             WORKFLOW_STATUSES=$(jq '.items | map("\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) <https://app.circleci.com/pipelines/\(.project_slug)/\(.pipeline_number)/workflows/\(.id)|\(.name)>") | join("\n")' < workflows.json)
