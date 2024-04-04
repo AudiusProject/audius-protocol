@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
+import { StreamTrackAvailabilityType } from '@audius/common/models'
 import {
   AlbumSchema,
   CollectionValues,
@@ -9,7 +10,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { UploadType } from '@audius/common/store'
 import { Text } from '@audius/harmony'
-import { Form, Formik } from 'formik'
+import { Form, Formik, useField } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -27,10 +28,10 @@ import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
+import { StemsAndDownloadsCollectionField } from '../fields/StemsAndDownloadsCollectionsField'
 import { CollectionFormState } from '../types'
 
 import styles from './EditCollectionForm.module.css'
-import { StemsAndDownloadsCollectionField } from '../fields/StemsAndDownloadsCollectionsField'
 
 const messages = {
   name: 'Name',
@@ -54,6 +55,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+  const [downloadToggleValue, setDownloadToggleValue] = useState(false)
 
   const initialValues: CollectionValues = {
     ...metadata,
@@ -122,7 +124,17 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
           <ReleaseDateFieldLegacy />
           {isAlbum && isPremiumAlbumsEnabled ? (
-            <AccessAndSaleField isAlbum isUpload />
+            <AccessAndSaleField
+              isAlbum
+              isUpload
+              onSubmit={({ stream_availability_type }) => {
+                console.log('premium track')
+                setDownloadToggleValue(
+                  stream_availability_type ===
+                    StreamTrackAvailabilityType.USDC_PURCHASE
+                )
+              }}
+            />
           ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
@@ -132,7 +144,9 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               <SelectMoodField name='trackDetails.mood' />
             </div>
             <TagField name='trackDetails.tags' />
-            {isAlbum && <StemsAndDownloadsCollectionField />}
+            {isAlbum && (
+              <StemsAndDownloadsCollectionField value={downloadToggleValue} />
+            )}
           </div>
         </Tile>
         <CollectionTrackFieldArray />

@@ -1,16 +1,28 @@
+import { useEffect } from 'react'
+
 import { Flex, Switch, Text, useTheme } from '@audius/harmony'
-import { Tile } from 'components/tile'
 import { useField } from 'formik'
-import { useState } from 'react'
+
+import { Tile } from 'components/tile'
 
 const messages = {
   title: 'Full Track Download',
   description: 'Allow your fans to download a lossless copy of each track.'
 }
 
-export const StemsAndDownloadsCollectionField = () => {
+export const StemsAndDownloadsCollectionField = ({
+  value: propsValue
+}: {
+  value?: boolean
+}) => {
   const { spacing } = useTheme()
   const [field, , { setValue }] = useField('are_tracks_downloadable')
+
+  useEffect(() => {
+    if (propsValue) {
+      setValue(true)
+    }
+  }, [propsValue, setValue])
 
   return (
     <Tile
@@ -29,7 +41,7 @@ export const StemsAndDownloadsCollectionField = () => {
             {messages.description}
           </Text>
         </Flex>
-        <Switch {...field} checked={field.value} />
+        <Switch {...field} checked={field.value} aria-label={messages.title} />
       </Flex>
     </Tile>
   )
