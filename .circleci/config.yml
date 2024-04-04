@@ -422,7 +422,12 @@ jobs:
             ) || handle_error
 
   notify-pipeline-status:
+    working_directory: ~/audius-protocol
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
     steps:
+      - checkout
       - run:
           name: Generate Slack Template
           command: |
