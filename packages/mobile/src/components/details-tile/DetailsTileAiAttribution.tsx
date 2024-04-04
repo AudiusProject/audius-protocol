@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 
 import type { ID } from '@audius/common/models'
 import { aiPageActions, aiPageSelectors } from '@audius/common/store'
-import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -28,11 +27,8 @@ const messages = {
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
-    gap: spacing(2),
     borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight7,
-    paddingBottom: spacing(4),
-    marginBottom: spacing(4)
+    borderBottomColor: palette.neutralLight7
   },
   badges: {
     paddingTop: spacing(4)
@@ -58,7 +54,7 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
   }
 
   return user ? (
-    <View style={styles.root}>
+    <Flex gap='s' pb='l' mb='l' style={styles.root}>
       <Flex inline direction='row' alignItems='center' gap='s'>
         <IconRobot color='default' />
         {/* IconRobot is bottom-heavy, adding marginTop makes text look more aligned */}
@@ -84,6 +80,6 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
       >
         {messages.viewMore}
       </PlainButton>
-    </View>
+    </Flex>
   ) : null
 }
