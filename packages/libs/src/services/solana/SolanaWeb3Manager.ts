@@ -187,6 +187,7 @@ export class SolanaWeb3Manager {
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
     for (const endpoint of this.solanaClusterEndpoint.split(',')) {
+      this.connections = []
       this.connections.push(
         new Connection(endpoint, {
           confirmTransactionInitialTimeout:
