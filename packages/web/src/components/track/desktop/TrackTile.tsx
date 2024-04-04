@@ -23,7 +23,6 @@ import {
   IconVisibilityHidden,
   Text,
   Flex,
-  spacing,
   ProgressBar
 } from '@audius/harmony'
 import cn from 'classnames'

@@ -8,10 +8,9 @@ import {
   DesktopPlaylistTileProps as PlaylistTileProps
 } from 'components/track/types'
 
+import { BottomRow } from './BottomRow'
 import styles from './PlaylistTile.module.css'
 import TrackTile from './TrackTile'
-import { BottomRow } from './BottomRow'
-import { on } from 'process'
 
 const DefaultTileContainer = ({ children }: { children: ReactNode }) => (
   <>{children}</>
@@ -124,8 +123,10 @@ const PlaylistTile = ({
           permalink={href}
         />
       </TileTrackContainer>
-      {renderTracks()}
-      {renderMoreTracks()}
+      <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
+        {renderTracks()}
+        {renderMoreTracks()}
+      </Box>
       <Box
         pv='s'
         ph='m'
@@ -135,7 +136,6 @@ const PlaylistTile = ({
         borderBottom='default'
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
-        shadow='midInverted'
       >
         <BottomRow
           hasStreamAccess={hasStreamAccess}

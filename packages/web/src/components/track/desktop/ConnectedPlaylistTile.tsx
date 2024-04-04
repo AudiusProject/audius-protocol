@@ -45,6 +45,7 @@ import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu
 import Menu from 'components/menu/Menu'
 import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackTileSize } from 'components/track/types'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import {
   setUsers,
   setVisibility
@@ -65,7 +66,6 @@ import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getUserFromCollection } = cacheUsersSelectors

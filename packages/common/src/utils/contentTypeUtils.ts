@@ -1,4 +1,5 @@
 import { Collection, Track } from '~/models'
+
 import { Nullable } from './typeUtils'
 
 /** Typeguard for determiniing if content is a Track */
