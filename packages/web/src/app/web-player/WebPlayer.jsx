@@ -1003,10 +1003,12 @@ class WebPlayer extends Component {
           {!isMobile ? <DevModeMananger /> : null}
           {/* Mobile-only */}
           {isMobile ? (
-            <AppRedirectPopover
-              incrementScroll={incrementScroll}
-              decrementScroll={decrementScroll}
-            />
+            <ClientOnly>
+              <AppRedirectPopover
+                incrementScroll={incrementScroll}
+                decrementScroll={decrementScroll}
+              />
+            </ClientOnly>
           ) : null}
         </div>
       </div>
