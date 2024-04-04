@@ -1,0 +1,88 @@
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": ":red_circle: Job $CIRCLE_JOB Failed On $CIRCLE_BRANCH branch",
+        "emoji": true
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "$SLACK_USER_ID you may have broken `$CIRCLE_BRANCH`! Here's what you should do:"
+      }
+    },
+    {
+      "type": "rich_text",
+      "elements": [
+        {
+          "type": "rich_text_list",
+          "style": "ordered",
+          "elements": [
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "If you broke something, fix it or revert your change."
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "If the test is flaky, send it to test jail with a ticket (but make sure to verify it's truly a flake!)."
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "If the branch is broken, but it wasn't your fault, tag the relevant committer in the replies."
+                }
+              ]
+            },
+            {
+              "type": "rich_text_section",
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "React to this message with a "
+                },
+                {
+                  "type": "emoji",
+                  "name": "white_check_mark"
+                },
+                {
+                  "type": "text",
+                  "text": " when CI is green again on the branch."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "actions",
+      "elements": [
+        {
+          "type": "button",
+          "text": {
+            "type": "plain_text",
+            "text": "View Job",
+            "emoji": true
+          },
+          "url": "$CIRCLE_BUILD_URL"
+        }
+      ]
+    }
+  ]
+}

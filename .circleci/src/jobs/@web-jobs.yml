@@ -37,7 +37,7 @@ web-init:
           - packages/trpc-server/node_modules
           - packages/trpc-server/dist
 
-    - slack-notify-test-failure
+    - slack-notify-job-failure
 
 web-build-demo:
   working_directory: ~/audius-protocol
@@ -75,7 +75,7 @@ web-build-staging:
         build-type: stage
         build-directory: packages/web/build-staging
         build-name: build-staging
-    - slack-notify-test-failure
+    - slack-notify-job-failure
 
 web-build-ssr-staging:
   working_directory: ~/audius-protocol
@@ -110,7 +110,7 @@ playwright-tests:
         when: always
     - store_artifacts:
         path: packages/web/blob-report
-    - slack-notify-test-failure
+    - slack-notify-job-failure
 
 playwright-tests-report:
   working_directory: ~/audius-protocol
@@ -157,7 +157,7 @@ web-test:
     - store_test_results:
         path: packages/web/report.xml
         when: always
-    - slack-notify-test-failure
+    - slack-notify-job-failure
 
 web-build-production:
   working_directory: ~/audius-protocol
