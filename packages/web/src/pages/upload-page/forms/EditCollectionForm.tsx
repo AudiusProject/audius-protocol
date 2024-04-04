@@ -10,7 +10,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { UploadType } from '@audius/common/store'
 import { Text } from '@audius/harmony'
-import { Form, Formik, useField } from 'formik'
+import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -128,7 +128,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               isAlbum
               isUpload
               onSubmit={({ stream_availability_type }) => {
-                console.log('premium track')
                 setDownloadToggleValue(
                   stream_availability_type ===
                     StreamTrackAvailabilityType.USDC_PURCHASE
