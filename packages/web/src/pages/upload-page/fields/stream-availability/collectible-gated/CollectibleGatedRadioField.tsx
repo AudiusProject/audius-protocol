@@ -1,4 +1,7 @@
-import { useAccessAndRemixSettings } from '@audius/common/hooks'
+import {
+  useAccessAndRemixSettings,
+  useHasNoCollectibles
+} from '@audius/common/hooks'
 import {
   StreamTrackAvailabilityType,
   AccessConditions
@@ -29,8 +32,8 @@ export const CollectibleGatedRadioField = (
   const { isRemix, isUpload, initialStreamConditions, isInitiallyUnlisted } =
     props
 
+  const hasNoCollectibles = useHasNoCollectibles()
   const {
-    hasNoCollectibles,
     noCollectibleGate: disabled,
     noCollectibleGateFields: fieldsDisabled
   } = useAccessAndRemixSettings({
