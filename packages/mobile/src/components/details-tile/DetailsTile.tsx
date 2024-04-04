@@ -162,6 +162,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
  */
 export const DetailsTile = ({
   contentId,
+  contentType,
   coSign,
   description,
   descriptionLinkPressSource,
@@ -386,6 +387,7 @@ export const DetailsTile = ({
                 contentId ? (
                   <DetailsTileNoAccess
                     trackId={contentId}
+                    contentType={contentType}
                     streamConditions={streamConditions}
                   />
                 ) : null}
