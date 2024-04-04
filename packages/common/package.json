@@ -34,6 +34,7 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
+    "@audius/fetch-nft": "0.2.3",
     "@audius/fixed-decimal": "*",
     "@audius/sdk": "*",
     "@audius/trpc-server": "*",
