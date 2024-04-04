@@ -231,4 +231,4 @@ get-committer-slack-id:
         command: |
           author_name=$(git log -1 --pretty=format:'%an')
           env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
-          echo "export SLACK_USER_ID=\"$(eval echo \$$env_key_name)\"" >> "$BASH_ENV"
+          echo "export SLACK_USER_ID=\"<@$(eval echo \$$env_key_name)>\"" >> "$BASH_ENV"
