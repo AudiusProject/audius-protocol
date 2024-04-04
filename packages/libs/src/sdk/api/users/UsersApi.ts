@@ -38,7 +38,8 @@ import {
   UpdateProfileSchema,
   SendTipRequest,
   SendTipSchema,
-  SubmitReactionRequest
+  SubmitReactionRequest,
+  SubmitReactionRequestSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -466,7 +467,29 @@ export class UsersApi extends GeneratedUsersApi {
    * Submits a reaction to a tip being received.
    * @hidden
    */
-  async submitReaction(request: SubmitReactionRequest) {}
+  async submitReaction(
+    params: SubmitReactionRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Parse inputs
+    const { userId, metadata } = await parseParams(
+      'submitReaction',
+      SubmitReactionRequestSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TIP,
+      entityId: userId,
+      action: Action.REACTION,
+      auth: this.auth,
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys(metadata)
+      }),
+      ...advancedOptions
+    })
+  }
 
   /**
    * Helper function for sendTip that gets the user wallet and creates

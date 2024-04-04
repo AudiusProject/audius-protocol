@@ -62,7 +62,8 @@ export enum Action {
   VIEW = 'View',
   VIEW_PLAYLIST = 'ViewPlaylist',
   APPROVE = 'Approve',
-  REJECT = 'Reject'
+  REJECT = 'Reject',
+  REACTION = 'Reaction'
 }
 
 export enum EntityType {
@@ -73,7 +74,8 @@ export enum EntityType {
   NOTIFICATION = 'Notification',
   DEVELOPER_APP = 'DeveloperApp',
   GRANT = 'Grant',
-  DASHBOARD_WALLET_USER = 'DashboardWalletUser'
+  DASHBOARD_WALLET_USER = 'DashboardWalletUser',
+  TIP = 'Tip'
 }
 
 export type AdvancedOptions = {

@@ -1,4 +1,8 @@
-import { AudiusBackend } from '@audius/common/services'
+import {
+  AudiusBackend,
+  FeatureFlags,
+  RemoteConfigInstance
+} from '@audius/common/services'
 import {
   reactionsUIActions,
   reactionsUISelectors,
@@ -19,6 +23,7 @@ type SubmitReactionConfig = {
   reactionValue: number
   audiusBackend: AudiusBackend
   audiusSdk: AudiusSdk
+  useDiscoveryReactions: boolean
 }
 
 type SubmitReactionResponse = { success: boolean; error: any }
@@ -27,12 +32,15 @@ const submitReaction = async ({
   reactedTo,
   reactionValue,
   audiusBackend,
-  audiusSdk
+  audiusSdk,
+  useDiscoveryReactions
 }: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
   try {
-    const useDiscoveryReactions = true
     if (useDiscoveryReactions) {
-      await audiusSdk.users.submitReaction({ reactedTo, reactionValue })
+      await audiusSdk.users.submitReaction({
+        userId: '',
+        metadata: { reactedTo, reactionValue }
+      })
       return { success: true, error: undefined }
     } else {
       const libs = await audiusBackend.getAudiusLibs()
@@ -92,11 +100,17 @@ function* writeReactionValueAsync({
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const audiusSdk = yield* getContext('audiusSdk')
 
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const useDiscoveryReactions = getFeatureEnabled(
+    FeatureFlags.DISCOVERY_REACTIONS
+  )
+
   yield* call(submitReaction, {
     reactedTo: entityId,
     reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0,
     audiusBackend,
-    audiusSdk
+    audiusSdk,
+    useDiscoveryReactions
   })
 }
 
