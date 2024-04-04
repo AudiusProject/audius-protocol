@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@amplitude/react-native": "2.17.2",
-    "@audius/fetch-nft": "0.2.2",
+    "@audius/fetch-nft": "0.2.3",
     "@audius/common": "*",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
