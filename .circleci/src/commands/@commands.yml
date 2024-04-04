@@ -7,3 +7,15 @@ create_concatenated_patch_file:
     - run:
         name: Combine patch-files to single file
         command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>
+
+get-committer-slack-id:
+  parameters:
+    when:
+      type: string
+  steps:
+    - run:
+        when: <<parameters.when>>
+        command: |
+          author_name=$(git log -1 --pretty=format:'%an')
+          env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
+          echo "export SLACK_USER_ID=\"$(eval echo \$$env_key_name)\"" >> "$BASH_ENV"
