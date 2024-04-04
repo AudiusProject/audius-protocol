@@ -1,4 +1,4 @@
-name: Release
+name: Publish Packages
 
 on:
   push:
@@ -8,8 +8,8 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release-packages:
-    name: Release Packages to NPM
+  publish-packages:
+    name: Publish Packages to NPM
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -29,8 +29,8 @@ jobs:
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
-        with:
-          publish: npm run publish-packages
+        # with:
+        #   publish: npm run publish-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # TODO: add turbo things
