@@ -4,7 +4,6 @@ import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
-import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
