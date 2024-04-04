@@ -220,3 +220,15 @@ web-deploy-sourcemaps-s3:
     - run:
         name: Deploy to S3
         command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800
+
+get-committer-slack-id:
+  parameters:
+    when:
+      type: string
+  steps:
+    - run:
+        when: <<parameters.when>>
+        command: |
+          author_name=$(git log -1 --pretty=format:'%an')
+          env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
+          echo "export SLACK_USER_ID=\"$(eval echo \$$env_key_name)\"" >> "$BASH_ENV"
