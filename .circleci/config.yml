@@ -461,6 +461,9 @@ jobs:
             WORKFLOW_STATUSES=$(jq -r '.items | map("\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) <https://app.circleci.com/pipelines/\(.project_slug)/\(.pipeline_number)/workflows/\(.id)|\(.name)>") | join("\n")' < workflows.json)
             echo "export WORKFLOW_STATUSES=\"${WORKFLOW_STATUSES}\"" >> "$BASH_ENV"
 
+            STATUS_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "*Action Items*:\n1. If you broke $CIRCLE_BRANCH, then fix it or revert your change.\n2. If you think a test is flaky, confirm it, make a change to skip the test with a ticket comment, and assign the ticket to the test owner.\n3. Once CI is green again, give this a :white_check_mark:." else "Changes should be live on <https://staging.audius.co|staging web> and all staging mobile apps." end' < workflows.json)
+            echo "export STATUS_MESSAGE=\"${STATUS_MESSAGE}\"" >> "$BASH_ENV"
+
             echo "Exporting template to bash environment..."
             echo 'export PIPELINE_STATUS_TEMPLATE=$(cat .circleci/slack-templates/pipeline-status-template.json)' >> "$BASH_ENV"
       - slack/notify:

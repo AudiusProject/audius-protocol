@@ -34,6 +34,13 @@
         "type": "mrkdwn",
         "text": "*Workflows:*\n$WORKFLOW_STATUSES"
       }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "$STATUS_MESSAGE"
+      }
     }
   ]
 }
