@@ -38,9 +38,9 @@ from src.queries import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
+from src.tasks.cache_current_nodes import do_cache_current_nodes
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
-from src.tasks.cache_current_nodes import do_cache_current_nodes
 from src.utils import helpers, web3_provider
 from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES

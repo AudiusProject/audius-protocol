@@ -23,7 +23,7 @@ def cache_current_nodes_task(self):
     do_cache_current_nodes(redis)
 
 
-def do_cache_current_nodes(redis)
+def do_cache_current_nodes(redis):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
