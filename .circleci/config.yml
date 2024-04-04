@@ -8,7 +8,6 @@ setup: true
 orbs:
   continuation: circleci/continuation@0.3.1
   path-filtering: circleci/path-filtering@0.1.1
-  slack: circleci/slack@4.12.0
 
 parameters:
   workflow:
@@ -25,18 +24,6 @@ commands:
       - run:
           name: Combine patch-files to single file
           command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>
-
-  get-committer-slack-id:
-    parameters:
-      when:
-        type: string
-    steps:
-      - run:
-          when: <<parameters.when>>
-          command: |
-            author_name=$(git log -1 --pretty=format:'%an')
-            env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
-            echo "export SLACK_USER_ID=\"$(eval echo \$$env_key_name)\"" >> "$BASH_ENV"
 
 jobs:
   # Generate the CircleCI continue_config.yml from .circleci/src
@@ -65,16 +52,6 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - get-committer-slack-id:
-          when: 'always'
-      - run:
-          name: Get Slack ID
-          command: |
-            echo $SLACK_USER_ID
-      - slack/notify:
-          channel: 'C06SP746DA7'
-          template: basic_fail_1
-          mentions: <@$SLACK_USER_ID>
 
       - create_concatenated_patch_file:
           filename: combined-patch-file.txt
