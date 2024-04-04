@@ -34,8 +34,8 @@ type Props = {
   isOwner?: boolean
   isShareHidden?: boolean
   isUnlisted?: boolean
-  contentId: ID
-  contentType: PurchaseableContentType
+  contentId?: ID
+  contentType?: PurchaseableContentType
   streamConditions?: Nullable<AccessConditions>
   hasStreamAccess?: boolean
   onPressOverflow?: GestureResponderHandler
@@ -137,7 +137,7 @@ export const LineupTileActionButtons = ({
 
   let content: ReactElement | null = null
   if (readonly) {
-    if (isUSDCPurchase && showGatedAccessStatus) {
+    if (isUSDCPurchase && showGatedAccessStatus && contentType) {
       content = (
         <View style={styles.leftButtons}>
           <LineupTileAccessStatus
@@ -152,7 +152,7 @@ export const LineupTileActionButtons = ({
     content = (
       <>
         <View style={styles.leftButtons}>
-          {showGatedAccessStatus && streamConditions != null ? (
+          {showGatedAccessStatus && contentType && streamConditions != null ? (
             <LineupTileAccessStatus
               contentId={contentId}
               contentType={contentType}
