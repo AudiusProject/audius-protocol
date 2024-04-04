@@ -37,7 +37,8 @@ import {
   UnsubscribeFromUserSchema,
   UpdateProfileSchema,
   SendTipRequest,
-  SendTipSchema
+  SendTipSchema,
+  SubmitReactionRequest
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -460,6 +461,12 @@ export class UsersApi extends GeneratedUsersApi {
     })
     return await this.claimableTokens.sendTransaction(transaction)
   }
+
+  /**
+   * Submits a reaction to a tip being received.
+   * @hidden
+   */
+  async submitReaction(request: SubmitReactionRequest) {}
 
   /**
    * Helper function for sendTip that gets the user wallet and creates

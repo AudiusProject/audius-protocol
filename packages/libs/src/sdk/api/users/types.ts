@@ -77,3 +77,10 @@ export const SendTipSchema = z
   .strict()
 
 export type SendTipRequest = z.input<typeof SendTipSchema>
+
+export const SubmitReactionRequestSchema = z.object({
+  reactedTo: z.string().nonempty(),
+  reactionValue: z.number().int().min(1).max(4)
+})
+
+export type SubmitReactionRequest = z.input<typeof SubmitReactionRequestSchema>

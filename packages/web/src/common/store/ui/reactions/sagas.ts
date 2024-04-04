@@ -7,6 +7,7 @@ import {
   getContext
 } from '@audius/common/store'
 import { getErrorMessage, removeNullable } from '@audius/common/utils'
+import { AudiusSdk } from '@audius/sdk'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
@@ -17,6 +18,7 @@ type SubmitReactionConfig = {
   reactedTo: string
   reactionValue: number
   audiusBackend: AudiusBackend
+  audiusSdk: AudiusSdk
 }
 
 type SubmitReactionResponse = { success: boolean; error: any }
@@ -24,11 +26,18 @@ type SubmitReactionResponse = { success: boolean; error: any }
 const submitReaction = async ({
   reactedTo,
   reactionValue,
-  audiusBackend
+  audiusBackend,
+  audiusSdk
 }: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
   try {
-    const libs = await audiusBackend.getAudiusLibs()
-    return libs.Reactions.submitReaction({ reactedTo, reactionValue })
+    const useDiscoveryReactions = true
+    if (useDiscoveryReactions) {
+      await audiusSdk.users.submitReaction({ reactedTo, reactionValue })
+      return { success: true, error: undefined }
+    } else {
+      const libs = await audiusBackend.getAudiusLibs()
+      return libs.Reactions.submitReaction({ reactedTo, reactionValue })
+    }
   } catch (err) {
     const errorMessage = getErrorMessage(err)
     console.error(errorMessage)
@@ -81,11 +90,13 @@ function* writeReactionValueAsync({
   )
 
   const audiusBackend = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
 
   yield* call(submitReaction, {
     reactedTo: entityId,
     reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0,
-    audiusBackend
+    audiusBackend,
+    audiusSdk
   })
 }
 
