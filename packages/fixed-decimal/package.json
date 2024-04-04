@@ -14,7 +14,8 @@
     "start": "tsc --build --verbose --watch tsconfig.build.json",
     "build": "tsc --build --verbose tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",

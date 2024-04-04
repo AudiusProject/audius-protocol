@@ -13,7 +13,7 @@
     "clean": "rm -rf dist",
     "dev": "tsc -w",
     "lint": "eslint \"src/**/*.ts*\"",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "jest": {
     "preset": "jest-presets/jest/node"

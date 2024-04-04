@@ -1,12 +1,18 @@
 when: << pipeline.parameters.run-harmony-workflow >>
 jobs:
-  - harmony-init
+  - harmony-init:
+      context:
+        - Vercel
   - harmony-build-storybook:
+      context:
+        - Vercel
       requires:
         - harmony-init
-      filters:
-        branches:
-          only: /^main$/
+  - harmony-test-storybook:
+      context:
+        - Vercel
+      requires:
+        - harmony-build-storybook
   - harmony-deploy-storybook:
       context: Audius Client
       requires:

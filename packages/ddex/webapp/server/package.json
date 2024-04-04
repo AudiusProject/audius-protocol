@@ -1,6 +1,7 @@
 {
   "name": "@audius/ddex-webapp-server",
   "version": "0.0.18",
+  "private": true,
   "description": "Backend server for DDEX ingestion (also serves frontend as static assets)",
   "main": "index.js",
   "scripts": {

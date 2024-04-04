@@ -21,7 +21,7 @@
     "storybook": "storybook dev -p 6006",
     "stylelint": "stylelint 'src/**/*.css'",
     "stylelint:fix": "npm run stylelint -- --fix",
-    "test": "test-storybook",
+    "test": "concurrently -k -s first \"npx http-server storybook-static --silent --port 6006\" \"npx wait-on http://127.0.0.1:6006 && test-storybook\"",
     "typecheck": "tsc --noEmit",
     "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\""
   },

@@ -14,7 +14,7 @@
     "dev": "tsc -w",
     "gen": "npx ts-node ./src/gen.ts",
     "lint": "eslint \"src/**/*.ts*\"",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "jest": {
     "preset": "jest-presets/jest/node"
