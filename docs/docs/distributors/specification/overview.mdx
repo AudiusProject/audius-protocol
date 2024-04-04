@@ -1,316 +1,66 @@
 ---
 id: overview
-title: DDEX Specification
-pagination_label: DDEX Specification
-sidebar_label: DDEX Specification
-description: Audius Protocol Documentation
-draft: true
+title: DDEX Best Practices
+pagination_label: DDEX Best Practices
+sidebar_label: DDEX Best Practices
+description: DDEX best practices for delivering DDEX to Audius
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
 
-## Schema
+## General Guidance
 
-### Mapping Audius metadata to DDEX fields
+:::info Delivery processing
 
-This depends on the ERN version. Mapping for our Sony example (ERN 3.81):
-
-:::note Each Release has multiple `ReleaseDetailsByTerritory` elements
-
-Audius only uses the one with `<TerritoryCode>Worldwide</TerritoryCode>`. Similarly, for each
-`SoundRecording` we only use the `SoundRecordingDetailsByTerritory` where TerritoryCode is
-Worldwide.
+[TikiLabs](https://tikilabs.com) is a facilitator of distributing DDEX directly to the Audius Protocol
+For inquiries or support, reach out at support@audius.co.
 
 :::
+
+- ERN3 is the preferred DDEX specification for bulk ingestion into Audius. See the [ERN3 details](./ern3) for more details around submission choreography.
+- Audius only accepts price information using absolute prices (e.g. via `WholesalePricePerUnit`).
+  Price codes will be ignored (e.g. `PriceType`).
+- Audius also does not support `ValidityPeriod` `EndDate`s. This includes using `EndDate` to specify
+  multiple `ValidityPeriod`s with different prices. We can only parse 1 `ValidityPeriod`
+  `StartDate`.
+- Audius currently only accepts the `Worldwide` `TerritoryCode`. Territory support for controlled streaming is coming soon! 🌎
+- `NonInteractiveStream` is not supported.
+- A `ReleaseDeal` is required with a `DealReleaseReference` to each track on an album.
+- A `ReleaseDeal` is not required with a `DealReleaseReference` to an album release. If an album
+  deal is not specified, the album defaults to being free to stream, but each of its tracks is
+  configured according to the track’s `ReleaseDeal` `DealTerms`.
+
+## Metadata Mapping
+
+:::info The following is provided based on ERN3.8
+
+Please note that exact DDEX fields will depend on the specific ERN version.
+
+:::
+
+### Required
+
 
 | Audius                                                             | DDEX                                                                                | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | releaseDate                                                        | /ReleaseList/Release/GlobalOriginalReleaseDate                                      | TODO: This is apparently deprecated. Probably needs to change to use a date from DealList                                                                                                                                                                                                                                                                                                           |
 | duration                                                           | /ResourceList/SoundRecording/Duration                                               | Parsed as ISO 8601. Falls back to /ReleaseList/Release/Duration from the release with a matching ResourceReference                                                                                                                                                                                                                                                                                  |
-| title                                                              |                                                                                     |
-| artist                                                             |                                                                                     |
-| preview                                                            |                                                                                     |
-| isrc                                                               |                                                                                     |
-| genre                                                              |                                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                     |
-|                                                                    |                                                                                     | We don't have the concept of "Disks" which some albums have multiple of. For now disks are flattened into the same album with no differentiation. See                                                                                                                                                                                                                                               |
-| description                                                        |                                                                                     | There was some element I remember being similar to description, but in the Sony example I didn’t see any actual description.                                                                                                                                                                                                                                                                        |
-| iswc                                                               |                                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                     |
-| license                                                            |                                                                                     |                                                                                                                                                                                                                                                                                                                                                                                                     |
-| previewStartSeconds                                                |                                                                                     | DDEX supports preview duration, but Audius sets it to exactly 30 seconds.                                                                                                                                                                                                                                                                                                                           |
-| isUnlisted                                                         |                                                                                     | Probably parse from DealList. See https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/deals-and-commercial-aspects/availability-and-visibility/                                                                                                                                                                                                                    |
-| fieldVisibility.\* (moods, tags, genre, share, playCount, remixes) |                                                                                     | Probably parse from DealList. See https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/deals-and-commercial-aspects/availability-and-visibility/                                                                                                                                                                                                                    |
-| remixOf                                                            |                                                                                     | Possible equivalent in DDEX RelatedResource. See https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/linking-different-releases-and-resources/ and https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-contributors,-artists-and-writers/communicating-remixes-and-remixers/ |
-| origFilename                                                       |                                                                                     | Possible equivalent in DDEX                                                                                                                                                                                                                                                                                                                                                                         |
-| isOriginalAvailable                                                |                                                                                     | Possible equivalent in DDEX                                                                                                                                                                                                                                                                                                                                                                         |
-| origFileCid                                                        |                                                                                     | Possible equivalent in DDEX                                                                                                                                                                                                                                                                                                                                                                         |
-| streamConditions                                                   |                                                                                     | Possible equivalent in DealList in the future                                                                                                                                                                                                                                                                                                                                                       |
-| isStreamGated                                                      |                                                                                     | Possible equivalent in DealList in the future                                                                                                                                                                                                                                                                                                                                                       |
-| isDownloadGated                                                    |                                                                                     | Possible equivalent in DealList in the future                                                                                                                                                                                                                                                                                                                                                       |
-| downloadConditions                                                 |                                                                                     | Possible equivalent in DealList in the future                                                                                                                                                                                                                                                                                                                                                       |
-| download.cid                                                       |                                                                                     | Possible equivalent in DealList in the future                                                                                                                                                                                                                                                                                                                                                       |
-| download.isDownloadable                                            |                                                                                     | Possible equivalent in DealList in the future                                                                                                                                                                                                                                                                                                                                                       |
-| download.requiresFollow                                            |                                                                                     | Possible equivalent in DealList in the future                                                                                                                                                                                                                                                                                                                                                       |
-| mood                                                               |                                                                                     | No equivalent in DDEX                                                                                                                                                                                                                                                                                                                                                                               |
-| tags                                                               |                                                                                     | No equivalent in DDEX                                                                                                                                                                                                                                                                                                                                                                               |
-| aiAttributionUserId                                                |                                                                                     | No equivalent in DDEX                                                                                                                                                                                                                                                                                                                                                                               |
-|                                                                    | /ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/PLine     | TODO: This has copyright data which we likely want to add to the track/album’s description. Although https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/pline-and-cline/ says it’s not mandatory                                                                                                                         |
-|                                                                    | /ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/LabelName |                                                                                                                                                                                                                                                                                                                                                                                                     |
-|                                                                    | other IDs (GRid, UPC, etc)                                                          | All possible options are enumerated https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-identifiers-and-iso-codes-lists/communication-of-identifiers-in-ddex-messages/                                                                                                                                                                                 |
-|                                                                    | ParentalWarningType                                                                 | No equivalent in Audius                                                                                                                                                                                                                                                                                                                                                                             |
 
-### Handling deliveries with multiple `<Release>` elements
 
-My understanding is that we should parse out each one and return a single album (assuming it’s
-marked as an album and not random unrelated tracks).
+### Optional
 
-However, we have to also parse each `/DealList/ReleaseDeal` and set the visibility metadata of each
-track based on if its the ReleaseDeal’s `DealReleaseReference` matches the track. See
-[here](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/trackreleases/)
-and
-[here](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/release-types-for-trackreleases/).
 
----
+| Audius                                                             | DDEX                                                                                | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| releaseDate                                                        | /ReleaseList/Release/GlobalOriginalReleaseDate                                      | TODO: This is apparently deprecated. Probably needs to change to use a date from DealList                                                                                                                                                                                                                                                                                                           |
+| duration                                                           | /ResourceList/SoundRecording/Duration                                               | Parsed as ISO 8601. Falls back to /ReleaseList/Release/Duration from the release with a matching ResourceReference                                                                                                                                                                                                                                                                                  |
 
-## Miscellaneous
 
-### What’s our DDEX Party Identifier (DPID)?
+### Unused
 
-Tiki Labs, Inc. has a DPID of `PA-DPIDA-202401120D-9`. According to
-[this](https://ddex.net/implementation/implementation-licence-and-ddex-party-identifiers/), a DPID
-is something every company accepting deliveries needs to receive by signing
-[this license](https://ddex.net/implementation/implementation-licence-terms-and-conditions/).
 
----
+| Audius                                                             | DDEX                                                                                | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| releaseDate                                                        | /ReleaseList/Release/GlobalOriginalReleaseDate                                      | TODO: This is apparently deprecated. Probably needs to change to use a date from DealList                                                                                                                                                                                                                                                                                                           |
+| duration                                                           | /ResourceList/SoundRecording/Duration                                               | Parsed as ISO 8601. Falls back to /ReleaseList/Release/Duration from the release with a matching ResourceReference                                                                                                                                                                                                                                                                                  |
 
-## Open Questions
-
-### How does each `<Deal>` map to Audius?
-
-According to
-[this](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/primary-and-secondary-resources/),
-we **must** have one of these `<DealType>`s in order to make a track visible.
-
-None of the existing options I’ve seen for deal types make sense for Audius:
-
-1. `PayAsYouGoModel`: “A CommercialModel where the Service or Product offering is financed by
-   revenue generated from payment (set at any level but not zero) for each Usage which the Customer
-   makes of the Service or Product.”
-2. `SubscriptionModel`: A CommercialModel where the Service or Product offering is financed by
-   revenue generated from a Customer Subscription.
-3. `AdvertisementSupportedModel`: `<no description provided>`
-
-UseTypes I’ve seen:
-
-1. `Stream`
-2. `NonInteractiveStream` (radio, no fast forward or playlist / search + play on demand. skip OK)
-3. `OnDemandStream`
-4. `PermanentDownload` (what it sounds like - store locally is OK)
-5. `ConditionalDownload` (like Spotify - as long as you’re subscribed you can download. offline
-   mode)
-
-Example Deal:
-
-```bash
-<Deal>
-    <DealTerms>
-    <CommercialModelType>AdvertisementSupportedModel</CommercialModelType>
-    <Usage>
-        <UseType>Stream</UseType>
-    </Usage>
-    <ValidityPeriod>
-        <StartDate>2018-01-10</StartDate>
-    </ValidityPeriod>
-    </DealTerms>
-</Deal>
-```
-
-Another example:
-
-```bash
-<Deal>
-      <DealTerms>
-          <CommercialModelType>PayAsYouGoModel</CommercialModelType>
-          <Usage>
-              <UseType>PermanentDownload</UseType>
-          </Usage>
-          <PriceInformation>
-              <PriceType Namespace="DPID:PADPIDA2007040502I">B89</PriceType>
-          </PriceInformation>
-          <ValidityPeriod>
-              <StartDate>2023-09-02</StartDate>
-          </ValidityPeriod>
-          <ReleaseDisplayStartDate>2023-09-02</ReleaseDisplayStartDate>
-          <TrackListingPreviewStartDate>2023-09-02</TrackListingPreviewStartDate>
-          <CoverArtPreviewStartDate>2023-09-02</CoverArtPreviewStartDate>
-          <ClipPreviewStartDate>2023-09-02</ClipPreviewStartDate>
-      </DealTerms>
-  </Deal>
-```
-
-Third example:
-
-```bash
-<Deal>
-    <DealTerms>
-        <CommercialModelType>SubscriptionModel</CommercialModelType>
-        <Usage>
-            <UseType>ConditionalDownload</UseType>
-            <UseType>NonInteractiveStream</UseType>
-            <UseType>OnDemandStream</UseType>
-        </Usage>
-        <ValidityPeriod>
-            <StartDate>2023-09-02</StartDate>
-        </ValidityPeriod>
-    </DealTerms>
-</Deal>
-```
-
-Fourth example:
-
-```bash
-<Deal>
-  <DealTerms>
-    <CommercialModelType>PayAsYouGoModel</CommercialModelType>
-    <Usage>
-      <UseType>PermanentDownload</UseType>
-    </Usage>
-    <TerritoryCode>Worldwide</TerritoryCode>
-    <PriceInformation>
-      <PriceRangeType Namespace="PADPIDA20110330020">FRONT</PriceRangeType>
-      <PriceType Namespace="PADPIDA20110330020">FRONT</PriceType>
-    </PriceInformation>
-    <ValidityPeriod>
-      <StartDate>2021-03-16</StartDate>
-    </ValidityPeriod>
-  </DealTerms>
-</Deal>
-```
-
-### Proposed (new) DealTypes for Audius types:
-
-1. Stream for free:
-   1. CommercialModelType: `FreeOfChargeModel`
-   2. UseType options: `Stream`
-   3. PriceType options: N/A
-   4. PriceRangeType options:
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money):
-2. Stream gated by premium/USDC (artist-defined payment amount)
-   1. CommercialModelType: `PayAsYouGoModel`
-   2. UseType options: `Stream`
-   3. PriceType options:
-   4. PriceRangeType options:
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money):
-3. Stream gated by NFT
-   1. CommercialModelType: `UserDefined` (`NFTGated`)
-   2. UseType options: `Stream`
-   3. PriceType options:
-   4. PriceRangeType options:
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money):
-4. Stream gated by follow
-   1. CommercialModelType: `UserDefined` (`FollowGated`)
-   2. UseType options: `Stream`
-   3. PriceType options:
-   4. PriceRangeType options:
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money):
-5. Stream gated by tip
-   1. CommercialModelType: `UserDefined` (`TipGated`) or `PayAsYouGoModel`?
-   2. UseType options: `Stream`
-   3. PriceType options:
-   4. PriceRangeType options:
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money):
-6. Download for free
-   1. CommercialModelType: `FreeOfChargeModel`
-   2. UseType options: `Stream`, `PermanentDownload`
-   3. PriceType options: N/A
-   4. PriceRangeType options: N/A
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money): N/A
-7. Download gated by premium/USDC (artist defined payment amount)
-   1. CommercialModelType: `PayAsYouGoModel`
-   2. UseType options: `Stream`, `PermanentDownload`
-   3. PriceType options:
-   4. PriceRangeType options:
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money):
-8. Download gated by follow
-   1. CommercialModelType: `UserDefined` (`FollowGated`)
-   2. UseType options: `Stream`, `PermanentDownload`
-   3. PriceType options:
-   4. PriceRangeType options:
-   5. WholeSalePricePerUnit vs retail price (label has to be paid the wholesale price, and we have
-      to mark it up (retail) to be able to make money):
-9. (If you can’t stream it, you can’t download it)
-
-### How do we parse each ID? Which ID type is the primary differentiator?
-
-There are different IDs that the XML can provide, like GRid, ICPN, CatalogNumber, ProprietaryId, and
-more (all ID options are enumerated
-[here](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-identifiers-and-iso-codes-lists/communication-of-identifiers-in-ddex-messages/)).
-For now, we ignore them and only look at ISRC, which I don’t think is correct.
-
-Tentative decision: According to
-[this](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/trackreleases/),
-we might need to at least store the GRid and ProprietaryId in the DDEX db somewhere for future
-reference. We should support more ID fields in our metadata to index (see Ray’s comment above).
-
-1. Is it acceptable to have 30 second previews when DDEX tells us exactly how long they should be?
-   - Context: We’re parsing out the data, but Audius is hardcoded to 30 second previews. This goes
-     against the variable lengths that different DDEX releases specify.
-2. How do we want to support releases that have multiple artists?
-   - Context: According to
-     [this](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-contributors,-artists-and-writers/contributors,-artists-and-writers/)
-     and
-     [this](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-contributors,-artists-and-writers/information-on-displayartists,-displayartistnames,-contributors-and-indirectcontributors/),
-     we should use “Display Artist Name” which could actually be 2 artists like “Drake & The Weeknd”
-     so it wouldn’t match an account. Also, to support showing “ID” for artist and/or track for
-     things like music festival sets, I think we’d need to have some kind of decoupling between
-     display names and actual accounts.
-   - Tentative decision: add some more fields to index. See Ray’s comment above and
-     https://www.ifpi.org/wp-content/uploads/2020/08/GRid_Standard_v2_1.pdf
-3. Do we need to upload an acknowledgement XML file for each delivery?
-   - Context:
-     [This](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/5-release-by-release-profile/5.1-choreography/)
-     says we “shall” upload XML acknowledging exactly what was done for each release (to a separate
-     acknowledgements folder according to
-     [this](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/5-release-by-release-profile/5.2-file-server-organisation/)).
-     Does Fuga require this or have any special constraints to be mindful of when uploading acks?
-4. Do we need to handle separate territories?
-   - Context: For example, it looks like the Sony example DealList allows for downloading in some
-     countries but not others.
-5. How should we handle all the other fields we don’t support?
-   - Context: See table above. The main ones are LabelName and PLineText (copyright info). Maybe we
-     just add the PLineText to the track/album description?
-6. Our genres don’t match the genres in DDEX. For example, Sony sent a delivery with “Hip hop” while
-   our equivalent is “Hip-hop/Rap.”
-   - Context: For now, we have an explicit mapping, which will break any time there’s a new genre.
-     Do we want to keep on this explicit mapping path?
-
-## Main areas of work remaining
-
-- Previews: see question above - we’re parsing out preview info, but the backend is hardcoded to 30
-  second previews instead of whatever variable length each release specifies
-- Making metadata un-editable by artist
-- Processing updates and deletes. One potential blocker on this is that we don’t have a “replacing
-  of audio” feature. See
-  [here](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-message-exchange-protocols-and-choreographies/update-indicator/)
-  and
-  [here](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-message-exchange-protocols-and-choreographies/differentiating-inserts-from-updates/)
-  for DDEX spec details when implementing.
-- According to
-  [this](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-message-exchange-protocols-and-choreographies/no-resources-in-initial-delivery/),
-  we should allow a release to not contain all the files (ie, the first delivery only has metadata,
-  and a future delivery will include the actual assets). Also see
-  [here](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/ern-message-without-resources/)
-- Maybe support
-  [stems](https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-releaseresourcework-metadata/communicating-stems/)
-- Other implementation details from above, including verifying file hashes
-- Long-term UX from
-  [here](https://www.notion.so/DDEX-Artist-Facing-UX-d204863533fe4e3b9900e6a006620dba?pvs=21)
-  (displaying distributors to choose from) and account creation from the same doc
-
----
