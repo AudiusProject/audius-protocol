@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { render, screen } from 'test/test-utils'
 
@@ -6,11 +6,13 @@ import { CollectionFormState } from '../types'
 
 import { UploadCollectionForm } from './UploadCollectionForm'
 
+import { authedUserStore } from 'test/redux-state'
+
 const baseMockedFormState: CollectionFormState = {
   tracks: [
     {
       file: 'blob' as unknown as File, // No reason to use a real blob in this test
-      preview: {},
+      preview: { addEventListener: vi.fn() },
       metadata: {
         track_cid: null,
         owner_id: null,
@@ -105,12 +107,16 @@ const baseMockedFormState: CollectionFormState = {
 describe('UploadCollectionForm', () => {
   it('should render', () => {
     const onContinue = vi.fn()
+
     render(
       <UploadCollectionForm
         formState={baseMockedFormState}
         onContinue={onContinue}
-      />
+      />,
+      {
+        reduxState: authedUserStore
+      }
     )
-    expect(screen.getByText('Upload')).toBeInTheDocument()
+    expect(screen.getByText(/album name/i)).toBeInTheDocument()
   })
 })
