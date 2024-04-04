@@ -323,7 +323,7 @@ export class TransactionHandler {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       logger.info(
-        `transactionHandler: finished for txid ${txid} with ${sendCount} retries`
+        `transactionHandler: finished for txid ${txid} with ${sendCount} retries to ${this.connection}`
       )
       return {
         res: txid,
@@ -334,7 +334,7 @@ export class TransactionHandler {
       logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
-        )}, ${txid}`
+        )}, ${txid}, with ${sendCount} retries to ${this.connection}`
       )
       done = true
       let errorCode = null

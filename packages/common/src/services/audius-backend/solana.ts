@@ -83,8 +83,7 @@ export const getRootSolanaAccount = async (
 export const getSolanaConnection = async (
   audiusBackendInstance: AudiusBackend
 ) => {
-  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!
-    .connection
+  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!.getConnection()
 }
 
 /**
@@ -758,7 +757,7 @@ export const getLookupTableAccounts = async (
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const connection = libs.solanaWeb3Manager!.connection
+  const connection = libs.solanaWeb3Manager!.getConnection()
   return await Promise.all(
     lookupTableAddresses.map(async (address) => {
       const account = await connection.getAddressLookupTable(
