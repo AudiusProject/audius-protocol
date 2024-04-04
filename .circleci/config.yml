@@ -451,7 +451,7 @@ jobs:
             env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
             SLACK_USER_ID="<@$(eval echo \$$env_key_name)>"
 
-            PIPELINE_STATUS_HEADER=$(jq 'if .items | map(.status == "failed") | any then ":x: Pipeline Failed" else ":white_check_mark: Pipeline Succeeded" end' < workflows.json)
+            PIPELINE_STATUS_HEADER=$(jq -r 'if .items | map(.status == "failed") | any then ":x: Pipeline Failed" else ":white_check_mark: Pipeline Succeeded" end' < workflows.json)
 
             COMMIT_MESSAGE=$(git log -1 --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-docker-compose/commit/%H|%h>]' --abbrev-commit HEAD)
 
@@ -459,12 +459,12 @@ jobs:
 
             echo "Exporting env vars to bash environment..."
             echo "export SLACK_USER_ID=\"$SLACK_USER_ID\"" >> "$BASH_ENV"
-            echo "export PIPELINE_STATUS_HEADER=\"$PIPELINE_STATUS_HEADER\"" >> "$BASH_ENV"
+            echo "export PIPELINE_STATUS_HEADER=$PIPELINE_STATUS_HEADER" >> "$BASH_ENV"
             echo "export COMMIT_MESSAGE=\"$COMMIT_MESSAGE\"" >> "$BASH_ENV"
             echo "export WORKFLOW_STATUSES=\"$WORKFLOW_STATUSES\"" >> "$BASH_ENV"
 
             echo "Exporting template to bash environment..."
-            echo "export PIPELINE_STATUS_TEMPLATE=\"$(cat .circleci/slack-templates/pipeline-status-template.json)\"" >> "$BASH_ENV"
+            echo 'export PIPELINE_STATUS_TEMPLATE=$(cat .circleci/slack-templates/pipeline-status-template.json)' >> "$BASH_ENV"
       - slack/notify:
           channel: 'C06SP746DA7'
           template: PIPELINE_STATUS_TEMPLATE
