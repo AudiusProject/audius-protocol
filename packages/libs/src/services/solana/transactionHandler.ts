@@ -52,8 +52,8 @@ export class TransactionHandler {
     feePayerKeypairs = null,
     skipPreflight = true,
     retryTimeoutMs = 60000,
-    pollingFrequencyMs = 300,
-    sendingFrequencyMs = 300
+    pollingFrequencyMs = 2000,
+    sendingFrequencyMs = 2000
   }: {
     connection: Connection
     useRelay: boolean
