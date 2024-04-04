@@ -37,17 +37,7 @@ web-init:
           - packages/trpc-server/node_modules
           - packages/trpc-server/dist
 
-    - get-committer-slack-id:
-        when: on_fail
-    - run:
-        when: on_fail
-        name: Get Slack ID
-        command: |
-          echo $SLACK_USER_ID
-    - slack/notify:
-        channel: 'C06SP746DA7'
-        event: fail
-        template: SLACK_TEST_FAIL_TEMPLATE
+    - slack-notify-test-failure
 
 web-build-demo:
   working_directory: ~/audius-protocol
@@ -85,6 +75,7 @@ web-build-staging:
         build-type: stage
         build-directory: packages/web/build-staging
         build-name: build-staging
+    - slack-notify-test-failure
 
 web-build-ssr-staging:
   working_directory: ~/audius-protocol
@@ -119,6 +110,7 @@ playwright-tests:
         when: always
     - store_artifacts:
         path: packages/web/blob-report
+    - slack-notify-test-failure
 
 playwright-tests-report:
   working_directory: ~/audius-protocol
@@ -165,6 +157,7 @@ web-test:
     - store_test_results:
         path: packages/web/report.xml
         when: always
+    - slack-notify-test-failure
 
 web-build-production:
   working_directory: ~/audius-protocol

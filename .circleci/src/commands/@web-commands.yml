@@ -221,14 +221,15 @@ web-deploy-sourcemaps-s3:
         name: Deploy to S3
         command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800
 
-get-committer-slack-id:
-  parameters:
-    when:
-      type: string
+slack-notify-test-failure:
   steps:
     - run:
-        when: <<parameters.when>>
+        when: on_fail
         command: |
           author_name=$(git log -1 --pretty=format:'%an')
           env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
           echo "export SLACK_USER_ID=\"<@$(eval echo \$$env_key_name)>\"" >> "$BASH_ENV"
+    - slack/notify:
+        channel: 'C06SP746DA7'
+        event: fail
+        template: SLACK_TEST_FAIL_TEMPLATE
