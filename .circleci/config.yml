@@ -434,15 +434,16 @@ jobs:
           command: |
             PIPELINE_PENDING="true"
             while [[ "$PIPELINE_PENDING" == "true" ]]; do
-                echo "Fetching pipeline workflows..."
-                curl --url "https://circleci.com/api/v2/pipeline/${CIRCLE_PIPELINE_ID}/workflow" \
-                    -H "Circle-Token: ${CIRCLE_TOKEN}" \
-                    > workflows.json
-                PIPELINE_PENDING=$(cat workflows.json | jq '.items | map(select(.id != "$CIRCLE_WORKFLOW_ID") | .status == "running" or "status" == "failing" )')
-                if [[ "$PIPELINE_PENDING" == "true" ]]; then
+              echo "Fetching pipeline workflows..."
+              curl -s --url "https://circleci.com/api/v2/pipeline/${CIRCLE_PIPELINE_ID}/workflow" \
+                  -H "Circle-Token: ${CIRCLE_TOKEN}" \
+                  > workflows.json
+              echo "Pipeline workflows fetched..."
+              PIPELINE_PENDING=$(jq '.items | map(select(.id != "$CIRCLE_WORKFLOW_ID") | .status == "running" or "status" == "failing" )' < workflows.json)
+              if [[ "$PIPELINE_PENDING" == "true" ]]; then
                 echo "Pipeline still has pending workflows. Sleeping for 30s..."
                 sleep 30
-                fi
+              fi
             done
             echo "Workflows finished. Generating env vars..."
 
