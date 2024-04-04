@@ -87,15 +87,15 @@ module.exports = {
       items: ['distributors/specification/overview', 'distributors/specification/ern3', 'distributors/specification/ern4'],
       collapsed: false,
     },
-    // {
-    //   type: 'category',
-    //   label: 'Run a DDEX Server',
-    //   items: [
-    //     'distributors/run-a-server/overview',
-    //     'distributors/run-a-server/run-a-ddex-server',
-    //   ],
-    //   collapsed: false,
-    // },
+    {
+      type: 'category',
+      label: 'Self Serve',
+      items: [
+        'distributors/self-serve/overview',
+        'distributors/self-serve/run-a-ddex-server',
+      ],
+      collapsed: false,
+    },
   ],
 
   node_operators: [
