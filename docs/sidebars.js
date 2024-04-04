@@ -84,7 +84,7 @@ module.exports = {
     {
       type: 'category',
       label: 'Specification',
-      items: ['distributors/specification/overview', 'distributors/specification/ern3'],
+      items: ['distributors/specification/overview', 'distributors/specification/ern3', 'distributors/specification/ern4'],
       collapsed: false,
     },
     // {

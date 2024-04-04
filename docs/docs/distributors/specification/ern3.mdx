@@ -3,24 +3,10 @@ id: ern3
 title: ERN3
 pagination_label: ERN3
 sidebar_label: ERN3
-description: Audius Protocol Documentation
+description: Support for ERN3
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
-
-## General Guidance
-
-- Audius only accepts price information using absolute prices (e.g. via `WholesalePricePerUnit`).
-  Price codes will be ignored (e.g. `PriceType`).
-- Audius also does not support `ValidityPeriod` `EndDate`s. This includes using `EndDate` to specify
-  multiple `ValidityPeriod`s with different prices. We can only parse 1 `ValidityPeriod`
-  `StartDate`.
-- Audius only accepts the `Worldwide` `TerritoryCode`.
-- `NonInteractiveStream` is not supported.
-- A `ReleaseDeal` is required with a `DealReleaseReference` to each track on an album.
-- A `ReleaseDeal` is not required with a `DealReleaseReference` to an album release. If an album
-  deal is not specified, the album defaults to being free to stream, but each of its tracks is
-  configured according to the track’s `ReleaseDeal` `DealTerms`.
 
 ---
 
