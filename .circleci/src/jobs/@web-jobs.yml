@@ -38,12 +38,12 @@ web-init:
           - packages/trpc-server/dist
 
     - get-committer-slack-id:
-        when: fail
+        when: on_fail
     - run:
+        when: on_fail
         name: Get Slack ID
         command: |
           echo $SLACK_USER_ID
-        when: fail
     - slack/notify:
         channel: 'C06SP746DA7'
         event: fail
