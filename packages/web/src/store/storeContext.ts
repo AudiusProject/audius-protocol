@@ -55,11 +55,9 @@ export const buildStoreContext = ({
   audioPlayer: audioPlayer!,
   nftClient: new FetchNFTClient({
     openSeaConfig: {
-      // apiEndpoint: 'https://google2.com'
       apiEndpoint: env.OPENSEA_API_URL
     },
     heliusConfig: {
-      // apiEndpoint: 'https://example2.com'
       apiEndpoint: env.HELIUS_DAS_API_URL
     },
     solanaConfig: {
