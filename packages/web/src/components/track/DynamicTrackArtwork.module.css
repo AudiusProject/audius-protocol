@@ -16,3 +16,7 @@
 .default {
   --size: var(--harmony-unit-16);
 }
+
+.default {
+  --size: var(--harmony-unit-24);
+}
