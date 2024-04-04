@@ -16,7 +16,8 @@ import {
 import {
   Nullable,
   formatCount,
-  formatLineupTileDuration
+  formatLineupTileDuration,
+  getDogEarType
 } from '@audius/common/utils'
 import { Flex, IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
 import cn from 'classnames'
@@ -25,6 +26,7 @@ import { range } from 'lodash'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
+import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
@@ -150,12 +152,14 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     showSkeleton,
     numLoadingSkeletonRows,
     isTrending,
+    isOwner,
     showRankIcon,
     trackCount,
     variant,
     containerClassName,
     permalink,
     isActive,
+    isUnlisted,
     playlistTitle,
     isPlaying,
     ownerId,
@@ -203,6 +207,14 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     openLockedContentModal
   ])
 
+  const DogEarIconType = getDogEarType({
+    streamConditions,
+    isOwner,
+    hasStreamAccess,
+    isArtistPick: false,
+    isUnlisted
+  })
+
   return (
     <div
       className={cn(
@@ -211,6 +223,11 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
         containerClassName
       )}
     >
+      {DogEarIconType ? (
+        <div className={styles.borderOffset}>
+          <DogEar type={DogEarIconType} />
+        </div>
+      ) : null}
       <div
         css={{ overflow: 'hidden' }}
         className={styles.mainContent}

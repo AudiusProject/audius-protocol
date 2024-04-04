@@ -121,6 +121,8 @@ const PlaylistTile = ({
           showRankIcon={showRankIcon}
           isTrending={isTrending}
           permalink={href}
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
         />
       </TileTrackContainer>
       <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
