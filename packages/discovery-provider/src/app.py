@@ -38,6 +38,7 @@ from src.queries import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
+from src.tasks.cache_current_nodes import do_cache_current_nodes
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
@@ -526,6 +527,9 @@ def configure_celery(celery, test_config=None):
     celery.Task = WrappedDatabaseTask
 
     celery.finalize()
+
+    # Cache current nodes at startup
+    do_cache_current_nodes(redis_inst)
 
     # Start tasks that should fire upon startup
     celery.send_task("cache_entity_counts")
