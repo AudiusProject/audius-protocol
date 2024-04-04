@@ -39,9 +39,12 @@ migrate_dir() {
     migration_files=$(ls "$1"/*.sql | sort -V)
 
     md5s=$(psql -c "select md5 from $MIGRATIONS_TABLE")
+    echo $migration_files
+    echo $md5s
 
     for file in $migration_files; do
         md5=$(cat "$file" | tr -d "[:space:]" | md5sum | awk '{print $1}')
+        echo $md5
 
         if [[ $md5s =~ $md5 ]]; then
           # echo "... skipping $file $md5"
@@ -49,7 +52,7 @@ migrate_dir() {
         fi
 
         if [[ $file =~ "failable" ]]; then
-            # echo "Applying failable $file"
+            echo "Applying failable $file"
             set +e
             psql < "$file"
             retval=$?

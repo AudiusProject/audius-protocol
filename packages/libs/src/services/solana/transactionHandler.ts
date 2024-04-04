@@ -322,7 +322,7 @@ export class TransactionHandler {
       done = true
       logger.info(
         `transactionHandler: finished sending txid ${txid} with ${sendCount} retries to ${
-          this.connection
+          this.connection.rpcEndpoint
         } in ${Date.now() - txStartTime} ms`
       )
       return {
@@ -334,7 +334,9 @@ export class TransactionHandler {
       logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
-        )}, ${txid}, with ${sendCount} retries to ${this.connection}`
+        )}, ${txid}, with ${sendCount} retries to ${
+          this.connection.rpcEndpoint
+        }`
       )
       done = true
       let errorCode = null
