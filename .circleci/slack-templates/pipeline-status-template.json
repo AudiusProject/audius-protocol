@@ -32,7 +32,7 @@
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": "*Workflows:*$WORKFLOW_STATUSES"
+        "text": "$WORKFLOW_STATUSES"
       }
     },
     {
