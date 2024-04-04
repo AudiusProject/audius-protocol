@@ -37,7 +37,7 @@ web-init:
           - packages/trpc-server/node_modules
           - packages/trpc-server/dist
 
-    - get-committer-slack-id
+    - get-committer-slack-id:
         when: fail
     - run:
         name: Get Slack ID
@@ -48,7 +48,7 @@ web-init:
         channel: 'C06SP746DA7'
         event: fail
         template: basic_fail_1
-        mentions: $SLACK_USER_ID
+        mentions: <@$SLACK_USER_ID>
 
 web-build-demo:
   working_directory: ~/audius-protocol

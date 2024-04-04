@@ -52,6 +52,15 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - get-committer-slack-id
+      - run:
+          name: Get Slack ID
+          command: |
+            echo $SLACK_USER_ID
+      - slack/notify:
+          channel: 'C06SP746DA7'
+          template: basic_fail_1
+          mentions: <@$SLACK_USER_ID>
 
       - create_concatenated_patch_file:
           filename: combined-patch-file.txt
