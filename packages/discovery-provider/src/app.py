@@ -40,6 +40,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
+from src.tasks.cache_current_nodes import do_cache_current_nodes
 from src.utils import helpers, web3_provider
 from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
@@ -527,8 +528,10 @@ def configure_celery(celery, test_config=None):
 
     celery.finalize()
 
+    # Cache current nodes at startup
+    do_cache_current_nodes(redis_inst)
+
     # Start tasks that should fire upon startup
-    celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
     celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_user_bank", queue="index_sol")
