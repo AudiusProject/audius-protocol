@@ -458,7 +458,7 @@ jobs:
             WORKFLOW_STATUSES=$(jq -r '.items | map("\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) <https://app.circleci.com/pipelines/\(.project_slug)/\(.pipeline_number)/workflows/\(.id)|\(.name)>") | join("\n")' < workflows.json)
 
             echo "Exporting env vars to bash environment..."
-            echo 'export SLACK_USER_ID="$SLACK_USER_ID"'' >> "$BASH_ENV"
+            echo 'export SLACK_USER_ID="$SLACK_USER_ID"' >> "$BASH_ENV"
             echo 'export PIPELINE_STATUS_HEADER="$PIPELINE_STATUS_HEADER"' >> "$BASH_ENV"
             echo 'export COMMIT_MESSAGE="$COMMIT_MESSAGE"' >> "$BASH_ENV"
             echo 'export WORKFLOW_STATUSES="$WORKFLOW_STATUSES"' >> "$BASH_ENV"
