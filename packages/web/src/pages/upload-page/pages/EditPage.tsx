@@ -3,8 +3,8 @@ import { useContext } from 'react'
 import { UploadType } from '@audius/common/store'
 import { useUnmount } from 'react-use'
 
-import { EditCollectionForm } from '../forms/EditCollectionForm'
 import { EditTrackForm } from '../forms/EditTrackForm'
+import { UploadCollectionForm } from '../forms/UploadCollectionForm'
 import { CollectionFormState, TrackFormState, UploadFormState } from '../types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
@@ -25,7 +25,7 @@ export const EditPage = (props: EditPageProps) => {
     case UploadType.ALBUM:
     case UploadType.PLAYLIST:
       return (
-        <EditCollectionForm formState={formState} onContinue={onContinue} />
+        <UploadCollectionForm formState={formState} onContinue={onContinue} />
       )
   }
 }

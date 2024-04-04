@@ -6,7 +6,7 @@ import {
   PlaylistSchema
 } from '@audius/common/schemas'
 import { UploadType } from '@audius/common/store'
-import { Text } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -26,8 +26,6 @@ import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
 import { CollectionFormState } from '../types'
 
-import styles from './EditCollectionForm.module.css'
-
 const messages = {
   name: 'Name',
   description: 'Description',
@@ -39,12 +37,12 @@ const messages = {
   completeButton: 'Complete Upload'
 }
 
-type EditCollectionFormProps = {
+type UploadCollectionFormProps = {
   formState: CollectionFormState
   onContinue: (formState: CollectionFormState) => void
 }
 
-export const EditCollectionForm = (props: EditCollectionFormProps) => {
+export const UploadCollectionForm = (props: UploadCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
 
@@ -86,46 +84,50 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(validationSchema)}
     >
-      <Form className={styles.root}>
-        <Tile className={styles.collectionFields} elevation='mid'>
-          <div className={styles.row}>
-            <ArtworkField
-              name='artwork'
-              className={styles.artwork}
-              size='small'
-            />
-            <div className={styles.collectionInfo}>
-              <TextField
-                name='playlist_name'
-                label={`${collectionTypeName} ${messages.name}`}
-                maxLength={64}
-                required
-              />
-              <TextAreaField
-                name='description'
-                aria-label={`${collectionTypeName} ${messages.description}`}
-                placeholder={`${collectionTypeName} ${messages.description}`}
-                maxLength={1000}
-                showMaxLength
-                className={styles.description}
-                grows
-              />
-            </div>
-          </div>
-          <ReleaseDateFieldLegacy />
+      <Form>
+        <Flex inline direction='column' gap='s' css={{ minWidth: '640px' }}>
+          <Tile elevation='mid'>
+            <Flex direction='column' p='l' gap='l'>
+              <Flex gap='l'>
+                <ArtworkField
+                  name='artwork'
+                  size='small'
+                  css={{ width: '248px', height: '248px' }}
+                />
+                <Flex direction='column' gap='l' css={{ flexGrow: 1 }}>
+                  <TextField
+                    name='playlist_name'
+                    label={`${collectionTypeName} ${messages.name}`}
+                    maxLength={64}
+                    required
+                  />
+                  <TextAreaField
+                    name='description'
+                    aria-label={`${collectionTypeName} ${messages.description}`}
+                    placeholder={`${collectionTypeName} ${messages.description}`}
+                    maxLength={1000}
+                    showMaxLength
+                    css={{ flexGrow: 1 }}
+                    grows
+                  />
+                </Flex>
+              </Flex>
+              <ReleaseDateFieldLegacy />
 
-          <div className={styles.trackDetails}>
-            <Text variant='label'>{messages.trackDetails.title}</Text>
-            <Text variant='body'>{messages.trackDetails.description}</Text>
-            <div className={styles.row}>
-              <SelectGenreField name='trackDetails.genre' />
-              <SelectMoodField name='trackDetails.mood' />
-            </div>
-            <TagField name='trackDetails.tags' />
-          </div>
-        </Tile>
-        <CollectionTrackFieldArray />
-        <AnchoredSubmitRow />
+              <Flex ph='xl' pv='l' gap='l' direction='column'>
+                <Text variant='label'>{messages.trackDetails.title}</Text>
+                <Text variant='body'>{messages.trackDetails.description}</Text>
+                <Flex gap='l'>
+                  <SelectGenreField name='trackDetails.genre' />
+                  <SelectMoodField name='trackDetails.mood' />
+                </Flex>
+                <TagField name='trackDetails.tags' />
+              </Flex>
+            </Flex>
+          </Tile>
+          <CollectionTrackFieldArray />
+          <AnchoredSubmitRow />
+        </Flex>
       </Form>
     </Formik>
   )
