@@ -47,8 +47,7 @@ web-init:
     - slack/notify:
         channel: 'C06SP746DA7'
         event: fail
-        template: basic_fail_1
-        mentions: SLACK_USER_ID
+        template: SLACK_TEST_FAIL_TEMPLATE
 
 web-build-demo:
   working_directory: ~/audius-protocol
