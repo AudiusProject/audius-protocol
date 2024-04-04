@@ -52,7 +52,8 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - get-committer-slack-id
+      - get-committer-slack-id:
+          when: 'always'
       - run:
           name: Get Slack ID
           command: |
