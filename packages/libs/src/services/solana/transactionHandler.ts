@@ -110,7 +110,6 @@ export class TransactionHandler {
         instructions,
         recentBlockhash,
         logger,
-        skipPreflight,
         feePayerOverride,
         signatures,
         lookupTableAddresses,
@@ -172,7 +171,6 @@ export class TransactionHandler {
     instructions: TransactionInstruction[],
     recentBlockhash: string | null,
     logger: Logger,
-    skipPreflight: boolean | null,
     feePayerOverride: Nullable<PublicKey | string> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
     lookupTableAddresses: string[],
@@ -323,9 +321,9 @@ export class TransactionHandler {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       logger.info(
-        `transactionHandler: finished for txid ${txid} with ${sendCount} retries ${
-          Date.now() - txStartTime
-        }`
+        `transactionHandler: finished sending txid ${txid} with ${sendCount} retries to ${
+          this.connection
+        } in ${Date.now() - txStartTime} ms`
       )
       return {
         res: txid,
@@ -336,7 +334,7 @@ export class TransactionHandler {
       logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
-        )}, ${txid}`
+        )}, ${txid}, with ${sendCount} retries to ${this.connection}`
       )
       done = true
       let errorCode = null
