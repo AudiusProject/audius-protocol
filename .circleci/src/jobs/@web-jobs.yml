@@ -38,11 +38,14 @@ web-init:
           - packages/trpc-server/dist
 
     - get-committer-slack-id
+    - run:
+        command: |
+          echo $SLACK_USER_ID
     - slack/notify:
         channel: 'C06SP746DA7'
         event: fail
         template: basic_fail_1
-        mentions: <@${SLACK_USER_ID}>
+        mentions: $SLACK_USER_ID
 
 web-build-demo:
   working_directory: ~/audius-protocol
