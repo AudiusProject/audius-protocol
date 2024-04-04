@@ -223,13 +223,17 @@ web-deploy-sourcemaps-s3:
 
 slack-notify-test-failure:
   steps:
-    - run:
-        when: on_fail
-        command: |
-          author_name=$(git log -1 --pretty=format:'%an')
-          env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
-          echo "export SLACK_USER_ID=\"<@$(eval echo \$$env_key_name)>\"" >> "$BASH_ENV"
-    - slack/notify:
-        channel: 'C06SP746DA7'
-        event: fail
-        template: SLACK_TEST_FAIL_TEMPLATE
+    - when:
+        condition:
+          equal: [main, << pipeline.git.branch >>]
+        steps:
+          - run:
+              when: on_fail
+              command: |
+                author_name=$(git log -1 --pretty=format:'%an')
+                env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
+                echo "export SLACK_USER_ID=\"<@$(eval echo \$$env_key_name)>\"" >> "$BASH_ENV"
+          - slack/notify:
+              channel: 'C06SP746DA7'
+              event: fail
+              template: SLACK_TEST_FAIL_TEMPLATE
