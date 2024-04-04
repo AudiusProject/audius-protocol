@@ -61,6 +61,7 @@ export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
     <View style={styles.root}>
       <Flex inline direction='row' alignItems='center' gap='s'>
         <IconRobot color='default' />
+        {/* IconRobot is bottom-heavy, adding marginTop makes text look more aligned */}
         <Text variant='label' style={{ marginTop: 2 }}>
           {messages.title}
         </Text>
