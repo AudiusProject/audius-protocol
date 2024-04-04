@@ -432,7 +432,7 @@ jobs:
       - run:
           name: Generate Slack Template
           command: |
-            PIPELINE_PENDING == "true"
+            PIPELINE_PENDING="true"
             while [[ "$PIPELINE_PENDING" == "true" ]]; do
                 echo "Fetching pipeline workflows..."
                 curl --url "https://circleci.com/api/v2/pipeline/${CIRCLE_PIPELINE_ID}/workflow" \
