@@ -102,7 +102,7 @@ function* writeReactionValueAsync({
 
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const useDiscoveryReactions = getFeatureEnabled(
-    FeatureFlags.DISCOVERY_REACTIONS
+    FeatureFlags.DISCOVERY_TIP_REACTIONS
   )
 
   yield* call(submitReaction, {
