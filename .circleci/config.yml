@@ -606,9 +606,9 @@ workflows:
       - notify-pipeline-status:
           context:
             - slack-secrets
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
 
   release-create-branch:
     when:
