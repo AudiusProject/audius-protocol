@@ -275,7 +275,7 @@ export const PremiumContentPurchaseModal = () => {
     !purchaseConditions ||
     !(isValidDownloadGated || isValidStreamGated)
   ) {
-    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    console.error('PremiumContentPurchaseModal: Content is not purchasable')
     return null
   }
 

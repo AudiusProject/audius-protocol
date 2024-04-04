@@ -13,6 +13,7 @@ import type { TextStyle } from 'react-native'
 
 import type { ImageProps } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
+import { PurchaseableContentType } from '@audius/common/store'
 
 export type DetailsTileDetail = {
   icon?: ReactNode
@@ -26,6 +27,9 @@ export type DetailsTileDetail = {
 export type DetailsTileProps = {
   /** Id of the track or collection */
   contentId?: ID
+
+  /** Type of content (for premium content) */
+  contentType: PurchaseableContentType
 
   /** Cosign information */
   coSign?: Track['_co_sign']
