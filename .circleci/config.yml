@@ -597,10 +597,10 @@ workflows:
           context:
             - slack-secrets
           requires:
-            - trigger-relevant-workflows
-          # filters:
-          #   branches:
-          #     only: /^main$/
+            - trigger-main-workflows
+          filters:
+            branches:
+              only: /^main$/
 
   release-create-branch:
     when:
