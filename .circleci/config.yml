@@ -488,7 +488,7 @@ jobs:
             jq -n --arg header "$PIPELINE_STATUS_HEADER"\
                 --arg author "*Author*: $SLACK_USER_ID"\
                 --arg branch "*Branch*: <$PIPELINE_URL|$CIRCLE_BRANCH>"\
-                --arg commit "$(printf "*Commit*:%s\n%s" "$COMMIT_SHA_LINK" "$COMMIT_MESSAGE")"\
+                --arg commit "$(printf "*Commit*: %s\n%s" "$COMMIT_SHA_LINK" "$COMMIT_MESSAGE")"\
                 --arg workflows "$WORKFLOW_STATUSES"\
                 --arg summary "$SUMMARY_MESSAGE"\
                 -f .circleci/slack-templates/pipeline-status-template.jq\
