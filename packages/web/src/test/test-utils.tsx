@@ -1,14 +1,13 @@
 import { ReactElement, ReactNode } from 'react'
 
 import { ThemeProvider } from '@audius/harmony'
+import { DeepPartial } from '@audius/sdk/dist/sdk/utils/deepPartial'
 import { render, RenderOptions } from '@testing-library/react'
 
 import { ReduxProvider } from 'app/ReduxProvider'
-import { ToastContextProvider } from 'components/toast/ToastContext'
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
+import { ToastContextProvider } from 'components/toast/ToastContext'
 import { AppState } from 'store/types'
-import './test-mocks'
-import { DeepPartial } from '@audius/sdk/dist/sdk/utils/deepPartial'
 
 type TestOptions = {
   reduxState?: DeepPartial<AppState>

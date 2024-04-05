@@ -6,12 +6,12 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 import { configureStore } from 'store/configureStore'
+import { AppState } from 'store/types'
 import logger from 'utils/logger'
 
 import { useSsrContext } from '../ssr/SsrContext'
 
 import { useHistoryContext } from './HistoryProvider'
-import { AppState } from 'store/types'
 
 export const ReduxProvider = ({
   children,

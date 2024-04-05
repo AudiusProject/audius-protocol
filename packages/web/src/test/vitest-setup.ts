@@ -3,7 +3,6 @@ import './vitest-canvas-mock'
 
 import { vi } from 'vitest'
 
-
 // Some global mocks that most tests will need.
 // If you need to provide any form of mocked responses, you can replace them in your test with a hoisted implementation
 // @ts-ignore
