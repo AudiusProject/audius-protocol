@@ -101,7 +101,10 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run preview:stage',
+    // On CI the build already exists, so we don't need to use the turbofied `preview:stage` command
+    command: process.env.CI
+      ? 'npm run preview:stage:ci'
+      : 'npm run preview:stage',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
