@@ -31,8 +31,6 @@ import styles from './styles.module.css'
 import { ContentProps } from './types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { FeatureFlags } from '@audius/common/services'
-import { Link } from 'react-router-dom'
-import { ExternalLink } from 'components/link'
 
 const messages = {
   by: 'By',
