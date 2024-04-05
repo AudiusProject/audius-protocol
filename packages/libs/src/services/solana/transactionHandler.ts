@@ -9,6 +9,7 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import bs58 from 'bs58'
+import { sample } from 'lodash'
 
 import type { Logger, Nullable } from '../../utils'
 import type { IdentityService, RelayTransactionData } from '../identity'
@@ -33,7 +34,7 @@ type HandleTransactionParams = {
  * or via IdentityService's relay.
  */
 export class TransactionHandler {
-  private readonly connection: Connection
+  private connection: Connection
   private readonly useRelay: boolean
   private readonly identityService: IdentityService | null
   private readonly feePayerKeypairs: Keypair[] | null
@@ -41,6 +42,7 @@ export class TransactionHandler {
   private readonly retryTimeoutMs: number
   private readonly pollingFrequencyMs: number
   private readonly sendingFrequencyMs: number
+  private readonly fallbackConnections: Connection[] | null
 
   /**
    * Creates an instance of TransactionHandler.
@@ -53,7 +55,8 @@ export class TransactionHandler {
     skipPreflight = true,
     retryTimeoutMs = 60000,
     pollingFrequencyMs = 2000,
-    sendingFrequencyMs = 2000
+    sendingFrequencyMs = 2000,
+    fallbackConnections = null
   }: {
     connection: Connection
     useRelay: boolean
@@ -63,6 +66,7 @@ export class TransactionHandler {
     retryTimeoutMs?: number
     pollingFrequencyMs?: number
     sendingFrequencyMs?: number
+    fallbackConnections?: Connection[] | null
   }) {
     this.connection = connection
     this.useRelay = useRelay
@@ -72,6 +76,7 @@ export class TransactionHandler {
     this.retryTimeoutMs = retryTimeoutMs
     this.pollingFrequencyMs = pollingFrequencyMs
     this.sendingFrequencyMs = sendingFrequencyMs
+    this.fallbackConnections = fallbackConnections
   }
 
   /**
@@ -322,7 +327,7 @@ export class TransactionHandler {
       done = true
       logger.info(
         `transactionHandler: finished sending txid ${txid} with ${sendCount} retries to ${
-          this.connection
+          this.connection.rpcEndpoint
         } in ${Date.now() - txStartTime} ms`
       )
       return {
@@ -331,11 +336,20 @@ export class TransactionHandler {
         errorCode: null
       }
     } catch (e) {
+      const fallbackConnection =
+        sample(
+          this.fallbackConnections?.filter(
+            (conn) => conn.rpcEndpoint !== this.connection.rpcEndpoint
+          )
+        ) ?? this.connection
       logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
-        )}, ${txid}, with ${sendCount} retries to ${this.connection}`
+        )}, ${txid}, with ${sendCount} retries to ${
+          this.connection.rpcEndpoint
+        } falling back to ${fallbackConnection.rpcEndpoint}`
       )
+      this.connection = fallbackConnection
       done = true
       let errorCode = null
       let error = null
