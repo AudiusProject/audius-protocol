@@ -35,7 +35,7 @@ export const useCollectionCoverArt2 = (
 ) => {
   const coverArtSizes = useSelector(
     (state: CommonState) =>
-      getCollection(state, { id: collectionId })?._cover_art_sizes ?? {}
+      getCollection(state, { id: collectionId })?._cover_art_sizes ?? null
   )
 
   return useCollectionCoverArt(collectionId, coverArtSizes, size)

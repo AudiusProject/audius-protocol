@@ -58,12 +58,7 @@ const defaultColumns: PurchasesTableColumn[] = [
 // Cell Render Functions
 const renderContentNameCell = (cellInfo: PurchaseCell) => {
   const { contentId, contentType } = cellInfo.row.original
-  return contentType === USDCContentPurchaseType.TRACK ? (
-    <TrackNameWithArtwork id={contentId} />
-  ) : (
-    // TODO: When we support collection purchases
-    <div />
-  )
+  return <TrackNameWithArtwork id={contentId} contentType={contentType} />
 }
 
 const renderArtistCell = (cellInfo: PurchaseCell) => {
@@ -166,18 +161,20 @@ export const PurchasesTable = ({
   )
 
   return (
-    <Table
-      columns={tableColumns}
-      data={data}
-      loading={loading}
-      isEmptyRow={isEmptyPurchaseRow}
-      onClickRow={handleClickRow}
-      onSort={onSort}
-      fetchMore={fetchMore}
-      isVirtualized={isVirtualized}
-      totalRowCount={totalRowCount ?? 0}
-      scrollRef={scrollRef}
-      fetchBatchSize={fetchBatchSize}
-    />
+    <>
+      <Table
+        columns={tableColumns}
+        data={data}
+        loading={loading}
+        isEmptyRow={isEmptyPurchaseRow}
+        onClickRow={handleClickRow}
+        onSort={onSort}
+        fetchMore={fetchMore}
+        isVirtualized={isVirtualized}
+        totalRowCount={totalRowCount ?? 0}
+        scrollRef={scrollRef}
+        fetchBatchSize={fetchBatchSize}
+      />
+    </>
   )
 }

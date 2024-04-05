@@ -1,6 +1,7 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
 import {
+  SquareSizes,
   USDCContentPurchaseType,
   USDCPurchaseDetails
 } from '@audius/common/models'
@@ -8,8 +9,10 @@ import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import { BN } from 'bn.js'
 import moment from 'moment'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Table } from 'components/table'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchaseCell, PurchaseRow } from '../types'
@@ -56,12 +59,7 @@ const defaultColumns: SalesTableColumn[] = [
 // Cell Render Functions
 const renderContentNameCell = (cellInfo: PurchaseCell) => {
   const { contentId, contentType } = cellInfo.row.original
-  return contentType === USDCContentPurchaseType.TRACK ? (
-    <TrackNameWithArtwork id={contentId} />
-  ) : (
-    // TODO: When we support collection purchases
-    <div />
-  )
+  return <TrackNameWithArtwork id={contentId} contentType={contentType} />
 }
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {

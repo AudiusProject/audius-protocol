@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   chatActions,
@@ -25,18 +26,14 @@ import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ExternalTextLink, UserLink } from 'components/link'
-import {
-  DynamicTrackArtwork,
-  DynamicTrackArtworkSize
-} from 'components/track/DynamicTrackArtwork'
+import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 
-import { DetailSection } from './DetailSection'
 import { ContentLink } from './ContentLink'
+import { DetailSection } from './DetailSection'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
-import { ContentProps } from './types'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
@@ -58,7 +55,10 @@ const messages = {
 export const SaleModalContent = ({
   purchaseDetails,
   onClose
-}: ContentProps) => {
+}: {
+  purchaseDetails: USDCPurchaseDetails
+  onClose: () => void
+}) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )

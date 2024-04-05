@@ -1,11 +1,16 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import {
   useGetCurrentUserId,
   useGetPlaylistById,
   useGetTrackById
 } from '@audius/common/api'
+import {
+  SquareSizes,
+  USDCContentPurchaseType,
+  USDCPurchaseDetails
+} from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   ModalContent,
@@ -22,21 +27,19 @@ import {
 } from '@audius/harmony'
 import moment from 'moment'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
-import {
-  DynamicTrackArtwork,
-  DynamicTrackArtworkSize
-} from 'components/track/DynamicTrackArtwork'
+import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
-import { DetailSection } from './DetailSection'
 import { ContentLink } from './ContentLink'
+import { DetailSection } from './DetailSection'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
-import { ContentProps } from './types'
-import { USDCContentPurchaseType } from '@audius/common/models'
 
 const messages = {
   by: 'by',
@@ -52,7 +55,10 @@ const messages = {
 export const PurchaseModalContent = ({
   purchaseDetails,
   onClose
-}: ContentProps) => {
+}: {
+  purchaseDetails: USDCPurchaseDetails
+  onClose: () => void
+}) => {
   const { contentType, contentId } = purchaseDetails
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
@@ -71,6 +77,11 @@ export const PurchaseModalContent = ({
     },
     { disabled: isTrack }
   )
+  const trackArtwork = useTrackCoverArt2(contentId, SquareSizes.SIZE_150_BY_150)
+  const albumArtwork = useCollectionCoverArt2(
+    contentId,
+    SquareSizes.SIZE_150_BY_150
+  )
 
   const handleClickVisitTrack = useCallback(() => {
     onClose()
@@ -79,7 +90,7 @@ export const PurchaseModalContent = ({
     } else if (!isTrack && album && album.permalink) {
       goToRoute(album.permalink)
     }
-  }, [track, onClose, goToRoute])
+  }, [onClose, isTrack, track, album, goToRoute])
 
   return isPremiumAlbumsEnabled ? (
     <>
@@ -88,9 +99,9 @@ export const PurchaseModalContent = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
-          <DynamicTrackArtwork
-            id={contentId}
-            size={DynamicTrackArtworkSize.LARGE}
+          <DynamicImage
+            image={isTrack ? trackArtwork : albumArtwork}
+            wrapperClassName={styles.artworkContainer}
           />
           <DetailSection label={messages.track}>
             <ContentLink

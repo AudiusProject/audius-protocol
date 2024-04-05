@@ -7,7 +7,7 @@ import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 import styles from './DynamicTrackArtwork.module.css'
 
-export enum DynamicTrackArtworkSize {
+export enum DynamicContentArtworkSize {
   /** 40x40 */
   SMALL = 'small',
   /** 64x64 */
@@ -16,18 +16,18 @@ export enum DynamicTrackArtworkSize {
   LARGE = 'large'
 }
 
-type DynamicTrackArtworkProps = {
+type DynamicContentArtworkProps = {
   id: ID
   className?: string
-  size?: DynamicTrackArtworkSize
+  size?: DynamicContentArtworkSize
 }
 
 /** Loads artwork for a given track ID and applies an optional className */
 export const DynamicTrackArtwork = ({
   id,
   className,
-  size = DynamicTrackArtworkSize.DEFAULT
-}: DynamicTrackArtworkProps) => {
+  size = DynamicContentArtworkSize.DEFAULT
+}: DynamicContentArtworkProps) => {
   const { status, data: track } = useGetTrackById({ id })
   const image = useTrackCoverArt2(id, SquareSizes.SIZE_150_BY_150)
   const loading = statusIsNotFinalized(status) || !track
