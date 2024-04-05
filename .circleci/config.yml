@@ -431,10 +431,10 @@ jobs:
       - checkout
       - run:
           name: Wait For Pipeline
-          command: sh .circleci/scripts/wait-for-pipeline.sh
+          command: .circleci/scripts/wait-for-pipeline.sh
       - run:
           name: Generate Slack Template
-          command: sh .circleci/scripts/generate-slack-template.sh
+          command: .circleci/scripts/generate-slack-template.sh
       - slack/notify:
           channel: 'C06SP746DA7'
           template: PIPELINE_STATUS_TEMPLATE
