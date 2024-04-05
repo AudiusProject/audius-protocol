@@ -20,15 +20,39 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 
 import { BoxedTextField } from '../../BoxedTextField'
-import { DOWNLOAD_CONDITIONS, PREVIEW, PRICE } from '../../types'
+import {
+  DOWNLOAD_CONDITIONS,
+  PREVIEW,
+  PRICE,
+  ALBUM_TRACK_PRICE
+} from '../../types'
 
 const messages = {
   price: {
-    title: 'Set a Price',
-    description:
-      'Set the price fans must pay to unlock this track (minimum price of $1.00)',
-    label: 'Cost to Unlock',
-    placeholder: '1.00'
+    // Standalone purchaseable track flow
+    standaloneTrackPrice: {
+      title: 'Set a Price',
+      description:
+        'Set the price fans must pay to unlock this track (minimum price of $1.00)',
+      label: 'Cost to Unlock',
+      placeholder: '1.00'
+    },
+    // Applies to the individual tracks within album upload flow
+    albumTrackPrice: {
+      title: 'Track Price',
+      description:
+        'Set the price fans must pay to unlock a single track on your album (minimum price of $0.99)',
+      label: 'Track price',
+      placeholder: '1.00'
+    },
+    // Album purchase flow
+    albumPrice: {
+      title: 'Album Price',
+      description:
+        'Set the price fans must pay to unlock this album (minimum price of $0.99) ',
+      label: 'Album price',
+      placeholder: '5.00'
+    }
   },
   preview: {
     title: '30 Second Preview',
@@ -50,20 +74,58 @@ export enum UsdcPurchaseType {
 
 export type TrackAvailabilityFieldsProps = {
   disabled?: boolean
+  isAlbum?: boolean
+}
+
+type PriceMessages = typeof messages.price
+export type PriceFieldProps = TrackAvailabilityFieldsProps & {
+  messaging: PriceMessages[keyof PriceMessages]
+  fieldName: typeof PRICE | typeof ALBUM_TRACK_PRICE
 }
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
-  const { disabled } = props
+  const { disabled, isAlbum } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      <PriceField disabled={disabled} />
-      <PreviewField disabled={disabled} />
-      {downloadConditions ? (
-        <HelpCallout icon={<IconInfo />} content={messages.premiumDownloads} />
-      ) : null}
+      {isAlbum ? (
+        <>
+          <PriceField
+            disabled={disabled}
+            messaging={messages.price.albumPrice}
+            fieldName={PRICE}
+          />
+          <PriceField
+            disabled={disabled}
+            messaging={messages.price.albumTrackPrice}
+            fieldName={ALBUM_TRACK_PRICE}
+          />
+          <input type='hidden' name={PREVIEW} value='0' />
+          {downloadConditions && !isAlbum ? (
+            <HelpCallout
+              icon={<IconInfo />}
+              content={messages.premiumDownloads}
+            />
+          ) : null}
+        </>
+      ) : (
+        <>
+          <PriceField
+            disabled={disabled}
+            messaging={messages.price.standaloneTrackPrice}
+            fieldName={PRICE}
+          />
+          <PreviewField disabled={disabled} />
+          {downloadConditions ? (
+            <HelpCallout
+              icon={<IconInfo />}
+              content={messages.premiumDownloads}
+            />
+          ) : null}
+        </>
+      )}
     </div>
   )
 }
@@ -98,9 +160,9 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
   )
 }
 
-const PriceField = (props: TrackAvailabilityFieldsProps) => {
-  const { disabled } = props
-  const [{ value }, , { setValue: setPrice }] = useField<number>(PRICE)
+const PriceField = (props: PriceFieldProps) => {
+  const { disabled, messaging, fieldName } = props
+  const [{ value }, , { setValue: setPrice }] = useField<number>(fieldName)
   const [humanizedValue, setHumanizedValue] = useState(
     value ? decimalIntegerToHumanReadable(value) : null
   )
@@ -127,11 +189,11 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
 
   return (
     <BoxedTextField
-      {...messages.price}
-      name={PRICE}
-      label={messages.price.label}
+      {...messaging}
+      name={fieldName}
+      label={messaging.label}
       value={humanizedValue ?? undefined}
-      placeholder={messages.price.placeholder}
+      placeholder={messaging.placeholder}
       startAdornmentText={messages.dollars}
       endAdornmentText={messages.usdc}
       onChange={handlePriceChange}

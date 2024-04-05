@@ -56,3 +56,25 @@ export type PickRename<
 > = Omit<Type, Key> & {
   [k in RenamedKey]: Type[Key]
 }
+
+/**
+ * Recurses through an object and removes all keys that match K.
+ * e.g.
+ * type Foo = { 
+ *   a: {
+ *     b: string
+ *     c: { b: string }
+ *   }
+ * }
+ * DeepOmit<Foo, 'b'> results in 
+ * { 
+ *   a: {
+ *     c: { }
+ *   }
+ * }
+ */
+export type DeepOmit<T, K> = T extends object
+  ? {
+      [P in keyof T as P extends K ? never : P]: DeepOmit<T[P], K>
+    }
+  : T
