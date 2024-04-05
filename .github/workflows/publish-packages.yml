@@ -33,6 +33,7 @@ jobs:
         #   publish: npm run publish-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
           # TODO: add turbo things
 
       # - name: Send a Slack notification if a publish happens
