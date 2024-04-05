@@ -12,18 +12,20 @@ import useBaseUrl from '@docusaurus/useBaseUrl'
 
 :::info Delivery processing
 
-[TikiLabs](https://tikilabs.com) is a facilitator of distributing DDEX directly to the Audius Protocol
-For inquiries or support, reach out at support@audius.co.
+[TikiLabs](https://tikilabs.com) is a facilitator of distributing DDEX directly to the Audius
+Protocol For inquiries or support, reach out at support@audius.co.
 
 :::
 
-- ERN3 is the preferred DDEX specification for bulk ingestion into Audius. See the [ERN3 details](./ern3) for more details around submission choreography.
+- ERN3 is the preferred DDEX specification for bulk ingestion into Audius. See the
+  [ERN3 details](./ern3) for more details around submission choreography.
 - Audius only accepts price information using absolute prices (e.g. via `WholesalePricePerUnit`).
   Price codes will be ignored (e.g. `PriceType`).
 - Audius also does not support `ValidityPeriod` `EndDate`s. This includes using `EndDate` to specify
   multiple `ValidityPeriod`s with different prices. We can only parse 1 `ValidityPeriod`
   `StartDate`.
-- Audius currently only accepts the `Worldwide` `TerritoryCode`. Territory support for controlled streaming is coming soon! 🌎
+- Audius currently only accepts the `Worldwide` `TerritoryCode`. Territory support for controlled
+  streaming is coming soon! 🌎
 - `NonInteractiveStream` is not supported.
 - A `ReleaseDeal` is required with a `DealReleaseReference` to each track on an album.
 - A `ReleaseDeal` is not required with a `DealReleaseReference` to an album release. If an album
@@ -38,29 +40,296 @@ Please note that exact DDEX fields will depend on the specific ERN version.
 
 :::
 
-### Required
+---
 
+### Required Fields
 
-| Audius                                                             | DDEX                                                                                | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| releaseDate                                                        | /ReleaseList/Release/GlobalOriginalReleaseDate                                      | TODO: This is apparently deprecated. Probably needs to change to use a date from DealList                                                                                                                                                                                                                                                                                                           |
-| duration                                                           | /ResourceList/SoundRecording/Duration                                               | Parsed as ISO 8601. Falls back to /ReleaseList/Release/Duration from the release with a matching ResourceReference                                                                                                                                                                                                                                                                                  |
+The following fields are required by the Audius SDK and map to DDEX fields in a cascade.
 
+#### releaseDate
+
+1. `/DealList/ReleaseDeal/Deal/ValidityPeriod/StartDate`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ReleaseDate`
+3. `/ReleaseList/Release/GlobalOriginalReleaseDate`
+
+#### genre
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/SubGenre`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/GenreText`
+3. (only for tracks)
+   `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/SubGenre`
+4. (only for tracks)
+   `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/GenreText`
+
+#### coverArtFile
+
+the `coverArtFile` maps to two DDEX Fields
+
+- `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FilePath`
+- `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FileName`
+
+:::info
+
+Not technically an Audius SDK metadata field, but uploaded as part of the track/album. note that
+this DDEX field is a relative path to the file within the delivery
+
+:::
+
+#### userId
+
+1. same as artists (next row below): checks each artist name (in order) against Audius database of
+   OAuthed display names, and uses the first match
+
+:::info
+
+not technically an Audius SDK metadata field, but uploaded as part of the track/album
+
+:::
+
+---
+
+### Optional Fields
+
+The following fields are optional, and will map to the listed DDEX fields.
+
+#### artists
+
+1. (only for tracks)
+   `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
+
+:::info
+
+we use the `/PartyName/FullName` child element as the artist’s name and the `SequenceNumber`
+attribute to preserve order
+
+:::
+
+#### ddexReleaseIds
+
+1. `/ReleaseList/Release/ReleaseId`
+
+:::info
+
+from this element, we parse+preserve many IDs (children elements): `PartyId`, `CatalogNumber`,
+`ICPN`, `GRid`, `ISAN`, `ISBN`, `ISMN`, `ISRC`, `ISSN`, `ISTC`, `ISWC`, `MWLI`, `SICI`, and
+`ProprietaryId`
+
+:::
+
+#### copyrightLine
+
+1. (only for tracks)
+   `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
+3. `/ReleaseList/Release/CLine`
+
+:::info
+
+only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
+`CLineText`
+
+:::
+
+#### producerCopyrightLine
+
+1. (only for tracks)
+   `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
+3. `/ReleaseList/Release/PLine`
+
+:::info
+
+only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
+`PLineText`
+
+:::
+
+#### parentalWarningType
+
+1. (only for tracks)
+   `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+
+#### description
+
+The DDEX standard includes a `MarketingComments` field that is rarely used, but is available.
+
+---
+
+### Unused Fields
+
+The following Audius SDK Fields are not used by DDEX and have no mapping.
+
+#### license
+
+:::info
+
+we don’t know which DDEX field to use for this, but it seems like something that would be
+communicated somewhere
+
+:::
+
+#### mood and tags
+
+:::info
+
+never passed to Audius SDK because DDEX doesn’t provide these and likely never will
+
+:::
+
+#### child elements of `/ReleaseList/Release/`
+
+The following child elements are parsed and stored in the separate DDEX server, but not stored in
+Audius and not used anywhere:
+
+- `ReferenceTitle/TitleText`
+- `ReferenceTitle/SubTitle`
+
+#### child elements of `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/`
+
+The following child elements are parsed and stored in the separate DDEX server, but not stored in
+Audius and not used anywhere:
+
+- `Title[@TitleType='DisplayTitle']/TitleText` (used in albums/EPs but not single tracks)
+- `Title[@TitleType='DisplayTitle']/SubTitle`
+- `Title[@TitleType='FormalTitle']/TitleText`
+- `Title[@TitleType='FormalTitle']/SubTitle `
+
+#### child elements of `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ResourceGroup/`
+
+The following child elements are parsed and stored in the separate DDEX server, but not stored in
+Audius and not used anywhere:
+
+- `SequenceNumber`
+- `ResourceGroupContentItem/ResourceType`
+- `ResourceGroupContentItem/ReleaseResourceReference`
+- `ResourceGroupContentItem/IsInstantGratificationResource`
+
+---
+
+## Track Metadata Mapping
+
+### Required Fields
+
+#### title
+
+1. `/ResourceList/SoundRecording/ReferenceTitle/TitleText`
+
+:::info
+
+Subtitle is currently ignored/unused, which likely needs to change (perhaps make title be
+`“<title> - <subtitle>.”` also note that DDEX communicates additional titles (eg,
+`<Title TitleType=”DisplayTitle”>` and `<Title TitleType=”FormalTitle”>`) in the both the
+SoundRecording and release. we store these in the separate DDEX server but not in the Audius network
+
+:::
+
+#### trackFile
+
+the `trackFile` maps to two DDEX Fields
+
+- `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FilePath`
+- `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FileName`
+
+:::info
+
+the actual audio file. not technically an Audius SDK metadata field, but uploaded in the same SDK
+function. note that this DDEX field is a relative path to the file within the delivery
+
+:::
+
+---
 
 ### Optional
 
+#### isrc
 
-| Audius                                                             | DDEX                                                                                | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| releaseDate                                                        | /ReleaseList/Release/GlobalOriginalReleaseDate                                      | TODO: This is apparently deprecated. Probably needs to change to use a date from DealList                                                                                                                                                                                                                                                                                                           |
-| duration                                                           | /ResourceList/SoundRecording/Duration                                               | Parsed as ISO 8601. Falls back to /ReleaseList/Release/Duration from the release with a matching ResourceReference                                                                                                                                                                                                                                                                                  |
+1. `/ResourceList/SoundRecording/SoundRecordingId/ISRC`
 
+#### resourceContributors
 
-### Unused
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/ResourceContributor`
 
+:::info
 
-| Audius                                                             | DDEX                                                                                | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| releaseDate                                                        | /ReleaseList/Release/GlobalOriginalReleaseDate                                      | TODO: This is apparently deprecated. Probably needs to change to use a date from DealList                                                                                                                                                                                                                                                                                                           |
-| duration                                                           | /ResourceList/SoundRecording/Duration                                               | Parsed as ISO 8601. Falls back to /ReleaseList/Release/Duration from the release with a matching ResourceReference                                                                                                                                                                                                                                                                                  |
+the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+`SequenceNumber`, and `ResourceContributorRole`
 
+:::
+
+#### indirectResourceContributors
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/IndirectResourceContributor`
+
+:::info
+
+the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+`SequenceNumber`, and `IndirectResourceContributorRole`
+
+:::
+
+#### rightsController
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/RightsController`
+
+:::info
+
+the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+`RightsShareUnknown`, and `RightsControllerRole`
+
+:::
+
+#### previewStartSeconds
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/PreviewDetails/StartPoint`
+2. only when
+   `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/IsPreview`
+   is true
+
+:::info
+
+Preview length is 30 seconds starting at the `previewStartSeconds` into the track’s audio, even if a
+longer or shorter duration is given. does not support using an external file for the preview
+
+:::
+
+---
+
+## Album Metadata Mapping
+
+### Required
+
+#### albumName
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Title[@TitleType='DisplayTitle']/TitleText`
+
+:::info
+
+subtitle is currently ignored/unused, which likely needs to change (perhaps make title be
+`“<title> - <subtitle>.”` the same element but with `TitleType=’FormalTitle’`, as well as a
+`<ReferenceTitle>` element, are stored in the separate DDEX server but not in the Audius network
+
+:::
+
+#### trackMetadatas
+
+1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
+
+:::info
+
+metadata about each track in the album. not technically an Audius SDK metadata field, but uploaded
+as part of the album
+
+:::
+
+#### trackFiles
+
+1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
+
+:::info
+
+array of audio files which the album is comprised of. not technically an Audius SDK metadata field,
+but uploaded as part of the album
+
+:::
