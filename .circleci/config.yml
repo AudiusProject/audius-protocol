@@ -596,6 +596,8 @@ workflows:
       - notify-pipeline-status:
           context:
             - slack-secrets
+          requires:
+            - trigger-relevant-workflows
           # filters:
           #   branches:
           #     only: /^main$/
