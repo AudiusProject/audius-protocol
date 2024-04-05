@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { UserLink } from 'components/link'
 
 import { useGetTrackById } from '@audius/common/api'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
@@ -76,12 +77,12 @@ export const PurchaseModalContent = ({
               <Text variant='body' size='l'>
                 {messages.by}
               </Text>
-              <Text variant='body' size='l' color='accent'>
-                <UserNameAndBadges
-                  onNavigateAway={onClose}
-                  userId={purchaseDetails.sellerUserId}
-                />
-              </Text>
+              <UserLink
+                userId={purchaseDetails.sellerUserId}
+                popover
+                textVariant='body'
+                size='l'
+              />
             </Flex>
           </DetailSection>
         </Flex>

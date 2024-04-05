@@ -12,11 +12,11 @@ export const DetailSection = ({
   button?: React.ReactNode
 }) => (
   <Flex
-    justifyContent='space-between'
     w='100%'
     alignItems={button ? undefined : 'center'}
+    css={{ overflow: 'hidden' }}
   >
-    <Flex gap='s' direction='column'>
+    <Flex gap='s' direction='column' w='100%'>
       <Text variant='label' size='l' color='subdued'>
         {label}
       </Text>

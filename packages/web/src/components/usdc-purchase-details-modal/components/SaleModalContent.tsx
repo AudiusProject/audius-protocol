@@ -36,6 +36,7 @@ import styles from './styles.module.css'
 import { ContentProps } from './types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { FeatureFlags } from '@audius/common/services'
+import { UserLink } from 'components/link'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
@@ -100,12 +101,12 @@ export const SaleModalContent = ({
               <Text variant='body' size='l'>
                 {messages.by}
               </Text>
-              <Text variant='body' size='l' color='accent'>
-                <UserNameAndBadges
-                  onNavigateAway={onClose}
-                  userId={purchaseDetails.sellerUserId}
-                />
-              </Text>
+              <UserLink
+                userId={purchaseDetails.sellerUserId}
+                popover
+                textVariant='body'
+                size='l'
+              />
             </Flex>
           </DetailSection>
         </Flex>
@@ -123,12 +124,12 @@ export const SaleModalContent = ({
               </Button>
             }
           >
-            <Text variant='body' size='l' color='accent'>
-              <UserNameAndBadges
-                onNavigateAway={onClose}
-                userId={purchaseDetails.buyerUserId}
-              />
-            </Text>
+            <UserLink
+              userId={purchaseDetails.buyerUserId}
+              popover
+              textVariant='body'
+              size='l'
+            />
           </DetailSection>
         </Flex>
         <DetailSection
