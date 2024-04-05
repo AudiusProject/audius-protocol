@@ -129,12 +129,16 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
           <ReleaseDateFieldLegacy />
           {isAlbum && showPremiumAlbums ? (
-            <AccessAndSaleField isAlbum isUpload onSubmit={({ stream_availability_type }) => {
-              setDownloadToggleValue(
-                stream_availability_type ===
-                StreamTrackAvailabilityType.USDC_PURCHASE
-              )
-            }} />
+            <AccessAndSaleField
+              isAlbum
+              isUpload
+              onSubmit={({ stream_availability_type }) => {
+                setDownloadToggleValue(
+                  stream_availability_type ===
+                    StreamTrackAvailabilityType.USDC_PURCHASE
+                )
+              }}
+            />
           ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>

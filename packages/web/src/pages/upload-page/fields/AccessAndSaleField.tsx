@@ -19,7 +19,6 @@ import { formatPrice, Nullable } from '@audius/common/utils'
 import {
   IconCart,
   IconCollectible,
-  IconComponent,
   IconVisibilityHidden as IconHidden,
   IconNote,
   IconSpecialAccess,
