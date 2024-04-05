@@ -488,11 +488,11 @@ jobs:
                 --arg workflows $WORKFLOW_STATUSES\
                 --arg summary $SUMMARY_MESSAGE\
                 -f .circleci/slack-templates/pipeline-status-template.jq\
-              > ./tmp/pipeline-status-template.json
+              > /tmp/pipeline-status-template.json
 
             # Export the template to be available to the slack/notify command
             echo "Exporting template to bash environment..."
-            echo 'export PIPELINE_STATUS_TEMPLATE=$(cat ./tmp/pipeline-status-template-gen.json)' >> "$BASH_ENV"
+            echo 'export PIPELINE_STATUS_TEMPLATE=$(cat /tmp/pipeline-status-template-gen.json)' >> "$BASH_ENV"
       - slack/notify:
           channel: 'C06SP746DA7'
           template: PIPELINE_STATUS_TEMPLATE
