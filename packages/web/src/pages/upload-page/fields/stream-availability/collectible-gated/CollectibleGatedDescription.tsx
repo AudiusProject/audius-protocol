@@ -1,7 +1,7 @@
 import { Flex, IconExternalLink, Text } from '@audius/harmony'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'
-import { ExternalLink } from 'components/link'
+import { ExternalTextLink } from 'components/link'
 import { AUDIUS_GATED_CONTENT_BLOG_LINK } from 'utils/route'
 
 const messages = {
@@ -30,9 +30,9 @@ export const CollectibleGatedDescription = (
       {!hasCollectibles && isUpload ? (
         <HelpCallout content={helpContent} />
       ) : null}
-      <ExternalLink to={AUDIUS_GATED_CONTENT_BLOG_LINK} textVariant='body'>
+      <ExternalTextLink to={AUDIUS_GATED_CONTENT_BLOG_LINK} textVariant='body'>
         {messages.learnMore} <IconExternalLink size='s' color='default' />
-      </ExternalLink>
+      </ExternalTextLink>
     </Flex>
   )
 }

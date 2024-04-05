@@ -9,7 +9,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import { IconCart, IconStars } from '@audius/harmony'
 
-import { ExternalLink } from 'components/link'
+import { ExternalTextLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { make, track } from 'services/analytics'
 
@@ -67,7 +67,7 @@ export const UsdcPurchaseGatedRadioField = (
   const helpContent = (
     <div className={styles.helpContent}>
       <div>{messages.waitlist}</div>
-      <ExternalLink
+      <ExternalTextLink
         onClick={handleClickWaitListLink}
         className={styles.link}
         to={WAITLIST_TYPEFORM}
@@ -75,7 +75,7 @@ export const UsdcPurchaseGatedRadioField = (
         ignoreWarning
       >
         {messages.join}
-      </ExternalLink>
+      </ExternalTextLink>
     </div>
   )
 
