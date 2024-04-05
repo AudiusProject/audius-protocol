@@ -1,0 +1,367 @@
+---
+id: metadata
+title: Metadata Mapping
+pagination_label: Metadata Mapping
+sidebar_label: Metadata Mapping
+description: Audius SDK to DDEX Metadata Mapping
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+:::info The following is provided based on ERN3.8
+
+Please note that exact DDEX fields will depend on the specific ERN version.
+
+:::
+
+---
+
+## Metadata Mapping
+
+### Required Fields
+
+The following metadata fields are required for content to be listed on Audius and are examined and
+pulled from a DDEX delivery in cascading precedence.
+
+#### releaseDate
+
+1. `/DealList/ReleaseDeal/Deal/ValidityPeriod/StartDate`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ReleaseDate`
+3. `/ReleaseList/Release/GlobalOriginalReleaseDate`
+
+#### coverArtFile
+
+the `coverArtFile` maps to two DDEX Fields
+
+- `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FilePath`
+- `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FileName`
+
+:::info
+
+Not technically an Audius SDK metadata field, but uploaded as part of the track/album. note that
+this DDEX field is a relative path to the file within the delivery
+
+:::
+
+#### userId
+
+1. same as artists (next row below): checks each artist name (in order) against Audius database of
+   OAuthed display names, and uses the first match
+
+:::info
+
+not technically an Audius SDK metadata field, but uploaded as part of the track/album
+
+:::
+
+---
+
+### Optional Fields
+
+The following fields are optional for content to be listed on Audius and are examined and pulled
+from a DDEX delivery in cascading precedence.
+
+#### ddexReleaseIds
+
+1. `/ReleaseList/Release/ReleaseId`
+
+:::info
+
+from this element, we parse+preserve many IDs (children elements): `PartyId`, `CatalogNumber`,
+`ICPN`, `GRid`, `ISAN`, `ISBN`, `ISMN`, `ISRC`, `ISSN`, `ISTC`, `ISWC`, `MWLI`, `SICI`, and
+`ProprietaryId`
+
+:::
+
+#### description
+
+The DDEX standard includes a `MarketingComments` field that is rarely used, but is available.
+
+---
+
+### Unused Fields
+
+The following Audius SDK Fields are not used by DDEX and have no mapping.
+
+#### license
+
+:::info
+
+we don’t know which DDEX field to use for this, but it seems like something that would be
+communicated somewhere
+
+:::
+
+#### mood and tags
+
+:::info
+
+never passed to Audius SDK because DDEX doesn’t provide these and likely never will
+
+:::
+
+#### child elements of `/ReleaseList/Release/`
+
+The following child elements are parsed and stored in the separate DDEX server, but not stored in
+Audius and not used anywhere:
+
+- `ReferenceTitle/TitleText`
+- `ReferenceTitle/SubTitle`
+
+#### child elements of `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/`
+
+The following child elements are parsed and stored in the separate DDEX server, but not stored in
+Audius and not used anywhere:
+
+- `Title[@TitleType='DisplayTitle']/TitleText` (used in albums/EPs but not single tracks)
+- `Title[@TitleType='DisplayTitle']/SubTitle`
+- `Title[@TitleType='FormalTitle']/TitleText`
+- `Title[@TitleType='FormalTitle']/SubTitle `
+
+#### child elements of `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ResourceGroup/`
+
+The following child elements are parsed and stored in the separate DDEX server, but not stored in
+Audius and not used anywhere:
+
+- `SequenceNumber`
+- `ResourceGroupContentItem/ResourceType`
+- `ResourceGroupContentItem/ReleaseResourceReference`
+- `ResourceGroupContentItem/IsInstantGratificationResource`
+
+---
+
+## Track Metadata Mapping
+
+### Required Fields
+
+The following fields are required for content to be listed on Audius and are examined and pulled
+from a DDEX delivery in cascading precedence.
+
+#### genre
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/SubGenre`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/GenreText`
+3. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/SubGenre`
+4. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/GenreText`
+
+#### title
+
+1. `/ResourceList/SoundRecording/ReferenceTitle/TitleText`
+
+:::info
+
+Subtitle is currently ignored/unused, which likely needs to change (perhaps make title be
+`“<title> - <subtitle>.”` also note that DDEX communicates additional titles (eg,
+`<Title TitleType=”DisplayTitle”>` and `<Title TitleType=”FormalTitle”>`) in the both the
+SoundRecording and release. we store these in the separate DDEX server but not in the Audius network
+
+:::
+
+#### trackFile
+
+the `trackFile` maps to two DDEX Fields
+
+- `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FilePath`
+- `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FileName`
+
+:::info
+
+the actual audio file. not technically an Audius SDK metadata field, but uploaded in the same SDK
+function. note that this DDEX field is a relative path to the file within the delivery
+
+:::
+
+---
+
+### Optional
+
+The following fields are optional for content to be listed on Audius and are examined and pulled
+from a DDEX delivery in cascading precedence.
+
+#### artists
+
+1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
+
+:::info
+
+we use the `/PartyName/FullName` child element as the artist’s name and the `SequenceNumber`
+attribute to preserve order
+
+:::
+
+#### copyrightLine
+
+1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
+3. `/ReleaseList/Release/CLine`
+
+:::info
+
+only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
+`CLineText`
+
+:::
+
+#### producerCopyrightLine
+
+1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
+3. `/ReleaseList/Release/PLine`
+
+:::info
+
+only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
+`PLineText`
+
+:::
+
+#### parentalWarningType
+
+1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+
+#### isrc
+
+1. `/ResourceList/SoundRecording/SoundRecordingId/ISRC`
+
+#### resourceContributors
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/ResourceContributor`
+
+:::info
+
+the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+`SequenceNumber`, and `ResourceContributorRole`
+
+:::
+
+#### indirectResourceContributors
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/IndirectResourceContributor`
+
+:::info
+
+the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+`SequenceNumber`, and `IndirectResourceContributorRole`
+
+:::
+
+#### rightsController
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/RightsController`
+
+:::info
+
+the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+`RightsShareUnknown`, and `RightsControllerRole`
+
+:::
+
+#### previewStartSeconds
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/PreviewDetails/StartPoint`
+2. only when
+   `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/IsPreview`
+   is true
+
+:::info
+
+Preview length is 30 seconds starting at the `previewStartSeconds` into the track’s audio, even if a
+longer or shorter duration is given. does not support using an external file for the preview
+
+:::
+
+---
+
+## Album Metadata Mapping
+
+### Required
+
+The following fields are required for content to be listed on Audius and are examined and pulled
+from a DDEX delivery in cascading precedence.
+
+#### albumName
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Title[@TitleType='DisplayTitle']/TitleText`
+
+:::info
+
+subtitle is currently ignored/unused, which likely needs to change (perhaps make title be
+`“<title> - <subtitle>.”` the same element but with `TitleType=’FormalTitle’`, as well as a
+`<ReferenceTitle>` element, are stored in the separate DDEX server but not in the Audius network
+
+:::
+
+#### genre
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/SubGenre`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/GenreText`
+
+#### trackMetadatas
+
+1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
+
+:::info
+
+metadata about each track in the album. not technically an Audius SDK metadata field, but uploaded
+as part of the album
+
+:::
+
+#### trackFiles
+
+1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
+
+:::info
+
+array of audio files which the album is comprised of. not technically an Audius SDK metadata field,
+but uploaded as part of the album
+
+:::
+
+---
+
+### Optional
+
+The following fields are optional for content to be listed on Audius and are examined and pulled
+from a DDEX delivery in cascading precedence.
+
+#### artists
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
+
+:::info
+
+we use the `/PartyName/FullName` child element as the artist’s name and the `SequenceNumber`
+attribute to preserve order
+
+:::
+
+#### copyrightLine
+
+1`/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/CLine` 2.
+`/ReleaseList/Release/CLine`
+
+:::info
+
+only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
+`CLineText`
+
+:::
+
+#### producerCopyrightLine
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
+2. `/ReleaseList/Release/PLine`
+
+:::info
+
+only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
+`PLineText`
+
+:::
+
+#### parentalWarningType
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`

@@ -84,16 +84,18 @@ module.exports = {
     {
       type: 'category',
       label: 'Specification',
-      items: ['distributors/specification/overview', 'distributors/specification/ern3', 'distributors/specification/ern4'],
+      items: [
+        'distributors/specification/overview',
+        'distributors/specification/metadata',
+        'distributors/specification/ern3',
+        'distributors/specification/ern4',
+      ],
       collapsed: false,
     },
     {
       type: 'category',
       label: 'Self Serve',
-      items: [
-        'distributors/self-serve/overview',
-        'distributors/self-serve/run-a-ddex-server',
-      ],
+      items: ['distributors/self-serve/overview', 'distributors/self-serve/run-a-ddex-server'],
       collapsed: false,
     },
   ],
