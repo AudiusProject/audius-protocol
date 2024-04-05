@@ -96,7 +96,8 @@ export const configureStore = (
   history: History,
   isMobile: boolean,
   ssrPageProps?: SsrPageProps,
-  isServerSide?: boolean
+  isServerSide?: boolean,
+  initialStoreState?: Partial<AppState>
 ) => {
   const onSagaError = (
     error: Error,
@@ -149,6 +150,8 @@ export const configureStore = (
 
   const store = createStore(
     createRootReducer(history, ssrPageProps, isServerSide),
+    // @ts-ignore - Initial state is just for test mocking purposes
+    initialStoreState,
     composeEnhancers(middlewares)
   )
 
