@@ -432,7 +432,6 @@ jobs:
       - run:
           name: Generate Slack Template
           command: |
-            # Wait for the pipeline to finish completely
             PIPELINE_PENDING="true"
             while [[ "$PIPELINE_PENDING" == "true" ]]; do
               echo "Fetching pipeline workflows..."
@@ -448,45 +447,28 @@ jobs:
             done
             echo "Workflows finished. Generating env vars..."
 
-            # Format the header of the message
-            PIPELINE_STATUS_HEADER=$(jq -r 'if .items | map(.status == "failed") | any then ":x: Pipeline Failed" else ":white_check_mark: Pipeline Succeeded" end' < workflows.json)
-            echo "export PIPELINE_STATUS_HEADER=\"${PIPELINE_STATUS_HEADER}"\" >> "$BASH_ENV"
-
-            # Get the Slack User ID of the last commit's author
             author_name=$(git log -1 --pretty=format:'%an')
             env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
             SLACK_USER_ID="<@$(eval echo \$$env_key_name)>"
             echo "export SLACK_USER_ID=\"${SLACK_USER_ID}\"" >> "$BASH_ENV"
 
-            # Format the commit message of the last commit
+            PIPELINE_STATUS_HEADER=$(jq -r 'if .items | map(.status == "failed") | any then ":x: Pipeline Failed" else ":white_check_mark: Pipeline Succeeded" end' < workflows.json)
+            echo "export PIPELINE_STATUS_HEADER=\"${PIPELINE_STATUS_HEADER}"\" >> "$BASH_ENV"
+
             COMMIT_MESSAGE=$(git log -1 --pretty=format:'[<https://github.com/AudiusProject/audius-docker-compose/commit/%H|%h>] %s - %an' --abbrev-commit HEAD)
             echo "export COMMIT_MESSAGE=\"${COMMIT_MESSAGE}\"" >> "$BASH_ENV"
 
-            # Get workflow and job statuses list
-            WORKFLOW_STATUSES="*Workflows:*"
-            for workflow in $(jq -r -c '.items[]' workflows.json)
-            do
-              workflow_id=$(echo $workflow | jq -r '.id')
-              workflow_filename="workflow-${workflow_id}.json"
-              curl -s 2>/dev/null --url $(echo $workflow | jq -r '"https://circleci.com/api/v2/workflow/\(.id)/job"') -H "Circle-Token: ${CIRCLE_TOKEN}" -o $workflow_filename
-              workflow_url=$(echo $workflow | jq -r '"https://app.circleci.com/pipelines/\(.project_slug)/\(.pipeline_number)/workflows/\(.id)"')
-              workflow_line=$(echo $workflow | jq -r '"\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) <'$workflow_url'|\(.name)>"')
-              jobs_lines=$(jq -r '.items | map("\t\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) \(if .status == "failed" or .status == "success" then "<'"$workflow_url"'/jobs/\(.job_number)|\(.name)>" else .name end)") | join("\n")' $workflow_filename)
-              WORKFLOW_STATUSES="${WORKFLOW_STATUSES}\n${workflow_line}\n${jobs_lines}"
-            done
+            WORKFLOW_STATUSES=$(jq -r '.items | map("\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) <https://app.circleci.com/pipelines/\(.project_slug)/\(.pipeline_number)/workflows/\(.id)|\(.name)>") | join("\n")' < workflows.json)
             echo "export WORKFLOW_STATUSES=\"${WORKFLOW_STATUSES}\"" >> "$BASH_ENV"
 
-            # Add help text in the case of failure
             STATUS_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "*Action Items*:\n1. If you broke $CIRCLE_BRANCH, then fix it or revert your change.\n2. If you think a test is flaky, confirm it, make a change to skip the test with a ticket comment, and assign the ticket to the test owner.\n3. Once CI is green again, give this a :white_check_mark:." else "Changes should be live on <https://staging.audius.co|staging web> and all staging mobile apps." end' < workflows.json)
             echo "export STATUS_MESSAGE=\"${STATUS_MESSAGE}\"" >> "$BASH_ENV"
 
-            # Export the template to be available to the slack/notify command
             echo "Exporting template to bash environment..."
             echo 'export PIPELINE_STATUS_TEMPLATE=$(cat .circleci/slack-templates/pipeline-status-template.json)' >> "$BASH_ENV"
       - slack/notify:
           channel: 'C06SP746DA7'
           template: PIPELINE_STATUS_TEMPLATE
-          debug: true
 
 workflows:
   setup:
