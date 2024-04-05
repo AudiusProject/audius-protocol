@@ -1,16 +1,18 @@
 import { expect } from '@playwright/test'
-import {
-  EditTrackPage,
-  UploadFinishPage,
-  UploadSelectPage
-} from './page-object-models/upload'
+
 import {
   RemixSettingsModal,
   AccessAndSaleModal,
   AttributionModal,
   StemsAndDownloadsModal
 } from './page-object-models/modals'
-import { test } from './test'
+import {
+  EditTrackPage,
+  UploadFinishPage,
+  UploadSelectPage
+} from './page-object-models/upload'
+import { SSR_HYDRATE_TIMEOUT, test } from './test'
+import { openCleanBrowser } from './utils'
 
 test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const trackTitle = `Test track ${Date.now()}`
@@ -54,7 +56,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   await expect(
     accessAndSaleModal.locator.getByRole('radio', { disabled: false })
   ).toHaveCount(2)
-  await accessAndSaleModal.setHidden({ ['Share Button']: true })
+  await accessAndSaleModal.setHidden({ 'Share Button': true })
   await accessAndSaleModal.save()
 
   await editPage.openAttributionSettings()
@@ -127,7 +129,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   // TODO
 })
 
-test('should upload a premium track', async ({ page }) => {
+test('should upload a premium track', async ({ page, browser }) => {
   const trackTitle = `Test premium track ${Date.now()}`
   const genre = 'Alternative'
   const price = '1.05'
@@ -173,6 +175,18 @@ test('should upload a premium track', async ({ page }) => {
 
   // Assert price
   await expect(page.getByText('$' + price)).toBeVisible()
+
+  const trackUrl = page.url()
+
+  // Open the tracks in a new browser to ensure the premium track page looks as expected to non-owners
+  const newPage = await openCleanBrowser({ browser })
+  const buyButton = newPage.getByRole('button', { name: /buy/i })
+  newPage.goto(trackUrl)
+  await expect(newPage.getByTestId('app-hydrated')).toBeAttached({
+    timeout: SSR_HYDRATE_TIMEOUT
+  })
+  await expect(buyButton).toBeVisible()
+  await expect(newPage.getByText('$' + price)).toBeVisible()
 })
 
 test('should upload a track with free stems', async ({ page }) => {

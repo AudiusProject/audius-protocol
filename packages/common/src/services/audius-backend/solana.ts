@@ -83,8 +83,7 @@ export const getRootSolanaAccount = async (
 export const getSolanaConnection = async (
   audiusBackendInstance: AudiusBackend
 ) => {
-  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!
-    .connection
+  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!.getConnection()
 }
 
 /**
@@ -581,7 +580,7 @@ export const decorateCoinflowWithdrawalTransaction = async (
   )
 
   const { blockhash, lastValidBlockHeight } =
-    await solanaWeb3Manager.connection.getLatestBlockhash()
+    await solanaWeb3Manager.getConnection().getLatestBlockhash()
   const modifiedTransaction = new Transaction({
     blockhash,
     feePayer,
@@ -663,7 +662,7 @@ export const createPaymentRouterRouteTransaction = async (
 ) => {
   const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
     .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager.connection.getLatestBlockhash()
+  const { blockhash } = await solanaWeb3Manager.getConnection().getLatestBlockhash()
   const [transfer, route] =
     // All the memo related parameters are ignored
     await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
@@ -758,7 +757,7 @@ export const getLookupTableAccounts = async (
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const connection = libs.solanaWeb3Manager!.connection
+  const connection = libs.solanaWeb3Manager!.getConnection()
   return await Promise.all(
     lookupTableAddresses.map(async (address) => {
       const account = await connection.getAddressLookupTable(
