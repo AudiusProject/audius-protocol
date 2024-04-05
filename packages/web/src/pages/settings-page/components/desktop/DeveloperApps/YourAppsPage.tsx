@@ -37,7 +37,6 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
 
   let createAppButton = (
     <Button
-      fakeProp='Foo'
       variant='secondary'
       size='small'
       iconLeft={IconPlus}
