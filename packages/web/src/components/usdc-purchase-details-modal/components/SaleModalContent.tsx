@@ -33,7 +33,7 @@ import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBa
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { DetailSection } from './DetailSection'
-import { TrackLink } from './TrackLink'
+import { ContentLink } from './ContentLink'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
@@ -96,7 +96,7 @@ export const SaleModalContent = ({
             size={DynamicTrackArtworkSize.LARGE}
           />
           <DetailSection label={messages.track}>
-            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+            {/* <ContentLink onClick={onClose} lin /> */}
             <Flex gap='xs'>
               <Text variant='body' size='l'>
                 {messages.by}
@@ -169,7 +169,7 @@ export const SaleModalContent = ({
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
           <DetailSection label={messages.trackPurchased}>
-            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+            <ContentLink onClick={onClose} id={purchaseDetails.contentId} />
           </DetailSection>
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>

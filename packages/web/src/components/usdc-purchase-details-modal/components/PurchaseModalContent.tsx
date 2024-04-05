@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
 import { FeatureFlags } from '@audius/common/services'
+import {
+  useGetCurrentUserId,
+  useGetPlaylistById,
+  useGetTrackById
+} from '@audius/common/api'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   ModalContent,
@@ -28,10 +32,11 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { DetailSection } from './DetailSection'
-import { TrackLink } from './TrackLink'
+import { ContentLink } from './ContentLink'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
+import { USDCContentPurchaseType } from '@audius/common/models'
 
 const messages = {
   by: 'by',
@@ -48,15 +53,31 @@ export const PurchaseModalContent = ({
   purchaseDetails,
   onClose
 }: ContentProps) => {
+  const { contentType, contentId } = purchaseDetails
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
   const goToRoute = useGoToRoute()
-  const { data: track } = useGetTrackById({ id: purchaseDetails.contentId })
+  const isTrack = contentType === USDCContentPurchaseType.TRACK
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: track } = useGetTrackById(
+    { id: contentId },
+    { disabled: !isTrack }
+  )
+  const { data: album } = useGetPlaylistById(
+    {
+      playlistId: contentId,
+      currentUserId
+    },
+    { disabled: isTrack }
+  )
+
   const handleClickVisitTrack = useCallback(() => {
-    if (track) {
-      onClose()
+    onClose()
+    if (isTrack && track) {
       goToRoute(track.permalink)
+    } else if (!isTrack && album && album.permalink) {
+      goToRoute(album.permalink)
     }
   }, [track, onClose, goToRoute])
 
@@ -68,11 +89,15 @@ export const PurchaseModalContent = ({
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
           <DynamicTrackArtwork
-            id={purchaseDetails.contentId}
+            id={contentId}
             size={DynamicTrackArtworkSize.LARGE}
           />
           <DetailSection label={messages.track}>
-            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+            <ContentLink
+              onClick={onClose}
+              title={isTrack && track ? track.title : album.playlist_name}
+              link={isTrack && track ? track?.permalink : album.permalink ?? ''}
+            />
             <Flex gap='xs'>
               <Text variant='body' size='l'>
                 {messages.by}
@@ -126,7 +151,11 @@ export const PurchaseModalContent = ({
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
           <DetailSection label={messages.track}>
-            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+            <ContentLink
+              onClick={onClose}
+              link={track?.permalink}
+              title={track?.title}
+            />
           </DetailSection>
           <DynamicTrackArtwork
             id={purchaseDetails.contentId}
