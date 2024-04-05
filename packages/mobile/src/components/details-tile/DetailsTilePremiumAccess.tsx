@@ -4,6 +4,7 @@ import {
   isContentFollowGated,
   isContentTipGated
 } from '@audius/common/models'
+import { PurchaseableContentType } from '@audius/common/store'
 import type { ViewStyle } from 'react-native'
 
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
@@ -44,6 +45,8 @@ export const DetailsTileGatedAccess = ({
   return (
     <DetailsTileNoAccess
       trackId={trackId}
+      // Currently only special-access tracks are supported
+      contentType={PurchaseableContentType.TRACK}
       streamConditions={streamConditions}
       style={style}
     />

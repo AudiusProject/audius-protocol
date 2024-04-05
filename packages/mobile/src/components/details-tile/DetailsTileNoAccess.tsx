@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
-import { useFeatureFlag } from '@audius/common/hooks'
 
-import { useStreamConditionsEntity } from '@audius/common/hooks'
+import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,
   ModalSource,
@@ -13,12 +12,13 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import type { PurchaseableContentType } from '@audius/common/store'
 import {
   usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
-  gatedContentSelectors,
-  PurchaseableContentType
+  gatedContentSelectors
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
@@ -39,7 +39,6 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { FeatureFlags } from '@audius/common/services'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { followUser } = usersSocialActions
@@ -183,12 +182,14 @@ const DetailsTileNoAccessSection = ({
 
 type DetailsTileNoAccessProps = {
   streamConditions: AccessConditions
+  contentType: PurchaseableContentType
   trackId: ID
   style?: ViewStyle
 }
 
 export const DetailsTileNoAccess = ({
   trackId,
+  contentType,
   streamConditions,
   style
 }: DetailsTileNoAccessProps) => {
@@ -225,10 +226,10 @@ export const DetailsTileNoAccess = ({
 
   const handlePurchasePress = useCallback(() => {
     openPremiumContentPurchaseModal(
-      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+      { contentId: trackId, contentType },
       { source: ModalSource.TrackDetails }
     )
-  }, [trackId, openPremiumContentPurchaseModal])
+  }, [trackId, openPremiumContentPurchaseModal, contentType])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {
@@ -398,6 +399,7 @@ export const DetailsTileNoAccess = ({
     handleFollowArtist,
     tippedUser,
     handleSendTip,
+    isIosGatedContentEnabled,
     handlePurchasePress
   ])
 

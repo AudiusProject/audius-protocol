@@ -16,7 +16,8 @@ export enum CollectibleMediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
   GIF = 'GIF',
-  THREE_D = 'THREE_D'
+  THREE_D = 'THREE_D',
+  ANIMATED_WEBP = 'ANIMATED_WEBP'
 }
 
 export type Collectible = {

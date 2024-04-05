@@ -56,9 +56,26 @@ export const dominantColor = async (imageUrl: string) => {
   return dominantColorWorker.getResult(imageUrl)
 }
 
+export const imageToFrame = async (imageUrl: string) => {
+  const image = new Image()
+  image.crossOrigin = 'anonymous'
+  const p = new Promise<string>((resolve) => {
+    image.onload = function () {
+      const canvas = document.createElement('canvas')
+      canvas.width = image.naturalWidth
+      canvas.height = image.naturalHeight
+      canvas.getContext('2d')?.drawImage(image, 0, 0)
+      resolve(canvas.toDataURL('image/jpeg'))
+    }
+  })
+  image.src = imageUrl
+  return p
+}
+
 export const gifPreview = async (imageUrl: string) => {
   gifPreviewWorker.call({ imageUrl }, imageUrl)
-  return gifPreviewWorker.getResult(imageUrl)
+  const res = await gifPreviewWorker.getResult(imageUrl)
+  return res
 }
 
 export const generatePlaylistArtwork = async (imageUrls: string[]) => {

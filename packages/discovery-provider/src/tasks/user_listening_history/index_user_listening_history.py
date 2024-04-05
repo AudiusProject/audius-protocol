@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import DefaultDict
 
 import sqlalchemy as sa
@@ -174,10 +174,6 @@ def index_user_listening_history(self):
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock("index_user_listening_history_lock", timeout=60 * 10)
-
-    interval = timedelta(seconds=5)
-    start_time = time.time()
-    errored = False
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -185,6 +181,7 @@ def index_user_listening_history(self):
             logger.info(
                 f"index_user_listening_history.py | Updating {USER_LISTENING_HISTORY_TABLE_NAME}"
             )
+            start_time = time.time()
 
             with db.scoped_session() as session:
                 _index_user_listening_history(session)
@@ -201,21 +198,7 @@ def index_user_listening_history(self):
         logger.error(
             "index_user_listening_history.py | Fatal error in main loop", exc_info=True
         )
-        errored = True
         raise e
     finally:
-        end_time = time.time()
-        elapsed = end_time - start_time
-        time_left = max(0, interval.total_seconds() - elapsed)
-        logger.info(
-            {
-                "task_name": self.name,
-                "elapsed": elapsed,
-                "interval": interval.total_seconds(),
-                "time_left": time_left,
-                "errored": errored,
-            },
-        )
         if have_lock:
             update_lock.release()
-        celery.send_task(self.name, countdown=time_left)

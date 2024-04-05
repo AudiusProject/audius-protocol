@@ -6,7 +6,6 @@ import {
   FollowSource,
   CreatePlaylistSource,
   Status,
-  BadgeTier,
   ID,
   UID
 } from '@audius/common/models'
@@ -131,8 +130,6 @@ type ProfilePageState = {
   showBlockUserConfirmationModal: boolean
   showUnblockUserConfirmationModal: boolean
 }
-
-export const MIN_COLLECTIBLES_TIER: BadgeTier = 'silver'
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   static defaultProps = {}

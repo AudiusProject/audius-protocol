@@ -52,8 +52,8 @@ export class TransactionHandler {
     feePayerKeypairs = null,
     skipPreflight = true,
     retryTimeoutMs = 60000,
-    pollingFrequencyMs = 300,
-    sendingFrequencyMs = 300
+    pollingFrequencyMs = 2000,
+    sendingFrequencyMs = 2000
   }: {
     connection: Connection
     useRelay: boolean
@@ -110,7 +110,6 @@ export class TransactionHandler {
         instructions,
         recentBlockhash,
         logger,
-        skipPreflight,
         feePayerOverride,
         signatures,
         lookupTableAddresses,
@@ -172,12 +171,12 @@ export class TransactionHandler {
     instructions: TransactionInstruction[],
     recentBlockhash: string | null,
     logger: Logger,
-    skipPreflight: boolean | null,
     feePayerOverride: Nullable<PublicKey | string> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
     lookupTableAddresses: string[],
     retry = true
   ) {
+    const txStartTime = Date.now()
     const feePayerKeypairOverride = (() => {
       if (feePayerOverride && this.feePayerKeypairs) {
         const stringFeePayer = feePayerOverride.toString()
@@ -277,10 +276,9 @@ export class TransactionHandler {
     // Send the txn
     const sendRawTransaction = async () => {
       return await this.connection.sendRawTransaction(rawTransaction, {
-        skipPreflight:
-          skipPreflight === null ? this.skipPreflight : skipPreflight,
+        skipPreflight: true,
         preflightCommitment: 'processed',
-        maxRetries: retry ? 0 : undefined
+        maxRetries: 0
       })
     }
 
@@ -323,7 +321,9 @@ export class TransactionHandler {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       logger.info(
-        `transactionHandler: finished for txid ${txid} with ${sendCount} retries`
+        `transactionHandler: finished sending txid ${txid} with ${sendCount} retries to ${
+          this.connection
+        } in ${Date.now() - txStartTime} ms`
       )
       return {
         res: txid,
@@ -334,7 +334,7 @@ export class TransactionHandler {
       logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
-        )}, ${txid}`
+        )}, ${txid}, with ${sendCount} retries to ${this.connection}`
       )
       done = true
       let errorCode = null
