@@ -18,17 +18,18 @@ Check back soon for updates on how to run and operate own DDEX Ingestion Server.
 
 ## Instructions
 
-1. Provision a new machine. We recommend:
-  - Ubuntu
-  - 8 CPUs
-  - 16 to 32GB Memory
-  - 256 GB storage
+1. Provision a new machine following. We recommend:
 
-2. Visit [audius-docker-compose](https://github.com/AudiusProject/audius-docker-compose) and 
-run the install script to set up your Audius environment on your provisioned machine.
+- Ubuntu
+- 8 CPUs
+- 16 to 32GB Memory
 
-3. Follow the instructions in the [audius-protocol](https://github.com/AudiusProject/audius-protocol/tree/main/packages/ddex)
-repository to set the appropriate environment variables
+2. Visit [audius-docker-compose](https://github.com/AudiusProject/audius-docker-compose) and run the
+   install script to set up your Audius environment on your provisioned machine.
+
+3. Follow the instructions in the
+   [audius-protocol](https://github.com/AudiusProject/audius-protocol/tree/main/packages/ddex)
+   repository to set the appropriate environment variables
 
 4. Start the DDEX Ingestion Server
 
@@ -36,5 +37,5 @@ repository to set the appropriate environment variables
 audius-cli launch ddex
 ```
 
-Your server will now be available at localhost:80 and is exposed via self-signed SSL on :443 if `DDEX_URL`
-is set.
+Your server will now be available at localhost:80 and is exposed via self-signed SSL on :443 if
+`DDEX_URL` is set.
