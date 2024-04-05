@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 
-import { Locator, Page } from '@playwright/test'
+import { Browser, Locator, Page } from '@playwright/test'
 import dayjs from 'dayjs'
 
 export function generateTestUser() {
@@ -48,3 +48,16 @@ export const dragAndDropFile = async (
 }
 
 export const resetAuthState = { storageState: { cookies: [], origins: [] } }
+
+export const openCleanBrowser = async ({ browser }: { browser: Browser }) => {
+  const type = browser.browserType()
+  const newBrowser = await type.launch()
+
+  const newPage = await newBrowser.newPage()
+  const context = await newPage.context()
+  // Clear out auth state
+  context.addInitScript(() => {
+    window.localStorage.clear()
+  })
+  return newPage
+}

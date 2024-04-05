@@ -41,43 +41,103 @@ type Delivery struct {
 }
 
 // TODO: When processing a release where a ReleaseID already exists, we can update the existing document and have a field with edit history
-// TODO: We could also just use the RemotePath (Delivery._id) all the way through
 
 // PendingRelease represents a fully formed release that waiting to be uploaded to Audius
 type PendingRelease struct {
-	ReleaseID          string             `bson:"_id"`
-	DeliveryRemotePath string             `bson:"delivery_remote_path"` // aka Delivery._id
-	PublishDate        time.Time          `bson:"publish_date"`
-	CreateTrackRelease CreateTrackRelease `bson:"create_track_release"`
-	CreateAlbumRelease CreateAlbumRelease `bson:"create_album_release"`
-	CreatedAt          time.Time          `bson:"created_at"`
-	PublishErrors      []string           `bson:"publish_errors"`
-	FailureCount       int                `bson:"failure_count"`
-	FailedAfterUpload  bool               `bson:"failed_after_upload"` // If the release failed after uploading to Audius, which means there could be some cleanup to do
+	ReleaseID          string    `bson:"_id"`
+	DeliveryRemotePath string    `bson:"delivery_remote_path"` // aka Delivery._id
+	Release            Release   `bson:"release"`
+	CreatedAt          time.Time `bson:"created_at"`
+	PublishErrors      []string  `bson:"publish_errors"`
+	FailureCount       int       `bson:"failure_count"`
+	FailedAfterUpload  bool      `bson:"failed_after_upload"` // If the release failed after uploading to Audius, which means there could be some cleanup to do
 }
 
 // PublishedRelease represents a release that has been successfully uploaded to Audius
 type PublishedRelease struct {
-	ReleaseID          string             `bson:"_id"`
-	DeliveryRemotePath string             `bson:"delivery_remote_path"`
-	PublishDate        time.Time          `bson:"publish_date"`
-	EntityID           string             `bson:"entity_id"`
-	Blockhash          string             `bson:"blockhash"`
-	Blocknumber        int64              `bson:"blocknumber"`
-	Track              CreateTrackRelease `bson:"create_track_release"`
-	Album              CreateAlbumRelease `bson:"create_album_release"`
-	CreatedAt          time.Time          `bson:"created_at"`
+	ReleaseID          string    `bson:"_id"`
+	DeliveryRemotePath string    `bson:"delivery_remote_path"`
+	EntityID           string    `bson:"entity_id"`
+	Blockhash          string    `bson:"blockhash"`
+	Blocknumber        int64     `bson:"blocknumber"`
+	Release            Release   `bson:"release"`
+	CreatedAt          time.Time `bson:"created_at"`
 }
 
-// CreateTrackRelease contains everything the publisher app needs in order to upload a single track to Audius
-type CreateTrackRelease struct {
-	DDEXReleaseRef string        `bson:"ddex_release_ref"`
-	Metadata       TrackMetadata `bson:"metadata"`
+type Release struct {
+	ReleaseProfile     ReleaseProfile         `bson:"release_profile"`      // "ReleaseProfileVersionId" from the DDEX XML
+	PublishDate        time.Time              `bson:"publish_date"`         // Alias to the main ParsedReleaseElems's ReleaseDate for faster lookups
+	ParsedReleaseElems []ParsedReleaseElement `bson:"parsed_release_elems"` // Releases parsed from XML
+	SDKUploadMetadata  SDKUploadMetadata      `bson:"sdk_upload_metadata"`  // Metadata for the publisher to upload to Audius via SDK
 }
 
-// CreateAlbumRelease contains everything the publisher app needs in order to upload a new album to Audius (including all track audio files and cover art)
-type CreateAlbumRelease struct {
-	DDEXReleaseRef string             `bson:"ddex_release_ref"`
-	Tracks         []TrackMetadata    `bson:"tracks"`
-	Metadata       CollectionMetadata `bson:"metadata"`
+// ParsedReleaseElement contains parsed details of a <Release> element
+type ParsedReleaseElement struct {
+	ReleaseRef    string           `bson:"release_ref"`
+	IsMainRelease bool             `bson:"is_main_release"`
+	ReleaseType   ReleaseType      `bson:"release_type"`
+	ReleaseIDs    ReleaseIDs       `bson:"release_ids"`
+	ReleaseDate   time.Time        `bson:"release_date"`
+	Resources     ReleaseResources `bson:"resources"`
+	ArtistID      string           `bson:"artist_id"`
+	ArtistName    string           `bson:"artist_name"`
+
+	DisplayTitle                 string                `bson:"display_title"` // For displaying on the frontend
+	DisplaySubtitle              NullableString        `bson:"display_subtitle,omitempty"`
+	ReferenceTitle               NullableString        `bson:"reference_title,omitempty"` // (Supposed to be) for internal cataloguing and rights management
+	ReferenceSubtitle            NullableString        `bson:"reference_subtitle,omitempty"`
+	FormalTitle                  NullableString        `bson:"formal_title,omitempty"` // The official title registered with rights organizations
+	FormalSubtitle               NullableString        `bson:"format_subtitle,omitempty"`
+	Genre                        Genre                 `bson:"genre"`
+	Duration                     int                   `bson:"duration"`
+	PreviewStartSeconds          NullableInt           `bson:"preview_start_seconds,omitempty"`
+	ISRC                         NullableString        `bson:"isrc,omitempty"` // TODO: Is this needed if we have ReleaseIDs?
+	Artists                      []ResourceContributor `bson:"artists"`
+	ResourceContributors         []ResourceContributor `bson:"resource_contributors,omitempty"`
+	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributors,omitempty"`
+	RightsController             *RightsController     `bson:"rights_controller,omitempty"`
+	CopyrightLine                *Copyright            `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine        *Copyright            `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType          NullableString        `bson:"parental_warning_type,omitempty"`
 }
+
+// ReleaseResources contains the parsed resources (tracks and images) for a release
+type ReleaseResources struct {
+	Tracks []TrackMetadata `bson:"tracks"`
+	Images []ImageMetadata `bson:"images"`
+}
+
+type ImageMetadata struct {
+	URL         string `bson:"url"`
+	URLHash     string `bson:"url_hash"`
+	URLHashAlgo string `bson:"url_hash_algo"`
+}
+
+// "<ReleaseType>" element from the DDEX XML
+type ReleaseType string
+
+const (
+	AlbumReleaseType ReleaseType = "Album"
+	EPReleaseType    ReleaseType = "EP"
+	TrackReleaseType ReleaseType = "TrackRelease"
+
+	// Singles are essentially a 1-track album release, which we don't support.
+	// Instead, we preserve the outer release's data but only upload the track by itself (not as part of a "Single" / 1-track album)
+	SingleReleaseType ReleaseType = "Single"
+)
+
+var StringToReleaseType = map[string]ReleaseType{
+	"Album":        AlbumReleaseType,
+	"EP":           EPReleaseType,
+	"TrackRelease": TrackReleaseType,
+	"Single":       SingleReleaseType,
+}
+
+// "ReleaseProfileVersionId" from the DDEX XML
+type ReleaseProfile string
+
+const (
+	Common13AudioSingle                        = "CommonReleaseTypes/13/AudioSingle"
+	Common14AudioAlbumMusicOnly ReleaseProfile = "CommonReleaseTypesTypes/14/AudioAlbumMusicOnly"
+	UnspecifiedReleaseProfile   ReleaseProfile = "Unspecified"
+)

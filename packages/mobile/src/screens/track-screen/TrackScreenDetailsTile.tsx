@@ -34,7 +34,8 @@ import {
   favoritesUserListActions,
   RepostType,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   Genre,
@@ -199,6 +200,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     width: '100%',
     justifyContent: 'center',
+    alignItems: 'center',
     gap: spacing(2),
     paddingVertical: spacing(2.5),
     borderRadius: spacing(1.5),
@@ -266,7 +268,8 @@ export const TrackScreenDetailsTile = ({
     save_count,
     tags,
     title,
-    track_id
+    track_id: trackId,
+    stream_conditions: streamConditions
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -285,8 +288,8 @@ export const TrackScreenDetailsTile = ({
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
+    { trackId },
+    { enabled: !!trackId }
   )
 
   const details: DetailsTileDetail[] = [
@@ -328,21 +331,21 @@ export const TrackScreenDetailsTile = ({
 
       if (isPlaying && isPlayingId && isPreviewing === isPreview) {
         dispatch(tracksActions.pause())
-        recordPlay(track_id, false, true)
+        recordPlay(trackId, false, true)
       } else if (
         currentQueueItem.uid !== uid &&
         currentQueueItem.track &&
-        currentQueueItem.track.track_id === track_id
+        currentQueueItem.track.track_id === trackId
       ) {
         dispatch(tracksActions.play())
-        recordPlay(track_id)
+        recordPlay(trackId)
       } else {
         dispatch(tracksActions.play(uid, { isPreview }))
-        recordPlay(track_id, true, true)
+        recordPlay(trackId, true, true)
       }
     },
     [
-      track_id,
+      trackId,
       currentQueueItem,
       uid,
       dispatch,
@@ -360,17 +363,17 @@ export const TrackScreenDetailsTile = ({
   )
 
   const handlePressFavorites = useCallback(() => {
-    dispatch(setFavorite(track_id, FavoriteType.TRACK))
+    dispatch(setFavorite(trackId, FavoriteType.TRACK))
     navigation.push('Favorited', {
-      id: track_id,
+      id: trackId,
       favoriteType: FavoriteType.TRACK
     })
-  }, [dispatch, track_id, navigation])
+  }, [dispatch, trackId, navigation])
 
   const handlePressReposts = useCallback(() => {
-    dispatch(setRepost(track_id, RepostType.TRACK))
-    navigation.push('Reposts', { id: track_id, repostType: RepostType.TRACK })
-  }, [dispatch, track_id, navigation])
+    dispatch(setRepost(trackId, RepostType.TRACK))
+    navigation.push('Reposts', { id: trackId, repostType: RepostType.TRACK })
+  }, [dispatch, trackId, navigation])
 
   const handlePressTag = useCallback(
     (tag: string) => {
@@ -382,9 +385,9 @@ export const TrackScreenDetailsTile = ({
   const handlePressSave = () => {
     if (!isOwner) {
       if (has_current_user_saved) {
-        dispatch(unsaveTrack(track_id, FavoriteSource.TRACK_PAGE))
+        dispatch(unsaveTrack(trackId, FavoriteSource.TRACK_PAGE))
       } else {
-        dispatch(saveTrack(track_id, FavoriteSource.TRACK_PAGE))
+        dispatch(saveTrack(trackId, FavoriteSource.TRACK_PAGE))
       }
     }
   }
@@ -392,9 +395,9 @@ export const TrackScreenDetailsTile = ({
   const handlePressRepost = () => {
     if (!isOwner) {
       if (has_current_user_reposted) {
-        dispatch(undoRepostTrack(track_id, RepostSource.TRACK_PAGE))
+        dispatch(undoRepostTrack(trackId, RepostSource.TRACK_PAGE))
       } else {
-        dispatch(repostTrack(track_id, RepostSource.TRACK_PAGE))
+        dispatch(repostTrack(trackId, RepostSource.TRACK_PAGE))
       }
     }
   }
@@ -403,14 +406,14 @@ export const TrackScreenDetailsTile = ({
     dispatch(
       requestOpenShareModal({
         type: 'track',
-        trackId: track_id,
+        trackId,
         source: ShareSource.PAGE
       })
     )
   }
 
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId: track_id, userId: currentUserId })
+    getTrackPosition(state, { trackId, userId: currentUserId })
   )
   const handlePressOverflow = () => {
     const isLongFormContent =
@@ -445,13 +448,13 @@ export const TrackScreenDetailsTile = ({
     dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
-        id: track_id,
+        id: trackId,
         overflowActions
       })
     )
   }
 
-  const downloadStatus = useSelector(getTrackOfflineDownloadStatus(track_id))
+  const downloadStatus = useSelector(getTrackOfflineDownloadStatus(trackId))
   const getDownloadTextColor = () => {
     if (
       downloadStatus === OfflineDownloadStatus.SUCCESS ||
@@ -552,7 +555,7 @@ export const TrackScreenDetailsTile = ({
           <TrackDownloadStatusIndicator
             style={styles.downloadStatusIndicator}
             size={16}
-            trackId={track_id}
+            trackId={trackId}
           />
           {renderHeaderText()}
         </View>
@@ -581,7 +584,7 @@ export const TrackScreenDetailsTile = ({
     return (
       <View style={styles.bottomContent}>
         {renderTags()}
-        {hasDownloadableAssets ? <DownloadSection trackId={track_id} /> : null}
+        {hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null}
       </View>
     )
   }
@@ -594,6 +597,8 @@ export const TrackScreenDetailsTile = ({
       details={details}
       hasReposted={has_current_user_reposted}
       hasSaved={has_current_user_saved}
+      hasStreamAccess={hasStreamAccess}
+      streamConditions={streamConditions}
       user={user}
       renderBottomContent={renderBottomContent}
       renderHeader={is_unlisted || isOfflineEnabled ? renderHeader : undefined}
@@ -625,6 +630,8 @@ export const TrackScreenDetailsTile = ({
       saveCount={save_count}
       title={title}
       track={track}
+      contentId={trackId}
+      contentType={PurchaseableContentType.TRACK}
     />
   )
 }

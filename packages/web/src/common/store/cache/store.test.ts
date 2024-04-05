@@ -1,15 +1,15 @@
 import { Kind, Status } from '@audius/common/models'
-import {
-  cacheActions as actions,
-  cacheConfig as config,
-  cacheReducer
-} from '@audius/common/store'
+import { IntKeys } from '@audius/common/services'
+import { cacheActions as actions, cacheReducer } from '@audius/common/store'
 import { makeKindId } from '@audius/common/utils'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { getContext } from 'redux-saga-test-plan/matchers'
+import { StaticProvider } from 'redux-saga-test-plan/providers'
+import { describe, it, expect, beforeAll, afterAll, vitest } from 'vitest'
 
 import sagas from 'common/store/cache/sagas'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
   allSagas,
   noopReducer,
@@ -25,16 +25,38 @@ const initialConfirmerState = {
 }
 
 const MOCK_TIMESTAMP = 1479427200000
+vitest.mock('@audius/common/store', async () => ({
+  ...((await vitest.importActual('@audius/common/store')) as object),
+  CACHE_PRUNE_MIN: 1
+}))
 
-// beforeAll(() => {
-//   config.CACHE_PRUNE_MIN = 1
-//   vitest.spyOn(Date, 'now').mockImplementation(() => MOCK_TIMESTAMP)
-// })
+vitest.mock('services/remote-config/remote-config-instance', async () => {
+  return {
+    remoteConfigInstance: {
+      waitForRemoteConfig: vitest.fn(),
+      getRemoteVar: vitest.fn().mockImplementation((arg) => {
+        if (arg === IntKeys.CACHE_ENTRY_TTL) {
+          return Infinity
+        }
+        return undefined
+      })
+    }
+  }
+})
 
-// TODO: PAY-2602
-describe.skip('add', () => {
+const defaultProviders: StaticProvider[] = [
+  [getContext('remoteConfigInstance'), remoteConfigInstance],
+  [getContext('getFeatureEnabled'), () => false]
+]
+
+beforeAll(() => {
+  vitest.spyOn(Date, 'now').mockImplementation(() => MOCK_TIMESTAMP)
+})
+
+describe('add', () => {
   it('can add one', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS),
@@ -79,7 +101,8 @@ describe.skip('add', () => {
   })
 
   it('does not add if confirming', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS),
@@ -131,7 +154,8 @@ describe.skip('add', () => {
   })
 
   it('can add multiple', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS),
@@ -201,7 +225,8 @@ describe.skip('add', () => {
   })
 
   it('does not replace when unless explicitly told', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS),
@@ -247,7 +272,8 @@ describe.skip('add', () => {
   })
 
   it('does replace when explicitly told', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS),
@@ -294,13 +320,9 @@ describe.skip('add', () => {
   })
 })
 
-// TODO: PAY-2602
-describe.skip('update', () => {
+describe('update', () => {
   it('can update', async () => {
-    const { storeState } = await expectSaga(
-      takeEverySaga(actions.UPDATE),
-      actions
-    )
+    const { storeState } = await expectSaga(takeEverySaga(actions.UPDATE))
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS)
@@ -355,69 +377,11 @@ describe.skip('update', () => {
       2: new Set(['222'])
     })
   })
-
-  it('can transitively subscribe', async () => {
-    const { storeState } = await expectSaga(takeSaga(actions.UPDATE), actions)
-      .withReducer(
-        combineReducers({
-          tracks: asCache(noopReducer(), Kind.TRACKS),
-          collections: asCache(noopReducer(), Kind.COLLECTIONS)
-        }),
-        {
-          tracks: {
-            ...initialCacheState,
-            entries: {
-              1: { metadata: { data: 10 } },
-              2: { metadata: { data: 20 } }
-            },
-            uids: {
-              111: 1,
-              112: 1,
-              222: 2
-            },
-            subscribers: {
-              1: new Set(['111', '112']),
-              2: new Set(['222'])
-            }
-          },
-          collections: {
-            ...initialCacheState,
-            entries: {
-              1: { tracks: [1, 2] }
-            }
-          }
-        }
-      )
-      // id 2 subscribes to id 1
-      .dispatch(
-        actions.update(
-          Kind.COLLECTIONS,
-          [],
-          [
-            {
-              id: 1,
-              kind: Kind.TRACKS,
-              uids: ['111', '222']
-            }
-          ]
-        )
-      )
-      .silentRun()
-    expect(storeState.collections.subscriptions).toEqual({
-      1: new Set([
-        { kind: Kind.TRACKS, uid: '111' },
-        { kind: Kind.TRACKS, uid: '222' }
-      ])
-    })
-  })
 })
 
 describe('setStatus', () => {
   it('sets status', async () => {
-    const { storeState } = await expectSaga(
-      takeSaga(actions.SET_STATUS),
-      actions
-    )
+    const { storeState } = await expectSaga(takeSaga(actions.SET_STATUS))
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS)
@@ -476,7 +440,8 @@ describe.skip('remove', () => {
       }
     }
 
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS)
@@ -493,13 +458,18 @@ describe.skip('remove', () => {
   })
 })
 
-// TODO: PAY-2602
-describe.skip('remove with pruning', () => {
+describe('remove with pruning', () => {
   beforeAll(() => {
-    config.CACHE_PRUNE_MIN = 2
+    vitest.mock('@audius/common/store', async () => ({
+      ...((await vitest.importActual('@audius/common/store')) as object),
+      CACHE_PRUNE_MIN: 2
+    }))
   })
   afterAll(() => {
-    config.CACHE_PRUNE_MIN = 1
+    vitest.mock('@audius/common/store', async () => ({
+      ...((await vitest.importActual('@audius/common/store')) as object),
+      CACHE_PRUNE_MIN: 1
+    }))
   })
 
   it('can mark to be pruned', async () => {
@@ -520,7 +490,8 @@ describe.skip('remove with pruning', () => {
       }
     }
 
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS)
@@ -538,13 +509,9 @@ describe.skip('remove with pruning', () => {
   })
 })
 
-// TODO: PAY-2602
-describe.skip('subscribe', () => {
+describe('subscribe', () => {
   it('can add a subscription', async () => {
-    const { storeState } = await expectSaga(
-      takeEverySaga(actions.SUBSCRIBE),
-      actions
-    )
+    const { storeState } = await expectSaga(takeEverySaga(actions.SUBSCRIBE))
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS)
@@ -582,10 +549,10 @@ describe.skip('subscribe', () => {
   })
 })
 
-// TODO: PAY-2602
-describe.skip('unsubscribe', () => {
+describe('unsubscribe', () => {
   it('can remove a subscription', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
+    const { storeState } = await expectSaga(allSagas(sagas()))
+      .provide(defaultProviders)
       .withReducer(
         combineReducers({
           tracks: asCache(noopReducer(), Kind.TRACKS)
@@ -615,95 +582,5 @@ describe.skip('unsubscribe', () => {
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111'])
     })
-  })
-
-  it('transitively unsubscribes', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
-      .withReducer(
-        combineReducers({
-          tracks: asCache(noopReducer(), Kind.TRACKS),
-          collections: asCache(noopReducer(), Kind.COLLECTIONS)
-        }),
-        {
-          tracks: {
-            ...initialCacheState,
-            entries: {
-              1: { metadata: { data: 10 } },
-              2: { metadata: { data: 20 } }
-            },
-            uids: {
-              111: 1,
-              222: 1,
-              333: 2
-            },
-            subscribers: {
-              1: new Set(['111', '222']),
-              2: new Set(['333'])
-            }
-          },
-          collections: {
-            ...initialCacheState,
-            entries: {
-              1: { tracks: [1, 2] }
-            },
-            uids: {
-              444: 1
-            },
-            subscribers: {
-              1: new Set(['444'])
-            },
-            subscriptions: {
-              1: new Set([{ kind: Kind.TRACKS, uid: '222' }])
-            }
-          }
-        }
-      )
-      .dispatch(actions.unsubscribe(Kind.COLLECTIONS, [{ uid: '444', id: 1 }]))
-      .put(actions.unsubscribe(Kind.TRACKS, [{ uid: '222' }]))
-      .put(
-        actions.unsubscribeSucceeded(Kind.COLLECTIONS, [{ uid: '444', id: 1 }])
-      )
-      .put(actions.unsubscribeSucceeded(Kind.TRACKS, [{ uid: '222' }]))
-      .silentRun()
-    expect(storeState.tracks.uids).toEqual({
-      111: 1,
-      333: 2
-    })
-    expect(storeState.tracks.subscribers).toEqual({
-      1: new Set(['111']),
-      2: new Set(['333'])
-    })
-    expect(storeState.collections).toEqual(initialCacheState)
-  })
-
-  it('removes entries with no subscribers', async () => {
-    const { storeState } = await expectSaga(allSagas(sagas()), actions)
-      .withReducer(
-        combineReducers({
-          tracks: asCache(noopReducer(), Kind.TRACKS)
-        }),
-        {
-          tracks: {
-            ...initialCacheState,
-            entries: {
-              1: { metadata: { data: 10 } }
-            },
-            uids: {
-              111: 1,
-              222: 1
-            },
-            subscribers: {
-              1: new Set(['111', '222'])
-            }
-          }
-        }
-      )
-      .dispatch(actions.unsubscribe(Kind.TRACKS, [{ uid: '111', id: 1 }]))
-      .put(actions.unsubscribeSucceeded(Kind.TRACKS, [{ uid: '111', id: 1 }]))
-      .dispatch(actions.unsubscribe(Kind.TRACKS, [{ uid: '222', id: 1 }]))
-      .put(actions.unsubscribeSucceeded(Kind.TRACKS, [{ uid: '222', id: 1 }]))
-      .put(actions.remove(Kind.TRACKS, [1]))
-      .silentRun()
-    expect(storeState.tracks).toEqual(initialCacheState)
   })
 })

@@ -4,3 +4,4 @@ import processBrowser from 'process/browser'
 // @ts-ignore
 window.Buffer = Buffer
 window.process = { ...processBrowser, env: process.env }
+window.global ||= window as any

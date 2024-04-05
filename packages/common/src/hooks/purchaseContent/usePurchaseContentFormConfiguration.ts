@@ -14,6 +14,7 @@ import {
   purchaseContentActions,
   purchaseContentSelectors
 } from '~/store/purchase-content'
+import { isContentCollection, isContentTrack } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { useUSDCBalance } from '../useUSDCBalance'
@@ -48,7 +49,8 @@ export const usePurchaseContentFormConfiguration = ({
   purchaseVendor?: PurchaseVendor
 }) => {
   const dispatch = useDispatch()
-  const isAlbum = metadata && 'playlist_id' in metadata
+  const isAlbum = isContentCollection(metadata)
+  const isTrack = isContentTrack(metadata)
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const page = useSelector(getPurchaseContentPage)
@@ -73,7 +75,11 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseMethod,
       purchaseVendor
     }: PurchaseContentValues) => {
-      const contentId = isAlbum ? metadata?.playlist_id : metadata?.track_id
+      const contentId = isAlbum
+        ? metadata.playlist_id
+        : isTrack
+        ? metadata.track_id
+        : undefined
       if (isUnlocking || !contentId) return
 
       if (
