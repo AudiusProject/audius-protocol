@@ -394,6 +394,7 @@ const ConnectedPlaylistTile = ({
   }, [shareCollection, id])
 
   const hasStreamAccess = !!access?.stream
+
   const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     const isPurchase = isContentUSDCPurchaseGated(streamConditions)
     if (isPurchase && id) {

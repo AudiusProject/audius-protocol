@@ -192,6 +192,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
+
   const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && id) {
       openPremiumContentPurchaseModal(
