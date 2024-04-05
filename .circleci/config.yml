@@ -473,7 +473,7 @@ jobs:
               workflow_url=$(echo $workflow | jq -r '"https://app.circleci.com/pipelines/\(.project_slug)/\(.pipeline_number)/workflows/\(.id)"')
               workflow_line=$(echo $workflow | jq -r '"\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) <'$workflow_url'|\(.name)>"')
               jobs_lines=$(jq -r '.items | map("\t\(if .status == "failed" then ":x:" elif .status == "success" then ":white_check_mark:" else ":grey_question:" end) \(if .status == "failed" or .status == "success" then "<'"$workflow_url"'/jobs/\(.job_number)|\(.name)>" else .name end)") | join("\n")' $workflow_filename)
-              WORKFLOW_STATUSES="${WORKFLOW_STATUSES}\n${workflow_line}\n${jobs_lines}"
+              WORKFLOW_STATUSES=$(printf '%s\n%s\n%s' "$WORKFLOW_STATUSES" "$workflow_line" "$jobs_lines")
             done
 
             # Add help text in the case of failure
@@ -484,7 +484,7 @@ jobs:
             jq -n --arg header "$PIPELINE_STATUS_HEADER"\
                 --arg author "*Author*: $SLACK_USER_ID"\
                 --arg branch "*Branch*: $CIRCLE_BRANCH"\
-                --arg commit "*Commit*: $COMMIT_MESSAGE"\
+                --arg commit "$(printf "*Commit*:\n$COMMIT_MESSAGE")"\
                 --arg workflows "$WORKFLOW_STATUSES"\
                 --arg summary "$SUMMARY_MESSAGE"\
                 -f .circleci/slack-templates/pipeline-status-template.jq\
