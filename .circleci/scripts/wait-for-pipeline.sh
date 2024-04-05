@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Wait for the pipeline to finish completely
 PIPELINE_PENDING="true"
 while [[ "$PIPELINE_PENDING" == "true" ]]; do
