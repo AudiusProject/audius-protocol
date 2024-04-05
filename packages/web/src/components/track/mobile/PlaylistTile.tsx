@@ -22,6 +22,7 @@ import {
 import { Flex, IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
+import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
@@ -180,12 +181,13 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     [styles.hide]: !shouldShow
   }
   const [, setModalVisibility] = useModalState('LockedContent')
+  const dispatch = useDispatch()
   const openLockedContentModal = useCallback(() => {
     if (id) {
       dispatch(setLockedContentId({ id }))
       setModalVisibility(true)
     }
-  }, [id, setModalVisibility])
+  }, [dispatch, id, setModalVisibility])
 
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -368,6 +370,3 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
 }
 
 export default PlaylistTile
-function dispatch(arg0: any) {
-  throw new Error('Function not implemented.')
-}
