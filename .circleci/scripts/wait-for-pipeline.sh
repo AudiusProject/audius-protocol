@@ -8,7 +8,7 @@ while [[ "$PIPELINE_PENDING" == "true" ]]; do
       -H "Circle-Token: ${CIRCLE_TOKEN}" \
       > /tmp/workflows.json
   echo "Pipeline workflows fetched..."
-  PIPELINE_PENDING=$(jq ".items | map(select(.id != \"${CIRCLE_WORKFLOW_ID}\") | .status == \"running\" or \"status\" == \"failing\" ) | any" < /tmp/workflows.json)
+  PIPELINE_PENDING=$(jq '.items | map(select(.id != "'$CIRCLE_WORKFLOW_ID'") | .status == "running" or .status == "failing") | any" < /tmp/workflows.json)
   if [[ "$PIPELINE_PENDING" == "true" ]]; then
     echo "Pipeline still has pending workflows. Sleeping for 30s..."
     sleep 30
