@@ -36,13 +36,12 @@ import styles from './styles.module.css'
 import { ContentProps } from './types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { FeatureFlags } from '@audius/common/services'
-import { Link } from 'react-router-dom'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
 
 const messages = {
-  by: 'By',
+  by: 'by',
   date: 'Date',
   done: 'Done',
   messageBuyer: 'Message Buyer',
@@ -84,86 +83,84 @@ export const SaleModalContent = ({
     dispatch
   ])
 
-  return isPremiumAlbumsEnabled ? (
+  return !isPremiumAlbumsEnabled ? (
     <>
       <ModalHeader>
         <ModalTitle title={messages.saleDetails} />
       </ModalHeader>
       <ModalContent className={styles.content}>
-        <Flex gap='xl' direction='column' w='100%'>
-          <Flex
-            borderBottom='default'
-            gap='l'
-            justifyContent='spaceBetween'
-            w='100%'
-            pb='xl'
-          >
-            <DynamicTrackArtwork
-              id={purchaseDetails.contentId}
-              size={DynamicTrackArtworkSize.LARGE}
-            />
-            <DetailSection label={messages.track}>
-              <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
-              <Flex gap='xs'>
-                <Text variant='body' size='l' textTransform='lowercase'>
-                  {messages.by}
-                </Text>
-                <Text variant='body' size='l' color='accent'>
-                  <UserNameAndBadges
-                    onNavigateAway={onClose}
-                    userId={purchaseDetails.sellerUserId}
-                  />
-                </Text>
-              </Flex>
-            </DetailSection>
-          </Flex>
-          <Flex
-            justifyContent='space-between'
-            w='100%'
-            borderBottom='default'
-            pb='xl'
-          >
-            <Flex gap='s' direction='column'>
-              <Text variant='label'> {messages.purchasedBy}</Text>
+        <Flex
+          borderBottom='default'
+          gap='l'
+          justifyContent='spaceBetween'
+          w='100%'
+          pb='xl'
+        >
+          <DynamicTrackArtwork
+            id={purchaseDetails.contentId}
+            size={DynamicTrackArtworkSize.LARGE}
+          />
+          <DetailSection label={messages.track}>
+            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+            <Flex gap='xs'>
+              <Text variant='body' size='l'>
+                {messages.by}
+              </Text>
               <Text variant='body' size='l' color='accent'>
                 <UserNameAndBadges
                   onNavigateAway={onClose}
-                  userId={purchaseDetails.buyerUserId}
+                  userId={purchaseDetails.sellerUserId}
                 />
               </Text>
             </Flex>
-            <Button
-              iconLeft={IconMessage}
-              variant='secondary'
-              size='small'
-              onClick={handleClickMessageBuyer}
-            >
-              {messages.sayThanks}
-            </Button>
-          </Flex>
-          <Flex justifyContent='space-between' w='100%'>
-            <Flex gap='s' direction='column'>
-              <Text variant='label'>{messages.transactionDate}</Text>
-              <Text variant='body' size='l'>
-                {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
-              </Text>
-            </Flex>
-            <Button
-              iconLeft={IconExternalLink}
-              variant='secondary'
-              size='small'
-              asChild
-            >
-              <a href={makeSolanaTransactionLink(purchaseDetails.signature)}>
-                {messages.transaction}
-              </a>
-            </Button>
-          </Flex>
-          <TransactionSummary transaction={purchaseDetails} />
+          </DetailSection>
         </Flex>
+        <Flex
+          justifyContent='space-between'
+          w='100%'
+          borderBottom='default'
+          pb='xl'
+        >
+          <Flex gap='s' direction='column'>
+            <Text variant='label'>{messages.purchasedBy}</Text>
+            <Text variant='body' size='l' color='accent'>
+              <UserNameAndBadges
+                onNavigateAway={onClose}
+                userId={purchaseDetails.buyerUserId}
+              />
+            </Text>
+          </Flex>
+          <Button
+            iconLeft={IconMessage}
+            variant='secondary'
+            size='small'
+            onClick={handleClickMessageBuyer}
+          >
+            {messages.sayThanks}
+          </Button>
+        </Flex>
+        <Flex justifyContent='space-between' w='100%'>
+          <Flex gap='s' direction='column'>
+            <Text variant='label'>{messages.transactionDate}</Text>
+            <Text variant='body' size='l'>
+              {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
+            </Text>
+          </Flex>
+          <Button
+            iconLeft={IconExternalLink}
+            variant='secondary'
+            size='small'
+            asChild
+          >
+            <a href={makeSolanaTransactionLink(purchaseDetails.signature)}>
+              {messages.transaction}
+            </a>
+          </Button>
+        </Flex>
+        <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
-      <ModalFooter className={styles.footer}>
-        <Button className={styles.button} onClick={onClose}>
+      <ModalFooter style={{ paddingTop: 0 }}>
+        <Button onClick={onClose} fullWidth>
           {messages.done}
         </Button>
       </ModalFooter>

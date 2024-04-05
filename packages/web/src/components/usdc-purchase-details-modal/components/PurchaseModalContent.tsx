@@ -33,7 +33,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { FeatureFlags } from '@audius/common/services'
 
 const messages = {
-  by: 'By',
+  by: 'by',
   date: 'Date',
   transactionDate: 'Transaction Date',
   done: 'Done',
@@ -59,46 +59,42 @@ export const PurchaseModalContent = ({
     }
   }, [track, onClose, goToRoute])
 
-  return isPremiumAlbumsEnabled ? (
+  return !isPremiumAlbumsEnabled ? (
     <>
       <ModalHeader>
         <ModalTitle title={messages.purchaseDetails} />
       </ModalHeader>
       <ModalContent className={styles.content}>
-        <Flex gap='xl' direction='column' w='100%'>
-          <Flex
-            borderBottom='default'
-            gap='l'
-            justifyContent='spaceBetween'
-            w='100%'
-            pb='xl'
-          >
-            <DynamicTrackArtwork
-              id={purchaseDetails.contentId}
-              size={DynamicTrackArtworkSize.LARGE}
-            />
-            <DetailSection label={messages.track}>
-              <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
-              <Flex gap='xs'>
-                <Text variant='body' size='l' textTransform='lowercase'>
-                  {messages.by}
-                </Text>
-                <Text variant='body' size='l' color='accent'>
-                  <UserNameAndBadges
-                    onNavigateAway={onClose}
-                    userId={purchaseDetails.sellerUserId}
-                  />
-                </Text>
-              </Flex>
-            </DetailSection>
-          </Flex>
-          <Flex justifyContent='space-between' w='100%'>
-            <Flex gap='s' direction='column'>
-              <Text variant='label'>{messages.transactionDate}</Text>
+        <Flex
+          borderBottom='default'
+          gap='l'
+          justifyContent='spaceBetween'
+          w='100%'
+          pb='xl'
+          alignItems='center'
+        >
+          <DynamicTrackArtwork
+            id={purchaseDetails.contentId}
+            size={DynamicTrackArtworkSize.LARGE}
+          />
+          <DetailSection label={messages.track}>
+            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+            <Flex gap='xs'>
               <Text variant='body' size='l'>
-                {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
+                {messages.by}
+              </Text>
+              <Text variant='body' size='l' color='accent'>
+                <UserNameAndBadges
+                  onNavigateAway={onClose}
+                  userId={purchaseDetails.sellerUserId}
+                />
               </Text>
             </Flex>
+          </DetailSection>
+        </Flex>
+        <DetailSection
+          label={messages.transactionDate}
+          button={
             <Button
               iconLeft={IconExternalLink}
               variant='secondary'
@@ -109,12 +105,16 @@ export const PurchaseModalContent = ({
                 {messages.transaction}
               </a>
             </Button>
-          </Flex>
-          <TransactionSummary transaction={purchaseDetails} />
-        </Flex>
+          }
+        >
+          <Text variant='body' size='l'>
+            {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
+          </Text>
+        </DetailSection>
+        <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
-      <ModalFooter className={styles.footer}>
-        <Button className={styles.button} onClick={onClose}>
+      <ModalFooter style={{ paddingTop: 0 }}>
+        <Button onClick={onClose} fullWidth>
           {messages.done}
         </Button>
       </ModalFooter>
@@ -132,7 +132,10 @@ export const PurchaseModalContent = ({
           <DetailSection label={messages.track}>
             <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
           </DetailSection>
-          <DynamicTrackArtwork id={purchaseDetails.contentId} />
+          <DynamicTrackArtwork
+            id={purchaseDetails.contentId}
+            size={DynamicTrackArtworkSize.DEFAULT}
+          />
         </div>
         <DetailSection label={messages.by}>
           <Text variant='body' size='l' color='accent'>
