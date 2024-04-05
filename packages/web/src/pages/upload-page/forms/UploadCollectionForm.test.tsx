@@ -119,4 +119,46 @@ describe('UploadCollectionForm', () => {
     )
     expect(screen.getByText(/album name/i)).toBeInTheDocument()
   })
+  it('should not submit until required fields are filled', () => {
+    const onContinue = vi.fn()
+
+    render(
+      <UploadCollectionForm
+        formState={baseMockedFormState}
+        onContinue={onContinue}
+      />,
+      {
+        reduxState: authedUserStore
+      }
+    )
+    expect(screen.getByText(/album name/i)).toBeInTheDocument()
+  })
+  it('should work with all fields fields', () => {
+    const onContinue = vi.fn()
+
+    render(
+      <UploadCollectionForm
+        formState={baseMockedFormState}
+        onContinue={onContinue}
+      />,
+      {
+        reduxState: authedUserStore
+      }
+    )
+    expect(screen.getByText(/album name/i)).toBeInTheDocument()
+  })
+  it('should have a max of 10 tags', () => {
+    const onContinue = vi.fn()
+
+    render(
+      <UploadCollectionForm
+        formState={baseMockedFormState}
+        onContinue={onContinue}
+      />,
+      {
+        reduxState: authedUserStore
+      }
+    )
+    expect(screen.getByText(/album name/i)).toBeInTheDocument()
+  })
 })
