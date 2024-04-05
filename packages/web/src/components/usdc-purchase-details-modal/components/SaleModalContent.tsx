@@ -24,7 +24,7 @@ import {
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ExternalTextLink, UserLink } from 'components/link'
+import { ExternalLink, UserLink } from 'components/link'
 import {
   DynamicTrackArtwork,
   DynamicTrackArtworkSize
@@ -141,11 +141,11 @@ export const SaleModalContent = ({
               size='small'
               asChild
             >
-              <ExternalTextLink
+              <ExternalLink
                 to={makeSolanaTransactionLink(purchaseDetails.signature)}
               >
                 {messages.transaction}
-              </ExternalTextLink>
+              </ExternalLink>
             </Button>
           }
         >
