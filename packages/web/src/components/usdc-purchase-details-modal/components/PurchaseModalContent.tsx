@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { UserLink } from 'components/link'
+import { ExternalLink, UserLink } from 'components/link'
 
 import { useGetTrackById } from '@audius/common/api'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
@@ -95,9 +95,11 @@ export const PurchaseModalContent = ({
               size='small'
               asChild
             >
-              <a href={makeSolanaTransactionLink(purchaseDetails.signature)}>
+              <ExternalLink
+                to={makeSolanaTransactionLink(purchaseDetails.signature)}
+              >
                 {messages.transaction}
-              </a>
+              </ExternalLink>
             </Button>
           }
         >

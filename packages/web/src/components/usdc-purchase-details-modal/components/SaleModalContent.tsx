@@ -36,7 +36,7 @@ import styles from './styles.module.css'
 import { ContentProps } from './types'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { FeatureFlags } from '@audius/common/services'
-import { UserLink } from 'components/link'
+import { ExternalLink, UserLink } from 'components/link'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
@@ -134,16 +134,18 @@ export const SaleModalContent = ({
         </Flex>
         <DetailSection
           label={messages.transactionDate}
-          button={
+          actionButton={
             <Button
               iconLeft={IconExternalLink}
               variant='secondary'
               size='small'
               asChild
             >
-              <a href={makeSolanaTransactionLink(purchaseDetails.signature)}>
+              <ExternalLink
+                to={makeSolanaTransactionLink(purchaseDetails.signature)}
+              >
                 {messages.transaction}
-              </a>
+              </ExternalLink>
             </Button>
           }
         >
