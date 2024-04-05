@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
-import { ExternalLink, UserLink } from 'components/link'
 
 import { useGetTrackById } from '@audius/common/api'
+import { FeatureFlags } from '@audius/common/services'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
   ModalContent,
@@ -18,20 +18,20 @@ import {
 } from '@audius/harmony'
 import moment from 'moment'
 
+import { ExternalLink, UserLink } from 'components/link'
 import {
   DynamicTrackArtwork,
   DynamicTrackArtworkSize
 } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { DetailSection } from './DetailSection'
 import { TrackLink } from './TrackLink'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { FeatureFlags } from '@audius/common/services'
 
 const messages = {
   by: 'by',

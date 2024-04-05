@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common/services'
 import {
   chatActions,
   chatSelectors,
@@ -23,20 +24,19 @@ import {
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { ExternalTextLink, UserLink } from 'components/link'
 import {
   DynamicTrackArtwork,
   DynamicTrackArtworkSize
 } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { DetailSection } from './DetailSection'
 import { TrackLink } from './TrackLink'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
-import { useFlag } from 'hooks/useRemoteConfig'
-import { FeatureFlags } from '@audius/common/services'
-import { ExternalLink, UserLink } from 'components/link'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
@@ -141,11 +141,11 @@ export const SaleModalContent = ({
               size='small'
               asChild
             >
-              <ExternalLink
+              <ExternalTextLink
                 to={makeSolanaTransactionLink(purchaseDetails.signature)}
               >
                 {messages.transaction}
-              </ExternalLink>
+              </ExternalTextLink>
             </Button>
           }
         >

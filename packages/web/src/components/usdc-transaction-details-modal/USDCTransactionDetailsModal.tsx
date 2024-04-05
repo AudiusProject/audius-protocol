@@ -16,7 +16,7 @@ import {
 } from '@audius/harmony'
 import moment from 'moment'
 
-import { ExternalLink } from 'components/link'
+import { ExternalTextLink } from 'components/link'
 
 import styles from './USDCTransactionDetailsModal.module.css'
 
@@ -82,14 +82,14 @@ export const USDCTransactionDetailsModal = () => {
         USDCTransactionType.WITHDRAWAL ? (
           <DetailSection
             label={
-              <ExternalLink
+              <ExternalTextLink
                 to={makeSolanaTransactionLink(transactionDetails.signature)}
               >
                 <span className={styles.transactionLink}>
                   {messages.destinationWallet}
                   <IconExternalLink size='s' color='default' />
                 </span>
-              </ExternalLink>
+              </ExternalTextLink>
             }
             value={`${transactionDetails.metadata ?? '-'}`}
           />
