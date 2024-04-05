@@ -88,7 +88,7 @@ export const PurchaseModalContent = ({
         </Flex>
         <DetailSection
           label={messages.transactionDate}
-          button={
+          actionButton={
             <Button
               iconLeft={IconExternalLink}
               variant='secondary'

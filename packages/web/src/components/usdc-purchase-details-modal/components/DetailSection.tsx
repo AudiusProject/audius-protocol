@@ -5,15 +5,15 @@ import React from 'react'
 export const DetailSection = ({
   children,
   label,
-  button
+  actionButton
 }: {
   children?: React.ReactNode
   label: string | React.ReactNode
-  button?: React.ReactNode
+  actionButton?: React.ReactNode
 }) => (
   <Flex
     w='100%'
-    alignItems={button ? undefined : 'center'}
+    alignItems={actionButton ? undefined : 'center'}
     css={{ overflow: 'hidden' }}
   >
     <Flex gap='s' direction='column' w='100%'>
@@ -22,6 +22,6 @@ export const DetailSection = ({
       </Text>
       {children}
     </Flex>
-    {button}
+    {actionButton}
   </Flex>
 )

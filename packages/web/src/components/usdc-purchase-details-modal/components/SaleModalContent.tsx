@@ -113,7 +113,7 @@ export const SaleModalContent = ({
         <Flex borderBottom='default' w='100%' pb='xl'>
           <DetailSection
             label={messages.purchasedBy}
-            button={
+            actionButton={
               <Button
                 iconLeft={IconMessage}
                 variant='secondary'

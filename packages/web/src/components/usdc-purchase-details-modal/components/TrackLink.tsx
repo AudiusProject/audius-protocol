@@ -3,7 +3,7 @@ import { Text } from '@audius/harmony'
 import { TextLink } from 'components/link'
 
 export const TrackLink = (props: { id: number; onClick: () => void }) => {
-  const { id, onClick, ...other } = props
+  const { id, ...other } = props
   const { data: track } = useGetTrackById({ id })
   if (!track) return null
   return (
