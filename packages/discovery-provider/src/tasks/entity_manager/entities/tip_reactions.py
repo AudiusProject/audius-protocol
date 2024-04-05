@@ -1,10 +1,13 @@
+import logging
+from datetime import datetime
+
 from src.exceptions import IndexingValidationError
 from src.models.social.reaction import Reaction
-from src.queries.get_tips import GetTipsArgs, get_tips
+from src.models.users.user import User
+from src.models.users.user_tip import UserTip
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
-from src.utils.structured_logger import StructuredLogger
 
-logger = StructuredLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # validates a valid tip reaction based on the manage entity parameters
@@ -12,18 +15,18 @@ logger = StructuredLogger(__name__)
 def validate_tip_reaction(params: ManageEntityParameters):
     if params.entity_type != EntityType.TIP:
         raise IndexingValidationError(f"Entity type {params.entity_type} is not a tip")
-    if params.action != Action.REACTION:
-        raise IndexingValidationError("Expected action to be reaction")
+    if params.action != Action.UPDATE:
+        raise IndexingValidationError("Expected action to be update")
 
     if not params.metadata:
         raise IndexingValidationError("Metadata is required for tip reaction")
 
     metadata = params.metadata
 
-    if metadata.get("reactedTo") is None:
+    if metadata.get("reacted_to") is None:
         raise IndexingValidationError("reactedTo is required in tip reactions metadata")
 
-    if metadata.get("reactionValue") is None:
+    if metadata.get("reaction_value") is None:
         raise IndexingValidationError(
             "reactionValue is required in tip reactions metadata"
         )
@@ -36,20 +39,37 @@ def tip_reaction(params: ManageEntityParameters):
         metadata = params.metadata
 
         # pull relevant fields out of em metadata
-        reacted_to = metadata.get("reactedTo")
-        reaction_value = metadata.get("reactionValue")
+        reacted_to = metadata.get("reacted_to")
+        reaction_value = metadata.get("reaction_value")
 
-        logger.info(f"Creating reaction {reaction_value} for reactedTo: {reacted_to}")
+        reactor_user_id = params.user_id
 
-        tips_args = GetTipsArgs(tx_signatures=[reacted_to])
-        tips = get_tips(tips_args)
-        if not tips:
-            raise IndexingValidationError(f"tip for {reacted_to} not found")
-        tip = tips[0]
+        session = params.session
+        tip = (
+            session.query(UserTip.slot, UserTip.sender_user_id)
+            .filter(
+                UserTip.signature == reacted_to,
+                UserTip.receiver_user_id == reactor_user_id,
+            )
+            .one_or_none()
+        )
 
-        # query solana for remaining info
-        slot = tip.get("slot")
-        sender_wallet = tip.get("sender")
+        if not tip:
+            raise IndexingValidationError(
+                f"reactor {reactor_user_id} reacted to a tip {reacted_to} that doesn't exist"
+            )
+
+        slot, sender_user_id = tip
+
+        sender_wallet = (
+            session.query(User.wallet)
+            .filter(User.user_id == sender_user_id)
+            .one_or_none()
+        )
+
+        if not sender_wallet:
+            raise IndexingValidationError(f"sender on tip {reacted_to} was not found")
+
         reaction_type = "tip"
 
         reaction = Reaction(
@@ -58,12 +78,10 @@ def tip_reaction(params: ManageEntityParameters):
             slot=slot,
             sender_wallet=sender_wallet,
             reaction_type=reaction_type,
+            timestamp=datetime.now().replace(microsecond=0, second=0, minute=0),
         )
 
         session = params.session
         session.bulk_save_objects([reaction])
     except Exception as e:
-        logger.error(
-            f"tip_reactions.py | error indexing tip reaction {params.metadata} {e}"
-        )
-        raise e
+        logger.error(f"tip_reactions.py | error indexing tip reactions {e}")

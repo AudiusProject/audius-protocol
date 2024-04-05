@@ -481,7 +481,7 @@ export class UsersApi extends GeneratedUsersApi {
       userId,
       entityType: EntityType.TIP,
       entityId: userId,
-      action: Action.REACTION,
+      action: Action.UPDATE,
       auth: this.auth,
       metadata: JSON.stringify({
         cid: '',

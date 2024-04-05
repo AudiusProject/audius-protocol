@@ -62,8 +62,7 @@ export enum Action {
   VIEW = 'View',
   VIEW_PLAYLIST = 'ViewPlaylist',
   APPROVE = 'Approve',
-  REJECT = 'Reject',
-  REACTION = 'Reaction'
+  REJECT = 'Reject'
 }
 
 export enum EntityType {
