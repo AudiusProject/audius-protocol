@@ -3,7 +3,6 @@ jobs:
   - web-init:
       context:
         - Vercel
-        - slack-secrets
 
   # Cut a demo if not main
   - web-build-demo:
@@ -26,7 +25,6 @@ jobs:
   - web-build-staging:
       context:
         - Vercel
-        - slack-secrets
       requires:
         - web-init
 
@@ -58,7 +56,6 @@ jobs:
       context:
         - Audius Client
         - Probers
-        - slack-secrets
       requires:
         - web-build-staging
 
@@ -71,7 +68,6 @@ jobs:
   - web-test:
       context:
         - Audius Client
-        - slack-secrets
       requires:
         - web-build-staging
 

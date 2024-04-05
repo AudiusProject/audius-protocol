@@ -220,21 +220,3 @@ web-deploy-sourcemaps-s3:
     - run:
         name: Deploy to S3
         command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800
-
-slack-notify-job-failure:
-  steps:
-    - when:
-        condition:
-          equal: [main, << pipeline.git.branch >>]
-        steps:
-          - run:
-              when: on_fail
-              command: |
-                author_name=$(git log -1 --pretty=format:'%an')
-                env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
-                echo "export SLACK_USER_ID=\"<@$(eval echo \$$env_key_name)>\"" >> "$BASH_ENV"
-                echo "export FAILED_JOB_TEMPLATE=\"$(cat .circleci/slack-templates/failed-job-template.json)\"" >> "$BASH_ENV"
-          - slack/notify:
-              channel: 'C06SP746DA7'
-              event: fail
-              template: FAILED_JOB_TEMPLATE
