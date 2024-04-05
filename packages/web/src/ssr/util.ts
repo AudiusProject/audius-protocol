@@ -61,3 +61,21 @@ export const makePageRoute =
     }
     return false
   }
+
+export const checkIsBot = (userAgent: string) => {
+  if (!userAgent) {
+    return false
+  }
+  const botTest =
+    /discordbot|facebookexternalhit|gigabot|ia_archiver|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
+  return botTest.test(userAgent)
+}
+
+export const checkIsCrawler = (userAgent: string) => {
+  if (!userAgent) {
+    return false
+  }
+  const crawlerTest =
+    /forcessr|ahrefs(bot|siteaudit)|altavista|baiduspider|bingbot|duckduckbot|googlebot|msnbot|nextgensearchbot|yahoo|yandex/i
+  return crawlerTest.test(userAgent)
+}

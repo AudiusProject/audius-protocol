@@ -120,9 +120,7 @@ export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
  * Adds relevant premium metadata
  * Converts prices to WEI and adds splits for USDC purchasable content.
  */
-export function* addPremiumMetadata<T extends TrackMetadata>(
-  track: T // track or collection
-) {
+export function* addPremiumMetadata<T extends TrackMetadata>(track: T) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,

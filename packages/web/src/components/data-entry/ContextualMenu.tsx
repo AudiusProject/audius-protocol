@@ -1,4 +1,11 @@
-import { ReactNode, ReactElement, useCallback, useMemo, useEffect } from 'react'
+import {
+  ReactNode,
+  ReactElement,
+  useCallback,
+  useMemo,
+  useEffect,
+  HTMLAttributes
+} from 'react'
 
 import { Nullable } from '@audius/common/utils'
 import {
@@ -103,11 +110,12 @@ const MenuForm = (props: MenuFormProps) => {
   )
 }
 
-type SelectedValueProps = {
+export type SelectedValueProps = {
   label?: string
   icon?: IconComponent
   children?: ReactNode
-}
+  'data-testid'?: string
+} & HTMLAttributes<HTMLSpanElement>
 
 export const SelectedValue = (props: SelectedValueProps) => {
   const { label, icon: Icon, children, ...rest } = props

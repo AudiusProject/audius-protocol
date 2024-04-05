@@ -140,7 +140,7 @@ export class Wormhole {
         options
       )
 
-      const connection = this.solanaWeb3Manager.connection
+      const connection = this.solanaWeb3Manager.getConnection()
       let signTransaction: (transaction: Transaction) => Promise<Transaction>
       if (customSignTransaction) {
         signTransaction = customSignTransaction
@@ -319,7 +319,7 @@ export class Wormhole {
       )
       phase = phases.TRANFER_FROM_SOL
 
-      const connection = this.solanaWeb3Manager.connection
+      const connection = this.solanaWeb3Manager.getConnection()
 
       // Submit transaction - results in a Wormhole message being published
       const tx = await this.wormholeSDK.transferFromSolana(

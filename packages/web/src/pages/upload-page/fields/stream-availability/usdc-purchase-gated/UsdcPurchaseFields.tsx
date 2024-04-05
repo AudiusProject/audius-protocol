@@ -194,8 +194,8 @@ const PriceField = (props: PriceFieldProps) => {
       label={messaging.label}
       value={humanizedValue ?? undefined}
       placeholder={messaging.placeholder}
-      startAdornment={messages.dollars}
-      endAdornment={messages.usdc}
+      startAdornmentText={messages.dollars}
+      endAdornmentText={messages.usdc}
       onChange={handlePriceChange}
       onBlur={handlePriceBlur}
       disabled={disabled}

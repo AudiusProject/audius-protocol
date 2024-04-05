@@ -55,6 +55,11 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
+  const { isEnabled: isUSDCUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
+  )
+  const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
+
   const [downloadToggleValue, setDownloadToggleValue] = useState(false)
 
   const initialValues: CollectionValues = {
@@ -123,17 +128,13 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           <ReleaseDateFieldLegacy />
-          {isAlbum && isPremiumAlbumsEnabled ? (
-            <AccessAndSaleField
-              isAlbum
-              isUpload
-              onSubmit={({ stream_availability_type }) => {
-                setDownloadToggleValue(
-                  stream_availability_type ===
-                    StreamTrackAvailabilityType.USDC_PURCHASE
-                )
-              }}
-            />
+          {isAlbum && showPremiumAlbums ? (
+            <AccessAndSaleField isAlbum isUpload onSubmit={({ stream_availability_type }) => {
+              setDownloadToggleValue(
+                stream_availability_type ===
+                StreamTrackAvailabilityType.USDC_PURCHASE
+              )
+            }} />
           ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
