@@ -336,17 +336,20 @@ export class TransactionHandler {
         errorCode: null
       }
     } catch (e) {
+      const fallbackConnection =
+        sample(
+          this.fallbackConnections?.filter(
+            (conn) => conn.rpcEndpoint !== this.connection.rpcEndpoint
+          )
+        ) ?? this.connection
       logger.error(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
         )}, ${txid}, with ${sendCount} retries to ${
           this.connection.rpcEndpoint
-        }`
+        } falling back to ${fallbackConnection.rpcEndpoint}`
       )
-      this.connection =
-        sample(
-          this.fallbackConnections?.filter((conn) => conn !== this.connection)
-        ) ?? this.connection
+      this.connection = fallbackConnection
       done = true
       let errorCode = null
       let error = null
