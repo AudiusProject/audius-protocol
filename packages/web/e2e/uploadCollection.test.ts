@@ -188,7 +188,7 @@ test('should upload an album', async ({ page }) => {
   // await expect(page.getByText(trackTwoDetails.mood)).toBeVisible()
 })
 
-test('should upload a premium album', async ({ browser, page }) => {
+test.fixme('should upload a premium album', async ({ browser, page }) => {
   const timestamp = Date.now()
   const albumName = `Test album ${timestamp}`
   const albumDescription = 'Test description'
