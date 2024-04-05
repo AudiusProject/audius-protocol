@@ -83,19 +83,13 @@ export const SaleModalContent = ({
     dispatch
   ])
 
-  return !isPremiumAlbumsEnabled ? (
+  return isPremiumAlbumsEnabled ? (
     <>
       <ModalHeader>
         <ModalTitle title={messages.saleDetails} />
       </ModalHeader>
       <ModalContent className={styles.content}>
-        <Flex
-          borderBottom='default'
-          gap='l'
-          justifyContent='spaceBetween'
-          w='100%'
-          pb='xl'
-        >
+        <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
           <DynamicTrackArtwork
             id={purchaseDetails.contentId}
             size={DynamicTrackArtworkSize.LARGE}
@@ -115,48 +109,47 @@ export const SaleModalContent = ({
             </Flex>
           </DetailSection>
         </Flex>
-        <Flex
-          justifyContent='space-between'
-          w='100%'
-          borderBottom='default'
-          pb='xl'
-        >
-          <Flex gap='s' direction='column'>
-            <Text variant='label'>{messages.purchasedBy}</Text>
+        <Flex borderBottom='default' w='100%' pb='xl'>
+          <DetailSection
+            label={messages.purchasedBy}
+            button={
+              <Button
+                iconLeft={IconMessage}
+                variant='secondary'
+                size='small'
+                onClick={handleClickMessageBuyer}
+              >
+                {messages.sayThanks}
+              </Button>
+            }
+          >
             <Text variant='body' size='l' color='accent'>
               <UserNameAndBadges
                 onNavigateAway={onClose}
                 userId={purchaseDetails.buyerUserId}
               />
             </Text>
-          </Flex>
-          <Button
-            iconLeft={IconMessage}
-            variant='secondary'
-            size='small'
-            onClick={handleClickMessageBuyer}
-          >
-            {messages.sayThanks}
-          </Button>
+          </DetailSection>
         </Flex>
-        <Flex justifyContent='space-between' w='100%'>
-          <Flex gap='s' direction='column'>
-            <Text variant='label'>{messages.transactionDate}</Text>
-            <Text variant='body' size='l'>
-              {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
-            </Text>
-          </Flex>
-          <Button
-            iconLeft={IconExternalLink}
-            variant='secondary'
-            size='small'
-            asChild
-          >
-            <a href={makeSolanaTransactionLink(purchaseDetails.signature)}>
-              {messages.transaction}
-            </a>
-          </Button>
-        </Flex>
+        <DetailSection
+          label={messages.transactionDate}
+          button={
+            <Button
+              iconLeft={IconExternalLink}
+              variant='secondary'
+              size='small'
+              asChild
+            >
+              <a href={makeSolanaTransactionLink(purchaseDetails.signature)}>
+                {messages.transaction}
+              </a>
+            </Button>
+          }
+        >
+          <Text variant='body' size='l'>
+            {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
+          </Text>
+        </DetailSection>
         <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter style={{ paddingTop: 0 }}>

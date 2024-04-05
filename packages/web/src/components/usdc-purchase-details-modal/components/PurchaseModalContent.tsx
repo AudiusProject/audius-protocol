@@ -59,20 +59,13 @@ export const PurchaseModalContent = ({
     }
   }, [track, onClose, goToRoute])
 
-  return !isPremiumAlbumsEnabled ? (
+  return isPremiumAlbumsEnabled ? (
     <>
       <ModalHeader>
         <ModalTitle title={messages.purchaseDetails} />
       </ModalHeader>
       <ModalContent className={styles.content}>
-        <Flex
-          borderBottom='default'
-          gap='l'
-          justifyContent='spaceBetween'
-          w='100%'
-          pb='xl'
-          alignItems='center'
-        >
+        <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
           <DynamicTrackArtwork
             id={purchaseDetails.contentId}
             size={DynamicTrackArtworkSize.LARGE}
