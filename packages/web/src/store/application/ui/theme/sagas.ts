@@ -8,7 +8,7 @@ import { spawn, takeEvery } from 'redux-saga/effects'
 import {
   setTheme,
   PREFERS_DARK_MEDIA_QUERY,
-  doesPreferDarkMode
+  getSystemAppearance
 } from 'utils/theme/theme'
 const { setTheme: setThemeAction, setSystemAppearance } = themeActions
 
@@ -31,9 +31,7 @@ function* setThemeAsync(action: PayloadAction<{ theme: Theme }>) {
       mqlListener = () => {
         emitter(
           setSystemAppearance({
-            systemAppearance: doesPreferDarkMode()
-              ? SystemAppearance.DARK
-              : SystemAppearance.LIGHT
+            systemAppearance: getSystemAppearance()
           })
         )
         emitter(setThemeAction({ theme: Theme.AUTO }))
