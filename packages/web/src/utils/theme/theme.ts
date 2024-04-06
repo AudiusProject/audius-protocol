@@ -1,4 +1,4 @@
-import { Theme } from '@audius/common/models'
+import { SystemAppearance, Theme } from '@audius/common/models'
 
 const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
@@ -34,6 +34,9 @@ export const getTheme = (): Theme | null => {
   }
   return null
 }
+
+export const getSystemAppearance = () =>
+  doesPreferDarkMode() ? SystemAppearance.DARK : SystemAppearance.LIGHT
 
 export const isDarkMode = () => shouldShowDark(getTheme())
 export const isMatrix = () => getTheme() === Theme.MATRIX

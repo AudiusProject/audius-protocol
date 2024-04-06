@@ -6,26 +6,12 @@ import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 import { AppState } from 'store/types'
 import { useSelector } from 'utils/reducer'
-import {
-  doesPreferDarkMode,
-  getTheme as getThemeFromLocalStorage
-} from 'utils/theme/theme'
 
 const { getTheme, getSystemAppearance } = themeSelectors
 
 const selectHarmonyTheme = (state: AppState) => {
-  let theme = getTheme(state)
-  let systemAppearance = getSystemAppearance(state)
-
-  if (theme === null) {
-    theme = getThemeFromLocalStorage()
-  }
-
-  if (systemAppearance === null) {
-    systemAppearance = doesPreferDarkMode()
-      ? SystemAppearance.DARK
-      : SystemAppearance.LIGHT
-  }
+  const theme = getTheme(state)
+  const systemAppearance = getSystemAppearance(state)
 
   switch (theme) {
     case Theme.DEFAULT:
