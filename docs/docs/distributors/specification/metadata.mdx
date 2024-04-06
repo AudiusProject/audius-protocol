@@ -1,6 +1,6 @@
 ---
 id: metadata
-title: Metadata Mapping
+title: Supported Metadata Mapping
 pagination_label: Metadata Mapping
 sidebar_label: Metadata Mapping
 description: Audius SDK to DDEX Metadata Mapping
@@ -15,8 +15,6 @@ Please note that exact DDEX fields will depend on the specific ERN version.
 :::
 
 ---
-
-## Metadata Mapping
 
 ### Required Fields
 
@@ -36,19 +34,12 @@ the `coverArtFile` maps to two DDEX Fields
 - `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FilePath`
 - `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FileName`
 
-:::info
-
-Not technically an Audius SDK metadata field, but uploaded as part of the track/album. note that
-this DDEX field is a relative path to the file within the delivery
-
-:::
-
 #### userId
 
 1. same as artists (next row below): checks each artist name (in order) against Audius database of
    OAuthed display names, and uses the first match
 
-:::info
+:::note
 
 Not technically an Audius SDK metadata field, but uploaded as part of the track/album
 
@@ -65,7 +56,7 @@ from a DDEX delivery in cascading precedence.
 
 1. `/ReleaseList/Release/ReleaseId`
 
-:::info
+:::note
 
 The following fields are parsed and preserved from this field:
 
@@ -132,7 +123,7 @@ from a DDEX delivery in cascading precedence.
 
 1. `/ResourceList/SoundRecording/ReferenceTitle/TitleText`
 
-:::info
+:::note
 
 Subtitle is currently ignored/unused in the both the SoundRecording and release and are stored in
 the separate DDEX server but not in the Audius network.
@@ -146,7 +137,7 @@ the `trackFile` maps to two DDEX Fields
 - `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FilePath`
 - `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FileName`
 
-:::info
+:::note
 
 This is the actual audio file, not technically an Audius SDK metadata field, but uploaded in the
 same SDK function. Note that this DDEX field is a relative path to the file within the delivery
@@ -165,7 +156,7 @@ from a DDEX delivery in cascading precedence.
 1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
 2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
 
-:::info
+:::note
 
 The `/PartyName/FullName` child element is used as the artist’s name and the `SequenceNumber`
 attribute to preserve order
@@ -178,7 +169,7 @@ attribute to preserve order
 2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
 3. `/ReleaseList/Release/CLine`
 
-:::info
+:::note
 
 This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
 `Year` and `CLineText`
@@ -191,7 +182,7 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
 3. `/ReleaseList/Release/PLine`
 
-:::info
+:::note
 
 This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
 `Year` and `CLineText`
@@ -211,7 +202,7 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 
 1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/ResourceContributor`
 
-:::info
+:::note
 
 The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
 `SequenceNumber`, and `ResourceContributorRole`
@@ -222,7 +213,7 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/IndirectResourceContributor`
 
-:::info
+:::note
 
 The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
 `SequenceNumber`, and `IndirectResourceContributorRole`
@@ -233,7 +224,7 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/RightsController`
 
-:::info
+:::note
 
 The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
 `RightsShareUnknown`, and `RightsControllerRole`
@@ -247,7 +238,7 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
    `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/IsPreview`
    is true
 
-:::info
+:::note
 
 Preview length is 30 seconds starting at the `previewStartSeconds` into the track’s audio, even if a
 longer or shorter duration is given. does not support using an external file for the preview
@@ -267,7 +258,7 @@ from a DDEX delivery in cascading precedence.
 
 1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Title[@TitleType='DisplayTitle']/TitleText`
 
-:::info
+:::note
 
 Subtitle is currently ignored/unused in the both the SoundRecording and release and are stored in
 the separate DDEX server but not in the Audius network.
@@ -283,7 +274,7 @@ the separate DDEX server but not in the Audius network.
 
 1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
 
-:::info
+:::note
 
 Metadata about each track in the album, not technically an Audius SDK metadata field, but uploaded
 as part of the album
@@ -294,7 +285,7 @@ as part of the album
 
 1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
 
-:::info
+:::note
 
 array of audio files which the album is comprised of, not technically an Audius SDK metadata field,
 but uploaded as part of the album
@@ -312,7 +303,7 @@ from a DDEX delivery in cascading precedence.
 
 1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
 
-:::info
+:::note
 
 The `/PartyName/FullName` child element is used as the artist’s name and the `SequenceNumber`
 attribute to preserve order
@@ -321,10 +312,10 @@ attribute to preserve order
 
 #### copyrightLine
 
-1`/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/CLine` 2.
-`/ReleaseList/Release/CLine`
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
+2. `/ReleaseList/Release/CLine`
 
-:::info
+:::note
 
 This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
 `Year` and `CLineText`
@@ -336,7 +327,7 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
 2. `/ReleaseList/Release/PLine`
 
-:::info
+:::note
 
 This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
 `Year` and `PLineText`
