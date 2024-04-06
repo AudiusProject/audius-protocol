@@ -8,7 +8,7 @@ description: Audius SDK to DDEX Metadata Mapping
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
 
-:::info The following is provided based on ERN3.8
+:::info The following is provided based on [ERN3.8](/distributors/specification/ern3)
 
 Please note that exact DDEX fields will depend on the specific ERN version.
 
@@ -50,7 +50,7 @@ this DDEX field is a relative path to the file within the delivery
 
 :::info
 
-not technically an Audius SDK metadata field, but uploaded as part of the track/album
+Not technically an Audius SDK metadata field, but uploaded as part of the track/album
 
 :::
 
@@ -67,9 +67,10 @@ from a DDEX delivery in cascading precedence.
 
 :::info
 
-from this element, we parse+preserve many IDs (children elements): `PartyId`, `CatalogNumber`,
-`ICPN`, `GRid`, `ISAN`, `ISBN`, `ISMN`, `ISRC`, `ISSN`, `ISTC`, `ISWC`, `MWLI`, `SICI`, and
-`ProprietaryId`
+The following fields are parsed and preserved from this field:
+
+`PartyId`, `CatalogNumber`, `ICPN`, `GRid`, `ISAN`, `ISBN`, `ISMN`, `ISRC`, `ISSN`, `ISTC`, `ISWC`,
+`MWLI`, `SICI`, and `ProprietaryId`
 
 :::
 
@@ -82,23 +83,6 @@ The DDEX standard includes a `MarketingComments` field that is rarely used, but 
 ### Unused Fields
 
 The following Audius SDK Fields are not used by DDEX and have no mapping.
-
-#### license
-
-:::info
-
-we don’t know which DDEX field to use for this, but it seems like something that would be
-communicated somewhere
-
-:::
-
-#### mood and tags
-
-:::info
-
-never passed to Audius SDK because DDEX doesn’t provide these and likely never will
-
-:::
 
 #### child elements of `/ReleaseList/Release/`
 
@@ -150,10 +134,8 @@ from a DDEX delivery in cascading precedence.
 
 :::info
 
-Subtitle is currently ignored/unused, which likely needs to change (perhaps make title be
-`“<title> - <subtitle>.”` also note that DDEX communicates additional titles (eg,
-`<Title TitleType=”DisplayTitle”>` and `<Title TitleType=”FormalTitle”>`) in the both the
-SoundRecording and release. we store these in the separate DDEX server but not in the Audius network
+Subtitle is currently ignored/unused in the both the SoundRecording and release and are stored in
+the separate DDEX server but not in the Audius network.
 
 :::
 
@@ -166,8 +148,8 @@ the `trackFile` maps to two DDEX Fields
 
 :::info
 
-the actual audio file. not technically an Audius SDK metadata field, but uploaded in the same SDK
-function. note that this DDEX field is a relative path to the file within the delivery
+This is the actual audio file, not technically an Audius SDK metadata field, but uploaded in the
+same SDK function. Note that this DDEX field is a relative path to the file within the delivery
 
 :::
 
@@ -185,7 +167,7 @@ from a DDEX delivery in cascading precedence.
 
 :::info
 
-we use the `/PartyName/FullName` child element as the artist’s name and the `SequenceNumber`
+The `/PartyName/FullName` child element is used as the artist’s name and the `SequenceNumber`
 attribute to preserve order
 
 :::
@@ -198,8 +180,8 @@ attribute to preserve order
 
 :::info
 
-only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
-`CLineText`
+This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
+`Year` and `CLineText`
 
 :::
 
@@ -211,8 +193,8 @@ only used if both year AND text are non-empty. the child elements that are parse
 
 :::info
 
-only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
-`PLineText`
+This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
+`Year` and `CLineText`
 
 :::
 
@@ -231,7 +213,7 @@ only used if both year AND text are non-empty. the child elements that are parse
 
 :::info
 
-the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
 `SequenceNumber`, and `ResourceContributorRole`
 
 :::
@@ -242,7 +224,7 @@ the following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 :::info
 
-the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
 `SequenceNumber`, and `IndirectResourceContributorRole`
 
 :::
@@ -253,7 +235,7 @@ the following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 :::info
 
-the following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
 `RightsShareUnknown`, and `RightsControllerRole`
 
 :::
@@ -287,9 +269,8 @@ from a DDEX delivery in cascading precedence.
 
 :::info
 
-subtitle is currently ignored/unused, which likely needs to change (perhaps make title be
-`“<title> - <subtitle>.”` the same element but with `TitleType=’FormalTitle’`, as well as a
-`<ReferenceTitle>` element, are stored in the separate DDEX server but not in the Audius network
+Subtitle is currently ignored/unused in the both the SoundRecording and release and are stored in
+the separate DDEX server but not in the Audius network.
 
 :::
 
@@ -304,7 +285,7 @@ subtitle is currently ignored/unused, which likely needs to change (perhaps make
 
 :::info
 
-metadata about each track in the album. not technically an Audius SDK metadata field, but uploaded
+Metadata about each track in the album, not technically an Audius SDK metadata field, but uploaded
 as part of the album
 
 :::
@@ -315,7 +296,7 @@ as part of the album
 
 :::info
 
-array of audio files which the album is comprised of. not technically an Audius SDK metadata field,
+array of audio files which the album is comprised of, not technically an Audius SDK metadata field,
 but uploaded as part of the album
 
 :::
@@ -333,7 +314,7 @@ from a DDEX delivery in cascading precedence.
 
 :::info
 
-we use the `/PartyName/FullName` child element as the artist’s name and the `SequenceNumber`
+The `/PartyName/FullName` child element is used as the artist’s name and the `SequenceNumber`
 attribute to preserve order
 
 :::
@@ -345,8 +326,8 @@ attribute to preserve order
 
 :::info
 
-only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
-`CLineText`
+This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
+`Year` and `CLineText`
 
 :::
 
@@ -357,8 +338,8 @@ only used if both year AND text are non-empty. the child elements that are parse
 
 :::info
 
-only used if both year AND text are non-empty. the child elements that are parsed are: `Year` and
-`PLineText`
+This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
+`Year` and `PLineText`
 
 :::
 
