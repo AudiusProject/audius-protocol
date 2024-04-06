@@ -19,7 +19,7 @@ export const ReduxProvider = ({
   initialStoreState
 }: {
   children: ReactNode
-  // Optional (for testing purposes) - sets up an initial store state
+  // Sets up an initial store state
   initialStoreState?: PartialDeep<AppState>
 }) => {
   const { pageProps, isServerSide } = useSsrContext()
