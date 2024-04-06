@@ -23,7 +23,7 @@ const TestProviders =
     const { reduxState } = options ?? {}
     return (
       <ThemeProvider theme='day'>
-        <ReduxProvider initialStoreState={reduxState as unknown as AppState}>
+        <ReduxProvider initialStoreState={reduxState}>
           <RouterContextProvider>
             <ToastContextProvider>{children} </ToastContextProvider>
           </RouterContextProvider>
