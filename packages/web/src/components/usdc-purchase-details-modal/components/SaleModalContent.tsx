@@ -25,8 +25,11 @@ import {
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ExternalTextLink, UserLink } from 'components/link'
-import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
+import { ExternalLink, UserLink } from 'components/link'
+import {
+  DynamicTrackArtwork,
+  DynamicTrackArtworkSize
+} from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -91,6 +94,10 @@ export const SaleModalContent = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
+          <DynamicImage
+            image={isTrack ? trackArtwork : albumArtwork}
+            wrapperClassName={styles.artworkContainer}
+          />
           <DynamicTrackArtwork
             id={purchaseDetails.contentId}
             size={DynamicTrackArtworkSize.LARGE}
@@ -141,11 +148,11 @@ export const SaleModalContent = ({
               size='small'
               asChild
             >
-              <ExternalTextLink
+              <ExternalLink
                 to={makeSolanaTransactionLink(purchaseDetails.signature)}
               >
                 {messages.transaction}
-              </ExternalTextLink>
+              </ExternalLink>
             </Button>
           }
         >
