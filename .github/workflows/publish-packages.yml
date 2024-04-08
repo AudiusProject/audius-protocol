@@ -15,9 +15,6 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
-        run: CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1
-
       - name: Update .npmrc
         run: |
           cat << EOF > "$HOME/.npmrc"
@@ -29,8 +26,10 @@ jobs:
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
-        # with:
-        #   publish: npm run publish-packages
+        with:
+          version: CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1 && npm run publish-packages
+          version: changeset version && CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
