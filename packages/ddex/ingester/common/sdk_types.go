@@ -218,10 +218,15 @@ type TrackMetadata struct {
 
 // SDKUploadMetadata represents the metadata required to upload a track or album to Audius
 type SDKUploadMetadata struct {
-	// Used by both tracks and albums
-	ReleaseDate           time.Time             `bson:"release_date"`
-	Genre                 Genre                 `bson:"genre"`
-	Artists               []ResourceContributor `bson:"artists"`
+	// Required for both tracks and albums
+	ReleaseDate time.Time `bson:"release_date"`
+	Genre       Genre     `bson:"genre"`
+	CoverArtURL string    `bson:"cover_art_url"`
+
+	// Optional for both tracks and albums
+	CoverArtURLHash       NullableString        `bson:"cover_art_url_hash,omitempty"`
+	CoverArtURLHashAlgo   NullableString        `bson:"cover_art_url_hash_algo,omitempty"`
+	Artists               []ResourceContributor `bson:"artists,omitempty"`
 	Description           NullableString        `bson:"description,omitempty"` // Apparently there's supposed to be a <MarketingComment> that we use for this, but I haven't seen it in any example files
 	DDEXReleaseIDs        *ReleaseIDs           `bson:"ddex_release_ids,omitempty"`
 	Mood                  *Mood                 `bson:"mood,omitempty"` // DDEX doesn't provide this, but the Audius SDK requires it
@@ -230,9 +235,6 @@ type SDKUploadMetadata struct {
 	ProducerCopyrightLine *Copyright            `bson:"producer_copyright_line,omitempty"`
 	ParentalWarningType   NullableString        `bson:"parental_warning_type,omitempty"`
 	License               NullableString        `bson:"license,omitempty"`
-	CoverArtURL           string                `bson:"cover_art_url"`
-	CoverArtURLHash       NullableString        `bson:"cover_art_url_hash,omitempty"`
-	CoverArtURLHashAlgo   NullableString        `bson:"cover_art_url_hash_algo,omitempty"`
 
 	// Only for tracks
 	Title                        NullableString        `bson:"title,omitempty"`
