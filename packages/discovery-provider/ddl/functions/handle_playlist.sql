@@ -5,6 +5,7 @@ declare
   subscriber_user_ids integer[];
   old_row RECORD;
   delta int := 0;
+  purchase_record RECORD;
 begin
 
   insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
@@ -88,6 +89,27 @@ begin
     if new.is_delete IS FALSE and new.is_private IS FALSE then
       for track_item IN select jsonb_array_elements from jsonb_array_elements(new.playlist_contents -> 'track_ids')
       loop
+        -- Add notification for each purchaser
+        if new.is_album and new.is_stream_gated then
+          for purchase_record IN select * from usdc_purchases where usdc_purchases.content_id = new.playlist_id and usdc_purchases.content_type = 'playlist' and usdc_purchases.is_current
+          loop
+            insert into notification
+              (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
+              values
+              (
+                new.blocknumber,
+                ARRAY [purchase_record.buyer_user_id],
+                new.updated_at,
+                'track_added_to_purchased_album',
+                purchase_record.buyer_user_id,
+                'track_added_to_purchased_album:playlist_id:' || new.playlist_id || ':track_id:' || (track_item->>'track')::int,
+                json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id, 'playlist_owner_id', new.playlist_owner_id)
+              )
+            on conflict do nothing;
+          end loop;
+        end if;
+
+        -- Add notification for each track owner
         if (track_item->>'time')::double precision::int >= extract(epoch from new.updated_at)::int then
           select owner_id into track_owner_id from tracks where is_current and track_id=(track_item->>'track')::int;
           if track_owner_id != new.playlist_owner_id then

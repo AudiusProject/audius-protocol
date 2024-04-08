@@ -170,6 +170,12 @@ export type DiscoveryAddTrackToPlaylistNotificationAction = {
   playlist_owner_id: string
   type: 'track_added_to_playlist'
 }
+export type DiscoveryTrackAddedToPurchasedAlbumNotificationAction = {
+  playlist_id: string
+  track_id: string
+  playlist_owner_id: string
+  type: 'track_added_to_purchased_album'
+}
 
 export type DiscoveryMilestoneFollowNotificationAction = {
   type: 'follow_count'
@@ -285,6 +291,11 @@ export type DiscoveryAddTrackToPlaylistNotification = DiscoveryBaseNotification<
   'track_added_to_playlist',
   DiscoveryAddTrackToPlaylistNotificationAction
 >
+export type DiscoveryTrackAddedToPurchasedAlbumNotification =
+  DiscoveryBaseNotification<
+    'track_added_to_purchased_album',
+    DiscoveryTrackAddedToPurchasedAlbumNotificationAction
+  >
 export type DiscoveryTipSendNotification = DiscoveryBaseNotification<
   'tip_send',
   DiscoveryTipSendNotificationAction
@@ -397,6 +408,7 @@ export type DiscoveryNotification =
   | DiscoveryRepostOfRepostNotification
   | DiscoverySaveOfRepostNotification
   | DiscoveryAddTrackToPlaylistNotification
+  | DiscoveryTrackAddedToPurchasedAlbumNotification
   | DiscoveryTastemakerNotification
   | DiscoveryUSDCPurchaseBuyerNotification
   | DiscoveryUSDCPurchaseSellerNotification
