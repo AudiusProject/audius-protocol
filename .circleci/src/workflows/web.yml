@@ -67,7 +67,8 @@ jobs:
         - web-build-staging
 
   - web-test:
-      context: Audius Client
+      context:
+        - Audius Client
       requires:
         - web-build-staging
 
