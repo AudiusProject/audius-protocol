@@ -3,6 +3,7 @@ import { ReactNode, useRef } from 'react'
 import { Provider } from 'react-redux'
 import { Persistor, persistStore } from 'redux-persist'
 import { PersistGate } from 'redux-persist/integration/react'
+import { PartialDeep } from 'type-fest'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 import { configureStore } from 'store/configureStore'
@@ -18,8 +19,8 @@ export const ReduxProvider = ({
   initialStoreState
 }: {
   children: ReactNode
-  // Optional (for testing purposes) - sets up an initial store state
-  initialStoreState?: Partial<AppState>
+  // Sets up an initial store state
+  initialStoreState?: PartialDeep<AppState>
 }) => {
   const { pageProps, isServerSide } = useSsrContext()
   const { history } = useHistoryContext()
