@@ -21,6 +21,10 @@
         "ddex_app": {
           "type": ["string", "null"],
           "default": null
+        },
+        "upc": {
+          "type": ["string", "null"],
+          "default": null
         }
       },
       "required": [],
