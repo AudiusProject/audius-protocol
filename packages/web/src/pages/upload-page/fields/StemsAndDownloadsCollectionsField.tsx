@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { Flex, Switch, Text, useTheme } from '@audius/harmony'
 import { useField } from 'formik'
 
@@ -10,20 +8,9 @@ const messages = {
   description: 'Allow your fans to download a lossless copy of each track.'
 }
 
-export const StemsAndDownloadsCollectionField = ({
-  value: propsValue
-}: {
-  value?: boolean
-}) => {
+export const StemsAndDownloadsCollectionField = () => {
   const { spacing } = useTheme()
-  const [field, , { setValue }] = useField('are_tracks_downloadable')
-
-  useEffect(() => {
-    if (propsValue) {
-      setValue(true)
-    }
-  }, [propsValue, setValue])
-
+  const [field, , { setValue }] = useField('is_downloadable')
   return (
     <Tile
       elevation='flat'

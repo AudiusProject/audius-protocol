@@ -102,7 +102,8 @@ const combineMetadata = (
     // Take collection tags
     metadata.tags = collectionMetadata.trackDetails.tags
   }
-  if (collectionMetadata.are_tracks_downloadable) {
+
+  if (collectionMetadata.is_downloadable) {
     metadata.is_downloadable = true
   }
 
@@ -110,7 +111,7 @@ const combineMetadata = (
   const albumTrackPrice =
     collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
-    if (collectionMetadata.are_tracks_downloadable) {
+    if (collectionMetadata.is_downloadable) {
       metadata.is_download_gated = true
       metadata.download_conditions = {
         usdc_purchase: {

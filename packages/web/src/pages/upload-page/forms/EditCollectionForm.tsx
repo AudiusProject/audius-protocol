@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { StreamTrackAvailabilityType } from '@audius/common/models'
@@ -60,12 +60,10 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   )
   const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
-  const [downloadToggleValue, setDownloadToggleValue] = useState(false)
-
   const initialValues: CollectionValues = {
     ...metadata,
     is_album: isAlbum,
-    are_tracks_downloadable: false,
+    is_downloadable: false,
     artwork: null,
     playlist_name: '',
     description: '',
@@ -129,16 +127,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
           <ReleaseDateFieldLegacy />
           {isAlbum && showPremiumAlbums ? (
-            <AccessAndSaleField
-              isAlbum
-              isUpload
-              onSubmit={({ stream_availability_type }) => {
-                setDownloadToggleValue(
-                  stream_availability_type ===
-                    StreamTrackAvailabilityType.USDC_PURCHASE
-                )
-              }}
-            />
+            <AccessAndSaleField isAlbum isUpload />
           ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
@@ -148,9 +137,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               <SelectMoodField name='trackDetails.mood' />
             </div>
             <TagField name='trackDetails.tags' />
-            {isAlbum && (
-              <StemsAndDownloadsCollectionField value={downloadToggleValue} />
-            )}
+            {isAlbum && <StemsAndDownloadsCollectionField />}
           </div>
         </Tile>
         <CollectionTrackFieldArray />

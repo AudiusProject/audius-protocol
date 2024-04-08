@@ -233,11 +233,10 @@ type AccessAndSaleFieldProps = {
   trackLength?: number
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
-  onSubmit?: (values: AccessAndSaleFormValues) => void
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload, isAlbum, forceOpen, setForceOpen, onSubmit } = props
+  const { isUpload, isAlbum, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -370,7 +369,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
   const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
-      onSubmit?.(values)
       const availabilityType = get(values, STREAM_AVAILABILITY_TYPE)
       const preview = get(values, PREVIEW)
       const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
@@ -480,7 +478,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       }
     },
     [
-      onSubmit,
       setFieldVisibilityValue,
       setIsUnlistedValue,
       isUnlisted,
