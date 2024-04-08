@@ -8,12 +8,12 @@ import type {
   User,
   AccessConditions
 } from '@audius/common/models'
-import type { PurchaseableContentType } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import type { TextStyle } from 'react-native'
 
 import type { ImageProps } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
+import { PurchaseableContentType } from '@audius/common/store'
 
 export type DetailsTileDetail = {
   icon?: ReactNode
