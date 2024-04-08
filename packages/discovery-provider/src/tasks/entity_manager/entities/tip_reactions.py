@@ -78,10 +78,9 @@ def tip_reaction(params: ManageEntityParameters):
             slot=slot,
             sender_wallet=sender_wallet,
             reaction_type=reaction_type,
-            timestamp=datetime.now().replace(microsecond=0, second=0, minute=0),
+            timestamp=datetime.now(),
         )
 
-        session = params.session
-        session.bulk_save_objects([reaction])
+        params.add_record(reacted_to, reaction)
     except Exception as e:
         logger.error(f"tip_reactions.py | error indexing tip reactions {e}")

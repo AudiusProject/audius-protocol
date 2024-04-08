@@ -86,3 +86,13 @@ def test_index_tip_reactions(app, mocker):
             block_timestamp=1000000000,
             block_hash=hex(0),
         )
+
+        all_tip_reactions: List[Reaction] = session.query(Reaction).all()
+
+        reaction1 = all_tip_reactions[0]
+        assert reaction1.id == 1
+        assert reaction1.reacted_to == "user_tip_1"
+        assert reaction1.reaction_type == "tip"
+        assert reaction1.reaction_value == 1
+        assert reaction1.sender_wallet == "user1wallet"
+        assert reaction1.slot == 0

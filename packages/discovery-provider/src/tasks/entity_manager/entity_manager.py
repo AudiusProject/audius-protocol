@@ -331,7 +331,7 @@ def entity_manager_update(
                     ):
                         delete_dashboard_wallet_user(params)
                     elif (
-                        params.action == Action.REACTION
+                        params.action == Action.UPDATE
                         and params.entity_type == EntityType.TIP
                     ):
                         tip_reaction(params)
