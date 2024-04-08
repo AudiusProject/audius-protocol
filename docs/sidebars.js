@@ -87,8 +87,7 @@ module.exports = {
       items: [
         'distributors/specification/overview',
         'distributors/specification/metadata',
-        'distributors/specification/ern3',
-        'distributors/specification/ern4',
+        'distributors/specification/deal-types',
       ],
       collapsed: false,
     },
