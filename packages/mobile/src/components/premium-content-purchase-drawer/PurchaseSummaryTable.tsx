@@ -1,3 +1,4 @@
+import { PurchaseableContentType } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 
 import { Text } from 'app/components/core'
@@ -9,6 +10,7 @@ const messages = {
   summary: 'Total',
   payExtra: 'Pay Extra',
   premiumTrack: 'Premium Track',
+  premiumAlbum: 'Premium Album',
   downloadableFiles: 'Downloadable Files',
   existingBalance: 'Existing Balance',
   total: 'Total',
@@ -19,6 +21,7 @@ const messages = {
 }
 
 type PurchaseSummaryTableProps = {
+  contentType: PurchaseableContentType
   totalPriceInCents: number
   basePrice: number
   extraAmount?: number
@@ -33,6 +36,7 @@ type PurchaseSummaryTableProps = {
 }
 
 export const PurchaseSummaryTable = ({
+  contentType,
   totalPriceInCents,
   basePrice,
   extraAmount,
@@ -42,11 +46,19 @@ export const PurchaseSummaryTable = ({
 }: PurchaseSummaryTableProps) => {
   const items: SummaryTableItem[] = []
   if (streamPurchaseCount) {
-    items.push({
-      id: 'premiumTrack',
-      label: messages.premiumTrack,
-      value: messages.price(formatPrice(basePrice))
-    })
+    if (contentType === PurchaseableContentType.TRACK) {
+      items.push({
+        id: messages.premiumTrack,
+        label: messages.premiumTrack,
+        value: messages.price(formatPrice(basePrice))
+      })
+    } else if (contentType === PurchaseableContentType.ALBUM) {
+      items.push({
+        id: messages.premiumAlbum,
+        label: messages.premiumAlbum,
+        value: messages.price(formatPrice(basePrice))
+      })
+    }
   }
 
   const downloadCount = (stemsPurchaseCount ?? 0) + (downloadPurchaseCount ?? 0)

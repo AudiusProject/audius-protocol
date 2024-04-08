@@ -4,10 +4,10 @@ import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
-import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
+  Flex,
   IconButton,
   IconKebabHorizontal,
   IconPencil,
@@ -52,14 +52,6 @@ type DetailsTileActionButtonsProps = {
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  root: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing(8),
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight7,
-    paddingBottom: spacing(4)
-  },
   actionButton: {
     width: spacing(8),
     height: spacing(8)
@@ -182,7 +174,13 @@ export const DetailsTileActionButtons = ({
   const isCollectionOwner = isCollection && isOwner
 
   return (
-    <View style={styles.root}>
+    <Flex
+      direction='row'
+      justifyContent='center'
+      gap='xl'
+      borderBottom='strong'
+      pb='l'
+    >
       {isCollectionOwner
         ? !isAlbum || isEditAlbumsEnabled
           ? editButton
@@ -196,6 +194,6 @@ export const DetailsTileActionButtons = ({
         ? publishButton
         : null}
       {hideOverflow ? null : overflowMenu}
-    </View>
+    </Flex>
   )
 }

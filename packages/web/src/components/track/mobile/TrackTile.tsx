@@ -474,7 +474,7 @@ const TrackTile = (props: CombinedProps) => {
           toggleSave={onToggleSave}
           onShare={onClickShare}
           onClickOverflow={onClickOverflowMenu}
-          onClickPill={onClickPill}
+          onClickGatedUnlockPill={onClickPill}
           isOwner={isOwner}
           readonly={isReadonly}
           isLoading={isLoading}

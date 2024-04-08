@@ -68,6 +68,7 @@ export const useCollectionImage = (options: UseCollectionImageOptions) => {
   const optimisticCoverArt = primitiveToImageSource(
     collection?._cover_art_sizes?.OVERRIDE
   )
+
   const localCollectionImageUri = useLocalCollectionImageUri(
     collection?.playlist_id
   )
@@ -99,18 +100,12 @@ export const CollectionImage = (props: CollectionImageProps) => {
 
   const { source, handleError, isFallbackImage } = collectionImageSource
 
-  if (isFallbackImage) {
-    return (
-      <FastImage
-        {...other}
-        style={[style, { backgroundColor: neutralLight6 }]}
-        source={source}
-        onError={handleError}
-      />
-    )
-  }
-
   return (
-    <FastImage {...other} style={style} source={source} onError={handleError} />
+    <FastImage
+      {...other}
+      style={[style, isFallbackImage && { backgroundColor: neutralLight6 }]}
+      source={source}
+      onError={handleError}
+    />
   )
 }

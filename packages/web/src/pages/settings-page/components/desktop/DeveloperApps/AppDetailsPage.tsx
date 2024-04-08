@@ -9,7 +9,7 @@ import {
 } from '@audius/harmony'
 
 import { Divider } from 'components/divider'
-import { ExternalLink } from 'components/link'
+import { ExternalTextLink } from 'components/link'
 import Toast from 'components/toast/Toast'
 import { MountPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -61,9 +61,12 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
           icon={IconError}
           actions={
             // TODO: use variant='visible' when migrated to harmony
-            <ExternalLink to={AUDIUS_SDK_LINK} className={styles.readTheDocs}>
+            <ExternalTextLink
+              to={AUDIUS_SDK_LINK}
+              className={styles.readTheDocs}
+            >
               {messages.readTheDocs}
-            </ExternalLink>
+            </ExternalTextLink>
           }
         >
           {messages.secretReminder}

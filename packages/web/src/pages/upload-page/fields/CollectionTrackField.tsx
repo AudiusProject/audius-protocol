@@ -1,25 +1,15 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { IconDrag, IconTrash, Text, PlainButton } from '@audius/harmony'
+import { IconDrag, IconTrash, Text, IconButton } from '@audius/harmony'
 import { useField } from 'formik'
 
-import { TagField } from 'components/form-fields'
-import { SwitchField } from 'components/form-fields/SwitchField'
 import { Tile } from 'components/tile'
 
-import { PreviewButton } from '../components/PreviewButton'
-import { SelectGenreField } from '../fields/SelectGenreField'
-import { SelectMoodField } from '../fields/SelectMoodField'
 import { TrackNameField } from '../fields/TrackNameField'
 import { CollectionTrackForUpload } from '../types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
 import styles from './CollectionTrackField.module.css'
-
-const messages = {
-  overrideLabel: 'Override details for this track',
-  delete: 'Delete'
-}
 
 type CollectionTrackFieldProps = {
   index: number
@@ -40,6 +30,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
 
   const [{ value }] = useField('trackDetails')
 
+  // Override is currently unavailable thru the UI but the code is still here. We will revisit this with a new expandable edit UI
   const { override } = track
   const isPreviewPlaying = playingPreviewIndex === index
 
@@ -65,33 +56,14 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         </span>
         <Text size='s'>{index + 1}</Text>
         <TrackNameField name={`tracks.${index}.metadata.title`} />
-      </div>
-      {override ? (
-        <div className={styles.trackInformation}>
-          <div className={styles.genreMood}>
-            <SelectGenreField name={`tracks.${index}.metadata.genre`} />
-            <SelectMoodField name={`tracks.${index}.metadata.mood`} />
-          </div>
-          <TagField name={`tracks.${index}.metadata.tags`} />
-        </div>
-      ) : null}
-      <div className={styles.overrideRow}>
-        <label className={styles.overrideSwitch}>
-          <SwitchField name={`tracks.${index}.override`} />
-          <Text variant='body'>{messages.overrideLabel}</Text>
-        </label>
-        <div className={styles.actions}>
-          <PreviewButton index={index} />
-          <PlainButton
-            variant='subdued'
-            type='button'
-            iconLeft={IconTrash}
-            onClick={handleRemove}
-            disabled={disableDelete}
-          >
-            {messages.delete}
-          </PlainButton>
-        </div>
+        <IconButton
+          size='m'
+          color='subdued'
+          icon={IconTrash}
+          onClick={handleRemove}
+          disabled={disableDelete}
+          aria-label='Delete track'
+        />
       </div>
     </Tile>
   )

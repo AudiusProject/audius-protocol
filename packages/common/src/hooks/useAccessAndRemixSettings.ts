@@ -13,6 +13,7 @@ import { Nullable } from '~/utils/typeUtils'
 type UseAccessAndRemixSettingsProps = {
   isUpload: boolean
   isRemix: boolean
+  isAlbum?: boolean
   initialStreamConditions: Nullable<AccessConditions>
   isInitiallyUnlisted: boolean
   isScheduledRelease?: boolean
@@ -41,6 +42,7 @@ export const useHasNoCollectibles = () => {
 export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
+  isAlbum,
   initialStreamConditions,
   isInitiallyUnlisted,
   isScheduledRelease = false
@@ -75,6 +77,7 @@ export const useAccessAndRemixSettings = ({
     isInitiallyCollectibleGated
 
   const noSpecialAccessGate =
+    isAlbum ||
     isRemix ||
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
@@ -84,6 +87,7 @@ export const useAccessAndRemixSettings = ({
 
   const hasNoCollectibles = useHasNoCollectibles()
   const noCollectibleGate =
+    isAlbum ||
     isRemix ||
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
@@ -92,7 +96,9 @@ export const useAccessAndRemixSettings = ({
   const noCollectibleGateFields =
     noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
-  const noHidden = isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
+  const noHidden =
+    isAlbum || isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
+
   return {
     noUsdcGate,
     noSpecialAccessGate,

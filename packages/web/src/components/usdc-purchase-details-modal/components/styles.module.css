@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--harmony-unit-4);
+  gap: var(--harmony-unit-6);
 }
 
 .trackRow {

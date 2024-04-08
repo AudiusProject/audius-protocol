@@ -37,7 +37,7 @@ export const useCoinflowWithdrawalAdapter = () => {
     const initWallet = async () => {
       const libs = await audiusBackend.getAudiusLibsTyped()
       if (!libs.solanaWeb3Manager) return
-      const { connection } = libs.solanaWeb3Manager
+      const connection = libs.solanaWeb3Manager.getConnection()
       const wallet = await getRootSolanaAccount(audiusBackend)
 
       setAdapter({
@@ -108,7 +108,7 @@ export const useCoinflowAdapter = () => {
     const initWallet = async () => {
       const libs = await audiusBackend.getAudiusLibsTyped()
       if (!libs.solanaWeb3Manager) return
-      const { connection } = libs.solanaWeb3Manager
+      const connection = libs.solanaWeb3Manager.getConnection()
       const wallet = await getRootSolanaAccount(audiusBackend)
       setAdapter({
         connection,

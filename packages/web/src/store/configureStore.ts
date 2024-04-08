@@ -8,6 +8,7 @@ import { createStore, applyMiddleware, Action, Store } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
+import { PartialDeep } from 'type-fest'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { audiusSdk } from 'services/audius-sdk'
@@ -96,7 +97,8 @@ export const configureStore = (
   history: History,
   isMobile: boolean,
   ssrPageProps?: SsrPageProps,
-  isServerSide?: boolean
+  isServerSide?: boolean,
+  initialStoreState?: PartialDeep<AppState>
 ) => {
   const onSagaError = (
     error: Error,
@@ -149,6 +151,8 @@ export const configureStore = (
 
   const store = createStore(
     createRootReducer(history, ssrPageProps, isServerSide),
+    // @ts-ignore - Initial state is just for test mocking purposes
+    initialStoreState,
     composeEnhancers(middlewares)
   )
 
