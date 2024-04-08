@@ -14,6 +14,7 @@ import {
   Genre,
   getDogEarType
 } from '@audius/common/utils'
+import { css } from '@emotion/native'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -45,7 +46,6 @@ import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
 import type { DetailsTileProps } from './types'
-import { css } from '@emotion/native'
 
 const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors

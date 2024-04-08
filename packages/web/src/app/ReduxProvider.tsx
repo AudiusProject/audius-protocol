@@ -6,6 +6,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 import { configureStore } from 'store/configureStore'
+import { AppState } from 'store/types'
 import logger from 'utils/logger'
 
 import { useSsrContext } from '../ssr/SsrContext'

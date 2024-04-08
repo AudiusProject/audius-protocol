@@ -4,7 +4,8 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  TrackMetadata
+  TrackMetadata,
+  USDCPurchaseConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -97,10 +98,29 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   yield* all(events.map((e) => put(e)))
 }
 
+export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
+  const ownerAccount = yield* select(getAccountUser)
+  const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
+  const ownerUserbank = yield* call(getUSDCUserBank, wallet)
+  const priceCents = stream_conditions.usdc_purchase.price
+  const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+  const conditionsWithMetadata: USDCPurchaseConditions = {
+    usdc_purchase: {
+      ...stream_conditions.usdc_purchase,
+      price: priceCents,
+      splits: {
+        [ownerUserbank?.toString() ?? '']: priceWei
+      }
+    }
+  }
+  return conditionsWithMetadata
+}
+
 /**
+ * Adds relevant premium metadata
  * Converts prices to WEI and adds splits for USDC purchasable content.
  */
-export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
+export function* addPremiumMetadata<T extends TrackMetadata>(track: T) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
@@ -108,30 +128,18 @@ export function* processTrackForUpload<T extends TrackMetadata>(track: T) {
   )
   if (!isUsdcPurchaseEnabled) return track
 
-  const ownerAccount = yield* select(getAccountUser)
-  const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-
   if (isContentUSDCPurchaseGated(track.stream_conditions)) {
-    const ownerUserbank = yield* call(getUSDCUserBank, wallet)
-    const priceCents = track.stream_conditions.usdc_purchase.price
-    const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-    track.stream_conditions.usdc_purchase = {
-      price: priceCents,
-      splits: {
-        [ownerUserbank?.toString() ?? '']: priceWei
-      }
-    }
+    track.stream_conditions = yield* call(
+      getUSDCMetadata,
+      track.stream_conditions
+    )
   }
+
   if (isContentUSDCPurchaseGated(track.download_conditions)) {
-    const ownerUserbank = yield* call(getUSDCUserBank, wallet)
-    const priceCents = track.download_conditions.usdc_purchase.price
-    const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-    track.download_conditions.usdc_purchase = {
-      price: priceCents,
-      splits: {
-        [ownerUserbank.toString()]: priceWei
-      }
-    }
+    track.download_conditions = yield* call(
+      getUSDCMetadata,
+      track.download_conditions
+    )
   }
 
   return track

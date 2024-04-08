@@ -6,7 +6,7 @@ import {
   GatedContentStatus
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { Text } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import MoreButton from 'components/alt-button/MoreButton'
@@ -25,7 +25,7 @@ type BottomButtonsProps = {
   toggleRepost: () => void
   onClickOverflow: () => void
   onShare: () => void
-  onClickPill?: (e: MouseEvent) => void
+  onClickGatedUnlockPill?: (e: MouseEvent) => void
   isLoading: boolean
   isOwner: boolean
   isDarkMode: boolean
@@ -60,23 +60,25 @@ const BottomButtons = (props: BottomButtonsProps) => {
   )
 
   // Stream conditions without access
-  if (
-    props.isTrack &&
-    !props.isLoading &&
-    props.streamConditions &&
-    !props.hasStreamAccess
-  ) {
+  if (!props.isLoading && props.streamConditions && !props.hasStreamAccess) {
     return (
-      <Text variant='title' size='s' className={styles.bottomButtons}>
-        <div className={styles.gatedContentContainer}>
+      <Flex
+        ph='s'
+        p='xs'
+        direction='row'
+        alignItems='center'
+        justifyContent='space-between'
+        borderTop='default'
+      >
+        <Text variant='title' size='s'>
           <GatedConditionsPill
             streamConditions={props.streamConditions}
             unlocking={props.gatedTrackStatus === 'UNLOCKING'}
-            onClick={props.onClickPill}
+            onClick={props.onClickGatedUnlockPill}
           />
-        </div>
+        </Text>
         {props.readonly ? null : moreButton}
-      </Text>
+      </Flex>
     )
   }
 
@@ -93,16 +95,34 @@ const BottomButtons = (props: BottomButtonsProps) => {
 
   if (props.isUnlisted) {
     return (
-      <div className={styles.bottomButtons}>
-        <div className={styles.actions}>{shareButton}</div>
+      <Flex
+        ph='s'
+        pv='xs'
+        direction='row'
+        alignItems='center'
+        justifyContent='flex-end'
+        borderTop='default'
+      >
         {moreButton}
-      </div>
+      </Flex>
     )
   }
 
   return (
-    <div className={styles.bottomButtons}>
-      <div className={styles.actions}>
+    <Flex
+      ph={props.isTrack ? undefined : 's'}
+      pb={props.isTrack ? undefined : 'xs'}
+      direction='row'
+      alignItems='center'
+      justifyContent='space-between'
+      borderTop='default'
+    >
+      <Flex
+        gap='2xl'
+        direction='row'
+        alignItems='center'
+        justifyContent='space-between'
+      >
         <RepostButton
           wrapperClassName={styles.button}
           className={styles.buttonContent}
@@ -124,9 +144,9 @@ const BottomButtons = (props: BottomButtonsProps) => {
           isMatrixMode={props.isMatrixMode}
         />
         {shareButton}
-      </div>
+      </Flex>
       {moreButton}
-    </div>
+    </Flex>
   )
 }
 

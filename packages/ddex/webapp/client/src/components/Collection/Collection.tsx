@@ -166,13 +166,13 @@ const Table = ({
               <tr key={item._id}>
                 <td>{item._id}</td>
                 <td>
-                  {item.create_album_release?.ddex_release_ref
-                    ? 'album'
-                    : item.create_track_release?.ddex_release_ref
-                      ? 'track'
+                  {item.release?.sdk_upload_metadata?.title
+                    ? 'track'
+                    : item.release?.sdk_upload_metadata?.playlist_name
+                      ? 'album'
                       : 'unknown'}
                 </td>
-                <td>{item.publish_date}</td>
+                <td>{item.release?.sdk_upload_metadata?.release_date}</td>
                 <td>{item.created_at}</td>
                 <td className={item.failure_count ? styles.statusFailed : ''}>
                   {item.failure_count
@@ -197,7 +197,6 @@ const Table = ({
               <th>Entity ID</th>
               <th>Blockhash</th>
               <th>Blocknumber</th>
-              <th>Publish Date</th>
               <th>Created At</th>
             </tr>
           </thead>
@@ -206,12 +205,15 @@ const Table = ({
               <tr key={item.id}>
                 <td>{item._id}</td>
                 <td>
-                  {item.track ? 'track' : item.album ? 'album' : 'unknown'}
+                  {item.release?.sdk_upload_metadata?.title
+                    ? 'track'
+                    : item.release?.sdk_upload_metadata?.playlist_name
+                      ? 'album'
+                      : 'unknown'}
                 </td>
                 <td>{item.entity_id}</td>
                 <td>{item.blockhash}</td>
                 <td>{item.blocknumber}</td>
-                <td>{item.publish_date}</td>
                 <td>{item.created_at}</td>
               </tr>
             ))}

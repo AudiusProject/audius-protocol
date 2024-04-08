@@ -6,8 +6,8 @@ settings:
 
 devDependencies:
   '@solana-mobile/dapp-store-cli':
-    specifier: 0.6.1
-    version: 0.6.1
+    specifier: 0.7.1
+    version: 0.7.1
 
 packages:
 
@@ -1614,14 +1614,14 @@ packages:
       tslib: 2.6.0
     dev: true
 
-  /@solana-mobile/dapp-store-cli@0.6.1:
-    resolution: {integrity: sha512-zxmwL49jFFsnVbsJWJ2bmi9+kI9mn2CfTWfDaVCc2ce5JBbLKK3k0YHauo1zRfx0u/eX5WDhbWP93Jc6PHn19g==}
+  /@solana-mobile/dapp-store-cli@0.7.1:
+    resolution: {integrity: sha512-FcUF7IXj5SSFygdZaY4HKRTlvZr6sAERPia9NgwrD3maNevWmPvOkNVRGMDP8tTGky0zlztvAJQAOjZDPLzybA==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
       '@aws-sdk/client-s3': 3.370.0
       '@metaplex-foundation/js-plugin-aws': 0.18.3
-      '@solana-mobile/dapp-store-publishing-tools': 0.6.1
+      '@solana-mobile/dapp-store-publishing-tools': 0.7.1
       '@solana/web3.js': 1.68.0
       '@types/semver': 7.3.13
       ajv: 8.11.2
@@ -1647,8 +1647,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@solana-mobile/dapp-store-publishing-tools@0.6.1:
-    resolution: {integrity: sha512-GyIqXRKEGKlbtND5G6hNL7zVfK0ZPXSfd3WA+H/WaBgXUS+k3WP88+fBVZDMr1GtFpykIXnciwuAXf8Hdd3THA==}
+  /@solana-mobile/dapp-store-publishing-tools@0.7.1:
+    resolution: {integrity: sha512-iXbMXCVaDmxidsbIskc+bW17N4Y3QJ/+bGxB1vfVMqidVff3Ko7262nUG8alweEVcfo4apfkguFJZT46fS0H7Q==}
     engines: {node: '>=18'}
     dependencies:
       '@metaplex-foundation/js': 0.18.3

@@ -1,23 +1,15 @@
 import { useGetTrackById } from '@audius/common/api'
 import { Text } from '@audius/harmony'
-import { Link } from 'react-router-dom'
 
-import styles from './styles.module.css'
+import { TextLink } from 'components/link'
 
-export const TrackLink = ({
-  id,
-  onClick
-}: {
-  id: number
-  onClick: () => void
-}) => {
+export const TrackLink = (props: { id: number; onClick: () => void }) => {
+  const { id, ...other } = props
   const { data: track } = useGetTrackById({ id })
   if (!track) return null
   return (
-    <Link onClick={onClick} className={styles.link} to={track.permalink}>
-      <Text variant='body' size='l' color='accent'>
-        {track.title}
-      </Text>
-    </Link>
+    <TextLink to={track.permalink} textVariant='body' size='l' {...other}>
+      <Text ellipses>{track.title}</Text>
+    </TextLink>
   )
 }

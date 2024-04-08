@@ -17,7 +17,8 @@ import { logError } from './logError'
 const IDENTITY_SERVICE_ENDPOINT = getIdentityEndpoint()
 
 const env = process.env.VITE_ENVIRONMENT
-const openSeaApiKey = process.env.VITE_OPEN_SEA_API_KEY
+const openSeaApiUrl = process.env.VITE_OPEN_SEA_API_URL
+const heliusDasApiUrl = process.env.VITE_HELIUS_DAS_API_URL
 const solanaRpcEndpoint = process.env.VITE_SOLANA_RPC_ENDPOINT
 
 const sdkConfigOptions =
@@ -51,7 +52,8 @@ const audiusSdk = sdk({
 })
 
 const fetchNFTClient = new FetchNFTClient({
-  openSeaConfig: { apiKey: openSeaApiKey },
+  openSeaConfig: { apiEndpoint: openSeaApiUrl },
+  heliusConfig: { apiEndpoint: heliusDasApiUrl },
   solanaConfig: { rpcEndpoint: solanaRpcEndpoint }
 })
 
