@@ -1,4 +1,4 @@
-import { SystemAppearance, Theme } from '@audius/common/models'
+import { Theme } from '@audius/common/models'
 import { themeActions } from '@audius/common/store'
 import { actionChannelDispatcher } from '@audius/common/utils'
 import { PayloadAction } from '@reduxjs/toolkit'
