@@ -28,7 +28,7 @@ jobs:
         uses: changesets/action@v1
         with:
           publish: CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1 && npm run publish-packages
-          version: changeset version && CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1
+          version: npx run changeset version && CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
