@@ -11,7 +11,7 @@ import {
   UploadFinishPage,
   UploadSelectPage
 } from './page-object-models/upload'
-import { SSR_HYDRATE_TIMEOUT, test } from './test'
+import { SSR_HYDRATE_TIMEOUT, test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
 
 test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
@@ -27,6 +27,7 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   const iswc = 'T-123456789-0'
 
   await page.goto('upload')
+  await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3')
@@ -136,6 +137,7 @@ test('should upload a premium track', async ({ page, browser }) => {
   const previewSeconds = '15'
 
   await page.goto('upload')
+  await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3')
@@ -194,6 +196,7 @@ test('should upload a track with free stems', async ({ page }) => {
   const genre = 'Alternative'
 
   await page.goto('upload')
+  await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3')

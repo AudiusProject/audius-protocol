@@ -33,3 +33,10 @@ export const test = base.extend<{}>({
     await use(page)
   }
 })
+
+// TODO: Remove this and fix bug in upload that doesn't wait for user
+export const waitForUser = async (page: Page) => {
+  await expect(page.getByRole('link', { name: /probertest/i })).toBeVisible({
+    timeout: 15 * 1000
+  })
+}
