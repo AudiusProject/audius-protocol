@@ -21,18 +21,18 @@ Please note that exact DDEX fields will depend on the specific ERN version.
 The following metadata fields are required for content to be listed on Audius and are examined and
 pulled from a DDEX delivery in cascading precedence.
 
-#### releaseDate
-
-1. `/DealList/ReleaseDeal/Deal/ValidityPeriod/StartDate`
-2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ReleaseDate`
-3. `/ReleaseList/Release/GlobalOriginalReleaseDate`
-
 #### coverArtFile
 
 the `coverArtFile` maps to two DDEX Fields
 
 - `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FilePath`
 - `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FileName`
+
+#### releaseDate
+
+1. `/DealList/ReleaseDeal/Deal/ValidityPeriod/StartDate`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ReleaseDate`
+3. `/ReleaseList/Release/GlobalOriginalReleaseDate`
 
 #### userId
 
@@ -176,6 +176,44 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 
 :::
 
+#### indirectResourceContributors
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/IndirectResourceContributor`
+
+:::note
+
+The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
+`SequenceNumber`, and `IndirectResourceContributorRole`
+
+:::
+
+#### isrc
+
+1. `/ResourceList/SoundRecording/SoundRecordingId/ISRC`
+
+#### iswc
+
+1. `/ReleaseList/Release/ReleaseId/ISWC`
+
+#### parentalWarningType
+
+1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+
+#### previewStartSeconds
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/PreviewDetails/StartPoint`
+2. only when
+   `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/IsPreview`
+   is true
+
+:::note
+
+Preview length is 30 seconds starting at the `previewStartSeconds` into the track’s audio, even if a
+longer or shorter duration is given. does not support using an external file for the preview
+
+:::
+
 #### producerCopyrightLine
 
 1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
@@ -189,15 +227,6 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 
 :::
 
-#### parentalWarningType
-
-1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
-2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
-
-#### isrc
-
-1. `/ResourceList/SoundRecording/SoundRecordingId/ISRC`
-
 #### resourceContributors
 
 1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/ResourceContributor`
@@ -209,17 +238,6 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 :::
 
-#### indirectResourceContributors
-
-1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/IndirectResourceContributor`
-
-:::note
-
-The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
-`SequenceNumber`, and `IndirectResourceContributorRole`
-
-:::
-
 #### rightsController
 
 1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/RightsController`
@@ -228,20 +246,6 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 The following children elements are parsed and stored in Audius: `PartyName`/`FullName`,
 `RightsShareUnknown`, and `RightsControllerRole`
-
-:::
-
-#### previewStartSeconds
-
-1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/PreviewDetails/StartPoint`
-2. only when
-   `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/IsPreview`
-   is true
-
-:::note
-
-Preview length is 30 seconds starting at the `previewStartSeconds` into the track’s audio, even if a
-longer or shorter duration is given. does not support using an external file for the preview
 
 :::
 
@@ -270,17 +274,6 @@ the separate DDEX server but not in the Audius network.
 1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/SubGenre`
 2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/Genre/GenreText`
 
-#### trackMetadatas
-
-1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
-
-:::note
-
-Metadata about each track in the album, not technically an Audius SDK metadata field, but uploaded
-as part of the album
-
-:::
-
 #### trackFiles
 
 1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
@@ -289,6 +282,17 @@ as part of the album
 
 array of audio files which the album is comprised of, not technically an Audius SDK metadata field,
 but uploaded as part of the album
+
+:::
+
+#### trackMetadatas
+
+1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
+
+:::note
+
+Metadata about each track in the album, not technically an Audius SDK metadata field, but uploaded
+as part of the album
 
 :::
 
@@ -322,6 +326,10 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 
 :::
 
+#### parentalWarningType
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+
 #### producerCopyrightLine
 
 1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/PLine`
@@ -334,6 +342,14 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 
 :::
 
-#### parentalWarningType
+#### upc
 
-1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ParentalWarningType`
+1. `/ReleaseList/Release/ReleaseId/ICPN`
+
+:::note
+
+ICPN (or "International Code Product Number") has an `IsEAN` attribute which determines if it’s an
+EAN (European Article Number) or UPC (Universal Product Code — only used in US and Canada). We use
+them interchangeably and just set it as UPC even if it’s an EAN
+
+:::
