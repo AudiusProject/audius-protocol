@@ -66,7 +66,6 @@ type PublishedRelease struct {
 
 type Release struct {
 	ReleaseProfile     ReleaseProfile         `bson:"release_profile"`      // "ReleaseProfileVersionId" from the DDEX XML
-	PublishDate        time.Time              `bson:"publish_date"`         // Alias to the main ParsedReleaseElems's ReleaseDate for faster lookups
 	ParsedReleaseElems []ParsedReleaseElement `bson:"parsed_release_elems"` // Releases parsed from XML
 	SDKUploadMetadata  SDKUploadMetadata      `bson:"sdk_upload_metadata"`  // Metadata for the publisher to upload to Audius via SDK
 }

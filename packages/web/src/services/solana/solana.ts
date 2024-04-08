@@ -17,7 +17,7 @@ export const TRANSACTION_FEE_FALLBACK = 10000
  */
 export const getSolanaConnection = async () => {
   const libs = await getLibs()
-  return libs.solanaWeb3Manager!.connection
+  return libs.solanaWeb3Manager!.getConnection()
 }
 
 /**

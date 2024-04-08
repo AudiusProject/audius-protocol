@@ -173,7 +173,6 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 				return
 			}
 			mainRelease = parsedRelease
-			release.PublishDate = parsedRelease.ReleaseDate
 		}
 	}
 	if mainRelease == nil {
@@ -271,7 +270,7 @@ func buildSingleMetadata(release *common.Release, mainRelease *common.ParsedRele
 	}
 
 	if release.SDKUploadMetadata.ReleaseDate.IsZero() {
-		release.SDKUploadMetadata.ReleaseDate = release.PublishDate
+		release.SDKUploadMetadata.ReleaseDate = mainRelease.ReleaseDate
 	}
 }
 
@@ -354,6 +353,7 @@ func buildSupportingTracks(release *common.Release) (tracks []common.TrackMetada
 			return
 		}
 
+		// Use fields from the <SoundRecording> (ie, Resources.Tracks[0]) and fall back to the <Release>'s fields when missing
 		track := parsedReleaseElem.Resources.Tracks[0]
 		if track.ArtistID == "" {
 			track.ArtistID = parsedReleaseElem.ArtistID
@@ -369,6 +369,9 @@ func buildSupportingTracks(release *common.Release) (tracks []common.TrackMetada
 		}
 		if track.ParentalWarningType == nil {
 			track.ParentalWarningType = parsedReleaseElem.ParentalWarningType
+		}
+		if track.Genre == "" {
+			track.Genre = parsedReleaseElem.Genre
 		}
 
 		tracks = append(tracks, track)
@@ -409,6 +412,11 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		err = fmt.Errorf("no <ReleaseDetailsByTerritory> found for <ReleaseReference>%s</ReleaseReference> with <TerritoryCode>Worldwide</TerritoryCode>", releaseRef)
 		return
 	}
+
+	detailsCopyrightYear := safeInnerText(releaseDetails.SelectElement("CLine/Year"))
+	detailsCopyrightText := safeInnerText(releaseDetails.SelectElement("CLine/CLineText"))
+	detailsProducerCopyrightYear := safeInnerText(releaseDetails.SelectElement("PLine/Year"))
+	detailsProducerCopyrightText := safeInnerText(releaseDetails.SelectElement("PLine/PLineText"))
 
 	artistName := safeInnerText(releaseDetails.SelectElement("DisplayArtistName"))
 	releaseDateStr := safeInnerText(releaseDetails.SelectElement("ReleaseDate")) // Fuga uses this. TODO: Still need to use DealList
@@ -577,13 +585,24 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		ParentalWarningType: stringPtr(safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))),
 	}
 
-	if copyrightYear != "" && copyrightText != "" {
+	if detailsCopyrightYear != "" && detailsCopyrightText != "" {
+		r.CopyrightLine = &common.Copyright{
+			Year: detailsCopyrightYear,
+			Text: detailsCopyrightText,
+		}
+	} else if copyrightYear != "" && copyrightText != "" {
 		r.CopyrightLine = &common.Copyright{
 			Year: copyrightYear,
 			Text: copyrightText,
 		}
 	}
-	if producerCopyrightYear != "" && producerCopyrightText != "" {
+
+	if detailsProducerCopyrightYear != "" && detailsProducerCopyrightText != "" {
+		r.ProducerCopyrightLine = &common.Copyright{
+			Year: detailsProducerCopyrightYear,
+			Text: detailsProducerCopyrightText,
+		}
+	} else if producerCopyrightYear != "" && producerCopyrightText != "" {
 		r.ProducerCopyrightLine = &common.Copyright{
 			Year: producerCopyrightYear,
 			Text: producerCopyrightText,

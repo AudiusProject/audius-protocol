@@ -13,12 +13,12 @@ import {
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import type { PurchaseableContentType } from '@audius/common/store'
 import {
   usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
-  gatedContentSelectors,
-  PurchaseableContentType
+  gatedContentSelectors
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
@@ -182,12 +182,14 @@ const DetailsTileNoAccessSection = ({
 
 type DetailsTileNoAccessProps = {
   streamConditions: AccessConditions
+  contentType: PurchaseableContentType
   trackId: ID
   style?: ViewStyle
 }
 
 export const DetailsTileNoAccess = ({
   trackId,
+  contentType,
   streamConditions,
   style
 }: DetailsTileNoAccessProps) => {
@@ -224,10 +226,10 @@ export const DetailsTileNoAccess = ({
 
   const handlePurchasePress = useCallback(() => {
     openPremiumContentPurchaseModal(
-      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+      { contentId: trackId, contentType },
       { source: ModalSource.TrackDetails }
     )
-  }, [trackId, openPremiumContentPurchaseModal])
+  }, [trackId, openPremiumContentPurchaseModal, contentType])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {

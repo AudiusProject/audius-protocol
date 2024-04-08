@@ -83,18 +83,12 @@ export const TrackImage = (props: TrackImageProps) => {
 
   const { source, handleError, isFallbackImage } = trackImageSource
 
-  if (isFallbackImage) {
-    return (
-      <FastImage
-        {...other}
-        style={[style, { backgroundColor: neutralLight8 }]}
-        source={source}
-        onError={handleError}
-      />
-    )
-  }
-
   return (
-    <FastImage {...other} style={style} source={source} onError={handleError} />
+    <FastImage
+      {...other}
+      style={[style, isFallbackImage && { backgroundColor: neutralLight8 }]}
+      source={source}
+      onError={handleError}
+    />
   )
 }

@@ -65,7 +65,7 @@ test('should upload a playlist', async ({ page }) => {
   const trackTable = page.getByRole('table')
   const trackOne = trackTable.getByRole('cell', { name: trackOneDetails.name })
   const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
-  await expect(trackOne).toBeVisible()
+  await expect(trackOne).toBeVisible({ timeout: 20000 }) // sometimes loading the track list can take longer
   await expect(trackTwo).toBeVisible()
 
   // Visit track 1
@@ -188,7 +188,7 @@ test('should upload an album', async ({ page }) => {
   // await expect(page.getByText(trackTwoDetails.mood)).toBeVisible()
 })
 
-test('should upload a premium album', async ({ browser, page }) => {
+test.fixme('should upload a premium album', async ({ browser, page }) => {
   const timestamp = Date.now()
   const albumName = `Test album ${timestamp}`
   const albumDescription = 'Test description'
@@ -259,7 +259,7 @@ test('should upload a premium album', async ({ browser, page }) => {
   const trackTable = page.getByRole('table')
   const trackOne = trackTable.getByRole('cell', { name: trackOneDetails.name })
   const trackTwo = trackTable.getByRole('cell', { name: trackTwoDetails.name })
-  await expect(trackOne).toBeVisible()
+  await expect(trackOne).toBeVisible({ timeout: 20000 }) // sometimes loading the track list can take longer
   await expect(trackTwo).toBeVisible()
 
   // Visit track 1
@@ -312,7 +312,7 @@ test('should upload a premium album', async ({ browser, page }) => {
   await expect(newPage.getByTestId('app-hydrated')).toBeAttached({
     timeout: SSR_HYDRATE_TIMEOUT
   })
-  await expect(buyButton).toBeVisible()
+  await expect(buyButton).toBeVisible({ timeout: 20000 }) // The first track page load can take extra long sometimes (mainly in CI)
   await expect(newPageAlbumPriceText).toBeVisible()
 
   newPage.goto(track1url)

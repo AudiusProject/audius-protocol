@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 
 import type { ID, AccessConditions } from '@audius/common/models'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
+import type { PurchaseableContentType } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { View } from 'react-native'
 
@@ -33,7 +34,8 @@ type Props = {
   isOwner?: boolean
   isShareHidden?: boolean
   isUnlisted?: boolean
-  trackId?: ID
+  contentId?: ID
+  contentType?: PurchaseableContentType
   streamConditions?: Nullable<AccessConditions>
   hasStreamAccess?: boolean
   onPressOverflow?: GestureResponderHandler
@@ -73,7 +75,8 @@ export const LineupTileActionButtons = ({
   isOwner,
   isShareHidden,
   isUnlisted,
-  trackId,
+  contentId,
+  contentType,
   hasStreamAccess = false,
   readonly = false,
   streamConditions,
@@ -129,16 +132,17 @@ export const LineupTileActionButtons = ({
     />
   )
 
-  const showGatedAccessStatus = trackId && !hasStreamAccess
+  const showGatedAccessStatus = contentId && !hasStreamAccess
   const showLeftButtons = !showGatedAccessStatus && !isUnlisted
 
   let content: ReactElement | null = null
   if (readonly) {
-    if (isUSDCPurchase && showGatedAccessStatus) {
+    if (isUSDCPurchase && showGatedAccessStatus && contentType) {
       content = (
         <View style={styles.leftButtons}>
           <LineupTileAccessStatus
-            trackId={trackId}
+            contentId={contentId}
+            contentType={contentType}
             streamConditions={streamConditions}
           />
         </View>
@@ -148,9 +152,10 @@ export const LineupTileActionButtons = ({
     content = (
       <>
         <View style={styles.leftButtons}>
-          {showGatedAccessStatus && streamConditions != null ? (
+          {showGatedAccessStatus && contentType && streamConditions != null ? (
             <LineupTileAccessStatus
-              trackId={trackId}
+              contentId={contentId}
+              contentType={contentType}
               streamConditions={streamConditions}
             />
           ) : null}

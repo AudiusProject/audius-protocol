@@ -1,10 +1,6 @@
+import { FetchNFTClient } from '@audius/fetch-nft'
 import type { AudiusSdk } from '@audius/sdk'
 import { Location } from 'history'
-
-import {
-  EthereumCollectiblesProvider,
-  SolanaCollectiblesProvider
-} from '~/services'
 
 import {
   AllTrackingEvents,
@@ -66,8 +62,7 @@ export type CommonStoreContext = {
     location: Location
   ) => (state: CommonState) => LineupState<Track>
   audioPlayer: AudioPlayer
-  ethereumCollectiblesProvider: EthereumCollectiblesProvider
-  solanaCollectiblesProvider: SolanaCollectiblesProvider
+  nftClient: FetchNFTClient
   sentry: {
     setTag: (key: string, value: string) => void
     configureScope: (fn: (scope: { setUser: any }) => void) => void

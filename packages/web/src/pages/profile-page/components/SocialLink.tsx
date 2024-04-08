@@ -10,7 +10,7 @@ import {
   Flex
 } from '@audius/harmony'
 
-import { ExternalLink } from 'components/link'
+import { ExternalTextLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserGeneratedText } from 'components/user-generated-text'
 
@@ -92,9 +92,9 @@ const SocialLink = (props: SocialLinkProps) => {
 
   if (href) {
     return (
-      <ExternalLink to={href} onClick={onClick} textVariant='body'>
+      <ExternalTextLink to={href} onClick={onClick} textVariant='body'>
         {icon} <Text ellipses>{iconOnly ? null : text}</Text>
-      </ExternalLink>
+      </ExternalTextLink>
     )
   }
 
