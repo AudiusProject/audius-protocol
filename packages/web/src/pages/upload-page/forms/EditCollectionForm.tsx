@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
-import { StreamTrackAvailabilityType } from '@audius/common/models'
 import {
   AlbumSchema,
   CollectionValues,
