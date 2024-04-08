@@ -30,13 +30,13 @@ Audius accepts the following DDEX `Deal`s for **track** releases:
 
 ### Free To Stream
 
-1.  `CommercialModelType`: `FreeOfChargeModel`
-2.  `UseType`: `Stream` or `OnDemandStream`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `FreeOfChargeModel`
+2. `UseType`: `Stream` or `OnDemandStream`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -55,13 +55,9 @@ Audius accepts the following DDEX `Deal`s for **track** releases:
 
 ### Pay Gated Stream
 
-1.  `CommercialModelType`: `PayAsYouGoModel`
-2.  `UseType`: `Stream` or `OnDemandStream`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: any nonzero USD amount
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+`CommercialModelType`: `PayAsYouGoModel` 2. `UseType`: `Stream` or `OnDemandStream` 3. `PriceType`:
+not supported 4. `WholesalePricePerUnit`: any nonzero USD amount 5. `ValidityPeriod` 1. `StartDate`:
+any 6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -72,8 +68,8 @@ Audius accepts the following DDEX `Deal`s for **track** releases:
         </Usage>
         <TerritoryCode>Worldwide</TerritoryCode>
         <PriceInformation>
-		        <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
-		        ...
+                <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+                ...
         </PriceInformation>
         <ValidityPeriod>
             <StartDate>2023-09-02</StartDate>
@@ -84,13 +80,13 @@ Audius accepts the following DDEX `Deal`s for **track** releases:
 
 ### Follow Gated Stream
 
-1.  `CommercialModelType`: `UserDefined` (`FollowGated`)
-2.  `UseType`: `Stream` or `OnDemandStream`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `UserDefined` (`FollowGated`)
+2. `UseType`: `Stream` or `OnDemandStream`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -109,40 +105,40 @@ Audius accepts the following DDEX `Deal`s for **track** releases:
 
 ### NFT Gated Stream
 
-1.  `CommercialModelType`: `UserDefined` (`NFTGated`)
-2.  `UseType`: `Stream` or `OnDemandStream`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
-7.  `Conditions` (custom XML specific to Audius)
+1. `CommercialModelType`: `UserDefined` (`NFTGated`)
+2. `UseType`: `Stream` or `OnDemandStream`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
+7. `Conditions` (custom XML specific to Audius)
 
-    1. For Ethereum NFTs:
+   1. For Ethereum NFTs:
 
-    ```xml
-    <Conditions>
-      <Chain>eth</Chain>
-      <Address></Address> // The Ethereum address of the NFT contract
-      <Standard></Standard> // The standard followed by the NFT - either "ERC-721" or "ERC-1155"
-      <Name></Name> // The name of the NFT
-      <Slug></Slug> // The slug of the NFT collection. E.g. if your collection is located at https://opensea.io/collection/example-nft, the slug is "example-nft".
-      <ImageUrl></ImageUrl> // Optional: URL to the image representing the NFT
-      <ExternalLink></ExternalLink> // Optional: URL to an external resource providing more details about the NFT
-    </Conditions>
-    ```
+   ```xml
+   <Conditions>
+     <Chain>eth</Chain>
+     <Address></Address> // The Ethereum address of the NFT contract
+     <Standard></Standard> // The standard followed by the NFT - either "ERC-721" or "ERC-1155"
+     <Name></Name> // The name of the NFT
+     <Slug></Slug> // The slug of the NFT collection. E.g. if your collection is located at https://opensea.io/collection/example-nft, the slug is "example-nft".
+     <ImageUrl></ImageUrl> // Optional: URL to the image representing the NFT
+     <ExternalLink></ExternalLink> // Optional: URL to an external resource providing more details about the NFT
+   </Conditions>
+   ```
 
-    ii. For Solana NFTs:
+   ii. For Solana NFTs:
 
-    ```xml
-    <Conditions>
-      <Chain>sol</Chain>
-      <Address></Address> // The address of the NFT on the Solana blockchain
-      <Name></Name> // The name of the NFT
-      <ImageUrl></ImageUrl> // Optional: URL to the image representing the NFT
-      <ExternalLink></ExternalLink> // Optional: URL to an external resource providing more details about the NFT
-    </Conditions>
-    ```
+   ```xml
+   <Conditions>
+     <Chain>sol</Chain>
+     <Address></Address> // The address of the NFT on the Solana blockchain
+     <Name></Name> // The name of the NFT
+     <ImageUrl></ImageUrl> // Optional: URL to the image representing the NFT
+     <ExternalLink></ExternalLink> // Optional: URL to an external resource providing more details about the NFT
+   </Conditions>
+   ```
 
 ```xml
 <Deal>
@@ -170,13 +166,13 @@ Audius accepts the following DDEX `Deal`s for **track** releases:
 
 ### $AUDIO Tip Gated Stream
 
-1.  `CommercialModelType`: `UserDefined` (`TipGated`)
-2.  `UseType`: `Stream` or `OnDemandStream`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `UserDefined` (`TipGated`)
+2. `UseType`: `Stream` or `OnDemandStream`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -201,13 +197,13 @@ If you can download it, you can stream it.
 
 :::
 
-1.  `CommercialModelType`: `FreeOfChargeModel`
-2.  `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `FreeOfChargeModel`
+2. `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -233,13 +229,13 @@ If you can download it, you can stream it.
 
 :::
 
-1.  `CommercialModelType`: `PayAsYouGoModel`
-2.  `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: any USD amount
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `PayAsYouGoModel`
+2. `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: any USD amount
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -251,8 +247,8 @@ If you can download it, you can stream it.
         </Usage>
         <TerritoryCode>Worldwide</TerritoryCode>
         <PriceInformation>
-		        <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
-		        ...
+            <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+            ...
         </PriceInformation>
         <ValidityPeriod>
             <StartDate>2023-09-02</StartDate>
@@ -269,13 +265,13 @@ If you can download it, you can stream it.
 
 :::
 
-1.  `CommercialModelType`: `UserDefined` (`FollowGated`)
-2.  `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `UserDefined` (`FollowGated`)
+2. `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -301,13 +297,13 @@ Audius accepts the following DDEX `Deal`s for **album** releases
 
 ### Free To Stream
 
-1.  `CommercialModelType`: `FreeOfChargeModel`
-2.  `UseType`: `Stream` or `OnDemandStream`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `FreeOfChargeModel`
+2. `UseType`: `Stream` or `OnDemandStream`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -326,13 +322,13 @@ Audius accepts the following DDEX `Deal`s for **album** releases
 
 ### Pay Gated Stream
 
-1.  `CommercialModelType`: `PayAsYouGoModel`
-2.  `UseType`: `Stream` or `OnDemandStream`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: any nonzero USD amount
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `PayAsYouGoModel`
+2. `UseType`: `Stream` or `OnDemandStream`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: any nonzero USD amount
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -343,8 +339,8 @@ Audius accepts the following DDEX `Deal`s for **album** releases
         </Usage>
         <TerritoryCode>Worldwide</TerritoryCode>
         <PriceInformation>
-		        <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
-		        ...
+            <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+            ...
         </PriceInformation>
         <ValidityPeriod>
             <StartDate>2023-09-02</StartDate>
@@ -361,13 +357,13 @@ If you can download it, you can stream it.
 
 :::
 
-1.  `CommercialModelType`: `FreeOfChargeModel`
-2.  `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: N/A
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `FreeOfChargeModel`
+2. `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: N/A
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -393,13 +389,13 @@ If you can download it, you can stream it.
 
 :::
 
-1.  `CommercialModelType`: `PayAsYouGoModel`
-2.  `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
-3.  `PriceType`: not supported
-4.  `WholesalePricePerUnit`: any USD amount
-5.  `ValidityPeriod`
-    1. `StartDate`: any
-6.  `TerritoryCode`: `Worldwide`
+1. `CommercialModelType`: `PayAsYouGoModel`
+2. `UseType`: `Stream` or `OnDemandStream`, `PermanentDownload`
+3. `PriceType`: not supported
+4. `WholesalePricePerUnit`: any USD amount
+5. `ValidityPeriod`
+   1. `StartDate`: any
+6. `TerritoryCode`: `Worldwide`
 
 ```xml
 <Deal>
@@ -411,8 +407,8 @@ If you can download it, you can stream it.
         </Usage>
         <TerritoryCode>Worldwide</TerritoryCode>
         <PriceInformation>
-		        <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
-		        ...
+            <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+            ...
         </PriceInformation>
         <ValidityPeriod>
             <StartDate>2023-09-02</StartDate>

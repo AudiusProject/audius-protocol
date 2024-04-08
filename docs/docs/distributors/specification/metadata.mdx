@@ -16,6 +16,8 @@ Please note that exact DDEX fields will depend on the specific ERN version.
 
 ---
 
+## General Metadata Mapping
+
 ### Required Fields
 
 The following metadata fields are required for content to be listed on Audius and are examined and
@@ -23,7 +25,11 @@ pulled from a DDEX delivery in cascading precedence.
 
 #### coverArtFile
 
-the `coverArtFile` maps to two DDEX Fields
+:::note
+
+The `coverArtFile` maps to two DDEX Fields
+
+:::
 
 - `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FilePath`
 - `/ResourceList/Image/ImageDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalImageDetails/File/FileName`
@@ -36,14 +42,14 @@ the `coverArtFile` maps to two DDEX Fields
 
 #### userId
 
-1. same as artists (next row below): checks each artist name (in order) against Audius database of
-   OAuthed display names, and uses the first match
-
 :::note
 
 Not technically an Audius SDK metadata field, but uploaded as part of the track/album
 
 :::
+
+1. checks each artist name (in order) against Audius database of OAuthed display names, and uses the
+   first match
 
 ---
 
@@ -77,26 +83,26 @@ The following Audius SDK Fields are not used by DDEX and have no mapping.
 
 #### child elements of `/ReleaseList/Release/`
 
-The following child elements are parsed and stored in the separate DDEX server, but not stored in
-Audius and not used anywhere:
+The following child elements are parsed and stored in the separate DDEX server. Audius does not
+store these child fields and they are not used.
 
 - `ReferenceTitle/TitleText`
 - `ReferenceTitle/SubTitle`
 
 #### child elements of `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/`
 
-The following child elements are parsed and stored in the separate DDEX server, but not stored in
-Audius and not used anywhere:
+The following child elements are parsed and stored in the separate DDEX server. Audius does not
+store these child fields and they are not used.
 
 - `Title[@TitleType='DisplayTitle']/TitleText` (used in albums/EPs but not single tracks)
 - `Title[@TitleType='DisplayTitle']/SubTitle`
 - `Title[@TitleType='FormalTitle']/TitleText`
-- `Title[@TitleType='FormalTitle']/SubTitle `
+- `Title[@TitleType='FormalTitle']/SubTitle`
 
 #### child elements of `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ResourceGroup/`
 
-The following child elements are parsed and stored in the separate DDEX server, but not stored in
-Audius and not used anywhere:
+The following child elements are parsed and stored in the separate DDEX server. Audius does not
+store these child fields and they are not used.
 
 - `SequenceNumber`
 - `ResourceGroupContentItem/ResourceType`
@@ -132,53 +138,43 @@ the separate DDEX server but not in the Audius network.
 
 #### trackFile
 
-the `trackFile` maps to two DDEX Fields
+This is the actual audio file, not technically an Audius SDK metadata field, but uploaded in the
+same SDK function. Note that this DDEX field is a relative path to the file within the delivery
+
+:::note
+
+The `trackFile` maps to two DDEX Fields
+
+:::
 
 - `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FilePath`
 - `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/File/FileName`
 
-:::note
-
-This is the actual audio file, not technically an Audius SDK metadata field, but uploaded in the
-same SDK function. Note that this DDEX field is a relative path to the file within the delivery
-
-:::
-
 ---
 
-### Optional
+### Optional Fields
 
 The following fields are optional for content to be listed on Audius and are examined and pulled
 from a DDEX delivery in cascading precedence.
 
 #### artists
 
-1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
-2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
-
-:::note
-
 The `/PartyName/FullName` child element is used as the artist’s name and the `SequenceNumber`
 attribute to preserve order
 
-:::
+1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
+2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
 
 #### copyrightLine
+
+This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
+`Year` and `CLineText`
 
 1. `/ResourceList/SoundRecording/SoundRecordingDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
 2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/CLine`
 3. `/ReleaseList/Release/CLine`
 
-:::note
-
-This is only used if both `year` _AND_ `text` are non-empty. The child elements that are parsed are:
-`Year` and `CLineText`
-
-:::
-
 #### indirectResourceContributors
-
-1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/IndirectResourceContributor`
 
 :::note
 
@@ -186,6 +182,8 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
 `SequenceNumber`, and `IndirectResourceContributorRole`
 
 :::
+
+1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/IndirectResourceContributor`
 
 #### isrc
 
@@ -202,17 +200,13 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 #### previewStartSeconds
 
+Preview length is 30 seconds starting at the `previewStartSeconds` into the track’s audio, even if a
+longer or shorter duration is given. does not support using an external file for the preview
+
 1. `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/PreviewDetails/StartPoint`
 2. only when
    `/ResourceList/SoundRecording/SoundDetailsByTerritory[TerritoryCode="Worldwide"]/TechnicalSoundRecordingDetails/IsPreview`
    is true
-
-:::note
-
-Preview length is 30 seconds starting at the `previewStartSeconds` into the track’s audio, even if a
-longer or shorter duration is given. does not support using an external file for the preview
-
-:::
 
 #### producerCopyrightLine
 
@@ -253,7 +247,7 @@ The following children elements are parsed and stored in Audius: `PartyName`/`Fu
 
 ## Album Metadata Mapping
 
-### Required
+### Required Fields
 
 The following fields are required for content to be listed on Audius and are examined and pulled
 from a DDEX delivery in cascading precedence.
@@ -276,43 +270,31 @@ the separate DDEX server but not in the Audius network.
 
 #### trackFiles
 
+This is an array of audio files which the album is comprised of, not technically an Audius SDK
+metadata field, but uploaded as part of the album.
+
 1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
-
-:::note
-
-array of audio files which the album is comprised of, not technically an Audius SDK metadata field,
-but uploaded as part of the album
-
-:::
 
 #### trackMetadatas
-
-1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
-
-:::note
 
 Metadata about each track in the album, not technically an Audius SDK metadata field, but uploaded
 as part of the album
 
-:::
+1. each `/ReleaseList/Release/` except the release with the attribute `IsMainRelease="true"`
 
 ---
 
-### Optional
+### Optional Fields
 
 The following fields are optional for content to be listed on Audius and are examined and pulled
 from a DDEX delivery in cascading precedence.
 
 #### artists
 
-1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
-
-:::note
-
 The `/PartyName/FullName` child element is used as the artist’s name and the `SequenceNumber`
 attribute to preserve order
 
-:::
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/DisplayArtist`
 
 #### copyrightLine
 
@@ -349,7 +331,8 @@ This is only used if both `year` _AND_ `text` are non-empty. The child elements 
 :::note
 
 ICPN (or "International Code Product Number") has an `IsEAN` attribute which determines if it’s an
-EAN (European Article Number) or UPC (Universal Product Code — only used in US and Canada). We use
-them interchangeably and just set it as UPC even if it’s an EAN
+EAN (or "European Article Number") or UPC ("Universal Product Code" — only used in US and Canada).
+
+Audius uses these interchangeably and just set it as UPC even if it’s an EAN.
 
 :::

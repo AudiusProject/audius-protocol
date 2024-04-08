@@ -24,6 +24,7 @@ img
 io
 ioredis
 isrc
+iswc
 js
 jwt
 mainnet
@@ -61,6 +62,7 @@ typehash
 undelegate
 unrepost
 unstake
+upc
 userbase
 wei
 whitepaper
