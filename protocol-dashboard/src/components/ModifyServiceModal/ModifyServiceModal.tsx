@@ -124,7 +124,7 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
   if (endpointUpdated && walletUpdated) {
     topBox = (
       <>
-        <div className={styles.doubleMetaMask}>
+        <div className={styles.warningContainer}>
           {sharedMessages.twoPopupsWarning}
         </div>
         <StandaloneBox className={styles.confirm}>

@@ -10,7 +10,6 @@ declare global {
     Web3: any
     web3: any
     dataWeb3: any
-    configuredMetamaskWeb3: any
     isAccountMisconfigured: boolean
   }
 }
@@ -53,7 +52,7 @@ export const getWalletChainId = async (walletProvider: Eip1193Provider) => {
 }
 
 /**
- * Metamask sometimes returns null chainId,
+ * Ethereum providers sometime returns null chainId,
  * so if this happens, try a second time after a slight delay
  */
 const getWalletIsOnEthMainnet = async (walletProvider: Eip1193Provider) => {
@@ -107,12 +106,12 @@ export async function setup(this: AudiusClient): Promise<void> {
     if (!isOnMainnetEth) {
       this.isMisconfigured = true
       this.libs = await configureReadOnlyLibs()
-      this.onMetaMaskAccountLoaded(null)
+      this.onWalletAccountLoaded(null)
     }
 
     this.libs = await configureLibsWithAccount({
       walletProvider: walletProvider,
-      onMetaMaskAccountLoaded: loadedAccount => {
+      onWalletAccountLoaded: loadedAccount => {
         account = loadedAccount
       }
     })
@@ -129,13 +128,13 @@ export async function setup(this: AudiusClient): Promise<void> {
   } catch (err) {
     console.error(err)
     this.isMisconfigured = true
-    this.onMetaMaskAccountLoaded(null)
+    this.onWalletAccountLoaded(null)
     this.libs = await configureReadOnlyLibs()
   }
 
   window.audiusLibs = this.libs
   this.isSetup = true
-  this.onMetaMaskAccountLoaded(account)
+  this.onWalletAccountLoaded(account)
   this.onSetupFinished()
 }
 
@@ -202,10 +201,10 @@ const configWeb3 = async (web3Provider: any, networkId: string) => {
 
 const configureLibsWithAccount = async ({
   walletProvider,
-  onMetaMaskAccountLoaded
+  onWalletAccountLoaded
 }: {
   walletProvider: Eip1193Provider
-  onMetaMaskAccountLoaded?: (account: string) => void
+  onWalletAccountLoaded?: (account: string) => void
 }) => {
   let configuredWeb3 = await configWeb3(walletProvider, CHAIN_ID)
 
@@ -216,8 +215,8 @@ const configureLibsWithAccount = async ({
   })
   let connectedAccount = connectedAccounts[0]
 
-  if (onMetaMaskAccountLoaded) {
-    onMetaMaskAccountLoaded(connectedAccount)
+  if (onWalletAccountLoaded) {
+    onWalletAccountLoaded(connectedAccount)
   }
 
   // Not connected or no accounts, return

@@ -1,6 +1,7 @@
 import {
   Box,
   Flex,
+  Button as HarmonyButton,
   HarmonyTheme,
   IconAudiusLogoHorizontal,
   PlainButton,
@@ -8,6 +9,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { IconLink } from '@audius/stems'
+import { useWeb3Modal, useWeb3ModalState } from '@web3modal/ethers/react'
 import clsx from 'clsx'
 import Button from 'components/Button'
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
@@ -51,27 +53,36 @@ const messages = {
   title: 'AUDIUS',
   name: 'Protocol Dashboard',
   launchApp: 'LAUNCH THE APP',
-  metaMaskMisconfigured: 'Wallet Misconfigured',
+  walletMisconfigured: 'Wallet Misconfigured',
   block: 'Block',
   wallet: 'WALLET',
   staked: 'STAKED',
   profileAlt: 'User Profile',
   connectProfile: 'Connect Audius Profile',
   loading: 'Loading Account...',
+  connectWallet: 'Connect Wallet',
+  connecting: 'Connecting...',
   disconnect: 'Disconnect'
 }
 
-// TODO:
-// * Replace account img, wallet & tokens from store
 type UserAccountSnippetProps = { wallet: Address }
 
 type ConnectWalletProps = {
   isMisconfigured: boolean
 }
 const ConnectWallet = ({ isMisconfigured }: ConnectWalletProps) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const onClick = useCallback(() => setIsOpen(true), [setIsOpen])
-  const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
+  const { open: openWeb3Modal } = useWeb3Modal()
+  const { open: isWeb3ModalOpen } = useWeb3ModalState()
+
+  const [isMisconfiguredModalOpen, setIsMisconfiguredModalOpen] = useState(
+    false
+  )
+  const onClick = useCallback(() => setIsMisconfiguredModalOpen(true), [
+    setIsMisconfiguredModalOpen
+  ])
+  const onClose = useCallback(() => setIsMisconfiguredModalOpen(false), [
+    setIsMisconfiguredModalOpen
+  ])
 
   return isMisconfigured ? (
     <>
@@ -80,14 +91,19 @@ const ConnectWallet = ({ isMisconfigured }: ConnectWalletProps) => {
         className={clsx(styles.connectWalletContainer, styles.cursorPointer)}
       >
         <div className={styles.misconfiguredDot}></div>
-        <div className={styles.connectText}>
-          {messages.metaMaskMisconfigured}
-        </div>
+        <div className={styles.connectText}>{messages.walletMisconfigured}</div>
       </div>
-      <MisconfiguredModal isOpen={isOpen} onClose={onClose} />
+      <MisconfiguredModal isOpen={isMisconfiguredModalOpen} onClose={onClose} />
     </>
   ) : (
-    <w3m-connect-button />
+    <HarmonyButton
+      variant="tertiary"
+      size="small"
+      isLoading={isWeb3ModalOpen}
+      onClick={() => openWeb3Modal()}
+    >
+      {isWeb3ModalOpen ? messages.connecting : messages.connectWallet}
+    </HarmonyButton>
   )
 }
 
@@ -112,7 +128,7 @@ const DisconnectButton = () => {
 
   return (
     <PlainButton
-      variant="default"
+      variant="inverted"
       css={({ spacing }: HarmonyTheme) => ({
         marginRight: -spacing['xs']
       })}
@@ -221,7 +237,7 @@ const AppBar: React.FC<AppBarProps> = () => {
   }, [isConnected])
 
   const waitForSetup = async () => {
-    await window.aud.metaMaskAccountLoadedPromise
+    await window.aud.walletAccountLoadedPromise
     setIsAudiusClientSetup(true)
     setIsMisconfigured(window.aud.isMisconfigured)
     setIsAccountMisconfigured(window.aud.isAccountMisconfigured)

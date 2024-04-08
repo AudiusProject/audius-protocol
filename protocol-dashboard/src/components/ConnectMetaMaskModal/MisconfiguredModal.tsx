@@ -17,12 +17,6 @@ const messages = {
   tryDisconnecting: 'Please try disconnecting and connecting your wallet again.'
 }
 
-type OwnProps = {
-  isOpen: boolean
-  onClose: () => void
-  isMisconfigured?: boolean
-}
-
 type ContentProps = {
   onClose: () => void
 }
@@ -84,7 +78,11 @@ const MisconfiguredWalletContent = ({ onClose }: ContentProps) => {
   )
 }
 
-type MisconfiguredModalProps = OwnProps
+type MisconfiguredModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  isMisconfigured?: boolean
+}
 
 const MisconfiguredModal: React.FC<MisconfiguredModalProps> = ({
   isOpen,

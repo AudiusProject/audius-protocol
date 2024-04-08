@@ -1,8 +1,8 @@
-import { formatNumber, formatAudString } from 'utils/format'
-import AudiusClient from './AudiusClient'
-import { Permission, BigNumber, Proposal } from 'types'
-import { fetchWithTimeout } from 'utils/fetch'
 import BN from 'bn.js'
+import { BigNumber, Permission, Proposal } from 'types'
+import { fetchWithTimeout } from 'utils/fetch'
+import { formatAudString, formatNumber } from 'utils/format'
+import AudiusClient from './AudiusClient'
 
 // Helpers
 export async function hasPermissions(
@@ -19,12 +19,12 @@ export function onSetup(this: AudiusClient) {
   this.isSetupPromise = new Promise(resolve => {
     this._setupPromiseResolve = resolve
   })
-  this.metaMaskAccountLoadedPromise = new Promise(resolve => {
+  this.walletAccountLoadedPromise = new Promise(resolve => {
     this._metaMaskAccountLoadedResolve = resolve
   })
 }
 
-export function onMetaMaskAccountLoaded(
+export function onWalletAccountLoaded(
   this: AudiusClient,
   account: string | null
 ) {

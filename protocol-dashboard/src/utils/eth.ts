@@ -36,7 +36,7 @@ export const WEB3_MODAL_METADATA = {
   description: 'The Audius Protocol Dashboard',
   url: 'https://dashboard.audius.org',
   icons: [
-    'https://assets-global.website-files.com/60999ea7cc5f28e9cda637b6/660b37f63b99ddf8185d5672_Logo_Horizontal_Color%402x.webp'
+    'https://www.dropbox.com/scl/fi/xw6rhvvgqev01owt3b5fm/AudiusProtocolDashboardLogo.png?rlkey=41vn0k2w611khbajfedjkphbq&raw=1'
   ]
 }
 

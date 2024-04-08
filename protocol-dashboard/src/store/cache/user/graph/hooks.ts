@@ -80,17 +80,13 @@ export const useUser = (
 ) => {
   const [didFetch, setDidFetch] = useState(false)
   const { hasBackupClient, didError } = useSelector(getGraphAPI)
-  let userNotFound = false
   const { error: gqlError, data: gqlData } = useQuery<UserData, UserVars>(
     GET_USER,
     {
       variables: { id: wallet.toLowerCase() }
     }
   )
-  if (gqlData && gqlData.user == null) {
-    userNotFound = true
-  }
-
+  const userNotFound = gqlData && gqlData.user == null
   useEffect(() => {
     setDidFetch(false)
   }, [wallet, setDidFetch])

@@ -147,7 +147,6 @@
   fill: var(--secondary) !important;
 }
 
-/* MetaMask */
 .connectWalletContainer {
   display: inline-flex;
   align-items: center;
