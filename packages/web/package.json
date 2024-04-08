@@ -21,6 +21,7 @@
     "lint:env": "dotenv-linter env",
     "prebuild": "npm run publish-scripts",
     "preview:prod": "npm run build:prod && env-cmd ./env/.env.prod vite preview --outDir build-production",
+    "preview:stage": "npm run build:stage && env-cmd ./env/.env.stage vite preview --outDir build-staging",
     "preview:stage:ci": "env-cmd ./env/.env.stage vite preview --outDir build-staging",
     "publish-scripts": "./scripts/publishScripts.sh",
     "start:dev": "env-cmd --no-override ./env/.env.dev env-cmd ./env/.env.ssr turbo run start",
