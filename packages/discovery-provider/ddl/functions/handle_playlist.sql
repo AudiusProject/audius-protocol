@@ -87,11 +87,11 @@ begin
 
   begin
     if new.is_delete IS FALSE and new.is_private IS FALSE then
-      for track_item IN select jsonb_array_elements from jsonb_array_elements(new.playlist_contents -> 'track_ids')
+      for track_item IN select jsonb_array_elements from jsonb_array_elements(new.playlist_contents->'track_ids')
       loop
         -- Add notification for each purchaser
         if new.is_album and new.is_stream_gated then
-          for purchase_record IN select * from usdc_purchases where usdc_purchases.content_id = new.playlist_id and usdc_purchases.content_type = 'playlist' and usdc_purchases.is_current
+          for purchase_record IN select * from usdc_purchases where usdc_purchases.content_id = new.playlist_id and usdc_purchases.content_type = 'album'
           loop
             insert into notification
               (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
