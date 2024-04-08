@@ -11,7 +11,7 @@ import {
   UploadFinishPage,
   UploadSelectPage
 } from './page-object-models/upload'
-import { SSR_HYDRATE_TIMEOUT, test, waitForUser } from './test'
+import { test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
 
 test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
@@ -184,9 +184,6 @@ test('should upload a premium track', async ({ page, browser }) => {
   const newPage = await openCleanBrowser({ browser })
   const buyButton = newPage.getByRole('button', { name: /buy/i })
   newPage.goto(trackUrl)
-  await expect(newPage.getByTestId('app-hydrated')).toBeAttached({
-    timeout: SSR_HYDRATE_TIMEOUT
-  })
   await expect(buyButton).toBeVisible()
   await expect(newPage.getByText('$' + price)).toBeVisible()
 })

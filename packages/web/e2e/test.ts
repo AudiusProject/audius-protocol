@@ -1,6 +1,6 @@
 import { Page, expect, test as base } from '@playwright/test'
 
-export const SSR_HYDRATE_TIMEOUT = 60 * 1000
+const SSR_HYDRATE_TIMEOUT = 60 * 1000
 
 /**
  * The initial page load is slow because we need to wait for the
