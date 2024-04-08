@@ -41,8 +41,7 @@ export const TrackNameWithArtwork = ({
 
   return loading ? null : (
     <div className={styles.container}>
-      {/* <DynamicImage wrapperClassName={styles.artwork} image={image} /> */}
-      <img src={image} className={styles.artwork} />
+      <DynamicImage wrapperClassName={styles.artwork} image={image} />
       <Text className={styles.text} variant='body' size='s'>
         {title}
       </Text>

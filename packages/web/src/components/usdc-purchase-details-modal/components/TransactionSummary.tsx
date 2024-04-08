@@ -1,20 +1,14 @@
+import { useGetTrackById } from '@audius/common/api'
 import { useCurrentStems } from '@audius/common/hooks'
 import {
   PurchaseAccess,
   USDCContentPurchaseType,
   USDCPurchaseDetails
 } from '@audius/common/models'
-import { cacheTracksSelectors, trackPageActions } from '@audius/common/store'
 import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import BN from 'bn.js'
-import { useDispatch } from 'react-redux'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
-import {
-  useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetTrackById
-} from '@audius/common/api'
 
 const messages = {
   costOfTrack: 'Cost of Track',
@@ -30,7 +24,6 @@ export const TransactionSummary = ({
 }: {
   transaction: USDCPurchaseDetails
 }) => {
-  const dispatch = useDispatch()
   const amountBN = new BN(transaction.amount)
   const { contentId, contentType } = transaction
   const isTrack = contentType === USDCContentPurchaseType.TRACK

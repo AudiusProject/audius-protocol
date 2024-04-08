@@ -1,4 +1,5 @@
 import { Text } from '@audius/harmony'
+
 import { TextLink } from 'components/link'
 
 export const ContentLink = (props: {

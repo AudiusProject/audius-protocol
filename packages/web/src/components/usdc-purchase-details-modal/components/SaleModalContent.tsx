@@ -1,6 +1,15 @@
 import { useCallback } from 'react'
 
-import { USDCPurchaseDetails } from '@audius/common/models'
+import {
+  useGetCurrentUserId,
+  useGetPlaylistById,
+  useGetTrackById
+} from '@audius/common/api'
+import {
+  SquareSizes,
+  USDCContentPurchaseType,
+  USDCPurchaseDetails
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   chatActions,
@@ -25,13 +34,13 @@ import {
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
-import {
-  DynamicTrackArtwork,
-  DynamicTrackArtworkSize
-} from 'components/track/DynamicTrackArtwork'
+import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 import { ContentLink } from './ContentLink'
 import { DetailSection } from './DetailSection'
@@ -62,12 +71,31 @@ export const SaleModalContent = ({
   purchaseDetails: USDCPurchaseDetails
   onClose: () => void
 }) => {
+  const dispatch = useDispatch()
+  const { contentType, contentId } = purchaseDetails
+  const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const dispatch = useDispatch()
-  const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: track } = useGetTrackById(
+    { id: contentId },
+    { disabled: !isTrack }
+  )
+  const { data: album } = useGetPlaylistById(
+    {
+      playlistId: contentId,
+      currentUserId
+    },
+    { disabled: isTrack }
+  )
+  const trackArtwork = useTrackCoverArt2(contentId, SquareSizes.SIZE_150_BY_150)
+  const albumArtwork = useCollectionCoverArt2(
+    contentId,
+    SquareSizes.SIZE_150_BY_150
+  )
 
+  const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { canCreateChat } = useSelector((state: CommonState) =>
     getCanCreateChat(state, { userId: purchaseDetails.buyerUserId })
   )
@@ -98,12 +126,12 @@ export const SaleModalContent = ({
             image={isTrack ? trackArtwork : albumArtwork}
             wrapperClassName={styles.artworkContainer}
           />
-          <DynamicTrackArtwork
-            id={purchaseDetails.contentId}
-            size={DynamicTrackArtworkSize.LARGE}
-          />
           <DetailSection label={messages.track}>
-            {/* <ContentLink onClick={onClose} lin /> */}
+            <ContentLink
+              onClick={onClose}
+              title={isTrack && track ? track.title : album.playlist_name}
+              link={isTrack && track ? track?.permalink : album.permalink ?? ''}
+            />
             <Flex gap='xs'>
               <Text variant='body' size='l'>
                 {messages.by}
@@ -176,7 +204,11 @@ export const SaleModalContent = ({
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
           <DetailSection label={messages.trackPurchased}>
-            <ContentLink onClick={onClose} id={purchaseDetails.contentId} />
+            <ContentLink
+              onClick={onClose}
+              title={track?.title ?? ''}
+              link={track?.permalink ?? ''}
+            />
           </DetailSection>
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>

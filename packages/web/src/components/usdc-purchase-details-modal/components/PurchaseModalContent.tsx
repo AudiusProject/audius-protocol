@@ -29,7 +29,10 @@ import moment from 'moment'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
-import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
+import {
+  DynamicTrackArtwork,
+  DynamicTrackArtworkSize
+} from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useGoToRoute } from 'hooks/useGoToRoute'
@@ -59,12 +62,12 @@ export const PurchaseModalContent = ({
   purchaseDetails: USDCPurchaseDetails
   onClose: () => void
 }) => {
+  const goToRoute = useGoToRoute()
   const { contentType, contentId } = purchaseDetails
+  const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const goToRoute = useGoToRoute()
-  const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: track } = useGetTrackById(
     { id: contentId },
@@ -164,8 +167,8 @@ export const PurchaseModalContent = ({
           <DetailSection label={messages.track}>
             <ContentLink
               onClick={onClose}
-              link={track?.permalink}
-              title={track?.title}
+              link={track?.permalink ?? ''}
+              title={track?.title ?? ''}
             />
           </DetailSection>
           <DynamicTrackArtwork
