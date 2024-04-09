@@ -91,22 +91,23 @@ begin
       loop
         -- Add notification for each purchaser
         if new.is_album and new.is_stream_gated then
-          for purchase_record IN select * from usdc_purchases where usdc_purchases.content_id = new.playlist_id and usdc_purchases.content_type = 'album'
-          loop
+          with album_purchasers as (
+            select distinct buyer_user_id
+              from usdc_purchases
+              where content_id = new.playlist_id
+              and content_type = 'album'
+          )
             insert into notification
               (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
-              values
-              (
+              select
                 new.blocknumber,
-                ARRAY [purchase_record.buyer_user_id],
+                array [album_purchaser.buyer_user_id],
                 new.updated_at,
                 'track_added_to_purchased_album',
-                purchase_record.buyer_user_id,
+                album_purchaser.buyer_user_id,
                 'track_added_to_purchased_album:playlist_id:' || new.playlist_id || ':track_id:' || (track_item->>'track')::int,
                 json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id, 'playlist_owner_id', new.playlist_owner_id)
-              )
-            on conflict do nothing;
-          end loop;
+              from album_purchasers as album_purchaser;
         end if;
 
         -- Add notification for each track owner
