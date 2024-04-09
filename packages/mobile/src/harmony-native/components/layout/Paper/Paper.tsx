@@ -1,6 +1,5 @@
 import { forwardRef } from 'react'
 
-import { css } from '@emotion/native'
 import type { View } from 'react-native'
 import { Animated, Pressable } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -26,7 +25,6 @@ const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 export const Paper = forwardRef<View, PaperProps>((props, ref) => {
   const {
     backgroundColor = 'white',
-    border,
     borderRadius = 'm',
     shadow = 'mid',
     style,
@@ -34,22 +32,11 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
   } = props
 
   const { onPress } = other
-  const { color, shadows, cornerRadius, motion } = useTheme()
+  const { shadows, motion } = useTheme()
 
   const pressed = useSharedValue(0)
 
   const shadowStyle = shadows[shadow]
-
-  const rootStyle = css({
-    ...shadowStyle,
-    ...(border && {
-      borderWidth: 1,
-      borderStyle: 'solid',
-      borderColor: color.border[border]
-    }),
-    borderRadius: cornerRadius[borderRadius],
-    backgroundColor: color.background[backgroundColor]
-  })
 
   const tap = Gesture.Tap()
     .onBegin(() => {
@@ -89,13 +76,15 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
     ),
     transform: [
       {
-        scale: interpolate(pressed.value, [0, 1], [1, 0.95])
+        scale: interpolate(pressed.value, [0, 1], [1, 0.995])
       }
     ]
   }))
 
+  const flexProps = { backgroundColor, borderRadius, shadow }
+
   if (!onPress) {
-    return <Flex ref={ref} style={[rootStyle, style]} {...other} />
+    return <Flex ref={ref} style={style} {...flexProps} {...other} />
   }
 
   return (
@@ -103,7 +92,8 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       <Pressable onPress={onPress}>
         <AnimatedFlex
           ref={ref}
-          style={[rootStyle, interactiveStyles, style]}
+          style={[interactiveStyles, style]}
+          {...flexProps}
           {...other}
         />
       </Pressable>

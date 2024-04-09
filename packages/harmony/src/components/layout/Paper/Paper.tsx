@@ -13,7 +13,6 @@ import type { PaperProps } from './types'
 export const Paper = forwardRef<HTMLDivElement, PaperProps>((props, ref) => {
   const {
     backgroundColor = 'white',
-    border,
     borderRadius = 'm',
     shadow = 'mid',
     ...other
@@ -21,13 +20,9 @@ export const Paper = forwardRef<HTMLDivElement, PaperProps>((props, ref) => {
 
   const { onClick } = other
 
-  const { shadows, color, cornerRadius, motion } = useTheme()
+  const { shadows, motion } = useTheme()
 
   const css = {
-    boxShadow: shadows[shadow],
-    border: border && `1px solid ${color.border[border]}`,
-    borderRadius: cornerRadius[borderRadius],
-    backgroundColor: color.background[backgroundColor],
     overflow: 'hidden',
     transition: motion.hover
   }
@@ -38,7 +33,7 @@ export const Paper = forwardRef<HTMLDivElement, PaperProps>((props, ref) => {
       boxShadow: shadows.far
     },
     '&:active': {
-      transform: 'scale(0.95)',
+      transform: 'scale(0.995)',
       boxShadow: shadows.near,
       transition: motion.press
     }
@@ -47,6 +42,9 @@ export const Paper = forwardRef<HTMLDivElement, PaperProps>((props, ref) => {
   return (
     <Flex
       css={[css, onClick && interactiveCss]}
+      backgroundColor={backgroundColor}
+      borderRadius={borderRadius}
+      shadow={shadow}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       ref={ref}
