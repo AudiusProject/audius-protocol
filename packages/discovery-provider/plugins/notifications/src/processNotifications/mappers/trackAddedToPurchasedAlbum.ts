@@ -54,7 +54,6 @@ export class TrackAddedToPurchasedAlbum extends BaseNotification<TrackAddedToPur
     }> = await this.dnDB
       .select('track_id', 'title', 'owner_id')
       .from<TrackRow>('tracks')
-      .where('is_current', true)
       .whereIn('track_id', [this.trackId])
     const track = trackRes[0]
     const playlistRes: Array<{
@@ -64,7 +63,6 @@ export class TrackAddedToPurchasedAlbum extends BaseNotification<TrackAddedToPur
     }> = await this.dnDB
       .select('playlist_id', 'playlist_name', 'playlist_owner_id')
       .from<PlaylistRow>('playlists')
-      .where('is_current', true)
       .whereIn('playlist_id', [this.playlistId])
     const playlist = playlistRes[0]
 
@@ -75,7 +73,6 @@ export class TrackAddedToPurchasedAlbum extends BaseNotification<TrackAddedToPur
     }> = await this.dnDB
       .select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
-      .where('is_current', true)
       .whereIn('user_id', [playlist.playlist_owner_id])
     const user = userRes[0]
 
@@ -89,7 +86,7 @@ export class TrackAddedToPurchasedAlbum extends BaseNotification<TrackAddedToPur
     const trackTitle = track.title
     const playlistName = playlist.playlist_name
 
-    const title = 'Your track got on a playlist! 💿'
+    const title = 'New Release'
     const body = `${playlistOwnerName} released a new track ${trackTitle} on the album you purchased, ${playlistName}`
     await sendBrowserNotification(
       isBrowserPushEnabled,
