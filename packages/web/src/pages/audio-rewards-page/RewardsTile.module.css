@@ -106,7 +106,6 @@
   border-radius: 8px;
   margin: 8px;
   gap: 16px;
-
 }
 
 .divider {
@@ -118,7 +117,6 @@
 .claimAllContent {
   display: flex;
   flex-direction: column;
-
 }
 
 .claimAllTitle {
@@ -143,7 +141,7 @@
 }
 
 .claimAllButton {
-  margin-left: auto
+  margin-left: auto;
 }
 
 .pillMessage {

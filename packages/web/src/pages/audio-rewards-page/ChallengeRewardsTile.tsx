@@ -1,12 +1,16 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import {
+  useFeatureFlag,
+  usePendingChallengeSchedule
+} from '@audius/common/hooks'
+import {
   Name,
   ChallengeName,
   ChallengeRewardID,
   OptimisticUserChallenge
 } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
+import { FeatureFlags, StringKeys } from '@audius/common/services'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
@@ -42,7 +46,6 @@ import { make, track } from 'services/analytics'
 import styles from './RewardsTile.module.css'
 import { Tile } from './components/ExplainerTile'
 import { getChallengeConfig } from './config'
-import { usePendingChallengeSchedule } from '@audius/common/hooks'
 const { getUserChallenges, getUserChallengesLoading } =
   audioRewardsPageSelectors
 const { fetchUserChallenges, setChallengeRewardsModalType } =
@@ -97,7 +100,7 @@ const RewardPanel = ({
   }
 
   const challenge = userChallenges[id]
-  console.log('asdf userChallenges: ', userChallenges)
+
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
@@ -239,6 +242,9 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
+  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
+    FeatureFlags.REWARDS_COOLDOWN
+  )
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
@@ -302,35 +308,37 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
         <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
       ) : (
         <>
-          <div className={wm(styles.claimAllContainer)}>
-            <IconTokenGold
-              height={48}
-              width={48}
-              aria-label={messages.goldAudioToken}
-            />
-            <div className={wm(styles.claimAllContent)}>
-              <div className={wm(styles.claimAllTitle)}>
-                <Text color='accent' size='m' variant='heading'>
-                  {messages.totalReadyToClaim}
-                </Text>
-                <div className={wm(styles.pendingPillContainer)}>
-                  <span className={styles.pillMessage}>
-                    {pendingAmount} {messages.pending}
-                  </span>
+          {isRewardsCooldownEnabled ? (
+            <div className={wm(styles.claimAllContainer)}>
+              <IconTokenGold
+                height={48}
+                width={48}
+                aria-label={messages.goldAudioToken}
+              />
+              <div className={wm(styles.claimAllContent)}>
+                <div className={wm(styles.claimAllTitle)}>
+                  <Text color='accent' size='m' variant='heading'>
+                    {messages.totalReadyToClaim}
+                  </Text>
+                  <div className={wm(styles.pendingPillContainer)}>
+                    <span className={styles.pillMessage}>
+                      {pendingAmount} {messages.pending}
+                    </span>
+                  </div>
                 </div>
+                <Text className={wm(styles.claimableAudioDescription)}>
+                  {totalClaimableAmount} {messages.availableNow}
+                </Text>
               </div>
-              <Text className={wm(styles.claimableAudioDescription)}>
-                {totalClaimableAmount} {messages.availableNow}
-              </Text>
+              <Button
+                className={wm(styles.claimAllButton)}
+                onClick={onClickClaimAllRewards}
+                iconRight={IconArrow}
+              >
+                {messages.claimAllRewards}
+              </Button>
             </div>
-            <Button
-              className={wm(styles.claimAllButton)}
-              onClick={onClickClaimAllRewards}
-              iconRight={IconArrow}
-            >
-              {messages.claimAllRewards}
-            </Button>
-          </div>
+          ) : null}
           <Divider orientation='horizontal' className={wm(styles.divider)} />
           <div className={styles.rewardsContainer}>{rewardsTiles}</div>
         </>

@@ -39,14 +39,18 @@ export const useChallengeCooldownSchedule = (
 }
 
 export const usePendingChallengeSchedule = () => {
-  const challenges = useSelector(getUndisbursedUserChallenges)
-    .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
+  const challenges = useSelector(getUndisbursedUserChallenges).map((c) => ({
+    ...c,
+    createdAtDate: dayjs.utc(c.created_at)
+  }))
 
-    const cooldownChallenges = challenges.filter(
+  const cooldownChallenges = challenges.filter(
     (c) => !isCooldownChallengeClaimable(c)
   )
-  const claimableAmount = cooldownChallenges
-    .reduce((acc, curr) => acc + curr.amount, 0)
+  const claimableAmount = cooldownChallenges.reduce(
+    (acc, curr) => acc + curr.amount,
+    0
+  )
   return { cooldownChallenges, claimableAmount }
 }
 

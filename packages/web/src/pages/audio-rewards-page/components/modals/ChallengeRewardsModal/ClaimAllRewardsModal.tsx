@@ -1,17 +1,20 @@
-import { useModalState } from 'common/hooks/useModalState'
-import ModalDrawer from '../ModalDrawer'
-import { Button, ModalContent, Text } from '@audius/harmony'
-import { SummaryTable } from 'components/summary-table'
-import styles from './styles.module.css'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { challengesSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 import {
   formatAudioMatchingChallengesForCooldownSchedule,
   usePendingChallengeSchedule
 } from '@audius/common/hooks'
+import { challengesSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
+import { Button, ModalContent, Text } from '@audius/harmony'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
+
+import { useModalState } from 'common/hooks/useModalState'
+import { SummaryTable } from 'components/summary-table'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+
+import ModalDrawer from '../ModalDrawer'
+
+import styles from './styles.module.css'
 
 const { getOptimisticUserChallenges } = challengesSelectors
 
@@ -30,10 +33,6 @@ export const ClaimAllRewardsModal = () => {
   const [isHCaptchaModalOpen] = useModalState('HCaptcha')
   const wm = useWithMobileStyle(styles.mobile)
   const userChallenges = useSelector(getOptimisticUserChallenges)
-
-  const claimableChallenges = Object.values(userChallenges).filter(
-    (challenge) => challenge.claimableAmount > 0
-  )
 
   const undisbursedChallenges = usePendingChallengeSchedule().cooldownChallenges
   // TODO merge conflicting dates
