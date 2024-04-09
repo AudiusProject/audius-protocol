@@ -10,18 +10,18 @@ Here is the [deployed program](https://explorer.solana.com/address/paytYpX3LPN98
 
 ## Versions
 
-Solana 1.16.1
+Solana 1.18.6
 
 ```
-solana-install init 1.16.1
+solana-install init 1.18.6
 solana -V
 ```
 
-rustc 1.70.0
+rustc 1.72.0
 
 ```
-rustup install 1.70.0
-rustup default 1.70.0
+rustup install 1.72.0
+rustup default 1.72.0
 rustc -V
 ```
 

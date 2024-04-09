@@ -6,12 +6,12 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.3"
-solana-cli-config = "=1.8.14"
-solana-clap-utils = "=1.8.14"
-solana-logger = "=1.8.14"
-solana-client = "=1.8.14"
-solana-sdk = "=1.8.14"
-solana-program = "=1.8.14"
+solana-cli-config = "=1.18.6"
+solana-clap-utils = "=1.18.6"
+solana-logger = "=1.18.6"
+solana-client = "=1.18.6"
+solana-sdk = "=1.18.6"
+solana-program = "=1.18.6"
 borsh = "0.9.0"
 anyhow = "1.0.40"
 claimable-tokens = { path="../program", features = [ "no-entrypoint" ] }

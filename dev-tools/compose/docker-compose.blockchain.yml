@@ -136,7 +136,7 @@ services:
     # image: audius/solana-programs:latest-amd64 # build on linux
     build:
       context: ${PROJECT_ROOT}/solana-programs
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         AUDIUS_ETH_REGISTRY_PRIVATE_KEY: '${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}'
         TRACK_LISTEN_COUNT_PRIVATE_KEY: '${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}'

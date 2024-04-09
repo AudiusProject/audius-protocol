@@ -17,6 +17,7 @@ default = []
 test-bpf = []
 
 [dependencies]
-anchor-lang = "0.28.0"
-anchor-spl = "0.28.0"
+anchor-lang = "0.29.0"
+anchor-spl = "0.29.0"
 solana-security-txt = "1.1.1"
+getrandom = { version = "0.2.9", features = ["custom"] }
