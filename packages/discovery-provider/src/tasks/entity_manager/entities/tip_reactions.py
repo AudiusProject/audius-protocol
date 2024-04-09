@@ -26,10 +26,14 @@ def validate_tip_reaction(params: ManageEntityParameters):
     if metadata.get("reacted_to") is None:
         raise IndexingValidationError("reactedTo is required in tip reactions metadata")
 
-    if metadata.get("reaction_value") is None:
+    reaction_value = metadata.get("reaction_value")
+    if reaction_value is None:
         raise IndexingValidationError(
             "reactionValue is required in tip reactions metadata"
         )
+
+    if not 1 <= reaction_value <= 4:
+        raise IndexingValidationError(f"reaction value out of range {metadata}")
 
 
 def tip_reaction(params: ManageEntityParameters):
