@@ -124,7 +124,7 @@ const Wallet = ({
       )}
       {hasActions && !(isConfirmAdding || isConfirmRemoving) && !isDisabled && (
         <div className={styles.removeContainer} onClick={onRequestRemoveWallet}>
-          <IconRemove className={styles.iconRemove} />
+          <IconRemove className={styles.iconRemove} color='danger' />
         </div>
       )}
       {hasActions && !(isConfirmAdding || isConfirmRemoving) && isDisabled && (

@@ -291,7 +291,7 @@ export class TransactionHandler {
       await sendRawTransaction()
     } catch (e) {
       // Rarely, this intiial send will fail
-      logger.error(
+      logger.warn(
         `transactionHandler: Initial send failed for txId ${txid}: ${e}`
       )
     }
@@ -310,7 +310,7 @@ export class TransactionHandler {
           try {
             sendRawTransaction()
           } catch (e) {
-            logger.error(
+            logger.warn(
               `transactionHandler: error in send loop: ${e} for txId ${txid}`
             )
           }
@@ -342,7 +342,7 @@ export class TransactionHandler {
             (conn) => conn.rpcEndpoint !== this.connection.rpcEndpoint
           )
         ) ?? this.connection
-      logger.error(
+      logger.warn(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
         )}, ${txid}, with ${sendCount} retries to ${
@@ -377,7 +377,7 @@ export class TransactionHandler {
           }
           done = true
           const message = `transactionHandler: Timed out in await, ${txid}`
-          logger.error(message)
+          logger.warn(message)
           reject(new Error(message))
         }, this.retryTimeoutMs)
 
@@ -390,7 +390,7 @@ export class TransactionHandler {
               done = true
               if (result.err) {
                 const err = JSON.stringify(result.err)
-                logger.error(
+                logger.warn(
                   `transactionHandler: Error in onSignature ${txid}, ${err}`
                 )
                 reject(new Error(err))

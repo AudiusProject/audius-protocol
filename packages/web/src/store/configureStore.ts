@@ -8,6 +8,7 @@ import { createStore, applyMiddleware, Action, Store } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
+import { PartialDeep } from 'type-fest'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { audiusSdk } from 'services/audius-sdk'
@@ -97,7 +98,7 @@ export const configureStore = (
   isMobile: boolean,
   ssrPageProps?: SsrPageProps,
   isServerSide?: boolean,
-  initialStoreState?: Partial<AppState>
+  initialStoreState?: PartialDeep<AppState>
 ) => {
   const onSagaError = (
     error: Error,

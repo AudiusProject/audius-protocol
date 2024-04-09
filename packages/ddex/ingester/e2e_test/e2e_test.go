@@ -174,7 +174,7 @@ func TestRunE2E(t *testing.T) {
 						PlaylistOwnerName: stringPtr("Theo Random"),
 						IsAlbum:           boolPtr(true),
 						IsPrivate:         nil,
-						UPC:               nil,
+						UPC:               stringPtr("196871335584"),
 						Tracks: []common.TrackMetadata{
 							{
 								Title:       "Playing With Fire.",
@@ -292,6 +292,7 @@ func TestRunE2E(t *testing.T) {
 						DDEXReleaseIDs: &common.ReleaseIDs{
 							ICPN: "721620118165",
 						},
+						UPC: stringPtr("721620118165"),
 						CopyrightLine: &common.Copyright{
 							Year: "2010",
 							Text: "(C) 2010 Iron Crown Music",

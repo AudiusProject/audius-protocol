@@ -8,6 +8,7 @@ import { HeaderContextProvider } from 'components/header/mobile/HeaderContextPro
 import { NavProvider } from 'components/nav/store/context'
 import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
+import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import { MainContentContextProvider } from '../pages/MainContentContext'
 
@@ -24,8 +25,18 @@ type AppContextProps = {
 
 export const AppProviders = ({ children }: AppContextProps) => {
   const { history } = useHistoryContext()
+
+  const initialStoreState = {
+    ui: {
+      theme: {
+        theme: getTheme(),
+        systemPreference: getSystemAppearance()
+      }
+    }
+  }
+
   return (
-    <ReduxProvider>
+    <ReduxProvider initialStoreState={initialStoreState}>
       <ConnectedRouter history={history}>
         <LastLocationProvider>
           <TrpcProvider>
