@@ -21,26 +21,26 @@ export const Paper = forwardRef<HTMLDivElement, PaperProps>((props, ref) => {
 
   const { onClick } = other
 
-  const theme = useTheme()
+  const { shadows, color, cornerRadius, motion } = useTheme()
 
   const css = {
-    boxShadow: theme.shadows[shadow],
-    border: border && `1px solid ${theme.color.border[border]}`,
-    borderRadius: theme.cornerRadius[borderRadius],
-    backgroundColor: theme.color.background[backgroundColor],
+    boxShadow: shadows[shadow],
+    border: border && `1px solid ${color.border[border]}`,
+    borderRadius: cornerRadius[borderRadius],
+    backgroundColor: color.background[backgroundColor],
     overflow: 'hidden',
-    transition: theme.motion.hover
+    transition: motion.hover
   }
 
   const interactiveCss = {
     '&:hover': {
       transform: 'scale(1.01)',
-      boxShadow: theme.shadows.far
+      boxShadow: shadows.far
     },
     '&:active': {
-      transform: 'scale(0.995)',
-      boxShadow: theme.shadows.near,
-      transition: theme.motion.press
+      transform: 'scale(0.95)',
+      boxShadow: shadows.near,
+      transition: motion.press
     }
   }
 
