@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 
-import { ExternalLink } from 'components/link'
+import { ExternalTextLink } from 'components/link'
 
 import styles from './ProfileHeader.module.css'
 
@@ -13,8 +13,8 @@ type SocialLinkProps = {
 export const SocialLink = (props: SocialLinkProps) => {
   const { icon, ...other } = props
   return (
-    <ExternalLink {...other} className={styles.socialIcon}>
+    <ExternalTextLink {...other} className={styles.socialIcon}>
       {icon}
-    </ExternalLink>
+    </ExternalTextLink>
   )
 }

@@ -48,7 +48,7 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     ...(color && { color }),
     ...(shadow && t.shadow[shadow]),
     textAlign,
-    textTransform,
+    ...(textTransform && { textTransform }),
     // Fixes demiBold text misalignment on iOS
     ...(fontWeight === 'demiBold' && Platform.OS === 'ios'
       ? { marginTop: 2 }

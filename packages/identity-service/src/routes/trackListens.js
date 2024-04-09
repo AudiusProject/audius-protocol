@@ -368,7 +368,7 @@ module.exports = function (app) {
     '/tracks/:id/listen',
     handleResponse(async (req, res) => {
       const libs = req.app.get('audiusLibs')
-      const connection = libs.solanaWeb3Manager.connection
+      const connection = libs.solanaWeb3Manager.getConnection()
       const solanaWeb3 = libs.solanaWeb3Manager.solanaWeb3
       const redis = req.app.get('redis')
       const trackId = parseInt(req.params.id)

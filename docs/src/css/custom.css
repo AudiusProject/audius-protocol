@@ -22,7 +22,8 @@ footer {
   --ifm-color-primary-light: var(--secondary-light-1);
   --ifm-color-primary-lighter: var(--secondary-light-2);
   --ifm-color-primary-lightest: var(--neutral-light-4);
-  --ifm-code-font-size: 95%;
+  --ifm-code-font-size: 75%;
+  --ifm-code-font-weight: 600;
   --ifm-spacing-horizontal: 1em;
   --ifm-font-family-base: 'Avenir Next LT Pro', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
     Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif,
@@ -31,7 +32,8 @@ footer {
   --ifm-font-color-base: var(--neutral-dark-3);
   --ifm-font-weight-base: 500;
   --ifm-footer-background-color: #35364f !important;
-  --ifm-code-background: var(--neutral-light-9);
+  --ifm-code-background: var(--neutral-light-10);
+  --ifm-code-padding-horizontal: 2px;
   --docsearch-searchbox-background: var(--white);
   --ifm-color-danger-contrast-background: var(--accent-red);
   --ifm-color-danger-contrast-foreground: var(--static-white);
@@ -161,6 +163,11 @@ footer .text--center {
 /* ///////////////////////////////////////////////////////////////////////// */
 /*                        Customized CSS Starts Here                         */
 /* ///////////////////////////////////////////////////////////////////////// */
+
+code {
+  font-weight: 600;
+  color: var(--neutral-dark-1);
+}
 
 /* Home Page customized css */
 
@@ -315,4 +322,10 @@ html[data-theme='dark'] .navbar__items > a:nth-child(1):hover {
 
 html[data-theme='dark'] .tabs__item--active {
   background-color: #00000080;
+}
+
+/* list elements */
+
+.markdown li {
+  margin-bottom: 12px;
 }

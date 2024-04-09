@@ -27,7 +27,7 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
     transformValueOnBlur,
     debouncedValidationMs = 0,
     helperText,
-    onChange: propsOnChange,
+    onChange: onChangeProp,
     error: errorProp,
     ...other
   } = props
@@ -56,7 +56,7 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
       error={hasError}
       helperText={helperText ?? (hasError ? error : undefined)}
       onChange={(e) => {
-        propsOnChange?.(e)
+        onChangeProp?.(e)
         if (clearErrorOnChange) {
           setError(undefined)
         }

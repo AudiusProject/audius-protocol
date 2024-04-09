@@ -127,7 +127,6 @@ func TestRunE2E(t *testing.T) {
 				PublishErrors:      []string{},
 				Release: common.Release{
 					ReleaseProfile: common.UnspecifiedReleaseProfile,
-					PublishDate:    time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
 					SDKUploadMetadata: common.SDKUploadMetadata{
 						ReleaseDate: time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
 						Genre:       "Hip-Hop/Rap",
@@ -175,7 +174,7 @@ func TestRunE2E(t *testing.T) {
 						PlaylistOwnerName: stringPtr("Theo Random"),
 						IsAlbum:           boolPtr(true),
 						IsPrivate:         nil,
-						UPC:               nil,
+						UPC:               stringPtr("196871335584"),
 						Tracks: []common.TrackMetadata{
 							{
 								Title:       "Playing With Fire.",
@@ -283,7 +282,6 @@ func TestRunE2E(t *testing.T) {
 				PublishErrors:      []string{},
 				Release: common.Release{
 					ReleaseProfile: common.Common14AudioAlbumMusicOnly,
-					PublishDate:    time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
 					SDKUploadMetadata: common.SDKUploadMetadata{
 						ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
 						PlaylistName:      stringPtr("A Monkey Claw in a Velvet Glove"),
@@ -294,6 +292,7 @@ func TestRunE2E(t *testing.T) {
 						DDEXReleaseIDs: &common.ReleaseIDs{
 							ICPN: "721620118165",
 						},
+						UPC: stringPtr("721620118165"),
 						CopyrightLine: &common.Copyright{
 							Year: "2010",
 							Text: "(C) 2010 Iron Crown Music",
@@ -432,7 +431,6 @@ func TestRunE2E(t *testing.T) {
 				PublishErrors:      []string{},
 				Release: common.Release{
 					ReleaseProfile: common.Common13AudioSingle,
-					PublishDate:    time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
 					SDKUploadMetadata: common.SDKUploadMetadata{
 						ReleaseDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
 						Genre:       "Blues",
@@ -523,7 +521,6 @@ func TestRunE2E(t *testing.T) {
 		assert.Equal(t, st.expectedPR.PublishErrors, pendingRelease.PublishErrors)
 		assert.Equal(t, st.expectedPR.FailedAfterUpload, pendingRelease.FailedAfterUpload)
 		assert.Equal(t, st.expectedPR.Release.ReleaseProfile, pendingRelease.Release.ReleaseProfile)
-		assert.Equal(t, st.expectedPR.Release.PublishDate, pendingRelease.Release.PublishDate)
 
 		// Compare SDKUploadMetadata without tracks (for cleaner diffing), and then compare tracks after
 		expectedTracks, actualTracks := st.expectedPR.Release.SDKUploadMetadata.Tracks, pendingRelease.Release.SDKUploadMetadata.Tracks

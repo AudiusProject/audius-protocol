@@ -1,21 +1,43 @@
-import { useState, useEffect, MouseEvent } from 'react'
+import { useState, useEffect, MouseEvent, useCallback } from 'react'
 
-import { ID, UID, LineupTrack } from '@audius/common/models'
-import { formatCount, formatLineupTileDuration } from '@audius/common/utils'
+import {
+  ID,
+  UID,
+  LineupTrack,
+  AccessConditions,
+  ModalSource,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
+import {
+  gatedContentActions,
+  PurchaseableContentType,
+  usePremiumContentPurchaseModal
+} from '@audius/common/store'
+import {
+  Nullable,
+  formatCount,
+  formatLineupTileDuration,
+  getDogEarType
+} from '@audius/common/utils'
 import { Flex, IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
+import { useDispatch } from 'react-redux'
 
+import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
+import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
 import { RankIcon } from './TrackTile'
 import TrackTileArt from './TrackTileArt'
+const { setLockedContentId } = gatedContentActions
 
 type TrackItemProps = {
   index: number
@@ -116,26 +138,34 @@ type ExtraProps = {
   makeGoToRepostsPage: (id: ID) => (e: MouseEvent<HTMLElement>) => void
   makeGoToFavoritesPage: (id: ID) => (e: MouseEvent<HTMLElement>) => void
   isOwner: boolean
+  isUnlisted: boolean
   darkMode: boolean
   isMatrix: boolean
+  hasStreamAccess: boolean
+  streamConditions: Nullable<AccessConditions>
 }
 
 const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   const {
+    id,
     hasLoaded,
     index,
     showSkeleton,
     numLoadingSkeletonRows,
     isTrending,
+    isOwner,
     showRankIcon,
     trackCount,
     variant,
     containerClassName,
     permalink,
     isActive,
+    isUnlisted,
     playlistTitle,
     isPlaying,
-    ownerId
+    ownerId,
+    hasStreamAccess,
+    streamConditions
   } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -150,6 +180,43 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     [styles.show]: shouldShow,
     [styles.hide]: !shouldShow
   }
+  const [, setModalVisibility] = useModalState('LockedContent')
+  const dispatch = useDispatch()
+  const openLockedContentModal = useCallback(() => {
+    if (id) {
+      dispatch(setLockedContentId({ id }))
+      setModalVisibility(true)
+    }
+  }, [dispatch, id, setModalVisibility])
+
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
+  const isPurchase = isContentUSDCPurchaseGated(streamConditions)
+
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
+    if (isPurchase && id) {
+      openPremiumContentPurchaseModal(
+        { contentId: id, contentType: PurchaseableContentType.ALBUM },
+        { source: ModalSource.TrackTile }
+      )
+    } else if (id && !hasStreamAccess) {
+      openLockedContentModal()
+    }
+  }, [
+    isPurchase,
+    id,
+    openPremiumContentPurchaseModal,
+    hasStreamAccess,
+    openLockedContentModal
+  ])
+
+  const DogEarIconType = getDogEarType({
+    streamConditions,
+    isOwner,
+    hasStreamAccess,
+    isArtistPick: false,
+    isUnlisted
+  })
 
   return (
     <div
@@ -159,6 +226,11 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
         containerClassName
       )}
     >
+      {DogEarIconType ? (
+        <div className={styles.borderOffset}>
+          <DogEar type={DogEarIconType} />
+        </div>
+      ) : null}
       <div
         css={{ overflow: 'hidden' }}
         className={styles.mainContent}
@@ -282,10 +354,14 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               toggleRepost={props.toggleRepost}
               onShare={props.onShare}
               onClickOverflow={props.onClickOverflow}
+              onClickGatedUnlockPill={onClickGatedUnlockPill}
               isLoading={props.isLoading}
               isOwner={props.isOwner}
               isDarkMode={props.darkMode}
               isMatrixMode={props.isMatrix}
+              hasStreamAccess={props.hasStreamAccess}
+              streamConditions={props.streamConditions}
+              isUnlisted={props.isUnlisted}
             />
           </div>
         ) : null}
