@@ -63,6 +63,7 @@ const EditPlaylistModal = () => {
 
   const handleSubmit = useCallback(
     (formFields: any) => {
+      console.log({ formFields })
       if (playlistId) {
         dispatch(editPlaylist(playlistId, formFields))
       }

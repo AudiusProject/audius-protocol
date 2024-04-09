@@ -11,6 +11,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { AccessAndSaleField } from 'pages/upload-page/fields/AccessAndSaleField'
 
 import { EditActions } from './FormActions'
 
@@ -53,7 +54,7 @@ const createCollectionFormSchema = (collectionType: 'album' | 'playlist') => {
   return createCollectionSchema(collectionType).pick({
     artwork: true,
     playlist_name: true,
-    description: true
+    description: true,
   })
 }
 
@@ -70,6 +71,8 @@ const PlaylistForm = ({
     metadata?._cover_art_sizes ? metadata._cover_art_sizes : null,
     SquareSizes.SIZE_1000_BY_1000
   )
+
+  console.log({ metadata })
 
   return (
     <Formik<EditPlaylistValues>
@@ -104,6 +107,11 @@ const PlaylistForm = ({
               />
             </Flex>
           </Flex>
+          {isAlbum ? (
+            <Flex>
+              <AccessAndSaleField isAlbum />
+            </Flex>
+          ) : null}
           <EditActions
             deleteText={
               isAlbum

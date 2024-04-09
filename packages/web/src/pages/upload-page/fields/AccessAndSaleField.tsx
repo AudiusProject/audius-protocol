@@ -151,7 +151,8 @@ const refineMaxPrice =
 export const AccessAndSaleFormSchema = (
   trackLength: number,
   { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig,
-  isAlbum?: boolean
+  isAlbum?: boolean,
+  isUpload?: boolean
 ) =>
   z
     .object({
@@ -169,7 +170,7 @@ export const AccessAndSaleFormSchema = (
     // Check for albumTrackPrice price >= min price (if applicable)
     .refine(
       (values) =>
-        isAlbum
+        isAlbum && !isUpload
           ? refineMinPrice('albumTrackPrice', minContentPriceCents)(values)
           : true,
       {
@@ -184,7 +185,7 @@ export const AccessAndSaleFormSchema = (
     })
     .refine(
       (values) =>
-        isAlbum
+        isAlbum && !isUpload
           ? refineMaxPrice('albumTrackPrice', maxContentPriceCents)(values)
           : true,
       {
@@ -266,6 +267,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     useTrackField<SingleTrackEditValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
+
   const [{ value: fieldVisibility }, , { setValue: setFieldVisibilityValue }] =
     useTrackField<SingleTrackEditValues[typeof FIELD_VISIBILITY]>(
       FIELD_VISIBILITY
@@ -318,7 +320,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     const initialValues = {}
     set(initialValues, IS_UNLISTED, isUnlisted)
     set(initialValues, IS_STREAM_GATED, isStreamGated)
-    set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
+    set(initialValues, STREAM_CONDITIONS, savedStreamConditions)
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
@@ -602,6 +604,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isScheduledRelease
   ])
 
+  console.log({ inititak: initialValues[STREAM_CONDITIONS] })
+
   return (
     <ContextualMenu
       label={messages.title}
@@ -611,14 +615,22 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig, isAlbum)
+        AccessAndSaleFormSchema(
+          trackLength,
+          usdcPurchaseConfig,
+          isAlbum,
+          isUpload
+        )
       )}
       menuFields={
         <AccessAndSaleMenuFields
+          streamConditions={tempStreamConditions}
           isRemix={isRemix}
           isUpload={isUpload}
           isAlbum={isAlbum}
-          streamConditions={tempStreamConditions}
+          initialStreamConditions={
+            initialValues[STREAM_CONDITIONS] ?? undefined
+          }
           isScheduledRelease={isScheduledRelease}
         />
       }

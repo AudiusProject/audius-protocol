@@ -48,6 +48,8 @@ export const useAccessAndRemixSettings = ({
     return numEthCollectibles + numSolCollectibles === 0
   })
 
+  console.log({ isInitiallyUnlisted, isUpload, initialStreamConditions })
+
   const isInitiallyPublic =
     !isInitiallyUnlisted && !isUpload && !initialStreamConditions
 
@@ -72,10 +74,11 @@ export const useAccessAndRemixSettings = ({
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
   const noUsdcGate =
-    isRemix ||
-    isInitiallyPublic ||
-    isInitiallySpecialAccess ||
-    isInitiallyCollectibleGated
+    !isInitiallyUsdcGated &&
+    (isRemix ||
+      isInitiallyPublic ||
+      isInitiallySpecialAccess ||
+      isInitiallyCollectibleGated)
 
   const noSpecialAccessGate =
     isAlbum ||
