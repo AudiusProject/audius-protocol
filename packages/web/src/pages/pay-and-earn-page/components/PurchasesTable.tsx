@@ -158,20 +158,18 @@ export const PurchasesTable = ({
   )
 
   return (
-    <>
-      <Table
-        columns={tableColumns}
-        data={data}
-        loading={loading}
-        isEmptyRow={isEmptyPurchaseRow}
-        onClickRow={handleClickRow}
-        onSort={onSort}
-        fetchMore={fetchMore}
-        isVirtualized={isVirtualized}
-        totalRowCount={totalRowCount ?? 0}
-        scrollRef={scrollRef}
-        fetchBatchSize={fetchBatchSize}
-      />
-    </>
+    <Table
+      columns={tableColumns}
+      data={data}
+      loading={loading}
+      isEmptyRow={isEmptyPurchaseRow}
+      onClickRow={handleClickRow}
+      onSort={onSort}
+      fetchMore={fetchMore}
+      isVirtualized={isVirtualized}
+      totalRowCount={totalRowCount ?? 0}
+      scrollRef={scrollRef}
+      fetchBatchSize={fetchBatchSize}
+    />
   )
 }

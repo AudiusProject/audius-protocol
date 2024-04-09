@@ -1,15 +1,5 @@
 import { useCallback } from 'react'
-
-import {
-  useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetTrackById
-} from '@audius/common/api'
-import {
-  SquareSizes,
-  USDCContentPurchaseType,
-  USDCPurchaseDetails
-} from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
@@ -34,10 +24,8 @@ import {
   DynamicTrackArtworkSize
 } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 import { ContentLink } from './ContentLink'
 import { DetailSection } from './DetailSection'
@@ -51,51 +39,36 @@ const messages = {
   done: 'Done',
   purchaseDetails: 'Purchase Details',
   track: 'Track',
-  album: 'Album',
   visitTrack: 'Visit Track',
-  visitAlbum: 'Visit Album',
   transaction: 'Explore Transaction'
+}
+
+type PurchaseModalContentProps = {
+  purchaseDetails: USDCPurchaseDetails
+  contentLabel: string
+  contentTitle: string
+  link: string
+  artwork?: string
+  onClose: () => void
 }
 
 export const PurchaseModalContent = ({
   purchaseDetails,
+  contentLabel,
+  contentTitle,
+  link,
+  artwork,
   onClose
-}: {
-  purchaseDetails: USDCPurchaseDetails
-  onClose: () => void
-}) => {
+}: PurchaseModalContentProps) => {
   const goToRoute = useGoToRoute()
-  const { contentType, contentId } = purchaseDetails
-  const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: track } = useGetTrackById(
-    { id: contentId },
-    { disabled: !isTrack }
-  )
-  const { data: album } = useGetPlaylistById(
-    {
-      playlistId: contentId,
-      currentUserId
-    },
-    { disabled: isTrack }
-  )
-  const trackArtwork = useTrackCoverArt2(contentId, SquareSizes.SIZE_150_BY_150)
-  const albumArtwork = useCollectionCoverArt2(
-    contentId,
-    SquareSizes.SIZE_150_BY_150
   )
 
   const handleClickVisitTrack = useCallback(() => {
     onClose()
-    if (isTrack && track) {
-      goToRoute(track.permalink)
-    } else if (!isTrack && album && album.permalink) {
-      goToRoute(album.permalink)
-    }
-  }, [onClose, isTrack, track, album, goToRoute])
+    goToRoute(link)
+  }, [onClose, link, goToRoute])
 
   return isPremiumAlbumsEnabled ? (
     <>
@@ -105,15 +78,11 @@ export const PurchaseModalContent = ({
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
           <DynamicImage
-            image={isTrack ? trackArtwork : albumArtwork}
+            image={artwork}
             wrapperClassName={styles.artworkContainer}
           />
-          <DetailSection label={isTrack ? messages.track : messages.album}>
-            <ContentLink
-              onClick={onClose}
-              title={isTrack && track ? track.title : album.playlist_name}
-              link={isTrack && track ? track?.permalink : album.permalink ?? ''}
-            />
+          <DetailSection label={contentLabel}>
+            <ContentLink onClick={onClose} title={contentTitle} link={link} />
             <Flex gap='xs'>
               <Text variant='body' size='l'>
                 {messages.by}
@@ -167,11 +136,7 @@ export const PurchaseModalContent = ({
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
           <DetailSection label={messages.track}>
-            <ContentLink
-              onClick={onClose}
-              link={track?.permalink ?? ''}
-              title={track?.title ?? ''}
-            />
+            <ContentLink onClick={onClose} link={link} title={contentTitle} />
           </DetailSection>
           <DynamicTrackArtwork
             id={purchaseDetails.contentId}
@@ -215,7 +180,7 @@ export const PurchaseModalContent = ({
           iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}
         >
-          {isTrack ? messages.visitTrack : messages.visitAlbum}
+          {messages.visitTrack}
         </Button>
         <Button className={styles.button} onClick={onClose}>
           {messages.done}
