@@ -238,7 +238,7 @@ type AccessAndSaleFieldProps = {
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload = false, isAlbum, forceOpen, setForceOpen } = props
+  const { isUpload = false, isAlbum = false, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -331,7 +331,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     const initialValues = {}
     set(initialValues, IS_UNLISTED, isUnlisted)
     set(initialValues, IS_STREAM_GATED, isStreamGated)
-    set(initialValues, STREAM_CONDITIONS, savedStreamConditions)
+    set(initialValues, STREAM_CONDITIONS, tempStreamConditions)
     set(initialValues, IS_DOWNLOAD_GATED, isDownloadGated)
     set(initialValues, DOWNLOAD_CONDITIONS, downloadConditions)
     set(initialValues, IS_DOWNLOADABLE, isDownloadable)
@@ -634,7 +634,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       )}
       menuFields={
         <AccessAndSaleMenuFields
-          streamConditions={tempStreamConditions}
           isRemix={isRemix}
           isUpload={isUpload}
           isAlbum={isAlbum}
