@@ -53,7 +53,7 @@ export class TransactionHandler {
     identityService = null,
     feePayerKeypairs = null,
     skipPreflight = true,
-    retryTimeoutMs = 10000,
+    retryTimeoutMs = 60000,
     pollingFrequencyMs = 2000,
     sendingFrequencyMs = 2000,
     fallbackConnections = null
@@ -287,6 +287,14 @@ export class TransactionHandler {
       })
     }
 
+    const sendRawTransactionToConn = async (conn: Connection) => {
+      return await conn.sendRawTransaction(rawTransaction, {
+        skipPreflight: true,
+        preflightCommitment: 'processed',
+        maxRetries: 0
+      })
+    }
+
     try {
       await sendRawTransaction()
     } catch (e) {
@@ -304,17 +312,27 @@ export class TransactionHandler {
     const startTime = Date.now()
     if (retry) {
       ;(async () => {
+        const connections =
+          this.fallbackConnections?.filter(
+            (conn) => conn.rpcEndpoint !== this.connection.rpcEndpoint
+          ) ?? []
+        connections.push(this.connection)
         let elapsed = Date.now() - startTime
+        let currConnIdx = 0
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
+          const conn = connections[currConnIdx % connections.length]
           try {
-            sendRawTransaction()
+            sendRawTransactionToConn(conn!)
           } catch (e) {
             logger.warn(
-              `transactionHandler: error in send loop: ${e} for txId ${txid}`
+              `transactionHandler: error in send loop: ${e} for txId ${txid} to ${
+                conn!.rpcEndpoint
+              }`
             )
           }
           sendCount++
+          currConnIdx++
           await delay(this.sendingFrequencyMs)
           elapsed = Date.now() - startTime
         }
@@ -326,9 +344,9 @@ export class TransactionHandler {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       logger.info(
-        `transactionHandler: finished sending txid ${txid} with ${sendCount} retries to ${
-          this.connection.rpcEndpoint
-        } in ${Date.now() - txStartTime} ms`
+        `transactionHandler: finished sending txid ${txid} with ${sendCount} retries in ${
+          Date.now() - txStartTime
+        } ms`
       )
       return {
         res: txid,
