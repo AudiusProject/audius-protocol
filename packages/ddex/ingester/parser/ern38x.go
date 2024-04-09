@@ -454,7 +454,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	detailsProducerCopyrightText := safeInnerText(releaseDetails.SelectElement("PLine/PLineText"))
 
 	artistName := safeInnerText(releaseDetails.SelectElement("DisplayArtistName"))
-	releaseDateStr := safeInnerText(releaseDetails.SelectElement("ReleaseDate")) // Fuga uses this. TODO: Still need to use DealList
+	releaseDateStr := safeInnerText(releaseDetails.SelectElement("ReleaseDate")) // Fuga uses this
 
 	// Convert releaseDate from string of format YYYY-MM-DD to time.Time
 	var releaseDate time.Time
@@ -713,7 +713,7 @@ func processDealNode(dNode *xmlquery.Node, release *common.Release) (err error) 
 		// Parse validity start date
 		validityStartStr := safeInnerText(dealTerms.SelectElement("ValidityPeriod/StartDate"))
 		if validityStartStr == "" {
-			err = fmt.Errorf("missing required ValidityPeriod/StartDatea for <DealReleaseReference>s%v", releaseRefs)
+			err = fmt.Errorf("missing required ValidityPeriod/StartDate for <DealReleaseReference>s%v", releaseRefs)
 			break
 		}
 		validityStart, validityStartErr := time.Parse("2006-01-02", validityStartStr)
