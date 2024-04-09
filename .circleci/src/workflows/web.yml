@@ -167,9 +167,9 @@ jobs:
         - slack-secrets
       requires:
         - web-build-staging
-      # filters:
-      #   branches:
-      #     only: /(^main)$/
+      filters:
+        branches:
+          only: /(^main)$/
   - web-dist-linux-staging:
       context:
         - Audius Client
