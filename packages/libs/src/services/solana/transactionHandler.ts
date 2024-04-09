@@ -53,7 +53,7 @@ export class TransactionHandler {
     identityService = null,
     feePayerKeypairs = null,
     skipPreflight = true,
-    retryTimeoutMs = 60000,
+    retryTimeoutMs = 10000,
     pollingFrequencyMs = 2000,
     sendingFrequencyMs = 2000,
     fallbackConnections = null
