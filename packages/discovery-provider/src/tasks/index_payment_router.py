@@ -504,6 +504,7 @@ def validate_and_index_usdc_transfers(
     slot: int,
     timestamp: datetime,
     tx_sig: str,
+    challenge_event_bus: ChallengeEventBus,
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
     if (
@@ -525,6 +526,31 @@ def validate_and_index_usdc_transfers(
             timestamp=timestamp,
             tx_sig=tx_sig,
         )
+
+        # dispatch audio matching challenge events
+        logger.info(
+            f"index_payment_router.py | tx: {tx_sig} | Purchase memo found. Dispatching challenge events"
+        )
+        purchase_metadata = memo["metadata"]
+        sender_user_id = purchase_metadata["purchaser_user_id"]
+        amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
+        challenge_event_bus.dispatch(
+            ChallengeEvent.audio_matching_buyer,
+            slot,
+            sender_user_id,
+            {"track_id": purchase_metadata["id"], "amount": amount},
+        )
+        challenge_event_bus.dispatch(
+            ChallengeEvent.audio_matching_seller,
+            slot,
+            purchase_metadata["content_owner_id"],
+            {
+                "track_id": purchase_metadata["id"],
+                "sender_user_id": sender_user_id,
+                "amount": amount,
+            },
+        )
+
     # For invalid purchases or transfers not related to a purchase, we'll index
     # it as a regular transfer from the sender_account.
     else:
@@ -667,36 +693,8 @@ def process_route_instruction(
             slot=slot,
             timestamp=timestamp,
             tx_sig=tx_sig,
+            challenge_event_bus=challenge_event_bus,
         )
-
-        # If the memo had purchase information, dispatch challenge events
-        if (
-            memo is not None
-            and memo["type"] is RouteTransactionMemoType.purchase
-            and memo["metadata"] is not None
-        ):
-            logger.info(
-                f"index_payment_router.py | tx: {tx_sig} | Purchase memo found. Dispatching challenge events"
-            )
-            purchase_metadata = memo["metadata"]
-            sender_user_id = purchase_metadata["purchaser_user_id"]
-            amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
-            challenge_event_bus.dispatch(
-                ChallengeEvent.audio_matching_buyer,
-                slot,
-                sender_user_id,
-                {"track_id": purchase_metadata["id"], "amount": amount},
-            )
-            challenge_event_bus.dispatch(
-                ChallengeEvent.audio_matching_seller,
-                slot,
-                purchase_metadata["content_owner_id"],
-                {
-                    "track_id": purchase_metadata["id"],
-                    "sender_user_id": sender_user_id,
-                    "amount": amount,
-                },
-            )
 
 
 def process_payment_router_tx_details(
