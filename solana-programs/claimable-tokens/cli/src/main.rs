@@ -485,11 +485,11 @@ fn main() -> anyhow::Result<()> {
 
 #[test]
 fn test_eth_address_gen_from_secret() {
-    use secp256k1::*;
+    use libsecp256k1::*;
 
     const INPUT_PV: &str = "a53b70c96e7960f1dc295c13fc4c6598a94cd6e98c418e5d4f33146402d13935";
     let private = SecretKey::parse_slice(&hex::decode(INPUT_PV).unwrap().as_slice()).unwrap();
-    let eth_address = secp256k1::PublicKey::from_secret_key(&private);
+    let eth_address = PublicKey::from_secret_key(&private);
     let hashed_eth_pk = construct_eth_pubkey(&eth_address);
     assert_eq!(
         "7f14493c18aa7ff329a3cbd8309296f1ab838c21",
@@ -499,7 +499,7 @@ fn test_eth_address_gen_from_secret() {
 
 #[test]
 fn test_parse_eth_pv() {
-    use secp256k1::*;
+    use libsecp256k1::*;
     use std::str;
 
     const INPUT_PV: &str = "09e910621c2e988e9f7f6ffcd7024f54ec1461fa6e86a4b545e9e1fe21c28866";

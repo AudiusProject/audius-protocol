@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 rust:1.72.0 AS bpf-builder
+FROM --platform=linux/amd64 rust:1.77.1 AS bpf-builder
 
 WORKDIR /usr/src/app
 
@@ -34,7 +34,7 @@ RUN --mount=type=cache,id=bpf-build-cache,target=/usr/src/app/target \
     cp -r target/deploy/ artifacts/main-target
 
 # ------
-FROM --platform=linux/amd64 rust:1.72.0 AS anchor-builder
+FROM --platform=linux/amd64 rust:1.77.1 AS anchor-builder
 
 WORKDIR /usr/src/app
 
@@ -83,7 +83,7 @@ RUN --mount=type=cache,id=anchor-build-cache,target=/usr/src/app/payment-router/
     cp -r payment-router/target/types artifacts/anchor-target
 
 # ------
-FROM rust:1.72.0
+FROM rust:1.77.1
 
 WORKDIR /usr/src/app
 
