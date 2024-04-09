@@ -490,6 +490,7 @@ def create_playlist(params: ManageEntityParameters):
         copyright_line=params.metadata.get("copyright_line", None),
         producer_copyright_line=params.metadata.get("producer_copyright_line", None),
         parental_warning_type=params.metadata.get("parental_warning_type", None),
+        upc=params.metadata.get("upc", None),
     )
 
     update_playlist_routes_table(params, playlist_record, True)

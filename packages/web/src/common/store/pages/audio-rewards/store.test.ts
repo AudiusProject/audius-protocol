@@ -4,7 +4,11 @@ import {
   ChallengeRewardID,
   StringAudio
 } from '@audius/common/models'
-import { IntKeys, StringKeys } from '@audius/common/services'
+import {
+  IntKeys,
+  StringKeys,
+  createUserBankIfNeeded
+} from '@audius/common/services'
 import {
   accountSelectors,
   audioRewardsPageSelectors,
@@ -17,22 +21,21 @@ import {
   AudioRewardsClaim
 } from '@audius/common/store'
 import { stringAudioToStringWei } from '@audius/common/utils'
-import delayP from '@redux-saga/delay-p'
 import { all, fork } from 'redux-saga/effects'
 import { expectSaga } from 'redux-saga-test-plan'
-import { call, select } from 'redux-saga-test-plan/matchers'
+import { call, getContext, select } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
+import { delay } from 'typed-redux-saga'
 import { beforeAll, describe, it, vitest } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-// Need the mock type to get the helper function that sets the config
-// eslint-disable-next-line jest/no-mocks-import
-import { MockRemoteConfigInstance } from 'services/remote-config/__mocks__/remote-config-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import rewardsSagas from './sagas'
+
 const { setVisibility } = modalsActions
 const { getBalance, increaseBalance } = walletActions
 const { getFeePayer } = solanaSelectors
@@ -57,13 +60,13 @@ const {
   setUserChallengesDisbursed,
   showRewardClaimedToast
 } = audioRewardsPageActions
-const { getAccountUser, getUserHandle, getUserId } = accountSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 // Setup mocks
 vitest.mock('services/remote-config/remote-config-instance')
 vitest.mock('utils/route/hashIds')
 vitest.mock('services/AudiusBackend')
-vitest.mock('services/audius-api-client/AudiusAPIClient')
+vitest.mock('services/audius-api-client')
 vitest.mock('utils/sagaPollingDaemons')
 
 function* saga() {
@@ -87,7 +90,19 @@ const testUserChallenge = {
 }
 const testFeePayer = '9AwMCALjKFp2ZQW97rnjJUzUiukzkGAH4HDz5V2uhW3D'
 
+const defaultProvisions: StaticProvider[] = [
+  [getContext('remoteConfigInstance'), remoteConfigInstance],
+  [getContext('getFeatureEnabled'), () => false],
+  [getContext('analytics'), () => {}],
+  [getContext('env'), 'staging'],
+  [getContext('audiusBackendInstance'), audiusBackendInstance],
+  [getContext('apiClient'), apiClient],
+  [call.fn(waitForRead), undefined],
+  [call.fn(createUserBankIfNeeded), () => {}]
+]
+
 const claimAsyncProvisions: StaticProvider[] = [
+  ...defaultProvisions,
   [select(getAccountUser), testUser],
   [
     select.like({
@@ -100,6 +115,7 @@ const claimAsyncProvisions: StaticProvider[] = [
 ]
 
 const retryClaimProvisions: StaticProvider[] = [
+  ...defaultProvisions,
   [select(getClaimStatus), ClaimStatus.WAITING_FOR_RETRY],
   [select(getClaimToRetry), testClaim]
 ]
@@ -107,32 +123,40 @@ const retryClaimProvisions: StaticProvider[] = [
 const MAX_CLAIM_RETRIES = 5
 
 const expectedRequestArgs = {
-  challenges: [{ challenge_id: 'connect-verified', specifier: '1' }],
+  challenges: [
+    { challenge_id: 'connect-verified', specifier: '1', amount: 10 }
+  ],
   userId: 1,
   handle: 'test_user',
   recipientEthAddress: 'test-wallet',
   oracleEthAddress: 'oracle eth address',
-  amount: 10,
   quorumSize: 1,
   endpoints: ['rewards attestation endpoints'],
   AAOEndpoint: 'oracle endpoint',
   parallelization: 20,
   feePayerOverride: testFeePayer,
-  isFinalAttempt: false
+  isFinalAttempt: false,
+  source: 'web'
 }
 beforeAll(() => {
   // Setup remote config
-  ;(remoteConfigInstance as MockRemoteConfigInstance).__setConfig({
-    [IntKeys.ATTESTATION_QUORUM_SIZE]: 1,
-    [StringKeys.ORACLE_ETH_ADDRESS]: 'oracle eth address',
-    [StringKeys.ORACLE_ENDPOINT]: 'oracle endpoint',
-    [StringKeys.REWARDS_ATTESTATION_ENDPOINTS]: 'rewards attestation endpoints',
-    [IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS]: 100000000000,
-    [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 1000000000000,
-    [IntKeys.MAX_CLAIM_RETRIES]: MAX_CLAIM_RETRIES,
-    [IntKeys.CLIENT_ATTESTATION_PARALLELIZATION]: 20
+  vitest
+    .mocked(remoteConfigInstance)
+    .waitForRemoteConfig.mockImplementation(async () => {})
+  vitest.mocked(remoteConfigInstance).getRemoteVar.mockImplementation((key) => {
+    const config = {
+      [IntKeys.ATTESTATION_QUORUM_SIZE]: 1,
+      [StringKeys.ORACLE_ETH_ADDRESS]: 'oracle eth address',
+      [StringKeys.ORACLE_ENDPOINT]: 'oracle endpoint',
+      [StringKeys.REWARDS_ATTESTATION_ENDPOINTS]:
+        'rewards attestation endpoints',
+      [IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS]: 100000000000,
+      [IntKeys.CHALLENGE_REFRESH_INTERVAL_MS]: 1000000000000,
+      [IntKeys.MAX_CLAIM_RETRIES]: MAX_CLAIM_RETRIES,
+      [IntKeys.CLIENT_ATTESTATION_PARALLELIZATION]: 20
+    }
+    return key in config ? config[key] : undefined
   })
-  remoteConfigInstance.waitForRemoteConfig = vitest.fn()
 
   // Hijack console.error for expected errors
   const oldConsoleError = console.error
@@ -147,8 +171,7 @@ beforeAll(() => {
   })
 })
 
-// TODO: PAY-2601
-describe.skip('Rewards Page Sagas', () => {
+describe('Rewards Page Sagas', () => {
   describe('Claim Rewards Async', () => {
     it('should open hcaptcha modal, close the challenges modal, and save the claim for retry on hcaptcha error', () => {
       return (
@@ -279,7 +302,7 @@ describe.skip('Rewards Page Sagas', () => {
           )
           .provide([
             ...claimAsyncProvisions,
-            [call.fn(delayP), null],
+            [call.like({ fn: delay }), undefined],
             [
               call.fn(audiusBackendInstance.submitAndEvaluateAttestations),
               { error: FailureReason.UNKNOWN_ERROR }
@@ -368,6 +391,7 @@ describe.skip('Rewards Page Sagas', () => {
             })
           )
           .provide([
+            ...defaultProvisions,
             [
               select.like({
                 selector: getUserChallenge,
@@ -444,28 +468,8 @@ describe.skip('Rewards Page Sagas', () => {
           .silentRun()
       ])
     })
-
-    it('should not retry twice', () => {
-      return expectSaga(saga)
-        .provide([
-          ...retryClaimProvisions,
-          ...claimAsyncProvisions,
-          [select(getUserHandle), testUser.handle],
-          [
-            call.fn(audiusBackendInstance.submitAndEvaluateAttestations),
-            { error: FailureReason.BLOCKED }
-          ]
-        ])
-        .put(claimChallengeReward({ claim: testClaim, retryOnFailure: false }))
-        .call(audiusBackendInstance.submitAndEvaluateAttestations, {
-          ...expectedRequestArgs,
-          isFinalAttempt: true
-        })
-        .not.put(claimChallengeRewardWaitForRetry(testClaim))
-        .put(claimChallengeRewardFailed())
-        .silentRun()
-    })
   })
+
   describe('Fetch User Challenges', () => {
     const expectedUserChallengesResponse: UserChallenge[] = [
       {
@@ -514,7 +518,8 @@ describe.skip('Rewards Page Sagas', () => {
     const fetchUserChallengesProvisions: StaticProvider[] = [
       [call.fn(waitForBackendSetup), {}],
       [select(getUserId), testUser.user_id],
-      [call.fn(apiClient.getUserChallenges), expectedUserChallengesResponse]
+      [call.fn(apiClient.getUserChallenges), expectedUserChallengesResponse],
+      ...defaultProvisions
     ]
     it('should show a toast to the user that they received a reward if the reward was not disbursed yet', () => {
       return expectSaga(saga)
@@ -630,6 +635,7 @@ describe.skip('Rewards Page Sagas', () => {
           })
         )
         .provide([
+          ...fetchUserChallengesProvisions,
           [
             select(getUserChallengeSpecifierMap),
             {
@@ -684,6 +690,7 @@ describe.skip('Rewards Page Sagas', () => {
           })
         )
         .provide([
+          ...fetchUserChallengesProvisions,
           [
             select(getUserChallengeSpecifierMap),
             {

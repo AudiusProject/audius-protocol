@@ -95,6 +95,7 @@ export const useHarmonyField = <Value = any>(
     validateFieldOnChange
   } = props
   const [field, meta, helpers] = useFormikField(props)
+  const { onChange } = field
   const { touched, error } = meta
   const { setValue, setTouched } = helpers
   const {
@@ -141,7 +142,7 @@ export const useHarmonyField = <Value = any>(
     } else {
       setIsChanging(false)
     }
-  }, [name, validateField, setIsChanging, setTouched])
+  }, [setTouched, setIsChanging])
 
   // Debounced validateAndSetIdle for when the user stops typing for a bit
   const debouncedValidateAndSetIdle = useDebouncedCallback(
@@ -189,12 +190,12 @@ export const useHarmonyField = <Value = any>(
     },
     [
       transformValueOnChange,
+      setValue,
       validateOnChange,
       debouncedIdleMs,
+      debouncedValidateAndSetIdle,
       validateField,
-      setValue,
-      setIsChanging,
-      debouncedValidateAndSetIdle
+      name
     ]
   )
 
@@ -220,7 +221,13 @@ export const useHarmonyField = <Value = any>(
         setIsChanging(false)
       }
     },
-    [transformValueOnBlur, validateAndSetIdle]
+    [
+      setTouched,
+      setValue,
+      transformValueOnBlur,
+      validateAndSetIdle,
+      validateOnBlur
+    ]
   )
 
   /**
@@ -232,7 +239,7 @@ export const useHarmonyField = <Value = any>(
    * Since type is in scope here, avoiding the regex checks used in Formik's {@link https://github.com/jaredpalmer/formik/blob/0f960aaeeb0bdbef8312b5107cd3374884a0e62b/packages/formik/src/Formik.tsx#L639C9-L645C19 executeChange}
    * and comparing directly for text-like input types.
    */
-  const onChange = useCallback(
+  const onChangeOverride = useCallback(
     (e: React.ChangeEvent<any>) => {
       if (
         type === 'text' ||
@@ -243,17 +250,17 @@ export const useHarmonyField = <Value = any>(
       ) {
         onChangeText(e)
       } else {
-        field.onChange(e)
+        onChange(e)
       }
     },
-    [onChangeText, field.onChange, type]
+    [onChangeText, onChange, type]
   )
 
   // Override onChange, onBlur, and error
   return [
     {
       ...field,
-      onChange,
+      onChange: onChangeOverride,
       onBlur
     },
     { ...meta, error: hasError ? error : undefined },

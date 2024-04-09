@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -exo pipefail
+set -eo pipefail
 
 [ -f "/etc/os-release" ] && source /etc/os-release
 case "$ID" in

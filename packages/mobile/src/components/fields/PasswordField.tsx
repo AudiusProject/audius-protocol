@@ -22,11 +22,11 @@ export const PasswordField = (props: PasswordFieldProps) => {
     <PasswordInput
       {...field}
       error={hasError}
-      onChangeText={(e) => {
+      onChange={(e) => {
         if (clearErrorOnChange) {
           setError(undefined)
         }
-        field.onChange(name)(e)
+        field.onChange(name)(e.nativeEvent.text)
       }}
       onBlur={field.onBlur(name)}
       {...other}

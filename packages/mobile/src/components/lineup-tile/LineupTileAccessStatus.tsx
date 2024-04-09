@@ -2,11 +2,11 @@ import { useCallback } from 'react'
 
 import type { ID, AccessConditions } from '@audius/common/models'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import type { PurchaseableContentType } from '@audius/common/store'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
-  gatedContentSelectors,
-  PurchaseableContentType
+  gatedContentSelectors
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import { TouchableOpacity, View } from 'react-native'
@@ -54,10 +54,12 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 }))
 
 export const LineupTileAccessStatus = ({
-  trackId,
+  contentId,
+  contentType,
   streamConditions
 }: {
-  trackId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
   streamConditions: AccessConditions
 }) => {
   const styles = useStyles()
@@ -66,7 +68,7 @@ export const LineupTileAccessStatus = ({
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
-  const gatedTrackStatus = gatedTrackStatusMap[trackId]
+  const gatedTrackStatus = gatedTrackStatusMap[contentId]
   const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =
     isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
@@ -74,14 +76,20 @@ export const LineupTileAccessStatus = ({
   const handlePress = useCallback(() => {
     if (isUSDCPurchase) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+        { contentId, contentType },
         { source: ModalSource.TrackTile }
       )
-    } else if (trackId) {
-      dispatch(setLockedContentId({ id: trackId }))
+    } else if (contentId) {
+      dispatch(setLockedContentId({ id: contentId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     }
-  }, [trackId, isUSDCPurchase, openPremiumContentPurchaseModal, dispatch])
+  }, [
+    isUSDCPurchase,
+    contentId,
+    openPremiumContentPurchaseModal,
+    contentType,
+    dispatch
+  ])
 
   return (
     <TouchableOpacity onPress={handlePress}>

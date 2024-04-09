@@ -51,6 +51,7 @@ export type AccesAndSaleMenuFieldsProps = {
   streamConditions: SingleTrackEditValues[typeof STREAM_CONDITIONS]
   isRemix: boolean
   isUpload?: boolean
+  isAlbum?: boolean
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
   initialStreamConditions?: AccessConditions | undefined
@@ -60,20 +61,30 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const {
     isRemix,
     isUpload,
+    isAlbum,
     isInitiallyUnlisted,
     initialStreamConditions,
     isScheduledRelease
   } = props
 
-  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
+  const { isEnabled: isUsdcFlagUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const { isEnabled: isCollectibleGatedEnabled } = useFlag(
+  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
+  const isUsdcUploadEnabled = isAlbum
+    ? isPremiumAlbumsEnabled && isUsdcFlagUploadEnabled
+    : isUsdcFlagUploadEnabled
+
+  const { isEnabled: isCollectibleGatedFlagEnabled } = useFlag(
     FeatureFlags.COLLECTIBLE_GATED_ENABLED
   )
-  const { isEnabled: isSpecialAccessEnabled } = useFlag(
+  const { isEnabled: isSpecialAccessFlagEnabled } = useFlag(
     FeatureFlags.SPECIAL_ACCESS_ENABLED
   )
+  const isCollectibleGatedEnabled = !isAlbum && isCollectibleGatedFlagEnabled
+  const isSpecialAccessEnabled = !isAlbum && isSpecialAccessFlagEnabled
 
   const [availabilityField] = useField({
     name: STREAM_AVAILABILITY_TYPE
@@ -83,6 +94,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     useAccessAndRemixSettings({
       isUpload: !!isUpload,
       isRemix,
+      isAlbum,
       initialStreamConditions: initialStreamConditions ?? null,
       isInitiallyUnlisted: !!isInitiallyUnlisted,
       isScheduledRelease: !!isScheduledRelease
@@ -99,10 +111,11 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           description={messages.publicSubtitle}
           value={StreamTrackAvailabilityType.PUBLIC}
         />
-        {isUsdcEnabled ? (
+        {isUsdcUploadEnabled ? (
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
+            isAlbum={isAlbum}
             initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
           />

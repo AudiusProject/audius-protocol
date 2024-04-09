@@ -8,6 +8,7 @@ import type { ViewStyle } from 'react-native'
 
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
+import { PurchaseableContentType } from '@audius/common/store'
 
 type DetailsTileGatedAccessProps = {
   trackId: ID
@@ -44,6 +45,8 @@ export const DetailsTileGatedAccess = ({
   return (
     <DetailsTileNoAccess
       trackId={trackId}
+      // Currently only special-access tracks are supported
+      contentType={PurchaseableContentType.TRACK}
       streamConditions={streamConditions}
       style={style}
     />

@@ -76,6 +76,12 @@ export const getCollectionWithFallback = (collection: Collection | null) => {
         '480x480': '',
         '1000x1000': '',
         OVERRIDE: ''
+      },
+      is_stream_gated: false,
+      stream_conditions: null,
+      access: {
+        stream: false,
+        download: false
       }
     }
   )
