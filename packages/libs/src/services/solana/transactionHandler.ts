@@ -312,11 +312,10 @@ export class TransactionHandler {
     const startTime = Date.now()
     if (retry) {
       ;(async () => {
-        const connections =
-          this.fallbackConnections?.filter(
-            (conn) => conn.rpcEndpoint !== this.connection.rpcEndpoint
-          ) ?? []
-        connections.push(this.connection)
+        const connections = this.fallbackConnections ?? []
+        if (connections.length === 0) {
+          connections.push(this.connection)
+        }
         let elapsed = Date.now() - startTime
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
