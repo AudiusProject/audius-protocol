@@ -61,6 +61,7 @@ const messages = {
   transaction: 'Explore Transaction',
   transactionDate: 'Transaction Date',
   track: 'Track',
+  album: 'Album',
   sayThanks: 'Say Thanks'
 }
 
@@ -126,7 +127,7 @@ export const SaleModalContent = ({
             image={isTrack ? trackArtwork : albumArtwork}
             wrapperClassName={styles.artworkContainer}
           />
-          <DetailSection label={messages.track}>
+          <DetailSection label={isTrack ? messages.track : messages.album}>
             <ContentLink
               onClick={onClose}
               title={isTrack && track ? track.title : album.playlist_name}

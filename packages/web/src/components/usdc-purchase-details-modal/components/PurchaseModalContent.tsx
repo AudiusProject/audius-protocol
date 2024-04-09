@@ -51,7 +51,9 @@ const messages = {
   done: 'Done',
   purchaseDetails: 'Purchase Details',
   track: 'Track',
+  album: 'Album',
   visitTrack: 'Visit Track',
+  visitAlbum: 'Visit Album',
   transaction: 'Explore Transaction'
 }
 
@@ -106,7 +108,7 @@ export const PurchaseModalContent = ({
             image={isTrack ? trackArtwork : albumArtwork}
             wrapperClassName={styles.artworkContainer}
           />
-          <DetailSection label={messages.track}>
+          <DetailSection label={isTrack ? messages.track : messages.album}>
             <ContentLink
               onClick={onClose}
               title={isTrack && track ? track.title : album.playlist_name}
@@ -213,7 +215,7 @@ export const PurchaseModalContent = ({
           iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}
         >
-          {messages.visitTrack}
+          {isTrack ? messages.visitTrack : messages.visitAlbum}
         </Button>
         <Button className={styles.button} onClick={onClose}>
           {messages.done}
