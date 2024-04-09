@@ -19,7 +19,8 @@ import {
   EntityType,
   AddTrackToPlaylistNotification,
   CollectionEntity,
-  TrackEntity
+  TrackEntity,
+  TrackAddedToPurchasedAlbumNotification
 } from './types'
 
 const getBaseState = (state: CommonState) => state.notifications
@@ -113,18 +114,20 @@ export const getNotificationEntity = (
   return null
 }
 
-type EntityTypes<T extends AddTrackToPlaylistNotification | Notification> =
-  T extends AddTrackToPlaylistNotification
-    ? { track: TrackEntity; playlist: CollectionEntity }
-    : Nullable<EntityType[]>
+type EntityTypes<T extends Notification> = T extends
+  | AddTrackToPlaylistNotification
+  | TrackAddedToPurchasedAlbumNotification
+  ? { track: TrackEntity; playlist: CollectionEntity }
+  : Nullable<EntityType[]>
 
-export const getNotificationEntities = <
-  T extends AddTrackToPlaylistNotification | Notification
->(
+export const getNotificationEntities = <T extends Notification>(
   state: CommonState,
   notification: T
 ): EntityTypes<T> => {
-  if (notification.type === NotificationType.AddTrackToPlaylist) {
+  if (
+    notification.type === NotificationType.AddTrackToPlaylist ||
+    notification.type === NotificationType.TrackAddedToPurchasedAlbum
+  ) {
     const track = getTrack(state, { id: notification.trackId })
     const currentUser = getAccountUser(state)
     const playlist = getCollection(state, { id: notification.playlistId })
