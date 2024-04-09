@@ -90,7 +90,11 @@ export const UsdcPurchaseGatedRadioField = (
       hintContent={!isUsdcUploadEnabled ? helpContent : undefined}
       tag={!isUsdcUploadEnabled ? messages.comingSoon : undefined}
       checkedContent={
-        <UsdcPurchaseFields disabled={disabled} isAlbum={isAlbum} />
+        <UsdcPurchaseFields
+          disabled={disabled}
+          isAlbum={isAlbum}
+          isUpload={isUpload}
+        />
       }
     />
   )

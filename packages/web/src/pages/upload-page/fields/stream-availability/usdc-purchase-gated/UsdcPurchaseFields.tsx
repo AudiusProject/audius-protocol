@@ -75,6 +75,7 @@ export enum UsdcPurchaseType {
 export type TrackAvailabilityFieldsProps = {
   disabled?: boolean
   isAlbum?: boolean
+  isUpload?: boolean
 }
 
 type PriceMessages = typeof messages.price
@@ -84,7 +85,7 @@ export type PriceFieldProps = TrackAvailabilityFieldsProps & {
 }
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
-  const { disabled, isAlbum } = props
+  const { disabled, isAlbum, isUpload } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
 
@@ -97,11 +98,13 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             messaging={messages.price.albumPrice}
             fieldName={PRICE}
           />
-          <PriceField
-            disabled={disabled}
-            messaging={messages.price.albumTrackPrice}
-            fieldName={ALBUM_TRACK_PRICE}
-          />
+          {isUpload && (
+            <PriceField
+              disabled={disabled}
+              messaging={messages.price.albumTrackPrice}
+              fieldName={ALBUM_TRACK_PRICE}
+            />
+          )}
           <input type='hidden' name={PREVIEW} value='0' />
           {downloadConditions && !isAlbum ? (
             <HelpCallout

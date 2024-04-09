@@ -551,7 +551,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       }
       const albumTrackPrice =
         savedStreamConditions.usdc_purchase.albumTrackPrice
-      if (albumTrackPrice) {
+      if (albumTrackPrice && isUpload) {
         selectedValues.push({
           label: messages.price(albumTrackPrice / 100),
           icon: IconNote,
