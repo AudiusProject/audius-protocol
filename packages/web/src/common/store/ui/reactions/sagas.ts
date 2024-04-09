@@ -23,7 +23,7 @@ type SubmitReactionConfig = {
   reactionValue: number
   audiusBackend: AudiusBackend
   audiusSdk: AudiusSdk
-  useDiscoveryReactions: boolean
+  useDiscoveryReactions: Promise<boolean>
 }
 
 type SubmitReactionResponse = { success: boolean; error: any }
@@ -36,7 +36,7 @@ const submitReaction = async ({
   useDiscoveryReactions
 }: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
   try {
-    if (useDiscoveryReactions) {
+    if (await useDiscoveryReactions) {
       const account = await audiusBackend.getAccount()
       if (account === null) {
         throw new Error('could not submit reaction, user account null')
@@ -103,6 +103,7 @@ function* writeReactionValueAsync({
 
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
 
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const useDiscoveryReactions = getFeatureEnabled(
@@ -113,7 +114,7 @@ function* writeReactionValueAsync({
     reactedTo: entityId,
     reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0,
     audiusBackend,
-    audiusSdk,
+    audiusSdk: sdk,
     useDiscoveryReactions
   })
 }
