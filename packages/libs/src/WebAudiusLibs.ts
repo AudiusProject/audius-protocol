@@ -200,7 +200,10 @@ export class AudiusLibs {
     providers: string | string[] | typeof Web3,
     ownerWallet: string,
     claimDistributionContractAddress: string,
-    wormholeContractAddress: string
+    wormholeContractAddress: string,
+    options?: {
+      disableMultiProvider: boolean
+    }
   ) {
     let providerList
     if (typeof providers === 'string') {
@@ -221,7 +224,8 @@ export class AudiusLibs {
       providers: providerList,
       ownerWallet,
       claimDistributionContractAddress,
-      wormholeContractAddress
+      wormholeContractAddress,
+      ...(options || {})
     }
   }
 

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 
@@ -12,6 +12,12 @@ type ThemeProviderProps = {
 
 export const ThemeProvider = (props: ThemeProviderProps) => {
   const { children, theme } = props
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+  }, [theme])
 
   return (
     <EmotionThemeProvider theme={themes[theme]}>

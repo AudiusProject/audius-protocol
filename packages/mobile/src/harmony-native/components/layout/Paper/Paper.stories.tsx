@@ -32,3 +32,14 @@ export const Default: Story = {
     alignItems: 'center'
   }
 }
+
+export const Interactive: Story = {
+  args: {
+    w: 248,
+    h: 84,
+    m: 'xl',
+    justifyContent: 'center',
+    alignItems: 'center',
+    onPress: () => {}
+  }
+}

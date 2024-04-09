@@ -57,7 +57,6 @@ export type PickRename<
   [k in RenamedKey]: Type[Key]
 }
 
-
 // Adjusted from Terry: https://stackoverflow.com/questions/61132262/typescript-deep-partial
 export type DeepPartial<T> = T extends any[]
   ? T
@@ -72,14 +71,14 @@ export type DeepPartial<T> = T extends any[]
 /**
  * Recurses through an object and removes all keys that match K.
  * e.g.
- * type Foo = { 
+ * type Foo = {
  *   a: {
  *     b: string
  *     c: { b: string }
  *   }
  * }
- * DeepOmit<Foo, 'b'> results in 
- * { 
+ * DeepOmit<Foo, 'b'> results in
+ * {
  *   a: {
  *     c: { }
  *   }

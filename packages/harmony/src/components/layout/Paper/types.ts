@@ -1,3 +1,5 @@
+import { ElementType } from 'react'
+
 import type { BorderColors } from '../../../foundations/color/semantic'
 import type { CornerRadiusOptions } from '../../../foundations/corner-radius'
 import type { ShadowOptions } from '../../../foundations/shadows'
@@ -24,6 +26,7 @@ export type BasePaperProps = {
    * @default mid
    */
   shadow?: Exclude<ShadowOptions, 'drop'>
+  as?: ElementType
 }
 
 export type PaperProps = BasePaperProps & FlexProps

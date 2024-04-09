@@ -196,7 +196,8 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
                                     variant='secondary'
                                     css={(theme) => ({
                                       borderRadius: theme.cornerRadius['2xl'],
-                                      color: theme.color.secondary.secondary
+                                      color: theme.color.secondary.secondary,
+                                      background: theme.color.static.white
                                     })}
                                     onClick={onClick}
                                   >

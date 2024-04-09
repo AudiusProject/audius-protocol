@@ -352,7 +352,7 @@ export const useUser = ({ wallet }: UseUserProps): UseUserResponse => {
     if (userStatus !== Status.Loading) {
       setUserStatus(Status.Loading)
     }
-  }, [wallet, user, userStatus, connectedAudiusUserStatus])
+  }, [wallet])
 
   const { error } = useGraphUser(wallet, setUserStatus, !!user)
 

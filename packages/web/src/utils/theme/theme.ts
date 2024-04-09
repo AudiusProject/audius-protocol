@@ -1,31 +1,13 @@
-import { Theme } from '@audius/common/models'
+import { SystemAppearance, Theme } from '@audius/common/models'
 
 const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
-const getThemeNameKey = (theme: Theme) => {
-  switch (theme) {
-    case Theme.AUTO:
-      if (doesPreferDarkMode()) {
-        return Theme.DARK
-      }
-      return Theme.DEFAULT
-    case Theme.DEFAULT:
-    case Theme.DARK:
-    case Theme.MATRIX:
-    default:
-      return theme
-  }
-}
-
-const applyTheme = (theme: Theme) => {
-  // Set data-theme to enable theme scoped css rules
-  document.documentElement.setAttribute('data-theme', getThemeNameKey(theme))
-}
-
 export const doesPreferDarkMode = () => {
   return (
-    window.matchMedia && window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches
   )
 }
 
@@ -37,7 +19,6 @@ export const shouldShowDark = (theme?: Theme | null) => {
 }
 
 export const setTheme = (theme: Theme) => {
-  applyTheme(theme)
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(THEME_KEY, theme)
   }
@@ -53,6 +34,9 @@ export const getTheme = (): Theme | null => {
   }
   return null
 }
+
+export const getSystemAppearance = () =>
+  doesPreferDarkMode() ? SystemAppearance.DARK : SystemAppearance.LIGHT
 
 export const isDarkMode = () => shouldShowDark(getTheme())
 export const isMatrix = () => getTheme() === Theme.MATRIX
