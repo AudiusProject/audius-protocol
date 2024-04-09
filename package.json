@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.74",
+  "version": "1.5.75",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -21,7 +21,7 @@
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
-    "patch-package": "patch-package && patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
+    "patch-package": "bash ./scripts/patch-package.sh",
     "publish-packages": "bash ./scripts/publish-packages.sh",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
@@ -104,6 +104,7 @@
     "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
+    "@web3modal/ethers": "4.1.0",
     "pg": "8.8.0"
   },
   "overrides": {

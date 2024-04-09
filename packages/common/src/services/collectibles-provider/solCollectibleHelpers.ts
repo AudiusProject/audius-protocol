@@ -478,9 +478,19 @@ const audiusBlocklistUrls = [
   '.fun',
   'sol-drift.com',
   'myrovoucher.com',
-  'magiceden.club'
+  'magiceden.club',
+  'tensor.markets',
+  'mnde.network',
+  '4000w.io',
+  'juppi.io',
+  'jupdao.com',
+  'jupgem.com',
+  'juptreasure.com',
+  'slerfdrop.com',
+  'airdrop.drift.exchange'
 ]
 const audiusBlocklistNames = [
+  '$1000',
   '00jup',
   'airdrop',
   'voucher',

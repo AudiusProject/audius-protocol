@@ -3030,12 +3030,12 @@ export const audiusBackend = ({
         solanaWalletKey: SolanaUtils.newPublicKeyNullable(address),
         mintKey: audiusLibs.solanaWeb3Manager.mints.audio,
         solanaTokenProgramKey: audiusLibs.solanaWeb3Manager.solanaTokenKey,
-        connection: audiusLibs.solanaWeb3Manager.connection
+        connection: audiusLibs.solanaWeb3Manager.getConnection()
       })
       const { signature } = await window.solana.signAndSendTransaction(tx)
-      await audiusLibs.solanaWeb3Manager.connection.confirmTransaction(
-        signature
-      )
+      await audiusLibs.solanaWeb3Manager
+        .getConnection()
+        .confirmTransaction(signature)
     }
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }

@@ -5,7 +5,6 @@
 .tracksContainer {
   overflow-y: auto;
   max-height: 240px;
-  background: var(--harmony-white);
 }
 
 .loading .tracksContainer {

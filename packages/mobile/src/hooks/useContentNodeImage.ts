@@ -160,9 +160,9 @@ export const useContentNodeImage = (
     }
   }, [imageSourceIndex, imageSources])
 
-  const showFallbackImage = useMemo(() => {
-    return (!cid && !localSource) || failedToLoad
-  }, [failedToLoad, localSource, cid])
+  // when localSource is a number, it's a placeholder image, so we should show fallback image
+  const showFallbackImage =
+    (!cid && (!localSource || typeof localSource === 'number')) || failedToLoad
 
   const source = useMemo(() => {
     if (showFallbackImage) {

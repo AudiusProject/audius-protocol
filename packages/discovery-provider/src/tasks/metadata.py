@@ -183,6 +183,7 @@ class PlaylistMetadata(TypedDict):
     is_stream_gated: Optional[bool]
     stream_conditions: Optional[Any]
     ddex_app: Optional[str]
+    upc: Optional[str]
 
 
 playlist_metadata_format: PlaylistMetadata = {
@@ -197,6 +198,7 @@ playlist_metadata_format: PlaylistMetadata = {
     "is_stream_gated": False,
     "stream_conditions": None,
     "ddex_app": None,
+    "upc": None,
 }
 
 # Updates cannot directly modify these fields via metadata
