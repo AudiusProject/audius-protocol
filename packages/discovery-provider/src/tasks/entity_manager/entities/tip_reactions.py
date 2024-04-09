@@ -73,6 +73,10 @@ def tip_reaction(params: ManageEntityParameters):
             raise IndexingValidationError(f"sender on tip {reacted_to} was not found")
 
         sender_wallet = sender.wallet
+        if not sender_wallet:
+            raise IndexingValidationError(
+                f"sender wallet not available {sender} {metadata}"
+            )
         reaction_type = "tip"
 
         reaction = Reaction(
