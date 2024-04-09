@@ -212,6 +212,8 @@ export class EditAlbumPage extends EditPlaylistPage {
     [k in AlbumAccessType]: Locator
   }
 
+  protected readonly downloadToggle: Locator
+
   constructor(page: Page) {
     super(page)
     this.titleInput = page.getByRole('textbox', { name: /album name/i })
@@ -232,6 +234,9 @@ export class EditAlbumPage extends EditPlaylistPage {
     })
     this.accessTrackPriceDisplay = page.getByTestId('track-price-display')
     this.accessPriceDisplay = page.getByTestId('price-display')
+    this.downloadToggle = page.getByRole('checkbox', {
+      name: /Full Track Download/i
+    })
   }
 
   async setAlbumAccessType(type: AlbumAccessType, args?: AlbumAccessArgs) {
@@ -250,6 +255,10 @@ export class EditAlbumPage extends EditPlaylistPage {
     } else {
       await this.accessMenuSaveButton.click()
     }
+  }
+
+  async toggleDownloadable() {
+    await this.downloadToggle.click()
   }
 }
 

@@ -479,16 +479,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     },
     [
       setFieldVisibilityValue,
-      setIsStreamGated,
       setIsUnlistedValue,
+      isUnlisted,
+      setIsStreamGated,
       setStreamConditionsValue,
+      setPreviewValue,
       setIsDownloadGated,
       setDownloadConditionsValue,
       setIsDownloadable,
-      setPreviewValue,
-      setLastGateKeeper,
       isDownloadable,
-      isUnlisted
+      setLastGateKeeper
     ]
   )
 
