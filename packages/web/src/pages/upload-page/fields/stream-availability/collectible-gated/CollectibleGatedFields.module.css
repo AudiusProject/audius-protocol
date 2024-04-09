@@ -50,3 +50,12 @@
   border-radius: initial;
   height: 100%;
 }
+
+.spinner {
+  width: 24px;
+  height: 24px;
+}
+
+.spinner g path {
+  stroke: var(--harmony-neutral);
+}

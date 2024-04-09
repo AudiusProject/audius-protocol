@@ -4,6 +4,7 @@ import IconAudiusLogoHorizontalSVG from '../assets/icons/AudiusLogoHorizontal.sv
 import IconAudiusLogoHorizontalColorSVG from '../assets/icons/AudiusLogoHorizontalColor.svg'
 import IconAudiusLogoVerticalSVG from '../assets/icons/AudiusLogoVertical.svg'
 import IconLogoCoinbaseSVG from '../assets/icons/Coinbase.svg'
+import IconLogoCoinbasePaySVG from '../assets/icons/CoinbasePay.svg'
 import IconDiscordSVG from '../assets/icons/Discord.svg'
 import IconFacebookSVG from '../assets/icons/Facebook.svg'
 import IconInstagramSVG from '../assets/icons/Instagram.svg'
@@ -32,6 +33,7 @@ export const IconAudiusLogoHorizontalColor =
   IconAudiusLogoHorizontalColorSVG as IconComponent
 export const IconAudiusLogoVertical = IconAudiusLogoVerticalSVG as IconComponent
 export const IconLogoCoinbase = IconLogoCoinbaseSVG as IconComponent
+export const IconLogoCoinbasePay = IconLogoCoinbasePaySVG as IconComponent
 export const IconLogoLinkByStripe = IconLogoLinkByStripeSVG as IconComponent
 export const IconDiscord = IconDiscordSVG as IconComponent
 export const IconFacebook = IconFacebookSVG as IconComponent

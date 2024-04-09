@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useHasNoCollectibles } from '@audius/common/hooks'
 import { isContentCollectibleGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
-import { collectiblesSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { useSelector } from 'react-redux'
 
 import {
   IconCaretRight,
@@ -36,8 +35,6 @@ const messages = {
 
 const LEARN_MORE_URL =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
-
-const { getSupportedUserCollections } = collectiblesSelectors
 
 const screenWidth = Dimensions.get('screen').width
 
@@ -161,12 +158,7 @@ export const CollectibleGatedAvailability = ({
     ? neutralLight4
     : neutral
 
-  const { ethCollectionMap, solCollectionMap } = useSelector(
-    getSupportedUserCollections
-  )
-  const numEthCollectibles = Object.keys(ethCollectionMap).length
-  const numSolCollectibles = Object.keys(solCollectionMap).length
-  const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
+  const hasNoCollectibles = useHasNoCollectibles()
 
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const [{ value: streamConditions }] =
