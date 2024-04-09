@@ -3,15 +3,14 @@ import { useCallback } from 'react'
 import {
   notificationsSelectors,
   Entity,
-  TrackAddedToPurchasedAlbumNotification
+  TrackAddedToPurchasedAlbumNotification as TrackAddedToPurchasedAlbumNotificationType
 } from '@audius/common/store'
-import { IconStars } from '@audius/harmony'
+import { Flex, IconStars } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
 
-import styles from './TipSentNotification.module.css'
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -30,10 +29,10 @@ const messages = {
 }
 
 type TrackAddedToPurchasedAlbumNotificationProps = {
-  notification: TrackAddedToPurchasedAlbumNotification
+  notification: TrackAddedToPurchasedAlbumNotificationType
 }
 
-export const AddTrackToPlaylistNotification = (
+export const TrackAddedToPurchasedAlbumNotification = (
   props: TrackAddedToPurchasedAlbumNotificationProps
 ) => {
   const { notification } = props
@@ -53,14 +52,11 @@ export const AddTrackToPlaylistNotification = (
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
-      <NotificationHeader icon={<IconStars />}>
+      <NotificationHeader icon={<IconStars color='accent' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <NotificationBody className={styles.body}>
-        <ProfilePicture
-          className={styles.profilePicture}
-          user={playlistOwner}
-        />
+      <Flex as={NotificationBody} alignItems='center' gap='s'>
+        <ProfilePicture user={playlistOwner} />
         <span>
           <UserNameLink user={playlistOwner} notification={notification} />
           {messages.released}
@@ -68,7 +64,7 @@ export const AddTrackToPlaylistNotification = (
           {messages.onAlbum}
           <EntityLink entity={playlist} entityType={Entity.Playlist} />
         </span>
-      </NotificationBody>
+      </Flex>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
