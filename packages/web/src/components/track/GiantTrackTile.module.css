@@ -60,6 +60,11 @@
   fill: var(--harmony-text-subdued);
 }
 
+.gatedContentOwner {
+  display: flex;
+  align-items: center;
+}
+
 .title {
   margin-bottom: var(--harmony-unit-3);
   width: 100%;
@@ -133,6 +138,7 @@
   height: 18px;
   width: 18px;
 }
+
 .completeTextIcon path {
   fill: var(--harmony-n-400);
 }

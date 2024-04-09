@@ -104,6 +104,7 @@
     "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
+    "@web3modal/ethers": "4.1.0",
     "pg": "8.8.0"
   },
   "overrides": {

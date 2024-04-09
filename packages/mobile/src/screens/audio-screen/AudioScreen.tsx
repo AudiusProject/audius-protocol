@@ -65,7 +65,7 @@ const messages = {
   audio: '$AUDIO',
   send: 'Send $AUDIO',
   receive: 'Receive $AUDIO',
-  manageWallet: 'Manage Wallets',
+  externalWallets: 'External Wallets',
   rewards: 'Earn Rewards',
   rewardsBody1: 'Complete tasks to earn $AUDIO tokens!',
   trending: 'Trending Competitions',
@@ -330,7 +330,7 @@ export const AudioScreen = () => {
           onPress={handlePressReceive}
         />
         <Button
-          title={messages.manageWallet}
+          title={messages.externalWallets}
           styles={{
             root: styles.buttonRoot,
             text: styles.buttonText,

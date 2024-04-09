@@ -39,6 +39,7 @@
 .snippetContainer {
   display: inline-flex;
   gap: var(--unit-2);
+  align-items: center;
 }
 
 .userNameContainer {
@@ -146,8 +147,7 @@
   fill: var(--secondary) !important;
 }
 
-/* MetaMask */
-.connectMetaMaskContainer {
+.connectWalletContainer {
   display: inline-flex;
   align-items: center;
   padding: 12px 0px;
@@ -157,7 +157,7 @@
   cursor: pointer;
 }
 
-.connectMetaMaskDot {
+.misconfiguredDot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -167,15 +167,7 @@
   transition: background-color 500ms linear;
 }
 
-.connectMetaMaskDot.yellow {
-  background-color: var(--accent-orange-light-1);
-}
-
-.connectMetaMaskDot.green {
-  background-color: var(--accent-green-dark-1);
-}
-
-.connectMetaMask {
+.connectText {
   font-family: var(--font-family);
   font-weight: var(--font-bold);
   font-size: var(--font-xs);
