@@ -324,13 +324,13 @@ func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedRelea
 		PlaylistOwnerID:   &mainRelease.ArtistID,
 		PlaylistOwnerName: &mainRelease.ArtistName,
 		IsAlbum:           &isAlbum,
+		UPC:               stringPtr(mainRelease.ReleaseIDs.ICPN), // ICPN is either UPC (USA/Canada) or EAN (rest of world), but we call them both UPC
 
 		// Fields we don't know the value for (except IsPrivate should come from parsing DealList)
 		// Description:           "",
 		// Mood:                  nil,
 		// License:               nil,
 		// IsPrivate:         nil,
-		// UPC:               nil,
 	}
 }
 
