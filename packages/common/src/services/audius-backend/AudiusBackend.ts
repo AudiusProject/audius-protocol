@@ -1875,6 +1875,29 @@ export const audiusBackend = ({
         reactionValue: data.reaction_value,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'track_added_to_purchased_album') {
+      let trackId = 0
+      let playlistId = 0
+      let playlistOwnerId = 0
+      notification.actions.filter(removeNullable).forEach((action) => {
+        const data = action.data
+        if (data.track_id && data.playlist_id) {
+          trackId = data.track_id ? (decodeHashId(data.track_id) as ID) : 0
+          playlistId = data.playlist_id
+            ? (decodeHashId(data.playlist_id) as ID)
+            : 0
+          playlistOwnerId = data.playlist_owner_id
+            ? (decodeHashId(data.playlist_owner_id) as ID)
+            : 0
+        }
+      })
+      return {
+        type: NotificationType.TrackAddedToPurchasedAlbum,
+        trackId,
+        playlistId,
+        playlistOwnerId,
+        ...formatBaseNotification(notification)
+      }
     } else if (notification.type === 'track_added_to_playlist') {
       let trackId = 0
       let playlistId = 0
@@ -3033,9 +3056,9 @@ export const audiusBackend = ({
         connection: audiusLibs.solanaWeb3Manager.getConnection()
       })
       const { signature } = await window.solana.signAndSendTransaction(tx)
-      await audiusLibs.solanaWeb3Manager.getConnection().confirmTransaction(
-        signature
-      )
+      await audiusLibs.solanaWeb3Manager
+        .getConnection()
+        .confirmTransaction(signature)
     }
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }

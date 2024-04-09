@@ -33,6 +33,7 @@ export enum NotificationType {
   SupporterRankUp = 'SupporterRankUp',
   SupportingRankUp = 'SupportingRankUp',
   AddTrackToPlaylist = 'AddTrackToPlaylist',
+  TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   SupporterDethroned = 'SupporterDethroned',
   USDCPurchaseSeller = 'USDCPurchaseSeller',
   USDCPurchaseBuyer = 'USDCPurchaseBuyer'
@@ -889,6 +890,13 @@ export type AddTrackToPlaylistNotification = BaseNotification & {
   playlistOwnerId: ID
 }
 
+export type TrackAddedToPurchasedAlbumNotification = BaseNotification & {
+  type: NotificationType.TrackAddedToPurchasedAlbum
+  trackId: ID
+  playlistId: ID
+  playlistOwnerId: ID
+}
+
 export type AddTrackToPlaylistPushNotification = {
   type: PushNotificationType.AddTrackToPlaylist
   entityId: ID
@@ -940,6 +948,7 @@ export type Notification =
   | SupportingRankUpNotification
   | SupporterDethronedNotification
   | AddTrackToPlaylistNotification
+  | TrackAddedToPurchasedAlbumNotification
   | USDCPurchaseSellerNotification
   | USDCPurchaseBuyerNotification
 
