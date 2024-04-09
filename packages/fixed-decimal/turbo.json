@@ -1,0 +1,9 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "typecheck": {
+      "dependsOn": ["build", "^build"],
+      "outputMode": "new-only"
+    }
+  }
+}
