@@ -23,7 +23,6 @@ import {
   IconVisibilityHidden,
   Text,
   Flex,
-  spacing,
   ProgressBar
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -182,7 +181,7 @@ const TrackTile = ({
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickPill = useAuthenticatedClickCallback(() => {
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -310,15 +309,13 @@ const TrackTile = ({
         </div>
       ) : null}
       <div className={styles.body}>
-        <Flex inline direction='column'>
+        <Flex inline direction='column' h='100%' justifyContent='space-between'>
           {size === TrackTileSize.LARGE ? (
             <Text
               variant='label'
-              size='xs'
-              strength='weak'
+              strength='default'
               textAlign='left'
               color='subdued'
-              css={{ letterSpacing: 2.5, height: spacing.m }}
             >
               {isLoading || !header ? null : header}
             </Text>
@@ -380,29 +377,32 @@ const TrackTile = ({
               : null}
           </Text>
         </Flex>
-        <div className={styles.divider} />
-        <BottomRow
-          hasStreamAccess={hasStreamAccess}
-          isDisabled={isDisabled}
-          isLoading={isLoading}
-          isFavorited={isFavorited}
-          isReposted={isReposted}
-          rightActions={rightActions}
-          bottomBar={bottomBar}
-          isUnlisted={isUnlisted}
-          fieldVisibility={fieldVisibility}
-          isOwner={isOwner}
-          isDarkMode={isDarkMode}
-          isMatrixMode={isMatrixMode}
-          showIconButtons={showIconButtons}
-          onClickRepost={onClickRepost}
-          onClickFavorite={onClickFavorite}
-          onClickShare={onClickShare}
-          onClickPill={onClickPill}
-          streamConditions={streamConditions}
-          isTrack={isTrack}
-          trackId={trackId}
-        />
+        {isTrack ? (
+          <>
+            <div className={styles.divider} />
+            <BottomRow
+              hasStreamAccess={hasStreamAccess}
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              isFavorited={isFavorited}
+              isReposted={isReposted}
+              rightActions={rightActions}
+              bottomBar={bottomBar}
+              isUnlisted={isUnlisted}
+              fieldVisibility={fieldVisibility}
+              isOwner={isOwner}
+              isDarkMode={isDarkMode}
+              isMatrixMode={isMatrixMode}
+              showIconButtons={showIconButtons}
+              onClickRepost={onClickRepost}
+              onClickFavorite={onClickFavorite}
+              onClickShare={onClickShare}
+              onClickGatedUnlockPill={onClickGatedUnlockPill}
+              streamConditions={streamConditions}
+              trackId={trackId}
+            />
+          </>
+        ) : null}
       </div>
     </div>
   )

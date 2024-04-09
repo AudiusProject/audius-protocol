@@ -52,6 +52,7 @@ const genres = [
   'Jersey Club',
   'Vaporwave',
   'Moombahton',
+  'Dancehall',
 ]
 const moods = [
   'Peaceful',
@@ -116,8 +117,8 @@ const trackMetadataSchema = new mongoose.Schema({
   title: { type: String, required: true },
   release_date: { type: Date, required: true },
   ddex_release_ids: mongoose.Schema.Types.Mixed,
-  genre: { type: String, enum: genres, required: true },
-  duration: { type: Number, required: true },
+  genre: { type: String, enum: genres },
+  duration: Number,
   preview_start_seconds: Number,
   isrc: String,
   license: String,
@@ -127,13 +128,13 @@ const trackMetadataSchema = new mongoose.Schema({
   preview_audio_file_url: String,
   preview_audio_file_url_hash: String,
   preview_audio_file_url_hash_algo: String,
-  audio_file_url: { type: String, required: true },
-  audio_file_url_hash: { type: String, required: true },
-  audio_file_url_hash_algo: { type: String, required: true },
+  audio_file_url: String,
+  audio_file_url_hash: String,
+  audio_file_url_hash_algo: String,
 
   // Required if it's a standalone track. Uses playlist_owner_id and playlist's cover_art_url if it's part of an album
-  artist_id: { type: String, required: true },
-  artist_name: { type: String, required: true },
+  artist_id: String,
+  artist_name: String,
   artists: { type: [resourceContributorSchema], default: null },
   resource_contributors: { type: [resourceContributorSchema], default: null },
   indirect_resource_contributors: {
@@ -144,69 +145,166 @@ const trackMetadataSchema = new mongoose.Schema({
   copyright_line: { type: copyrightSchema, default: null },
   producer_copyright_line: { type: copyrightSchema, default: null },
   parental_warning_type: { type: String, default: null },
-  cover_art_url: { type: String, required: true },
-  cover_art_url_hash: { type: String, required: true },
-  cover_art_url_hash_algo: { type: String, required: true },
+  cover_art_url: String,
+  cover_art_url_hash: String,
+  cover_art_url_hash_algo: String,
 })
 
 export type TrackMetadata = mongoose.InferSchemaType<typeof trackMetadataSchema>
 
-const collectionMetadataSchema = new mongoose.Schema({
-  playlist_name: { type: String, required: true },
-  playlist_owner_name: { type: String, required: true },
-  playlist_owner_id: { type: String, required: true },
-  artists: { type: [resourceContributorSchema], default: null },
-  genre: { type: String, enum: genres, required: true },
-  release_date: { type: Date, required: true },
-  ddex_release_ids: mongoose.Schema.Types.Mixed,
-  description: String,
-  is_album: Boolean,
-  is_private: Boolean,
-  tags: String,
-  mood: { type: String, enum: moods },
-  license: String,
-  upc: String,
-  cover_art_url: { type: String, required: true },
-  cover_art_url_hash: { type: String, required: true },
-  cover_art_url_hash_algo: { type: String, required: true },
-  copyright_line: { type: copyrightSchema, default: null },
-  producer_copyright_line: { type: copyrightSchema, default: null },
-  parental_warning_type: { type: String, default: null },
+const imageMetadataSchema = new mongoose.Schema({
+  url: String,
+  url_hash: String,
+  url_hash_algo: String,
 })
 
-export type CollectionMetadata = mongoose.InferSchemaType<
-  typeof collectionMetadataSchema
->
+const nullableString = {
+  type: String,
+  default: null,
+}
 
-export const createTrackReleaseSchema = new mongoose.Schema({
-  ddex_release_ref: { type: String, required: true },
-  metadata: { type: trackMetadataSchema, required: true },
+const nullableBool = {
+  type: Boolean,
+  default: null,
+}
+
+const nullableInt = {
+  type: Number,
+  default: null,
+}
+
+const releaseIDsSchema = new mongoose.Schema({
+  party_id: { type: String, default: '' },
+  catalog_number: { type: String, default: '' },
+  icpn: { type: String, default: '' },
+  grid: { type: String, default: '' },
+  isan: { type: String, default: '' },
+  isbn: { type: String, default: '' },
+  ismn: { type: String, default: '' },
+  isrc: { type: String, default: '' },
+  issn: { type: String, default: '' },
+  istc: { type: String, default: '' },
+  iswc: { type: String, default: '' },
+  mwli: { type: String, default: '' },
+  sici: { type: String, default: '' },
+  proprietary_id: { type: String, default: '' },
 })
 
-export type CreateTrackRelease = mongoose.InferSchemaType<
-  typeof createTrackReleaseSchema
+export const sdkUploadMetadataSchema = new mongoose.Schema(
+  {
+    // Used by both tracks and albums
+    release_date: { type: Date, required: true },
+    genre: { type: String, required: true, enum: genres },
+    artists: { type: [resourceContributorSchema], default: null },
+    description: nullableString,
+    ddex_release_ids: releaseIDsSchema,
+    mood: { type: String, enum: moods, default: null },
+    tags: nullableString,
+    copyright_line: copyrightSchema,
+    producer_copyright_line: copyrightSchema,
+    parental_warning_type: nullableString,
+    license: nullableString,
+    cover_art_url: { type: String, required: true },
+    cover_art_url_hash: nullableString,
+    cover_art_url_hash_algo: nullableString,
+
+    // Only for tracks
+    title: nullableString,
+    artist_id: nullableString,
+    duration: Number,
+    preview_start_seconds: nullableInt,
+    isrc: nullableString,
+    resource_contributors: [resourceContributorSchema],
+    indirect_resource_contributors: [resourceContributorSchema],
+    rights_controller: rightsControllerSchema,
+    preview_audio_file_url: nullableString,
+    preview_audio_file_url_hash: nullableString,
+    preview_audio_file_url_hash_algo: nullableString,
+    audio_file_url: nullableString,
+    audio_file_url_hash: nullableString,
+    audio_file_url_hash_algo: nullableString,
+
+    // Only for albums
+    tracks: [trackMetadataSchema],
+    playlist_name: nullableString,
+    playlist_owner_id: nullableString,
+    playlist_owner_name: nullableString,
+    is_album: nullableBool,
+    is_private: nullableBool,
+    upc: nullableString,
+  },
+  { _id: false }
+) // _id is set to false because this schema is used as a sub-document
+
+export type SDKUploadMetadataSchema = mongoose.InferSchemaType<
+  typeof sdkUploadMetadataSchema
 >
 
-export const createAlbumReleaseSchema = new mongoose.Schema({
-  ddex_release_ref: { type: String, required: true },
+const releaseResourcesSchema = new mongoose.Schema({
   tracks: [trackMetadataSchema],
-  metadata: { type: collectionMetadataSchema, required: true },
+  images: [imageMetadataSchema],
 })
 
-export type CreateAlbumRelease = mongoose.InferSchemaType<
-  typeof createAlbumReleaseSchema
->
+const parsedReleaseElementSchema = new mongoose.Schema(
+  {
+    release_ref: { type: String, required: true },
+    is_main_release: { type: Boolean, required: true },
+    release_type: {
+      type: String,
+      required: true,
+      enum: ['Album', 'EP', 'TrackRelease', 'Single'],
+    },
+    release_ids: releaseIDsSchema,
+    release_date: { type: Date, required: true },
+    resources: releaseResourcesSchema,
+    artist_id: { type: String, required: true },
+    artist_name: { type: String, required: true },
+    display_title: { type: String, required: true },
+    display_subtitle: nullableString,
+    reference_title: nullableString,
+    reference_subtitle: nullableString,
+    formal_title: nullableString,
+    formal_subtitle: nullableString,
+    genre: { type: String, enum: genres, required: true },
+    duration: { type: Number, required: true },
+    preview_start_seconds: nullableInt,
+    isrc: nullableString,
+    artists: { type: [resourceContributorSchema], default: null },
+    resource_contributors: { type: [resourceContributorSchema], default: null },
+    indirect_resource_contributors: {
+      type: [resourceContributorSchema],
+      default: null,
+    },
+    rights_controller: { type: rightsControllerSchema, default: null },
+    copyright_line: { type: copyrightSchema, default: null },
+    producer_copyright_line: { type: copyrightSchema, default: null },
+    parental_warning_type: nullableString,
+  },
+  { _id: false }
+) // _id is set to false because this schema is used as a sub-document
 
-export const pendingReleasesSchema = new mongoose.Schema({
+export const releaseSchema = new mongoose.Schema({
+  release_profile: {
+    type: String,
+    required: true,
+    enum: [
+      'CommonReleaseTypes/13/AudioSingle',
+      'CommonReleaseTypesTypes/14/AudioAlbumMusicOnly',
+      'Unspecified',
+    ],
+  },
+  parsed_release_elems: [parsedReleaseElementSchema],
+  sdk_upload_metadata: sdkUploadMetadataSchema,
+})
+
+const pendingReleasesSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   delivery_remote_path: { type: String, required: true },
-  publish_date: { type: Date, required: true },
+  release: releaseSchema,
   created_at: { type: Date, required: true },
-  create_track_release: createTrackReleaseSchema,
-  create_album_release: createAlbumReleaseSchema,
   publish_errors: [String],
-  failure_count: Number,
-  failed_after_upload: Boolean,
+  failure_count: { type: Number, default: 0 },
+  failed_after_upload: { type: Boolean, default: false },
 })
 
 // Releases awaiting publishing. Releases are parsed from DDEX deliveries

@@ -13,14 +13,14 @@ import UserImage from 'components/UserImage'
 import AudiusClient from 'services/Audius'
 import { Address, BigNumber, ServiceType, Status } from 'types'
 import { TICKER } from 'utils/consts'
+import { sharedMessages } from 'utils/sharedMessages'
 import styles from './ConfirmTransactionModal.module.css'
 
 const messages = {
   title: 'Confirm Transaction',
-  metamask: 'Confirm With MetaMask',
+  confirmCta: 'Confirm With Wallet',
   error: 'An Error Has Occured',
   okay: 'OKAY',
-  twoPopupsWarning: '2 MetaMask Pop-Ups Will Appear',
   discoveryProvider: 'Discovery Node',
   contentNode: 'Content Node',
   stakingAmount: `Staking Amount ${TICKER}`,
@@ -263,7 +263,7 @@ const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
           {!showTwoPopupsWarning ? null : (
             <HarmonyBox mt="xl">
               <Text variant="heading" size="s" color="warning">
-                {messages.twoPopupsWarning}
+                {sharedMessages.twoPopupsWarning}
               </Text>
             </HarmonyBox>
           )}
@@ -272,7 +272,7 @@ const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
           {bottomBox}
           {!status && (
             <Button
-              text={messages.metamask}
+              text={messages.confirmCta}
               type={ButtonType.PRIMARY}
               onClick={onConfirm}
             />

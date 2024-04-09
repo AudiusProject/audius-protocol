@@ -1,18 +1,3 @@
-.bottomButtons {
-  align-items: center;
-  border-top: 1px solid var(--harmony-n-100);
-  display: flex;
-  height: var(--harmony-unit-32);
-  justify-content: space-between;
-}
-
-.actions {
-  align-items: center;
-  display: flex;
-  gap: var(--harmony-unit-8);
-  justify-content: flex-start;
-}
-
 .button {
   display: flex;
   align-items: flex-end;
@@ -55,11 +40,6 @@
 .overflow {
   height: var(--harmony-unit-8);
   width: var(--harmony-unit-8);
-}
-
-.gatedContentContainer {
-  height: var(--harmony-unit-8);
-  padding-top: var(--harmony-unit-2);
 }
 
 .gatedContent {

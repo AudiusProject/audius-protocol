@@ -1,10 +1,10 @@
-import { PurchaseableContentType } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 
 import { Text } from 'app/components/core'
 
 import { SummaryTable } from '../summary-table'
 import type { SummaryTableItem } from '../summary-table/SummaryTable'
+import { PurchaseableContentType } from '@audius/common/store'
 
 const messages = {
   summary: 'Total',

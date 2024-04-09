@@ -1,6 +1,6 @@
 {
   "name": "embed",
-  "version": "1.5.74",
+  "version": "1.5.75",
   "private": true,
   "scripts": {
     "start": "vite",
@@ -33,7 +33,7 @@
     "webpack-cli": "4.5.0"
   },
   "dependencies": {
-    "@audius/fetch-nft": "0.2.4",
+    "@audius/fetch-nft": "0.1.8",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",

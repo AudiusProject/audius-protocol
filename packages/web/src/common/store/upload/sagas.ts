@@ -90,7 +90,8 @@ const combineMetadata = (
   collectionMetadata: CollectionValues
 ) => {
   const metadata = trackMetadata
-  metadata.artwork = trackMetadata.artwork ?? collectionMetadata.artwork
+
+  metadata.artwork = collectionMetadata.artwork
 
   if (!metadata.genre)
     metadata.genre = collectionMetadata.trackDetails.genre ?? ''

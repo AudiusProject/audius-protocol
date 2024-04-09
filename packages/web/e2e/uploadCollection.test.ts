@@ -6,7 +6,7 @@ import {
   UploadFinishPage,
   UploadSelectPage
 } from './page-object-models/upload'
-import { SSR_HYDRATE_TIMEOUT, test } from './test'
+import { test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
 
 test('should upload a playlist', async ({ page }) => {
@@ -23,6 +23,7 @@ test('should upload a playlist', async ({ page }) => {
   const tags = ['TAG1', 'TAG2']
 
   await page.goto('upload')
+  await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
@@ -114,6 +115,7 @@ test('should upload an album', async ({ page }) => {
   const tags = ['TAG1', 'TAG2']
 
   await page.goto('upload')
+  await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
@@ -213,6 +215,7 @@ test.fixme('should upload a premium album', async ({ browser, page }) => {
   const albumTrackPrice = 2
 
   await page.goto('upload')
+  await waitForUser(page)
 
   const selectPage = new UploadSelectPage(page)
   await selectPage.setTracks('track.mp3', 'track-2.mp3')
@@ -318,22 +321,13 @@ test.fixme('should upload a premium album', async ({ browser, page }) => {
   const newPageTrackPriceText = newPage.getByText(`$${albumTrackPrice}.00`)
 
   newPage.goto(albumUrl)
-  await expect(newPage.getByTestId('app-hydrated')).toBeAttached({
-    timeout: SSR_HYDRATE_TIMEOUT
-  })
   await expect(buyButton).toBeVisible({ timeout: 20000 }) // The first track page load can take extra long sometimes (mainly in CI)
   await expect(newPageAlbumPriceText).toBeVisible()
 
   newPage.goto(track1url)
-  await expect(newPage.getByTestId('app-hydrated')).toBeAttached({
-    timeout: SSR_HYDRATE_TIMEOUT
-  })
   await expect(buyButton).toBeVisible()
   await expect(newPageTrackPriceText).toBeVisible()
   newPage.goto(track2url)
-  await expect(newPage.getByTestId('app-hydrated')).toBeAttached({
-    timeout: SSR_HYDRATE_TIMEOUT
-  })
   await expect(buyButton).toBeVisible()
   await expect(newPageTrackPriceText).toBeVisible()
 })

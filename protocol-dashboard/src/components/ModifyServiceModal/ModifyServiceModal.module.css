@@ -23,16 +23,15 @@
 }
 
 .confirm {
-
 }
 
-.doubleMetaMask {
+.warningContainer {
   margin-top: 24px;
   font-family: Avenir Next LT Pro;
   font-weight: var(--font-bold);
   font-size: var(--font-xl);
   text-align: center;
-  color: #E8AB57;
+  color: #e8ab57;
 }
 
 .boxSpacing {
@@ -46,5 +45,5 @@
   font-size: var(--font-l);
   line-height: 22px;
   text-align: center;
-  color: #BEC5E0;
+  color: #bec5e0;
 }

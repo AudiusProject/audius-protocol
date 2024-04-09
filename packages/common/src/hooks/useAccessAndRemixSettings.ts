@@ -8,7 +8,6 @@ import {
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { getSupportedUserCollections } from '~/store/collectibles/selectors'
-import { CommonState } from '~/store/index'
 import { Nullable } from '~/utils/typeUtils'
 
 type UseAccessAndRemixSettingsProps = {
@@ -18,6 +17,15 @@ type UseAccessAndRemixSettingsProps = {
   initialStreamConditions: Nullable<AccessConditions>
   isInitiallyUnlisted: boolean
   isScheduledRelease?: boolean
+}
+
+export const useHasNoCollectibles = () => {
+  const { isLoading, ethCollectionMap, solCollectionMap } = useSelector(
+    getSupportedUserCollections
+  )
+  const numEthCollectibles = Object.keys(ethCollectionMap).length
+  const numSolCollectibles = Object.keys(solCollectionMap).length
+  return !isLoading && numEthCollectibles + numSolCollectibles === 0
 }
 
 /**
@@ -39,15 +47,6 @@ export const useAccessAndRemixSettings = ({
   isInitiallyUnlisted,
   isScheduledRelease = false
 }: UseAccessAndRemixSettingsProps) => {
-  const hasNoCollectibles = useSelector((state: CommonState) => {
-    const { ethCollectionMap, solCollectionMap } =
-      getSupportedUserCollections(state)
-
-    const numEthCollectibles = Object.keys(ethCollectionMap).length
-    const numSolCollectibles = Object.keys(solCollectionMap).length
-    return numEthCollectibles + numSolCollectibles === 0
-  })
-
   const isInitiallyPublic =
     !isInitiallyUnlisted && !isUpload && !initialStreamConditions
 
@@ -86,6 +85,7 @@ export const useAccessAndRemixSettings = ({
   const noSpecialAccessGateFields =
     noSpecialAccessGate || (!isUpload && !isInitiallyHidden)
 
+  const hasNoCollectibles = useHasNoCollectibles()
   const noCollectibleGate =
     isAlbum ||
     isRemix ||
