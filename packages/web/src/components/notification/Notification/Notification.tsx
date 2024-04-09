@@ -112,6 +112,11 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.AddTrackToPlaylist: {
         return <AddTrackToPlaylistNotification notification={notification} />
       }
+      case NotificationType.TrackAddedToPurchasedAlbum: {
+        return (
+          <TrackAddedToPurchasedAlbumNotification notification={notification} />
+        )
+      }
 
       case NotificationType.SupporterDethroned: {
         return <SupporterDethronedNotification notification={notification} />
