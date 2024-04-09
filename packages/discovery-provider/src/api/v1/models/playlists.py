@@ -46,6 +46,7 @@ playlist_model = ns.model(
         "user": fields.Nested(user_model, required=True),
         "ddex_app": fields.String(allow_null=True),
         "access": fields.Nested(access),
+        "upc": fields.String(allow_null=True),
     },
 )
 

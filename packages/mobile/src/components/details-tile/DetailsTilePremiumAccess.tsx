@@ -4,11 +4,11 @@ import {
   isContentFollowGated,
   isContentTipGated
 } from '@audius/common/models'
-import { PurchaseableContentType } from '@audius/common/store'
 import type { ViewStyle } from 'react-native'
 
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
+import { PurchaseableContentType } from '@audius/common/store'
 
 type DetailsTileGatedAccessProps = {
   trackId: ID
