@@ -14,7 +14,8 @@ import {
   USDCPurchaseConditions,
   AccessConditions
 } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import { CollectionValues } from '@audius/common/schemas'
+import { accountSelectors, EditPlaylistValues } from '@audius/common/store'
 import { formatPrice, Nullable } from '@audius/common/utils'
 import {
   IconCart,
@@ -25,7 +26,7 @@ import {
   IconVisibilityPublic,
   Text
 } from '@audius/harmony'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -40,7 +41,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { useIndexedField, useTrackField } from '../hooks'
-import { SingleTrackEditValues } from '../types'
+import { SingleTrackEditValues, TrackEditFormValues } from '../types'
 
 import styles from './AccessAndSaleField.module.css'
 import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'
@@ -170,7 +171,7 @@ export const AccessAndSaleFormSchema = (
     // Check for albumTrackPrice price >= min price (if applicable)
     .refine(
       (values) =>
-        isAlbum && !isUpload
+        isAlbum && isUpload
           ? refineMinPrice('albumTrackPrice', minContentPriceCents)(values)
           : true,
       {
@@ -185,7 +186,7 @@ export const AccessAndSaleFormSchema = (
     })
     .refine(
       (values) =>
-        isAlbum && !isUpload
+        isAlbum && isUpload
           ? refineMaxPrice('albumTrackPrice', maxContentPriceCents)(values)
           : true,
       {
@@ -237,7 +238,7 @@ type AccessAndSaleFieldProps = {
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload, isAlbum, forceOpen, setForceOpen } = props
+  const { isUpload = false, isAlbum, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -247,6 +248,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   )
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
+
+  // For edit flows we need to track initial stream conditions from the parent form (not from inside contextual menu)
+  // So we take this from the parent form and pass it down to the menu fields
+  const { initialValues: parentFormInitialValues } = useFormikContext<
+    EditPlaylistValues | CollectionValues | TrackEditFormValues
+  >()
+  const parentFormInitialStreamConditions =
+    'stream_conditions' in parentFormInitialValues
+      ? (parentFormInitialValues.stream_conditions as AccessConditions)
+      : undefined
 
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
@@ -597,14 +608,13 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       </div>
     )
   }, [
-    fieldVisibility,
-    isUnlisted,
     savedStreamConditions,
+    isUnlisted,
+    isScheduledRelease,
+    fieldVisibility,
     preview,
-    isScheduledRelease
+    isUpload
   ])
-
-  console.log({ inititak: initialValues[STREAM_CONDITIONS] })
 
   return (
     <ContextualMenu
@@ -629,7 +639,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           isUpload={isUpload}
           isAlbum={isAlbum}
           initialStreamConditions={
-            initialValues[STREAM_CONDITIONS] ?? undefined
+            parentFormInitialStreamConditions ?? undefined
           }
           isScheduledRelease={isScheduledRelease}
         />

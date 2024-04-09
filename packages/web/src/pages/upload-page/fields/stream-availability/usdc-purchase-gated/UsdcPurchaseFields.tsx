@@ -41,7 +41,7 @@ const messages = {
     albumTrackPrice: {
       title: 'Track Price',
       description:
-        'Set the price fans must pay to unlock a single track on your album (minimum price of $0.99)',
+        'Set the price fans must pay to unlock a single track on your album (minimum price of $1.00)',
       label: 'Track price',
       placeholder: '1.00'
     },
@@ -49,7 +49,7 @@ const messages = {
     albumPrice: {
       title: 'Album Price',
       description:
-        'Set the price fans must pay to unlock this album (minimum price of $0.99) ',
+        'Set the price fans must pay to unlock this album (minimum price of $1.00) ',
       label: 'Album price',
       placeholder: '5.00'
     }
