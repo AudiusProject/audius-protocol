@@ -67,6 +67,7 @@
     "pack": "electron-builder --dir"
   },
   "dependencies": {
+    "@audius/fetch-nft": "0.2.4",
     "@audius/common": "*",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
