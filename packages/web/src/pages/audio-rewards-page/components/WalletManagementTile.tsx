@@ -63,7 +63,7 @@ const messages = {
   transactionsLabel: 'View Transactions',
   audio: '$AUDIO',
   manageWallets: 'Manage Wallets',
-  buyAudio: 'Buy $AUDIO',
+  buyAudio: 'Buy $AUDdIO',
   buyAudioSubheader:
     'Buy $Audio tokens to unlock VIP tiers, earn badges, and tip artists',
   showAdvanced: 'Show More Options',

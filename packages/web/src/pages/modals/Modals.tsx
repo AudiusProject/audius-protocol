@@ -46,6 +46,7 @@ import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modal
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
+import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals/ClaimAllRewardsModal'
 
 import { AppModal } from './AppModal'
 
@@ -96,6 +97,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
   ChallengeRewardsExplainer: ChallengeRewardsModal,
+  ClaimAllRewards: ClaimAllRewardsModal,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   AiAttributionSettings: AiAttributionSettingsModal,

@@ -38,7 +38,7 @@ const messages = {
     'Note: There is a 7 day waiting period from completion until you can claim your reward.',
   totalClaimed: (amount: string) => `Total $AUDIO Claimed: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
-  upcomingRewards: 'Upcoming Rewards',
+  upcomingRewards: 'Upcomindg Rewards',
   audio: '$AUDIO'
 }
 
@@ -76,7 +76,11 @@ export const CooldownRewardsModalContent = ({
     isEmpty: isCooldownChallengesEmpty
   } = useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
-
+  console.log(
+    'asdf cooldownChallengesSummary: ',
+    cooldownChallengesSummary,
+    cooldownChallenges
+  )
   const progressDescription = (
     <ProgressDescription
       description={

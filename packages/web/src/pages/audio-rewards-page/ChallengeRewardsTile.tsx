@@ -22,8 +22,10 @@ import {
 } from '@audius/common/utils'
 import {
   Button,
+  Divider,
   IconArrowRight as IconArrow,
   IconCheck,
+  IconTokenGold,
   ProgressBar,
   Text
 } from '@audius/harmony'
@@ -40,8 +42,16 @@ import { make, track } from 'services/analytics'
 import styles from './RewardsTile.module.css'
 import { Tile } from './components/ExplainerTile'
 import { getChallengeConfig } from './config'
-const { getUserChallenges, getUserChallengesLoading } =
-  audioRewardsPageSelectors
+import Pill from 'components/pill/Pill'
+import {
+  useChallengeCooldownSchedule,
+  usePendingChallengeSchedule
+} from '@audius/common/hooks'
+const {
+  getUserChallenges,
+  getUserChallengesLoading,
+  getUndisbursedUserChallenges
+} = audioRewardsPageSelectors
 const { fetchUserChallenges, setChallengeRewardsModalType } =
   audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
@@ -53,7 +63,8 @@ const messages = {
   claimReward: 'Claim Your Reward',
   readyToClaim: 'Ready to Claim',
   viewDetails: 'View Details',
-  new: 'New!'
+  new: 'New!',
+  goldAudioToken: 'Gold $AUDIO token'
 }
 
 type RewardPanelProps = {
@@ -128,13 +139,9 @@ const RewardPanel = ({
         )
       : ''
   }
-  const buttonMessage = needsDisbursement
-    ? messages.claimReward
-    : hasDisbursed
-    ? messages.viewDetails
-    : panelButtonText
+  const buttonMessage = hasDisbursed ? messages.viewDetails : panelButtonText
 
-  const buttonVariant = needsDisbursement ? 'primary' : 'secondary'
+  const buttonVariant = 'secondary'
 
   return (
     <div
@@ -274,6 +281,22 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   })
 
   const wm = useWithMobileStyle(styles.mobile)
+  console.log('asdf rewards: ', optimisticUserChallenges)
+  // const openClaimAllModal = () => {
+  //   openModal(id)
+  // }
+
+  const totalClaimableAmount = Object.values(optimisticUserChallenges).reduce(
+    (sum, challenge) => sum + challenge.claimableAmount,
+    0
+  )
+  const pendingChallengeSchedule = usePendingChallengeSchedule()
+  console.log('asdf pendingChallengeSchedule: ', pendingChallengeSchedule)
+
+  const onClickClaimAllRewards = () => {
+    setVisibility('ClaimAllRewards')(true)
+  }
+  const pendingAmount = pendingChallengeSchedule.claimableAmount
 
   return (
     <Tile className={wm(styles.rewardsTile, className)}>
@@ -281,13 +304,32 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
       <div className={wm(styles.subtitle)}>
         <span>{messages.description1}</span>
       </div>
-      <div className={styles.rewardsContainer}>
-        {userChallengesLoading && !haveChallengesLoaded ? (
-          <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
-        ) : (
-          rewardsTiles
-        )}
-      </div>
+      {userChallengesLoading && !haveChallengesLoaded ? (
+        <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
+      ) : (
+        <>
+          <div className={wm(styles.claimAllContainer)}>
+            <IconTokenGold
+              height={48}
+              width={48}
+              aria-label={messages.goldAudioToken}
+            />
+
+            <Text color='accent' size='m' variant='heading'>
+              Total Ready To Claim
+            </Text>
+            <div className={wm(styles.pillContainer)}>
+              <span className={styles.pillMessage}>
+                {pendingAmount} Pending
+              </span>
+            </div>
+            <Text> {totalClaimableAmount} $AUDIO available now</Text>
+            <Button onClick={onClickClaimAllRewards}>Claim All Rewards</Button>
+          </div>
+          <Divider orientation='horizontal' className={wm(styles.divider)} />
+          <div className={styles.rewardsContainer}>{rewardsTiles}</div>
+        </>
+      )}
     </Tile>
   )
 }

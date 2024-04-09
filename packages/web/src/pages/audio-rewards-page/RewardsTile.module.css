@@ -84,6 +84,27 @@
   min-width: 320px;
 }
 
+.claimAllContainer {
+  display: flex;
+  padding: 24px;
+  align-items: center;
+  align-content: center;
+  align-self: stretch;
+  flex-wrap: wrap;
+
+  border: 2px solid var(--harmony-n-150);
+  border-radius: 8px;
+  margin: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+}
+
+.divider {
+  align-self: stretch;
+  margin: 24px 8px;
+  border: 1px solid var(--harmony-n-150);
+}
+
 @media screen and (max-width: 1060px) {
   div.rewardPanelContainer {
     flex: 1 1 340px;
