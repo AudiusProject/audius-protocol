@@ -318,10 +318,9 @@ export class TransactionHandler {
           ) ?? []
         connections.push(this.connection)
         let elapsed = Date.now() - startTime
-        let currConnIdx = 0
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
-          const conn = connections[currConnIdx % connections.length]
+          const conn = connections[sendCount % connections.length]
           try {
             sendRawTransactionToConn(conn!)
           } catch (e) {
@@ -332,7 +331,6 @@ export class TransactionHandler {
             )
           }
           sendCount++
-          currConnIdx++
           await delay(this.sendingFrequencyMs)
           elapsed = Date.now() - startTime
         }
