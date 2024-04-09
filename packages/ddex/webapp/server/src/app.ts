@@ -1,5 +1,6 @@
 import express, { Express, NextFunction, Request, Response } from 'express'
 import path from 'path'
+import helmet from 'helmet'
 import session from 'express-session'
 import connectMongoDBSession from 'connect-mongodb-session'
 import User from './userSchema'
@@ -33,7 +34,9 @@ export default function createApp(
    */
   const app: Express = express()
 
+  app.disable('x-powered-by')
   app.use(express.json())
+  app.use(helmet())
 
   const MongoDBStore = connectMongoDBSession(session)
   const store = new MongoDBStore({
@@ -173,9 +176,6 @@ export default function createApp(
     const envData = {
       data: {
         env: process.env.NODE_ENV,
-        awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        awsBucketRaw: process.env.AWS_BUCKET_RAW,
-        awsBucketCrawled: process.env.AWS_BUCKET_CRAWLED,
         ddexKey: process.env.DDEX_KEY,
         ddexChoreography: process.env.DDEX_CHOREOGRAPHY,
       },
