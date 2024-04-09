@@ -41,9 +41,8 @@ export const useChallengeCooldownSchedule = (
 export const usePendingChallengeSchedule = () => {
   const challenges = useSelector(getUndisbursedUserChallenges)
     .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
-  // Only challenges past the cooldown period are claimable
-  // Challenges are already ordered by completed_blocknumber ascending.
-  const cooldownChallenges = challenges.filter(
+
+    const cooldownChallenges = challenges.filter(
     (c) => !isCooldownChallengeClaimable(c)
   )
   const claimableAmount = cooldownChallenges

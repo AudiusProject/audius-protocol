@@ -46,7 +46,7 @@ import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modal
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
-import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals/ClaimAllRewardsModal'
+import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal/ClaimAllRewardsModal'
 
 import { AppModal } from './AppModal'
 

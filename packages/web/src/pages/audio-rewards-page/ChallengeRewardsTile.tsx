@@ -42,16 +42,9 @@ import { make, track } from 'services/analytics'
 import styles from './RewardsTile.module.css'
 import { Tile } from './components/ExplainerTile'
 import { getChallengeConfig } from './config'
-import Pill from 'components/pill/Pill'
-import {
-  useChallengeCooldownSchedule,
-  usePendingChallengeSchedule
-} from '@audius/common/hooks'
-const {
-  getUserChallenges,
-  getUserChallengesLoading,
-  getUndisbursedUserChallenges
-} = audioRewardsPageSelectors
+import { usePendingChallengeSchedule } from '@audius/common/hooks'
+const { getUserChallenges, getUserChallengesLoading } =
+  audioRewardsPageSelectors
 const { fetchUserChallenges, setChallengeRewardsModalType } =
   audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
@@ -61,10 +54,15 @@ const messages = {
   description1: 'Complete tasks to earn $AUDIO tokens!',
   completeLabel: 'COMPLETE',
   claimReward: 'Claim Your Reward',
+  claimAllRewards: 'Claim All Rewards',
+
   readyToClaim: 'Ready to Claim',
+  totalReadyToClaim: 'Total Ready To Claim',
+  pending: 'Pending',
   viewDetails: 'View Details',
   new: 'New!',
-  goldAudioToken: 'Gold $AUDIO token'
+  goldAudioToken: 'Gold $AUDIO token',
+  availableNow: '$AUDIO available now'
 }
 
 type RewardPanelProps = {
@@ -99,6 +97,7 @@ const RewardPanel = ({
   }
 
   const challenge = userChallenges[id]
+  console.log('asdf userChallenges: ', userChallenges)
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
@@ -151,7 +150,7 @@ const RewardPanel = ({
       onClick={openRewardModal}
     >
       <div className={wm(styles.rewardPanelTop)}>
-        <div className={wm(styles.pillContainer)}>
+        <div className={wm(styles.rewardPillContainer)}>
           {needsDisbursement ? (
             <span className={styles.pillMessage}>{messages.readyToClaim}</span>
           ) : showNewChallengePill ? (
@@ -281,17 +280,12 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   })
 
   const wm = useWithMobileStyle(styles.mobile)
-  console.log('asdf rewards: ', optimisticUserChallenges)
-  // const openClaimAllModal = () => {
-  //   openModal(id)
-  // }
 
   const totalClaimableAmount = Object.values(optimisticUserChallenges).reduce(
     (sum, challenge) => sum + challenge.claimableAmount,
     0
   )
   const pendingChallengeSchedule = usePendingChallengeSchedule()
-  console.log('asdf pendingChallengeSchedule: ', pendingChallengeSchedule)
 
   const onClickClaimAllRewards = () => {
     setVisibility('ClaimAllRewards')(true)
@@ -314,17 +308,28 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
               width={48}
               aria-label={messages.goldAudioToken}
             />
-
-            <Text color='accent' size='m' variant='heading'>
-              Total Ready To Claim
-            </Text>
-            <div className={wm(styles.pillContainer)}>
-              <span className={styles.pillMessage}>
-                {pendingAmount} Pending
-              </span>
+            <div className={wm(styles.claimAllContent)}>
+              <div className={wm(styles.claimAllTitle)}>
+                <Text color='accent' size='m' variant='heading'>
+                  {messages.totalReadyToClaim}
+                </Text>
+                <div className={wm(styles.pendingPillContainer)}>
+                  <span className={styles.pillMessage}>
+                    {pendingAmount} {messages.pending}
+                  </span>
+                </div>
+              </div>
+              <Text className={wm(styles.claimableAudioDescription)}>
+                {totalClaimableAmount} {messages.availableNow}
+              </Text>
             </div>
-            <Text> {totalClaimableAmount} $AUDIO available now</Text>
-            <Button onClick={onClickClaimAllRewards}>Claim All Rewards</Button>
+            <Button
+              className={wm(styles.claimAllButton)}
+              onClick={onClickClaimAllRewards}
+              iconRight={IconArrow}
+            >
+              {messages.claimAllRewards}
+            </Button>
           </div>
           <Divider orientation='horizontal' className={wm(styles.divider)} />
           <div className={styles.rewardsContainer}>{rewardsTiles}</div>

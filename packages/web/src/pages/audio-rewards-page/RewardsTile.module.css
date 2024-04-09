@@ -84,6 +84,16 @@
   min-width: 320px;
 }
 
+@media screen and (max-width: 1060px) {
+  div.rewardPanelContainer {
+    flex: 1 1 340px;
+  }
+}
+
+.disbursed {
+  background: var(--harmony-n-25);
+}
+
 .claimAllContainer {
   display: flex;
   padding: 24px;
@@ -95,8 +105,8 @@
   border: 2px solid var(--harmony-n-150);
   border-radius: 8px;
   margin: 8px;
-  cursor: pointer;
-  transition: all 0.18s ease-in-out;
+  gap: 16px;
+
 }
 
 .divider {
@@ -105,22 +115,35 @@
   border: 1px solid var(--harmony-n-150);
 }
 
-@media screen and (max-width: 1060px) {
-  div.rewardPanelContainer {
-    flex: 1 1 340px;
-  }
+.claimAllContent {
+  display: flex;
+  flex-direction: column;
+
 }
 
-.disbursed {
-  background: var(--harmony-n-25);
+.claimAllTitle {
+  display: flex;
 }
 
-.pillContainer {
+.claimableAudioDescription {
+  text-align: left;
+}
+
+.pendingPillContainer {
+  height: 24px;
+  margin: 8px;
+}
+
+.rewardPillContainer {
   width: 100%;
   height: 24px;
   margin: 8px;
   display: flex;
   justify-content: flex-end;
+}
+
+.claimAllButton {
+  margin-left: auto
 }
 
 .pillMessage {

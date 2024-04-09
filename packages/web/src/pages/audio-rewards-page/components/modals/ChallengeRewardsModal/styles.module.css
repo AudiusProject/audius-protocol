@@ -382,3 +382,8 @@
   padding: var(--harmony-unit-4) var(--harmony-unit-6);
   background-color: var(--harmony-bg-surface-2);
 }
+
+.claimAllDescription {
+  margin-top: 8px;
+  align-self: flex-start;
+}
