@@ -1,8 +1,4 @@
-import {
-  AudiusBackend,
-  FeatureFlags,
-  RemoteConfigInstance
-} from '@audius/common/services'
+import { AudiusBackend, FeatureFlags } from '@audius/common/services'
 import {
   reactionsUIActions,
   reactionsUISelectors,
