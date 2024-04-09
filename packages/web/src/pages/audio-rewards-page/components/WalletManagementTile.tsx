@@ -13,13 +13,15 @@ import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import {
   IconReceive,
   IconSend,
-  IconSettings,
-  IconTokenGold,
   IconTransaction,
   IconInfo,
   Button,
   Flex,
-  ButtonProps
+  ButtonProps,
+  IconLogoLinkByStripe,
+  IconLogoCoinbasePay,
+  Text,
+  IconWallet
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { push as pushRoute } from 'connected-react-router'
@@ -29,10 +31,8 @@ import { useAsync } from 'react-use'
 import { useHistoryContext } from 'app/HistoryProvider'
 import { useModalState } from 'common/hooks/useModalState'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
-import { CollapsibleContent } from 'components/collapsible-content'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
-import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -62,47 +62,24 @@ const messages = {
   sendLabel: 'Send',
   transactionsLabel: 'View Transactions',
   audio: '$AUDIO',
-  manageWallets: 'Manage Wallets',
-  buyAudio: 'Buy $AUDIO',
-  buyAudioSubheader:
-    'Buy $Audio tokens to unlock VIP tiers, earn badges, and tip artists',
-  showAdvanced: 'Show More Options',
-  hideAdvanced: 'Hide More Options',
-  additionalPaymentMethods: 'Additional Payment Methods',
-  advancedOptions: 'Advanced Options',
-  stripeRegionNotSupported:
-    'Link by Stripe is not yet supported in your region',
-  coinbasePayRegionNotSupported:
-    'Coinbase Pay is not yet supported in your region',
-  stripeStateNotSupported: (state: string) =>
-    `Link by Stripe is not supported in the state of ${state}`,
-  coinbaseStateNotSupported: (state: string) =>
-    `Coinbase Pay is not supported in the state of ${state}`,
-  goldAudioToken: 'Gold $AUDIO token',
-  findArtists: 'Find Artists to Support on Trending'
+  externalWallets: 'External Wallets',
+  buyAudio: 'Buy $AUDIO Tokens',
+  buyAudioNotSupported: 'Buy $AUDIO is not yet supported in your region',
+  findArtists: 'Find Artists to Support on Trending',
+  onRampsPowered: 'Onramps powered by'
 }
 
-const AdvancedOptionButton = (props: ButtonProps) => {
-  return (
-    <Button
-      variant='secondary'
-      css={(theme) => ({ flexBasis: `calc(50% - ${theme.spacing.s}px)` })}
-      fullWidth
-      {...props}
-    />
-  )
+const OptionButton = (props: ButtonProps) => {
+  return <Button variant='secondary' size='small' fullWidth {...props} />
 }
 
-const AdvancedWalletActions = () => {
+const WalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
   const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
   const isMobile = useIsMobile()
-  const { isEnabled: isTransactionsEnabled } = useFlag(
-    FeatureFlags.AUDIO_TRANSACTIONS_HISTORY
-  )
   const onClickReceive = useCallback(() => {
     if (isMobile) {
       openTransferDrawer(true)
@@ -124,29 +101,22 @@ const AdvancedWalletActions = () => {
 
   return (
     <div className={styles.moreOptionsSection}>
-      <div className={styles.subtitle}>{messages.advancedOptions}</div>
-      <Flex wrap='wrap' gap='l' w='100%'>
-        <AdvancedOptionButton
+      <Flex gap='m' w='100%' wrap={isMobileWeb() ? 'wrap' : undefined}>
+        <OptionButton
           disabled={!hasBalance}
           onClick={onClickSend}
           iconLeft={IconSend}
         >
           {messages.sendLabel}
-        </AdvancedOptionButton>
-        <AdvancedOptionButton onClick={onClickReceive} iconLeft={IconReceive}>
+        </OptionButton>
+        <OptionButton onClick={onClickReceive} iconLeft={IconReceive}>
           {messages.receiveLabel}
-        </AdvancedOptionButton>
-      </Flex>
-      {!isMobile && isTransactionsEnabled ? (
-        <Button
-          variant='secondary'
-          onClick={onClickTransactions}
-          iconLeft={IconTransaction}
-          fullWidth
-        >
+        </OptionButton>
+        <OptionButton onClick={onClickTransactions} iconLeft={IconTransaction}>
           {messages.transactionsLabel}
-        </Button>
-      ) : null}
+        </OptionButton>
+        <ManageWalletsButton />
+      </Flex>
     </div>
   )
 }
@@ -176,16 +146,7 @@ const OnRampTooltipButton = ({
       })
     )
   }, [dispatch, provider, history])
-  const bannedRegionText =
-    provider === OnRampProvider.COINBASE
-      ? messages.coinbasePayRegionNotSupported
-      : messages.stripeRegionNotSupported
-  const disabledText =
-    typeof bannedState === 'string'
-      ? provider === OnRampProvider.COINBASE
-        ? messages.coinbaseStateNotSupported(bannedState)
-        : messages.stripeStateNotSupported(bannedState)
-      : bannedRegionText
+  const disabledText = messages.buyAudioNotSupported
   return (
     <Tooltip
       disabled={!isDisabled}
@@ -195,11 +156,14 @@ const OnRampTooltipButton = ({
       shouldWrapContent={false}
     >
       <div className={styles.onRampButtonTooltipContainer}>
-        <OnRampButton
-          provider={provider}
+        <Button
           disabled={isDisabled}
+          variant='primary'
+          fullWidth
           onClick={onClick}
-        />
+        >
+          {messages.buyAudio}
+        </Button>
       </div>
     </Tooltip>
   )
@@ -221,7 +185,7 @@ const isLocationSupported = ({
   )
 }
 
-const useOnRampProviderInfo = () => {
+export const useOnRampProviderInfo = () => {
   const { isEnabled: isCoinbaseEnabled } = useFlag(
     FeatureFlags.BUY_AUDIO_COINBASE_ENABLED
   )
@@ -299,14 +263,9 @@ const ManageWalletsButton = () => {
 
   return (
     <>
-      <Button
-        variant='secondary'
-        onClick={onClickConnectWallets}
-        iconLeft={IconSettings}
-        fullWidth
-      >
-        {messages.manageWallets}
-      </Button>
+      <OptionButton onClick={onClickConnectWallets} iconLeft={IconWallet}>
+        {messages.externalWallets}
+      </OptionButton>
       {isMobile && (
         <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
       )}
@@ -374,56 +333,38 @@ export const WalletManagementTile = () => {
         </div>
       </div>
       <div className={styles.container}>
-        {!isMobileWeb() && isAnyProviderAllowed ? (
-          <>
-            <div className={styles.header}>
-              <IconTokenGold
-                className={styles.headerIcon}
-                aria-label={messages.goldAudioToken}
-              />
-              <div className={styles.headerText}>
-                <div className={styles.title}>{messages.buyAudio}</div>
-                <div className={styles.subtitle}>
-                  {messages.buyAudioSubheader}
-                </div>
-              </div>
-            </div>
-            <div className={styles.onRampButtons}>
-              {onRampProviders[primaryProvider].isEnabled ? (
-                <OnRampTooltipButton
-                  provider={primaryProvider}
-                  isDisabled={!onRampProviders[primaryProvider].isAllowed}
-                  bannedState={onRampProviders[primaryProvider].bannedState}
-                />
-              ) : null}
-            </div>
-          </>
+        {!isMobileWeb() && onRampProviders[primaryProvider].isEnabled ? (
+          <OnRampTooltipButton
+            provider={primaryProvider}
+            isDisabled={!isAnyProviderAllowed}
+            bannedState={onRampProviders[primaryProvider].bannedState}
+          />
         ) : null}
-        <ManageWalletsButton />
-        <CollapsibleContent
-          id='advanced-wallet-actions'
-          className={styles.toggle}
-          toggleButtonClassName={styles.advancedToggle}
-          showText={messages.showAdvanced}
-          hideText={messages.hideAdvanced}
+        <WalletActions />
+
+        <Flex
+          alignItems='center'
+          justifyContent='center'
+          gap='xl'
+          borderTop='default'
+          pt='xl'
+          pb='s'
+          wrap='wrap'
         >
-          <div className={styles.moreOptions}>
-            {onRampProviders[secondaryProvider].isEnabled &&
-            isAnyProviderAllowed ? (
-              <div className={styles.moreOptionsSection}>
-                <div className={styles.subtitle}>
-                  {messages.additionalPaymentMethods}
-                </div>
-                <OnRampTooltipButton
-                  provider={secondaryProvider}
-                  isDisabled={!onRampProviders[secondaryProvider].isAllowed}
-                  bannedState={onRampProviders[secondaryProvider].bannedState}
-                />
-              </div>
-            ) : null}
-            <AdvancedWalletActions />
-          </div>
-        </CollapsibleContent>
+          <Text variant='label' size='s' strength='default' color='subdued'>
+            {messages.onRampsPowered}
+          </Text>
+          <IconLogoLinkByStripe
+            width={'6em'}
+            height={'1.33em'}
+            color='subdued'
+          />
+          <IconLogoCoinbasePay
+            width={'6em'}
+            height={'1.33em'}
+            color='subdued'
+          />
+        </Flex>
       </div>
     </div>
   )
