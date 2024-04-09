@@ -65,15 +65,14 @@ def tip_reaction(params: ManageEntityParameters):
 
         slot, sender_user_id = tip
 
-        sender_wallet = (
-            session.query(User.wallet)
-            .filter(User.user_id == sender_user_id)
-            .one_or_none()
+        sender = (
+            session.query(User).filter(User.user_id == sender_user_id).one_or_none()
         )
 
-        if not sender_wallet:
+        if not sender:
             raise IndexingValidationError(f"sender on tip {reacted_to} was not found")
 
+        sender_wallet = sender.wallet
         reaction_type = "tip"
 
         reaction = Reaction(
