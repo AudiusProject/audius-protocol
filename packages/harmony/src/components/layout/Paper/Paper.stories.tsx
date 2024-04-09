@@ -22,3 +22,11 @@ export const Default: Story = {
     h: 84
   }
 }
+
+export const Interactive: Story = {
+  args: {
+    w: 248,
+    h: 84,
+    onClick: () => {}
+  }
+}
