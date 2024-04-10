@@ -1,26 +1,17 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
-import {
-  SagaGenerator,
-  all,
-  call,
-  put,
-  select,
-  takeEvery
-} from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { ID, UserMetadata, userMetadataListFromSDK } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'
-import { getContext, getSDK } from '~/store/effects'
+import { checkSDKMigration, getContext, getSDK } from '~/store/effects'
 import { waitForRead } from '~/utils/sagaHelpers'
 import { removeNullable } from '~/utils/typeUtils'
 
-import { actions as relatedArtistsActions } from './slice'
-import { compareSDKResponse } from '~/utils/sdkMigrationUtils'
 import { Id } from '~/api'
-import { AllEffect, CallEffect } from 'redux-saga/effects'
+import { actions as relatedArtistsActions } from './slice'
 
 const getUserId = accountSelectors.getUserId
 
@@ -72,23 +63,6 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
       )
     }
   }
-}
-
-function* checkSDKMigration<T extends object>({
-  legacy: legacyCall,
-  migrated: migratedCall,
-  endpointName
-}: {
-  legacy: SagaGenerator<T, CallEffect<T>>
-  migrated: SagaGenerator<T, CallEffect<T>>
-  endpointName: string
-}) {
-  const [legacy, migrated] = yield* all([
-    legacyCall,
-    migratedCall
-  ]) as SagaGenerator<T[], AllEffect<CallEffect<T>>>
-  compareSDKResponse({ legacy, migrated }, endpointName)
-  return { legacy, migrated }
 }
 
 function* fetchTopArtists() {

@@ -38,3 +38,37 @@ export const compareSDKResponse = <T extends object>(
     console.debug(`DIFF ${apiName}`, diffValue)
   }
 }
+
+const coerceToError = (e: any) => (e instanceof Error ? e : new Error(e))
+
+/** Accepts two promises or functions generating promises,
+ * runs them in parallel, compares the results and returns them.
+ */
+export const checkSDKMigration = async <T extends object>({
+  legacy: legacyCall,
+  migrated: migratedCall,
+  endpointName
+}: {
+  legacy: Promise<T> | (() => Promise<T>)
+  migrated: Promise<T> | (() => Promise<T>)
+  endpointName: string
+}) => {
+  const [legacyResult, migratedResult] = await Promise.allSettled([
+    typeof legacyCall === 'function' ? legacyCall() : legacyCall,
+    typeof migratedCall === 'function' ? migratedCall() : migratedCall
+  ])
+  // Preserve existing behavior of legacy call throwing on failure
+  if (legacyResult.status === 'rejected') {
+    throw legacyResult.reason
+  }
+
+  const legacy = legacyResult.value
+  const migrated =
+    migratedResult.status === 'rejected'
+      ? coerceToError(migratedResult.reason)
+      : migratedResult.value
+
+  compareSDKResponse({ legacy, migrated }, endpointName)
+
+  return { legacy, migrated }
+}

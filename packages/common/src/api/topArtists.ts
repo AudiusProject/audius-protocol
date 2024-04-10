@@ -5,7 +5,8 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 
 import { userApiFetch } from './user'
-import { compareSDKResponse, unwrapSDKData } from '~/utils/sdkMigrationUtils'
+import { checkSDKMigration } from '~/utils/sdkMigrationUtils'
+import { userMetadataListFromSDK } from '~/models'
 
 type GetTopArtistsForGenreArgs = {
   genre: string
@@ -22,22 +23,26 @@ const topArtistsApi = createApi({
         const { apiClient, audiusSdk } = context
         const sdk = await audiusSdk()
 
-        const [legacy, migrated] = await Promise.all([
-          apiClient.getTopArtistGenres({
+        const { legacy } = await checkSDKMigration({
+          legacy: apiClient.getTopArtistGenres({
             genres: [genre],
             limit,
             offset
           }),
-          unwrapSDKData(
-            sdk.full.users.getTopUsersInGenre({
-              genre: [genre],
-              limit,
-              offset
-            })
-          )
-        ])
+          migrated: async () =>
+            userMetadataListFromSDK(
+              (
+                await sdk.full.users.getTopUsersInGenre({
+                  genre: [genre],
+                  limit,
+                  offset
+                })
+              ).data
+            ),
+          endpointName: 'getTopArtistsInGenre'
+        })
 
-        return compareSDKResponse({ legacy, migrated }, 'getTopArtistGenres')
+        return legacy
       },
       options: { idArgKey: 'genre', kind: Kind.USERS, schemaKey: 'users' }
     },
