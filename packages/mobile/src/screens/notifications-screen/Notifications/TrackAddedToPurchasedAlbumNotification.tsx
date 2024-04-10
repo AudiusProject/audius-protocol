@@ -46,7 +46,7 @@ export const TrackAddedToPurchasedAlbumNotification = (
     }
   }, [playlist, navigation, notification])
 
-  if (!playlistOwner) return null
+  if (!playlistOwner || !track || !playlist) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
