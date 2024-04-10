@@ -27,6 +27,7 @@ import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
+import { StemsAndDownloadsCollectionField } from '../fields/StemsAndDownloadsCollectionsField'
 import { CollectionFormState } from '../types'
 
 import styles from './EditCollectionForm.module.css'
@@ -61,6 +62,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const initialValues: CollectionValues = {
     ...metadata,
     is_album: isAlbum,
+    is_downloadable: false,
     artwork: null,
     playlist_name: '',
     description: '',
@@ -134,6 +136,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               <SelectMoodField name='trackDetails.mood' />
             </div>
             <TagField name='trackDetails.tags' />
+            {isAlbum && <StemsAndDownloadsCollectionField />}
           </div>
         </Tile>
         <CollectionTrackFieldArray />

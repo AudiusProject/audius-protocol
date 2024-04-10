@@ -287,6 +287,14 @@ export class TransactionHandler {
       })
     }
 
+    const sendRawTransactionToConn = async (conn: Connection) => {
+      return await conn.sendRawTransaction(rawTransaction, {
+        skipPreflight: true,
+        preflightCommitment: 'processed',
+        maxRetries: 0
+      })
+    }
+
     try {
       await sendRawTransaction()
     } catch (e) {
@@ -304,14 +312,21 @@ export class TransactionHandler {
     const startTime = Date.now()
     if (retry) {
       ;(async () => {
+        const connections = this.fallbackConnections ?? []
+        if (connections.length === 0) {
+          connections.push(this.connection)
+        }
         let elapsed = Date.now() - startTime
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
+          const conn = connections[sendCount % connections.length]
           try {
-            sendRawTransaction()
+            sendRawTransactionToConn(conn!)
           } catch (e) {
             logger.warn(
-              `transactionHandler: error in send loop: ${e} for txId ${txid}`
+              `transactionHandler: error in send loop: ${e} for txId ${txid} to ${
+                conn!.rpcEndpoint
+              }`
             )
           }
           sendCount++
@@ -326,9 +341,9 @@ export class TransactionHandler {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       logger.info(
-        `transactionHandler: finished sending txid ${txid} with ${sendCount} retries to ${
-          this.connection.rpcEndpoint
-        } in ${Date.now() - txStartTime} ms`
+        `transactionHandler: finished sending txid ${txid} with ${sendCount} retries in ${
+          Date.now() - txStartTime
+        } ms`
       )
       return {
         res: txid,

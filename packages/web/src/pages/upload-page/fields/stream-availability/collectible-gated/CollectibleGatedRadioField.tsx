@@ -34,8 +34,8 @@ export const CollectibleGatedRadioField = (
 
   const hasNoCollectibles = useHasNoCollectibles()
   const {
-    noCollectibleGate: disabled,
-    noCollectibleGateFields: fieldsDisabled
+    disableCollectibleGate: disabled,
+    disableCollectibleGateFields: fieldsDisabled
   } = useAccessAndRemixSettings({
     isUpload: !!isUpload,
     isRemix,
