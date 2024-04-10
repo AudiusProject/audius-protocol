@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   chatActions,
@@ -24,19 +25,16 @@ import {
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
-import {
-  DynamicTrackArtwork,
-  DynamicTrackArtworkSize
-} from 'components/track/DynamicTrackArtwork'
+import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 
+import { ContentLink } from './ContentLink'
 import { DetailSection } from './DetailSection'
-import { TrackLink } from './TrackLink'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
-import { ContentProps } from './types'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
@@ -51,20 +49,32 @@ const messages = {
   trackPurchased: 'Track Purchased',
   transaction: 'Explore Transaction',
   transactionDate: 'Transaction Date',
-  track: 'Track',
   sayThanks: 'Say Thanks'
+}
+
+type SaleModalContentProps = {
+  purchaseDetails: USDCPurchaseDetails
+  contentLabel: string
+  contentTitle: string
+  link: string
+  artwork?: string
+  onClose: () => void
 }
 
 export const SaleModalContent = ({
   purchaseDetails,
+  contentLabel,
+  contentTitle,
+  link,
+  artwork,
   onClose
-}: ContentProps) => {
+}: SaleModalContentProps) => {
+  const dispatch = useDispatch()
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
-  const dispatch = useDispatch()
-  const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
 
+  const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { canCreateChat } = useSelector((state: CommonState) =>
     getCanCreateChat(state, { userId: purchaseDetails.buyerUserId })
   )
@@ -91,12 +101,12 @@ export const SaleModalContent = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
-          <DynamicTrackArtwork
-            id={purchaseDetails.contentId}
-            size={DynamicTrackArtworkSize.LARGE}
+          <DynamicImage
+            image={artwork}
+            wrapperClassName={styles.artworkContainer}
           />
-          <DetailSection label={messages.track}>
-            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+          <DetailSection label={contentLabel}>
+            <ContentLink onClick={onClose} title={contentTitle} link={link} />
             <Flex gap='xs'>
               <Text variant='body' size='l'>
                 {messages.by}
@@ -169,7 +179,7 @@ export const SaleModalContent = ({
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
           <DetailSection label={messages.trackPurchased}>
-            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+            <ContentLink onClick={onClose} title={contentTitle} link={link} />
           </DetailSection>
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>
