@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start:prod": "NODE_ENV=production node dist/index.js",
-    "start": "IS_DEV=true nodemon src/index.ts",
-    "dev:dev": "NODE_ENV=dev turbo run start --filter=@audius/ddex-webapp-server",
-    "dev:stage": "NODE_ENV=stage turbo run start --filter=@audius/ddex-webapp-server",
-    "dev:prod": "NODE_ENV=production turbo run start --filter=@audius/ddex-webapp-server",
+    "start": "node dist/index.js",
+    "start:dev": "IS_DEV=true nodemon src/index.ts",
+    "dev:dev": "turbo run start:dev --filter=@audius/ddex-webapp-server",
+    "dev:stage": "NETWORK=stage turbo run start:dev --filter=@audius/ddex-webapp-server",
+    "dev:prod": "NETWORK=prod turbo run start:dev --filter=@audius/ddex-webapp-server",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "verify": "concurrently \"npm:build\" \"npm:lint\""

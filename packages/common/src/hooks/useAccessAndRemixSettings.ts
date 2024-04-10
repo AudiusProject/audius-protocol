@@ -8,7 +8,6 @@ import {
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { getSupportedUserCollections } from '~/store/collectibles/selectors'
-import { CommonState } from '~/store/index'
 import { Nullable } from '~/utils/typeUtils'
 
 type UseAccessAndRemixSettingsProps = {
@@ -20,34 +19,36 @@ type UseAccessAndRemixSettingsProps = {
   isScheduledRelease?: boolean
 }
 
+export const useHasNoCollectibles = () => {
+  const { isLoading, ethCollectionMap, solCollectionMap } = useSelector(
+    getSupportedUserCollections
+  )
+  const numEthCollectibles = Object.keys(ethCollectionMap).length
+  const numSolCollectibles = Object.keys(solCollectionMap).length
+  return !isLoading && numEthCollectibles + numSolCollectibles === 0
+}
+
 /**
- * Returns a map of booleans that determine whether to show certain access fields are enabled.
+ * Returns a map of booleans that determine whether certain access fields are enabled.
  * This is based on whether the user is uploading a track or editing it.
  *
  * 1. Remixes cannot be gated tracks.
  * 2. During upload, all access options are enabled unless the track is marked as a remix,
  * in which case only Public and Hidden are enabled.
  * 3. During edit, rule of thumb is that gated tracks can only be modified to allow broader access.
- * This means that gated tracks can only be made public.
- * Hidden tracks may be gated or made public.
+ *    This means that gated tracks can only be made public.
+ * 4. Hidden tracks may be gated or made public.
+ *
+ * NOTE: this logic is different from the logic using feature flags. to determine whether options should render or not; just whether or not they should be disabled
  */
 export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
-  isAlbum,
+  isAlbum = false,
   initialStreamConditions,
   isInitiallyUnlisted,
   isScheduledRelease = false
 }: UseAccessAndRemixSettingsProps) => {
-  const hasNoCollectibles = useSelector((state: CommonState) => {
-    const { ethCollectionMap, solCollectionMap } =
-      getSupportedUserCollections(state)
-
-    const numEthCollectibles = Object.keys(ethCollectionMap).length
-    const numSolCollectibles = Object.keys(solCollectionMap).length
-    return numEthCollectibles + numSolCollectibles === 0
-  })
-
   const isInitiallyPublic =
     !isInitiallyUnlisted && !isUpload && !initialStreamConditions
 
@@ -71,40 +72,49 @@ export const useAccessAndRemixSettings = ({
 
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
-  const noUsdcGate =
-    isRemix ||
-    isInitiallyPublic ||
-    isInitiallySpecialAccess ||
-    isInitiallyCollectibleGated
+  const disableUsdcGate =
+    !isInitiallyUsdcGated &&
+    (isRemix ||
+      isInitiallyPublic ||
+      isInitiallySpecialAccess ||
+      isInitiallyCollectibleGated)
 
-  const noSpecialAccessGate =
+  const disableSpecialAccessGate =
     isAlbum ||
     isRemix ||
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
     isInitiallyCollectibleGated
-  const noSpecialAccessGateFields =
-    noSpecialAccessGate || (!isUpload && !isInitiallyHidden)
 
-  const noCollectibleGate =
+  // This applies when the parent field is active but we still want to disable sub-options
+  // used for edit flow to not allow increasing permission strictness
+  const disableSpecialAccessGateFields =
+    disableSpecialAccessGate || (!isUpload && !isInitiallyHidden)
+
+  const hasNoCollectibles = useHasNoCollectibles()
+
+  const disableCollectibleGate =
     isAlbum ||
     isRemix ||
     isInitiallyPublic ||
     isInitiallyUsdcGated ||
     isInitiallySpecialAccess ||
     hasNoCollectibles
-  const noCollectibleGateFields =
-    noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
-  const noHidden =
+  // This applies when the parent field is active but we still want to disable sub-options
+  // used for edit flow to not allow increasing permission strictness
+  const disableCollectibleGateFields =
+    disableCollectibleGate || (!isUpload && !isInitiallyHidden)
+
+  const disableHidden =
     isAlbum || isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
 
   return {
-    noUsdcGate,
-    noSpecialAccessGate,
-    noSpecialAccessGateFields,
-    noCollectibleGate,
-    noCollectibleGateFields,
-    noHidden
+    disableUsdcGate,
+    disableSpecialAccessGate,
+    disableSpecialAccessGateFields,
+    disableCollectibleGate,
+    disableCollectibleGateFields,
+    disableHidden
   }
 }

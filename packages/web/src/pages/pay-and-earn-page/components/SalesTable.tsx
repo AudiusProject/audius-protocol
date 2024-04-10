@@ -1,9 +1,6 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
-import {
-  USDCContentPurchaseType,
-  USDCPurchaseDetails
-} from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import { BN } from 'bn.js'
 import moment from 'moment'
@@ -56,12 +53,7 @@ const defaultColumns: SalesTableColumn[] = [
 // Cell Render Functions
 const renderContentNameCell = (cellInfo: PurchaseCell) => {
   const { contentId, contentType } = cellInfo.row.original
-  return contentType === USDCContentPurchaseType.TRACK ? (
-    <TrackNameWithArtwork id={contentId} />
-  ) : (
-    // TODO: When we support collection purchases
-    <div />
-  )
+  return <TrackNameWithArtwork id={contentId} contentType={contentType} />
 }
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {

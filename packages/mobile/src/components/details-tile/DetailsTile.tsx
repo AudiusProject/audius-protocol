@@ -369,7 +369,7 @@ export const DetailsTile = ({
               <Flex
                 wrap='wrap'
                 direction='row'
-                border={
+                borderBottom={
                   hideFavoriteCount && hideListenCount && hideRepostCount
                     ? 'strong'
                     : undefined

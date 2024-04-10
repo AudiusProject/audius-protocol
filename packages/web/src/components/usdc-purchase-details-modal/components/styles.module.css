@@ -30,3 +30,12 @@
 .button {
   flex: 1;
 }
+
+.artworkContainer {
+  border-radius: var(--harmony-unit-1);
+  border: 1px solid var(--harmony-border-default);
+  overflow: hidden;
+  width: var(--harmony-unit-24);
+  height: var(--harmony-unit-24);
+  flex: 0 0 var(--harmony-unit-24);
+}

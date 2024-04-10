@@ -166,6 +166,7 @@ class NotificationType(str, Enum):
     TRENDING_UNDERGROUND = "trending_underground"
     USDC_PURCHASE_BUYER = "usdc_purchase_buyer"
     USDC_PURCHASE_SELLER = "usdc_purchase_seller"
+    TRACK_ADDED_TO_PURCHASED_ALBUM = "track_added_to_purchased_album"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -368,6 +369,12 @@ class TierChangeNotification(TypedDict):
 
 
 class TrackAddedToPlaylistNotification(TypedDict):
+    track_id: int
+    playlist_id: int
+    playlist_owner_id: int
+
+
+class TrackAddedToPurchasedAlbumNotification(TypedDict):
     track_id: int
     playlist_id: int
     playlist_owner_id: int

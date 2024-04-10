@@ -13,12 +13,12 @@ import {
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import type { PurchaseableContentType } from '@audius/common/store'
 import {
   usersSocialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
-  gatedContentSelectors,
-  PurchaseableContentType
+  gatedContentSelectors
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'

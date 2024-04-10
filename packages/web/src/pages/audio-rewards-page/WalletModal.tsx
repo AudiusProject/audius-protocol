@@ -50,7 +50,7 @@ const messages = {
   sending: 'Your $AUDIO is Sending',
   sent: 'Your $AUDIO Has Been Sent',
   sendError: 'Uh oh! Something went wrong sending your $AUDIO.',
-  manageWallets: 'Manage Wallets',
+  externalWallets: 'External Wallets',
   removeWallets: 'Remove Wallet',
   awaitConvertingEthToSolAudio: 'Hold On a Moment'
 }
@@ -72,7 +72,7 @@ export const TitleWrapper = ({
 
 const titlesMap = {
   CONNECT_WALLETS: {
-    ADD_WALLET: () => messages.manageWallets,
+    ADD_WALLET: () => messages.externalWallets,
     REMOVE_WALLET: () => messages.removeWallets,
     ERROR: () => messages.sendError
   },

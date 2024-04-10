@@ -9,6 +9,7 @@ import {
 } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
+  ComputeBudgetProgram,
   Keypair,
   PublicKey,
   Transaction,
@@ -83,7 +84,9 @@ export const getRootSolanaAccount = async (
 export const getSolanaConnection = async (
   audiusBackendInstance: AudiusBackend
 ) => {
-  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!.getConnection()
+  return (
+    await audiusBackendInstance.getAudiusLibsTyped()
+  ).solanaWeb3Manager!.getConnection()
 }
 
 /**
@@ -519,11 +522,18 @@ export const decorateCoinflowWithdrawalTransaction = async (
       'usdc'
     )
 
+  // Filter any compute budget instructions since the budget will
+  // definitely change
+  const instructions = transaction.instructions.filter(
+    (instruction) =>
+      !instruction.programId.equals(ComputeBudgetProgram.programId)
+  )
+
   // Find original transfer instruction and index
-  const transferInstructionIndex = transaction.instructions.findIndex(
+  const transferInstructionIndex = instructions.findIndex(
     isTransferCheckedInstruction
   )
-  const transferInstruction = transaction.instructions[transferInstructionIndex]
+  const transferInstruction = instructions[transferInstructionIndex]
   if (!transferInstruction) {
     throw new Error('No transfer instruction found')
   }
@@ -570,7 +580,6 @@ export const decorateCoinflowWithdrawalTransaction = async (
   })
 
   // Remove original transfer instruction and replace with our set of transfer steps
-  const instructions = [...transaction.instructions]
   instructions.splice(
     transferInstructionIndex,
     1,
@@ -579,8 +588,9 @@ export const decorateCoinflowWithdrawalTransaction = async (
     withdrawalMemoInstruction
   )
 
-  const { blockhash, lastValidBlockHeight } =
-    await solanaWeb3Manager.getConnection().getLatestBlockhash()
+  const { blockhash, lastValidBlockHeight } = await solanaWeb3Manager
+    .getConnection()
+    .getLatestBlockhash()
   const modifiedTransaction = new Transaction({
     blockhash,
     feePayer,
@@ -662,7 +672,9 @@ export const createPaymentRouterRouteTransaction = async (
 ) => {
   const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
     .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager.getConnection().getLatestBlockhash()
+  const { blockhash } = await solanaWeb3Manager
+    .getConnection()
+    .getLatestBlockhash()
   const [transfer, route] =
     // All the memo related parameters are ignored
     await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({

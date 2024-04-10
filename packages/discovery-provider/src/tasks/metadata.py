@@ -184,6 +184,11 @@ class PlaylistMetadata(TypedDict):
     stream_conditions: Optional[Any]
     ddex_app: Optional[str]
     upc: Optional[str]
+    ddex_release_ids: Optional[Any]
+    artists: Optional[List[ResourceContributor]]
+    copyright_line: Optional[Copyright]
+    producer_copyright_line: Optional[Copyright]
+    parental_warning_type: Optional[str]
 
 
 playlist_metadata_format: PlaylistMetadata = {
@@ -199,6 +204,11 @@ playlist_metadata_format: PlaylistMetadata = {
     "stream_conditions": None,
     "ddex_app": None,
     "upc": None,
+    "ddex_release_ids": None,
+    "artists": None,
+    "copyright_line": None,
+    "producer_copyright_line": None,
+    "parental_warning_type": None,
 }
 
 # Updates cannot directly modify these fields via metadata
