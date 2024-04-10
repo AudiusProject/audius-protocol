@@ -28,7 +28,7 @@ func CreateArtistNameIndex(usersColl *mongo.Collection, ctx context.Context) err
 
 // GetFirstArtistID searches Mongo OAuthed artists for the first match on the track's display artists' names
 // and returns that artist's ID
-func GetFirstArtistID(artists []common.Artist, usersColl *mongo.Collection, ctx context.Context) (string, string, []string, error) {
+func GetFirstArtistID(artists []common.ResourceContributor, usersColl *mongo.Collection, ctx context.Context) (string, string, []string, error) {
 	// Sort artists by SequenceNumber (asc)
 	sort.Slice(artists, func(i, j int) bool {
 		return artists[i].SequenceNumber < artists[j].SequenceNumber
@@ -36,7 +36,6 @@ func GetFirstArtistID(artists []common.Artist, usersColl *mongo.Collection, ctx 
 
 	artistID := ""
 	artistName := ""
-	var err error
 	var warnings []string
 	for _, artist := range artists {
 		filter := bson.M{"name": artist.Name}
@@ -95,7 +94,7 @@ func GetFirstArtistID(artists []common.Artist, usersColl *mongo.Collection, ctx 
 	if artistID != "" {
 		return artistID, artistName, warnings, nil
 	}
-	return "", "", warnings, err
+	return "", "", warnings, errors.New("no artist was found with the given display name - see warning for details")
 }
 
 // searchArtistOnAudius searches Audius (public /v1/users/search endpoint) for an artist by name and returns potential matches.

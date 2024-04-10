@@ -1,9 +1,9 @@
-import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
+import { useRef, useCallback, useMemo } from 'react'
 
 import { Theme } from '@audius/common/models'
+import { useTheme } from '@emotion/react'
 
 import Confetti from 'utils/animations/music-confetti'
-import { getCurrentThemeColors } from 'utils/theme/theme'
 
 const DEFAULTS = {
   limit: 200,
@@ -51,19 +51,10 @@ export const MusicConfetti = ({
     []
   )
 
-  const confettiRef = useRef<Confetti | null>(null)
-  const [colors, setColors] = useState<string[]>([
-    getCurrentThemeColors()['--primary'],
-    getCurrentThemeColors()['--secondary']
-  ])
-  const isMatrix = theme === Theme.MATRIX
+  const { color } = useTheme()
 
-  useEffect(() => {
-    setColors([
-      getCurrentThemeColors()['--primary'],
-      getCurrentThemeColors()['--secondary']
-    ])
-  }, [theme])
+  const confettiRef = useRef<Confetti | null>(null)
+  const isMatrix = theme === Theme.MATRIX
 
   // When we mount canvas, start confetti and set the confettiRef
   const setCanvasRef = useCallback(
@@ -73,7 +64,9 @@ export const MusicConfetti = ({
       const confetti = new Confetti(
         node,
         isMatrix ? undefined : PATHS,
-        isMatrix ? undefined : colors,
+        isMatrix
+          ? undefined
+          : [color.primary.primary, color.secondary.secondary],
         false,
         isMatrix ? (isMobile ? 200 : 500) : DEFAULTS.limit,
         DEFAULTS.friction,
@@ -86,7 +79,7 @@ export const MusicConfetti = ({
       confetti.run()
       confettiRef.current = confetti
     },
-    [onCompletion, isMatrix, isMobile, colors, PATHS]
+    [onCompletion, isMatrix, isMobile, color, PATHS]
   )
 
   return (

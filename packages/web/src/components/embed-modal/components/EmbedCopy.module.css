@@ -7,22 +7,22 @@
 .box {
   min-height: 120px;
   min-width: 400px;
-  border: 1px solid var(--neutral-light-6);
-  background-color: var(--white);
+  border: 1px solid var(--harmony-n-200);
+  background-color: var(--harmony-white);
 
   padding: 20px 16px;
 
-  color: var(--neutral);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   line-height: 20px;
   margin-bottom: 8px;
   border-radius: 4px;
 }
 
 .click {
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
+  color: var(--harmony-n-400);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
   line-height: 15px;
 }

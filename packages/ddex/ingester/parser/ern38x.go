@@ -12,7 +12,7 @@ import (
 	"github.com/antchfx/xmlquery"
 )
 
-// SoundRecording represents the parsed details of a sound recording.
+// SoundRecording represents the parsed details of a sound recording
 type SoundRecording struct {
 	Type                         string
 	ISRC                         string
@@ -21,17 +21,19 @@ type SoundRecording struct {
 	Title                        string
 	LanguageOfPerformance        string
 	Duration                     string
-	Artists                      []common.Artist
+	Artists                      []common.ResourceContributor
 	ResourceContributors         []common.ResourceContributor
 	IndirectResourceContributors []common.ResourceContributor
-	LabelName                    string
-	Genre                        string
+	RightsController             *common.RightsController
+	CopyrightLine                *common.Copyright
+	ProducerCopyrightLine        *common.Copyright
 	ParentalWarningType          string
+	LabelName                    string
+	Genre                        common.Genre
 	TechnicalDetails             []TechnicalSoundRecordingDetails
-	RightsController             common.RightsController
 }
 
-// TechnicalSoundRecordingDetails represents technical details about the sound recording.
+// TechnicalSoundRecordingDetails represents technical details about the sound recording
 type TechnicalSoundRecordingDetails struct {
 	Reference        string
 	AudioCodecType   string
@@ -42,7 +44,7 @@ type TechnicalSoundRecordingDetails struct {
 	PreviewDetails   PreviewDetails
 }
 
-// FileDetails represents details about the sound recording file.
+// FileDetails represents details about the sound recording file
 type FileDetails struct {
 	FileName             string
 	FilePath             string
@@ -50,7 +52,7 @@ type FileDetails struct {
 	HashSumAlgorithmType string
 }
 
-// PreviewDetails represents details about the sound recording file's preview.
+// PreviewDetails represents details about the sound recording file's preview
 type PreviewDetails struct {
 	StartPoint     int
 	EndPoint       int
@@ -58,7 +60,7 @@ type PreviewDetails struct {
 	ExpressionType string
 }
 
-// Image represents the parsed details of an image.
+// Image represents the parsed details of an image
 type Image struct {
 	Type              string
 	ProprietaryId     string
@@ -67,7 +69,7 @@ type Image struct {
 	TechnicalDetails  []TechnicalImageDetails
 }
 
-// TechnicalImageDetails represents technical details about the image.
+// TechnicalImageDetails represents technical details about the image
 type TechnicalImageDetails struct {
 	TechnicalResourceDetailsReference string
 	ImageCodecType                    string
@@ -82,13 +84,14 @@ type ResourceType string
 
 const ResourceTypeSoundRecording ResourceType = "SoundRecording"
 const ResourceTypeImage ResourceType = "Image"
+const ResourceTypeUnspecified ResourceType = "Unspecified"
 
 var resourceTypes = map[string]ResourceType{
 	"SoundRecording": ResourceTypeSoundRecording,
 	"Image":          ResourceTypeImage,
 }
 
-// ResourceGroupContentItem represents a reference to an audio or image file within a <ResourceGroup> element.
+// ResourceGroupContentItem represents a reference to an audio or image file within a <ResourceGroup> element
 type ResourceGroupContentItem struct {
 	GroupSequenceNumber            int
 	ItemSequenceNumber             int
@@ -100,9 +103,9 @@ type ResourceGroupContentItem struct {
 	Image          *Image
 }
 
-// parseERN38x parses the given XML data and returns structured data including releases, sound recordings, and images.
+// parseERN38x parses the given XML data and returns a release ready to be uploaded to Audius.
 // NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
-func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string) (tracks []common.CreateTrackRelease, albums []common.CreateAlbumRelease, errs []error) {
+func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *common.Release) (errs []error) {
 	var (
 		soundRecordings []SoundRecording
 		images          []Image
@@ -148,64 +151,250 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string) (tracks []
 		errs = append(errs, fmt.Errorf("no <Release> found"))
 		return
 	}
-	for _, rNode := range releaseNodes {
-		track, album, err := processReleaseNode(rNode, &soundRecordings, &images, crawledBucket, releaseID)
-		if err != nil {
+	for _, releaseNode := range releaseNodes {
+		if parsedReleaseElem, err := processReleaseNode(releaseNode, &soundRecordings, &images, crawledBucket, releaseID); err == nil {
+			release.ParsedReleaseElems = append(release.ParsedReleaseElems, *parsedReleaseElem)
+		} else {
 			errs = append(errs, err)
-			continue
 		}
-		if track != nil {
-			tracks = append(tracks, *track)
-		} else if album != nil {
-			albums = append(albums, *album)
+	}
+
+	// Find the release that's marked as the main release
+	if len(release.ParsedReleaseElems) == 0 {
+		errs = append(errs, fmt.Errorf("no <Release> elements could be parsed from <ReleaseList>"))
+		return
+	}
+	var mainRelease *common.ParsedReleaseElement
+	for i := range release.ParsedReleaseElems {
+		parsedRelease := &release.ParsedReleaseElems[i]
+		if parsedRelease.IsMainRelease {
+			if mainRelease != nil {
+				errs = append(errs, fmt.Errorf("multiple main releases found: %s and %s", mainRelease.ReleaseRef, parsedRelease.ReleaseRef))
+				return
+			}
+			mainRelease = parsedRelease
+		}
+	}
+	if mainRelease == nil {
+		errs = append(errs, fmt.Errorf("no main release found in releases: %#v", release.ParsedReleaseElems))
+		return
+	}
+
+	// Create metadata to use in the Audius SDK's upload based on release type
+	switch release.ReleaseProfile {
+	case common.Common13AudioSingle:
+		buildSingleMetadata(release, mainRelease, &errs)
+	case common.Common14AudioAlbumMusicOnly:
+		buildAlbumMetadata(release, mainRelease, &errs)
+	case common.UnspecifiedReleaseProfile:
+		// The Sony ZIP example doesn't specify a profile, so we have to infer the type from the main release element
+		if mainRelease.ReleaseType == common.AlbumReleaseType {
+			buildAlbumMetadata(release, mainRelease, &errs)
+		} else if mainRelease.ReleaseType == common.SingleReleaseType {
+			buildSingleMetadata(release, mainRelease, &errs)
+		} else {
+			errs = append(errs, fmt.Errorf("only Album is supported when no release profile is specified"))
+			return
 		}
 	}
 
 	return
 }
 
-// processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
-func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image, crawledBucket, releaseID string) (track *common.CreateTrackRelease, album *common.CreateAlbumRelease, err error) {
-	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
-	releaseDateStr := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // TODO: This is deprecated. Need to use DealList
-	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))
-	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
-	releaseType := safeInnerText(rNode.SelectElement("ReleaseType"))
-	copyright := common.Copyright{
-		Year: safeInnerText(rNode.SelectElement("CLine/Year")),
-		Text: safeInnerText(rNode.SelectElement("CLine/CLineText")),
-	}
-	producerCopyright := common.Copyright{
-		Year: safeInnerText(rNode.SelectElement("PLine/Year")),
-		Text: safeInnerText(rNode.SelectElement("PLine/PLineText")),
-	}
-
-	// Release IDs
-	ddexReleaseIDs := &common.ReleaseIDs{
-		PartyID:       safeInnerText(rNode.SelectElement("ReleaseId/PartyId")),
-		CatalogNumber: safeInnerText(rNode.SelectElement("ReleaseId/CatalogNumber")),
-		ICPN:          safeInnerText(rNode.SelectElement("ReleaseId/ICPN")),
-		GRid:          safeInnerText(rNode.SelectElement("ReleaseId/GRid")),
-		ISAN:          safeInnerText(rNode.SelectElement("ReleaseId/ISAN")),
-		ISBN:          safeInnerText(rNode.SelectElement("ReleaseId/ISBN")),
-		ISMN:          safeInnerText(rNode.SelectElement("ReleaseId/ISMN")),
-		ISRC:          isrc,
-		ISSN:          safeInnerText(rNode.SelectElement("ReleaseId/ISSN")),
-		ISTC:          safeInnerText(rNode.SelectElement("ReleaseId/ISTC")),
-		ISWC:          safeInnerText(rNode.SelectElement("ReleaseId/ISWC")),
-		MWLI:          safeInnerText(rNode.SelectElement("ReleaseId/MWLI")),
-		SICI:          safeInnerText(rNode.SelectElement("ReleaseId/SICI")),
-		ProprietaryID: safeInnerText(rNode.SelectElement("ReleaseId/ProprietaryId")),
-	}
-
-	// Convert releaseDate from string of format YYYY-MM-DD to time.Time
-	if releaseDateStr == "" {
-		err = fmt.Errorf("missing release date for <ReleaseReference>%s</ReleaseReference>", releaseRef)
+func buildSingleMetadata(release *common.Release, mainRelease *common.ParsedReleaseElement, errs *[]error) {
+	// Verify mainRelease.profile is a single, and find supporting TrackRelease
+	if mainRelease.ReleaseType != common.SingleReleaseType {
+		*errs = append(*errs, fmt.Errorf("expected Single release type for main release"))
 		return
 	}
-	releaseDate, releaseDateErr := time.Parse("2006-01-02", releaseDateStr)
-	if releaseDateErr != nil {
-		err = fmt.Errorf("failed to parse release date for <ReleaseReference>%s</ReleaseReference>: %s", releaseRef, releaseDateErr)
+	if len(release.ParsedReleaseElems) != 2 {
+		*errs = append(*errs, fmt.Errorf("expected Single to have at exactly 2 release elements, got %d", len(release.ParsedReleaseElems)))
+		return
+	}
+
+	for _, parsedReleaseElem := range release.ParsedReleaseElems {
+		if parsedReleaseElem.IsMainRelease {
+			continue
+		}
+		if parsedReleaseElem.ReleaseType != common.TrackReleaseType {
+			*errs = append(*errs, fmt.Errorf("expected TrackRelease release type for release ref %s", parsedReleaseElem.ReleaseRef))
+			return
+		}
+		if parsedReleaseElem.Resources.Tracks == nil || len(parsedReleaseElem.Resources.Tracks) == 0 {
+			*errs = append(*errs, fmt.Errorf("no tracks found for release %s", parsedReleaseElem.ReleaseRef))
+			return
+		}
+		if len(parsedReleaseElem.Resources.Tracks) > 1 {
+			*errs = append(*errs, fmt.Errorf("expected only one track for release %s", parsedReleaseElem.ReleaseRef))
+			return
+		}
+	}
+
+	// Single just has one track
+	tracks, err := buildSupportingTracks(release)
+	if err != nil {
+		*errs = append(*errs, err)
+		return
+	}
+
+	releaseIDs := tracks[0].DDEXReleaseIDs
+	release.SDKUploadMetadata = common.SDKUploadMetadata{
+		ReleaseDate:           tracks[0].ReleaseDate,
+		Genre:                 tracks[0].Genre,
+		Artists:               tracks[0].Artists,
+		Tags:                  nil,
+		DDEXReleaseIDs:        &releaseIDs,
+		CopyrightLine:         tracks[0].CopyrightLine,
+		ProducerCopyrightLine: tracks[0].ProducerCopyrightLine,
+		ParentalWarningType:   tracks[0].ParentalWarningType,
+
+		// For singles, we have to use cover art from the main release because the TrackRelease doesn't have cover art
+		CoverArtURL:         mainRelease.Resources.Images[0].URL,
+		CoverArtURLHash:     stringPtr(mainRelease.Resources.Images[0].URLHash),
+		CoverArtURLHashAlgo: stringPtr(mainRelease.Resources.Images[0].URLHashAlgo),
+
+		Title:                        &tracks[0].Title,
+		ArtistID:                     &tracks[0].ArtistID,
+		Duration:                     tracks[0].Duration,
+		PreviewStartSeconds:          tracks[0].PreviewStartSeconds,
+		ISRC:                         tracks[0].ISRC,
+		ResourceContributors:         tracks[0].ResourceContributors,
+		IndirectResourceContributors: tracks[0].IndirectResourceContributors,
+		RightsController:             tracks[0].RightsController,
+		PreviewAudioFileURL:          stringPtr(tracks[0].PreviewAudioFileURL),
+		PreviewAudioFileURLHash:      stringPtr(tracks[0].PreviewAudioFileURLHash),
+		PreviewAudioFileURLHashAlgo:  stringPtr(tracks[0].PreviewAudioFileURLHashAlgo),
+		AudioFileURL:                 stringPtr(tracks[0].AudioFileURL),
+		AudioFileURLHash:             stringPtr(tracks[0].AudioFileURLHash),
+		AudioFileURLHashAlgo:         stringPtr(tracks[0].AudioFileURLHash),
+	}
+
+	if release.SDKUploadMetadata.ReleaseDate.IsZero() {
+		release.SDKUploadMetadata.ReleaseDate = mainRelease.ReleaseDate
+	}
+}
+
+func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedReleaseElement, errs *[]error) {
+	// Verify mainRelease.profile is an album or EP, and find supporting TrackReleases
+	if mainRelease.ReleaseType != common.AlbumReleaseType && mainRelease.ReleaseType != common.EPReleaseType {
+		*errs = append(*errs, fmt.Errorf("expected Album or EP release type for main release"))
+		return
+	}
+	if len(release.ParsedReleaseElems) < 2 {
+		*errs = append(*errs, fmt.Errorf("expected Album or EP to have at least 2 release elements"))
+		return
+	}
+
+	tracks, err := buildSupportingTracks(release)
+	if err != nil {
+		*errs = append(*errs, err)
+		return
+	}
+
+	// Album is required to have a genre in its metadata (not just a genre per track)
+	if mainRelease.Genre == "" {
+		*errs = append(*errs, fmt.Errorf("missing genre for release %s", mainRelease.ReleaseRef))
+		return
+	}
+
+	// Album is required to have a cover art image
+	if mainRelease.Resources.Images == nil || len(mainRelease.Resources.Images) == 0 || mainRelease.Resources.Images[0].URL == "" {
+		*errs = append(*errs, fmt.Errorf("missing cover art image for release %s", mainRelease.ReleaseRef))
+		return
+	}
+
+	isAlbum := true // Also true for EPs. This could be false in the future if we support playlists
+
+	releaseIDs := mainRelease.ReleaseIDs
+	release.SDKUploadMetadata = common.SDKUploadMetadata{
+		ReleaseDate:           mainRelease.ReleaseDate,
+		Genre:                 mainRelease.Genre,
+		Artists:               mainRelease.Artists,
+		Tags:                  nil,
+		DDEXReleaseIDs:        &releaseIDs,
+		CopyrightLine:         mainRelease.CopyrightLine,
+		ProducerCopyrightLine: mainRelease.ProducerCopyrightLine,
+		ParentalWarningType:   mainRelease.ParentalWarningType,
+		CoverArtURL:           mainRelease.Resources.Images[0].URL,
+		CoverArtURLHash:       stringPtr(mainRelease.Resources.Images[0].URLHash),
+		CoverArtURLHashAlgo:   stringPtr(mainRelease.Resources.Images[0].URLHashAlgo),
+
+		Tracks:            tracks,
+		PlaylistName:      &mainRelease.DisplayTitle,
+		PlaylistOwnerID:   &mainRelease.ArtistID,
+		PlaylistOwnerName: &mainRelease.ArtistName,
+		IsAlbum:           &isAlbum,
+		UPC:               stringPtr(mainRelease.ReleaseIDs.ICPN), // ICPN is either UPC (USA/Canada) or EAN (rest of world), but we call them both UPC
+
+		// Fields we don't know the value for (except IsPrivate should come from parsing DealList)
+		// Description:           "",
+		// Mood:                  nil,
+		// License:               nil,
+		// IsPrivate:         nil,
+	}
+}
+
+// buildSupportingTracks formats and returns (in order) all tracks in the release except the main release
+func buildSupportingTracks(release *common.Release) (tracks []common.TrackMetadata, err error) {
+	for _, parsedReleaseElem := range release.ParsedReleaseElems {
+		if parsedReleaseElem.IsMainRelease {
+			continue
+		}
+		if parsedReleaseElem.ReleaseType != common.TrackReleaseType {
+			err = fmt.Errorf("expected TrackRelease release type for release ref %s", parsedReleaseElem.ReleaseRef)
+			return
+		}
+		if parsedReleaseElem.Resources.Tracks == nil || len(parsedReleaseElem.Resources.Tracks) == 0 {
+			err = fmt.Errorf("no tracks found for release %s", parsedReleaseElem.ReleaseRef)
+			return
+		}
+		if len(parsedReleaseElem.Resources.Tracks) > 1 {
+			err = fmt.Errorf("expected only one track for release %s", parsedReleaseElem.ReleaseRef)
+			return
+		}
+
+		// Use fields from the <SoundRecording> (ie, Resources.Tracks[0]) and fall back to the <Release>'s fields when missing
+		track := parsedReleaseElem.Resources.Tracks[0]
+		if track.ArtistID == "" {
+			track.ArtistID = parsedReleaseElem.ArtistID
+		}
+		if track.ArtistName == "" {
+			track.ArtistName = parsedReleaseElem.ArtistName
+		}
+		if track.CopyrightLine == nil {
+			track.CopyrightLine = parsedReleaseElem.CopyrightLine
+		}
+		if track.ProducerCopyrightLine == nil {
+			track.ProducerCopyrightLine = parsedReleaseElem.ProducerCopyrightLine
+		}
+		if track.ParentalWarningType == nil {
+			track.ParentalWarningType = parsedReleaseElem.ParentalWarningType
+		}
+		if track.Genre == "" {
+			track.Genre = parsedReleaseElem.Genre
+		}
+
+		tracks = append(tracks, track)
+	}
+	return
+}
+
+// processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
+func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image, crawledBucket, releaseID string) (r *common.ParsedReleaseElement, err error) {
+	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
+	globalOriginalReleaseDateStr := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // Some suppliers (not Fuga) use this. TODO: This is deprecated. Need to use DealList
+	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))                                // Only the Sony example uses this. Other suppliers use it in the SoundRecording
+	isrc := safeInnerText(rNode.SelectElement("ReleaseId/ISRC"))
+	copyrightYear := safeInnerText(rNode.SelectElement("CLine/Year"))
+	copyrightText := safeInnerText(rNode.SelectElement("CLine/CLineText"))
+	producerCopyrightYear := safeInnerText(rNode.SelectElement("PLine/Year"))
+	producerCopyrightText := safeInnerText(rNode.SelectElement("PLine/PLineText"))
+
+	// Release type
+	releaseTypeStr := safeInnerText(rNode.SelectElement("ReleaseType"))
+	releaseType, ok := common.StringToReleaseType[releaseTypeStr]
+	if !ok {
+		err = fmt.Errorf("unsupported release type: %s", releaseTypeStr)
 		return
 	}
 
@@ -224,21 +413,44 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 		return
 	}
 
-	title := safeInnerText(releaseDetails.SelectElement("Title[@TitleType='DisplayTitle']/TitleText")) // TODO: This assumes there aren't multiple titles in different languages (ie, different `LanguageAndScriptCode` attributes)
+	detailsCopyrightYear := safeInnerText(releaseDetails.SelectElement("CLine/Year"))
+	detailsCopyrightText := safeInnerText(releaseDetails.SelectElement("CLine/CLineText"))
+	detailsProducerCopyrightYear := safeInnerText(releaseDetails.SelectElement("PLine/Year"))
+	detailsProducerCopyrightText := safeInnerText(releaseDetails.SelectElement("PLine/PLineText"))
+
 	artistName := safeInnerText(releaseDetails.SelectElement("DisplayArtistName"))
-	genreStr := safeInnerText(releaseDetails.SelectElement("Genre/GenreText"))
-	parentalWarning := safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))
+	releaseDateStr := safeInnerText(releaseDetails.SelectElement("ReleaseDate")) // Fuga uses this. TODO: Still need to use DealList
+
+	// Convert releaseDate from string of format YYYY-MM-DD to time.Time
+	var releaseDate time.Time
+	var releaseDateErr error
+	if releaseDateStr != "" {
+		releaseDate, releaseDateErr = time.Parse("2006-01-02", releaseDateStr)
+		if releaseDateErr != nil {
+			err = fmt.Errorf("failed to parse release date for <ReleaseReference>%s</ReleaseReference>: %s", releaseRef, releaseDateErr)
+			return
+		}
+	} else if globalOriginalReleaseDateStr != "" {
+		releaseDate, releaseDateErr = time.Parse("2006-01-02", globalOriginalReleaseDateStr)
+		if releaseDateErr != nil {
+			err = fmt.Errorf("failed to parse global original release date for <ReleaseReference>%s</ReleaseReference>: %s", releaseRef, releaseDateErr)
+			return
+		}
+	} else {
+		err = fmt.Errorf("missing release date for <ReleaseReference>%s</ReleaseReference>", releaseRef)
+		return
+	}
 
 	// Parse DisplayArtist nodes
-	var displayArtists []common.Artist
+	var displayArtists []common.ResourceContributor
 	for _, artistNode := range xmlquery.Find(releaseDetails, "DisplayArtist") {
 		name := safeInnerText(artistNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(artistNode.SelectAttr("SequenceNumber"))
 		if seqNoErr != nil {
-			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
+			err = fmt.Errorf("error parsing DisplayArtist %s's SequenceNumber: %w", name, seqNoErr)
 			return
 		}
-		artist := common.Artist{
+		artist := common.ResourceContributor{
 			Name:           name,
 			SequenceNumber: seqNo,
 		}
@@ -255,6 +467,11 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 
 	var contentItems []ResourceGroupContentItem
 	processResourceGroup(releaseDetails, 0, &contentItems)
+	if contentItems == nil {
+		// TODO: We should probably allow there to be no resources because that's valid as per https://kb.ddex.net/implementing-each-standard/best-practices-for-all-ddex-standards/guidance-on-message-exchange-protocols-and-choreographies/no-resources-in-initial-delivery/
+		err = fmt.Errorf("no <ResourceGroupContentItem> found for <ReleaseReference>%s</ReleaseReference>", releaseRef)
+		return
+	}
 
 	// Sort the slice by GroupSequenceNumber first, then by ItemSequenceNumber
 	sort.Slice(contentItems, func(i, j int) bool {
@@ -280,164 +497,125 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 					break
 				}
 			}
-		}
-	}
-
-	if releaseType == "Album" {
-		genre, ok := common.ToGenre(genreStr)
-		if !ok {
-			err = fmt.Errorf("unsupported genre %s for <ReleaseReference>%s</ReleaseReference>", genreStr, releaseRef)
-			return
-		}
-
-		var tracks []common.TrackMetadata
-		var coverArtURL, coverArtURLHash, coverArtURLHashAlgo string
-		for _, ci := range contentItems {
-			if ci.ResourceType == ResourceTypeSoundRecording {
-				var trackMetadata *common.TrackMetadata
-				trackMetadata, err = parseTrackMetadata(ci, crawledBucket, releaseID)
-				if err != nil {
-					return
-				}
-				tracks = append(tracks, *trackMetadata)
-			} else if ci.ResourceType == ResourceTypeImage {
-				if ci.Image == nil || len(ci.Image.TechnicalDetails) == 0 {
-					err = fmt.Errorf("no <Image> found for <ResourceReference>%s</ResourceReference>", ci.Reference)
-					return
-				}
-				for _, d := range ci.Image.TechnicalDetails {
-					if d.IsPreview {
-						fmt.Printf("Skipping unsupported preview for Image %s\n", ci.Reference)
-						continue
-					}
-					if coverArtURL != "" {
-						fmt.Printf("Skipping duplicate audio file for Image %s\n", ci.Reference)
-					}
-					coverArtURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
-					coverArtURLHash = d.FileDetails.HashSum
-					coverArtURLHashAlgo = d.FileDetails.HashSumAlgorithmType
-				}
-			}
-		}
-
-		album = &common.CreateAlbumRelease{
-			DDEXReleaseRef: releaseRef,
-			Tracks:         tracks,
-			Metadata: common.CollectionMetadata{
-				PlaylistName:          title,
-				PlaylistOwnerName:     artistName,
-				ReleaseDate:           releaseDate,
-				DDEXReleaseIDs:        *ddexReleaseIDs,
-				Genre:                 genre,
-				IsAlbum:               true,
-				IsPrivate:             false, // TODO: Use DealList to determine this. Same with releaseDate because I think the XML element it's reading is deprecated
-				CoverArtURL:           coverArtURL,
-				CoverArtURLHash:       coverArtURLHash,
-				CoverArtURLHashAlgo:   coverArtURLHashAlgo,
-				CopyrightLine:         copyright,
-				ProducerCopyrightLine: producerCopyright,
-				Artists:               displayArtists,
-				ParentalWarningType:   parentalWarning,
-			},
-		}
-		return
-	}
-
-	if releaseType == "TrackRelease" {
-		if len(contentItems) > 2 {
-			err = fmt.Errorf("unsupported number of <ResourceGroupContentItem>s for TrackRelease <ReleaseReference>%s</ReleaseReference>", releaseRef)
-			return
-		}
-
-		// Extract file links and other details from the audio and image resources
-		var trackMetadata *common.TrackMetadata
-		var coverArtURL, coverArtURLHash, coverArtURLHashAlgo string
-		for _, ci := range contentItems {
-			if ci.ResourceType == ResourceTypeSoundRecording {
-				trackMetadata, err = parseTrackMetadata(ci, crawledBucket, releaseID)
-				if err != nil {
-					return
-				}
-			} else if ci.ResourceType == ResourceTypeImage {
-				if ci.Image == nil || len(ci.Image.TechnicalDetails) == 0 {
-					err = fmt.Errorf("no <Image> found for <ResourceReference>%s</ResourceReference>", ci.Reference)
-					return
-				}
-				for _, d := range ci.Image.TechnicalDetails {
-					if d.IsPreview {
-						fmt.Printf("Skipping unsupported preview for Image %s\n", ci.Reference)
-						continue
-					}
-					if coverArtURL != "" {
-						fmt.Printf("Skipping duplicate cover art file for Image %s\n", ci.Reference)
-					}
-					coverArtURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
-					coverArtURLHash = d.FileDetails.HashSum
-					coverArtURLHashAlgo = d.FileDetails.HashSumAlgorithmType
-				}
-			}
-		}
-
-		if trackMetadata.Title == "" {
-			if title == "" {
-				err = fmt.Errorf("missing title for <ReleaseReference>%s</ReleaseReference>", releaseRef)
-				return
-			}
-			trackMetadata.Title = title
-		}
-
-		if trackMetadata.ISRC == nil || *trackMetadata.ISRC == "" {
-			if isrc == "" {
-				err = fmt.Errorf("missing isrc for <ReleaseReference>%s</ReleaseReference>", releaseRef)
-				return
-			}
-			*trackMetadata.ISRC = isrc
 		} else {
-			if *trackMetadata.ISRC != isrc {
-				// Use the ISRC from the SoundRecording if it differs from the Release ISRC
-				(*ddexReleaseIDs).ISRC = *trackMetadata.ISRC
+			for _, sr := range *soundRecordings {
+				if sr.ResourceReference == contentItems[i].Reference {
+					contentItems[i].SoundRecording = &sr
+					contentItems[i].ResourceType = ResourceTypeSoundRecording
+					break
+				}
+			}
+
+			for _, img := range *images {
+				if img.ResourceReference == contentItems[i].Reference {
+					contentItems[i].Image = &img
+					contentItems[i].ResourceType = ResourceTypeImage
+					break
+				}
 			}
 		}
-
-		if trackMetadata.Genre == "" {
-			genre, ok := common.ToGenre(genreStr)
-			if !ok {
-				err = fmt.Errorf("unsupported genre %s for <ReleaseReference>%s</ReleaseReference>", genreStr, releaseRef)
-				return
-			}
-			trackMetadata.Genre = genre
-		}
-
-		if trackMetadata.Duration == 0 {
-			duration, durationErr := parseISODuration(durationISOStr)
-			if durationErr != nil {
-				err = fmt.Errorf("failed to parse duration for <ReleaseReference>%s</ReleaseReference>: %s", releaseRef, durationErr)
-				return
-			}
-			trackMetadata.Duration = int(duration.Seconds())
-		}
-
-		trackMetadata.ArtistName = artistName
-		trackMetadata.ReleaseDate = releaseDate
-		trackMetadata.DDEXReleaseIDs = *ddexReleaseIDs
-		trackMetadata.CopyrightLine = copyright
-		trackMetadata.ProducerCopyrightLine = producerCopyright
-		trackMetadata.ParentalWarningType = parentalWarning
-		trackMetadata.CoverArtURL = coverArtURL
-		trackMetadata.CoverArtURLHash = coverArtURLHash
-		trackMetadata.CoverArtURLHashAlgo = coverArtURLHashAlgo
-
-		track = &common.CreateTrackRelease{
-			DDEXReleaseRef: releaseRef,
-			Metadata:       *trackMetadata,
-		}
-		return
 	}
-	err = fmt.Errorf("unsupported <ReleaseType>%s</ReleaseType> for <ReleaseReference>%s</ReleaseReference>", releaseType, releaseRef)
+
+	genre, _ := getGenres(releaseDetails)
+
+	// Parse all resources (sound recordings and images) for the release
+	resources := common.ReleaseResources{}
+	for _, ci := range contentItems {
+		if ci.ResourceType == ResourceTypeSoundRecording {
+			var trackMetadata *common.TrackMetadata
+			trackMetadata, err = parseTrackMetadata(ci, crawledBucket, releaseID)
+			if err != nil {
+				return
+			}
+			resources.Tracks = append(resources.Tracks, *trackMetadata)
+		} else if ci.ResourceType == ResourceTypeImage {
+			if ci.Image == nil || len(ci.Image.TechnicalDetails) == 0 {
+				err = fmt.Errorf("no <Image> found for <ResourceReference>%s</ResourceReference>", ci.Reference)
+				return
+			}
+			for _, d := range ci.Image.TechnicalDetails {
+				if d.IsPreview {
+					fmt.Printf("Skipping unsupported preview for Image %s\n", ci.Reference)
+					continue
+				}
+				resources.Images = append(resources.Images, common.ImageMetadata{
+					URL:         fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName),
+					URLHash:     d.FileDetails.HashSum,
+					URLHashAlgo: d.FileDetails.HashSumAlgorithmType,
+				})
+			}
+		} else {
+			err = fmt.Errorf("unsupported resource type %s", ci.ResourceType)
+			return
+		}
+	}
+
+	r = &common.ParsedReleaseElement{
+		IsMainRelease: rNode.SelectAttr("IsMainRelease") == "true",
+		ReleaseRef:    releaseRef,
+		ReleaseDate:   releaseDate,
+		Resources:     resources,
+		ReleaseType:   releaseType,
+		ReleaseIDs: common.ReleaseIDs{
+			PartyID:       safeInnerText(rNode.SelectElement("ReleaseId/PartyId")),
+			CatalogNumber: safeInnerText(rNode.SelectElement("ReleaseId/CatalogNumber")),
+			ICPN:          safeInnerText(rNode.SelectElement("ReleaseId/ICPN")),
+			GRid:          safeInnerText(rNode.SelectElement("ReleaseId/GRid")),
+			ISAN:          safeInnerText(rNode.SelectElement("ReleaseId/ISAN")),
+			ISBN:          safeInnerText(rNode.SelectElement("ReleaseId/ISBN")),
+			ISMN:          safeInnerText(rNode.SelectElement("ReleaseId/ISMN")),
+			ISRC:          isrc,
+			ISSN:          safeInnerText(rNode.SelectElement("ReleaseId/ISSN")),
+			ISTC:          safeInnerText(rNode.SelectElement("ReleaseId/ISTC")),
+			ISWC:          safeInnerText(rNode.SelectElement("ReleaseId/ISWC")),
+			MWLI:          safeInnerText(rNode.SelectElement("ReleaseId/MWLI")),
+			SICI:          safeInnerText(rNode.SelectElement("ReleaseId/SICI")),
+			ProprietaryID: safeInnerText(rNode.SelectElement("ReleaseId/ProprietaryId")),
+		},
+
+		DisplayTitle:        safeInnerText(releaseDetails.SelectElement("Title[@TitleType='DisplayTitle']/TitleText")), // TODO: This assumes there aren't multiple titles in different languages (ie, different `LanguageAndScriptCode` attributes)
+		DisplaySubtitle:     stringPtr(safeInnerText(releaseDetails.SelectElement("Title[@TitleType='DisplayTitle']/SubTitle"))),
+		FormalTitle:         stringPtr(safeInnerText(releaseDetails.SelectElement("Title[@TitleType='FormalTitle']/TitleText"))),
+		FormalSubtitle:      stringPtr(safeInnerText(releaseDetails.SelectElement("Title[@TitleType='FormalTitle']/SubTitle"))),
+		ReferenceTitle:      stringPtr(safeInnerText(rNode.SelectElement("ReferenceTitle/TitleText"))),
+		ReferenceSubtitle:   stringPtr(safeInnerText(rNode.SelectElement("ReferenceTitle/SubTitle"))),
+		Genre:               genre,
+		ArtistName:          artistName,
+		Artists:             displayArtists,
+		ParentalWarningType: stringPtr(safeInnerText(releaseDetails.SelectElement("ParentalWarningType"))),
+	}
+
+	if detailsCopyrightYear != "" && detailsCopyrightText != "" {
+		r.CopyrightLine = &common.Copyright{
+			Year: detailsCopyrightYear,
+			Text: detailsCopyrightText,
+		}
+	} else if copyrightYear != "" && copyrightText != "" {
+		r.CopyrightLine = &common.Copyright{
+			Year: copyrightYear,
+			Text: copyrightText,
+		}
+	}
+
+	if detailsProducerCopyrightYear != "" && detailsProducerCopyrightText != "" {
+		r.ProducerCopyrightLine = &common.Copyright{
+			Year: detailsProducerCopyrightYear,
+			Text: detailsProducerCopyrightText,
+		}
+	} else if producerCopyrightYear != "" && producerCopyrightText != "" {
+		r.ProducerCopyrightLine = &common.Copyright{
+			Year: producerCopyrightYear,
+			Text: producerCopyrightText,
+		}
+	}
+	if duration, durationErr := parseISODuration(durationISOStr); durationErr == nil {
+		r.Duration = int(duration.Seconds())
+	}
+
 	return
 }
 
-// parseTrackMetadata parses the metadata for a sound recording from a ResourceGroupContentItem.
+// parseTrackMetadata parses the metadata for a sound recording from a ResourceGroupContentItem
 func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID string) (metadata *common.TrackMetadata, err error) {
 	if ci.SoundRecording == nil {
 		err = fmt.Errorf("no <SoundRecording> found for <ResourceReference>%s</ResourceReference>", ci.Reference)
@@ -448,54 +626,51 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 		return
 	}
 
-	var audioFileURL, audioFileURLHash, audioFileURLHashAlgo, previewAudioFileURL, previewAudioFileURLHash, previewAudioFileURLHashAlgo string
-	var previewStartSec int
+	duration, _ := parseISODuration(ci.SoundRecording.Duration)
+	metadata = &common.TrackMetadata{
+		Title:    ci.SoundRecording.Title,
+		Duration: int(duration.Seconds()),
+		ISRC:     &ci.SoundRecording.ISRC,
+		DDEXReleaseIDs: common.ReleaseIDs{
+			ISRC: ci.SoundRecording.ISRC,
+		},
+		Genre:                        ci.SoundRecording.Genre,
+		Artists:                      ci.SoundRecording.Artists,
+		ResourceContributors:         ci.SoundRecording.ResourceContributors,
+		IndirectResourceContributors: ci.SoundRecording.IndirectResourceContributors,
+		RightsController:             ci.SoundRecording.RightsController,
+		CopyrightLine:                ci.SoundRecording.CopyrightLine,
+		ProducerCopyrightLine:        ci.SoundRecording.ProducerCopyrightLine,
+	}
 
 	for _, d := range ci.SoundRecording.TechnicalDetails {
 		if d.IsPreview {
-			if previewAudioFileURL == "" {
-				previewAudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
-				previewAudioFileURLHash = d.FileDetails.HashSum
-				previewAudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
-				previewStartSec = d.PreviewDetails.StartPoint
+			if metadata.PreviewAudioFileURL == "" {
+				metadata.PreviewAudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				metadata.PreviewAudioFileURLHash = d.FileDetails.HashSum
+				metadata.PreviewAudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
+				metadata.PreviewStartSeconds = &d.PreviewDetails.StartPoint
 			} else {
 				fmt.Printf("Skipping duplicate audio preview for SoundRecording %s\n", ci.Reference)
 			}
 		} else {
-			if audioFileURL == "" {
-				audioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
-				audioFileURLHash = d.FileDetails.HashSum
-				audioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
+			if metadata.AudioFileURL == "" {
+				metadata.AudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				metadata.AudioFileURLHash = d.FileDetails.HashSum
+				metadata.AudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 			} else {
 				fmt.Printf("Skipping duplicate audio file for SoundRecording %s\n", ci.Reference)
 			}
 		}
 	}
 
-	duration, _ := parseISODuration(ci.SoundRecording.Duration)
-	metadata = &common.TrackMetadata{
-		Title:                        ci.SoundRecording.Title,
-		Duration:                     int(duration.Seconds()),
-		PreviewStartSeconds:          &previewStartSec,
-		ISRC:                         &ci.SoundRecording.ISRC,
-		Artists:                      ci.SoundRecording.Artists,
-		ResourceContributors:         ci.SoundRecording.ResourceContributors,
-		IndirectResourceContributors: ci.SoundRecording.IndirectResourceContributors,
-		RightsController:             ci.SoundRecording.RightsController,
-		PreviewAudioFileURL:          previewAudioFileURL,
-		PreviewAudioFileURLHash:      previewAudioFileURLHash,
-		PreviewAudioFileURLHashAlgo:  previewAudioFileURLHashAlgo,
-		AudioFileURL:                 audioFileURL,
-		AudioFileURLHash:             audioFileURLHash,
-		AudioFileURLHashAlgo:         audioFileURLHashAlgo,
-	}
-	if genre, ok := common.ToGenre(ci.SoundRecording.Genre); ok {
-		metadata.Genre = genre
+	if ci.SoundRecording.ParentalWarningType != "" {
+		metadata.ParentalWarningType = &ci.SoundRecording.ParentalWarningType
 	}
 	return
 }
 
-// processImageNode parses an <Image> node into an Image struct.
+// processImageNode parses an <Image> node into an Image struct
 func processImageNode(iNode *xmlquery.Node) (image *Image, err error) {
 	resourceRef := safeInnerText(iNode.SelectElement("ResourceReference"))
 	// Only use data from the "Worldwide" territory
@@ -537,7 +712,7 @@ func processImageNode(iNode *xmlquery.Node) (image *Image, err error) {
 	return
 }
 
-// processSoundRecordingNode parses a <SoundRecording> node into a SoundRecording struct.
+// processSoundRecordingNode parses a <SoundRecording> node into a SoundRecording struct
 func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording, err error) {
 	resourceRef := safeInnerText(sNode.SelectElement("ResourceReference"))
 	// Only use data from the "Worldwide" territory
@@ -552,6 +727,11 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		return
 	}
 
+	genre, genreStrs := getGenres(details)
+	if genre == "" {
+		fmt.Printf("no genre match in list '%v' for <ResourceReference>%s</ResourceReference>\n", genreStrs, resourceRef)
+	}
+
 	recording = &SoundRecording{
 		Type:                  safeInnerText(sNode.SelectElement("SoundRecordingType")),
 		ISRC:                  safeInnerText(sNode.SelectElement("SoundRecordingId/ISRC")),
@@ -561,8 +741,26 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		LanguageOfPerformance: safeInnerText(sNode.SelectElement("LanguageOfPerformance")),
 		Duration:              safeInnerText(sNode.SelectElement("Duration")),
 		LabelName:             safeInnerText(details.SelectElement("LabelName")),
-		Genre:                 safeInnerText(details.SelectElement("Genre/GenreText")),
+		Genre:                 genre,
 		ParentalWarningType:   safeInnerText(details.SelectElement("ParentalWarningType")),
+	}
+
+	// Parse copyrights
+	copyrightYear := safeInnerText(details.SelectElement("CLine/Year"))
+	copyrightText := safeInnerText(details.SelectElement("CLine/CLineText"))
+	if copyrightYear != "" && copyrightText != "" {
+		recording.CopyrightLine = &common.Copyright{
+			Year: copyrightYear,
+			Text: copyrightText,
+		}
+	}
+	producerCopyrightYear := safeInnerText(details.SelectElement("PLine/Year"))
+	producerCopyrightText := safeInnerText(details.SelectElement("PLine/PLineText"))
+	if producerCopyrightYear != "" && producerCopyrightText != "" {
+		recording.ProducerCopyrightLine = &common.Copyright{
+			Year: producerCopyrightYear,
+			Text: producerCopyrightText,
+		}
 	}
 
 	// Parse DisplayArtist nodes
@@ -570,10 +768,10 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		name := safeInnerText(artistNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(artistNode.SelectAttr("SequenceNumber"))
 		if seqNoErr != nil {
-			err = fmt.Errorf("Error parsing DisplayArtist %s's SequenceNumber", name)
+			err = fmt.Errorf("error parsing DisplayArtist %s's SequenceNumber: %w", name, seqNoErr)
 			return
 		}
-		artist := common.Artist{
+		artist := common.ResourceContributor{
 			Name:           name,
 			SequenceNumber: seqNo,
 		}
@@ -589,8 +787,8 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		name := safeInnerText(contributorNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(contributorNode.SelectAttr("SequenceNumber"))
 		if seqNoErr != nil {
-			err = fmt.Errorf("Error parsing ResourceContributor %s's SequenceNumber", name)
-			return
+			fmt.Printf("error parsing ResourceContributor %s's SequenceNumber: %v\n", name, seqNoErr)
+			seqNo = -1
 		}
 		contributor := common.ResourceContributor{
 			Name:           name,
@@ -613,8 +811,8 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		name := safeInnerText(indirectContributorNode.SelectElement("PartyName/FullName"))
 		seqNo, seqNoErr := strconv.Atoi(indirectContributorNode.SelectAttr("SequenceNumber"))
 		if seqNoErr != nil {
-			err = fmt.Errorf("Error parsing IndirectResourceContributor %s's SequenceNumber", name)
-			return
+			fmt.Printf("error parsing IndirectResourceContributor %s's SequenceNumber: %v\n", name, seqNoErr)
+			seqNo = -1
 		}
 		contributor := common.ResourceContributor{
 			Name:           name,
@@ -641,7 +839,7 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		for _, roleNode := range xmlquery.Find(rightsControllerNode, "RightsControllerRole") {
 			controller.Roles = append(controller.Roles, safeInnerText(roleNode))
 		}
-		recording.RightsController = controller
+		recording.RightsController = &controller
 	}
 
 	// Parse TechnicalSoundRecordingDetails nodes
@@ -684,8 +882,7 @@ func processResourceGroup(node *xmlquery.Node, parentSequence int, contentItems 
 		resourceTypeStr := safeInnerText(item.SelectElement("ResourceType"))
 		resourceType, ok := resourceTypes[resourceTypeStr]
 		if !ok {
-			fmt.Printf("Skipping unsupported resource type %s\n", resourceTypeStr)
-			continue
+			resourceType = ResourceTypeUnspecified
 		}
 		ci := ResourceGroupContentItem{
 			GroupSequenceNumber:            currentSequence,
@@ -783,4 +980,32 @@ func parseISODuration(isoDuration string) (time.Duration, error) {
 	totalSeconds := hours*3600 + minutes*60 + seconds
 	duration := time.Duration(totalSeconds) * time.Second
 	return duration, nil
+}
+
+// getGenres returns the first match of Genre for all SubGenre and GenreText elements, along with the ordered slice of strings it tried to match
+func getGenres(node *xmlquery.Node) (genre common.Genre, genreStrs []string) {
+	for _, genreNode := range xmlquery.Find(node, "Genre") {
+		genreStrs = append(genreStrs, safeInnerText(genreNode.SelectElement("SubGenre")))
+	}
+	for _, genreNode := range xmlquery.Find(node, "Genre") {
+		genreStrs = append(genreStrs, safeInnerText(genreNode.SelectElement("GenreText")))
+	}
+
+	var ok bool
+	for _, genreStr := range genreStrs {
+		genre, ok = common.ToGenre(genreStr)
+		if ok {
+			return
+		} else {
+			fmt.Printf("Skipping unsupported genre '%s'\n", genreStr)
+		}
+	}
+	return
+}
+
+func stringPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }

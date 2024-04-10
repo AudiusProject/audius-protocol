@@ -4,7 +4,7 @@
 
 .image {
   border-radius: 50%;
-  border: 1px solid var(--white);
+  border: 1px solid var(--harmony-white);
   box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
 
   text-align: center;

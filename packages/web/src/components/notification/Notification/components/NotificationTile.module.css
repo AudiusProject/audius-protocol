@@ -1,8 +1,8 @@
 .root {
-  background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-6);
-  border-radius: var(--unit-2);
-  padding: var(--unit-4);
+  background-color: var(--harmony-n-25);
+  border: 1px solid var(--harmony-n-200);
+  border-radius: var(--harmony-unit-2);
+  padding: var(--harmony-unit-4);
   transition: all 0.12s ease-in-out;
 }
 
@@ -14,12 +14,12 @@
 }
 
 .active:active {
-  background-color: var(--neutral-light-9);
+  background-color: var(--harmony-n-50);
   box-shadow: unset;
   transform: scale3d(1, 1, 1);
   cursor: pointer;
 }
 
 .read {
-  background-color: var(--white);
+  background-color: var(--harmony-white);
 }

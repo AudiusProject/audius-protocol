@@ -8,6 +8,8 @@ import {
   AddressLookupTableAccount,
   VersionedTransaction
 } from '@solana/web3.js'
+import bs58 from 'bs58'
+import { sample } from 'lodash'
 
 import type { Logger, Nullable } from '../../utils'
 import type { IdentityService, RelayTransactionData } from '../identity'
@@ -32,7 +34,7 @@ type HandleTransactionParams = {
  * or via IdentityService's relay.
  */
 export class TransactionHandler {
-  private readonly connection: Connection
+  private connection: Connection
   private readonly useRelay: boolean
   private readonly identityService: IdentityService | null
   private readonly feePayerKeypairs: Keypair[] | null
@@ -40,6 +42,7 @@ export class TransactionHandler {
   private readonly retryTimeoutMs: number
   private readonly pollingFrequencyMs: number
   private readonly sendingFrequencyMs: number
+  private readonly fallbackConnections: Connection[] | null
 
   /**
    * Creates an instance of TransactionHandler.
@@ -51,8 +54,9 @@ export class TransactionHandler {
     feePayerKeypairs = null,
     skipPreflight = true,
     retryTimeoutMs = 60000,
-    pollingFrequencyMs = 300,
-    sendingFrequencyMs = 300
+    pollingFrequencyMs = 2000,
+    sendingFrequencyMs = 2000,
+    fallbackConnections = null
   }: {
     connection: Connection
     useRelay: boolean
@@ -62,6 +66,7 @@ export class TransactionHandler {
     retryTimeoutMs?: number
     pollingFrequencyMs?: number
     sendingFrequencyMs?: number
+    fallbackConnections?: Connection[] | null
   }) {
     this.connection = connection
     this.useRelay = useRelay
@@ -71,6 +76,7 @@ export class TransactionHandler {
     this.retryTimeoutMs = retryTimeoutMs
     this.pollingFrequencyMs = pollingFrequencyMs
     this.sendingFrequencyMs = sendingFrequencyMs
+    this.fallbackConnections = fallbackConnections
   }
 
   /**
@@ -109,7 +115,6 @@ export class TransactionHandler {
         instructions,
         recentBlockhash,
         logger,
-        skipPreflight,
         feePayerOverride,
         signatures,
         lookupTableAddresses,
@@ -171,12 +176,12 @@ export class TransactionHandler {
     instructions: TransactionInstruction[],
     recentBlockhash: string | null,
     logger: Logger,
-    skipPreflight: boolean | null,
     feePayerOverride: Nullable<PublicKey | string> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
     lookupTableAddresses: string[],
     retry = true
   ) {
+    const txStartTime = Date.now()
     const feePayerKeypairOverride = (() => {
       if (feePayerOverride && this.feePayerKeypairs) {
         const stringFeePayer = feePayerOverride.toString()
@@ -214,6 +219,7 @@ export class TransactionHandler {
       recentBlockhash ??
       (await this.connection.getLatestBlockhash('confirmed')).blockhash
     let rawTransaction: Buffer | Uint8Array
+    let txid: string
 
     // Branch on whether to send a legacy or v0 transaction. Some duplicated code
     // unfortunately due to type errors, eg `add` does not exist on VersionedTransaction.
@@ -252,6 +258,7 @@ export class TransactionHandler {
           tx.addSignature(new PublicKey(publicKey), signature)
         })
       }
+      txid = bs58.encode(tx.signatures[0]!)
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction
@@ -267,53 +274,59 @@ export class TransactionHandler {
           tx.addSignature(new PublicKey(publicKey), signature)
         })
       }
+      txid = bs58.encode(tx.signatures[0]!.signature!)
       rawTransaction = tx.serialize()
     }
 
     // Send the txn
     const sendRawTransaction = async () => {
       return await this.connection.sendRawTransaction(rawTransaction, {
-        skipPreflight:
-          skipPreflight === null ? this.skipPreflight : skipPreflight,
+        skipPreflight: true,
         preflightCommitment: 'processed',
-        maxRetries: retry ? 0 : undefined
+        maxRetries: 0
       })
     }
 
-    let txid
+    const sendRawTransactionToConn = async (conn: Connection) => {
+      return await conn.sendRawTransaction(rawTransaction, {
+        skipPreflight: true,
+        preflightCommitment: 'processed',
+        maxRetries: 0
+      })
+    }
+
     try {
-      txid = await sendRawTransaction()
+      await sendRawTransaction()
     } catch (e) {
       // Rarely, this intiial send will fail
-      logger.warn(`transactionHandler: Initial send failed: ${e}`)
-      let errorCode = null
-      let error = null
-      if (e instanceof Error) {
-        error = e.message
-        errorCode = this._parseSolanaErrorCode(error)
-      }
-      return {
-        res: null,
-        error,
-        errorCode
-      }
+      logger.warn(
+        `transactionHandler: Initial send failed for txId ${txid}: ${e}`
+      )
     }
 
     let done = false
 
-    // Start up resubmission loop
+    // Start up resubmission loop. It will run in the background and continue
+    // to send the transaction until it hits a timeout.
     let sendCount = 0
     const startTime = Date.now()
     if (retry) {
       ;(async () => {
+        const connections = this.fallbackConnections ?? []
+        if (connections.length === 0) {
+          connections.push(this.connection)
+        }
         let elapsed = Date.now() - startTime
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
+          const conn = connections[sendCount % connections.length]
           try {
-            sendRawTransaction()
+            sendRawTransactionToConn(conn!)
           } catch (e) {
             logger.warn(
-              `transactionHandler: error in send loop: ${e} for txId ${txid}`
+              `transactionHandler: error in send loop: ${e} for txId ${txid} to ${
+                conn!.rpcEndpoint
+              }`
             )
           }
           sendCount++
@@ -328,7 +341,9 @@ export class TransactionHandler {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       logger.info(
-        `transactionHandler: finished for txid ${txid} with ${sendCount} retries`
+        `transactionHandler: finished sending txid ${txid} with ${sendCount} retries in ${
+          Date.now() - txStartTime
+        } ms`
       )
       return {
         res: txid,
@@ -336,11 +351,20 @@ export class TransactionHandler {
         errorCode: null
       }
     } catch (e) {
+      const fallbackConnection =
+        sample(
+          this.fallbackConnections?.filter(
+            (conn) => conn.rpcEndpoint !== this.connection.rpcEndpoint
+          )
+        ) ?? this.connection
       logger.warn(
         `transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(
           e
-        )}, ${txid}`
+        )}, ${txid}, with ${sendCount} retries to ${
+          this.connection.rpcEndpoint
+        } falling back to ${fallbackConnection.rpcEndpoint}`
       )
+      this.connection = fallbackConnection
       done = true
       let errorCode = null
       let error = null

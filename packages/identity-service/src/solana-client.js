@@ -231,12 +231,8 @@ async function createTrackListenInstructions({
     programId: TRACK_LISTEN_PROGRAM,
     data: serializedInstructionArgs
   })
-  const priorityFeeInstruction =
-    solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-      microLamports: 100000
-    })
 
-  return [secpInstruction, listenInstruction, priorityFeeInstruction]
+  return [secpInstruction, listenInstruction]
 }
 
 module.exports = {

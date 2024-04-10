@@ -56,6 +56,7 @@ const (
 	JerseyClub       Genre = "Jersey Club"
 	Vaporwave        Genre = "Vaporwave"
 	Moombahton       Genre = "Moombahton"
+	Dancehall        Genre = "Dancehall"
 )
 
 var stringToGenre = map[string]Genre{
@@ -110,12 +111,16 @@ var stringToGenre = map[string]Genre{
 	"Jersey Club":       JerseyClub,
 	"Vaporwave":         Vaporwave,
 	"Moombahton":        Moombahton,
+	"Dancehall":         Dancehall,
 }
 
 func ToGenre(s string) (Genre, bool) {
 	// Manually match genres that aren't part of the official set
 	if s == "Hip Hop" {
 		return HipHopRap, true
+	}
+	if s == "Dark Techno" {
+		return Techno, true
 	}
 
 	genre, ok := stringToGenre[s]
@@ -174,13 +179,20 @@ type ReleaseIDs struct {
 }
 
 type TrackMetadata struct {
-	Title               string         `bson:"title"`
-	ReleaseDate         time.Time      `bson:"release_date"`
-	Genre               Genre          `bson:"genre"`
-	Duration            int            `bson:"duration"`
-	PreviewStartSeconds NullableInt    `bson:"preview_start_seconds,omitempty"`
-	ISRC                NullableString `bson:"isrc,omitempty"`
-	DDEXReleaseIDs      ReleaseIDs     `bson:"ddex_release_ids"`
+	Title                        string                `bson:"title"`
+	ReleaseDate                  time.Time             `bson:"release_date"`
+	Genre                        Genre                 `bson:"genre"`
+	Duration                     int                   `bson:"duration"`
+	PreviewStartSeconds          NullableInt           `bson:"preview_start_seconds,omitempty"`
+	ISRC                         NullableString        `bson:"isrc,omitempty"`
+	DDEXReleaseIDs               ReleaseIDs            `bson:"ddex_release_ids"`
+	Artists                      []ResourceContributor `bson:"artists"`
+	ResourceContributors         []ResourceContributor `bson:"resource_contributors,omitempty"`
+	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributors,omitempty"`
+	RightsController             *RightsController     `bson:"rights_controller,omitempty"`
+	CopyrightLine                *Copyright            `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine        *Copyright            `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType          NullableString        `bson:"parental_warning_type,omitempty"`
 
 	// TODO: Handle License from PLineText?
 	License NullableString `bson:"license,omitempty"`
@@ -191,23 +203,8 @@ type TrackMetadata struct {
 	Tags        NullableString `bson:"tags,omitempty"`
 
 	// Extra fields (not in SDK)
-
-	// michelle add to sdk ==
-	Artists []Artist `bson:"artists"`
-	// michelle add to sdk ==
-
-	ArtistID   string `bson:"artist_id"`
-	ArtistName string `bson:"artist_name"`
-
-	// michelle add to sdk ==
-	ResourceContributors         []ResourceContributor `bson:"resource_contributor,omitempty"`
-	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributor,omitempty"`
-	RightsController             RightsController      `bson:"rights_controller,omitempty"`
-	CopyrightLine                Copyright             `bson:"copyright_line,omitempty"`
-	ProducerCopyrightLine        Copyright             `bson:"producer_copyright_line,omitempty"`
-	ParentalWarningType          string                `bson:"parental_warning_type,omitempty"`
-	// michelle add to sdk ==
-
+	ArtistID                    string `bson:"artist_id"`
+	ArtistName                  string `bson:"artist_name"`
 	PreviewAudioFileURL         string `bson:"preview_audio_file_url"`
 	PreviewAudioFileURLHash     string `bson:"preview_audio_file_url_hash"`
 	PreviewAudioFileURLHashAlgo string `bson:"preview_audio_file_url_hash_algo"`
@@ -219,58 +216,66 @@ type TrackMetadata struct {
 	CoverArtURLHashAlgo         string `bson:"cover_art_url_hash_algo"`
 }
 
-// Not part of SDK
-type Artist struct {
+// SDKUploadMetadata represents the metadata required to upload a track or album to Audius
+type SDKUploadMetadata struct {
+	// Required for both tracks and albums
+	ReleaseDate time.Time `bson:"release_date"`
+	Genre       Genre     `bson:"genre"`
+	CoverArtURL string    `bson:"cover_art_url"`
+
+	// Optional for both tracks and albums
+	CoverArtURLHash       NullableString        `bson:"cover_art_url_hash,omitempty"`
+	CoverArtURLHashAlgo   NullableString        `bson:"cover_art_url_hash_algo,omitempty"`
+	Artists               []ResourceContributor `bson:"artists,omitempty"`
+	Description           NullableString        `bson:"description,omitempty"` // Apparently there's supposed to be a <MarketingComment> that we use for this, but I haven't seen it in any example files
+	DDEXReleaseIDs        *ReleaseIDs           `bson:"ddex_release_ids,omitempty"`
+	Mood                  *Mood                 `bson:"mood,omitempty"` // DDEX doesn't provide this, but the Audius SDK requires it
+	Tags                  NullableString        `bson:"tags,omitempty"` // DDEX also doesn't provide this as far as I know
+	CopyrightLine         *Copyright            `bson:"copyright_line,omitempty"`
+	ProducerCopyrightLine *Copyright            `bson:"producer_copyright_line,omitempty"`
+	ParentalWarningType   NullableString        `bson:"parental_warning_type,omitempty"`
+	License               NullableString        `bson:"license,omitempty"`
+
+	// Only for tracks
+	Title                        NullableString        `bson:"title,omitempty"`
+	ArtistID                     NullableString        `bson:"artist_id,omitempty"`
+	Duration                     int                   `bson:"duration"`
+	PreviewStartSeconds          NullableInt           `bson:"preview_start_seconds,omitempty"`
+	ISRC                         NullableString        `bson:"isrc,omitempty"`
+	ResourceContributors         []ResourceContributor `bson:"resource_contributors,omitempty"`
+	IndirectResourceContributors []ResourceContributor `bson:"indirect_resource_contributors,omitempty"`
+	RightsController             *RightsController     `bson:"rights_controller,omitempty"`
+	PreviewAudioFileURL          NullableString        `bson:"preview_audio_file_url,omitempty"`
+	PreviewAudioFileURLHash      NullableString        `bson:"preview_audio_file_url_hash,omitempty"`
+	PreviewAudioFileURLHashAlgo  NullableString        `bson:"preview_audio_file_url_hash_algo,omitempty"`
+	AudioFileURL                 NullableString        `bson:"audio_file_url,omitempty"`
+	AudioFileURLHash             NullableString        `bson:"audio_file_url_hash,omitempty"`
+	AudioFileURLHashAlgo         NullableString        `bson:"audio_file_url_hash_algo,omitempty"`
+
+	// Only for albums
+	Tracks            []TrackMetadata `bson:"tracks,omitempty"`
+	PlaylistName      NullableString  `bson:"playlist_name,omitempty"`
+	PlaylistOwnerID   NullableString  `bson:"playlist_owner_id,omitempty"`
+	PlaylistOwnerName NullableString  `bson:"playlist_owner_name,omitempty"`
+	IsAlbum           NullableBool    `bson:"is_album,omitempty"`
+	IsPrivate         NullableBool    `bson:"is_private,omitempty"`
+	UPC               NullableString  `bson:"upc,omitempty"`
+}
+
+type Copyright struct {
+	Year string `bson:"year"`
+	Text string `bson:"text"`
+}
+
+// ResourceContributor represents a contributor to the sound recording
+type ResourceContributor struct {
 	Name           string   `bson:"name"`
 	Roles          []string `bson:"roles"`
 	SequenceNumber int      `bson:"sequence_number"`
 }
 
-type Copyright struct {
-	Year string
-	Text string
-}
-
-// ResourceContributor represents a contributor to the sound recording
-type ResourceContributor struct {
-	Name           string
-	Roles          []string
-	SequenceNumber int `bson:"sequence_number"`
-}
-
 type RightsController struct {
-	Name               string
-	Roles              []string
-	RightsShareUnknown string
-}
-
-type CollectionMetadata struct {
-	PlaylistName      string         `bson:"playlist_name"`
-	PlaylistOwnerID   string         `bson:"playlist_owner_id"`
-	PlaylistOwnerName string         `bson:"playlist_owner_name"`
-	Description       NullableString `bson:"description,omitempty"`
-	IsAlbum           bool           `bson:"is_album"`
-	IsPrivate         bool           `bson:"is_private"`
-	Tags              NullableString `bson:"tags,omitempty"`
-	Genre             Genre          `bson:"genre"`
-	Mood              Mood           `bson:"mood,omitempty"`
-	ReleaseDate       time.Time      `bson:"release_date"`
-	DDEXReleaseIDs    ReleaseIDs     `bson:"ddex_release_ids"`
-
-	// TODO: Handle these fields
-	License NullableString `bson:"license,omitempty"`
-	UPC     NullableString `bson:"upc,omitempty"`
-
-	// Extra fields (not in SDK)
-
-	// michelle add to sdk ==
-	Artists               []Artist  `bson:"artists"`
-	CopyrightLine         Copyright `bson:"copyright_line,omitempty"`
-	ProducerCopyrightLine Copyright `bson:"producer_copyright_line,omitempty"`
-	ParentalWarningType   string    `bson:"parental_warning_type,omitempty"`
-	// michelle add to sdk ==
-
-	CoverArtURL         string `bson:"cover_art_url"`
-	CoverArtURLHash     string `bson:"cover_art_url_hash"`
-	CoverArtURLHashAlgo string `bson:"cover_art_url_hash_algo"`
+	Name               string   `bson:"name"`
+	Roles              []string `bson:"roles"`
+	RightsShareUnknown string   `bson:"rights_share_unknown,omitempty"`
 }

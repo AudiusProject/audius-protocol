@@ -3,9 +3,9 @@
   top: 0;
   left: 0;
   z-index: 10;
-  border-radius: var(--unit-2) 0px 0px 0px;
-  width: var(--unit-12);
-  height: var(--unit-12);
+  border-radius: var(--harmony-unit-2) 0px 0px 0px;
+  width: var(--harmony-unit-12);
+  height: var(--harmony-unit-12);
   pointer-events: none;
   overflow: hidden;
 }
@@ -21,29 +21,29 @@
 /* Note: dogEarRectangle has multiple `path` elements, but we only want to fill one of them.
 That path uses `fill='currentColor'`, allowing us to set `color` here instead of `fill` */
 .gated {
-  color: var(--accent-blue);
+  color: var(--harmony-blue);
 }
 
 .purchase {
-  color: var(--special-light-green);
+  color: var(--harmony-light-green);
 }
 
 .artistPick {
-  color: var(--secondary);
+  color: var(--harmony-secondary);
 }
 
 .hidden {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
 }
 
 .icon {
   position: absolute;
-  top: var(--unit-1);
-  left: var(--unit-1);
-  width: var(--unit-4);
-  height: var(--unit-4);
+  top: var(--harmony-unit-1);
+  left: var(--harmony-unit-1);
+  width: var(--harmony-unit-4);
+  height: var(--harmony-unit-4);
 }
 
 .icon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }

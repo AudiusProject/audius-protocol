@@ -3,7 +3,7 @@
   align-items: center;
   cursor: pointer;
   /* Setting explicit height to make the emojis pop out of the popup */
-  height: var(--unit-18);
+  height: var(--harmony-unit-18);
 }
 
 .popup {

@@ -229,7 +229,8 @@ const initializeApis = ({
   const grants = new GrantsApi(
     generatedApiClientConfig,
     services.entityManager,
-    services.auth
+    services.auth,
+    users
   )
 
   const developerApps = new DeveloperAppsApi(

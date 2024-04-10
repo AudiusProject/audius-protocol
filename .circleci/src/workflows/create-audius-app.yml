@@ -1,0 +1,18 @@
+when: << pipeline.parameters.run-create-audius-app-workflow >>
+jobs:
+  - create-audius-app-init:
+      context:
+        - Vercel
+
+  - create-audius-app-test:
+      context:
+        - Vercel
+      requires:
+        - create-audius-app-init
+
+  - create-audius-app-test-e2e:
+      context:
+        - Vercel
+        - create-audius-app
+      requires:
+        - create-audius-app-init

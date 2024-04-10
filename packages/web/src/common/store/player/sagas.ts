@@ -94,7 +94,7 @@ export function* watchPlay() {
         return
       }
 
-      yield* waitForWrite()
+      yield* call(waitForWrite)
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
 

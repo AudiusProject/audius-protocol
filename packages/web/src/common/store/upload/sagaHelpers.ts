@@ -4,71 +4,24 @@ import {
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  TrackMetadata
+  TrackMetadata,
+  USDCPurchaseConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   getUSDCUserBank,
-  getContext
+  getContext,
+  TrackForUpload
 } from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import BN from 'bn.js'
-import { range } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { TrackForUpload } from 'pages/upload-page/types'
-import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
 
-export function* reportResultEvents({
-  numSuccess,
-  numFailure,
-  numRejected,
-  uploadType,
-  errors
-}: {
-  numSuccess: number
-  numFailure: number
-  numRejected: number
-  uploadType: 'single_track' | 'multi_track' | 'album' | 'playlist'
-  errors: string[]
-}) {
-  yield* waitForWrite()
-  const accountUser = yield* select(getAccountUser)
-  if (!accountUser) return
-  const primary = accountUser.creator_node_endpoint?.split(',')[0]
-  if (!primary) return
-  const successEvents = range(numSuccess).map((_) =>
-    make(Name.TRACK_UPLOAD_SUCCESS, {
-      endpoint: primary,
-      kind: uploadType
-    })
-  )
-
-  const failureEvents = range(numFailure).map((i) =>
-    make(Name.TRACK_UPLOAD_FAILURE, {
-      endpoint: primary,
-      kind: uploadType,
-      error: errors[i]
-    })
-  )
-
-  const rejectedEvents = range(numRejected).map((i) =>
-    make(Name.TRACK_UPLOAD_REJECTED, {
-      endpoint: primary,
-      kind: uploadType,
-      error: errors[i]
-    })
-  )
-
-  yield* all(
-    [...successEvents, ...failureEvents, ...rejectedEvents].map((e) => put(e))
-  )
-}
-
-// Record gated track uploads
+/** Records gated track uploads. */
 export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   const events = tracks.reduce<ReturnType<typeof make>[]>(
     (out, trackOrMetadata) => {
@@ -145,42 +98,49 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
   yield* all(events.map((e) => put(e)))
 }
 
-export function* processTracksForUpload(tracks: TrackForUpload[]) {
+export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
+  const ownerAccount = yield* select(getAccountUser)
+  const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
+  const ownerUserbank = yield* call(getUSDCUserBank, wallet)
+  const priceCents = stream_conditions.usdc_purchase.price
+  const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+  const conditionsWithMetadata: USDCPurchaseConditions = {
+    usdc_purchase: {
+      ...stream_conditions.usdc_purchase,
+      price: priceCents,
+      splits: {
+        [ownerUserbank?.toString() ?? '']: priceWei
+      }
+    }
+  }
+  return conditionsWithMetadata
+}
+
+/**
+ * Adds relevant premium metadata
+ * Converts prices to WEI and adds splits for USDC purchasable content.
+ */
+export function* addPremiumMetadata<T extends TrackMetadata>(track: T) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.USDC_PURCHASES
   )
-  if (!isUsdcPurchaseEnabled) return tracks
+  if (!isUsdcPurchaseEnabled) return track
 
-  const ownerAccount = yield* select(getAccountUser)
-  const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-  const ownerUserbank = yield* getUSDCUserBank(wallet)
+  if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+    track.stream_conditions = yield* call(
+      getUSDCMetadata,
+      track.stream_conditions
+    )
+  }
 
-  tracks.forEach((track) => {
-    const streamConditions = track.metadata.stream_conditions
-    const downloadConditions = track.metadata.download_conditions
-    if (isContentUSDCPurchaseGated(streamConditions)) {
-      const priceCents = streamConditions.usdc_purchase.price
-      const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-      streamConditions.usdc_purchase = {
-        price: priceCents,
-        splits: {
-          [ownerUserbank?.toString() ?? '']: priceWei
-        }
-      }
-    }
-    if (isContentUSDCPurchaseGated(downloadConditions)) {
-      const priceCents = downloadConditions.usdc_purchase.price
-      const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
-      downloadConditions.usdc_purchase = {
-        price: priceCents,
-        splits: {
-          [ownerUserbank.toString()]: priceWei
-        }
-      }
-    }
-  })
+  if (isContentUSDCPurchaseGated(track.download_conditions)) {
+    track.download_conditions = yield* call(
+      getUSDCMetadata,
+      track.download_conditions
+    )
+  }
 
-  return tracks
+  return track
 }

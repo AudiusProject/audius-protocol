@@ -9,7 +9,8 @@ import {
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
-  gatedContentSelectors
+  gatedContentSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   formatCount,
@@ -49,7 +50,7 @@ import styles from './TrackTile.module.css'
 import TrackTileArt from './TrackTileArt'
 
 const { setLockedContentId } = gatedContentActions
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 type ExtraProps = {
   permalink: string
@@ -193,7 +194,7 @@ const TrackTile = (props: CombinedProps) => {
   const [, setModalVisibility] = useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const trackId = isStreamGated ? id : null
   const gatedTrackStatus = trackId ? gatedTrackStatusMap[trackId] : undefined
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
@@ -229,7 +230,7 @@ const TrackTile = (props: CombinedProps) => {
   const onClickPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId },
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
         { source: ModalSource.TrackTile }
       )
     } else if (trackId && !hasStreamAccess) {
@@ -473,7 +474,7 @@ const TrackTile = (props: CombinedProps) => {
           toggleSave={onToggleSave}
           onShare={onClickShare}
           onClickOverflow={onClickOverflowMenu}
-          onClickPill={onClickPill}
+          onClickGatedUnlockPill={onClickPill}
           isOwner={isOwner}
           readonly={isReadonly}
           isLoading={isLoading}

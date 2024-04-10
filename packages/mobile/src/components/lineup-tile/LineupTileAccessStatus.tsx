@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { ID, AccessConditions } from '@audius/common/models'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import type { PurchaseableContentType } from '@audius/common/store'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -20,7 +21,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 const { setLockedContentId } = gatedContentActions
 
 const messages = {
@@ -53,10 +54,12 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 }))
 
 export const LineupTileAccessStatus = ({
-  trackId,
+  contentId,
+  contentType,
   streamConditions
 }: {
-  trackId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
   streamConditions: AccessConditions
 }) => {
   const styles = useStyles()
@@ -64,8 +67,8 @@ export const LineupTileAccessStatus = ({
   const isUSDCEnabled = useIsUSDCEnabled()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
-  const gatedTrackStatus = gatedTrackStatusMap[trackId]
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
+  const gatedTrackStatus = gatedTrackStatusMap[contentId]
   const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =
     isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
@@ -73,14 +76,20 @@ export const LineupTileAccessStatus = ({
   const handlePress = useCallback(() => {
     if (isUSDCPurchase) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId },
+        { contentId, contentType },
         { source: ModalSource.TrackTile }
       )
-    } else if (trackId) {
-      dispatch(setLockedContentId({ id: trackId }))
+    } else if (contentId) {
+      dispatch(setLockedContentId({ id: contentId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     }
-  }, [trackId, isUSDCPurchase, openPremiumContentPurchaseModal, dispatch])
+  }, [
+    isUSDCPurchase,
+    contentId,
+    openPremiumContentPurchaseModal,
+    contentType,
+    dispatch
+  ])
 
   return (
     <TouchableOpacity onPress={handlePress}>

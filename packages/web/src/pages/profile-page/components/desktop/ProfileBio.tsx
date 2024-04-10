@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
-import {
-  IconCaretDown as IconCaretDownLine,
-  IconCaretUp as IconCaretUpLine
-} from '@audius/harmony'
+import { IconCaretDown, IconCaretUp, PlainButton } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -232,31 +229,24 @@ export const ProfileBio = ({
       >
         {bio}
       </UserGeneratedText>
-      {isCollapsed ? (
-        <div>
-          <OpacityTransition render={renderCollapsedContent} duration={300} />
-          <div
-            className={styles.truncateContainer}
+      <div>
+        <OpacityTransition
+          render={isCollapsed ? renderCollapsedContent : renderExpandedContent}
+          duration={300}
+        />
+        {isCollapsible ? (
+          <PlainButton
+            iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
             onClick={handleToggleCollapse}
+            css={(theme) => ({
+              marginTop: theme.spacing.l,
+              paddingLeft: 0
+            })}
           >
-            <span>{messages.seeMore}</span>
-            <IconCaretDownLine size='m' color='subdued' />
-          </div>
-        </div>
-      ) : (
-        <div>
-          <OpacityTransition render={renderExpandedContent} duration={300} />
-          {isCollapsible ? (
-            <div
-              className={styles.truncateContainer}
-              onClick={handleToggleCollapse}
-            >
-              <span>{messages.seeLess}</span>
-              <IconCaretUpLine size='m' color='subdued' />
-            </div>
-          ) : null}
-        </div>
-      )}
+            {isCollapsed ? messages.seeMore : messages.seeLess}
+          </PlainButton>
+        ) : null}
+      </div>
     </div>
   )
 }

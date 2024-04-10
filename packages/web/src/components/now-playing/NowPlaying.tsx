@@ -29,11 +29,11 @@ import {
   playerSelectors,
   playbackRateValueMap,
   gatedContentSelectors,
-  OverflowActionCallbacks
+  OverflowActionCallbacks,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
-import { IconCaretRight as IconCaret } from '@audius/harmony'
-import { Scrubber } from '@audius/stems'
+import { IconCaretRight as IconCaret, Scrubber } from '@audius/harmony'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -80,7 +80,7 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
 const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 type OwnProps = {
   onClose: () => void
@@ -405,7 +405,7 @@ const NowPlaying = g(
     const matrix = isMatrix()
     const darkMode = isDarkMode()
 
-    const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+    const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
     const gatedTrackStatus =
       track_id &&
       gatedTrackStatusMap[typeof track_id === 'number' ? track_id : -1]
@@ -414,7 +414,8 @@ const NowPlaying = g(
     const onClickPill = useAuthenticatedClickCallback(() => {
       openPremiumContentPurchaseModal(
         {
-          contentId: typeof track_id === 'number' ? track_id : -1
+          contentId: typeof track_id === 'number' ? track_id : -1,
+          contentType: PurchaseableContentType.TRACK
         },
         { source: ModalSource.NowPlaying }
       )

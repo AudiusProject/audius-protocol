@@ -35,6 +35,8 @@ func RunNewCrawler(ctx context.Context) {
 	interval := 3 * time.Minute
 	if os.Getenv("TEST_MODE") == "true" {
 		interval = time.Second
+	} else if os.Getenv("IS_DEV") == "true" {
+		interval = 5 * time.Second
 	}
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -44,28 +46,31 @@ func RunNewCrawler(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			lastPolledTime, err := c.getLastPolledTime()
+			lastPolledStr, err := c.getLastPolledStr()
 			if err != nil {
 				c.Logger.Error("Failed to retrieve S3 raw bucket's last polled time", "error", err)
 				continue
 			}
 
-			zipFiles, err := c.pollS3Bucket(lastPolledTime)
+			deliveries, err := c.pollS3Bucket(lastPolledStr)
 			if err != nil {
 				c.Logger.Error("Error polling S3 bucket", "error", err)
 				continue
 			}
 
-			for _, zipFile := range zipFiles {
-				err = c.processZIP(zipFile)
+			for _, delivery := range deliveries {
+				err = c.crawlDelivery(delivery)
 				if err != nil {
 					c.Logger.Error("Error processing ZIP file", "error", err)
 				}
 			}
 
-			err = c.updateLastPolledTime(time.Now())
-			if err != nil {
-				c.Logger.Error("Failed to update s3 raw bucket's last polled time", "error", err)
+			if len(deliveries) > 0 {
+				pathWithoutPrefix := strings.TrimPrefix(deliveries[len(deliveries)-1].RemotePath, "s3://"+c.RawBucket+"/")
+				err = c.updateLastPolledStr(pathWithoutPrefix)
+				if err != nil {
+					c.Logger.Error("Failed to update s3 raw bucket's last polled time", "error", err)
+				}
 			}
 
 			if ctx.Err() != nil {
@@ -75,103 +80,126 @@ func RunNewCrawler(ctx context.Context) {
 	}
 }
 
-func (c *Crawler) updateLastPolledTime(lastPolledTime time.Time) error {
+func (c *Crawler) updateLastPolledStr(lastPolledStr string) error {
 	filter := bson.M{"service": "crawler"}
-	update := bson.M{"$set": bson.M{"s3RawLastPolledTime": lastPolledTime}}
+	update := bson.M{"$set": bson.M{"s3_raw_last_polled_str": lastPolledStr}}
 	opts := options.Update().SetUpsert(true)
 
 	_, err := c.CursorsColl.UpdateOne(c.Ctx, filter, update, opts)
 	return err
 }
 
-func (c *Crawler) getLastPolledTime() (time.Time, error) {
+func (c *Crawler) getLastPolledStr() (string, error) {
 	var result struct {
-		LastPolledTime time.Time `bson:"s3RawLastPolledTime"`
+		LastPolledStr string `bson:"s3_raw_last_polled_str"`
 	}
 	filter := bson.M{"service": "crawler"}
 
 	err := c.CursorsColl.FindOne(c.Ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			// No record found, return zero time
-			return time.Time{}, nil
+			// No record found, return empty string
+			return "", nil
 		}
-		return time.Time{}, err
+		return "", err
 	}
 
-	return result.LastPolledTime, nil
+	return result.LastPolledStr, nil
 }
 
-// TODO: If deliveries contain a timestamp in their name, we should be able to use that to avoid querying the entire bucket
-func (c *Crawler) pollS3Bucket(lastPolledTime time.Time) ([]*s3.Object, error) {
-	resp, err := c.S3Client.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: aws.String(c.RawBucket),
-	})
+// pollS3Bucket lists top-level folders and ZIP files in the S3 bucket, starting after the specified string
+func (c *Crawler) pollS3Bucket(lastPolledString string) ([]common.Delivery, error) {
+	input := &s3.ListObjectsV2Input{
+		Bucket:     aws.String(c.RawBucket),
+		Delimiter:  aws.String("/"),
+		StartAfter: aws.String(lastPolledString),
+	}
+
+	var items []common.Delivery
+	res, err := c.S3Client.ListObjectsV2(input)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error polling S3 bucket: %w", err)
 	}
 
-	var newUploads []*s3.Object
-	for _, item := range resp.Contents {
-		if item.LastModified.After(lastPolledTime) {
-			newUploads = append(newUploads, item)
+	// Handle top-level ZIP files
+	for _, item := range res.Contents {
+		if strings.HasSuffix(*item.Key, ".zip") {
+			items = append(items, common.Delivery{
+				RemotePath:     fmt.Sprintf("s3://%s/%s", c.RawBucket, *item.Key),
+				IsFolder:       false,
+				CreatedAt:      *item.LastModified,
+				DeliveryStatus: constants.DeliveryStatusParsing,
+			})
 		}
 	}
-	return newUploads, nil
+
+	// Handle top-level directories (common prefixes)
+	for _, prefix := range res.CommonPrefixes {
+		folderName := strings.TrimSuffix(*prefix.Prefix, "/")
+		items = append(items, common.Delivery{
+			RemotePath:     fmt.Sprintf("s3://%s/%s", c.RawBucket, folderName),
+			IsFolder:       true,
+			CreatedAt:      time.Now(), // TODO: This could query the folder's contents to any file's LastModified
+			DeliveryStatus: constants.DeliveryStatusParsing,
+		})
+	}
+
+	return items, nil
 }
 
-// processZIP unzips a "delivery" and crawls it to find one or more "releases"
-func (c *Crawler) processZIP(upload *s3.Object) error {
-	remotePath := "s3://" + c.RawBucket + "/" + *upload.Key
-	etag := strings.Trim(*upload.ETag, "\"")
-
-	// Only insert if a document doesn't already exist with this ETag
-	var delivery common.Delivery
+// crawlDelivery searches a remote "delivery" (S3 folder or S3 ZIP file that crawDelivery will unzip) for one or more "releases"
+func (c *Crawler) crawlDelivery(delivery common.Delivery) error {
+	// Only insert if a document doesn't already exist with this remotePath
 	filter := bson.M{
-		"_id": etag,
+		"_id": delivery.RemotePath,
 	}
 	err := c.DeliveriesColl.FindOne(c.Ctx, filter).Decode(&delivery)
 	if err == nil {
-		c.Logger.Info("Skipping crawling delivery with ETag that already exists", "etag", etag)
+		c.Logger.Info("Skipping crawling delivery with remotePath that already exists in Mongo", "remotePath", delivery.RemotePath)
 		return nil
 	}
 	if err != mongo.ErrNoDocuments {
-		c.Logger.Error("Error querying Mongo to check for existing ETag", "error", err)
+		c.Logger.Error("Error querying Mongo to check for existing remotePath", "remotePath", delivery.RemotePath, "error", err)
 		return err
 	}
 
-	c.Logger.Info("Processing new ZIP file", "remotePath", remotePath, "etag", etag)
+	c.Logger.Info("Processing new delivery", "remotePath", delivery.RemotePath)
 
-	delivery = common.Delivery{
-		ZIPFileETag:    etag,
-		ZIPFilePath:    remotePath,
-		CreatedAt:      *upload.LastModified,
-		DeliveryStatus: constants.DeliveryStatusParsing,
-	}
-
-	// Download ZIP file from S3
-	zipFilePath, cleanup := c.downloadFromS3Raw(remotePath)
-	defer cleanup()
-	if zipFilePath == "" {
-		c.Logger.Error("Failed to download ZIP file from S3 bucket", "path", remotePath)
-		return err
-	}
-
-	// Unzip the file and crawl its contents
-	extractDir, err := os.MkdirTemp("", "extracted")
+	// Create temp directory for the delivery's contents (either from ZIP file or folder in S3)
+	deliveryLocalPath, err := os.MkdirTemp("", "delivery")
 	if err != nil {
 		c.Logger.Error("Error creating temp directory", "error", err)
 		return err
 	}
-	defer os.RemoveAll(extractDir)
+	defer func() {
+		if err := os.RemoveAll(deliveryLocalPath); err != nil {
+			c.Logger.Error("Error removing temp directory", "deliveryLocalPath", deliveryLocalPath, "error", err)
+		}
+	}()
 
-	if err := unzip(zipFilePath, extractDir); err != nil {
-		c.Logger.Error("Error unzipping file", "error", err)
-		return err
+	// Download folder from S3, or download+extract ZIP file from S3
+	if delivery.IsFolder {
+		err := c.downloadFolderFromS3Raw(delivery.RemotePath, deliveryLocalPath)
+		if err != nil {
+			c.Logger.Error("Failed to download folder from S3", "path", delivery.RemotePath, "error", err)
+			return err
+		}
+	} else {
+		zipFilePath, cleanup := c.downloadFileFromS3Raw(delivery.RemotePath)
+		defer cleanup()
+		if zipFilePath == "" {
+			c.Logger.Error("Failed to download ZIP file from S3", "path", delivery.RemotePath)
+			return err
+		}
+
+		if err := unzip(zipFilePath, deliveryLocalPath); err != nil {
+			c.Logger.Error("Error unzipping file", "error", err)
+			return err
+		}
 	}
 
 	if c.DDEXChoreography == constants.ERNReleaseByRelease {
-		releases, err := c.crawlUnzippedReleaseByRelease(extractDir)
+		releases, err := c.crawlUnzippedReleaseByRelease(deliveryLocalPath)
 		if err == nil {
 			delivery.Releases = *releases
 		} else {
@@ -180,7 +208,7 @@ func (c *Crawler) processZIP(upload *s3.Object) error {
 			c.Logger.Error("Error crawling unzipped release-by-release", "error", err)
 		}
 	} else {
-		batches, err := c.crawlUnzippedBatch(extractDir)
+		batches, err := c.crawlUnzippedBatch(deliveryLocalPath)
 		if err == nil {
 			delivery.Batches = *batches
 		} else {
@@ -258,8 +286,61 @@ func (c *Crawler) getReleaseAndUploadAssets(rootDir, dir string) (*common.Unproc
 	return release, nil
 }
 
-// downloadFromRaw downloads a file from the S3 "raw" bucket to a temporary file
-func (c *Crawler) downloadFromS3Raw(remotePath string) (string, func()) {
+// downloadFolderFromS3Raw downloads all contents of the remote dir, including nested subdirs, to localFolder
+func (c *Crawler) downloadFolderFromS3Raw(remoteFolder, localFolder string) error {
+	if !strings.HasPrefix(remoteFolder, "s3://"+c.RawBucket+"/") {
+		return fmt.Errorf("invalid S3 path: %s", remoteFolder)
+	}
+	prefix := strings.TrimPrefix(remoteFolder, "s3://"+c.RawBucket+"/")
+
+	// List objects in the folder
+	res, err := c.S3Client.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: aws.String(c.RawBucket),
+		Prefix: aws.String(prefix),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to list objects: %w", err)
+	}
+
+	// Download through objects
+	for _, obj := range res.Contents {
+		localFilePath := filepath.Join(localFolder, *obj.Key) // Use localFolder as the root
+		err := c.downloadSingleFile(obj.Key, localFilePath)
+		if err != nil {
+			return fmt.Errorf("failed to download object %s: %w", *obj.Key, err)
+		}
+	}
+
+	return nil
+}
+
+func (c *Crawler) downloadSingleFile(s3Key *string, localPath string) error {
+	// Ensure parent directories exist
+	err := os.MkdirAll(filepath.Dir(localPath), 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create directories: %w", err)
+	}
+
+	// Create the local file
+	file, err := os.Create(localPath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = c.S3Downloader.Download(file, &s3.GetObjectInput{
+		Bucket: aws.String(c.RawBucket),
+		Key:    s3Key,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to download file from S3: %w", err)
+	}
+
+	return nil
+}
+
+// downloadFileFromS3Raw downloads a file from the S3 "raw" bucket to a temporary file
+func (c *Crawler) downloadFileFromS3Raw(remotePath string) (string, func()) {
 	if !strings.HasPrefix(remotePath, "s3://"+c.RawBucket+"/") {
 		c.Logger.Error("Invalid S3 path", "path", remotePath)
 		return "", func() {}
@@ -276,7 +357,7 @@ func (c *Crawler) downloadFromS3Raw(remotePath string) (string, func()) {
 		Key:    aws.String(s3Key),
 	})
 	if err != nil {
-		c.Logger.Error("Error downloading file from S3", "error", err)
+		c.Logger.Error("Error downloading file from S3", remotePath, "remotePath", "error", err)
 		file.Close()
 		os.Remove(file.Name())
 		return "", func() {}
@@ -285,7 +366,7 @@ func (c *Crawler) downloadFromS3Raw(remotePath string) (string, func()) {
 	return file.Name(), func() { os.Remove(file.Name()) }
 }
 
-// uploadDirToS3Crawled uploads all contents of the dir, including nested subdirs, to the S3 "crawled" bucket.
+// uploadDirToS3Crawled uploads all contents of the dir, including nested subdirs, to the S3 "crawled" bucket
 func (c *Crawler) uploadDirToS3Crawled(dirPath, keyPrefix string) {
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -307,7 +388,7 @@ func (c *Crawler) uploadDirToS3Crawled(dirPath, keyPrefix string) {
 	}
 }
 
-// uploadFileToCrawled uploads a file to the S3 "crawled" bucket.
+// uploadFileToCrawled uploads a file to the S3 "crawled" bucket
 func (c *Crawler) uploadFileToS3Crawled(filePath, fileKey string) {
 	file, err := os.Open(filePath)
 	if err != nil {

@@ -108,7 +108,7 @@ const buildInitialState = (ssrPageProps?: SsrPageProps) => {
 }
 
 const reducer =
-  (ssrPageProps: SsrPageProps) =>
+  (ssrPageProps?: SsrPageProps) =>
   (state: TracksCacheState, action: AddSuccededAction<Track>) => {
     if (!state) {
       // @ts-ignore

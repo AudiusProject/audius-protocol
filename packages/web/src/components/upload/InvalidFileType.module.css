@@ -1,15 +1,15 @@
 .invalidFileType {
   max-width: 320px;
-  padding: var(--unit-2) var(--unit-4);
+  padding: var(--harmony-unit-2) var(--harmony-unit-4);
   border-radius: 8px;
-  background-color: var(--accent-red);
-  color: var(--white);
+  background-color: var(--harmony-red);
+  color: var(--harmony-white);
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
+  font-family: var(--harmony-font-family);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-demi-bold);
 }
 
 .message {

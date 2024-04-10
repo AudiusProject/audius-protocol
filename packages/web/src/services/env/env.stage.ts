@@ -46,6 +46,7 @@ export const env: Env = {
   INSTAGRAM_REDIRECT_URL: 'https://staging.audius.co/',
   METADATA_PROGRAM_ID: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
   OPENSEA_API_URL: 'https://rinkeby-api.opensea.io',
+  HELIUS_DAS_API_URL: 'https://sol-collectibles.audius.workers.dev',
   OPTIMIZELY_KEY: 'MX4fYBgANQetvmBXGpuxzF',
   ORACLE_ETH_ADDRESSES: '0x00b6462e955dA5841b6D9e1E2529B830F00f31Bf',
   PAYMENT_ROUTER_PROGRAM_ID: 'sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry',
@@ -63,7 +64,8 @@ export const env: Env = {
   SENTRY_DSN: 'https://4b15a7a2f2e2459997408b39a0c4942c@s.audius.co/1851611',
   SOL_BRIDGE_ADDRESS: null,
   SOL_TOKEN_BRIDGE_ADDRESS: null,
-  SOLANA_CLUSTER_ENDPOINT: 'https://audius-fe.rpcpool.com',
+  SOLANA_CLUSTER_ENDPOINT:
+    process.env.VITE_SOLANA_CLUSTER_ENDPOINT || 'https://audius-fe.rpcpool.com',
   SOLANA_FEE_PAYER_ADDRESS: 'E3CfijtAJwBSHfwFEViAUd3xp7c8TBxwC1eXn1Fgxp8h',
   SOLANA_RELAY_ENDPOINT: 'https://discoveryprovider.staging.audius.co',
   SOLANA_TOKEN_PROGRAM_ADDRESS: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',

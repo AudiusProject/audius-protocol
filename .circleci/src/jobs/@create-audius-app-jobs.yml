@@ -1,0 +1,65 @@
+create-audius-app-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+    - run:
+        name: lint & typecheck
+        command: |
+          npx turbo run verify --filter=create-audius-app
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/create-audius-app/node_modules
+
+create-audius-app-test:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: 'test'
+        command: |
+          npx turbo run test --filter=create-audius-app
+
+create-audius-app-test-e2e:
+  working_directory: ~/audius-protocol
+  resource_class: medium
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: 'test-e2e'
+        command: |
+          npx playwright install --with-deps
+          npm run setup-test-env -w create-audius-app
+          cd packages/create-audius-app/examples/react
+          npm i
+          npm run build
+          cd ../../
+          npm run test:e2e
+    - store_test_results:
+        path: packages/create-audius-app/report.xml
+        when: always
+    - store_artifacts:
+        path: packages/create-audius-app/playwright-report
+    - store_artifacts:
+        path: packages/create-audius-app/blob-report

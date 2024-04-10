@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
+    "lib": ["esnext"],
     "target": "es2019",
     "moduleResolution": "node",
     "strict": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   },
-  "exclude": ["dist"]
+  "exclude": ["dist", "examples", "*.test.ts"]
 }

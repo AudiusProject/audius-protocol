@@ -55,6 +55,7 @@ export type ProfileState = {
 export type ProfilePageState = {
   currentUser: Nullable<string>
   entries: Record<string, ProfileState>
+  isInitialFetchAfterSsr: boolean
 }
 
 export enum ProfilePageTabs {

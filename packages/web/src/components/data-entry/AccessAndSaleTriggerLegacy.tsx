@@ -370,7 +370,7 @@ export const AccessAndSaleTriggerLegacy = (
       renderValue={() => null}
       previewOverride={(toggleMenu) => (
         <Button
-          variant='common'
+          variant='secondary'
           size='small'
           css={(theme) => ({ marginTop: theme.spacing.l })}
           name='availabilityModal'

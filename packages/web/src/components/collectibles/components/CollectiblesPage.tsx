@@ -24,7 +24,8 @@ import {
   PopupMenu,
   PopupMenuItem,
   Button,
-  Flex
+  Flex,
+  Box
 } from '@audius/harmony'
 import cn from 'classnames'
 import {
@@ -557,11 +558,27 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     }
   ]
 
-  if (isUserOnTheirProfile)
+  if (isUserOnTheirProfile) {
     overflowMenuItems.unshift({
       text: 'Edit',
       onClick: handleEditClick
     })
+  }
+  const [loadedIndex, setLoadedIndex] = useState(-1)
+  const [concurrentLoads, setConcurrentLoads] = useState(0)
+  const onStartLoad = useCallback(
+    (value: number) => {
+      setConcurrentLoads(concurrentLoads + 1)
+    },
+    [concurrentLoads, setConcurrentLoads]
+  )
+  const onLoaded = useCallback(
+    (value: number) => {
+      setLoadedIndex(Math.max(loadedIndex, value))
+      setConcurrentLoads(concurrentLoads - 1)
+    },
+    [concurrentLoads, loadedIndex, setLoadedIndex, setConcurrentLoads]
+  )
 
   return (
     <div
@@ -587,7 +604,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             <Flex gap='s' w='100%'>
               {isUserOnTheirProfile && (
                 <Button
-                  variant='common'
+                  variant='secondary'
                   size='small'
                   onClick={handleEditClick}
                   iconLeft={IconPencil}
@@ -597,7 +614,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 </Button>
               )}
               <Button
-                variant='common'
+                variant='secondary'
                 size='small'
                 onClick={handleShareClick}
                 iconLeft={IconShare}
@@ -636,13 +653,15 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           ) : (
             <div className={styles.container}>
-              {getVisibleCollectibles().map((collectible) => (
+              {getVisibleCollectibles().map((collectible, i) => (
                 <CollectibleDetails
                   key={collectible.id}
                   collectible={collectible}
-                  onClick={() =>
-                    setEmbedCollectibleHash(getHash(collectible.id))
-                  }
+                  onClick={setEmbedCollectibleHash}
+                  canLoad={i <= loadedIndex + 7 && concurrentLoads <= 8}
+                  index={i}
+                  onLoad={onStartLoad}
+                  onLoaded={onLoaded}
                 />
               ))}
             </div>
@@ -739,14 +758,11 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
               </div>
             </div>
           )}
-
-          <HarmonyButton
-            variant='primary'
-            size='small'
-            onClick={handleDoneClick}
-          >
-            Done
-          </HarmonyButton>
+          <Box m='l'>
+            <HarmonyButton variant='primary' onClick={handleDoneClick}>
+              Done
+            </HarmonyButton>
+          </Box>
         </div>
       </Modal>
 

@@ -109,8 +109,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
     !matchPath(history.location.pathname, { path: '/', exact: true }) &&
     animDelay &&
     !isDismissed &&
-    isMobile &&
-    !(navigator.userAgent === 'probers')
+    isMobile
 
   useEffect(() => {
     shouldShow && incrementScroll()
@@ -194,10 +193,11 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
                                   style={props}
                                 >
                                   <Button
-                                    variant='common'
+                                    variant='secondary'
                                     css={(theme) => ({
                                       borderRadius: theme.cornerRadius['2xl'],
-                                      color: theme.color.secondary.secondary
+                                      color: theme.color.secondary.secondary,
+                                      background: theme.color.static.white
                                     })}
                                     onClick={onClick}
                                   >

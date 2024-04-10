@@ -11,7 +11,9 @@ export enum DynamicTrackArtworkSize {
   /** 40x40 */
   SMALL = 'small',
   /** 64x64 */
-  DEFAULT = 'default'
+  DEFAULT = 'default',
+  /** 96x96 */
+  LARGE = 'large'
 }
 
 type DynamicTrackArtworkProps = {

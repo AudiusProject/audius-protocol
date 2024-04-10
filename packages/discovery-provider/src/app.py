@@ -313,7 +313,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
             "src.tasks.calculate_trending_challenges",
-            "src.tasks.backfill_cid_data",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
@@ -439,11 +438,6 @@ def configure_celery(celery, test_config=None):
     # Initialize Redis connection
     redis_inst = get_redis()
 
-    # backfill cid data if url is provided
-    env = os.getenv("audius_discprov_env")
-    if env in ("stage", "prod") and not redis_inst.get("backfilled_cid_data"):
-        celery.send_task("backfill_cid_data")
-
     # Initialize DB object for celery task context
     db = SessionManager(
         database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
@@ -483,7 +477,6 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
     redis_inst.delete("spl_token_lock")
     redis_inst.delete("profile_challenge_backfill_lock")
-    redis_inst.delete("backfill_cid_data_lock")
     redis_inst.delete("index_trending_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
@@ -528,6 +521,7 @@ def configure_celery(celery, test_config=None):
     celery.finalize()
 
     # Start tasks that should fire upon startup
+    celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")
     celery.send_task("index_nethermind", queue="index_nethermind")
     celery.send_task("index_user_bank", queue="index_sol")

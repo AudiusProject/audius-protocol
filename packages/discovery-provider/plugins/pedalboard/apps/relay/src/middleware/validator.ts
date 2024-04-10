@@ -4,7 +4,6 @@ import { validationError } from '../error'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
 import { AudiusABIDecoder } from '@audius/sdk'
 import { config, discoveryDb } from '..'
-import { logger } from '../logger'
 import { isUserCreate, isUserDeactivate } from '../utils'
 import { getEntityManagerActionKey } from './rateLimiter'
 
@@ -16,7 +15,7 @@ export const validator = async (
   next: NextFunction
 ) => {
   const body = request.body as RelayRequest
-  const { requestId } = response.locals.ctx
+  const { logger } = response.locals.ctx
 
   // Validation of input fields
   const contractAddress =
@@ -51,8 +50,19 @@ export const validator = async (
     handle
   }
 
+  const loggerInfo: {
+    operation?: string,
+    handle?: string,
+    address?: string,
+    userId?: number,
+    isApp?: boolean
+  } = {
+    isApp: false
+  }
+
   const operation = getEntityManagerActionKey(encodedABI)
-  logger.info({ requestId, operation, abi: encodedABI })
+  loggerInfo.operation = operation
+  logger.info({ operation, encodedABI }, "retrieved operation")
 
   // Gather user from input data
   // @ts-ignore, partially populate for now
@@ -76,19 +86,23 @@ export const validator = async (
   if (user !== undefined) {
     recoveredSigner = user
     signerIsUser = true
-    logger.info({ requestId, handle: user.handle_lc, address: user.wallet, userId: user.user_id, operation }, `retrieved user ${user.handle_lc}`)
+    loggerInfo.handle = user.handle_lc || undefined
+    loggerInfo.address = user.wallet || undefined
+    loggerInfo.userId = user.user_id || undefined
+    
+    logger.info({ handle: user.handle_lc, address: user.wallet, userId: user.user_id, operation }, `retrieved user ${user.handle_lc}`)
   }
 
   if (signerIsUser) {
     const isDeactivated = (recoveredSigner as Users).is_deactivated
     if (isUserDeactivate(isDeactivated, encodedABI)) {
-      logger.info({ requestId, encodedABI, operation }, "user deactivation")
+      logger.info("user deactivation")
       createOrDeactivate = true
     }
   }
 
   if (isUserCreate(encodedABI)) {
-    logger.info({ requestId: response.locals.ctx.requestId, encodedABI, operation }, "user create")
+    logger.info("user create")
     createOrDeactivate = true
   }
 
@@ -96,19 +110,25 @@ export const validator = async (
   if (!signerIsUser && !createOrDeactivate && !isSenderVerifier) {
     const developerApp = await retrieveDeveloperApp({ encodedABI, contractAddress })
     if (developerApp === undefined) {
-      logger.error({ encodedABI, operation }, "neither user nor developer app could be found for address")
+      logger.error("neither user nor developer app could be found for address")
       validationError(next, 'recoveredSigner not valid')
       return
     }
     recoveredSigner = developerApp
     signerIsApp = true
-    logger.info({ requestId, address: developerApp.address, userId: developerApp.user_id, name: developerApp.name, operation }, `retrieved developer app ${developerApp.name}`)
+    loggerInfo.address = developerApp.address
+    loggerInfo.userId = developerApp.user_id || undefined
+    loggerInfo.handle = developerApp.name
+    loggerInfo.isApp = true
+    logger.info({ address: developerApp.address, userId: developerApp.user_id, handle: developerApp.name, operation }, `retrieved developer app ${developerApp.name}`)
   }
 
   // inject remaining fields into ctx for downstream middleware
   const ip = request.ip ?? ''
 
   const oldCtx = response.locals.ctx
+  // create child logger with additional
+  const newLogger = logger.child({...loggerInfo})
   response.locals.ctx = {
     ...oldCtx,
     validatedRelayRequest,
@@ -117,7 +137,8 @@ export const validator = async (
     ip,
     signerIsApp,
     signerIsUser,
-    isSenderVerifier
+    isSenderVerifier,
+    logger: newLogger
   }
   next()
 }

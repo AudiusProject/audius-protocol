@@ -14,10 +14,17 @@ new_grants_data = [
     {
         "user_id": 1,
         "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+        "is_user_grant": False,
     },
     {
         "user_id": 1,
         "grantee_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
+        "is_user_grant": False,
+    },
+    {
+        "user_id": 1,
+        "grantee_address": "user3Wallet",
+        "is_user_grant": True,
     },
 ]
 
@@ -56,6 +63,20 @@ def test_index_grant(app, mocker):
                         "_metadata": f"""{{"grantee_address": "{new_grants_data[1]["grantee_address"]}"}}""",
                         "_action": Action.CREATE,
                         "_signer": f"user{new_grants_data[1]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "CreateGrantTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[2]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[2]["grantee_address"]}"}}""",
+                        "_action": Action.CREATE,
+                        "_signer": f"user{new_grants_data[2]['user_id']}wallet",
                     }
                 )
             },
@@ -116,7 +137,7 @@ def test_index_grant(app, mocker):
 
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
-        assert len(all_grants) == 3
+        assert len(all_grants) == 4
 
         for expected_grant in new_grants_data:
             found_matches = [
@@ -128,6 +149,10 @@ def test_index_grant(app, mocker):
             assert len(found_matches) == 1
             res = found_matches[0]
             assert res.is_current == True
+            if expected_grant["is_user_grant"]:
+                assert res.is_approved == None
+            else:
+                assert res.is_approved == True
             assert res.blocknumber == 5
 
     # Test invalid create grant txs
@@ -213,7 +238,52 @@ def test_index_grant(app, mocker):
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
         # make sure no new rows were added
-        assert len(all_grants) == 3
+        assert len(all_grants) == 4
+
+    # Valid approve grant
+    tx_receipts = {
+        "ApproveGrantTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.GRANT,
+                        "_userId": 3,
+                        "_metadata": f"""{{"grantor_user_id": {new_grants_data[2]["user_id"]}}}""",
+                        "_action": Action.APPROVE,
+                        "_signer": "user3Wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        timestamp = 1000000001
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=7,
+            block_timestamp=timestamp,
+            block_hash=hex(0),
+        )
+        # validate db records
+        all_grants: List[Grant] = session.query(Grant).all()
+        assert len(all_grants) == 4
+        found_matches = [
+            item
+            for item in all_grants
+            if item.grantee_address.lower() == "user3wallet" and item.user_id == 1
+        ]
+        assert len(found_matches) == 1
+        assert found_matches[0].is_approved == True
 
     tx_receipts = {
         "InvalidDeleteGrantTx1": [
@@ -282,7 +352,7 @@ def test_index_grant(app, mocker):
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
         # make sure no new rows were added
-        assert len(all_grants) == 3
+        assert len(all_grants) == 4
 
     # Valid deletes
     tx_receipts = {
@@ -314,6 +384,20 @@ def test_index_grant(app, mocker):
                 )
             },
         ],
+        "DeleteGrantTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[2]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[2]["grantee_address"]}"}}""",
+                        "_action": Action.DELETE,
+                        "_signer": f"user{new_grants_data[2]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -334,7 +418,7 @@ def test_index_grant(app, mocker):
 
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
-        assert len(all_grants) == 3
+        assert len(all_grants) == 4
 
         for expected_grant in new_grants_data:
             found_matches = [
@@ -389,7 +473,7 @@ def test_index_grant(app, mocker):
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
         # No change
-        assert len(all_grants) == 3
+        assert len(all_grants) == 4
 
     # Reactivate a revoked grant
     tx_receipts = {
@@ -427,7 +511,7 @@ def test_index_grant(app, mocker):
 
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
-        assert len(all_grants) == 3
+        assert len(all_grants) == 4
         expected_grant = new_grants_data[1]
         found_matches = [
             item

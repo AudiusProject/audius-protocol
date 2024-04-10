@@ -56,6 +56,8 @@ export const shadows = {
   flat: {
     elevation: 0,
     shadowRadius: 0,
+    shadowOpacity: 0,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 }
   }
 }

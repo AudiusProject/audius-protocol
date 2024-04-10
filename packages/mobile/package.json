@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.5.72",
+  "version": "1.5.75",
   "private": true,
   "scripts": {
     "android:dev": "ENVFILE=.env.dev turbo run android -- --mode=prodDebug",
@@ -126,6 +126,7 @@
     "react-native-code-push": "8.1.1",
     "react-native-collapsible-tab-view": "2.0.2",
     "react-native-config": "1.5.1",
+    "react-native-create-thumbnail": "2.0.0",
     "react-native-document-picker": "9.1.0",
     "react-native-draggable-flatlist": "4.0.1",
     "react-native-dynamic": "1.0.0",

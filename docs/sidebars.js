@@ -75,6 +75,31 @@ module.exports = {
     },
   ],
 
+  distributors: [
+    {
+      type: 'category',
+      label: 'Introduction',
+      items: ['distributors/introduction/overview'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Specification',
+      items: [
+        'distributors/specification/overview',
+        'distributors/specification/metadata',
+        'distributors/specification/deal-types',
+      ],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Self Serve',
+      items: ['distributors/self-serve/overview', 'distributors/self-serve/run-a-ddex-server'],
+      collapsed: false,
+    },
+  ],
+
   node_operators: [
     {
       type: 'category',

@@ -4,7 +4,8 @@ import { CollectionMetadata, UserTrackMetadata } from '@audius/common/models'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 
 export function* addTracksFromCollections(
-  metadataArray: Array<CollectionMetadata>
+  metadataArray: Array<CollectionMetadata>,
+  isInitialFetchAfterSsr?: boolean
 ) {
   const tracks: UserTrackMetadata[] = []
 
@@ -15,5 +16,5 @@ export function* addTracksFromCollections(
       })
     }
   })
-  yield processAndCacheTracks(tracks)
+  yield processAndCacheTracks(tracks, isInitialFetchAfterSsr)
 }

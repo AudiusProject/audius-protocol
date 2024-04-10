@@ -1,6 +1,6 @@
 import { License } from '~/utils/creativeCommons'
 
-import { Nullable } from '../utils/typeUtils'
+import { DeepOmit, Nullable } from '../utils/typeUtils'
 
 import { Chain } from './Chain'
 import { Favorite } from './Favorite'
@@ -45,11 +45,11 @@ export type RemixOf = {
 }
 
 // Gated content
-export type TokenStandard = 'ERC721' | 'ERC1155'
+export type EthTokenStandard = 'ERC721' | 'ERC1155'
 
 export type AccessConditionsEthNFTCollection = {
   chain: Chain.Eth
-  standard: TokenStandard
+  standard: EthTokenStandard
   address: string
   name: string
   slug: string
@@ -82,6 +82,7 @@ export type TipGatedConditions = { tip_user_id: number }
 export type USDCPurchaseConditions = {
   usdc_purchase: {
     price: number
+    albumTrackPrice?: number
     splits: Record<ID, number>
   }
 }
@@ -130,7 +131,9 @@ export const isContentTipGated = (
   'tip_user_id' in (gatedConditions ?? {})
 
 export const isContentUSDCPurchaseGated = (
-  gatedConditions?: Nullable<AccessConditions>
+  gatedConditions?: Nullable<
+    AccessConditions | DeepOmit<USDCPurchaseConditions, 'splits'>
+  > // data coming from upload/edit forms will not have splits on the type
 ): gatedConditions is USDCPurchaseConditions =>
   'usdc_purchase' in (gatedConditions ?? {})
 
@@ -148,7 +151,7 @@ export type EthCollectionMap = {
   [slug: string]: {
     name: string
     address: string
-    standard: TokenStandard
+    standard: EthTokenStandard
     img: Nullable<string>
     externalLink: Nullable<string>
   }
@@ -162,7 +165,22 @@ export type SolCollectionMap = {
   }
 }
 
-export type GatedTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
+export type ResourceContributor = {
+  name: string
+  roles: [string]
+  sequence_number: number
+}
+
+export type RightsController = {
+  name: string
+  roles: [string]
+  rights_share_unknown?: string
+}
+
+export type Copyright = {
+  year: string
+  text: string
+}
 
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
@@ -210,6 +228,14 @@ export type TrackMetadata = {
   is_downloadable: boolean
   is_original_available: boolean
   ddex_app?: Nullable<string>
+  ddex_release_ids?: any | null
+  artists?: [ResourceContributor] | null
+  resource_contributors?: [ResourceContributor] | null
+  indirect_resource_contributors?: [ResourceContributor] | null
+  rights_controller?: RightsController | null
+  copyright_line?: Copyright | null
+  producer_copyright_line?: Copyright | null
+  parental_warning_type?: string | null
 
   // Optional Fields
   is_playlist_upload?: boolean

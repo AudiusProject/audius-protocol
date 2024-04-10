@@ -77,7 +77,7 @@ web-build:
         no_output_timeout: 30m
         command: |
           cd packages/web
-          CI=false npm run build:<< parameters.build-type >>
+          npm run build:<< parameters.build-type >>
           cp package.json << parameters.build-name >>
     - persist_to_workspace:
         root: ./
@@ -185,6 +185,7 @@ web-deploy-cloudflare:
         command: |
           cd packages/web
           cp ./robots.txt build
+          cp ./robots.txt build-ssr/client
     - run:
         name: Deploy to Cloudflare
         command: |

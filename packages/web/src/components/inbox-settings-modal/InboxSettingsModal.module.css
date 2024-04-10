@@ -8,7 +8,7 @@
 }
 
 .error {
-  margin: var(--unit-6) auto 0;
-  font-weight: var(--font-demi-bold);
-  color: var(--accent-red);
+  margin: var(--harmony-unit-6) auto 0;
+  font-weight: var(--harmony-font-demi-bold);
+  color: var(--harmony-red);
 }

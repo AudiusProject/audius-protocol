@@ -1,11 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import type { Collection } from '@audius/common/models'
 import { CreatePlaylistSource, SquareSizes } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
   cacheCollectionsActions,
-  collectionPageSelectors,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions
 } from '@audius/common/store'
@@ -21,10 +21,11 @@ import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles, shadow } from 'app/styles'
+import { fuzzySearch } from 'app/utils/fuzzySearch'
 
 import { CollectionList } from '../collection-list'
 import { AddCollectionCard } from '../collection-list/AddCollectionCard'
-const { getCollectionId } = collectionPageSelectors
+import { FilterInput } from '../filter-input'
 
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
@@ -34,11 +35,25 @@ const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
 
+const selectCollectionsToAddTo = (state: CommonState) => {
+  const collectionType = getCollectionType(state)
+  const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
+  if (!account) return []
+  const { albums, playlists, user_id } = account
+  const collections = collectionType === 'album' ? albums : playlists
+
+  return collections.filter(
+    (collection) => collection.playlist_owner_id === user_id
+  )
+}
+
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   title: `Add To ${capitalize(collectionType)}`,
   addedToast: `Added To ${capitalize(collectionType)}!`,
   newCollection: `New ${capitalize(collectionType)}`,
-  hiddenAdd: `You cannot add hidden tracks to a public ${collectionType}.`
+  hiddenAdd: `You cannot add hidden tracks to a public ${collectionType}.`,
+  tracks: (count: number) => `${count} track${count === 1 ? '' : 's'}`,
+  filterPlaceholder: 'Find one of your playlists'
 })
 
 const useStyles = makeStyles(() => ({
@@ -66,8 +81,7 @@ export const AddToCollectionDrawer = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
-  const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
-  const currentCollectionId = useSelector(getCollectionId)
+  const [filter, setFilter] = useState('')
 
   const messages = getMessages(collectionType)
 
@@ -75,44 +89,20 @@ export const AddToCollectionDrawer = () => {
     dispatch(fetchAccountCollections())
   })
 
-  const renderImage = useCallback(
-    (item) => (props?: ImageProps) =>
-      (
-        <CollectionImage
-          collection={item}
-          size={SquareSizes.SIZE_480_BY_480}
-          {...props}
-        />
-      ),
-    []
-  )
+  const collectionsToAddTo = useSelector(selectCollectionsToAddTo)
 
-  const filteredCollections = useMemo(() => {
-    return ((isAlbumType ? account?.albums : account?.playlists) ?? []).filter(
-      (collection: Collection) =>
-        // Don't allow adding to this collection if already on this collection's page.
-        collection.playlist_id !== currentCollectionId &&
-        collection.playlist_owner_id === account?.user_id
-    )
-  }, [
-    isAlbumType,
-    account?.albums,
-    account?.playlists,
-    account?.user_id,
-    currentCollectionId
-  ])
+  const filteredCollectionsToAddTo = useMemo(() => {
+    return filter
+      ? fuzzySearch(
+          filter,
+          collectionsToAddTo,
+          3,
+          (collection) => collection.playlist_name
+        )
+      : collectionsToAddTo
+  }, [collectionsToAddTo, filter])
 
-  const collectionTrackIdMap = useMemo(() => {
-    const collections =
-      (isAlbumType ? account?.albums : account?.playlists) ?? []
-    return collections.reduce((acc, playlist) => {
-      const trackIds = playlist.playlist_contents.track_ids.map((t) => t.track)
-      acc[playlist.playlist_id] = trackIds
-      return acc
-    }, {})
-  }, [account?.albums, account?.playlists, isAlbumType])
-
-  const addToNewCollection = useCallback(() => {
+  const handleAddToNewCollection = useCallback(() => {
     const metadata = {
       playlist_name: trackTitle ?? messages.newCollection
     }
@@ -140,7 +130,7 @@ export const AddToCollectionDrawer = () => {
         <AddCollectionCard
           source={CreatePlaylistSource.FROM_TRACK}
           sourceTrackId={trackId}
-          onCreate={addToNewCollection}
+          onCreate={handleAddToNewCollection}
           collectionType={collectionType}
         />
       ) : (
@@ -150,7 +140,9 @@ export const AddToCollectionDrawer = () => {
           type='collection'
           id={item.playlist_id}
           primaryText={item.playlist_name}
-          secondaryText={account?.name}
+          secondaryText={messages.tracks(
+            item.playlist_contents.track_ids.length
+          )}
           onPress={() => {
             if (!trackId) return
 
@@ -161,7 +153,9 @@ export const AddToCollectionDrawer = () => {
             }
 
             const doesCollectionContainTrack =
-              collectionTrackIdMap[item.playlist_id]?.includes(trackId)
+              item.playlist_contents.track_ids.some(
+                (track) => track.track === trackId
+              )
 
             if (doesCollectionContainTrack) {
               dispatch(
@@ -176,26 +170,28 @@ export const AddToCollectionDrawer = () => {
             }
             onClose()
           }}
-          renderImage={renderImage(item)}
+          renderImage={(props?: ImageProps) => (
+            <CollectionImage
+              collection={item}
+              size={SquareSizes.SIZE_480_BY_480}
+              {...props}
+            />
+          )}
         />
       ),
     [
       trackId,
-      addToNewCollection,
+      handleAddToNewCollection,
       collectionType,
       isTrackUnlisted,
-      account?.name,
-      renderImage,
-      collectionTrackIdMap,
+      messages,
       onClose,
       toast,
-      messages.hiddenAdd,
-      messages.addedToast,
       dispatch
     ]
   )
 
-  if (!account || !trackId || !trackTitle) {
+  if (!trackId || !trackTitle) {
     return null
   }
 
@@ -208,8 +204,14 @@ export const AddToCollectionDrawer = () => {
     >
       <View>
         <CollectionList
+          ListHeaderComponent={
+            <FilterInput
+              placeholder={messages.filterPlaceholder}
+              onChangeText={setFilter}
+            />
+          }
           contentContainerStyle={styles.cardList}
-          collection={filteredCollections}
+          collection={filteredCollectionsToAddTo}
           showCreatePlaylistTile
           renderItem={renderCard}
         />

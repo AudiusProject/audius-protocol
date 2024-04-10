@@ -164,7 +164,7 @@ export const reducers = (
 
   // Cache
   // @ts-ignore
-  collections: asCache(collectionsReducer, Kind.COLLECTIONS),
+  collections: asCache(collectionsReducer(ssrPageProps), Kind.COLLECTIONS),
   // TODO: Fix type error
   // @ts-ignore
   tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
@@ -239,13 +239,13 @@ export const reducers = (
     audioRewards: audioRewardsSlice.reducer,
     audioTransactions: audioTransactionsSlice.reducer,
     chat: chatReducer,
-    collection,
+    collection: collection(ssrPageProps),
     deactivateAccount: deactivateAccountReducer,
     feed,
     explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
-    profile: profileReducer,
+    profile: profileReducer(ssrPageProps),
     smartCollection,
     savedPage: isServerSide
       ? savePageReducer

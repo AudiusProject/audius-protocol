@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { UploadType } from '@audius/common/store'
+import { TrackForUpload, UploadType } from '@audius/common/store'
 import {
   Button,
   SegmentedControl,
@@ -11,8 +11,6 @@ import {
 import cn from 'classnames'
 
 import { TrackPreview } from 'components/upload/TrackPreview'
-
-import { TrackForUpload } from '../types'
 
 import styles from './TracksPreview.module.css'
 
@@ -59,6 +57,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
           {messages.releaseType}
         </Text>
         <SegmentedControl
+          label={messages.releaseType}
           onSelectOption={handleOptionSelect}
           selected={String(uploadType)}
           options={[
@@ -69,7 +68,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
           // Matches 0.18s entry animation
           forceRefreshAfterMs={180}
         />
-        <Text>{uploadDescriptions[props.uploadType]}</Text>
+        <Text variant='body'>{uploadDescriptions[props.uploadType]}</Text>
       </div>
       <Scrollbar
         className={cn(styles.tracks, {
@@ -83,7 +82,7 @@ export const TracksPreview = (props: TracksPreviewProps) => {
             displayIndex={tracks.length > 1}
             key={`track-preview-${i}`}
             onRemove={() => onRemove(i)}
-            file={track.file}
+            file={track.file as File}
           />
         ))}
       </Scrollbar>

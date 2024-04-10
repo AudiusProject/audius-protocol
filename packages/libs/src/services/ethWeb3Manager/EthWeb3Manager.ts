@@ -28,6 +28,7 @@ export type EthWeb3Config = {
   registryAddress: string
   claimDistributionContractAddress: string
   wormholeContractAddress: string
+  disableMultiProvider?: boolean
 }
 
 type EthWeb3ManagerConfig = {
@@ -50,8 +51,12 @@ export class EthWeb3Manager {
       throw new Error('missing web3Config property: providers')
 
     // MultiProvider implements a web3 provider with fallback.
-    const provider = new MultiProvider(web3Config.providers)
-
+    let provider: MultiProvider | string
+    if (!web3Config.disableMultiProvider) {
+      provider = new MultiProvider(web3Config.providers)
+    } else {
+      provider = web3Config.providers![0]!
+    }
     this.web3Config = web3Config
     this.web3 = new Web3(provider)
     this.identityService = identityService

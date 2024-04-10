@@ -12,11 +12,13 @@ import {
   IconMessage,
   PopupMenu,
   Button,
-  FollowButton
+  FollowButton,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ArtistRecommendationsPopup } from 'components/artist-recommendations/ArtistRecommendationsPopup'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import Stats, { StatProps } from 'components/stats/Stats'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -229,10 +231,9 @@ export const StatBanner = (props: StatsBannerProps) => {
             shareButton
           )}
 
-          <div className={styles.followContainer}>
+          <>
             {onToggleSubscribe ? (
               <SubscribeButton
-                className={styles.subscribeButton}
                 isSubscribed={isSubscribed!}
                 isFollowing={following!}
                 onToggleSubscribe={onToggleSubscribe}
@@ -244,13 +245,15 @@ export const StatBanner = (props: StatsBannerProps) => {
               onFollow={onFollow}
               onUnfollow={onUnfollow}
             />
-            <ArtistRecommendationsPopup
-              anchorRef={followButtonRef}
-              artistId={profileId!}
-              isVisible={areArtistRecommendationsVisible}
-              onClose={onCloseArtistRecommendations!}
-            />
-          </div>
+            <ClientOnly>
+              <ArtistRecommendationsPopup
+                anchorRef={followButtonRef}
+                artistId={profileId!}
+                isVisible={areArtistRecommendationsVisible}
+                onClose={onCloseArtistRecommendations!}
+              />
+            </ClientOnly>
+          </>
         </>
       )
       break
@@ -263,7 +266,14 @@ export const StatBanner = (props: StatsBannerProps) => {
           <div className={styles.stats}>
             <Stats clickable userId={profileId!} stats={stats} size='large' />
           </div>
-          <div className={styles.buttons}>{buttons}</div>
+          <Flex
+            justifyContent='flex-end'
+            gap='s'
+            alignItems='center'
+            css={{ zIndex: 3 }}
+          >
+            {buttons}
+          </Flex>
         </div>
       ) : null}
     </div>

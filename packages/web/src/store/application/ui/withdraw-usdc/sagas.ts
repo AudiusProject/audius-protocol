@@ -135,7 +135,7 @@ function* createDestinationTokenAccount({
   if (!libs.solanaWeb3Manager) {
     throw new Error('Failed to get solana web3 manager')
   }
-  const connection = libs.solanaWeb3Manager.connection
+  const connection = libs.solanaWeb3Manager.getConnection()
 
   // Check if there is enough SOL to fund the destination associated token account
   const feeAmount = yield* call(
@@ -249,7 +249,7 @@ function* doWithdrawUSDCCoinflow({
       throw new Error('Missing Fee Payer.')
     }
     const feePayerPubkey = new PublicKey(feePayer)
-    const connection = libs.solanaWeb3Manager.connection
+    const connection = libs.solanaWeb3Manager.getConnection()
 
     const destinationPubkey = new PublicKey(destinationAddress)
     let destinationTokenAccountAddress: string
@@ -413,7 +413,7 @@ function* doWithdrawUSDCCoinflow({
     )
 
     yield* call(
-      [libs.solanaWeb3Manager.connection, 'confirmTransaction'],
+      [libs.solanaWeb3Manager.getConnection(), 'confirmTransaction'],
       transactionSignature,
       'finalized'
     )
@@ -539,7 +539,7 @@ function* doWithdrawUSDCManualTransfer({
       throw new Error('Missing Fee Payer.')
     }
     const feePayerPubkey = new PublicKey(feePayer)
-    const connection = libs.solanaWeb3Manager.connection
+    const connection = libs.solanaWeb3Manager.getConnection()
 
     const destinationPubkey = new PublicKey(destinationAddress)
     let destinationTokenAccountAddress: string

@@ -19,7 +19,8 @@ import {
   usePremiumContentPurchaseModal,
   CommonState,
   useWaitForDownloadModal,
-  toastActions
+  toastActions,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -122,7 +123,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
       setLockedContentModalVisibility(false)
     }
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.TrackDetails }
     )
   }, [])
@@ -212,6 +213,9 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
           css={{
             cursor: 'pointer'
           }}
+          role='button'
+          aria-expanded={expanded}
+          aria-controls='download-section'
         >
           <Flex
             justifyContent='space-between'
@@ -243,7 +247,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     borderRadius='3xl'
                     ph='s'
                     css={{
-                      backgroundColor: 'var(--special-light-green)',
+                      backgroundColor: 'var(--harmony-light-green)',
                       paddingTop: '1px',
                       paddingBottom: '1px'
                     }}
@@ -278,7 +282,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             </Text>
           </Flex>
         ) : null}
-        <Expandable expanded={expanded}>
+        <Expandable expanded={expanded} id='downloads-section'>
           <Box>
             {track?.is_original_available ? (
               <Flex

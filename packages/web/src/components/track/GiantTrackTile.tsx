@@ -12,7 +12,8 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksSelectors,
   publishTrackConfirmationModalUIActions,
-  CommonState
+  CommonState,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   Genre,
@@ -59,7 +60,7 @@ import { trpc } from 'utils/trpcClientWeb'
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
-import { GatedTrackSection } from './GatedTrackSection'
+import { GatedContentSection } from './GatedContentSection'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
@@ -108,7 +109,6 @@ export type GiantTrackTileProps = {
   currentUserId: Nullable<ID>
   description: string
   hasStreamAccess: boolean
-  hasDownloadAccess: boolean
   duration: number
   fieldVisibility: FieldVisibility
   following: boolean
@@ -128,17 +128,6 @@ export type GiantTrackTileProps = {
   mood: string
   onClickFavorites: () => void
   onClickReposts: () => void
-  onDownload: ({
-    trackId,
-    category,
-    original,
-    parentTrackId
-  }: {
-    trackId: ID
-    category?: string
-    original?: boolean
-    parentTrackId?: ID
-  }) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -169,7 +158,6 @@ export const GiantTrackTile = ({
   credits,
   description,
   hasStreamAccess,
-  hasDownloadAccess,
   duration,
   fieldVisibility,
   following,
@@ -188,7 +176,6 @@ export const GiantTrackTile = ({
   mood,
   onClickFavorites,
   onClickReposts,
-  onDownload,
   onFollow,
   onMakePublic,
   onPlay,
@@ -530,7 +517,8 @@ export const GiantTrackTile = ({
       isArtistPick,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToPlaylist: !(isUnlisted || isStreamGated),
+      includeAddToPlaylist: !isStreamGated,
+      includeAddToAlbum: !isStreamGated,
       extraMenuItems: overflowMenuExtraItems
     }
   }
@@ -552,6 +540,7 @@ export const GiantTrackTile = ({
           trackId={trackId}
           coverArtSizes={coverArtSizes}
           coSign={coSign}
+          cid={track?.cover_art_sizes ?? null}
           callback={onArtworkLoad}
         />
         <div className={styles.infoSection}>
@@ -658,14 +647,17 @@ export const GiantTrackTile = ({
 
       <ClientOnly>
         {isStreamGated && streamConditions ? (
-          <GatedTrackSection
-            isLoading={isLoading}
-            trackId={trackId}
-            streamConditions={streamConditions}
-            hasStreamAccess={hasStreamAccess}
-            isOwner={isOwner}
-            ownerId={userId}
-          />
+          <Box mb='xl'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={trackId}
+              contentType={PurchaseableContentType.TRACK}
+              streamConditions={streamConditions}
+              hasStreamAccess={hasStreamAccess}
+              isOwner={isOwner}
+              ownerId={userId}
+            />
+          </Box>
         ) : null}
       </ClientOnly>
 

@@ -64,7 +64,6 @@ export default interface SignOnPageState {
   suggestedFollowEntries: User[]
   followIds: ID[]
   status: EditingStatus
-  toastText: string | null
   hidePreviewHint: boolean
   followArtists: FollowArtists
   isMobileSignOnVisible: boolean

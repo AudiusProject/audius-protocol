@@ -4,16 +4,12 @@ import {
   Name,
   Client,
   SmartCollectionVariant,
-  Status,
-  Theme,
-  SystemAppearance
+  Status
 } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   ExploreCollectionsVariant,
-  themeActions,
-  themeSelectors,
   UploadType
 } from '@audius/common/store'
 import cn from 'classnames'
@@ -82,7 +78,7 @@ import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
-import RequiresUpdate from 'pages/requires-update/RequiresUpdate'
+import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import SavedPage from 'pages/saved-page/SavedPage'
 import SearchPage from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
@@ -182,15 +178,8 @@ import {
   PURCHASES_PAGE,
   SALES_PAGE
 } from 'utils/route'
-import {
-  doesPreferDarkMode,
-  getTheme as getSystemTheme
-} from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
-
-const { setTheme, setSystemAppearance } = themeActions
-const { getTheme, getSystemAppearance } = themeSelectors
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
@@ -334,8 +323,6 @@ class WebPlayer extends Component {
         }
       }
     }
-
-    this.handleTheme()
   }
 
   componentDidUpdate(prevProps) {
@@ -359,10 +346,6 @@ class WebPlayer extends Component {
         this.pushWithToken(TRENDING_PAGE)
       }
     }
-
-    if (prevProps.theme !== this.props.theme) {
-      this.handleTheme()
-    }
   }
 
   componentWillUnmount() {
@@ -373,20 +356,6 @@ class WebPlayer extends Component {
     if (client === Client.ELECTRON) {
       this.ipc.removeAllListeners('updateDownloaded')
       this.ipc.removeAllListeners('updateAvailable')
-    }
-  }
-
-  handleTheme() {
-    const { theme, systemAppearance, setTheme, setSystemAppearance } =
-      this.props
-    // Set local theme
-    if (theme === null) {
-      setTheme(getSystemTheme() || Theme.DEFAULT)
-    }
-    if (systemAppearance === null) {
-      setSystemAppearance(
-        doesPreferDarkMode() ? SystemAppearance.DARK : SystemAppearance.LIGHT
-      )
     }
   }
 
@@ -429,7 +398,7 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const { theme, incrementScroll, decrementScroll, userHandle } = this.props
+    const { incrementScroll, decrementScroll, userHandle } = this.props
 
     const {
       showWebUpdateBanner,
@@ -444,7 +413,6 @@ class WebPlayer extends Component {
     if (showRequiresUpdate)
       return (
         <RequiresUpdate
-          theme={theme}
           isUpdating={isUpdating}
           onUpdate={this.acceptUpdateApp}
         />
@@ -453,7 +421,6 @@ class WebPlayer extends Component {
     if (showRequiresWebUpdate)
       return (
         <RequiresUpdate
-          theme={theme}
           isUpdating={isUpdating}
           onUpdate={this.acceptWebUpdate}
         />
@@ -991,7 +958,9 @@ class WebPlayer extends Component {
           </div>
           <PlayBarProvider />
           <ClientOnly>
-            <Modals />
+            <Suspense fallback={null}>
+              <Modals />
+            </Suspense>
             <ConnectedMusicConfetti />
           </ClientOnly>
 
@@ -1001,10 +970,12 @@ class WebPlayer extends Component {
           {!isMobile ? <DevModeMananger /> : null}
           {/* Mobile-only */}
           {isMobile ? (
-            <AppRedirectPopover
-              incrementScroll={incrementScroll}
-              decrementScroll={decrementScroll}
-            />
+            <ClientOnly>
+              <AppRedirectPopover
+                incrementScroll={incrementScroll}
+                decrementScroll={decrementScroll}
+              />
+            </ClientOnly>
           ) : null}
         </div>
       </div>
@@ -1018,16 +989,11 @@ const mapStateToProps = (state) => ({
   userHandle: getUserHandle(state),
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
-  theme: getTheme(state),
-  systemAppearance: getSystemAppearance(state),
   showCookieBanner: getShowCookieBanner(state),
   isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  setTheme: (theme) => dispatch(setTheme({ theme })),
-  setSystemAppearance: (systemAppearance) =>
-    dispatch(setSystemAppearance({ systemAppearance })),
   updateRouteOnSignUpCompletion: (route) =>
     dispatch(updateRouteOnSignUpCompletion(route)),
   openSignOn: (signIn = true, page = null, fields = {}) =>

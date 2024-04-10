@@ -1,7 +1,7 @@
 .taskCompletionItem {
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   margin: 8px;
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   font-size: 15px;
   display: flex;
   align-items: center;
@@ -11,13 +11,13 @@
 @media screen and (max-width: 1200px) {
   .taskCompletionItem {
     margin: 3px;
-    font-size: var(--font-xs);
+    font-size: var(--harmony-font-xs);
   }
 }
 
 .completedItem {
   text-decoration: line-through;
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--harmony-font-demi-bold);
   opacity: 0.5;
 }
 
@@ -34,6 +34,6 @@
   height: 16px;
   width: 16px;
   border-radius: 8px;
-  border: 1px solid var(--static-white);
+  border: 1px solid var(--harmony-static-white);
   margin-right: 6px;
 }

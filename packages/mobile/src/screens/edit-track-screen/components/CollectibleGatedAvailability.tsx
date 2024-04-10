@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useHasNoCollectibles } from '@audius/common/hooks'
 import { isContentCollectibleGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
-import { collectiblesSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
 import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { useSelector } from 'react-redux'
 
 import {
   IconCaretRight,
@@ -31,17 +30,11 @@ const messages = {
   pickACollection: 'Pick A Collection',
   ownersOf: 'Owners Of',
   noCollectibles:
-    'No Collectibles found. To enable this option, link a wallet containing a collectible.',
-  compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.'
+    'No Collectibles found. To enable this option, link a wallet containing a collectible.'
 }
 
 const LEARN_MORE_URL =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
-
-const { getSupportedUserCollections, getHasUnsupportedCollection } =
-  collectiblesSelectors
 
 const screenWidth = Dimensions.get('screen').width
 
@@ -165,13 +158,7 @@ export const CollectibleGatedAvailability = ({
     ? neutralLight4
     : neutral
 
-  const { ethCollectionMap, solCollectionMap } = useSelector(
-    getSupportedUserCollections
-  )
-  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
-  const numEthCollectibles = Object.keys(ethCollectionMap).length
-  const numSolCollectibles = Object.keys(solCollectionMap).length
-  const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
+  const hasNoCollectibles = useHasNoCollectibles()
 
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const [{ value: streamConditions }] =
@@ -208,15 +195,8 @@ export const CollectibleGatedAvailability = ({
   }, [navigation])
 
   const renderHelpCalloutContent = useCallback(() => {
-    return hasUnsupportedCollection ? (
-      <View>
-        <Text>{messages.compatibilityTitle}</Text>
-        <Text>{messages.compatibilitySubtitle}</Text>
-      </View>
-    ) : (
-      messages.noCollectibles
-    )
-  }, [hasUnsupportedCollection])
+    return hasNoCollectibles ? messages.noCollectibles : null
+  }, [hasNoCollectibles])
 
   return (
     <View style={styles.root}>

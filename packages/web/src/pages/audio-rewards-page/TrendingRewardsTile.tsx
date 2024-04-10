@@ -50,7 +50,7 @@ const RewardPanel = ({
       </span>
       <span className={wm(styles.rewardDescription)}>{description()}</span>
       <Button
-        variant='common'
+        variant='secondary'
         size='small'
         iconRight={IconArrowRight}
         onClick={onClickButton}

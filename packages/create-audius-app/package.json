@@ -1,11 +1,18 @@
 {
   "name": "create-audius-app",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "Create an Audius app with one command",
   "scripts": {
-    "dev": "ncc build ./index.ts -w -o dist/",
+    "build": "tsup ./index.ts",
+    "dev": "tsup ./index.ts --watch",
+    "lint": "eslint",
     "prepublishOnly": "rm -rf dist && npm run build",
-    "build": "ncc build ./index.ts -o ./dist/ --minify --no-cache --no-source-map-register"
+    "setup-test-env": "./tests/e2e/setup-test-env.sh",
+    "test": "vitest tests/integration",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\"",
+    "start-examples": "concurrently \"cd examples/react && npm run start\""
   },
   "repository": {
     "type": "git",
@@ -23,16 +30,23 @@
     "create-audius-app": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "examples"
   ],
   "devDependencies": {
+    "@playwright/test": "1.42.1",
+    "@types/glob": "7.1.1",
     "@types/prompts": "2.4.2",
     "@types/tar": "6.1.11",
     "@types/validate-npm-package-name": "4.0.2",
-    "@vercel/ncc": "0.38.1",
     "commander": "2.20.0",
+    "execa": "2.0.3",
+    "fast-glob": "3.3.1",
+    "glob": "7.1.6",
     "prompts": "2.4.2",
     "tar": "6.2.0",
-    "validate-npm-package-name": "5.0.0"
+    "tsup": "8.0.2",
+    "validate-npm-package-name": "5.0.0",
+    "vitest": "1.3.0"
   }
 }

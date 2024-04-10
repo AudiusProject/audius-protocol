@@ -4,10 +4,11 @@ import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
 import {
-  ContentType,
+  PurchaseableContentType,
   PurchaseContentPage,
   isContentPurchaseInProgress,
   purchaseContentActions,
@@ -27,6 +28,7 @@ import {
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
 import { PurchaseContentSchema, PurchaseContentValues } from './validation'
+import { isContentCollection, isContentTrack } from '~/utils'
 
 const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
 const {
@@ -36,17 +38,19 @@ const {
 } = purchaseContentSelectors
 
 export const usePurchaseContentFormConfiguration = ({
-  track,
+  metadata,
   price,
   presetValues,
   purchaseVendor
 }: {
-  track?: Nullable<UserTrackMetadata>
+  metadata?: Nullable<UserTrackMetadata | UserCollectionMetadata>
   price: number
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
 }) => {
   const dispatch = useDispatch()
+  const isAlbum = isContentCollection(metadata)
+  const isTrack = isContentTrack(metadata)
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const page = useSelector(getPurchaseContentPage)
@@ -71,7 +75,12 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseMethod,
       purchaseVendor
     }: PurchaseContentValues) => {
-      if (isUnlocking || !track?.track_id) return
+      const contentId = isAlbum
+        ? metadata.playlist_id
+        : isTrack
+        ? metadata.track_id
+        : undefined
+      if (isUnlocking || !contentId) return
 
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
@@ -90,13 +99,15 @@ export const usePurchaseContentFormConfiguration = ({
             purchaseVendor,
             extraAmount,
             extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
+            contentId,
+            contentType: isAlbum
+              ? PurchaseableContentType.ALBUM
+              : PurchaseableContentType.TRACK
           })
         )
       }
     },
-    [isUnlocking, track, page, presetValues, dispatch]
+    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch]
   )
 
   return {

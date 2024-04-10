@@ -1,14 +1,31 @@
 import mongoose from 'mongoose'
 
-// DDEX deliveries indexed from DDEX uploads
-const deliveriesSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
-  upload_etag: String,
-  delivery_status: String,
+const releaseSchema = new mongoose.Schema({
+  release_id: String,
   xml_file_path: String,
   xml_content: Buffer,
+  validation_errors: [String],
+})
+
+const batchSchema = new mongoose.Schema({
+  batch_id: String,
+  batch_xml_path: String,
+  batch_xml_content: Buffer,
+  validation_errors: [String],
+  releases: [releaseSchema],
+  ddex_schema: String,
+  num_messages: Number,
+})
+
+// DDEX deliveries crawled from the S3 "raw" bucket
+const deliveriesSchema = new mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId, // aka remote path in S3 crawled bucket
+  is_folder: Boolean,
+  delivery_status: String,
   created_at: Date,
-  errors: [String],
+  releases: [releaseSchema],
+  batches: [batchSchema],
+  validation_errors: [String],
 })
 
 const Deliveries = mongoose.model('Deliveries', deliveriesSchema, 'deliveries')

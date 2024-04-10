@@ -1,4 +1,9 @@
-import { OpenSeaClient, SolanaClient } from '@audius/common/services'
+import {
+  OpenSeaClient,
+  HeliusClient,
+  SolanaCollectiblesProvider,
+  EthereumCollectiblesProvider
+} from '@audius/common/services'
 import type { CommonStoreContext } from '@audius/common/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
@@ -38,7 +43,11 @@ export const storeContext: CommonStoreContext = {
   isElectron: false,
   env,
   explore,
-  solanaClient: new SolanaClient({
+  ethereumCollectiblesProvider: new EthereumCollectiblesProvider(
+    new OpenSeaClient(env.OPENSEA_API_URL!)
+  ),
+  solanaCollectiblesProvider: new SolanaCollectiblesProvider({
+    heliusClient: new HeliusClient(env.HELIUS_DAS_API_URL),
     solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: env.METADATA_PROGRAM_ID
   }),
@@ -50,7 +59,6 @@ export const storeContext: CommonStoreContext = {
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
-  openSeaClient: new OpenSeaClient(env.OPENSEA_API_URL!),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork
