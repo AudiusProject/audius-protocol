@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 rust:1.77.1 AS bpf-builder
+FROM --platform=linux/amd64 rust:1.72 AS bpf-builder
 
 WORKDIR /usr/src/app
 

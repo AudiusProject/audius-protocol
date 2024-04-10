@@ -45,6 +45,7 @@ pub fn is_csv_file(s: String) -> Result<(), String> {
     Err(String::from("Receive wrong path to csv file"))
 }
 
+#[allow(dead_code)]
 fn check_fee_payer_balance(config: &Config, required_balance: u64) -> Result<(), Error> {
     let balance = config.rpc_client.get_balance(&config.fee_payer.pubkey())?;
     if balance < required_balance {
@@ -72,18 +73,18 @@ impl<'a> Transaction<'a> {
     pub fn sign(
         self,
         config: &Config,
-        additional_balance_required: u64,
+        _additional_balance_required: u64,
     ) -> Result<Option<OnchainTransaction>, Error> {
         let mut transaction = OnchainTransaction::new_with_payer(
             self.instructions.as_ref(),
             Some(&config.fee_payer.pubkey()),
         );
 
-        let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
-        check_fee_payer_balance(
-            config,
-            fee_calculator.calculate_fee(&transaction.message()) + additional_balance_required,
-        )?;
+        let recent_blockhash= config.rpc_client.get_latest_blockhash()?;
+        // check_fee_payer_balance(
+        //     config,
+        //     fee_calculator.calculate_fee(&transaction.message()) + additional_balance_required,
+        // )?;
 
         transaction.sign(&self.signers, recent_blockhash);
 

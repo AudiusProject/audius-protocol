@@ -53,7 +53,7 @@ fn is_hex(s: String) -> Result<(), String> {
     }
 }
 
-fn check_fee_payer_balance(config: &Config, required_balance: u64) -> Result<(), Error> {
+fn _check_fee_payer_balance(config: &Config, required_balance: u64) -> Result<(), Error> {
     let balance = config.rpc_client.get_balance(&config.fee_payer.pubkey())?;
     if balance < required_balance {
         Err(format!(
@@ -96,11 +96,11 @@ fn command_create_signer_group(config: &Config, signer_group: Box<dyn Signer>) -
         Some(&config.fee_payer.pubkey()),
     );
 
-    let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
-    check_fee_payer_balance(
-        config,
-        fee_calculator.calculate_fee(&transaction.message()) + signer_group_account_balance,
-    )?;
+    let recent_blockhash = config.rpc_client.get_latest_blockhash()?;
+    // check_fee_payer_balance(
+    //     config,
+    //     fee_calculator.calculate_fee(&transaction.message()) + signer_group_account_balance,
+    // )?;
 
     transaction.sign(
         &[config.fee_payer.as_ref(), signer_group.as_ref()],
@@ -187,8 +187,8 @@ fn command_disable_signer_group_owner(
         Some(&config.fee_payer.pubkey()),
     );
 
-    let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
-    check_fee_payer_balance(config, fee_calculator.calculate_fee(&transaction.message()))?;
+    let recent_blockhash = config.rpc_client.get_latest_blockhash()?;
+    //check_fee_payer_balance(config, fee_calculator.calculate_fee(&transaction.message()))?;
 
     transaction.sign(
         &[
@@ -238,11 +238,11 @@ fn command_create_valid_signer(
         Some(&config.fee_payer.pubkey()),
     );
 
-    let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
-    check_fee_payer_balance(
-        config,
-        fee_calculator.calculate_fee(&transaction.message()) + valid_signer_account_balance,
-    )?;
+    let recent_blockhash= config.rpc_client.get_latest_blockhash()?;
+    // check_fee_payer_balance(
+    //     config,
+    //     fee_calculator.calculate_fee(&transaction.message()) + valid_signer_account_balance,
+    // )?;
 
     transaction.sign(
         &[
@@ -271,8 +271,8 @@ fn command_clear_valid_signer(config: &Config, valid_signer: &Pubkey) -> Command
         Some(&config.fee_payer.pubkey()),
     );
 
-    let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
-    check_fee_payer_balance(config, fee_calculator.calculate_fee(&transaction.message()))?;
+    let recent_blockhash = config.rpc_client.get_latest_blockhash()?;
+    //check_fee_payer_balance(config, fee_calculator.calculate_fee(&transaction.message()))?;
 
     transaction.sign(
         &[config.fee_payer.as_ref(), config.owner.as_ref()],
@@ -330,8 +330,8 @@ fn command_send_message(
         Some(&config.fee_payer.pubkey()),
     );
 
-    let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
-    check_fee_payer_balance(config, fee_calculator.calculate_fee(&transaction.message()))?;
+    let recent_blockhash = config.rpc_client.get_latest_blockhash()?;
+    //check_fee_payer_balance(config, fee_calculator.calculate_fee(&transaction.message()))?;
 
     transaction.sign(&[config.fee_payer.as_ref()], recent_blockhash);
     Ok(Some(transaction))

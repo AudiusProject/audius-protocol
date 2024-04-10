@@ -24,7 +24,7 @@ use solana_sdk::{
     transport::TransportError,
     feature_set::FeatureSet
 };
-use {std::sync::Arc};
+use std::sync::Arc;
 
 use chrono::Utc;
 

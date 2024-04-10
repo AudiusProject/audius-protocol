@@ -187,7 +187,7 @@ fn transfer(
         )?,
     ];
     let mut tx = Transaction::new_with_payer(instructions, Some(&config.fee_payer.pubkey()));
-    let (recent_blockhash, _) = config.rpc_client.get_recent_blockhash()?;
+    let recent_blockhash = config.rpc_client.get_latest_blockhash()?;
     tx.sign(&[config.fee_payer.as_ref()], recent_blockhash);
     let tx_hash = config
         .rpc_client
@@ -228,7 +228,7 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
 
     let mut tx =
         Transaction::new_with_payer(instructions.as_slice(), Some(&config.fee_payer.pubkey()));
-    let (recent_blockhash, _) = config.rpc_client.get_recent_blockhash()?;
+    let recent_blockhash = config.rpc_client.get_latest_blockhash()?;
     tx.sign(
         &[config.fee_payer.as_ref(), config.owner.as_ref()],
         recent_blockhash,
