@@ -204,6 +204,61 @@ const RewardPanel = ({
   )
 }
 
+const ClaimAllPanel = ({}) => {
+  const wm = useWithMobileStyle(styles.mobile)
+  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
+
+  const totalClaimableAmount = Object.values(optimisticUserChallenges).reduce(
+    (sum, challenge) => sum + challenge.claimableAmount,
+    0
+  )
+  const pendingChallengeSchedule = usePendingChallengeSchedule()
+  const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
+  const onClickClaimAllRewards = () => {
+    setClaimAllRewardsVisibility(true)
+  }
+  const pendingAmount = pendingChallengeSchedule.claimableAmount
+
+  return (
+    <Paper
+      shadow='flat'
+      border='strong'
+      p='xl'
+      alignItems='center'
+      alignSelf='stretch'
+      justifyContent='space-between'
+      m='s'
+      // className={wm(styles.claimAllContainer)}
+    >
+      <Flex gap='l' alignItems='center'>
+        <IconTokenGold
+          height={48}
+          width={48}
+          aria-label={messages.goldAudioToken}
+        />
+        <Flex direction='column'>
+          <Flex>
+            <Text color='accent' size='m' variant='heading'>
+              {messages.totalReadyToClaim}
+            </Text>
+            <div className={wm(styles.pendingPillContainer)}>
+              <span className={styles.pillMessage}>
+                {pendingAmount} {messages.pending}
+              </span>
+            </div>
+          </Flex>
+          <Text variant='body' textAlign='left'>
+            {totalClaimableAmount} {messages.availableNow}
+          </Text>
+        </Flex>
+      </Flex>
+      <Button onClick={onClickClaimAllRewards} iconRight={IconArrow}>
+        {messages.claimAllRewards}
+      </Button>
+    </Paper>
+  )
+}
+
 type RewardsTileProps = {
   className?: string
 }
@@ -289,17 +344,6 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
 
   const wm = useWithMobileStyle(styles.mobile)
 
-  const totalClaimableAmount = Object.values(optimisticUserChallenges).reduce(
-    (sum, challenge) => sum + challenge.claimableAmount,
-    0
-  )
-  const pendingChallengeSchedule = usePendingChallengeSchedule()
-  const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
-  const onClickClaimAllRewards = () => {
-    setClaimAllRewardsVisibility(true)
-  }
-  const pendingAmount = pendingChallengeSchedule.claimableAmount
-
   return (
     <Tile className={wm(styles.rewardsTile, className)}>
       <span className={wm(styles.title)}>{messages.title}</span>
@@ -310,44 +354,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
         <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
       ) : (
         <>
-          {isRewardsCooldownEnabled ? (
-            <Paper
-              shadow='flat'
-              border='strong'
-              p='xl'
-              alignItems='center'
-              alignSelf='stretch'
-              justifyContent='space-between'
-              m='s'
-              // className={wm(styles.claimAllContainer)}
-            >
-              <Flex gap='l' alignItems='center'>
-                <IconTokenGold
-                  height={48}
-                  width={48}
-                  aria-label={messages.goldAudioToken}
-                />
-                <Flex direction='column'>
-                  <Flex>
-                    <Text color='accent' size='m' variant='heading'>
-                      {messages.totalReadyToClaim}
-                    </Text>
-                    <div className={wm(styles.pendingPillContainer)}>
-                      <span className={styles.pillMessage}>
-                        {pendingAmount} {messages.pending}
-                      </span>
-                    </div>
-                  </Flex>
-                  <Text variant='body' textAlign='left'>
-                    {totalClaimableAmount} {messages.availableNow}
-                  </Text>
-                </Flex>
-              </Flex>
-              <Button onClick={onClickClaimAllRewards} iconRight={IconArrow}>
-                {messages.claimAllRewards}
-              </Button>
-            </Paper>
-          ) : null}
+          {isRewardsCooldownEnabled ? <ClaimAllPanel></ClaimAllPanel> : null}
           <Divider orientation='horizontal' className={wm(styles.divider)} />
           <div className={styles.rewardsContainer}>{rewardsTiles}</div>
         </>
