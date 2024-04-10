@@ -25,6 +25,7 @@ const formatTrackMetadata = (
     ...(metadata.mood && { mood: metadata.mood as Mood }),
     tags: metadata.tags || '',
     isrc: metadata.isrc,
+    iswc: metadata.ddex_release_ids?.iswc,
     license: metadata.license,
     releaseDate: new Date(metadata.release_date),
     ddexReleaseIds: metadata.ddex_release_ids,
@@ -42,7 +43,6 @@ const formatTrackMetadata = (
     producerCopyrightLine: metadata.producer_copyright_line,
     parentalWarningType: metadata.parental_warning_type,
     // isUnlisted: // TODO: set visibility
-    // iswc:
     // origFilename:
     // isOriginalAvailable:
     // isStreamGated:

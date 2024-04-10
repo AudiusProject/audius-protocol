@@ -147,16 +147,19 @@ jobs:
           only: /(^release.*)$/
 
   # Distribute staging desktop binaries.
-  - web-dist-mac-staging:
-      context:
-        - Audius Client
-        - Vercel
-        - slack-secrets
-      requires:
-        - web-build-staging
-      filters:
-        branches:
-          only: /(^main)$/
+  # Mac Stage Desktop App deploys are skipped to prevent high
+  # CircleCI credit usage as they use the M1. Enable for one-off deploys
+  #
+  # - web-dist-mac-staging:
+  #     context:
+  #       - Audius Client
+  #       - Vercel
+  #       - slack-secrets
+  #     requires:
+  #       - web-build-staging
+  #     filters:
+  #       branches:
+  #         only: /(^main)$/
   - web-dist-win-staging:
       context:
         - Audius Client

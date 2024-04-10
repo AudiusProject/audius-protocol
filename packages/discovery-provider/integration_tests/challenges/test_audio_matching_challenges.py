@@ -21,7 +21,7 @@ AMOUNT_FIVE = 5
 TRACK_ID = 1234
 
 
-def test_referral_challenge(app):
+def test_audio_matching_challenge(app):
     redis_conn = get_redis()
 
     with app.app_context():
