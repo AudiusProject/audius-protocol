@@ -15,9 +15,8 @@ test('Change premium album price', async ({ page }) => {
   // For this test we toggle the price between $1 and $2
   // So we check to see what value we're starting with
   const startingPrice = unlockText?.match(/\$([0-9]+)\./)?.[1] || '1'
-
-  // In case
   const newPrice = startingPrice === '1' ? '2' : '1'
+
   // Open Edit modal
   await page.getByRole('button', { name: 'Edit', exact: true }).click()
   // Open access & sale modal
