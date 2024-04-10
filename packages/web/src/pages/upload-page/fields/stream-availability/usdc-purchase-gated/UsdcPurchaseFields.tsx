@@ -41,7 +41,7 @@ const messages = {
     albumTrackPrice: {
       title: 'Track Price',
       description:
-        'Set the price fans must pay to unlock a single track on your album (minimum price of $0.99)',
+        'Set the price fans must pay to unlock a single track on your album (minimum price of $1.00)',
       label: 'Track price',
       placeholder: '1.00'
     },
@@ -49,7 +49,7 @@ const messages = {
     albumPrice: {
       title: 'Album Price',
       description:
-        'Set the price fans must pay to unlock this album (minimum price of $0.99) ',
+        'Set the price fans must pay to unlock this album (minimum price of $1.00) ',
       label: 'Album price',
       placeholder: '5.00'
     }
@@ -75,6 +75,7 @@ export enum UsdcPurchaseType {
 export type TrackAvailabilityFieldsProps = {
   disabled?: boolean
   isAlbum?: boolean
+  isUpload?: boolean
 }
 
 type PriceMessages = typeof messages.price
@@ -84,7 +85,7 @@ export type PriceFieldProps = TrackAvailabilityFieldsProps & {
 }
 
 export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
-  const { disabled, isAlbum } = props
+  const { disabled, isAlbum, isUpload } = props
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
 
@@ -97,11 +98,13 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
             messaging={messages.price.albumPrice}
             fieldName={PRICE}
           />
-          <PriceField
-            disabled={disabled}
-            messaging={messages.price.albumTrackPrice}
-            fieldName={ALBUM_TRACK_PRICE}
-          />
+          {isUpload && (
+            <PriceField
+              disabled={disabled}
+              messaging={messages.price.albumTrackPrice}
+              fieldName={ALBUM_TRACK_PRICE}
+            />
+          )}
           <input type='hidden' name={PREVIEW} value='0' />
           {downloadConditions && !isAlbum ? (
             <HelpCallout
