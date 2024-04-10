@@ -8,6 +8,7 @@ import {
 } from '@audius/common/store'
 import { getErrorMessage, removeNullable } from '@audius/common/utils'
 import { AudiusSdk } from '@audius/sdk'
+import { getReaction } from '@audius/sdk/dist/sdk/utils/reactionsMap'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
@@ -37,9 +38,13 @@ const submitReaction = async ({
       if (account === null) {
         throw new Error('could not submit reaction, user account null')
       }
-      await audiusSdk.users.submitReaction({
+      const reactionValueEmoji = getReaction(reactionValue)
+      if (reactionValueEmoji === undefined) {
+        throw new Error(`Invalid reactionValue: ${reactionValue} not supported`)
+      }
+      await audiusSdk.users.sendTipReaction({
         userId: account.user_id.toString(),
-        metadata: { reactedTo, reactionValue }
+        metadata: { reactedTo, reactionValue: reactionValueEmoji }
       })
       return { success: true, error: undefined }
     } else {

@@ -38,9 +38,10 @@ import {
   UpdateProfileSchema,
   SendTipRequest,
   SendTipSchema,
-  SubmitReactionRequest,
-  SubmitReactionRequestSchema
+  SendTipReactionRequest,
+  SendTipReactionRequestSchema
 } from './types'
+import { getReaction } from '../../utils/reactionsMap'
 
 export class UsersApi extends GeneratedUsersApi {
   constructor(
@@ -467,15 +468,25 @@ export class UsersApi extends GeneratedUsersApi {
    * Submits a reaction to a tip being received.
    * @hidden
    */
-  async submitReaction(
-    params: SubmitReactionRequest,
+  async sendTipReaction(
+    params: SendTipReactionRequest,
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, metadata } = await parseParams(
-      'submitReaction',
-      SubmitReactionRequestSchema
+      'sendTipReaction',
+      SendTipReactionRequestSchema
     )(params)
+
+    const reactionValue = getReaction(metadata.reactionValue)
+
+    if (reactionValue === undefined) {
+      throw new Error(
+        `Invalid reactionValue: ${metadata.reactionValue} is not a supported reaction`
+      )
+    }
+
+    const checkedMetadata = { reactedTo: metadata.reactedTo, reactionValue }
 
     return await this.entityManager.manageEntity({
       userId,
@@ -485,7 +496,7 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(metadata)
+        data: snakecaseKeys(checkedMetadata)
       }),
       ...advancedOptions
     })

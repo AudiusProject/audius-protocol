@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
+import { reactionsMap } from '../../utils/reactionsMap'
 
 export const UpdateProfileSchema = z
   .object({
@@ -78,12 +79,26 @@ export const SendTipSchema = z
 
 export type SendTipRequest = z.input<typeof SendTipSchema>
 
-export const SubmitReactionRequestSchema = z.object({
+export type ReactionTypes = keyof typeof reactionsMap
+
+const ReactionTypeSchema = z.custom<ReactionTypes>(
+  (value) => {
+    const validReactions = Object.keys(reactionsMap) as ReactionTypes[]
+    return validReactions.includes(value as ReactionTypes)
+  },
+  {
+    message: 'Invalid reaction type'
+  }
+)
+
+export const SendTipReactionRequestSchema = z.object({
   userId: HashId,
   metadata: z.object({
     reactedTo: z.string().nonempty(),
-    reactionValue: z.number().int().min(1).max(4)
+    reactionValue: ReactionTypeSchema
   })
 })
 
-export type SubmitReactionRequest = z.input<typeof SubmitReactionRequestSchema>
+export type SendTipReactionRequest = z.input<
+  typeof SendTipReactionRequestSchema
+>
