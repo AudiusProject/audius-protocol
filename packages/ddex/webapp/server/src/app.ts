@@ -1,6 +1,5 @@
 import express, { Express, NextFunction, Request, Response } from 'express'
 import path from 'path'
-import helmet from 'helmet'
 import session from 'express-session'
 import connectMongoDBSession from 'connect-mongodb-session'
 import User from './userSchema'
@@ -36,7 +35,6 @@ export default function createApp(
 
   app.disable('x-powered-by')
   app.use(express.json())
-  app.use(helmet())
 
   const MongoDBStore = connectMongoDBSession(session)
   const store = new MongoDBStore({
