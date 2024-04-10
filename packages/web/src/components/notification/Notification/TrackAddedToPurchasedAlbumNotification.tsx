@@ -1,17 +1,14 @@
 import { useCallback } from 'react'
 
-import { Name, Track } from '@audius/common/models'
 import {
   notificationsSelectors,
   Entity,
-  CollectionEntity,
-  AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType
+  TrackAddedToPurchasedAlbumNotification as TrackAddedToPurchasedAlbumNotificationType
 } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
+import { Flex, IconStars } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
@@ -21,28 +18,22 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
-import { IconAddTrackToPlaylist } from './components/icons'
 import { getEntityLink } from './utils'
 const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
-  title: 'Track Added to Playlist',
-  shareTwitterText: (
-    handle: string,
-    track: Track,
-    playlist: CollectionEntity
-  ) =>
-    `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audius! #Audius`
+  title: 'New Release',
+  released: ' released a new track ',
+  onAlbum: ' on the album you purchased, '
 }
 
-type AddTrackToPlaylistNotificationProps = {
-  notification: AddTrackToPlaylistNotificationType
+type TrackAddedToPurchasedAlbumNotificationProps = {
+  notification: TrackAddedToPurchasedAlbumNotificationType
 }
 
-export const AddTrackToPlaylistNotification = (
-  props: AddTrackToPlaylistNotificationProps
+export const TrackAddedToPurchasedAlbumNotification = (
+  props: TrackAddedToPurchasedAlbumNotificationProps
 ) => {
   const { notification } = props
   const { timeLabel, isViewed } = notification
@@ -53,25 +44,6 @@ export const AddTrackToPlaylistNotification = (
 
   const dispatch = useDispatch()
 
-  const handleTwitterShare = useCallback(
-    (twitterHandle: string) => {
-      if (track && playlist && twitterHandle) {
-        const shareText = messages.shareTwitterText(
-          twitterHandle,
-          track,
-          playlist
-        )
-        const analytics = make(
-          Name.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE,
-          { text: shareText }
-        )
-        return { shareText, analytics }
-      }
-      return null
-    },
-    [track, playlist]
-  )
-
   const handleClick = useCallback(() => {
     dispatch(push(getEntityLink(playlist)))
   }, [playlist, dispatch])
@@ -80,25 +52,19 @@ export const AddTrackToPlaylistNotification = (
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
-      <NotificationHeader icon={<IconAddTrackToPlaylist />}>
+      <NotificationHeader icon={<IconStars color='accent' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <Flex as={NotificationBody} alignItems='center' gap='s'>
         <ProfilePicture user={playlistOwner} />
         <span>
           <UserNameLink user={playlistOwner} notification={notification} />
-          {' added your track '}
+          {messages.released}
           <EntityLink entity={track} entityType={Entity.Track} />
-          {' to their playlist '}
+          {messages.onAlbum}
           <EntityLink entity={playlist} entityType={Entity.Playlist} />
         </span>
       </Flex>
-      <TwitterShareButton
-        type='dynamic'
-        handle={playlistOwner.handle}
-        shareData={handleTwitterShare}
-        url={getEntityLink(playlist, true)}
-      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

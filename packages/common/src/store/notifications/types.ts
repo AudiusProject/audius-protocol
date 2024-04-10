@@ -76,6 +76,7 @@ export enum PushNotificationType {
   SupportingRankUp = 'SupportingRankUp',
   SupporterDethroned = 'SupporterDethroned',
   AddTrackToPlaylist = 'AddTrackToPlaylist',
+  TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   Message = 'Message',
   MessageReaction = 'MessageReaction'
 }
@@ -899,6 +900,17 @@ export type TrackAddedToPurchasedAlbumNotification = BaseNotification & {
 
 export type AddTrackToPlaylistPushNotification = {
   type: PushNotificationType.AddTrackToPlaylist
+  entityId: ID
+  metadata: {
+    // TODO: Need to verify camelCase vs snake_case
+    playlistId: ID
+    trackOwnerId: ID
+    playlistOwnerId: ID
+  }
+}
+
+export type TrackAddedToPurchasedAlbumPushNotification = {
+  type: PushNotificationType.TrackAddedToPurchasedAlbum
   entityId: ID
   metadata: {
     // TODO: Need to verify camelCase vs snake_case
