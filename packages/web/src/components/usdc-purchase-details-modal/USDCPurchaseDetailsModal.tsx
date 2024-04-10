@@ -3,8 +3,10 @@ import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { Modal } from '@audius/harmony'
 
 import { AlbumPurchaseModalContent } from './components/AlbumPurchaseModalContent'
-import { SaleModalContent } from './components/SaleModalContent'
+
 import { TrackPurchaseModalContent } from './components/TrackPurchaseModalContent'
+import { TrackSaleModalContent } from './components/TrackSaleModalContent'
+import { AlbumSaleModalContent } from './components/AlbumSaleModalContent'
 
 export const USDCPurchaseDetailsModal = () => {
   const { isOpen, data, onClose, onClosed } = useUSDCPurchaseDetailsModal()
@@ -30,8 +32,16 @@ export const USDCPurchaseDetailsModal = () => {
             onClose={onClose}
           />
         )
+      ) : purchaseDetails.contentType === USDCContentPurchaseType.TRACK ? (
+        <TrackSaleModalContent
+          purchaseDetails={purchaseDetails}
+          onClose={onClose}
+        />
       ) : (
-        <SaleModalContent purchaseDetails={purchaseDetails} onClose={onClose} />
+        <AlbumSaleModalContent
+          purchaseDetails={purchaseDetails}
+          onClose={onClose}
+        />
       )}
     </Modal>
   )

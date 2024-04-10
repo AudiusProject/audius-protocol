@@ -65,35 +65,26 @@ const messages = {
   sayThanks: 'Say Thanks'
 }
 
+type SaleModalContentProps = {
+  purchaseDetails: USDCPurchaseDetails
+  contentLabel: string
+  contentTitle: string
+  link: string
+  artwork?: string
+  onClose: () => void
+}
+
 export const SaleModalContent = ({
   purchaseDetails,
+  contentLabel,
+  contentTitle,
+  link,
+  artwork,
   onClose
-}: {
-  purchaseDetails: USDCPurchaseDetails
-  onClose: () => void
-}) => {
+}: SaleModalContentProps) => {
   const dispatch = useDispatch()
-  const { contentType, contentId } = purchaseDetails
-  const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: track } = useGetTrackById(
-    { id: contentId },
-    { disabled: !isTrack }
-  )
-  const { data: album } = useGetPlaylistById(
-    {
-      playlistId: contentId,
-      currentUserId
-    },
-    { disabled: isTrack }
-  )
-  const trackArtwork = useTrackCoverArt2(contentId, SquareSizes.SIZE_150_BY_150)
-  const albumArtwork = useCollectionCoverArt2(
-    contentId,
-    SquareSizes.SIZE_150_BY_150
   )
 
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
@@ -124,15 +115,11 @@ export const SaleModalContent = ({
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
           <DynamicImage
-            image={isTrack ? trackArtwork : albumArtwork}
+            image={artwork}
             wrapperClassName={styles.artworkContainer}
           />
-          <DetailSection label={isTrack ? messages.track : messages.album}>
-            <ContentLink
-              onClick={onClose}
-              title={isTrack && track ? track.title : album.playlist_name}
-              link={isTrack && track ? track?.permalink : album.permalink ?? ''}
-            />
+          <DetailSection label={contentLabel}>
+            <ContentLink onClick={onClose} title={contentTitle} link={link} />
             <Flex gap='xs'>
               <Text variant='body' size='l'>
                 {messages.by}
@@ -205,11 +192,7 @@ export const SaleModalContent = ({
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
           <DetailSection label={messages.trackPurchased}>
-            <ContentLink
-              onClick={onClose}
-              title={track?.title ?? ''}
-              link={track?.permalink ?? ''}
-            />
+            <ContentLink onClick={onClose} title={contentTitle} link={link} />
           </DetailSection>
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>

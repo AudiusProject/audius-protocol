@@ -1,15 +1,13 @@
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
-
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
-
-import { PurchaseModalContent } from './PurchaseModalContent'
+import { SaleModalContent } from './SaleModalContent'
 
 const messages = {
   album: 'Album'
 }
 
-export const AlbumPurchaseModalContent = ({
+export const AlbumSaleModalContent = ({
   purchaseDetails,
   onClose
 }: {
@@ -30,7 +28,7 @@ export const AlbumPurchaseModalContent = ({
   if (!album) return null
 
   return (
-    <PurchaseModalContent
+    <SaleModalContent
       purchaseDetails={purchaseDetails}
       contentLabel={messages.album}
       contentTitle={album.playlist_name}

@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+
 import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
@@ -15,6 +16,7 @@ import {
   IconCart,
   Text
 } from '@audius/harmony'
+import { css } from '@emotion/native'
 import moment from 'moment'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -65,7 +67,7 @@ export const PurchaseModalContent = ({
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
-  const handleClickVisitTrack = useCallback(() => {
+  const handleClickVisit = useCallback(() => {
     onClose()
     goToRoute(link)
   }, [onClose, link, goToRoute])
@@ -77,10 +79,14 @@ export const PurchaseModalContent = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
-          <DynamicImage
-            image={artwork}
-            wrapperClassName={styles.artworkContainer}
-          />
+          <Flex
+            w='xl'
+            h='xl'
+            border='default'
+            style={css({ overflow: 'hidden' })}
+          >
+            <DynamicImage image={artwork} />
+          </Flex>
           <DetailSection label={contentLabel}>
             <ContentLink onClick={onClose} title={contentTitle} link={link} />
             <Flex gap='xs'>
@@ -138,10 +144,7 @@ export const PurchaseModalContent = ({
           <DetailSection label={messages.track}>
             <ContentLink onClick={onClose} link={link} title={contentTitle} />
           </DetailSection>
-          <DynamicTrackArtwork
-            id={purchaseDetails.contentId}
-            size={DynamicTrackArtworkSize.DEFAULT}
-          />
+          <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>
         <DetailSection label={messages.by}>
           <Text variant='body' size='l' color='accent'>
@@ -178,7 +181,7 @@ export const PurchaseModalContent = ({
           className={styles.button}
           variant='secondary'
           iconRight={IconArrowRight}
-          onClick={handleClickVisitTrack}
+          onClick={handleClickVisit}
         >
           {messages.visitTrack}
         </Button>
