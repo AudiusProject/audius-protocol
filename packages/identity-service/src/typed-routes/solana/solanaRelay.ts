@@ -46,6 +46,8 @@ type RelayRequestBody = {
   useCoinflowRelay?: boolean
 }
 
+const COINFLOW_API_RELAY = 'https://api.coinflow.cash/api/utils/send-solana-tx'
+
 const isMalformedInstruction = (instr: TransactionInstructionJSON) =>
   !instr ||
   !Array.isArray(instr.keys) ||
@@ -130,7 +132,7 @@ const createRouter = () => {
           const rawTransaction = tx.serialize()
           const encodedTx = Buffer.from(rawTransaction).toString('base64')
           const res = await axios.post(
-            'https://api-sandbox.coinflow.cash/api/utils/send-solana-tx',
+            COINFLOW_API_RELAY,
             {
               transaction: encodedTx
             },
