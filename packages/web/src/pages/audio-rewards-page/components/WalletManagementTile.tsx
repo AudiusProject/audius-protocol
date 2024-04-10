@@ -363,7 +363,10 @@ export const WalletManagementTile = () => {
         {!isMobileWeb() && isAnyProviderAllowed ? (
           <>
             <div className={styles.header}>
-              <IconTokenGold className={styles.headerIcon} />
+              <IconTokenGold
+                className={styles.headerIcon}
+                aria-label={messages.goldAudioToken}
+              />
               <div className={styles.headerText}>
                 <div className={styles.title}>{messages.buyAudio}</div>
                 <div className={styles.subtitle}>

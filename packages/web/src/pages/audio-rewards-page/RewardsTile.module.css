@@ -94,37 +94,10 @@
   background: var(--harmony-n-25);
 }
 
-.claimAllContainer {
-  display: flex;
-  padding: 24px;
-  align-items: center;
-  align-content: center;
-  align-self: stretch;
-  flex-wrap: wrap;
-
-  border: 2px solid var(--harmony-n-150);
-  border-radius: 8px;
-  margin: 8px;
-  gap: 16px;
-}
-
 .divider {
   align-self: stretch;
   margin: 24px 8px;
   border: 1px solid var(--harmony-n-150);
-}
-
-.claimAllContent {
-  display: flex;
-  flex-direction: column;
-}
-
-.claimAllTitle {
-  display: flex;
-}
-
-.claimableAudioDescription {
-  text-align: left;
 }
 
 .pendingPillContainer {
@@ -138,10 +111,6 @@
   margin: 8px;
   display: flex;
   justify-content: flex-end;
-}
-
-.claimAllButton {
-  margin-left: auto;
 }
 
 .pillMessage {

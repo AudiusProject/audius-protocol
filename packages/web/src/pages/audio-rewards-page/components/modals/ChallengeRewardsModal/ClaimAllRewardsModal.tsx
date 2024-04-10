@@ -4,8 +4,7 @@ import {
 } from '@audius/common/hooks'
 import { challengesSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { Button, ModalContent, Text } from '@audius/harmony'
-import cn from 'classnames'
+import { Button, Flex, ModalContent, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -56,10 +55,8 @@ export const ClaimAllRewardsModal = () => {
       dismissOnClickOutside={!isHCaptchaModalOpen}
     >
       <ModalContent>
-        <div
-          className={wm(cn(styles.container, styles.audioMatchingContainer))}
-        >
-          <Text variant='body' className={wm(styles.claimAllDescription)}>
+        <Flex direction='column' gap='2xl' mt='s'>
+          <Text variant='body' textAlign='left'>
             {messages.description}
           </Text>
           <SummaryTable
@@ -89,7 +86,7 @@ export const ClaimAllRewardsModal = () => {
               {messages.done}
             </Button>
           )}
-        </div>
+        </Flex>
       </ModalContent>
     </ModalDrawer>
   )

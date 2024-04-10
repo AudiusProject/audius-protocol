@@ -3033,9 +3033,9 @@ export const audiusBackend = ({
         connection: audiusLibs.solanaWeb3Manager.getConnection()
       })
       const { signature } = await window.solana.signAndSendTransaction(tx)
-      await audiusLibs.solanaWeb3Manager
-        .getConnection()
-        .confirmTransaction(signature)
+      await audiusLibs.solanaWeb3Manager.getConnection().confirmTransaction(
+        signature
+      )
     }
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }

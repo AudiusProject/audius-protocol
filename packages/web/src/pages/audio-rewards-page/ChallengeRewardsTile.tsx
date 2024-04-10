@@ -204,7 +204,7 @@ const RewardPanel = ({
   )
 }
 
-const ClaimAllPanel = ({}) => {
+const ClaimAllPanel = () => {
   const wm = useWithMobileStyle(styles.mobile)
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
 
@@ -228,7 +228,6 @@ const ClaimAllPanel = ({}) => {
       alignSelf='stretch'
       justifyContent='space-between'
       m='s'
-      // className={wm(styles.claimAllContainer)}
     >
       <Flex gap='l' alignItems='center'>
         <IconTokenGold
