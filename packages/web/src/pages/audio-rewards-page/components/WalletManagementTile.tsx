@@ -71,7 +71,7 @@ const messages = {
 }
 
 const OptionButton = (props: ButtonProps) => {
-  return <Button variant='secondary' size='small' fullWidth {...props} />
+  return <Button variant='secondary' size='small' minWidth={150} fullWidth {...props} />
 }
 
 const WalletActions = () => {
@@ -104,7 +104,6 @@ const WalletActions = () => {
     <Flex gap='m' wrap='wrap' justifyContent='center'>
       <Box flex={1}>
         <OptionButton
-          minWidth={150}
           disabled={!hasBalance}
           onClick={onClickSend}
           iconLeft={IconSend}
@@ -114,7 +113,6 @@ const WalletActions = () => {
       </Box>
       <Box flex={1}>
         <OptionButton
-          minWidth={150}
           onClick={onClickReceive}
           iconLeft={IconReceive}
         >
@@ -123,7 +121,6 @@ const WalletActions = () => {
       </Box>
       <Box flex={1}>
         <OptionButton
-          minWidth={150}
           onClick={onClickTransactions}
           iconLeft={IconTransaction}
         >
@@ -280,7 +277,6 @@ const ManageWalletsButton = () => {
   return (
     <>
       <OptionButton
-        minWidth={150}
         onClick={onClickConnectWallets}
         iconLeft={IconWallet}
       >
