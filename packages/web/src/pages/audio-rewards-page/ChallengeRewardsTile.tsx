@@ -27,16 +27,18 @@ import {
 import {
   Button,
   Divider,
+  Flex,
   IconArrowRight as IconArrow,
   IconCheck,
   IconTokenGold,
+  Paper,
   ProgressBar,
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useSetVisibility } from 'common/hooks/useModalState'
+import { useModalState, useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -292,9 +294,9 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     0
   )
   const pendingChallengeSchedule = usePendingChallengeSchedule()
-
+  const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
   const onClickClaimAllRewards = () => {
-    setVisibility('ClaimAllRewards')(true)
+    setClaimAllRewardsVisibility(true)
   }
   const pendingAmount = pendingChallengeSchedule.claimableAmount
 
@@ -309,35 +311,42 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
       ) : (
         <>
           {isRewardsCooldownEnabled ? (
-            <div className={wm(styles.claimAllContainer)}>
-              <IconTokenGold
-                height={48}
-                width={48}
-                aria-label={messages.goldAudioToken}
-              />
-              <div className={wm(styles.claimAllContent)}>
-                <div className={wm(styles.claimAllTitle)}>
-                  <Text color='accent' size='m' variant='heading'>
-                    {messages.totalReadyToClaim}
+            <Paper
+              shadow='flat'
+              border='strong'
+              p='xl'
+              alignItems='center'
+              alignSelf='stretch'
+              justifyContent='space-between'
+              m='s'
+              // className={wm(styles.claimAllContainer)}
+            >
+              <Flex gap='l' alignItems='center'>
+                <IconTokenGold
+                  height={48}
+                  width={48}
+                  aria-label={messages.goldAudioToken}
+                />
+                <Flex direction='column'>
+                  <Flex>
+                    <Text color='accent' size='m' variant='heading'>
+                      {messages.totalReadyToClaim}
+                    </Text>
+                    <div className={wm(styles.pendingPillContainer)}>
+                      <span className={styles.pillMessage}>
+                        {pendingAmount} {messages.pending}
+                      </span>
+                    </div>
+                  </Flex>
+                  <Text variant='body' textAlign='left'>
+                    {totalClaimableAmount} {messages.availableNow}
                   </Text>
-                  <div className={wm(styles.pendingPillContainer)}>
-                    <span className={styles.pillMessage}>
-                      {pendingAmount} {messages.pending}
-                    </span>
-                  </div>
-                </div>
-                <Text className={wm(styles.claimableAudioDescription)}>
-                  {totalClaimableAmount} {messages.availableNow}
-                </Text>
-              </div>
-              <Button
-                className={wm(styles.claimAllButton)}
-                onClick={onClickClaimAllRewards}
-                iconRight={IconArrow}
-              >
+                </Flex>
+              </Flex>
+              <Button onClick={onClickClaimAllRewards} iconRight={IconArrow}>
                 {messages.claimAllRewards}
               </Button>
-            </div>
+            </Paper>
           ) : null}
           <Divider orientation='horizontal' className={wm(styles.divider)} />
           <div className={styles.rewardsContainer}>{rewardsTiles}</div>

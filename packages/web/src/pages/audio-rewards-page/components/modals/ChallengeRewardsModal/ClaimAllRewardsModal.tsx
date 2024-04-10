@@ -59,7 +59,7 @@ export const ClaimAllRewardsModal = () => {
         <div
           className={wm(cn(styles.container, styles.audioMatchingContainer))}
         >
-          <Text className={wm(styles.claimAllDescription)}>
+          <Text variant='body' className={wm(styles.claimAllDescription)}>
             {messages.description}
           </Text>
           <SummaryTable
