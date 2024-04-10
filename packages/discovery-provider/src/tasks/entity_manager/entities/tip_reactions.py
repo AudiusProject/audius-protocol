@@ -14,29 +14,38 @@ logger = logging.getLogger(__name__)
 # returns a valid reaction model
 def validate_tip_reaction(params: ManageEntityParameters):
     if params.entity_type != EntityType.TIP:
-        raise IndexingValidationError(f"Entity type {params.entity_type} is not a tip")
+        raise IndexingValidationError(
+            f"tip_reactions.py | Entity type {params.entity_type} is not a tip"
+        )
     if params.action != Action.UPDATE:
-        raise IndexingValidationError("Expected action to be update")
+        raise IndexingValidationError("tip_reactions.py | Expected action to be update")
 
     if not params.metadata:
-        raise IndexingValidationError("Metadata is required for tip reaction")
+        raise IndexingValidationError(
+            "tip_reactions.py | Metadata is required for tip reaction"
+        )
 
     metadata = params.metadata
 
     if metadata.get("reacted_to") is None:
-        raise IndexingValidationError("reactedTo is required in tip reactions metadata")
+        raise IndexingValidationError(
+            "tip_reactions.py | reactedTo is required in tip reactions metadata"
+        )
 
     reaction_value = metadata.get("reaction_value")
     if reaction_value is None:
         raise IndexingValidationError(
-            "reactionValue is required in tip reactions metadata"
+            "tip_reactions.py | reactionValue is required in tip reactions metadata"
         )
 
     if not 1 <= reaction_value <= 4:
-        raise IndexingValidationError(f"reaction value out of range {metadata}")
+        raise IndexingValidationError(
+            f"rtip_reactions.py | eaction value out of range {metadata}"
+        )
 
 
 def tip_reaction(params: ManageEntityParameters):
+    logger.info("tip_reactions.py | indexing tip reaction")
     try:
         validate_tip_reaction(params)
 
@@ -60,7 +69,7 @@ def tip_reaction(params: ManageEntityParameters):
 
         if not tip:
             raise IndexingValidationError(
-                f"reactor {reactor_user_id} reacted to a tip {reacted_to} that doesn't exist"
+                f"tip_reactions.py | reactor {reactor_user_id} reacted to a tip {reacted_to} that doesn't exist"
             )
 
         slot, sender_user_id = tip
@@ -70,12 +79,14 @@ def tip_reaction(params: ManageEntityParameters):
         )
 
         if not sender:
-            raise IndexingValidationError(f"sender on tip {reacted_to} was not found")
+            raise IndexingValidationError(
+                f"tip_reactions.py | sender on tip {reacted_to} was not found"
+            )
 
         sender_wallet = sender.wallet
         if not sender_wallet:
             raise IndexingValidationError(
-                f"sender wallet not available {sender} {metadata}"
+                f"tip_reactions.py | sender wallet not available {sender} {metadata}"
             )
         reaction_type = "tip"
 

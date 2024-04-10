@@ -57,6 +57,8 @@ program
         program.error(chalk.red(response.error))
       }
 
+      console.log(response)
+
       const entropy = audiusLibs.localStorage.getItem('hedgehog-entropy-key')
 
       console.log(chalk.green('Successfully created user!'))
