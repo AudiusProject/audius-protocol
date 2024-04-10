@@ -38,6 +38,22 @@ export const useChallengeCooldownSchedule = (
   return { cooldownChallenges, claimableAmount }
 }
 
+export const usePendingChallengeSchedule = () => {
+  const challenges = useSelector(getUndisbursedUserChallenges).map((c) => ({
+    ...c,
+    createdAtDate: dayjs.utc(c.created_at)
+  }))
+
+  const cooldownChallenges = challenges.filter(
+    (c) => !isCooldownChallengeClaimable(c)
+  )
+  const claimableAmount = cooldownChallenges.reduce(
+    (acc, curr) => acc + curr.amount,
+    0
+  )
+  return { cooldownChallenges, claimableAmount }
+}
+
 const getAudioMatchingCooldownLabel = (
   challenge: UndisbursedUserChallenge,
   now: Dayjs
@@ -53,7 +69,7 @@ const getAudioMatchingCooldownLabel = (
   return createdAt.add(cooldownDays, 'day').format('ddd (M/D)')
 }
 
-const formatAudioMatchingChallengesForCooldownSchedule = (
+export const formatAudioMatchingChallengesForCooldownSchedule = (
   challenges: UndisbursedUserChallenge[]
 ) => {
   if (challenges.length === 0) return []
