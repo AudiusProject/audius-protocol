@@ -129,7 +129,8 @@ export const useCoinflowAdapter = () => {
                 signatures: transaction.signatures.map((s) => ({
                   signature: s.signature!, // already completely signed
                   publicKey: s.publicKey.toBase58()
-                }))
+                })),
+                useCoinflowRelay: true
               })
             if (!res) {
               console.error('Sending Coinflow transaction failed.', {
