@@ -4,11 +4,11 @@ import {
   reactionsUISelectors,
   reactionsMap,
   getReactionFromRawValue,
-  getContext
+  getContext,
+  ReactionTypes
 } from '@audius/common/store'
 import { getErrorMessage, removeNullable } from '@audius/common/utils'
 import { AudiusSdk } from '@audius/sdk'
-import { getReaction } from '@audius/sdk/dist/sdk/utils/reactionsMap'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
@@ -17,7 +17,7 @@ const { makeGetReactionForSignature } = reactionsUISelectors
 
 type SubmitReactionConfig = {
   reactedTo: string
-  reactionValue: number
+  reactionValue: ReactionTypes | null
   audiusBackend: AudiusBackend
   audiusSdk: AudiusSdk
   useDiscoveryReactions: Promise<boolean>
@@ -38,18 +38,20 @@ const submitReaction = async ({
       if (account === null) {
         throw new Error('could not submit reaction, user account null')
       }
-      const reactionValueEmoji = getReaction(reactionValue)
-      if (reactionValueEmoji === undefined) {
-        throw new Error(`Invalid reactionValue: ${reactionValue} not supported`)
-      }
       await audiusSdk.users.sendTipReaction({
         userId: account.user_id.toString(),
-        metadata: { reactedTo, reactionValue: reactionValueEmoji }
+        metadata: {
+          reactedTo,
+          reactionValue: reactionValue ? reactionValue : '😍'
+        }
       })
       return { success: true, error: undefined }
     } else {
       const libs = await audiusBackend.getAudiusLibs()
-      return libs.Reactions.submitReaction({ reactedTo, reactionValue })
+      return libs.Reactions.submitReaction({
+        reactedTo,
+        reactionValue: reactionValue ? reactionsMap[reactionValue] : 0
+      })
     }
   } catch (err) {
     const errorMessage = getErrorMessage(err)
@@ -113,7 +115,7 @@ function* writeReactionValueAsync({
 
   yield* call(submitReaction, {
     reactedTo: entityId,
-    reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0,
+    reactionValue: newReactionValue,
     audiusBackend,
     audiusSdk: sdk,
     useDiscoveryReactions
