@@ -14,7 +14,8 @@ import {
   Collection,
   SmartCollection,
   ID,
-  UID
+  UID,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -49,6 +50,7 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { useModalState } from 'common/hooks/useModalState'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import {
@@ -106,8 +108,8 @@ type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
   children:
-    | ComponentType<MobileCollectionPageProps>
-    | ComponentType<DesktopCollectionPageProps>
+  | ComponentType<MobileCollectionPageProps>
+  | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
   smartCollection?: SmartCollection
@@ -493,21 +495,37 @@ class CollectionPage extends Component<
     uid: string,
     timestamp: number
   ) => {
-    const { playlistId } = this.props
-    this.props.removeTrackFromPlaylist(
-      trackId,
-      playlistId as number,
-      uid,
-      timestamp
+    const [, setConfirmationModalOpen] = useModalState(
+      'PremiumAlbumRemoveConfirmation'
     )
+    const {
+      playlistId,
+      collection: { stream_conditions }
+    } = this.props
+    console.log('Calling removing')
+    const removeTrackFromPlaylistCallback = () => {
+      console.log('Actually removing now')
+      this.props.removeTrackFromPlaylist(
+        trackId,
+        playlistId as number,
+        uid,
+        timestamp
+      )
+    }
+    if (isContentUSDCPurchaseGated(stream_conditions)) {
+      console.log('yo this is premium')
+      setConfirmationModalOpen(true)
+    } else {
+      removeTrackFromPlaylistCallback()
+    }
 
     // Remove the track from the initial order,
     // because reorder uses initial order as a starting point
     const initialOrder = this.state.initialOrder
       ? [
-          ...this.state.initialOrder.slice(0, index),
-          ...this.state.initialOrder.slice(index + 1)
-        ]
+        ...this.state.initialOrder.slice(0, index),
+        ...this.state.initialOrder.slice(index + 1)
+      ]
       : null
     this.setState({ initialOrder })
   }

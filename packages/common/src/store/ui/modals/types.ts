@@ -84,6 +84,7 @@ export type Modals =
   | 'CoinflowWithdraw'
   | 'WaitForDownloadModal'
   | 'ArtistPick'
+  | 'PremiumAlbumRemoveConfirmation'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
