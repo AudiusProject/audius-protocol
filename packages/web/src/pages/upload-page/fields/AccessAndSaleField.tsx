@@ -637,6 +637,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           isRemix={isRemix}
           isUpload={isUpload}
           isAlbum={isAlbum}
+          streamConditions={tempStreamConditions}
           initialStreamConditions={
             parentFormInitialStreamConditions ?? undefined
           }
