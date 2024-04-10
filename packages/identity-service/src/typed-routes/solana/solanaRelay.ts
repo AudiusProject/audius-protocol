@@ -1,7 +1,14 @@
 import type { AudiusLibs } from '@audius/sdk'
 import { parameterizedAuthMiddleware } from '../../authMiddleware'
 import express, { RequestHandler } from 'express'
-import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import {
+  Keypair,
+  PublicKey,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction
+} from '@solana/web3.js'
+import axios from 'axios'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
@@ -14,6 +21,7 @@ import {
 
 import { assertRelayAllowedInstructions } from './solanaRelayChecks'
 import { getFeePayerKeypair } from '../../solana-client'
+import config from '../../config'
 
 type AccountMetaJSON = {
   pubkey: string
@@ -35,7 +43,10 @@ type RelayRequestBody = {
   retry: boolean
   recentBlockhash: string
   lookupTableAddresses: string[]
+  useCoinflowRelay?: boolean
 }
+
+const COINFLOW_API_RELAY = 'https://api.coinflow.cash/api/utils/send-solana-tx'
 
 const isMalformedInstruction = (instr: TransactionInstructionJSON) =>
   !instr ||
@@ -71,7 +82,8 @@ const createRouter = () => {
           signatures = [],
           retry = true,
           recentBlockhash,
-          lookupTableAddresses = []
+          lookupTableAddresses = [],
+          useCoinflowRelay = false
         } = req.body
 
         // Ensure instructions are formed correctly
@@ -94,6 +106,44 @@ const createRouter = () => {
             data: Buffer.from(instr.data)
           })
         })
+
+        if (useCoinflowRelay) {
+          const feePayerAccounts = config
+            .get('solanaFeePayerWallets')
+            .map((item: any) => item.privateKey)
+            .map((key: number[]) => Keypair.fromSecretKey(Uint8Array.from(key)))
+          const feePayerAccount = feePayerAccounts.find(
+            (keypair: Keypair) =>
+              keypair.publicKey.toString() === feePayerOverride
+          )
+          const message = new TransactionMessage({
+            payerKey: feePayerAccount.publicKey,
+            recentBlockhash,
+            instructions
+          }).compileToV0Message()
+          const tx = new VersionedTransaction(message)
+          tx.sign([feePayerAccount])
+          signatures.forEach(({ publicKey, signature }) => {
+            tx.addSignature(
+              new PublicKey(publicKey),
+              signature as any as Buffer
+            )
+          })
+          const rawTransaction = tx.serialize()
+          const encodedTx = Buffer.from(rawTransaction).toString('base64')
+          const res = await axios.post(
+            COINFLOW_API_RELAY,
+            {
+              transaction: encodedTx
+            },
+            {
+              headers: {
+                Authorization: config.get('coinflowApiKey')
+              }
+            }
+          )
+          return successResponse({ res })
+        }
 
         // Check that the instructions are allowed for relay
         await assertRelayAllowedInstructions(instructions, {

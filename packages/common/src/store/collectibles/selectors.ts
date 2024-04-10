@@ -55,6 +55,12 @@ export const getSupportedUserCollections = createSelector(
       ? allUserCollectibles[accountUserId] ?? defaultCollectibles
       : defaultCollectibles
 
+    const isLoading =
+      !accountUserId ||
+      !allUserCollectibles[accountUserId] ||
+      collectibles[Chain.Eth] === undefined ||
+      collectibles[Chain.Sol] === undefined
+
     // Ethereum collections
     const ethCollectionMap: EthCollectionMap = {}
     const userEthCollectibles = collectibles[Chain.Eth] ?? []
@@ -125,6 +131,6 @@ export const getSupportedUserCollections = createSelector(
       }
     })
 
-    return { ethCollectionMap, solCollectionMap, collectionImageMap }
+    return { isLoading, ethCollectionMap, solCollectionMap, collectionImageMap }
   }
 )

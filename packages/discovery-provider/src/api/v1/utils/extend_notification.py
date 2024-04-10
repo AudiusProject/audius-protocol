@@ -28,6 +28,7 @@ from src.queries.get_notifications import (
     TipReceiveNotification,
     TipSendNotification,
     TrackAddedToPlaylistNotification,
+    TrackAddedToPurchasedAlbumNotification,
     TrackMilestoneNotification,
     TrendingNotification,
     TrendingPlaylistNotification,
@@ -456,6 +457,31 @@ def extend_track_added_to_playlist(action: NotificationAction):
     return notification
 
 
+def extend_track_added_to_purchased_album(action: NotificationAction):
+    data: TrackAddedToPurchasedAlbumNotification = cast(
+        TrackAddedToPurchasedAlbumNotification, action["data"]
+    )
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "track_id": encode_int_id(data["track_id"]),
+            "playlist_id": encode_int_id(data["playlist_id"]),
+            "playlist_owner_id": (
+                encode_int_id(data["playlist_owner_id"])
+                if data.get("playlist_owner_id")
+                else None
+            ),
+        },
+    }
+    return notification
+
+
 def extend_trending(action: NotificationAction):
     data: TrendingNotification = action["data"]  # type: ignore
     notification = {
@@ -599,6 +625,7 @@ notification_action_handler = {
     "tastemaker": extend_tastemaker,
     "tier_change": extend_tier_change,
     "track_added_to_playlist": extend_track_added_to_playlist,
+    "track_added_to_purchased_album": extend_track_added_to_purchased_album,
     "trending": extend_trending,
     "trending_playlist": extend_trending_playlist,
     "trending_underground": extend_trending_underground,

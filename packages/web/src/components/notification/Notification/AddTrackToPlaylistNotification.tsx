@@ -7,13 +7,13 @@ import {
   CollectionEntity,
   AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType
 } from '@audius/common/store'
+import { Flex } from '@audius/harmony'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
-import styles from './TipSentNotification.module.css'
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -83,11 +83,8 @@ export const AddTrackToPlaylistNotification = (
       <NotificationHeader icon={<IconAddTrackToPlaylist />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <NotificationBody className={styles.body}>
-        <ProfilePicture
-          className={styles.profilePicture}
-          user={playlistOwner}
-        />
+      <Flex as={NotificationBody} alignItems='center' gap='s'>
+        <ProfilePicture user={playlistOwner} />
         <span>
           <UserNameLink user={playlistOwner} notification={notification} />
           {' added your track '}
@@ -95,7 +92,7 @@ export const AddTrackToPlaylistNotification = (
           {' to their playlist '}
           <EntityLink entity={playlist} entityType={Entity.Playlist} />
         </span>
-      </NotificationBody>
+      </Flex>
       <TwitterShareButton
         type='dynamic'
         handle={playlistOwner.handle}

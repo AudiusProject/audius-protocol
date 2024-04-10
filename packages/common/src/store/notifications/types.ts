@@ -33,6 +33,7 @@ export enum NotificationType {
   SupporterRankUp = 'SupporterRankUp',
   SupportingRankUp = 'SupportingRankUp',
   AddTrackToPlaylist = 'AddTrackToPlaylist',
+  TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   SupporterDethroned = 'SupporterDethroned',
   USDCPurchaseSeller = 'USDCPurchaseSeller',
   USDCPurchaseBuyer = 'USDCPurchaseBuyer'
@@ -75,6 +76,7 @@ export enum PushNotificationType {
   SupportingRankUp = 'SupportingRankUp',
   SupporterDethroned = 'SupporterDethroned',
   AddTrackToPlaylist = 'AddTrackToPlaylist',
+  TrackAddedToPurchasedAlbum = 'TrackAddedToPurchasedAlbum',
   Message = 'Message',
   MessageReaction = 'MessageReaction'
 }
@@ -169,6 +171,12 @@ export type DiscoveryAddTrackToPlaylistNotificationAction = {
   track_id: string
   playlist_owner_id: string
   type: 'track_added_to_playlist'
+}
+export type DiscoveryTrackAddedToPurchasedAlbumNotificationAction = {
+  playlist_id: string
+  track_id: string
+  playlist_owner_id: string
+  type: 'track_added_to_purchased_album'
 }
 
 export type DiscoveryMilestoneFollowNotificationAction = {
@@ -285,6 +293,11 @@ export type DiscoveryAddTrackToPlaylistNotification = DiscoveryBaseNotification<
   'track_added_to_playlist',
   DiscoveryAddTrackToPlaylistNotificationAction
 >
+export type DiscoveryTrackAddedToPurchasedAlbumNotification =
+  DiscoveryBaseNotification<
+    'track_added_to_purchased_album',
+    DiscoveryTrackAddedToPurchasedAlbumNotificationAction
+  >
 export type DiscoveryTipSendNotification = DiscoveryBaseNotification<
   'tip_send',
   DiscoveryTipSendNotificationAction
@@ -397,6 +410,7 @@ export type DiscoveryNotification =
   | DiscoveryRepostOfRepostNotification
   | DiscoverySaveOfRepostNotification
   | DiscoveryAddTrackToPlaylistNotification
+  | DiscoveryTrackAddedToPurchasedAlbumNotification
   | DiscoveryTastemakerNotification
   | DiscoveryUSDCPurchaseBuyerNotification
   | DiscoveryUSDCPurchaseSellerNotification
@@ -877,8 +891,26 @@ export type AddTrackToPlaylistNotification = BaseNotification & {
   playlistOwnerId: ID
 }
 
+export type TrackAddedToPurchasedAlbumNotification = BaseNotification & {
+  type: NotificationType.TrackAddedToPurchasedAlbum
+  trackId: ID
+  playlistId: ID
+  playlistOwnerId: ID
+}
+
 export type AddTrackToPlaylistPushNotification = {
   type: PushNotificationType.AddTrackToPlaylist
+  entityId: ID
+  metadata: {
+    // TODO: Need to verify camelCase vs snake_case
+    playlistId: ID
+    trackOwnerId: ID
+    playlistOwnerId: ID
+  }
+}
+
+export type TrackAddedToPurchasedAlbumPushNotification = {
+  type: PushNotificationType.TrackAddedToPurchasedAlbum
   entityId: ID
   metadata: {
     // TODO: Need to verify camelCase vs snake_case
@@ -928,6 +960,7 @@ export type Notification =
   | SupportingRankUpNotification
   | SupporterDethronedNotification
   | AddTrackToPlaylistNotification
+  | TrackAddedToPurchasedAlbumNotification
   | USDCPurchaseSellerNotification
   | USDCPurchaseBuyerNotification
 
