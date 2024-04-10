@@ -16,15 +16,11 @@ import {
   IconCart,
   Text
 } from '@audius/harmony'
-import { css } from '@emotion/native'
 import moment from 'moment'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
-import {
-  DynamicTrackArtwork,
-  DynamicTrackArtworkSize
-} from 'components/track/DynamicTrackArtwork'
+import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -40,7 +36,6 @@ const messages = {
   transactionDate: 'Transaction Date',
   done: 'Done',
   purchaseDetails: 'Purchase Details',
-  track: 'Track',
   visitTrack: 'Visit Track',
   transaction: 'Explore Transaction'
 }
@@ -79,14 +74,10 @@ export const PurchaseModalContent = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Flex borderBottom='default' gap='l' w='100%' pb='xl'>
-          <Flex
-            w='xl'
-            h='xl'
-            border='default'
-            style={css({ overflow: 'hidden' })}
-          >
-            <DynamicImage image={artwork} />
-          </Flex>
+          <DynamicImage
+            image={artwork}
+            wrapperClassName={styles.artworkContainer}
+          />
           <DetailSection label={contentLabel}>
             <ContentLink onClick={onClose} title={contentTitle} link={link} />
             <Flex gap='xs'>
@@ -141,7 +132,7 @@ export const PurchaseModalContent = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
-          <DetailSection label={messages.track}>
+          <DetailSection label={contentLabel}>
             <ContentLink onClick={onClose} link={link} title={contentTitle} />
           </DetailSection>
           <DynamicTrackArtwork id={purchaseDetails.contentId} />

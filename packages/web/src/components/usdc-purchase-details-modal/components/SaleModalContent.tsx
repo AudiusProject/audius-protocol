@@ -1,15 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetTrackById
-} from '@audius/common/api'
-import {
-  SquareSizes,
-  USDCContentPurchaseType,
-  USDCPurchaseDetails
-} from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   chatActions,
@@ -38,9 +29,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 import { ContentLink } from './ContentLink'
 import { DetailSection } from './DetailSection'
@@ -60,8 +49,6 @@ const messages = {
   trackPurchased: 'Track Purchased',
   transaction: 'Explore Transaction',
   transactionDate: 'Transaction Date',
-  track: 'Track',
-  album: 'Album',
   sayThanks: 'Say Thanks'
 }
 

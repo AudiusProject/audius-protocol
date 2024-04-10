@@ -11,12 +11,12 @@ import BN from 'bn.js'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 
 const messages = {
-  costOfTrack: 'Cost of Track',
   payExtra: 'Pay Extra',
   downloadable: (count: number) => `Downloadable Files (${count})`,
   title: 'Transaction Summary',
   total: 'Total',
-  albumCost: 'Album Cost'
+  albumCost: 'Album Cost',
+  trackCost: 'Track Cost'
 }
 
 export const TransactionSummary = ({
@@ -38,7 +38,7 @@ export const TransactionSummary = ({
   if (transaction.access === PurchaseAccess.STREAM) {
     items.push({
       id: 'cost',
-      label: isTrack ? messages.costOfTrack : messages.albumCost,
+      label: isTrack ? messages.trackCost : messages.albumCost,
       value: `$${formatUSDCWeiToUSDString(amountBN)}`
     })
   } else if (transaction.access === PurchaseAccess.DOWNLOAD) {
