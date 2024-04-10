@@ -101,7 +101,12 @@ playwright-tests:
     - attach_workspace:
         at: ./
     - run: npx playwright install --with-deps
-    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
+    - run:
+        command: |
+          TESTFILES=$(circleci tests glob "e2e/**/*.spec.ts");
+          SHARD="$((${CIRCLE_NODE_INDEX}+1))"; 
+          cd packages/web; 
+          echo "$TESTFILES" | circleci tests run --command="npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}" --verbose --split-by=timings
     - store_test_results:
         path: packages/web/report.xml
         when: always
