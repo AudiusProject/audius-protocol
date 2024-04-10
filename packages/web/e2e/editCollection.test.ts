@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 
-import { test, waitForUser } from './test'
+import { test } from './test'
 
 const PREMIUM_ALBUM =
   'proberTest/album/__do_not_delete__-probers-premium-album-edit'
