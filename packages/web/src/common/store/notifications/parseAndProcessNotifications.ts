@@ -131,7 +131,10 @@ export function* parseAndProcessNotifications(
     if (type === NotificationType.TipReceive) {
       reactionSignatureToFetch.add(notification.tipTxSignature)
     }
-    if (type === NotificationType.AddTrackToPlaylist) {
+    if (
+      type === NotificationType.AddTrackToPlaylist ||
+      type === NotificationType.TrackAddedToPurchasedAlbum
+    ) {
       trackIdsToFetch.add(notification.trackId)
       userIdsToFetch.add(notification.playlistOwnerId)
       collectionIdsToFetch.add(notification.playlistId)

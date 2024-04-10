@@ -94,6 +94,11 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     FeatureFlags.USDC_PURCHASES
   )
 
+  const isPurchaseableAlbumsEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
+
   const validTypes = [
     isRepostOfRepostEnabled ? 'repost_of_repost' : null,
     isSaveOfRepostEnabled ? 'save_of_repost' : null,
@@ -101,7 +106,8 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     isTrendingUndergroundEnabled ? 'trending_underground' : null,
     isTastemakerEnabled ? 'tastemaker' : null,
     isUSDCPurchasesEnabled ? 'usdc_purchase_buyer' : null,
-    isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null
+    isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null,
+    isPurchaseableAlbumsEnabled ? 'track_added_to_purchased_album' : null
   ].filter(removeNullable)
 
   const discoveryNotifications = yield* call(
