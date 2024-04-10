@@ -16,7 +16,7 @@ export const createSdkService = async () => {
 
   const ddexKey = process.env.DDEX_KEY
   const ddexSecret = process.env.DDEX_SECRET
-  const env = process.env.NODE_ENV || 'development'
+  const env = process.env.NODE_ENV
   if (ddexKey && ddexSecret) {
     try {
       const logger = new Logger({ logLevel: 'info' })
@@ -24,10 +24,10 @@ export const createSdkService = async () => {
       // Determine config to use
       let config = developmentConfig as ServicesConfig
       let initialSelectedNode = 'http://audius-protocol-discovery-provider-1'
-      if (env === 'prod') {
+      if (env === 'production') {
         config = productionConfig as ServicesConfig
         initialSelectedNode = 'https://discoveryprovider.audius.co'
-      } else if (env === 'stage') {
+      } else if (env === 'staging') {
         config = stagingConfig as ServicesConfig
         initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
       } else {
