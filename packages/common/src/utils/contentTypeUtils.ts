@@ -1,6 +1,7 @@
 import { Collection, Track } from '~/models'
 
 import { Nullable } from './typeUtils'
+import { EntityType } from '~/store'
 
 /** Typeguard for determiniing if content is a Track */
 export const isContentTrack = (
@@ -11,3 +12,13 @@ export const isContentTrack = (
 export const isContentCollection = (
   content?: Nullable<Partial<Track | Collection>>
 ): content is Collection => !!content && 'playlist_id' in content
+
+/** Returns the title or playlist_name given a track, playlist, or album */
+export const getEntityTitle = (entity: Nullable<EntityType>) => {
+  if (!entity) return ''
+  return 'title' in entity
+    ? entity?.title
+    : 'playlist_name' in entity
+    ? entity?.playlist_name
+    : ''
+}

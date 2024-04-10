@@ -5,9 +5,10 @@ import {
   notificationsSelectors,
   Entity,
   TrackEntity,
-  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
+  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
+  CollectionEntity
 } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
+import { Nullable, getEntityTitle } from '@audius/common/utils'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -32,8 +33,10 @@ const messages = {
   youJustPurchased: 'You just purchased ',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (trackTitle: string, sellerUsername: string) =>
-    `I bought the track ${trackTitle} by ${sellerUsername} on @Audius! #AudiusPremium`
+  twitterShare: (title: string, sellerUsername: string, type: string) =>
+    `I bought the ${
+      type === 'track' ? 'track' : 'album'
+    } ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
 }
 
 type USDCPurchaseBuyerNotificationProps = {
@@ -44,33 +47,37 @@ export const USDCPurchaseBuyerNotification = (
   props: USDCPurchaseBuyerNotificationProps
 ) => {
   const { notification } = props
-  const { timeLabel, isViewed } = notification
+  const { timeLabel, isViewed, entityType } = notification
   const dispatch = useDispatch()
-  const track = useSelector((state) =>
+  const content = useSelector((state) =>
     getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity>
+  ) as Nullable<TrackEntity | CollectionEntity>
   const notificationUsers = useSelector((state) =>
     getNotificationUsers(state, notification, 1)
   )
   const sellerUser = notificationUsers ? notificationUsers[0] : null
   const handleClick = useCallback(() => {
-    if (track) {
-      dispatch(push(getEntityLink(track)))
+    if (content) {
+      dispatch(push(getEntityLink(content)))
     }
-  }, [dispatch, track])
+  }, [dispatch, content])
+
   const handleShare = useCallback(
     (sellerHandle: string) => {
-      const trackTitle = track?.title || ''
-      const shareText = messages.twitterShare(trackTitle, sellerHandle)
+      const shareText = messages.twitterShare(
+        getEntityTitle(content),
+        sellerHandle,
+        entityType
+      )
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_USDC_PURCHASE_TWITTER_SHARE,
         { text: shareText }
       )
-      return { shareText: track ? shareText : '', analytics }
+      return { shareText: content ? shareText : '', analytics }
     },
-    [track]
+    [content]
   )
-  if (!track || !sellerUser) return null
+  if (!content || !sellerUser) return null
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconCart />}>
@@ -78,14 +85,17 @@ export const USDCPurchaseBuyerNotification = (
       </NotificationHeader>
       <NotificationBody>
         {messages.youJustPurchased}{' '}
-        <EntityLink entity={track} entityType={Entity.Track} />
+        <EntityLink
+          entity={content}
+          entityType={entityType === 'track' ? Entity.Track : Entity.Album}
+        />
         {messages.from}
         <UserNameLink user={sellerUser} notification={notification} />
         {messages.exclamation}
       </NotificationBody>
       <TwitterShareButton
         type='dynamic'
-        url={getEntityLink(track, true)}
+        url={getEntityLink(content, true)}
         handle={sellerUser.handle}
         shareData={handleShare}
       />
