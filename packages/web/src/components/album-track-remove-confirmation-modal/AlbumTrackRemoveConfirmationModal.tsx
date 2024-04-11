@@ -8,8 +8,7 @@ import {
   ModalContentText,
   ModalHeader,
   ModalTitle,
-  ModalFooter,
-  IconRocket
+  ModalFooter
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
