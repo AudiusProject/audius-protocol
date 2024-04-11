@@ -7,7 +7,12 @@ import {
 } from 'typed-redux-saga'
 
 import { CommonStoreContext } from './storeContext'
-import { compareSDKResponse } from '~/utils/sdkMigrationUtils'
+import {
+  compareSDKResponse,
+  SDKMigrationFailedError
+} from '~/utils/sdkMigrationUtils'
+import { FeatureFlags } from '~/services'
+import { ErrorLevel } from '~/models/ErrorReporting'
 
 export const getContext = <Prop extends keyof CommonStoreContext>(
   prop: Prop
@@ -35,6 +40,13 @@ export function* checkSDKMigration<T extends object>({
   migrated: SagaGenerator<T, CallEffect<T>>
   endpointName: string
 }) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const reportToSentry = yield* getContext('reportToSentry')
+
+  if (!getFeatureEnabled(FeatureFlags.SDK_MIGRATION_SHADOWING)) {
+    return yield* legacyCall
+  }
+
   // TODO: Add feature flagging for running the shadow
   const [legacy, migrated] = yield* all([
     legacyCall,
@@ -46,6 +58,28 @@ export function* checkSDKMigration<T extends object>({
       }
     })
   ]) as SagaGenerator<T[], AllEffect<CallEffect<T>>>
-  compareSDKResponse({ legacy, migrated }, endpointName)
+
+  try {
+    compareSDKResponse({ legacy, migrated }, endpointName)
+  } catch (e) {
+    const error =
+      e instanceof SDKMigrationFailedError
+        ? e
+        : new SDKMigrationFailedError({
+            endpointName,
+            innerMessage: `Unknown error: ${e}`,
+            legacyValue: legacy,
+            migratedValue: migrated
+          })
+    yield* call(reportToSentry, {
+      error,
+      level: ErrorLevel.Warning,
+      additionalInfo: {
+        legacyValue: error.legacyValue,
+        migratedValue: error.migratedValue
+      },
+      tags: { endpointName: error.endpointName }
+    })
+  }
   return legacy
 }

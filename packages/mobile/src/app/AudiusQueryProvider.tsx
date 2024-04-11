@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { AudiusQueryContext } from '@audius/common/audius-query'
+import { createMigrationChecker } from '@audius/common/utils/sdkMigrationUtils'
 
 import { env } from 'app/env'
 import { apiClient } from 'app/services/audius-api-client'
@@ -14,10 +15,16 @@ type AudiusQueryProviderProps = {
   children: ReactNode
 }
 
+const checkSDKMigration = createMigrationChecker({
+  remoteConfigInstance,
+  reportToSentry
+})
+
 export const audiusQueryContext = {
   apiClient,
   audiusBackend: audiusBackendInstance,
   audiusSdk,
+  checkSDKMigration,
   dispatch: store.dispatch,
   reportToSentry,
   env,

@@ -5,7 +5,6 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 
 import { userApiFetch } from './user'
-import { checkSDKMigration } from '~/utils/sdkMigrationUtils'
 import { userMetadataListFromSDK } from '~/models'
 
 type GetTopArtistsForGenreArgs = {
@@ -20,7 +19,7 @@ const topArtistsApi = createApi({
     getTopArtistsInGenre: {
       async fetch(args: GetTopArtistsForGenreArgs, context) {
         const { genre, limit, offset } = args
-        const { apiClient, audiusSdk } = context
+        const { apiClient, audiusSdk, checkSDKMigration } = context
         const sdk = await audiusSdk()
 
         return await checkSDKMigration({
