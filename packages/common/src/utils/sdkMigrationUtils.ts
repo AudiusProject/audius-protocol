@@ -1,10 +1,8 @@
 import { detailedDiff } from 'deep-object-diff'
 
-export type ShadowAndCompareArgs<T> = {
+export type CheckSDKMigrationArgs<T> = {
   legacy: T
   migrated?: T | Error
-  /** Only perform diff, do not return migrated response */
-  useLegacy?: boolean
 }
 
 export const unwrapSDKData = async <P extends { data?: unknown }>(
@@ -18,7 +16,7 @@ export const unwrapSDKData = async <P extends { data?: unknown }>(
 }
 
 export const compareSDKResponse = <T extends object>(
-  { legacy, migrated }: ShadowAndCompareArgs<T>,
+  { legacy, migrated }: CheckSDKMigrationArgs<T>,
   apiName: string
 ) => {
   if (migrated instanceof Error) {
