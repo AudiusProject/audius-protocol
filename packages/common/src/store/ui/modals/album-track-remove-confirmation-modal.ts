@@ -17,6 +17,5 @@ const albumTrackRemoveConfirmationModal =
 export const {
   hook: useAlbumTrackRemoveConfirmationModal,
   reducer: albumTrackRemoveConfirmationModalReducer,
-  actions: albumTrackRemoveConfirmationModalActions,
-  selector: albumTrackRemoveConfirmationModalSelector
+  actions: albumTrackRemoveConfirmationModalActions
 } = albumTrackRemoveConfirmationModal
