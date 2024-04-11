@@ -1,7 +1,11 @@
 import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
-import { UID, UserTrack } from '@audius/common/models'
+import {
+  UID,
+  UserTrack,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import { formatCount, formatSeconds } from '@audius/common/utils'
 import { IconVisibilityHidden, IconLock } from '@audius/harmony'
 import cn from 'classnames'
@@ -153,6 +157,7 @@ export const TracksTable = ({
       const active = index === playingIndex
       const track = cellInfo.row.original
       const isTrackUnlisted = track.is_unlisted
+      const isTrackPremium = isContentUSDCPurchaseGated(track.stream_conditions)
 
       return (
         <>
@@ -161,6 +166,7 @@ export const TracksTable = ({
             paused={!playing}
             playing={active}
             hideDefault={false}
+            isTrackPremium={isTrackPremium}
           />
           {isTrackUnlisted ? (
             <IconVisibilityHidden

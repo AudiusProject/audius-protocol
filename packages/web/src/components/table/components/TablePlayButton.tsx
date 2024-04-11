@@ -1,6 +1,7 @@
 import {
   IconPlaybackPause as IconPause,
-  IconPlaybackPlay as IconPlay
+  IconPlaybackPlay as IconPlay,
+  useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -12,6 +13,7 @@ type TablePlayButtonProps = {
   onClick?: (e: any) => void
   paused?: boolean
   playing?: boolean
+  isTrackPremium?: boolean
 }
 
 export const TablePlayButton = ({
@@ -19,8 +21,13 @@ export const TablePlayButton = ({
   hideDefault = true,
   onClick,
   paused,
-  playing = false
+  playing = false,
+  isTrackPremium = false
 }: TablePlayButtonProps) => {
+  const {
+    color: { special }
+  } = useTheme()
+  console.log(isTrackPremium)
   return (
     <div onClick={onClick} className={cn(styles.tablePlayButton, className)}>
       {playing && !paused ? (
@@ -33,6 +40,8 @@ export const TablePlayButton = ({
             className={cn(styles.icon, {
               [styles.hideDefault]: hideDefault && !playing
             })}
+            color={isTrackPremium ? special.green : 'active'}
+            css={{}}
           />
         </div>
       )}
