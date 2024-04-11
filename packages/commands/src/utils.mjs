@@ -74,7 +74,7 @@ export const initializeAudiusLibs = async (handle) => {
 };
 
 let audiusSdk;
-export const initializeAudiusSdk = async () => {
+export const initializeAudiusSdk = async ({ apiKey = undefined, apiSecret = undefined } = {}) => {
   const discoveryNodeSelector = new DiscoveryNodeSelector({
     healthCheckThresholds: {
       minVersion: developmentConfig.minVersion,
@@ -93,6 +93,8 @@ export const initializeAudiusSdk = async () => {
   if (!audiusSdk) {
     audiusSdk = AudiusSdk({
       appName: "audius-cmd",
+      apiKey,
+      apiSecret,
       services: {
         discoveryNodeSelector,
         entityManager
