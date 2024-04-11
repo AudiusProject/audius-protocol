@@ -71,7 +71,7 @@ function* fetchTopArtists() {
 
   const currentUserId = yield* select(getUserId)
 
-  const { legacy: topArtists } = yield* checkSDKMigration({
+  const topArtists = yield* checkSDKMigration({
     endpointName: 'getTopArtists',
     legacy: call([apiClient, apiClient.getTopArtists], {
       currentUserId,

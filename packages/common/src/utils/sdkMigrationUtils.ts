@@ -41,8 +41,11 @@ export const compareSDKResponse = <T extends object>(
 
 const coerceToError = (e: any) => (e instanceof Error ? e : new Error(e))
 
-/** Accepts two promises or functions generating promises,
- * runs them in parallel, compares the results and returns them.
+/** This helper is used to shadow a migration without affecting the return value.
+ * It will run two calls in parallel to fetch the legacy and migrated responses,
+ * compare the results, log the diff, and then return the legacy value. Errors thrown
+ * by the call for the migrated response will be caught to avoid bugs in the migrated
+ * code from causing errors.
  */
 export const checkSDKMigration = async <T extends object>({
   legacy: legacyCall,
@@ -53,6 +56,7 @@ export const checkSDKMigration = async <T extends object>({
   migrated: Promise<T> | (() => Promise<T>)
   endpointName: string
 }) => {
+  // TODO: Add feature flagging for running the shadow
   const [legacyResult, migratedResult] = await Promise.allSettled([
     typeof legacyCall === 'function' ? legacyCall() : legacyCall,
     typeof migratedCall === 'function' ? migratedCall() : migratedCall
@@ -70,5 +74,5 @@ export const checkSDKMigration = async <T extends object>({
 
   compareSDKResponse({ legacy, migrated }, endpointName)
 
-  return { legacy, migrated }
+  return legacy
 }

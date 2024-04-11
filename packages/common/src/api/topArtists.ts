@@ -23,7 +23,7 @@ const topArtistsApi = createApi({
         const { apiClient, audiusSdk } = context
         const sdk = await audiusSdk()
 
-        const { legacy } = await checkSDKMigration({
+        return await checkSDKMigration({
           legacy: apiClient.getTopArtistGenres({
             genres: [genre],
             limit,
@@ -41,8 +41,6 @@ const topArtistsApi = createApi({
             ),
           endpointName: 'getTopArtistsInGenre'
         })
-
-        return legacy
       },
       options: { idArgKey: 'genre', kind: Kind.USERS, schemaKey: 'users' }
     },
