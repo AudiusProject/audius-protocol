@@ -7,11 +7,12 @@ description: Audius Protocol Documentation
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
+<!-- markdownlint-disable MD033 -->
 
 :::tip Wallet Connect Update
 
 The [Audius Protocol Dashboard][protocol-dashboard] has been updated to allow connections using
-Wallet Connect. Registing nodes with a multisig wallet can now follow the
+Wallet Connect. Registering nodes with a multisig wallet can now follow the
 [Registration][register-a-node] guide
 
 This page is saved for reference and additional information.
@@ -123,7 +124,7 @@ On the Transaction Builder screen, complete the form as follows:
 | Field                      | input                                                                                                                                                                          |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Address or ENS Name`      | The [AUDIO token address `0x18aaa7115705e8be94bffebde57af9bfc265b998`][token-address]                                                                                          |
-| `Enter ABI`                | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#audius-token-abi), or directly from source on [GitHub][token-github] |
+| `Enter ABI`                | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#audius-token-abi), or directly from source on [GitHub][token-source] |
 | `To Address`               | The [AUDIO token address `0x18aaa7115705e8be94bffebde57af9bfc265b998`][token-address]                                                                                          |
 | `Contract Method Selector` | `approve`                                                                                                                                                                      |
 | `spender (address)`        | The staking proxy address [`0xe6D97B2099F142513be7A2a068bE040656Ae4591`][staking-proxy-address]                                                                                |
@@ -133,7 +134,7 @@ On the Transaction Builder screen, complete the form as follows:
 
 Double check the `Enter ABI` field, the ABI it detects will be incorrect and must be copied from the
 code block at the [bottom of this page](#audius-token-abi), or directly from source on
-[GitHub][token-github]
+[GitHub][token-source]
 
 :::
 
@@ -161,16 +162,16 @@ Next, add the `Register` transaction to the batch.
 
 To start, clear the "New Transaction" form fields and enter the following:
 
-| Field                            | input                                                                                                                                                                               |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Address or ENS Name`            | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`][service-reg-address]:https://etherscan.io/address/0xD17A9bc90c582249e211a4f4b16721e7f65156c8 |
-| `Enter ABI`                      | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#service-registration-abi)                                                 |
-| `To Address`                     | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`][service-reg-address]                                                                         |
-| `Contract Method Selector`       | `register`                                                                                                                                                                          |
-| `_serviceType (bytes32)`         | This depends on the Node type (Content or Discovery), see table below for value for each Node type                                                                                  |
-| `_endpoint (string)`             | The endpoint for the Node, this example uses the [TikiLabs Discovery Node][tiki-labs-node]                                                                                          |
-| `_stakeAmount (uint256)`         | The amount to be staked, see table below for min and max stake by Node type.                                                                                                        |
-| `_delegateOwnerWallet (address)` | The Delegate Owner wallet used when setting the Node, this can be viewed at the `/health_check` endpoint of the node, [https://audius-dn1.tikilabs.com/health_check][health-check]  |
+| Field                            | input                                                                                                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Address or ENS Name`            | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`][service-reg-address]                                                                        |
+| `Enter ABI`                      | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#service-registration-abi)                                                |
+| `To Address`                     | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`][service-reg-address]                                                                        |
+| `Contract Method Selector`       | `register`                                                                                                                                                                         |
+| `_serviceType (bytes32)`         | This depends on the Node type (Content or Discovery), see table below for value for each Node type                                                                                 |
+| `_endpoint (string)`             | The endpoint for the Node, this example uses the [TikiLabs Discovery Node][tiki-labs-node]                                                                                         |
+| `_stakeAmount (uint256)`         | The amount to be staked, see table below for min and max stake by Node type.                                                                                                       |
+| `_delegateOwnerWallet (address)` | The Delegate Owner wallet used when setting the Node, this can be viewed at the `/health_check` endpoint of the node, [https://audius-dn1.tikilabs.com/health_check][health-check] |
 
 | `_serviceType (bytes32)` | Address                                                              | Minimum Stake | Maximum Stake |
 | :----------------------: | -------------------------------------------------------------------- | ------------: | ------------: |
@@ -291,7 +292,7 @@ included here directly are the same, multiple sources are provided for verificat
 
 ### Audius Token ABI
 
-- [Source Code][token-github]
+- [Source Code][token-source]
 - [Etherscan.io][token-abi-etherscan]
 
 <details>
@@ -1347,6 +1348,6 @@ included here directly are the same, multiple sources are provided for verificat
 [token-abi-etherscan]: https://etherscan.io/address/0x930c746a6e92ca8122682df48cd5020bc1771b32#code
 [token-address]:
   https://etherscan.io/token/0x18aaa7115705e8be94bffebde57af9bfc265b998?a=0x44617f9dced9787c3b06a05b35b4c779a2aa1334
-[token-github]:
+[token-source]:
   https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/AudiusToken.json
 [unit-converter]: https://etherscan.io/unitconverter
