@@ -3,7 +3,7 @@
 
 set -e
 
-changeset version
+npx changeset version
 
 # Update package-lock.json
 npm install --package-lock-only
