@@ -34,7 +34,13 @@ export function* checkSDKMigration<T extends object>({
 }) {
   const [legacy, migrated] = yield* all([
     legacyCall,
-    migratedCall
+    call(function* settle() {
+      try {
+        return yield* migratedCall
+      } catch (e) {
+        return e instanceof Error ? e : new Error(`${e}`)
+      }
+    })
   ]) as SagaGenerator<T[], AllEffect<CallEffect<T>>>
   compareSDKResponse({ legacy, migrated }, endpointName)
   return { legacy, migrated }
