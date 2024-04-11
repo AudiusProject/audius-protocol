@@ -19,15 +19,9 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
-          # cache-dependency-path: |
-          #   package-lock.json
-          #   packages/*/patches/*.patch
-
-      - name: Install Dependencies
-        run: CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1
-
-      - name: Install Playwright
-        run: npx playwright install
+          cache-dependency-path: |
+            package-lock.json
+            packages/*/patches/*.patch
 
       - name: Update .npmrc
         run: |
@@ -41,8 +35,8 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: npm run publish-packages
-          version: npm run version
+          publish: bash ./scripts/publish-packages.sh
+          version: bash ./scripts/version-packages.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
