@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { cyan, green, red, bold } from 'picocolors'
 import Commander from 'commander'
 import path from 'path'
