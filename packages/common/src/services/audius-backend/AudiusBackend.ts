@@ -2188,7 +2188,8 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.content_id) as number
-          entityType = Entity.Track
+          entityType =
+            data.content_type === 'track' ? Entity.Track : Entity.Album
           amount = data.amount
           extraAmount = data.extra_amount
           return decodeHashId(data.buyer_user_id)
@@ -2210,7 +2211,8 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.content_id) as number
-          entityType = Entity.Track
+          entityType =
+            data.content_type === 'track' ? Entity.Track : Entity.Album
           return decodeHashId(data.seller_user_id)
         })
         .filter(removeNullable)
