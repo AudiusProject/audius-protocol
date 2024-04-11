@@ -23,7 +23,8 @@ import {
   playbackPositionSagas,
   gatedContentSagas,
   purchaseContentSagas,
-  confirmerSagas
+  confirmerSagas,
+  albumTrackRemoveConfirmationModalUISagas
 } from '@audius/common/store'
 import { all, fork } from 'redux-saga/effects'
 
@@ -207,6 +208,7 @@ export default function* rootSaga() {
     tokenDashboardSagas(),
     uploadConfirmationModalSagas(),
     publishTrackConfirmationModalSagas(),
+    albumTrackRemoveConfirmationModalUISagas(),
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),

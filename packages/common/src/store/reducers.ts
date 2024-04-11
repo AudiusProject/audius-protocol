@@ -96,6 +96,8 @@ import {
 import addToCollectionReducer, {
   AddToCollectionState
 } from './ui/add-to-collection/reducer'
+import albumTrackRemoveConfirmationReducer from './ui/album-track-remove-confirmation-modal/slice'
+import { AlbumTrackRemoveConfirmationModalState } from './ui/album-track-remove-confirmation-modal/types'
 import buyAudioReducer from './ui/buy-audio/slice'
 import coinflowModalReducer from './ui/coinflow-modal/slice'
 import collectibleDetailsReducer, {
@@ -203,6 +205,7 @@ export const reducers = (
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
     duplicateAddConfirmationModal: duplicateAddConfirmationReducer,
     publishPlaylistConfirmationModal: publishPlaylistConfirmationReducer,
+    albumTrackRemoveConfirmationModal: albumTrackRemoveConfirmationReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     modals: modalsReducer,
     musicConfetti: musicConfettiReducer,
@@ -333,6 +336,7 @@ export type CommonState = {
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
     duplicateAddConfirmationModal: DuplicateAddConfirmationModalState
     publishPlaylistConfirmationModal: PublishPlaylistConfirmationModalState
+    albumTrackRemoveConfirmationModal: AlbumTrackRemoveConfirmationModalState
     mobileOverflowModal: MobileOverflowModalState
     modals: ModalsState
     musicConfetti: MusicConfettiState

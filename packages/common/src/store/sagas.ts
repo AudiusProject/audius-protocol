@@ -26,7 +26,8 @@ import {
   stripeModalUISagas,
   uploadConfirmationModalUISagas,
   publishTrackConfirmationModalUISagas,
-  modalsSagas
+  modalsSagas,
+  albumTrackRemoveConfirmationModalUISagas
 } from '~/store/ui'
 
 import { buyCryptoSagas } from './buy-crypto'
@@ -65,6 +66,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   uploadConfirmationModalUI: uploadConfirmationModalUISagas,
   publishTrackConfirmationModalUI: publishTrackConfirmationModalUISagas,
   publishPlaylistConfirmationModalUI: publishPlaylistConfirmationModalUISagas,
+  albumTrackRemoveConfirmationModalUI: albumTrackRemoveConfirmationModalUISagas,
   player: playerSagas,
   playbackPosition: playbackPositionSagas,
   playlistUpdates: playlistUpdatesSagas

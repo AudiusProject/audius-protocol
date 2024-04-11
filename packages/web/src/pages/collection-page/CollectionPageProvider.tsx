@@ -41,7 +41,9 @@ import {
   playlistUpdatesSelectors,
   CollectionTrack,
   CollectionsPageType,
-  CollectionPageTrackRecord
+  CollectionPageTrackRecord,
+  modalsActions,
+  albumTrackRemoveConfirmationModalUIActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -50,7 +52,6 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { useModalState } from 'common/hooks/useModalState'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import {
@@ -76,6 +77,7 @@ import { getCollectionPageSEOFields } from 'utils/seo'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
+
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
@@ -495,16 +497,11 @@ class CollectionPage extends Component<
     uid: string,
     timestamp: number
   ) => {
-    const [, setConfirmationModalOpen] = useModalState(
-      'PremiumAlbumRemoveConfirmation'
-    )
     const {
       playlistId,
       collection: { stream_conditions }
     } = this.props
-    console.log('Calling removing')
     const removeTrackFromPlaylistCallback = () => {
-      console.log('Actually removing now')
       this.props.removeTrackFromPlaylist(
         trackId,
         playlistId as number,
@@ -513,8 +510,7 @@ class CollectionPage extends Component<
       )
     }
     if (isContentUSDCPurchaseGated(stream_conditions)) {
-      console.log('yo this is premium')
-      setConfirmationModalOpen(true)
+      this.props.openConfirmationModal(removeTrackFromPlaylistCallback)
     } else {
       removeTrackFromPlaylistCallback()
     }
@@ -1006,6 +1002,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       ),
     setModalVisibility: () => dispatch(setVisibility(true)),
+    openConfirmationModal: (confirmCallback: () => void) =>
+      dispatch(
+        albumTrackRemoveConfirmationModalUIActions.requestOpen({
+          confirmCallback
+        })
+      ),
     onEditCollection: (collectionId: ID) =>
       dispatch(
         editPlaylistModalActions.open({
