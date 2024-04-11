@@ -15,6 +15,14 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path:
+            - package-lock.json
+            - packages/*/patches/*.patch
+
       - name: Install Dependencies
         run: CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1
 
