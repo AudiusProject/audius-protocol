@@ -19,12 +19,15 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
-          cache-dependency-path: |
-            package-lock.json
-            packages/*/patches/*.patch
+          # cache-dependency-path: |
+          #   package-lock.json
+          #   packages/*/patches/*.patch
 
       - name: Install Dependencies
         run: CI=true SKIP_POD_INSTALL=true npm ci --maxsockets 1
+
+      - name: Install Playwright
+        run: npx playwright install
 
       - name: Update .npmrc
         run: |
