@@ -478,16 +478,6 @@ export class UsersApi extends GeneratedUsersApi {
       SendTipReactionRequestSchema
     )(params)
 
-    const reactionValue = getReaction(metadata.reactionValue)
-
-    if (reactionValue === undefined) {
-      throw new Error(
-        `Invalid reactionValue: ${metadata.reactionValue} is not a supported reaction`
-      )
-    }
-
-    const checkedMetadata = { reactedTo: metadata.reactedTo, reactionValue }
-
     return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TIP,
@@ -496,7 +486,7 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(checkedMetadata)
+        data: snakecaseKeys(metadata)
       }),
       ...advancedOptions
     })
