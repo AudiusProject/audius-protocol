@@ -57,7 +57,7 @@ export class BorshString extends Layout<string> {
 
   getSpan(b: Uint8Array, offset = 0): number {
     if (!b) {
-      return this.maxLength
+      return u32().span + this.maxLength
     }
     const length = u32().decode(b, offset)
     return u32().span + length
