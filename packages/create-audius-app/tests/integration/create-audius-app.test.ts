@@ -1,9 +1,11 @@
-import execa from 'execa'
-import fs from 'fs-extra'
-import path from 'path'
-import { useTempDir } from './use-temp-dir'
-import { describe, it, expect } from 'vitest'
-import { projectFilesShouldExist, projectFilesShouldNotExist } from './utils'
+// import execa from 'execa'
+// import fs from 'fs-extra'
+// import path from 'path'
+// import { useTempDir } from './use-temp-dir'
+// import { describe, it, expect } from 'vitest'
+// import { projectFilesShouldExist, projectFilesShouldNotExist } from './utils'
+
+import { describe } from 'vitest'
 
 // const cli = require.resolve('create-audius-app/dist/index.js')
 
