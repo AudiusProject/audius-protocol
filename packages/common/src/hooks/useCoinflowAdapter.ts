@@ -57,8 +57,7 @@ export const useCoinflowWithdrawalAdapter = () => {
               audiusBackend,
               {
                 transaction: finalTransaction,
-                skipPreflight: true,
-                useCoinflowRelay: true
+                skipPreflight: true
               }
             )
             if (!res) {
