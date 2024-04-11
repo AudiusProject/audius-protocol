@@ -1,0 +1,16 @@
+{
+  "name": "moshpit",
+  "version": "1.0.0",
+  "description": "end to end protocol test suite",
+  "main": "index.js",
+  "scripts": {
+    "test:watch": "vitest watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@audius/sdk": "*",
+    "lodash": "^4.17.21"
+  }
+}
