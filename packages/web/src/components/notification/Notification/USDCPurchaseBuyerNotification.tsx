@@ -58,6 +58,7 @@ export const USDCPurchaseBuyerNotification = (
     getNotificationUsers(state, notification, 1)
   )
   const sellerUser = notificationUsers ? notificationUsers[0] : null
+
   const handleClick = useCallback(() => {
     if (content) {
       dispatch(push(getEntityLink(content)))
@@ -77,8 +78,9 @@ export const USDCPurchaseBuyerNotification = (
       )
       return { shareText: content ? shareText : '', analytics }
     },
-    [content]
+    [content, entityType]
   )
+
   if (!content || !sellerUser) return null
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

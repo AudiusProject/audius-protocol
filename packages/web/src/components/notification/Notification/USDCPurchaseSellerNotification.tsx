@@ -58,11 +58,13 @@ export const USDCPurchaseSellerNotification = (
   )
   const buyerUser = notificationUsers ? notificationUsers[0] : null
   const { amount, extraAmount } = notification
+
   const handleClick = useCallback(() => {
     if (content) {
       dispatch(push(getEntityLink(content)))
     }
   }, [dispatch, content])
+
   if (!content || !buyerUser) return null
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
