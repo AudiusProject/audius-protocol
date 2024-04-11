@@ -2,6 +2,8 @@ import { Action } from '@reduxjs/toolkit'
 
 import { ModalSource } from '~/models/Analytics'
 
+import { AlbumTrackRemoveConfirmationState } from '../album-track-remove-confirmation-modal/types'
+
 import { AddFundsModalState } from './add-funds-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
@@ -106,6 +108,7 @@ export type StatefulModalsState = {
   CoinflowWithdraw: CoinflowWithdrawModalState
   WaitForDownloadModal: WaitForDownloadModalState
   ArtistPick: ArtistPickModalState
+  AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

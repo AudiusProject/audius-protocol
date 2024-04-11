@@ -55,14 +55,6 @@ export {
 export { default as publishPlaylistConfirmationModalUISagas } from './publish-playlist-confirmation-modal/sagas'
 export * from './publish-playlist-confirmation-modal/types'
 
-export * as albumTrackRemoveConfirmationModalUISelectors from './album-track-remove-confirmation-modal/selectors'
-export {
-  default as albumTrackRemoveConfirmationModalUIReducer,
-  actions as albumTrackRemoveConfirmationModalUIActions
-} from './album-track-remove-confirmation-modal/slice'
-export { default as albumTrackRemoveConfirmationModalUISagas } from './album-track-remove-confirmation-modal/sagas'
-export * from './album-track-remove-confirmation-modal/types'
-
 export {
   default as reactionsUIReducer,
   actions as reactionsUIActions

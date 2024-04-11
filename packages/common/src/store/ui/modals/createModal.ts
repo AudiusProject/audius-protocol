@@ -142,6 +142,7 @@ export const createModal = <T>({
   return {
     hook: useModal,
     actions: slice.actions,
-    reducer: slice.reducer
+    reducer: slice.reducer,
+    selector
   }
 }

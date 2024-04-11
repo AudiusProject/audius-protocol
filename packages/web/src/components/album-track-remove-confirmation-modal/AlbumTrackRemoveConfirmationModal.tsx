@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { albumTrackRemoveConfirmationModalUISelectors } from '@audius/common/store'
+import { albumTrackRemoveConfirmationModalSelector } from '@audius/common/store'
 import {
   Button,
   Modal,
@@ -14,8 +14,6 @@ import {
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
 
-const { getConfirmCallback } = albumTrackRemoveConfirmationModalUISelectors
-
 const messages = {
   title: 'Remove Track',
   description1: 'Are you sure you want to remove this track from your album?',
@@ -26,7 +24,9 @@ const messages = {
 }
 
 export const AlbumTrackRemoveConfirmationModal = () => {
-  const confirmCallback = useSelector(getConfirmCallback)
+  const { confirmCallback } = useSelector(
+    albumTrackRemoveConfirmationModalSelector
+  )
   const [isOpen, setIsOpen] = useModalState('AlbumTrackRemoveConfirmation')
 
   const onClose = useCallback(() => {
@@ -34,7 +34,7 @@ export const AlbumTrackRemoveConfirmationModal = () => {
   }, [setIsOpen])
 
   const handleConfirm = useCallback(() => {
-    confirmCallback()
+    confirmCallback?.()
     onClose()
   }, [confirmCallback, onClose])
 

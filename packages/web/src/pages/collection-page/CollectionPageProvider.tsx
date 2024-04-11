@@ -42,7 +42,7 @@ import {
   CollectionTrack,
   CollectionsPageType,
   CollectionPageTrackRecord,
-  albumTrackRemoveConfirmationModalUIActions
+  albumTrackRemoveConfirmationModalActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -109,8 +109,8 @@ type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
   children:
-    | ComponentType<MobileCollectionPageProps>
-    | ComponentType<DesktopCollectionPageProps>
+  | ComponentType<MobileCollectionPageProps>
+  | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
   smartCollection?: SmartCollection
@@ -518,9 +518,9 @@ class CollectionPage extends Component<
     // because reorder uses initial order as a starting point
     const initialOrder = this.state.initialOrder
       ? [
-          ...this.state.initialOrder.slice(0, index),
-          ...this.state.initialOrder.slice(index + 1)
-        ]
+        ...this.state.initialOrder.slice(0, index),
+        ...this.state.initialOrder.slice(index + 1)
+      ]
       : null
     this.setState({ initialOrder })
   }
@@ -1003,9 +1003,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setModalVisibility: () => dispatch(setVisibility(true)),
     openConfirmationModal: (confirmCallback: () => void) =>
       dispatch(
-        albumTrackRemoveConfirmationModalUIActions.requestOpen({
-          confirmCallback
-        })
+        albumTrackRemoveConfirmationModalActions.open({ confirmCallback })
       ),
     onEditCollection: (collectionId: ID) =>
       dispatch(
