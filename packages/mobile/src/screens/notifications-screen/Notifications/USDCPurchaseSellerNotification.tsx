@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import type { StringUSDC } from '@audius/common/models'
 import type {
   CollectionEntity,
+  Entity,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common/store'
@@ -27,11 +28,13 @@ import {
 const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
-  title: (type: string) => `${capitalize(type)} Sold`,
+  title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
   congrats: 'Congrats,',
-  justBoughtYourTrack: (type: string) => ` just bought your ${type} `,
+  justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
+    ` just bought your ${type} `,
   for: ' for ',
-  exclamation: '!'
+  exclamation: '!',
+  dollar: '$'
 }
 
 type USDCPurchaseSellerNotificationProps = {
@@ -66,9 +69,10 @@ export const USDCPurchaseSellerNotification = (
         <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        {messages.congrats} <UserNameLink user={buyerUser} />{' '}
-        {messages.justBoughtYourTrack(entityType)}{' '}
-        <EntityLink entity={content} /> for $
+        {messages.congrats} <UserNameLink user={buyerUser} />
+        {messages.justBoughtYourTrack(entityType)}
+        <EntityLink entity={content} />
+        {messages.for + messages.dollar}
         {formatUSDCWeiToUSDString(
           stringUSDCToBN(amount)
             .add(stringUSDCToBN(extraAmount))

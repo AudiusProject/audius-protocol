@@ -1,7 +1,7 @@
 import { Collection, Track } from '~/models'
+import { EntityType } from '~/store'
 
 import { Nullable } from './typeUtils'
-import { EntityType } from '~/store'
 
 /** Typeguard for determiniing if content is a Track */
 export const isContentTrack = (

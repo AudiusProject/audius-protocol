@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { Name } from '@audius/common/models'
 import type {
   CollectionEntity,
+  Entity,
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
 } from '@audius/common/store'
@@ -32,10 +33,12 @@ const messages = {
   youJustPurchased: 'You just purchased',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (title: string, sellerUsername: string, type: string) =>
-    `I bought the ${
-      type === 'track' ? 'track' : 'album'
-    } ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
+  twitterShare: (
+    title: string,
+    sellerUsername: string,
+    type: Entity.Track | Entity.Album
+  ) =>
+    `I bought the ${type} ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
 }
 type USDCPurchaseBuyerNotificationProps = {
   notification: USDCPurchaseBuyerNotificationType

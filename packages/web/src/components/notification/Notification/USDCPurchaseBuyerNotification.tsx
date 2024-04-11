@@ -6,7 +6,8 @@ import {
   Entity,
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
-  CollectionEntity
+  CollectionEntity,
+  EntityType
 } from '@audius/common/store'
 import { Nullable, getEntityTitle } from '@audius/common/utils'
 import { push } from 'connected-react-router'
@@ -33,10 +34,12 @@ const messages = {
   youJustPurchased: 'You just purchased ',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (title: string, sellerUsername: string, type: string) =>
-    `I bought the ${
-      type === 'track' ? 'track' : 'album'
-    } ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
+  twitterShare: (
+    title: string,
+    sellerUsername: string,
+    type: Entity.Track | Entity.Album
+  ) =>
+    `I bought the ${type} ${title} by ${sellerUsername} on @Audius! #AudiusPremium`
 }
 
 type USDCPurchaseBuyerNotificationProps = {
@@ -84,11 +87,8 @@ export const USDCPurchaseBuyerNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.youJustPurchased}{' '}
-        <EntityLink
-          entity={content}
-          entityType={entityType === 'track' ? Entity.Track : Entity.Album}
-        />
+        {messages.youJustPurchased}
+        <EntityLink entity={content} entityType={entityType} />
         {messages.from}
         <UserNameLink user={sellerUser} notification={notification} />
         {messages.exclamation}

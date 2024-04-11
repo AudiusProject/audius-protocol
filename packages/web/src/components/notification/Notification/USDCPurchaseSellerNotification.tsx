@@ -31,11 +31,13 @@ import { capitalize } from 'lodash'
 const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
-  title: (type: string) => `${capitalize(type)} Sold`,
+  title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
   congrats: 'Congrats, ',
-  justBoughtYourTrack: (type: string) => ` just bought your ${type} `,
+  justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
+    ` just bought your ${type} `,
   for: ' for ',
-  exclamation: '!'
+  exclamation: '!',
+  dollar: '$'
 }
 
 type USDCPurchaseSellerNotificationProps = {
@@ -68,14 +70,11 @@ export const USDCPurchaseSellerNotification = (
         <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.congrats}{' '}
-        <UserNameLink user={buyerUser} notification={notification} />{' '}
-        {messages.justBoughtYourTrack(entityType)}{' '}
-        <EntityLink
-          entity={content}
-          entityType={entityType === 'track' ? Entity.Track : Entity.Album}
-        />{' '}
-        for $
+        {messages.congrats}
+        <UserNameLink user={buyerUser} notification={notification} />
+        {messages.justBoughtYourTrack(entityType)}
+        <EntityLink entity={content} entityType={entityType} />
+        {messages.for + messages.dollar}
         {formatUSDCWeiToUSDString(
           stringUSDCToBN(amount)
             .add(stringUSDCToBN(extraAmount))
