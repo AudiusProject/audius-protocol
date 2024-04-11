@@ -109,18 +109,15 @@ const sendTransactionWithRetries = async ({
   let retryCount = 0
   const createRetryPromise = async (): Promise<void> => {
     while (!done) {
-      try {
-        // Explicitly not awaited, sent in the background
-        Promise.any(
-          connections.map((connection) =>
-            connection.sendRawTransaction(serializedTx, sendOptions)
-          )
+      Promise.any(
+        connections.map((connection) =>
+          connection.sendRawTransaction(serializedTx, sendOptions)
         )
-        await delay(RETRY_DELAY_MS)
-        retryCount++
-      } catch (error) {
+      ).catch((error) => {
         logger.warn({ error, retryCount }, `Failed retry...`)
-      }
+      })
+      await delay(RETRY_DELAY_MS)
+      retryCount++
     }
   }
 
