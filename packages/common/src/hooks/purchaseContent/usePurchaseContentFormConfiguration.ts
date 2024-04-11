@@ -107,7 +107,7 @@ export const usePurchaseContentFormConfiguration = ({
         )
       }
     },
-    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch]
+    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch, isTrack]
   )
 
   return {
