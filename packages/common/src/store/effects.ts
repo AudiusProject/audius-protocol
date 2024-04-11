@@ -6,13 +6,14 @@ import {
   SagaGenerator
 } from 'typed-redux-saga'
 
-import { CommonStoreContext } from './storeContext'
+import { ErrorLevel } from '~/models/ErrorReporting'
+import { FeatureFlags } from '~/services'
 import {
   compareSDKResponse,
   SDKMigrationFailedError
 } from '~/utils/sdkMigrationUtils'
-import { FeatureFlags } from '~/services'
-import { ErrorLevel } from '~/models/ErrorReporting'
+
+import { CommonStoreContext } from './storeContext'
 
 export const getContext = <Prop extends keyof CommonStoreContext>(
   prop: Prop

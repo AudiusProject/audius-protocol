@@ -2,6 +2,7 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
+import { Id } from '~/api'
 import { ID, UserMetadata, userMetadataListFromSDK } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
@@ -10,7 +11,6 @@ import { checkSDKMigration, getContext, getSDK } from '~/store/effects'
 import { waitForRead } from '~/utils/sagaHelpers'
 import { removeNullable } from '~/utils/typeUtils'
 
-import { Id } from '~/api'
 import { actions as relatedArtistsActions } from './slice'
 
 const getUserId = accountSelectors.getUserId

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 
 import { AudiusQueryContext } from '@audius/common/audius-query'
-import { createMigrationChecker } from '@audius/common/utils/sdkMigrationUtils'
+import { createMigrationChecker } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { apiClient } from 'services/audius-api-client'

@@ -1,3 +1,7 @@
+import { full } from '@audius/sdk'
+import { omit } from 'lodash'
+import snakecaseKeys from 'snakecase-keys'
+
 import { Collectible, CollectiblesMetadata } from '~/models/Collectible'
 import { Color } from '~/models/Color'
 import { CID, ID } from '~/models/Identifiers'
@@ -14,14 +18,11 @@ import {
   playlistLibraryFromSDK
 } from '~/models/PlaylistLibrary'
 import { SolanaWalletAddress, StringWei, WalletAddress } from '~/models/Wallet'
+import { decodeHashId } from '~/utils/hashIds'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
-import { full } from '@audius/sdk'
-import snakecaseKeys from 'snakecase-keys'
-import { decodeHashId } from '~/utils/hashIds'
-import { omit } from 'lodash'
 
 export type UserMetadata = {
   album_count: number

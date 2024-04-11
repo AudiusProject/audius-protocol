@@ -5,9 +5,9 @@ import type { Dispatch } from 'redux'
 
 import type { AudiusAPIClient } from '~/services/audius-api-client'
 import { AudiusBackend, Env, RemoteConfigInstance } from '~/services/index'
+import { SDKMigrationChecker } from '~/utils/sdkMigrationUtils'
 
 import { ReportToSentryArgs } from '../models'
-import { SDKMigrationChecker } from '~/utils/sdkMigrationUtils'
 
 export type AudiusQueryContextType = {
   apiClient: AudiusAPIClient

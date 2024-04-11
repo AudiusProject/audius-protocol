@@ -1,7 +1,8 @@
+import { full } from '@audius/sdk'
+
 import { SmartCollectionVariant } from '~/models/SmartCollectionVariant'
 
 import { ID } from './Identifiers'
-import { full } from '@audius/sdk'
 
 export type PlaylistLibraryID = ID | string | SmartCollectionVariant
 

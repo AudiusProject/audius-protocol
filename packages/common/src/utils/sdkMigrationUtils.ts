@@ -1,5 +1,6 @@
 import { detailedDiff } from 'deep-object-diff'
 import { isEmpty } from 'lodash'
+
 import { ErrorLevel, ReportToSentryArgs } from '~/models/ErrorReporting'
 import { FeatureFlags, RemoteConfigInstance } from '~/services/remote-config'
 
@@ -52,7 +53,7 @@ export const compareSDKResponse = <T extends object>(
     })
   }
   // Both object-like, perform deep diff
-  if (typeof legacy == 'object' && typeof migrated == 'object') {
+  if (typeof legacy === 'object' && typeof migrated === 'object') {
     const diffValue = detailedDiff(legacy, migrated)
     if (
       !isEmpty(diffValue.added) ||
