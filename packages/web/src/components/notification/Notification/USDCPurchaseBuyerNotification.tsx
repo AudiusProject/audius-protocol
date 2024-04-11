@@ -6,8 +6,7 @@ import {
   Entity,
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
-  CollectionEntity,
-  EntityType
+  CollectionEntity
 } from '@audius/common/store'
 import { Nullable, getEntityTitle } from '@audius/common/utils'
 import { push } from 'connected-react-router'
