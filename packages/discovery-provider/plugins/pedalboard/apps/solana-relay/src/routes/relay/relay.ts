@@ -99,27 +99,12 @@ const sendTransactionWithRetries = async ({
 
   const start = Date.now()
 
-  // Try to send once w/ await before retrying
-  try {
-    logger.info(
-      { rpcEndpoints: connections.map((c) => c.rpcEndpoint) },
-      'Initial send...'
-    )
-    await Promise.any(
-      connections.map(async (connection) => {
-        await connection.sendRawTransaction(serializedTx, sendOptions)
-      })
-    )
-  } catch (error) {
-    logger.warn({ error }, 'Initial send failed')
-  }
-
   const createRetryPromise = async (): Promise<void> => {
     let retryCount = 0
     while (true) {
       await delay(RETRY_DELAY_MS)
       // Explicitly not awaited, sent in the background
-      logger.info({ retryCount }, 'Retry send...')
+      logger.info({ retryCount }, 'Attempting send...')
       try {
         Promise.any(
           connections.map((connection) =>
