@@ -24,39 +24,32 @@ npm run dev
 
 ## Creating an App
 
-The easiest way to start building on Audius is by using `create-audius-app`. This CLI tool enables
-you to quickly start building a new Audius application, with everything set up for you. You can
-create a new app using the default Audius react template, or by using one of the
-[examples](https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs/src/sdk/examples).
+The easiest way to start building a new application on top of the Audius Protocol is by using
+`create-audius-app`. This CLI tool enables you to quickly start building a new Audius application,
+with everything set up for you. You can create a new app using the default Audius react template, or
+by using one of the
+[examples](https://github.com/AudiusProject/audius-protocol/tree/main/packages/create-audius-app/examples).
 
-:::info Minumum Node Version
+:::info Minimum Node Version
 
-You’ll need to have Node >= 18 on your local development machine (but it’s not required on the
-server). You can use [nvm][nvm-url] (macOS/Linux) or [nvm-windows][nvm-windows-url] to switch Node
-versions between different projects.
+You’ll need to have Node >= 18 on your local development machine. You can use [nvm][nvm-url]
+(macOS/Linux) or [nvm-windows][nvm-windows-url] to switch Node versions between different projects.
 
 :::
 
 [nvm-url]: https://github.com/nvm-sh/nvm#installation
 [nvm-windows-url]: https://github.com/coreybutler/nvm-windows#node-version-manager-nvm-for-windows
 
-To create a new app, you may choose one of the following methods:
-
-### npx
+To create a new app run the following command:
 
 ```sh
 npx create-react-app my-app
 ```
 
-### npm
-
-```sh
-npm init audius-app my-app
-```
-
 You will be asked for the name of your project, and all the necessary dependencies will be
 installed.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/create-audius-app/create-audius-app-terminal.svg')} />
 </figure>
