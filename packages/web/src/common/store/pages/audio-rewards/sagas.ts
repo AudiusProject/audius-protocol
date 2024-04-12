@@ -33,6 +33,7 @@ import {
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import { ChallengeId } from '@audius/sdk'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import {
   call,
   fork,
@@ -296,6 +297,15 @@ function* claimChallengeRewardAsync(
           `Failed to claim specifier: ${error.specifier} for amount: ${error.amount} with error:`,
           error.error
         )
+        yield* call(reportToSentry, {
+          error: error.error,
+          name: `ClaimRewards: ${error.error.name}`,
+          additionalInfo: {
+            challengeId,
+            specifier: error.specifier,
+            amount: error.amount
+          }
+        })
       }
       throw new Error('Some specifiers failed to claim')
     }
