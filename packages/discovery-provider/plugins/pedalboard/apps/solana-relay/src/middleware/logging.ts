@@ -17,7 +17,7 @@ export const incomingRequestLogger = (
     method
   })
   response.locals.logger.info(
-    { startTime: new Date(startTime) },
+    { startTime: new Date(startTime), body: request.body },
     'incoming request'
   )
   next()

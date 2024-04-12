@@ -1,12 +1,14 @@
-import { AudiusBackend } from '@audius/common/services'
+import { AudiusBackend, FeatureFlags } from '@audius/common/services'
 import {
   reactionsUIActions,
   reactionsUISelectors,
   reactionsMap,
   getReactionFromRawValue,
-  getContext
+  getContext,
+  ReactionTypes
 } from '@audius/common/store'
 import { getErrorMessage, removeNullable } from '@audius/common/utils'
+import { AudiusSdk } from '@audius/sdk'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
@@ -15,8 +17,10 @@ const { makeGetReactionForSignature } = reactionsUISelectors
 
 type SubmitReactionConfig = {
   reactedTo: string
-  reactionValue: number
+  reactionValue: ReactionTypes | null
   audiusBackend: AudiusBackend
+  audiusSdk: AudiusSdk
+  useDiscoveryReactions: Promise<boolean>
 }
 
 type SubmitReactionResponse = { success: boolean; error: any }
@@ -24,11 +28,31 @@ type SubmitReactionResponse = { success: boolean; error: any }
 const submitReaction = async ({
   reactedTo,
   reactionValue,
-  audiusBackend
+  audiusBackend,
+  audiusSdk,
+  useDiscoveryReactions
 }: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
   try {
-    const libs = await audiusBackend.getAudiusLibs()
-    return libs.Reactions.submitReaction({ reactedTo, reactionValue })
+    if (await useDiscoveryReactions) {
+      const account = await audiusBackend.getAccount()
+      if (account === null) {
+        throw new Error('could not submit reaction, user account null')
+      }
+      await audiusSdk.users.sendTipReaction({
+        userId: account.user_id.toString(),
+        metadata: {
+          reactedTo,
+          reactionValue: reactionValue ? reactionValue : '😍'
+        }
+      })
+      return { success: true, error: undefined }
+    } else {
+      const libs = await audiusBackend.getAudiusLibs()
+      return libs.Reactions.submitReaction({
+        reactedTo,
+        reactionValue: reactionValue ? reactionsMap[reactionValue] : 0
+      })
+    }
   } catch (err) {
     const errorMessage = getErrorMessage(err)
     console.error(errorMessage)
@@ -81,11 +105,20 @@ function* writeReactionValueAsync({
   )
 
   const audiusBackend = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const useDiscoveryReactions = getFeatureEnabled(
+    FeatureFlags.DISCOVERY_TIP_REACTIONS
+  )
 
   yield* call(submitReaction, {
     reactedTo: entityId,
-    reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0,
-    audiusBackend
+    reactionValue: newReactionValue,
+    audiusBackend,
+    audiusSdk: sdk,
+    useDiscoveryReactions
   })
 }
 

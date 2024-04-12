@@ -43,6 +43,7 @@ import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components
 import { useIsMobile } from 'hooks/useIsMobile'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal'
+import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal/ClaimAllRewardsModal'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
@@ -96,6 +97,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
   ChallengeRewardsExplainer: ChallengeRewardsModal,
+  ClaimAllRewards: ClaimAllRewardsModal,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   AiAttributionSettings: AiAttributionSettingsModal,

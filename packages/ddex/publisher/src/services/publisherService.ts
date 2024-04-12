@@ -219,6 +219,11 @@ export const publishReleases = async (
           `pending_releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
         )
         continue
+      } else if (doc.failure_count > 3) {
+        console.error(
+          `pending_releases doc with ID ${releaseId} requires manual intervention because we've already retried it 3 times.`
+        )
+        continue
       }
 
       let uploadResult: {

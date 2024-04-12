@@ -95,6 +95,7 @@ class EntityType(str, Enum):
     REMIX = "Remix"
     TRACK_ROUTE = "TrackRoute"
     PLAYLIST_ROUTE = "PlaylistRoute"
+    TIP = "Tip"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -504,5 +505,5 @@ def is_ddex_signer(signer):
     # TODO read from a table in the db after implementing UI to register a DDEX node
     ddex_apps = os.getenv("audius_ddex_apps")
     if ddex_apps:
-        return signer.removeprefix("0x") in ddex_apps.split(",")
+        return signer.removeprefix("0x").lower() in (address.lower() for address in ddex_apps.split(","))
     return False

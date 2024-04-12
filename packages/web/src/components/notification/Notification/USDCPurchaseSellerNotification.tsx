@@ -5,7 +5,8 @@ import {
   notificationsSelectors,
   Entity,
   TrackEntity,
-  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
+  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType,
+  CollectionEntity
 } from '@audius/common/store'
 import {
   stringUSDCToBN,
@@ -25,15 +26,18 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { UserNameLink } from './components/UserNameLink'
 import { IconCart } from './components/icons'
 import { getEntityLink } from './utils'
+import { capitalize } from 'lodash'
 
 const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
-  title: 'Track Sold',
+  title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
   congrats: 'Congrats, ',
-  justBoughtYourTrack: ' just bought your track ',
+  justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
+    ` just bought your ${type} `,
   for: ' for ',
-  exclamation: '!'
+  exclamation: '!',
+  dollar: '$'
 }
 
 type USDCPurchaseSellerNotificationProps = {
@@ -44,31 +48,35 @@ export const USDCPurchaseSellerNotification = (
   props: USDCPurchaseSellerNotificationProps
 ) => {
   const { notification } = props
+  const { entityType } = notification
   const dispatch = useDispatch()
-  const track = useSelector((state) =>
+  const content = useSelector((state) =>
     getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity>
+  ) as Nullable<TrackEntity | CollectionEntity>
   const notificationUsers = useSelector((state) =>
     getNotificationUsers(state, notification, 1)
   )
   const buyerUser = notificationUsers ? notificationUsers[0] : null
   const { amount, extraAmount } = notification
+
   const handleClick = useCallback(() => {
-    if (track) {
-      dispatch(push(getEntityLink(track)))
+    if (content) {
+      dispatch(push(getEntityLink(content)))
     }
-  }, [dispatch, track])
-  if (!track || !buyerUser) return null
+  }, [dispatch, content])
+
+  if (!content || !buyerUser) return null
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconCart />}>
-        <NotificationTitle>{messages.title}</NotificationTitle>
+        <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.congrats}{' '}
-        <UserNameLink user={buyerUser} notification={notification} />{' '}
-        {messages.justBoughtYourTrack}{' '}
-        <EntityLink entity={track} entityType={Entity.Track} /> for $
+        {messages.congrats}
+        <UserNameLink user={buyerUser} notification={notification} />
+        {messages.justBoughtYourTrack(entityType)}
+        <EntityLink entity={content} entityType={entityType} />
+        {messages.for + messages.dollar}
         {formatUSDCWeiToUSDString(
           stringUSDCToBN(amount)
             .add(stringUSDCToBN(extraAmount))

@@ -924,7 +924,7 @@ export type USDCPurchaseSellerNotification = BaseNotification & {
   type: NotificationType.USDCPurchaseSeller
   entityId: ID
   userIds: ID[]
-  entityType: string
+  entityType: Entity.Track | Entity.Album
   amount: StringUSDC
   extraAmount: StringUSDC
 }
@@ -933,7 +933,7 @@ export type USDCPurchaseBuyerNotification = BaseNotification & {
   type: NotificationType.USDCPurchaseBuyer
   entityId: ID
   userIds: ID[]
-  entityType: string
+  entityType: Entity.Track | Entity.Album
 }
 
 export type Notification =

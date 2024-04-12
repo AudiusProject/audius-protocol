@@ -31,6 +31,7 @@ export type Modals =
   | 'TiersExplainer'
   | 'TrendingRewardsExplainer'
   | 'ChallengeRewardsExplainer'
+  | 'ClaimAllRewards'
   | 'LinkSocialRewardsExplainer'
   | 'APIRewardsExplainer'
   | 'TransferAudioMobileWarning'

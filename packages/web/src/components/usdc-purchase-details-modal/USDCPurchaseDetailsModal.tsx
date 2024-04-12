@@ -1,8 +1,12 @@
+import { USDCContentPurchaseType } from '@audius/common/models'
 import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { Modal } from '@audius/harmony'
 
-import { PurchaseModalContent } from './components/PurchaseModalContent'
-import { SaleModalContent } from './components/SaleModalContent'
+import { AlbumPurchaseModalContent } from './components/AlbumPurchaseModalContent'
+
+import { TrackPurchaseModalContent } from './components/TrackPurchaseModalContent'
+import { TrackSaleModalContent } from './components/TrackSaleModalContent'
+import { AlbumSaleModalContent } from './components/AlbumSaleModalContent'
 
 export const USDCPurchaseDetailsModal = () => {
   const { isOpen, data, onClose, onClosed } = useUSDCPurchaseDetailsModal()
@@ -17,12 +21,27 @@ export const USDCPurchaseDetailsModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size={'small'}>
       {variant === 'purchase' ? (
-        <PurchaseModalContent
+        purchaseDetails.contentType === USDCContentPurchaseType.TRACK ? (
+          <TrackPurchaseModalContent
+            purchaseDetails={purchaseDetails}
+            onClose={onClose}
+          />
+        ) : (
+          <AlbumPurchaseModalContent
+            purchaseDetails={purchaseDetails}
+            onClose={onClose}
+          />
+        )
+      ) : purchaseDetails.contentType === USDCContentPurchaseType.TRACK ? (
+        <TrackSaleModalContent
           purchaseDetails={purchaseDetails}
           onClose={onClose}
         />
       ) : (
-        <SaleModalContent purchaseDetails={purchaseDetails} onClose={onClose} />
+        <AlbumSaleModalContent
+          purchaseDetails={purchaseDetails}
+          onClose={onClose}
+        />
       )}
     </Modal>
   )
