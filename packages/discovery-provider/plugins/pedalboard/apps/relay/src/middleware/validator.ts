@@ -204,6 +204,7 @@ export const retrieveUser = async (
   const user = await query
     .andWhere('is_current', '=', true)
     .whereNotNull('handle_lc')
+    .orderBy('blocknumber', 'desc')
     .first()
   return user
 }
