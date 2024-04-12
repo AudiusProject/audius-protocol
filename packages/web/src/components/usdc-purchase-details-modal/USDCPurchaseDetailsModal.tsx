@@ -3,10 +3,9 @@ import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { Modal } from '@audius/harmony'
 
 import { AlbumPurchaseModalContent } from './components/AlbumPurchaseModalContent'
-
+import { AlbumSaleModalContent } from './components/AlbumSaleModalContent'
 import { TrackPurchaseModalContent } from './components/TrackPurchaseModalContent'
 import { TrackSaleModalContent } from './components/TrackSaleModalContent'
-import { AlbumSaleModalContent } from './components/AlbumSaleModalContent'
 
 export const USDCPurchaseDetailsModal = () => {
   const { isOpen, data, onClose, onClosed } = useUSDCPurchaseDetailsModal()
