@@ -1,10 +1,5 @@
-import {
-  OpenSeaClient,
-  HeliusClient,
-  SolanaCollectiblesProvider,
-  EthereumCollectiblesProvider
-} from '@audius/common/services'
 import type { CommonStoreContext } from '@audius/common/store'
+import { FetchNFTClient } from '@audius/fetch-nft'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
 
@@ -43,13 +38,17 @@ export const storeContext: CommonStoreContext = {
   isElectron: false,
   env,
   explore,
-  ethereumCollectiblesProvider: new EthereumCollectiblesProvider(
-    new OpenSeaClient(env.OPENSEA_API_URL!)
-  ),
-  solanaCollectiblesProvider: new SolanaCollectiblesProvider({
-    heliusClient: new HeliusClient(env.HELIUS_DAS_API_URL),
-    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: env.METADATA_PROGRAM_ID
+  nftClient: new FetchNFTClient({
+    openSeaConfig: {
+      apiEndpoint: env.OPENSEA_API_URL
+    },
+    heliusConfig: {
+      apiEndpoint: env.HELIUS_DAS_API_URL
+    },
+    solanaConfig: {
+      rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+      metadataProgramId: env.METADATA_PROGRAM_ID
+    }
   }),
   sentry: Sentry,
   reportToSentry,

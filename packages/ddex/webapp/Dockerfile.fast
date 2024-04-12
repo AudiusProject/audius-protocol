@@ -52,4 +52,4 @@ COPY packages/ddex/webapp/server/dist /app/packages/ddex/webapp/server/public
 WORKDIR /app/packages/ddex/webapp/server
 
 EXPOSE 9000
-CMD [ "node", "dist/index.js" ]
+CMD ["npm", "run", "start"]

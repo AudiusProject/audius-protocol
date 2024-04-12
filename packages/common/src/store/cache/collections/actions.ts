@@ -30,7 +30,7 @@ export const DELETE_PLAYLIST_FAILED = 'DELETE_PLAYLIST_FAILED'
 
 export const SET_PERMALINK = 'CACHE/COLLECTION/SET_PERMALINK'
 
-export const FETCH_COVER_ART = 'TRACKS/FETCH_COVER_ART'
+export const FETCH_COVER_ART = 'CACHE/COLLECTION/FETCH_COVER_ART'
 
 /**
  * @param initTrackId optional track id to pull artwork from.

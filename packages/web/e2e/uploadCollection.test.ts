@@ -133,6 +133,8 @@ test('should upload an album', async ({ page }) => {
   await editPage.setMood(mood)
   await editPage.setTags(tags)
   await editPage.setDescription(playlistDescription)
+  // Enable downloadable
+  await editPage.toggleDownloadable()
 
   for (let i = 0; i < trackDetails.length; i++) {
     await editPage.setTrackDetails(i, trackDetails[i])
@@ -170,6 +172,10 @@ test('should upload an album', async ({ page }) => {
   await expect(tag1).toBeVisible()
   await expect(tag2).toBeVisible()
 
+  // Assert downloadable
+  const downloadText = page.getByText(/Stems & downloads/i)
+  await expect(downloadText).toBeVisible()
+
   // Assert genre and mood
   await expect(page.getByText(genre)).toBeVisible()
   await expect(page.getByText(mood)).toBeVisible()
@@ -178,6 +184,9 @@ test('should upload an album', async ({ page }) => {
 
   // Visit track 2
   await trackTwo.getByRole('link', { name: trackTwoDetails.name }).click()
+
+  // Assert downloadable text
+  await expect(downloadText).toBeVisible()
 
   // Assert tagged differently
   // const tag3 = page.getByRole('link', { name: trackTwoDetails.tags[0] })

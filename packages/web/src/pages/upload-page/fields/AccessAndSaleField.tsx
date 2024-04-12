@@ -14,7 +14,8 @@ import {
   USDCPurchaseConditions,
   AccessConditions
 } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import { CollectionValues } from '@audius/common/schemas'
+import { accountSelectors, EditPlaylistValues } from '@audius/common/store'
 import { formatPrice, Nullable } from '@audius/common/utils'
 import {
   IconCart,
@@ -25,7 +26,7 @@ import {
   IconVisibilityPublic,
   Text
 } from '@audius/harmony'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -40,7 +41,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { useIndexedField, useTrackField } from '../hooks'
-import { SingleTrackEditValues } from '../types'
+import { SingleTrackEditValues, TrackEditFormValues } from '../types'
 
 import styles from './AccessAndSaleField.module.css'
 import { AccessAndSaleMenuFields } from './AccessAndSaleMenuFields'
@@ -151,7 +152,8 @@ const refineMaxPrice =
 export const AccessAndSaleFormSchema = (
   trackLength: number,
   { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig,
-  isAlbum?: boolean
+  isAlbum?: boolean,
+  isUpload?: boolean
 ) =>
   z
     .object({
@@ -169,7 +171,7 @@ export const AccessAndSaleFormSchema = (
     // Check for albumTrackPrice price >= min price (if applicable)
     .refine(
       (values) =>
-        isAlbum
+        isAlbum && isUpload
           ? refineMinPrice('albumTrackPrice', minContentPriceCents)(values)
           : true,
       {
@@ -184,7 +186,7 @@ export const AccessAndSaleFormSchema = (
     })
     .refine(
       (values) =>
-        isAlbum
+        isAlbum && isUpload
           ? refineMaxPrice('albumTrackPrice', maxContentPriceCents)(values)
           : true,
       {
@@ -236,7 +238,7 @@ type AccessAndSaleFieldProps = {
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload, isAlbum, forceOpen, setForceOpen } = props
+  const { isUpload = false, isAlbum = false, forceOpen, setForceOpen } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -246,6 +248,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   )
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
+
+  // For edit flows we need to track initial stream conditions from the parent form (not from inside contextual menu)
+  // So we take this from the parent form and pass it down to the menu fields
+  const { initialValues: parentFormInitialValues } = useFormikContext<
+    EditPlaylistValues | CollectionValues | TrackEditFormValues
+  >()
+  const parentFormInitialStreamConditions =
+    'stream_conditions' in parentFormInitialValues
+      ? (parentFormInitialValues.stream_conditions as AccessConditions)
+      : undefined
 
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
@@ -266,6 +278,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     useTrackField<SingleTrackEditValues[typeof STREAM_CONDITIONS]>(
       STREAM_CONDITIONS
     )
+
   const [{ value: fieldVisibility }, , { setValue: setFieldVisibilityValue }] =
     useTrackField<SingleTrackEditValues[typeof FIELD_VISIBILITY]>(
       FIELD_VISIBILITY
@@ -479,16 +492,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     },
     [
       setFieldVisibilityValue,
-      setIsStreamGated,
       setIsUnlistedValue,
+      isUnlisted,
+      setIsStreamGated,
       setStreamConditionsValue,
+      setPreviewValue,
       setIsDownloadGated,
       setDownloadConditionsValue,
       setIsDownloadable,
-      setPreviewValue,
-      setLastGateKeeper,
       isDownloadable,
-      isUnlisted
+      setLastGateKeeper
     ]
   )
 
@@ -549,7 +562,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       }
       const albumTrackPrice =
         savedStreamConditions.usdc_purchase.albumTrackPrice
-      if (albumTrackPrice) {
+      if (albumTrackPrice && isUpload) {
         selectedValues.push({
           label: messages.price(albumTrackPrice / 100),
           icon: IconNote,
@@ -595,11 +608,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       </div>
     )
   }, [
-    fieldVisibility,
-    isUnlisted,
     savedStreamConditions,
+    isUnlisted,
+    isScheduledRelease,
+    fieldVisibility,
     preview,
-    isScheduledRelease
+    isUpload
   ])
 
   return (
@@ -611,7 +625,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig, isAlbum)
+        AccessAndSaleFormSchema(
+          trackLength,
+          usdcPurchaseConfig,
+          isAlbum,
+          isUpload
+        )
       )}
       menuFields={
         <AccessAndSaleMenuFields
@@ -619,6 +638,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           isUpload={isUpload}
           isAlbum={isAlbum}
           streamConditions={tempStreamConditions}
+          initialStreamConditions={
+            parentFormInitialStreamConditions ?? undefined
+          }
           isScheduledRelease={isScheduledRelease}
         />
       }

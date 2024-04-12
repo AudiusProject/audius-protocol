@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import styles from './NotificationHeader.module.css'
+import { Flex } from '@audius/harmony'
 
 type NotificationHeaderProps = {
   icon: ReactNode
@@ -10,9 +10,16 @@ type NotificationHeaderProps = {
 export const NotificationHeader = (props: NotificationHeaderProps) => {
   const { icon, children } = props
   return (
-    <div className={styles.root}>
+    <Flex
+      alignItems='center'
+      w='100%'
+      pb='l'
+      mb='l'
+      borderBottom='default'
+      gap='s'
+    >
       {icon}
       {children}
-    </div>
+    </Flex>
   )
 }
