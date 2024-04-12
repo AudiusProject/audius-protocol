@@ -1,22 +1,14 @@
-import { MouseEventHandler, useEffect, useRef, useState } from 'react'
-import { sdk, full as FullSdk } from '@audius/sdk'
+import { useCallback } from 'react'
 import {
   ThemeProvider as HarmonyThemeProvider,
-  Hint,
-  IconAudiusLogoColor,
+  IconArrowRight,
   IconAudiusLogoHorizontal,
   IconAudiusLogoHorizontalColor,
-  IconInfo,
-  IconPause,
-  IconPlay,
   Paper,
   Text,
-  TextInput,
-  TextInputSize,
   TextLink
 } from '@audius/harmony'
 import { Button, Flex } from '@audius/harmony'
-import { css } from '@emotion/react'
 
 const messages = {
   connect: 'Connect Distributor',
@@ -97,6 +89,10 @@ const Footer = () => {
 
 
 export default function App() {
+  const onClickLogin = useCallback(() => {
+    window.open('http://localhost:5174/login?auto=true', '_self')
+  }, [])
+
   return (
     <HarmonyThemeProvider theme='day'>
       <Flex
@@ -110,11 +106,46 @@ export default function App() {
           justifyContent='center'
           alignItems='center'
         >
-          <Paper h={'460px'} direction='column'>
-            <IconAudiusLogoHorizontalColor />
-            <Text>{messages.connect}</Text>
-            <Text>{messages.access}</Text>
-            
+          <Paper
+            h='460px'
+            w='416px'
+            direction='column'
+            p='2xl'
+            gap='2xl'
+          >
+            <Flex justifyContent='center'>
+              <IconAudiusLogoHorizontalColor />
+            </Flex>
+            <Text
+              variant='heading'
+              size='l'
+              color='accent'
+              textAlign='center'
+            >
+              {messages.connect}
+            </Text>
+            <Text
+              variant='body'
+              size='m'
+              textAlign='center'
+              color='default'
+            >
+              {messages.access}
+            </Text>
+            <Text
+              variant='body'
+              size='m'
+              color='default'
+            >
+              {`${messages.choose}:`}
+            </Text>
+            <Button
+              variant='primary'
+              onClick={onClickLogin}
+              iconRight={IconArrowRight}
+            >
+              {messages.login}
+            </Button>
           </Paper>
         </Flex>
         <Footer />

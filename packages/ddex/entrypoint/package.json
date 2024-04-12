@@ -11,8 +11,8 @@
     "start": "npm run preview"
   },
   "dependencies": {
-    "@audius/sdk": "latest",
-    "@audius/harmony": "latest",
+    "@audius/sdk": "*",
+    "@audius/harmony": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

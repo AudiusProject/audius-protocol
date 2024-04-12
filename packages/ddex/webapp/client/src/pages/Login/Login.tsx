@@ -1,19 +1,31 @@
-import { Button, Flex } from '@audius/harmony'
+import { useCallback, useEffect } from 'react'
 
+import { Button, Flex } from '@audius/harmony'
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
+import { useSearchParams } from 'react-router-dom'
 
 import styles from './Login.module.css'
 
 const Login = () => {
   const { audiusSdk, oauthError } = useAudiusSdk()
+  const [searchParams] = useSearchParams()
 
-  const handleOauth = () => {
+  const shouldAutoLogin = searchParams.get('auto_login') !== undefined
+
+  const handleOauth = useCallback(() => {
     audiusSdk!.oauth!.login({ scope: 'write' })
-  }
+  }, [audiusSdk])
+
+  useEffect(() => {
+    if (audiusSdk && shouldAutoLogin) {
+      audiusSdk.oauth!.login({ scope: 'write' })
+    }
+  }, [audiusSdk, shouldAutoLogin])
 
   if (!audiusSdk) {
     return <>{'Loading...'}</>
   }
+
   return (
     <Flex
       p='xl'
