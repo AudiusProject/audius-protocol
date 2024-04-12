@@ -29,7 +29,7 @@ def get_reactions(
         .filter(
             *filters,
         )
-        .order_by(desc(Reaction.slot))
+        .order_by(desc(Reaction.timestamp))
         .first()
     )
 
