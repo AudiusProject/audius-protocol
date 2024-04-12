@@ -234,7 +234,7 @@ function* claimChallengeRewardAsync(
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
-  const { claim, retryOnFailure, retryCount = 0 } = action.payload
+  const { claim } = action.payload
   const { specifiers, challengeId, amount } = claim
 
   const { completionPollFrequency, completionPollTimeout } = getClaimingConfig(
