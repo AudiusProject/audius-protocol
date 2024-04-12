@@ -127,7 +127,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    paddingTop: spacing(4)
+    padding: spacing(4)
   },
 
   moodEmoji: {

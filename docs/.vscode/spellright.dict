@@ -20,6 +20,7 @@ fs
 goerli
 graphql
 gravatar
+gutendog
 img
 io
 ioredis
@@ -28,6 +29,7 @@ iswc
 js
 jwt
 mainnet
+markdownlint
 metadatas
 metamask
 multisig

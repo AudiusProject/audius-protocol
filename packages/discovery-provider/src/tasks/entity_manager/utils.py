@@ -95,6 +95,7 @@ class EntityType(str, Enum):
     REMIX = "Remix"
     TRACK_ROUTE = "TrackRoute"
     PLAYLIST_ROUTE = "PlaylistRoute"
+    TIP = "Tip"
 
     def __str__(self) -> str:
         return str.__str__(self)
