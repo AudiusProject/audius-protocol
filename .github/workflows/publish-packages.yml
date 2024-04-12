@@ -40,10 +40,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: |
-            package-lock.json
-            packages/*/patches/*.patch
+
+      - uses: actions/cache@v3
+            with:
+              path: '~/.npm'
+              key: ${{ runner.os }}-${{ matrix.node-version }}-npmcache-${{ hashFiles('package-lock.json') }}-${{ hashFiles('packages/*/patches/*.patch') }}
 
       - name: Update .npmrc
         run: |
