@@ -42,9 +42,9 @@ jobs:
           node-version: 18
 
       - uses: actions/cache@v3
-            with:
-              path: '~/.npm'
-              key: ${{ runner.os }}-${{ matrix.node-version }}-npmcache-${{ hashFiles('package-lock.json') }}-${{ hashFiles('packages/*/patches/*.patch') }}
+        with:
+          path: '~/.npm'
+          key: ${{ runner.os }}-${{ matrix.node-version }}-npmcache-${{ hashFiles('package-lock.json') }}-${{ hashFiles('packages/*/patches/*.patch') }}
 
       - name: Update .npmrc
         run: |
