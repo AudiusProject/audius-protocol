@@ -3,9 +3,7 @@
 
 set -e
 
-# If node_modules exists in cache, run postinstall. Otherwise, run npm ci
-[[ ! -d node_modules ]] || CI=true npm run postinstall
-[[ -d node_modules ]] || CI=true npm ci
+npm i
 
 npx playwright install
 
