@@ -1,7 +1,12 @@
+import { ID } from '~/models'
+
 import { createModal } from './createModal'
 
 export type AlbumTrackRemoveConfirmationModalState = {
-  confirmCallback: (() => void) | undefined
+  trackId: ID | undefined
+  playlistId: ID | undefined
+  uid: string | undefined
+  timestamp: number | undefined
 }
 
 const albumTrackRemoveConfirmationModal =
@@ -9,7 +14,10 @@ const albumTrackRemoveConfirmationModal =
     reducerPath: 'AlbumTrackRemoveConfirmation',
     initialState: {
       isOpen: false,
-      confirmCallback: undefined
+      trackId: undefined,
+      playlistId: undefined,
+      uid: undefined,
+      timestamp: undefined
     },
     sliceSelector: (state) => state.ui.modals
   })

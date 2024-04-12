@@ -42,7 +42,8 @@ import {
   CollectionTrack,
   CollectionsPageType,
   CollectionPageTrackRecord,
-  albumTrackRemoveConfirmationModalActions
+  albumTrackRemoveConfirmationModalActions,
+  AlbumTrackRemoveConfirmationModalState
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -109,8 +110,8 @@ type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
   children:
-    | ComponentType<MobileCollectionPageProps>
-    | ComponentType<DesktopCollectionPageProps>
+  | ComponentType<MobileCollectionPageProps>
+  | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
   smartCollection?: SmartCollection
@@ -205,6 +206,7 @@ class CollectionPage extends Component<
     // if the uids of the tracks in the lineup are changing with this
     // update (initialOrder should contain ALL of the uids, so it suffices to check the first one).
     const newInitialOrder = tracks.entries.map((track) => track.uid)
+    // console.log(tracks.entries)
     const noInitialOrder = !initialOrder && tracks.entries.length > 0
     const entryIds = new Set(newInitialOrder)
     const newUids =
@@ -500,28 +502,26 @@ class CollectionPage extends Component<
       playlistId,
       collection: { stream_conditions }
     } = this.props
-    const removeTrackFromPlaylistCallback = () => {
-      this.props.removeTrackFromPlaylist(
+    if (isContentUSDCPurchaseGated(stream_conditions)) {
+      this.props.openConfirmationModal({
         trackId,
-        playlistId as number,
+        playlistId,
         uid,
         timestamp
-      )
-    }
-    if (isContentUSDCPurchaseGated(stream_conditions)) {
-      this.props.openConfirmationModal(removeTrackFromPlaylistCallback)
+      })
     } else {
-      removeTrackFromPlaylistCallback()
+      this.props.removeTrackFromPlaylist(trackId, playlistId, uid, timestamp)
     }
 
     // Remove the track from the initial order,
     // because reorder uses initial order as a starting point
     const initialOrder = this.state.initialOrder
       ? [
-          ...this.state.initialOrder.slice(0, index),
-          ...this.state.initialOrder.slice(index + 1)
-        ]
+        ...this.state.initialOrder.slice(0, index),
+        ...this.state.initialOrder.slice(index + 1)
+      ]
       : null
+
     this.setState({ initialOrder })
   }
 
@@ -1001,10 +1001,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       ),
     setModalVisibility: () => dispatch(setVisibility(true)),
-    openConfirmationModal: (confirmCallback: () => void) =>
-      dispatch(
-        albumTrackRemoveConfirmationModalActions.open({ confirmCallback })
-      ),
+    openConfirmationModal: (args: AlbumTrackRemoveConfirmationModalState) =>
+      dispatch(albumTrackRemoveConfirmationModalActions.open(args)),
     onEditCollection: (collectionId: ID) =>
       dispatch(
         editPlaylistModalActions.open({

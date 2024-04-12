@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import { useAlbumTrackRemoveConfirmationModal } from '@audius/common/store'
+import { Kind } from '@audius/common/models'
+import {
+  useAlbumTrackRemoveConfirmationModal,
+  collectionPageLineupActions,
+  cacheCollectionsActions
+} from '@audius/common/store'
 import {
   Button,
   Modal,
@@ -10,6 +15,7 @@ import {
   ModalTitle,
   ModalFooter
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 
 const messages = {
   title: 'Remove Track',
@@ -24,13 +30,24 @@ export const AlbumTrackRemoveConfirmationModal = () => {
   const {
     isOpen,
     onClose,
-    data: { confirmCallback }
+    data: { trackId, playlistId, uid, timestamp }
   } = useAlbumTrackRemoveConfirmationModal()
 
+  const dispatch = useDispatch()
+
   const handleConfirm = useCallback(() => {
-    confirmCallback?.()
+    if (trackId && playlistId && uid && timestamp) {
+      dispatch(
+        cacheCollectionsActions.removeTrackFromPlaylist(
+          trackId,
+          playlistId as number,
+          timestamp
+        )
+      )
+      dispatch(collectionPageLineupActions.remove(Kind.TRACKS, uid))
+    }
     onClose()
-  }, [confirmCallback, onClose])
+  }, [dispatch, onClose, playlistId, timestamp, trackId, uid])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
