@@ -8,8 +8,30 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
+  changes:
+    name: Check for changes to public packages
+    runs-on: ubuntu-latest
+    outputs:
+      public-packages: ${{ steps.filter.outputs.public-packages }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            public-packages:
+              - 'packages/create-audius-app/**'
+              - 'packages/fixed-decimal/**'
+              - 'packages/harmony/**'
+              - 'packages/libs/**'
+              - 'packages/spl/**'
+
   publish-packages:
     name: Publish Packages to NPM
+    needs: changes
+    if: ${{ needs.changes.outputs.public-packages == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
