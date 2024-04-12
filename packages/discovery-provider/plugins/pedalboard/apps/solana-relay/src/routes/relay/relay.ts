@@ -28,6 +28,9 @@ const connections = config.solanaEndpoints.map(
 const delay = async (ms: number, options?: { signal: AbortSignal }) => {
   const signal = options?.signal
   return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject()
+    }
     const listener = () => {
       clearTimeout(timer)
       reject()

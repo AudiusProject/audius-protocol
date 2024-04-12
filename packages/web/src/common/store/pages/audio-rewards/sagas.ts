@@ -221,7 +221,7 @@ function* waitForOptimisticChallengeToComplete({
 }
 
 type ErrorResult = {
-  error: any
+  error: unknown
   specifier: string
   amount: number
 }
@@ -250,7 +250,7 @@ function* claimChallengeRewardAsync(
 
   const decodedUserId = yield* select(getUserId)
   if (!decodedUserId) {
-    return
+    throw new Error('Failed to get current userId')
   }
   const userId = encodeHashId(decodedUserId)
 
@@ -292,18 +292,20 @@ function* claimChallengeRewardAsync(
 
     const errors = results.filter((r): r is ErrorResult => 'error' in r)
     if (errors.length > 0) {
-      for (const error of errors) {
+      for (const res of errors) {
+        const error =
+          res.error instanceof Error ? res.error : new Error(String(res.error))
         console.error(
-          `Failed to claim specifier: ${error.specifier} for amount: ${error.amount} with error:`,
-          error.error
+          `Failed to claim specifier: ${res.specifier} for amount: ${res.amount} with error:`,
+          error
         )
         yield* call(reportToSentry, {
-          error: error.error,
-          name: `ClaimRewards: ${error.error.name}`,
+          error,
+          name: `ClaimRewards: ${error.name}`,
           additionalInfo: {
             challengeId,
-            specifier: error.specifier,
-            amount: error.amount
+            specifier: res.specifier,
+            amount: res.amount
           }
         })
       }
