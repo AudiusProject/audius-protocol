@@ -34,12 +34,24 @@ export type ProfilePictureSizes = ImageSizesObject<SquareSizes>
 export type CoverPhotoSizesCids = ImageSizesObjectWithoutOverride<WidthSizes>
 export type CoverPhotoSizes = ImageSizesObject<WidthSizes>
 
-export const coverPhotoSizesCIDsFromSDK = (input?: full.CoverPhoto) => {
-  if (!input) return undefined
-  return input as CoverPhotoSizesCids
+export const coverPhotoSizesCIDsFromSDK = (
+  input: full.CoverPhoto = {}
+): CoverPhotoSizesCids => {
+  return [WidthSizes.SIZE_640, WidthSizes.SIZE_2000].reduce((out, size) => {
+    out[size] = input[size] ?? null
+    return out
+  }, {})
 }
 
-export const profilePictureSizesCIDsFromSDK = (input?: full.ProfilePicture) => {
-  if (!input) return undefined
-  return input as ProfilePictureSizesCids
+export const profilePictureSizesCIDsFromSDK = (
+  input: full.ProfilePicture = {}
+): ProfilePictureSizesCids => {
+  return [
+    SquareSizes.SIZE_1000_BY_1000,
+    SquareSizes.SIZE_150_BY_150,
+    SquareSizes.SIZE_480_BY_480
+  ].reduce((out, size) => {
+    out[size] = input[size] ?? null
+    return out
+  }, {})
 }

@@ -72,12 +72,14 @@ export function* checkSDKMigration<T extends object>({
             legacyValue: legacy,
             migratedValue: migrated
           })
+    console.warn('SDK Migration failed', error)
     yield* call(reportToSentry, {
       error,
       level: ErrorLevel.Warning,
       additionalInfo: {
-        legacyValue: error.legacyValue,
-        migratedValue: error.migratedValue
+        diff: JSON.stringify(error.diff, null, 2),
+        legacyValue: JSON.stringify(error.legacyValue, null, 2),
+        migratedValue: JSON.stringify(error.migratedValue, null, 2)
       },
       tags: { endpointName: error.endpointName }
     })

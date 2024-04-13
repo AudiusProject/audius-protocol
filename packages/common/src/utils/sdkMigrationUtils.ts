@@ -14,17 +14,20 @@ export class SDKMigrationFailedError extends Error {
   public innerMessage: string
   public legacyValue: unknown
   public migratedValue: unknown
+  public diff?: object
 
   constructor({
     endpointName,
     innerMessage,
     legacyValue,
-    migratedValue
+    migratedValue,
+    diff
   }: {
     endpointName: string
     innerMessage: string
     legacyValue?: unknown
     migratedValue?: unknown
+    diff?: object
   }) {
     super(`Diff ${endpointName} failed: ${innerMessage}`)
     this.name = 'SDKMigrationFailedError'
@@ -32,6 +35,7 @@ export class SDKMigrationFailedError extends Error {
     this.innerMessage = innerMessage
     this.legacyValue = legacyValue
     this.migratedValue = migratedValue
+    this.diff = diff
   }
 }
 
@@ -54,13 +58,14 @@ export const compareSDKResponse = <T extends object>(
   }
   // Both object-like, perform deep diff
   if (typeof legacy === 'object' && typeof migrated === 'object') {
-    const diffValue = detailedDiff(legacy, migrated)
+    const diff = detailedDiff(legacy, migrated)
     if (
-      !isEmpty(diffValue.added) ||
-      !isEmpty(diffValue.deleted) ||
-      !isEmpty(diffValue.updated)
+      !isEmpty(diff.added) ||
+      !isEmpty(diff.deleted) ||
+      !isEmpty(diff.updated)
     ) {
       throw new SDKMigrationFailedError({
+        diff,
         endpointName,
         innerMessage: 'Legacy and migrated values differ',
         legacyValue: legacy,
@@ -69,7 +74,7 @@ export const compareSDKResponse = <T extends object>(
     }
   }
   // Not object like, perform strict equals
-  if (legacy !== migrated) {
+  else if (legacy !== migrated) {
     throw new SDKMigrationFailedError({
       endpointName,
       innerMessage: 'Legacy and migrated values not strictly equal',
@@ -144,12 +149,14 @@ export const createMigrationChecker = ({
               legacyValue: legacy,
               migratedValue: migrated
             })
+      console.warn('SDK Migration failed', error)
       reportToSentry({
         error,
         level: ErrorLevel.Warning,
         additionalInfo: {
-          legacyValue: error.legacyValue,
-          migratedValue: error.migratedValue
+          diff: JSON.stringify(error.diff, null, 2),
+          legacyValue: JSON.stringify(error.legacyValue, null, 2),
+          migratedValue: JSON.stringify(error.migratedValue, null, 2)
         },
         tags: { endpointName: error.endpointName }
       })

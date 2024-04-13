@@ -79,7 +79,7 @@ export type UserMetadata = {
   associated_wallets?: Nullable<string[]>
   associated_sol_wallets?: Nullable<string[]>
   associated_wallets_balance?: Nullable<StringWei>
-  playlist_library?: PlaylistLibrary
+  playlist_library?: Nullable<PlaylistLibrary>
   userBank?: SolanaWalletAddress
   local?: boolean
   events?: UserEvent
@@ -131,7 +131,7 @@ export const userMetadataFromSDK = (
       : null,
 
     // Nested Types
-    playlist_library: playlistLibraryFromSDK(user.playlist_library),
+    playlist_library: playlistLibraryFromSDK(user.playlist_library) ?? null,
     cover_photo_cids: coverPhotoSizesCIDsFromSDK(user.cover_photo_cids) ?? null,
     profile_picture_cids:
       profilePictureSizesCIDsFromSDK(user.profile_picture_cids) ?? null,
