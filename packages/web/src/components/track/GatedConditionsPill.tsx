@@ -44,7 +44,7 @@ export const GatedConditionsPill = ({
 
   return (
     <Button
-      className={cn(styles.button, className)}
+      className={className}
       size={buttonSize}
       onClick={onClick}
       color={isPurchase ? 'lightGreen' : 'blue'}

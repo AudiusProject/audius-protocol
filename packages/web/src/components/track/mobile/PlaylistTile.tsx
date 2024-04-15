@@ -180,6 +180,7 @@ const renderLockedContent = ({
           streamConditions={streamConditions}
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickGatedUnlockPill}
+          buttonSize='small'
         />
       )
     }
@@ -347,7 +348,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             isVisible={isTrending && shouldShow}
             showCrown={showRankIcon}
           />
-          {specialContentLabel}
+          {isReadonly ? specialContentLabel : null}
           {!!(props.repostCount || props.saveCount) && (
             <>
               <div
@@ -390,21 +391,24 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               </div>
             </>
           )}
-          <Text
-            variant='body'
-            size='xs'
-            className={cn(styles.bottomRight, fadeIn)}
-          >
-            {renderLockedContent({
-              hasStreamAccess,
-              isOwner,
-              isStreamGated,
-              streamConditions,
-              gatedTrackStatus: gatedContentStatus,
-              variant: isPurchase ? 'premium' : 'gated',
-              onClickGatedUnlockPill
-            })}
-          </Text>
+          {isReadonly ? (
+            <Text
+              variant='body'
+              size='xs'
+              color='staticWhite'
+              className={cn(styles.bottomRight, fadeIn)}
+            >
+              {renderLockedContent({
+                hasStreamAccess,
+                isOwner,
+                isStreamGated,
+                streamConditions,
+                gatedTrackStatus: gatedContentStatus,
+                variant: isPurchase ? 'premium' : 'gated',
+                onClickGatedUnlockPill
+              })}
+            </Text>
+          ) : null}
         </div>
         <TrackList
           activeTrackUid={props.activeTrackUid}

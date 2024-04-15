@@ -104,6 +104,7 @@ const renderLockedOrPlaysContent = ({
           streamConditions={streamConditions}
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickGatedUnlockPill}
+          buttonSize='small'
         />
       )
     }
