@@ -7,7 +7,9 @@ import type {
   NativeStackNavigationProp
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
+import { clearSearch } from 'audius-client/src/common/store/search-bar/actions'
 import { Text, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import {
   IconAudiusLogoHorizontal,
@@ -69,14 +71,16 @@ export const useAppScreenOptions = (
   const styles = useStyles()
   const navigation = useNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
+  const dispatch = useDispatch()
 
   const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
   }, [drawerHelpers])
 
   const handlePressSearch = useCallback(() => {
+    dispatch(clearSearch())
     navigation.navigate('Search')
-  }, [navigation])
+  }, [dispatch, navigation])
 
   const { isEnabled: isEarlyAccess } = useFeatureFlag(FeatureFlags.EARLY_ACCESS)
 

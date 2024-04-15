@@ -2,12 +2,15 @@ import { useCallback } from 'react'
 
 import type { StringUSDC } from '@audius/common/models'
 import type {
+  CollectionEntity,
+  Entity,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { capitalize } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { IconCart } from '@audius/harmony-native'
@@ -25,11 +28,13 @@ import {
 const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
-  title: 'Track Sold',
+  title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
   congrats: 'Congrats,',
-  justBoughtYourTrack: 'just bought your track',
+  justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
+    ` just bought your ${type} `,
   for: ' for ',
-  exclamation: '!'
+  exclamation: '!',
+  dollar: '$'
 }
 
 type USDCPurchaseSellerNotificationProps = {
@@ -40,10 +45,11 @@ export const USDCPurchaseSellerNotification = (
   props: USDCPurchaseSellerNotificationProps
 ) => {
   const { notification } = props
+  const { entityType } = notification
   const navigation = useNotificationNavigation()
-  const track = useSelector((state) =>
+  const content = useSelector((state) =>
     getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity>
+  ) as Nullable<TrackEntity | CollectionEntity>
   const notificationUsers = useSelector((state) =>
     getNotificationUsers(state, notification, 1)
   )
@@ -51,20 +57,22 @@ export const USDCPurchaseSellerNotification = (
   const { amount, extraAmount } = notification
 
   const handlePress = useCallback(() => {
-    if (track) {
+    if (content) {
       navigation.navigate(notification)
     }
-  }, [track, navigation, notification])
+  }, [content, navigation, notification])
 
-  if (!track || !buyerUser) return null
+  if (!content || !buyerUser) return null
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconCart}>
-        <NotificationTitle>{messages.title}</NotificationTitle>
+        <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        {messages.congrats} <UserNameLink user={buyerUser} />{' '}
-        {messages.justBoughtYourTrack} <EntityLink entity={track} /> for $
+        {messages.congrats} <UserNameLink user={buyerUser} />
+        {messages.justBoughtYourTrack(entityType)}
+        <EntityLink entity={content} />
+        {messages.for + messages.dollar}
         {formatUSDCWeiToUSDString(
           stringUSDCToBN(amount)
             .add(stringUSDCToBN(extraAmount))

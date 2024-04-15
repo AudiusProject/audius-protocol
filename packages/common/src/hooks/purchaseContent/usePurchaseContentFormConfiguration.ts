@@ -14,6 +14,7 @@ import {
   purchaseContentActions,
   purchaseContentSelectors
 } from '~/store/purchase-content'
+import { isContentCollection, isContentTrack } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { useUSDCBalance } from '../useUSDCBalance'
@@ -28,7 +29,6 @@ import {
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
 import { PurchaseContentSchema, PurchaseContentValues } from './validation'
-import { isContentCollection, isContentTrack } from '~/utils'
 
 const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
 const {
@@ -107,7 +107,7 @@ export const usePurchaseContentFormConfiguration = ({
         )
       }
     },
-    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch]
+    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch, isTrack]
   )
 
   return {

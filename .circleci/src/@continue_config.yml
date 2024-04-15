@@ -64,6 +64,9 @@ parameters:
   run-healthz-workflow:
     type: boolean
     default: false
+  run-ddex-e2e-workflow:
+    type: boolean
+    default: false
   run-ddex-webapp-workflow:
     type: boolean
     default: false
