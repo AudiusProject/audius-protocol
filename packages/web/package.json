@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.75",
+  "version": "1.5.76",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -68,6 +68,7 @@
   },
   "dependencies": {
     "@audius/common": "*",
+    "@audius/fetch-nft": "0.2.6",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",

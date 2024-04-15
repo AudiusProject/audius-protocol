@@ -26,6 +26,7 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Configuration } from '../generated/default'
 
 import { UsersApi } from './UsersApi'
+import { getReaction } from '../../utils/reactionsMap'
 
 const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
@@ -339,6 +340,50 @@ describe('UsersApi', () => {
 
       // Ensure relay was attempted to ensure the assertions run
       expect(solanaRelay.relay).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('sendTipReaction', () => {
+    it('converts correct reaction values', () => {
+      const heartEyes = getReaction(1)
+      const fire = getReaction(2)
+      const party = getReaction(3)
+      const headExploding = getReaction(4)
+      const invalidEmoji = getReaction(5)
+
+      expect(heartEyes).toEqual('😍')
+      expect(fire).toEqual('🔥')
+      expect(party).toEqual('🥳')
+      expect(headExploding).toEqual('🤯')
+      expect(invalidEmoji).toBeUndefined()
+
+      const one = getReaction('😍')
+      const two = getReaction('🔥')
+      const three = getReaction('🥳')
+      const four = getReaction('🤯')
+      //@ts-ignore because type checker only accepts previous four emojis
+      const invalidNumber = getReaction('🦀')
+
+      expect(one).toEqual(1)
+      expect(two).toEqual(2)
+      expect(three).toEqual(3)
+      expect(four).toEqual(4)
+      expect(invalidNumber).toBeUndefined()
+    })
+
+    it('creates and relays a properly formatted tip reaction', async () => {
+      const result = await users.sendTipReaction({
+        userId: '7eP5n',
+        metadata: {
+          reactedTo: 'userTip1',
+          reactionValue: '🔥'
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
     })
   })
 })

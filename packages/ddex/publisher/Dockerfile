@@ -57,4 +57,4 @@ COPY --from=app-builder --chown=nodejs:nodejs /app .
 WORKDIR /app/packages/ddex/publisher
 
 EXPOSE 9001
-CMD ["node", "dist/index.js"]
+CMD ["npm", "run", "start"]

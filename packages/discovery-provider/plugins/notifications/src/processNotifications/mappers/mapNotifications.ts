@@ -32,7 +32,8 @@ import {
   TrendingPlaylistNotification,
   USDCPurchaseBuyerNotification,
   USDCWithdrawalNotification,
-  USDCTransferNotification
+  USDCTransferNotification,
+  TrackAddedToPurchasedAlbumNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -61,6 +62,7 @@ import { USDCPurchaseSeller } from './usdcPurchaseSeller'
 import { USDCPurchaseBuyer } from './usdcPurchaseBuyer'
 import { USDCWithdrawal } from './usdcWithdrawal'
 import { USDCTransfer } from './usdcTransfer'
+import { TrackAddedToPurchasedAlbum } from './trackAddedToPurchasedAlbum'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -190,6 +192,16 @@ const mapNotification = (
       dnDb,
       identityDb,
       addTrackToPlaylistNotification
+    )
+  } else if (notification.type == 'track_added_to_purchased_album') {
+    const trackAddedToPurchasedAlbumNotification =
+      notification as NotificationRow & {
+        data: TrackAddedToPurchasedAlbumNotification
+      }
+    return new TrackAddedToPurchasedAlbum(
+      dnDb,
+      identityDb,
+      trackAddedToPurchasedAlbumNotification
     )
   } else if (notification.type == 'create') {
     const createNotification = notification as NotificationRow & {

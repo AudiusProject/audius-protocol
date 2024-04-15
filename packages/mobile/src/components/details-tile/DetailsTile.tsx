@@ -125,7 +125,8 @@ export const DetailsTile = ({
   headerText,
   title,
   user,
-  track
+  track,
+  ddexApp
 }: DetailsTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -323,6 +324,7 @@ export const DetailsTile = ({
                   </Flex>
                 ) : null}
                 <DetailsTileActionButtons
+                  ddexApp={ddexApp}
                   hasReposted={!!hasReposted}
                   hasSaved={!!hasSaved}
                   hideFavorite={hideFavorite}
@@ -369,7 +371,7 @@ export const DetailsTile = ({
               <Flex
                 wrap='wrap'
                 direction='row'
-                border={
+                borderBottom={
                   hideFavoriteCount && hideListenCount && hideRepostCount
                     ? 'strong'
                     : undefined

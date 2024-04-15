@@ -88,7 +88,7 @@ const readConfig = () => {
     redisUrl: env.audius_redis_url,
     serverHost: env.solana_relay_server_host,
     serverPort: env.solana_relay_server_port,
-    solanaEndpoint: env.audius_solana_endpoint,
+    solanaEndpoints: env.audius_solana_endpoint.split(','),
     rewardsManagerProgramId: env.audius_solana_rewards_manager_program_address,
     rewardsManagerAccountAddress: env.audius_solana_rewards_manager_account,
     claimableTokenProgramId: env.audius_solana_user_bank_program_address,
