@@ -34,6 +34,14 @@ export const ClaimAllRewardsModal = () => {
   const userChallenges = useSelector(getOptimisticUserChallenges)
 
   const undisbursedChallenges = usePendingChallengeSchedule().cooldownChallenges
+  const summaryItems = formatAudioMatchingChallengesForCooldownSchedule(
+    undisbursedChallenges
+  )
+  console.log(
+    'asdf undisbursedChallenges: ',
+    undisbursedChallenges,
+    summaryItems
+  )
   // TODO merge conflicting dates
   const totalClaimableAmount = Object.values(userChallenges).reduce(
     (sum, challenge) => sum + challenge.claimableAmount,
@@ -61,14 +69,16 @@ export const ClaimAllRewardsModal = () => {
           </Text>
           <SummaryTable
             title={messages.upcomingRewards}
-            items={formatAudioMatchingChallengesForCooldownSchedule(
-              undisbursedChallenges
-            )}
-            summaryItem={{
-              id: messages.readyToClaim,
-              label: messages.readyToClaim,
-              value: totalClaimableAmount
-            }}
+            items={summaryItems}
+            summaryItem={
+              totalClaimableAmount > 0
+                ? {
+                    id: messages.readyToClaim,
+                    label: messages.readyToClaim,
+                    value: totalClaimableAmount
+                  }
+                : undefined
+            }
             secondaryTitle={messages.audio}
             summaryLabelColor='accent'
             summaryValueColor='default'
@@ -82,7 +92,7 @@ export const ClaimAllRewardsModal = () => {
               {messages.claimAudio(formatNumberCommas(totalClaimableAmount))}
             </Button>
           ) : (
-            <Button variant='secondary' fullWidth>
+            <Button variant='primary' fullWidth>
               {messages.done}
             </Button>
           )}

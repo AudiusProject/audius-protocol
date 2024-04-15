@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import {
+  formatAudioMatchingChallengesForCooldownSchedule,
   useFeatureFlag,
   usePendingChallengeSchedule
 } from '@audius/common/hooks'
@@ -62,12 +63,23 @@ const messages = {
   claimAllRewards: 'Claim All Rewards',
 
   readyToClaim: 'Ready to Claim',
+  pendingRewards: 'Pending Reward',
   totalReadyToClaim: 'Total Ready To Claim',
   pending: 'Pending',
   viewDetails: 'View Details',
   new: 'New!',
   goldAudioToken: 'Gold $AUDIO token',
-  availableNow: '$AUDIO available now'
+  availableNow: '$AUDIO available now',
+  availableMessage: (summaryItems) => {
+    for (let i = summaryItems.length - 1; i >= 0; i--) {
+      if (summaryItems[i] !== undefined) {
+        return `${summaryItems[i].value} $AUDIO available  ${
+          summaryItems[i].label.split(' (')[0]
+        }.`
+      }
+    }
+    return undefined // In case all elements are undefined or the array is empty
+  }
 }
 
 type RewardPanelProps = {
@@ -102,11 +114,14 @@ const RewardPanel = ({
   }
 
   const challenge = userChallenges[id]
-
+  console.log('asdf challenge: ', challenge)
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
+  const pending =
+    challenge?.undisbursedSpecifiers &&
+    challenge?.undisbursedSpecifiers.length > 0
   const shouldShowProgressBar =
     challenge &&
     challenge.max_steps > 1 &&
@@ -116,14 +131,16 @@ const RewardPanel = ({
     isAudioMatchingChallenge(id) && !needsDisbursement
 
   let progressLabelFilled: string
-  if (shouldShowCompleted) {
-    progressLabelFilled = messages.completeLabel
-  } else if (isAudioMatchingChallenge(id)) {
+  if (challenge && challenge?.cooldown_days > 0) {
     if (needsDisbursement) {
       progressLabelFilled = messages.readyToClaim
+    } else if (pending) {
+      progressLabelFilled = messages.pendingRewards
     } else {
       progressLabelFilled = progressLabel ?? ''
     }
+  } else if (shouldShowCompleted) {
+    progressLabelFilled = messages.completeLabel
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
     progressLabelFilled = fillString(
@@ -207,7 +224,11 @@ const RewardPanel = ({
 const ClaimAllPanel = () => {
   const wm = useWithMobileStyle(styles.mobile)
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
-
+  const undisbursedChallenges = usePendingChallengeSchedule().cooldownChallenges
+  const summaryItems = formatAudioMatchingChallengesForCooldownSchedule(
+    undisbursedChallenges
+  )
+  console.log('asdf claim all summary: ', summaryItems)
   const totalClaimableAmount = Object.values(optimisticUserChallenges).reduce(
     (sum, challenge) => sum + challenge.claimableAmount,
     0
@@ -217,6 +238,7 @@ const ClaimAllPanel = () => {
   const onClickClaimAllRewards = () => {
     setClaimAllRewardsVisibility(true)
   }
+
   const pendingAmount = pendingChallengeSchedule.claimableAmount
 
   return (
@@ -247,7 +269,7 @@ const ClaimAllPanel = () => {
             </div>
           </Flex>
           <Text variant='body' textAlign='left'>
-            {totalClaimableAmount} {messages.availableNow}
+            {messages.availableMessage(summaryItems)}
           </Text>
         </Flex>
       </Flex>

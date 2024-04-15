@@ -66,7 +66,7 @@ const getAudioMatchingCooldownLabel = (
   } else if (diff === cooldownDays - 1) {
     return messages.tomorrow
   }
-  return createdAt.add(cooldownDays, 'day').format('ddd (M/D)')
+  return {label: createdAt.add(cooldownDays, 'day').format('dddd (M/D)'), claimableDate: createdAt.add(cooldownDays, 'day')}
 }
 
 export const formatAudioMatchingChallengesForCooldownSchedule = (
@@ -78,11 +78,13 @@ export const formatAudioMatchingChallengesForCooldownSchedule = (
   challenges.forEach((c) => {
     const createdAt = utcToLocalTime(c.created_at)
     const diff = now.diff(createdAt, 'day')
+    const {label, claimableDate} = getAudioMatchingCooldownLabel(c, now)
     cooldownChallenges[diff] = {
       ...cooldownChallenges[diff],
       id: c.specifier,
-      label: getAudioMatchingCooldownLabel(c, now),
-      value: (cooldownChallenges[diff]?.value ?? 0) + c.amount
+      label,
+      value: (cooldownChallenges[diff]?.value ?? 0) + c.amount,
+      claimableDate
     }
   })
   return cooldownChallenges

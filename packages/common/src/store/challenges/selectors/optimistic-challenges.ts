@@ -76,6 +76,7 @@ const toOptimisticChallenge = (
 ): OptimisticUserChallenge => {
   const currentStepCountOverride = stepCountOverrides[challenge.challenge_id]
   const userChallengeOverrides = userChallengesOverrides[challenge.challenge_id]
+  console.log('asdf toOptimisticChallenge: ', challenge, undisbursed)
 
   const challengeOverridden = {
     ...challenge,
@@ -105,16 +106,17 @@ const toOptimisticChallenge = (
     challenge.challenge_type === 'aggregate'
       ? challenge.amount * challenge.max_steps
       : challenge.amount
-  const claimableAmount =
-    challengeOverridden.challenge_type !== 'aggregate'
-      ? state === 'completed'
-        ? totalAmount
-        : 0
-      : undisbursed.reduce<number>(
-          (acc, val) =>
-            isCooldownChallengeClaimable(val) ? acc + val.amount : acc + 0,
-          0
-        )
+
+  let claimableAmount = 0
+  if (challenge.cooldown_days > 0) {
+    claimableAmount = undisbursed.reduce<number>(
+      (acc, val) =>
+        isCooldownChallengeClaimable(val) ? acc + val.amount : acc + 0,
+      0
+    )
+  } else if (challengeOverridden.challenge_type !== 'aggregate' && state === 'completed') {
+    claimableAmount = totalAmount
+  }
 
   const undisbursedSpecifiers = undisbursed.reduce(
     (acc, c) => [...acc, { specifier: c.specifier, amount: c.amount }],
