@@ -1,5 +1,8 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { accountSelectors } from '@audius/common/store'
+import { encodeHashId } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -14,16 +17,12 @@ import {
   RadioGroupProps,
   Text
 } from '@audius/harmony'
-
-import { z } from 'zod'
-
-import { useAudiusQueryContext } from '@audius/common/audius-query'
-import { accountSelectors } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
-import { TextField } from 'components/form-fields'
 import { Form, Formik, useField } from 'formik'
 import { useSelector } from 'react-redux'
+import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
+
+import { TextField } from 'components/form-fields'
 
 const messages = {
   title: 'Manager Mode',
@@ -42,12 +41,11 @@ type ManagerModeFormValues = {
   grantType: 'request' | 'accept' | 'reject' | 'revoke'
 }
 
-// TODO: This is prototype code, please don't use it as-is
-
+// TODO: This is prototype code, please don't use it permanently
 const useManagerModeState = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<string | null>(null)
+  const [_ignored, setResult] = useState<string | null>(null)
 
   const { audiusSdk } = useAudiusQueryContext()
   const userIdRaw = useSelector(accountSelectors.getUserId)
@@ -89,11 +87,11 @@ const useManagerModeState = () => {
           case 'revoke':
             result = await sdk.grants.removeManager({
               userId: currentUserId,
-              grantorUserId: targetUserId
+              managerUserId: targetUserId
             })
             break
         }
-        console.log(result)
+        console.debug(result)
         setResult(
           'Sucessfully submitted. Indexing of operation may take a moment.'
         )
@@ -119,7 +117,7 @@ const managerModeSchema = toFormikValidationSchema(
 
 const GrantTypeField = (props: RadioGroupProps) => {
   const { name, ...other } = props
-  const [field, _, { setValue }] = useField(name)
+  const [field, _ignored, { setValue }] = useField(name)
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {

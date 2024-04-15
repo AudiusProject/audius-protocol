@@ -59,11 +59,11 @@ import {
 import packageInfo from '../../../../../package.json'
 
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
+import { ManagerModeSettingsCard } from './ManagerMode/ManagerModeSettingsCard'
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
-import { ManagerModeSettingsCard } from './ManagerMode/ManagerModeSettingsCard'
 
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
@@ -309,6 +309,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const { isEnabled: areDeveloperAppsEnabled } = useFlag(
     FeatureFlags.DEVELOPER_APPS_PAGE
   )
+  const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
 
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
@@ -465,7 +466,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
           </SettingsCard>
         ) : null}
         {areDeveloperAppsEnabled ? <DeveloperAppsSettingsCard /> : null}
-        <ManagerModeSettingsCard />
+        {isManagerModeEnabled ? <ManagerModeSettingsCard /> : null}
       </div>
       <div className={styles.version}>
         <Button

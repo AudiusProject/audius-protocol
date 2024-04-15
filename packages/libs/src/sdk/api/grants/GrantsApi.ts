@@ -14,7 +14,8 @@ import {
   CreateGrantRequest,
   CreateGrantSchema,
   RevokeGrantRequest,
-  RevokeGrantSchema
+  RevokeGrantSchema,
+  RemoveManagerRequest
 } from './types'
 
 export class GrantsApi {
@@ -88,7 +89,7 @@ export class GrantsApi {
   /**
    * Revokes another user's manager access
    */
-  async removeManager(params: AddManagerRequest) {
+  async removeManager(params: RemoveManagerRequest) {
     const { userId, managerUserId } = await parseParams(
       'addManager',
       AddManagerSchema

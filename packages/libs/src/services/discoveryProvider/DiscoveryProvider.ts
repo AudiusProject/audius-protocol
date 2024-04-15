@@ -65,6 +65,7 @@ export type DiscoveryProviderConfig = {
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
   discoveryNodeSelector?: DiscoveryNodeSelector
+  enableUserIdOverride?: boolean
 } & Pick<
   DiscoveryProviderSelectionConfig,
   'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
@@ -151,6 +152,8 @@ export class DiscoveryProvider {
     | DiscoveryProviderSelection['monitoringCallbacks']
     | undefined
 
+  enableUserIdOverride = false
+
   discoveryProviderEndpoint: string | undefined
   isInitialized = false
   discoveryNodeSelector?: DiscoveryNodeSelector
@@ -172,7 +175,8 @@ export class DiscoveryProvider {
     localStorage,
     unhealthySlotDiffPlays,
     unhealthyBlockDiff,
-    discoveryNodeSelector
+    discoveryNodeSelector,
+    enableUserIdOverride = false
   }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -181,6 +185,7 @@ export class DiscoveryProvider {
     this.web3Manager = web3Manager
     this.selectionCallback = selectionCallback
     this.localStorage = localStorage
+    this.enableUserIdOverride = enableUserIdOverride
 
     this.unhealthyBlockDiff = unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection(
@@ -834,7 +839,9 @@ export class DiscoveryProvider {
    * Return user collections (saved & uploaded) along w/ users for those collections
    */
   async getUserAccount(wallet: string) {
-    const userIdOverride = await getUserIdOverride(this.localStorage)
+    const userIdOverride = this.enableUserIdOverride
+      ? await getUserIdOverride(this.localStorage)
+      : undefined
     // If override is used, fetch that account instead
     if (userIdOverride) {
       const req = Requests.getUsers(1, 0, [parseInt(userIdOverride)])
