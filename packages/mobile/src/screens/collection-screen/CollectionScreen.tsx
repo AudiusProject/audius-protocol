@@ -217,6 +217,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     is_album,
     isEditAlbumsEnabled,
     isOwner,
+    ddex_app,
     is_private,
     dispatch,
     playlist_id
