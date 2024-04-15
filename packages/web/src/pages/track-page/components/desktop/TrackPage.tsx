@@ -150,6 +150,7 @@ const TrackPage = ({
           ? user.artist_pick_track_id === heroTrack.track_id
           : false
       }
+      ddexApp={heroTrack?.ddex_app}
       isSaved={isSaved}
       badge={badge}
       isUnlisted={defaults.isUnlisted}

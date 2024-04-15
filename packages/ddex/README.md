@@ -21,7 +21,7 @@ Use audius-docker-compose to run a production DDEX instance. After you've instal
     * Name the user `ddex-[dev|staging]-<label/distributor>-user` and press Next.
     * Select "Attach policies directly," and search for the policy you created (`ddex-[dev|staging]-<label/distributor>-policy`). Check the box next to it and press Next and then Create User.
 5. Search for your new user and press "Create access key" and then "Third-party service." Copy the access key and secret access key into your `.env` file (assuming you've already done `cp .env.[dev|stage] .env`).
-6. Go back to the bucket ending with `raw`, and add CORS at the bottom of the Permissions tab. Here's an example for dev, but for a prod environment you'll wnat to replace "*" in "AllowedOrigins" with the DNS that the frontend will be served from:
+6. Go back to the bucket ending with `raw`, and add CORS at the bottom of the Permissions tab. Here's an example for dev, but for a prod environment you'll want to replace "*" in "AllowedOrigins" with the DNS that the frontend will be served from:
 ```json
 [
     {

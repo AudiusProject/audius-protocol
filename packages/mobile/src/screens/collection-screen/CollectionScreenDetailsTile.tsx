@@ -293,6 +293,7 @@ export const CollectionScreenDetailsTile = ({
       {...detailsTileProps}
       contentId={numericCollectionId}
       contentType={PurchaseableContentType.ALBUM}
+      ddexApp={(collection as Collection | null)?.ddex_app}
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}
