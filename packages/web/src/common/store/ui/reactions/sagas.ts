@@ -15,6 +15,7 @@ import {
 } from '@audius/common/utils'
 import { AudiusSdk } from '@audius/sdk'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 const { getUserId } = accountSelectors
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
@@ -117,6 +118,7 @@ function* writeReactionValueAsync({
     FeatureFlags.DISCOVERY_TIP_REACTIONS
   )
 
+  yield* waitForWrite()
   const accountId = yield* select(getUserId)
   const userId = encodeHashId(accountId!)
 
