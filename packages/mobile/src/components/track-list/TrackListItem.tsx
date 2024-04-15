@@ -321,7 +321,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      isEditAlbumsEnabled && isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
+      isEditAlbumsEnabled && isTrackOwner && !ddexApp
+        ? OverflowAction.ADD_TO_ALBUM
+        : null,
       !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE

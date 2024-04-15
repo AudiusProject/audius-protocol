@@ -165,7 +165,9 @@ export const TrackTileComponent = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const overflowActions = [
-      isEditAlbumsEnabled && isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
+      isEditAlbumsEnabled && isOwner && !ddexApp
+        ? OverflowAction.ADD_TO_ALBUM
+        : null,
       !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
