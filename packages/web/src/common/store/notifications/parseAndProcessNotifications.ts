@@ -131,7 +131,10 @@ export function* parseAndProcessNotifications(
     if (type === NotificationType.TipReceive) {
       reactionSignatureToFetch.add(notification.tipTxSignature)
     }
-    if (type === NotificationType.AddTrackToPlaylist) {
+    if (
+      type === NotificationType.AddTrackToPlaylist ||
+      type === NotificationType.TrackAddedToPurchasedAlbum
+    ) {
       trackIdsToFetch.add(notification.trackId)
       userIdsToFetch.add(notification.playlistOwnerId)
       collectionIdsToFetch.add(notification.playlistId)
@@ -149,7 +152,11 @@ export function* parseAndProcessNotifications(
       type === NotificationType.USDCPurchaseSeller
     ) {
       userIdsToFetch = new Set([...userIdsToFetch, ...notification.userIds])
-      trackIdsToFetch.add(notification.entityId)
+      if (notification.entityType === Entity.Track) {
+        trackIdsToFetch.add(notification.entityId)
+      } else if (notification.entityType === Entity.Album) {
+        collectionIdsToFetch.add(notification.entityId)
+      }
     }
   })
 

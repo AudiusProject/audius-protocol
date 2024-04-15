@@ -49,6 +49,10 @@ export const getUser = (state: CommonState, params?: { id?: ID }) => {
   return getCachedUser(state, props)
 }
 
+export const getIsInitialFetchAfterSsr = (state: CommonState) => {
+  return state.pages.collection.isInitialFetchAfterSsr
+}
+
 export const makeGetCollection = () =>
   createSelector(
     [getCollectionUid, getUserUid, getCollectionStatus, getCollection, getUser],

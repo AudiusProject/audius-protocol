@@ -46,6 +46,7 @@ playlist_model = ns.model(
         "user": fields.Nested(user_model, required=True),
         "ddex_app": fields.String(allow_null=True),
         "access": fields.Nested(access),
+        "upc": fields.String(allow_null=True),
     },
 )
 
@@ -72,6 +73,8 @@ full_playlist_without_tracks_model = ns.clone(
         "cover_art_sizes": fields.String,
         "cover_art_cids": fields.Nested(playlist_artwork, allow_null=True),
         "track_count": fields.Integer(required=True),
+        "is_stream_gated": fields.Boolean(required=True),
+        "stream_conditions": fields.Raw(allow_null=True),
     },
 )
 

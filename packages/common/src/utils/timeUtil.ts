@@ -1,11 +1,9 @@
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
-import timezone from 'dayjs/plugin/timezone'
 
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60
 const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
-dayjs.extend(timezone)
 dayjs.extend(advancedFormat)
 
 export const formatSeconds = (seconds: number): string => {
@@ -47,18 +45,18 @@ export const formatLineupTileDuration = (
 }
 
 export const formatDate = (date: string, format?: string): string => {
-  const dayjsFormat = format || 'MM/DD/YY'
+  const dayjsFormat = format || 'M/D/YY'
   return dayjs(date).format(dayjsFormat)
 }
 
 export const formatDateWithTimezoneOffset = (date: string): string => {
-  return dayjs.tz(dayjs.utc(date)).format('MM/DD/YY')
+  return dayjs.utc(date).local().format('M/D/YY')
 }
 
 export const utcToLocalTime = (date: string) => {
-  return dayjs.tz(dayjs.utc(date))
+  return dayjs.utc(date).local()
 }
 
 export const getLocalTimezone = () => {
-  return dayjs.tz(dayjs()).format('z')
+  return dayjs().format('z')
 }

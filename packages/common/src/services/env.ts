@@ -43,6 +43,7 @@ export type Env = {
   INSTAGRAM_REDIRECT_URL: string
   METADATA_PROGRAM_ID: string
   OPENSEA_API_URL: string
+  HELIUS_DAS_API_URL: string
   OPTIMIZELY_KEY: string
   ORACLE_ETH_ADDRESSES: string
   PAYMENT_ROUTER_PROGRAM_ID: string

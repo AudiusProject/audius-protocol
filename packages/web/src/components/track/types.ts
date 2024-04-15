@@ -259,6 +259,9 @@ export type DesktopPlaylistTileProps = {
   /** If the button actions should be clickable */
   isDisabled?: boolean
 
+  /** If the track is unlisted */
+  isUnlisted?: boolean
+
   /** If track metadata is loading in */
   isLoading?: boolean
 
@@ -331,6 +334,9 @@ export type DesktopPlaylistTileProps = {
   /** on click share icon */
   onClickShare: (e?: MouseEvent) => void
 
+  /** on click unlock content pill */
+  onClickGatedUnlockPill?: (e: MouseEvent) => void
+
   /** On click track tile that's does not trigger another action (ie. button or text) */
   onTogglePlay: (e?: MouseEvent) => void
 
@@ -351,6 +357,12 @@ export type DesktopPlaylistTileProps = {
 
   /** Relative link to playlist page */
   href: string
+
+  /** If the current user has streaming access */
+  hasStreamAccess: boolean
+
+  /** Stream gated conditions for the collection */
+  streamConditions?: Nullable<AccessConditions>
 }
 
 export type SkeletonTileProps = {

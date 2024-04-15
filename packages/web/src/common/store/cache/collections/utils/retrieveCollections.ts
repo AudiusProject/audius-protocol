@@ -12,7 +12,9 @@ import {
   cacheSelectors,
   reformatCollection,
   getContext,
-  CommonState
+  CommonState,
+  collectionPageActions,
+  collectionPageSelectors
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
 import { chunk } from 'lodash'
@@ -29,6 +31,8 @@ const { getEntryTimestamp } = cacheSelectors
 const { getCollections } = cacheCollectionsSelectors
 const { setPermalink } = cacheCollectionsActions
 const getUserId = accountSelectors.getUserId
+const { setIsInitialFetchAfterSsr } = collectionPageActions
+const { getIsInitialFetchAfterSsr } = collectionPageSelectors
 
 // Attempting to fetch more than this amount at once could result in a 400
 // due to the URL being too long.
@@ -150,6 +154,9 @@ export function* retrieveCollectionByPermalink(
   permalink: string,
   config?: RetrieveCollectionsConfig
 ) {
+  // Check if this is the first fetch of the collection page after server side rendering
+  const isInitialFetchAfterSsr = yield* select(getIsInitialFetchAfterSsr)
+
   const {
     fetchTracks = false,
     requiresAllTracks = false,
@@ -193,14 +200,17 @@ export function* retrieveCollectionByPermalink(
     },
     onBeforeAddToCache: function* (collections: UserCollectionMetadata[]) {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      yield* addUsersFromCollections(collections)
-      yield* addTracksFromCollections(collections)
+      yield* addUsersFromCollections(collections, isInitialFetchAfterSsr)
+      yield* addTracksFromCollections(collections, isInitialFetchAfterSsr)
 
       const [collection] = collections
 
       const isLegacyPermalink = permalink !== collection.permalink
       if (isLegacyPermalink) {
         yield* put(setPermalink(permalink, collection.playlist_id))
+      }
+      if (isInitialFetchAfterSsr) {
+        yield* put(setIsInitialFetchAfterSsr(false))
       }
 
       if (fetchTracks) {
@@ -215,9 +225,9 @@ export function* retrieveCollectionByPermalink(
     },
     kind: Kind.COLLECTIONS,
     idField: 'playlist_id',
-    forceRetrieveFromSource,
+    forceRetrieveFromSource: forceRetrieveFromSource || isInitialFetchAfterSsr,
     shouldSetLoading: true,
-    deleteExistingEntry
+    deleteExistingEntry: deleteExistingEntry || isInitialFetchAfterSsr
   })
 
   return { collections: entries, uids }

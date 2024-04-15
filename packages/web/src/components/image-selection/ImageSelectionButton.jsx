@@ -79,6 +79,7 @@ const ImageSelectionButton = ({
         <>
           <Button
             variant='tertiary'
+            size='small'
             ref={anchorRefProp ? undefined : anchorRefInner}
             className={cn(buttonClassName, {
               [styles.hide]: showModal
@@ -111,6 +112,7 @@ const ImageSelectionButton = ({
           >
             <Button
               variant='tertiary'
+              size='small'
               className={cn(styles.noPopup, {
                 [styles.hide]: hasImage
               })}

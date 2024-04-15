@@ -44,9 +44,7 @@ const config = {
           path: 'docs',
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/AudiusProject/docs.audius.org/',
+          editUrl: 'https://github.com/AudiusProject/audius-protocol/tree/main/docs',
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -76,21 +74,31 @@ const config = {
             label: 'Learn',
             to: '/',
             position: 'right',
+            activeBasePath: 'learn'
           },
           {
             label: 'Developers',
             to: '/developers/introduction/overview',
             position: 'right',
+            activeBasePath: 'developers'
           },
           {
             label: 'Staking',
             to: '/node-operator/overview',
             position: 'right',
+            activeBasePath: 'staking'
+          },
+          {
+            label: 'Distributors',
+            to: '/distributors/introduction/overview',
+            position: 'right',
+            activeBasePath: 'distributors'
           },
           {
             label: 'Reference',
             to: '/reference/overview',
             position: 'right',
+            activeBasePath: 'reference'
           },
           {
             'aria-label': 'Discord',

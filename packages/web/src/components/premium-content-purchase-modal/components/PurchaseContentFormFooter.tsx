@@ -1,14 +1,16 @@
 import { useCallback } from 'react'
 
 import {
-  PurchaseableTrackMetadata,
+  PurchaseableContentMetadata,
+  isPurchaseableAlbum,
   usePurchaseContentErrorMessage
 } from '@audius/common/hooks'
 import { Name, RepostSource } from '@audius/common/models'
 import {
   PurchaseContentStage,
   PurchaseContentError,
-  tracksSocialActions
+  tracksSocialActions,
+  collectionsSocialActions
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import {
@@ -20,11 +22,12 @@ import {
   IconRepost,
   Flex
 } from '@audius/harmony'
+import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
-import { fullTrackPage } from 'utils/route'
+import { fullCollectionPage, fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
@@ -32,11 +35,12 @@ import styles from './PurchaseContentFormFooter.module.css'
 
 const messages = {
   buy: 'Buy',
-  viewTrack: 'View Track',
+  viewContent: (contentType: 'track' | 'album') =>
+    `View ${capitalize(contentType)}`,
   purchasing: 'Purchasing',
   shareButtonContent: 'I just purchased a track on Audius!',
-  shareTwitterText: (trackTitle: string, handle: string) =>
-    `I bought the track ${trackTitle} by ${handle} on @Audius! #AudiusPremium`,
+  shareTwitterText: (contentType: string, title: string, handle: string) =>
+    `I bought the ${contentType} ${title} by ${handle} on @Audius! #AudiusPremium`,
   reposted: 'Reposted',
   repost: 'Repost'
 }
@@ -65,47 +69,60 @@ type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,
   'error' | 'isUnlocking' | 'purchaseSummaryValues' | 'stage'
 > & {
-  track: PurchaseableTrackMetadata
-  onViewTrackClicked: () => void
+  metadata: PurchaseableContentMetadata
+  onViewContentClicked: () => void
 }
 
 export const PurchaseContentFormFooter = ({
   error,
-  track,
+  metadata,
   isUnlocking,
   purchaseSummaryValues,
   stage,
-  onViewTrackClicked
+  onViewContentClicked: onViewTrackClicked
 }: PurchaseContentFormFooterProps) => {
   const {
-    title,
     permalink,
     user: { handle },
-    has_current_user_reposted: isReposted,
-    track_id: trackId
-  } = track
+    has_current_user_reposted: isReposted
+  } = metadata
+  const contentId =
+    'track_id' in metadata ? metadata.track_id : metadata.playlist_id
+  const title = 'title' in metadata ? metadata.title : metadata.playlist_name
+  const isAlbum = isPurchaseableAlbum(metadata)
   const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
-      const shareText = messages.shareTwitterText(title, handle)
+      const shareText = messages.shareTwitterText(
+        isAlbum ? 'album' : 'track',
+        title,
+        handle
+      )
       const analytics = make(Name.PURCHASE_CONTENT_TWITTER_SHARE, {
         text: shareText
       })
       return { shareText, analytics }
     },
-    [title]
+    [title, isAlbum]
   )
 
   const onRepost = useCallback(() => {
     dispatch(
       isReposted
-        ? tracksSocialActions.undoRepostTrack(trackId, RepostSource.PURCHASE)
-        : tracksSocialActions.repostTrack(trackId, RepostSource.PURCHASE)
+        ? (isAlbum
+            ? collectionsSocialActions.undoRepostCollection
+            : tracksSocialActions.undoRepostTrack)(
+            contentId,
+            RepostSource.PURCHASE
+          )
+        : (isAlbum
+            ? collectionsSocialActions.repostCollection
+            : tracksSocialActions.repostTrack)(contentId, RepostSource.PURCHASE)
     )
-  }, [trackId, dispatch, isReposted])
+  }, [contentId, dispatch, isAlbum, isReposted])
 
   if (isPurchased) {
     return (
@@ -121,13 +138,19 @@ export const PurchaseContentFormFooter = ({
           >
             {isReposted ? messages.reposted : messages.repost}
           </Button>
-          <TwitterShareButton
-            fullWidth
-            type='dynamic'
-            url={fullTrackPage(permalink)}
-            shareData={handleTwitterShare}
-            handle={handle}
-          />
+          {permalink ? (
+            <TwitterShareButton
+              fullWidth
+              type='dynamic'
+              url={
+                isAlbum
+                  ? fullCollectionPage(handle, null, null, permalink)
+                  : fullTrackPage(permalink)
+              }
+              shareData={handleTwitterShare}
+              handle={handle}
+            />
+          ) : null}
         </Flex>
         <PlainButton
           onClick={onViewTrackClicked}
@@ -135,7 +158,7 @@ export const PurchaseContentFormFooter = ({
           variant='subdued'
           size='large'
         >
-          {messages.viewTrack}
+          {messages.viewContent(isAlbum ? 'album' : 'track')}
         </PlainButton>
       </Flex>
     )

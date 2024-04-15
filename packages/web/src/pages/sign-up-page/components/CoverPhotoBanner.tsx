@@ -13,7 +13,7 @@ import { useSelector } from 'utils/reducer'
 const { getUserId } = accountSelectors
 
 const messages = {
-  selectCoverPhoto: 'Select cover photo'
+  selectCoverPhoto: 'Upload a cover photo for your profile'
 }
 
 type CoverPhotoBannerProps = {

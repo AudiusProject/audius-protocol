@@ -1,15 +1,18 @@
 {
   "name": "create-audius-app",
-  "version": "1.0.2",
+  "version": "1.0.6",
   "description": "Create an Audius app with one command",
   "scripts": {
     "build": "tsup ./index.ts",
     "dev": "tsup ./index.ts --watch",
     "lint": "eslint",
     "prepublishOnly": "rm -rf dist && npm run build",
-    "test": "vitest",
+    "setup-test-env": "./tests/e2e/setup-test-env.sh",
+    "test": "vitest tests/integration",
+    "test:e2e": "playwright test",
     "typecheck": "tsc",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\"",
+    "start-examples": "concurrently \"cd examples/react && npm run start\""
   },
   "repository": {
     "type": "git",
@@ -31,12 +34,15 @@
     "examples"
   ],
   "devDependencies": {
+    "@playwright/test": "1.42.1",
+    "@types/glob": "7.1.1",
     "@types/prompts": "2.4.2",
     "@types/tar": "6.1.11",
     "@types/validate-npm-package-name": "4.0.2",
     "commander": "2.20.0",
     "execa": "2.0.3",
     "fast-glob": "3.3.1",
+    "glob": "7.1.6",
     "prompts": "2.4.2",
     "tar": "6.2.0",
     "tsup": "8.0.2",

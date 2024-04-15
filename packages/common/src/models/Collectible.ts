@@ -1,9 +1,11 @@
 import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
+import { HeliusCollection } from '~/services/helius/types'
+
 import { Nullable } from '../utils/typeUtils'
 
 import { Chain } from './Chain'
-import { TokenStandard } from './Track'
+import { EthTokenStandard } from './Track'
 
 export type CollectiblesMetadata = {
   [key: string]: object
@@ -14,7 +16,8 @@ export enum CollectibleMediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
   GIF = 'GIF',
-  THREE_D = 'THREE_D'
+  THREE_D = 'THREE_D',
+  ANIMATED_WEBP = 'ANIMATED_WEBP'
 }
 
 export type Collectible = {
@@ -41,11 +44,12 @@ export type Collectible = {
 
   // ethereum nfts
   assetContractAddress: Nullable<string>
-  standard: Nullable<TokenStandard>
+  standard: Nullable<EthTokenStandard>
   collectionSlug: Nullable<string>
   collectionName: Nullable<string>
   collectionImageUrl: Nullable<string>
 
   // solana nfts
-  solanaChainMetadata: Nullable<Metadata>
+  solanaChainMetadata?: Nullable<Metadata>
+  heliusCollection?: Nullable<HeliusCollection>
 }

@@ -1,6 +1,5 @@
 import { useEffect, useContext, MouseEvent, ReactNode } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import {
   Status,
   Collection,
@@ -16,7 +15,6 @@ import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
   ProfilePageTabs,
-  badgeTiers,
   ProfileUser
 } from '@audius/common/store'
 import {
@@ -42,7 +40,6 @@ import NavContext, {
 } from 'components/nav/store/context'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
-import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { useSsrContext } from 'ssr/SsrContext'
 import { collectionPage, profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
@@ -352,11 +349,6 @@ const ProfilePage = g(
       hasMadeEdit
     ])
 
-    const { tierNumber } = useSelectTierInfo(userId ?? 0)
-    const profileHasCollectiblesTierRequirement =
-      tierNumber >=
-      badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
-
     const profileHasCollectibles =
       profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
     const profileNeverSetCollectiblesOrder = !profile?.collectibles
@@ -602,12 +594,9 @@ const ProfilePage = g(
 
       if (
         // `has_collectibles` is a shortcut that is only true iff the user has a modified collectibles state
-        (profile?.has_collectibles &&
-          profileHasCollectiblesTierRequirement &&
-          !didCollectiblesLoadAndWasEmpty) ||
-        (profileHasCollectiblesTierRequirement &&
-          (profileHasVisibleImageOrVideoCollectibles ||
-            (profileHasCollectibles && isUserOnTheirProfile)))
+        (profile?.has_collectibles && !didCollectiblesLoadAndWasEmpty) ||
+        profileHasVisibleImageOrVideoCollectibles ||
+        (profileHasCollectibles && isUserOnTheirProfile)
       ) {
         profileTabs = isArtist
           ? artistTabsWithCollectibles
@@ -709,7 +698,7 @@ const ProfilePage = g(
             areArtistRecommendationsVisible={areArtistRecommendationsVisible}
             onCloseArtistRecommendations={onCloseArtistRecommendations}
           />
-          {content}
+          <ClientOnly>{content}</ClientOnly>
         </MobilePageContainer>
         <ClientOnly>
           <TierExplainerDrawer />

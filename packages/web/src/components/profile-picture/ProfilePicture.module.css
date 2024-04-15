@@ -54,25 +54,10 @@
 
 .imageSelectionButtonWrapper {
   position: absolute;
-  bottom: 48px;
+  bottom: var(--harmony-spacing-2xl);
   right: 0;
   left: 0;
   z-index: 4;
-}
-
-.isMobile .imageSelectionButtonWrapper {
-  bottom: 32px;
-}
-
-.imageSelectionButton {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.editMode .overlay,
-.editMode .imageSelectionButton {
-  opacity: 1;
-  pointer-events: all;
 }
 
 .modalOpen .overlay,
@@ -88,7 +73,9 @@
 }
 
 .editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .overlay,
-.editMode.hasChanged:not(.modalOpen) .profilePictureBackground:hover .imageSelectionButton {
+.editMode.hasChanged:not(.modalOpen)
+  .profilePictureBackground:hover
+  .imageSelectionButton {
   opacity: 1;
   pointer-events: all;
 }

@@ -22,17 +22,24 @@ type AudiusValueProps = { icon: IconComponent; text: string; dynamic?: boolean }
  */
 const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
+  const isMedium = useMediaQuery(
+    '(max-width: 1363px) and (min-width: 1094px), (max-width: 860px) and (min-width: 645px)'
+  )
   const isSmall = useMediaQuery(
-    '(max-width: 1363px) and (min-width: 860px), (max-width: 645px)'
+    '(max-width: 1094px) and (min-width: 860px), (max-width: 645px)'
   )
 
   return (
     <Flex alignItems='center' justifyContent='center' gap='m'>
-      <Icon color='staticWhite' size={isSmall ? 'l' : '2xl'} shadow='drop' />
+      <Icon
+        color='staticWhite'
+        size={isSmall ? 'l' : isMedium ? 'l' : '2xl'}
+        shadow='drop'
+      />
       <Text
         variant={isSmall ? 'title' : 'heading'}
         tag='h2'
-        size={isSmall ? 'l' : 'xl'}
+        size={isSmall ? 'l' : isMedium ? 'm' : 'xl'}
         strength={isSmall ? 'weak' : 'default'}
         color='staticWhite'
         shadow='emphasis'
@@ -53,22 +60,26 @@ type AudiusValuesProps = {
 
 export const AudiusValues = (props: AudiusValuesProps) => {
   const isMobile = useMediaQuery('(max-width: 860px)')
+
+  const isMedium = useMediaQuery(
+    '(max-width: 1363px) and (min-width: 1094px), (max-width: 860px) and (min-width: 645px)'
+  )
   const isSmall = useMediaQuery(
-    '(max-width: 1363px) and (min-width: 860px), (max-width: 645px)'
+    '(max-width: 1094px) and (min-width: 860px), (max-width: 645px)'
   )
 
   return (
     <Flex
       direction='column'
-      gap={isSmall ? 'l' : 'xl'}
+      gap={isSmall || isMedium ? 'l' : 'xl'}
       alignItems='center'
-      p={isSmall ? 'xl' : '2xl'}
+      p={isSmall || isMedium ? 'xl' : '2xl'}
       {...props}
     >
       {isMobile ? null : (
         <Text
-          variant={isSmall ? 'heading' : 'display'}
-          size='s'
+          variant={isSmall || isMedium ? 'heading' : 'display'}
+          size={isMedium ? 'xl' : 's'}
           strength='strong'
           color='staticWhite'
           shadow='emphasis'

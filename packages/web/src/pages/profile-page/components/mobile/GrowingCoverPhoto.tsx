@@ -34,6 +34,10 @@ const springConfig = {
   friction: 20
 }
 
+const messages = {
+  coverArtAltText: 'User Cover Art'
+}
+
 /**
  * A cover photo for mobile that grows as the user overflow scrolls in the Y direction (up).
  * Same props as DynamicImage.
@@ -123,7 +127,11 @@ const GrowingCoverPhoto = ({
         transform: springProps.y.interpolate(interpTransform)
       }}
     >
-      <ImageElement size={WidthSizes.SIZE_640} {...rest}>
+      <ImageElement
+        size={WidthSizes.SIZE_640}
+        alt={messages.coverArtAltText}
+        {...rest}
+      >
         {children}
       </ImageElement>
     </animated.div>

@@ -19,7 +19,8 @@ import {
   usePremiumContentPurchaseModal,
   CommonState,
   useWaitForDownloadModal,
-  toastActions
+  toastActions,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -29,8 +30,7 @@ import {
   IconReceive,
   Button,
   IconCaretDown,
-  IconLockUnlocked,
-  SegmentedControl
+  IconLockUnlocked
 } from '@audius/harmony'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
@@ -55,9 +55,6 @@ const STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK = 2
 
 const messages = {
   title: 'Stems & Downloads',
-  choose: 'Choose File Quality',
-  mp3: 'MP3',
-  lossless: 'Lossless',
   downloadAll: 'Download All',
   unlockAll: (price: string) => `Unlock All $${price}`,
   purchased: 'purchased',
@@ -93,6 +90,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     (track?.is_downloadable ? 1 : 0) + stemTracks.length > 1 &&
     hasDownloadAccess
 
+  const downloadQuality = DownloadQuality.ORIGINAL
   const shouldHideDownload =
     !track?.access.download && !shouldDisplayDownloadFollowGated
   const formattedPrice = price
@@ -102,7 +100,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         maximumFractionDigits: 2
       })
     : undefined
-  const [quality, setQuality] = useState(DownloadQuality.MP3)
   const [expanded, setExpanded] = useState(false)
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
@@ -111,18 +108,18 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const fileSizes = useFileSizes({
     audiusSdk,
     trackIds: [trackId, ...stemTracks.map((s) => s.id)],
-    downloadQuality: quality
+    downloadQuality
   })
   const { onOpen: openWaitForDownloadModal } = useWaitForDownloadModal()
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
-  const handlePurchaseClick = useAuthenticatedClickCallback((event) => {
+  const handlePurchaseClick = useAuthenticatedClickCallback((_event) => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
     openPremiumContentPurchaseModal(
-      { contentId: trackId },
+      { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.TrackDetails }
     )
   }, [])
@@ -136,7 +133,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         openWaitForDownloadModal({
           parentTrackId,
           trackIds,
-          quality
+          quality: downloadQuality
         })
 
         // Track download attempt event
@@ -160,25 +157,14 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     },
     [
       dispatch,
+      downloadQuality,
       isMobile,
       openWaitForDownloadModal,
       record,
-      quality,
       shouldDisplayDownloadFollowGated,
       track
     ]
   )
-
-  const options = [
-    {
-      key: DownloadQuality.MP3,
-      text: messages.mp3
-    },
-    {
-      key: DownloadQuality.ORIGINAL,
-      text: messages.lossless
-    }
-  ]
 
   const downloadAllButton = () => (
     <Button
@@ -283,34 +269,6 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
         ) : null}
         <Expandable expanded={expanded} id='downloads-section'>
           <Box>
-            {track?.is_original_available ? (
-              <Flex
-                p='l'
-                direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-                borderTop='default'
-              >
-                <Flex
-                  direction={isMobile ? 'column' : 'row'}
-                  alignItems='center'
-                  gap='l'
-                >
-                  <Text variant='title'>{messages.choose}</Text>
-                  <SegmentedControl
-                    options={options}
-                    selected={quality}
-                    onSelectOption={(quality: DownloadQuality) =>
-                      setQuality(quality)
-                    }
-                    equalWidth
-                  />
-                </Flex>
-                {shouldDisplayDownloadAll && !isMobile
-                  ? downloadAllButton()
-                  : null}
-              </Flex>
-            ) : null}
             {track?.is_downloadable ? (
               <DownloadRow
                 trackId={trackId}
@@ -318,8 +276,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 onDownload={handleDownload}
                 index={ORIGINAL_TRACK_INDEX}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[trackId]?.[quality]}
-                isOriginal={quality === DownloadQuality.ORIGINAL}
+                size={fileSizes[trackId]?.[downloadQuality]}
               />
             ) : null}
             {stemTracks.map((s, i) => (
@@ -329,14 +286,13 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                 key={s.id}
                 onDownload={handleDownload}
                 hideDownload={shouldHideDownload}
-                size={fileSizes[s.id]?.[quality]}
+                size={fileSizes[s.id]?.[downloadQuality]}
                 index={
                   i +
                   (track?.is_downloadable
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
-                isOriginal={quality === DownloadQuality.ORIGINAL}
               />
             ))}
             {uploadingStems.map((s, i) => (
@@ -352,16 +308,12 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                     ? STEM_INDEX_OFFSET_WITH_ORIGINAL_TRACK
                     : STEM_INDEX_OFFSET_WITHOUT_ORIGINAL_TRACK)
                 }
-                isOriginal={quality === DownloadQuality.ORIGINAL}
                 category={s.category ?? StemCategory.OTHER}
                 filename={s.name}
                 isLoading
               />
             ))}
-            {/* Only display this row if original quality is not available,
-            because the download all button will not be displayed at the top right. */}
-            {(!track?.is_original_available && shouldDisplayDownloadAll) ||
-            isMobile ? (
+            {shouldDisplayDownloadAll || isMobile ? (
               <Flex borderTop='default' p='l' justifyContent='center'>
                 {downloadAllButton()}
               </Flex>

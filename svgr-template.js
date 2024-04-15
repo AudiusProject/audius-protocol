@@ -59,6 +59,9 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
 
   ${native ? nativeStyles : webStyles}
 
+  other.role = title ? 'img' : undefined
+  other['aria-hidden'] = title ? undefined : true
+
   props = {...other, ref, fillColor}
 
   return (${variables.jsx})

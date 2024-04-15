@@ -323,7 +323,9 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
   const address = action.payload.wallet
 
   const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
-  const connection = (audiusLibs as AudiusLibs).solanaWeb3Manager!.connection
+  const connection = (
+    audiusLibs as AudiusLibs
+  ).solanaWeb3Manager!.getConnection()
 
   const associatedTokenAccount = yield* call(
     [walletClient, 'getAssociatedTokenAccountInfo'],

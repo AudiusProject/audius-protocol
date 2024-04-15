@@ -259,7 +259,6 @@ class ChallengeInfo(Resource):
                     "weekly_pool_remaining": float(weekly_pool_remaining),
                     "cooldown_days": challenge.cooldown_days,
                 }
-                logger.info(f"asdf res {res}")
                 if (
                     weekly_pool_min_amount
                     and challenge.weekly_pool

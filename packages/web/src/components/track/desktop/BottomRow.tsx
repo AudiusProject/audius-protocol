@@ -16,7 +16,7 @@ import { GatedConditionsPill } from '../GatedConditionsPill'
 
 import styles from './TrackTile.module.css'
 
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 const messages = {
   repostLabel: 'Repost',
@@ -37,13 +37,12 @@ type BottomRowProps = {
   isDarkMode?: boolean
   isMatrixMode: boolean
   showIconButtons?: boolean
-  isTrack?: boolean
   trackId?: ID
   streamConditions?: Nullable<AccessConditions>
   onClickRepost: (e?: any) => void
   onClickFavorite: (e?: any) => void
   onClickShare: (e?: any) => void
-  onClickPill?: (e: MouseEvent) => void
+  onClickGatedUnlockPill?: (e: MouseEvent) => void
 }
 
 export const BottomRow = ({
@@ -60,15 +59,14 @@ export const BottomRow = ({
   isDarkMode,
   isMatrixMode,
   showIconButtons,
-  isTrack,
   trackId,
   streamConditions,
   onClickRepost,
   onClickFavorite,
   onClickShare,
-  onClickPill
+  onClickGatedUnlockPill
 }: BottomRowProps) => {
-  const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+  const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
 
   const repostLabel = isReposted ? messages.unrepostLabel : messages.repostLabel
@@ -107,13 +105,13 @@ export const BottomRow = ({
     )
   }
 
-  if (isTrack && streamConditions && !isLoading && !hasStreamAccess) {
+  if (streamConditions && !isLoading && !hasStreamAccess) {
     return (
       <Text variant='title' size='s' className={styles.bottomRow}>
         <GatedConditionsPill
           streamConditions={streamConditions}
           unlocking={gatedTrackStatus === 'UNLOCKING'}
-          onClick={onClickPill}
+          onClick={onClickGatedUnlockPill}
         />
         <div>{rightActions}</div>
       </Text>

@@ -1,18 +1,27 @@
-import { Text } from '@audius/harmony'
+import React from 'react'
 
-import styles from './styles.module.css'
+import { Flex, Text } from '@audius/harmony'
 
 export const DetailSection = ({
   children,
-  label
+  label,
+  actionButton
 }: {
   children?: React.ReactNode
   label: string | React.ReactNode
+  actionButton?: React.ReactNode
 }) => (
-  <div className={styles.detailSection}>
-    <Text variant='label' size='l' color='subdued'>
-      {label}
-    </Text>
-    {children}
-  </div>
+  <Flex
+    w='100%'
+    alignItems={actionButton ? undefined : 'center'}
+    css={{ overflow: 'hidden' }}
+  >
+    <Flex gap='s' direction='column' w='100%'>
+      <Text variant='label' size='l' color='subdued'>
+        {label}
+      </Text>
+      {children}
+    </Flex>
+    {actionButton}
+  </Flex>
 )

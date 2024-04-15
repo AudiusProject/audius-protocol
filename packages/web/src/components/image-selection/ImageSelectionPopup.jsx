@@ -1,8 +1,7 @@
 import { useState, useCallback, useRef, useContext } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import { RandomImage } from '@audius/common/services'
-import { accountSelectors, badgeTiers } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { Button, Popup, SegmentedControl, IconSearch } from '@audius/harmony'
 import cn from 'classnames'
@@ -13,7 +12,6 @@ import { useWindowSize } from 'react-use'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import { MainContentContext } from 'pages/MainContentContext'
-import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import zIndex from 'utils/zIndex'
 
 import styles from './ImageSelectionPopup.module.css'
@@ -233,16 +231,8 @@ const ImageSelectionPopup = ({
   const { mainContentRef } = useContext(MainContentContext)
   const [page, setPage] = useState(messages.uploadYourOwn)
   const windowSize = useWindowSize()
-  const {
-    collectibles,
-    collectibleList,
-    solanaCollectibleList,
-    user_id: userId
-  } = useSelector(getAccountUser)
-
-  const { tierNumber } = useSelectTierInfo(userId ?? 0)
-  const isCollectibleOptionEnabled =
-    tierNumber >= badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
+  const { collectibles, collectibleList, solanaCollectibleList } =
+    useSelector(getAccountUser)
 
   const allCollectibles = [
     ...(collectibleList || []),
@@ -277,7 +267,7 @@ const ImageSelectionPopup = ({
       text: messages.findArtwork
     }
   ]
-  if (isCollectibleOptionEnabled && visibleCollectibles.length) {
+  if (visibleCollectibles.length) {
     tabSliderOptions.push({
       key: messages.yourCollectibles,
       text: messages.yourCollectibles

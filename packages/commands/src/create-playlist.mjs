@@ -48,7 +48,6 @@ program
             }))
           }
         }
-        console.log(chalk.yellow('Playlist Metadata: '), metadata)
         if (price) {
           if (!album) {
             program.error(chalk.red('Price can only be set for albums'))
@@ -58,10 +57,6 @@ program
             price,
             audiusLibs
           })
-          console.log(
-            chalk.yellow('Stream Conditions: '),
-            metadata.stream_conditions
-          )
         }
         const response = await audiusLibs.EntityManager.createPlaylist(metadata)
 

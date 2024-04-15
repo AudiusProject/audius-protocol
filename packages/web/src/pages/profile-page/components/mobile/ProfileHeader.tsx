@@ -57,7 +57,8 @@ const messages = {
   playlists: 'Playlists',
   showMore: 'Show More',
   showLess: 'Show Less',
-  editProfile: 'Edit Profile'
+  editProfile: 'Edit Profile',
+  profilePicAltText: 'User Profile Picture'
 }
 
 const LoadingProfileHeader = () => {
@@ -329,6 +330,7 @@ const ProfileHeader = ({
       </GrowingCoverPhoto>
       <ImageElement
         image={updatedProfilePicture || profilePicture}
+        alt={messages.profilePicAltText}
         cid={profile?.profile_picture_sizes}
         size={SquareSizes.SIZE_150_BY_150}
         imageUrl={
@@ -495,14 +497,16 @@ const ProfileHeader = ({
               {isDescriptionMinimized ? messages.showMore : messages.showLess}
             </div>
           ) : null}
-          <ArtistRecommendationsDropdown
-            isVisible={areArtistRecommendationsVisible}
-            renderHeader={() => (
-              <p>Here are some accounts that vibe well with {name}</p>
-            )}
-            artistId={userId}
-            onClose={onCloseArtistRecommendations}
-          />
+          <ClientOnly>
+            <ArtistRecommendationsDropdown
+              isVisible={areArtistRecommendationsVisible}
+              renderHeader={() => (
+                <p>Here are some accounts that vibe well with {name}</p>
+              )}
+              artistId={userId}
+              onClose={onCloseArtistRecommendations}
+            />
+          </ClientOnly>
         </div>
       )}
       {mode === 'owner' && !isEditing && <UploadButton />}

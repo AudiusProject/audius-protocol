@@ -24,7 +24,6 @@ export enum FeatureFlags {
   VERIFY_HANDLE_WITH_TIKTOK = 'verify_handle_with_tiktok',
   VERIFY_HANDLE_WITH_TWITTER = 'verify_handle_with_twitter',
   VERIFY_HANDLE_WITH_INSTAGRAM = 'verify_handle_with_instagram',
-  AUDIO_TRANSACTIONS_HISTORY = 'audio_transactions_history',
   RATE_CTA_ENABLED = 'rate_cta_enabled_v2',
   CHAT_ENABLED = 'chat_enabled',
   FAST_CACHE = 'fast_cache',
@@ -58,7 +57,10 @@ export enum FeatureFlags {
   COINFLOW_OFFRAMP_ENABLED = 'coinflow_offramp_enabled',
   TIKTOK_NATIVE_AUTH = 'tiktok_native_auth',
   PREMIUM_ALBUMS_ENABLED = 'premium_albums_enabled',
-  REWARDS_COOLDOWN = 'rewards_cooldown'
+  REWARDS_COOLDOWN = 'rewards_cooldown',
+  USE_SDK_TIPS = 'use_sdk_tips',
+  USE_SDK_REWARDS = 'use_sdk_rewards',
+  DISCOVERY_TIP_REACTIONS = 'discovery_tip_reactions'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -98,7 +100,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_TWITTER]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_INSTAGRAM]: false,
-  [FeatureFlags.AUDIO_TRANSACTIONS_HISTORY]: false,
   [FeatureFlags.RATE_CTA_ENABLED]: false,
   [FeatureFlags.CHAT_ENABLED]: false,
   [FeatureFlags.FAST_CACHE]: false,
@@ -132,5 +133,8 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.COINFLOW_OFFRAMP_ENABLED]: false,
   [FeatureFlags.TIKTOK_NATIVE_AUTH]: true,
   [FeatureFlags.PREMIUM_ALBUMS_ENABLED]: false,
-  [FeatureFlags.REWARDS_COOLDOWN]: false
+  [FeatureFlags.REWARDS_COOLDOWN]: false,
+  [FeatureFlags.USE_SDK_TIPS]: false,
+  [FeatureFlags.USE_SDK_REWARDS]: false,
+  [FeatureFlags.DISCOVERY_TIP_REACTIONS]: false
 }

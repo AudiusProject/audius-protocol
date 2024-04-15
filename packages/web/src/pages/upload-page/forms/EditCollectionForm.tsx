@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AlbumSchema,
   CollectionValues,
   PlaylistSchema
 } from '@audius/common/schemas'
+import { FeatureFlags } from '@audius/common/services'
 import { UploadType } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -20,10 +22,12 @@ import {
 import { Tile } from 'components/tile'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
+import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
+import { StemsAndDownloadsCollectionField } from '../fields/StemsAndDownloadsCollectionsField'
 import { CollectionFormState } from '../types'
 
 import styles from './EditCollectionForm.module.css'
@@ -33,8 +37,7 @@ const messages = {
   description: 'Description',
   trackDetails: {
     title: 'Track Details',
-    description:
-      "Set defaults for all tracks in this collection. Use 'Override' to personalize individual track details."
+    description: 'Set defaults for all tracks in this collection'
   },
   completeButton: 'Complete Upload'
 }
@@ -47,10 +50,19 @@ type EditCollectionFormProps = {
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
+  const isAlbum = uploadType === UploadType.ALBUM
+  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
+  const { isEnabled: isUSDCUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
+  )
+  const showPremiumAlbums = isPremiumAlbumsEnabled && isUSDCUploadEnabled
 
   const initialValues: CollectionValues = {
     ...metadata,
-    is_album: uploadType === UploadType.ALBUM,
+    is_album: isAlbum,
+    is_downloadable: false,
     artwork: null,
     playlist_name: '',
     description: '',
@@ -113,15 +125,18 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             </div>
           </div>
           <ReleaseDateFieldLegacy />
-
+          {isAlbum && showPremiumAlbums ? (
+            <AccessAndSaleField isAlbum isUpload />
+          ) : null}
           <div className={styles.trackDetails}>
             <Text variant='label'>{messages.trackDetails.title}</Text>
-            <Text>{messages.trackDetails.description}</Text>
+            <Text variant='body'>{messages.trackDetails.description}</Text>
             <div className={styles.row}>
               <SelectGenreField name='trackDetails.genre' />
               <SelectMoodField name='trackDetails.mood' />
             </div>
             <TagField name='trackDetails.tags' />
+            {isAlbum && <StemsAndDownloadsCollectionField />}
           </div>
         </Tile>
         <CollectionTrackFieldArray />

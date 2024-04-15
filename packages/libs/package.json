@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.40",
+  "version": "3.0.44",
   "audius": {
     "releaseSHA": "f1d70a2a0643c5c84d8ab053f70c1e0a2ec3ad49"
   },
@@ -63,9 +63,9 @@
     "prepack": "turbo run build"
   },
   "dependencies": {
-    "@audius/fixed-decimal": "^0.0.21",
+    "@audius/fixed-decimal": "*",
     "@audius/hedgehog": "3.0.0-alpha.0",
-    "@audius/spl": "^0.0.27",
+    "@audius/spl": "*",
     "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",
     "@babel/runtime": "7.18.3",

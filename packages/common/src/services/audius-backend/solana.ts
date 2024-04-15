@@ -9,6 +9,7 @@ import {
 } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
+  ComputeBudgetProgram,
   Keypair,
   PublicKey,
   Transaction,
@@ -18,6 +19,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
+import { PurchaseableContentType } from '~/store'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import {
@@ -82,8 +84,9 @@ export const getRootSolanaAccount = async (
 export const getSolanaConnection = async (
   audiusBackendInstance: AudiusBackend
 ) => {
-  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!
-    .connection
+  return (
+    await audiusBackendInstance.getAudiusLibsTyped()
+  ).solanaWeb3Manager!.getConnection()
 }
 
 /**
@@ -381,7 +384,7 @@ export type PurchaseContentArgs = {
   id: ID
   blocknumber: number
   extraAmount?: number | BN
-  type: 'track'
+  type: PurchaseableContentType
   splits: Record<string, number | BN>
   purchaserUserId: ID
   purchaseAccess: PurchaseAccess
@@ -397,7 +400,7 @@ export const purchaseContent = async (
 
 export type PurchaseContentWithPaymentRouterArgs = {
   id: number
-  type: 'track'
+  type: PurchaseableContentType
   splits: Record<string, number>
   extraAmount?: number
   blocknumber: number
@@ -519,11 +522,18 @@ export const decorateCoinflowWithdrawalTransaction = async (
       'usdc'
     )
 
+  // Filter any compute budget instructions since the budget will
+  // definitely change
+  const instructions = transaction.instructions.filter(
+    (instruction) =>
+      !instruction.programId.equals(ComputeBudgetProgram.programId)
+  )
+
   // Find original transfer instruction and index
-  const transferInstructionIndex = transaction.instructions.findIndex(
+  const transferInstructionIndex = instructions.findIndex(
     isTransferCheckedInstruction
   )
-  const transferInstruction = transaction.instructions[transferInstructionIndex]
+  const transferInstruction = instructions[transferInstructionIndex]
   if (!transferInstruction) {
     throw new Error('No transfer instruction found')
   }
@@ -570,7 +580,6 @@ export const decorateCoinflowWithdrawalTransaction = async (
   })
 
   // Remove original transfer instruction and replace with our set of transfer steps
-  const instructions = [...transaction.instructions]
   instructions.splice(
     transferInstructionIndex,
     1,
@@ -579,8 +588,9 @@ export const decorateCoinflowWithdrawalTransaction = async (
     withdrawalMemoInstruction
   )
 
-  const { blockhash, lastValidBlockHeight } =
-    await solanaWeb3Manager.connection.getLatestBlockhash()
+  const { blockhash, lastValidBlockHeight } = await solanaWeb3Manager
+    .getConnection()
+    .getLatestBlockhash()
   const modifiedTransaction = new Transaction({
     blockhash,
     feePayer,
@@ -662,7 +672,9 @@ export const createPaymentRouterRouteTransaction = async (
 ) => {
   const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
     .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager.connection.getLatestBlockhash()
+  const { blockhash } = await solanaWeb3Manager
+    .getConnection()
+    .getLatestBlockhash()
   const [transfer, route] =
     // All the memo related parameters are ignored
     await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
@@ -757,7 +769,7 @@ export const getLookupTableAccounts = async (
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const connection = libs.solanaWeb3Manager!.connection
+  const connection = libs.solanaWeb3Manager!.getConnection()
   return await Promise.all(
     lookupTableAddresses.map(async (address) => {
       const account = await connection.getAddressLookupTable(

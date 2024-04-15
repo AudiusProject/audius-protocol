@@ -23,6 +23,7 @@ export const Text = forwardRef(
       tag,
       asChild,
       textAlign,
+      textTransform,
       ellipses,
       ...other
     } = props
@@ -58,6 +59,7 @@ export const Text = forwardRef(
         textShadow: typography.shadow[shadow]
       }),
       textAlign,
+      ...(textTransform && { textTransform }),
       ...(ellipses && {
         overflow: 'hidden',
         textOverflow: 'ellipsis',

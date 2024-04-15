@@ -67,10 +67,12 @@ const config = {
     splPath
   ],
   resolver: {
+    unstable_enablePackageExports: true,
     assetExts: assetExts.filter((ext) => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],
     extraNodeModules: {
       ...require('node-libs-react-native'),
+
       // Alias for 'src' to allow for absolute paths
       app: path.resolve(__dirname, 'src'),
       '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
