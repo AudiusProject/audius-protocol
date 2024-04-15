@@ -175,6 +175,7 @@ func TestRunE2E(t *testing.T) {
 						IsAlbum:           boolPtr(true),
 						IsPrivate:         nil,
 						UPC:               stringPtr("196871335584"),
+						HasDeal:           true,
 						Tracks: []common.TrackMetadata{
 							{
 								Title:       "Playing With Fire.",
@@ -493,6 +494,9 @@ func TestRunE2E(t *testing.T) {
 						AudioFileURLHash:     stringPtr("5e2994cdd94f14a197283a00387ca451"),
 						AudioFileURLHashAlgo: stringPtr("5e2994cdd94f14a197283a00387ca451"), // TODO: This isn't right
 						Tracks:               nil,
+						IsStreamGated:        false,
+						IsDownloadGated:      false,
+						HasDeal:              true,
 					},
 				},
 			},

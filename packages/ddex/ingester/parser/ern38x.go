@@ -785,9 +785,9 @@ func processDealNode(dNode *xmlquery.Node, release *common.Release) (err error) 
 }
 
 func findParsedReleaseElem(release *common.Release, releaseRef string) (*common.ParsedReleaseElement, bool) {
-	for _, elem := range release.ParsedReleaseElems {
+	for i, elem := range release.ParsedReleaseElems {
 		if elem.ReleaseRef == releaseRef {
-			return &elem, true
+			return &release.ParsedReleaseElems[i], true
 		}
 	}
 	return nil, false

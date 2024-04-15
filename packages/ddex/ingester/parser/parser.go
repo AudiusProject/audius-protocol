@@ -218,14 +218,6 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 				unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
 				return nil, err
 			}
-		} else {
-			for _, track := range parsedRelease.Resources.Tracks {
-				if !track.HasDeal {
-					err = fmt.Errorf("track '%s' on release '%s' (ref %s) does not have a corresponding deal", track.Title, parsedRelease.DisplayTitle, parsedRelease.ReleaseRef)
-					unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-					return nil, err
-				}
-			}
 		}
 		release.ParsedReleaseElems[i] = parsedRelease
 	}
