@@ -37,14 +37,12 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
     let suggestedFollows = relatedArtists
       .filter((user) => !user.does_current_user_follow)
       .slice(0, 5)
-    // TODO: Remove hacks
     if (suggestedFollows.length !== 0) {
       const showTopArtistRecommendationsPercent =
         remoteConfigInstance.getRemoteVar(
           DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT
         ) || 0
-      const showTopArtists =
-        true || Math.random() < showTopArtistRecommendationsPercent
+      const showTopArtists = Math.random() < showTopArtistRecommendationsPercent
 
       if (showTopArtists) {
         suggestedFollows = yield* call(fetchTopArtists)
