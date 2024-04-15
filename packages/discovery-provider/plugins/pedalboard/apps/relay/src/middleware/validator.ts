@@ -182,7 +182,11 @@ export const retrieveUser = async (
     throw new Error('either handle or senderAddress is required')
   }
 
-  const user = await query.andWhere('is_current', '=', true).first()
+  const user = await query
+    .andWhere('is_current', '=', true)
+    .whereNotNull('handle_lc')
+    .orderBy('created_at', 'asc')
+    .first()
   return user
 }
 
