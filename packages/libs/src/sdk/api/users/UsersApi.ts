@@ -41,7 +41,6 @@ import {
   SendTipReactionRequest,
   SendTipReactionRequestSchema
 } from './types'
-import { getReaction } from '../../utils/reactionsMap'
 
 export class UsersApi extends GeneratedUsersApi {
   constructor(

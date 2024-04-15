@@ -25,8 +25,22 @@ const connections = config.solanaEndpoints.map(
   (endpoint) => new Connection(endpoint)
 )
 
-const delay = async (ms: number) => {
-  return await new Promise((resolve) => setTimeout(() => resolve, ms))
+const delay = async (ms: number, options?: { signal: AbortSignal }) => {
+  const signal = options?.signal
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject()
+    }
+    const listener = () => {
+      clearTimeout(timer)
+      reject()
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', listener)
+      resolve()
+    }, ms)
+    signal?.addEventListener('abort', listener)
+  })
 }
 
 const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
@@ -104,54 +118,75 @@ const sendTransactionWithRetries = async ({
   logger: Logger
 }) => {
   const serializedTx = transaction.serialize()
-  const connection = connections[0]
 
-  const createRetryPromise = async (): Promise<void> => {
-    let retryCount = 0
-    while (true) {
+  let retryCount = 0
+  const createRetryPromise = async (signal: AbortSignal): Promise<void> => {
+    while (!signal.aborted) {
+      Promise.any(
+        connections.map((connection) =>
+          connection.sendRawTransaction(serializedTx, {
+            skipPreflight: true,
+            maxRetries: 0,
+            ...sendOptions
+          })
+        )
+      ).catch((error) => {
+        logger.warn({ error, retryCount }, `Failed retry...`)
+      })
       await delay(RETRY_DELAY_MS)
-      // Explicitly not awaited, sent in the background
-      logger.info({ retryCount }, 'Attempting send...')
-      try {
-        Promise.any(
-          connections.map((connection) =>
-            connection.sendRawTransaction(serializedTx, sendOptions)
-          )
-        )
-      } catch (error) {
-        logger.warn(
-          { error, retryCount, rpcEndpoint: connection.rpcEndpoint },
-          `Failed retry...`
-        )
-      }
+      retryCount++
     }
   }
 
-  const createTimeoutPromise = async () => {
+  const createTimeoutPromise = async (signal: AbortSignal) => {
     await delay(RETRY_TIMEOUT_MS)
-    logger.error('Timed out sending transaction')
+    if (!signal.aborted) {
+      logger.error('Timed out sending transaction')
+    }
   }
 
   const start = Date.now()
+  const connection = connections[0]
+  const abortController = new AbortController()
+  try {
+    if (!sendOptions?.skipPreflight) {
+      const simulatedRes = await connection.simulateTransaction(transaction)
+      if (simulatedRes.value.err) {
+        logger.error(
+          { error: simulatedRes.value.err },
+          'Transaction simulation failed'
+        )
+        throw simulatedRes.value.err
+      }
+    }
 
-  const res = await Promise.race([
-    createRetryPromise(),
-    connection.confirmTransaction(confirmationStrategy, commitment),
-    createTimeoutPromise()
-  ])
+    const res = await Promise.race([
+      createRetryPromise(abortController.signal),
+      connection.confirmTransaction(
+        { ...confirmationStrategy, abortSignal: abortController.signal },
+        commitment
+      ),
+      createTimeoutPromise(abortController.signal)
+    ])
 
-  const end = Date.now()
-  const elapsedMs = end - start
-
-  if (!res || res.value.err) {
+    if (!res || res.value.err) {
+      throw res?.value.err ?? 'Transaction polling timed out.'
+    }
+    logger.info({ commitment }, 'Transaction sent successfully')
+    return confirmationStrategy.signature
+  } catch (error) {
+    logger.error({ error }, 'Transaction failed to send')
+    throw error
+  } finally {
+    // Stop the other operations
+    abortController.abort()
+    const end = Date.now()
+    const elapsedMs = end - start
     logger.info(
-      { error: res?.value.err ?? 'timeout', commitment, elapsedMs },
-      'Transaction failed to send'
+      { elapsedMs, retryCount },
+      'sendTransactionWithRetries completed.'
     )
-    throw new Error('Transaction failed to send')
   }
-  logger.info({ commitment, elapsedMs }, 'Transaction sent successfully')
-  return confirmationStrategy.signature
 }
 
 export const relay = async (
@@ -188,7 +223,10 @@ export const relay = async (
     const signature = base58.encode(transaction.signatures[0])
 
     const logger = res.locals.logger.child({ signature })
-    logger.info('Sending transaction...')
+    logger.info(
+      { rpcEndpoints: connections.map((c) => c.rpcEndpoint) },
+      'Sending transaction...'
+    )
     const confirmationStrategy = { ...strategy, signature }
     await sendTransactionWithRetries({
       transaction,
@@ -220,6 +258,11 @@ export const relay = async (
     await forwardTransaction(logger, formattedResponse)
     logger.info('Request finished.')
   } catch (e) {
-    next(e)
+    if (!res.writableEnded && e) {
+      res.status(500).send({ error: e })
+      next()
+    } else {
+      next(e)
+    }
   }
 }

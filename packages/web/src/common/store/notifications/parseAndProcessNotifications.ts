@@ -152,7 +152,11 @@ export function* parseAndProcessNotifications(
       type === NotificationType.USDCPurchaseSeller
     ) {
       userIdsToFetch = new Set([...userIdsToFetch, ...notification.userIds])
-      trackIdsToFetch.add(notification.entityId)
+      if (notification.entityType === Entity.Track) {
+        trackIdsToFetch.add(notification.entityId)
+      } else if (notification.entityType === Entity.Album) {
+        collectionIdsToFetch.add(notification.entityId)
+      }
     }
   })
 
