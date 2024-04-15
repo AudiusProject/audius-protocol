@@ -1,6 +1,8 @@
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
+
 import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+
 import { SaleModalContent } from './SaleModalContent'
 
 const messages = {

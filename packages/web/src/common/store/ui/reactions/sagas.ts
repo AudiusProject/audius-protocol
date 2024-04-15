@@ -42,7 +42,7 @@ const submitReaction = async ({
         userId: account.user_id.toString(),
         metadata: {
           reactedTo,
-          reactionValue: reactionValue ? reactionValue : '😍'
+          reactionValue: reactionValue || '😍'
         }
       })
       return { success: true, error: undefined }
