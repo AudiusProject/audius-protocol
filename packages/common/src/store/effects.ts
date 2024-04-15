@@ -48,7 +48,6 @@ export function* checkSDKMigration<T extends object>({
     return yield* legacyCall
   }
 
-  // TODO: Add feature flagging for running the shadow
   const [legacy, migrated] = yield* all([
     legacyCall,
     call(function* settle() {

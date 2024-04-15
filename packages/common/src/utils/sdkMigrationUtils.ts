@@ -82,6 +82,7 @@ export const compareSDKResponse = <T extends object>(
       migratedValue: migrated
     })
   }
+  console.debug(`SDK Migration succeeded for ${endpointName}`)
 }
 
 const safeAwait = async <T>(promiseOrFn: Promise<T> | (() => Promise<T>)) => {

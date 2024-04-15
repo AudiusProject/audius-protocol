@@ -35,7 +35,7 @@ export type CoverPhotoSizesCids = ImageSizesObjectWithoutOverride<WidthSizes>
 export type CoverPhotoSizes = ImageSizesObject<WidthSizes>
 
 export const coverPhotoSizesCIDsFromSDK = (
-  input: full.CoverPhoto = {}
+  input: full.CoverPhoto
 ): CoverPhotoSizesCids => {
   return [WidthSizes.SIZE_640, WidthSizes.SIZE_2000].reduce((out, size) => {
     out[size] = input[size] ?? null
@@ -44,7 +44,7 @@ export const coverPhotoSizesCIDsFromSDK = (
 }
 
 export const profilePictureSizesCIDsFromSDK = (
-  input: full.ProfilePicture = {}
+  input: full.ProfilePicture
 ): ProfilePictureSizesCids => {
   return [
     SquareSizes.SIZE_1000_BY_1000,

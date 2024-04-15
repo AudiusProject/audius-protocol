@@ -133,7 +133,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.TIKTOK_NATIVE_AUTH]: true,
   [FeatureFlags.PREMIUM_ALBUMS_ENABLED]: false,
   [FeatureFlags.REWARDS_COOLDOWN]: false,
-  // TODO: flip
-  [FeatureFlags.SDK_MIGRATION_SHADOWING]: true,
+  [FeatureFlags.SDK_MIGRATION_SHADOWING]: false,
   [FeatureFlags.DISCOVERY_TIP_REACTIONS]: false
 }

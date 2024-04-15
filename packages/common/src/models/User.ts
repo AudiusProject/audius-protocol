@@ -132,9 +132,12 @@ export const userMetadataFromSDK = (
 
     // Nested Types
     playlist_library: playlistLibraryFromSDK(user.playlist_library) ?? null,
-    cover_photo_cids: coverPhotoSizesCIDsFromSDK(user.cover_photo_cids) ?? null,
-    profile_picture_cids:
-      profilePictureSizesCIDsFromSDK(user.profile_picture_cids) ?? null,
+    cover_photo_cids: user.cover_photo_cids
+      ? coverPhotoSizesCIDsFromSDK(user.cover_photo_cids)
+      : null,
+    profile_picture_cids: user.profile_picture_cids
+      ? profilePictureSizesCIDsFromSDK(user.profile_picture_cids)
+      : null,
 
     // Re-types
     balance: user.balance as StringWei,
