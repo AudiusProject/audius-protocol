@@ -12,7 +12,9 @@ Use audius-docker-compose to run a production DDEX instance. After you've instal
 
 ### Creating a bucket in S3
 1. Create a new bucket in the S3 console with the name `ddex-<env>-<provider>-raw`. Use all the defaults, including "ACLs disabled"
+
 2. Do the same for a bucket named `ddex-<env>-<provider>-crawled`. Use all the defaults, including "ACLs disabled"
+
 3. Create an IAM Policy [here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/policies/create) (or search IAM and click Policies > Create Policy). Select S3.
     * Under `Read` choose `GetObject` and `GetObjectAttributes`.
     * Under `Write` choose `DeleteObject` and `PutObject`.
@@ -22,10 +24,13 @@ Use audius-docker-compose to run a production DDEX instance. After you've instal
     * Click `Add Arn` for object actions, enter the bucket name ending with `raw`, and check the box for `Any object name`.
     * Click `Add Arn` for object actions again, enter the bucket name ending with `crawled`, and check the box for `Any object name`.
     * Click Next, and then name the policy `ddex-<env>-<provider>-policy`.
+
 4. Create an IAM User [here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/users/create) (or search IAM and click Users > Create User).
     * Name the user `ddex-<env>-<provider>-user` and press Next.
     * Select "Attach policies directly," and search for the policy you created (`ddex-<env>-<provider>-policy`). Check the box next to it and press Next and then Create User.
-5. Search for your new user and press "Create access key" and then "Third-party service." Copy the access key and secret access key into your `.env` file (assuming you've already done `cp .env.[dev|stage] .env`).
+
+5. Search for your new user and press "Create access key" and then "Third-party service." Copy the access key and secret access key into your `.env` file (assuming you've already done `cp .env.[dev|stage] .env`). Do not share this access key externally.
+
 6. Go back to the bucket ending with `raw`, and add CORS at the bottom of the Permissions tab. Here's an example for dev, but for a prod environment you'll want to replace "*" in "AllowedOrigins" with the DNS that the frontend will be served from:
 ```json
 [
@@ -46,7 +51,7 @@ Use audius-docker-compose to run a production DDEX instance. After you've instal
 
 ### [Optional] Sharing external S3 access for direct upload
 
-Unless the provider has elected to upload directly to S3, you may skip these steps.
+If the provider wishes to use admin UI to deliver releases, you may skip these steps.
 
 1. If external access to deliver files directly into S3 is required, create another IAM Policy following step 3 above, with the following: 
     * Under `Read` choose `GetObject` and `GetObjectAttributes`.
