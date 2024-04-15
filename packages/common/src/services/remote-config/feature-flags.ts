@@ -58,6 +58,8 @@ export enum FeatureFlags {
   TIKTOK_NATIVE_AUTH = 'tiktok_native_auth',
   PREMIUM_ALBUMS_ENABLED = 'premium_albums_enabled',
   REWARDS_COOLDOWN = 'rewards_cooldown',
+  USE_SDK_TIPS = 'use_sdk_tips',
+  USE_SDK_REWARDS = 'use_sdk_rewards',
   DISCOVERY_TIP_REACTIONS = 'discovery_tip_reactions'
 }
 
@@ -132,5 +134,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.TIKTOK_NATIVE_AUTH]: true,
   [FeatureFlags.PREMIUM_ALBUMS_ENABLED]: false,
   [FeatureFlags.REWARDS_COOLDOWN]: false,
+  [FeatureFlags.USE_SDK_TIPS]: false,
+  [FeatureFlags.USE_SDK_REWARDS]: false,
   [FeatureFlags.DISCOVERY_TIP_REACTIONS]: false
 }
