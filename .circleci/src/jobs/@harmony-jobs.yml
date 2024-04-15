@@ -53,6 +53,7 @@ harmony-test-storybook:
     - run:
         name: test storybook
         command: |
+          npx playwright install
           npx turbo run test --filter=@audius/harmony
 
 harmony-deploy-storybook:
