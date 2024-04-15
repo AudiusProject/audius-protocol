@@ -56,7 +56,7 @@ export const Box = styled.div<BoxProps>(
       height: spacing[h as SpacingOptions] ?? h,
       width: spacing[w as SpacingOptions] ?? w,
       boxShadow: shadow && shadows[shadow],
-      paddingTop: padT && spacing[padT],
+      paddingTop: (padT && spacing[padT as SpacingOptions]) ?? padT,
       paddingLeft: padL && spacing[padL],
       paddingRight: padR && spacing[padR],
       paddingBottom: padB && spacing[padB],
