@@ -40,7 +40,7 @@ export const AlbumTrackRemoveConfirmationModal = () => {
       dispatch(
         cacheCollectionsActions.removeTrackFromPlaylist(
           trackId,
-          playlistId as number,
+          playlistId,
           timestamp
         )
       )
