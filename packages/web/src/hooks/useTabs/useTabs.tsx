@@ -21,7 +21,6 @@ import { throttle } from 'lodash'
 import { animated, useTransition, useSpring } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import { ClientOnly } from 'components/client-only/ClientOnly'
 import { SeoLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
 
@@ -269,21 +268,20 @@ const TabBar = memo(
           }
 
           return (
-            <ClientOnly key={i}>
-              <Tooltip
-                text={tab.disabledTooltipText || disabledTabTooltipText}
-                placement='bottom'
-                disabled={!tooltipActive}
-              >
-                {to && pathname ? (
-                  <SeoLink {...rootProps} to={`${pathname}/${to}`}>
-                    {tabElement}
-                  </SeoLink>
-                ) : (
-                  <div {...rootProps}>{tabElement}</div>
-                )}
-              </Tooltip>
-            </ClientOnly>
+            <Tooltip
+              text={tab.disabledTooltipText || disabledTabTooltipText}
+              placement='bottom'
+              disabled={!tooltipActive}
+              key={i}
+            >
+              {to && pathname ? (
+                <SeoLink {...rootProps} to={`${pathname}/${to}`}>
+                  {tabElement}
+                </SeoLink>
+              ) : (
+                <div {...rootProps}>{tabElement}</div>
+              )}
+            </Tooltip>
           )
         })}
       </div>

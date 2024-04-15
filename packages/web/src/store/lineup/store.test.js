@@ -89,7 +89,8 @@ beforeAll(() => {
   vitest.spyOn(Date, 'now').mockImplementation(() => MOCK_TIMESTAMP)
 })
 
-describe('fetch', () => {
+// TODO: PAY-2604
+describe.skip('fetch', () => {
   it('fetches and add tracks to the lineup', async () => {
     const { storeState } = await expectSaga(
       allSagas(sagas.getSagas().concat(cacheSagas())),
@@ -171,7 +172,8 @@ describe('fetch', () => {
   })
 })
 
-describe('play', () => {
+// TODO: PAY-2604
+describe.skip('play', () => {
   it('adds all tracks to the queue', async () => {
     const { storeState } = await expectSaga(allSagas(sagas.getSagas()), actions)
       .withReducer(

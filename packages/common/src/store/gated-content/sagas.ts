@@ -14,13 +14,13 @@ import {
   ID,
   Kind,
   Name,
-  GatedTrackStatus,
   Track,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  NFTAccessSignature
+  NFTAccessSignature,
+  GatedContentStatus
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -33,6 +33,10 @@ import { usersSocialActions } from '~/store/social'
 import { tippingActions } from '~/store/tipping'
 import { Nullable } from '~/utils/typeUtils'
 
+import { getCollection } from '../cache/collections/selectors'
+import { getTrack } from '../cache/tracks/selectors'
+import { PurchaseableContentType } from '../purchase-content'
+
 import * as gatedContentSelectors from './selectors'
 import { actions as gatedContentActions } from './slice'
 
@@ -41,8 +45,8 @@ const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
 const {
   updateNftAccessSignatures,
   revokeAccess,
-  updateGatedTrackStatus,
-  updateGatedTrackStatuses,
+  updateGatedContentStatus,
+  updateGatedContentStatuses,
   addFolloweeId,
   removeFolloweeId,
   addTippedUserId,
@@ -104,19 +108,21 @@ function* getTokenIdMap({
   // Build a set of sol nft collection mint addresses
   const solCollectionMintSet: Set<string> = new Set()
   solCollectibles.forEach((c: Collectible) => {
-    if (!c.solanaChainMetadata) return
-
-    // "If the Collection field is set, it means the NFT is part of the collection specified within that field."
-    // https://docs.metaplex.com/programs/token-metadata/certified-collections#linking-regular-nfts-to-collection-nfts
-    const { collection } = c.solanaChainMetadata
-    if (collection?.verified) {
-      // Weirdly enough, sometimes the key is a string, and other times it's a PublicKey
-      // even though the @metaplex-foundation collection type defines it as a web3.PublicKey
-      const mintKey =
-        typeof collection.key === 'string'
-          ? collection.key
-          : collection.key.toBase58()
-      solCollectionMintSet.add(mintKey)
+    if (c.heliusCollection) {
+      solCollectionMintSet.add(c.heliusCollection.address)
+    } else if (c.solanaChainMetadata) {
+      // "If the Collection field is set, it means the NFT is part of the collection specified within that field."
+      // https://docs.metaplex.com/programs/token-metadata/certified-collections#linking-regular-nfts-to-collection-nfts
+      const { collection } = c.solanaChainMetadata
+      if (collection?.verified) {
+        // Weirdly enough, sometimes the key is a string, and other times it's a PublicKey
+        // even though the @metaplex-foundation collection type defines it as a web3.PublicKey
+        const mintKey =
+          typeof collection.key === 'string'
+            ? collection.key
+            : collection.key.toBase58()
+        solCollectionMintSet.add(mintKey)
+      }
     }
   })
 
@@ -183,7 +189,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
   const followeeIds = yield* select(getFolloweeIds)
   const tippedUserIds = yield* select(getTippedUserIds)
 
-  const statusMap: { [id: ID]: GatedTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedContentStatus } = {}
 
   const tracksThatNeedSignature = Object.values(tracks).filter((track) => {
     const {
@@ -227,13 +233,14 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
     return false
   })
 
-  yield* put(updateGatedTrackStatuses(statusMap))
+  yield* put(updateGatedContentStatuses(statusMap))
 
   yield* all(
     tracksThatNeedSignature.map((track) => {
       const trackId = track.track_id
-      return call(pollGatedTrack, {
-        trackId,
+      return call(pollGatedContent, {
+        contentId: trackId,
+        contentType: PurchaseableContentType.TRACK,
         currentUserId,
         isSourceTrack: false
       })
@@ -316,7 +323,7 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
  *   make a request to DN which confirms that user owns the corresponding nft collections by
  *   returning corresponding stream and download signatures.
  */
-function* updateGatedTrackAccess(
+function* updateGatedContentAccess(
   action:
     | ReturnType<typeof updateUserEthCollectibles>
     | ReturnType<typeof updateUserSolCollectibles>
@@ -405,14 +412,16 @@ function* updateGatedTrackAccess(
   yield* call(updateCollectibleGatedTracks, trackMap)
 }
 
-export function* pollGatedTrack({
-  trackId,
+export function* pollGatedContent({
+  contentId,
+  contentType,
   currentUserId,
   isSourceTrack
 }: {
-  trackId: ID
+  contentId: ID
+  contentType: PurchaseableContentType
   currentUserId: number
-  isSourceTrack: boolean
+  isSourceTrack?: boolean
 }) {
   const analytics = yield* getContext('analytics')
   const apiClient = yield* getContext('apiClient')
@@ -423,94 +432,112 @@ export function* pollGatedTrack({
     DEFAULT_GATED_TRACK_POLL_INTERVAL_MS
 
   // get initial track metadata to determine whether we are polling for stream or download access
-  const cachedTracks = yield* select(getTracks, {
-    ids: [trackId]
-  })
-  const initialTrack = cachedTracks[trackId]
-  const initiallyHadNoStreamAccess = !initialTrack?.access.stream
-  const initiallyHadNoDownloadAccess = !initialTrack?.access.download
+  const isAlbum = contentType === PurchaseableContentType.ALBUM
+  const cachedEntity = isAlbum
+    ? yield* select(getCollection, { id: contentId })
+    : yield* select(getTrack, {
+        id: contentId
+      })
+  const initiallyHadNoStreamAccess = !cachedEntity?.access.stream
+  const initiallyHadNoDownloadAccess = !cachedEntity?.access.download
 
   // poll for access until it is granted
   while (true) {
-    const track = yield* call([apiClient, 'getTrack'], {
-      id: trackId,
-      currentUserId
-    })
-    const currentlyHasStreamAccess = !!track?.access?.stream
-    const currentlyHasDownloadAccess = !!track?.access?.download
+    const apiEntity = isAlbum
+      ? (yield* call([apiClient, 'getPlaylist'], {
+          playlistId: contentId,
+          currentUserId
+        }))[0]
+      : yield* call([apiClient, 'getTrack'], {
+          id: contentId,
+          currentUserId
+        })
 
-    if (initiallyHadNoStreamAccess && currentlyHasStreamAccess) {
-      yield* put(
-        cacheActions.update(Kind.TRACKS, [
-          {
-            id: trackId,
-            metadata: {
-              access: track.access
-            }
-          }
-        ])
+    if (!apiEntity?.access) {
+      throw new Error(
+        `Could not retrieve entity with access for ${contentType} ${contentId}`
       )
-      yield* put(updateGatedTrackStatus({ trackId, status: 'UNLOCKED' }))
-      // note: if necessary, update some ui status to show that the track download is unlocked
-      yield* put(removeFolloweeId({ id: track.owner_id }))
-      yield* put(removeTippedUserId({ id: track.owner_id }))
+    }
 
-      // Show confetti if track is unlocked from the how to unlock section on track page or modal
+    const ownerId =
+      'playlist_owner_id' in apiEntity // isAlbum
+        ? apiEntity.playlist_owner_id
+        : apiEntity.owner_id
+
+    const currentlyHasStreamAccess = !!apiEntity.access.stream
+    const currentlyHasDownloadAccess = !!apiEntity.access.download
+
+    yield* put(
+      cacheActions.update(isAlbum ? Kind.COLLECTIONS : Kind.TRACKS, [
+        {
+          id: contentId,
+          metadata: {
+            access: apiEntity.access
+          }
+        }
+      ])
+    )
+    if (initiallyHadNoStreamAccess && currentlyHasStreamAccess) {
+      yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKED' }))
+      // note: if necessary, update some ui status to show that the download is unlocked
+      yield* put(removeFolloweeId({ id: ownerId }))
+      yield* put(removeTippedUserId({ id: ownerId }))
+
+      // Show confetti if track is unlocked from the how to unlock section on track/collection page or modal
       if (isSourceTrack) {
         yield* put(showConfetti())
       }
 
-      if (!track.stream_conditions) {
+      if (!apiEntity.stream_conditions) {
         return
       }
-      const eventName = isContentUSDCPurchaseGated(track.stream_conditions)
-        ? Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
-        : isContentFollowGated(track.stream_conditions)
-        ? Name.FOLLOW_GATED_TRACK_UNLOCKED
-        : isContentTipGated(track.stream_conditions)
-        ? Name.TIP_GATED_TRACK_UNLOCKED
-        : null
+
+      // TODO: Add separate analytics names for gated albums
+      const eventName =
+        !isAlbum &&
+        (isContentUSDCPurchaseGated(apiEntity.stream_conditions)
+          ? Name.USDC_PURCHASE_GATED_TRACK_UNLOCKED
+          : isContentFollowGated(apiEntity.stream_conditions)
+          ? Name.FOLLOW_GATED_TRACK_UNLOCKED
+          : isContentTipGated(apiEntity.stream_conditions)
+          ? Name.TIP_GATED_TRACK_UNLOCKED
+          : null)
       if (eventName) {
         analytics.track({
           eventName,
           properties: {
-            trackId
+            contentId
           }
         })
       }
       break
     } else if (initiallyHadNoDownloadAccess && currentlyHasDownloadAccess) {
-      yield* put(
-        cacheActions.update(Kind.TRACKS, [
-          {
-            id: trackId,
-            metadata: {
-              access: track.access
-            }
-          }
-        ])
-      )
       // note: if necessary, update some ui status to show that the track download is unlocked
-      yield* put(removeFolloweeId({ id: track.owner_id }))
+      yield* put(removeFolloweeId({ id: ownerId }))
 
       // Show confetti if track is unlocked from the how to unlock section on track page or modal
       if (isSourceTrack) {
         yield* put(showConfetti())
       }
 
-      if (!track.download_conditions) {
+      if (
+        !('download_conditions' in apiEntity) ||
+        !apiEntity.download_conditions
+      ) {
         return
       }
-      const eventName = isContentUSDCPurchaseGated(track.download_conditions)
-        ? Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
-        : isContentFollowGated(track.download_conditions)
-        ? Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
-        : null
+      const eventName =
+        !isAlbum &&
+        (isContentUSDCPurchaseGated(apiEntity.download_conditions)
+          ? Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
+          : isContentFollowGated(apiEntity.download_conditions)
+          ? Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
+          : null)
       if (eventName) {
         analytics.track({
           eventName,
           properties: {
-            trackId
+            contentId
           }
         })
       }
@@ -542,7 +569,7 @@ function* updateSpecialAccessTracks(
     yield* put(addTippedUserId({ id: trackOwnerId }))
   }
 
-  const statusMap: { [id: ID]: GatedTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedContentStatus } = {}
   const tracksToPoll: Set<ID> = new Set()
   const cachedTracks = yield* select(getTracks, {})
 
@@ -571,12 +598,13 @@ function* updateSpecialAccessTracks(
     }
   })
 
-  yield* put(updateGatedTrackStatuses(statusMap))
+  yield* put(updateGatedContentStatuses(statusMap))
 
   yield* all(
     Array.from(tracksToPoll).map((trackId) => {
-      return call(pollGatedTrack, {
-        trackId,
+      return call(pollGatedContent, {
+        contentId: trackId,
+        contentType: PurchaseableContentType.TRACK,
         currentUserId,
         isSourceTrack: sourceTrackId === trackId
       })
@@ -596,7 +624,7 @@ function* handleUnfollowUser(
   // polling their newly loaded follow gated track signatures.
   yield* put(removeFolloweeId({ id: action.userId }))
 
-  const statusMap: { [id: ID]: GatedTrackStatus } = {}
+  const statusMap: { [id: ID]: GatedContentStatus } = {}
   const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
   const cachedTracks = yield* select(getTracks, {})
 
@@ -619,7 +647,7 @@ function* handleUnfollowUser(
     }
   })
 
-  yield* put(updateGatedTrackStatuses(statusMap))
+  yield* put(updateGatedContentStatuses(statusMap))
   yield* put(revokeAccess({ revokeAccessMap }))
 }
 
@@ -673,7 +701,7 @@ function* watchGatedTracks() {
       updateUserEthCollectibles.type,
       updateUserSolCollectibles.type
     ],
-    updateGatedTrackAccess
+    updateGatedContentAccess
   )
 }
 

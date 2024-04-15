@@ -15,7 +15,9 @@ import {
   CollectionsPageType,
   CollectionPageTrackRecord
 } from '@audius/common/store'
+import { getDogEarType } from '@audius/common/utils'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import {
   CollectiblesPlaylistTableColumn,
   CollectiblesPlaylistTable
@@ -111,7 +113,7 @@ const CollectionPage = ({
   allowReordering,
   playing,
   type,
-  collection: { status, metadata, user },
+  collection,
   tracks,
   userId,
   getFilteredData,
@@ -127,7 +129,11 @@ const CollectionPage = ({
   onClickReposts,
   onClickFavorites
 }: CollectionPageProps) => {
+  const { status, metadata, user } = collection
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const [dataSource, playingIndex] =
@@ -167,8 +173,15 @@ const CollectionPage = ({
     metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
   const customEmptyText =
     metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
+  const access =
+    metadata !== null && 'access' in metadata ? metadata?.access : null
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
+
+  const isStreamGated =
+    metadata && 'is_stream_gated' in metadata && metadata?.is_stream_gated
+  const streamConditions =
+    metadata && 'stream_conditions' in metadata && metadata?.stream_conditions
 
   const {
     isEmpty,
@@ -183,9 +196,19 @@ const CollectionPage = ({
   const numTracks = tracks.entries.length
   const areAllTracksDeleted = tracks.entries.every((track) => track.is_delete)
   const isPlayable = !areAllTracksDeleted && numTracks > 0
+  const dogEarType =
+    (!collectionLoading &&
+      isStreamGated &&
+      streamConditions &&
+      getDogEarType({
+        streamConditions,
+        isUnlisted: isPrivate
+      })) ||
+    undefined
 
   const topSection = (
     <CollectionHeader
+      access={access}
       collectionId={playlistId}
       userId={playlistOwnerId}
       loading={isNftPlaylist ? tracksLoading : collectionLoading}
@@ -216,6 +239,17 @@ const CollectionPage = ({
       gradient={gradient}
       icon={icon}
       imageOverride={imageOverride}
+      ownerId={playlistOwnerId}
+      isStreamGated={
+        metadata?.variant === Variant.USER_GENERATED
+          ? metadata?.is_stream_gated
+          : null
+      }
+      streamConditions={
+        metadata?.variant === Variant.USER_GENERATED
+          ? metadata?.stream_conditions
+          : null
+      }
     />
   )
 
@@ -250,13 +284,20 @@ const CollectionPage = ({
       structuredData={structuredData}
       containerClassName={styles.pageContainer}
       contentClassName={styles.pageContent}
+      fromOpacity={1}
       scrollableSearch
     >
       <Tile
         className={styles.bodyWrapper}
         size='large'
         elevation='mid'
-        dogEar={isPrivate ? DogEarType.HIDDEN : undefined}
+        dogEar={
+          isPremiumAlbumsEnabled
+            ? dogEarType
+            : isPrivate
+            ? DogEarType.HIDDEN
+            : undefined
+        }
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
@@ -267,42 +308,46 @@ const CollectionPage = ({
           />
         ) : (
           <div className={styles.tableWrapper}>
-            <TableComponent
-              // @ts-ignore
-              columns={tracksTableColumns}
-              wrapperClassName={styles.tracksTableWrapper}
-              key={playlistName}
-              loading={isNftPlaylist ? collectionLoading : tracksLoading}
-              userId={userId}
-              playing={playing}
-              playingIndex={playingIndex}
-              data={dataSource}
-              onClickRow={onClickRow}
-              onClickFavorite={onClickSave}
-              onClickRemove={isOwner ? onClickRemove : undefined}
-              onClickRepost={onClickRepostTrack}
-              onReorderTracks={onReorderTracks}
-              onSortTracks={onSortTracks}
-              isReorderable={
-                userId !== null &&
-                userId === playlistOwnerId &&
-                allowReordering &&
-                (!isAlbum || isEditAlbumsEnabled)
-              }
-              removeText={`${messages.remove} ${
-                isAlbum ? messages.type.album : messages.type.playlist
-              }`}
-              isAlbumPage={isAlbum}
-            />
+            <ClientOnly>
+              <TableComponent
+                // @ts-ignore
+                columns={tracksTableColumns}
+                wrapperClassName={styles.tracksTableWrapper}
+                key={playlistName}
+                loading={isNftPlaylist ? collectionLoading : tracksLoading}
+                userId={userId}
+                playing={playing}
+                playingIndex={playingIndex}
+                data={dataSource}
+                onClickRow={onClickRow}
+                onClickFavorite={onClickSave}
+                onClickRemove={isOwner ? onClickRemove : undefined}
+                onClickRepost={onClickRepostTrack}
+                onReorderTracks={onReorderTracks}
+                onSortTracks={onSortTracks}
+                isReorderable={
+                  userId !== null &&
+                  userId === playlistOwnerId &&
+                  allowReordering &&
+                  (!isAlbum || isEditAlbumsEnabled)
+                }
+                removeText={`${messages.remove} ${
+                  isAlbum ? messages.type.album : messages.type.playlist
+                }`}
+                isAlbumPage={isAlbum}
+              />
+            </ClientOnly>
           </div>
         )}
       </Tile>
-      {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
-        <>
-          <Divider variant='default' className={styles.tileDivider} />
-          <SuggestedCollectionTracks collectionId={playlistId} />
-        </>
-      ) : null}
+      <ClientOnly>
+        {isOwner && (!isAlbum || isEditAlbumsEnabled) && !isNftPlaylist ? (
+          <>
+            <Divider variant='default' className={styles.tileDivider} />
+            <SuggestedCollectionTracks collectionId={playlistId} />
+          </>
+        ) : null}
+      </ClientOnly>
     </Page>
   )
 }

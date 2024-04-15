@@ -365,17 +365,25 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
 
         elif key == "indirect_resource_contributors":
             if "indirect_resource_contributors" in track_metadata:
-                indirect_resource_contributors = track_metadata["indirect_resource_contributors"]
-                if indirect_resource_contributors and isinstance(indirect_resource_contributors, list):
+                indirect_resource_contributors = track_metadata[
+                    "indirect_resource_contributors"
+                ]
+                if indirect_resource_contributors and isinstance(
+                    indirect_resource_contributors, list
+                ):
                     valid = True
                     for contributor in indirect_resource_contributors:
                         if not isinstance(contributor, dict):
                             valid = False
                             break
                     if valid:
-                        track_record.indirect_resource_contributors = indirect_resource_contributors
+                        track_record.indirect_resource_contributors = (
+                            indirect_resource_contributors
+                        )
                 elif indirect_resource_contributors is None:
-                    track_record.indirect_resource_contributors = indirect_resource_contributors
+                    track_record.indirect_resource_contributors = (
+                        indirect_resource_contributors
+                    )
 
         elif key == "rights_controller":
             if "rights_controller" in track_metadata and (
@@ -396,7 +404,9 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 is_valid_json_field(track_metadata, "producer_copyright_line")
                 or track_metadata["producer_copyright_line"] is None
             ):
-                track_record.producer_copyright_line = track_metadata["producer_copyright_line"]
+                track_record.producer_copyright_line = track_metadata[
+                    "producer_copyright_line"
+                ]
 
         else:
             # For most fields, update the track_record when the corresponding field exists
@@ -513,6 +523,10 @@ def create_track(params: ManageEntityParameters):
     track_id = params.entity_id
     owner_id = params.user_id
 
+    ddex_app = None
+    if is_ddex_signer(params.signer):
+        ddex_app = params.signer
+
     track_record = Track(
         track_id=track_id,
         owner_id=owner_id,
@@ -523,10 +537,8 @@ def create_track(params: ManageEntityParameters):
         updated_at=params.block_datetime,
         release_date=str(params.block_datetime),  # type: ignore
         is_delete=False,
+        ddex_app=ddex_app,
     )
-
-    if is_ddex_signer(params.signer):
-        track_record.ddex_app = params.signer
 
     update_track_routes_table(
         params, track_record, params.metadata, params.pending_track_routes

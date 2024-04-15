@@ -36,7 +36,6 @@ import {
   FailureReason,
   ID,
   Name,
-  PlaylistTrackId,
   ProfilePictureSizes,
   SquareSizes,
   StringUSDC,
@@ -1484,34 +1483,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function deleteAlbum(playlistId: ID, trackIds: PlaylistTrackId[]) {
-    try {
-      console.debug(
-        `Deleting Album ${playlistId}, tracks: ${JSON.stringify(
-          trackIds.map((t) => t.track)
-        )}`
-      )
-
-      const trackDeletionPromises = trackIds.map((t) =>
-        audiusLibs.Track.deleteTrack(t.track)
-      )
-      const playlistDeletionPromise =
-        audiusLibs.EntityManager.deletePlaylist(playlistId)
-      const results = await Promise.all(
-        trackDeletionPromises.concat(playlistDeletionPromise)
-      )
-      const deleteTrackReceipts = results.slice(0, -1).map((r) => r.txReceipt)
-      const deletePlaylistReceipt = results.slice(-1)[0].txReceipt
-
-      return getLatestTxReceipt(
-        deleteTrackReceipts.concat(deletePlaylistReceipt)
-      )
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   // TODO(C-2719)
   async function getSavedTracks(limit = 100, offset = 0) {
     try {
@@ -1904,20 +1875,35 @@ export const audiusBackend = ({
         reactionValue: data.reaction_value,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'track_added_to_purchased_album') {
+      let trackId = 0
+      let playlistId = 0
+      let playlistOwnerId = 0
+      notification.actions.filter(removeNullable).forEach((action) => {
+        const { data } = action
+        if (data.track_id && data.playlist_id && data.playlist_owner_id) {
+          trackId = decodeHashId(data.track_id) as ID
+          playlistId = decodeHashId(data.playlist_id) as ID
+          playlistOwnerId = decodeHashId(data.playlist_owner_id) as ID
+        }
+      })
+      return {
+        type: NotificationType.TrackAddedToPurchasedAlbum,
+        trackId,
+        playlistId,
+        playlistOwnerId,
+        ...formatBaseNotification(notification)
+      }
     } else if (notification.type === 'track_added_to_playlist') {
       let trackId = 0
       let playlistId = 0
       let playlistOwnerId = 0
       notification.actions.filter(removeNullable).forEach((action) => {
-        const data = action.data
-        if (data.track_id && data.playlist_id) {
-          trackId = data.track_id ? (decodeHashId(data.track_id) as ID) : 0
-          playlistId = data.playlist_id
-            ? (decodeHashId(data.playlist_id) as ID)
-            : 0
-          playlistOwnerId = data.playlist_owner_id
-            ? (decodeHashId(data.playlist_owner_id) as ID)
-            : 0
+        const { data } = action
+        if (data.track_id && data.playlist_id && data.playlist_owner_id) {
+          trackId = decodeHashId(data.track_id) as ID
+          playlistId = decodeHashId(data.playlist_id) as ID
+          playlistOwnerId = decodeHashId(data.playlist_owner_id) as ID
         }
       })
       return {
@@ -2202,7 +2188,8 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.content_id) as number
-          entityType = Entity.Track
+          entityType =
+            data.content_type === 'track' ? Entity.Track : Entity.Album
           amount = data.amount
           extraAmount = data.extra_amount
           return decodeHashId(data.buyer_user_id)
@@ -2224,7 +2211,8 @@ export const audiusBackend = ({
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.content_id) as number
-          entityType = Entity.Track
+          entityType =
+            data.content_type === 'track' ? Entity.Track : Entity.Album
           return decodeHashId(data.seller_user_id)
         })
         .filter(removeNullable)
@@ -3059,12 +3047,12 @@ export const audiusBackend = ({
         solanaWalletKey: SolanaUtils.newPublicKeyNullable(address),
         mintKey: audiusLibs.solanaWeb3Manager.mints.audio,
         solanaTokenProgramKey: audiusLibs.solanaWeb3Manager.solanaTokenKey,
-        connection: audiusLibs.solanaWeb3Manager.connection
+        connection: audiusLibs.solanaWeb3Manager.getConnection()
       })
       const { signature } = await window.solana.signAndSendTransaction(tx)
-      await audiusLibs.solanaWeb3Manager.connection.confirmTransaction(
-        signature
-      )
+      await audiusLibs.solanaWeb3Manager
+        .getConnection()
+        .confirmTransaction(signature)
     }
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }
@@ -3265,7 +3253,6 @@ export const audiusBackend = ({
     createPlaylist,
     currentDiscoveryProvider,
     dangerouslySetPlaylistOrder,
-    deleteAlbum,
     deletePlaylist,
     deletePlaylistTrack,
     deleteTrack,

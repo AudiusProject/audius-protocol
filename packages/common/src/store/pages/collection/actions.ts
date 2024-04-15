@@ -1,10 +1,19 @@
 import { ID, SmartCollectionVariant, UID } from '../../../models'
 
-export const FETCH_COLLECTION = 'FETCH_COLLECTION'
-export const FETCH_COLLECTION_SUCCEEDED = 'FETCH_COLLECTION_SUCCEEDED'
-export const FETCH_COLLECTION_FAILED = 'FETCH_COLLECTION_FAILED'
-export const RESET_COLLECTION = 'RESET_COLLECTION'
-export const SET_SMART_COLLECTION = 'SET_SMART_COLLECTION'
+export const SET_IS_INITIAL_FETCH_AFTER_SSR =
+  'COLLECTION/SET_IS_INITIAL_FETCH_AFTER_SSR'
+
+export const FETCH_COLLECTION = 'COLLECTION/FETCH_COLLECTION'
+export const FETCH_COLLECTION_SUCCEEDED =
+  'COLLECTION/FETCH_COLLECTION_SUCCEEDED'
+export const FETCH_COLLECTION_FAILED = 'COLLECTION/FETCH_COLLECTION_FAILED'
+export const RESET_COLLECTION = 'COLLECTION/RESET_COLLECTION'
+export const SET_SMART_COLLECTION = 'COLLECTION/SET_SMART_COLLECTION'
+
+export type SetIsInitialFetchAfterSSRAction = {
+  type: typeof SET_IS_INITIAL_FETCH_AFTER_SSR
+  isInitialFetchAfterSsr: boolean
+}
 
 export type FetchCollectionAction = {
   type: typeof FETCH_COLLECTION
@@ -43,6 +52,7 @@ export type CollectionPageAction =
   | FetchCollectionFailedAction
   | ResetCollectionAction
   | SetSmartCollectionAction
+  | SetIsInitialFetchAfterSSRAction
 
 export const fetchCollection = (
   id: number | null,
@@ -89,4 +99,11 @@ export const setSmartCollection = (
 ): SetSmartCollectionAction => ({
   type: SET_SMART_COLLECTION,
   smartCollectionVariant
+})
+
+export const setIsInitialFetchAfterSsr = (
+  isInitialFetchAfterSsr: boolean
+): SetIsInitialFetchAfterSSRAction => ({
+  type: SET_IS_INITIAL_FETCH_AFTER_SSR,
+  isInitialFetchAfterSsr
 })

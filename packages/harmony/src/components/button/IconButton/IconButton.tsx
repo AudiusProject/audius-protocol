@@ -37,14 +37,32 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       ...other
     } = props
     const { disabled } = other
-    const { color, cornerRadius, spacing } = useTheme()
+    const { color, cornerRadius, spacing, motion } = useTheme()
 
     const buttonCss: CSSObject = {
       background: 'transparent',
       border: 'none',
       borderRadius: '50%',
       padding: spacing.xs,
-      overflow: 'unset'
+      overflow: 'unset',
+      svg: {
+        transition: `
+        transform ${motion.hover},
+        color ${motion.hover}
+        `
+      },
+      '&:hover': {
+        transform: 'scale(1.0)',
+        svg: {
+          transform: 'scale(1.1)'
+        }
+      },
+      '&:active': {
+        transform: 'scale(1.0)',
+        svg: {
+          transform: 'scale(0.98)'
+        }
+      }
     }
 
     const rippleCss: CSSObject = {

@@ -73,6 +73,7 @@ export type OwnProps = {
   includeAddToPlaylist?: boolean
   includeArtistPick?: boolean
   includeEdit?: boolean
+  ddexApp?: string | null
   includeEmbed?: boolean
   includeFavorite?: boolean
   includeRepost?: boolean
@@ -121,6 +122,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       includeAddToPlaylist,
       includeArtistPick,
       includeEdit,
+      ddexApp,
       includeEmbed,
       includeFavorite,
       includeRepost,
@@ -313,7 +315,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (handle && !isOwnerDeactivated) {
       menu.items.push(artistPageMenuItem)
     }
-    if (includeEdit && isOwner && !isDeleted) {
+    if (includeEdit && isOwner && !isDeleted && !ddexApp) {
       menu.items.push(editTrackMenuItem)
     }
     if (extraMenuItems && extraMenuItems.length > 0) {

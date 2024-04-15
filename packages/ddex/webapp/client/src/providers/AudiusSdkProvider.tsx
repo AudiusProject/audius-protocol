@@ -57,10 +57,10 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
     // Determine config to use
     let config = developmentConfig as ServicesConfig
     let initialSelectedNode = 'http://audius-protocol-discovery-provider-1'
-    if (envVars.env === 'prod') {
+    if (envVars.env === 'production') {
       config = productionConfig as ServicesConfig
       initialSelectedNode = 'https://discoveryprovider.audius.co'
-    } else if (envVars.env === 'stage') {
+    } else if (envVars.env === 'staging') {
       config = stagingConfig as ServicesConfig
       initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
     } else {
@@ -119,7 +119,7 @@ export const AudiusSdkProvider = ({ children }: { children: ReactNode }) => {
 
     let env: OAuthEnv = 'production'
     if (
-      envVars.env === 'stage' ||
+      envVars.env === 'staging' ||
       initialSelectedNode === 'https://discoveryprovider.staging.audius.co'
     ) {
       env = 'staging'

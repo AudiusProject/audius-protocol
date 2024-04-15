@@ -10,7 +10,6 @@ import { useSelector } from 'react-redux'
 
 import { IconImage } from '@audius/harmony-native'
 import { Button, Text } from 'app/components/core'
-import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, typography } from 'app/styles'
 
@@ -19,14 +18,10 @@ import { ListSelectionScreen } from './ListSelectionScreen'
 const messages = {
   collections: 'COLLECTIONS',
   searchCollections: 'Search Collections',
-  compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.',
   done: 'Done'
 }
 
-const { getSupportedUserCollections, getHasUnsupportedCollection } =
-  collectiblesSelectors
+const { getSupportedUserCollections } = collectiblesSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   item: {
@@ -59,9 +54,8 @@ export const NFTCollectionsScreen = () => {
   const navigation = useNavigation()
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
-  const { ethCollectionMap, solCollectionMap, collectionImageMap } =
+  const { isLoading, ethCollectionMap, solCollectionMap, collectionImageMap } =
     useSelector(getSupportedUserCollections)
-  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
 
   const ethCollectibleItems = useMemo(() => {
     return Object.keys(ethCollectionMap)
@@ -152,20 +146,6 @@ export const NFTCollectionsScreen = () => {
     }
   }, [streamConditions, navigation])
 
-  const renderFooter = useCallback(() => {
-    return hasUnsupportedCollection ? (
-      <HelpCallout
-        style={styles.unsupported}
-        content={
-          <View>
-            <Text>{messages.compatibilityTitle}</Text>
-            <Text>{messages.compatibilitySubtitle}</Text>
-          </View>
-        }
-      />
-    ) : null
-  }, [hasUnsupportedCollection, styles])
-
   return (
     <ListSelectionScreen
       data={data}
@@ -175,6 +155,7 @@ export const NFTCollectionsScreen = () => {
       value={value}
       onChange={handleChange}
       searchText={messages.searchCollections}
+      isLoading={isLoading}
       allowDeselect={false}
       itemStyles={styles.row}
       itemContentStyles={styles.row}
@@ -188,7 +169,6 @@ export const NFTCollectionsScreen = () => {
           disabled={!isContentCollectibleGated(streamConditions)}
         />
       }
-      footer={renderFooter()}
     />
   )
 }

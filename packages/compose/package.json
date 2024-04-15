@@ -1,6 +1,6 @@
 {
   "name": "@audius/compose",
-  "version": "1.0.28",
+  "version": "1.0.31",
   "private": true,
   "scripts": {
     "start": "./start.sh"

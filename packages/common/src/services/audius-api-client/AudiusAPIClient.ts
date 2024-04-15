@@ -1,10 +1,13 @@
 import type { AudiusLibs } from '@audius/sdk'
 
+import { UndisbursedUserChallenge } from '@audius/common/store'
+
 import {
   ID,
   TimeRange,
   StemTrackMetadata,
-  CollectionMetadata
+  CollectionMetadata,
+  UserChallenge
 } from '../../models'
 import { SearchKind } from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
@@ -404,6 +407,7 @@ type UserChallengesResponse = [
     amount: string
     disbursed_amount: number
     metadata: object
+    cooldown_days: number
   }
 ]
 
@@ -1521,7 +1525,7 @@ export class AudiusAPIClient {
         amount: Number(challenge.amount)
       }
     })
-    return challenges
+    return challenges as UserChallenge[]
   }
 
   getUserTags = async ({ userId }: { userId: ID }) => {
@@ -1558,7 +1562,7 @@ export class AudiusAPIClient {
         amount: Number(challenge.amount)
       }
     })
-    return challenges
+    return challenges as UndisbursedUserChallenge[]
   }
 
   async getBlockConfirmation(

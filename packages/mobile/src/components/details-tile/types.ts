@@ -5,8 +5,11 @@ import type {
   SearchUser,
   SearchTrack,
   Track,
-  User
+  User,
+  AccessConditions
 } from '@audius/common/models'
+import type { PurchaseableContentType } from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 import type { TextStyle } from 'react-native'
 
 import type { ImageProps } from '@audius/harmony-native'
@@ -22,8 +25,11 @@ export type DetailsTileDetail = {
 }
 
 export type DetailsTileProps = {
-  /** Id of the collection */
-  collectionId?: ID
+  /** Id of the track or collection */
+  contentId?: ID
+
+  /** Type of content (for premium content) */
+  contentType: PurchaseableContentType
 
   /** Cosign information */
   coSign?: Track['_co_sign']
@@ -42,6 +48,12 @@ export type DetailsTileProps = {
 
   /** Has the current user saved */
   hasSaved?: boolean
+
+  /** Does the current user have stream access to the track */
+  hasStreamAccess?: boolean
+
+  /** Stream conditions for the track or collection */
+  streamConditions?: Nullable<AccessConditions>
 
   /** Label to be displayed at the top of the tile */
   headerText?: string
@@ -147,4 +159,7 @@ export type DetailsTileProps = {
 
   /** The track if tile is for a track */
   track?: Track | SearchTrack
+
+  /** The key of the DDEX app that owns this track/collection */
+  ddexApp?: string | null
 }

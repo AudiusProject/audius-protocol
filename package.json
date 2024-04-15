@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.73",
+  "version": "1.5.76",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -20,7 +20,7 @@
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
-    "patch-package": "patch-package && patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
+    "patch-package": "bash ./scripts/patch-package.sh",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
     "turbo-link": "turbo login && turbo link",
@@ -31,6 +31,7 @@
     "web:prod": "npm run start:prod -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
     "web:e2e": "npm run e2e -w audius-client",
+    "web:test": "turbo run test --filter=audius-client",
     "DESKTOP====================================": "",
     "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://0.0.0.0:3000 && npm run electron:localhost -w audius-client -- 3000'",
     "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://0.0.0.0:3002 && npm run electron:localhost -w audius-client -- 3002'",
@@ -99,6 +100,7 @@
   "dependencies": {
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
+    "@web3modal/ethers": "4.1.0",
     "pg": "8.8.0"
   },
   "overrides": {

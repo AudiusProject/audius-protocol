@@ -1,6 +1,11 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useEditPlaylistModal } from '@audius/common/store'
+import { useGetCurrentUserId } from '@audius/common/api'
+import { FeatureFlags } from '@audius/common/services'
+import {
+  PurchaseableContentType,
+  useEditPlaylistModal
+} from '@audius/common/store'
 import { formatSecondsAsText, formatDate } from '@audius/common/utils'
 import {
   Text,
@@ -11,12 +16,16 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import { Input } from 'components/input'
 import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
+import { GatedContentSection } from 'components/track/GatedContentSection'
 import InfoLabel from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { useSsrContext } from 'ssr/SsrContext'
 
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
@@ -31,7 +40,9 @@ type CollectionHeaderProps = any
 
 export const CollectionHeader = (props: CollectionHeaderProps) => {
   const {
+    access,
     collectionId,
+    ownerId,
     type,
     title,
     coverArtSizes,
@@ -56,11 +67,21 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     reposts,
     saves,
     onClickReposts,
-    onClickFavorites
+    onClickFavorites,
+    isStreamGated,
+    streamConditions
   } = props
 
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
+  const { isSsrEnabled } = useSsrContext()
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
+
+  const { data: currentUserId } = useGetCurrentUserId({})
+
+  const hasStreamAccess = access?.stream
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +116,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     )
   }
 
-  const isLoading = loading || artworkLoading
+  const isLoading = !isSsrEnabled && (loading || artworkLoading)
 
   const fadeIn = {
     [styles.show]: !isLoading,
@@ -105,7 +126,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const TitleComponent = isOwner ? 'button' : 'span'
 
   return (
-    <div className={styles.collectionHeader}>
+    <Flex className={styles.collectionHeader} direction='column' gap='m'>
       <div className={styles.topSection}>
         <Artwork
           collectionId={collectionId}
@@ -136,7 +157,9 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             >
               {title}
             </Text>
-            {isOwner ? <IconPencil className={styles.editIcon} /> : null}
+            <ClientOnly>
+              {isOwner ? <IconPencil className={styles.editIcon} /> : null}
+            </ClientOnly>
             {isLoading ? <Skeleton className={styles.skeleton} /> : null}
           </TitleComponent>
           <Flex>
@@ -187,16 +210,18 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           <div className={cn(styles.statsRow, fadeIn)}>
             {renderStatsRow(isLoading)}
           </div>
-          <CollectionActionButtons
-            playing={playing}
-            variant={variant}
-            isOwner={isOwner}
-            userId={userId}
-            collectionId={collectionId}
-            onPlay={onPlay}
-            isPlayable={isPlayable}
-            tracksLoading={tracksLoading}
-          />
+          <ClientOnly>
+            <CollectionActionButtons
+              playing={playing}
+              variant={variant}
+              isOwner={isOwner}
+              userId={userId}
+              collectionId={collectionId}
+              onPlay={onPlay}
+              isPlayable={isPlayable}
+              tracksLoading={tracksLoading}
+            />
+          </ClientOnly>
         </div>
         {onFilterChange ? (
           <div className={styles.inputWrapper}>
@@ -211,6 +236,17 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           </div>
         ) : null}
       </div>
-    </div>
+      {isPremiumAlbumsEnabled && isStreamGated && streamConditions ? (
+        <GatedContentSection
+          isLoading={isLoading}
+          contentId={collectionId}
+          contentType={PurchaseableContentType.ALBUM}
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
+          isOwner={ownerId === currentUserId}
+          ownerId={ownerId}
+        />
+      ) : null}
+    </Flex>
   )
 }

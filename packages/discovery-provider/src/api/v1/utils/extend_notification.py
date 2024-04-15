@@ -28,6 +28,7 @@ from src.queries.get_notifications import (
     TipReceiveNotification,
     TipSendNotification,
     TrackAddedToPlaylistNotification,
+    TrackAddedToPurchasedAlbumNotification,
     TrackMilestoneNotification,
     TrendingNotification,
     TrendingPlaylistNotification,
@@ -77,9 +78,11 @@ def extend_follow(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "follower_user_id": encode_int_id(data["follower_user_id"]),
             "followee_user_id": encode_int_id(data["followee_user_id"]),
@@ -92,9 +95,11 @@ def extend_repost(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "type": data["type"],
             "user_id": encode_int_id(data["user_id"]),
@@ -108,9 +113,11 @@ def extend_repost_of_a_repost(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "type": data["type"],
             "user_id": encode_int_id(data["user_id"]),
@@ -124,9 +131,11 @@ def extend_save_of_repost(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "type": data["type"],
             "user_id": encode_int_id(data["user_id"]),
@@ -140,9 +149,11 @@ def extend_save(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "type": data["type"],
             "user_id": encode_int_id(data["user_id"]),
@@ -156,9 +167,11 @@ def extend_tastemaker(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "tastemaker_item_owner_id": encode_int_id(data["tastemaker_item_owner_id"]),
             "tastemaker_item_id": encode_int_id(data["tastemaker_item_id"]),
@@ -175,9 +188,11 @@ def extend_remix(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "parent_track_id": encode_int_id(data["parent_track_id"]),
             "track_id": encode_int_id(data["track_id"]),
@@ -191,9 +206,11 @@ def extend_cosign(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "track_owner_id": encode_int_id(data["track_owner_id"]),
             "parent_track_owner_id": encode_int_id(int(action["specifier"])),
@@ -207,9 +224,11 @@ def extend_create(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {},
     }
     if "track_id" in action["data"]:
@@ -229,9 +248,11 @@ def extend_send_tip(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "amount": to_wei_string(data["amount"]),
             "sender_user_id": encode_int_id(data["sender_user_id"]),
@@ -246,17 +267,21 @@ def extend_receive_tip(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "amount": to_wei_string(data["amount"]),
             "sender_user_id": encode_int_id(data["sender_user_id"]),
             "receiver_user_id": encode_int_id(data["receiver_user_id"]),
             "tip_tx_signature": data["tx_signature"],
-            "reaction_value": data["reaction_value"]  # type: ignore
-            if "reaction_value" in data
-            else None,
+            "reaction_value": (
+                data["reaction_value"]  # type: ignore
+                if "reaction_value" in data
+                else None
+            ),
         },
     }
 
@@ -266,9 +291,11 @@ def extend_supporter_rank_up(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "rank": data["rank"],
             "sender_user_id": encode_int_id(data["sender_user_id"]),
@@ -282,9 +309,11 @@ def extend_supporter_dethroned(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "dethroned_user_id": encode_int_id(data["dethroned_user_id"]),
             "sender_user_id": encode_int_id(data["sender_user_id"]),
@@ -298,9 +327,11 @@ def extend_challenge_reward(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "amount": to_wei_string(data["amount"]),
             "specifier": data["specifier"],
@@ -314,9 +345,11 @@ def extend_reaction(action: NotificationAction):
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "reacted_to": data["reacted_to"],
             "reaction_type": data["reaction_type"],
@@ -335,9 +368,11 @@ def extend_milestone(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": type,
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
     }
 
     if action["group_id"].startswith("milestone:PLAYLIST_REPOST_COUNT") or action[
@@ -387,9 +422,11 @@ def extend_tier_change(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": data,
     }
     return notification
@@ -402,15 +439,44 @@ def extend_track_added_to_playlist(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "track_id": encode_int_id(data["track_id"]),
             "playlist_id": encode_int_id(data["playlist_id"]),
-            "playlist_owner_id": encode_int_id(data["playlist_owner_id"])
-            if data.get("playlist_owner_id")
-            else None,
+            "playlist_owner_id": (
+                encode_int_id(data["playlist_owner_id"])
+                if data.get("playlist_owner_id")
+                else None
+            ),
+        },
+    }
+    return notification
+
+
+def extend_track_added_to_purchased_album(action: NotificationAction):
+    data: TrackAddedToPurchasedAlbumNotification = cast(
+        TrackAddedToPurchasedAlbumNotification, action["data"]
+    )
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "track_id": encode_int_id(data["track_id"]),
+            "playlist_id": encode_int_id(data["playlist_id"]),
+            "playlist_owner_id": (
+                encode_int_id(data["playlist_owner_id"])
+                if data.get("playlist_owner_id")
+                else None
+            ),
         },
     }
     return notification
@@ -421,9 +487,11 @@ def extend_trending(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "rank": data["rank"],
             "genre": data["genre"],
@@ -439,9 +507,11 @@ def extend_trending_playlist(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "rank": data["rank"],
             "genre": data["genre"],
@@ -457,17 +527,19 @@ def extend_usdc_purchase_seller(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "content_type": data["content_type"],
             "buyer_user_id": encode_int_id(data["buyer_user_id"]),
             "seller_user_id": encode_int_id(data["seller_user_id"]),
             "amount": str(data["amount"]),
-            "extra_amount": str(data["extra_amount"])
-            if "extra_amount" in data
-            else "0",
+            "extra_amount": (
+                str(data["extra_amount"]) if "extra_amount" in data else "0"
+            ),
             "content_id": encode_int_id(data["content_id"]),
         },
     }
@@ -479,17 +551,19 @@ def extend_usdc_purchase_buyer(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "content_type": data["content_type"],
             "buyer_user_id": encode_int_id(data["buyer_user_id"]),
             "seller_user_id": encode_int_id(data["seller_user_id"]),
             "amount": str(data["amount"]),
-            "extra_amount": str(data["extra_amount"])
-            if "extra_amount" in data
-            else "0",
+            "extra_amount": (
+                str(data["extra_amount"]) if "extra_amount" in data else "0"
+            ),
             "content_id": encode_int_id(data["content_id"]),
         },
     }
@@ -501,9 +575,11 @@ def extend_trending_underground(action: NotificationAction):
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": {
             "rank": data["rank"],
             "genre": data["genre"],
@@ -519,9 +595,11 @@ def extend_announcement(action: NotificationAction):
     notification = {
         "specifier": None,
         "type": action["type"],
-        "timestamp": datetime.timestamp(action["timestamp"])
-        if action["timestamp"]
-        else action["timestamp"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
         "data": data,
     }
     return notification
@@ -547,6 +625,7 @@ notification_action_handler = {
     "tastemaker": extend_tastemaker,
     "tier_change": extend_tier_change,
     "track_added_to_playlist": extend_track_added_to_playlist,
+    "track_added_to_purchased_album": extend_track_added_to_purchased_album,
     "trending": extend_trending,
     "trending_playlist": extend_trending_playlist,
     "trending_underground": extend_trending_underground,

@@ -81,14 +81,23 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
           userBank,
           programId: this.programId
         })
-      const { blockhash } = await this.connection.getLatestBlockhash()
+      const confirmationStrategyArgs =
+        await this.connection.getLatestBlockhash()
       const message = new TransactionMessage({
         payerKey: feePayer,
-        recentBlockhash: blockhash,
+        recentBlockhash: confirmationStrategyArgs.blockhash,
         instructions: [createUserBankInstruction]
       }).compileToLegacyMessage()
       const transaction = new VersionedTransaction(message)
-      await this.wallet.sendTransaction(transaction, this.connection)
+      const signature = await this.wallet.sendTransaction(
+        transaction,
+        this.connection
+      )
+      const confirmationStrategy = { ...confirmationStrategyArgs, signature }
+      await this.connection.confirmTransaction(
+        confirmationStrategy,
+        'finalized'
+      )
       return { userBank, didExist: false }
     }
     return { userBank, didExist: true }

@@ -168,7 +168,7 @@ export const ReleaseDateField = () => {
         // upload case is initially unlisted
         menuFields={
           <Flex direction='column' gap='l'>
-            <Text>{messages.description}</Text>
+            <Text variant='body'>{messages.description}</Text>
             <ReleaseDateRadioItems
               isInitiallyUnlisted={true}
               initialReleaseDate={trackReleaseDate}

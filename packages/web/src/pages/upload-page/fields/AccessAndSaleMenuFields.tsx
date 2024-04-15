@@ -51,6 +51,7 @@ export type AccesAndSaleMenuFieldsProps = {
   streamConditions: SingleTrackEditValues[typeof STREAM_CONDITIONS]
   isRemix: boolean
   isUpload?: boolean
+  isAlbum?: boolean
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
   initialStreamConditions?: AccessConditions | undefined
@@ -60,38 +61,52 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const {
     isRemix,
     isUpload,
+    isAlbum,
     isInitiallyUnlisted,
     initialStreamConditions,
     isScheduledRelease
   } = props
 
-  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
+  const { isEnabled: isUsdcFlagUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const { isEnabled: isCollectibleGatedEnabled } = useFlag(
+  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
+  const isUsdcUploadEnabled = isAlbum
+    ? isPremiumAlbumsEnabled && isUsdcFlagUploadEnabled
+    : isUsdcFlagUploadEnabled
+
+  const { isEnabled: isCollectibleGatedFlagEnabled } = useFlag(
     FeatureFlags.COLLECTIBLE_GATED_ENABLED
   )
-  const { isEnabled: isSpecialAccessEnabled } = useFlag(
+  const { isEnabled: isSpecialAccessFlagEnabled } = useFlag(
     FeatureFlags.SPECIAL_ACCESS_ENABLED
   )
+  const isCollectibleGatedEnabled = !isAlbum && isCollectibleGatedFlagEnabled
+  const isSpecialAccessEnabled = !isAlbum && isSpecialAccessFlagEnabled
 
   const [availabilityField] = useField({
     name: STREAM_AVAILABILITY_TYPE
   })
 
-  const { noSpecialAccessGate, noSpecialAccessGateFields, noHidden } =
-    useAccessAndRemixSettings({
-      isUpload: !!isUpload,
-      isRemix,
-      initialStreamConditions: initialStreamConditions ?? null,
-      isInitiallyUnlisted: !!isInitiallyUnlisted,
-      isScheduledRelease: !!isScheduledRelease
-    })
+  const {
+    disableSpecialAccessGate,
+    disableSpecialAccessGateFields,
+    disableHidden
+  } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    isAlbum,
+    initialStreamConditions: initialStreamConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isScheduledRelease: !!isScheduledRelease
+  })
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
-      <Text>{messages.modalDescription}</Text>
+      <Text variant='body'>{messages.modalDescription}</Text>
       <RadioGroup {...availabilityField} aria-label={messages.title}>
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
@@ -99,10 +114,11 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           description={messages.publicSubtitle}
           value={StreamTrackAvailabilityType.PUBLIC}
         />
-        {isUsdcEnabled ? (
+        {isUsdcUploadEnabled ? (
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
+            isAlbum={isAlbum}
             initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
           />
@@ -114,9 +130,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={StreamTrackAvailabilityType.SPECIAL_ACCESS}
-            disabled={noSpecialAccessGate}
+            disabled={disableSpecialAccessGate}
             checkedContent={
-              <SpecialAccessFields disabled={noSpecialAccessGateFields} />
+              <SpecialAccessFields disabled={disableSpecialAccessGateFields} />
             }
           />
         ) : null}
@@ -133,7 +149,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           label={messages.hidden}
           value={StreamTrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
-          disabled={noHidden}
+          disabled={disableHidden}
           // isInitiallyUnlisted is undefined on create
           // show hint on scheduled releases that are in create or already unlisted
           hintContent={

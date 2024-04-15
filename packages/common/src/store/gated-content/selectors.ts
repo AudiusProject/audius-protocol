@@ -3,7 +3,7 @@ import { CommonState } from '../commonStore'
 export const getNftAccessSignatureMap = (state: CommonState) =>
   state.gatedContent.nftAccessSignatureMap
 
-export const getGatedTrackStatusMap = (state: CommonState) =>
+export const getGatedContentStatusMap = (state: CommonState) =>
   state.gatedContent.statusMap
 
 export const getLockedContentId = (state: CommonState) =>

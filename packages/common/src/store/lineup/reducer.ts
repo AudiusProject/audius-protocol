@@ -11,7 +11,8 @@ import {
   SET_IN_VIEW,
   UPDATE_LINEUP_ORDER,
   SET_PAGE,
-  stripPrefix
+  stripPrefix,
+  SET_MAX_ENTRIES
 } from '~/store/lineup/actions'
 
 import { UID } from '../../models/Identifiers'
@@ -45,6 +46,11 @@ export const initialLineupState = {
   payload: undefined,
   // We save the handle of the last fetch call to re-use if not provided
   handle: undefined
+}
+
+type SetMaxEntriesAction = {
+  type: typeof SET_MAX_ENTRIES
+  maxEntries: number | null
 }
 
 type SetInViewAction = {
@@ -99,6 +105,7 @@ type SetPageAction = {
 }
 
 export type LineupActions<T> =
+  | SetMaxEntriesAction
   | SetInViewAction
   | FetchLineupMetadatasRequestedAction
   | FetchLineupMetadatasSucceededAction<T>
@@ -114,6 +121,12 @@ export const actionsMap = {
     return {
       ...state,
       inView: action.inView
+    }
+  },
+  [SET_MAX_ENTRIES]<T>(state: LineupState<T>, action: SetMaxEntriesAction) {
+    return {
+      ...state,
+      maxEntries: action.maxEntries
     }
   },
   [FETCH_LINEUP_METADATAS_REQUESTED]<T>(
@@ -275,8 +288,16 @@ export const asLineup =
       action.type
     ) as LineupActions<EntryT>['type']
     const matchingReduceFunction = actionsMap[baseActionType]
-    if (!matchingReduceFunction)
+
+    if (matchingReduceFunction) {
+      const newState = matchingReduceFunction(
+        // @ts-ignore action is never for some reason, ts 4.1 may help here
+        state,
+        action as LineupActions<EntryT>
+      )
+      // @ts-ignore action is never for some reason, ts 4.1 may help here
+      return reducer(newState, action as LineupActionType)
+    } else {
       return reducer(state, action as LineupActionType)
-    // @ts-ignore action is never for some reason, ts 4.1 may help here
-    return matchingReduceFunction(state, action as LineupActions<EntryT>)
+    }
   }

@@ -3,9 +3,7 @@ import PendingReleases from '../models/pendingReleases'
 import PublishedReleases from '../models/publishedReleases'
 import type {
   TrackMetadata,
-  CollectionMetadata,
-  CreateTrackRelease,
-  CreateAlbumRelease,
+  SDKUploadMetadataSchema,
   PendingRelease,
 } from '../models/pendingReleases'
 import type {
@@ -18,7 +16,7 @@ import type {
 import createS3 from './s3Service'
 
 const formatTrackMetadata = (
-  metadata: TrackMetadata
+  metadata: SDKUploadMetadataSchema | TrackMetadata
 ): UploadTrackRequest['metadata'] => {
   return {
     title: metadata.title,
@@ -27,6 +25,7 @@ const formatTrackMetadata = (
     ...(metadata.mood && { mood: metadata.mood as Mood }),
     tags: metadata.tags || '',
     isrc: metadata.isrc,
+    iswc: metadata.ddex_release_ids?.iswc,
     license: metadata.license,
     releaseDate: new Date(metadata.release_date),
     ddexReleaseIds: metadata.ddex_release_ids,
@@ -44,7 +43,6 @@ const formatTrackMetadata = (
     producerCopyrightLine: metadata.producer_copyright_line,
     parentalWarningType: metadata.parental_warning_type,
     // isUnlisted: // TODO: set visibility
-    // iswc:
     // origFilename:
     // isOriginalAvailable:
     // isStreamGated:
@@ -57,7 +55,7 @@ const formatTrackMetadata = (
 }
 
 const formatAlbumMetadata = (
-  metadata: CollectionMetadata
+  metadata: SDKUploadMetadataSchema
 ): UploadAlbumRequest['metadata'] => {
   return {
     genre: metadata.genre as Genre,
@@ -78,26 +76,26 @@ const formatAlbumMetadata = (
 
 const uploadTrack = async (
   audiusSdk: AudiusSdkType,
-  pendingTrack: CreateTrackRelease,
+  pendingTrack: SDKUploadMetadataSchema,
   s3Service: ReturnType<typeof createS3>
 ) => {
-  const userId = pendingTrack.metadata.artist_id
-  const metadata = formatTrackMetadata(pendingTrack.metadata)
+  const userId = pendingTrack.artist_id
+  const metadata = formatTrackMetadata(pendingTrack)
 
   const coverArtDownload = await s3Service.downloadFromS3Crawled(
-    pendingTrack.metadata.cover_art_url
+    pendingTrack.cover_art_url
   )
   // TODO: We can hash and verify against the metadata here
   const coverArtFile = {
     buffer: coverArtDownload!,
-    originalname: pendingTrack.metadata.cover_art_url.split('/').pop(),
+    originalname: pendingTrack.cover_art_url.split('/').pop(),
   }
   const trackDownload = await s3Service.downloadFromS3Crawled(
-    pendingTrack.metadata.audio_file_url
+    pendingTrack.audio_file_url
   )
   const trackFile = {
     buffer: trackDownload!,
-    originalname: pendingTrack.metadata.audio_file_url.split('/').pop(),
+    originalname: pendingTrack.audio_file_url.split('/').pop(),
   }
 
   const uploadTrackRequest: UploadTrackRequest = {
@@ -108,7 +106,7 @@ const uploadTrack = async (
     trackFile,
   }
   console.log(
-    `Uploading ${pendingTrack.metadata.title} by ${pendingTrack.metadata.artist_name} to Audius...`
+    `Uploading ${pendingTrack.title} by ${pendingTrack.artist_id} to Audius...`
   )
   const result = await audiusSdk.tracks.uploadTrack(uploadTrackRequest)
   console.log(result)
@@ -117,28 +115,28 @@ const uploadTrack = async (
 
 const uploadAlbum = async (
   audiusSdk: AudiusSdkType,
-  pendingAlbum: CreateAlbumRelease,
+  pendingAlbum: SDKUploadMetadataSchema,
   s3Service: ReturnType<typeof createS3>
 ) => {
   // Fetch cover art from S3
   const coverArtDownload = await s3Service.downloadFromS3Crawled(
-    pendingAlbum.metadata.cover_art_url
+    pendingAlbum.cover_art_url
   )
   // TODO: We can hash and verify against the metadata here
   const coverArtFile = {
     buffer: coverArtDownload!,
-    originalname: pendingAlbum.metadata.cover_art_url.split('/').pop(),
+    originalname: pendingAlbum.cover_art_url.split('/').pop(),
   }
 
   // Fetch track audio files from S3
   const trackFilesPromises = pendingAlbum.tracks.map(async (track) => {
     const trackDownload = await s3Service.downloadFromS3Crawled(
-      track.audio_file_url
+      track.audio_file_url!
     )
     // TODO: We can hash and verify against the metadata here
     return {
       buffer: trackDownload!,
-      originalname: track.audio_file_url.split('/').pop(),
+      originalname: track.audio_file_url!.split('/').pop(),
     }
   })
   const trackFiles = await Promise.all(trackFilesPromises)
@@ -149,14 +147,14 @@ const uploadAlbum = async (
 
   const uploadAlbumRequest: UploadAlbumRequest = {
     coverArtFile,
-    metadata: formatAlbumMetadata(pendingAlbum.metadata),
+    metadata: formatAlbumMetadata(pendingAlbum),
     onProgress: (progress: any) => console.log('Progress:', progress),
     trackFiles,
     trackMetadatas,
-    userId: pendingAlbum.metadata.playlist_owner_id,
+    userId: pendingAlbum.playlist_owner_id,
   }
   console.log(
-    `Uploading ${pendingAlbum.metadata.playlist_name} by ${pendingAlbum.metadata.playlist_owner_id} to Audius...`
+    `Uploading ${pendingAlbum.playlist_name} by ${pendingAlbum.playlist_owner_id} to Audius...`
   )
   const result = await audiusSdk.albums.uploadAlbum(uploadAlbumRequest)
   console.log(result)
@@ -205,7 +203,7 @@ export const publishReleases = async (
     try {
       const currentDate = new Date()
       documents = await PendingReleases.find({
-        publish_date: { $lte: currentDate },
+        'release.sdk_upload_metadata.release_date': { $lte: currentDate },
       }).lean<PendingRelease[]>()
     } catch (error) {
       console.error('Failed to fetch pending releases:', error)
@@ -221,6 +219,11 @@ export const publishReleases = async (
           `pending_releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
         )
         continue
+      } else if (doc.failure_count > 3) {
+        console.error(
+          `pending_releases doc with ID ${releaseId} requires manual intervention because we've already retried it 3 times.`
+        )
+        continue
       }
 
       let uploadResult: {
@@ -230,16 +233,16 @@ export const publishReleases = async (
         blockNumber: number
       }
       try {
-        if (doc.create_track_release?.ddex_release_ref) {
+        if (doc.release?.sdk_upload_metadata?.title) {
           uploadResult = await uploadTrack(
             audiusSdk,
-            doc.create_track_release,
+            doc.release.sdk_upload_metadata,
             s3
           )
-        } else if (doc.create_album_release?.ddex_release_ref) {
+        } else if (doc.release?.sdk_upload_metadata?.playlist_name) {
           uploadResult = await uploadAlbum(
             audiusSdk,
-            doc.create_album_release,
+            doc.release.sdk_upload_metadata,
             s3
           )
         } else {
@@ -256,15 +259,13 @@ export const publishReleases = async (
 
       const publishedData = {
         _id: releaseId,
-        track: doc.create_track_release,
-        album: doc.create_album_release,
-        entity_id: doc.create_track_release
+        release: doc.release,
+        entity_id: doc.release.sdk_upload_metadata.title
           ? uploadResult.trackId
           : uploadResult.albumId,
         blockhash: uploadResult.blockHash,
         blocknumber: uploadResult.blockNumber,
-        publish_date: doc.publish_date,
-        delivery_etag: doc.delivery_etag,
+        delivery_remote_path: doc.delivery_remote_path,
         created_at: new Date(),
       }
       console.log('Published release: ', JSON.stringify(publishedData))

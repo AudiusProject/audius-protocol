@@ -1,8 +1,9 @@
 import { memo } from 'react'
 
+import { imageBlank } from '@audius/common/assets'
 import { Variant, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { OverflowAction } from '@audius/common/store'
+import { OverflowAction, cacheCollectionsSelectors } from '@audius/common/store'
 import {
   formatCount,
   formatSecondsAsText,
@@ -11,25 +12,31 @@ import {
 import { Button, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
+import { StaticImage } from 'components/static-image/StaticImage'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
 import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import StatsButtonRow from 'pages/track-page/components/mobile/StatsButtonRow'
+import { useSsrContext } from 'ssr/SsrContext'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
 import styles from './CollectionHeader.module.css'
 
+const { getCollection } = cacheCollectionsSelectors
+
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
   publishing: 'Publishing...',
   play: 'PLAY',
-  pause: 'PAUSE'
+  pause: 'PAUSE',
+  coverArtAltText: 'Collection Cover Art'
 }
 
 const Loading = (props) => {
@@ -67,6 +74,7 @@ const CollectionHeader = ({
   collectionId,
   userId,
   title,
+  ddexApp,
   coverArtSizes,
   description,
   isOwner,
@@ -95,10 +103,15 @@ const CollectionHeader = ({
   imageOverride,
   icon: Icon
 }) => {
+  const { isSsrEnabled } = useSsrContext()
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const collection = useSelector((state) =>
+    getCollection(state, { id: collectionId })
+  )
+
   const onSaveCollection = () => {
     if (!isOwner) onSave()
   }
-  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
   const onClickOverflow = () => {
     const overflowActions = [
@@ -112,7 +125,7 @@ const CollectionHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      (!isAlbum || isEditAlbumsEnabled) && isOwner
+      (!isAlbum || isEditAlbumsEnabled) && isOwner && !ddexApp
         ? isAlbum
           ? OverflowAction.EDIT_ALBUM
           : OverflowAction.EDIT_PLAYLIST
@@ -120,7 +133,7 @@ const CollectionHeader = ({
       isOwner && (!isAlbum || isEditAlbumsEnabled) && !isPublished
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && (!isAlbum || isEditAlbumsEnabled)
+      isOwner && (!isAlbum || isEditAlbumsEnabled) && !ddexApp
         ? isAlbum
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST
@@ -164,6 +177,9 @@ const CollectionHeader = ({
     })
   }
 
+  const isLoading = !isSsrEnabled && loading
+  const ImageElement = isSsrEnabled ? StaticImage : DynamicImage
+
   return (
     <div className={styles.collectionHeader}>
       <div className={styles.typeLabel}>
@@ -173,7 +189,7 @@ const CollectionHeader = ({
             : messages.hiddenPlaylist
           : type}
       </div>
-      {loading ? (
+      {isLoading ? (
         <>
           <div className={styles.coverArt}>
             <Loading variant='artwork' />
@@ -194,7 +210,11 @@ const CollectionHeader = ({
         </>
       ) : (
         <>
-          <DynamicImage
+          <ImageElement
+            cid={collection?.cover_art_sizes}
+            size={SquareSizes.SIZE_480_BY_480}
+            fallbackImageUrl={imageBlank}
+            alt={messages.coverArtAltText}
             wrapperClassName={styles.coverArt}
             image={gradient || imageOverride || image}
           >
@@ -210,7 +230,7 @@ const CollectionHeader = ({
                 }}
               />
             )}
-          </DynamicImage>
+          </ImageElement>
           <h1 className={styles.title}>{title}</h1>
           <UserLink
             userId={userId}

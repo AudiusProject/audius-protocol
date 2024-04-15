@@ -129,6 +129,12 @@ const slice = createSlice({
       state.provider = action.payload.provider
       state.onSuccess = action.payload.onSuccess
     },
+    setProvider: (
+      state,
+      action: PayloadAction<{ provider: OnRampProvider }>
+    ) => {
+      state.provider = action.payload.provider
+    },
     onrampOpened: (state, _action: PayloadAction<PurchaseInfo>) => {
       state.stage = BuyAudioStage.PURCHASING
     },

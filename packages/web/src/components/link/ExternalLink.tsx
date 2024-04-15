@@ -1,19 +1,28 @@
-import { MouseEvent, useCallback } from 'react'
+import { MouseEvent, ReactNode, useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
 import { useLeavingAudiusModal } from '@audius/common/store'
 import { isAllowedExternalLink } from '@audius/common/utils'
-import { TextLink, TextLinkProps } from '@audius/harmony'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 
-type ExternalLinkProps = Omit<TextLinkProps, 'href'> & {
+export type ExternalLinkProps = {
+  to: string
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void
   source?: 'profile page' | 'track page' | 'collection page'
   ignoreWarning?: boolean
+  children: ReactNode
 }
 
 export const ExternalLink = (props: ExternalLinkProps) => {
-  const { to, onClick, source, ignoreWarning = false, ...other } = props
+  const {
+    to,
+    onClick,
+    source,
+    ignoreWarning = false,
+    children,
+    ...other
+  } = props
 
   const record = useRecord()
   const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
@@ -38,5 +47,15 @@ export const ExternalLink = (props: ExternalLinkProps) => {
     [onClick, record, source, openLeavingAudiusModal, to, ignoreWarning]
   )
 
-  return <TextLink isExternal href={to} onClick={handleClick} {...other} />
+  return (
+    <a
+      target='_blank'
+      rel='noreferrer'
+      href={to}
+      onClick={handleClick}
+      {...other}
+    >
+      {children}
+    </a>
+  )
 }

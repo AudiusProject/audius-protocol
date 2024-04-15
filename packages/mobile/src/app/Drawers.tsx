@@ -16,7 +16,6 @@ import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-draw
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
-import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
 import { ReleaseNowConfirmationDrawer } from 'app/components/drawers/ReleaseNowConfirmationDrawer'
 import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
@@ -29,7 +28,7 @@ import { LeavingAudiusDrawer } from 'app/components/leaving-audius-drawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
-import { PremiumTrackPurchaseDrawer } from 'app/components/premium-track-purchase-drawer'
+import { PremiumContentPurchaseDrawer } from 'app/components/premium-content-purchase-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
 import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
@@ -118,7 +117,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   PublishTrackConfirmation: ReleaseNowConfirmationDrawer,
   // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
-  PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,
+  PremiumContentPurchaseModal: PremiumContentPurchaseDrawer,
   AddFundsModal: AddFundsDrawer,
   PurchaseVendor: PurchaseVendorDrawer,
   USDCManualTransferModal: USDCManualTransferDrawer,
@@ -132,7 +131,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   EnablePushNotifications: EnablePushNotificationsDrawer,
   OfflineListening: OfflineListeningDrawer,
-  DownloadTrackProgress: DownloadTrackProgressDrawer,
   ForgotPassword: ForgotPasswordDrawer,
   DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
   ReleaseNowConfirmation: ReleaseNowConfirmationDrawer,

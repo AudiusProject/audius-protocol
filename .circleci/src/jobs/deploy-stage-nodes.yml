@@ -29,6 +29,9 @@ steps:
         git add */docker-compose*.yml
         git commit -m "Update tag to $CIRCLE_SHA1 for << parameters.service >>"
         git push origin stage
+  - docker-tag-images:
+      tag: prerelease
+      service: << parameters.service >>
   - run:
       name: Wait for 2 minutes for staging nodes to auto-upgrade
       command: sleep 120

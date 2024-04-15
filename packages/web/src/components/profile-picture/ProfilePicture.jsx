@@ -19,6 +19,10 @@ import styles from './ProfilePicture.module.css'
 
 const { getUser } = cacheUsersSelectors
 
+const messages = {
+  profilePicAltText: 'User Profile Picture'
+}
+
 const ProfilePicture = ({
   editMode,
   userId,
@@ -85,6 +89,7 @@ const ProfilePicture = ({
             updatedProfilePicture ||
             (!user?.profile_picture_sizes ? imageProfilePicEmpty : undefined)
           }
+          alt={messages.profilePicAltText}
           usePlaceholder={false}
           image={updatedProfilePicture || image}
           skeletonClassName={styles.profilePictureSkeleton}
@@ -106,7 +111,7 @@ const ProfilePicture = ({
             </div>
           )}
         </ImageElement>
-        {(editMode || showEdit) && (
+        {editMode || showEdit ? (
           <ImageSelectionButton
             wrapperClassName={styles.imageSelectionButtonWrapper}
             buttonClassName={styles.imageSelectionButton}
@@ -118,7 +123,7 @@ const ProfilePicture = ({
             hasImage={hasProfilePicture}
             source='ProfilePicture'
           />
-        )}
+        ) : null}
       </div>
     </div>
   )
