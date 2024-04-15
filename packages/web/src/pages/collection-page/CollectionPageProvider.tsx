@@ -206,7 +206,7 @@ class CollectionPage extends Component<
     // if the uids of the tracks in the lineup are changing with this
     // update (initialOrder should contain ALL of the uids, so it suffices to check the first one).
     const newInitialOrder = tracks.entries.map((track) => track.uid)
-    // console.log(tracks.entries)
+
     const noInitialOrder = !initialOrder && tracks.entries.length > 0
     const entryIds = new Set(newInitialOrder)
     const newUids =
@@ -494,7 +494,7 @@ class CollectionPage extends Component<
 
   onClickRemove = (
     trackId: number,
-    index: number,
+    _index: number,
     uid: string,
     timestamp: number
   ) => {
@@ -512,17 +512,6 @@ class CollectionPage extends Component<
     } else {
       this.props.removeTrackFromPlaylist(trackId, playlistId, uid, timestamp)
     }
-
-    // Remove the track from the initial order,
-    // because reorder uses initial order as a starting point
-    const initialOrder = this.state.initialOrder
-      ? [
-        ...this.state.initialOrder.slice(0, index),
-        ...this.state.initialOrder.slice(index + 1)
-      ]
-      : null
-
-    this.setState({ initialOrder })
   }
 
   onPlay = () => {
