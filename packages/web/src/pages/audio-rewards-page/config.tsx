@@ -1,23 +1,23 @@
 import { ReactNode } from 'react'
 
 import { ChallengeName, ChallengeRewardID } from '@audius/common/models'
-import { challengeRewardsConfig, Nullable } from '@audius/common/utils'
+import { Nullable, challengeRewardsConfig } from '@audius/common/utils'
 import {
   IconArrowRight,
   IconCheck,
   IconCloudUpload,
-  IconComponent,
-  IconTokenGold
+  IconComponent
 } from '@audius/harmony'
 
+import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
 import {
-  profilePage,
+  EXPLORE_PAGE,
+  EXPLORE_PREMIUM_TRACKS_PAGE,
+  LIBRARY_PAGE,
   SETTINGS_PAGE,
   TRENDING_PAGE,
   UPLOAD_PAGE,
-  EXPLORE_PAGE,
-  LIBRARY_PAGE,
-  EXPLORE_PREMIUM_TRACKS_PAGE
+  profilePage
 } from 'utils/route'
 
 type LinkButtonType =
@@ -38,7 +38,13 @@ type LinkButtonInfo = {
 }
 
 const GoldBadgeIconImage = () => (
-  <IconTokenGold size='l' aria-label='Gold badge' />
+  <img
+    draggable={false}
+    alt='Gold badge'
+    src={IconGoldBadge}
+    width={24}
+    height={24}
+  />
 )
 
 const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {

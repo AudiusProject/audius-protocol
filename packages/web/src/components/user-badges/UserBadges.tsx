@@ -12,6 +12,11 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
+import IconBronzeBadge from 'assets/img/tokenBadgeBronze48@2x.webp'
+import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
+import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum48@2x.webp'
+import IconSilverBadge from 'assets/img/tokenBadgeSilver48@2x.webp'
+
 import styles from './UserBadges.module.css'
 
 export const audioTierMapSVG: { [tier in BadgeTier]: Nullable<ReactElement> } =
@@ -22,6 +27,16 @@ export const audioTierMapSVG: { [tier in BadgeTier]: Nullable<ReactElement> } =
     gold: <IconGoldBadgeSVG />,
     platinum: <IconPlatinumBadgeSVG />
   }
+
+export const audioTierMapPng: {
+  [tier in BadgeTier]: Nullable<ReactElement>
+} = {
+  none: null,
+  bronze: <img draggable={false} alt='' src={IconBronzeBadge as string} />,
+  silver: <img draggable={false} alt='' src={IconSilverBadge as string} />,
+  gold: <img draggable={false} alt='' src={IconGoldBadge as string} />,
+  platinum: <img draggable={false} alt='' src={IconPlatinumBadge as string} />
+}
 
 type UserBadgesProps = {
   userId: ID
@@ -47,13 +62,15 @@ const UserBadges = ({
   badgeSize,
   className,
   noContentClassName = '',
+  useSVGTiers = false,
   inline = false,
   isVerifiedOverride,
   overrideTier
 }: UserBadgesProps) => {
   const { tier: currentTier, isVerified } = useSelectTierInfo(userId)
   const tier = overrideTier || currentTier
-  const audioBadge = audioTierMapSVG[tier as BadgeTier]
+  const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
+  const audioBadge = tierMap[tier as BadgeTier]
   const hasContent = isVerifiedOverride ?? (isVerified || audioBadge)
 
   if (inline) {
