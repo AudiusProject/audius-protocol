@@ -28,7 +28,6 @@ export const TablePlayButton = ({
 }: TablePlayButtonProps) => {
   const {
     color: {
-      // TODO: better way to not have to do this
       special,
       primary: { p300 }
     }
@@ -38,7 +37,10 @@ export const TablePlayButton = ({
     <div onClick={onClick} className={cn(styles.tablePlayButton, className)}>
       {playing && !paused ? (
         <div>
-          <IconPause className={styles.icon} />
+          <IconPause
+            className={styles.icon}
+            fill={showPremiumColor ? special.lightGreen : p300}
+          />
         </div>
       ) : (
         <div>
