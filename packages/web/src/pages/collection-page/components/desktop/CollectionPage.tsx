@@ -92,6 +92,7 @@ export type CollectionPageProps = {
   ) => [CollectionPageTrackRecord[], number]
   onFilterChange: (evt: ChangeEvent<HTMLInputElement>) => void
   onClickRepostTrack: (record: CollectionPageTrackRecord) => void
+  onClickPurchaseTrack: (record: CollectionPageTrackRecord) => void
   onSortTracks: (sorters: any) => void
   onReorderTracks: (source: number, destination: number) => void
   onClickRemove: (
@@ -123,6 +124,7 @@ const CollectionPage = ({
   onClickRow,
   onClickSave,
   onClickRepostTrack,
+  onClickPurchaseTrack,
   onSortTracks,
   onReorderTracks,
   onClickRemove,
@@ -234,6 +236,7 @@ const CollectionPage = ({
       onPlay={onPlay}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
+      onClickPurchase={onClickPurchaseTrack}
       // Smart collection
       variant={variant}
       gradient={gradient}
@@ -264,14 +267,14 @@ const CollectionPage = ({
       isNftPlaylist
         ? ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
         : [
-            'playButton',
-            'trackName',
-            'artistName',
-            isAlbum ? 'date' : 'addedDate',
-            'length',
-            'plays',
-            'overflowActions'
-          ],
+          'playButton',
+          'trackName',
+          'artistName',
+          isAlbum ? 'date' : 'addedDate',
+          'length',
+          'plays',
+          'overflowActions'
+        ],
     [isAlbum, isNftPlaylist]
   )
 
@@ -295,8 +298,8 @@ const CollectionPage = ({
           isPremiumAlbumsEnabled
             ? dogEarType
             : isPrivate
-            ? DogEarType.HIDDEN
-            : undefined
+              ? DogEarType.HIDDEN
+              : undefined
         }
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
@@ -323,6 +326,8 @@ const CollectionPage = ({
                 onClickFavorite={onClickSave}
                 onClickRemove={isOwner ? onClickRemove : undefined}
                 onClickRepost={onClickRepostTrack}
+                onClickPurchase={onClickPurchaseTrack}
+                isPremiumEnabled={isPremiumAlbumsEnabled}
                 onReorderTracks={onReorderTracks}
                 onSortTracks={onSortTracks}
                 isReorderable={
@@ -331,9 +336,8 @@ const CollectionPage = ({
                   allowReordering &&
                   (!isAlbum || isEditAlbumsEnabled)
                 }
-                removeText={`${messages.remove} ${
-                  isAlbum ? messages.type.album : messages.type.playlist
-                }`}
+                removeText={`${messages.remove} ${isAlbum ? messages.type.album : messages.type.playlist
+                  }`}
                 isAlbumPage={isAlbum}
               />
             </ClientOnly>

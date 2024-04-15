@@ -40,7 +40,10 @@ import {
   playlistUpdatesSelectors,
   CollectionTrack,
   CollectionsPageType,
-  CollectionPageTrackRecord
+  CollectionPageTrackRecord,
+  PurchaseableContentType,
+  usePremiumContentPurchaseModalActions,
+  PremiumContentPurchaseModalState
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -106,8 +109,8 @@ type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
   children:
-    | ComponentType<MobileCollectionPageProps>
-    | ComponentType<DesktopCollectionPageProps>
+  | ComponentType<MobileCollectionPageProps>
+  | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
   smartCollection?: SmartCollection
@@ -487,6 +490,13 @@ class CollectionPage extends Component<
     }
   }
 
+  onClickPurchaseTrack = (record: CollectionPageTrackRecord) => {
+    this.props.openPremiumContentPurchaseModal({
+      contentId: record.track_id,
+      contentType: PurchaseableContentType.TRACK
+    })
+  }
+
   onClickRemove = (
     trackId: number,
     index: number,
@@ -505,9 +515,9 @@ class CollectionPage extends Component<
     // because reorder uses initial order as a starting point
     const initialOrder = this.state.initialOrder
       ? [
-          ...this.state.initialOrder.slice(0, index),
-          ...this.state.initialOrder.slice(index + 1)
-        ]
+        ...this.state.initialOrder.slice(0, index),
+        ...this.state.initialOrder.slice(index + 1)
+      ]
       : null
     this.setState({ initialOrder })
   }
@@ -759,6 +769,7 @@ class CollectionPage extends Component<
       onClickRow: this.onClickRow,
       onClickSave: this.onClickSave,
       onClickRepostTrack: this.onClickRepostTrack,
+      onClickPurchaseTrack: this.onClickPurchaseTrack,
       onSortTracks: this.onSortTracks,
       onReorderTracks: this.onReorderTracks,
       onClickRemove: this.onClickRemove,
@@ -996,7 +1007,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       ),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
-      dispatch(updatedPlaylistViewed({ playlistId }))
+      dispatch(updatedPlaylistViewed({ playlistId })),
+    openPremiumContentPurchaseModal: (args: PremiumContentPurchaseModalState) =>
+      dispatch(usePremiumContentPurchaseModalActions.open(args))
   }
 }
 

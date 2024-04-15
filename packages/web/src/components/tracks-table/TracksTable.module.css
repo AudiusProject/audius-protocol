@@ -42,7 +42,10 @@
 .trackActionsContainer {
   display: inline-flex;
   align-items: center;
-  gap: 16px;
+  justify-content: flex-end;
+  width: 100%;
+  gap: var(--harmony-spacing-l);
+  margin: 0 var(--harmony-spacing-l);
 }
 
 .trackActionsContainer .tableActionButton {

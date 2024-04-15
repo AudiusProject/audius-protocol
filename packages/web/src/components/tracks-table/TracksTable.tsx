@@ -77,8 +77,10 @@ type TracksTableProps = {
   isPaginated?: boolean
   isReorderable?: boolean
   isAlbumPage?: boolean
+  isPremiumEnabled?: boolean
   loading?: boolean
   onClickFavorite?: (track: any) => void
+  onClickPurchase?: (track: any) => void
   onClickRemove?: (
     track: any,
     index: number,
@@ -128,10 +130,12 @@ export const TracksTable = ({
   fetchPage,
   fetchThreshold,
   isVirtualized = false,
+  isPremiumEnabled = false,
   loading = false,
   onClickFavorite,
   onClickRemove,
   onClickRepost,
+  onClickPurchase,
   onClickRow,
   onReorderTracks,
   onShowMoreToggle,
@@ -170,7 +174,7 @@ export const TracksTable = ({
             paused={!playing}
             playing={active}
             hideDefault={false}
-            isTrackPremium={isTrackPremium}
+            isTrackPremium={isTrackPremium && isPremiumEnabled}
             isLocked={isLocked}
           />
           {isTrackUnlisted ? (
@@ -181,7 +185,7 @@ export const TracksTable = ({
         </>
       )
     },
-    [playing, playingIndex]
+    [isPremiumEnabled, playing, playingIndex, trackAccessMap]
   )
 
   const renderTrackNameCell = useCallback(
@@ -424,20 +428,37 @@ export const TracksTable = ({
     ]
   )
 
-  const renderPurchaseButton = useCallback((cellInfo: TrackCell) => {
-    const track = cellInfo.row.original
-    if (isContentUSDCPurchaseGated(track.stream_conditions)) {
-      return (
-        <Button
-          size='small'
-          color='lightGreen'
-          className={styles.purchaseButton}
-        >
-          ${track.stream_conditions.usdc_purchase.price / 100}.00
-        </Button>
-      )
-    }
-  }, [])
+  const renderPurchaseButton = useCallback(
+    (cellInfo: TrackCell) => {
+      const track = cellInfo.row.original
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
+      const isOwner = track.owner_id === userId
+      const deleted =
+        track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      if (!isLocked || deleted || isOwner) {
+        return null
+      }
+      // note: wrapping an if with this method does type casting for track.stream_conditions
+      if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+        return (
+          <Button
+            size='small'
+            color='lightGreen'
+            className={styles.purchaseButton}
+            onClick={() => {
+              onClickPurchase?.(track)
+            }}
+          >
+            ${track.stream_conditions.usdc_purchase.price / 100}.00
+          </Button>
+        )
+      }
+    },
+    [onClickPurchase, trackAccessMap, userId]
+  )
 
   const renderTrackActions = useCallback(
     (cellInfo: TrackCell) => {
@@ -445,12 +466,18 @@ export const TracksTable = ({
         <div className={styles.trackActionsContainer}>
           {renderRepostButtonCell(cellInfo)}
           {renderFavoriteButtonCell(cellInfo)}
-          {renderPurchaseButton(cellInfo)}
+          {isPremiumEnabled ? renderPurchaseButton(cellInfo) : null}
           {renderOverflowMenuCell(cellInfo)}
         </div>
       )
     },
-    [renderFavoriteButtonCell, renderOverflowMenuCell, renderRepostButtonCell]
+    [
+      isPremiumEnabled,
+      renderFavoriteButtonCell,
+      renderOverflowMenuCell,
+      renderPurchaseButton,
+      renderRepostButtonCell
+    ]
   )
 
   // Columns
