@@ -41,6 +41,7 @@
 
 .trackActionsContainer {
   display: inline-flex;
+  align-items: center;
   gap: 16px;
 }
 
@@ -60,6 +61,10 @@
   position: absolute;
   opacity: 0;
   transition: opacity 0.07s ease-out;
+}
+
+.purchaseButton {
+  opacity: 0;
 }
 
 .tablePlayButton.active {
@@ -82,7 +87,8 @@
 }
 
 .tableRow:hover .tablePlayButton,
-.tableRow:hover .trackActionsContainer .tableActionButton {
+.tableRow:hover .trackActionsContainer .tableActionButton,
+.tableRow:hover .purchaseButton {
   opacity: 1;
 }
 
@@ -107,7 +113,8 @@
   background-color: var(--harmony-n-50);
 }
 
-.tableRow.disabled:hover .tablePlayButton {
+.tableRow.disabled:hover .tablePlayButton,
+.tableRow.disabled:hover .purchaseButton {
   opacity: 0;
   pointer-events: none;
 }

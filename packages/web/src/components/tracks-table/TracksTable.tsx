@@ -7,7 +7,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { formatCount, formatSeconds } from '@audius/common/utils'
-import { IconVisibilityHidden, IconLock } from '@audius/harmony'
+import { IconVisibilityHidden, IconLock, Button } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -158,6 +158,10 @@ export const TracksTable = ({
       const track = cellInfo.row.original
       const isTrackUnlisted = track.is_unlisted
       const isTrackPremium = isContentUSDCPurchaseGated(track.stream_conditions)
+      const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
+      const isLocked = !isFetchingNFTAccess && !hasStreamAccess
 
       return (
         <>
@@ -167,6 +171,7 @@ export const TracksTable = ({
             playing={active}
             hideDefault={false}
             isTrackPremium={isTrackPremium}
+            isLocked={isLocked}
           />
           {isTrackUnlisted ? (
             <IconVisibilityHidden
@@ -190,6 +195,7 @@ export const TracksTable = ({
       const active = index === playingIndex
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      const isPremium = isContentUSDCPurchaseGated(track.stream_conditions)
 
       const renderLocked = () => {
         return (
@@ -215,7 +221,7 @@ export const TracksTable = ({
             {track.name}
             {deleted ? ` [Deleted By Artist]` : ''}
           </TextLink>
-          {!deleted && isLocked ? renderLocked() : null}
+          {!deleted && isLocked && !isPremium ? renderLocked() : null}
         </div>
       )
     },
@@ -311,7 +317,7 @@ export const TracksTable = ({
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
       if (isLocked || deleted || isOwner) {
-        return <div className={styles.placeholderButton} />
+        return null
       }
 
       return (
@@ -346,7 +352,7 @@ export const TracksTable = ({
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
       if (isLocked || deleted || isOwner) {
-        return <div className={styles.placeholderButton} />
+        return null
       }
 
       return (
@@ -418,12 +424,28 @@ export const TracksTable = ({
     ]
   )
 
+  const renderPurchaseButton = useCallback((cellInfo: TrackCell) => {
+    const track = cellInfo.row.original
+    if (isContentUSDCPurchaseGated(track.stream_conditions)) {
+      return (
+        <Button
+          size='small'
+          color='lightGreen'
+          className={styles.purchaseButton}
+        >
+          ${track.stream_conditions.usdc_purchase.price / 100}.00
+        </Button>
+      )
+    }
+  }, [])
+
   const renderTrackActions = useCallback(
     (cellInfo: TrackCell) => {
       return (
         <div className={styles.trackActionsContainer}>
           {renderRepostButtonCell(cellInfo)}
           {renderFavoriteButtonCell(cellInfo)}
+          {renderPurchaseButton(cellInfo)}
           {renderOverflowMenuCell(cellInfo)}
         </div>
       )
@@ -626,9 +648,10 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      const isPremium = isContentUSDCPurchaseGated(track.stream_conditions)
       return cn(styles.tableRow, {
-        [styles.disabled]: isLocked || deleted,
-        [styles.lockedRow]: isLocked && !deleted
+        [styles.disabled]: (isLocked || deleted) && !isPremium,
+        [styles.lockedRow]: isLocked && !deleted && !isPremium
       })
     },
     [trackAccessMap, data]
