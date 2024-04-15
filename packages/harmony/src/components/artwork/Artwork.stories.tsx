@@ -12,13 +12,7 @@ const LoadArtwork = (props: ArtworkProps) => {
 
   return (
     <Flex direction='column' gap='l' alignItems='flex-start'>
-      <Artwork
-        isLoading={isLoading}
-        {...props}
-        // src='https://blockdaemon-audius-content-09.bdnodes.net/content/01H5JSX00M4A83D1V1WFWZBAZK/480x480.jpg'
-        // w={200}
-        // h={200}
-      />
+      <Artwork isLoading={isLoading} {...props} />
       <Button variant='primary' onClick={() => setIsLoading(!isLoading)}>
         Toggle Loading
       </Button>

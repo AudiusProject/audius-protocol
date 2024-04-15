@@ -1,6 +1,8 @@
 import { useGetTrackById } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
+
 import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+
 import { SaleModalContent } from './SaleModalContent'
 
 const messages = {
