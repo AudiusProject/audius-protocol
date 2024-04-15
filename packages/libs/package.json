@@ -27,7 +27,6 @@
     "test:sdk": "./node_modules/.bin/jest --coverage=false",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "npm run test:unit && npm run test:sdk",
-    "#TODO: Should we be running test:libs anywhere?": "",
     "test:libs": "./scripts/test.sh",
     "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
     "test:unit:watch": "ts-mocha 'src/[!sdk]**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --watch",

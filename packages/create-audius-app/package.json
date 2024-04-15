@@ -8,7 +8,7 @@
     "lint": "eslint",
     "prepublishOnly": "rm -rf dist && npm run build",
     "setup-test-env": "./tests/e2e/setup-test-env.sh",
-    "test": "vitest run tests/integration --passWithNoTests",
+    "test": "vitest run tests/integration",
     "test:watch": "vitest tests/integration",
     "test:e2e": "playwright test",
     "typecheck": "tsc",
