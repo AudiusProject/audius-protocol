@@ -1,1 +1,1 @@
-export { default } from './ConnectMetaMaskModal'
+export { default } from './MisconfiguredModal'

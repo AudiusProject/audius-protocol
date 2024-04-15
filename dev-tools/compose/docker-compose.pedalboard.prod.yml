@@ -45,6 +45,13 @@ services:
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
     profiles:
       - discovery
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'curl -f http://localhost:6001/relay/health || exit 1']
+      interval: 3s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
 
   solana-relay:
     build:
@@ -63,7 +70,7 @@ services:
       audius_solana_fee_payer_wallets: '[{"privateKey":${SOLANA_FEEPAYER_SECRET_KEY}}]'
     restart: always
     profiles:
-      - pedalboard
+      - discovery
     deploy:
       mode: replicated
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'

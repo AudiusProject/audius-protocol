@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { imageCollectiblePlaceholder } from '@audius/common/assets'
 import {
   AccessConditions,
   Chain,
@@ -14,6 +15,7 @@ import { useSelector } from 'react-redux'
 
 import DropdownInput from 'components/ai-attribution-modal/DropdownInput'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import {
   AccessAndSaleFormValues,
@@ -23,12 +25,11 @@ import {
 } from '../../types'
 
 import styles from './CollectibleGatedFields.module.css'
-import { imageCollectiblePlaceholder } from '@audius/common/assets'
 
-const { getSupportedUserCollections } =
-  collectiblesSelectors
+const { getSupportedUserCollections } = collectiblesSelectors
 
 const messages = {
+  loading: 'Loading...',
   pickACollection: 'Pick a Collection',
   premiumDownloads:
     'Setting your track to Collectible Gated will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
@@ -54,7 +55,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
 
-  const { ethCollectionMap, solCollectionMap } = useSelector(
+  const { ethCollectionMap, solCollectionMap, isLoading } = useSelector(
     getSupportedUserCollections
   )
 
@@ -98,10 +99,28 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
       }))
   }, [solCollectionMap])
 
-  const menuItems = useMemo(
-    () => [...ethCollectibleItems, ...solCollectibleItems],
-    [ethCollectibleItems, solCollectibleItems]
-  )
+  const menuItems: {
+    text: string
+    el: React.ReactElement
+    value: string
+    disabled?: boolean
+  }[] = useMemo(() => {
+    if (isLoading)
+      return [
+        {
+          text: messages.loading,
+          el: (
+            <div className={styles.dropdownRow}>
+              <LoadingSpinner className={styles.spinner} />
+              <span>{messages.loading}</span>
+            </div>
+          ),
+          value: 'loading',
+          disabled: true
+        }
+      ]
+    return [...ethCollectibleItems, ...solCollectibleItems]
+  }, [ethCollectibleItems, isLoading, solCollectibleItems])
 
   // If no nft collection was previously selected, then the default value is an empty string,
   // which makes the dropdown show the placeholder.

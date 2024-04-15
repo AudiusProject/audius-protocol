@@ -119,7 +119,8 @@ export const TrackTileComponent = ({
     genre,
     is_stream_gated: isStreamGated,
     stream_conditions,
-    preview_cid
+    preview_cid,
+    ddex_app: ddexApp
   } = track
 
   const hasPreview =
@@ -164,7 +165,7 @@ export const TrackTileComponent = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const overflowActions = [
-      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
+      isEditAlbumsEnabled && isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
       !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
@@ -176,11 +177,11 @@ export const TrackTileComponent = ({
           : OverflowAction.MARK_AS_PLAYED
         : null,
       isOnArtistsTracksTab ? null : OverflowAction.VIEW_ARTIST_PAGE,
-      isOwner ? OverflowAction.EDIT_TRACK : null,
+      isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && track?.is_scheduled_release && track?.is_unlisted
         ? OverflowAction.RELEASE_NOW
         : null,
-      isOwner ? OverflowAction.DELETE_TRACK : null
+      isOwner && !ddexApp ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 
     dispatch(

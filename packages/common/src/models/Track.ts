@@ -1,6 +1,6 @@
 import { License } from '~/utils/creativeCommons'
 
-import { Nullable } from '../utils/typeUtils'
+import { DeepOmit, Nullable } from '../utils/typeUtils'
 
 import { Chain } from './Chain'
 import { Favorite } from './Favorite'
@@ -82,6 +82,7 @@ export type TipGatedConditions = { tip_user_id: number }
 export type USDCPurchaseConditions = {
   usdc_purchase: {
     price: number
+    albumTrackPrice?: number
     splits: Record<ID, number>
   }
 }
@@ -130,7 +131,9 @@ export const isContentTipGated = (
   'tip_user_id' in (gatedConditions ?? {})
 
 export const isContentUSDCPurchaseGated = (
-  gatedConditions?: Nullable<AccessConditions>
+  gatedConditions?: Nullable<
+    AccessConditions | DeepOmit<USDCPurchaseConditions, 'splits'>
+  > // data coming from upload/edit forms will not have splits on the type
 ): gatedConditions is USDCPurchaseConditions =>
   'usdc_purchase' in (gatedConditions ?? {})
 

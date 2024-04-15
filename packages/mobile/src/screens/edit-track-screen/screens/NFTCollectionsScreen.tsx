@@ -54,7 +54,7 @@ export const NFTCollectionsScreen = () => {
   const navigation = useNavigation()
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
-  const { ethCollectionMap, solCollectionMap, collectionImageMap } =
+  const { isLoading, ethCollectionMap, solCollectionMap, collectionImageMap } =
     useSelector(getSupportedUserCollections)
 
   const ethCollectibleItems = useMemo(() => {
@@ -155,6 +155,7 @@ export const NFTCollectionsScreen = () => {
       value={value}
       onChange={handleChange}
       searchText={messages.searchCollections}
+      isLoading={isLoading}
       allowDeselect={false}
       itemStyles={styles.row}
       itemContentStyles={styles.row}

@@ -37,6 +37,7 @@ import { TICKER } from 'utils/consts'
 import { formatWeiNumber } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import { sharedMessages } from 'utils/sharedMessages'
 import styles from './UpdateDelegationModal.module.css'
 import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 
@@ -50,7 +51,6 @@ const messages = {
   increaseBtn: 'Increase Delegation',
   decreaseTitle: 'Decrease Delegation',
   decreaseBtn: 'Decrease Delegation',
-  twoPopupsWarning: '2 MetaMask Pop-Ups Will Appear',
   pendingDecreaseDisabled:
     'Not permitted while you still have a pending Decrease Delegation (Undelegate) transaction.',
   pendingClaimDisabled:
@@ -368,7 +368,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                 <Flex direction="column" gap="l" alignItems="center">
                   {status === Status.Loading && isIncrease ? (
                     <Text variant="heading" size="s" color="warning">
-                      {messages.twoPopupsWarning}
+                      {sharedMessages.twoPopupsWarning}
                     </Text>
                   ) : null}
                   {status === Status.Loading ? (

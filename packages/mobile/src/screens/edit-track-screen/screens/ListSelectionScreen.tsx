@@ -8,6 +8,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
 import { TextInput, Text, RadioButton, Divider } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 import { FormScreen } from '../components'
@@ -26,6 +27,7 @@ export type ListSelectionProps = {
   onChange: (value: any) => void
   value: string
   searchText?: string
+  isLoading?: boolean
   disableSearch?: boolean
   allowDeselect?: boolean
   hideSelectionLabel?: boolean
@@ -38,11 +40,12 @@ export type ListSelectionProps = {
 }
 
 const messages = {
+  loading: 'Loading...',
   selected: 'Selected',
   done: 'Done'
 }
 
-const useStyles = makeStyles(({ spacing, typography }) => ({
+const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {
     justifyContent: 'space-between'
   },
@@ -70,6 +73,22 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
   },
   radio: {
     marginRight: spacing(4)
+  },
+  loading: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  loadingText: {
+    fontFamily: typography.fontByWeight.demiBold,
+    fontSize: typography.fontSize.large,
+    marginLeft: spacing(4)
+  },
+  loadingSpinnerView: {
+    width: spacing(6),
+    height: spacing(6)
+  },
+  loadingSpinner: {
+    color: palette.neutral
   }
 }))
 
@@ -82,6 +101,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
     onChange,
     value,
     searchText = '',
+    isLoading = false,
     disableSearch = false,
     allowDeselect = true,
     hideSelectionLabel = false,
@@ -194,12 +214,28 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
             returnKeyType='search'
           />
         )}
-        <FlatList
-          renderItem={renderItem}
-          ListHeaderComponent={<View style={styles.listHeader} />}
-          ItemSeparatorComponent={Divider}
-          data={filteredData}
-        />
+        {isLoading ? (
+          <View style={styles.listItem}>
+            <View style={styles.listItemContent}>
+              <View style={styles.loading}>
+                <LoadingSpinner
+                  fill={styles.loadingSpinner.color}
+                  style={styles.loadingSpinnerView}
+                />
+                <Text style={styles.loadingText} numberOfLines={1}>
+                  {messages.loading}
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <FlatList
+            renderItem={renderItem}
+            ListHeaderComponent={<View style={styles.listHeader} />}
+            ItemSeparatorComponent={Divider}
+            data={filteredData}
+          />
+        )}
         {footer}
       </View>
     </FormScreen>

@@ -42,11 +42,6 @@ const messages = {
     header: 'Allow Full Track Download',
     description: 'Allow your fans to download a copy of your full track.'
   },
-  [IS_ORIGINAL_AVAILABLE]: {
-    header: 'Provide Lossless Files',
-    description:
-      'Provide your fans with the Lossless files you upload in addition to an mp3.'
-  },
   priceTooLow: (minPrice: number) =>
     `Price must be at least $${formatPrice(minPrice)}.`,
   priceTooHigh: (maxPrice: number) =>
@@ -317,12 +312,6 @@ export const StemsAndDownloadsMenuFields = (
         name={IS_DOWNLOADABLE}
         header={messages[IS_DOWNLOADABLE].header}
         description={messages[IS_DOWNLOADABLE].description}
-      />
-      <Divider />
-      <SwitchRowField
-        name={IS_ORIGINAL_AVAILABLE}
-        header={messages[IS_ORIGINAL_AVAILABLE].header}
-        description={messages[IS_ORIGINAL_AVAILABLE].description}
       />
       <Divider />
       <StemFilesView

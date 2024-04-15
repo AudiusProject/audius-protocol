@@ -50,6 +50,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		return
 	}
 	p.Logger.Info("Parsing releases from delivery", "_id", delivery.RemotePath)
+	defer p.replaceDelivery(&delivery)
 
 	// Parse the delivery's releases
 	pendingReleases := []*common.PendingRelease{}
@@ -60,8 +61,8 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			if err == nil {
 				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
+				delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
 				p.Logger.Error("Failed to process release", "error", err)
-				p.replaceDelivery(&delivery)
 				return
 			}
 		}
@@ -72,8 +73,8 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			if err == nil {
 				pendingReleases = append(pendingReleases, morePendingReleases...)
 			} else {
+				delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
 				p.Logger.Error("Failed to process batch", "error", err)
-				p.replaceDelivery(&delivery)
 				return
 			}
 		}
@@ -103,7 +104,7 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
 		}
 
-		p.DeliveriesColl.UpdateByID(sessionCtx, delivery.RemotePath, bson.M{"$set": bson.M{"delivery_status": constants.DeliveryStatusSuccess}})
+		delivery.DeliveryStatus = constants.DeliveryStatusSuccess
 		return session.CommitTransaction(sessionCtx)
 	})
 
@@ -194,6 +195,30 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 		}
 		p.Logger.Info("Found artist ID for release", "artistID", artistID, "artistName", artistName, "display title", parsedRelease.DisplayTitle, "display artists", parsedRelease.Artists)
 		parsedRelease.ArtistID = artistID
+		// Use this artist ID in conditions for follow/tip stream/download gates
+		if parsedRelease.IsStreamFollowGated {
+			parsedRelease.StreamConditions = &common.AccessConditions{
+				FollowUserID: artistID,
+			}
+		} else if parsedRelease.IsStreamTipGated {
+			parsedRelease.StreamConditions = &common.AccessConditions{
+				TipUserID: artistID,
+			}
+		}
+		if parsedRelease.IsDownloadFollowGated {
+			parsedRelease.DownloadConditions = &common.AccessConditions{
+				FollowUserID: artistID,
+			}
+		}
+
+		// Verify release element has a corresponding deal (only required for tracks for now)
+		if parsedRelease.ReleaseType == common.TrackReleaseType {
+			if !parsedRelease.HasDeal {
+				err = fmt.Errorf("release '%s' (ref %s) does not have a corresponding deal", parsedRelease.DisplayTitle, parsedRelease.ReleaseRef)
+				unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
+				return nil, err
+			}
+		}
 		release.ParsedReleaseElems[i] = parsedRelease
 	}
 

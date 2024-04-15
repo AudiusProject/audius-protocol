@@ -33,6 +33,7 @@ export default function createApp(
    */
   const app: Express = express()
 
+  app.disable('x-powered-by')
   app.use(express.json())
 
   const MongoDBStore = connectMongoDBSession(session)
@@ -173,9 +174,6 @@ export default function createApp(
     const envData = {
       data: {
         env: process.env.NODE_ENV,
-        awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        awsBucketRaw: process.env.AWS_BUCKET_RAW,
-        awsBucketCrawled: process.env.AWS_BUCKET_CRAWLED,
         ddexKey: process.env.DDEX_KEY,
         ddexChoreography: process.env.DDEX_CHOREOGRAPHY,
       },

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { render, fireEvent, screen, act } from '@testing-library/react'
+import { render, fireEvent, screen } from '@testing-library/react'
 import { describe, it } from 'vitest'
 
 import { useDelayedEffect } from './useDelayedEffect'
@@ -9,8 +9,8 @@ const TestComponent = () => {
   const [string, setString] = useState('initial')
   const [didClick, setDidClick] = useState(false)
   useDelayedEffect({
-    callback: () => act(() => setString('callback')),
-    reset: () => act(() => setString('initial')),
+    callback: () => setString('callback'),
+    reset: () => setString('initial'),
     condition: didClick,
     delay: 100
   })
