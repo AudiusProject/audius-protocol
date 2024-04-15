@@ -1,28 +1,23 @@
 import { ReactNode, useCallback } from 'react'
 
 import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
-import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
+import {
+  ChallengeName,
+  ChallengeRewardID,
+  OptimisticUserChallenge
+} from '@audius/common/models'
 import { challengesSelectors } from '@audius/common/store'
 import {
   formatNumberCommas,
   challengeRewardsConfig
 } from '@audius/common/utils'
-import {
-  Button,
-  ButtonProps,
-  IconArrowRight,
-  IconCloudUpload,
-  Text
-} from '@audius/harmony'
+import { Button, IconComponent, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
@@ -30,43 +25,36 @@ import styles from './styles.module.css'
 
 const { getOptimisticUserChallenges } = challengesSelectors
 
+type AudioMatchingChallengeName =
+  | ChallengeName.AudioMatchingBuy
+  | ChallengeName.AudioMatchingSell
+
 const messages = {
   rewardMapping: {
     [ChallengeName.AudioMatchingBuy]: '$AUDIO Every Dollar Spent',
     [ChallengeName.AudioMatchingSell]: '$AUDIO Every Dollar Earned'
   },
-  descriptionSubtext: {
-    [ChallengeName.AudioMatchingBuy]:
-      'Note: There is a 7 day waiting period between when you purchase and when you can claim your reward.',
-    [ChallengeName.AudioMatchingSell]:
-      'Note: There is a 7 day waiting period between when your track is purchased and when you can claim your reward.'
-  },
-  viewPremiumTracks: 'View Premium Tracks',
-  uploadTrack: 'Upload Track',
+  descriptionSubtext:
+    'Note: There is a 7 day waiting period from completion until you can claim your reward.',
   totalClaimed: (amount: string) => `Total $AUDIO Claimed: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   upcomingRewards: 'Upcoming Rewards',
   audio: '$AUDIO'
 }
 
-type AudioMatchingRewardsModalContentProps = {
+type CooldownRewardsModalContentProps = {
   challenge?: OptimisticUserChallenge
-  challengeName: AudioMatchingChallengeName
+  challengeName: ChallengeRewardID
   onClaimRewardClicked: () => void
   claimInProgress?: boolean
   onNavigateAway: () => void
-  onClickProgress: any
-  progressIcon: any
-  progressLabel: any
+  onClickProgress: () => void
+  progressIcon?: IconComponent | null
+  progressLabel?: string
   errorContent?: ReactNode
 }
 
-// TODO: Migrate to @audius/harmony Button and pass `isLoading`
-const ClaimInProgressSpinner = () => (
-  <LoadingSpinner className={styles.spinner} />
-)
-
-/** Implements custom ChallengeRewardsContent for the $AUDIO matching challenges */
+/** Implements custom ChallengeRewardsContent for the cooldown challenges */
 export const CooldownRewardsModalContent = ({
   challenge,
   challengeName,
@@ -77,10 +65,9 @@ export const CooldownRewardsModalContent = ({
   progressIcon,
   progressLabel,
   errorContent
-}: AudioMatchingRewardsModalContentProps) => {
+}: CooldownRewardsModalContentProps) => {
   const wm = useWithMobileStyle(styles.mobile)
   const isMobile = useIsMobile()
-  const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const {
     cooldownChallenges,
@@ -96,7 +83,7 @@ export const CooldownRewardsModalContent = ({
         <div className={styles.audioMatchingDescription}>
           <Text variant='body'>{fullDescription?.(challenge)}</Text>
           <Text variant='body' color='subdued'>
-            {messages.descriptionSubtext[challengeName]}
+            {messages.descriptionSubtext}
           </Text>
         </div>
       }
@@ -105,7 +92,11 @@ export const CooldownRewardsModalContent = ({
   const progressReward = (
     <ProgressReward
       amount={formatNumberCommas(challenge?.amount ?? '')}
-      subtext={messages.rewardMapping[challengeName]}
+      subtext={
+        challengeName in messages.rewardMapping
+          ? messages.rewardMapping[challengeName as AudioMatchingChallengeName]
+          : messages.audio
+      }
     />
   )
 
@@ -121,15 +112,9 @@ export const CooldownRewardsModalContent = ({
     ) : null
 
   const handleClickCTA = useCallback(() => {
-    if (challengeName === ChallengeName.AudioMatchingBuy) {
-      navigateToPage(EXPLORE_PREMIUM_TRACKS_PAGE)
-    } else if (challengeName === ChallengeName.AudioMatchingSell) {
-      navigateToPage(UPLOAD_PAGE)
-    } else {
-      onClickProgress()
-    }
+    onClickProgress()
     onNavigateAway()
-  }, [challengeName, onNavigateAway, navigateToPage])
+  }, [onNavigateAway, onClickProgress])
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
       {isMobile ? (
@@ -164,8 +149,7 @@ export const CooldownRewardsModalContent = ({
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
         <Button
           fullWidth
-          iconRight={claimInProgress ? ClaimInProgressSpinner : IconArrowRight}
-          disabled={claimInProgress}
+          isLoading={claimInProgress}
           onClick={onClaimRewardClicked}
         >
           {messages.claimAudio(formatNumberCommas(claimableAmount))}
@@ -175,9 +159,10 @@ export const CooldownRewardsModalContent = ({
           variant='secondary'
           fullWidth
           iconRight={progressIcon}
-          children={progressLabel}
           onClick={handleClickCTA}
-        />
+        >
+          {progressLabel}
+        </Button>
       )}
       {errorContent}
     </div>

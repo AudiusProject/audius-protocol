@@ -294,14 +294,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           challenge?.state === 'completed' || challenge?.state === 'disbursed'
       })}
     >
-      {challenge?.state === 'incomplete' && (
+      {challenge?.state === 'incomplete' ? (
         <h3 className={styles.incomplete}>Incomplete</h3>
-      )}
-      {(challenge?.state === 'completed' ||
-        challenge?.state === 'disbursed') && (
+      ) : null}
+      {challenge?.state === 'completed' || challenge?.state === 'disbursed' ? (
         <h3 className={styles.complete}>Complete</h3>
-      )}
-      {challenge?.state === 'in_progress' && progressLabel && (
+      ) : null}
+      {challenge?.state === 'in_progress' && progressLabel ? (
         <h3 className={styles.inProgress}>
           {fillString(
             progressLabel,
@@ -309,7 +308,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             formatNumberCommas(challenge?.max_steps?.toString() ?? '')
           )}
         </h3>
-      )}
+      ) : null}
     </div>
   )
 
@@ -386,12 +385,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
     FeatureFlags.REWARDS_COOLDOWN
   )
-  console.log(
-    'asdf isRewardsCooldownEnabled: ',
-    isRewardsCooldownEnabled,
-    challenge
-  )
-  if (isRewardsCooldownEnabled && challenge?.cooldown_days) {
+  if (isRewardsCooldownEnabled && challenge && challenge.cooldown_days > 0) {
     return (
       <CooldownRewardsModalContent
         errorContent={errorContent}
@@ -438,7 +432,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               </div>
               {progressStatusLabel}
             </div>
-            {modalType === 'profile-completion' && <ProfileChecks />}
+            {modalType === 'profile-completion' ? <ProfileChecks /> : null}
           </>
         ) : (
           <div className={styles.progressCard}>
@@ -446,28 +440,28 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               {progressDescription}
               {progressReward}
             </div>
-            {showProgressBar && (
+            {showProgressBar ? (
               <div className={wm(styles.progressBarSection)}>
-                {modalType === 'profile-completion' && <ProfileChecks />}
+                {modalType === 'profile-completion' ? <ProfileChecks /> : null}
                 <ProgressBar
                   className={wm(styles.progressBar)}
                   value={currentStepCount}
                   max={challenge?.max_steps}
                 />
               </div>
-            )}
+            ) : null}
             {progressStatusLabel}
           </div>
         )}
 
-        {userHandle && (modalType === 'referrals' || modalType === 'ref-v') && (
+        {userHandle && (modalType === 'referrals' || modalType === 'ref-v') ? (
           <div className={wm(styles.buttonContainer)}>
             <TwitterShareButton modalType={modalType} inviteLink={inviteLink} />
             <div className={styles.buttonSpacer} />
             <InviteLink inviteLink={inviteLink} />
           </div>
-        )}
-        {modalType === 'mobile-install' && (
+        ) : null}
+        {modalType === 'mobile-install' ? (
           <div className={wm(styles.qrContainer)}>
             <img className={styles.qr} src={QRCode} alt='QR Code' />
             <div className={styles.qrTextContainer}>
@@ -475,8 +469,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               <h3 className={styles.qrSubtext}>{messages.qrSubtext}</h3>
             </div>
           </div>
-        )}
-        {buttonLink && challenge?.state !== 'completed' && (
+        ) : null}
+        {buttonLink && challenge?.state !== 'completed' ? (
           <Button
             variant='primary'
             fullWidth={isMobile}
@@ -486,7 +480,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           >
             {buttonInfo?.label}
           </Button>
-        )}
+        ) : null}
         <div className={wm(styles.claimRewardWrapper)}>
           {audioToClaim > 0 ? (
             <>
