@@ -36,6 +36,12 @@ const cardSizeToCoverArtSizeMap = {
   l: SquareSizes.SIZE_480_BY_480
 }
 
+const cardSizes = {
+  s: 200,
+  m: 224,
+  l: 320
+}
+
 export const CollectionCard = (props: CollectionCardProps) => {
   const { id, size } = props
 
@@ -62,27 +68,40 @@ export const CollectionCard = (props: CollectionCardProps) => {
       onClick={handleClick}
       aria-labelledby={`${id}-title ${id}-artist`}
       direction='column'
+      w={cardSizes[size]}
       css={{ cursor: 'pointer' }}
     >
-      <CollectionImage
-        id={id}
-        size={cardSizeToCoverArtSizeMap[size]}
-        data-testid={`${id}-cover-art`}
-      />
-      <Link id={`${id}-title`} to={permalink}>
-        <Text variant='title' tag='span' color='default'>
-          {playlist_name}
-        </Text>
-      </Link>
-      <UserLink id={`${id}-artist`} userId={playlist_owner_id} />
+      <Flex direction='column' p='s' gap='s'>
+        <CollectionImage
+          collectionId={id}
+          size={cardSizeToCoverArtSizeMap[size]}
+          data-testid={`${id}-cover-art`}
+        />
+        <Link id={`${id}-title`} to={permalink} css={{ alignSelf: 'center' }}>
+          <Text variant='title' tag='span' color='default' textAlign='center'>
+            {playlist_name}
+          </Text>
+        </Link>
+        <UserLink
+          id={`${id}-artist`}
+          userId={playlist_owner_id}
+          css={{ alignSelf: 'center' }}
+        />
+      </Flex>
       <Divider orientation='horizontal' />
-      <Flex gap='l'>
-        <Text color='subdued' variant='body' size='s'>
-          <IconRepost size='s' title={messages.repost} /> {repost_count}
-        </Text>
-        <Text color='subdued' variant='body' size='s'>
-          <IconHeart size='s' title={messages.favorites} /> {save_count}
-        </Text>
+      <Flex gap='l' p='s' justifyContent='center'>
+        <Flex gap='xs' alignItems='center'>
+          <IconRepost size='s' color='subdued' title={messages.repost} />
+          <Text color='subdued' variant='body' size='s'>
+            {repost_count}
+          </Text>
+        </Flex>
+        <Flex gap='xs' alignItems='center'>
+          <IconHeart size='s' color='subdued' title={messages.favorites} />{' '}
+          <Text color='subdued' variant='body' size='s'>
+            {save_count}
+          </Text>
+        </Flex>
       </Flex>
     </Paper>
   )

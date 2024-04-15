@@ -2,14 +2,9 @@ import { ReactElement, ReactNode } from 'react'
 
 import { ThemeProvider } from '@audius/harmony'
 import { render, RenderOptions } from '@testing-library/react'
-import { createMemoryHistory, type InitialEntry } from 'history'
+import { createMemoryHistory } from 'history'
 import { Router } from 'react-router-dom'
-import {
-  CompatRouter,
-  MemoryRouter,
-  Route,
-  Routes
-} from 'react-router-dom-v5-compat'
+import { CompatRouter } from 'react-router-dom-v5-compat'
 import { PartialDeep } from 'type-fest'
 
 import { ReduxProvider } from 'app/ReduxProvider'

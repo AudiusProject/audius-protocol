@@ -4,7 +4,6 @@ import { FeatureFlags } from '@audius/common/services'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { CollectionCard } from 'components/collection/CollectionCard'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -97,7 +96,6 @@ const FeedPageContent = ({
       size='large'
       header={header}
     >
-      <CollectionCard id={34934012} size='s' />
       <Lineup
         emptyElement={
           <EmptyFeed
