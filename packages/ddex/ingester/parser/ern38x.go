@@ -54,8 +54,8 @@ type FileDetails struct {
 
 // PreviewDetails represents details about the sound recording file's preview
 type PreviewDetails struct {
-	StartPoint     int
-	EndPoint       int
+	StartPoint     *int
+	EndPoint       *int
 	Duration       string
 	ExpressionType string
 }
@@ -649,7 +649,7 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 				metadata.PreviewAudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
 				metadata.PreviewAudioFileURLHash = d.FileDetails.HashSum
 				metadata.PreviewAudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
-				metadata.PreviewStartSeconds = &d.PreviewDetails.StartPoint
+				metadata.PreviewStartSeconds = d.PreviewDetails.StartPoint
 			} else {
 				fmt.Printf("Skipping duplicate audio preview for SoundRecording %s\n", ci.Reference)
 			}
@@ -859,10 +859,28 @@ func processSoundRecordingNode(sNode *xmlquery.Node) (recording *SoundRecording,
 		}
 		if technicalDetail.IsPreview {
 			technicalDetail.PreviewDetails = PreviewDetails{
-				StartPoint:     safeAtoi(safeInnerText(techNode.SelectElement("PreviewDetails/StartPoint"))),
-				EndPoint:       safeAtoi(safeInnerText(techNode.SelectElement("PreviewDetails/EndPoint"))),
 				Duration:       safeInnerText(techNode.SelectElement("PreviewDetails/Duration")),
 				ExpressionType: safeInnerText(techNode.SelectElement("PreviewDetails/ExpressionType")),
+			}
+			startPointStr := safeInnerText(techNode.SelectElement("PreviewDetails/StartPoint"))
+			if startPointStr != "" {
+				var startPoint int
+				startPoint, err = strconv.Atoi(startPointStr)
+				if err != nil {
+					err = fmt.Errorf("error parsing PreviewDetails/StartPoint")
+					return
+				}
+				technicalDetail.PreviewDetails.StartPoint = &startPoint
+			}
+			endPointStr := safeInnerText(techNode.SelectElement("PreviewDetails/EndPoint"))
+			if endPointStr != "" {
+				var endPoint int
+				endPoint, err = strconv.Atoi(endPointStr)
+				if err != nil {
+					err = fmt.Errorf("error parsing PreviewDetails/EndPoint")
+					return
+				}
+				technicalDetail.PreviewDetails.EndPoint = &endPoint
 			}
 		}
 		recording.TechnicalDetails = append(recording.TechnicalDetails, technicalDetail)
