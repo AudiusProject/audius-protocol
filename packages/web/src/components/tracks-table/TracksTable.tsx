@@ -448,7 +448,8 @@ export const TracksTable = ({
             size='small'
             color='lightGreen'
             className={styles.purchaseButton}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               onClickPurchase?.(track)
             }}
           >
@@ -652,6 +653,7 @@ export const TracksTable = ({
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
+      const isPremium = isContentUSDCPurchaseGated(track.stream_conditions)
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const clickedActionButton = [
@@ -660,7 +662,7 @@ export const TracksTable = ({
         overflowMenuRef
       ].some((ref) => isDescendantElementOf(e?.target, ref.current))
 
-      if (isLocked || deleted || clickedActionButton) return
+      if ((isLocked && !isPremium) || deleted || clickedActionButton) return
       onClickRow?.(track, index)
     },
     [trackAccessMap, onClickRow]
