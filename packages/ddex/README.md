@@ -8,14 +8,14 @@ Use audius-docker-compose to run a production DDEX instance. After you've instal
 ### Creating a bucket in S3
 1. Create a new bucket in the S3 console with the name `ddex-[dev|staging]-<label/distributor>-raw`. Use all the defaults, including "ACLs disabled"
 2. Do the same for a bucket named `ddex-[dev|staging]-<label/distributor>-crawled`. Use all the defaults, including "ACLs disabled"
-3. Create an IAM Policy (here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/policies/create) (or search IAM and click Policies > Create Policy). Select S3.
+3. Create an IAM Policy [here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/policies/create) (or search IAM and click Policies > Create Policy). Select S3.
     * Under `Read` choose `GetObject` and `GetObjectAttributes`.
     * Under `Write` choose `DeleteObject` and `PutObject`.
     * Under `List` choose `ListBucket`.
-    * Click `Add Arn` for object actions, enter the bucket name ending with `raw`, and check the box for `Any object name`.
-    * Click `Add Arn` for object actions again, enter the bucket name ending with `crawled`, and check the box for `Any object name`.
     * Click `Add Arn` for bucket actions and enter the bucket name ending with `raw`.
     * Click `Add Arn` for bucket actions again and enter the bucket name ending with `crawled`.
+    * Click `Add Arn` for object actions, enter the bucket name ending with `raw`, and check the box for `Any object name`.
+    * Click `Add Arn` for object actions again, enter the bucket name ending with `crawled`, and check the box for `Any object name`.
     * Click Next, and then name the policy `ddex-[dev|staging]-<label/distributor>-policy`.
 4. Create an IAM User [here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/users/create) (or search IAM and click Users > Create User).
     * Name the user `ddex-[dev|staging]-<label/distributor>-user` and press Next.
@@ -39,6 +39,43 @@ Use audius-docker-compose to run a production DDEX instance. After you've instal
 ]
 ```
 
+### [Optional] Sharing external S3 access for direct upload
+
+Unless the provider has elected to upload directly to S3, you may skip these steps.
+
+1. If external access to deliver files directly into S3 is required, create another IAM Policy following step 3 above, with the following: 
+    * Under `Read` choose `GetObject` and `GetObjectAttributes`.
+    * Under `Write` choose `DeleteObject` and `PutObject`.
+    * Under `List` choose `ListBucket`.
+    * Click `Add Arn` for bucket actions and enter the bucket name ending with `raw`.
+    * Click `Add Arn` for object actions, enter the bucket name ending with `raw`, and check the box for `Any object name`.
+    * Click Next, and then name the policy `ddex-[dev|staging]-<label/distributor>-policy`.
+
+2. Create an IAM User [here](https://us-east-1.console.aws.amazon.com/iamv2/home?region=us-west-2#/users/create) (or search IAM and click Users > Create User).
+    * Name the user `ddex-[dev|staging]-<label/distributor>-external-user` and press Next.
+    * Add the user to the group External DDEX and click enable console access. Allow for AWS to generate the password and write it down to share with the provider.
+    * Select "Attach policies directly," and search for the policy you created (`ddex-[dev|staging]-<label/distributor>-policy`). Check the box next to it and press Next and then Create User.
+
+3. Search for your new user and press "Create access key" and then "Third-party service." Copy these values to send to the provider.
+
+    In order to validate that a given access key/secret works, run the following
+
+    ```bash
+    echo "Hello, World" > test.txt
+
+    AWS_ACCESS_KEY_ID="your_access_key_here" \
+    AWS_SECRET_ACCESS_KEY="your_secret_key_here" \
+    AWS_DEFAULT_REGION="your_region_here" \
+    AWS_DEFAULT_OUTPUT="json" \
+    aws s3 cp test.txt s3://ddex-prod-labelworx-raw
+
+    rm test.txt
+    ```
+
+### Set up a DDEX server
+
+TODO
+
 ### AWS environment variables:
 Set up your buckets by following the "Creating a bucket in S3" section below. Then, set these environment variables:
 - `AWS_ACCESS_KEY_ID`: the access key for the IAM user you created
@@ -48,7 +85,7 @@ Set up your buckets by following the "Creating a bucket in S3" section below. Th
 - `AWS_BUCKET_CRAWLED`: the name of the bucket you created (likely the format of `ddex-[dev|staging]-<label/distributor>-crawled`)
 
 ### App environment variables:
-Create an app by following the 2 steps [here](https://docs.audius.org/developers/sdk/#set-up-your-developer-app), and then set these environment variables:
+Create an app by following the 2 steps [here](https://docs.audius.org/developers/sdk/overview#set-up-your-developer-app), and then set these environment variables:
 - `DDEX_KEY`: the key created for your Audius app
 - `DDEX_SECRET`: the secret created for your Audius app
 - `DDEX_CHOREOGRAPHY`: the type of choreography you're using: "[ERNReleaseByRelease](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/5-release-by-release-profile/5.1-choreography/)" or "[ERNBatched](https://ernccloud.ddex.net/electronic-release-notification-message-suite-part-3%253A-choreographies-for-cloud-based-storage/6-batch-profile/6.1-choreography/)." If you want another option, you'll have to implement the code for it
