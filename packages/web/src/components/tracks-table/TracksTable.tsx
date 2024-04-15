@@ -679,7 +679,7 @@ export const TracksTable = ({
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isPremium = isContentUSDCPurchaseGated(track.stream_conditions)
       return cn(styles.tableRow, {
-        [styles.disabled]: (isLocked || deleted) && !isPremium,
+        [styles.disabled]: (isLocked && !isPremium) || deleted,
         [styles.lockedRow]: isLocked && !deleted && !isPremium
       })
     },
