@@ -19,6 +19,7 @@ export class AntiAbuseOracle extends BaseAPI implements AntiAbuseOracleService {
   constructor({ antiAbuseOracleSelector }: AntiAbuseOracleConfig) {
     super(
       new runtime.Configuration({
+        basePath: '',
         fetchApi: fetch,
         middleware: [antiAbuseOracleSelector.createMiddleware()]
       })
