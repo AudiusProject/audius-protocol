@@ -110,8 +110,8 @@ type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
   children:
-  | ComponentType<MobileCollectionPageProps>
-  | ComponentType<DesktopCollectionPageProps>
+    | ComponentType<MobileCollectionPageProps>
+    | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
   smartCollection?: SmartCollection
