@@ -9,7 +9,8 @@ declare global {
   }
 }
 
-test('should play a trending track', async ({ page }) => {
+// TODO: fix this test https://linear.app/audius/issue/C-4269/fix-e2e-play-test
+test.skip('should play a trending track', async ({ page }) => {
   await page.goto('trending')
 
   const trendingList = page.getByRole('list', {

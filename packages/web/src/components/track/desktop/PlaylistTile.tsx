@@ -125,7 +125,11 @@ const PlaylistTile = ({
           hasStreamAccess={hasStreamAccess}
         />
       </TileTrackContainer>
-      <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
+      <Box
+        backgroundColor='surface1'
+        borderTop='default'
+        borderBottom='default'
+      >
         {renderTracks()}
         {renderMoreTracks()}
       </Box>

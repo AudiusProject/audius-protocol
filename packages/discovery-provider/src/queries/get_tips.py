@@ -13,7 +13,7 @@ from src.models.users.user import User
 from src.models.users.user_tip import UserTip
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import paginate_query, populate_user_metadata
-from src.utils.db_session import get_db_read_replica
+from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -291,8 +291,8 @@ def _get_tips(session: Session, args: GetTipsArgs):
     return tips_results
 
 
-def get_tips(args: GetTipsArgs) -> List[PopulatedTipResult]:
-    db = get_db_read_replica()
+def get_tips(args: GetTipsArgs, db=None) -> List[PopulatedTipResult]:
+    db = get_db()
     with db.scoped_session() as session:
         results: Union[List[Tuple[UserTip, List[str]]], List[UserTip]] = _get_tips(
             session, args

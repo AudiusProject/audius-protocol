@@ -59,4 +59,4 @@ COPY --from=app-builder --chown=nodejs:nodejs /app .
 WORKDIR /app/packages/ddex/webapp/server
 
 EXPOSE 9000
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start"]

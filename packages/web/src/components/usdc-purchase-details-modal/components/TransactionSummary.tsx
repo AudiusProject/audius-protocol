@@ -1,27 +1,22 @@
-import { useEffect } from 'react'
-
+import { useGetTrackById } from '@audius/common/api'
 import { useCurrentStems } from '@audius/common/hooks'
-import { PurchaseAccess, USDCPurchaseDetails } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
-  trackPageActions,
-  CommonState
-} from '@audius/common/store'
+  PurchaseAccess,
+  USDCContentPurchaseType,
+  USDCPurchaseDetails
+} from '@audius/common/models'
 import { formatUSDCWeiToUSDString } from '@audius/common/utils'
 import BN from 'bn.js'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 
-const { getTrack } = cacheTracksSelectors
-const { fetchTrack } = trackPageActions
-
 const messages = {
-  cost: 'Cost of Track',
   payExtra: 'Pay Extra',
   downloadable: (count: number) => `Downloadable Files (${count})`,
   title: 'Transaction Summary',
-  total: 'Total'
+  total: 'Total',
+  albumCost: 'Album Cost',
+  trackCost: 'Track Cost'
 }
 
 export const TransactionSummary = ({
@@ -29,26 +24,21 @@ export const TransactionSummary = ({
 }: {
   transaction: USDCPurchaseDetails
 }) => {
-  const dispatch = useDispatch()
   const amountBN = new BN(transaction.amount)
-  const trackId = transaction.contentId
-  const track = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId }),
-    shallowEqual
-  )
-  const { stemTracks } = useCurrentStems({ trackId: track!.track_id })
+  const { contentId, contentType } = transaction
+  const isTrack = contentType === USDCContentPurchaseType.TRACK
+  const { data: track } = useGetTrackById({ id: contentId })
+  const { stemTracks } = useCurrentStems({
+    trackId: isTrack && track ? track.track_id : 0
+  })
   const downloadableCount =
     stemTracks.length + (track?.is_original_available ? 1 : 0)
-
-  useEffect(() => {
-    dispatch(fetchTrack(trackId, undefined, undefined, false))
-  }, [dispatch, trackId])
 
   const items: SummaryTableItem[] = []
   if (transaction.access === PurchaseAccess.STREAM) {
     items.push({
       id: 'cost',
-      label: messages.cost,
+      label: isTrack ? messages.trackCost : messages.albumCost,
       value: `$${formatUSDCWeiToUSDString(amountBN)}`
     })
   } else if (transaction.access === PurchaseAccess.DOWNLOAD) {

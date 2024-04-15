@@ -1,46 +1,76 @@
 ---
 id: delegate
-title: Delegating to a Node Operator
+title: Delegating to an Audius Node Operator
 pagination_label: Delegating
 sidebar_label: Delegating
 description: Audius Protocol Documentation
 ---
 
-## What is Delegating?
+import useBaseUrl from '@docusaurus/useBaseUrl'
 
-For users that either do not hold enough $AUDIO to self stake a Node, do not want to operate a Node,
-or are just looking to get started, Delegation is a great place to get involved.
+Delegation is a great place to get involved for users that either do not hold enough $AUDIO to self
+[stake a Node][staking], do not want to [become a Node Operator][node-operators], or are just
+looking to get started.
 
-Delegating tokens earns rewards, and increases your ownership of the protocol while supporting Node
-Operators, assisting in keeping them up and running, which in turns keeps the Audius protocol
-healthy.
+Delegating increases your ownership of the Protocol and earns token rewards in exchange for keeping
+the Protocol healthy by supporting Node Operators.
+
+A list of all active Node Operators can be found under the [Nodes tab][nodes-tab] on the [Audius
+Protocol Dashboard][protocol-dashboard].
 
 ---
 
-## Delegating on Audius
+## How to Delegate
 
-To stake on Audius, Node Operators can set up content and/or discovery nodes using
-[these resources](https://github.com/AudiusProject/audius-protocol/wiki/Staking-Resources).
+$AUDIO holders can delegate a minimum of 100 tokens to any Node Operator by connecting their wallet
+on the [Audius Protocol Dashboard][protocol-dashboard] using Wallet Connect.
 
-:::info Active Node Operators
+:::tip
 
-A list of all active Node Operators can be found under the
-[Services tab](https://dashboard.audius.org/services) in the
-[Audius Protocol Dashboard](https://dashboard.audius.org/).
+Each Node Operator is also able to set a higher minimum delegation, keep that in mind when
+evaluating Node Operators to delegate towards.
 
 :::
 
-$AUDIO holders can delegate a minimum of 100 tokens to any Node Operator by connecting to either
-MetaMask or using a Gnosis Safe. Each Node Operator is also able to set a higher minimum delegation,
-keep that in mind when evaluating which Node Operator you chose to delegate towards.
+### Delegate with Wallet Connect
 
-### Delegate with MetaMask
+1. Navigate to the Audius Protocol Dashboard at [https://dashboard.audius.org][protocol-dashboard]
+2. Click the "Connect Wallet" button on the upper right
 
-1. First sign in to your MetaMask account and connect to the
-   [Audius Protocol Dashboard](https://dashboard.audius.org).
-1. Select a Node Operator you would like to delegate toward and click the "Delegate" button.
-1. Select the amount of $AUDIO to delegate and click the "Delegate" button.
-1. Sign the transaction in MetaMask to complete the process.
+<!-- prettier-ignore -->
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/delegate/wallet-connect-button.png')} />
+  <figcaption>Wallet Connect Button</figcaption>
+</figure>
+
+3. Select your web3 wallet in the wallet selection modal and sign in.
+
+<!-- prettier-ignore -->
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/delegate/wallet-selector.png')} />
+  <figcaption>Wallet Selection Modal</figcaption>
+</figure>
+
+4. On the [Node Operator tab][node-operators], select a Node Operator you would like to delegate
+   toward and click the "Delegate" button. Take note of the minimum Delegation set by the Node
+   Operator.
+
+<!-- prettier-ignore -->
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/delegate/node-operator-tab.png')} />
+  <figcaption>Note this Node Operator has a minimum delegation of 200 $AUDIO.</figcaption>
+</figure>
+
+5. Review the Node Operator information and enter the amount of $AUDIO to delegate, and click the
+   "Delegate" button.
+
+<!-- prettier-ignore -->
+<figure className="screensnippet-wrapper">
+  <img src={useBaseUrl('/img/delegate/delegate-modal.png')} />
+  <figcaption>Enter the amount to Delegate and click the "Delegate" button to proceed.</figcaption>
+</figure>
+
+6. Sign the transaction in your wallet to complete the process.
 
 ---
 
@@ -48,3 +78,9 @@ keep that in mind when evaluating which Node Operator you chose to delegate towa
 
 Audius features a 7 day cooldown period to undelegate in order to provide adequate time for Nodes to
 be slashed in the event of malicious behavior.
+
+<!-- prettier-ignore -->
+[node-operators]: https://dashboard.audius.org/#/nodes
+[protocol-dashboard]: https://dashboard.audius.org/
+[nodes-tab]: https://dashboard.audius.org/#/nodes
+[staking]: /node-operator/staking/stake
