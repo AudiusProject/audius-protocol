@@ -21,7 +21,12 @@ import {
   formatLineupTileDuration,
   getDogEarType
 } from '@audius/common/utils'
-import { Flex, IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
+import {
+  Box,
+  Flex,
+  IconVolumeLevel2 as IconVolume,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
@@ -101,16 +106,16 @@ const TrackList = ({
 }: TrackListProps) => {
   if (!tracks.length && isLoading && numLoadingSkeletonRows) {
     return (
-      <>
+      <Box backgroundColor='surface1'>
         {range(numLoadingSkeletonRows).map((i) => (
           <TrackItem key={i} active={false} index={i} forceSkeleton />
         ))}
-      </>
+      </Box>
     )
   }
 
   return (
-    <div onClick={goToCollectionPage}>
+    <Box backgroundColor='surface1' onClick={goToCollectionPage}>
       {tracks.slice(0, DISPLAY_TRACK_COUNT).map((track, index) => (
         <TrackItem
           key={track.uid}
@@ -127,7 +132,7 @@ const TrackList = ({
           </div>
         </>
       ) : null}
-    </div>
+    </Box>
   )
 }
 

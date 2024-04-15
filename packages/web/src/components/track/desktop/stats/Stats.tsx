@@ -89,7 +89,8 @@ const Stats = memo((props: StatsProps) => {
         <div className={styles.profileImages}>{profileImages}</div>
       ) : null}
       <span className={styles.text}>
-        <Icon size='xs' color='subdued' />
+        {/* TODO: css hack to align the text. We need to fix the icon so we can use flex alignment */}
+        <Icon size='xs' color='subdued' css={{ marginTop: '1px' }} />
         <StatsText
           flavor={flavor}
           count={count}
