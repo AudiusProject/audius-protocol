@@ -42,14 +42,13 @@ const formatTrackMetadata = (
     copyrightLine: metadata.copyright_line,
     producerCopyrightLine: metadata.producer_copyright_line,
     parentalWarningType: metadata.parental_warning_type,
+    isStreamGated: metadata.is_stream_gated,
+    streamConditions: metadata.stream_conditions,
+    isDownloadGated: metadata.is_download_gated,
+    downloadConditions: metadata.download_conditions,
     // isUnlisted: // TODO: set visibility
     // origFilename:
     // isOriginalAvailable:
-    // isStreamGated:
-    // streamConditions:
-    // isDownloadable:
-    // isDownloadGated:
-    // downloadConditions:
     // remixOf:
   }
 }
