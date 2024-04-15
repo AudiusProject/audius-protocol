@@ -420,9 +420,7 @@ export const TrackScreenDetailsTile = ({
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
-      isEditAlbumsEnabled && isOwner && !ddexApp
-        ? OverflowAction.ADD_TO_ALBUM
-        : null
+      isEditAlbumsEnabled && isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
     const addToPlaylistAction = !isStreamGated
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
