@@ -81,7 +81,8 @@ jobs:
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
-            - ./packages/ddex/webapp/node_modules
+            - ./packages/ddex/webapp/client/node_modules
+            - ./packages/ddex/webapp/server/node_modules
             - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
             - ./packages/create-audius-app/node_modules

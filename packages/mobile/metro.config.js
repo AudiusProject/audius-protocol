@@ -67,7 +67,6 @@ const config = {
     splPath
   ],
   resolver: {
-    unstable_enablePackageExports: true,
     assetExts: assetExts.filter((ext) => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],
     extraNodeModules: {
@@ -108,6 +107,14 @@ const config = {
           type: 'sourceFile'
         }
       }
+
+      if (moduleName === '@metaplex-foundation/umi/serializers') {
+        return {
+          filePath: `${resolveModule('@metaplex-foundation/umi')}/dist/cjs/serializers.cjs`,
+          type: 'sourceFile'
+        }
+      }
+
       return context.resolveRequest(context, moduleName, platform)
     }
   },

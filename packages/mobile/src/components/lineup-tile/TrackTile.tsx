@@ -198,6 +198,7 @@ export const TrackTileComponent = ({
     genre,
     isEditAlbumsEnabled,
     isOwner,
+    ddexApp,
     isStreamGated,
     isNewPodcastControlsEnabled,
     albumInfo,

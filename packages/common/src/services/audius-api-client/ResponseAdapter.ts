@@ -398,7 +398,7 @@ export const makePlaylist = (
   delete marshalled.favorite_count
   delete marshalled.added_timestamps
 
-  return marshalled as UserCollectionMetadata
+  return marshalled as unknown as UserCollectionMetadata
 }
 
 export const makeActivity = (

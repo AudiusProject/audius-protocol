@@ -14,7 +14,8 @@ import {
   Collection,
   SmartCollection,
   ID,
-  UID
+  UID,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -43,7 +44,9 @@ import {
   CollectionPageTrackRecord,
   PurchaseableContentType,
   usePremiumContentPurchaseModalActions,
-  PremiumContentPurchaseModalState
+  PremiumContentPurchaseModalState,
+  albumTrackRemoveConfirmationModalActions,
+  AlbumTrackRemoveConfirmationModalState
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable } from '@audius/common/utils'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -77,6 +80,7 @@ import { getCollectionPageSEOFields } from 'utils/seo'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
+
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
@@ -109,8 +113,8 @@ type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
   children:
-    | ComponentType<MobileCollectionPageProps>
-    | ComponentType<DesktopCollectionPageProps>
+  | ComponentType<MobileCollectionPageProps>
+  | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
   smartCollection?: SmartCollection
@@ -205,6 +209,7 @@ class CollectionPage extends Component<
     // if the uids of the tracks in the lineup are changing with this
     // update (initialOrder should contain ALL of the uids, so it suffices to check the first one).
     const newInitialOrder = tracks.entries.map((track) => track.uid)
+
     const noInitialOrder = !initialOrder && tracks.entries.length > 0
     const entryIds = new Set(newInitialOrder)
     const newUids =
@@ -499,27 +504,24 @@ class CollectionPage extends Component<
 
   onClickRemove = (
     trackId: number,
-    index: number,
+    _index: number,
     uid: string,
     timestamp: number
   ) => {
-    const { playlistId } = this.props
-    this.props.removeTrackFromPlaylist(
-      trackId,
-      playlistId as number,
-      uid,
-      timestamp
-    )
-
-    // Remove the track from the initial order,
-    // because reorder uses initial order as a starting point
-    const initialOrder = this.state.initialOrder
-      ? [
-          ...this.state.initialOrder.slice(0, index),
-          ...this.state.initialOrder.slice(index + 1)
-        ]
-      : null
-    this.setState({ initialOrder })
+    const {
+      playlistId,
+      collection: { stream_conditions }
+    } = this.props
+    if (isContentUSDCPurchaseGated(stream_conditions)) {
+      this.props.openConfirmationModal({
+        trackId,
+        playlistId,
+        uid,
+        timestamp
+      })
+    } else {
+      this.props.removeTrackFromPlaylist(trackId, playlistId, uid, timestamp)
+    }
   }
 
   onPlay = () => {
@@ -999,6 +1001,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       ),
     setModalVisibility: () => dispatch(setVisibility(true)),
+    openConfirmationModal: (args: AlbumTrackRemoveConfirmationModalState) =>
+      dispatch(albumTrackRemoveConfirmationModalActions.open(args)),
     onEditCollection: (collectionId: ID) =>
       dispatch(
         editPlaylistModalActions.open({

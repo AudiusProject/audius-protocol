@@ -14,6 +14,7 @@ export type IconProps = {
   height?: number
   width?: number
   shadow?: ShadowOptions
+  title?: string
 }
 
 type SVGIconProps = SVGBaseProps & IconProps
