@@ -1,13 +1,6 @@
 import { ID, SquareSizes } from '@audius/common/models'
 import { cacheCollectionsSelectors } from '@audius/common/store'
-import {
-  Divider,
-  Flex,
-  // IconHeart,
-  // IconRepost,
-  Paper,
-  Text
-} from '@audius/harmony'
+import { Divider, Flex, Paper, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
