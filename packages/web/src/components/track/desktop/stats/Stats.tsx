@@ -90,7 +90,7 @@ const Stats = memo((props: StatsProps) => {
       ) : null}
       <span className={styles.text}>
         {/* TODO: css hack to align the text. We need to fix the icon so we can use flex alignment */}
-        <Icon size='xs' color='subdued' css={{ marginTop: '1px' }} />
+        <Icon size='xs' color='subdued' css={{ marginTop: 1 }} />
         <StatsText
           flavor={flavor}
           count={count}
