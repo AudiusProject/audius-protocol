@@ -195,7 +195,7 @@ export const GiantTrackTile = ({
   trackId,
   trackTitle,
   userId,
-  ddexApp,
+  ddexApp
 }: GiantTrackTileProps) => {
   const dispatch = useDispatch()
   const { isSsrEnabled } = useSsrContext()

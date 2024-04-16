@@ -28,6 +28,7 @@ import {
   Box
 } from '@audius/harmony'
 import cn from 'classnames'
+import { chunk } from 'lodash'
 import {
   DragDropContext,
   Draggable,
@@ -35,6 +36,7 @@ import {
   DropResult
 } from 'react-beautiful-dnd'
 import { useDispatch, useSelector } from 'react-redux'
+import { AutoSizer, ColumnSizer, Grid, WindowScroller } from 'react-virtualized'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import IconGradientCollectibles from 'assets/img/iconGradientCollectibles.svg'
@@ -51,6 +53,7 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { MainContentContext } from 'pages/MainContentContext'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import {
   BASE_GA_URL,
@@ -564,21 +567,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       onClick: handleEditClick
     })
   }
-  const [loadedIndex, setLoadedIndex] = useState(-1)
-  const [concurrentLoads, setConcurrentLoads] = useState(0)
-  const onStartLoad = useCallback(
-    (value: number) => {
-      setConcurrentLoads(concurrentLoads + 1)
-    },
-    [concurrentLoads, setConcurrentLoads]
-  )
-  const onLoaded = useCallback(
-    (value: number) => {
-      setLoadedIndex(Math.max(loadedIndex, value))
-      setConcurrentLoads(concurrentLoads - 1)
-    },
-    [concurrentLoads, loadedIndex, setLoadedIndex, setConcurrentLoads]
-  )
+  const { mainContentRef } = useContext(MainContentContext)
 
   return (
     <div
@@ -653,17 +642,60 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           ) : (
             <div className={styles.container}>
-              {getVisibleCollectibles().map((collectible, i) => (
-                <CollectibleDetails
-                  key={collectible.id}
-                  collectible={collectible}
-                  onClick={setEmbedCollectibleHash}
-                  canLoad={i <= loadedIndex + 7 && concurrentLoads <= 8}
-                  index={i}
-                  onLoad={onStartLoad}
-                  onLoaded={onLoaded}
-                />
-              ))}
+              <WindowScroller scrollElement={mainContentRef.current}>
+                {({ height, isScrolling, onChildScroll, scrollTop }) => {
+                  const collectibles = chunk(getVisibleCollectibles(), 3)
+                  return (
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <ColumnSizer
+                          width={width}
+                          columnCount={collectibles[0].length}
+                        >
+                          {({
+                            adjustedWidth,
+                            getColumnWidth,
+                            registerChild
+                          }) => (
+                            <Grid
+                              ref={registerChild}
+                              autoHeight
+                              width={adjustedWidth}
+                              height={height}
+                              isScrolling={isScrolling}
+                              onScroll={onChildScroll}
+                              scrollTop={scrollTop}
+                              rowCount={collectibles.length}
+                              columnCount={collectibles[0].length}
+                              rowHeight={274}
+                              columnWidth={getColumnWidth}
+                              cellRenderer={({
+                                key,
+                                rowIndex,
+                                columnIndex,
+                                style
+                              }) => {
+                                const collectible =
+                                  collectibles[rowIndex][columnIndex]
+                                return (
+                                  <div key={key} style={style}>
+                                    {collectible ? (
+                                      <CollectibleDetails
+                                        collectible={collectible}
+                                        onClick={setEmbedCollectibleHash}
+                                      />
+                                    ) : null}
+                                  </div>
+                                )
+                              }}
+                            />
+                          )}
+                        </ColumnSizer>
+                      )}
+                    </AutoSizer>
+                  )
+                }}
+              </WindowScroller>
             </div>
           )}
         </div>
