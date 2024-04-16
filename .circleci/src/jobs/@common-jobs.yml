@@ -23,6 +23,8 @@ common-init:
         paths:
           - node_modules
           - packages/common/node_modules
+          - packages/libs/node_modules
+          - packages/libs/dist
 
 common-test:
   working_directory: ~/audius-protocol

@@ -33,7 +33,6 @@ import {
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import { ChallengeId } from '@audius/sdk'
-import { reportToSentry } from 'store/errors/reportToSentry'
 import {
   call,
   fork,
@@ -47,6 +46,7 @@ import {
   all
 } from 'typed-redux-saga'
 
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron } from 'utils/clientUtil'
 import { AUDIO_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'

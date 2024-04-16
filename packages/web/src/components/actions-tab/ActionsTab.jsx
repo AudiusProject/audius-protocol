@@ -206,7 +206,7 @@ export class ActionsTab extends PureComponent {
         mount: 'page',
         isOwner: handle === userHandle,
         isArtistPick,
-        ddexApp,
+        ddexApp
       }
     }
     if (variant === 'track') {
@@ -268,10 +268,7 @@ ActionsTab.propTypes = {
   trackTitle: PropTypes.string,
   trackId: PropTypes.number,
   playlistName: PropTypes.string,
-  ddexApp: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.oneOf([null])
-  ]),
+  ddexApp: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf([null])]),
   playlistId: PropTypes.number,
   permalink: PropTypes.string
 }

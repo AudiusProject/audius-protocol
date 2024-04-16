@@ -321,7 +321,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      isEditAlbumsEnabled && isTrackOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null,
+      isEditAlbumsEnabled && isTrackOwner && !ddexApp
+        ? OverflowAction.ADD_TO_ALBUM
+        : null,
       !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
@@ -352,12 +354,13 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_saved,
     has_current_user_reposted,
     isEditAlbumsEnabled,
+    ddexApp,
     isStreamGated,
     isNewPodcastControlsEnabled,
     isLongFormContent,
+    showViewAlbum,
     albumInfo,
     playbackPositionInfo?.status,
-    showViewAlbum,
     isContextPlaylistOwner,
     dispatch,
     track_id,

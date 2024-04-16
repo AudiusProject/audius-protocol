@@ -25,10 +25,12 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
 
   return collection ? (
     <>
-      {!ddex_app && <EditButton
-        collectionId={collectionId}
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-      />}
+      {!ddex_app && (
+        <EditButton
+          collectionId={collectionId}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+        />
+      )}
       <ShareButton
         collectionId={collectionId}
         disabled={isDisabled}

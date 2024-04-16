@@ -50,7 +50,9 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
         : props.isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      isEditAlbumsEnabled && props.user?.user_id === props.currentUserId && !props.ddexApp
+      isEditAlbumsEnabled &&
+      props.user?.user_id === props.currentUserId &&
+      !props.ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
       !props.isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
