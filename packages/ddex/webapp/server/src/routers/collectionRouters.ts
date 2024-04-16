@@ -8,7 +8,7 @@ import { Sort } from 'mongodb'
 const getCollectionInput = z.object({
   nextId: z.string().optional(),
   prevId: z.string().optional(),
-  limit: z.string().default('10'),
+  limit: z.string().default('10')
 })
 
 const createCollectionRouter = (collection: string) => {
@@ -79,7 +79,7 @@ const createCollectionRouter = (collection: string) => {
         }
 
         return { items, hasMoreNext, hasMorePrev }
-      }),
+      })
   })
 }
 
