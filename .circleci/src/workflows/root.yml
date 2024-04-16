@@ -1,0 +1,6 @@
+jobs:
+  - root-publish-github-release:
+      context: Audius Client
+      filters:
+        branches:
+          only: /(^release.*)$/
