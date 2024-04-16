@@ -39,15 +39,6 @@
   align-items: center;
 }
 
-.trackActionsContainer {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  width: 100%;
-  gap: var(--harmony-spacing-l);
-  margin: 0 var(--harmony-spacing-l);
-}
-
 .trackActionsContainer .tableActionButton {
   opacity: 0;
 }

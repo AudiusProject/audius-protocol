@@ -36,21 +36,17 @@ export const TablePlayButton = ({
   return (
     <div onClick={onClick} className={cn(styles.tablePlayButton, className)}>
       {playing && !paused ? (
-        <div>
-          <IconPause
-            className={styles.icon}
-            fill={showPremiumColor ? special.lightGreen : p300}
-          />
-        </div>
+        <IconPause
+          className={styles.icon}
+          fill={showPremiumColor ? special.lightGreen : p300}
+        />
       ) : (
-        <div>
-          <IconPlay
-            className={cn(styles.icon, {
-              [styles.hideDefault]: hideDefault && !playing
-            })}
-            fill={showPremiumColor ? special.lightGreen : p300}
-          />
-        </div>
+        <IconPlay
+          className={cn(styles.icon, {
+            [styles.hideDefault]: hideDefault && !playing
+          })}
+          fill={showPremiumColor ? special.lightGreen : p300}
+        />
       )}
     </div>
   )

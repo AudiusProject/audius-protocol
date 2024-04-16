@@ -7,7 +7,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { formatCount, formatSeconds } from '@audius/common/utils'
-import { IconVisibilityHidden, IconLock, Button } from '@audius/harmony'
+import { IconVisibilityHidden, IconLock, Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -438,7 +438,7 @@ export const TracksTable = ({
       const isOwner = track.owner_id === userId
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
-      if (!isLocked || deleted || isOwner) {
+      if (!isLocked || deleted || isOwner || !isPremiumEnabled) {
         return null
       }
       // note: wrapping an if with this method does type casting for track.stream_conditions
@@ -458,22 +458,29 @@ export const TracksTable = ({
         )
       }
     },
-    [onClickPurchase, trackAccessMap, userId]
+    [isPremiumEnabled, onClickPurchase, trackAccessMap, userId]
   )
 
   const renderTrackActions = useCallback(
     (cellInfo: TrackCell) => {
       return (
-        <div className={styles.trackActionsContainer}>
+        <Flex
+          inline
+          alignItems='center'
+          justifyContent='flex-end'
+          w='100%'
+          gap='l'
+          mh='l'
+          className={styles.trackActionsContainer}
+        >
           {renderRepostButtonCell(cellInfo)}
           {renderFavoriteButtonCell(cellInfo)}
-          {isPremiumEnabled ? renderPurchaseButton(cellInfo) : null}
+          {renderPurchaseButton(cellInfo)}
           {renderOverflowMenuCell(cellInfo)}
-        </div>
+        </Flex>
       )
     },
     [
-      isPremiumEnabled,
       renderFavoriteButtonCell,
       renderOverflowMenuCell,
       renderPurchaseButton,
