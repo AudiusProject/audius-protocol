@@ -699,8 +699,9 @@ export const relayTransaction = async (
   audiusBackendInstance: AudiusBackend,
   {
     transaction,
-    skipPreflight
-  }: { transaction: Transaction; skipPreflight?: boolean }
+    skipPreflight,
+    useCoinflowRelay
+  }: { transaction: Transaction; skipPreflight?: boolean, useCoinflowRelay?: boolean }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const instructions = transaction.instructions
@@ -717,7 +718,8 @@ export const relayTransaction = async (
     recentBlockhash,
     signatures,
     feePayerOverride,
-    skipPreflight
+    skipPreflight,
+    useCoinflowRelay
   })
 }
 
