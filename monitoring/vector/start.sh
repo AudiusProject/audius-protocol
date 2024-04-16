@@ -15,6 +15,8 @@ elif [ "${audius_delegate_owner_wallet}" ]; then
   node=${audius_delegate_owner_wallet}
 elif [ "${delegateOwnerWallet}" ]; then
   node=${delegateOwnerWallet}
+elif [ "${DDEX_URL}" ]; then
+  node=${DDEX_URL}
 fi
 
 # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
