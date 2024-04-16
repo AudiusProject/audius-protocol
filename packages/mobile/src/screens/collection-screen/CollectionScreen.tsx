@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -145,7 +145,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     playlist_owner_id,
     repost_count,
     save_count,
-    updated_at
+    updated_at,
+    stream_conditions
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
@@ -186,6 +187,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(playlist_id.toString())
   )
+
+  const { hasStreamAccess } = useGatedContentAccess(collection as Collection)
 
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
@@ -315,6 +318,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               title={playlist_name}
               user={user}
               isOwner={isOwner}
+              hasStreamAccess={hasStreamAccess}
+              streamConditions={stream_conditions}
             />
             {isOwner && (!is_album || isEditAlbumsEnabled) ? (
               <>

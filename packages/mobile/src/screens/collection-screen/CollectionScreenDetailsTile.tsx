@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
 import { Name, PlaybackSource, Status } from '@audius/common/models'
 import type {
   SmartCollectionVariant,
   ID,
   UID,
-  Collection
+  AccessConditions
 } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
@@ -126,6 +125,8 @@ type CollectionScreenDetailsTileProps = {
   isPublishing?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
+  hasStreamAccess?: boolean
+  streamConditions?: AccessConditions
 } & Omit<
   DetailsTileProps,
   | 'descriptionLinkPressSource'
@@ -158,6 +159,8 @@ export const CollectionScreenDetailsTile = ({
   isOwner,
   hideOverflow,
   hideRepost,
+  hasStreamAccess,
+  streamConditions,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -178,14 +181,6 @@ export const CollectionScreenDetailsTile = ({
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
-  const collection = useSelector((state) =>
-    typeof collectionId !== 'number'
-      ? 0
-      : getCollection(state, { id: collectionId })
-  )
-  const { hasStreamAccess } = useGatedContentAccess(collection as Collection)
-  const { stream_conditions: streamConditions } = collection as Collection
-
   const details = useMemo(() => {
     if (!isLineupLoading && trackCount === 0) return []
     return [
