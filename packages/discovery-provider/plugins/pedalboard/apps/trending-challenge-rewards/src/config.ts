@@ -20,8 +20,6 @@ let sharedData: SharedData | undefined = undefined
 export const initSharedData = async (): Promise<SharedData> => {
   if (sharedData !== undefined) return sharedData
 
-  dotenv.config({ path: './tcr.env' })
-
   const libs = await initAudiusLibs()
 
   // default to true if undefined, otherwise explicitly state false to not do dry run
