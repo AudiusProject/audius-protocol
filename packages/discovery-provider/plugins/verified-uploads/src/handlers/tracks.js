@@ -13,12 +13,17 @@ export const isOldUpload = (uploadDate) => {
   return oneWeekAgo > uploadedDate
 }
 
-export default async ({ track_id, updated_at, created_at }) => {
+export default async ({ track_id, updated_at, created_at, is_scheduled_release, is_unlisted }) => {
   const isUpload =
     updated_at === created_at &&
     updated_at !== undefined &&
     created_at !== undefined
-  if (!isUpload) return
+  const isScheduledRelease =
+    is_scheduled_release &&
+    !is_unlisted &&
+    updated_at !== undefined &&
+    created_at !== undefined
+  if (!isUpload && !isScheduledRelease) return
 
   const trackId = track_id
   const results = await dp_db('tracks')
