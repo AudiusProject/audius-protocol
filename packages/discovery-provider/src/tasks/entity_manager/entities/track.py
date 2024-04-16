@@ -523,6 +523,10 @@ def create_track(params: ManageEntityParameters):
     track_id = params.entity_id
     owner_id = params.user_id
 
+    ddex_app = None
+    if is_ddex_signer(params.signer):
+        ddex_app = params.signer
+
     track_record = Track(
         track_id=track_id,
         owner_id=owner_id,
@@ -533,10 +537,8 @@ def create_track(params: ManageEntityParameters):
         updated_at=params.block_datetime,
         release_date=str(params.block_datetime),  # type: ignore
         is_delete=False,
+        ddex_app=ddex_app,
     )
-
-    if is_ddex_signer(params.signer):
-        track_record.ddex_app = params.signer
 
     update_track_routes_table(
         params, track_record, params.metadata, params.pending_track_routes

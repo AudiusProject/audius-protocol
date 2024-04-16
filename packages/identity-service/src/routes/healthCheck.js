@@ -281,7 +281,7 @@ module.exports = function (app) {
       )
       const solanaFeePayerWallets = config.get('solanaFeePayerWallets')
       const libs = req.app.get('audiusLibs')
-      const connection = libs.solanaWeb3Manager.connection
+      const connection = libs.solanaWeb3Manager.getConnection()
 
       const solanaFeePayerBalances = {}
       const belowMinimumBalances = []

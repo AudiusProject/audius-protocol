@@ -34,7 +34,8 @@ import {
   favoritesUserListActions,
   RepostType,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   Genre,
@@ -126,7 +127,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    paddingTop: spacing(4)
+    padding: spacing(4)
   },
 
   moodEmoji: {
@@ -268,7 +269,8 @@ export const TrackScreenDetailsTile = ({
     tags,
     title,
     track_id: trackId,
-    stream_conditions: streamConditions
+    stream_conditions: streamConditions,
+    ddex_app: ddexApp
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -418,7 +420,9 @@ export const TrackScreenDetailsTile = ({
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
-      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
+      isEditAlbumsEnabled && isOwner && !ddexApp
+        ? OverflowAction.ADD_TO_ALBUM
+        : null
     const addToPlaylistAction = !isStreamGated
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
@@ -437,11 +441,11 @@ export const TrackScreenDetailsTile = ({
         : null,
       isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
-      isOwner ? OverflowAction.EDIT_TRACK : null,
+      isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && track?.is_scheduled_release && track?.is_unlisted
         ? OverflowAction.RELEASE_NOW
         : null,
-      isOwner ? OverflowAction.DELETE_TRACK : null
+      isOwner && !ddexApp ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 
     dispatch(
@@ -630,6 +634,8 @@ export const TrackScreenDetailsTile = ({
       title={title}
       track={track}
       contentId={trackId}
+      contentType={PurchaseableContentType.TRACK}
+      ddexApp={ddexApp}
     />
   )
 }

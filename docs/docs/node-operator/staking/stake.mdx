@@ -6,15 +6,15 @@ sidebar_label: Staking
 description: Audius Protocol Documentation
 ---
 
+> Built as a decentralized protocol on Ethereum, all the content, information and data on Audius is
+> stored and indexed by a growing network of third-party [Node Operators][node-operators].
+
 ## What is Staking?
 
-Built as a decentralized protocol on Ethereum, all the content, information and data on Audius is
-stored and indexed by a growing network of third-party Node Operators.
-
-To ensure this content can be trusted and maintained, Node Operators are required to provide
-collateral or ‘stake’ as a bond to service the protocol. This stake, denominated in $AUDIO, ensures
-that Node Operators have tokens at risk that can be slashed, or taken, in the event of malicious or
-poor behavior.
+To ensure that content on Audius can be trusted and maintained, Node Operators are required to
+provide collateral or ‘stake’ as a bond to service the protocol. This stake, denominated in $AUDIO,
+ensures that Node Operators have tokens at risk that can be slashed, or taken, in the event of
+malicious or poor behavior.
 
 By using $AUDIO tokens as collateral, anyone with the proper hardware requirements can join as a
 Node Operator in a completely permissionless fashion. The more $AUDIO staked to the protocol, the
@@ -32,29 +32,29 @@ network.
 
 <!-- TODO: pull content from this link into these docs, replace GitHub version with a link to this page -->
 
-To stake on Audius, Node Operators can set up content and/or discovery nodes using
-[these resources](https://github.com/AudiusProject/audius-protocol/wiki/Staking-Resources).
+To stake on Audius, Node Operators can set up [Content Nodes][content-node] and [Discovery
+Nodes][discovery-node] using [these resources][resources].
 
 :::note Permissionless Staking
 
-Learn more about
-[staking with Figment](https://figment.io/insights/audius-guide-staking-delegating-audio-tokens/) if
-you are not ready to run your own Node.
+Learn more about [staking with Figment][figment-staking-guide] if you are not ready to run your own
+Node.
 
 :::
 
 <!-- TODO: add disclaimer that Figment is a 3rd party and not specifically endorsed by Audius/TikiLabs -->
 
-A list of all active Node Operators can be found under the
-[Services tab](https://dashboard.audius.org/services) in the
-[Audius Protocol Dashboard](https://dashboard.audius.org/).
+A list of all active Node Operators can be found under the [Services tab][dashboard-services] in the
+[Audius Protocol Dashboard][protocol-dashboard].
 
-$AUDIO holders can delegate a minimum of 100 tokens to any of these Node Operators by connecting to
-either MetaMask or using a Gnosis Safe. More details on delegation will be released soon!
+$AUDIO holders can delegate a minimum of 100 tokens to any of these Node Operators by connecting a
+wallet to the [Audius Protocol Dashboard][protocol-dashboard] using Wallet Connect. More details on
+delegation will be released soon!
 
-Node Operators can choose to run either a Content Node, a Discovery Node or a combination of both.
-The amount of $AUDIO staked to a given Node Operator can be thought of as their economic bandwidth
-to run one or a combination of services on the network.
+Node Operators can choose to run either a [Content Node][content-node], a [Discovery
+Node][discovery-node] or a combination of both. The amount of $AUDIO staked to a given Node Operator
+can be thought of as their economic bandwidth to run one or a combination of services on the
+network.
 
 All Node Operators are required to post a **minimum self-bond of 200,000 $AUDIO tokens per node**.
 While both Content and Discovery Nodes utilize the same machine, Content Nodes require more storage
@@ -81,10 +81,9 @@ votes, and the different nodes they maintain. Other key parameters include:
 | Services      | The number of unique nodes run by a given operator.                                                                                                 |
 | Delegators    | The total number of unique addresses delegating tokens to the Operator.                                                                             |
 
-Node Operators can also populate their information by
-[linking an Audius account](/reference/protocol-dashboard/link-profile), displaying a profile image
-and Audius profile link to allow delegates to more easily distinguish themselves from others on the
-network.
+Node Operators can also populate their information by [linking an Audius account][link-profile],
+displaying a profile image and Audius profile link to allow delegates to more easily distinguish
+themselves from others on the network.
 
 Audius features a 7 day cooldown period to undelegate or unstake in order to provide adequate time
 for nodes to be slashed in the event of malicious behavior. During the genesis staking period, nodes
@@ -108,3 +107,13 @@ Moving forward, anyone in the network can call the reward function, with tokens 
 a weekly cadence and claimable at any time.
 
 The rate, duration and parameters of $AUDIO staking are controlled entirely by governance.
+
+<!-- prettier-ignore -->
+[content-node]: /learn/architecture/content-node
+[dashboard-services]: https://dashboard.audius.org/services
+[discovery-node]: /learn/architecture/discovery-node
+[figment-staking-guide]: https://figment.io/insights/audius-guide-staking-delegating-audio-tokens/
+[link-profile]: /reference/protocol-dashboard/link-profile
+[node-operators]: https://dashboard.audius.org/#/nodes
+[protocol-dashboard]: https://dashboard.audius.org/
+[resources]: https://github.com/AudiusProject/audius-protocol/wiki/Staking-Resources

@@ -2,6 +2,7 @@
   gap: var(--harmony-unit-4);
   padding: var(--harmony-unit-4) var(--harmony-unit-6);
   flex-direction: column;
+  flex: 1;
   cursor: pointer;
 }
 

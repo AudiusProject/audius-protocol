@@ -13,7 +13,8 @@ import {
   collectionPageSelectors,
   reachabilitySelectors,
   playerSelectors,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
 import type { Maybe } from '@audius/common/utils'
@@ -135,6 +136,7 @@ type CollectionScreenDetailsTileProps = {
   | 'onPressPlay'
   | 'onPressPreview'
   | 'collectionId'
+  | 'contentType'
 >
 
 const recordPlay = (id: Maybe<number>, play = true) => {
@@ -285,6 +287,8 @@ export const CollectionScreenDetailsTile = ({
     <DetailsTile
       {...detailsTileProps}
       contentId={numericCollectionId}
+      contentType={PurchaseableContentType.ALBUM}
+      ddexApp={(collection as Collection | null)?.ddex_app}
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}

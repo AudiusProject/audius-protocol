@@ -59,7 +59,7 @@ export const Text = forwardRef(
         textShadow: typography.shadow[shadow]
       }),
       textAlign,
-      textTransform,
+      ...(textTransform && { textTransform }),
       ...(ellipses && {
         overflow: 'hidden',
         textOverflow: 'ellipsis',

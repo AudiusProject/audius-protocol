@@ -8,6 +8,7 @@ import type {
   User,
   AccessConditions
 } from '@audius/common/models'
+import type { PurchaseableContentType } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import type { TextStyle } from 'react-native'
 
@@ -26,6 +27,9 @@ export type DetailsTileDetail = {
 export type DetailsTileProps = {
   /** Id of the track or collection */
   contentId?: ID
+
+  /** Type of content (for premium content) */
+  contentType: PurchaseableContentType
 
   /** Cosign information */
   coSign?: Track['_co_sign']
@@ -155,4 +159,7 @@ export type DetailsTileProps = {
 
   /** The track if tile is for a track */
   track?: Track | SearchTrack
+
+  /** The key of the DDEX app that owns this track/collection */
+  ddexApp?: string | null
 }

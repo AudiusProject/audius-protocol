@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es2020"],
+    "lib": ["es2021"],
     "module": "CommonJS",
     "outDir": "./dist",
     "rootDir": "./src"

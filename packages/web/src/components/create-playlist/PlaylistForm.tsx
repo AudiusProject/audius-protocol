@@ -11,6 +11,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { AccessAndSaleField } from 'pages/upload-page/fields/AccessAndSaleField'
 
 import { EditActions } from './FormActions'
 
@@ -104,6 +105,11 @@ const PlaylistForm = ({
               />
             </Flex>
           </Flex>
+          {isAlbum ? (
+            <Flex>
+              <AccessAndSaleField isAlbum />
+            </Flex>
+          ) : null}
           <EditActions
             deleteText={
               isAlbum

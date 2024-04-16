@@ -146,7 +146,8 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     repost_count,
     save_count,
     updated_at,
-    stream_conditions
+    stream_conditions,
+    ddex_app
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
@@ -192,7 +193,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const handlePressOverflow = useCallback(() => {
     const overflowActions = [
-      (!is_album || isEditAlbumsEnabled) && isOwner
+      (!is_album || isEditAlbumsEnabled) && isOwner && !ddex_app
         ? is_album
           ? OverflowAction.EDIT_ALBUM
           : OverflowAction.EDIT_PLAYLIST
@@ -200,7 +201,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
       isOwner && (!is_album || isEditAlbumsEnabled) && is_private
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && (!is_album || isEditAlbumsEnabled)
+      isOwner && (!is_album || isEditAlbumsEnabled) && !ddex_app
         ? is_album
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST
@@ -219,6 +220,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     is_album,
     isEditAlbumsEnabled,
     isOwner,
+    ddex_app,
     is_private,
     dispatch,
     playlist_id
@@ -320,8 +322,9 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               isOwner={isOwner}
               hasStreamAccess={hasStreamAccess}
               streamConditions={stream_conditions}
+              ddexApp={ddex_app}
             />
-            {isOwner && (!is_album || isEditAlbumsEnabled) ? (
+            {isOwner && (!is_album || isEditAlbumsEnabled) && !ddex_app ? (
               <>
                 <Divider style={styles.divider} color={neutralLight5} />
                 <SuggestedCollectionTracks collectionId={playlist_id} />

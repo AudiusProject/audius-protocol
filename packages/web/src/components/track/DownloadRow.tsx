@@ -25,7 +25,6 @@ const messages = {
 
 type DownloadRowProps = {
   onDownload: (args: { trackIds: ID[]; parentTrackId?: ID }) => void
-  isOriginal: boolean
   trackId?: ID
   parentTrackId?: ID
   hideDownload?: boolean
@@ -38,7 +37,6 @@ type DownloadRowProps = {
 
 export const DownloadRow = ({
   onDownload,
-  isOriginal,
   trackId,
   parentTrackId,
   hideDownload,
@@ -109,7 +107,7 @@ export const DownloadRow = ({
           >
             {getDownloadFilename({
               filename: filename ?? track?.orig_filename,
-              isOriginal
+              isOriginal: true
             })}
           </Text>
         </Flex>
