@@ -34,19 +34,14 @@ const { getProfileUserHandle } = profilePageSelectors
 type CollectibleDetailsProps = {
   collectible: Collectible
   onClick: (hash: string) => void
-  canLoad?: boolean
-  index?: number
-  onLoad?: (i: number) => void
-  onLoaded?: (i: number) => void
 }
 
 const CollectibleDetails = (props: CollectibleDetailsProps) => {
-  const { collectible, onClick, canLoad, onLoad, onLoaded, index } = props
+  const { collectible, onClick } = props
   const dispatch = useDispatch()
   const { mediaType, frameUrl, videoUrl, gifUrl, name } = collectible
 
   const [isLoading, setIsLoading] = useState(true)
-  const [hasLoaded, setHasLoaded] = useState(false)
   const [frame, setFrame] = useState(frameUrl)
   const [showSpinner, setShowSpinner] = useState(false)
   const [, setIsModalOpen] = useModalState('CollectibleDetails')
@@ -58,20 +53,8 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
     }, 1000)
   }, [])
 
-  // After some time, tell the container we have timed out
-  useEffect(() => {
-    if (canLoad) {
-      setTimeout(() => {
-        if (index !== undefined && onLoad) {
-          onLoad(index)
-        }
-      }, 2000)
-    }
-  }, [canLoad, onLoad, index])
-
   useEffect(() => {
     const load = async () => {
-      setHasLoaded(true)
       let f = frameUrl
       if (!f && mediaType === CollectibleMediaType.GIF) {
         f = await getFrameFromGif(gifUrl!)
@@ -79,9 +62,6 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
         f = await getFrameFromAnimatedWebp(gifUrl!)
       } else if (!f && mediaType === CollectibleMediaType.VIDEO) {
         setIsLoading(false)
-        if (index !== undefined && onLoaded) {
-          onLoaded(index)
-        }
       }
       // we know that images and 3D objects have frame urls so no need to check those
 
@@ -89,32 +69,11 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
         await preload(f)
         setFrame(f)
         setIsLoading(false)
-        if (index !== undefined && onLoaded) {
-          onLoaded(index)
-        }
       }
     }
-    if (!hasLoaded && canLoad) {
-      if (index !== undefined && onLoad) {
-        onLoad(index)
-      }
-      load()
-    }
-  }, [
-    index,
-    isLoading,
-    mediaType,
-    frameUrl,
-    gifUrl,
-    name,
-    setFrame,
-    setIsLoading,
-    hasLoaded,
-    setHasLoaded,
-    onLoad,
-    onLoaded,
-    canLoad
-  ])
+
+    load()
+  }, [isLoading, mediaType, frameUrl, gifUrl, name, setFrame, setIsLoading])
 
   const handle = useSelector(getProfileUserHandle)
   const handleItemClick = useCallback(() => {
