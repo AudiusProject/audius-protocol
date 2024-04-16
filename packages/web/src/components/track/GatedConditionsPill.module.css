@@ -6,7 +6,3 @@
 .spinner g path {
   stroke: var(--harmony-static-white);
 }
-
-.button {
-  height: var(--harmony-unit-6);
-}

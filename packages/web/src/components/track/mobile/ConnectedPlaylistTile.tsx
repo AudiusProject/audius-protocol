@@ -328,6 +328,7 @@ const ConnectedPlaylistTile = ({
       showRankIcon={showRankIcon}
       variant={variant}
       isUnlisted={collection.is_private}
+      isStreamGated={collection.is_stream_gated}
       hasStreamAccess={!!collection.access?.stream}
       streamConditions={collection.stream_conditions}
     />
