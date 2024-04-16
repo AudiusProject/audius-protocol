@@ -159,4 +159,7 @@ export type DetailsTileProps = {
 
   /** The track if tile is for a track */
   track?: Track | SearchTrack
+
+  /** The key of the DDEX app that owns this track/collection */
+  ddexApp?: string | null
 }

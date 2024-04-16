@@ -34,6 +34,7 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
 
 type DetailsTileActionButtonsProps = {
   collectionId?: ID
+  ddexApp?: string | null
   hasReposted: boolean
   hasSaved: boolean
   isOwner: boolean
@@ -63,6 +64,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
  */
 export const DetailsTileActionButtons = ({
   collectionId,
+  ddexApp,
   hasReposted,
   hasSaved,
   isCollection,
@@ -181,7 +183,7 @@ export const DetailsTileActionButtons = ({
       borderBottom='strong'
       pb='l'
     >
-      {isCollectionOwner
+      {isCollectionOwner && !ddexApp
         ? !isAlbum || isEditAlbumsEnabled
           ? editButton
           : null

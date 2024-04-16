@@ -1,6 +1,7 @@
 import { uniq } from 'lodash'
 
 import { createApi } from '~/audius-query'
+import { userMetadataListFromSDK } from '~/models'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 
@@ -18,12 +19,26 @@ const topArtistsApi = createApi({
     getTopArtistsInGenre: {
       async fetch(args: GetTopArtistsForGenreArgs, context) {
         const { genre, limit, offset } = args
-        const { apiClient } = context
+        const { apiClient, audiusSdk, checkSDKMigration } = context
+        const sdk = await audiusSdk()
 
-        return await apiClient.getTopArtistGenres({
-          genres: [genre],
-          limit,
-          offset
+        return await checkSDKMigration({
+          legacy: apiClient.getTopArtistGenres({
+            genres: [genre],
+            limit,
+            offset
+          }),
+          migrated: async () =>
+            userMetadataListFromSDK(
+              (
+                await sdk.full.users.getTopUsersInGenre({
+                  genre: [genre],
+                  limit,
+                  offset
+                })
+              ).data
+            ),
+          endpointName: 'getTopArtistsInGenre'
         })
       },
       options: { idArgKey: 'genre', kind: Kind.USERS, schemaKey: 'users' }

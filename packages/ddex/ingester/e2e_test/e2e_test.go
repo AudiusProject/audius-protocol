@@ -128,7 +128,7 @@ func TestRunE2E(t *testing.T) {
 				Release: common.Release{
 					ReleaseProfile: common.UnspecifiedReleaseProfile,
 					SDKUploadMetadata: common.SDKUploadMetadata{
-						ReleaseDate: time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+						ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
 						Genre:       "Hip-Hop/Rap",
 						Artists: []common.ResourceContributor{
 							{
@@ -175,10 +175,11 @@ func TestRunE2E(t *testing.T) {
 						IsAlbum:           boolPtr(true),
 						IsPrivate:         nil,
 						UPC:               stringPtr("196871335584"),
+						HasDeal:           true,
 						Tracks: []common.TrackMetadata{
 							{
 								Title:       "Playing With Fire.",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
 								Genre:       "Hip-Hop/Rap",
 								Duration:    279,
 								ISRC:        stringPtr("ZAA012300131"),
@@ -211,10 +212,13 @@ func TestRunE2E(t *testing.T) {
 								PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/", // TODO: This doesn't seem right...
 								PreviewStartSeconds:  intPtr(48),
 								ArtistName:           "Theo Random",
+								IsStreamGated:        false,
+								IsDownloadGated:      false,
+								HasDeal:              true,
 							},
 							{
 								Title:       "No Comment.",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
 								Genre:       "Hip-Hop/Rap",
 								Duration:    142,
 								ISRC:        stringPtr("ZAA012300128"),
@@ -243,6 +247,9 @@ func TestRunE2E(t *testing.T) {
 								PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/", // TODO: This doesn't seem right...
 								PreviewStartSeconds:  intPtr(48),
 								ArtistName:           "Theo Random & Thato Saul",
+								IsStreamGated:        false,
+								IsDownloadGated:      false,
+								HasDeal:              true,
 							},
 						},
 					},
@@ -314,7 +321,7 @@ func TestRunE2E(t *testing.T) {
 							{
 								Title:       "Can you feel ...the Monkey Claw!",
 								ArtistName:  "Monkey Claw",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 								Genre:       "Metal",
 								Duration:    811,
 								ISRC:        stringPtr("CASE00000001"),
@@ -351,12 +358,15 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
-								AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
+								AudioFileURL:    "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
+								IsStreamGated:   false,
+								IsDownloadGated: false,
+								HasDeal:         true,
 							},
 							{
 								Title:       "Red top mountain, blown sky high",
 								ArtistName:  "Monkey Claw",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 								Genre:       "Metal",
 								Duration:    366,
 								ISRC:        stringPtr("CASE00000002"),
@@ -393,7 +403,10 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
-								AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
+								AudioFileURL:    "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
+								IsStreamGated:   false,
+								IsDownloadGated: false,
+								HasDeal:         true,
 							},
 						},
 					},
@@ -481,6 +494,9 @@ func TestRunE2E(t *testing.T) {
 						AudioFileURLHash:     stringPtr("5e2994cdd94f14a197283a00387ca451"),
 						AudioFileURLHashAlgo: stringPtr("5e2994cdd94f14a197283a00387ca451"), // TODO: This isn't right
 						Tracks:               nil,
+						IsStreamGated:        false,
+						IsDownloadGated:      false,
+						HasDeal:              true,
 					},
 				},
 			},

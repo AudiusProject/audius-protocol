@@ -148,6 +148,13 @@ const trackMetadataSchema = new mongoose.Schema({
   cover_art_url: String,
   cover_art_url_hash: String,
   cover_art_url_hash_algo: String,
+  is_stream_gated: { type: Boolean, required: true },
+  stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+  is_download_gated: { type: Boolean, required: true },
+  download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+  is_stream_follow_gated: Boolean,
+  is_stream_tip_gated: Boolean,
+  is_download_follow_gated: Boolean,
 })
 
 export type TrackMetadata = mongoose.InferSchemaType<typeof trackMetadataSchema>
@@ -207,6 +214,7 @@ export const sdkUploadMetadataSchema = new mongoose.Schema(
     cover_art_url: { type: String, required: true },
     cover_art_url_hash: nullableString,
     cover_art_url_hash_algo: nullableString,
+    has_deal: Boolean,
 
     // Only for tracks
     title: nullableString,
@@ -223,6 +231,13 @@ export const sdkUploadMetadataSchema = new mongoose.Schema(
     audio_file_url: nullableString,
     audio_file_url_hash: nullableString,
     audio_file_url_hash_algo: nullableString,
+    is_stream_gated: { type: Boolean, required: true },
+    stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+    is_download_gated: { type: Boolean, required: true },
+    download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+    is_stream_follow_gated: Boolean,
+    is_stream_tip_gated: Boolean,
+    is_download_follow_gated: Boolean,
 
     // Only for albums
     tracks: [trackMetadataSchema],
