@@ -10,10 +10,4 @@ WORKDIR /app/packages/discovery-provider/plugins/pedalboard/apps/${APP_NAME}
 
 RUN apk add --no-cache curl
 
-HEALTHCHECK --interval=3s \
-            --timeout=30s \
-            --start-period=5s \
-            --retries=3 \
-            CMD curl -f http://localhost:6001/relay/health || exit 1
-
 CMD sh ../../docker/startup.sh

@@ -74,6 +74,7 @@ const CollectionHeader = ({
   collectionId,
   userId,
   title,
+  ddexApp,
   coverArtSizes,
   description,
   isOwner,
@@ -124,7 +125,7 @@ const CollectionHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      (!isAlbum || isEditAlbumsEnabled) && isOwner
+      (!isAlbum || isEditAlbumsEnabled) && isOwner && !ddexApp
         ? isAlbum
           ? OverflowAction.EDIT_ALBUM
           : OverflowAction.EDIT_PLAYLIST
@@ -132,7 +133,7 @@ const CollectionHeader = ({
       isOwner && (!isAlbum || isEditAlbumsEnabled) && !isPublished
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
-      isOwner && (!isAlbum || isEditAlbumsEnabled)
+      isOwner && (!isAlbum || isEditAlbumsEnabled) && !ddexApp
         ? isAlbum
           ? OverflowAction.DELETE_ALBUM
           : OverflowAction.DELETE_PLAYLIST

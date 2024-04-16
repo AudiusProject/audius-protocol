@@ -42,14 +42,13 @@ const formatTrackMetadata = (
     copyrightLine: metadata.copyright_line,
     producerCopyrightLine: metadata.producer_copyright_line,
     parentalWarningType: metadata.parental_warning_type,
+    isStreamGated: metadata.is_stream_gated,
+    streamConditions: metadata.stream_conditions,
+    isDownloadGated: metadata.is_download_gated,
+    downloadConditions: metadata.download_conditions,
     // isUnlisted: // TODO: set visibility
     // origFilename:
     // isOriginalAvailable:
-    // isStreamGated:
-    // streamConditions:
-    // isDownloadable:
-    // isDownloadGated:
-    // downloadConditions:
     // remixOf:
   }
 }
@@ -217,6 +216,11 @@ export const publishReleases = async (
       if (doc.failed_after_upload) {
         console.error(
           `pending_releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
+        )
+        continue
+      } else if (doc.failure_count > 3) {
+        console.error(
+          `pending_releases doc with ID ${releaseId} requires manual intervention because we've already retried it 3 times.`
         )
         continue
       }

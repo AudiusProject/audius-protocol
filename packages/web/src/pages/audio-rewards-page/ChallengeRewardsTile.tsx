@@ -1,12 +1,16 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import {
+  useFeatureFlag,
+  usePendingChallengeSchedule
+} from '@audius/common/hooks'
+import {
   Name,
   ChallengeName,
   ChallengeRewardID,
   OptimisticUserChallenge
 } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
+import { FeatureFlags, StringKeys } from '@audius/common/services'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
@@ -22,15 +26,19 @@ import {
 } from '@audius/common/utils'
 import {
   Button,
+  Divider,
+  Flex,
   IconArrowRight as IconArrow,
   IconCheck,
+  IconTokenGold,
+  Paper,
   ProgressBar,
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useSetVisibility } from 'common/hooks/useModalState'
+import { useModalState, useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -51,9 +59,15 @@ const messages = {
   description1: 'Complete tasks to earn $AUDIO tokens!',
   completeLabel: 'COMPLETE',
   claimReward: 'Claim Your Reward',
+  claimAllRewards: 'Claim All Rewards',
+
   readyToClaim: 'Ready to Claim',
+  totalReadyToClaim: 'Total Ready To Claim',
+  pending: 'Pending',
   viewDetails: 'View Details',
-  new: 'New!'
+  new: 'New!',
+  goldAudioToken: 'Gold $AUDIO token',
+  availableNow: '$AUDIO available now'
 }
 
 type RewardPanelProps = {
@@ -88,6 +102,7 @@ const RewardPanel = ({
   }
 
   const challenge = userChallenges[id]
+
   const shouldShowCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
@@ -128,13 +143,9 @@ const RewardPanel = ({
         )
       : ''
   }
-  const buttonMessage = needsDisbursement
-    ? messages.claimReward
-    : hasDisbursed
-    ? messages.viewDetails
-    : panelButtonText
+  const buttonMessage = hasDisbursed ? messages.viewDetails : panelButtonText
 
-  const buttonVariant = needsDisbursement ? 'primary' : 'secondary'
+  const buttonVariant = 'secondary'
 
   return (
     <div
@@ -144,7 +155,7 @@ const RewardPanel = ({
       onClick={openRewardModal}
     >
       <div className={wm(styles.rewardPanelTop)}>
-        <div className={wm(styles.pillContainer)}>
+        <div className={wm(styles.rewardPillContainer)}>
           {needsDisbursement ? (
             <span className={styles.pillMessage}>{messages.readyToClaim}</span>
           ) : showNewChallengePill ? (
@@ -193,6 +204,60 @@ const RewardPanel = ({
   )
 }
 
+const ClaimAllPanel = () => {
+  const wm = useWithMobileStyle(styles.mobile)
+  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
+
+  const totalClaimableAmount = Object.values(optimisticUserChallenges).reduce(
+    (sum, challenge) => sum + challenge.claimableAmount,
+    0
+  )
+  const pendingChallengeSchedule = usePendingChallengeSchedule()
+  const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
+  const onClickClaimAllRewards = () => {
+    setClaimAllRewardsVisibility(true)
+  }
+  const pendingAmount = pendingChallengeSchedule.claimableAmount
+
+  return (
+    <Paper
+      shadow='flat'
+      border='strong'
+      p='xl'
+      alignItems='center'
+      alignSelf='stretch'
+      justifyContent='space-between'
+      m='s'
+    >
+      <Flex gap='l' alignItems='center'>
+        <IconTokenGold
+          height={48}
+          width={48}
+          aria-label={messages.goldAudioToken}
+        />
+        <Flex direction='column'>
+          <Flex>
+            <Text color='accent' size='m' variant='heading'>
+              {messages.totalReadyToClaim}
+            </Text>
+            <div className={wm(styles.pendingPillContainer)}>
+              <span className={styles.pillMessage}>
+                {pendingAmount} {messages.pending}
+              </span>
+            </div>
+          </Flex>
+          <Text variant='body' textAlign='left'>
+            {totalClaimableAmount} {messages.availableNow}
+          </Text>
+        </Flex>
+      </Flex>
+      <Button onClick={onClickClaimAllRewards} iconRight={IconArrow}>
+        {messages.claimAllRewards}
+      </Button>
+    </Paper>
+  )
+}
+
 type RewardsTileProps = {
   className?: string
 }
@@ -233,6 +298,9 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
+  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
+    FeatureFlags.REWARDS_COOLDOWN
+  )
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
@@ -281,13 +349,15 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
       <div className={wm(styles.subtitle)}>
         <span>{messages.description1}</span>
       </div>
-      <div className={styles.rewardsContainer}>
-        {userChallengesLoading && !haveChallengesLoaded ? (
-          <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
-        ) : (
-          rewardsTiles
-        )}
-      </div>
+      {userChallengesLoading && !haveChallengesLoaded ? (
+        <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
+      ) : (
+        <>
+          {isRewardsCooldownEnabled ? <ClaimAllPanel></ClaimAllPanel> : null}
+          <Divider orientation='horizontal' className={wm(styles.divider)} />
+          <div className={styles.rewardsContainer}>{rewardsTiles}</div>
+        </>
+      )}
     </Tile>
   )
 }

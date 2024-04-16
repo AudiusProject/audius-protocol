@@ -73,10 +73,11 @@ export const useAccessAndRemixSettings = ({
   const isInitiallyHidden = !isUpload && isInitiallyUnlisted
 
   const disableUsdcGate =
-    isRemix ||
-    isInitiallyPublic ||
-    isInitiallySpecialAccess ||
-    isInitiallyCollectibleGated
+    !isInitiallyUsdcGated &&
+    (isRemix ||
+      isInitiallyPublic ||
+      isInitiallySpecialAccess ||
+      isInitiallyCollectibleGated)
 
   const disableSpecialAccessGate =
     isAlbum ||

@@ -15,7 +15,8 @@ import {
   LocalStorage,
   GetSupportingArgs,
   GetSupportersArgs,
-  GetTipsArgs
+  GetTipsArgs,
+  FeatureFlags
 } from '@audius/common/services'
 import {
   accountSelectors,
@@ -40,8 +41,10 @@ import {
   waitForValue,
   MAX_PROFILE_TOP_SUPPORTERS,
   SUPPORTING_PAGINATION_SIZE,
-  removeNullable
+  removeNullable,
+  encodeHashId
 } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 import {
@@ -57,9 +60,10 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
-const { decreaseBalance } = walletActions
+const { decreaseBalance, getBalance } = walletActions
 const { getFeePayer } = solanaSelectors
 const { getAccountBalance } = walletSelectors
 const {
@@ -88,7 +92,7 @@ const {
   getSupporting
 } = tippingSelectors
 const { update } = cacheActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getAccountUser } = accountSelectors
 const { fetchPermissions } = chatActions
 
 export const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
@@ -263,7 +267,171 @@ function* confirmTipIndexed({
   return false
 }
 
+function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
+  const walletClient = yield* getContext('walletClient')
+
+  const waudioBalanceWei = yield* call([
+    walletClient,
+    'getCurrentWAudioBalance'
+  ])
+  const audioWeiAmount = new BN(AUDIO(amount).value.toString()) as BNWei
+
+  if (isNullOrUndefined(waudioBalanceWei)) {
+    throw new Error('Failed to retrieve current wAudio balance')
+  }
+
+  // If transferring spl wrapped audio and there are insufficent funds with only the
+  // user bank balance, transfer all eth AUDIO to spl wrapped audio
+  if (audioWeiAmount.gt(waudioBalanceWei)) {
+    console.info('Converting Ethereum AUDIO to Solana wAUDIO...')
+
+    // Wait for a second before showing the notice that this might take a while
+    const showConvertingMessage = yield* fork(function* () {
+      yield delay(1000)
+      yield put(convert())
+    })
+    yield call([walletClient, walletClient.transferTokensFromEthToSol])
+    // Cancel showing the notice if the conversion was magically super quick
+    yield cancel(showConvertingMessage)
+  }
+}
+
 function* sendTipAsync() {
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+  const isNativeMobile = yield* getContext('isNativeMobile')
+
+  const sender = yield* select(getAccountUser)
+  const {
+    trackId,
+    user: receiver,
+    amount: stringAudioAmount,
+    onSuccessConfirmedActions,
+    source
+  } = yield* select(getSendTipData)
+
+  if (!sender || !receiver) {
+    return
+  }
+
+  const device = isNativeMobile ? 'mobile' : 'web'
+
+  const senderUserId = encodeHashId(sender.user_id)
+  const receiverUserId = encodeHashId(receiver.user_id)
+  const amount = Number(stringAudioAmount)
+
+  try {
+    yield put(
+      make(Name.TIP_AUDIO_REQUEST, {
+        senderWallet: sender.userBank,
+        recipientWallet: receiver.userBank,
+        senderHandle: sender.handle,
+        recipientHandle: receiver.handle,
+        amount,
+        device,
+        source
+      })
+    )
+
+    yield* call(wormholeAudioIfNecessary, { amount })
+
+    yield* call([sdk.users, sdk.users.sendTip], {
+      amount,
+      senderUserId,
+      receiverUserId
+    })
+
+    yield put(sendTipSucceeded())
+    yield put(
+      make(Name.TIP_AUDIO_SUCCESS, {
+        recipientHandle: receiver.handle,
+        amount: stringAudioAmount,
+        device,
+        source
+      })
+    )
+
+    yield* put(refreshTipGatedTracks({ userId: receiver.user_id, trackId }))
+
+    yield* fork(function* () {
+      // Wait for tip to index
+      yield* call(confirmTipIndexed, { sender, recipient: receiver })
+
+      // Fetch balance
+      yield* put(getBalance)
+
+      // Refetch chat permissions
+      yield* put(
+        fetchPermissions({ userIds: [sender.user_id, receiver.user_id] })
+      )
+
+      // Do any callbacks
+      if (onSuccessConfirmedActions) {
+        // Spread here to unfreeze the action
+        // Redux sagas can't "put" frozen actions
+        for (const action of onSuccessConfirmedActions) {
+          yield* put({ ...action })
+        }
+      }
+
+      // Record if the tip unlocked a chat
+      if (source === 'inboxUnavailableModal') {
+        yield* put(
+          make(Name.TIP_UNLOCKED_CHAT, {
+            recipientUserId: receiver.user_id
+          })
+        )
+      }
+    })
+
+    // Store optimistically updated supporting value for sender
+    // and supporter value for receiver.
+    const amountBN = new BN(AUDIO(amount).value.toString()) as BNWei
+    try {
+      yield call(overrideSupportingForUser, {
+        amountBN,
+        sender,
+        receiver
+      })
+      yield call(overrideSupportersForUser, {
+        amountBN,
+        sender,
+        receiver
+      })
+    } catch (e) {
+      console.error(
+        `Could not optimistically update support: ${(e as Error).message}`
+      )
+    }
+  } catch (error) {
+    const e = error instanceof Error ? error : new Error(String(error))
+    console.error(`Send tip failed`, error)
+    yield* put(sendTipFailed({ error: e.message }))
+    yield* put(
+      make(Name.TIP_AUDIO_FAILURE, {
+        senderWallet: sender.userBank,
+        recipientWallet: receiver.userBank,
+        senderHandle: sender.handle,
+        recipientHandle: receiver.handle,
+        amount,
+        error: e.message,
+        device,
+        source
+      })
+    )
+    yield* call(reportToSentry, {
+      name: `SendTip: ${e.name}`,
+      error: e,
+      additionalInfo: {
+        senderUserId,
+        receiverUserId,
+        amount
+      }
+    })
+  }
+}
+
+function* sendTipAsyncOld() {
   const walletClient = yield* getContext('walletClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
@@ -794,7 +962,16 @@ function* watchRefreshSupport() {
 }
 
 function* watchConfirmSendTip() {
-  yield* takeEvery(confirmSendTip.type, sendTipAsync)
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const sdkTipsEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USE_SDK_TIPS
+  )
+  if (sdkTipsEnabled) {
+    yield* takeEvery(confirmSendTip.type, sendTipAsync)
+  } else {
+    yield* takeEvery(confirmSendTip.type, sendTipAsyncOld)
+  }
 }
 
 function* watchFetchRecentTips() {

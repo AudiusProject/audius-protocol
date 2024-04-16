@@ -11,10 +11,14 @@ import { env } from 'services/env'
 
 const solanaRelay = new SolanaRelay(
   new Configuration({
+    basePath: '/solana',
+    headers: {
+      'Content-Type': 'application/json'
+    },
     middleware: [
       {
         pre: async (context) => {
-          const endpoint = process.env.VITE_SOLANA_RELAY_ENDPOINT
+          const endpoint = env.SOLANA_RELAY_ENDPOINT
           const url = `${endpoint}${context.url}`
           return { url, init: context.init }
         }
@@ -26,7 +30,7 @@ const solanaRelay = new SolanaRelay(
 const solanaWalletAdapter = new SolanaRelayWalletAdapter({ solanaRelay })
 
 export const claimableTokensService = new ClaimableTokensClient({
-  rpcEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
+  rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
   mints: {
     wAUDIO: new PublicKey(env.WAUDIO_MINT_ADDRESS),
     USDC: new PublicKey(env.USDC_MINT_ADDRESS)

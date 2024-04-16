@@ -10,7 +10,7 @@ description: Audius Protocol Documentation
 
 ### Setting environment variables
 
-```sh
+```bash
 # to set individual environment variables
 # valid service-names are "creator-node" or "discovery-provider"
 audius-cli set-config creator-node
@@ -39,7 +39,7 @@ If you set an external Postgres url during setup you can skip this section.
 If you did not set an external Postgres url during setup and you want to add one now, replace the db
 url by running:
 
-```sh
+```bash
 audius-cli set-config creator-node
 key   : dbUrl
 value : <db url>
@@ -62,7 +62,7 @@ If you set an external Postgres url during setup you can skip this section.
 
 The below is only if using a externally managed Postgres (version 11.1+) database:
 
-```sh
+```bash
 audius-cli set-config discovery-provider
 key   : audius_db_url
 value : <audius_db_url>
@@ -84,7 +84,7 @@ CREATE EXTENSION pg_trgm;
 
 ## Launch
 
-```sh
+```bash
 audius-cli launch creator-node
 
 # or

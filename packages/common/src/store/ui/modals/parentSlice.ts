@@ -11,6 +11,7 @@ export const initialState: BasicModalsState = {
   TiersExplainer: { isOpen: false },
   TrendingRewardsExplainer: { isOpen: false },
   ChallengeRewardsExplainer: { isOpen: false },
+  ClaimAllRewards: { isOpen: false },
   LinkSocialRewardsExplainer: { isOpen: false },
   APIRewardsExplainer: { isOpen: false },
   TransferAudioMobileWarning: { isOpen: false },

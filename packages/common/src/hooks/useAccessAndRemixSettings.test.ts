@@ -333,4 +333,69 @@ describe('useAccessAndRemixSettings', () => {
       expect(actual).toEqual(expected)
     })
   })
+  describe('album edit', () => {
+    it('public track - should disable all options', () => {
+      const actual = useAccessAndRemixSettings({
+        isUpload: false,
+        isRemix: false,
+        isAlbum: true,
+        initialStreamConditions: null,
+        isInitiallyUnlisted: false,
+        isScheduledRelease: false
+      })
+      const expected = {
+        disableUsdcGate: true,
+        disableSpecialAccessGate: true,
+        disableSpecialAccessGateFields: true,
+        disableCollectibleGate: true,
+        disableCollectibleGateFields: true,
+        disableHidden: true
+      }
+      expect(actual).toEqual(expected)
+    })
+    it('usdc gated - should disable everything except original option', () => {
+      mockedUseSelector.mockImplementation(
+        mockUseSelector(reduxStateWithCollectibles)
+      )
+      const actual = useAccessAndRemixSettings({
+        isUpload: false,
+        isRemix: false,
+        isAlbum: true,
+        initialStreamConditions: mockUSDCGateConditions,
+        isInitiallyUnlisted: false,
+        isScheduledRelease: false
+      })
+      const expected = {
+        disableUsdcGate: false,
+        disableSpecialAccessGate: true,
+        disableSpecialAccessGateFields: true,
+        disableCollectibleGate: true,
+        disableCollectibleGateFields: true,
+        disableHidden: true
+      }
+      expect(actual).toEqual(expected)
+    })
+    it('initially hidden - should enable everything', () => {
+      mockedUseSelector.mockImplementation(
+        mockUseSelector(reduxStateWithCollectibles)
+      )
+      const actual = useAccessAndRemixSettings({
+        isUpload: false,
+        isRemix: false,
+        isAlbum: true,
+        initialStreamConditions: null,
+        isInitiallyUnlisted: true,
+        isScheduledRelease: false
+      })
+      const expected = {
+        disableUsdcGate: false,
+        disableSpecialAccessGate: true,
+        disableSpecialAccessGateFields: true,
+        disableCollectibleGate: true,
+        disableCollectibleGateFields: true,
+        disableHidden: true // atm hidden albums are not supported so this is currently disabled
+      }
+      expect(actual).toEqual(expected)
+    })
+  })
 })
