@@ -1,7 +1,8 @@
 import '@testing-library/jest-dom/vitest'
 import './vitest-canvas-mock'
 
-import { vi } from 'vitest'
+import { cleanup } from '@testing-library/react'
+import { afterEach, vi } from 'vitest'
 
 // Some global mocks that most tests will need.
 // If you need to provide any form of mocked responses, you can replace them in your test with a hoisted implementation
@@ -33,3 +34,5 @@ window.matchMedia = vi.fn().mockReturnValue({
   addListener: vi.fn(),
   removeListener: vi.fn()
 })
+
+afterEach(cleanup)
