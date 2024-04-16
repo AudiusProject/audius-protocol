@@ -28,7 +28,7 @@ import {
   Box
 } from '@audius/harmony'
 import cn from 'classnames'
-import { chunk, flatten, times } from 'lodash'
+import { chunk } from 'lodash'
 import {
   DragDropContext,
   Draggable,
