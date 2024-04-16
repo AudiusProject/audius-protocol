@@ -121,6 +121,7 @@ const PlaylistTile = ({
           showRankIcon={showRankIcon}
           isTrending={isTrending}
           permalink={href}
+          isStreamGated={!!streamConditions}
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
         />

@@ -1,10 +1,12 @@
-import express, { Express, NextFunction, Request, Response } from 'express'
 import path from 'path'
-import session from 'express-session'
-import connectMongoDBSession from 'connect-mongodb-session'
-import User from './userSchema'
-import createSdkService from './services/sdkService'
+
 import { ProfilePicture } from '@audius/sdk'
+import connectMongoDBSession from 'connect-mongodb-session'
+import express, { Express, NextFunction, Request, Response } from 'express'
+import session from 'express-session'
+
+import createSdkService from './services/sdkService'
+import User from './userSchema'
 
 declare module 'express-session' {
   interface SessionData {
@@ -39,10 +41,10 @@ export default function createApp(
   const MongoDBStore = connectMongoDBSession(session)
   const store = new MongoDBStore({
     uri: dbUrl,
-    collection: 'authSessions',
+    collection: 'authSessions'
   })
   store.on('error', function (error: any) {
-    console.log(error)
+    console.error(error)
   })
 
   if (!process.env.SESSION_SECRET) {
@@ -52,12 +54,12 @@ export default function createApp(
   const sess: session.SessionOptions = {
     secret: process.env.SESSION_SECRET,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7 * 3, // 3 weeks
+      maxAge: 1000 * 60 * 60 * 24 * 7 * 3 // 3 weeks
     },
     store,
     resave: false,
     saveUninitialized: false,
-    rolling: true, // Reset maxAge on every response
+    rolling: true // Reset maxAge on every response
   }
 
   if (app.get('env') === 'production') {
@@ -79,7 +81,7 @@ export default function createApp(
   // The frontend does this for the user on OAuth (there's no actual login button UI) and re-checks the session via /auth/session on page load.
   app.post('/auth/login', async (req: Request, res: Response) => {
     const decodedJwt = await sdkService.users.verifyIDToken({
-      token: req.body.token,
+      token: req.body.token
     })
     if (decodedJwt?.data) {
       const { userId, handle, email, name, verified, profilePicture } =
@@ -90,7 +92,7 @@ export default function createApp(
         email,
         name,
         verified,
-        profilePicture,
+        profilePicture
       })
 
       req.session.user = {
@@ -100,7 +102,7 @@ export default function createApp(
         name: user.name,
         verified: user.verified,
         profilePicture: user.profilePicture,
-        isAdmin: user.isAdmin,
+        isAdmin: user.isAdmin
       }
 
       req.session.save((err) => {
@@ -136,7 +138,7 @@ export default function createApp(
         name: updatedUser.name,
         verified: updatedUser.verified,
         profilePicture: updatedUser.profilePicture,
-        isAdmin: updatedUser.isAdmin,
+        isAdmin: updatedUser.isAdmin
       }
       req.session.save((err) => {
         if (err) {
@@ -175,8 +177,8 @@ export default function createApp(
       data: {
         env: process.env.NODE_ENV,
         ddexKey: process.env.DDEX_KEY,
-        ddexChoreography: process.env.DDEX_CHOREOGRAPHY,
-      },
+        ddexChoreography: process.env.DDEX_CHOREOGRAPHY
+      }
     }
     res.json(envData)
   })
