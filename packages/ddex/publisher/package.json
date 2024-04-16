@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "start:dev": "nodemon src/index.ts",
-    "dev:dev": "turbo run start:dev --filter=@audius/ddex-publisher",
-    "dev:stage": "NETWORK=stage turbo run start:dev --filter=@audius/ddex-publisher",
-    "dev:prod": "NETWORK=prod turbo run start:dev --filter=@audius/ddex-publisher",
+    "start:prod": "node dist/index.js",
+    "start": "nodemon src/index.ts",
+    "dev:dev": "turbo run start --filter=@audius/ddex-publisher",
+    "dev:stage": "NETWORK=stage turbo run start --filter=@audius/ddex-publisher",
+    "dev:prod": "NETWORK=prod turbo run start --filter=@audius/ddex-publisher",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "verify": "concurrently \"npm:build\" \"npm:lint\""
