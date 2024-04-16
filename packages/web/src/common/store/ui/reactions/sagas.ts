@@ -5,12 +5,20 @@ import {
   reactionsMap,
   getReactionFromRawValue,
   getContext,
-  ReactionTypes
+  ReactionTypes,
+  accountSelectors
 } from '@audius/common/store'
-import { getErrorMessage, removeNullable } from '@audius/common/utils'
+import {
+  encodeHashId,
+  getErrorMessage,
+  removeNullable
+} from '@audius/common/utils'
 import { AudiusSdk } from '@audius/sdk'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
+import { waitForWrite } from 'utils/sagaHelpers'
+
+const { getUserId } = accountSelectors
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
   reactionsUIActions
 const { makeGetReactionForSignature } = reactionsUISelectors
@@ -20,6 +28,7 @@ type SubmitReactionConfig = {
   reactionValue: ReactionTypes | null
   audiusBackend: AudiusBackend
   audiusSdk: AudiusSdk
+  userId: string
   useDiscoveryReactions: Promise<boolean>
 }
 
@@ -30,19 +39,16 @@ const submitReaction = async ({
   reactionValue,
   audiusBackend,
   audiusSdk,
+  userId,
   useDiscoveryReactions
 }: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
   try {
     if (await useDiscoveryReactions) {
-      const account = await audiusBackend.getAccount()
-      if (account === null) {
-        throw new Error('could not submit reaction, user account null')
-      }
       await audiusSdk.users.sendTipReaction({
-        userId: account.user_id.toString(),
+        userId,
         metadata: {
           reactedTo,
-          reactionValue: reactionValue ? reactionValue : '😍'
+          reactionValue: reactionValue || '😍'
         }
       })
       return { success: true, error: undefined }
@@ -113,11 +119,16 @@ function* writeReactionValueAsync({
     FeatureFlags.DISCOVERY_TIP_REACTIONS
   )
 
+  yield* waitForWrite()
+  const accountId = yield* select(getUserId)
+  const userId = encodeHashId(accountId!)
+
   yield* call(submitReaction, {
     reactedTo: entityId,
     reactionValue: newReactionValue,
     audiusBackend,
     audiusSdk: sdk,
+    userId,
     useDiscoveryReactions
   })
 }

@@ -44,6 +44,7 @@ import {
   removeNullable,
   encodeHashId
 } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 import {
@@ -59,9 +60,8 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
-import { AUDIO } from '@audius/fixed-decimal'
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 const { decreaseBalance, getBalance } = walletActions
 const { getFeePayer } = solanaSelectors

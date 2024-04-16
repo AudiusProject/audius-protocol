@@ -14,6 +14,7 @@ import {
   Nullable
 } from '@audius/common/utils'
 import { push } from 'connected-react-router'
+import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
@@ -26,7 +27,6 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { UserNameLink } from './components/UserNameLink'
 import { IconCart } from './components/icons'
 import { getEntityLink } from './utils'
-import { capitalize } from 'lodash'
 
 const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 

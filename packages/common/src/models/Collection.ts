@@ -116,6 +116,7 @@ export type SmartCollection = {
   incentivized?: boolean // Whether we reward winners with Audio
   cardSensitivity?: number
   customEmptyText?: string
+  ddex_app?: string | null
 }
 
 export type CollectionImage = {
