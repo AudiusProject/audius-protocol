@@ -29,7 +29,12 @@
       "dependsOn": ["^build", "^rebuild"]
     },
     "test": {
+      "outputMode": "new-only",
       "outputs": ["coverage/**"],
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "outputMode": "new-only",
       "dependsOn": ["^build"]
     }
   }

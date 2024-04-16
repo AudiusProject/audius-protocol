@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "build-storybook": {
+      "outputs": ["storybook-static/**"],
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
+    "test": {
+      "outputs": ["coverage/**"],
+      "dependsOn": ["build-storybook"],
+      "outputMode": "new-only"
+    }
+  }
+}
