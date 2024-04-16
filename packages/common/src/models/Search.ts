@@ -120,4 +120,5 @@ export type SearchPlaylist = CollectionImage & {
       time: number
     }[]
   }
+  stream_conditions: null
 }
