@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash'
 
-import { RemoteDataNotFoundError, createApi } from '~/audius-query'
+import { createApi } from '~/audius-query'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { IntKeys } from '~/services/remote-config/types'
 import { parseHandleReservedStatusFromSocial } from '~/utils/handleReservedStatus'
@@ -21,23 +21,15 @@ const signUpApi = createApi({
     },
     isHandleInUse: {
       fetch: async ({ handle }: { handle: string }, context) => {
-        try {
-          const user = await userApiFetch.getUserByHandle(
-            {
-              handle,
-              currentUserId: null,
-              retry: false
-            },
-            context
-          )
-          return !isEmpty(user)
-        } catch (e) {
-          if (e instanceof RemoteDataNotFoundError) {
-            window.alert('handle not found')
-            return false
-          }
-          throw e
-        }
+        const user = await userApiFetch.getUserByHandle(
+          {
+            handle,
+            currentUserId: null,
+            retry: false
+          },
+          context
+        )
+        return !isEmpty(user)
       },
       options: {}
     },
