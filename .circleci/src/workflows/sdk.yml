@@ -9,23 +9,3 @@ jobs:
       name: test-audius-sdk
       context: Vercel
       service: audius-sdk
-
-  # Patch via trigger
-  - release-audius-sdk-trigger:
-      requires:
-        - test-audius-libs
-        - test-audius-sdk
-      filters:
-        branches:
-          only: /(^main)|(^release.*)$/
-      type: approval
-  - release-audius-sdk:
-      name: release-audius-sdk-patch
-      requires:
-        - release-audius-sdk-trigger
-      sdk-release-commit: $CIRCLE_SHA1
-      sdk-release-version: patch
-      sdk-release-preid: ''
-      context:
-        - Audius Client
-        - slack-secrets
