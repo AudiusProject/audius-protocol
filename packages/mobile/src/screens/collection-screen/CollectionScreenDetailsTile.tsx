@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGatedContentAccess } from '@audius/common/hooks'
 import { Name, PlaybackSource, Status } from '@audius/common/models'
-import type {
-  SmartCollectionVariant,
-  ID,
-  UID,
-  Collection
-} from '@audius/common/models'
+import type { SmartCollectionVariant, ID, UID } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   collectionPageLineupActions as tracksActions,
@@ -18,7 +12,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
-import type { Maybe } from '@audius/common/utils'
+import type { Maybe, Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
@@ -105,7 +99,7 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
   detailsPlaceholder: '---'
 })
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   trackListDivider: {
     marginHorizontal: spacing(6),
     borderTopWidth: 1,
@@ -127,6 +121,8 @@ type CollectionScreenDetailsTileProps = {
   isPublishing?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
+  hasStreamAccess?: boolean
+  streamConditions?: Nullable<AccessConditions>
 } & Omit<
   DetailsTileProps,
   | 'descriptionLinkPressSource'
@@ -160,6 +156,8 @@ export const CollectionScreenDetailsTile = ({
   isOwner,
   hideOverflow,
   hideRepost,
+  hasStreamAccess,
+  streamConditions,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -180,14 +178,6 @@ export const CollectionScreenDetailsTile = ({
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
-  const collection = useSelector((state) =>
-    typeof collectionId !== 'number'
-      ? 0
-      : getCollection(state, { id: collectionId })
-  )
-  const { hasStreamAccess } = useGatedContentAccess(collection as Collection)
-  const { stream_conditions: streamConditions } = collection as Collection
-
   const details = useMemo(() => {
     if (!isLineupLoading && trackCount === 0) return []
     return [
