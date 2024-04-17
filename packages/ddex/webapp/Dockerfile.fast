@@ -52,4 +52,4 @@ COPY packages/ddex/webapp/server/dist /app/packages/ddex/webapp/server/public
 WORKDIR /app/packages/ddex/webapp/server
 
 EXPOSE 9000
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:prod"]

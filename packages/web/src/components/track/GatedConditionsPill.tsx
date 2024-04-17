@@ -6,9 +6,6 @@ import {
 } from '@audius/common/models'
 import { formatPrice } from '@audius/common/utils'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
-import cn from 'classnames'
-
-import styles from './GatedConditionsPill.module.css'
 
 const messages = {
   unlocking: 'Unlocking',
@@ -44,12 +41,14 @@ export const GatedConditionsPill = ({
 
   return (
     <Button
-      className={cn(styles.button, className)}
+      className={className}
       size={buttonSize}
       onClick={onClick}
       color={isPurchase ? 'lightGreen' : 'blue'}
       isLoading={unlocking}
       iconLeft={showIcon ? IconLock : undefined}
+      // TODO: Add 'xs' button size in harmony
+      css={{ height: '24px' }}
     >
       {message}
     </Button>

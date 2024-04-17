@@ -5,6 +5,7 @@ import { Modals as ModalTypes } from '@audius/common/store'
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
+import { AlbumTrackRemoveConfirmationModal } from 'components/album-track-remove-confirmation-modal/AlbumTrackRemoveConfirmationModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import { ArtistPickModal } from 'components/artist-pick-modal/ArtistPickModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
@@ -88,6 +89,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   PublishTrackConfirmation: PublishTrackConfirmationModal,
+  AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,

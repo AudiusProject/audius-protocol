@@ -249,6 +249,7 @@ export const TracksTableContainer = ({
             suffix={
               filterText ? (
                 <IconClose
+                  color='subdued'
                   className={styles.close}
                   onClick={() => setFilterText('')}
                 />

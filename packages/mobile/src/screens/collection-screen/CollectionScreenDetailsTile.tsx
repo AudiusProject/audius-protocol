@@ -17,7 +17,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
-import type { Maybe } from '@audius/common/utils'
+import type { Maybe, Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
@@ -104,7 +104,7 @@ const getMessages = (collectionType: 'album' | 'playlist') => ({
   detailsPlaceholder: '---'
 })
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   trackListDivider: {
     marginHorizontal: spacing(6),
     borderTopWidth: 1,
@@ -127,7 +127,7 @@ type CollectionScreenDetailsTileProps = {
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
   hasStreamAccess?: boolean
-  streamConditions?: AccessConditions
+  streamConditions?: Nullable<AccessConditions>
 } & Omit<
   DetailsTileProps,
   | 'descriptionLinkPressSource'
@@ -163,6 +163,7 @@ export const CollectionScreenDetailsTile = ({
   hideRepost,
   hasStreamAccess,
   streamConditions,
+  ddexApp,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -288,7 +289,7 @@ export const CollectionScreenDetailsTile = ({
       {...detailsTileProps}
       contentId={numericCollectionId}
       contentType={PurchaseableContentType.ALBUM}
-      ddexApp={(collection as Collection | null)?.ddex_app}
+      ddexApp={ddexApp}
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}

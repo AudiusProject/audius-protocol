@@ -8,7 +8,7 @@ import {
   developmentConfig,
   stagingConfig,
   productionConfig,
-  sdk,
+  sdk
 } from '@audius/sdk'
 
 const createSdkService = async (): Promise<AudiusSdk> => {
@@ -52,13 +52,13 @@ const createSdkService = async (): Promise<AudiusSdk> => {
 
     // Init SDK
     const discoveryNodeSelector = new DiscoveryNodeSelector({
-      initialSelectedNode,
+      initialSelectedNode
     })
     const storageNodeSelector = new StorageNodeSelector({
       auth: new AppAuth(ddexKey, ddexSecret),
-      discoveryNodeSelector: discoveryNodeSelector,
+      discoveryNodeSelector,
       bootstrapNodes: config.storageNodes,
-      logger,
+      logger
     })
     const sdkInstance = sdk({
       services: {
@@ -69,16 +69,16 @@ const createSdkService = async (): Promise<AudiusSdk> => {
           contractAddress: config.entityManagerContractAddress,
           identityServiceUrl: config.identityServiceUrl,
           useDiscoveryRelay: true,
-          logger,
+          logger
         }),
         storageNodeSelector,
-        logger,
+        logger
       },
       apiKey: ddexKey,
       apiSecret: ddexSecret,
-      appName: 'DDEX Demo',
+      appName: 'DDEX Demo'
     })
-    console.log(`SDK initialized for ${env}`)
+    console.info(`SDK initialized for ${env}`)
     return sdkInstance
   } catch (error) {
     throw new Error(`SDK failed to initialize for ${env}: ${error}`)
