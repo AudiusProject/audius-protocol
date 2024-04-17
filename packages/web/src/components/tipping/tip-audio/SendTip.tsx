@@ -37,7 +37,7 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
+import IconNoTierBadge from 'assets/img/tokenBadgePurple16@2x.webp'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'

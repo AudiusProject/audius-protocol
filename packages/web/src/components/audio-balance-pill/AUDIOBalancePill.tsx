@@ -10,7 +10,7 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
+import IconNoTierBadge from 'assets/img/tokenBadgePurple24@2x.webp'
 import Skeleton from 'components/skeleton/Skeleton'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 
