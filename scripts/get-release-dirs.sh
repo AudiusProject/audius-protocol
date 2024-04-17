@@ -1,21 +1,18 @@
 # This file defines which directories are included in changelogs for
 # client and protocol releases
 #
-# Source this file in your shell to get the relevant directories
-# for client and protocol releases
-# ./set-release-directories.sh
-#
-# You can then generate a changelog, for example:
-# git log -- $CLIENT_DIRECTORIES
+# Usage:
+# CLIENT_DIRS=$(bash ./scripts/get-release-directories.sh client)
+# git log -- $CLIENT_DIRS
 
-export CLIENT_DIRECTORIES="packages/web
+CLIENT_DIRS="packages/web
     packages/fixed-decimal \
     packages/common \
     packages/mobile \
     packages/harmony \
     packages/libs"
 
-export PROTOCOL_DIRECTORIES="mediorum \
+PROTOCOL_DIRS="mediorum \
     packages/discovery-provider \
     packages/identity-service \
     packages/ddex* \
@@ -23,3 +20,15 @@ export PROTOCOL_DIRECTORIES="mediorum \
     monitoring/healthz \
     monitoring/uptime \
     protocol-dashboard"
+
+# `client` or `protocol`
+release_type="$1"
+
+case "$release_type" in
+"client")
+    echo $CLIENT_DIRS
+    ;;
+"protocol")
+    echo $PROTOCOL_DIRS
+    ;;
+esac
