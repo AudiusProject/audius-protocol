@@ -81,7 +81,8 @@ jobs:
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
-            - ./packages/ddex/webapp/node_modules
+            - ./packages/ddex/webapp/client/node_modules
+            - ./packages/ddex/webapp/server/node_modules
             - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
             - ./packages/create-audius-app/node_modules
@@ -463,6 +464,8 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/webapp/.* run-ddex-e2e-workflow true
+            packages/ddex/ingester/.* run-ddex-e2e-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
@@ -474,6 +477,7 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-webapp-workflow true
+            .circleci/.* run-ddex-e2e-workflow true
             .circleci/.* run-ddex-publisher-workflow true
             .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
@@ -549,6 +553,8 @@ workflows:
             packages/web/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/webapp/.* run-ddex-e2e-workflow true
+            packages/ddex/ingester/.* run-ddex-e2e-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true

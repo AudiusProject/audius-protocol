@@ -24,6 +24,7 @@ import { TipReceivedNotification } from './TipReceivedNotification'
 import { TipSentNotification } from './TipSentNotification'
 import { TopSupporterNotification } from './TopSupporterNotification'
 import { TopSupportingNotification } from './TopSupportingNotification'
+import { TrackAddedToPurchasedAlbumNotification } from './TrackAddedToPurchasedAlbumNotification'
 import { TrendingPlaylistNotification } from './TrendingPlaylistNotification'
 import { TrendingTrackNotification } from './TrendingTrackNotification'
 import { TrendingUndergroundNotification } from './TrendingUndergroundNotification'
@@ -111,6 +112,11 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.AddTrackToPlaylist: {
         return <AddTrackToPlaylistNotification notification={notification} />
+      }
+      case NotificationType.TrackAddedToPurchasedAlbum: {
+        return (
+          <TrackAddedToPurchasedAlbumNotification notification={notification} />
+        )
       }
 
       case NotificationType.SupporterDethroned: {

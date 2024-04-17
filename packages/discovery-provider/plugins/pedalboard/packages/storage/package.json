@@ -1,6 +1,6 @@
 {
   "name": "@pedalboard/storage",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "private": true,
   "main": "./dist/index.js",
   "source": "./src/index.ts",
@@ -14,7 +14,7 @@
     "dev": "tsc -w",
     "gen": "npx ts-node ./src/gen.ts",
     "lint": "eslint \"src/**/*.ts*\"",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "jest": {
     "preset": "jest-presets/jest/node"

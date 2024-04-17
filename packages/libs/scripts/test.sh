@@ -5,10 +5,10 @@ set -o xtrace
 
 ##### INIT DATA CONTRACTS #####
 
-if [ -d "../contracts" ]
+if [ -d "../../contracts" ]
 then
   echo "Audius contracts repo is present"
-  cd ../contracts/
+  cd ../../contracts/
 else
   echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
   exit 1
@@ -27,10 +27,10 @@ npm run truffle-migrate
 
 ##### INIT ETH CONTRACTS #####
 
-if [ -d "../eth-contracts" ]
+if [ -d "../../eth-contracts" ]
 then
   echo "Audius eth-contracts repo is present"
-  cd ../eth-contracts/
+  cd ../../eth-contracts/
 else
   echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
   exit 1

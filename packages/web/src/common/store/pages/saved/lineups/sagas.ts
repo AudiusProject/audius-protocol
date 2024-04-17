@@ -1,4 +1,4 @@
-import { Collection, Kind, LineupEntry, UID } from '@audius/common/models'
+import { Collection, Kind, LineupEntry, UID, User } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
@@ -14,9 +14,10 @@ import {
   playerSelectors,
   purchaseContentActions,
   PurchaseableContentType,
-  SavedPageTrack
+  SavedPageTrack,
+  accountSelectors
 } from '@audius/common/store'
-import { makeUid } from '@audius/common/utils'
+import { makeUid, waitForAccount } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'typed-redux-saga'
@@ -27,6 +28,7 @@ import { AppState } from 'store/types'
 
 const { getUid: getPlayerUid } = playerSelectors
 const { getSource } = queueSelectors
+const { FETCH_SAVES, FETCH_MORE_SAVES } = saveActions
 const { SAVE_TRACK, UNSAVE_TRACK, REPOST_TRACK, UNDO_REPOST_TRACK } =
   tracksSocialActions
 const {
@@ -132,6 +134,22 @@ class SavedTracksSagas extends LineupSagas<SavedPageTrack> {
       sourceSelector
     )
   }
+}
+
+function* watchFetchSaves() {
+  yield* takeEvery(
+    [FETCH_SAVES, FETCH_MORE_SAVES],
+    function* (_action: ReturnType<typeof saveActions.fetchSaves>) {
+      yield waitForAccount()
+      const account: User | null = yield* select(
+        accountSelectors.getAccountUser
+      )
+
+      if (account?.track_save_count) {
+        yield* put(savedTracksActions.setMaxEntries(account.track_save_count))
+      }
+    }
+  )
 }
 
 // If a local save is being done and the user is on the saved page route, make sure to update the lineup.
@@ -287,5 +305,5 @@ function* watchRemoveFromLibrary() {
 export default function sagas() {
   return new SavedTracksSagas()
     .getSagas()
-    .concat(watchAddToLibrary, watchRemoveFromLibrary)
+    .concat(watchAddToLibrary, watchRemoveFromLibrary, watchFetchSaves)
 }

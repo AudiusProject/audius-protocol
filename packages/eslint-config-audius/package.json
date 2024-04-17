@@ -1,7 +1,7 @@
 {
   "name": "eslint-config-audius",
   "private": true,
-  "version": "1.5.75",
+  "version": "1.5.76",
   "description": "Custom eslint config for Audius.",
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
@@ -17,9 +17,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AudiusProject/audius-client.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "peerDependencies": {
     "@emotion/eslint-plugin": "11.11.0",

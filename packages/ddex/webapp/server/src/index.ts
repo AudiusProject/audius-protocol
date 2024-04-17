@@ -1,18 +1,31 @@
-import dotenv from 'dotenv'
 import path from 'path'
+
+import * as trpcExpress from '@trpc/server/adapters/express'
+import dotenv from 'dotenv'
+
+import createApp from './app'
+import createAppRouter from './routers'
+import collectionRouters from './routers/collectionRouters'
+import makeUploadRouter from './routers/uploadRouter'
+import { dialDb } from './services/dbService'
 import createS3 from './services/s3'
+import createSdkService from './services/sdkService'
+import { createContext, router } from './trpc'
 
 // Load env vars from ddex package root
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') })
 
-import createApp from './app'
-import { dialDb } from './services/dbService'
-import { createContext, router } from './trpc'
-import * as trpcExpress from '@trpc/server/adapters/express'
-import collectionRouters from './routers/collectionRouters'
-import makeUploadRouter from './routers/uploadRouter'
-import createAppRouter from './routers'
-import createSdkService from './services/sdkService'
+// Audius-docker-compose sets the NETWORK env var to the network being run
+switch (process.env.NETWORK) {
+  case 'stage':
+    process.env.NODE_ENV = 'staging'
+    break
+  case 'prod':
+    process.env.NODE_ENV = 'production'
+    break
+  default:
+    process.env.NODE_ENV = 'development'
+}
 
 // TODO: Use superjson
 
@@ -33,9 +46,9 @@ const port = process.env.DDEX_PORT || 9000
     const s3 = createS3()
     const appRouter = router({
       upload: makeUploadRouter(s3),
-      deliveries: collectionRouters['deliveries'],
-      pendingReleases: collectionRouters['pending_releases'],
-      publishedReleases: collectionRouters['published_releases'],
+      deliveries: collectionRouters.deliveries,
+      pendingReleases: collectionRouters.pending_releases,
+      publishedReleases: collectionRouters.published_releases
     })
 
     app.use(
@@ -43,12 +56,12 @@ const port = process.env.DDEX_PORT || 9000
       isAuthedAsAdmin,
       trpcExpress.createExpressMiddleware({
         router: appRouter,
-        createContext: (opts) => createContext(opts, {}),
+        createContext: (opts) => createContext(opts, {})
       })
     )
 
     app.listen(port, () => {
-      console.log(`[server]: Server is running at http://localhost:${port}`)
+      console.info(`[server]: Server is running at http://localhost:${port}`)
     })
   } catch (error) {
     console.error('Failed to initialize:', error)

@@ -110,27 +110,14 @@ function* fetchProfileCustomizedCollectibles(user) {
 }
 
 export function* fetchEthereumCollectiblesForWallets(wallets) {
-  const ethereumCollectiblesProvider = yield getContext(
-    'ethereumCollectiblesProvider'
-  )
-  return yield call(
-    [
-      ethereumCollectiblesProvider,
-      ethereumCollectiblesProvider.getCollectibles
-    ],
-    wallets
-  )
+  const nftClient = yield getContext('nftClient')
+  return yield call([nftClient, nftClient.getEthereumCollectibles], wallets)
 }
 
 export function* fetchEthereumCollectiblesWithCollections(collectibles) {
-  const ethereumCollectiblesProvider = yield getContext(
-    'ethereumCollectiblesProvider'
-  )
+  const nftClient = yield getContext('nftClient')
   return yield call(
-    [
-      ethereumCollectiblesProvider,
-      ethereumCollectiblesProvider.getCollectionMetadatasForCollectibles
-    ],
+    [nftClient, nftClient.getEthereumCollectionMetadatasForCollectibles],
     collectibles
   )
 }
@@ -195,21 +182,14 @@ export function* fetchEthereumCollectibles(user) {
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  const solanaCollectiblesProvider = yield getContext(
-    'solanaCollectiblesProvider'
-  )
+  const nftClient = yield getContext('nftClient')
   yield call(waitForRemoteConfig)
-  return yield call(
-    [solanaCollectiblesProvider, solanaCollectiblesProvider.getCollectibles],
-    wallets
-  )
+  return yield call([nftClient, nftClient.getSolanaCollectibles], wallets)
 }
 
 export function* fetchSolanaCollectibles(user) {
   const apiClient = yield getContext('apiClient')
-  const solanaCollectiblesProvider = yield getContext(
-    'solanaCollectiblesProvider'
-  )
+  const nftClient = yield getContext('nftClient')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
   const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
@@ -283,7 +263,7 @@ export function* fetchSolanaCollectibles(user) {
   ]
   const nonHeliusCollectionMetadatas = yield all(
     validNonHeliusCollectionMints.map((mint) =>
-      call(solanaCollectiblesProvider.getNftMetadataFromMint, mint)
+      call([nftClient, nftClient.getSolanaMetadataFromChain], mint)
     )
   )
   const nonHeliusCollectionMetadatasMap = {}

@@ -50,7 +50,7 @@ export type CollectionMetadata = {
   cover_art: CID | null
   cover_art_sizes: Nullable<CID>
   cover_art_cids?: Nullable<CoverArtSizesCids>
-  permalink?: string
+  permalink: string
   playlist_name: string
   playlist_owner_id: ID
   repost_count: number
@@ -116,6 +116,7 @@ export type SmartCollection = {
   incentivized?: boolean // Whether we reward winners with Audio
   cardSensitivity?: number
   customEmptyText?: string
+  ddex_app?: string | null
 }
 
 export type CollectionImage = {

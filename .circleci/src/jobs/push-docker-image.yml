@@ -12,14 +12,9 @@ steps:
   - checkout:
       path: '~/audius-protocol'
   - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-  - run:
-      name: Docker login
-      command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - docker-login
   - run: . ~/.profile; audius-compose push --prod "<< parameters.service >>"
-  - run:
-      when: always
-      name: Log out of Docker
-      command: docker logout
+  - docker-logout
   - docker-prune
   - run:
       when: on_fail

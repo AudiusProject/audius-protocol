@@ -9,6 +9,7 @@ import {
 } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
+  ComputeBudgetProgram,
   Keypair,
   PublicKey,
   Transaction,
@@ -521,11 +522,18 @@ export const decorateCoinflowWithdrawalTransaction = async (
       'usdc'
     )
 
+  // Filter any compute budget instructions since the budget will
+  // definitely change
+  const instructions = transaction.instructions.filter(
+    (instruction) =>
+      !instruction.programId.equals(ComputeBudgetProgram.programId)
+  )
+
   // Find original transfer instruction and index
-  const transferInstructionIndex = transaction.instructions.findIndex(
+  const transferInstructionIndex = instructions.findIndex(
     isTransferCheckedInstruction
   )
-  const transferInstruction = transaction.instructions[transferInstructionIndex]
+  const transferInstruction = instructions[transferInstructionIndex]
   if (!transferInstruction) {
     throw new Error('No transfer instruction found')
   }
@@ -572,7 +580,6 @@ export const decorateCoinflowWithdrawalTransaction = async (
   })
 
   // Remove original transfer instruction and replace with our set of transfer steps
-  const instructions = [...transaction.instructions]
   instructions.splice(
     transferInstructionIndex,
     1,
@@ -692,8 +699,9 @@ export const relayTransaction = async (
   audiusBackendInstance: AudiusBackend,
   {
     transaction,
-    skipPreflight
-  }: { transaction: Transaction; skipPreflight?: boolean }
+    skipPreflight,
+    useCoinflowRelay
+  }: { transaction: Transaction; skipPreflight?: boolean, useCoinflowRelay?: boolean }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const instructions = transaction.instructions
@@ -710,7 +718,8 @@ export const relayTransaction = async (
     recentBlockhash,
     signatures,
     feePayerOverride,
-    skipPreflight
+    skipPreflight,
+    useCoinflowRelay
   })
 }
 

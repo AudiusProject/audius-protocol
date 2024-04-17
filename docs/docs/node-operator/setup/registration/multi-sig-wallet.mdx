@@ -1,6 +1,6 @@
 ---
 id: multi-sig-wallet
-title: Registering an Audius Node with a Multi-Sig Wallet
+title: Registering an Audius Node Manually (Multi-Sig Wallets)
 pagination_label: Multi-Sig Wallet Registration
 sidebar_label: Multi-Sig Wallet Registration
 description: Audius Protocol Documentation
@@ -8,8 +8,20 @@ description: Audius Protocol Documentation
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
 
-> This page walks through the process of Registering a new Audius Node operated by TIkiLabs with a
-> freshly created [Safe\{Wallet\}](https://safe.global/) (or "Safe").
+:::tip Wallet Connect Update
+
+The [Audius Protocol Dashboard][protocol-dashboard] has been updated to allow connections using
+Wallet Connect. Registering nodes with a multisig wallet can now follow the
+[Registration][register-a-node] guide.
+
+The following guide demonstrates how to skip using the Audius Protocol Dashboard to register a
+service and instead talk to the smart contracts directly using their ABIs. The guide is written for
+Safe Multi-Sig Wallets, but can be extended to any on-chain wallet infrastructure following similar
+method calls.
+
+:::
+
+---
 
 ## Create a Safe
 
@@ -19,16 +31,17 @@ of 2" configuration using the following wallets as signers:
 - `0x159200F84c2cF000b3A014cD4D8244500CCc36ca`
 - `0xDa4AA6851970d3f9EC151E8dF0AFc7Cc3d11071d`
 
-:::tip Stay Up to Date
+:::info Stay Up to Date
 
 For the most up to date instructions on creating a Safe, follow the onboarding process on
-[https://safe.global](https://safe.global)
+[https://safe.global][safe-url]
 
 :::
 
-To get started, navigating to [https://app.safe.global](https://app.safe.global) and sign in with an
-Ethereum wallet, Metamask is used in this example.
+To get started, navigating to [https://app.safe.global][safe-url] and sign in with an Ethereum
+wallet, Metamask is used in this example.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/multisig-wallet/register-node/create/create-new-safe.png')} />
   <figcaption>Create new Safe screen</figcaption>
@@ -39,12 +52,10 @@ Ethereum wallet, Metamask is used in this example.
 When creating the Safe, add multiple trusted wallet addresses as signers and confirm the required
 minimum number of signers to accommodate your security needs.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/multisig-wallet/register-node/create/create-signers.png')} />
-  <figcaption>
-    Giving each member wallet address a meaningful nickname helps trouble shoot and identify wallets
-    in the future.
-  </figcaption>
+  <figcaption>Giving each member wallet address a meaningful nickname helps trouble shoot and identify wallets in the future.</figcaption>
 </figure>
 
 ### Set Signing Thresholds
@@ -55,12 +66,10 @@ in the process of signing transactions.
 Work with the other members of the Safe to determine the safety and convenience trade offs and
 select a minimum number of member wallets required to sign transactions.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/multisig-wallet/register-node/create/create-threshold.png')} />
-  <figcaption>
-    This example requires 2 of the 2 signers to participate in signing transactions, meaning that
-    all wallet members are required to sign transactions on behalf of the Safe.
-  </figcaption>
+  <figcaption>This example requires 2 of the 2 signers to participate in signing transactions, meaning that all wallet members are required to sign transactions on behalf of the Safe. </figcaption>
 </figure>
 
 ---
@@ -71,12 +80,9 @@ Once a Safe has been created, send the amount of $AUDIO to delegate to the Safe 
 
 The address can be seen, and copied, from the top left corner of the Safe homepage.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl(
-      '/img/multisig-wallet/register-node/transaction-builder/transact-safe-address.png',
-    )}
-  />
+  <img src={useBaseUrl('/img/multisig-wallet/register-node/transaction-builder/transact-safe-address.png')} />
   <figcaption>The Safe Wallet address is displayed here.</figcaption>
 </figure>
 
@@ -84,15 +90,10 @@ From a wallet holding $AUDIO, transfer the amount to be staked or delegated to t
 address. Best practice is to transfer a small amount to confirm the wallet addresses before sending
 large numbers of tokens.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl(
-      '/img/multisig-wallet/register-node/transaction-builder/transact-safe-balance.png',
-    )}
-  />
-  <figcaption>
-    Use the "Assets" menu on the side bar to view the token allocations in the Safe.
-  </figcaption>
+  <img src={useBaseUrl( '/img/multisig-wallet/register-node/transaction-builder/transact-safe-balance.png' )} />
+  <figcaption>Use the "Assets" menu on the side bar to view the token allocations in the Safe. </figcaption>
 </figure>
 
 ---
@@ -108,45 +109,40 @@ You now need to call two functions via the Safe
 
 Select the "New Transaction" button on the Safe home page, and then choose "Transaction Builder".
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl('/img/multisig-wallet/register-node/transaction-builder/transact-new.png')}
-  />
+  <img src={useBaseUrl('/img/multisig-wallet/register-node/transaction-builder/transact-new.png')} />
   <figcaption>"New transaction" button.</figcaption>
 </figure>
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl('/img/multisig-wallet/register-node/transaction-builder/transact-builder.png')}
-  />
+  <img src={useBaseUrl('/img/multisig-wallet/register-node/transaction-builder/transact-builder.png')} />
   <figcaption>"Transaction Builder" button.</figcaption>
 </figure>
 
 On the Transaction Builder screen, complete the form as follows:
 
-| Field                      | input                                                                                                                                                                                                                                                                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Address or ENS Name`      | The [AUDIO token address `0x18aaa7115705e8be94bffebde57af9bfc265b998`](https://etherscan.io/token/0x18aaa7115705e8be94bffebde57af9bfc265b998?a=0x44617f9dced9787c3b06a05b35b4c779a2aa1334)                                                                                                                             |
-| `Enter ABI`                | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#audius-token-abi), or directly from source on [GitHub](https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/AudiusToken.json) |
-| `To Address`               | The [AUDIO token address `0x18aaa7115705e8be94bffebde57af9bfc265b998`](https://etherscan.io/token/0x18aaa7115705e8be94bffebde57af9bfc265b998?a=0x44617f9dced9787c3b06a05b35b4c779a2aa1334)                                                                                                                             |
-| `Contract Method Selector` | `approve`                                                                                                                                                                                                                                                                                                              |
-| `spender (address)`        | The staking proxy address [`0xe6D97B2099F142513be7A2a068bE040656Ae4591`](https://etherscan.io/address/0xe6d97b2099f142513be7a2a068be040656ae4591)                                                                                                                                                                      |
-| `value (uint256)`          | The amount to be staked in Wei. Use the [etherscan unit converter tool](https://etherscan.io/unitconverter) to convert from Audius Tokens to the amount in Wei                                                                                                                                                         |
+| Field                      | input                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Address or ENS Name`      | The [AUDIO token address `0x18aaa7115705e8be94bffebde57af9bfc265b998`][token-address]                                                                                          |
+| `Enter ABI`                | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#audius-token-abi), or directly from source on [GitHub][token-source] |
+| `To Address`               | The [AUDIO token address `0x18aaa7115705e8be94bffebde57af9bfc265b998`][token-address]                                                                                          |
+| `Contract Method Selector` | `approve`                                                                                                                                                                      |
+| `spender (address)`        | The staking proxy address [`0xe6D97B2099F142513be7A2a068bE040656Ae4591`][staking-proxy-address]                                                                                |
+| `value (uint256)`          | The amount to be staked in Wei. Use the [etherscan unit converter tool][unit-converter] to convert from Audius Tokens to the amount in Wei                                     |
 
 :::warning
 
 Double check the `Enter ABI` field, the ABI it detects will be incorrect and must be copied from the
 code block at the [bottom of this page](#audius-token-abi), or directly from source on
-[GitHub](https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/AudiusToken.json)
+[GitHub][token-source]
 
 :::
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl(
-      '/img/multisig-wallet/register-node/transaction-builder/transact-builder-approve.png',
-    )}
-  />
+  <img src={useBaseUrl( '/img/multisig-wallet/register-node/transaction-builder/transact-builder-approve.png' )} />
   <figcaption>The completed Transaction Builder form for the Approve transaction.</figcaption>
 </figure>
 
@@ -168,28 +164,25 @@ Next, add the `Register` transaction to the batch.
 
 To start, clear the "New Transaction" form fields and enter the following:
 
-| Field                            | input                                                                                                                                                                                                              |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Address or ENS Name`            | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`](https://etherscan.io/address/0xD17A9bc90c582249e211a4f4b16721e7f65156c8)                                                    |
-| `Enter ABI`                      | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#service-registration-abi)                                                                                |
-| `To Address`                     | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`](https://etherscan.io/address/0xD17A9bc90c582249e211a4f4b16721e7f65156c8)                                                    |
-| `Contract Method Selector`       | `register`                                                                                                                                                                                                         |
-| `_serviceType (bytes32)`         | This depends on the Node type (Content or Discovery), see table below for value for each Node type                                                                                                                 |
-| `_endpoint (string)`             | The endpoint for the Node, this example uses the TikiLabs Discovery Node at [https://audius-dn1.tikilabs.com](https://audius-dn1.tikilabs.com)                                                                     |
-| `_stakeAmount (uint256)`         | The amount to be staked, see table below for min and max stake by Node type.                                                                                                                                       |
-| `_delegateOwnerWallet (address)` | The Delegate Owner wallet used when setting the Node, this can be viewed at the `/health_check` endpoint of the node, [https://audius-dn1.tikilabs.com/health_check](https://audius-dn1.tikilabs.com/health_check) |
+| Field                            | input                                                                                                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Address or ENS Name`            | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`][service-reg-address]                                                                        |
+| `Enter ABI`                      | The ABI it detects will be incorrect and must be copied from the code block at the [bottom of this page](#service-registration-abi)                                                |
+| `To Address`                     | The [Audius Service Registration address `0xD17A9bc90c582249e211a4f4b16721e7f65156c8`][service-reg-address]                                                                        |
+| `Contract Method Selector`       | `register`                                                                                                                                                                         |
+| `_serviceType (bytes32)`         | This depends on the Node type (Content or Discovery), see table below for value for each Node type                                                                                 |
+| `_endpoint (string)`             | The endpoint for the Node, this example uses the [TikiLabs Discovery Node][tiki-labs-node]                                                                                         |
+| `_stakeAmount (uint256)`         | The amount to be staked, see table below for min and max stake by Node type.                                                                                                       |
+| `_delegateOwnerWallet (address)` | The Delegate Owner wallet used when setting the Node, this can be viewed at the `/health_check` endpoint of the node, [https://audius-dn1.tikilabs.com/health_check][health-check] |
 
 | `_serviceType (bytes32)` | Address                                                              | Minimum Stake | Maximum Stake |
 | :----------------------: | -------------------------------------------------------------------- | ------------: | ------------: |
 |       Content Node       | `0x636f6e74656e742d6e6f64650000000000000000000000000000000000000000` |       200,000 |    10,000,000 |
 |      Discovery Node      | `0x646973636f766572792d6e6f6465000000000000000000000000000000000000` |       200,000 |     7,000,000 |
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl(
-      '/img/multisig-wallet/register-node/transaction-builder/transact-builder-register.png',
-    )}
-  />
+  <img src={useBaseUrl( '/img/multisig-wallet/register-node/transaction-builder/transact-builder-register.png' )} />
   <figcaption>The completed Transaction Builder form for the Register transaction.</figcaption>
 </figure>
 
@@ -200,37 +193,26 @@ Once complete, click the "Add transaction" button to add this step to the Transa
 Once both the `Approve` and `Register` transactions have been created, click the "Create batch"
 button
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl(
-      '/img/multisig-wallet/register-node/transaction-builder/transact-builder-create-batch.png',
-    )}
-  />
-  <figcaption>
-    Confirm both transactions have been added to the batch and click "Create batch"
-  </figcaption>
+  <img src={useBaseUrl( '/img/multisig-wallet/register-node/transaction-builder/transact-builder-create-batch.png' )} />
+  <figcaption>Confirm both transactions have been added to the batch and click "Create batch"</figcaption>
 </figure>
 
 On the next screen, confirm the transactions one more time and use the "Simulate" button to simulate
 the transaction.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl(
-      '/img/multisig-wallet/register-node/transaction-builder/transact-builder-simulate.png',
-    )}
-  />
+  <img src={useBaseUrl( '/img/multisig-wallet/register-node/transaction-builder/transact-builder-simulate.png' )} />
   <figcaption>Successfully simulated transaction batch.</figcaption>
 </figure>
 
 Click the "Send Batch" button to submit the batch to the multisig wallet signers.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
-  <img
-    src={useBaseUrl(
-      '/img/multisig-wallet/register-node/transaction-builder/transact-batch-send.png',
-    )}
-  />
+  <img src={useBaseUrl( '/img/multisig-wallet/register-node/transaction-builder/transact-batch-send.png' )} />
   <figcaption>Successfully submitted transaction batch.</figcaption>
 </figure>
 
@@ -246,6 +228,7 @@ the multisig.
 The first signer will be the user creating the transaction batch and must first sign the transaction
 for it to be submitted to the other members of the Safe.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/multisig-wallet/register-node/sign/sign-first.png')} />
   <figcaption>Review the details and sign the transaction.</figcaption>
@@ -254,6 +237,7 @@ for it to be submitted to the other members of the Safe.
 To view the state of the transaction, use the "Transactions" menu from the side bar. The details of
 the transaction and status of other signers is shown.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/multisig-wallet/register-node/sign/pending-transactions.png')} />
   <figcaption>Transaction awaiting additional signers.</figcaption>
@@ -264,11 +248,13 @@ the transaction and status of other signers is shown.
 The last wallet to sign the signature will be responsible for paying Gas fees when submitting the
 transactions to the Ethereum blockchain.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/multisig-wallet/register-node/sign/last-signer-confirm.png')} />
   <figcaption>Transaction to be signed.</figcaption>
 </figure>
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/multisig-wallet/register-node/sign/successful-transaction.png')} />
   <figcaption>Successful Transaction in history.</figcaption>
@@ -278,23 +264,21 @@ transactions to the Ethereum blockchain.
 
 ## Protocol Dashboard
 
-Once registration is complete, verify that the Node on the
-[Audius Protocol Dashboard](https://dashboard.audius.org).
+Once registration is complete, verify that the Node on the [Audius Protocol
+Dashboard][protocol-dashboard].
 
 Under the "Services" heading, look for the Safe wallet address and select it to view more details.
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/protocol-dashboard/protocol-dashboard.png')} />
-  <figcaption>
-    Click the "View Leaderboard" button to expand the list of service providers.
-  </figcaption>
+  <figcaption>Click the "View Leaderboard" button to expand the list of service providers.</figcaption>
 </figure>
 
-The wallet used in this walkthrough has both a
-[Content Node](https://dashboard.audius.org/#/services/content-node/85) and a
-[Discovery Node](https://dashboard.audius.org/#/services/discovery-node/85), both are visible on the
-[Protocol Dashboard here](https://dashboard.audius.org/#/services/user/0xe4882D9A38A2A1fc652996719AF0fb15CB968d0a)
+The wallet used in this walkthrough has both a [Content Node][example-content-node] and a [Discovery
+Node][example-discovery-node], both are visible on the [Protocol Dashboard][example-dashboard]
 
+<!-- prettier-ignore -->
 <figure className="screensnippet-wrapper">
   <img src={useBaseUrl('/img/protocol-dashboard/tikilabs-dashboard.png')} />
   <figcaption>TikiLabs Nodes on the Audius Protocol Dashboard.</figcaption>
@@ -310,8 +294,8 @@ included here directly are the same, multiple sources are provided for verificat
 
 ### Audius Token ABI
 
-- [Source Code](https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/AudiusToken.json)
-- [Etherscan.io](https://etherscan.io/address/0x930c746a6e92ca8122682df48cd5020bc1771b32#code)
+- [Source Code][token-source]
+- [Etherscan.io][token-abi-etherscan]
 
 <details>
 <summary>Show JSON</summary>
@@ -714,8 +698,8 @@ included here directly are the same, multiple sources are provided for verificat
 
 ### Service Registration ABI
 
-- [Source Code](https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/ServiceProviderFactory.json)
-- [Etherscan.io](https://etherscan.io/address/0xc30c04a773508f5cbe213ab3bc9f0d4ff3847f80#code)
+- [Source Code][service-registration-code]
+- [Etherscan.io][service-registration-code-etherscan]
 
 <details>
 <summary>Show JSON</summary>
@@ -1346,3 +1330,26 @@ included here directly are the same, multiple sources are provided for verificat
 
 </p>
 </details>
+
+<!-- prettier-ignore -->
+[example-content-node]: https://dashboard.audius.org/#/services/content-node/85
+[example-dashboard]:
+  https://dashboard.audius.org/#/services/user/0xe4882D9A38A2A1fc652996719AF0fb15CB968d0a
+[example-discovery-node]: https://dashboard.audius.org/#/services/discovery-node/85
+[health-check]: https://audius-dn1.tikilabs.com/health_check
+[protocol-dashboard]: https://dashboard.audius.org
+[register-a-node]: /node-operator/setup/registration/registration.mdx
+[safe-url]: https://safe.global
+[service-reg-address]: https://etherscan.io/address/0xD17A9bc90c582249e211a4f4b16721e7f65156c8
+[service-registration-code-etherscan]:
+  https://etherscan.io/address/0xc30c04a773508f5cbe213ab3bc9f0d4ff3847f80#code
+[service-registration-code]:
+  https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/ServiceProviderFactory.json
+[staking-proxy-address]: https://etherscan.io/address/0xe6d97b2099f142513be7a2a068be040656ae4591
+[tiki-labs-node]: https://audius-dn1.tikilabs.com
+[token-abi-etherscan]: https://etherscan.io/address/0x930c746a6e92ca8122682df48cd5020bc1771b32#code
+[token-address]:
+  https://etherscan.io/token/0x18aaa7115705e8be94bffebde57af9bfc265b998?a=0x44617f9dced9787c3b06a05b35b4c779a2aa1334
+[token-source]:
+  https://github.com/AudiusProject/audius-protocol/blob/7b53f915cd2b5581e877ed66ef050825d47e17e1/packages/libs/src/eth-contracts/ABIs/AudiusToken.json
+[unit-converter]: https://etherscan.io/unitconverter

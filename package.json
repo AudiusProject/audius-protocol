@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.75",
+  "version": "1.5.76",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -15,6 +15,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "changeset": "changeset",
     "check-secrets": "sh ./scripts/check_secrets.sh",
     "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "clean:dist": "rm -rf packages/*/dist",
@@ -94,11 +95,12 @@
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
-    "vike": "^0.4.150",
     "typescript": "5.0.4",
+    "vike": "^0.4.150",
     "wait-on": "7.2.0"
   },
   "dependencies": {
+    "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
     "@web3modal/ethers": "4.1.0",

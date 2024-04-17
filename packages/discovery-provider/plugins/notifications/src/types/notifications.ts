@@ -170,6 +170,12 @@ export type AddTrackToPlaylistNotification = {
   playlist_id: number
 }
 
+export type TrackAddedToPurchasedAlbumNotification = {
+  track_id: number
+  playlist_id: number
+  playlist_owner_id: number
+}
+
 export type FollowerMilestoneNotification = {
   type: MilestoneType.FOLLOWER_COUNT
   user_id: number
@@ -288,6 +294,7 @@ export type NotificationData =
   | TierChangeNotification
   | SupporterDethronedNotification
   | AddTrackToPlaylistNotification
+  | TrackAddedToPurchasedAlbumNotification
   | AnnouncementNotification
   | TastemakerNotification
   | TrendingTrackNotification

@@ -1,14 +1,14 @@
+import { Sort } from 'mongodb'
+import mongoose from 'mongoose'
 import { z } from 'zod'
 
-import { router, publicProcedure } from '../trpc'
 import { collections } from '../controllers/collectionController'
-import mongoose from 'mongoose'
-import { Sort } from 'mongodb'
+import { router, publicProcedure } from '../trpc'
 
 const getCollectionInput = z.object({
   nextId: z.string().optional(),
   prevId: z.string().optional(),
-  limit: z.string().default('10'),
+  limit: z.string().default('10')
 })
 
 const createCollectionRouter = (collection: string) => {
@@ -79,7 +79,7 @@ const createCollectionRouter = (collection: string) => {
         }
 
         return { items, hasMoreNext, hasMorePrev }
-      }),
+      })
   })
 }
 

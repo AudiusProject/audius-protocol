@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.43",
+  "version": "3.0.44",
   "audius": {
     "releaseSHA": "f1d70a2a0643c5c84d8ab053f70c1e0a2ec3ad49"
   },
@@ -26,7 +26,8 @@
   "scripts": {
     "test:sdk": "./node_modules/.bin/jest --coverage=false",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
-    "test": "./scripts/test.sh",
+    "test": "npm run test:unit && npm run test:sdk",
+    "test:libs": "./scripts/test.sh",
     "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
     "test:unit:watch": "ts-mocha 'src/[!sdk]**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --watch",
     "test:integration": "ts-mocha tests/index.js",
@@ -63,9 +64,9 @@
     "prepack": "turbo run build"
   },
   "dependencies": {
-    "@audius/fixed-decimal": "*",
+    "@audius/fixed-decimal": "0.0.25",
     "@audius/hedgehog": "3.0.0-alpha.0",
-    "@audius/spl": "*",
+    "@audius/spl": "0.0.32",
     "@babel/core": "^7.23.7",
     "@babel/plugin-proposal-class-static-block": "7.21.0",
     "@babel/runtime": "7.18.3",

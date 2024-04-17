@@ -30,7 +30,7 @@ export const DELETE_PLAYLIST_FAILED = 'DELETE_PLAYLIST_FAILED'
 
 export const SET_PERMALINK = 'CACHE/COLLECTION/SET_PERMALINK'
 
-export const FETCH_COVER_ART = 'TRACKS/FETCH_COVER_ART'
+export const FETCH_COVER_ART = 'CACHE/COLLECTION/FETCH_COVER_ART'
 
 /**
  * @param initTrackId optional track id to pull artwork from.
@@ -122,8 +122,8 @@ export function addTrackToPlaylistFailed(
 }
 
 export function removeTrackFromPlaylist(
-  trackId: number,
-  playlistId: number,
+  trackId: ID,
+  playlistId: ID,
   timestamp: number
 ) {
   return { type: REMOVE_TRACK_FROM_PLAYLIST, trackId, playlistId, timestamp }

@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.75",
+  "version": "1.5.76",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -68,6 +68,7 @@
   },
   "dependencies": {
     "@audius/common": "*",
+    "@audius/fetch-nft": "0.2.6",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
@@ -170,6 +171,7 @@
     "react-qr-code": "2.0.12",
     "react-redux": "8.0.5",
     "react-router-dom": "5.3.4",
+    "react-router-dom-v5-compat": "6.22.3",
     "react-router-last-location": "2.0.1",
     "react-scroll-parallax": "3.3.2",
     "react-spring": "8.0.27",
@@ -283,6 +285,6 @@
     "vite": "4.5.0",
     "vite-plugin-glslify": "2.0.2",
     "vite-plugin-svgr": "4.1.0",
-    "vitest": "1.4.0"
+    "vitest": "0.34.6"
   }
 }

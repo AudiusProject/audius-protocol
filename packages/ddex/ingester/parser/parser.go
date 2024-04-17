@@ -195,6 +195,30 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 		}
 		p.Logger.Info("Found artist ID for release", "artistID", artistID, "artistName", artistName, "display title", parsedRelease.DisplayTitle, "display artists", parsedRelease.Artists)
 		parsedRelease.ArtistID = artistID
+		// Use this artist ID in conditions for follow/tip stream/download gates
+		if parsedRelease.IsStreamFollowGated {
+			parsedRelease.StreamConditions = &common.AccessConditions{
+				FollowUserID: artistID,
+			}
+		} else if parsedRelease.IsStreamTipGated {
+			parsedRelease.StreamConditions = &common.AccessConditions{
+				TipUserID: artistID,
+			}
+		}
+		if parsedRelease.IsDownloadFollowGated {
+			parsedRelease.DownloadConditions = &common.AccessConditions{
+				FollowUserID: artistID,
+			}
+		}
+
+		// Verify release element has a corresponding deal (only required for tracks for now)
+		if parsedRelease.ReleaseType == common.TrackReleaseType {
+			if !parsedRelease.HasDeal {
+				err = fmt.Errorf("release '%s' (ref %s) does not have a corresponding deal", parsedRelease.DisplayTitle, parsedRelease.ReleaseRef)
+				unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
+				return nil, err
+			}
+		}
 		release.ParsedReleaseElems[i] = parsedRelease
 	}
 

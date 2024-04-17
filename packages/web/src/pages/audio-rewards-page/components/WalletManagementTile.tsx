@@ -21,7 +21,8 @@ import {
   IconLogoLinkByStripe,
   IconLogoCoinbasePay,
   Text,
-  IconWallet
+  IconWallet,
+  Box
 } from '@audius/harmony'
 import BN from 'bn.js'
 import { push as pushRoute } from 'connected-react-router'
@@ -70,7 +71,15 @@ const messages = {
 }
 
 const OptionButton = (props: ButtonProps) => {
-  return <Button variant='secondary' size='small' fullWidth {...props} />
+  return (
+    <Button
+      variant='secondary'
+      size='small'
+      minWidth={150}
+      fullWidth
+      {...props}
+    />
+  )
 }
 
 const WalletActions = () => {
@@ -100,8 +109,8 @@ const WalletActions = () => {
   }, [dispatch])
 
   return (
-    <div className={styles.moreOptionsSection}>
-      <Flex gap='m' w='100%' wrap={isMobileWeb() ? 'wrap' : undefined}>
+    <Flex gap='m' wrap='wrap' justifyContent='center'>
+      <Box flex={1}>
         <OptionButton
           disabled={!hasBalance}
           onClick={onClickSend}
@@ -109,15 +118,21 @@ const WalletActions = () => {
         >
           {messages.sendLabel}
         </OptionButton>
+      </Box>
+      <Box flex={1}>
         <OptionButton onClick={onClickReceive} iconLeft={IconReceive}>
           {messages.receiveLabel}
         </OptionButton>
+      </Box>
+      <Box flex={1}>
         <OptionButton onClick={onClickTransactions} iconLeft={IconTransaction}>
           {messages.transactionsLabel}
         </OptionButton>
+      </Box>
+      <Box flex={1}>
         <ManageWalletsButton />
-      </Flex>
-    </div>
+      </Box>
+    </Flex>
   )
 }
 

@@ -2,11 +2,12 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { ID, UserMetadata } from '~/models'
+import { Id } from '~/api'
+import { ID, UserMetadata, userMetadataListFromSDK } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'
-import { getContext } from '~/store/effects'
+import { checkSDKMigration, getContext, getSDK } from '~/store/effects'
 import { waitForRead } from '~/utils/sagaHelpers'
 import { removeNullable } from '~/utils/typeUtils'
 
@@ -36,7 +37,7 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
     let suggestedFollows = relatedArtists
       .filter((user) => !user.does_current_user_follow)
       .slice(0, 5)
-    if (suggestedFollows.length === 0) {
+    if (suggestedFollows.length !== 0) {
       const showTopArtistRecommendationsPercent =
         remoteConfigInstance.getRemoteVar(
           DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT
@@ -66,11 +67,28 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
 function* fetchTopArtists() {
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
+
   const currentUserId = yield* select(getUserId)
-  const topArtists = yield* call([apiClient, apiClient.getTopArtists], {
-    currentUserId,
-    limit: 50
+
+  const topArtists = yield* checkSDKMigration({
+    endpointName: 'getTopArtists',
+    legacy: call([apiClient, apiClient.getTopArtists], {
+      currentUserId,
+      limit: 50
+    }),
+    migrated: call(function* () {
+      const sdk = yield* getSDK()
+      const { data } = yield* call(
+        [sdk.full.users, sdk.full.users.getTopUsers],
+        {
+          limit: 50,
+          userId: Id.parse(currentUserId)
+        }
+      )
+      return userMetadataListFromSDK(data)
+    })
   })
+
   const filteredArtists = topArtists.filter(
     (user) => !user.does_current_user_follow && !user.is_deactivated
   )

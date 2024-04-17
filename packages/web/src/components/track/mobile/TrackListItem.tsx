@@ -116,6 +116,7 @@ export type TrackListItemProps = {
   artistHandle: string
   trackTitle: string
   trackId: ID
+  ddexApp?: string | null
   userId: ID
   permalink: string
   uid?: string

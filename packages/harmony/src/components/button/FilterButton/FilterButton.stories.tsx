@@ -121,8 +121,12 @@ export const Accessibility: Story = {
     // Popup portals outside to document.body. Probably a TODO to fix that
     // portaling.
     const body = within(document.body)
-    await body.getByRole('button', { name: /choice/i }).click()
-    await expect(body.getByRole('listbox', { name: /choice/i }))
-    await expect(body.getByRole('option', { name: /green goblin/i }))
+    body.getByRole('button', { name: /choice/i }).click()
+    expect(
+      await body.findByRole('listbox', { name: /choice/i })
+    ).toBeInTheDocument()
+    expect(
+      await body.findByRole('option', { name: /green goblin/i })
+    ).toBeInTheDocument()
   }
 }
