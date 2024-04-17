@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
 import { Name, PlaybackSource, Status } from '@audius/common/models'
-import type { SmartCollectionVariant, ID, UID } from '@audius/common/models'
+import type {
+  SmartCollectionVariant,
+  ID,
+  UID,
+  AccessConditions
+} from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   collectionPageLineupActions as tracksActions,
