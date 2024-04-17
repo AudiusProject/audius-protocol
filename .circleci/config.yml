@@ -332,15 +332,15 @@ jobs:
 
             ${CHANGELOG}"
             git commit -m "${MESSAGE}"
-            git push -u origin main
+            git push -u origin sk-test-changelogs
             git tag client-v${VERSION}
             git push origin client-v${VERSION}
       - run:
           name: Create release branch
           command: |
             VERSION=$(jq -r .version ./package.json)
-            git checkout -b release-client-v${VERSION}
-            git push -u origin release-client-v${VERSION}
+            git checkout -b test-release-client-v${VERSION}
+            git push -u origin test-release-client-v${VERSION}
 
   notify-stuck-stage-nodes-job:
     resource_class: small
@@ -631,9 +631,9 @@ workflows:
           context: [slack-secrets, circle-daily-deploy-secrets]
 
   release-client-create-branch:
-    when:
-      equal:
-        ['release-client-create-branch', << pipeline.parameters.workflow >>]
+    # when:
+    #   equal:
+    #     ['release-client-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-client-release
 
