@@ -13,7 +13,7 @@ orbs:
 parameters:
   workflow:
     type: string
-    default: 'main'
+    default: 'release-client-create-branch'
 
 commands:
   create_concatenated_patch_file:
@@ -631,9 +631,9 @@ workflows:
           context: [slack-secrets, circle-daily-deploy-secrets]
 
   release-client-create-branch:
-    # when:
-    #   equal:
-    #     ['release-client-create-branch', << pipeline.parameters.workflow >>]
+    when:
+      equal:
+        ['release-client-create-branch', << pipeline.parameters.workflow >>]
     jobs:
       - generate-client-release
 
