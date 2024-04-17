@@ -162,7 +162,7 @@ export const LineupTileStats = ({
   const isReadonly = variant === 'readonly'
   const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
 
-  const renderLockedOrPlaysContent = () => {
+  const renderLockedContentOrPlayCount = () => {
     if (streamConditions && !isOwner) {
       if (isPurchase) {
         return (
@@ -297,7 +297,7 @@ export const LineupTileStats = ({
           ) : null}
         </View>
       </View>
-      {renderLockedOrPlaysContent()}
+      {renderLockedContentOrPlayCount()}
     </View>
   )
 }

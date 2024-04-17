@@ -86,7 +86,7 @@ type LockedOrPlaysContentProps = Pick<
     onClickGatedUnlockPill: (e: MouseEvent) => void
   }
 
-const renderLockedOrPlaysContent = ({
+const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
   fieldVisibility,
   isOwner,
@@ -477,7 +477,7 @@ const TrackTile = (props: CombinedProps) => {
             className={cn(styles.bottomRight, fadeIn)}
           >
             {!isLoading
-              ? renderLockedOrPlaysContent({
+              ? renderLockedContentOrPlayCount({
                   hasStreamAccess,
                   fieldVisibility,
                   isOwner,
