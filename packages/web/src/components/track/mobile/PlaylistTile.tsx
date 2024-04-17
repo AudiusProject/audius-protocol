@@ -346,75 +346,83 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             </UserLink>
           </Flex>
         </div>
-        <div className={cn(styles.stats, styles.statText)}>
-          <RankIcon
-            className={styles.rankIcon}
-            index={index}
-            isVisible={isTrending && shouldShow}
-            showCrown={showRankIcon}
-          />
-          {isReadonly ? specialContentLabel : null}
-          {!!(props.repostCount || props.saveCount) && (
-            <>
-              <div
-                className={cn(styles.statItem, fadeIn, {
-                  [styles.disabledStatItem]: !props.saveCount
-                })}
-                onClick={
-                  props.saveCount && !isReadonly
-                    ? props.makeGoToFavoritesPage(props.id)
-                    : undefined
-                }
+        <Text size='xs' color='subdued'>
+          <Flex m='m' justifyContent='space-between' alignItems='center'>
+            <Flex gap='l'>
+              <RankIcon
+                className={styles.rankIcon}
+                index={index}
+                isVisible={isTrending && shouldShow}
+                showCrown={showRankIcon}
+              />
+              {isReadonly ? specialContentLabel : null}
+              {!!(props.repostCount || props.saveCount) && (
+                <>
+                  <Flex
+                    gap='xs'
+                    alignItems='center'
+                    className={cn(styles.statItem, fadeIn, {
+                      [styles.disabledStatItem]: !props.saveCount
+                    })}
+                    onClick={
+                      props.saveCount && !isReadonly
+                        ? props.makeGoToFavoritesPage(props.id)
+                        : undefined
+                    }
+                  >
+                    <FavoriteButton
+                      iconMode
+                      isDarkMode={props.darkMode}
+                      isMatrixMode={props.isMatrix}
+                      className={styles.favoriteButton}
+                      wrapperClassName={styles.favoriteButtonWrapper}
+                    />
+                    {formatCount(props.saveCount)}
+                  </Flex>
+                  <Flex
+                    gap='xs'
+                    alignItems='center'
+                    className={cn(styles.statItem, fadeIn, {
+                      [styles.disabledStatItem]: !props.repostCount
+                    })}
+                    onClick={
+                      props.repostCount && !isReadonly
+                        ? props.makeGoToRepostsPage(props.id)
+                        : undefined
+                    }
+                  >
+                    <RepostButton
+                      iconMode
+                      isDarkMode={props.darkMode}
+                      isMatrixMode={props.isMatrix}
+                      className={styles.repostButton}
+                      wrapperClassName={styles.repostButtonWrapper}
+                    />
+                    {formatCount(props.repostCount)}
+                  </Flex>
+                </>
+              )}
+            </Flex>
+            {isReadonly ? (
+              <Text
+                variant='body'
+                size='xs'
+                color='staticWhite'
+                className={cn(styles.bottomRight, fadeIn)}
               >
-                {formatCount(props.saveCount)}
-                <FavoriteButton
-                  iconMode
-                  isDarkMode={props.darkMode}
-                  isMatrixMode={props.isMatrix}
-                  className={styles.favoriteButton}
-                  wrapperClassName={styles.favoriteButtonWrapper}
-                />
-              </div>
-              <div
-                className={cn(styles.statItem, fadeIn, {
-                  [styles.disabledStatItem]: !props.repostCount
+                {renderLockedContent({
+                  hasStreamAccess,
+                  isOwner,
+                  isStreamGated,
+                  streamConditions,
+                  gatedTrackStatus: gatedContentStatus,
+                  variant: isPurchase ? 'premium' : 'gated',
+                  onClickGatedUnlockPill
                 })}
-                onClick={
-                  props.repostCount && !isReadonly
-                    ? props.makeGoToRepostsPage(props.id)
-                    : undefined
-                }
-              >
-                {formatCount(props.repostCount)}
-                <RepostButton
-                  iconMode
-                  isDarkMode={props.darkMode}
-                  isMatrixMode={props.isMatrix}
-                  className={styles.repostButton}
-                  wrapperClassName={styles.repostButtonWrapper}
-                />
-              </div>
-            </>
-          )}
-          {isReadonly ? (
-            <Text
-              variant='body'
-              size='xs'
-              color='staticWhite'
-              className={cn(styles.bottomRight, fadeIn)}
-            >
-              {renderLockedContent({
-                hasStreamAccess,
-                isOwner,
-                isStreamGated,
-                streamConditions,
-                gatedTrackStatus: gatedContentStatus,
-                variant: isPurchase ? 'premium' : 'gated',
-                onClickGatedUnlockPill
-              })}
-            </Text>
-          ) : null}
-        </div>
+              </Text>
+            ) : null}
+          </Flex>
+        </Text>
         <TrackList
           activeTrackUid={props.activeTrackUid}
           goToCollectionPage={props.goToCollectionPage}
