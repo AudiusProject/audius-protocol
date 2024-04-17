@@ -325,7 +325,7 @@ jobs:
             CLIENT_DIRS=$(bash ./scripts/get-release-dirs.sh client)
             CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${PREV_VERSION}..HEAD -- ${CLIENT_DIRS})
             npm i --ignore-scripts
-            npm version patch -ws --include-workspace-root --no-git-tag-version
+            npm version patch -w audius-client -w audius-mobile-client --include-workspace-root --no-git-tag-version
             git add .
             VERSION=$(jq -r .version ./package.json)
             MESSAGE="v${VERSION}

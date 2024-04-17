@@ -13,7 +13,11 @@
     "notifications",
     "chain",
     "mediorum",
-    "relay"
+    "relay",
+    "ddex-publisher",
+    "ddex-web",
+    "ddex-parser",
+    "ddex-crawler"
   ]
   exclude_containers = [
     # System containers

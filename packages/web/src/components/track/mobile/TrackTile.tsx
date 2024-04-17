@@ -4,7 +4,8 @@ import {
   ModalSource,
   isContentUSDCPurchaseGated,
   ID,
-  AccessConditions
+  AccessConditions,
+  GatedContentStatus
 } from '@audius/common/models'
 import {
   usePremiumContentPurchaseModal,
@@ -42,6 +43,7 @@ import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
+import { GatedConditionsPill } from '../GatedConditionsPill'
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
 import { messages } from '../trackTileMessages'
 
@@ -70,23 +72,42 @@ type ExtraProps = {
 
 type CombinedProps = TrackTileProps & ExtraProps
 
-const renderLockedOrPlaysContent = ({
-  hasStreamAccess,
-  fieldVisibility,
-  isOwner,
-  isStreamGated,
-  listenCount,
-  variant
-}: Pick<
+type LockedOrPlaysContentProps = Pick<
   CombinedProps,
   | 'hasStreamAccess'
   | 'fieldVisibility'
   | 'isOwner'
   | 'isStreamGated'
+  | 'streamConditions'
   | 'listenCount'
 > &
-  Pick<LockedStatusBadgeProps, 'variant'>) => {
-  if (isStreamGated && !isOwner) {
+  Pick<LockedStatusBadgeProps, 'variant'> & {
+    gatedTrackStatus?: GatedContentStatus
+    onClickGatedUnlockPill: (e: MouseEvent) => void
+  }
+
+const renderLockedContentOrPlayCount = ({
+  hasStreamAccess,
+  fieldVisibility,
+  isOwner,
+  isStreamGated,
+  streamConditions,
+  gatedTrackStatus,
+  listenCount,
+  onClickGatedUnlockPill,
+  variant
+}: LockedOrPlaysContentProps) => {
+  if (isStreamGated && streamConditions && !isOwner) {
+    if (variant === 'premium') {
+      return (
+        <GatedConditionsPill
+          streamConditions={streamConditions}
+          unlocking={gatedTrackStatus === 'UNLOCKING'}
+          onClick={onClickGatedUnlockPill}
+          buttonSize='small'
+        />
+      )
+    }
     return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
   }
 
@@ -456,37 +477,42 @@ const TrackTile = (props: CombinedProps) => {
             className={cn(styles.bottomRight, fadeIn)}
           >
             {!isLoading
-              ? renderLockedOrPlaysContent({
+              ? renderLockedContentOrPlayCount({
                   hasStreamAccess,
                   fieldVisibility,
                   isOwner,
                   isStreamGated,
+                  streamConditions,
                   listenCount,
-                  variant: isPurchase ? 'premium' : 'gated'
+                  gatedTrackStatus,
+                  variant: isPurchase ? 'premium' : 'gated',
+                  onClickGatedUnlockPill: onClickPill
                 })
               : null}
           </Text>
         </Text>
-        <BottomButtons
-          hasSaved={props.hasCurrentUserSaved}
-          hasReposted={props.hasCurrentUserReposted}
-          toggleRepost={onToggleRepost}
-          toggleSave={onToggleSave}
-          onShare={onClickShare}
-          onClickOverflow={onClickOverflowMenu}
-          onClickGatedUnlockPill={onClickPill}
-          isOwner={isOwner}
-          readonly={isReadonly}
-          isLoading={isLoading}
-          isUnlisted={isUnlisted}
-          hasStreamAccess={hasStreamAccess}
-          streamConditions={streamConditions}
-          gatedTrackStatus={gatedTrackStatus}
-          isShareHidden={hideShare}
-          isDarkMode={darkMode}
-          isMatrixMode={isMatrix}
-          isTrack
-        />
+        {isReadonly ? null : (
+          <BottomButtons
+            hasSaved={props.hasCurrentUserSaved}
+            hasReposted={props.hasCurrentUserReposted}
+            toggleRepost={onToggleRepost}
+            toggleSave={onToggleSave}
+            onShare={onClickShare}
+            onClickOverflow={onClickOverflowMenu}
+            onClickGatedUnlockPill={onClickPill}
+            isOwner={isOwner}
+            readonly={isReadonly}
+            isLoading={isLoading}
+            isUnlisted={isUnlisted}
+            hasStreamAccess={hasStreamAccess}
+            streamConditions={streamConditions}
+            gatedTrackStatus={gatedTrackStatus}
+            isShareHidden={hideShare}
+            isDarkMode={darkMode}
+            isMatrixMode={isMatrix}
+            isTrack
+          />
+        )}
       </div>
     </div>
   )

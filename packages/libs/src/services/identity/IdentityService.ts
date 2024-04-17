@@ -44,6 +44,7 @@ export type RelayTransactionData = {
   retry?: boolean
   recentBlockhash?: string
   lookupTableAddresses?: string[]
+  useCoinflowRelay?: boolean
 }
 
 export type IdentityRequestError = AxiosError

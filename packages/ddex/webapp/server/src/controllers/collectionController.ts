@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
-import mongoose from 'mongoose'
 import { Sort } from 'mongodb'
+import mongoose from 'mongoose'
 
 export const collections = [
   'deliveries',
   'pending_releases',
-  'published_releases',
+  'published_releases'
 ]
 
 export const getCollection = (collection: string) => {

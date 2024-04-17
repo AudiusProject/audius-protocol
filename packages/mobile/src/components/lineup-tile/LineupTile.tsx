@@ -148,26 +148,28 @@ export const LineupTile = ({
       </View>
       {children}
 
-      <LineupTileActionButtons
-        hasReposted={has_current_user_reposted}
-        hasSaved={has_current_user_saved}
-        isOwner={isOwner}
-        isShareHidden={hideShare}
-        isUnlisted={isUnlisted}
-        readonly={isReadonly}
-        contentId={contentId}
-        contentType={
-          isTrack
-            ? PurchaseableContentType.TRACK
-            : PurchaseableContentType.ALBUM
-        }
-        streamConditions={streamConditions}
-        hasStreamAccess={hasStreamAccess}
-        onPressOverflow={onPressOverflow}
-        onPressRepost={onPressRepost}
-        onPressSave={onPressSave}
-        onPressShare={onPressShare}
-      />
+      {isReadonly ? null : (
+        <LineupTileActionButtons
+          hasReposted={has_current_user_reposted}
+          hasSaved={has_current_user_saved}
+          isOwner={isOwner}
+          isShareHidden={hideShare}
+          isUnlisted={isUnlisted}
+          readonly={isReadonly}
+          contentId={contentId}
+          contentType={
+            isTrack
+              ? PurchaseableContentType.TRACK
+              : PurchaseableContentType.ALBUM
+          }
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
+          onPressOverflow={onPressOverflow}
+          onPressRepost={onPressRepost}
+          onPressSave={onPressSave}
+          onPressShare={onPressShare}
+        />
+      )}
     </LineupTileRoot>
   )
 }
