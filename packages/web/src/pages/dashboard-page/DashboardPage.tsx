@@ -27,6 +27,9 @@ import {
   makeGetDashboard
 } from './store/selectors'
 import { fetch, reset, fetchListenData } from './store/slice'
+import { ArtistContentSection } from './components/ArtistContentSection'
+import { FeatureFlags } from '@audius/common/services'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 const { getTheme } = themeSelectors
 
@@ -67,6 +70,9 @@ const StatTile = (props: { title: string; value: any }) => {
 export const DashboardPage = () => {
   const goToRoute = useGoToRoute()
   const dispatch = useDispatch()
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
   const [selectedTrack, setSelectedTrack] = useState(-1)
   const { account, tracks, stats } = useSelector(makeGetDashboard())
   const listenData = useSelector(getDashboardListenData)
@@ -194,7 +200,14 @@ export const DashboardPage = () => {
           <div className={styles.sectionContainer}>
             {renderChart()}
             {renderStats()}
-            {renderTable()}
+            {isPremiumAlbumsEnabled ? (
+              <ArtistContentSection
+                tracks={formatMetadata(tracks)}
+                account={account}
+              />
+            ) : (
+              renderTable()
+            )}
           </div>
         </>
       )}
