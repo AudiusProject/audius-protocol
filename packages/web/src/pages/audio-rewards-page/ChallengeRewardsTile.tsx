@@ -249,8 +249,6 @@ const ClaimAllPanel = () => {
   }, [setClaimAllRewardsVisibility])
   const onClickMoreInfo = useCallback(() => {}, [])
 
-  if (claimableAmount + cooldownAmount === 0) return null
-
   return (
     <Paper
       shadow='flat'
@@ -401,6 +399,12 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
 
   const wm = useWithMobileStyle(styles.mobile)
 
+  const { isEmpty: shouldHideCumulativeRewards } = useChallengeCooldownSchedule(
+    {
+      multiple: true
+    }
+  )
+
   return (
     <Tile className={wm(styles.rewardsTile, className)}>
       <span className={wm(styles.title)}>{messages.title}</span>
@@ -411,8 +415,15 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
         <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
       ) : (
         <>
-          {isRewardsCooldownEnabled ? <ClaimAllPanel /> : null}
-          <Divider orientation='horizontal' className={wm(styles.divider)} />
+          {isRewardsCooldownEnabled && !shouldHideCumulativeRewards ? (
+            <>
+              <ClaimAllPanel />
+              <Divider
+                orientation='horizontal'
+                className={wm(styles.divider)}
+              />
+            </>
+          ) : null}
           <div className={styles.rewardsContainer}>{rewardsTiles}</div>
         </>
       )}
