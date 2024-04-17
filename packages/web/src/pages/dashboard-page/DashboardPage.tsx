@@ -1,6 +1,7 @@
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
 import { Status, Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { themeSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
@@ -12,10 +13,12 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useFlag } from 'hooks/useRemoteConfig'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
 import styles from './DashboardPage.module.css'
 import { ArtistCard } from './components/ArtistCard'
+import { ArtistContentSection } from './components/ArtistContentSection'
 import {
   TracksTableContainer,
   DataSourceTrack,
@@ -27,9 +30,6 @@ import {
   makeGetDashboard
 } from './store/selectors'
 import { fetch, reset, fetchListenData } from './store/slice'
-import { ArtistContentSection } from './components/ArtistContentSection'
-import { FeatureFlags } from '@audius/common/services'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 const { getTheme } = themeSelectors
 
