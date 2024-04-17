@@ -1,7 +1,13 @@
-import { IconLock, IconLockUnlocked, Text } from '@audius/harmony'
+import { IconLockUnlocked, IconSize, Text } from '@audius/harmony'
+import IconLock from '@audius/harmony/src/assets/icons/Lock.svg'
 import cn from 'classnames'
 
 import styles from './LockedStatusBadge.module.css'
+
+const messages = {
+  premiumLocked: 'Available for purchase',
+  premiumUnlocked: 'Purchased'
+}
 
 export type LockedStatusBadgeProps = {
   locked: boolean
@@ -9,18 +15,23 @@ export type LockedStatusBadgeProps = {
   text?: string
   /** Whether the badge is colored when locked */
   coloredWhenLocked?: boolean
-  iconSize?: 'medium' | 'small'
+  iconSize?: IconSize
+  id?: string
 }
 
 /** Renders a small badge with locked or unlocked icon */
-export const LockedStatusBadge = ({
-  locked,
-  variant = 'gated',
-  text,
-  coloredWhenLocked = false,
-  iconSize = 'medium'
-}: LockedStatusBadgeProps) => {
+export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
+  const {
+    locked,
+    variant = 'gated',
+    text,
+    coloredWhenLocked = false,
+    iconSize = 'xs',
+    id
+  } = props
+
   const LockComponent = locked ? IconLock : IconLockUnlocked
+
   return (
     <div
       className={cn(
@@ -34,18 +45,21 @@ export const LockedStatusBadge = ({
       )}
     >
       <LockComponent
-        className={cn(
-          styles.icon,
-          iconSize === 'medium' ? styles.medium : styles.small
-        )}
+        color='staticWhite'
+        size={iconSize}
+        id={text ? undefined : id}
+        title={
+          text
+            ? undefined
+            : variant === 'premium'
+            ? locked
+              ? messages.premiumLocked
+              : messages.premiumUnlocked
+            : undefined
+        }
       />
       {text ? (
-        <Text
-          className={styles.text}
-          size='xs'
-          variant='label'
-          color='staticWhite'
-        >
+        <Text size='xs' variant='label' color='staticWhite' id={id}>
           {text}
         </Text>
       ) : null}

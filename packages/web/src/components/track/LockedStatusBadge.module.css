@@ -22,22 +22,3 @@
 .coloredWhenLocked.premium {
   background-color: var(--harmony-light-green);
 }
-
-.icon.medium {
-  width: 14px;
-  height: 14px;
-}
-
-.icon.small {
-  width: 12px;
-  height: 12px;
-}
-
-.icon path {
-  fill: var(--harmony-static-white);
-}
-
-.text {
-  color: var(--harmony-static-white);
-  text-decoration: none;
-}

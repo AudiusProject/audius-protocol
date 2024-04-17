@@ -120,7 +120,7 @@ const PlayingTrackInfo = ({
         {shouldShowPreviewLock ? (
           <LockedStatusBadge
             locked
-            iconSize='small'
+            iconSize='2xs'
             coloredWhenLocked
             variant='premium'
             text={messages.preview}

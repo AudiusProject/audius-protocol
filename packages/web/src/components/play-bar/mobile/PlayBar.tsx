@@ -214,7 +214,7 @@ const PlayBar = ({
                   variant='premium'
                   text={messages.preview}
                   coloredWhenLocked
-                  iconSize='small'
+                  iconSize='2xs'
                 />
               </div>
             ) : null}
