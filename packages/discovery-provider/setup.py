@@ -22,4 +22,17 @@ config = {
     "name": "audius_discovery_provider",
 }
 
-setup(**config)
+# Call setup using individual elements from the config dictionary
+# this doesn't confuse type checker
+setup(
+    name=config["name"],
+    version=config["version"],
+    description=config["description"],
+    author=config["author"],
+    author_email=config["author_email"],
+    url=config["url"],
+    download_url=config["download_url"],
+    packages=config["packages"],
+    install_requires=config["install_requires"],
+    scripts=config["scripts"],
+)
