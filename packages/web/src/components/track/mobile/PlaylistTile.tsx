@@ -54,6 +54,7 @@ const { getGatedContentStatusMap } = gatedContentSelectors
 type TrackItemProps = {
   index: number
   track?: LineupTrack
+  isAlbum: boolean
   active: boolean
   forceSkeleton?: boolean
 }
@@ -62,24 +63,24 @@ type TrackItemProps = {
 const DISPLAY_TRACK_COUNT = 5
 
 const TrackItem = (props: TrackItemProps) => {
+  const { active, index, isAlbum, track, forceSkeleton } = props
   return (
     <>
       <div className={styles.trackItemDivider}></div>
       <div
         className={cn(styles.trackItem, {
-          [styles.activeTrackItem]: props.active
+          [styles.activeTrackItem]: active
         })}
       >
-        {props.forceSkeleton ? (
+        {forceSkeleton ? (
           <Skeleton width='100%' height='10px' />
-        ) : props.track ? (
+        ) : track ? (
           <>
-            <div className={styles.index}> {props.index + 1} </div>
-            <div className={styles.trackTitle}> {props.track.title} </div>
-            <div className={styles.byArtist}>
-              {' '}
-              {`by ${props.track.user.name}`}{' '}
-            </div>
+            <div className={styles.index}> {index + 1} </div>
+            <div className={styles.trackTitle}> {track.title} </div>
+            {!isAlbum ? (
+              <div className={styles.byArtist}> {`by ${track.user.name}`} </div>
+            ) : null}
           </>
         ) : null}
       </div>
@@ -92,6 +93,7 @@ type TrackListProps = {
   tracks: LineupTrack[]
   goToCollectionPage: (e: MouseEvent<HTMLElement>) => void
   isLoading?: boolean
+  isAlbum: boolean
   numLoadingSkeletonRows?: number
   trackCount?: number
 }
@@ -101,6 +103,7 @@ const TrackList = ({
   activeTrackUid,
   goToCollectionPage,
   isLoading,
+  isAlbum,
   numLoadingSkeletonRows,
   trackCount
 }: TrackListProps) => {
@@ -108,7 +111,13 @@ const TrackList = ({
     return (
       <Box backgroundColor='surface1'>
         {range(numLoadingSkeletonRows).map((i) => (
-          <TrackItem key={i} active={false} index={i} forceSkeleton />
+          <TrackItem
+            key={i}
+            active={false}
+            index={i}
+            isAlbum={isAlbum}
+            forceSkeleton
+          />
         ))}
       </Box>
     )
@@ -121,6 +130,7 @@ const TrackList = ({
           key={track.uid}
           active={activeTrackUid === track.uid}
           index={index}
+          isAlbum={isAlbum}
           track={track}
         />
       ))}
@@ -211,6 +221,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     isUnlisted,
     playlistTitle,
     isPlaying,
+    isAlbum,
     ownerId,
     isStreamGated,
     hasStreamAccess,
@@ -428,6 +439,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
           goToCollectionPage={props.goToCollectionPage}
           tracks={props.tracks}
           isLoading={showSkeleton}
+          isAlbum={isAlbum}
           numLoadingSkeletonRows={numLoadingSkeletonRows}
           trackCount={trackCount}
         />

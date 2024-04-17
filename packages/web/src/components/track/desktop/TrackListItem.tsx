@@ -26,6 +26,7 @@ const makeStrings = ({ deleted }: { deleted: boolean }) => ({
 type TrackListItemProps = {
   index: number
   isLoading: boolean
+  isAlbum: boolean
   active: boolean
   size: TrackTileSize
   disableActions: boolean
@@ -47,6 +48,7 @@ const TrackListItem = ({
   goToRoute,
   togglePlay,
   isLoading,
+  isAlbum,
   forceSkeleton = false
 }: TrackListItemProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
@@ -161,16 +163,18 @@ const TrackListItem = ({
             {track.title}
             {strings.deleted}
           </div>
-          <div className={styles.artistName} onClick={onClickArtistName}>
-            <div className={styles.by}>{strings.by}</div>
-            {track.user.is_deactivated ? (
-              `${track.user.name} [Deactivated]`
-            ) : (
-              <ArtistPopover handle={track.user.handle}>
-                {track.user.name}
-              </ArtistPopover>
-            )}
-          </div>
+          {!isAlbum ? (
+            <div className={styles.artistName} onClick={onClickArtistName}>
+              <div className={styles.by}>{strings.by}</div>
+              {track.user.is_deactivated ? (
+                `${track.user.name} [Deactivated]`
+              ) : (
+                <ArtistPopover handle={track.user.handle}>
+                  {track.user.name}
+                </ArtistPopover>
+              )}
+            </div>
+          ) : null}
         </div>
         <div className={styles.duration}>
           {track.duration && formatSeconds(track.duration)}
