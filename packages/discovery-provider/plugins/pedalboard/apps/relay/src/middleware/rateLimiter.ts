@@ -16,6 +16,12 @@ export const rateLimiterMiddleware = async (
   const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier, logger } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
 
+  // don't rate limit on local dev, this can block audius-cmd
+  if (config.environment === 'dev') {
+    next()
+    return
+  }
+
   let signer: string | null
   if (signerIsUser) {
     signer = (recoveredSigner as Users).wallet!

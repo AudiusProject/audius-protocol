@@ -92,6 +92,7 @@ export type CollectionPageProps = {
   ) => [CollectionPageTrackRecord[], number]
   onFilterChange: (evt: ChangeEvent<HTMLInputElement>) => void
   onClickRepostTrack: (record: CollectionPageTrackRecord) => void
+  onClickPurchaseTrack: (record: CollectionPageTrackRecord) => void
   onSortTracks: (sorters: any) => void
   onReorderTracks: (source: number, destination: number) => void
   onClickRemove: (
@@ -123,6 +124,7 @@ const CollectionPage = ({
   onClickRow,
   onClickSave,
   onClickRepostTrack,
+  onClickPurchaseTrack,
   onSortTracks,
   onReorderTracks,
   onClickRemove,
@@ -234,6 +236,7 @@ const CollectionPage = ({
       onPlay={onPlay}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
+      onClickPurchase={onClickPurchaseTrack}
       // Smart collection
       variant={variant}
       gradient={gradient}
@@ -323,6 +326,8 @@ const CollectionPage = ({
                 onClickFavorite={onClickSave}
                 onClickRemove={isOwner ? onClickRemove : undefined}
                 onClickRepost={onClickRepostTrack}
+                onClickPurchase={onClickPurchaseTrack}
+                isPremiumEnabled={isPremiumAlbumsEnabled}
                 onReorderTracks={onReorderTracks}
                 onSortTracks={onSortTracks}
                 isReorderable={

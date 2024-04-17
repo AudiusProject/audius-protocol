@@ -1,5 +1,6 @@
 import type { ProfilePicture } from '@audius/sdk'
 import mongoose from 'mongoose'
+
 import { decodeHashedId, isUserAdmin } from './utils'
 
 export interface IUser {
@@ -16,7 +17,7 @@ export interface IUser {
 const profilePictureSchema = new mongoose.Schema({
   '150x150': String,
   '480x480': String,
-  '1000x1000': String,
+  '1000x1000': String
 })
 
 interface IUserMethods {
@@ -38,7 +39,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>({
   name: String,
   verified: { type: Boolean, default: false },
   profilePicture: { type: profilePictureSchema, default: null },
-  isAdmin: { type: Boolean, default: false },
+  isAdmin: { type: Boolean, default: false }
 })
 
 userSchema.method('updateRoles', async function updateRoles() {
