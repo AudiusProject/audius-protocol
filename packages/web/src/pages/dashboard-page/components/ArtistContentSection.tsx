@@ -413,6 +413,8 @@ export const ArtistContentSection = ({
                 selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
                 label={messages.allReleases}
                 options={filterButtonOptions}
+                popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
               />
             ) : null
           }
