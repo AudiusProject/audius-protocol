@@ -82,13 +82,10 @@ export const CollectionCard = (props: CollectionCardProps) => {
       direction='column'
       border='default'
       w={cardSizes[size]}
-      css={{ cursor: 'pointer' }}
+      css={{ cursor: 'pointer', overflow: 'unset' }}
     >
       {dogEarType ? (
-        <DogEar
-          type={dogEarType}
-          css={{ position: 'absolute', top: -1, left: -1 }}
-        />
+        <DogEar type={dogEarType} css={{ top: -1, left: -1 }} />
       ) : null}
       <Flex direction='column' p='s' gap='s'>
         <CollectionImage
@@ -96,33 +93,33 @@ export const CollectionCard = (props: CollectionCardProps) => {
           size={cardSizeToCoverArtSizeMap[size]}
           data-testid={`${id}-cover-art`}
         />
-        <Link
+        <Text
           id={`${id}-title`}
-          to={permalink}
-          css={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
+          variant='title'
+          color='default'
+          ellipses
+          asChild
         >
-          <Text
-            variant='title'
-            tag='span'
-            color='default'
-            textAlign='center'
-            ellipses
-          >
+          <Link to={permalink} css={{ pointerEvents: 'none' }}>
             {playlist_name}
-          </Text>
-        </Link>
+          </Link>
+        </Text>
         <UserLink
           id={`${id}-artist`}
           userId={playlist_owner_id}
           textVariant='body'
-          css={{ alignSelf: 'center' }}
+          css={{ justifyContent: 'center' }}
         />
       </Flex>
       <Divider orientation='horizontal' />
-      <Flex gap='l' p='s' justifyContent='center' backgroundColor='surface1'>
+      <Flex
+        gap='l'
+        p='s'
+        justifyContent='center'
+        backgroundColor='surface1'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+      >
         {is_private ? (
           <Text
             variant='body'
