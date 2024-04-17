@@ -148,13 +148,13 @@ const trackMetadataSchema = new mongoose.Schema({
   cover_art_url: String,
   cover_art_url_hash: String,
   cover_art_url_hash_algo: String,
-  is_stream_gated: { type: Boolean, required: true },
+  is_stream_gated: { type: Boolean, default: false },
   stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
-  is_download_gated: { type: Boolean, required: true },
+  is_download_gated: { type: Boolean, default: false },
   download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
-  is_stream_follow_gated: Boolean,
-  is_stream_tip_gated: Boolean,
-  is_download_follow_gated: Boolean,
+  is_stream_follow_gated: { type: Boolean, default: false },
+  is_stream_tip_gated: { type: Boolean, default: false },
+  is_download_follow_gated: { type: Boolean, default: false },
 })
 
 export type TrackMetadata = mongoose.InferSchemaType<typeof trackMetadataSchema>
@@ -271,6 +271,7 @@ const parsedReleaseElementSchema = new mongoose.Schema(
     },
     release_ids: releaseIDsSchema,
     release_date: { type: Date, required: true },
+    validity_start_date: { type: Date, required: true },
     resources: releaseResourcesSchema,
     artist_id: { type: String, required: true },
     artist_name: { type: String, required: true },

@@ -72,14 +72,15 @@ type Release struct {
 
 // ParsedReleaseElement contains parsed details of a <Release> element
 type ParsedReleaseElement struct {
-	ReleaseRef    string           `bson:"release_ref"`
-	IsMainRelease bool             `bson:"is_main_release"`
-	ReleaseType   ReleaseType      `bson:"release_type"`
-	ReleaseIDs    ReleaseIDs       `bson:"release_ids"`
-	ReleaseDate   time.Time        `bson:"release_date"`
-	Resources     ReleaseResources `bson:"resources"`
-	ArtistID      string           `bson:"artist_id"`
-	ArtistName    string           `bson:"artist_name"`
+	ReleaseRef        string           `bson:"release_ref"`
+	IsMainRelease     bool             `bson:"is_main_release"`
+	ReleaseType       ReleaseType      `bson:"release_type"`
+	ReleaseIDs        ReleaseIDs       `bson:"release_ids"`
+	ReleaseDate       time.Time        `bson:"release_date"`
+	ValidityStartDate time.Time        `bson:"validity_start_date"`
+	Resources         ReleaseResources `bson:"resources"`
+	ArtistID          string           `bson:"artist_id"`
+	ArtistName        string           `bson:"artist_name"`
 
 	DisplayTitle                 string                `bson:"display_title"` // For displaying on the frontend
 	DisplaySubtitle              NullableString        `bson:"display_subtitle,omitempty"`
