@@ -18,6 +18,7 @@ type LineupTileTrackListProps = {
   onPress: GestureResponderHandler
   trackCount?: number
   tracks: LineupTrack[]
+  isAlbum: boolean
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -66,9 +67,11 @@ type TrackItemProps = {
   index: number
   track?: LineupTrack
   uid?: UID
+  isAlbum?: boolean
 }
 
-const TrackItem = ({ track, index, showSkeleton, uid }: TrackItemProps) => {
+const TrackItem = (props: TrackItemProps) => {
+  const { showSkeleton, index, track, uid, isAlbum } = props
   const styles = useStyles()
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === uid
@@ -90,16 +93,18 @@ const TrackItem = ({ track, index, showSkeleton, uid }: TrackItemProps) => {
             >
               {track.title}
             </Text>
-            <Text
-              style={[
-                styles.text,
-                styles.artist,
-                isPlayingUid && styles.active
-              ]}
-              numberOfLines={1}
-            >
-              {`by ${track.user.name}`}
-            </Text>
+            {!isAlbum ? (
+              <Text
+                style={[
+                  styles.text,
+                  styles.artist,
+                  isPlayingUid && styles.active
+                ]}
+                numberOfLines={1}
+              >
+                {`by ${track.user.name}`}
+              </Text>
+            ) : null}
           </>
         )}
       </View>
@@ -107,19 +112,15 @@ const TrackItem = ({ track, index, showSkeleton, uid }: TrackItemProps) => {
   )
 }
 
-export const CollectionTileTrackList = ({
-  isLoading,
-  onPress,
-  trackCount,
-  tracks
-}: LineupTileTrackListProps) => {
+export const CollectionTileTrackList = (props: LineupTileTrackListProps) => {
+  const { isLoading, onPress, trackCount, tracks, isAlbum } = props
   const styles = useStyles()
 
   if (!tracks.length && isLoading) {
     return (
       <>
         {range(DISPLAY_TRACK_COUNT).map((i) => (
-          <TrackItem key={i} index={i} showSkeleton />
+          <TrackItem key={i} index={i} showSkeleton isAlbum={isAlbum} />
         ))}
       </>
     )
@@ -133,6 +134,7 @@ export const CollectionTileTrackList = ({
           uid={track.uid}
           index={index}
           track={track}
+          isAlbum={isAlbum}
         />
       ))}
       {trackCount && trackCount > 5 ? (
