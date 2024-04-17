@@ -3,9 +3,10 @@
 
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 
-import { getIndexHtml } from 'ssr/getIndexHtml'
+// import { getIndexHtml } from 'ssr/getIndexHtml'
 
 export function render() {
-  const html = getIndexHtml()
+  // const html = getIndexHtml()
+  const html = 'HI!'
   return escapeInject`${dangerouslySkipEscape(html)}`
 }
