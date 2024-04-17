@@ -9,7 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "start": "npm run preview",
-    "pages:deploy": "npm run build && wrangler pages deploy ./dist"
+    "deploy": "npm run build && wrangler pages deploy ./dist"
   },
   "dependencies": {
     "@audius/sdk": "*",
