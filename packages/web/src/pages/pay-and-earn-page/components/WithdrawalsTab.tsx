@@ -207,6 +207,7 @@ export const useWithdrawals = () => {
       userId,
       sortMethod,
       sortDirection,
+      type: full.GetUSDCTransactionsTypeEnum.Withdrawal,
       method: full.GetUSDCTransactionsMethodEnum.Send
     },
     { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
