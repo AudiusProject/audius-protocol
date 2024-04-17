@@ -9,30 +9,15 @@ from setuptools import find_packages, setup
 install_reqs = parse_requirements("requirements.txt", session=uuid.uuid1())  # type: ignore
 requirements = [str(ir.requirement) for ir in install_reqs]
 
-config = {
-    "description": "Audius Discovery Provider",
-    "author": "Hareesh Nagaraj",
-    "url": "",
-    "download_url": "",
-    "author_email": "",
-    "version": "0.1",
-    "install_requires": requirements,
-    "packages": find_packages(),
-    "scripts": [],
-    "name": "audius_discovery_provider",
-}
-
-# Call setup using individual elements from the config dictionary
-# this doesn't confuse type checker
 setup(
-    name=config["name"],
-    version=config["version"],
-    description=config["description"],
-    author=config["author"],
-    author_email=config["author_email"],
-    url=config["url"],
-    download_url=config["download_url"],
-    packages=config["packages"],
-    install_requires=config["install_requires"],
-    scripts=config["scripts"],
+    name="audius_discovery_provider",
+    version="0.1",
+    description="Audius Discovery Provider",
+    author="Hareesh Nagaraj",
+    author_email="",
+    url="",
+    download_url="",
+    packages=find_packages(),
+    requires=requirements,
+    scripts=[],
 )
