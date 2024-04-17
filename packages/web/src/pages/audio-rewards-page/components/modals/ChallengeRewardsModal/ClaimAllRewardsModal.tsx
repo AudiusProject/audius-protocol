@@ -1,11 +1,17 @@
+import { useCallback } from 'react'
+
 import {
-  formatAudioMatchingChallengesForCooldownSchedule,
-  usePendingChallengeSchedule
+  formatCooldownChallenges,
+  useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import { challengesSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { Button, Flex, ModalContent, Text } from '@audius/harmony'
-import { useSelector } from 'react-redux'
+import {
+  Button,
+  Flex,
+  IconArrowRight,
+  ModalContent,
+  Text
+} from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { SummaryTable } from 'components/summary-table'
@@ -15,12 +21,10 @@ import ModalDrawer from '../ModalDrawer'
 
 import styles from './styles.module.css'
 
-const { getOptimisticUserChallenges } = challengesSelectors
-
 const messages = {
   upcomingRewards: 'Upcoming Rewards',
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
-  readyToClaim: 'Ready to Claim',
+  readyToClaim: 'Ready to claim!',
   rewards: 'Rewards',
   audio: '$AUDIO',
   description: 'You can check and claim all your upcoming rewards here.',
@@ -31,24 +35,28 @@ export const ClaimAllRewardsModal = () => {
   const [isOpen, setOpen] = useModalState('ClaimAllRewards')
   const [isHCaptchaModalOpen] = useModalState('HCaptcha')
   const wm = useWithMobileStyle(styles.mobile)
-  const userChallenges = useSelector(getOptimisticUserChallenges)
 
-  const undisbursedChallenges = usePendingChallengeSchedule().cooldownChallenges
-  const summaryItems = formatAudioMatchingChallengesForCooldownSchedule(
-    undisbursedChallenges
-  )
-  console.log(
-    'asdf undisbursedChallenges: ',
-    undisbursedChallenges,
-    summaryItems
-  )
-  // TODO merge conflicting dates
-  const totalClaimableAmount = Object.values(userChallenges).reduce(
-    (sum, challenge) => sum + challenge.claimableAmount,
-    0
-  )
+  const { claimableAmount, cooldownChallenges, summary } =
+    useChallengeCooldownSchedule({
+      multiple: true
+    })
   const claimInProgress = false
-  const onClaimRewardClicked = () => {}
+  const onClaimRewardClicked = useCallback(() => {}, [])
+  const formatLabel = useCallback((item: any) => {
+    const { label, claimableDate, isClose } = item
+    const formattedLabel = isClose ? (
+      label
+    ) : (
+      <Text>
+        {label}&nbsp;
+        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
+      </Text>
+    )
+    return {
+      ...item,
+      label: formattedLabel
+    }
+  }, [])
   return (
     <ModalDrawer
       title={messages.rewards}
@@ -69,27 +77,22 @@ export const ClaimAllRewardsModal = () => {
           </Text>
           <SummaryTable
             title={messages.upcomingRewards}
-            items={summaryItems}
-            summaryItem={
-              totalClaimableAmount > 0
-                ? {
-                    id: messages.readyToClaim,
-                    label: messages.readyToClaim,
-                    value: totalClaimableAmount
-                  }
-                : undefined
-            }
+            items={formatCooldownChallenges(cooldownChallenges).map(
+              formatLabel
+            )}
+            summaryItem={summary}
             secondaryTitle={messages.audio}
             summaryLabelColor='accent'
             summaryValueColor='default'
           />
-          {totalClaimableAmount > 0 ? (
+          {claimableAmount > 0 ? (
             <Button
-              fullWidth
               isLoading={claimInProgress}
               onClick={onClaimRewardClicked}
+              iconRight={IconArrowRight}
+              fullWidth
             >
-              {messages.claimAudio(formatNumberCommas(totalClaimableAmount))}
+              {messages.claimAudio(formatNumberCommas(claimableAmount))}
             </Button>
           ) : (
             <Button variant='primary' fullWidth>

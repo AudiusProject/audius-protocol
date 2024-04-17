@@ -1,6 +1,9 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
+import {
+  formatCooldownChallenges,
+  useChallengeCooldownSchedule
+} from '@audius/common/hooks'
 import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
 import { challengesSelectors } from '@audius/common/store'
 import {
@@ -94,11 +97,11 @@ export const AudioMatchingRewardsModalContent = ({
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const {
-    cooldownChallenges,
     claimableAmount,
-    cooldownChallengesSummary,
+    cooldownChallenges,
+    summary,
     isEmpty: isCooldownChallengesEmpty
-  } = useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
+  } = useChallengeCooldownSchedule({ challengeId: challenge?.challenge_id })
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
@@ -162,8 +165,8 @@ export const AudioMatchingRewardsModalContent = ({
           {!isCooldownChallengesEmpty ? (
             <SummaryTable
               title={messages.upcomingRewards}
-              items={cooldownChallenges}
-              summaryItem={cooldownChallengesSummary}
+              items={formatCooldownChallenges(cooldownChallenges)}
+              summaryItem={summary}
               secondaryTitle={messages.audio}
               summaryLabelColor='accent'
               summaryValueColor='default'
