@@ -42,6 +42,8 @@ export default async ({ track_id, updated_at, created_at }) => {
     )
     .where('tracks.track_id', '=', trackId)
     .where('users.is_verified', '=', true)
+    .whereNull('tracks.stem_of')
+    .where('tracks.is_unlisted', '=', false)
     .first()
     .catch(console.error)
 
