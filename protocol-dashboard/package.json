@@ -81,7 +81,7 @@
     "update-build:stage": "node ./scripts/updateBuild.cjs stage",
     "update-build:prod": "node ./scripts/updateBuild.cjs prod",
     "TODO - ADD TYPECHECK TO VERIFY: =========================": "",
-    "verify": "concurrently \"npm:lint:fix\" \"npm:lint:env\""
+    "verify": "concurrently \"npm:lint\" \"npm:lint:env\""
   },
   "eslintConfig": {
     "extends": "react-app"
