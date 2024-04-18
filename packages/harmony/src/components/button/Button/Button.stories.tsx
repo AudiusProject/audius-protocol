@@ -11,22 +11,15 @@ import { ButtonProps } from './types'
 
 const meta: Meta<typeof Button> = {
   title: 'Buttons/Button',
-  component: Button,
-  parameters: {
-    design: {
-      type: 'figma',
-      url: 'https://www.figma.com/file/hcVGqf35jfxueO7klqXlma/%F0%9F%A7%B0-Harmony-Component-Library?type=design&node-id=143-534&mode=dev',
-      examples: [Primary]
-    }
-  }
+  component: Button
 }
 
 export default meta
 
 type Story = StoryObj<typeof Button>
 
-export function Primary(props: ButtonProps) {
-  return <Button {...props}>Button</Button>
+export const Primary: Story = {
+  render: (props: ButtonProps) => <Button {...props}>Button</Button>
 }
 
 export const Variants: Story = {
