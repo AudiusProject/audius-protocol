@@ -1,6 +1,7 @@
+import React from 'react'
+
 import Error from 'components/Error'
 import Loading from 'components/Loading'
-import React from 'react'
 import Paper from 'components/Paper'
 import { createStyles } from 'utils/mobile'
 

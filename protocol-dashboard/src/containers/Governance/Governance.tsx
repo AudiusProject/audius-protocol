@@ -1,7 +1,8 @@
 import React from 'react'
+
+import IconGavel from 'assets/img/iconGavel.svg?react'
 import Page from 'components/Page'
 import Proposals from 'components/Proposals'
-import IconGavel from 'assets/img/iconGavel.svg?react'
 
 const messages = {
   title: 'Governance'

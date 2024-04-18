@@ -1,6 +1,8 @@
 import BN from 'bn.js'
-import { User, ServiceType, Operator, ServiceProvider } from 'types'
+
 import Audius from 'services/Audius'
+import { User, ServiceType, Operator, ServiceProvider } from 'types'
+
 import { FullUser } from './types'
 
 export const formatUser = async (
@@ -11,7 +13,7 @@ export const formatUser = async (
 
   const delegates = user.delegateTo
     ? await Promise.all(
-        user.delegateTo.map(async delegate => {
+        user.delegateTo.map(async (delegate) => {
           return {
             wallet: await aud.toChecksumAddress(delegate.toUser.id),
             amount: new BN(delegate.amount),
@@ -22,7 +24,7 @@ export const formatUser = async (
     : []
 
   const voteHistory = await Promise.all(
-    user.votes.map(async vote => {
+    user.votes.map(async (vote) => {
       return {
         proposalId: parseInt(vote.proposal.id),
         voter: await aud.toChecksumAddress(user.id),
@@ -33,13 +35,13 @@ export const formatUser = async (
     })
   )
 
-  let formattedUser: User = {
+  const formattedUser: User = {
     wallet: userWallet,
     audToken: new BN(user.balance),
     totalDelegatorStake: new BN(user.delegationSentAmount),
-    delegates: delegates,
+    delegates,
     events: [],
-    voteHistory: voteHistory,
+    voteHistory,
     pendingUndelegateRequest: user.pendingUndelegateStake
       ? {
           amount: new BN(user.pendingUndelegateStake.amount),
@@ -58,11 +60,11 @@ export const formatUser = async (
 
   // Note: We must make a contract call to check "validBounds" because that value is not
   // updated with the graph
-  const serviceProvider: ServiceProvider = await aud.ServiceProviderClient.getServiceProviderDetails(
-    userWallet
-  )
+  const serviceProvider: ServiceProvider =
+    await aud.ServiceProviderClient.getServiceProviderDetails(userWallet)
 
-  const protocolMinDelegationAmount = await aud.Delegate.getMinDelegationAmount()
+  const protocolMinDelegationAmount =
+    await aud.Delegate.getMinDelegationAmount()
   const spMinDelegationAmount = await aud.Delegate.getSPMinDelegationAmount(
     userWallet
   )
@@ -75,7 +77,7 @@ export const formatUser = async (
 
   const delegators = user.delegateFrom
     ? await Promise.all(
-        user.delegateFrom.map(async delegate => {
+        user.delegateFrom.map(async (delegate) => {
           return {
             wallet: await aud.toChecksumAddress(delegate.fromUser.id),
             amount: new BN(delegate.amount),
@@ -88,7 +90,7 @@ export const formatUser = async (
   return {
     ...formattedUser,
     serviceProvider,
-    delegators: delegators,
+    delegators,
     totalStakedFor: new BN(user.stakeAmount).add(
       new BN(user.delegationReceivedAmount)
     ),
@@ -96,11 +98,11 @@ export const formatUser = async (
     discoveryProviders:
       user.services
         ?.filter(({ type: { id } }) => id === ServiceType.DiscoveryProvider)
-        .map(service => parseInt(service.spId)) ?? [],
+        .map((service) => parseInt(service.spId)) ?? [],
     contentNodes:
       user.services
         ?.filter(({ type: { id } }) => id === ServiceType.ContentNode)
-        .map(service => parseInt(service.spId)) ?? [],
+        .map((service) => parseInt(service.spId)) ?? [],
     pendingDecreaseStakeRequest: user.pendingDecreaseStake
       ? {
           amount: new BN(user.pendingDecreaseStake.decreaseAmount),

@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react'
+
 import { IconCaretDown, useClickOutside } from '@audius/stems'
+import clsx from 'clsx'
 
 import styles from './Dropdown.module.css'
-import clsx from 'clsx'
 
 type OwnProps = {
   options: string[]
@@ -25,7 +26,7 @@ const Dropdown: React.FC<DropdownProps> = ({
     (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      setIsOpen(isOpen => !isOpen)
+      setIsOpen((isOpen) => !isOpen)
     },
     [setIsOpen]
   )
@@ -52,7 +53,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         <IconCaretDown className={styles.caret} />
       </div>
       <div className={styles.list}>
-        {options.map(option => (
+        {options.map((option) => (
           <div
             key={option}
             className={styles.option}

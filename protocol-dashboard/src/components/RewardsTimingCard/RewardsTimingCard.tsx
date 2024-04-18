@@ -1,15 +1,18 @@
+import { useEffect, useState } from 'react'
+
 import { Box, Flex, Text } from '@audius/harmony'
+
 import Button, { ButtonType } from 'components/Button'
 import { Card } from 'components/Card/Card'
 import Loading from 'components/Loading'
-import { useEffect, useState } from 'react'
+import { LoadingSpinner } from 'components/LoadingSpinner/LoadingSpinner'
+import { useAccount } from 'store/account/hooks'
 import { useClaimMetadata } from 'store/cache/claims/hooks'
 import { useEthBlockNumber, useTimeRemaining } from 'store/cache/protocol/hooks'
 import { Status } from 'types'
 import { formatNumber, getHumanReadableTime } from 'utils/format'
+
 import styles from './RewardsTimingCard.module.css'
-import { useAccount } from 'store/account/hooks'
-import { LoadingSpinner } from 'components/LoadingSpinner/LoadingSpinner'
 
 const messages = {
   rewardsTiming: 'Rewards Timing',
@@ -63,64 +66,64 @@ export const RewardsTimingCard = () => {
   }
 
   return (
-    <Card direction="column">
-      <Box pv="xl" ph="xl" borderBottom="default">
-        <Text variant="heading" size="s">
+    <Card direction='column'>
+      <Box pv='xl' ph='xl' borderBottom='default'>
+        <Text variant='heading' size='s'>
           {messages.rewardsTiming}
         </Text>
       </Box>
-      <Flex p="l" gap="xl" wrap="wrap">
-        <Card p="xl" direction="column">
+      <Flex p='l' gap='xl' wrap='wrap'>
+        <Card p='xl' direction='column'>
           <Box>
             {currentBlockNumber == null ? (
-              <Box mb="xs">
+              <Box mb='xs'>
                 <Loading className={styles.loading} />
               </Box>
             ) : (
-              <Text variant="heading" size="s" strength="default">
+              <Text variant='heading' size='s' strength='default'>
                 {currentRound}
               </Text>
             )}
           </Box>
           <Box>
-            <Text variant="body" size="m" strength="strong" color="subdued">
+            <Text variant='body' size='m' strength='strong' color='subdued'>
               {messages.currentRound}
             </Text>
           </Box>
         </Card>
         <Card
-          p="xl"
+          p='xl'
           css={{ flexGrow: 1 }}
-          justifyContent="space-between"
-          wrap="wrap"
-          gap="l"
+          justifyContent='space-between'
+          wrap='wrap'
+          gap='l'
         >
-          <Flex gap="xl" wrap="wrap">
+          <Flex gap='xl' wrap='wrap'>
             <Box>
               {timeRemaining == null ? (
-                <Box mb="xs">
+                <Box mb='xs'>
                   <Loading className={styles.loading} />
                 </Box>
               ) : (
-                <Text variant="heading" size="s" strength="default">
+                <Text variant='heading' size='s' strength='default'>
                   {getHumanReadableTime(timeRemaining)}
                 </Text>
               )}
-              <Text variant="body" size="m" strength="strong" color="subdued">
+              <Text variant='body' size='m' strength='strong' color='subdued'>
                 {messages.untilNextRound}
               </Text>
             </Box>
             <Box>
               {period == null ? (
-                <Box mb="xs">
+                <Box mb='xs'>
                   <Loading className={styles.loading} />
                 </Box>
               ) : (
-                <Text variant="heading" size="s" strength="default">
+                <Text variant='heading' size='s' strength='default'>
                   {formatNumber(period)}
                 </Text>
               )}
-              <Text variant="body" size="m" strength="strong" color="subdued">
+              <Text variant='body' size='m' strength='strong' color='subdued'>
                 {messages.blocksRemaining}
               </Text>
             </Box>

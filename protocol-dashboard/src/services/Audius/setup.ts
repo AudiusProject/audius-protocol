@@ -1,7 +1,9 @@
 import { libs as AudiusLibs } from '@audius/sdk/dist/web-libs'
 import { Eip1193Provider } from 'ethers'
-import { AudiusClient } from './AudiusClient'
+
 import { CHAIN_ID, ETH_PROVIDER_URL } from 'utils/eth'
+
+import { AudiusClient } from './AudiusClient'
 
 declare global {
   interface Window {
@@ -60,7 +62,7 @@ const getWalletIsOnEthMainnet = async (walletProvider: Eip1193Provider) => {
   if (chainId === CHAIN_ID) return true
 
   // Try a second time just in case wallet was being slow to understand itself
-  chainId = await new Promise(resolve => {
+  chainId = await new Promise((resolve) => {
     console.debug('Wallet network not matching, trying again')
     setTimeout(async () => {
       chainId = await getWalletChainId(walletProvider)
@@ -72,7 +74,7 @@ const getWalletIsOnEthMainnet = async (walletProvider: Eip1193Provider) => {
 }
 
 export let resolveAccountConnected: null | ((provider: Eip1193Provider) => void)
-const accountConnectedPromise = new Promise<Eip1193Provider>(resolve => {
+const accountConnectedPromise = new Promise<Eip1193Provider>((resolve) => {
   resolveAccountConnected = resolve
 })
 
@@ -82,7 +84,7 @@ export async function setup(this: AudiusClient): Promise<void> {
   // Avoid initializing read-only libs if account is already connected from previous session
   const quickConnectedWalletProvider = await Promise.race([
     accountConnectedPromise,
-    new Promise(resolve => {
+    new Promise((resolve) => {
       setTimeout(() => {
         resolve(null)
       }, 3500)
@@ -110,8 +112,8 @@ export async function setup(this: AudiusClient): Promise<void> {
     }
 
     this.libs = await configureLibsWithAccount({
-      walletProvider: walletProvider,
-      onWalletAccountLoaded: loadedAccount => {
+      walletProvider,
+      onWalletAccountLoaded: (loadedAccount) => {
         account = loadedAccount
       }
     })
@@ -206,14 +208,14 @@ const configureLibsWithAccount = async ({
   walletProvider: Eip1193Provider
   onWalletAccountLoaded?: (account: string) => void
 }) => {
-  let configuredWeb3 = await configWeb3(walletProvider, CHAIN_ID)
+  const configuredWeb3 = await configWeb3(walletProvider, CHAIN_ID)
 
-  let connectedAccounts: any = await new Promise(resolve => {
+  const connectedAccounts: any = await new Promise((resolve) => {
     configuredWeb3.externalWeb3Config.web3.eth.getAccounts((...args: any) => {
       resolve(args[1])
     })
   })
-  let connectedAccount = connectedAccounts[0]
+  const connectedAccount = connectedAccounts[0]
 
   if (onWalletAccountLoaded) {
     onWalletAccountLoaded(connectedAccount)

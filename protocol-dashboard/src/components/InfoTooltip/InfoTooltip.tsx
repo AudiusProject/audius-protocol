@@ -1,4 +1,5 @@
 import { IconColors, IconInfo, IconProps } from '@audius/harmony'
+
 import Tooltip from 'components/Tooltip'
 
 type InfoTooltipProps = {

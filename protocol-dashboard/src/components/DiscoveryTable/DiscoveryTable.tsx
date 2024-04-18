@@ -1,11 +1,10 @@
 import React, { useCallback } from 'react'
-import { useDiscoveryProviders } from 'store/cache/discoveryProvider/hooks'
 
+import ServiceTable from 'components/ServiceTable'
+import { useDiscoveryProviders } from 'store/cache/discoveryProvider/hooks'
 import { Address, DiscoveryProvider, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { NODES_DISCOVERY, discoveryNodePage } from 'utils/routes'
-
-import ServiceTable from 'components/ServiceTable'
 
 const messages = {
   title: 'Discovery Nodes',
