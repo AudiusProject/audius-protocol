@@ -14,6 +14,8 @@ type PlaylistInfo = {
   playlist_id: number
   playlist_name: string
   is_album: boolean
+  playlist_image_sizes_multihash: string
+  slug: string
 }
 
 type TrackInfo = {
@@ -40,14 +42,17 @@ export abstract class BaseNotification<Type> {
         const res: Array<{
           track_id: number
           title: string
-          cover_art_sizes:string
+          cover_art_sizes: string
           slug: string
         }> = await this.dnDB
-          .select('tracks.track_id', 'tracks.title', 'tracks.cover_art_sizes', 'track_routes.slug')
+          .select(
+            'tracks.track_id',
+            'tracks.title',
+            'tracks.cover_art_sizes',
+            'track_routes.slug'
+          )
           .from<TrackRow>('tracks')
           .join('track_routes', 'tracks.track_id', 'track_routes.track_id')
-          .where('track_routes.is_current', true)
-          .where('tracks.is_current', true)
           .whereIn(
             'tracks.track_id',
             entityIds.map((id) => id.toString())
@@ -66,10 +71,22 @@ export abstract class BaseNotification<Type> {
           playlist_id: number
           playlist_name: string
           is_album: boolean
+          playlist_image_sizes_multihash: string
+          slug: string
         }> = await this.dnDB
-          .select('playlist_id', 'playlist_name', 'is_album')
+          .select(
+            'playlist_id',
+            'playlist_name',
+            'is_album',
+            'playlist_image_sizes_multihash',
+            'slug'
+          )
           .from<PlaylistRow>('playlists')
-          .where('is_current', true)
+          .join(
+            'playlist_routes',
+            'playlists.playlist_id',
+            'playlist_routes.playlist_id'
+          )
           .whereIn(
             'playlist_id',
             entityIds.map((id) => id.toString())

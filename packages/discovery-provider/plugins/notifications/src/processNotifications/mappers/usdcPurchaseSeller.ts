@@ -28,20 +28,21 @@ type USDCPurchaseSellerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseSellerNotification
 }
 
-const title = 'Track Sold'
 const body = (
   buyerUsername: string,
-  purchasedTrackName: string,
+  purchasedContentName: string,
+  contentType: string,
   price: string
 ): string =>
   `Congrats, ${capitalize(
     buyerUsername
-  )} just bought your track ${purchasedTrackName} for $${price}!`
+  )} just bought your ${contentType} ${purchasedContentName} for $${price}!`
 export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> {
   notificationReceiverUserId: number
   buyerUserId: number
   amount: string
   contentId: number
+  contentType: string
   extraAmount: string
   totalAmount: string
 
@@ -65,6 +66,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     this.buyerUserId = this.notification.data.buyer_user_id
     this.notificationReceiverUserId = this.notification.data.seller_user_id
     this.contentId = this.notification.data.content_id
+    this.contentType = this.notification.data.content_type
   }
 
   async processNotification({
@@ -87,14 +89,37 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
       [this.notificationReceiverUserId, this.buyerUserId]
     )
 
-    const tracks = await this.fetchEntities([this.contentId], EntityType.Track)
-    const track = tracks[this.contentId]
-    if (!('title' in track)) {
-      logger.error(`Missing title in track ${track}`)
-      return
+    let purchasedContentName, cover_art_sizes, slug, title
+    if (this.contentType === 'track') {
+      const tracks = await this.fetchEntities(
+        [this.contentId],
+        EntityType.Track
+      )
+      const track = tracks[this.contentId]
+      if (!('title' in track)) {
+        logger.error(`Missing title in track ${track}`)
+        return
+      }
+      title = 'Track Sold'
+      purchasedContentName = track.title
+      cover_art_sizes = track.cover_art_sizes
+      slug = track.slug
+    } else {
+      const albums = await this.fetchEntities(
+        [this.contentId],
+        EntityType.Album
+      )
+      const album = albums[this.contentId]
+      if (!('playlist_name' in album)) {
+        logger.error(`Missing title in album ${album}`)
+        return
+      }
+      title = 'Album sold'
+      purchasedContentName = album.playlist_name
+      cover_art_sizes = album.playlist_image_sizes_multihash
+      slug = album.slug
     }
 
-    const purchasedTrackName = track.title
     const buyerUsername = users[this.buyerUserId]?.name
     const buyerHandle = users[this.buyerUserId]?.handle
     const sellerUsername = users[this.notificationReceiverUserId]?.name
@@ -106,7 +131,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
       userNotificationSettings,
       this.notificationReceiverUserId,
       title,
-      body(buyerUsername, purchasedTrackName, price)
+      body(buyerUsername, purchasedContentName, this.contentType, price)
     )
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -130,7 +155,12 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
             },
             {
               title,
-              body: body(buyerUsername, purchasedTrackName, price),
+              body: body(
+                buyerUsername,
+                purchasedContentName,
+                this.contentType,
+                price
+              ),
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -178,11 +208,9 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
         purchaserName: buyerUsername,
         purchaserLink: `${getHostname()}/${buyerHandle}`,
         artistName: sellerUsername,
-        trackTitle: purchasedTrackName,
-        trackLink: `${getHostname()}/${sellerHandle}/${track.slug}`,
-        trackImage: `${getContentNode()}/content/${
-          track.cover_art_sizes
-        }/480x480.jpg`,
+        contentTitle: purchasedContentName,
+        contentLink: `${getHostname()}/${sellerHandle}/${slug}`,
+        contentImage: `${getContentNode()}/content/${cover_art_sizes}/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount
@@ -193,20 +221,28 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
 
   getResourcesForEmail(): ResourceIds {
     const tracks = new Set<number>()
-    tracks.add(this.contentId)
+    const albums = new Set<number>()
+    if (this.contentType === 'track') {
+      tracks.add(this.contentId)
+    } else {
+      albums.add(this.contentId)
+    }
     return {
       users: new Set([this.notificationReceiverUserId, this.buyerUserId]),
-      tracks
+      tracks,
+      playlists: albums
     }
   }
 
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.buyerUserId]
     const track = resources.tracks[this.contentId]
+    const album = resources.playlists[this.contentId]
+    const isTrack = this.contentType === 'track'
     const entity = {
-      type: EntityType.Track,
-      name: track.title,
-      imageUrl: track.imageUrl
+      type: isTrack ? EntityType.Track : EntityType.Album,
+      name: isTrack ? track.title : album.playlist_name,
+      imageUrl: isTrack ? track.imageUrl : album.imageUrl
     }
     return {
       type: this.notification.type,

@@ -104,7 +104,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
         return
       }
       purchasedContentName = album.playlist_name
-      cover_art_sizes = album.cover_art_sizes
+      cover_art_sizes = album.playlist_image_sizes_multihash
       slug = album.slug
     }
 
@@ -206,20 +206,28 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
 
   getResourcesForEmail(): ResourceIds {
     const tracks = new Set<number>()
-    tracks.add(this.contentId)
+    const albums = new Set<number>()
+    if (this.contentType === 'track') {
+      tracks.add(this.contentId)
+    } else {
+      albums.add(this.contentId)
+    }
     return {
       users: new Set([this.notificationReceiverUserId, this.sellerUserId]),
-      tracks
+      tracks,
+      playlists: albums
     }
   }
 
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.sellerUserId]
     const track = resources.tracks[this.contentId]
+    const album = resources.playlists[this.contentId]
+    const isTrack = this.contentType === 'track'
     const entity = {
-      type: EntityType.Track,
-      name: track.title,
-      imageUrl: track.imageUrl
+      type: isTrack ? EntityType.Track : EntityType.Album,
+      name: isTrack ? track.title : album.playlist_name,
+      imageUrl: isTrack ? track.imageUrl : album.imageUrl
     }
     return {
       type: this.notification.type,
