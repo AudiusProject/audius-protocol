@@ -25,12 +25,7 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
 
   return collection ? (
     <>
-      {!ddex_app && (
-        <EditButton
-          collectionId={collectionId}
-          widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-        />
-      )}
+      {!ddex_app && <EditButton collectionId={collectionId} />}
       <ShareButton
         collectionId={collectionId}
         disabled={isDisabled}
@@ -39,7 +34,6 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
             ? `You can’t share an empty ${is_album ? 'album' : 'playlist'}.`
             : undefined
         }
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
       {is_private ? (
         <PublishButton

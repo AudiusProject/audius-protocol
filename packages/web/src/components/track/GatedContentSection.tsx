@@ -547,12 +547,12 @@ type GatedContentSectionProps = {
   contentId: ID
   contentType: PurchaseableContentType
   streamConditions: AccessConditions
-  hasStreamAccess: boolean
+  hasStreamAccess?: boolean
   isOwner: boolean
   wrapperClassName?: string
   className?: string
   buttonClassName?: string
-  ownerId: ID
+  ownerId: ID | null
 }
 
 export const GatedContentSection = ({
@@ -589,7 +589,8 @@ export const GatedContentSection = ({
     })
   )
   const followee = isFollowGated ? users[streamConditions.follow_user_id] : null
-  const trackOwner = isUSDCPurchaseGated ? users[ownerId] : null
+  const trackOwner =
+    isUSDCPurchaseGated && ownerId !== null ? users[ownerId] : null
   const tippedUser = isTipGated ? users[streamConditions.tip_user_id] : null
 
   const fadeIn = {

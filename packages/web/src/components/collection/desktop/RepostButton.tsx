@@ -6,7 +6,13 @@ import {
   collectionsSocialActions,
   CommonState
 } from '@audius/common/store'
-import { ButtonProps, IconRepost, Button } from '@audius/harmony'
+import {
+  ButtonProps,
+  IconRepost,
+  Button,
+  IconButton,
+  IconButtonProps
+} from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
@@ -20,12 +26,12 @@ const messages = {
   unrepost: 'Unrepost'
 }
 
-type RepostButtonProps = Partial<ButtonProps> & {
+type RepostButtonProps = Partial<IconButtonProps> & {
   collectionId: ID
 }
 
 export const RepostButton = (props: RepostButtonProps) => {
-  const { collectionId, variant, ...other } = props
+  const { collectionId, color, ...other } = props
   const dispatch = useDispatch()
 
   const { has_current_user_reposted } =
@@ -45,16 +51,15 @@ export const RepostButton = (props: RepostButtonProps) => {
     <Tooltip
       text={has_current_user_reposted ? messages.unrepost : messages.repost}
     >
-      <Button
-        variant={
-          variant ?? (has_current_user_reposted ? 'primary' : 'secondary')
+      <IconButton
+        color={color ?? (has_current_user_reposted ? 'active' : 'subdued')}
+        icon={IconRepost}
+        aria-label={
+          has_current_user_reposted ? messages.unrepost : messages.repost
         }
-        iconLeft={IconRepost}
         onClick={handleRepost}
         {...other}
-      >
-        {has_current_user_reposted ? messages.reposted : messages.repost}
-      </Button>
+      />
     </Tooltip>
   )
 }

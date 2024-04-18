@@ -1,25 +1,31 @@
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './CollectionHeader.module.css'
 import { OwnerActionButtons } from './OwnerActionButtons'
-import { PlayButton } from './PlayButton'
 import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
+import { BUTTON_COLLAPSE_WIDTHS } from './utils'
+import { MouseEventHandler } from 'react'
 
 const messages = {
-  actionGroupLabel: 'collection actions'
+  actionGroupLabel: 'collection actions',
+  play: 'Play',
+  preview: 'Preview',
+  pause: 'Pause'
 }
 
 type CollectionActionButtonProps = {
   collectionId: ID | SmartCollectionVariant
-  variant?: Variant
+  variant?: Nullable<Variant>
   isOwner?: boolean
-  onPlay: () => void
+  onPlay: MouseEventHandler<HTMLButtonElement>
   playing: boolean
   isPlayable: boolean
-  userId: ID
+  isPremium: Nullable<boolean>
+  userId: Nullable<ID>
   tracksLoading: boolean
 }
 
@@ -29,10 +35,11 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isOwner,
     collectionId,
     onPlay,
-    playing,
+    playing: isPlaying,
     isPlayable,
     userId,
-    tracksLoading
+    tracksLoading,
+    isPremium
   } = props
 
   let actionButtons: Nullable<JSX.Element> = null
@@ -53,16 +60,31 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   }
 
   return (
-    <div
-      className={cn(styles.actionButtons, {
+    <Flex
+      className={cn({
         [styles.show]: !tracksLoading,
         [styles.hide]: tracksLoading
       })}
       role='group'
       aria-label={messages.actionGroupLabel}
+      gap='2xl'
+      alignItems='center'
     >
-      {!isPlayable ? null : <PlayButton onPlay={onPlay} playing={playing} />}
+      {!isPlayable ? null : (
+        <Button
+          variant={isPremium ? 'secondary' : 'primary'}
+          iconLeft={isPlaying ? IconPause : IconPlay}
+          onClick={onPlay}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+        >
+          {isPlaying
+            ? messages.pause
+            : isPremium
+              ? messages.preview
+              : messages.play}
+        </Button>
+      )}
       {actionButtons}
-    </div>
+    </Flex>
   )
 }

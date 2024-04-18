@@ -490,10 +490,10 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        streamConditions,
-        isUnlisted:
-          isUnlisted && (!released || moment(released).isBefore(moment()))
-      })
+      streamConditions,
+      isUnlisted:
+        isUnlisted && (!released || moment(released).isBefore(moment()))
+    })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
@@ -650,7 +650,7 @@ export const GiantTrackTile = ({
 
       <ClientOnly>
         {isStreamGated && streamConditions ? (
-          <Box mb='xl'>
+          <Box mb='xl' mh='xl' w='100%'>
             <GatedContentSection
               isLoading={isLoading}
               contentId={trackId}

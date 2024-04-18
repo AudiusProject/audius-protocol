@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo } from 'react'
+import { ChangeEvent, MouseEventHandler, useMemo } from 'react'
 
 import {
   Variant,
@@ -83,7 +83,7 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onPlay: (record: CollectionPageTrackRecord) => void
+  onPlay: MouseEventHandler<HTMLButtonElement>
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
@@ -161,14 +161,13 @@ const CollectionPage = ({
   const isOwner = userId === playlistOwnerId
 
   const variant = metadata?.variant ?? null
-  const gradient =
-    (metadata?.variant === Variant.SMART && metadata.gradient) ?? ''
+  const gradient = metadata?.variant === Variant.SMART ? metadata.gradient : ''
   const icon =
     metadata?.variant === Variant.SMART
       ? smartCollectionIcons[metadata.playlist_name]
       : null
   const imageOverride =
-    (metadata?.variant === Variant.SMART && metadata.imageOverride) ?? ''
+    metadata?.variant === Variant.SMART ? metadata.imageOverride : ''
   const typeTitle =
     metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
   const customEmptyText =
@@ -185,7 +184,8 @@ const CollectionPage = ({
 
   const {
     isEmpty,
-    lastModified,
+    lastModifiedDate,
+    releaseDate,
     playlistName,
     description,
     isPrivate,
@@ -223,7 +223,8 @@ const CollectionPage = ({
       isAlbum={isAlbum}
       numTracks={numTracks}
       isPlayable={isPlayable}
-      modified={lastModified}
+      lastModifiedDate={lastModifiedDate}
+      releaseDate={releaseDate}
       duration={duration}
       isPublished={!isPrivate}
       reposts={playlistRepostCount}
@@ -264,14 +265,14 @@ const CollectionPage = ({
       isNftPlaylist
         ? ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
         : [
-            'playButton',
-            'trackName',
-            'artistName',
-            isAlbum ? 'date' : 'addedDate',
-            'length',
-            'plays',
-            'overflowActions'
-          ],
+          'playButton',
+          'trackName',
+          'artistName',
+          isAlbum ? 'date' : 'addedDate',
+          'length',
+          'plays',
+          'overflowActions'
+        ],
     [isAlbum, isNftPlaylist]
   )
 
@@ -295,8 +296,8 @@ const CollectionPage = ({
           isPremiumAlbumsEnabled
             ? dogEarType
             : isPrivate
-            ? DogEarType.HIDDEN
-            : undefined
+              ? DogEarType.HIDDEN
+              : undefined
         }
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
@@ -331,9 +332,8 @@ const CollectionPage = ({
                   allowReordering &&
                   (!isAlbum || isEditAlbumsEnabled)
                 }
-                removeText={`${messages.remove} ${
-                  isAlbum ? messages.type.album : messages.type.playlist
-                }`}
+                removeText={`${messages.remove} ${isAlbum ? messages.type.album : messages.type.playlist
+                  }`}
                 isAlbumPage={isAlbum}
               />
             </ClientOnly>
