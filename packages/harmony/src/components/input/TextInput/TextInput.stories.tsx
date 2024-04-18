@@ -8,6 +8,20 @@ import { IconSearch, IconVisibilityHidden, IconFilter } from 'icons'
 import { TextInput } from './TextInput'
 import { TextInputSize } from './types'
 
+const meta: Meta<typeof TextInput> = {
+  title: 'Inputs/TextInput',
+  component: TextInput,
+  parameters: {
+    docs: {
+      controls: {
+        exclude: ['inputRef', 'inputRootClassName', 'inputClassName']
+      }
+    }
+  }
+}
+
+export default meta
+
 type Story = StoryObj<typeof TextInput>
 
 export const Default: Story = {
@@ -29,25 +43,6 @@ export const Default: Story = {
     })
   }
 }
-
-const meta: Meta<typeof TextInput> = {
-  title: 'Inputs/TextInput',
-  component: TextInput,
-  parameters: {
-    docs: {
-      controls: {
-        exclude: ['inputRef', 'inputRootClassName', 'inputClassName']
-      }
-    },
-    design: {
-      type: 'figma',
-      url: 'https://www.figma.com/file/hcVGqf35jfxueO7klqXlma/%F0%9F%A7%B0-Harmony-Component-Library?type=design&node-id=405-2182&mode=dev',
-      examples: [Default]
-    }
-  }
-}
-
-export default meta
 
 export const Sizes: Story = {
   render: () => (
