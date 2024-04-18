@@ -88,7 +88,7 @@ export abstract class BaseNotification<Type> {
             'playlist_routes.playlist_id'
           )
           .whereIn(
-            'playlist_id',
+            'playlists.playlist_id',
             entityIds.map((id) => id.toString())
           )
         return res.reduce<Record<number, PlaylistInfo>>(
