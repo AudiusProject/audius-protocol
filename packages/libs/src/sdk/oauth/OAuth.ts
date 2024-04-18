@@ -190,10 +190,12 @@ export class OAuth {
 
   login({
     scope = 'read',
-    params
+    params,
+    redirectUri = 'postMessage'
   }: {
     scope?: OAuthScope
     params?: WriteOnceParams
+    redirectUri?: string
   }) {
     const scopeFormatted = typeof scope === 'string' ? [scope] : scope
     if (!this.config.appName && !this.apiKey) {
@@ -247,17 +249,21 @@ export class OAuth {
 
     const fullOauthUrl = `${
       OAUTH_URL[this.env]
-    }?scope=${effectiveScope}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}${writeOnceParams}`
-    this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
-    this._clearPopupCheckInterval()
-    this.popupCheckInterval = setInterval(() => {
-      if (this.activePopupWindow?.closed) {
-        this._surfaceError('The login popup was closed prematurely.')
-        if (this.popupCheckInterval) {
-          clearInterval(this.popupCheckInterval)
+    }?scope=${effectiveScope}&state=${csrfToken}&redirect_uri=${redirectUri}&origin=${originURISafe}&${appIdURIParam}${writeOnceParams}`
+    if (redirectUri === 'postMessage') {
+      this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
+      this._clearPopupCheckInterval()
+      this.popupCheckInterval = setInterval(() => {
+        if (this.activePopupWindow?.closed) {
+          this._surfaceError('The login popup was closed prematurely.')
+          if (this.popupCheckInterval) {
+            clearInterval(this.popupCheckInterval)
+          }
         }
-      }
-    }, 500)
+      }, 500)
+    } else {
+      window.location.href = fullOauthUrl
+    }
   }
 
   renderButton({
