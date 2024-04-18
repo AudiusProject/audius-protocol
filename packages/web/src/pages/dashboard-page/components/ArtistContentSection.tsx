@@ -25,6 +25,10 @@ import {
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
+import {
+  CollectionsTable,
+  CollectionsTableColumn
+} from 'components/collections-table/CollectionsTable'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 
@@ -59,10 +63,11 @@ const tracksTableColumns: TracksTableColumn[] = [
   'overflowMenu'
 ]
 
-const albumTableColumns: TracksTableColumn[] = [
+const albumTableColumns: CollectionsTableColumn[] = [
   'spacer',
-  'trackName',
+  'playlistName',
   'releaseDate',
+  'saves',
   'reposts',
   'overflowMenu'
 ]
@@ -445,9 +450,8 @@ export const ArtistContentSection = ({
           isPaginated
         />
       ) : (
-        <TracksTable
+        <CollectionsTable
           data={filteredAlbums}
-          disabledTrackEdit
           columns={albumTableColumns}
           onClickRow={onClickRow}
           pageSize={tablePageSize}

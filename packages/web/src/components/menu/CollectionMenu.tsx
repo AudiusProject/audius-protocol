@@ -32,6 +32,7 @@ export type OwnProps = {
   includeRepost?: boolean
   includeShare?: boolean
   includeVisitPage?: boolean
+  includeVisitArtistPage?: boolean
   isFavorited?: boolean
   isOwner?: boolean
   isPublic?: boolean
@@ -71,6 +72,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
       includeFavorite,
       includeEmbed,
       includeVisitPage,
+      includeVisitArtistPage = true,
       isPublic,
       isArtist,
       onShare,
@@ -140,11 +142,12 @@ const CollectionMenu = (props: CollectionMenuProps) => {
 
     const embedMenuItem = {
       text: messages.embed,
-      onClick: () =>
+      onClick: () => {
         openEmbedModal(
           playlistId,
           type === 'album' ? PlayableType.ALBUM : PlayableType.PLAYLIST
         )
+      }
     }
 
     const menu: { items: PopupMenuItem[] } = { items: [] }
@@ -156,9 +159,11 @@ const CollectionMenu = (props: CollectionMenuProps) => {
       if (includeRepost) menu.items.push(repostMenuItem)
       if (includeFavorite) menu.items.push(favoriteMenuItem)
     }
-    menu.items.push(artistPageMenuItem)
     if (includeVisitPage) {
       menu.items.push(playlistPageMenuItem)
+    }
+    if (includeVisitArtistPage) {
+      menu.items.push(artistPageMenuItem)
     }
     if (extraMenuItems && extraMenuItems.length > 0) {
       menu.items = menu.items.concat(extraMenuItems)
