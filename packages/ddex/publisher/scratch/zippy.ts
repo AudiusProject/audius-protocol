@@ -8,6 +8,8 @@ import * as cheerio from 'cheerio'
 import { createSdkService } from '../src/services/sdkService'
 import { UploadTrackRequest, Genre } from '@audius/sdk'
 
+const sdkService = createSdkService()
+
 type CH = cheerio.Cheerio<cheerio.Element>
 
 type DDEXRelease = {
@@ -46,16 +48,15 @@ type DDEXImage = {
   filePath: string
 }
 
-async function processZip(maybeZip: string) {
+export async function processDDEX(maybeZip: string) {
   if (maybeZip.endsWith('.zip')) {
     const tempDir = await mkdtemp(join(tmpdir(), 'ddex-'))
     await decompress(maybeZip, tempDir)
     await processDeliveryDir(tempDir)
+    // await rm(tempDir, { recursive: true })
   } else {
     await processDeliveryDir(maybeZip)
   }
-
-  // await rm(tempDir, { recursive: true })
 }
 
 async function processDeliveryDir(dir: string) {
@@ -179,8 +180,7 @@ async function processXmlFile(ddexXmlLocation: string) {
   console.log(JSON.stringify(releases, undefined, 2))
 
   // sdk time!
-  const svc = await createSdkService()
-  const sdk = svc.getSdk()
+  const sdk = (await sdkService).getSdk()
 
   for (const release of releases) {
     // todo: what to do when no image
@@ -190,9 +190,12 @@ async function processXmlFile(ddexXmlLocation: string) {
     const imageFile = await readFileToBuffer(release.images[0].filePath)
 
     for (const track of release.soundRecordings) {
+      console.log('---------', track.filePath)
       const trackFile = await readFileToBuffer(track.filePath)
       const audiusGenre = track.audiusGenre || release.audiusGenre || Genre.ALL
 
+      // todo: actually find actual userId based on who dun oauthed
+      // todo: store some state when no matcho
       const uploadTrackRequest: UploadTrackRequest = {
         userId: 'KKa311z',
         metadata: {
@@ -221,7 +224,7 @@ function resolveAudiusGenre(
     searchTerm = searchTerm.toLowerCase()
     for (const [k, v] of Object.entries(Genre)) {
       if (v.toLowerCase() == searchTerm) {
-        return k as Genre
+        return v
       }
     }
   }
@@ -254,20 +257,20 @@ async function cleanup() {
 
 // cli
 
-const arg = process.argv[2]?.trim()
-switch (arg) {
-  case 'derp':
-    console.log(resolveAudiusGenre('Blues', 'dunno'))
-    break
-  case '':
-    console.log('specify path to ddex dir or zip')
-    break
-  case 'cleanup':
-    cleanup()
-    break
-  default:
-    processZip(arg)
-}
+// const arg = process.argv[2]?.trim()
+// switch (arg) {
+//   case 'derp':
+//     console.log(resolveAudiusGenre('Blues', 'dunno'))
+//     break
+//   case '':
+//     console.log('specify path to ddex dir or zip')
+//     break
+//   case 'cleanup':
+//     cleanup()
+//     break
+//   default:
+//     processDDEX(arg)
+// }
 
 /*
 
