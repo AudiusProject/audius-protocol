@@ -122,7 +122,7 @@ jobs:
             git add packages/discovery-provider/.version.json
 
             PROTOCOL_DIRS=$(bash ./scripts/get-release-dirs.sh protocol)
-            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${OLD_VERSION}..HEAD -- ${PROTOCOL_DIRS})
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short v${OLD_VERSION}..HEAD -- ${PROTOCOL_DIRS})
             MESSAGE="Audius Protocol v${NEW_VERSION}
 
             ${CHANGELOG}"
