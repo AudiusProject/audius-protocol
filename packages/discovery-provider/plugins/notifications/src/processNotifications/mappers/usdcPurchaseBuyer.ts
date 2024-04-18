@@ -32,6 +32,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
   sellerUserId: number
   amount: string
   contentId: number
+  contentType: string
   extraAmount: string
   totalAmount: string
 
@@ -41,7 +42,6 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     notification: USDCPurchaseBuyerRow
   ) {
     super(dnDB, identityDB, notification)
-    const userIds: number[] = this.notification.user_ids!
     this.amount = formatUSDCWeiToUSDString(
       this.notification.data.amount.toString()
     )
@@ -56,6 +56,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     this.sellerUserId = this.notification.data.seller_user_id
     this.notificationReceiverUserId = this.notification.data.buyer_user_id
     this.contentId = this.notification.data.content_id
+    this.contentType = this.notification.data.content_type
   }
 
   async processNotification({
@@ -78,20 +79,41 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       [this.notificationReceiverUserId, this.sellerUserId]
     )
 
-    const tracks = await this.fetchEntities([this.contentId], EntityType.Track)
-    const track = tracks[this.contentId]
-    if (!('title' in track)) {
-      logger.error(`Missing title in track ${track}`)
-      return
+    let purchasedContentName, cover_art_sizes, slug
+    if (this.contentType === 'track') {
+      const tracks = await this.fetchEntities(
+        [this.contentId],
+        EntityType.Track
+      )
+      const track = tracks[this.contentId]
+      if (!('title' in track)) {
+        logger.error(`Missing title in track ${track}`)
+        return
+      }
+      purchasedContentName = track.title
+      cover_art_sizes = track.cover_art_sizes
+      slug = track.slug
+    } else {
+      const albums = await this.fetchEntities(
+        [this.contentId],
+        EntityType.Album
+      )
+      const album = albums[this.contentId]
+      if (!('playlist_name' in album)) {
+        logger.error(`Missing title in album ${album}`)
+        return
+      }
+      purchasedContentName = album.playlist_name
+      cover_art_sizes = album.cover_art_sizes
+      slug = album.slug
     }
 
-    const purchasedTrackName = track.title
     const sellerUsername = users[this.sellerUserId]?.name
     const sellerHandle = users[this.sellerUserId]?.handle
     const purchaserUsername = users[this.notificationReceiverUserId]?.name
 
     const title = 'Purchase Successful'
-    const body = `You just purchased ${purchasedTrackName} from ${capitalize(
+    const body = `You just purchased ${purchasedContentName} from ${capitalize(
       sellerUsername
     )}!`
     await sendBrowserNotification(
@@ -171,9 +193,9 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       html: email({
         purchaserName: purchaserUsername,
         artistName: sellerUsername,
-        trackTitle: purchasedTrackName,
-        trackLink: `${getHostname()}/${sellerHandle}/${track.slug}`,
-        trackImage: `${getContentNode()}/content/${track.cover_art_sizes}/480x480.jpg`,
+        contentTitle: purchasedContentName,
+        contentLink: `${getHostname()}/${sellerHandle}/${slug}`,
+        contentImage: `${getContentNode()}/content/${cover_art_sizes}/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount
