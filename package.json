@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.170",
+  "version": "1.5.171",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
