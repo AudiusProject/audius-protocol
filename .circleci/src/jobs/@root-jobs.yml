@@ -12,4 +12,4 @@ root-publish-github-release:
         command: |
           VERSION=$(jq -r .version ./package.json)
           CHANGELOG=$(git log --format=%B -n 1)
-          ghr -t ${GHI_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -b "${CHANGELOG}" -replace client-v${VERSION} ./
+          ghr -t ${GHI_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -b "${CHANGELOG}" -soft client-v${VERSION} ./
