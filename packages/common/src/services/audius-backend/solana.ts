@@ -701,7 +701,11 @@ export const relayTransaction = async (
     transaction,
     skipPreflight,
     useCoinflowRelay
-  }: { transaction: Transaction; skipPreflight?: boolean, useCoinflowRelay?: boolean }
+  }: {
+    transaction: Transaction
+    skipPreflight?: boolean
+    useCoinflowRelay?: boolean
+  }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const instructions = transaction.instructions
@@ -762,6 +766,9 @@ export const relayVersionedTransaction = async (
   })
 }
 
+// TODO: Make better
+const audiusLookupTableAddress = '8pguuuGsjFvcZasuMXsCaiM6g4Y3DVysBfdRmTxx8jTa'
+
 /**
  * Helper that gets the lookup table accounts (that is, the account holding the lookup table,
  * not the accounts _in_ the lookup table) from their addresses.
@@ -770,10 +777,14 @@ export const getLookupTableAccounts = async (
   audiusBackendInstance: AudiusBackend,
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
 ) => {
+  const extendedLookupTableAddresses = [
+    ...lookupTableAddresses,
+    audiusLookupTableAddress
+  ]
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const connection = libs.solanaWeb3Manager!.getConnection()
   return await Promise.all(
-    lookupTableAddresses.map(async (address) => {
+    extendedLookupTableAddresses.map(async (address) => {
       const account = await connection.getAddressLookupTable(
         new PublicKey(address)
       )
@@ -802,7 +813,9 @@ export const createVersionedTransaction = async (
 ) => {
   const addressLookupTableAccounts = await getLookupTableAccounts(
     audiusBackendInstance,
-    { lookupTableAddresses }
+    {
+      lookupTableAddresses
+    }
   )
   const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
 
