@@ -328,7 +328,7 @@ jobs:
             npm version patch -w audius-client -w audius-mobile-client --include-workspace-root --no-git-tag-version
             git add .
             VERSION=$(jq -r .version ./package.json)
-            MESSAGE="v${VERSION}
+            MESSAGE="Audius Client (Web and Mobile) v${VERSION}
 
             ${CHANGELOG}"
             git commit -m "${MESSAGE}"
