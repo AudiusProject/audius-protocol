@@ -126,8 +126,8 @@ jobs:
             ${CHANGELOG}"
             git commit -m "${MESSAGE}"
 
-            git tag protocol-v${VERSION}
-            git push origin protocol-v${VERSION}
+            git tag protocol-v${NEW_VERSION}
+            git push origin protocol-v${NEW_VERSION}
 
             # Weird way to push both to main and the new release branch
             git branch "release-v$NEW_VERSION"

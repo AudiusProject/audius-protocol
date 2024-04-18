@@ -24,6 +24,6 @@ root-publish-github-release-protocol:
     - run:
         name: 'Publish Release on GitHub'
         command: |
-          VERSION=$(jq -r .version ./packages/discovery-provider/.version.json))
+          VERSION=$(jq -r .version ./packages/discovery-provider/.version.json)
           CHANGELOG=$(git log --format=%B -n 1)
           ghr -t ${GHI_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -b "${CHANGELOG}" -soft protocol-v${VERSION} ./
