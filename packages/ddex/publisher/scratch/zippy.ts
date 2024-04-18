@@ -3,8 +3,10 @@ import 'dotenv/config'
 import decompress from 'decompress'
 import { mkdtemp, readFile, readdir, rm, rmdir, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import * as cheerio from 'cheerio'
+import { createSdkService } from '../src/services/sdkService'
+import { UploadTrackRequest, Genre } from '@audius/sdk'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
@@ -15,11 +17,12 @@ type DDEXRelease = {
   subTitle?: string
   artists: string[]
   genre: string
-  subGenre?: string
+  subGenre: string
   releaseDate?: string
   releaseType: string
 
   isMainRelease: boolean
+  audiusGenre?: Genre
 
   soundRecordings: DDEXSoundRecording[]
   images: DDEXImage[]
@@ -32,6 +35,10 @@ type DDEXSoundRecording = {
   title: string
   artists: string[]
   releaseDate: string
+  genre: string
+  subGenre: string
+
+  audiusGenre?: Genre
 }
 
 type DDEXImage = {
@@ -91,17 +98,24 @@ async function processXmlFile(ddexXmlLocation: string) {
   $('SoundRecording').each((_, el) => {
     const $el = $(el)
 
-    const recording = {
+    const recording: DDEXSoundRecording = {
       ref: $el.find('ResourceReference').text(),
       isrc: $el.find('ISRC').text(),
       filePath: resolveFile($el),
       title: $el.find('TitleText:first').text(),
       artists: toTexts($el.find('DisplayArtist PartyName FullName')),
+      genre: $el.find('GenreText').text(),
+      subGenre: $el.find('SubGenre').text(),
       releaseDate: $el
         .find('OriginalResourceReleaseDate, ResourceReleaseDate')
         .first()
         .text()
     }
+
+    recording.audiusGenre = resolveAudiusGenre(
+      recording.subGenre,
+      recording.genre
+    )
 
     soundResources[recording.ref] = recording
   })
@@ -141,6 +155,8 @@ async function processXmlFile(ddexXmlLocation: string) {
         images: []
       }
 
+      release.audiusGenre = resolveAudiusGenre(release.subGenre, release.genre)
+
       // resolve resources
       $el
         .find('ReleaseResourceReferenceList > ReleaseResourceReference')
@@ -162,7 +178,64 @@ async function processXmlFile(ddexXmlLocation: string) {
   // all done!
   console.log(JSON.stringify(releases, undefined, 2))
 
+  // sdk time!
+  const svc = await createSdkService()
+  const sdk = svc.getSdk()
+
+  for (const release of releases) {
+    // todo: what to do when no image
+    if (!release.images.length) {
+      continue
+    }
+    const imageFile = await readFileToBuffer(release.images[0].filePath)
+
+    for (const track of release.soundRecordings) {
+      const trackFile = await readFileToBuffer(track.filePath)
+      const audiusGenre = track.audiusGenre || release.audiusGenre || Genre.ALL
+
+      const uploadTrackRequest: UploadTrackRequest = {
+        userId: 'KKa311z',
+        metadata: {
+          genre: audiusGenre,
+          title: track.title
+        },
+        onProgress: (progress: any) => console.log('Progress:', progress),
+        coverArtFile: imageFile,
+        trackFile
+      }
+      console.log(`Uploading by  to Audius...`)
+      const result = await sdk.tracks.uploadTrack(uploadTrackRequest)
+      console.log(result)
+    }
+  }
+
   return releases
+}
+
+function resolveAudiusGenre(
+  genre: string,
+  subgenre: string
+): Genre | undefined {
+  // first try subgenre, then genre
+  for (let searchTerm of [subgenre, genre]) {
+    searchTerm = searchTerm.toLowerCase()
+    for (const [k, v] of Object.entries(Genre)) {
+      if (v.toLowerCase() == searchTerm) {
+        return k as Genre
+      }
+    }
+  }
+
+  // maybe try some edit distance magic?
+  // for now just log
+  console.warn(`failed to resolve genre: subgenre=${subgenre} genre=${genre}`)
+}
+
+// sdk helpers
+async function readFileToBuffer(filePath: string) {
+  const buffer = await readFile(filePath)
+  const name = basename(filePath)
+  return { buffer, name }
 }
 
 // cleanup
@@ -183,6 +256,9 @@ async function cleanup() {
 
 const arg = process.argv[2]?.trim()
 switch (arg) {
+  case 'derp':
+    console.log(resolveAudiusGenre('Blues', 'dunno'))
+    break
   case '':
     console.log('specify path to ddex dir or zip')
     break
