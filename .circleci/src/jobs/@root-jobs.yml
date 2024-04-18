@@ -1,7 +1,7 @@
 root-publish-github-release-client:
   working_directory: ~/audius-protocol
   docker:
-    - image: cibuilds/github:0.10
+    - image: cibuilds/github:0.13
   steps:
     - checkout
     - attach_workspace:
@@ -16,7 +16,7 @@ root-publish-github-release-client:
 root-publish-github-release-protocol:
   working_directory: ~/audius-protocol
   docker:
-    - image: cibuilds/github:0.10
+    - image: cibuilds/github:0.13
   steps:
     - checkout
     - attach_workspace:
