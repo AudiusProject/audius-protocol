@@ -20,7 +20,6 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import { lookup } from 'dns'
 
 import {
   JupiterSingleton,
