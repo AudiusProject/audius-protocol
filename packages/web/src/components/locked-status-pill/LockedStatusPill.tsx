@@ -1,15 +1,18 @@
-import { IconLockUnlocked, IconSize, Text } from '@audius/harmony'
+import {
+  Flex,
+  IconLockUnlocked,
+  IconSize,
+  Text,
+  useTheme
+} from '@audius/harmony'
 import IconLock from '@audius/harmony/src/assets/icons/Lock.svg'
-import cn from 'classnames'
-
-import styles from './LockedStatusBadge.module.css'
 
 const messages = {
   premiumLocked: 'Available for purchase',
   premiumUnlocked: 'Purchased'
 }
 
-export type LockedStatusBadgeProps = {
+export type LockedStatusPillProps = {
   locked: boolean
   variant?: 'premium' | 'gated'
   text?: string
@@ -19,8 +22,7 @@ export type LockedStatusBadgeProps = {
   id?: string
 }
 
-/** Renders a small badge with locked or unlocked icon */
-export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
+export const LockedStatusPill = (props: LockedStatusPillProps) => {
   const {
     locked,
     variant = 'gated',
@@ -32,17 +34,25 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
 
   const LockComponent = locked ? IconLock : IconLockUnlocked
 
+  const { color } = useTheme()
+
+  const backgroundColor =
+    !locked || coloredWhenLocked
+      ? variant === 'gated'
+        ? color.special.blue
+        : color.special.lightGreen
+      : color.neutral.n400
+
   return (
-    <div
-      className={cn(
-        styles.container,
-        locked ? styles.locked : styles.unlocked,
-        variant === 'premium' ? styles.premium : styles.gated,
-        {
-          [styles.hasText]: !!text,
-          [styles.coloredWhenLocked]: !!coloredWhenLocked
-        }
-      )}
+    <Flex
+      alignItems='center'
+      justifyContent='center'
+      gap='xs'
+      pv={text ? 'xs' : '2xs'}
+      ph='s'
+      h={16}
+      borderRadius='l'
+      css={{ backgroundColor }}
     >
       <LockComponent
         color='staticWhite'
@@ -63,6 +73,6 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
           {text}
         </Text>
       ) : null}
-    </div>
+    </Flex>
   )
 }

@@ -42,7 +42,10 @@ import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
-import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
+import {
+  LockedStatusPill,
+  LockedStatusPillProps
+} from '../../locked-status-pill'
 import { messages } from '../trackTileMessages'
 
 import BottomButtons from './BottomButtons'
@@ -85,9 +88,9 @@ const renderLockedOrPlaysContent = ({
   | 'isStreamGated'
   | 'listenCount'
 > &
-  Pick<LockedStatusBadgeProps, 'variant'>) => {
+  Pick<LockedStatusPillProps, 'variant'>) => {
   if (isStreamGated && !isOwner) {
-    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
+    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility

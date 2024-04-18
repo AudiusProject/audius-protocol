@@ -12,7 +12,7 @@ import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { DogEar } from 'components/dog-ear'
 import { UserLink } from 'components/link'
-import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 
 import { CollectionImage } from './CollectionImage'
@@ -145,7 +145,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
               </Text>
             </Flex>
             {isPurchase ? (
-              <LockedStatusBadge
+              <LockedStatusPill
                 variant='premium'
                 locked={!access.stream}
                 id={`${id}-condition`}

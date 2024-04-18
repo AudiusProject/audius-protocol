@@ -36,8 +36,11 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
+import {
+  LockedStatusPill,
+  LockedStatusPillProps
+} from '../../locked-status-pill'
 import { GatedContentLabel } from '../GatedContentLabel'
-import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -92,9 +95,9 @@ const renderLockedOrPlaysContent = ({
   | 'isStreamGated'
   | 'listenCount'
 > &
-  Pick<LockedStatusBadgeProps, 'variant'>) => {
+  Pick<LockedStatusPillProps, 'variant'>) => {
   if (isStreamGated && !isOwner) {
-    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
+    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility
