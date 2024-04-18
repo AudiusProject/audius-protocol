@@ -217,7 +217,7 @@ export const publishReleases = async (
             },
           },
         },
-      ]).toArray()
+      ])
     } catch (error) {
       console.error('Failed to fetch pending releases:', error)
       await new Promise((resolve) => setTimeout(resolve, 10_000))
