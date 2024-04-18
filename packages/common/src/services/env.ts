@@ -41,6 +41,7 @@ export type Env = {
   IDENTITY_SERVICE: string
   INSTAGRAM_APP_ID: string
   INSTAGRAM_REDIRECT_URL: string
+  LOOKUP_TABLE_ADDRESS: string
   METADATA_PROGRAM_ID: string
   OPENSEA_API_URL: string
   HELIUS_DAS_API_URL: string

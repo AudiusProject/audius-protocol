@@ -766,9 +766,6 @@ export const relayVersionedTransaction = async (
   })
 }
 
-// TODO: Make better
-const audiusLookupTableAddress = '8pguuuGsjFvcZasuMXsCaiM6g4Y3DVysBfdRmTxx8jTa'
-
 /**
  * Helper that gets the lookup table accounts (that is, the account holding the lookup table,
  * not the accounts _in_ the lookup table) from their addresses.
@@ -777,14 +774,10 @@ export const getLookupTableAccounts = async (
   audiusBackendInstance: AudiusBackend,
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
 ) => {
-  const extendedLookupTableAddresses = [
-    ...lookupTableAddresses,
-    audiusLookupTableAddress
-  ]
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const connection = libs.solanaWeb3Manager!.getConnection()
   return await Promise.all(
-    extendedLookupTableAddresses.map(async (address) => {
+    lookupTableAddresses.map(async (address) => {
       const account = await connection.getAddressLookupTable(
         new PublicKey(address)
       )
