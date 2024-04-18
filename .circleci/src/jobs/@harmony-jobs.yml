@@ -16,8 +16,7 @@ harmony-init:
     - run:
         name: lint
         command: |
-          cd packages/harmony
-          npm run lint
+          npx turbo run lint --filter=@audius/harmony
 
     # Persist node modules directory to workspace
     - persist_to_workspace:
@@ -37,12 +36,26 @@ harmony-build-storybook:
     - run:
         name: build storybook
         command: |
-          cd packages/harmony
-          npm run build-storybook
+          npx turbo run build-storybook --filter=@audius/harmony
     - persist_to_workspace:
         root: ./
         paths:
           - packages/harmony/storybook-static
+
+harmony-test-storybook:
+  working_directory: ~/harmony
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: test storybook
+        command: |
+          sudo npx playwright install-deps  
+          npx playwright install
+          npx turbo run test --filter=@audius/harmony
 
 harmony-deploy-storybook:
   working_directory: ~/harmony

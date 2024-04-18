@@ -1,19 +1,19 @@
 module.exports = {
-  extends: ["eslint:recommended"],
+  extends: ['eslint:recommended', 'typescript'],
   env: {
     node: true,
-    es6: true,
+    es6: true
   },
   parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
+    ecmaVersion: 'latest',
+    sourceType: 'module'
   },
   overrides: [
     {
-      files: ["**/__tests__/**/*"],
+      files: ['**/__tests__/**/*'],
       env: {
-        jest: true,
-      },
-    },
-  ],
-};
+        jest: true
+      }
+    }
+  ]
+}

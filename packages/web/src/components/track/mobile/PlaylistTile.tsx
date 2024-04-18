@@ -6,10 +6,12 @@ import {
   LineupTrack,
   AccessConditions,
   ModalSource,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  GatedContentStatus
 } from '@audius/common/models'
 import {
   gatedContentActions,
+  gatedContentSelectors,
   PurchaseableContentType,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
@@ -19,25 +21,38 @@ import {
   formatLineupTileDuration,
   getDogEarType
 } from '@audius/common/utils'
-import { Flex, IconVolumeLevel2 as IconVolume, Text } from '@audius/harmony'
+import {
+  Box,
+  Flex,
+  IconVolumeLevel2 as IconVolume,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { range } from 'lodash'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
+import {
+  LockedStatusPill,
+  LockedStatusPillProps
+} from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+
+import { GatedConditionsPill } from '../GatedConditionsPill'
+import { GatedContentLabel } from '../GatedContentLabel'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
 import { RankIcon } from './TrackTile'
 import TrackTileArt from './TrackTileArt'
 const { setLockedContentId } = gatedContentActions
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 type TrackItemProps = {
   index: number
@@ -94,16 +109,16 @@ const TrackList = ({
 }: TrackListProps) => {
   if (!tracks.length && isLoading && numLoadingSkeletonRows) {
     return (
-      <>
+      <Box backgroundColor='surface1'>
         {range(numLoadingSkeletonRows).map((i) => (
           <TrackItem key={i} active={false} index={i} forceSkeleton />
         ))}
-      </>
+      </Box>
     )
   }
 
   return (
-    <div onClick={goToCollectionPage}>
+    <Box backgroundColor='surface1' onClick={goToCollectionPage}>
       {tracks.slice(0, DISPLAY_TRACK_COUNT).map((track, index) => (
         <TrackItem
           key={track.uid}
@@ -120,7 +135,7 @@ const TrackList = ({
           </div>
         </>
       ) : null}
-    </div>
+    </Box>
   )
 }
 
@@ -141,8 +156,44 @@ type ExtraProps = {
   isUnlisted: boolean
   darkMode: boolean
   isMatrix: boolean
+  isStreamGated: boolean
   hasStreamAccess: boolean
   streamConditions: Nullable<AccessConditions>
+}
+
+type CombinedProps = PlaylistTileProps & ExtraProps
+
+type LockedOrPlaysContentProps = Pick<
+  CombinedProps,
+  'hasStreamAccess' | 'isOwner' | 'isStreamGated' | 'streamConditions'
+> &
+  Pick<LockedStatusPillProps, 'variant'> & {
+    gatedTrackStatus?: GatedContentStatus
+    onClickGatedUnlockPill: (e: MouseEvent) => void
+  }
+
+const renderLockedContent = ({
+  hasStreamAccess,
+  isOwner,
+  isStreamGated,
+  streamConditions,
+  gatedTrackStatus,
+  onClickGatedUnlockPill,
+  variant
+}: LockedOrPlaysContentProps) => {
+  if (isStreamGated && streamConditions && !isOwner) {
+    if (variant === 'premium') {
+      return (
+        <GatedConditionsPill
+          streamConditions={streamConditions}
+          unlocking={gatedTrackStatus === 'UNLOCKING'}
+          onClick={onClickGatedUnlockPill}
+          buttonSize='small'
+        />
+      )
+    }
+    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
+  }
 }
 
 const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
@@ -164,6 +215,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     playlistTitle,
     isPlaying,
     ownerId,
+    isStreamGated,
     hasStreamAccess,
     streamConditions
   } = props
@@ -180,6 +232,9 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     [styles.show]: shouldShow,
     [styles.hide]: !shouldShow
   }
+  const gatedContentStatusMap = useSelector(getGatedContentStatusMap)
+  const gatedContentStatus = id ? gatedContentStatusMap[id] : undefined
+
   const [, setModalVisibility] = useModalState('LockedContent')
   const dispatch = useDispatch()
   const openLockedContentModal = useCallback(() => {
@@ -217,6 +272,18 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     isArtistPick: false,
     isUnlisted
   })
+
+  let specialContentLabel = null
+
+  if (isStreamGated) {
+    specialContentLabel = (
+      <GatedContentLabel
+        streamConditions={streamConditions}
+        hasStreamAccess={!!hasStreamAccess}
+        isOwner={isOwner}
+      />
+    )
+  }
 
   return (
     <div
@@ -269,11 +336,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             >
               <Text ellipses className={cn(fadeIn)}>
                 {playlistTitle}
-                {playlistTitle}
-                {playlistTitle}
-                {playlistTitle}
-                {playlistTitle}
-                {playlistTitle}
               </Text>
               {isPlaying ? <IconVolume size='m' /> : null}
               {!shouldShow ? (
@@ -294,6 +356,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             isVisible={isTrending && shouldShow}
             showCrown={showRankIcon}
           />
+          {isReadonly ? specialContentLabel : null}
           {!!(props.repostCount || props.saveCount) && (
             <>
               <div
@@ -336,6 +399,24 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               </div>
             </>
           )}
+          {isReadonly ? (
+            <Text
+              variant='body'
+              size='xs'
+              color='staticWhite'
+              className={cn(styles.bottomRight, fadeIn)}
+            >
+              {renderLockedContent({
+                hasStreamAccess,
+                isOwner,
+                isStreamGated,
+                streamConditions,
+                gatedTrackStatus: gatedContentStatus,
+                variant: isPurchase ? 'premium' : 'gated',
+                onClickGatedUnlockPill
+              })}
+            </Text>
+          ) : null}
         </div>
         <TrackList
           activeTrackUid={props.activeTrackUid}

@@ -2,13 +2,16 @@ import { log } from '@pedalboard/logger'
 import App from '@pedalboard/basekit/src/app'
 import moment from 'moment'
 
-type SharedData = {}
+type SharedData = object
 
 const main = async () => {
   await new App<SharedData>({})
-    .tick({ seconds: 5 }, async (_app) => {
-      console.log(`tick ${moment().calendar()}`)
-    })
+    .tick({ seconds: 5 }, async () =>
+      // appData
+      {
+        console.log(`tick ${moment().calendar()}`)
+      }
+    )
     .run()
 }
 

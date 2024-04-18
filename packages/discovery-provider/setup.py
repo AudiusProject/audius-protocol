@@ -9,17 +9,15 @@ from setuptools import find_packages, setup
 install_reqs = parse_requirements("requirements.txt", session=uuid.uuid1())  # type: ignore
 requirements = [str(ir.requirement) for ir in install_reqs]
 
-config = {
-    "description": "Audius Discovery Provider",
-    "author": "Hareesh Nagaraj",
-    "url": "",
-    "download_url": "",
-    "author_email": "",
-    "version": "0.1",
-    "install_requires": requirements,
-    "packages": find_packages(),
-    "scripts": [],
-    "name": "audius_discovery_provider",
-}
-
-setup(**config)
+setup(
+    name="audius_discovery_provider",
+    version="0.1",
+    description="Audius Discovery Provider",
+    author="Hareesh Nagaraj",
+    author_email="",
+    url="",
+    download_url="",
+    packages=find_packages(),
+    requires=requirements,
+    scripts=[],
+)

@@ -12,7 +12,7 @@ export function createContext(
   return {
     req: options.req,
     res: options.res,
-    ...customContext,
+    ...customContext
   }
 }
 

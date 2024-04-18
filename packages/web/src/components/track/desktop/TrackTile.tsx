@@ -80,7 +80,7 @@ const RankAndIndexIndicator = ({
   )
 }
 
-const renderLockedOrPlaysContent = ({
+const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
   fieldVisibility,
   isOwner,
@@ -369,7 +369,7 @@ const TrackTile = ({
           </Text>
           <Text variant='body' size='xs' className={styles.bottomRight}>
             {!isLoading
-              ? renderLockedOrPlaysContent({
+              ? renderLockedContentOrPlayCount({
                   hasStreamAccess,
                   fieldVisibility,
                   isOwner,

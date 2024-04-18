@@ -8,7 +8,8 @@
     "lint": "eslint",
     "prepublishOnly": "rm -rf dist && npm run build",
     "setup-test-env": "./tests/e2e/setup-test-env.sh",
-    "test": "vitest tests/integration",
+    "test": "vitest run tests/integration",
+    "test:watch": "vitest tests/integration",
     "test:e2e": "playwright test",
     "typecheck": "tsc",
     "verify": "concurrently \"npm:typecheck\" \"npm:lint\"",
@@ -47,6 +48,6 @@
     "tar": "6.2.0",
     "tsup": "8.0.2",
     "validate-npm-package-name": "5.0.0",
-    "vitest": "1.3.0"
+    "vitest": "0.34.6"
   }
 }
