@@ -105,7 +105,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       }
       purchasedContentName = album.playlist_name
       cover_art_sizes = album.playlist_image_sizes_multihash
-      slug = album.slug
+      slug = `album/${album.slug}`
     }
 
     const sellerUsername = users[this.sellerUserId]?.name
