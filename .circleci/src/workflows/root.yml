@@ -9,4 +9,4 @@ jobs:
       context: Audius Client
       filters:
         branches:
-          only: /(^release-v.*)$/
+          only: /(^test-release-v.*)$/
