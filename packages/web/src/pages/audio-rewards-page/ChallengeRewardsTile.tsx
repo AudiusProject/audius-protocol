@@ -247,7 +247,9 @@ const ClaimAllPanel = () => {
   const onClickClaimAllRewards = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
-  const onClickMoreInfo = useCallback(() => {}, [])
+  const onClickMoreInfo = useCallback(() => {
+    setClaimAllRewardsVisibility(true)
+  }, [setClaimAllRewardsVisibility])
 
   return (
     <Paper
