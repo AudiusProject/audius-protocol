@@ -129,8 +129,8 @@ jobs:
             git commit -m "${MESSAGE}"
 
             # Weird way to push both to main and the new release branch
-            git branch "release-v$NEW_VERSION"
-            git checkout "release-v$NEW_VERSION"
+            git branch "test-release-v$NEW_VERSION"
+            git checkout "test-release-v$NEW_VERSION"
             git push --set-upstream origin "test-release-v$NEW_VERSION"
 
   approve-deployment-holds:
