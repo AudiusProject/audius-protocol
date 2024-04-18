@@ -1,3 +1,4 @@
+import { partition, sum } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID } from '~/models/AudioRewards'
@@ -75,22 +76,12 @@ export const useChallengeCooldownSchedule = ({
     .filter((c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id))
     .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
 
-  // Challenges that are claimable now
-  const claimableChallenges = challenges.filter(isCooldownChallengeClaimable)
-  const claimableAmount = claimableChallenges.reduce(
-    (acc, curr) => acc + curr.amount,
-    0
+  const [claimableChallenges, cooldownChallenges] = partition(
+    challenges,
+    isCooldownChallengeClaimable
   )
-
-  // Challenges that are in still in cooldown period i.e. not yet claimable.
-  // Challenges are already ordered by completed_blocknumber ascending.
-  const cooldownChallenges = challenges.filter(
-    (c) => !isCooldownChallengeClaimable(c)
-  )
-  const cooldownAmount = cooldownChallenges.reduce(
-    (acc, curr) => acc + curr.amount,
-    0
-  )
+  const claimableAmount = sum(claimableChallenges.map((c) => c.amount))
+  const cooldownAmount = sum(cooldownChallenges.map((c) => c.amount))
 
   // Summary for claimable amount if any
   const summary =

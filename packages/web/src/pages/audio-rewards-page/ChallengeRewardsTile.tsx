@@ -81,21 +81,19 @@ const messages = {
   available: '$AUDIO available',
   now: 'now!',
   availableMessage: (summaryItems: ClaimableSummaryTableItem[]) => {
-    for (let i = summaryItems.length - 1; i >= 0; i--) {
-      const { value, label, claimableDate, isClose } = summaryItems[i] ?? {}
-      if (summaryItems[i]) {
-        if (isClose) {
-          return `${value} ${messages.available} ${label}`
-        }
-        return (
-          <Text>
-            {value} {messages.available} {label}&nbsp;
-            <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
-          </Text>
-        )
-      }
+    const filteredSummaryItems = summaryItems.filter(removeNullable)
+    const summaryItem = filteredSummaryItems.pop()
+    const { value, label, claimableDate, isClose } = (summaryItem ??
+      {}) as ClaimableSummaryTableItem
+    if (isClose) {
+      return `${value} ${messages.available} ${label}`
     }
-    return undefined // In case all elements are undefined or the array is empty
+    return (
+      <Text>
+        {value} {messages.available} {label}&nbsp;
+        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
+      </Text>
+    )
   }
 }
 
@@ -239,8 +237,7 @@ const RewardPanel = ({
 
 const ClaimAllPanel = () => {
   const wm = useWithMobileStyle(styles.mobile)
-  // const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
-  const { cooldownChallenges, cooldownAmount, claimableAmount } =
+  const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
 
   const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
@@ -269,15 +266,13 @@ const ClaimAllPanel = () => {
         />
         <Flex direction='column'>
           <Flex>
-            {claimableAmount > 0 ? (
+            {isEmpty ? null : (
               <Text color='accent' size='m' variant='heading'>
-                {messages.totalReadyToClaim}
+                {claimableAmount > 0
+                  ? messages.totalReadyToClaim
+                  : messages.totalUpcomingRewards}
               </Text>
-            ) : cooldownAmount > 0 ? (
-              <Text color='accent' size='m' variant='heading'>
-                {messages.totalUpcomingRewards}
-              </Text>
-            ) : null}
+            )}
             {cooldownAmount > 0 ? (
               <div className={wm(styles.pendingPillContainer)}>
                 <span className={styles.pillMessage}>
@@ -286,17 +281,13 @@ const ClaimAllPanel = () => {
               </div>
             ) : null}
           </Flex>
-          {claimableAmount > 0 ? (
-            <Text variant='body' textAlign='left'>
-              {claimableAmount} {messages.available} {messages.now}
-            </Text>
-          ) : (
-            <Text variant='body' textAlign='left'>
-              {messages.availableMessage(
-                formatCooldownChallenges(cooldownChallenges)
-              )}
-            </Text>
-          )}
+          <Text variant='body' textAlign='left'>
+            {claimableAmount > 0
+              ? `${claimableAmount} ${messages.available} ${messages.now}`
+              : messages.availableMessage(
+                  formatCooldownChallenges(cooldownChallenges)
+                )}
+          </Text>
         </Flex>
       </Flex>
       {claimableAmount > 0 ? (
@@ -420,10 +411,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
           {isRewardsCooldownEnabled && !shouldHideCumulativeRewards ? (
             <>
               <ClaimAllPanel />
-              <Divider
-                orientation='horizontal'
-                className={wm(styles.divider)}
-              />
+              <Divider className={wm(styles.divider)} />
             </>
           ) : null}
           <div className={styles.rewardsContainer}>{rewardsTiles}</div>
