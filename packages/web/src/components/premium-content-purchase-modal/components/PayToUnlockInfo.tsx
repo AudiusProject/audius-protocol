@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Name } from '@audius/common/models'
 import { Text, TextLink } from '@audius/harmony'
 
-import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import { make, track } from 'services/analytics'
 import { TERMS_OF_SERVICE } from 'utils/route'
 
@@ -30,7 +30,7 @@ export const PayToUnlockInfo = () => {
         className={styles.header}
       >
         <span>{messages.payToUnlock}</span>
-        <LockedStatusBadge locked />
+        <LockedStatusPill locked />
       </Text>
       <Text className={styles.copy} variant='body'>
         <span>{messages.copyPart1}</span>

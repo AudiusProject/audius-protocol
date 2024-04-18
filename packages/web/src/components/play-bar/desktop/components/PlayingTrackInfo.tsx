@@ -19,7 +19,7 @@ import { animated, useSpring } from 'react-spring'
 
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { fullTrackPage } from 'utils/route'
@@ -118,9 +118,9 @@ const PlayingTrackInfo = ({
           {trackTitle}
         </div>
         {shouldShowPreviewLock ? (
-          <LockedStatusBadge
+          <LockedStatusPill
             locked
-            iconSize='small'
+            iconSize='2xs'
             coloredWhenLocked
             variant='premium'
             text={messages.preview}
