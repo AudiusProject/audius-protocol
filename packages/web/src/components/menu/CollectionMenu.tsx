@@ -142,12 +142,11 @@ const CollectionMenu = (props: CollectionMenuProps) => {
 
     const embedMenuItem = {
       text: messages.embed,
-      onClick: () => {
+      onClick: () =>
         openEmbedModal(
           playlistId,
           type === 'album' ? PlayableType.ALBUM : PlayableType.PLAYLIST
         )
-      }
     }
 
     const menu: { items: PopupMenuItem[] } = { items: [] }

@@ -65,7 +65,7 @@ const tracksTableColumns: TracksTableColumn[] = [
 
 const albumTableColumns: CollectionsTableColumn[] = [
   'spacer',
-  'playlistName',
+  'name',
   'releaseDate',
   'saves',
   'reposts',
