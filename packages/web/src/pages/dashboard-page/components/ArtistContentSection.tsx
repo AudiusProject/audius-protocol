@@ -55,6 +55,7 @@ const tracksTableColumns: TracksTableColumn[] = [
   'releaseDate',
   'length',
   'plays',
+  'saves',
   'reposts',
   'overflowMenu'
 ]
@@ -64,6 +65,7 @@ const albumTableColumns: TracksTableColumn[] = [
   'trackName',
   'releaseDate',
   'reposts',
+  'saves',
   'overflowMenu'
 ]
 
