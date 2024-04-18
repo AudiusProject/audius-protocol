@@ -471,6 +471,7 @@ const ConnectedPlaylistTile = ({
   }, [
     tracks,
     isLoading,
+    isAlbum,
     userHandle,
     playingUid,
     size,
