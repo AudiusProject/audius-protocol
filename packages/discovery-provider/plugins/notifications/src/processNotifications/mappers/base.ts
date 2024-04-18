@@ -75,11 +75,11 @@ export abstract class BaseNotification<Type> {
           slug: string
         }> = await this.dnDB
           .select(
-            'playlist_id',
-            'playlist_name',
-            'is_album',
-            'playlist_image_sizes_multihash',
-            'slug'
+            'playlists.playlist_id',
+            'playlists.playlist_name',
+            'playlists.is_album',
+            'playlists.playlist_image_sizes_multihash',
+            'playlist_routes.slug'
           )
           .from<PlaylistRow>('playlists')
           .join(
