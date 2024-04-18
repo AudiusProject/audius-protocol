@@ -12,7 +12,8 @@ import {
 import { challengesSelectors } from '@audius/common/store'
 import {
   formatNumberCommas,
-  challengeRewardsConfig
+  challengeRewardsConfig,
+  isAudioMatchingChallenge
 } from '@audius/common/utils'
 import { Button, IconComponent, Text } from '@audius/harmony'
 import cn from 'classnames'
@@ -22,6 +23,7 @@ import { SummaryTable } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
+import { useRewardsModalType } from './ChallengeRewardsModal'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
@@ -92,9 +94,13 @@ export const CooldownRewardsModalContent = ({
       }
     />
   )
+  const [modalType] = useRewardsModalType()
+  const amount = isAudioMatchingChallenge(modalType)
+    ? formatNumberCommas(challenge?.amount ?? '')
+    : formatNumberCommas(challenge?.totalAmount ?? '')
   const progressReward = (
     <ProgressReward
-      amount={formatNumberCommas(challenge?.amount ?? '')}
+      amount={amount}
       subtext={
         challengeName in messages.rewardMapping
           ? messages.rewardMapping[challengeName as AudioMatchingChallengeName]
