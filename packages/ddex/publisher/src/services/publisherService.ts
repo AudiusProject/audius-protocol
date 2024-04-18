@@ -201,9 +201,23 @@ export const publishReleases = async (
     let documents
     try {
       const currentDate = new Date()
-      documents = await PendingReleases.find({
-        'release.sdk_upload_metadata.release_date': { $lte: currentDate },
-      }).lean<PendingRelease[]>()
+      documents = await PendingReleases.aggregate([
+        {
+          $match: {
+            $expr: {
+              $lte: [
+                {
+                  $max: [
+                    '$release.sdk_upload_metadata.release_date',
+                    '$release.sdk_upload_metadata.validity_start_date',
+                  ],
+                },
+                currentDate,
+              ],
+            },
+          },
+        },
+      ]).toArray()
     } catch (error) {
       console.error('Failed to fetch pending releases:', error)
       await new Promise((resolve) => setTimeout(resolve, 10_000))

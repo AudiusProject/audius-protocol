@@ -271,6 +271,7 @@ func buildSingleMetadata(release *common.Release, mainRelease *common.ParsedRele
 	releaseIDs := tracks[0].DDEXReleaseIDs
 	release.SDKUploadMetadata = common.SDKUploadMetadata{
 		ReleaseDate:           tracks[0].ReleaseDate,
+		ValidityStartDate:     tracks[0].ValidityStartDate,
 		Genre:                 tracks[0].Genre,
 		Artists:               tracks[0].Artists,
 		Tags:                  nil,
@@ -347,6 +348,7 @@ func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedRelea
 	releaseIDs := mainRelease.ReleaseIDs
 	release.SDKUploadMetadata = common.SDKUploadMetadata{
 		ReleaseDate:           mainRelease.ReleaseDate,
+		ValidityStartDate:     mainRelease.ValidityStartDate,
 		Genre:                 mainRelease.Genre,
 		Artists:               mainRelease.Artists,
 		Tags:                  nil,
@@ -423,6 +425,7 @@ func buildSupportingTracks(release *common.Release) (tracks []common.TrackMetada
 		track.IsStreamTipGated = parsedReleaseElem.IsStreamTipGated
 		track.IsDownloadFollowGated = parsedReleaseElem.IsDownloadFollowGated
 		track.ReleaseDate = parsedReleaseElem.ReleaseDate
+		track.ValidityStartDate = parsedReleaseElem.ValidityStartDate
 
 		tracks = append(tracks, track)
 	}
