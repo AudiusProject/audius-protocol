@@ -13,7 +13,7 @@ orbs:
 parameters:
   workflow:
     type: string
-    default: 'release-client-create-branch'
+    default: 'main'
 
 commands:
   create_concatenated_patch_file:
