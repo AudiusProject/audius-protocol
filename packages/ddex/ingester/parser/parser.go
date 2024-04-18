@@ -354,6 +354,13 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 
 		// Validate the URL without the prefix "/"
 		releaseURL := strings.TrimPrefix(safeInnerText(messageInBatch.SelectElement("URL")), "/")
+
+		// Special case for Fuga deliveries with a different URL format
+		if strings.Contains(releaseURL, "ddex-prod-fuga-raw") {
+			releaseURL = strings.SplitAfter(releaseURL, "ddex-prod-fuga-raw//")[1]
+			releaseURL = fmt.Sprintf("%s/%s", strings.Split(targetRelease.XmlFilePath, "/")[0], releaseURL)
+		}
+
 		if releaseURL != targetRelease.XmlFilePath {
 			err := fmt.Errorf("URL '%s' does not match expected value: '%s'", releaseURL, targetRelease.XmlFilePath)
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
