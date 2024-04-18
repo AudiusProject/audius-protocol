@@ -58,6 +58,10 @@ const defaultColumns: CollectionsTableColumn[] = [
   'spacer'
 ]
 
+/**
+ * Note: this table is not generalized the way TracksTable is. It is
+ * specifically tailored to the Artist Dashboard use case.
+ */
 export const CollectionsTable = ({
   columns = defaultColumns,
   data,
