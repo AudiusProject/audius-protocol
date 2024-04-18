@@ -36,9 +36,20 @@ The `coverArtFile` maps to two DDEX Fields
 
 #### releaseDate
 
-1. `/DealList/ReleaseDeal/Deal/ValidityPeriod/StartDate`
-2. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ReleaseDate`
-3. `/ReleaseList/Release/GlobalOriginalReleaseDate`
+:::note
+
+The resource will not be published on the Audius platform until the following condition is met:
+
+`current date ≥ max(releaseDate, validity start date from the corresponding deal)`
+
+However the date displayed in the Audius interface will be this SDK `releaseDate` value (determined
+by the hierarchy below).
+
+:::
+
+1. `/ReleaseList/Release/ReleaseDetailsByTerritory[TerritoryCode="Worldwide"]/ReleaseDate`
+2. `/ReleaseList/Release/GlobalOriginalReleaseDate`
+3. `/DealList/ReleaseDeal/Deal/ValidityPeriod/StartDate`
 
 #### userId
 
