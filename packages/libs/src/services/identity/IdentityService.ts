@@ -223,14 +223,20 @@ export class IdentityService {
    * @param userId
    * @param handle User handle
    */
-  async associateTwitterUser(uuid: string, userId: number, handle: string) {
+  async associateTwitterUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber: number
+  ) {
     return await this._makeRequest({
       url: '/twitter/associate',
       method: 'post',
       data: {
         uuid,
         userId,
-        handle
+        handle,
+        blockNumber
       }
     })
   }
@@ -241,14 +247,20 @@ export class IdentityService {
    * @param userId
    * @param handle
    */
-  async associateInstagramUser(uuid: string, userId: number, handle: string) {
+  async associateInstagramUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber: number
+  ) {
     return await this._makeRequest({
       url: '/instagram/associate',
       method: 'post',
       data: {
         uuid,
         userId,
-        handle
+        handle,
+        blockNumber
       }
     })
   }
@@ -259,14 +271,20 @@ export class IdentityService {
    * @param userId
    * @param handle
    */
-  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+  async associateTikTokUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber: number
+  ) {
     return await this._makeRequest({
       url: '/tiktok/associate',
       method: 'post',
       data: {
         uuid,
         userId,
-        handle
+        handle,
+        blockNumber
       }
     })
   }
