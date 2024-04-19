@@ -87,7 +87,7 @@ export class GrantsApi {
   }
 
   /**
-   * Revokes another user's manager access
+   * Revokes a user's manager access - can either be called by the manager user or the child user
    */
   async removeManager(params: RemoveManagerRequest) {
     const { userId, managerUserId } = await parseParams(
