@@ -138,7 +138,7 @@ For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
 
 
 ### Bring up the ddex stack locally
-Run `audius-compose up -ddex-release-by-release` (or `audius-compose up --ddex-batched` -- see "Choreography" in Glossary below), and navigate to `http://localhost:9000` to view the DDEX webapp
+Run `audius-compose up --ddex-release-by-release` (or `audius-compose up --ddex-batched` -- see "Choreography" in Glossary below), and navigate to `http://localhost:9000` to view the DDEX webapp
 
 To upload a delivery to be processed:
   1. Create buckets: `aws --endpoint=http://ingress:4566 s3 mb s3://audius-test-raw && aws --endpoint=http://ingress:4566 s3 mb s3://audius-test-crawled`

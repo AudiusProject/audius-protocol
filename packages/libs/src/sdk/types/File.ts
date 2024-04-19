@@ -43,6 +43,7 @@ export const ALLOWED_AUDIO_MIME_TYPES = [
   'audio/mp3',
   'audio/aiff',
   'audio/flac',
+  'audio/x-flac',
   'audio/ogg',
   'audio/wav',
   'audio/vnd.wave'
