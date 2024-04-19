@@ -647,6 +647,10 @@ export const audiusBackend = ({
       FeatureFlags.SDK_DISCOVERY_NODE_SELECTOR
     )
 
+    const isManagerModeEnabled = await getFeatureEnabled(
+      FeatureFlags.MANAGER_MODE
+    )
+
     let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
 
     if (useSdkDiscoveryNodeSelector) {
@@ -710,7 +714,8 @@ export const audiusBackend = ({
           unhealthyBlockDiff:
             getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined,
 
-          discoveryNodeSelector
+          discoveryNodeSelector,
+          enableUserIdOverride: isManagerModeEnabled
         },
         identityServiceConfig:
           AudiusLibs.configIdentityService(identityServiceUrl),
