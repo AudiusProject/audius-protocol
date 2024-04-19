@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"mime"
 	"net/http"
 	"os"
@@ -347,7 +348,24 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		userId = strconv.Itoa(sig.Data.UserID)
 	}
 
+	discoveryListensVar := os.Getenv("discoveryListens")
+	discoveryListens, err := strconv.ParseBool(discoveryListensVar)
+	if err != nil {
+		discoveryListens = false
+	}
+
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
+
+	if discoveryListens {
+		// load and select a random discovery provider that's eligible for listens
+		discoveryNodes := strings.Split(os.Getenv("discoveryNodeListensEnabled"), ",")
+		i := rand.Intn(len(discoveryNodes))
+		discoveryNode := discoveryNodes[i]
+
+		// modify endpoint to discovery instead of identity
+		endpoint = fmt.Sprintf("%s/tracks/%d/listen", discoveryNode, sig.Data.TrackId)
+	}
+
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
 		ss.logger.Error("unable to build request", "err", err)
