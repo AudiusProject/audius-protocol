@@ -2,7 +2,8 @@ import {
   IconShare,
   IconKebabHorizontal,
   IconButton,
-  Flex
+  Flex,
+  IconPencil
 } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
@@ -26,9 +27,11 @@ type ActionButtonRowProps = {
   onFavorite?: () => void
   onShare?: () => void
   onClickOverflow?: () => void
+  onClickEdit?: () => void
   showFavorite: boolean
   showShare: boolean
   showOverflow: boolean
+  showEdit?: boolean
   shareToastDisabled?: boolean
   darkMode: boolean
 }
@@ -44,11 +47,13 @@ const ActionButtonRow = ({
   showFavorite,
   showShare,
   showOverflow,
+  showEdit,
   shareToastDisabled = true,
-  onRepost = () => {},
-  onFavorite = () => {},
-  onShare = () => {},
-  onClickOverflow = () => {},
+  onRepost = () => { },
+  onFavorite = () => { },
+  onShare = () => { },
+  onClickOverflow = () => { },
+  onClickEdit = () => { },
   darkMode
 }: ActionButtonRowProps) => {
   const renderRepostButton = () => {
@@ -93,7 +98,7 @@ const ActionButtonRow = ({
         disabled={!isPublished}
         color='subdued'
         icon={IconShare}
-        onClick={isPublished ? onShare : () => {}}
+        onClick={isPublished ? onShare : () => { }}
       />
     )
   }
@@ -124,6 +129,16 @@ const ActionButtonRow = ({
     )
   }
 
+  const renderEditButton = () => (
+    <IconButton
+      aria-label='edit'
+      size='2xl'
+      color='subdued'
+      icon={IconPencil}
+      onClick={onClickEdit}
+    />
+  )
+
   return (
     <Flex
       direction='row'
@@ -136,6 +151,7 @@ const ActionButtonRow = ({
         {showRepost && renderRepostButton()}
         {showFavorite && renderFavoriteButton()}
         {showShare && (isPublishing ? renderSpinner() : renderShareButton())}
+        {showEdit && renderEditButton()}
         {showOverflow && renderOverflowMenu()}
       </ClientOnly>
     </Flex>

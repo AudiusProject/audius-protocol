@@ -176,6 +176,7 @@ const CollectionPage = ({
 
   const {
     isEmpty,
+    releaseDate,
     lastModifiedDate,
     playlistName,
     description,
@@ -262,7 +263,8 @@ const CollectionPage = ({
             isAlbum={isAlbum}
             numTracks={numTracks}
             isPlayable={isPlayable}
-            modified={lastModifiedDate}
+            releaseDate={releaseDate}
+            lastModifiedDate={lastModifiedDate}
             duration={duration}
             isPublished={!isPrivate}
             isPublishing={isPublishing}
@@ -302,7 +304,6 @@ const CollectionPage = ({
                   containerClassName={''}
                   itemClassName={''}
                   tracks={trackList}
-                  showTopDivider
                   showDivider
                   togglePlay={togglePlay}
                 />
