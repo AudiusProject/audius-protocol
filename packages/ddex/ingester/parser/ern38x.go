@@ -159,24 +159,14 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 		}
 	}
 
-	// Find the release that's marked as the main release
+	// Validate existence of a single main release
 	if len(release.ParsedReleaseElems) == 0 {
 		errs = append(errs, fmt.Errorf("no <Release> elements could be parsed from <ReleaseList>"))
 		return
 	}
-	var mainRelease *common.ParsedReleaseElement
-	for i := range release.ParsedReleaseElems {
-		parsedRelease := &release.ParsedReleaseElems[i]
-		if parsedRelease.IsMainRelease {
-			if mainRelease != nil {
-				errs = append(errs, fmt.Errorf("multiple main releases found: %s and %s", mainRelease.ReleaseRef, parsedRelease.ReleaseRef))
-				return
-			}
-			mainRelease = parsedRelease
-		}
-	}
-	if mainRelease == nil {
-		errs = append(errs, fmt.Errorf("no main release found in releases: %#v", release.ParsedReleaseElems))
+	_, err := getMainRelease(release)
+	if err != nil {
+		errs = append(errs, err)
 		return
 	}
 
@@ -194,6 +184,15 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 		}
 	}
 
+	return
+}
+
+func buildSDKMetadataERN38x(release *common.Release) (errs []error) {
+	mainRelease, err := getMainRelease(release)
+	if err != nil {
+		errs = append(errs, err)
+		return
+	}
 	// Create metadata to use in the Audius SDK's upload based on release type
 	switch release.ReleaseProfile {
 	case common.Common13AudioSingle:
@@ -213,6 +212,24 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 	}
 
 	return
+}
+
+func getMainRelease(release *common.Release) (*common.ParsedReleaseElement, error) {
+	var mainRelease *common.ParsedReleaseElement
+	for i := range release.ParsedReleaseElems {
+		parsedRelease := &release.ParsedReleaseElems[i]
+		if parsedRelease.IsMainRelease {
+			if mainRelease != nil {
+				return nil, fmt.Errorf("multiple main releases found: %s and %s", mainRelease.ReleaseRef, parsedRelease.ReleaseRef)
+			}
+			mainRelease = parsedRelease
+		}
+	}
+	if mainRelease == nil {
+		return nil, fmt.Errorf("no main release found in releases: %#v", release.ParsedReleaseElems)
+	}
+
+	return mainRelease, nil
 }
 
 func buildSingleMetadata(release *common.Release, mainRelease *common.ParsedReleaseElement, errs *[]error) {
@@ -254,6 +271,7 @@ func buildSingleMetadata(release *common.Release, mainRelease *common.ParsedRele
 	releaseIDs := tracks[0].DDEXReleaseIDs
 	release.SDKUploadMetadata = common.SDKUploadMetadata{
 		ReleaseDate:           tracks[0].ReleaseDate,
+		ValidityStartDate:     tracks[0].ValidityStartDate,
 		Genre:                 tracks[0].Genre,
 		Artists:               tracks[0].Artists,
 		Tags:                  nil,
@@ -337,6 +355,7 @@ func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedRelea
 	releaseIDs := mainRelease.ReleaseIDs
 	release.SDKUploadMetadata = common.SDKUploadMetadata{
 		ReleaseDate:           mainRelease.ReleaseDate,
+		ValidityStartDate:     mainRelease.ValidityStartDate,
 		Genre:                 mainRelease.Genre,
 		Artists:               mainRelease.Artists,
 		Tags:                  nil,
@@ -412,9 +431,8 @@ func buildSupportingTracks(release *common.Release) (tracks []common.TrackMetada
 		track.IsStreamFollowGated = parsedReleaseElem.IsStreamFollowGated
 		track.IsStreamTipGated = parsedReleaseElem.IsStreamTipGated
 		track.IsDownloadFollowGated = parsedReleaseElem.IsDownloadFollowGated
-		if !parsedReleaseElem.ReleaseDate.IsZero() {
-			track.ReleaseDate = parsedReleaseElem.ReleaseDate
-		}
+		track.ReleaseDate = parsedReleaseElem.ReleaseDate
+		track.ValidityStartDate = parsedReleaseElem.ValidityStartDate
 
 		tracks = append(tracks, track)
 	}
@@ -777,7 +795,7 @@ func processDealNode(dNode *xmlquery.Node, release *common.Release) (err error) 
 				}
 
 				if validityStartStr != "" {
-					elem.ReleaseDate = validityStart
+					elem.ValidityStartDate = validityStart
 				}
 				elem.HasDeal = true
 			}
