@@ -12,14 +12,6 @@ import {
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
-<<<<<<< HEAD
-import {
-  CollectionsTable,
-  CollectionsTableColumn
-} from 'components/collections-table/CollectionsTable'
-import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-=======
->>>>>>> rt-artist-dashboard
 import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { makeGetDashboard } from '../store/selectors'
@@ -167,15 +159,9 @@ export const ArtistContentSection = () => {
           onClickRow={onClickRow}
         />
       ) : (
-<<<<<<< HEAD
-        <CollectionsTable
-          data={filteredAlbums}
-          columns={albumTableColumns}
-=======
         <ArtistDashboardAlbumsTab
           selectedFilter={selectedAlbumFilter}
           filterText={filterText}
->>>>>>> rt-artist-dashboard
           onClickRow={onClickRow}
         />
       )}
