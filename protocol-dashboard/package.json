@@ -68,12 +68,9 @@
     "build": "NODE_OPTIONS=--max_old_space_size=8192 tsc -p ./tsconfig.node.json && vite build",
     "build:stage": "npm run configure-stage-env && ./node_modules/.bin/env-cmd -f .env.stage.local turbo run build",
     "build:prod": "npm run configure-prod-env && ./node_modules/.bin/env-cmd -f .env.prod.local turbo run build",
-    "lint": "npm run prettier:check",
-    "lint:fix": "npm run prettier:write",
+    "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
+    "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
     "lint:env": "dotenv-linter",
-    "prettier:base": "prettier --parser typescript --single-quote --no-semi",
-    "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
-    "prettier:write": "npm run prettier:base -- --write \"src/**/*.{ts,tsx}\"",
     "pull-dev-accounts": "node ./scripts/pullDevAccounts.js",
     "typecheck": "tsc",
     "advance-blocks": "node ./scripts/advanceBlocks.js",
@@ -81,10 +78,7 @@
     "update-build:stage": "node ./scripts/updateBuild.cjs stage",
     "update-build:prod": "node ./scripts/updateBuild.cjs prod",
     "TODO - ADD TYPECHECK TO VERIFY: =========================": "",
-    "verify": "concurrently \"npm:lint:fix\" \"npm:lint:env\""
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "verify": "concurrently \"npm:lint\" \"npm:lint:env\""
   },
   "browserslist": {
     "production": [
@@ -128,13 +122,13 @@
     "crypto-browserify": "3.12.0",
     "dotenv": "16.3.1",
     "env-cmd": "9.0.3",
+    "eslint": "8.56.0",
     "https-browserify": "1.0.0",
     "jsdom": "22.1.0",
     "node-fetch": "2.6.1",
     "os-browserify": "0.3.0",
     "path-browserify": "1.0.1",
     "postcss": "8.4.14",
-    "prettier": "1.19.1",
     "redux-devtools-extension": "2.13.9",
     "setimmediate": "1.0.5",
     "stream-browserify": "3.0.0",

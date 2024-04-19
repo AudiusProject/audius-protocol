@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+
 import { ServiceType } from 'types'
 
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
@@ -42,7 +43,7 @@ const useNodeHealth = (endpoint: string, serviceType: ServiceType) => {
   if (serviceType === 'discovery-node') {
     // ----------Discovery health----------
 
-    let chainError = undefined
+    let chainError
     if (!health?.chain_health) chainError = 'Missing health info'
     if (!data?.portHealth) chainError = "Can't reach port 30300"
 

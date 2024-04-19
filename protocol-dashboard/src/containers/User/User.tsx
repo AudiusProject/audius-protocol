@@ -1,25 +1,25 @@
+import { useCallback, useEffect, useRef } from 'react'
+
 import { Flex, IconUser } from '@audius/harmony'
 import clsx from 'clsx'
-import { useCallback, useEffect, useRef } from 'react'
 import { matchPath, useLocation, useParams } from 'react-router-dom'
 
+import { ConnectAudiusProfileCard } from 'components/ConnectAudiusProfileCard/ConnectAudiusProfileCard'
 import ContentTable from 'components/ContentTable'
 import DiscoveryTable from 'components/DiscoveryTable'
+import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
+import ManageService from 'components/ManageService'
 import Page from 'components/Page'
+import ProfileInfoCard from 'components/ProfileInfoCard/ProfileInfoCard'
 import Timeline from 'components/Timeline'
-
+import TransactionStatus from 'components/TransactionStatus'
 import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Operator, Status, User } from 'types'
 import { useReplaceRoute } from 'utils/effects'
+import { createStyles } from 'utils/mobile'
 import { NODES_ACCOUNT_USER, accountPage, operatorPage } from 'utils/routes'
 
-import { ConnectAudiusProfileCard } from 'components/ConnectAudiusProfileCard/ConnectAudiusProfileCard'
-import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
-import ManageService from 'components/ManageService'
-import ProfileInfoCard from 'components/ProfileInfoCard/ProfileInfoCard'
-import TransactionStatus from 'components/TransactionStatus'
-import { createStyles } from 'utils/mobile'
 import desktopStyles from './User.module.css'
 import mobileStyles from './UserMobile.module.css'
 
@@ -53,7 +53,7 @@ const UserPage = () => {
 
   const isOwner = accountWallet === wallet
 
-  let user = userAccount as User | Operator
+  const user = userAccount as User | Operator
 
   const isServiceProvider = user && 'serviceProvider' in user
 
@@ -81,7 +81,7 @@ const UserPage = () => {
     : messages.user
   return (
     <Page icon={IconUser} title={title}>
-      <Flex direction="column" gap="l">
+      <Flex direction='column' gap='l'>
         <ProfileInfoCard
           isOwner={isOwner}
           user={user}

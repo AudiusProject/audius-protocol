@@ -12,6 +12,7 @@ import TotalApiCallsChart from 'components/TotalApiCallsChart'
 import TotalStakedChart from 'components/TotalStakedChart'
 import UniqueUsersChart from 'components/UniqueUsersChart'
 import { createStyles } from 'utils/mobile'
+
 import desktopStyles from './Analytics.module.css'
 import mobileStyles from './AnalyticsMobile.module.css'
 

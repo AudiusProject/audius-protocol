@@ -1,12 +1,14 @@
-import clsx from 'clsx'
 import React, { useEffect } from 'react'
+
+import clsx from 'clsx'
+
+import UserBadges from 'components/UserInfo/AudiusProfileBadges'
+import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
 import { useUserProfile } from 'store/cache/user/hooks'
 import { Address } from 'types'
 import { formatShortWallet } from 'utils/format'
 
 import styles from './UserName.module.css'
-import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
-import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 
 type UserNameProps = {
   className?: string

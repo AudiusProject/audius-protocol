@@ -1,12 +1,15 @@
+import { useEffect, useState } from 'react'
+
+import { useLocation } from 'react-router-dom'
+
 import ContentTable from 'components/ContentTable'
 import Page from 'components/Page'
-import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useReplaceRoute } from 'utils/effects'
 import {
   NODES_CONTENT_NODE,
   NODES_UNREGISTERED_CONTENT_NODE
 } from 'utils/routes'
+
 import styles from './ContentNodes.module.css'
 
 const messages = {
@@ -25,9 +28,10 @@ const ContentNodes = () => {
     const resolveEndpointToSpId = async () => {
       if (!endpoint) return
       try {
-        const spId = await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(
-          endpoint
-        )
+        const spId =
+          await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(
+            endpoint
+          )
         setSpId(spId)
       } catch (error) {
         console.error('Failed to resolve endpoint to spId:', error)

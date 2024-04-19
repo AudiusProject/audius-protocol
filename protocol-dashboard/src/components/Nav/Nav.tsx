@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
-import { matchPath, useNavigate, useLocation } from 'react-router-dom'
+
+import { Button, ButtonType } from '@audius/stems'
 import clsx from 'clsx'
+import { matchPath, useNavigate, useLocation } from 'react-router-dom'
+
+import { navRoutes } from 'utils/routes'
 
 import styles from './Nav.module.css'
-import { navRoutes } from 'utils/routes'
-import { Button, ButtonType } from '@audius/stems'
 
 type NavButtonProps = {
   matchParams: {
@@ -21,12 +23,12 @@ const NavButton = (props: NavButtonProps) => {
   const location = useLocation()
 
   const isActiveRoute = props.matchParams.some(
-    matchParam => !!matchPath(matchParam, location.pathname)
+    (matchParam) => !!matchPath(matchParam, location.pathname)
   )
-  const onButtonClick = useCallback(() => pushRoute(baseRoute), [
-    baseRoute,
-    pushRoute
-  ])
+  const onButtonClick = useCallback(
+    () => pushRoute(baseRoute),
+    [baseRoute, pushRoute]
+  )
 
   return (
     <Button
@@ -43,9 +45,9 @@ const Nav = () => {
   const navigate = useNavigate()
   return (
     <div className={styles.container}>
-      {navRoutes.map(route => (
+      {navRoutes.map((route) => (
         <div key={route.text} className={styles.btnContainer}>
-          <NavButton {...route} pushRoute={path => navigate(path)} />
+          <NavButton {...route} pushRoute={(path) => navigate(path)} />
         </div>
       ))}
     </div>

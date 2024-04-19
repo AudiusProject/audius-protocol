@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { PendingTransactionName, Status, Address } from 'types'
+import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
 import Audius from 'services/Audius'
-import { AppState } from 'store/types'
 import { fetchPendingTransactions, getAccountWallet } from 'store/account/hooks'
 import { fetchUser } from 'store/cache/user/hooks'
-import { AnyAction } from '@reduxjs/toolkit'
+import { AppState } from 'store/types'
+import { PendingTransactionName, Status, Address } from 'types'
 
 function decreaseStake(
   setStatus: (status: Status) => void,
@@ -27,7 +28,7 @@ function decreaseStake(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       setError(error.message)
       setStatus(Status.Failure)
     }
@@ -51,7 +52,7 @@ function updateOperatorCut(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       setError(error.message)
       setStatus(Status.Failure)
     }
@@ -75,7 +76,7 @@ function undelegate(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       setError(error.message)
       setStatus(Status.Failure)
     }
@@ -102,7 +103,7 @@ function removeDelegator(
 
       setStatus(Status.Success)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       setError(error.message)
       setStatus(Status.Failure)
     }

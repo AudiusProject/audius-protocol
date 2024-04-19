@@ -1,13 +1,11 @@
-import clsx from 'clsx'
 import React, { useCallback } from 'react'
-import { NODES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
-
-import Table from 'components/Table'
-import styles from './TopOperatorsTable.module.css'
 
 import BN from 'bn.js'
+import clsx from 'clsx'
+
 import DisplayAudio from 'components/DisplayAudio'
 import { NodeOperatorInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
+import Table from 'components/Table'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
 import { useUsers } from 'store/cache/user/hooks'
@@ -15,6 +13,9 @@ import { Address, Operator, SortUser, Status } from 'types'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
+import { NODES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
+
+import styles from './TopOperatorsTable.module.css'
 
 const messages = {
   topAddresses: 'Top Node Operators',
@@ -71,7 +72,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   }
 
   const data = (users as Operator[])
-    .map(user => {
+    .map((user) => {
       const activeStake = getActiveStake(user)
       const totalActiveDelegated = getTotalActiveDelegatedStake(user)
       const totalCurrentStake = activeStake.add(totalActiveDelegated)

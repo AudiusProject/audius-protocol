@@ -701,7 +701,11 @@ export const relayTransaction = async (
     transaction,
     skipPreflight,
     useCoinflowRelay
-  }: { transaction: Transaction; skipPreflight?: boolean, useCoinflowRelay?: boolean }
+  }: {
+    transaction: Transaction
+    skipPreflight?: boolean
+    useCoinflowRelay?: boolean
+  }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const instructions = transaction.instructions
