@@ -36,13 +36,16 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
+import {
+  LockedStatusPill,
+  LockedStatusPillProps
+} from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 import { GatedContentLabel } from '../GatedContentLabel'
-import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
@@ -181,7 +184,7 @@ type LockedOrPlaysContentProps = Pick<
   CombinedProps,
   'hasStreamAccess' | 'isOwner' | 'isStreamGated' | 'streamConditions'
 > &
-  Pick<LockedStatusBadgeProps, 'variant'> & {
+  Pick<LockedStatusPillProps, 'variant'> & {
     gatedTrackStatus?: GatedContentStatus
     onClickGatedUnlockPill: (e: MouseEvent) => void
   }
@@ -206,7 +209,7 @@ const renderLockedContent = ({
         />
       )
     }
-    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
+    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
   }
 }
 

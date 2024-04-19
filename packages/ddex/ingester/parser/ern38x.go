@@ -319,6 +319,13 @@ func buildAlbumMetadata(release *common.Release, mainRelease *common.ParsedRelea
 		return
 	}
 
+	// Use mainRelease's genre for all tracks if a track is missing a genre
+	for i := range tracks {
+		if tracks[i].Genre == "" {
+			tracks[i].Genre = mainRelease.Genre
+		}
+	}
+
 	// Album is required to have a cover art image
 	if mainRelease.Resources.Images == nil || len(mainRelease.Resources.Images) == 0 || mainRelease.Resources.Images[0].URL == "" {
 		*errs = append(*errs, fmt.Errorf("missing cover art image for release %s", mainRelease.ReleaseRef))

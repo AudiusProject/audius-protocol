@@ -1,6 +1,9 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
+import {
+  formatCooldownChallenges,
+  useChallengeCooldownSchedule
+} from '@audius/common/hooks'
 import {
   ChallengeName,
   ChallengeRewardID,
@@ -9,7 +12,8 @@ import {
 import { challengesSelectors } from '@audius/common/store'
 import {
   formatNumberCommas,
-  challengeRewardsConfig
+  challengeRewardsConfig,
+  isAudioMatchingChallenge
 } from '@audius/common/utils'
 import { Button, IconComponent, Text } from '@audius/harmony'
 import cn from 'classnames'
@@ -19,6 +23,7 @@ import { SummaryTable } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
+import { useRewardsModalType } from './ChallengeRewardsModal'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
@@ -70,11 +75,11 @@ export const CooldownRewardsModalContent = ({
   const isMobile = useIsMobile()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const {
-    cooldownChallenges,
     claimableAmount,
-    cooldownChallengesSummary,
+    cooldownChallenges,
+    summary,
     isEmpty: isCooldownChallengesEmpty
-  } = useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
+  } = useChallengeCooldownSchedule({ challengeId: challenge?.challenge_id })
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
@@ -89,9 +94,13 @@ export const CooldownRewardsModalContent = ({
       }
     />
   )
+  const [modalType] = useRewardsModalType()
+  const amount = isAudioMatchingChallenge(modalType)
+    ? formatNumberCommas(challenge?.amount ?? '')
+    : formatNumberCommas(challenge?.totalAmount ?? '')
   const progressReward = (
     <ProgressReward
-      amount={formatNumberCommas(challenge?.amount ?? '')}
+      amount={amount}
       subtext={
         challengeName in messages.rewardMapping
           ? messages.rewardMapping[challengeName as AudioMatchingChallengeName]
@@ -137,8 +146,8 @@ export const CooldownRewardsModalContent = ({
           {!isCooldownChallengesEmpty ? (
             <SummaryTable
               title={messages.upcomingRewards}
-              items={cooldownChallenges}
-              summaryItem={cooldownChallengesSummary}
+              items={formatCooldownChallenges(cooldownChallenges)}
+              summaryItem={summary}
               secondaryTitle={messages.audio}
               summaryLabelColor='accent'
               summaryValueColor='default'

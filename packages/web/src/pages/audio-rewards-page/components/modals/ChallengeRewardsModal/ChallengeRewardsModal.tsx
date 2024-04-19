@@ -101,7 +101,7 @@ const messages = {
     'Something has gone wrong, not all your rewards were claimed. Please try again or contact support@audius.co.',
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
-  claimYourReward: 'Claim Your Reward',
+  claimYourReward: 'Claim This Reward',
   twitterShare: (modalType: 'referrals' | 'ref-v') =>
     `Share Invite With Your ${modalType === 'referrals' ? 'Friends' : 'Fans'}`,
   twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`,

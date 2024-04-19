@@ -73,7 +73,7 @@ const DDEXResourceContributor = z
   .object({
     name: z.string(),
     roles: z.array(z.string()),
-    sequence_number: z.number().positive()
+    sequence_number: z.optional(z.number())
   })
   .strict()
 
