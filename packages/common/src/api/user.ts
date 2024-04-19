@@ -17,7 +17,7 @@ type GetUSDCTransactionListArgs = {
   limit: number
   sortMethod?: full.GetUSDCTransactionsSortMethodEnum
   sortDirection?: full.GetUSDCTransactionsSortDirectionEnum
-  type?: full.GetUSDCTransactionsTypeEnum
+  type?: full.GetUSDCTransactionsTypeEnum[]
   method?: full.GetUSDCTransactionsMethodEnum
 }
 
