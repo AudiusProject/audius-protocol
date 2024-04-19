@@ -49,3 +49,16 @@ export const getCachedDiscoveryNodeWallets = async () => {
   const json = await redis.get(key)
   return parseStringArray(json)
 }
+
+/**
+ * Initialize a key that expires after a certain number of seconds
+ * @param {Object} redis connection
+ * @param {String} key that will be initialized
+ * @param {number} expiry number of seconds after which the key will expire
+ */
+const initializeExpiringRedisKey = async (redis: RedisClientType, key: string, expiry: number) => {
+  const value = await redis.get(key)
+  if (!value) {
+    await redis.set(key, 0, { EX: expiry })
+  }
+}

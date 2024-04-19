@@ -59,7 +59,7 @@ const getInittedLibs = async () => {
   // @ts-ignore
   const libs = new AudiusLibs({
     solanaWeb3Config: {
-      solanaClusterEndpoint: config.solanaEndpoint,
+      solanaClusterEndpoint: config.solanaEndpoints[0],
       mintAddress: config.waudioMintAddress,
       usdcMintAddress: config.usdcMintAddress,
       solanaTokenAddress: TOKEN_PROGRAM_ID.toBase58(),
