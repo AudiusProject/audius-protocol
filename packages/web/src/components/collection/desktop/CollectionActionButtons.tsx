@@ -22,12 +22,12 @@ type CollectionActionButtonProps = {
   collectionId: ID | SmartCollectionVariant
   variant?: Nullable<Variant>
   isOwner?: boolean
-  onPlay: MouseEventHandler<HTMLButtonElement>
-  playing: boolean
-  isPlayable: boolean
-  isPremium: Nullable<boolean>
-  userId: Nullable<ID>
+  isPlaying: boolean
   tracksLoading: boolean
+  isPlayable: boolean
+  isPremium?: Nullable<boolean>
+  userId: Nullable<ID>
+  onPlay: MouseEventHandler<HTMLButtonElement>
 }
 
 export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
@@ -36,7 +36,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isOwner,
     collectionId,
     onPlay,
-    playing: isPlaying,
+    isPlaying,
     isPlayable,
     userId,
     tracksLoading,
@@ -60,6 +60,21 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     actionButtons = <ViewerActionButtons collectionId={collectionId} />
   }
 
+  const playButton = (
+    <Button
+      variant={isPremium ? 'secondary' : 'primary'}
+      iconLeft={isPlaying ? IconPause : IconPlay}
+      onClick={onPlay}
+      widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+    >
+      {isPlaying
+        ? messages.pause
+        : isPremium
+        ? messages.preview
+        : messages.play}
+    </Button>
+  )
+
   return (
     <Flex
       className={cn({
@@ -71,20 +86,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       gap='2xl'
       alignItems='center'
     >
-      {!isPlayable ? null : (
-        <Button
-          variant={isPremium ? 'secondary' : 'primary'}
-          iconLeft={isPlaying ? IconPause : IconPlay}
-          onClick={onPlay}
-          widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
-        >
-          {isPlaying
-            ? messages.pause
-            : isPremium
-            ? messages.preview
-            : messages.play}
-        </Button>
-      )}
+      {!isPlayable ? null : playButton}
       {actionButtons}
     </Flex>
   )

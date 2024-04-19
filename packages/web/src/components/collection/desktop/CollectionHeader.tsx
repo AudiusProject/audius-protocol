@@ -15,7 +15,7 @@ import {
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { formatSecondsAsText, formatDate } from '@audius/common/utils'
+import { formatSecondsAsText, formatDate, Nullable } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -26,7 +26,8 @@ import {
   IconSearch,
   IconCart,
   useTheme,
-  IconComponent
+  IconComponent,
+  Box
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -44,11 +45,15 @@ import styles from './CollectionHeader.module.css'
 import { RepostFavoritesStats } from './RepostsFavoritesStats'
 
 const messages = {
-  filter: 'Search in playlist...'
+  filterPlaylist: 'Search in playlist...',
+  filterAlbum: 'Search in album...',
+  premiumLabel: 'premium',
+  hiddenPlaylistLabel: 'hidden playlist',
+  by: 'By '
 }
 
 type CollectionHeaderProps = {
-  isStreamGated: boolean | null
+  isStreamGated: Nullable<boolean>
   isPlayable: boolean
   isPublished: boolean
   tracksLoading: boolean
@@ -56,12 +61,12 @@ type CollectionHeaderProps = {
   playing: boolean
   isOwner: boolean
   isAlbum: boolean
-  access: AccessPermissions | null
+  access: Nullable<AccessPermissions>
   collectionId: ID
-  ownerId: ID | null
+  ownerId: Nullable<ID>
   type: CollectionsPageType | 'Playlist' | 'Audio NFT Playlist'
   title: string
-  coverArtSizes: CoverArtSizes | null
+  coverArtSizes: Nullable<CoverArtSizes>
   artistName: string
   description: string
   artistHandle: string
@@ -69,14 +74,14 @@ type CollectionHeaderProps = {
   lastModifiedDate?: string | number // either format should be utc time
   numTracks: number
   duration: number
-  variant: Variant | null
+  variant: Nullable<Variant>
   gradient?: string
   icon: IconComponent
   imageOverride?: string
-  userId: ID | null
+  userId: Nullable<ID>
   reposts: number
   saves: number
-  streamConditions: AccessConditions | null
+  streamConditions: Nullable<AccessConditions>
   onClickReposts?: () => void
   onClickFavorites?: () => void
   onPlay: MouseEventHandler<HTMLButtonElement>
@@ -169,16 +174,14 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     [styles.hide]: isLoading
   }
 
-  const TitleComponent = isOwner ? 'button' : 'span'
-
   const isPremium =
     isStreamGated && isContentUSDCPurchaseGated(streamConditions)
 
   const renderAlbumDetailsText = () => {
     const releaseAndUpdatedText = lastModifiedDate
       ? `Released ${formatDate(`${releaseDate}`)}, Updated ${formatDate(
-          `${lastModifiedDate}`
-        )}`
+        `${lastModifiedDate}`
+      )}`
       : `Released ${formatDate(`${releaseDate}`)}`
 
     const trackCountText = `${numTracks} tracks`
@@ -186,168 +189,173 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     return `${releaseAndUpdatedText} • ${trackCountText}${durationText}`
   }
 
-  return (
-    <Flex direction='column'>
-      {/* Top Section */}
-      <Flex gap='xl' p='l' backgroundColor='white'>
-        {coverArtSizes ? (
-          <Artwork
-            collectionId={collectionId}
-            coverArtSizes={coverArtSizes}
-            callback={handleLoadArtwork}
-            gradient={gradient}
-            icon={icon}
-            imageOverride={imageOverride}
-            isOwner={isOwner}
-          />
-        ) : null}
-        <Flex direction='column' justifyContent='space-between'>
-          <Flex direction='column' gap='xl'>
-            <Flex className={cn(fadeIn)} gap='s' mt='s'>
-              {!isPublished ? <IconVisibilityHidden /> : null}
-              {isPremium ? <IconCart size='s' color='subdued' /> : null}
-              <Text
-                variant='label'
-                color='subdued'
-                css={{ letterSpacing: '2px' }}
-              >
-                {isPremium ? 'premium ' : ''}
-                {type === 'playlist' && !isPublished ? 'hidden playlist' : type}
-              </Text>
-            </Flex>
-            <Flex direction='column' gap='s'>
-              <TitleComponent
-                className={cn(styles.title, {
-                  [styles.editableTitle]: isOwner
-                })}
-                css={{
-                  outline: 0,
-                  border: 0,
-                  background: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: spacing.s,
-                  padding: 0
-                }}
-                onClick={isOwner ? handleClickEditTitle : undefined}
-              >
-                <Text
-                  variant='heading'
-                  size='xl'
-                  className={cn(styles.titleHeader, fadeIn)}
-                >
-                  {title}
-                </Text>
-                <ClientOnly>
-                  {isOwner ? (
-                    <IconPencil className={styles.editIcon} color='subdued' />
-                  ) : null}
-                </ClientOnly>
-                {isLoading ? (
-                  <Skeleton css={{ position: 'absolute', top: 0 }} />
-                ) : null}
-              </TitleComponent>
-              {artistName ? (
-                <Text
-                  variant='title'
-                  strength='weak'
-                  tag='h2'
-                  className={cn(fadeIn)}
-                  textAlign='left'
-                >
-                  <Text color='subdued'>By </Text>
-                  {userId !== null ? (
-                    <UserLink userId={userId} popover variant='visible' />
-                  ) : null}
-                </Text>
-              ) : null}
-            </Flex>
-            {isLoading ? (
-              <Skeleton css={{ position: 'absolute', top: 0 }} width='60%' />
-            ) : null}
-            <div>{renderStatsRow(isLoading)}</div>
-          </Flex>
-          <ClientOnly>
-            <CollectionActionButtons
-              playing={playing}
-              variant={variant}
-              isOwner={isOwner}
-              userId={userId}
-              collectionId={collectionId}
-              onPlay={onPlay}
-              isPlayable={isPlayable}
-              tracksLoading={tracksLoading}
-              isPremium={isPremium}
-            />
-          </ClientOnly>
-        </Flex>
-        {onFilterChange ? (
-          <Flex
-            css={{
-              position: 'absolute',
-              top: spacing.l,
-              right: spacing.l,
-              width: '240px'
-            }}
-          >
-            <TextInput
-              label='Search in playlist...'
-              placeholder={messages.filter}
-              startIcon={IconSearch}
-              onChange={handleFilterChange}
-              value={filterText}
-              size={TextInputSize.SMALL}
-              className={styles.searchInput}
-            />
-          </Flex>
-        ) : null}
-      </Flex>
-
-      {/* Description section */}
-      <Flex
-        gap='xl'
-        direction='column'
-        p='xl'
-        backgroundColor='surface1'
-        borderTop='strong'
-        borderBottom='strong'
-      >
-        {isPremiumAlbumsEnabled && isStreamGated && streamConditions ? (
-          <GatedContentSection
-            isLoading={isLoading}
-            contentId={collectionId}
-            contentType={PurchaseableContentType.ALBUM}
-            streamConditions={streamConditions}
-            hasStreamAccess={hasStreamAccess}
-            isOwner={ownerId === currentUserId}
-            ownerId={ownerId}
-          />
-        ) : null}
-
-        <Flex className={cn(fadeIn)} gap='l' direction='column'>
-          {description ? (
-            <UserGeneratedText
-              size='xs'
-              className={cn(fadeIn)}
-              linkSource='collection page'
-              css={{ textAlign: 'left' }}
-            >
-              {description}
-            </UserGeneratedText>
-          ) : null}
-          <Flex>
+  const topSection = (
+    <Flex gap='xl' p='l' backgroundColor='white'>
+      {coverArtSizes ? (
+        <Artwork
+          collectionId={collectionId}
+          coverArtSizes={coverArtSizes}
+          callback={handleLoadArtwork}
+          gradient={gradient}
+          icon={icon}
+          imageOverride={imageOverride}
+          isOwner={isOwner}
+        />
+      ) : null}
+      <Flex direction='column' justifyContent='space-between'>
+        <Flex direction='column' gap='xl'>
+          <Flex className={cn(fadeIn)} gap='s' mt='s'>
+            {!isPublished ? <IconVisibilityHidden /> : null}
+            {isPremium ? <IconCart size='s' color='subdued' /> : null}
             <Text
-              variant='body'
-              size='s'
-              strength='strong'
-              textAlign='left'
-              color='default'
+              variant='label'
+              color='subdued'
+              css={{ letterSpacing: '2px' }}
             >
-              {renderAlbumDetailsText()}
+              {isPremium ? messages.premiumLabel : ''}
+              {type === 'playlist' && !isPublished
+                ? messages.hiddenPlaylistLabel
+                : type}
             </Text>
           </Flex>
+          <Flex direction='column' gap='s'>
+            <Flex
+              as={isOwner ? 'button' : 'span'}
+              css={{ background: 0, border: 0, padding: 0, margin: 0 }}
+              gap='s'
+              alignItems='center'
+              className={cn(styles.title, {
+                [styles.editableTitle]: isOwner
+              })}
+              onClick={isOwner ? handleClickEditTitle : undefined}
+            >
+              <Text
+                variant='heading'
+                size='xl'
+                className={cn(styles.titleHeader, fadeIn)}
+              >
+                {title}
+              </Text>
+              <ClientOnly>
+                {isOwner ? (
+                  <IconPencil className={styles.editIcon} color='subdued' />
+                ) : null}
+              </ClientOnly>
+              {isLoading ? (
+                <Skeleton css={{ position: 'absolute', top: 0 }} />
+              ) : null}
+            </Flex>
+            {artistName ? (
+              <Text
+                variant='title'
+                strength='weak'
+                tag='h2'
+                className={cn(fadeIn)}
+                textAlign='left'
+              >
+                <Text color='subdued'>{messages.by}</Text>
+                {userId !== null ? (
+                  <UserLink userId={userId} popover variant='visible' />
+                ) : null}
+              </Text>
+            ) : null}
+          </Flex>
+          {isLoading ? (
+            <Skeleton css={{ position: 'absolute', top: 0 }} width='60%' />
+          ) : null}
+          <div>{renderStatsRow(isLoading)}</div>
         </Flex>
+        <ClientOnly>
+          <CollectionActionButtons
+            variant={variant}
+            userId={userId}
+            collectionId={collectionId}
+            isPlayable={isPlayable}
+            isPlaying={playing}
+            isPremium={isPremium}
+            isOwner={isOwner}
+            tracksLoading={tracksLoading}
+            onPlay={onPlay}
+          />
+        </ClientOnly>
       </Flex>
+      {onFilterChange ? (
+        <Flex
+          w='240px'
+          css={{
+            position: 'absolute',
+            top: spacing.l,
+            right: spacing.l
+          }}
+        >
+          <TextInput
+            label={
+              type === 'album' ? messages.filterAlbum : messages.filterPlaylist
+            }
+            placeholder={
+              type === 'album' ? messages.filterAlbum : messages.filterPlaylist
+            }
+            startIcon={IconSearch}
+            onChange={handleFilterChange}
+            value={filterText}
+            size={TextInputSize.SMALL}
+            className={styles.searchInput}
+          />
+        </Flex>
+      ) : null}
+    </Flex>
+  )
+
+  const descriptionSection = (
+    <Flex
+      gap='xl'
+      direction='column'
+      p='xl'
+      backgroundColor='surface1'
+      borderTop='strong'
+      borderBottom='strong'
+    >
+      {isPremiumAlbumsEnabled && isStreamGated && streamConditions ? (
+        <GatedContentSection
+          isLoading={isLoading}
+          contentId={collectionId}
+          contentType={PurchaseableContentType.ALBUM}
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
+          isOwner={ownerId === currentUserId}
+          ownerId={ownerId}
+        />
+      ) : null}
+
+      <Flex className={cn(fadeIn)} gap='l' direction='column'>
+        {description ? (
+          <UserGeneratedText
+            size='xs'
+            className={cn(fadeIn)}
+            linkSource='collection page'
+            css={{ textAlign: 'left' }}
+          >
+            {description}
+          </UserGeneratedText>
+        ) : null}
+        <Box>
+          <Text
+            variant='body'
+            size='s'
+            strength='strong'
+            textAlign='left'
+            color='default'
+          >
+            {renderAlbumDetailsText()}
+          </Text>
+        </Box>
+      </Flex>
+    </Flex>
+  )
+  return (
+    <Flex direction='column'>
+      {topSection}
+      {descriptionSection}
     </Flex>
   )
 }
