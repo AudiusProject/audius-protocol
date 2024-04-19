@@ -1,5 +1,3 @@
-import BN from 'bn.js'
-import { ButtonType } from 'components/Button'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
@@ -12,7 +10,9 @@ import {
   TokenAmountInput,
   useTheme
 } from '@audius/harmony'
-import Button from 'components/Button'
+import BN from 'bn.js'
+
+import Button, { ButtonType } from 'components/Button'
 import DisplayAudio from 'components/DisplayAudio'
 import ErrorModal from 'components/ErrorModal'
 import {
@@ -23,6 +23,7 @@ import {
 import Loading from 'components/Loading'
 import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
 import Modal from 'components/Modal'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import AudiusClient from 'services/Audius'
 import {
   useAccountUser,
@@ -38,8 +39,8 @@ import { formatWeiNumber } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import { sharedMessages } from 'utils/sharedMessages'
+
 import styles from './UpdateDelegationModal.module.css'
-import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 
 const messages = {
   manageDelegation: 'Manage Delegation',
@@ -121,7 +122,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
   )
 
   useEffect(() => {
-    if (!!error) {
+    if (error) {
       openErrorModal()
     }
   }, [error])
@@ -224,7 +225,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
         onClose={onClose}
         isCloseable={true}
       >
-        <Box mt="xl">
+        <Box mt='xl'>
           <Loading />
         </Box>
       </Modal>
@@ -243,7 +244,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
         dismissOnClickOutside={status !== Status.Loading}
       >
         <div className={styles.content}>
-          <Flex direction="column" gap="l" w="100%">
+          <Flex direction='column' gap='l' w='100%'>
             <SegmentedControl
               options={options}
               selected={selectedOption}
@@ -251,48 +252,48 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
               fullWidth
               disabled={status === Status.Loading}
             />
-            <Flex justifyContent="space-between" w="100%">
-              <Flex gap="s" direction="column">
-                <Flex inline gap="xs" alignItems="center">
+            <Flex justifyContent='space-between' w='100%'>
+              <Flex gap='s' direction='column'>
+                <Flex inline gap='xs' alignItems='center'>
                   <Text
-                    variant="body"
-                    size="m"
-                    strength="strong"
-                    color="subdued"
+                    variant='body'
+                    size='m'
+                    strength='strong'
+                    color='subdued'
                   >
                     {messages.nodeOperator}
                   </Text>
-                  <NodeOperatorInfoTooltip color="subdued" />
+                  <NodeOperatorInfoTooltip color='subdued' />
                 </Flex>
                 <DelegateInfo clickable={false} wallet={wallet} />
               </Flex>
-              <Flex gap="s" direction="column" alignItems="flex-end">
-                <Flex inline gap="xs" alignItems="center">
-                  <Text variant="body" size="m" strength="strong">
+              <Flex gap='s' direction='column' alignItems='flex-end'>
+                <Flex inline gap='xs' alignItems='center'>
+                  <Text variant='body' size='m' strength='strong'>
                     {messages.operatorFee}
                   </Text>
-                  <NodeServiceFeeInfoTooltip color="subdued" />
+                  <NodeServiceFeeInfoTooltip color='subdued' />
                 </Flex>
-                <Text variant="heading" size="s">
+                <Text variant='heading' size='s'>
                   {deployerCut}%
                 </Text>
               </Flex>
             </Flex>
             <Divider css={{ borderColor: color.neutral.n100 }} />
             {actionDisabledText ? (
-              <Flex justifyContent="center">
+              <Flex justifyContent='center'>
                 <Text
-                  variant="body"
-                  size="l"
-                  strength="strong"
-                  textAlign="center"
+                  variant='body'
+                  size='l'
+                  strength='strong'
+                  textAlign='center'
                 >
                   {actionDisabledText}
                 </Text>
               </Flex>
             ) : (
               <>
-                <Flex gap="l" alignItems="center">
+                <Flex gap='l' alignItems='center'>
                   <TokenAmountInput
                     label={
                       selectedOption === 'increase'
@@ -306,7 +307,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                     value={inputValue}
                     error={hasError}
                     disabled={isDisabled || status === Status.Loading}
-                    onChange={stringValue => {
+                    onChange={(stringValue) => {
                       if (checkWeiNumber(stringValue)) {
                         setInputNumberValue(parseWeiNumber(stringValue)!)
                       }
@@ -336,38 +337,38 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
                     type={ButtonType.PRIMARY_ALT}
                   />
                 </Flex>
-                <Flex direction="column" gap="xs" alignSelf="center" p="l">
-                  <Flex gap="s">
-                    <Text variant="heading" size="s">
+                <Flex direction='column' gap='xs' alignSelf='center' p='l'>
+                  <Flex gap='s'>
+                    <Text variant='heading' size='s'>
                       <DisplayAudio amount={newDelegationAmount} />
                     </Text>
 
                     <Text
-                      variant="heading"
-                      size="s"
-                      color="subdued"
+                      variant='heading'
+                      size='s'
+                      color='subdued'
                       css={{ textDecoration: 'line-through' }}
                     >
                       <DisplayAudio amount={delegates} />
                     </Text>
                   </Flex>
                   <Box>
-                    <Flex inline gap="xs" alignItems="center">
+                    <Flex inline gap='xs' alignItems='center'>
                       <Text
-                        variant="body"
-                        size="m"
-                        strength="strong"
-                        color="subdued"
+                        variant='body'
+                        size='m'
+                        strength='strong'
+                        color='subdued'
                       >
                         {messages.newStakingAmount}
                       </Text>
-                      <DelegatedAudioInfoTooltip color="subdued" />
+                      <DelegatedAudioInfoTooltip color='subdued' />
                     </Flex>
                   </Box>
                 </Flex>
-                <Flex direction="column" gap="l" alignItems="center">
+                <Flex direction='column' gap='l' alignItems='center'>
                   {status === Status.Loading && isIncrease ? (
-                    <Text variant="heading" size="s" color="warning">
+                    <Text variant='heading' size='s' color='warning'>
                       {sharedMessages.twoPopupsWarning}
                     </Text>
                   ) : null}
@@ -414,7 +415,7 @@ export const ManageDelegation = ({
       <BasicTooltip
         position={Position.TOP}
         text={disabledReason}
-        isDisabled={!Boolean(disabledReason)}
+        isDisabled={!disabledReason}
       >
         <Button
           type={ButtonType.PRIMARY}

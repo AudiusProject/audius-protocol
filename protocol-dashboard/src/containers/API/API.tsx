@@ -2,11 +2,11 @@ import React from 'react'
 
 import Page from 'components/Page'
 import RewardsCTABanner from 'components/RewardsCTABanner'
-import useOpenLink from 'hooks/useOpenLink'
-import { AUDIUS_API_URL } from 'utils/routes'
 import TopAPIAppsChart from 'components/TopAPIAppsChart'
-
+import useOpenLink from 'hooks/useOpenLink'
 import { createStyles } from 'utils/mobile'
+import { AUDIUS_API_URL } from 'utils/routes'
+
 import desktopStyles from './API.module.css'
 import mobileStyles from './APIMobile.module.css'
 

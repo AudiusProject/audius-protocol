@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { AnyAction } from '@reduxjs/toolkit'
-import { Action } from 'redux'
-import BN from 'bn.js'
 
-import { Status, Address } from 'types'
+import { AnyAction } from '@reduxjs/toolkit'
+import BN from 'bn.js'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
 import Audius from 'services/Audius'
-import { AppState } from 'store/types'
 import { getAccountWallet, fetchPendingTransactions } from 'store/account/hooks'
+import { AppState } from 'store/types'
+import { Status, Address } from 'types'
 
 export function undelegateAudiusStake(
   address: Address,

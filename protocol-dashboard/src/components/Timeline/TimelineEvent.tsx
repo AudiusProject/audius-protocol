@@ -1,19 +1,11 @@
-import clsx from 'clsx'
 import React, { ReactNode, useCallback } from 'react'
+
+import clsx from 'clsx'
 import { useSelector } from 'react-redux'
 
+import DisplayAudio from 'components/DisplayAudio'
 import Proposal from 'components/Proposal'
 import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
-import { useProposal } from 'store/cache/proposals/hooks'
-import { useBlock } from 'store/cache/protocol/hooks'
-import { getUser } from 'store/cache/user/hooks'
-import { Address } from 'types'
-import { TICKER } from 'utils/consts'
-import { usePushRoute } from 'utils/effects'
-import { formatShortWallet, getDate } from 'utils/format'
-import { accountPage } from 'utils/routes'
-
-import DisplayAudio from 'components/DisplayAudio'
 import {
   ClaimProcessedEvent,
   DelegateClaimEvent,
@@ -28,7 +20,16 @@ import {
   ServiceProviderRegisteredEvent,
   TimelineEvent as TimelineEventType
 } from 'models/TimelineEvents'
+import { useProposal } from 'store/cache/proposals/hooks'
+import { useBlock } from 'store/cache/protocol/hooks'
+import { getUser } from 'store/cache/user/hooks'
+import { Address } from 'types'
+import { TICKER } from 'utils/consts'
+import { usePushRoute } from 'utils/effects'
+import { formatShortWallet, getDate } from 'utils/format'
 import { createStyles } from 'utils/mobile'
+import { accountPage } from 'utils/routes'
+
 import desktopStyles from './TimelineEvent.module.css'
 import mobileStyles from './TimelineEventMobile.module.css'
 const styles = createStyles({ desktopStyles, mobileStyles })
@@ -37,7 +38,7 @@ const DisplayUser = ({ wallet }: { wallet: Address }) => {
   const user = useSelector(getUser(wallet))
   const pushRoute = usePushRoute()
   const onClick = useCallback(
-    e => {
+    (e) => {
       e.preventDefault()
       e.stopPropagation()
       pushRoute(accountPage(wallet))

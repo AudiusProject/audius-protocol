@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+
 import { Address, BlockNumber } from 'types'
 
 export type UndelegateStakeResponse = {

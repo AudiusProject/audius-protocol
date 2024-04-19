@@ -1,6 +1,7 @@
+import React, { useState } from 'react'
+
 import { APICallsInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
 import LineChart from 'components/LineChart'
-import React, { useState } from 'react'
 import { useApiCalls, useTrailingApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { datesToSkip } from 'utils/consts'
@@ -16,9 +17,7 @@ const TotalApiCallsChart: React.FC = () => {
   const { apiCalls: trailingApiCalls } = useTrailingApiCalls(
     bucket === Bucket.ALL_TIME ? Bucket.MONTH : bucket
   )
-  let topNumberError: boolean, topNumber: number
   if (trailingApiCalls === MetricError.ERROR) {
-    topNumberError = true
     topNumber = null
   } else {
     topNumber = trailingApiCalls?.total_count ?? null
@@ -32,16 +31,16 @@ const TotalApiCallsChart: React.FC = () => {
   } else {
     labels =
       apiCalls
-        ?.filter(a => !datesToSkip.has(a.timestamp))
-        ?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
+        ?.filter((a) => !datesToSkip.has(a.timestamp))
+        ?.map((a) => new Date(a.timestamp).getTime() / 1000) ?? null
     data =
       apiCalls
-        ?.filter(a => !datesToSkip.has(a.timestamp))
-        ?.map(a => a.total_count) ?? null
+        ?.filter((a) => !datesToSkip.has(a.timestamp))
+        ?.map((a) => a.total_count) ?? null
 
     if (bucket === Bucket.ALL_TIME) {
       topNumber = apiCalls
-        ?.filter(a => !datesToSkip.has(a.timestamp))
+        ?.filter((a) => !datesToSkip.has(a.timestamp))
         ?.reduce((acc, point) => {
           return acc + point.total_count
         }, 0)
@@ -52,8 +51,8 @@ const TotalApiCallsChart: React.FC = () => {
     <LineChart
       topNumber={topNumber}
       size={isMobile ? 'default' : 'large'}
-      title="API Calls"
-      tooltipTitle="Calls"
+      title='API Calls'
+      tooltipTitle='Calls'
       titleTooltipComponent={APICallsInfoTooltip}
       error={error}
       data={data}

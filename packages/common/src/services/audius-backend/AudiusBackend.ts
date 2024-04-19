@@ -1719,11 +1719,17 @@ export const audiusBackend = ({
   async function associateTwitterAccount(
     twitterId: string,
     userId: ID,
-    handle: string
+    handle: string,
+    blockNumber: number
   ) {
     await waitForLibsInit()
     try {
-      await audiusLibs.Account.associateTwitterUser(twitterId, userId, handle)
+      await audiusLibs.Account.associateTwitterUser(
+        twitterId,
+        userId,
+        handle,
+        blockNumber
+      )
       return { success: true }
     } catch (error) {
       console.error(getErrorMessage(error))
@@ -1734,14 +1740,16 @@ export const audiusBackend = ({
   async function associateInstagramAccount(
     instagramId: string,
     userId: ID,
-    handle: string
+    handle: string,
+    blockNumber: number
   ) {
     await waitForLibsInit()
     try {
       await audiusLibs.Account.associateInstagramUser(
         instagramId,
         userId,
-        handle
+        handle,
+        blockNumber
       )
       return { success: true }
     } catch (error) {
@@ -1753,11 +1761,17 @@ export const audiusBackend = ({
   async function associateTikTokAccount(
     tikTokId: string,
     userId: ID,
-    handle: string
+    handle: string,
+    blockNumber: number
   ) {
     await waitForLibsInit()
     try {
-      await audiusLibs.Account.associateTikTokUser(tikTokId, userId, handle)
+      await audiusLibs.Account.associateTikTokUser(
+        tikTokId,
+        userId,
+        handle,
+        blockNumber
+      )
       return { success: true }
     } catch (error) {
       console.error(getErrorMessage(error))

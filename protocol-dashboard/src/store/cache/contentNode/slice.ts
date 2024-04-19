@@ -31,7 +31,7 @@ const slice = createSlice({
   name: 'contentNode',
   initialState,
   reducers: {
-    setLoading: state => {
+    setLoading: (state) => {
       state.status = Status.Loading
     },
     setNodes: (state, action: PayloadAction<SetNodesPayload>) => {

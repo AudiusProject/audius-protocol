@@ -1,9 +1,20 @@
+import { useEffect } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 
 import Audius from 'services/Audius'
+import {
+  useTotalStaked,
+  useDispatchBasedOnBlockNumber,
+  useTimeRemaining,
+  useEthBlockNumber
+} from 'store/cache/protocol/hooks'
 import { AppState } from 'store/types'
+import { Proposal, ProposalEvent, Outcome } from 'types'
+
 import {
   setActiveProposals,
   setAllProposals,
@@ -11,15 +22,6 @@ import {
   setProposal,
   setVotingPeriod
 } from './slice'
-import { useEffect } from 'react'
-import { Proposal, ProposalEvent, Outcome } from 'types'
-import {
-  useTotalStaked,
-  useDispatchBasedOnBlockNumber,
-  useTimeRemaining,
-  useEthBlockNumber
-} from 'store/cache/protocol/hooks'
-import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getActiveProposals = (state: AppState) =>
@@ -29,7 +31,7 @@ export const getAllProposals = (state: AppState) =>
 export const getResolvedProposals = (state: AppState) => {
   const allProposals = getAllProposals(state)
   return (
-    state.cache.proposals.resolvedProposals?.map(p => allProposals[p]) ?? null
+    state.cache.proposals.resolvedProposals?.map((p) => allProposals[p]) ?? null
   )
 }
 export const getRecentProposals = (state: AppState) => {
@@ -68,16 +70,14 @@ export function fetchActiveProposals(): ThunkAction<
 > {
   return async (dispatch, getState, aud) => {
     let proposalIds = await aud.Governance.getInProgressProposalIds()
-    proposalIds = proposalIds.filter(p => !filteredProposals.has(p))
+    proposalIds = proposalIds.filter((p) => !filteredProposals.has(p))
     const proposals = (
       await Promise.all(
-        proposalIds.map(async id => {
+        proposalIds.map(async (id) => {
           const proposal = await aud.Governance.getProposalById(id)
           const quorum = await aud.Governance.getProposalQuorum(id)
-          const {
-            name,
-            description
-          } = await aud.Governance.getProposalSubmissionById(id)
+          const { name, description } =
+            await aud.Governance.getProposalSubmissionById(id)
           proposal.name = name
           proposal.description = description
           proposal.quorum = quorum
@@ -110,9 +110,8 @@ export function fetchAllProposals(): ThunkAction<
         proposal.name = name
         proposal.quorum = quorum
         if (proposal.outcome !== Outcome.InProgress) {
-          const evaluationBlockNumber = await aud.Governance.getProposalEvaluationBlock(
-            proposalId
-          )
+          const evaluationBlockNumber =
+            await aud.Governance.getProposalEvaluationBlock(proposalId)
           proposal.evaluatedBlock = evaluationBlockNumber
         }
         return proposal
@@ -131,17 +130,14 @@ export function fetchProposal(
   return async (dispatch, getState, aud) => {
     const proposal = await aud.Governance.getProposalById(proposalId)
     const quorum = await aud.Governance.getProposalQuorum(proposalId)
-    const {
-      name,
-      description
-    } = await aud.Governance.getProposalSubmissionById(proposalId)
+    const { name, description } =
+      await aud.Governance.getProposalSubmissionById(proposalId)
     proposal.name = name
     proposal.description = description
     proposal.quorum = quorum
     if (proposal.outcome !== Outcome.InProgress) {
-      const evaluationBlockNumber = await aud.Governance.getProposalEvaluationBlock(
-        proposalId
-      )
+      const evaluationBlockNumber =
+        await aud.Governance.getProposalEvaluationBlock(proposalId)
       proposal.evaluatedBlock = evaluationBlockNumber
     }
 
@@ -200,7 +196,7 @@ export const useProposals = () => {
 }
 
 export const useProposal = (proposalId: number) => {
-  const proposal = useSelector(state =>
+  const proposal = useSelector((state) =>
     getProposal(state as AppState, { proposalId })
   )
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()

@@ -118,7 +118,6 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             f"Programming error while indexing {params.action} Developer App Transaction, user wallet missing"
         )
     validate_signer(params)
-    # TODO (C-4041) - Make sure address is not already a user
     if params.action == Action.DELETE:
         if not address:
             raise IndexingValidationError(
@@ -172,6 +171,10 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         if address in params.existing_records["DeveloperApp"]:
             raise IndexingValidationError(
                 f"Invalid Create Developer App Transaction, address {address} already exists"
+            )
+        if address in params.existing_records["UserWallet"]:
+            raise IndexingValidationError(
+                "Invalid Create Developer App Transaction, address cannot be a user's wallet"
             )
         if metadata["is_personal_access"] != None and not isinstance(
             metadata["is_personal_access"], bool
