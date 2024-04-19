@@ -31,13 +31,7 @@ import {
 export const tablePageSize = 50
 
 const messages = {
-  filterInputPlacehoder: 'Search Tracks',
   allReleases: 'All Releases',
-  public: 'Public',
-  premium: 'Premium',
-  specialAcess: 'SpecialAccess',
-  gated: 'Gated',
-  hidden: 'Hidden',
   tracks: 'Tracks',
   albums: 'Albums',
   search: (type: Pills) =>
@@ -60,6 +54,14 @@ export const ArtistContentSection = () => {
     useState<Nullable<AlbumFilters>>(null)
   const isTracks = selectedPill === Pills.TRACKS
 
+  const onClickRow = useCallback(
+    (record: any) => {
+      if (!account) return
+      goToRoute(record.permalink)
+    },
+    [account, goToRoute]
+  )
+
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     setFilterText(val)
@@ -72,14 +74,6 @@ export const ArtistContentSection = () => {
       setSelectedAlbumFilter(value as AlbumFilters)
     }
   }
-
-  const onClickRow = useCallback(
-    (record: any) => {
-      if (!account) return
-      goToRoute(record.permalink)
-    },
-    [account, goToRoute]
-  )
 
   const onClickPill = useCallback(
     (pill: Pills) => {

@@ -1,10 +1,6 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import {
-  isContentUSDCPurchaseGated,
-  User,
-  Collection
-} from '@audius/common/models'
+import { isContentUSDCPurchaseGated, Collection } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -13,10 +9,9 @@ import {
   IconCart,
   Paper
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { makeGetDashboard } from '../store/selectors'
 
@@ -26,15 +21,9 @@ const { getAccountAlbums } = accountSelectors
 export const tablePageSize = 50
 
 const messages = {
-  filterInputPlacehoder: 'Search Tracks',
-  allReleases: 'All Releases',
   public: 'Public',
   premium: 'Premium',
-  specialAcess: 'SpecialAccess',
-  gated: 'Gated',
-  hidden: 'Hidden',
-  tracks: 'Tracks',
-  albums: 'Albums'
+  hidden: 'Hidden'
 }
 
 const albumTableColumns: TracksTableColumn[] = [

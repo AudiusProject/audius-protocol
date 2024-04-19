@@ -1,9 +1,8 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   isContentUSDCPurchaseGated,
   Track,
-  User,
   Status,
   isContentFollowGated,
   isContentCollectibleGated
@@ -19,7 +18,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
 import { fetchTracks } from '../store/slice'
@@ -28,14 +26,11 @@ import { fetchTracks } from '../store/slice'
 export const tablePageSize = 50
 
 const messages = {
-  filterInputPlacehoder: 'Search Tracks',
-  allReleases: 'All Releases',
   public: 'Public',
   premium: 'Premium',
   specialAcess: 'SpecialAccess',
   gated: 'Gated',
-  hidden: 'Hidden',
-  tracks: 'Tracks'
+  hidden: 'Hidden'
 }
 
 const tracksTableColumns: TracksTableColumn[] = [
