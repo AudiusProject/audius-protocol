@@ -36,6 +36,7 @@ type TrackListItemProps = {
   artistHandle: string
   track?: EnhancedCollectionTrack
   forceSkeleton?: boolean
+  isLastTrack?: boolean
 }
 
 const TrackListItem = ({
@@ -49,6 +50,7 @@ const TrackListItem = ({
   togglePlay,
   isLoading,
   isAlbum,
+  isLastTrack,
   forceSkeleton = false
 }: TrackListItemProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
@@ -137,7 +139,8 @@ const TrackListItem = ({
         [styles.deleted]: deleted,
         [styles.active]: active,
         [styles.disabled]: disableActions || deleted,
-        [styles.noBorder]: isLoading
+        [styles.noBorder]: isLoading,
+        [styles.lastTrack]: isLastTrack
       })}
       onClick={onPlayTrack}
     >

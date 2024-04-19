@@ -465,6 +465,7 @@ const ConnectedPlaylistTile = ({
           togglePlay={togglePlay}
           goToRoute={goToRoute}
           artistHandle={handle}
+          isLastTrack={i === tracks.length - 1}
         />
       </Draggable>
     ))
