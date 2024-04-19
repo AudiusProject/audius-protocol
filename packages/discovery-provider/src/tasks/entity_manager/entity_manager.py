@@ -520,11 +520,16 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
                 else:
                     try:
-                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            get_address_from_signature(
-                                json_metadata.get("app_signature", {})
-                            )
+                        address_from_signature = get_address_from_signature(
+                            json_metadata.get("app_signature", {})
                         )
+                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                            address_from_signature
+                        )
+                        if action == Action.CREATE:
+                            entities_to_fetch[EntityType.USER_WALLET].add(
+                                address_from_signature
+                            )
                     except:
                         logger.error(
                             "tasks | entity_manager.py | Missing address or valid app signature in metadata required for add developer app tx"
