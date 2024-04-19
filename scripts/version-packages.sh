@@ -3,8 +3,11 @@
 
 set -e
 
+echo "Installing root packages..."
+npm i --workspaces=false
+
 echo "Updating package versions..."
-npm run changeset version
+npx changeset version
 
 # Update package-lock.json
 echo "Updating package-lock.json..."

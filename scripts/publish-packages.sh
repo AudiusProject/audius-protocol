@@ -3,10 +3,13 @@
 
 set -e
 
+echo "Installing packages..."
 npm i
 
+echo "Installing playwrigth..."
 npx playwright install
 
+echo "Running build, lint, typecheck, and test..."
 # Ensure that all public packages are in this list,
 # otherwise they won't get built/linted/tested before being published
 npx turbo run build lint typecheck test \
@@ -16,4 +19,5 @@ npx turbo run build lint typecheck test \
     --filter=@audius/sdk \
     --filter=@audius/spl \
 
-npm run changeset publish  
+echo "Publishing packages..."
+npx changeset publish  
