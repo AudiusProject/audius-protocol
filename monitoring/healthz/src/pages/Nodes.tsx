@@ -194,7 +194,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
     health.chain_health?.entries['node-health'].description
 
   const StorageProgressBar = ({ progress }: { progress: number }) => {
-    const progressPercent = (progress / Math.max(progress, MAX_STORAGE_SIZE)) * 100
+    const progressPercent = (progress / Math.max(progress, totalMediorumSize)) * 100
 
     return (
       <div className="min-w-[200px] relative">
