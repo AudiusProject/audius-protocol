@@ -3,7 +3,7 @@
 
 set -e
 
-echo "Installing playwrigth..."
+echo "Installing playwright..."
 npx playwright install
 
 echo "Running build, lint, typecheck, and test..."
