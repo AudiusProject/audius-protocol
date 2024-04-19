@@ -5,6 +5,7 @@ import {
   UserCollectionMetadata
 } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
+import { Flex } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -81,7 +82,15 @@ export const CollectionsTable = ({
     const deleted = collection.is_delete || !!collection.user?.is_deactivated
 
     return (
-      <div className={styles.textContainer} css={{ overflow: 'hidden' }}>
+      <Flex
+        gap='xs'
+        css={{
+          overflow: 'hidden',
+          position: 'relative',
+          display: 'inline-flex',
+          'max-width': '100%'
+        }}
+      >
         <TextLink
           tag={deleted ? 'span' : undefined}
           to={deleted ? '' : collection.permalink ?? ''}
@@ -94,7 +103,7 @@ export const CollectionsTable = ({
           {collection.playlist_name}
           {deleted ? ` [Deleted By Artist]` : ''}
         </TextLink>
-      </div>
+      </Flex>
     )
   }, [])
 
