@@ -1,6 +1,3 @@
-import type { AudiusLibs } from '@audius/sdk'
-import type Logger from 'bunyan'
-
 /** How long to attempt to retry for (roughly) */
 const RETRY_TIMEOUT_MS = 45 * 1000
 /** How long to wait between retries */
@@ -12,22 +9,12 @@ export const waitForUser = async ({
   blockNumber: blocknumber,
   audiusLibsInstance,
   logger
-}: {
-  userId: number
-  handle: string
-  blockNumber: number
-  audiusLibsInstance: AudiusLibs
-  logger: Logger
 }) => {
   let retryCount = 0
   while (retryCount < RETRY_TIMEOUT_MS / RETRY_DELAY_MS) {
     try {
       logger.info({ userId, handle, blocknumber }, 'req')
-      const u = await audiusLibsInstance.discoveryProvider!._makeRequest<
-        {
-          handle: string
-        }[]
-      >(
+      const u = await audiusLibsInstance.discoveryProvider._makeRequest(
         {
           endpoint: 'users',
           queryParams: { id: userId }
