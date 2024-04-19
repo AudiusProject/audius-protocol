@@ -6,13 +6,7 @@ import {
   collectionsSocialActions,
   CommonState
 } from '@audius/common/store'
-import {
-  ButtonProps,
-  IconRepost,
-  Button,
-  IconButton,
-  IconButtonProps
-} from '@audius/harmony'
+import { IconRepost, IconButton, IconButtonProps } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'

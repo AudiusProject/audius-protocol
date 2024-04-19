@@ -6,19 +6,16 @@ import {
   AccessPermissions,
   CoverArtSizes,
   ID,
-  ImageSizesObject,
-  SquareSizes,
   Variant,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  CollectionPageTrackRecord,
   CollectionsPageType,
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { formatSecondsAsText, formatDate, Nullable } from '@audius/common/utils'
+import { formatSecondsAsText, formatDate } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -29,14 +26,12 @@ import {
   IconSearch,
   IconCart,
   useTheme,
-  TextLink,
   IconComponent
 } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
 import { UserLink } from 'components/link'
-import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
@@ -46,12 +41,12 @@ import { useSsrContext } from 'ssr/SsrContext'
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
 import styles from './CollectionHeader.module.css'
+import { RepostFavoritesStats } from './RepostsFavoritesStats'
 
 const messages = {
-  filter: 'Filter Tracks'
+  filter: 'Search in playlist...'
 }
 
-// TODO: move all props to leaves
 type CollectionHeaderProps = {
   isStreamGated: boolean | null
   isPlayable: boolean
@@ -182,8 +177,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const renderAlbumDetailsText = () => {
     const releaseAndUpdatedText = lastModifiedDate
       ? `Released ${formatDate(`${releaseDate}`)}, Updated ${formatDate(
-        `${lastModifiedDate}`
-      )}`
+          `${lastModifiedDate}`
+        )}`
       : `Released ${formatDate(`${releaseDate}`)}`
 
     const trackCountText = `${numTracks} tracks`
@@ -232,7 +227,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: spacing.s,
-                  padding: 0,
+                  padding: 0
                 }}
                 onClick={isOwner ? handleClickEditTitle : undefined}
               >
@@ -302,6 +297,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               onChange={handleFilterChange}
               value={filterText}
               size={TextInputSize.SMALL}
+              className={styles.searchInput}
             />
           </Flex>
         ) : null}
@@ -325,7 +321,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             hasStreamAccess={hasStreamAccess}
             isOwner={ownerId === currentUserId}
             ownerId={ownerId}
-            css={{ margin: 0 }}
           />
         ) : null}
 

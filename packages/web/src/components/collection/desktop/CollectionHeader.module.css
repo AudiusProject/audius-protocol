@@ -75,3 +75,9 @@
 .coverArtWrapper:hover .imageEditButtonWrapper {
   opacity: 1;
 }
+
+.searchInput {
+  & label {
+    background: none;
+  }
+}

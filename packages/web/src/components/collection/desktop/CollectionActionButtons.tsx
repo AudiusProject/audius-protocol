@@ -1,3 +1,5 @@
+import { MouseEventHandler } from 'react'
+
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
@@ -8,7 +10,6 @@ import { OwnerActionButtons } from './OwnerActionButtons'
 import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
-import { MouseEventHandler } from 'react'
 
 const messages = {
   actionGroupLabel: 'collection actions',
@@ -80,8 +81,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
           {isPlaying
             ? messages.pause
             : isPremium
-              ? messages.preview
-              : messages.play}
+            ? messages.preview
+            : messages.play}
         </Button>
       )}
       {actionButtons}

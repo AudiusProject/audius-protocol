@@ -54,11 +54,11 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
 
   const extraMenuItems = !isOwner
     ? [
-      {
-        text: isFollowing ? messages.unfollow : messages.follow,
-        onClick: handleFollow
-      }
-    ]
+        {
+          text: isFollowing ? messages.unfollow : messages.follow,
+          onClick: handleFollow
+        }
+      ]
     : []
 
   const overflowMenu = {

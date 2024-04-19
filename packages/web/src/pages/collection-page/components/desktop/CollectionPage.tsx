@@ -265,14 +265,14 @@ const CollectionPage = ({
       isNftPlaylist
         ? ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
         : [
-          'playButton',
-          'trackName',
-          'artistName',
-          isAlbum ? 'date' : 'addedDate',
-          'length',
-          'plays',
-          'overflowActions'
-        ],
+            'playButton',
+            'trackName',
+            'artistName',
+            isAlbum ? 'date' : 'addedDate',
+            'length',
+            'plays',
+            'overflowActions'
+          ],
     [isAlbum, isNftPlaylist]
   )
 
@@ -296,8 +296,8 @@ const CollectionPage = ({
           isPremiumAlbumsEnabled
             ? dogEarType
             : isPrivate
-              ? DogEarType.HIDDEN
-              : undefined
+            ? DogEarType.HIDDEN
+            : undefined
         }
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
@@ -332,8 +332,9 @@ const CollectionPage = ({
                   allowReordering &&
                   (!isAlbum || isEditAlbumsEnabled)
                 }
-                removeText={`${messages.remove} ${isAlbum ? messages.type.album : messages.type.playlist
-                  }`}
+                removeText={`${messages.remove} ${
+                  isAlbum ? messages.type.album : messages.type.playlist
+                }`}
                 isAlbumPage={isAlbum}
               />
             </ClientOnly>

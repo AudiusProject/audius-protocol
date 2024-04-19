@@ -255,13 +255,13 @@ const TrackHeader = ({
       isOwner || !showSocials
         ? null
         : isReposted
-          ? OverflowAction.UNREPOST
-          : OverflowAction.REPOST,
+        ? OverflowAction.UNREPOST
+        : OverflowAction.REPOST,
       isOwner || !showSocials
         ? null
         : isSaved
-          ? OverflowAction.UNFAVORITE
-          : OverflowAction.FAVORITE,
+        ? OverflowAction.UNFAVORITE
+        : OverflowAction.FAVORITE,
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
       !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
@@ -520,7 +520,7 @@ TrackHeader.defaultProps = {
 
   saveCount: 0,
   tags: [],
-  onPlay: () => { }
+  onPlay: () => {}
 }
 
 export default TrackHeader

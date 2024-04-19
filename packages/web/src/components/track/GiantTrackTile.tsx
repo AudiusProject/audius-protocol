@@ -490,10 +490,10 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-      streamConditions,
-      isUnlisted:
-        isUnlisted && (!released || moment(released).isBefore(moment()))
-    })
+        streamConditions,
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
+      })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
