@@ -291,10 +291,6 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
-    # Clear out old celery tasks on app startup
-    # Initialize with beat or initial message
-    celery.control.purge()
-
     # Update celery configuration
     celery.conf.update(
         imports=[
@@ -523,6 +519,10 @@ def configure_celery(celery, test_config=None):
     celery.Task = WrappedDatabaseTask
 
     celery.finalize()
+
+    # Clear out old celery tasks on app startup
+    # Initialize with beat or initial message
+    celery.control.purge()
 
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
