@@ -535,7 +535,8 @@ function* signUp() {
             audiusBackendInstance.associateTwitterAccount,
             signOn.twitterId,
             userId,
-            handle
+            handle,
+            blockNumber
           )
           if (error) {
             reportToSentry({
@@ -550,7 +551,8 @@ function* signUp() {
             audiusBackendInstance.associateInstagramAccount,
             signOn.instagramId,
             userId,
-            handle
+            handle,
+            blockNumber
           )
           if (error) {
             reportToSentry({
@@ -566,7 +568,8 @@ function* signUp() {
             audiusBackendInstance.associateTikTokAccount,
             signOn.tikTokId,
             userId,
-            handle
+            handle,
+            blockNumber
           )
           if (error) {
             reportToSentry({
