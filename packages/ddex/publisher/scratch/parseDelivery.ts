@@ -1,18 +1,14 @@
-import 'dotenv/config'
-
-import decompress from 'decompress'
-import { mkdtemp, readFile, readdir, rm, rmdir, unlink } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { basename, join, resolve } from 'node:path'
 import * as cheerio from 'cheerio'
-import { createSdkService } from '../src/services/sdkService'
-import { UploadTrackRequest, Genre } from '@audius/sdk'
-
-const sdkService = createSdkService()
+import { Genre } from '@audius/sdk'
+import decompress from 'decompress'
+import { mkdtemp, readFile, readdir } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { publishRelease } from './publishRelease'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
-type DDEXRelease = {
+export type DDEXRelease = {
   ref: string
   isrc?: string
   title: string
@@ -20,7 +16,7 @@ type DDEXRelease = {
   artists: string[]
   genre: string
   subGenre: string
-  releaseDate?: string
+  releaseDate: string
   releaseType: string
 
   isMainRelease: boolean
@@ -30,7 +26,7 @@ type DDEXRelease = {
   images: DDEXImage[]
 }
 
-type DDEXSoundRecording = {
+export type DDEXSoundRecording = {
   ref: string
   isrc?: string
   filePath: string
@@ -43,12 +39,12 @@ type DDEXSoundRecording = {
   audiusGenre?: Genre
 }
 
-type DDEXImage = {
+export type DDEXImage = {
   ref: string
   filePath: string
 }
 
-export async function processDDEX(maybeZip: string) {
+export async function parseDelivery(maybeZip: string) {
   if (maybeZip.endsWith('.zip')) {
     const tempDir = await mkdtemp(join(tmpdir(), 'ddex-'))
     await decompress(maybeZip, tempDir)
@@ -66,12 +62,19 @@ async function processDeliveryDir(dir: string) {
     .filter((f) => f.toLowerCase().endsWith('.xml'))
     .map((f) => join(dir, f))
 
+  // actual publish step...
+  // move this to caller
   for (const xmlFile of xmlFiles) {
-    await processXmlFile(xmlFile)
+    const releases = await parseDdexXmlFile(xmlFile)
+    for (const release of releases) {
+      // todo: what to do when no image
+      if (!release.images.length) continue
+      await publishRelease(release)
+    }
   }
 }
 
-async function processXmlFile(ddexXmlLocation: string) {
+export async function parseDdexXmlFile(ddexXmlLocation: string) {
   console.log('processing:', ddexXmlLocation)
   const xmlText = await readFile(ddexXmlLocation, 'utf8')
   const $ = cheerio.load(xmlText, { xmlMode: true })
@@ -91,7 +94,9 @@ async function processXmlFile(ddexXmlLocation: string) {
     )
   }
 
-  // index resources
+  //
+  // parse resources
+  //
 
   const soundResources: Record<string, DDEXSoundRecording> = {}
   const imageResources: Record<string, DDEXImage> = {}
@@ -132,7 +137,9 @@ async function processXmlFile(ddexXmlLocation: string) {
     imageResources[img.ref] = img
   })
 
-  // index releases
+  //
+  // parse releases
+  //
 
   const releases = $('Release')
     .toArray()
@@ -176,41 +183,7 @@ async function processXmlFile(ddexXmlLocation: string) {
       return release
     })
 
-  // all done!
-  console.log(JSON.stringify(releases, undefined, 2))
-
-  // sdk time!
-  const sdk = (await sdkService).getSdk()
-
-  for (const release of releases) {
-    // todo: what to do when no image
-    if (!release.images.length) {
-      continue
-    }
-    const imageFile = await readFileToBuffer(release.images[0].filePath)
-
-    for (const track of release.soundRecordings) {
-      console.log('---------', track.filePath)
-      const trackFile = await readFileToBuffer(track.filePath)
-      const audiusGenre = track.audiusGenre || release.audiusGenre || Genre.ALL
-
-      // todo: actually find actual userId based on who dun oauthed
-      // todo: store some state when no matcho
-      const uploadTrackRequest: UploadTrackRequest = {
-        userId: 'KKa311z',
-        metadata: {
-          genre: audiusGenre,
-          title: track.title
-        },
-        onProgress: (progress: any) => console.log('Progress:', progress),
-        coverArtFile: imageFile,
-        trackFile
-      }
-      console.log(`Uploading by  to Audius...`)
-      const result = await sdk.tracks.uploadTrack(uploadTrackRequest)
-      console.log(result)
-    }
-  }
+  // todo: resolve user ids here?
 
   return releases
 }
@@ -222,7 +195,7 @@ function resolveAudiusGenre(
   // first try subgenre, then genre
   for (let searchTerm of [subgenre, genre]) {
     searchTerm = searchTerm.toLowerCase()
-    for (const [k, v] of Object.entries(Genre)) {
+    for (const v of Object.values(Genre)) {
       if (v.toLowerCase() == searchTerm) {
         return v
       }
@@ -233,49 +206,3 @@ function resolveAudiusGenre(
   // for now just log
   console.warn(`failed to resolve genre: subgenre=${subgenre} genre=${genre}`)
 }
-
-// sdk helpers
-async function readFileToBuffer(filePath: string) {
-  const buffer = await readFile(filePath)
-  const name = basename(filePath)
-  return { buffer, name }
-}
-
-// cleanup
-
-async function cleanup() {
-  let dirs = await readdir(tmpdir(), { recursive: false })
-  const work = dirs
-    .filter((dir) => dir.includes('ddex-'))
-    .map((dir) => {
-      dir = join(tmpdir(), dir)
-      console.log('removing', dir)
-      return rm(dir, { recursive: true })
-    })
-  await Promise.all(work)
-}
-
-// cli
-
-// const arg = process.argv[2]?.trim()
-// switch (arg) {
-//   case 'derp':
-//     console.log(resolveAudiusGenre('Blues', 'dunno'))
-//     break
-//   case '':
-//     console.log('specify path to ddex dir or zip')
-//     break
-//   case 'cleanup':
-//     cleanup()
-//     break
-//   default:
-//     processDDEX(arg)
-// }
-
-/*
-
-npx tsx scratch/zippy.ts ../ingester/e2e_test/fixtures/release_by_release/ern381/sony1.zip
-
-../ingester/e2e_test/fixtures/batch/ern382/1_CPD1.zip
-
-*/

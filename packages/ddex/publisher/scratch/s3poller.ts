@@ -1,5 +1,3 @@
-import 'dotenv/config'
-
 import {
   GetObjectCommand,
   ListObjectsCommand,
@@ -10,7 +8,7 @@ import { mkdir, stat } from 'fs/promises'
 import { dirname, join } from 'path'
 import { createWriteStream } from 'node:fs'
 import { Readable } from 'node:stream'
-import { processDDEX } from './zippy'
+import { parseDelivery } from './parseDelivery'
 
 function dialS3() {
   const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env
@@ -31,34 +29,40 @@ function dialS3() {
   return new S3Client(config)
 }
 
-async function startPollingS3() {
-  const client = dialS3()
+export async function startPoller() {
+  while (true) {
+    console.log('polling s3...')
+    await pollS3()
+    await sleep(5_000)
+  }
+}
 
+export async function pollS3() {
+  const client = dialS3()
+  const bucket = process.env.AWS_BUCKET_RAW
+  if (!bucket) {
+    throw new Error(`process.env.AWS_BUCKET_RAW is required`)
+  }
+
+  // list top level prefixes
   const result = await client.send(
     new ListObjectsCommand({
-      Bucket: process.env.AWS_BUCKET_RAW,
+      Bucket: bucket,
       Delimiter: '/'
     })
   )
-  const topLevelPrefixes = result.CommonPrefixes?.map(
-    (p) => p.Prefix
-  ) as string[]
+  const prefixes = result.CommonPrefixes?.map((p) => p.Prefix) as string[]
 
-  for (const prefix of topLevelPrefixes) {
+  for (const prefix of prefixes) {
     // todo: skip dir if we did it already (track state in the sqlite)
+    const key = join(bucket, prefix)
 
     const localDir = await syncToLocalFs(client, prefix)
     if (localDir) {
       console.log('........ processing', localDir)
-      await processDDEX(localDir)
+      await parseDelivery(localDir)
     }
   }
-
-  // while (true) {
-  //   console.log('polling s3...')
-  //   // client.
-  //   await sleep(5_000)
-  // }
 }
 
 async function syncToLocalFs(client: S3Client, prefix: string) {
@@ -120,5 +124,3 @@ async function fileExists(path: string) {
     return false
   }
 }
-
-startPollingS3()
