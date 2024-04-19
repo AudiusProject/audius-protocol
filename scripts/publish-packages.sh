@@ -3,9 +3,6 @@
 
 set -e
 
-echo "Installing packages..."
-npm i
-
 echo "Installing playwrigth..."
 npx playwright install
 

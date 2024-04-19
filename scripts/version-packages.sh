@@ -3,9 +3,6 @@
 
 set -e
 
-echo "Installing root packages..."
-npm i --workspaces=false
-
 echo "Updating package versions..."
 npx changeset version
 
