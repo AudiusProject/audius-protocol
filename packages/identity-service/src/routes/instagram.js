@@ -111,7 +111,7 @@ module.exports = function (app) {
     '/instagram/associate',
     handleResponse(async (req, res, next) => {
       const { uuid, userId, handle, blockNumber } = req.body
-      req.connection.setTimeout(10 * 1000)
+      req.connection.setTimeout(60 * 1000)
       const audiusLibsInstance = req.app.get('audiusLibs')
       try {
         const instagramObj = await models.InstagramUser.findOne({
