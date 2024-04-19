@@ -4,7 +4,7 @@
 set -e
 
 echo "Updating package versions..."
-npx changeset version
+npm run changeset version
 
 # Update package-lock.json
 echo "Updating package-lock.json..."

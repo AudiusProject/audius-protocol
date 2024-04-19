@@ -16,4 +16,4 @@ npx turbo run build lint typecheck test \
     --filter=@audius/sdk \
     --filter=@audius/spl \
 
-npx changeset publish  
+npm run changeset publish  
