@@ -19,6 +19,7 @@
     "check-secrets": "sh ./scripts/check_secrets.sh",
     "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "clean:dist": "rm -rf packages/*/dist",
+    "install-git-secrets": "sh ./scripts/install-git-secrets.sh",
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
