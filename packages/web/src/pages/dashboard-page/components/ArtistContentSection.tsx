@@ -16,19 +16,15 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { makeGetDashboard } from '../store/selectors'
 
+import { ArtistDashboardAlbumsTab } from './AlbumsTab'
+import { ArtistDashboardTracksTab } from './TracksTab'
 import {
-  AlbumFilters,
-  ArtistDashboardAlbumsTab,
-  useArtistDashboardAlbumFilters
-} from './AlbumsTab'
-import {
-  ArtistDashboardTracksTab,
-  TrackFilters,
-  useArtistDashboardTrackFilters
-} from './TracksTab'
-
-// Pagination Constants
-export const tablePageSize = 50
+  useArtistDashboardAlbumFilters,
+  useArtistDashboardTrackFilters,
+  useFormattedAlbumData,
+  useFormattedTrackData
+} from './hooks'
+import { AlbumFilters, TrackFilters } from './types'
 
 const messages = {
   allReleases: 'All Releases',
@@ -53,6 +49,25 @@ export const ArtistContentSection = () => {
   const [selectedAlbumFilter, setSelectedAlbumFilter] =
     useState<Nullable<AlbumFilters>>(null)
   const isTracks = selectedPill === Pills.TRACKS
+  const tracks = useFormattedTrackData()
+  const albums = useFormattedAlbumData()
+
+  const {
+    filterButtonOptions: filterButtonTrackOptions,
+    hasOnlyOneSection: hasOnlyOneTrackSection
+  } = useArtistDashboardTrackFilters()
+  const {
+    filterButtonOptions: filterButtonAlbumOptions,
+    hasOnlyOneSection: hasOnlyOneAlbumSection
+  } = useArtistDashboardAlbumFilters()
+
+  const filterButtonOptions = isTracks
+    ? filterButtonTrackOptions
+    : filterButtonAlbumOptions
+  const shouldShowFilterButton =
+    (isTracks && !hasOnlyOneTrackSection) ||
+    (!isTracks && !hasOnlyOneAlbumSection)
+  const shouldShowPills = tracks.length && albums.length
 
   const onClickRow = useCallback(
     (record: any) => {
@@ -61,19 +76,6 @@ export const ArtistContentSection = () => {
     },
     [account, goToRoute]
   )
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setFilterText(val)
-  }
-
-  const handleSelectFilter = (value: string) => {
-    if (isTracks) {
-      setSelectedTrackFilter(value as TrackFilters)
-    } else {
-      setSelectedAlbumFilter(value as AlbumFilters)
-    }
-  }
 
   const onClickPill = useCallback(
     (pill: Pills) => {
@@ -90,29 +92,18 @@ export const ArtistContentSection = () => {
     [isTracks]
   )
 
-  const {
-    filterButtonOptions: filterButtonTrackOptions,
-    data: tracks,
-    hasOnlyOneSection: hasOnlyOneTrackSection
-  } = useArtistDashboardTrackFilters({
-    selectedFilter: selectedTrackFilter,
-    filterText
-  })
-  const {
-    filterButtonOptions: filterButtonAlbumOptions,
-    data: albums,
-    hasOnlyOneSection: hasOnlyOneAlbumSection
-  } = useArtistDashboardAlbumFilters({
-    selectedFilter: selectedAlbumFilter,
-    filterText
-  })
-  const filterButtonOptions = isTracks
-    ? filterButtonTrackOptions
-    : filterButtonAlbumOptions
-  const shouldShowFilterButton =
-    (isTracks && !hasOnlyOneTrackSection) ||
-    (!isTracks && !hasOnlyOneAlbumSection)
-  const shouldShowPills = tracks.length && albums.length
+  const handleSelectFilter = (value: string) => {
+    if (isTracks) {
+      setSelectedTrackFilter(value as TrackFilters)
+    } else {
+      setSelectedAlbumFilter(value as AlbumFilters)
+    }
+  }
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setFilterText(val)
+  }
 
   if (!tracks.length && !albums.length) return null
 
