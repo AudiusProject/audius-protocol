@@ -118,24 +118,24 @@ export const isContentCollectibleGated = (
   nft_collection:
     | AccessConditionsEthNFTCollection
     | AccessConditionsSolNFTCollection
-} => 'nft_collection' in (gatedConditions ?? {})
+} => !!gatedConditions && 'nft_collection' in (gatedConditions ?? {})
 
 export const isContentFollowGated = (
   gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is FollowGatedConditions =>
-  'follow_user_id' in (gatedConditions ?? {})
+  !!gatedConditions && 'follow_user_id' in (gatedConditions ?? {})
 
 export const isContentTipGated = (
   gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is TipGatedConditions =>
-  'tip_user_id' in (gatedConditions ?? {})
+  !!gatedConditions && 'tip_user_id' in (gatedConditions ?? {})
 
 export const isContentUSDCPurchaseGated = (
   gatedConditions?: Nullable<
     AccessConditions | DeepOmit<USDCPurchaseConditions, 'splits'>
   > // data coming from upload/edit forms will not have splits on the type
 ): gatedConditions is USDCPurchaseConditions =>
-  'usdc_purchase' in (gatedConditions ?? {})
+  !!gatedConditions && 'usdc_purchase' in (gatedConditions ?? {})
 
 export type AccessSignature = {
   data: string

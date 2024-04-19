@@ -200,14 +200,7 @@ export const DashboardPage = () => {
           <div className={styles.sectionContainer}>
             {renderChart()}
             {renderStats()}
-            {isPremiumAlbumsEnabled ? (
-              <ArtistContentSection
-                tracks={formatMetadata(tracks)}
-                account={account}
-              />
-            ) : (
-              renderTable()
-            )}
+            {isPremiumAlbumsEnabled ? <ArtistContentSection /> : renderTable()}
           </div>
         </>
       )}
