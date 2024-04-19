@@ -338,17 +338,15 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             {description}
           </UserGeneratedText>
         ) : null}
-        <Box>
-          <Text
-            variant='body'
-            size='s'
-            strength='strong'
-            textAlign='left'
-            color='default'
-          >
-            {renderAlbumDetailsText()}
-          </Text>
-        </Box>
+        <Text
+          variant='body'
+          size='s'
+          strength='strong'
+          textAlign='left'
+          color='default'
+        >
+          {renderAlbumDetailsText()}
+        </Text>
       </Flex>
     </Flex>
   )
