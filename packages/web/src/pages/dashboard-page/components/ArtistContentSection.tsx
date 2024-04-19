@@ -18,12 +18,12 @@ import { makeGetDashboard } from '../store/selectors'
 
 import {
   AlbumFilters,
-  AlbumsTab,
+  ArtistDashboardAlbumsTab,
   useArtistDashboardAlbumFilters
 } from './AlbumsTab'
 import {
+  ArtistDashboardTracksTab,
   TrackFilters,
-  TracksTab,
   useArtistDashboardTrackFilters
 } from './TracksTab'
 
@@ -162,13 +162,13 @@ export const ArtistContentSection = () => {
         </Flex>
       </Flex>
       {selectedPill === Pills.TRACKS ? (
-        <TracksTab
+        <ArtistDashboardTracksTab
           selectedFilter={selectedTrackFilter}
           filterText={filterText}
           onClickRow={onClickRow}
         />
       ) : (
-        <AlbumsTab
+        <ArtistDashboardAlbumsTab
           selectedFilter={selectedAlbumFilter}
           filterText={filterText}
           onClickRow={onClickRow}

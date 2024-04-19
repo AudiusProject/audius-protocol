@@ -15,6 +15,8 @@ import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 
 import { makeGetDashboard } from '../store/selectors'
 
+import { showMoreLimit } from './constants'
+
 const { getAccountAlbums } = accountSelectors
 
 // Pagination Constants
@@ -152,17 +154,17 @@ export const useArtistDashboardAlbumFilters = ({
   }
 }
 
-type AlbumsTabProps = {
+type ArtistDashboardAlbumsTabProps = {
   selectedFilter: Nullable<AlbumFilters>
   filterText: string
   onClickRow: (record: any) => void
 }
 
-export const AlbumsTab = ({
+export const ArtistDashboardAlbumsTab = ({
   selectedFilter,
   filterText,
   onClickRow
-}: AlbumsTabProps) => {
+}: ArtistDashboardAlbumsTabProps) => {
   const { account } = useSelector(makeGetDashboard())
   const { filteredData } = useArtistDashboardAlbumFilters({
     selectedFilter,
@@ -180,7 +182,7 @@ export const AlbumsTab = ({
         onClickRow={onClickRow}
         pageSize={tablePageSize}
         userId={account.user_id}
-        showMoreLimit={5}
+        showMoreLimit={showMoreLimit}
         totalRowCount={account.track_count}
       />
     </Paper>

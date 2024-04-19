@@ -22,6 +22,8 @@ import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
 import { fetchTracks } from '../store/slice'
 
+import { showMoreLimit } from './constants'
+
 // Pagination Constants
 export const tablePageSize = 50
 
@@ -216,17 +218,17 @@ export const useArtistDashboardTrackFilters = ({
   }
 }
 
-type TracksTabProps = {
+type ArtistDashboardTracksTabProps = {
   selectedFilter: Nullable<TrackFilters>
   filterText: string
   onClickRow: (record: any) => void
 }
 
-export const TracksTab = ({
+export const ArtistDashboardTracksTab = ({
   selectedFilter,
   filterText,
   onClickRow
-}: TracksTabProps) => {
+}: ArtistDashboardTracksTabProps) => {
   const dispatch = useDispatch()
   const tracksStatus = useSelector(getDashboardTracksStatus)
   const { account } = useSelector(makeGetDashboard())
@@ -256,7 +258,7 @@ export const TracksTab = ({
       fetchPage={handleFetchPage}
       pageSize={tablePageSize}
       userId={account.user_id}
-      showMoreLimit={5}
+      showMoreLimit={showMoreLimit}
       totalRowCount={account.track_count}
       loading={tracksStatus === Status.LOADING}
       isPaginated
