@@ -107,8 +107,6 @@ jobs:
       - run:
           name: Create + push branch
           command: |
-            git checkout main
-
             OLD_VERSION=$(jq -r .version packages/discovery-provider/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
@@ -122,8 +120,17 @@ jobs:
             mv /tmp/.version.json packages/discovery-provider/.version.json
             git add packages/discovery-provider/.version.json
 
+            PROTOCOL_DIRS=$(bash ./scripts/get-release-dirs.sh protocol)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short protocol-v${OLD_VERSION}..HEAD -- ${PROTOCOL_DIRS})
+            MESSAGE="Audius Protocol v${NEW_VERSION}
+
+            ${CHANGELOG}"
+            git commit -m "${MESSAGE}"
+
+            git tag protocol-v${NEW_VERSION}
+            git push origin protocol-v${NEW_VERSION}
+
             # Weird way to push both to main and the new release branch
-            git commit -m "Bump version to $NEW_VERSION"
             git branch "release-v$NEW_VERSION"
             git checkout "release-v$NEW_VERSION"
             git push --set-upstream origin main "release-v$NEW_VERSION"
