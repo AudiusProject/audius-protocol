@@ -13,6 +13,10 @@ const { getUid } = playerSelectors
 // Max number of tracks to display
 const DISPLAY_TRACK_COUNT = 5
 
+const messages = {
+  by: 'by'
+}
+
 type LineupTileTrackListProps = {
   isLoading?: boolean
   onPress: GestureResponderHandler
@@ -102,7 +106,7 @@ const TrackItem = (props: TrackItemProps) => {
                 ]}
                 numberOfLines={1}
               >
-                {`by ${track.user.name}`}
+                {`${messages.by} ${track.user.name}`}
               </Text>
             ) : null}
           </>

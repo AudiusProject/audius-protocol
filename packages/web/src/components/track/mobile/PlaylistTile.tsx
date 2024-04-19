@@ -62,6 +62,10 @@ type TrackItemProps = {
 // Max number of track to display in a playlist
 const DISPLAY_TRACK_COUNT = 5
 
+const messages = {
+  by: 'by'
+}
+
 const TrackItem = (props: TrackItemProps) => {
   const { active, index, isAlbum, track, forceSkeleton } = props
   return (
@@ -79,7 +83,10 @@ const TrackItem = (props: TrackItemProps) => {
             <div className={styles.index}> {index + 1} </div>
             <div className={styles.trackTitle}> {track.title} </div>
             {!isAlbum ? (
-              <div className={styles.byArtist}> {`by ${track.user.name}`} </div>
+              <div className={styles.byArtist}>
+                {' '}
+                {`${messages.by} ${track.user.name}`}{' '}
+              </div>
             ) : null}
           </>
         ) : null}
