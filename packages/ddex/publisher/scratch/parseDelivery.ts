@@ -5,12 +5,14 @@ import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { publishRelease } from './publishRelease'
+import { matchAudiusUser, upsertRelease } from './db'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
 export type DDEXRelease = {
   ref: string
   isrc?: string
+  icpn?: string
   title: string
   subTitle?: string
   artists: string[]
@@ -21,6 +23,7 @@ export type DDEXRelease = {
 
   isMainRelease: boolean
   audiusGenre?: Genre
+  audiusUser?: string
 
   soundRecordings: DDEXSoundRecording[]
   images: DDEXImage[]
@@ -107,6 +110,7 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
     const recording: DDEXSoundRecording = {
       ref: $el.find('ResourceReference').text(),
       isrc: $el.find('ISRC').text(),
+
       filePath: resolveFile($el),
       title: $el.find('TitleText:first').text(),
       artists: toTexts($el.find('DisplayArtist PartyName FullName')),
@@ -149,6 +153,7 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
       const release: DDEXRelease = {
         ref: $el.find('ReleaseReference').text(),
         isrc: $el.find('ISRC').text(),
+        icpn: $el.find('ICPN').text(),
         title: $el.find('ReferenceTitle TitleText').text(),
         subTitle: $el.find('ReferenceTitle SubTitle').text(),
         artists: toTexts($el.find('DisplayArtist PartyName FullName')),
@@ -165,6 +170,10 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
 
       release.audiusGenre = resolveAudiusGenre(release.subGenre, release.genre)
 
+      // resolve audius user
+      release.audiusUser = matchAudiusUser(release.artists)
+      console.log('-----------', release.audiusGenre, release.audiusUser)
+
       // resolve resources
       $el
         .find('ReleaseResourceReferenceList > ReleaseResourceReference')
@@ -180,10 +189,11 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
           }
         })
 
+      // create or replace this release
+      upsertRelease(xmlText, release)
+
       return release
     })
-
-  // todo: resolve user ids here?
 
   return releases
 }
