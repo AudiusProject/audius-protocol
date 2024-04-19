@@ -6,7 +6,7 @@ if ! git secrets > /dev/null 2>&1; then
   exit 1
 fi
 
-git secrets --add --allowed 'dev-tools/config.json:.*'
+git secrets --add --allowed 'dev-tools/config.json'
 git secrets --add --allowed 'scripts/install-git-secrets.sh'
 git secrets --add --allowed 'package.json'
 
