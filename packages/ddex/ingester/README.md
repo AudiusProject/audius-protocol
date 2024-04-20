@@ -9,4 +9,4 @@ The easiest way to test DDEX locally is via `audius-compose up --ddex-[release-b
 
 1. Make sure the DDEX stack is running. See `packages/ddex/README.md` for instructions on how to bring up the DDEX stack locally.
 2. `docker stop ddex-crawler` or `docker stop ddex-parser` (assuming it's running as part of the whole DDEX stack)
-3. `IS_DEV=true DDEX_CHOREOGRAPHY=ERNReleaseByRelease air -c .air.toml -- --service [crawler|parser]`
+3. `IS_DEV=true AWS_ENDPOINT=http://ingress:4566 DDEX_CHOREOGRAPHY=ERNReleaseByRelease air -c .air.toml -- --service [crawler|parser]`
