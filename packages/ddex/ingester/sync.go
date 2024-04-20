@@ -78,5 +78,5 @@ func main() {
 	}
 
 	fmt.Println("Sync done!")
-	fmt.Printf("Try aws s3 ls %s\n", bucketPath)
+	fmt.Printf("aws s3 ls %s --profile local\n", bucketPath)
 }
