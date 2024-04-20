@@ -13,7 +13,7 @@ import { Cell, Row } from 'react-table'
 import { TextLink } from 'components/link'
 import { Table, alphaSorter, dateSorter, numericSorter } from 'components/table'
 
-import styles from './CollectionsTable.css'
+import styles from './CollectionsTable.module.css'
 import { CollectionsTableOverflowMenuButton } from './CollectionsTableOverflowMenuButton'
 
 type RowInfo = UserCollectionMetadata & {
