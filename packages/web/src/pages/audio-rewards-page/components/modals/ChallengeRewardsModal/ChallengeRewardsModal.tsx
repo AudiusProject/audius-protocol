@@ -33,7 +33,8 @@ import {
   SocialButton,
   Button,
   Text,
-  ProgressBar
+  ProgressBar,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -53,7 +54,6 @@ import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { openTwitterLink } from 'utils/tweet'
 
-import PurpleBox from '../../PurpleBox'
 import ModalDrawer from '../ModalDrawer'
 
 import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
@@ -150,16 +150,16 @@ export const InviteLink = ({ className, inviteLink }: InviteLinkProps) => {
           placement={ComponentPlacement.TOP}
           mount={MountPlacement.PARENT}
         >
-          <PurpleBox
-            className={wm(styles.inviteButtonContainer)}
-            onClick={onButtonClick}
-            text={
-              <div className={styles.inviteLinkContainer}>
-                <IconCopy className={wm(styles.inviteIcon)} />
-                <div className={styles.inviteLink}>{messages.inviteLabel}</div>
-              </div>
-            }
-          />
+          <div className={wm(styles.inviteButtonContainer)}>
+            <Button
+              variant='primary'
+              iconRight={IconCopy}
+              onClick={onButtonClick}
+              fullWidth
+            >
+              {messages.inviteLabel}
+            </Button>
+          </div>
         </Toast>
       </div>
     </Tooltip>
@@ -332,7 +332,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         <h3 className={styles.incomplete}>Incomplete</h3>
       ) : null}
       {challenge?.state === 'completed' || challenge?.state === 'disbursed' ? (
-        <h3 className={styles.complete}>Complete</h3>
+        <Flex gap='s' justifyContent='center' alignItems='center'>
+          <IconCheck width={16} height={16} color='subdued' />
+          <h3 className={styles.complete}>Complete</h3>
+        </Flex>
       ) : null}
       {challenge?.state === 'in_progress' && progressLabel ? (
         <h3 className={styles.inProgress}>
@@ -500,9 +503,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     if (audioClaimedSoFar > 0 && challenge?.state !== 'disbursed') {
       return (
         <div className={styles.claimRewardClaimedAmountLabel}>
-          {`(${formatNumberCommas(audioClaimedSoFar)} ${
-            messages.claimedSoFar
-          })`}
+          {`${formatNumberCommas(audioClaimedSoFar)} ${messages.claimedSoFar}`}
         </div>
       )
     }
@@ -573,10 +574,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             {buttonInfo?.label}
           </Button>
         ) : null}
-        <div className={wm(styles.claimRewardWrapper)}>
-          {renderClaimButton()}
-          {renderClaimedSoFarContent()}
-        </div>
+        {audioToClaim > 0 ||
+        (audioClaimedSoFar > 0 && challenge?.state !== 'disbursed') ? (
+          <div className={wm(styles.claimRewardWrapper)}>
+            {renderClaimButton()}
+            {renderClaimedSoFarContent()}
+          </div>
+        ) : null}
         {errorContent}
       </div>
     )
