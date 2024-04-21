@@ -281,6 +281,9 @@
 
 .claimRewardWrapper {
   margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .claimRewardWrapper.mobile {
