@@ -395,12 +395,28 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     dismissModal()
   }, [buttonLink, dispatch, dismissModal])
 
+  const formatLabel = useCallback((item: any) => {
+    const { label, claimableDate, isClose } = item
+    const formattedLabel = isClose ? (
+      label
+    ) : (
+      <Text>
+        {label}&nbsp;
+        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
+      </Text>
+    )
+    return {
+      ...item,
+      label: formattedLabel
+    }
+  }, [])
+
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {
       return (
         <SummaryTable
           title={messages.upcomingRewards}
-          items={formatCooldownChallenges(cooldownChallenges)}
+          items={formatCooldownChallenges(cooldownChallenges).map(formatLabel)}
           summaryItem={summary}
           secondaryTitle={messages.audio}
           summaryLabelColor='accent'
