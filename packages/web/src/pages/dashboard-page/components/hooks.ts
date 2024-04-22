@@ -108,7 +108,7 @@ const useSegregatedTrackData = () => {
       collectibleGatedTracks
     ]
     const nonEmptyArrays = arrays.filter((arr) => arr.length > 0)
-    const hasOnlyOneSection = nonEmptyArrays.length === 1
+    const hasOnlyOneSection = nonEmptyArrays.length <= 1
 
     return {
       hasOnlyOneSection,
@@ -292,7 +292,7 @@ const useSegregatedAlbumData = () => {
 
       const arrays = [publicAlbums, hiddenAlbums, premiumAlbums]
       const nonEmptyArrays = arrays.filter((arr) => arr.length > 0)
-      const hasOnlyOneSection = nonEmptyArrays.length === 1
+      const hasOnlyOneSection = nonEmptyArrays.length <= 1
 
       return {
         hasOnlyOneSection,

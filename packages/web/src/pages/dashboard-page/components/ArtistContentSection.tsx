@@ -57,9 +57,9 @@ export const ArtistContentSection = () => {
   const filterButtonOptions = isTracks
     ? filterButtonTrackOptions
     : filterButtonAlbumOptions
-  const shouldShowFilterButton =
-    (isTracks && !hasOnlyOneTrackSection) ||
-    (!isTracks && !hasOnlyOneAlbumSection)
+  const isFilterButtonDisabled =
+    (isTracks && hasOnlyOneTrackSection) ||
+    (!isTracks && hasOnlyOneAlbumSection)
   const shouldShowPills = tracks.length && albums.length
 
   const onClickPill = useCallback(
@@ -112,19 +112,15 @@ export const ArtistContentSection = () => {
               />
             </Flex>
           ) : null}
-          {
-            // Only show filter button if there are multiple sections for the selected content type
-            shouldShowFilterButton ? (
-              <FilterButton
-                onSelect={handleSelectFilter}
-                selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
-                label={messages.allReleases}
-                options={filterButtonOptions}
-                popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-              />
-            ) : null
-          }
+          <FilterButton
+            onSelect={handleSelectFilter}
+            selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
+            label={messages.allReleases}
+            options={filterButtonOptions}
+            popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            isDisabled={isFilterButtonDisabled}
+          />
         </Flex>
         <Flex>
           <TextInput

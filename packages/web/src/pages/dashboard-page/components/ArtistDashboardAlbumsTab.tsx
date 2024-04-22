@@ -9,6 +9,7 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { makeGetDashboard } from '../store/selectors'
 
+import { EmptyTabState } from './EmptyTabState'
 import { SHOW_MORE_LIMIT, TABLE_PAGE_SIZE } from './constants'
 import { useFilteredAlbumData } from './hooks'
 import { AlbumFilters } from './types'
@@ -45,9 +46,9 @@ export const ArtistDashboardAlbumsTab = ({
     [account, goToRoute]
   )
 
-  if (!filteredData.length || !account) return null
-
-  return (
+  return !filteredData.length || !account ? (
+    <EmptyTabState type='album' />
+  ) : (
     <Paper w='100%' direction='column' mt='xl'>
       <TracksTable
         data={filteredData}

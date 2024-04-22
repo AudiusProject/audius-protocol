@@ -10,6 +10,7 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
 import { fetchTracks } from '../store/slice'
 
+import { EmptyTabState } from './EmptyTabState'
 import { SHOW_MORE_LIMIT, TABLE_PAGE_SIZE } from './constants'
 import { useFilteredTrackData } from './hooks'
 import { TrackFilters } from './types'
@@ -59,9 +60,9 @@ export const ArtistDashboardTracksTab = ({
     [account, goToRoute]
   )
 
-  if (!filteredData.length || !account) return null
-
-  return (
+  return !filteredData.length || !account ? (
+    <EmptyTabState type='track' />
+  ) : (
     <TracksTable
       data={filteredData}
       disabledTrackEdit
