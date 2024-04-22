@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { Status } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { Flex } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
@@ -22,6 +23,7 @@ const tracksTableColumns: TracksTableColumn[] = [
   'releaseDate',
   'length',
   'plays',
+  'saves',
   'reposts',
   'overflowMenu'
 ]
@@ -68,18 +70,20 @@ export const ArtistDashboardTracksTab = ({
       <EmptyTabState type='track' />
     )
   ) : (
-    <TracksTable
-      data={filteredData}
-      disabledTrackEdit
-      columns={tracksTableColumns}
-      onClickRow={onClickRow}
-      fetchPage={handleFetchPage}
-      pageSize={TABLE_PAGE_SIZE}
-      userId={account.user_id}
-      showMoreLimit={SHOW_MORE_LIMIT}
-      totalRowCount={account.track_count}
-      loading={tracksStatus === Status.LOADING}
-      isPaginated
-    />
+    <Flex w='100%' direction='column' borderTop='default'>
+      <TracksTable
+        data={filteredData}
+        disabledTrackEdit
+        columns={tracksTableColumns}
+        onClickRow={onClickRow}
+        fetchPage={handleFetchPage}
+        pageSize={TABLE_PAGE_SIZE}
+        userId={account.user_id}
+        showMoreLimit={SHOW_MORE_LIMIT}
+        totalRowCount={account.track_count}
+        loading={tracksStatus === Status.LOADING}
+        isPaginated
+      />
+    </Flex>
   )
 }
