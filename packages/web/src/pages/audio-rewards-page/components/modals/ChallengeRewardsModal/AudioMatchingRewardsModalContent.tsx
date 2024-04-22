@@ -143,6 +143,22 @@ export const AudioMatchingRewardsModalContent = ({
     onNavigateAway()
   }, [challengeName, onNavigateAway, navigateToPage])
 
+  const formatLabel = useCallback((item: any) => {
+    const { label, claimableDate, isClose } = item
+    const formattedLabel = isClose ? (
+      label
+    ) : (
+      <Text>
+        {label}&nbsp;
+        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
+      </Text>
+    )
+    return {
+      ...item,
+      label: formattedLabel
+    }
+  }, [])
+
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
       {isMobile ? (
@@ -165,7 +181,9 @@ export const AudioMatchingRewardsModalContent = ({
           {!isCooldownChallengesEmpty ? (
             <SummaryTable
               title={messages.upcomingRewards}
-              items={formatCooldownChallenges(cooldownChallenges)}
+              items={formatCooldownChallenges(cooldownChallenges).map(
+                formatLabel
+              )}
               summaryItem={summary}
               secondaryTitle={messages.audio}
               summaryLabelColor='accent'

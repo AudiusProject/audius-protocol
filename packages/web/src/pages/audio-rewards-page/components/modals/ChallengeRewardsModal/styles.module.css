@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--harmony-spacing-m);
+  gap: var(--harmony-spacing-2xl);
 }
 .container h2 {
   font-weight: 900;
@@ -125,6 +125,7 @@
 .progressStatus {
   padding: 12px 32px;
   text-align: center;
+  border-top: 1px solid var(--harmony-border-strong);
 }
 .progressStatus h3 {
   margin-bottom: 0px;
@@ -142,10 +143,7 @@
   color: var(--harmony-s-200);
 }
 .progressStatus.complete {
-  background-color: var(--harmony-light-green);
-}
-.progressStatus.complete h3 {
-  color: var(--harmony-white);
+  background-color: var(--harmony-bg-surface-1);
 }
 
 .buttonLink {
@@ -155,7 +153,6 @@
 /* QR Code Styles */
 .qrContainer {
   display: flex;
-  margin-top: 32px;
 }
 .qrContainer.mobile {
   display: none;
@@ -187,46 +184,8 @@
 }
 
 /* Invite Link Styles */
-.inviteButtonContainer {
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.07s ease-in-out;
-  transform: scale3d(1, 1, 1);
-  min-width: unset;
-  min-height: 60px;
-  padding: unset;
-}
 .inviteButtonContainer.mobile {
-  padding: 16px;
-  margin-top: 8px;
-}
-.inviteButtonContainer:hover {
-  transform: scale3d(1.03, 1.03, 1.03);
-}
-.inviteButtonContainer:active {
-  transform: scale3d(0.99, 0.99, 0.99);
-}
-
-.inviteLinkContainer {
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-}
-
-.inviteLink {
-  min-width: 0;
-  font-size: var(--harmony-font-m);
-}
-
-.inviteIcon {
-  height: 24px;
-  flex: 0 0 24px;
-  margin-right: 8px;
-}
-
-.inviteIcon path {
-  fill: var(--harmony-static-white);
+  margin-top: 24px;
 }
 
 .toastContainer {
@@ -280,7 +239,9 @@
 }
 
 .claimRewardWrapper {
-  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .claimRewardWrapper.mobile {
@@ -316,8 +277,9 @@
   text-align: center;
   text-transform: uppercase;
   color: var(--harmony-n-400);
-  font-weight: var(--harmony-font-heavy);
+  font-weight: var(--harmony-font-bold);
   font-size: var(--harmony-font-s);
+  letter-spacing: 1px;
 }
 
 .claimError {
@@ -351,7 +313,6 @@
   display: flex;
   width: 100%;
   align-items: center;
-  margin-top: 32px;
 }
 
 .buttonContainer.mobile {
