@@ -128,6 +128,10 @@ jobs:
       service: discovery-provider-notifications
       requires:
         - lint-discovery-provider
+  - test:
+      name: test-audius-sdk-types
+      context: Vercel
+      service: audius-sdk-types
 
   - push-arm-image:
       name: push-discovery-provider-arm

@@ -60,6 +60,7 @@
     "gen:prod": "npm run gen:prod:default ; npm run gen:prod:full",
     "gen:prod:default": "node ./src/sdk/api/generator/gen.js",
     "gen:prod:full": "node ./src/sdk/api/generator/gen.js --api-flavor full",
+    "check-generated-types": "sh ./scripts/check-generated-types.sh",
     "prepare": "patch-package",
     "prepack": "turbo run build"
   },

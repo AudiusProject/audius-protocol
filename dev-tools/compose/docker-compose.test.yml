@@ -118,6 +118,20 @@ services:
     profiles:
       - tests
 
+  test-audius-sdk-types:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
+      args:
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run check-generated-types)' -
+    logging: *default-logging
+    deploy:
+      mode: global
+    profiles:
+      - tests
+
   # contracts
   test-contracts:
     build:
