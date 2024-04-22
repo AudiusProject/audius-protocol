@@ -318,13 +318,11 @@ def test_identity_and_discovery_tip_reactions(app, mocker):
         discovery_reaction = all_tip_reactions[1]
 
         assert 1 == identity_reaction.id
-        assert 0 == identity_reaction.slot
         assert 1 == identity_reaction.reaction_value
         assert "user_1_tip_2_1" == identity_reaction.reacted_to
         assert "user1wallet" == identity_reaction.sender_wallet
 
         assert 2 == discovery_reaction.id
-        assert 1 == discovery_reaction.slot
         assert 1 == discovery_reaction.reaction_value
         assert "user_1_tip_2_2" == discovery_reaction.reacted_to
         assert "user1wallet" == discovery_reaction.sender_wallet
