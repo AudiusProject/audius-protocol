@@ -21,9 +21,9 @@ import { ArtistCard } from './components/ArtistCard'
 import { ArtistContentSection } from './components/ArtistContentSection'
 import {
   TracksTableContainer,
-  DataSourceTrack,
-  tablePageSize
+  DataSourceTrack
 } from './components/TracksTableContainer'
+import { TABLE_PAGE_SIZE } from './components/constants'
 import {
   getDashboardListenData,
   getDashboardStatus,
@@ -82,7 +82,7 @@ export const DashboardPage = () => {
   const header = <Header primary={messages.title} />
 
   useEffect(() => {
-    dispatch(fetch({ offset: 0, limit: tablePageSize }))
+    dispatch(fetch({ offset: 0, limit: TABLE_PAGE_SIZE }))
     TotalPlaysChart.preload()
     return () => {
       dispatch(reset({}))

@@ -6,7 +6,7 @@ import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 
 import { makeGetDashboard } from '../store/selectors'
 
-import { showMoreLimit, tablePageSize } from './constants'
+import { SHOW_MORE_LIMIT, TABLE_PAGE_SIZE } from './constants'
 import { useFilteredAlbumData } from './hooks'
 import { AlbumFilters } from './types'
 
@@ -44,9 +44,9 @@ export const ArtistDashboardAlbumsTab = ({
         disabledTrackEdit
         columns={albumTableColumns}
         onClickRow={onClickRow}
-        pageSize={tablePageSize}
+        pageSize={TABLE_PAGE_SIZE}
         userId={account.user_id}
-        showMoreLimit={showMoreLimit}
+        showMoreLimit={SHOW_MORE_LIMIT}
         totalRowCount={account.track_count}
       />
     </Paper>

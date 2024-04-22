@@ -9,7 +9,7 @@ import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
 import { fetchTracks } from '../store/slice'
 
-import { showMoreLimit, tablePageSize } from './constants'
+import { SHOW_MORE_LIMIT, TABLE_PAGE_SIZE } from './constants'
 import { useFilteredTrackData } from './hooks'
 import { TrackFilters } from './types'
 
@@ -41,7 +41,7 @@ export const ArtistDashboardTracksTab = ({
   const handleFetchPage = useCallback(
     (page: number) => {
       dispatch(
-        fetchTracks({ offset: page * tablePageSize, limit: tablePageSize })
+        fetchTracks({ offset: page * TABLE_PAGE_SIZE, limit: TABLE_PAGE_SIZE })
       )
     },
     [dispatch]
@@ -61,9 +61,9 @@ export const ArtistDashboardTracksTab = ({
       columns={tracksTableColumns}
       onClickRow={onClickRow}
       fetchPage={handleFetchPage}
-      pageSize={tablePageSize}
+      pageSize={TABLE_PAGE_SIZE}
       userId={account.user_id}
-      showMoreLimit={showMoreLimit}
+      showMoreLimit={SHOW_MORE_LIMIT}
       totalRowCount={account.track_count}
       loading={tracksStatus === Status.LOADING}
       isPaginated
