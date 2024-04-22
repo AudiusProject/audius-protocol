@@ -30,20 +30,6 @@ vitest.mock('@audius/common/store', async () => ({
   CACHE_PRUNE_MIN: 1
 }))
 
-vitest.mock('services/remote-config/remote-config-instance', async () => {
-  return {
-    remoteConfigInstance: {
-      waitForRemoteConfig: vitest.fn(),
-      getRemoteVar: vitest.fn().mockImplementation((arg) => {
-        if (arg === IntKeys.CACHE_ENTRY_TTL) {
-          return Infinity
-        }
-        return undefined
-      })
-    }
-  }
-})
-
 const defaultProviders: StaticProvider[] = [
   [getContext('remoteConfigInstance'), remoteConfigInstance],
   [getContext('getFeatureEnabled'), () => false]
