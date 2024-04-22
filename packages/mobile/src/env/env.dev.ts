@@ -42,6 +42,7 @@ export const env: Env = {
   IDENTITY_SERVICE: 'http://audius-protocol-identity-service-1',
   INSTAGRAM_APP_ID: '2875320099414320',
   INSTAGRAM_REDIRECT_URL: 'http://localhost:3000',
+  LOOKUP_TABLE_ADDRESS: '',
   METADATA_PROGRAM_ID: 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
   OPENSEA_API_URL: 'https://rinkeby-api.opensea.io',
   HELIUS_DAS_API_URL: 'https://sol-collectibles.audius.workers.dev',
