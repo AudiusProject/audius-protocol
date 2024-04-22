@@ -59,7 +59,7 @@ export type CollectionPageProps = {
   description: string
   canonicalUrl: string
   structuredData?: Object
-  playlistId: ID | SmartCollectionVariant
+  playlistId: ID
   playing: boolean
   getPlayingUid: () => string | null
   type: CollectionsPageType
@@ -82,7 +82,7 @@ export type CollectionPageProps = {
   onClickRow: (record: any) => void
   onClickMobileOverflow?: (
     collectionId: ID,
-    overflowActions: OverflowAction[]
+    overflowActions: (OverflowAction | null)[]
   ) => void
   onClickFavorites?: () => void
   onClickReposts?: () => void
@@ -159,6 +159,8 @@ const CollectionPage = ({
     metadata && metadata?.variant !== Variant.SMART
       ? metadata._is_publishing
       : false
+  const access =
+    metadata !== null && 'access' in metadata ? metadata?.access : null
 
   const variant = metadata?.variant ?? null
   const gradient =
@@ -188,7 +190,7 @@ const CollectionPage = ({
   } = computeCollectionMetadataProps(metadata)
 
   const togglePlay = (uid: string, trackId: ID) => {
-    if (playlistId === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {
+    if (playlistName === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {
       const track = tracks.entries.find((track) => track.uid === uid)
 
       if (track?.collectible) {
@@ -244,6 +246,7 @@ const CollectionPage = ({
       <div className={styles.collectionContent}>
         <div>
           <CollectionHeader
+            access={access}
             collectionId={playlistId}
             userId={user?.user_id ?? 0}
             loading={
@@ -271,8 +274,19 @@ const CollectionPage = ({
             isSaved={isSaved}
             saves={playlistSaveCount}
             playing={queuedAndPlaying}
-            repostCount={playlistRepostCount}
+            reposts={playlistRepostCount}
             isReposted={isReposted}
+            isStreamGated={
+              metadata?.variant === Variant.USER_GENERATED
+                ? metadata?.is_stream_gated
+                : null
+            }
+            streamConditions={
+              metadata?.variant === Variant.USER_GENERATED
+                ? metadata?.stream_conditions
+                : null
+            }
+            ownerId={playlistOwnerId}
             // Actions
             onPlay={onPlay}
             onShare={onHeroTrackShare}

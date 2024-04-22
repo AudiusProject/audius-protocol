@@ -1,13 +1,7 @@
-import { memo, useCallback } from 'react'
+import { MouseEventHandler, memo, useCallback } from 'react'
 
 import { imageBlank } from '@audius/common/assets'
-import {
-  Variant,
-  SquareSizes,
-  Collection,
-  ID,
-  SmartCollectionVariant
-} from '@audius/common/models'
+import { Variant, SquareSizes, Collection, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
@@ -38,10 +32,11 @@ import { useSsrContext } from 'ssr/SsrContext'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
-import styles from './CollectionHeader.module.css'
-import { RepostFavoritesStats } from '../components/RepostsFavoritesStats'
 import { AlbumDetailsText } from '../components/AlbumDetailsText'
+import { RepostFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
+
+import styles from './CollectionHeader.module.css'
 
 const { getCollection } = cacheCollectionsSelectors
 
@@ -53,26 +48,13 @@ const messages = {
   coverArtAltText: 'Collection Cover Art'
 }
 
-const Loading = (props: {
-  variant: 'artwork' | 'title' | 'name' | 'infoSection' | 'description'
-}) => {
-  const style = {
-    [styles.loadingArtwork]: props.variant === 'artwork',
-    [styles.loadingTitle]: props.variant === 'title',
-    [styles.loadingName]: props.variant === 'name',
-    [styles.loadingInfoSection]: props.variant === 'infoSection',
-    [styles.loadingDescription]: props.variant === 'description'
-  }
-  return <Skeleton className={cn(styles.loadingSkeleton, style)} />
-}
-
 const PlayButton = ({
   playing,
   onPlay,
   ...rest
 }: {
   playing: boolean
-  onPlay: () => void
+  onPlay: MouseEventHandler<HTMLButtonElement>
 } & ButtonProps) => {
   return playing ? (
     <Button variant='primary' iconLeft={IconPause} onClick={onPlay} {...rest}>
@@ -85,15 +67,18 @@ const PlayButton = ({
   )
 }
 
-// TODO: strongly type this
 type MobileCollectionHeaderProps = CollectionHeaderProps & {
-  collectionId?: number | SmartCollectionVariant
+  collectionId?: number
   ddexApp?: string | null
   isReposted?: boolean
   isSaved?: boolean
+  isPublishing?: boolean
+  onShare: () => void
+  onSave?: () => void
+  onRepost?: () => void
   onClickMobileOverflow?: (
     collectionId: ID,
-    overflowActions: OverflowAction[]
+    overflowActions: (OverflowAction | null)[]
   ) => void
 }
 
@@ -139,8 +124,10 @@ const CollectionHeader = ({
   ) as Collection
 
   const onSaveCollection = () => {
-    if (!isOwner) onSave()
+    if (!isOwner) onSave?.()
   }
+
+  console.log({ variant })
 
   const onClickOverflow = () => {
     const overflowActions = [
@@ -165,7 +152,7 @@ const CollectionHeader = ({
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean)
 
-    onClickMobileOverflow(collectionId, overflowActions)
+    onClickMobileOverflow?.(collectionId, overflowActions)
   }
 
   const image = useCollectionCoverArt(
@@ -238,13 +225,15 @@ const CollectionHeader = ({
           <Text variant='heading' size='s' tag='h1'>
             {title}
           </Text>
-          <UserLink
-            userId={userId}
-            color='accent'
-            size='l'
-            textAs='h2'
-            variant='visible'
-          />
+          {userId ? (
+            <UserLink
+              userId={userId}
+              color='accent'
+              size='l'
+              textAs='h2'
+              variant='visible'
+            />
+          ) : null}
         </Flex>
         {isPlayable ? (
           <PlayButton playing={playing} onPlay={onPlay} fullWidth />

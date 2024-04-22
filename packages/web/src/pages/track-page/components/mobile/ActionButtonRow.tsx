@@ -49,11 +49,11 @@ const ActionButtonRow = ({
   showOverflow,
   showEdit,
   shareToastDisabled = true,
-  onRepost = () => { },
-  onFavorite = () => { },
-  onShare = () => { },
-  onClickOverflow = () => { },
-  onClickEdit = () => { },
+  onRepost = () => {},
+  onFavorite = () => {},
+  onShare = () => {},
+  onClickOverflow = () => {},
+  onClickEdit = () => {},
   darkMode
 }: ActionButtonRowProps) => {
   const renderRepostButton = () => {
@@ -98,7 +98,7 @@ const ActionButtonRow = ({
         disabled={!isPublished}
         color='subdued'
         icon={IconShare}
-        onClick={isPublished ? onShare : () => { }}
+        onClick={isPublished ? onShare : () => {}}
       />
     )
   }

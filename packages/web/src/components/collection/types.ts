@@ -1,3 +1,5 @@
+import { ChangeEvent, MouseEventHandler } from 'react'
+
 import {
   AccessConditions,
   AccessPermissions,
@@ -7,7 +9,6 @@ import {
 } from '@audius/common/models'
 import { CollectionsPageType } from '@audius/common/store'
 import { IconComponent } from '@audius/harmony'
-import { ChangeEvent, MouseEventHandler } from 'react'
 
 export type CollectionHeaderProps = {
   isStreamGated: boolean | null
