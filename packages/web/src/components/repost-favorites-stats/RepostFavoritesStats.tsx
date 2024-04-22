@@ -17,8 +17,8 @@ type RepostFavoritesStatsProps = {
   isUnlisted: boolean
   repostCount: number
   saveCount: number
-  onClickReposts: () => void
-  onClickFavorites: () => void
+  onClickReposts?: () => void
+  onClickFavorites?: () => void
   className?: string
   size?: Size
 }
@@ -41,7 +41,7 @@ const RepostFavoritesStats = ({
     (e: MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      onClickReposts()
+      onClickReposts?.()
     },
     [onClickReposts]
   )
@@ -49,7 +49,7 @@ const RepostFavoritesStats = ({
     (e: MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
-      onClickFavorites()
+      onClickFavorites?.()
     },
     [onClickFavorites]
   )

@@ -128,8 +128,9 @@ func TestRunE2E(t *testing.T) {
 				Release: common.Release{
 					ReleaseProfile: common.UnspecifiedReleaseProfile,
 					SDKUploadMetadata: common.SDKUploadMetadata{
-						ReleaseDate: time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
-						Genre:       "Hip-Hop/Rap",
+						ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+						ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
+						Genre:             "Hip-Hop/Rap",
 						Artists: []common.ResourceContributor{
 							{
 								Name:           "Theo Random",
@@ -175,16 +176,19 @@ func TestRunE2E(t *testing.T) {
 						IsAlbum:           boolPtr(true),
 						IsPrivate:         nil,
 						UPC:               stringPtr("196871335584"),
+						HasDeal:           true,
 						Tracks: []common.TrackMetadata{
 							{
-								Title:       "Playing With Fire.",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-								Genre:       "Hip-Hop/Rap",
-								Duration:    279,
-								ISRC:        stringPtr("ZAA012300131"),
+								Title:             "Playing With Fire.",
+								ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
+								Genre:             "Hip-Hop/Rap",
+								Duration:          279,
+								ISRC:              stringPtr("ZAA012300131"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "ZAA012300131",
 								},
+								ArtistID: "Bmv3bJ",
 								Artists: []common.ResourceContributor{
 									{
 										Name:           "Theo Random",
@@ -211,16 +215,21 @@ func TestRunE2E(t *testing.T) {
 								PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/", // TODO: This doesn't seem right...
 								PreviewStartSeconds:  intPtr(48),
 								ArtistName:           "Theo Random",
+								IsStreamGated:        false,
+								IsDownloadGated:      false,
+								HasDeal:              true,
 							},
 							{
-								Title:       "No Comment.",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-								Genre:       "Hip-Hop/Rap",
-								Duration:    142,
-								ISRC:        stringPtr("ZAA012300128"),
+								Title:             "No Comment.",
+								ReleaseDate:       time.Date(2023, time.July, 27, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
+								Genre:             "Hip-Hop/Rap",
+								Duration:          142,
+								ISRC:              stringPtr("ZAA012300128"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "ZAA012300128",
 								},
+								ArtistID: "Bmv3bJ",
 								Artists: []common.ResourceContributor{
 									{Name: "Theo Random", Roles: []string{"AssociatedPerformer", "MainArtist"}, SequenceNumber: 1},
 									{Name: "Thato Saul", Roles: []string{"AssociatedPerformer", "MainArtist"}, SequenceNumber: 2},
@@ -243,6 +252,9 @@ func TestRunE2E(t *testing.T) {
 								PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/", // TODO: This doesn't seem right...
 								PreviewStartSeconds:  intPtr(48),
 								ArtistName:           "Theo Random & Thato Saul",
+								IsStreamGated:        false,
+								IsDownloadGated:      false,
+								HasDeal:              true,
 							},
 						},
 					},
@@ -284,6 +296,7 @@ func TestRunE2E(t *testing.T) {
 					ReleaseProfile: common.Common14AudioAlbumMusicOnly,
 					SDKUploadMetadata: common.SDKUploadMetadata{
 						ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+						ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 						PlaylistName:      stringPtr("A Monkey Claw in a Velvet Glove"),
 						PlaylistOwnerID:   stringPtr("abcdef"),
 						PlaylistOwnerName: stringPtr("Monkey Claw"),
@@ -312,12 +325,13 @@ func TestRunE2E(t *testing.T) {
 						CoverArtURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T7_007.jpg",
 						Tracks: []common.TrackMetadata{
 							{
-								Title:       "Can you feel ...the Monkey Claw!",
-								ArtistName:  "Monkey Claw",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-								Genre:       "Metal",
-								Duration:    811,
-								ISRC:        stringPtr("CASE00000001"),
+								Title:             "Can you feel ...the Monkey Claw!",
+								ArtistName:        "Monkey Claw",
+								ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
+								Genre:             "Metal",
+								Duration:          811,
+								ISRC:              stringPtr("CASE00000001"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "CASE00000001",
 								},
@@ -344,6 +358,7 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
+								ArtistID: "abcdef",
 								Artists: []common.ResourceContributor{
 									{
 										Name:           "Monkey Claw",
@@ -351,15 +366,19 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
-								AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
+								AudioFileURL:    "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
+								IsStreamGated:   false,
+								IsDownloadGated: false,
+								HasDeal:         true,
 							},
 							{
-								Title:       "Red top mountain, blown sky high",
-								ArtistName:  "Monkey Claw",
-								ReleaseDate: time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
-								Genre:       "Metal",
-								Duration:    366,
-								ISRC:        stringPtr("CASE00000002"),
+								Title:             "Red top mountain, blown sky high",
+								ArtistName:        "Monkey Claw",
+								ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
+								Genre:             "Metal",
+								Duration:          366,
+								ISRC:              stringPtr("CASE00000002"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "CASE00000002",
 								},
@@ -386,6 +405,7 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
+								ArtistID: "abcdef",
 								Artists: []common.ResourceContributor{
 									{
 										Name:           "Monkey Claw",
@@ -393,7 +413,10 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
-								AudioFileURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
+								AudioFileURL:    "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
+								IsStreamGated:   false,
+								IsDownloadGated: false,
+								HasDeal:         true,
 							},
 						},
 					},
@@ -432,11 +455,13 @@ func TestRunE2E(t *testing.T) {
 				Release: common.Release{
 					ReleaseProfile: common.Common13AudioSingle,
 					SDKUploadMetadata: common.SDKUploadMetadata{
-						ReleaseDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
-						Genre:       "Blues",
+						ReleaseDate:       time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
+						ValidityStartDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
+						Genre:             "Blues",
 						DDEXReleaseIDs: &common.ReleaseIDs{
 							ISRC: "NLRD51952976",
 						},
+						ArtistID: stringPtr("fugarian"),
 						Artists: []common.ResourceContributor{
 							{
 								Name:           "FUGARIAN",
@@ -457,7 +482,6 @@ func TestRunE2E(t *testing.T) {
 						CoverArtURLHash:     stringPtr("03a3372963d1567ef98f7229c49538e0"),
 						CoverArtURLHashAlgo: stringPtr("MD5"),
 						Title:               stringPtr("All My Single"),
-						ArtistID:            stringPtr(""), // TODO: Shouldn't be empty
 						Duration:            75,
 						ISRC:                stringPtr("NLRD51952976"),
 						ResourceContributors: []common.ResourceContributor{
@@ -481,6 +505,9 @@ func TestRunE2E(t *testing.T) {
 						AudioFileURLHash:     stringPtr("5e2994cdd94f14a197283a00387ca451"),
 						AudioFileURLHashAlgo: stringPtr("5e2994cdd94f14a197283a00387ca451"), // TODO: This isn't right
 						Tracks:               nil,
+						IsStreamGated:        false,
+						IsDownloadGated:      false,
+						HasDeal:              true,
 					},
 				},
 			},

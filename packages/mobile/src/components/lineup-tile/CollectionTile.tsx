@@ -268,7 +268,11 @@ const CollectionTileComponent = ({
       user={user}
       variant={variant}
     >
-      <CollectionTileTrackList tracks={tracks} onPress={handlePressTitle} />
+      <CollectionTileTrackList
+        tracks={tracks}
+        onPress={handlePressTitle}
+        isAlbum={is_album}
+      />
     </LineupTile>
   )
 }

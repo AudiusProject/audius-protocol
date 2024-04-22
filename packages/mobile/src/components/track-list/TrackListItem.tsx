@@ -235,7 +235,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     title,
     track_id,
     owner_id,
-    is_stream_gated: isStreamGated
+    is_stream_gated: isStreamGated,
+    ddex_app: ddexApp
   } = track
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
@@ -320,7 +321,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      isEditAlbumsEnabled && isTrackOwner ? OverflowAction.ADD_TO_ALBUM : null,
+      isEditAlbumsEnabled && isTrackOwner && !ddexApp
+        ? OverflowAction.ADD_TO_ALBUM
+        : null,
       !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
@@ -333,7 +336,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
-      isTrackOwner ? OverflowAction.EDIT_TRACK : null,
+      isTrackOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       !isTrackOwner ? OverflowAction.VIEW_ARTIST_PAGE : null,
       isContextPlaylistOwner ? OverflowAction.REMOVE_FROM_PLAYLIST : null
     ].filter(removeNullable)
@@ -351,12 +354,13 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_saved,
     has_current_user_reposted,
     isEditAlbumsEnabled,
+    ddexApp,
     isStreamGated,
     isNewPodcastControlsEnabled,
     isLongFormContent,
+    showViewAlbum,
     albumInfo,
     playbackPositionInfo?.status,
-    showViewAlbum,
     isContextPlaylistOwner,
     dispatch,
     track_id,

@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
+    ListEnumArgument,
     abort_bad_request_param,
     abort_forbidden,
     abort_unauthorized,
@@ -169,12 +170,14 @@ class LegacyGetTransactionHistoryCount(Resource):
 
 def add_transaction_history_filters(parser: reqparse.RequestParser):
     parser.add_argument(
-        "type",
-        required=False,
-        description="Filters the type of transactions to show",
-        type=str,
-        choices=USDCTransactionType._member_names_,
-        default=None,
+        ListEnumArgument(
+            "type",
+            required=False,
+            description="Filters the type of transactions to show",
+            choices=USDCTransactionType._member_names_,
+            action="append",
+            default=None,
+        )
     )
     parser.add_argument(
         "include_system_transactions",

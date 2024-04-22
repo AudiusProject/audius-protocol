@@ -1,6 +1,7 @@
+import React, { useCallback, useState } from 'react'
+
 import BarChart from 'components/BarChart'
 import { TopApiAppsInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
-import React, { useCallback, useState } from 'react'
 import { useTopApps } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { usePushRoute } from 'utils/effects'
@@ -31,10 +32,10 @@ const TopAppsChart: React.FC<TopAppsChartProps> = () => {
 
   return (
     <BarChart
-      title="Top API Apps"
+      title='Top API Apps'
       titleTooltipComponent={TopApiAppsInfoTooltip}
-      column1="apps"
-      column2="requests"
+      column1='apps'
+      column2='requests'
       data={data}
       labels={labels}
       error={error}

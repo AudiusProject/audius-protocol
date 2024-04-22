@@ -124,10 +124,7 @@ const createRouter = () => {
           const tx = new VersionedTransaction(message)
           tx.sign([feePayerAccount])
           signatures.forEach(({ publicKey, signature }) => {
-            tx.addSignature(
-              new PublicKey(publicKey),
-              signature as any as Buffer
-            )
+            tx.addSignature(new PublicKey(publicKey), Buffer.from(signature))
           })
           const rawTransaction = tx.serialize()
           const encodedTx = Buffer.from(rawTransaction).toString('base64')

@@ -49,8 +49,9 @@ import { emptyStringGuard } from 'pages/track-page/utils'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 
+import { LockedStatusPill } from '../locked-status-pill'
+
 import styles from './GiantTrackTile.module.css'
-import { LockedStatusBadge } from './LockedStatusBadge'
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
@@ -317,7 +318,7 @@ const LockedGatedContentSection = ({
     <div className={className}>
       <div className={styles.gatedContentDescriptionContainer}>
         <Flex alignItems='center' gap='s' mb='s'>
-          <LockedStatusBadge
+          <LockedStatusPill
             locked
             variant={isUSDCPurchaseGated ? 'premium' : 'gated'}
           />
@@ -522,7 +523,7 @@ const UnlockedGatedContentSection = ({
         {isOwner ? (
           <IconComponent className={styles.gatedContentIcon} />
         ) : (
-          <LockedStatusBadge
+          <LockedStatusPill
             locked={false}
             variant={
               isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
@@ -547,12 +548,12 @@ type GatedContentSectionProps = {
   contentId: ID
   contentType: PurchaseableContentType
   streamConditions: AccessConditions
-  hasStreamAccess: boolean
+  hasStreamAccess?: boolean
   isOwner: boolean
   wrapperClassName?: string
   className?: string
   buttonClassName?: string
-  ownerId: ID
+  ownerId: ID | null
 }
 
 export const GatedContentSection = ({
@@ -589,7 +590,8 @@ export const GatedContentSection = ({
     })
   )
   const followee = isFollowGated ? users[streamConditions.follow_user_id] : null
-  const trackOwner = isUSDCPurchaseGated ? users[ownerId] : null
+  const trackOwner =
+    isUSDCPurchaseGated && ownerId !== null ? users[ownerId] : null
   const tippedUser = isTipGated ? users[streamConditions.tip_user_id] : null
 
   const fadeIn = {

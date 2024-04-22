@@ -71,11 +71,6 @@
 }
 
 .statItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0px 10px;
-  margin-right: 12px;
   transform: scale(1);
   transition: transform 0.07s ease-in-out;
 }
@@ -102,32 +97,6 @@
 .skeleton {
   position: absolute;
   top: 0;
-}
-
-.stats {
-  display: flex;
-  flex: 0 0 30px;
-  align-items: stretch;
-  margin: 2px 0px;
-}
-
-.statText {
-  font-weight: var(--harmony-font-medium);
-  font-size: var(--harmony-font-xs);
-  letter-spacing: 0.2px;
-  line-height: 11px;
-  color: var(--harmony-n-400);
-}
-
-.stats svg {
-  width: 14px;
-  height: 14px;
-  position: relative;
-  bottom: 1px;
-}
-
-.stats path {
-  fill: var(--harmony-n-400);
 }
 
 .albumArtContainer {

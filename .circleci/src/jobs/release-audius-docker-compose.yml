@@ -26,3 +26,6 @@ steps:
         git checkout main
         git merge $release_commit_hash --no-edit
         git push origin main
+  - docker-tag-images:
+      tag: current
+      service: all

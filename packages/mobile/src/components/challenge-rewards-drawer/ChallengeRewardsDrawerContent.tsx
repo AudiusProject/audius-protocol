@@ -23,7 +23,7 @@ const messages = {
   audio: '$AUDIO',
   incomplete: 'Incomplete',
   complete: 'Complete',
-  claim: 'Claim Your Reward',
+  claim: 'Claim This Reward',
   claimableLabel: '$AUDIO available to claim',
   claimedLabel: '$AUDIO claimed so far'
 }

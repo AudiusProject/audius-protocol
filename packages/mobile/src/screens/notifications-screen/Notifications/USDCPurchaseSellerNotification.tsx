@@ -10,12 +10,12 @@ import type {
 import { notificationsSelectors } from '@audius/common/store'
 import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { capitalize } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { IconCart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
-import { capitalize } from 'lodash'
 import {
   EntityLink,
   NotificationHeader,

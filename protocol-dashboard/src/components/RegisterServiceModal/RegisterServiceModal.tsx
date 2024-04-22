@@ -1,8 +1,9 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { Box, Flex, Text } from '@audius/harmony'
 import { ButtonType, TabSlider } from '@audius/stems'
 import BN from 'bn.js'
 import clsx from 'clsx'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import Button from 'components/Button'
 import ConfirmTransactionModal, {
@@ -26,6 +27,7 @@ import { formatShortWallet } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import { REGISTER_NODE_DOCS_URL } from 'utils/routes'
+
 import styles from './RegisterServiceModal.module.css'
 
 const messages = {
@@ -81,7 +83,7 @@ const RegisterServiceModal = ({
   //   where
   //    ACTIVE_STAKE = amount that we have staked in audius
   //    USED_STAKE = # of services we have * minstake for each service
-  let availableStake: BN | undefined = undefined
+  let availableStake: BN | undefined
   if (
     user &&
     'serviceProvider' in user &&
@@ -160,7 +162,7 @@ const RegisterServiceModal = ({
   ])
 
   const onSelectTab = useCallback(
-    selectedKey => {
+    (selectedKey) => {
       if (selectedKey === selectedTab) return
       setSelectedTab(selectedKey)
       setEndpoint(defaultEndpoint || '')
@@ -249,7 +251,7 @@ const RegisterServiceModal = ({
       isCloseable={true}
       dismissOnClickOutside={!isConfirmModalOpen}
     >
-      <Box mt="xl">
+      <Box mt='xl'>
         <InfoBox
           description={messages.learnMoreNode}
           ctaHref={REGISTER_NODE_DOCS_URL}
@@ -281,8 +283,8 @@ const RegisterServiceModal = ({
           placeholder={defaultDelegateOwnerWallet || wallet || ''}
           className={styles.input}
         />
-        <Flex gap="l" alignItems="flex-end" mb="xl">
-          <Flex direction="column" gap="xs" css={{ flexGrow: 1 }}>
+        <Flex gap='l' alignItems='flex-end' mb='xl'>
+          <Flex direction='column' gap='xs' css={{ flexGrow: 1 }}>
             <TextField
               value={stakingAmount}
               isNumeric
@@ -296,22 +298,22 @@ const RegisterServiceModal = ({
               })}
             />
             {exceedsMaxStake || doesNotMeetMinStake ? (
-              <Text color="danger" variant="body" size="s">
+              <Text color='danger' variant='body' size='s'>
                 {exceedsMaxStake
                   ? messages.maxStakeExceeded
                   : messages.minStakeNotMet}
               </Text>
             ) : null}
           </Flex>
-          <Flex direction="column" alignItems="flex-end">
-            <Text variant="heading" size="s">
+          <Flex direction='column' alignItems='flex-end'>
+            <Text variant='heading' size='s'>
               <DisplayAudio amount={min} />
             </Text>
-            <Flex inline gap="xs" alignItems="center">
-              <Text variant="body" size="m" strength="strong" color="subdued">
+            <Flex inline gap='xs' alignItems='center'>
+              <Text variant='body' size='m' strength='strong' color='subdued'>
                 {messages.minStake}
               </Text>
-              <OperatorStakeInfoTooltip color="subdued" />
+              <OperatorStakeInfoTooltip color='subdued' />
             </Flex>
           </Flex>
         </Flex>

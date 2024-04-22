@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { Status, BigNumber, Address } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { fetchUser } from 'store/cache/user/hooks'
-import { getAccountWallet } from 'store/account/hooks'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { getAccountWallet } from 'store/account/hooks'
+import { fetchUser } from 'store/cache/user/hooks'
+import { AppState } from 'store/types'
+import { Status, BigNumber, Address } from 'types'
 
 export function delegateAudiusStake(
   serviceOperatorWallet: Address,

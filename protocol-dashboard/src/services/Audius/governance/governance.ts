@@ -1,7 +1,10 @@
-import { AudiusClient } from '../AudiusClient'
-
 import BN from 'bn.js'
 
+import {
+  GovernanceProposalEvent,
+  GovernanceVoteEvent,
+  GovernanceVoteUpdateEvent
+} from 'models/TimelineEvents'
 import {
   Vote,
   Outcome,
@@ -12,11 +15,9 @@ import {
   Permission,
   ProposalEvent
 } from 'types'
-import {
-  GovernanceProposalEvent,
-  GovernanceVoteEvent,
-  GovernanceVoteUpdateEvent
-} from 'models/TimelineEvents'
+
+import { AudiusClient } from '../AudiusClient'
+
 import { RawProposal, RawVoteEvent } from './types'
 
 // NOTE: Temporary fix- Set the start query block so that the getPastEvent does not error
@@ -46,18 +47,18 @@ export default class Governance {
     queryStartBlock = QUERY_PROPOSAL_START_BLOCK
   ) {
     await this.aud.hasPermissions()
-    const proposal: ProposalEvent = await this.getContract().getProposalSubmission(
-      proposalId,
-      queryStartBlock
-    )
+    const proposal: ProposalEvent =
+      await this.getContract().getProposalSubmission(
+        proposalId,
+        queryStartBlock
+      )
     return proposal
   }
 
   async getProposalTargetContractHash(proposalId: ProposalId) {
     await this.aud.hasPermissions()
-    const contractHash: string = await this.getContract().getProposalTargetContractHash(
-      proposalId
-    )
+    const contractHash: string =
+      await this.getContract().getProposalTargetContractHash(proposalId)
     return contractHash
   }
 
@@ -151,9 +152,11 @@ export default class Governance {
     queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ) {
     await this.aud.hasPermissions()
-    const votes: RawVoteEvent[] = await this.getContract().getVoteSubmissionsByAddress(
-      { addresses, queryStartBlock }
-    )
+    const votes: RawVoteEvent[] =
+      await this.getContract().getVoteSubmissionsByAddress({
+        addresses,
+        queryStartBlock
+      })
     return votes.map(formatVoteEvent).filter(Boolean) as VoteEvent[]
   }
 
@@ -162,7 +165,7 @@ export default class Governance {
     queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ): Promise<GovernanceVoteEvent[]> {
     const votes = await this.getVotesByAddress(addresses, queryStartBlock)
-    return votes.map(v => ({
+    return votes.map((v) => ({
       ...v,
       _type: 'GovernanceVote'
     }))
@@ -174,9 +177,11 @@ export default class Governance {
     queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ) {
     await this.aud.hasPermissions()
-    const votes: RawVoteEvent[] = await this.getContract().getVoteUpdatesByAddress(
-      { addresses, queryStartBlock }
-    )
+    const votes: RawVoteEvent[] =
+      await this.getContract().getVoteUpdatesByAddress({
+        addresses,
+        queryStartBlock
+      })
     return votes.map(formatVoteEvent).filter(Boolean) as VoteEvent[]
   }
 
@@ -185,7 +190,7 @@ export default class Governance {
     queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ): Promise<GovernanceVoteUpdateEvent[]> {
     const votes = await this.getVoteUpdatesByAddress(addresses, queryStartBlock)
-    return votes.map(v => ({
+    return votes.map((v) => ({
       ...v,
       _type: 'GovernanceVoteUpdate'
     }))
@@ -212,11 +217,12 @@ export default class Governance {
     queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ): Promise<GovernanceProposalEvent[]> {
     await this.aud.hasPermissions()
-    const proposals: ProposalEvent[] = await this.getContract().getProposalsForAddresses(
-      addresses,
-      queryStartBlock
-    )
-    return proposals.map(p => ({
+    const proposals: ProposalEvent[] =
+      await this.getContract().getProposalsForAddresses(
+        addresses,
+        queryStartBlock
+      )
+    return proposals.map((p) => ({
       ...p,
       _type: 'GovernanceProposal'
     }))
@@ -241,9 +247,10 @@ export default class Governance {
   }) {
     // Current callValue is always 0. Changing this is unsupported.
     const proposal = {
-      targetContractRegistryKey: this.aud.libs.ethWeb3Manager.web3.utils.utf8ToHex(
-        args.targetContractName
-      ),
+      targetContractRegistryKey:
+        this.aud.libs.ethWeb3Manager.web3.utils.utf8ToHex(
+          args.targetContractName
+        ),
       functionSignature: args.functionSignature,
       callData: args.callData,
       callValue: new BN(0),

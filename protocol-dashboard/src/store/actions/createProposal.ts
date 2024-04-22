@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { Status } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { fetchActiveProposals } from 'store/cache/proposals/hooks'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { fetchActiveProposals } from 'store/cache/proposals/hooks'
+import { AppState } from 'store/types'
+import { Status } from 'types'
 
 function createAudiusProposal(
   targetContractName: string,
@@ -22,7 +23,7 @@ function createAudiusProposal(
     setStatus(Status.Loading)
     try {
       const proposal = {
-        targetContractName: targetContractName,
+        targetContractName,
         functionSignature: signature,
         callData,
         name,

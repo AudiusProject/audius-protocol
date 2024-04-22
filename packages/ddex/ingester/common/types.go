@@ -72,14 +72,15 @@ type Release struct {
 
 // ParsedReleaseElement contains parsed details of a <Release> element
 type ParsedReleaseElement struct {
-	ReleaseRef    string           `bson:"release_ref"`
-	IsMainRelease bool             `bson:"is_main_release"`
-	ReleaseType   ReleaseType      `bson:"release_type"`
-	ReleaseIDs    ReleaseIDs       `bson:"release_ids"`
-	ReleaseDate   time.Time        `bson:"release_date"`
-	Resources     ReleaseResources `bson:"resources"`
-	ArtistID      string           `bson:"artist_id"`
-	ArtistName    string           `bson:"artist_name"`
+	ReleaseRef        string           `bson:"release_ref"`
+	IsMainRelease     bool             `bson:"is_main_release"`
+	ReleaseType       ReleaseType      `bson:"release_type"`
+	ReleaseIDs        ReleaseIDs       `bson:"release_ids"`
+	ReleaseDate       time.Time        `bson:"release_date"`
+	ValidityStartDate time.Time        `bson:"validity_start_date"`
+	Resources         ReleaseResources `bson:"resources"`
+	ArtistID          string           `bson:"artist_id"`
+	ArtistName        string           `bson:"artist_name"`
 
 	DisplayTitle                 string                `bson:"display_title"` // For displaying on the frontend
 	DisplaySubtitle              NullableString        `bson:"display_subtitle,omitempty"`
@@ -98,6 +99,36 @@ type ParsedReleaseElement struct {
 	CopyrightLine                *Copyright            `bson:"copyright_line,omitempty"`
 	ProducerCopyrightLine        *Copyright            `bson:"producer_copyright_line,omitempty"`
 	ParentalWarningType          NullableString        `bson:"parental_warning_type,omitempty"`
+	IsStreamGated                bool                  `bson:"is_stream_gated,omitempty"`
+	StreamConditions             *AccessConditions     `bson:"stream_conditions,omitempty"`
+	IsDownloadGated              bool                  `bson:"is_download_gated,omitempty"`
+	DownloadConditions           *AccessConditions     `bson:"download_conditions,omitempty"`
+	IsStreamFollowGated          bool                  `bson:"is_stream_follow_gated"`
+	IsStreamTipGated             bool                  `bson:"is_stream_tip_gated"`
+	IsDownloadFollowGated        bool                  `bson:"is_download_follow_gated"`
+	HasDeal                      bool                  `bson:"has_deal"`
+}
+
+type USDCPurchaseConditions struct {
+	Price  int            `bson:"price,omitempty"`
+	Splits map[string]int `bson:"splits,omitempty"`
+}
+
+type CollectibleGatedConditions struct {
+	Chain        string `bson:"chain,omitempty"`
+	Address      string `bson:"address,omitempty"`
+	Standard     string `bson:"standard,omitempty"`
+	Name         string `bson:"name,omitempty"`
+	Slug         string `bson:"slug,omitempty"`
+	ImageURL     string `bson:"image_url,omitempty"`
+	ExternalLink string `bson:"external_link,omitempty"`
+}
+
+type AccessConditions struct {
+	USDCPurchase  *USDCPurchaseConditions     `bson:"usdc_purchase,omitempty"`
+	TipUserID     string                      `bson:"tip_user_id,omitempty"`
+	FollowUserID  string                      `bson:"follow_user_id,omitempty"`
+	NFTCollection *CollectibleGatedConditions `bson:"nft_collection,omitempty"`
 }
 
 // ReleaseResources contains the parsed resources (tracks and images) for a release

@@ -420,7 +420,7 @@ const TrackHeader = ({
         />
       ) : null}
       {streamConditions && trackId ? (
-        <Box mb='xl'>
+        <Box mb='xl' w='100%'>
           <GatedContentSection
             isLoading={isLoading}
             contentId={trackId}

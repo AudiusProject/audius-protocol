@@ -3,18 +3,17 @@ import { useCallback, useEffect } from 'react'
 import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
-  tippingSelectors,
   tippingActions,
-  walletActions,
-  TippingSendStatus
+  tippingSelectors,
+  TippingSendStatus,
+  walletActions
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
+  IconVerified as IconSuccess,
   Modal,
   ModalHeader,
-  ModalTitle,
-  IconVerified as IconSuccess,
-  IconTokenGold
+  ModalTitle
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -22,6 +21,7 @@ import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops.cjs'
 import { usePrevious } from 'react-use'
 
+import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
 import { useSelector } from 'common/hooks/useSelector'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 
@@ -42,10 +42,12 @@ const messages = {
 }
 
 const GoldBadgeIconImage = () => (
-  <IconTokenGold
-    size='l'
-    aria-label='Gold badge'
-    className={styles.iconToken}
+  <img
+    draggable={false}
+    alt='Gold badge'
+    src={IconGoldBadge}
+    width={24}
+    height={24}
   />
 )
 

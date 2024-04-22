@@ -147,6 +147,7 @@ export type GiantTrackTileProps = {
   trackId: number
   trackTitle: string
   userId: number
+  ddexApp?: string | null
 }
 
 export const GiantTrackTile = ({
@@ -193,7 +194,8 @@ export const GiantTrackTile = ({
   tags,
   trackId,
   trackTitle,
-  userId
+  userId,
+  ddexApp
 }: GiantTrackTileProps) => {
   const dispatch = useDispatch()
   const { isSsrEnabled } = useSsrContext()
@@ -507,6 +509,7 @@ export const GiantTrackTile = ({
       type: 'track',
       trackId,
       trackTitle,
+      ddexApp,
       genre,
       handle: artistHandle,
       isFavorited: isSaved,
@@ -647,7 +650,7 @@ export const GiantTrackTile = ({
 
       <ClientOnly>
         {isStreamGated && streamConditions ? (
-          <Box mb='xl'>
+          <Box mb='xl' mh='xl' w='100%'>
             <GatedContentSection
               isLoading={isLoading}
               contentId={trackId}

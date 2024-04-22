@@ -1,7 +1,8 @@
-import BN from 'bn.js'
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { Box, Flex, Text, TokenAmountInput } from '@audius/harmony'
+import BN from 'bn.js'
+
 import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal, {
   NewStake,
@@ -19,6 +20,7 @@ import { useUpdateStake } from 'store/actions/updateStake'
 import { Operator, Status } from 'types'
 import { TICKER } from 'utils/consts'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+
 import styles from './UpdateStakeModal.module.css'
 
 const messages = {
@@ -197,36 +199,36 @@ const UpdateStakeModal: React.FC<UpdateStakeModalProps> = ({
       isCloseable={true}
       dismissOnClickOutside={!isConfirmModalOpen}
     >
-      <Flex direction="column" w="100%" pt="l" css={{ maxWidth: 480 }} gap="l">
-        <Box border="default" borderRadius="s">
+      <Flex direction='column' w='100%' pt='l' css={{ maxWidth: 480 }} gap='l'>
+        <Box border='default' borderRadius='s'>
           <Flex
-            pv="m"
-            ph="xl"
-            justifyContent="space-between"
-            backgroundColor="surface1"
+            pv='m'
+            ph='xl'
+            justifyContent='space-between'
+            backgroundColor='surface1'
           >
-            <Text variant="title" size="m">
+            <Text variant='title' size='m'>
               {messages.currentStake}
             </Text>
-            <Text variant="title" size="m">
+            <Text variant='title' size='m'>
               <DisplayAudio amount={oldStakeAmount} />
             </Text>
           </Flex>
           <Flex
-            pv="m"
-            ph="xl"
-            justifyContent="space-between"
-            borderTop="default"
+            pv='m'
+            ph='xl'
+            justifyContent='space-between'
+            borderTop='default'
           >
-            <Text variant="body" size="m">
+            <Text variant='body' size='m'>
               {messages.minStake}
             </Text>
-            <Text variant="body" size="m">
+            <Text variant='body' size='m'>
               <DisplayAudio amount={minAccountStake} />
             </Text>
           </Flex>
         </Box>
-        <Flex gap="l" alignItems="center">
+        <Flex gap='l' alignItems='center'>
           <TokenAmountInput
             label={messages.newStakingAmount}
             isWhole={false}
@@ -235,22 +237,22 @@ const UpdateStakeModal: React.FC<UpdateStakeModalProps> = ({
             decimals={8}
             value={stakingAmount}
             error={hasError}
-            onChange={stringValue => {
+            onChange={(stringValue) => {
               onUpdateStaking(stringValue)
             }}
             helperText={errorText}
             max={max ? AudiusClient.displayShortAud(max) : undefined}
           />
-          <Flex direction="column">
-            <Text variant="heading" size="s">
+          <Flex direction='column'>
+            <Text variant='heading' size='s'>
               <DisplayAudio position={Position.BOTTOM} amount={stakeChange} />
             </Text>
-            <Text variant="body" size="m">
+            <Text variant='body' size='m'>
               {messages.change}
             </Text>
           </Flex>
         </Flex>
-        <Flex justifyContent="center">
+        <Flex justifyContent='center'>
           <Button
             isDisabled={
               !stakingAmount ||

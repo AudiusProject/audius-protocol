@@ -1,6 +1,9 @@
 import React from 'react'
 
-import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
+import {
+  formatCooldownChallenges,
+  useChallengeCooldownSchedule
+} from '@audius/common/hooks'
 import type { ChallengeRewardID } from '@audius/common/models'
 
 import { SummaryTable } from '../summary-table'
@@ -16,15 +19,16 @@ export const CooldownSummaryTable = ({
 }: {
   challengeId: ChallengeRewardID
 }) => {
-  const { cooldownChallenges, cooldownChallengesSummary, isEmpty } =
-    useAudioMatchingChallengeCooldownSchedule(challengeId)
+  const { cooldownChallenges, summary, isEmpty } = useChallengeCooldownSchedule(
+    { challengeId }
+  )
   return !isEmpty ? (
     <SummaryTable
       title={messages.upcomingRewards}
       secondaryTitle={messages.audio}
       summaryValueColor='default'
-      items={cooldownChallenges}
-      summaryItem={cooldownChallengesSummary}
+      items={formatCooldownChallenges(cooldownChallenges)}
+      summaryItem={summary}
     />
   ) : null
 }

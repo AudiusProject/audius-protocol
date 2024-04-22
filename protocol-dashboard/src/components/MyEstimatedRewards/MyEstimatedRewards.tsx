@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { Flex, Text } from '@audius/harmony'
+
 import DisplayAudio from 'components/DisplayAudio'
 import Loading from 'components/Loading'
 import {
@@ -22,12 +23,12 @@ type RowStatProps = {
 }
 const RowStat: React.FC<RowStatProps> = ({ label, value }) => {
   return (
-    <Flex gap="s" alignItems="center">
-      <Text variant="heading" size="s">
+    <Flex gap='s' alignItems='center'>
+      <Text variant='heading' size='s'>
         {value}
       </Text>
 
-      <Text variant="body" size="l" strength="strong" color="subdued">
+      <Text variant='body' size='l' strength='strong' color='subdued'>
         {label}
       </Text>
     </Flex>
@@ -59,7 +60,7 @@ const MyEstimatedRewards: React.FC<MyEstimatedRewardsProps> = ({ wallet }) => {
     ) : null
 
   return (
-    <Flex direction="column">
+    <Flex direction='column'>
       {isLoading ? (
         <Loading />
       ) : (

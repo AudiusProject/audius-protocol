@@ -86,6 +86,7 @@ export type SearchTrack = TrackImage & {
   followee_favorites: null
   user_id: number
   permalink: string
+  ddex_app: null
   _remixes: undefined
   _remixes_count: undefined
 }
@@ -120,4 +121,6 @@ export type SearchPlaylist = CollectionImage & {
       time: number
     }[]
   }
+  stream_conditions: null
+  ddex_app: null
 }

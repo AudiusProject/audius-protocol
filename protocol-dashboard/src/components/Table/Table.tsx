@@ -1,11 +1,13 @@
+import React, { useCallback } from 'react'
+
 import { Flex, Text } from '@audius/harmony'
 import clsx from 'clsx'
-import Loading from 'components/Loading'
-import Paper from 'components/Paper'
-import React, { useCallback } from 'react'
 
 import Error from 'components/Error'
 import { AppliedInfoTooltipProps } from 'components/InfoTooltip/InfoTooltips'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
+
 import styles from './Table.module.css'
 
 type TableProps = {
@@ -90,8 +92,8 @@ const Table: React.FC<TableProps> = ({
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       {title && (
         <div className={styles.titleContainer}>
-          <Flex inline gap="xs" alignItems="center">
-            <Text variant="heading" size="s" strength="default" tag="span">
+          <Flex inline gap='xs' alignItems='center'>
+            <Text variant='heading' size='s' strength='default' tag='span'>
               {title}
             </Text>
             {tooltipComponent == null ? null : <TooltipComponent />}
@@ -108,7 +110,7 @@ const Table: React.FC<TableProps> = ({
       ) : (
         <>
           <div className={styles.headers}>
-            {columns.map(c => (
+            {columns.map((c) => (
               <div
                 key={c.title}
                 className={clsx(styles.columnTitle, c.className)}

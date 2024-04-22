@@ -186,10 +186,10 @@ export const parseHealthStatusReason = ({
     }
   }
 
-  if (data.chain_health?.status === "Unhealthy") {
+  if (data.chain_health?.status === 'Unhealthy') {
     return {
       health: HealthCheckStatus.UNHEALTHY,
-      reason: "chain"
+      reason: 'chain'
     }
   }
 

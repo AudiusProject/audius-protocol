@@ -148,6 +148,13 @@ const trackMetadataSchema = new mongoose.Schema({
   cover_art_url: String,
   cover_art_url_hash: String,
   cover_art_url_hash_algo: String,
+  is_stream_gated: { type: Boolean, default: false },
+  stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+  is_download_gated: { type: Boolean, default: false },
+  download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+  is_stream_follow_gated: { type: Boolean, default: false },
+  is_stream_tip_gated: { type: Boolean, default: false },
+  is_download_follow_gated: { type: Boolean, default: false },
 })
 
 export type TrackMetadata = mongoose.InferSchemaType<typeof trackMetadataSchema>
@@ -207,6 +214,7 @@ export const sdkUploadMetadataSchema = new mongoose.Schema(
     cover_art_url: { type: String, required: true },
     cover_art_url_hash: nullableString,
     cover_art_url_hash_algo: nullableString,
+    has_deal: { type: Boolean, default: false },
 
     // Only for tracks
     title: nullableString,
@@ -223,6 +231,13 @@ export const sdkUploadMetadataSchema = new mongoose.Schema(
     audio_file_url: nullableString,
     audio_file_url_hash: nullableString,
     audio_file_url_hash_algo: nullableString,
+    is_stream_gated: { type: Boolean, default: false },
+    stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+    is_download_gated: { type: Boolean, default: false },
+    download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+    is_stream_follow_gated: { type: Boolean, default: false },
+    is_stream_tip_gated: { type: Boolean, default: false },
+    is_download_follow_gated: { type: Boolean, default: false },
 
     // Only for albums
     tracks: [trackMetadataSchema],
@@ -256,6 +271,7 @@ const parsedReleaseElementSchema = new mongoose.Schema(
     },
     release_ids: releaseIDsSchema,
     release_date: { type: Date, required: true },
+    validity_start_date: { type: Date, required: true },
     resources: releaseResourcesSchema,
     artist_id: { type: String, required: true },
     artist_name: { type: String, required: true },
@@ -279,6 +295,14 @@ const parsedReleaseElementSchema = new mongoose.Schema(
     copyright_line: { type: copyrightSchema, default: null },
     producer_copyright_line: { type: copyrightSchema, default: null },
     parental_warning_type: nullableString,
+    is_stream_gated: { type: Boolean, default: false },
+    stream_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+    is_download_gated: { type: Boolean, default: false },
+    download_conditions: { type: mongoose.Schema.Types.Mixed, default: null },
+    is_stream_follow_gated: { type: Boolean, default: false },
+    is_stream_tip_gated: { type: Boolean, default: false },
+    is_download_follow_gated: { type: Boolean, default: false },
+    has_deal: { type: Boolean, default: false },
   },
   { _id: false }
 ) // _id is set to false because this schema is used as a sub-document

@@ -176,7 +176,7 @@ const CollectionPage = ({
 
   const {
     isEmpty,
-    lastModified,
+    lastModifiedDate,
     playlistName,
     description,
     isPrivate,
@@ -220,6 +220,7 @@ const CollectionPage = ({
       artistName: entry?.user?.name,
       artistHandle: entry?.user?.handle,
       trackTitle: entry.title,
+      ddexApp: entry.ddex_app,
       permalink: entry.permalink,
       trackId: entry.track_id,
       uid: entry.uid,
@@ -251,6 +252,7 @@ const CollectionPage = ({
             }
             tracksLoading={tracksLoading}
             type={typeTitle}
+            ddexApp={metadata?.ddex_app}
             title={playlistName}
             artistName={playlistOwnerName}
             artistHandle={playlistOwnerHandle}
@@ -260,7 +262,7 @@ const CollectionPage = ({
             isAlbum={isAlbum}
             numTracks={numTracks}
             isPlayable={isPlayable}
-            modified={lastModified || Date.now()}
+            modified={lastModifiedDate}
             duration={duration}
             isPublished={!isPrivate}
             isPublishing={isPublishing}

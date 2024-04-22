@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class GetUSDCTransactionsCountArgs(TypedDict):
     user_id: int
-    transaction_type: Optional[USDCTransactionType]
+    transaction_type: Optional[List[USDCTransactionType]]
     transaction_method: Optional[USDCTransactionMethod]
     include_system_transactions: Optional[bool]
 
@@ -34,7 +34,7 @@ class GetUSDCTransactionsArgs(TypedDict):
     user_id: int
     sort_direction: SortDirection
     sort_method: TransactionSortMethod
-    transaction_type: Optional[USDCTransactionType]
+    transaction_type: Optional[List[USDCTransactionType]]
     transaction_method: Optional[USDCTransactionMethod]
     include_system_transactions: Optional[bool]
     limit: int
@@ -76,7 +76,7 @@ def _get_usdc_transactions_history_count(
     )
     if transaction_type is not None:
         query = query.filter(
-            USDCTransactionsHistory.transaction_type == transaction_type
+            USDCTransactionsHistory.transaction_type.in_(transaction_type)
         )
     if not include_system_transactions:
         query = query.filter(
@@ -124,7 +124,7 @@ def _get_usdc_transactions_history(session: Session, args: GetUSDCTransactionsAr
     )
     if transaction_type is not None:
         query = query.filter(
-            USDCTransactionsHistory.transaction_type == transaction_type
+            USDCTransactionsHistory.transaction_type.in_(transaction_type)
         )
     if not include_system_transactions:
         query = query.filter(

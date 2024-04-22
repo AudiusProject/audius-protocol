@@ -67,6 +67,7 @@ export const LineupTile = ({
   const currentUserId = useSelector(getUserId)
   const isOwner = user_id === currentUserId
   const isCollection = 'playlist_id' in item
+  const isAlbum = 'is_album' in item && item.is_album
   const isTrack = 'track_id' in item
   const contentId = isTrack ? item.track_id : item.playlist_id
   const streamConditions = item.stream_conditions ?? null
@@ -122,6 +123,7 @@ export const LineupTile = ({
           title={title}
           user={user}
           isPlayingUid={isPlayingUid}
+          type={isTrack ? 'track' : isAlbum ? 'album' : 'playlist'}
         />
         {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
         <LineupTileStats
@@ -148,26 +150,28 @@ export const LineupTile = ({
       </View>
       {children}
 
-      <LineupTileActionButtons
-        hasReposted={has_current_user_reposted}
-        hasSaved={has_current_user_saved}
-        isOwner={isOwner}
-        isShareHidden={hideShare}
-        isUnlisted={isUnlisted}
-        readonly={isReadonly}
-        contentId={contentId}
-        contentType={
-          isTrack
-            ? PurchaseableContentType.TRACK
-            : PurchaseableContentType.ALBUM
-        }
-        streamConditions={streamConditions}
-        hasStreamAccess={hasStreamAccess}
-        onPressOverflow={onPressOverflow}
-        onPressRepost={onPressRepost}
-        onPressSave={onPressSave}
-        onPressShare={onPressShare}
-      />
+      {isReadonly ? null : (
+        <LineupTileActionButtons
+          hasReposted={has_current_user_reposted}
+          hasSaved={has_current_user_saved}
+          isOwner={isOwner}
+          isShareHidden={hideShare}
+          isUnlisted={isUnlisted}
+          readonly={isReadonly}
+          contentId={contentId}
+          contentType={
+            isTrack
+              ? PurchaseableContentType.TRACK
+              : PurchaseableContentType.ALBUM
+          }
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
+          onPressOverflow={onPressOverflow}
+          onPressRepost={onPressRepost}
+          onPressSave={onPressSave}
+          onPressShare={onPressShare}
+        />
+      )}
     </LineupTileRoot>
   )
 }

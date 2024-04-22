@@ -42,14 +42,13 @@ const formatTrackMetadata = (
     copyrightLine: metadata.copyright_line,
     producerCopyrightLine: metadata.producer_copyright_line,
     parentalWarningType: metadata.parental_warning_type,
+    isStreamGated: metadata.is_stream_gated,
+    streamConditions: metadata.stream_conditions,
+    isDownloadGated: metadata.is_download_gated,
+    downloadConditions: metadata.download_conditions,
     // isUnlisted: // TODO: set visibility
     // origFilename:
     // isOriginalAvailable:
-    // isStreamGated:
-    // streamConditions:
-    // isDownloadable:
-    // isDownloadGated:
-    // downloadConditions:
     // remixOf:
   }
 }
@@ -202,9 +201,23 @@ export const publishReleases = async (
     let documents
     try {
       const currentDate = new Date()
-      documents = await PendingReleases.find({
-        'release.sdk_upload_metadata.release_date': { $lte: currentDate },
-      }).lean<PendingRelease[]>()
+      documents = await PendingReleases.aggregate([
+        {
+          $match: {
+            $expr: {
+              $lte: [
+                {
+                  $max: [
+                    '$release.sdk_upload_metadata.release_date',
+                    '$release.sdk_upload_metadata.validity_start_date',
+                  ],
+                },
+                currentDate,
+              ],
+            },
+          },
+        },
+      ])
     } catch (error) {
       console.error('Failed to fetch pending releases:', error)
       await new Promise((resolve) => setTimeout(resolve, 10_000))

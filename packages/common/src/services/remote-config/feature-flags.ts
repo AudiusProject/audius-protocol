@@ -58,9 +58,12 @@ export enum FeatureFlags {
   TIKTOK_NATIVE_AUTH = 'tiktok_native_auth',
   PREMIUM_ALBUMS_ENABLED = 'premium_albums_enabled',
   REWARDS_COOLDOWN = 'rewards_cooldown',
+  SDK_MIGRATION_SHADOWING = 'sdk_migration_shadowing',
   USE_SDK_TIPS = 'use_sdk_tips',
   USE_SDK_REWARDS = 'use_sdk_rewards',
-  DISCOVERY_TIP_REACTIONS = 'discovery_tip_reactions'
+  DISCOVERY_TIP_REACTIONS = 'discovery_tip_reactions',
+  USE_ADDRESS_LOOKUPS = 'use_address_lookups',
+  MANAGER_MODE = 'manager_mode'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -134,7 +137,10 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.TIKTOK_NATIVE_AUTH]: true,
   [FeatureFlags.PREMIUM_ALBUMS_ENABLED]: false,
   [FeatureFlags.REWARDS_COOLDOWN]: false,
+  [FeatureFlags.SDK_MIGRATION_SHADOWING]: false,
   [FeatureFlags.USE_SDK_TIPS]: false,
   [FeatureFlags.USE_SDK_REWARDS]: false,
-  [FeatureFlags.DISCOVERY_TIP_REACTIONS]: false
+  [FeatureFlags.DISCOVERY_TIP_REACTIONS]: false,
+  [FeatureFlags.USE_ADDRESS_LOOKUPS]: false,
+  [FeatureFlags.MANAGER_MODE]: false
 }

@@ -72,6 +72,7 @@ jobs:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
             - ./node_modules
+            - ./protocol-dashboard/node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
             - ./packages/embed/node_modules
@@ -81,7 +82,8 @@ jobs:
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
-            - ./packages/ddex/webapp/node_modules
+            - ./packages/ddex/webapp/client/node_modules
+            - ./packages/ddex/webapp/server/node_modules
             - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
             - ./packages/create-audius-app/node_modules
@@ -105,8 +107,6 @@ jobs:
       - run:
           name: Create + push branch
           command: |
-            git checkout main
-
             OLD_VERSION=$(jq -r .version packages/discovery-provider/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
@@ -120,8 +120,17 @@ jobs:
             mv /tmp/.version.json packages/discovery-provider/.version.json
             git add packages/discovery-provider/.version.json
 
+            PROTOCOL_DIRS=$(bash ./scripts/get-release-dirs.sh protocol)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short protocol-v${OLD_VERSION}..HEAD -- ${PROTOCOL_DIRS})
+            MESSAGE="Audius Protocol v${NEW_VERSION}
+
+            ${CHANGELOG}"
+            git commit -m "${MESSAGE}"
+
+            git tag protocol-v${NEW_VERSION}
+            git push origin protocol-v${NEW_VERSION}
+
             # Weird way to push both to main and the new release branch
-            git commit -m "Bump version to $NEW_VERSION"
             git branch "release-v$NEW_VERSION"
             git checkout "release-v$NEW_VERSION"
             git push --set-upstream origin main "release-v$NEW_VERSION"
@@ -321,12 +330,13 @@ jobs:
             git config --global user.email "audius-infra@audius.co"
             git config --global user.name "audius-infra"
             PREV_VERSION=$(jq -r .version ./package.json)
-            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${PREV_VERSION}..HEAD)
+            CLIENT_DIRS=$(bash ./scripts/get-release-dirs.sh client)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${PREV_VERSION}..HEAD -- ${CLIENT_DIRS})
             npm i --ignore-scripts
-            npm version patch -ws --include-workspace-root --no-git-tag-version
+            npm version patch -w audius-client -w audius-mobile-client --include-workspace-root --no-git-tag-version
             git add .
             VERSION=$(jq -r .version ./package.json)
-            MESSAGE="v${VERSION}
+            MESSAGE="Audius Client (Web and Mobile) v${VERSION}
 
             ${CHANGELOG}"
             git commit -m "${MESSAGE}"
@@ -463,6 +473,8 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/webapp/.* run-ddex-e2e-workflow true
+            packages/ddex/ingester/.* run-ddex-e2e-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
@@ -474,6 +486,7 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-webapp-workflow true
+            .circleci/.* run-ddex-e2e-workflow true
             .circleci/.* run-ddex-publisher-workflow true
             .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
@@ -549,6 +562,8 @@ workflows:
             packages/web/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/webapp/.* run-ddex-e2e-workflow true
+            packages/ddex/ingester/.* run-ddex-e2e-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true

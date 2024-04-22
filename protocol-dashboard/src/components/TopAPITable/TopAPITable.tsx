@@ -1,11 +1,14 @@
+import React from 'react'
+
 import { IconCrown } from '@audius/stems'
 import clsx from 'clsx'
+
 import Table from 'components/Table'
-import React from 'react'
 import { useTopApps } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { formatNumberCommas } from 'utils/format'
 import { useIsMobile } from 'utils/hooks'
+
 import styles from './TopAPITable.module.css'
 
 const messages = {

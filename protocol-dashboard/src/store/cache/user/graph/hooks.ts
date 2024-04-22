@@ -1,13 +1,17 @@
-import { AnyAction } from '@reduxjs/toolkit'
 import { useEffect, useState } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 import { Action } from 'redux'
 import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
 import Audius from 'services/Audius'
 import { getGraphAPI, useGraphQuery as useQuery } from 'store/api/hooks'
 import { AppState } from 'store/types'
 import { Operator, Status, User } from 'types'
+
 import { setLoading, setUsers } from '../slice'
+
 import { formatUser } from './formatter'
 import { GET_USER, GET_USERS } from './queries'
 import { FullUser, UserData, UserVars, UsersData, UsersVars } from './types'
@@ -22,7 +26,7 @@ function populateUsers(
       if (setStatus) setStatus(Status.Loading)
       else dispatch(setLoading())
       const formattedUsers = await Promise.all(
-        users.filter(user => !!user).map(user => formatUser(aud, user))
+        users.filter((user) => !!user).map((user) => formatUser(aud, user))
       )
       dispatch(
         setUsers({
@@ -38,7 +42,7 @@ function populateUsers(
       )
       if (setStatus) setStatus(Status.Success)
     } catch (err) {
-      console.log({ err })
+      console.error({ err })
     }
   }
 }

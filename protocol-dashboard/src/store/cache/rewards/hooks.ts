@@ -1,23 +1,24 @@
-import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
-import BN from 'bn.js'
-
-import { Address, User, Operator, Status } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
 import { useEffect } from 'react'
 
+import { AnyAction } from '@reduxjs/toolkit'
+import BN from 'bn.js'
+import { useSelector, useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
 import {
   useFundsPerRound,
   useLastFundedBlock,
   usePendingClaim
 } from 'store/cache/claims/hooks'
 import { useEthBlockNumber } from 'store/cache/protocol/hooks'
-import { useUsers } from 'store/cache/user/hooks'
 import { fetchWeeklyRewards, setWeeklyRewards } from 'store/cache/rewards/slice'
+import { useUsers } from 'store/cache/user/hooks'
+import { AppState } from 'store/types'
+import { Address, User, Operator, Status } from 'types'
+
 import { getRewardForClaimBlock } from './helpers'
-import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getUserRewards = (wallet: Address) => (state: AppState) =>
@@ -49,16 +50,14 @@ export function fetchRewards({
     try {
       // NOTE: If blocknumber is set to lastFundedBlock, then the reward will represent the pending claim amount
       const blockNumber = currentBlockNumber
-      const {
-        totalRewards,
-        delegateToUserRewards
-      } = await getRewardForClaimBlock({
-        wallet,
-        users,
-        fundsPerRound,
-        blockNumber,
-        aud
-      })
+      const { totalRewards, delegateToUserRewards } =
+        await getRewardForClaimBlock({
+          wallet,
+          users,
+          fundsPerRound,
+          blockNumber,
+          aud
+        })
       dispatch(
         setWeeklyRewards({
           wallet,
@@ -68,7 +67,7 @@ export function fetchRewards({
       )
     } catch (error) {
       // TODO: Handle error case
-      console.log(error)
+      console.error(error)
     }
   }
 }
@@ -79,10 +78,8 @@ export const useUserWeeklyRewards = ({ wallet }: { wallet: Address }) => {
   const weeklyRewards = useSelector(getUserRewards(wallet))
   const currentBlockNumber = useEthBlockNumber()
   const { status: fundsStatus, amount: fundsPerRound } = useFundsPerRound()
-  const {
-    status: lastFundedStatus,
-    blockNumber: lastFundedBlock
-  } = useLastFundedBlock()
+  const { status: lastFundedStatus, blockNumber: lastFundedBlock } =
+    useLastFundedBlock()
   const { status: usersStatus, users } = useUsers()
   const { status: claimStatus, hasClaim } = usePendingClaim(wallet)
 
@@ -93,7 +90,7 @@ export const useUserWeeklyRewards = ({ wallet }: { wallet: Address }) => {
       usersStatus,
       lastFundedStatus,
       claimStatus
-    ].every(status => status === Status.Success)
+    ].every((status) => status === Status.Success)
     if (wallet && hasInfo && currentBlockNumber && !weeklyRewards) {
       dispatch(
         fetchRewards({

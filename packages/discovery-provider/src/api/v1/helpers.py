@@ -668,6 +668,21 @@ class DescriptiveArgument(reqparse.Argument):
         return param
 
 
+class ListEnumArgument(DescriptiveArgument):
+    """
+    A descriptive argument that's used for a list of enum values.
+    See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
+    """
+
+    @property
+    def __schema__(self):
+        param = super().__schema__
+        if "enum" in param and "items" in param:
+            param["items"]["enum"] = param["enum"]
+            del param["enum"]
+        return param
+
+
 # Helper to allow consumer to pass message and signature headers as request params
 def add_auth_headers_to_parser(parser, required=True):
     parser.add_argument(

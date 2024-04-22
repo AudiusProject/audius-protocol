@@ -1,17 +1,17 @@
 export const email = ({
   purchaserName,
-  trackTitle,
-	trackLink,
-	trackImage,
+  contentTitle,
+  contentLink,
+  contentImage,
   artistName,
   price,
   payExtra,
   total
 }: {
   purchaserName: string
-  trackTitle: string
-		trackLink: string
-		trackImage: string
+  contentTitle: string
+  contentLink: string
+  contentImage: string
   artistName: string
   price: string
   payExtra: string
@@ -169,7 +169,7 @@ export const email = ({
 							</table>
 						</div> 
 						<div>
-							<a href="${trackLink}" target="_blank">
+							<a href="${contentLink}" target="_blank">
 							<table border="0" cellspacing="0" cellpadding="0" width="100%">
 							<tr><td align="left" valign="middle" style="padding: 40px; border-top: 1px solid #f2f2f4;">
 								<div>
@@ -183,7 +183,7 @@ export const email = ({
 													<tr><td align="center" style="padding: 0px 6px;">
 														<div>
 															<div>
-																<img src="${trackImage}" width="112" alt="" border="0" style="display: block; max-width: 112px; width: 100%;" class="w112px">
+																<img src="${contentImage}" width="112" alt="" border="0" style="display: block; max-width: 112px; width: 100%;" class="w112px">
 															</div>
 														</div>
 													</td></tr>
@@ -212,7 +212,7 @@ export const email = ({
 																<tr><td align="left" valign="middle" style="padding: 8px 0px;">
 																	<div>
 																		<div style="line-height: 24px;">
-																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc;">${trackTitle}<br>${artistName}</span>
+																			<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 18px; color: #7e1bcc;">${contentTitle}<br>${artistName}</span>
 																		</div>
 																	</div>
 																</td></tr>

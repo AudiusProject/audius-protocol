@@ -1,10 +1,13 @@
+import React, { useEffect, useState } from 'react'
+
 import { useDisconnect, useWeb3ModalProvider } from '@web3modal/ethers/react'
+
 import Button, { ButtonType } from 'components/Button'
 import Modal from 'components/Modal'
-import React, { useEffect, useState } from 'react'
 import { getWalletChainId } from 'services/Audius/setup'
 import { CHAIN_ID } from 'utils/eth'
 import { decimalNetworkIdToHexNetworkId } from 'utils/switchNetwork'
+
 import styles from './MisconfiguredModal.module.css'
 
 const messages = {
