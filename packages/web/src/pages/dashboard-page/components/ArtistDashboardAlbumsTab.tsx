@@ -1,8 +1,11 @@
+import { useCallback } from 'react'
+
 import { Nullable } from '@audius/common/utils'
 import { Paper } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { makeGetDashboard } from '../store/selectors'
 
@@ -21,19 +24,26 @@ const albumTableColumns: TracksTableColumn[] = [
 type ArtistDashboardAlbumsTabProps = {
   selectedFilter: Nullable<AlbumFilters>
   filterText: string
-  onClickRow: (record: any) => void
 }
 
 export const ArtistDashboardAlbumsTab = ({
   selectedFilter,
-  filterText,
-  onClickRow
+  filterText
 }: ArtistDashboardAlbumsTabProps) => {
+  const goToRoute = useGoToRoute()
   const { account } = useSelector(makeGetDashboard())
   const filteredData = useFilteredAlbumData({
     selectedFilter,
     filterText
   })
+
+  const onClickRow = useCallback(
+    (collection: any) => {
+      if (!account) return
+      goToRoute(collection.permalink)
+    },
+    [account, goToRoute]
+  )
 
   if (!filteredData.length || !account) return null
 

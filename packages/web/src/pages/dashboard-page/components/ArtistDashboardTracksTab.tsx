@@ -5,6 +5,7 @@ import { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
 import { fetchTracks } from '../store/slice'
@@ -26,17 +27,20 @@ const tracksTableColumns: TracksTableColumn[] = [
 type ArtistDashboardTracksTabProps = {
   selectedFilter: Nullable<TrackFilters>
   filterText: string
-  onClickRow: (record: any) => void
 }
 
 export const ArtistDashboardTracksTab = ({
   selectedFilter,
-  filterText,
-  onClickRow
+  filterText
 }: ArtistDashboardTracksTabProps) => {
   const dispatch = useDispatch()
+  const goToRoute = useGoToRoute()
   const tracksStatus = useSelector(getDashboardTracksStatus)
   const { account } = useSelector(makeGetDashboard())
+  const filteredData = useFilteredTrackData({
+    selectedFilter,
+    filterText
+  })
 
   const handleFetchPage = useCallback(
     (page: number) => {
@@ -47,10 +51,13 @@ export const ArtistDashboardTracksTab = ({
     [dispatch]
   )
 
-  const filteredData = useFilteredTrackData({
-    selectedFilter,
-    filterText
-  })
+  const onClickRow = useCallback(
+    (track: any) => {
+      if (!account) return
+      goToRoute(track.permalink)
+    },
+    [account, goToRoute]
+  )
 
   if (!filteredData.length || !account) return null
 

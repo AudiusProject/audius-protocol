@@ -10,14 +10,9 @@ import {
   TextInput,
   TextInputSize
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
-import { useGoToRoute } from 'hooks/useGoToRoute'
-
-import { makeGetDashboard } from '../store/selectors'
-
-import { ArtistDashboardAlbumsTab } from './AlbumsTab'
-import { ArtistDashboardTracksTab } from './TracksTab'
+import { ArtistDashboardAlbumsTab } from './ArtistDashboardAlbumsTab'
+import { ArtistDashboardTracksTab } from './ArtistDashboardTracksTab'
 import {
   useArtistDashboardAlbumFilters,
   useArtistDashboardTrackFilters,
@@ -40,8 +35,6 @@ enum Pills {
 }
 
 export const ArtistContentSection = () => {
-  const goToRoute = useGoToRoute()
-  const { account } = useSelector(makeGetDashboard())
   const [filterText, setFilterText] = useState('')
   const [selectedPill, setSelectedPill] = useState(Pills.TRACKS)
   const [selectedTrackFilter, setSelectedTrackFilter] =
@@ -68,14 +61,6 @@ export const ArtistContentSection = () => {
     (isTracks && !hasOnlyOneTrackSection) ||
     (!isTracks && !hasOnlyOneAlbumSection)
   const shouldShowPills = tracks.length && albums.length
-
-  const onClickRow = useCallback(
-    (record: any) => {
-      if (!account) return
-      goToRoute(record.permalink)
-    },
-    [account, goToRoute]
-  )
 
   const onClickPill = useCallback(
     (pill: Pills) => {
@@ -156,13 +141,11 @@ export const ArtistContentSection = () => {
         <ArtistDashboardTracksTab
           selectedFilter={selectedTrackFilter}
           filterText={filterText}
-          onClickRow={onClickRow}
         />
       ) : (
         <ArtistDashboardAlbumsTab
           selectedFilter={selectedAlbumFilter}
           filterText={filterText}
-          onClickRow={onClickRow}
         />
       )}
     </Paper>
