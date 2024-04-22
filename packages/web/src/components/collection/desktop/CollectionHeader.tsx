@@ -179,8 +179,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const renderAlbumDetailsText = () => {
     const releaseAndUpdatedText = lastModifiedDate
       ? `Released ${formatDate(`${releaseDate}`)}, Updated ${formatDate(
-        `${lastModifiedDate}`
-      )}`
+          `${lastModifiedDate}`
+        )}`
       : `Released ${formatDate(`${releaseDate}`)}`
 
     const trackCountText = `${numTracks} tracks`

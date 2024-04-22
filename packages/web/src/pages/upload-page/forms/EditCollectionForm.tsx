@@ -78,7 +78,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      console.log(values)
       onContinue({
         uploadType,
         tracks: values.tracks,

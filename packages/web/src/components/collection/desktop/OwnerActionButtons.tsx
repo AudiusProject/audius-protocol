@@ -6,7 +6,6 @@ import { EditButton } from './EditButton'
 import { OverflowMenuButton } from './OverflowMenuButton'
 import { PublishButton } from './PublishButton'
 import { ShareButton } from './ShareButton'
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 const { getCollection } = collectionPageSelectors
 
 type OwnerActionButtonProps = {
