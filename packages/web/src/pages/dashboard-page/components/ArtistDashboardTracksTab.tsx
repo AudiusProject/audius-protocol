@@ -20,6 +20,7 @@ const tracksTableColumns: TracksTableColumn[] = [
   'releaseDate',
   'length',
   'plays',
+  'saves',
   'reposts',
   'overflowMenu'
 ]

@@ -17,6 +17,7 @@ const albumTableColumns: TracksTableColumn[] = [
   'spacer',
   'trackName',
   'releaseDate',
+  'saves',
   'reposts',
   'overflowMenu'
 ]
