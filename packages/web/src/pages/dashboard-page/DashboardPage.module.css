@@ -85,3 +85,7 @@
   min-height: 518px;
   width: 100%;
 }
+
+.tableHeader {
+  padding-top: 0;
+}
