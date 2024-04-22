@@ -2,7 +2,8 @@ import {
   getRecentBlockhash,
   getLookupTableAccounts,
   IntKeys,
-  BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS
+  BUY_SOL_VIA_TOKEN_SLIPPAGE_BPS,
+  FeatureFlags
 } from '@audius/common/services'
 import { MintName } from '@audius/sdk'
 import {
@@ -26,6 +27,7 @@ import {
 } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getLibs } from 'services/audius-libs'
+import { env } from 'services/env'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
   getAssociatedTokenAccountRent,
@@ -185,6 +187,12 @@ export const createSwapUserbankToSolInstructions = async ({
   }
 }
 
+const extendLookupTableAddresses = (lookupTableAddresses: string[]) => {
+  return env.LOOKUP_TABLE_ADDRESS
+    ? [...lookupTableAddresses, env.LOOKUP_TABLE_ADDRESS]
+    : lookupTableAddresses
+}
+
 export const createVersionedTransaction = async ({
   instructions,
   lookupTableAddresses,
@@ -194,9 +202,17 @@ export const createVersionedTransaction = async ({
   lookupTableAddresses: string[]
   feePayer: PublicKey
 }) => {
+  const lookupAddressesEnabled = remoteConfigInstance.getFeatureEnabled(
+    FeatureFlags.USE_ADDRESS_LOOKUPS
+  )
+
   const lookupTableAccounts = await getLookupTableAccounts(
     audiusBackendInstance,
-    { lookupTableAddresses }
+    {
+      lookupTableAddresses: lookupAddressesEnabled
+        ? extendLookupTableAddresses(lookupTableAddresses)
+        : lookupTableAddresses
+    }
   )
   const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
 
