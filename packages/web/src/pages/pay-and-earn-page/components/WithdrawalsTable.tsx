@@ -15,7 +15,8 @@ import { isEmptyTransactionRow } from '../utils'
 import styles from './WithdrawalsTable.module.css'
 
 const messages = {
-  cash: 'Cash'
+  cash: 'Cash',
+  crypto: 'Crypto'
 }
 
 export type WithdrawalsTableColumn =
@@ -55,15 +56,22 @@ const defaultColumns: WithdrawalsTableColumn[] = [
 // Cell Render Functions
 const renderDestinationCell = (cellInfo: TransactionCell) => {
   const { metadata, transactionType } = cellInfo.row.original
-  const destination =
-    transactionType === USDCTransactionType.WITHDRAWAL
-      ? messages.cash
-      : metadata
-  return typeof destination === 'string' ? (
-    <span className={styles.text}>{destination}</span>
-  ) : (
-    ''
-  )
+  let destination = ''
+  switch (transactionType) {
+    case USDCTransactionType.WITHDRAWAL:
+      destination = messages.cash
+      break
+    case USDCTransactionType.TRANSFER:
+      destination = messages.crypto
+      break
+    default:
+      console.error(
+        `Unexpected transaction type for withdrawal: ${transactionType}`
+      )
+      break
+  }
+
+  return <span className={styles.text}>{destination}</span>
 }
 
 const renderDateCell = (cellInfo: TransactionCell) => {
@@ -80,7 +88,7 @@ const renderAmountCell = (cellInfo: TransactionCell) => {
 const tableColumnMap = {
   destination: {
     id: 'destination',
-    Header: 'Wallet',
+    Header: 'Method',
     accessor: 'metadata',
     Cell: renderDestinationCell,
     width: 480,
