@@ -1,6 +1,7 @@
+import React, { useCallback, useEffect, useState } from 'react'
+
 import { Box, Flex, Text } from '@audius/harmony'
 import { ButtonType } from '@audius/stems'
-import React, { useCallback, useEffect, useState } from 'react'
 
 import Button from 'components/Button'
 import ConfirmTransactionModal, {
@@ -12,6 +13,7 @@ import TextField from 'components/TextField'
 import { useUpdateOperatorCut } from 'store/actions/updateOperatorCut'
 import { Status } from 'types'
 import { useModalControls } from 'utils/hooks'
+
 import styles from './OperatorCutModal.module.css'
 
 const messages = {
@@ -85,10 +87,10 @@ const OperatorCutModal: React.FC<OperatorCutModalProps> = ({
       dismissOnClickOutside={!isConfirmModalOpen}
     >
       <Flex
-        gap="l"
-        mt="xl"
-        alignItems="flex-end"
-        w="100%"
+        gap='l'
+        mt='xl'
+        alignItems='flex-end'
+        w='100%'
         css={{ maxWidth: 420 }}
       >
         <Box css={{ flexGrow: 1 }}>
@@ -99,15 +101,15 @@ const OperatorCutModal: React.FC<OperatorCutModalProps> = ({
             rightLabel={'%'}
           />
         </Box>
-        <Flex direction="column" alignItems="flex-end" pb="xl">
-          <Text variant="heading" size="s">
+        <Flex direction='column' alignItems='flex-end' pb='xl'>
+          <Text variant='heading' size='s'>
             {`${cut}%`}
           </Text>
-          <Flex inline gap="xs" alignItems="center">
-            <Text variant="body" size="m" strength="strong" color="subdued">
+          <Flex inline gap='xs' alignItems='center'>
+            <Text variant='body' size='m' strength='strong' color='subdued'>
               {messages.currentLabel}
             </Text>
-            <NodeServiceFeeInfoTooltip color="subdued" />
+            <NodeServiceFeeInfoTooltip color='subdued' />
           </Flex>
         </Flex>
       </Flex>

@@ -23,10 +23,10 @@ import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { Storage } from '../../services/Storage'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
+import { getReaction } from '../../utils/reactionsMap'
 import { Configuration } from '../generated/default'
 
 import { UsersApi } from './UsersApi'
-import { getReaction } from '../../utils/reactionsMap'
 
 const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
@@ -361,7 +361,7 @@ describe('UsersApi', () => {
       const two = getReaction('🔥')
       const three = getReaction('🥳')
       const four = getReaction('🤯')
-      //@ts-ignore because type checker only accepts previous four emojis
+      // @ts-ignore because type checker only accepts previous four emojis
       const invalidNumber = getReaction('🦀')
 
       expect(one).toEqual(1)

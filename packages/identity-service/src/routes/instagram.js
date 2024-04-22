@@ -3,6 +3,7 @@ const retry = require('async-retry')
 const config = require('../config.js')
 const models = require('../models')
 const txRelay = require('../relay/txRelay')
+const { waitForUser } = require('../utils/waitForUser')
 
 const {
   handleResponse,
@@ -109,14 +110,19 @@ module.exports = function (app) {
   app.post(
     '/instagram/associate',
     handleResponse(async (req, res, next) => {
-      const { uuid, userId, handle } = req.body
+      const { uuid, userId, handle, blockNumber } = req.body
+      req.connection.setTimeout(60 * 1000)
       const audiusLibsInstance = req.app.get('audiusLibs')
       try {
         const instagramObj = await models.InstagramUser.findOne({
           where: { uuid }
         })
-        const user = await models.User.findOne({
-          where: { handle }
+        const user = await waitForUser({
+          userId,
+          handle,
+          blockNumber,
+          audiusLibsInstance,
+          logger: req.logger
         })
 
         const isUnassociated = instagramObj && !instagramObj.blockchainUserId
@@ -185,7 +191,7 @@ module.exports = function (app) {
           )
         }
       } catch (err) {
-        return errorResponseBadRequest(err)
+        return errorResponseBadRequest(err instanceof Error ? err.message : err)
       }
     })
   )

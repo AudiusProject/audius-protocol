@@ -1,4 +1,5 @@
-import { PropsWithChildren, ReactNode } from 'react'
+import { PropsWithChildren } from 'react'
+
 import { Text, TextProps } from '@audius/harmony'
 
 type StatLabelProps = PropsWithChildren<{

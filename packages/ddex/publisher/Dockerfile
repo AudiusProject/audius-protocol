@@ -37,7 +37,7 @@ RUN CI=true npm i --maxsockets 1
 COPY --from=turbo-builder /app/out/full/ .
 COPY svgr-template.js svgr-template.js
 COPY turbo.json turbo.json
-RUN npx turbo run build --filter=@audius/ddex-publisher --filter=@audius/ddex-publisher
+RUN npx turbo run build --filter=@audius/ddex-publisher
 
 # Make a smaller image by removing all src directories (except for in node_modules)
 RUN find packages -path '*/node_modules/*' -prune -o -name 'src' -type d -exec rm -rf {} +

@@ -19,6 +19,13 @@ export const AddManagerSchema = z.object({
 
 export type AddManagerRequest = z.input<typeof AddManagerSchema>
 
+export const RemoveManagerSchema = z.object({
+  userId: HashId,
+  managerUserId: HashId
+})
+
+export type RemoveManagerRequest = z.input<typeof RemoveManagerSchema>
+
 export const RevokeGrantSchema = z.object({
   userId: HashId,
   appApiKey: z.custom<string>((data: unknown) => {

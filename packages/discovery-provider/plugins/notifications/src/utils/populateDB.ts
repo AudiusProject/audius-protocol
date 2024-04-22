@@ -347,9 +347,9 @@ export const createUSDCPurchase = async (
 ) => {
   await db
     .insert(
-      usdcPurchases.map((usdcPurchase) => ({
+      usdcPurchases.map((usdcPurchase, index) => ({
         created_at: new Date(Date.now()),
-        slot: '4',
+        slot: index,
         signature: 'fake_signature',
         ...usdcPurchase
       }))

@@ -14,7 +14,8 @@ import {
   CreateGrantRequest,
   CreateGrantSchema,
   RevokeGrantRequest,
-  RevokeGrantSchema
+  RevokeGrantSchema,
+  RemoveManagerRequest
 } from './types'
 
 export class GrantsApi {
@@ -78,6 +79,42 @@ export class GrantsApi {
       entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.CREATE,
+      metadata: JSON.stringify({
+        grantee_address: managerUser!.ercWallet
+      }),
+      auth: this.auth
+    })
+  }
+
+  /**
+   * Revokes a user's manager access - can either be called by the manager user or the child user
+   */
+  async removeManager(params: RemoveManagerRequest) {
+    const { userId, managerUserId } = await parseParams(
+      'addManager',
+      AddManagerSchema
+    )(params)
+    let managerUser: User | undefined
+    try {
+      managerUser = (
+        await this.usersApi.getUser({
+          id: encodeHashId(managerUserId)!
+        })
+      ).data
+      if (!managerUser) {
+        throw new Error()
+      }
+    } catch (e) {
+      throw new Error(
+        '`managerUserId` passed to `removeManager` method is invalid.'
+      )
+    }
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.GRANT,
+      entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
+      action: Action.DELETE,
       metadata: JSON.stringify({
         grantee_address: managerUser!.ercWallet
       }),

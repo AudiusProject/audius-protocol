@@ -1,11 +1,21 @@
-import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
+import { useEffect, useState } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
+import { useSelector, useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
+import { ServiceType } from 'types'
+import { fetchWithLibs, fetchWithTimeout } from 'utils/fetch'
+import { weiAudToAud } from 'utils/numeric'
+
+import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
+
+import { ELECTRONIC_SUB_GENRES } from './genres'
 import {
   setApiCalls,
   setTotalStaked,
@@ -20,13 +30,7 @@ import {
   setIndividualNodeUptime,
   setIndividualServiceApiCalls
 } from './slice'
-import { useEffect, useState } from 'react'
-import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
-import { weiAudToAud } from 'utils/numeric'
-import { ELECTRONIC_SUB_GENRES } from './genres'
-import { fetchWithLibs, fetchWithTimeout } from 'utils/fetch'
-import { AnyAction } from '@reduxjs/toolkit'
-import { ServiceType } from 'types'
+
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()
@@ -70,14 +74,9 @@ export const formatBucketText = (bucket: string) =>
 const getStartTime = (bucket: Bucket, clampDays: boolean = false) => {
   switch (bucket) {
     case Bucket.ALL_TIME:
-      return dayjs('2020-07-01')
-        .startOf('hour')
-        .unix()
+      return dayjs('2020-07-01').startOf('hour').unix()
     case Bucket.YEAR:
-      return dayjs()
-        .subtract(1, 'year')
-        .startOf('hour')
-        .unix()
+      return dayjs().subtract(1, 'year').startOf('hour').unix()
     case Bucket.MONTH:
       return dayjs()
         .subtract(1, 'month')
@@ -89,10 +88,7 @@ const getStartTime = (bucket: Bucket, clampDays: boolean = false) => {
         .startOf(clampDays ? 'day' : 'hour')
         .unix()
     case Bucket.DAY:
-      return dayjs()
-        .subtract(1, 'day')
-        .startOf('hour')
-        .unix()
+      return dayjs().subtract(1, 'day').startOf('hour').unix()
   }
 }
 
@@ -268,7 +264,7 @@ export function fetchPlays(
     let metric = await fetchTimeSeries('plays', bucket, true)
     if (metric !== MetricError.ERROR) {
       metric = metric.filter(
-        m => m.timestamp !== '1620345600' && m.timestamp !== '1620259200'
+        (m) => m.timestamp !== '1620345600' && m.timestamp !== '1620259200'
       )
     }
     dispatch(setPlays({ metric, bucket }))
@@ -280,7 +276,7 @@ export function fetchIndividualNodeUptime(
   node: string,
   bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async dispatch => {
+  return async (dispatch) => {
     const metric = await fetchUptime(nodeType, node, bucket)
     dispatch(setIndividualNodeUptime({ nodeType, node, metric, bucket }))
   }
@@ -290,7 +286,7 @@ export function fetchIndividualServiceRouteMetrics(
   node: string,
   bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async dispatch => {
+  return async (dispatch) => {
     const metric = await fetchTimeSeries('routes', bucket, true, node)
     dispatch(setIndividualServiceApiCalls({ node, metric, bucket }))
   }
@@ -338,14 +334,14 @@ export function fetchTotalStaked(
 
     // Get the nearest block to the target timestamps
     const blocks = await Promise.all(
-      timestamps.map(async ts =>
+      timestamps.map(async (ts) =>
         aud.getBlockNearTimestamp(averageBlockTime, currentBlockNumber, ts)
       )
     )
 
     // Get the stake value at each block
     const staked = await Promise.all(
-      blocks.map(async block => aud.Staking.totalStakedAt(block.number))
+      blocks.map(async (block) => aud.Staking.totalStakedAt(block.number))
     )
 
     // Format the metric & reverse order so we display reverse chronological
@@ -411,7 +407,7 @@ export function fetchTopApps(
     try {
       const res = await getTrailingTopApps(bucket, limit)
       if (res) {
-        let apps: CountRecord = {}
+        const apps: CountRecord = {}
         res.forEach((app: { name: string; count: number }) => {
           const name =
             app.name === 'unknown' ? 'Audius Apps + Unknown' : app.name
@@ -462,17 +458,17 @@ export function fetchTrailingTopGenres(
       data.forEach((genre: { name: string; count: number }) => {
         const name = genre.name
         if (ELECTRONIC_SUB_GENRES.has(name)) {
-          agg['Electronic'] += genre.count
+          agg.Electronic += genre.count
         } else {
           agg[name] = genre.count
         }
       })
       const metric: CountRecord = {}
       Object.keys(agg)
-        .map(m => [m, agg[m]])
+        .map((m) => [m, agg[m]])
         .sort((a, b) => (b[1] as number) - (a[1] as number))
         .slice(0, 5)
-        .forEach(m => {
+        .forEach((m) => {
           metric[m[0] as string] = m[1] as number
         })
 
@@ -488,7 +484,7 @@ export function fetchTrailingTopGenres(
 
 export const useApiCalls = (bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const apiCalls = useSelector(state =>
+  const apiCalls = useSelector((state) =>
     getApiCalls(state as AppState, { bucket })
   )
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
@@ -514,7 +510,7 @@ export const useIndividualNodeUptime = (
   bucket: Bucket
 ) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const uptime = useSelector(state =>
+  const uptime = useSelector((state) =>
     getIndividualNodeUptime(state as AppState, { node, bucket })
   )
   const dispatch = useDispatch()
@@ -536,7 +532,7 @@ export const useIndividualNodeUptime = (
 
 export const useIndividualServiceApiCalls = (node: string, bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const apiCalls = useSelector(state =>
+  const apiCalls = useSelector((state) =>
     getIndividualServiceApiCalls(state as AppState, { node, bucket })
   )
   const dispatch = useDispatch()
@@ -558,7 +554,7 @@ export const useIndividualServiceApiCalls = (node: string, bucket: Bucket) => {
 
 export const useTotalStaked = (bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const totalStaked = useSelector(state =>
+  const totalStaked = useSelector((state) =>
     getTotalStaked(state as AppState, { bucket })
   )
   const averageBlockTime = useAverageBlockTime()
@@ -594,7 +590,7 @@ export const useTotalStaked = (bucket: Bucket) => {
 
 export const usePlays = (bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const plays = useSelector(state => getPlays(state as AppState, { bucket }))
+  const plays = useSelector((state) => getPlays(state as AppState, { bucket }))
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (doOnce !== bucket && (plays === null || plays === undefined)) {
@@ -616,7 +612,7 @@ export const useTrailingApiCalls = (
   bucket: Bucket.MONTH | Bucket.WEEK | Bucket.YEAR
 ) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const apiCalls = useSelector(state =>
+  const apiCalls = useSelector((state) =>
     getTrailingApiCalls(state as AppState, { bucket })
   )
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
@@ -638,7 +634,7 @@ export const useTrailingApiCalls = (
 
 export const useTrailingTopGenres = (bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const topGenres = useSelector(state =>
+  const topGenres = useSelector((state) =>
     getTrailingTopGenres(state as AppState, { bucket })
   )
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
@@ -694,7 +690,9 @@ export const useTopApps = (
   filter?: (name: string, count: number) => boolean
 ) => {
   const [hasFetched, setHasFetched] = useState<boolean>(false)
-  let topApps = useSelector(state => getTopApps(state as AppState, { bucket }))
+  let topApps = useSelector((state) =>
+    getTopApps(state as AppState, { bucket })
+  )
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (

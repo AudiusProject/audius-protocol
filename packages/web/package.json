@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.76",
+  "version": "1.5.77",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -38,7 +38,7 @@
     "test": "vitest",
     "typecheck:watch": "tsc --watch",
     "typecheck": "tsc",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\" \"npm:lint:env\"",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:stylelint\" \"npm:lint:env\"",
     "worker-ssr:dev": "npx wrangler dev --env test --config ./src/ssr/wrangler.toml",
     "worker:dev": "npx wrangler dev --env test",
     "write-sha": "./scripts/writeSHA.sh",

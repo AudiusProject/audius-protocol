@@ -32,8 +32,8 @@ const initAudiusSdk = () => {
       discoveryNodeSelector: dnSelector,
       entityManager: new EntityManager({
         contractAddress: entityManagerContractAddress,
-        web3ProviderUrl: web3ProviderUrl,
-        identityServiceUrl: identityServiceUrl,
+        web3ProviderUrl,
+        identityServiceUrl,
         discoveryNodeSelector: dnSelector
       })
     }

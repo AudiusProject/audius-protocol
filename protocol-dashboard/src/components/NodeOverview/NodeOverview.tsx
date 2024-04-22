@@ -1,15 +1,12 @@
-import clsx from 'clsx'
 import { ReactNode } from 'react'
 
-import { ButtonType } from '@audius/stems'
-import Button from 'components/Button'
-import ModifyServiceModal from 'components/ModifyServiceModal'
-import { Address, ServiceType } from 'types'
-import { useModalControls } from 'utils/hooks'
-
 import { Box, Flex, Text } from '@audius/harmony'
+import { ButtonType } from '@audius/stems'
+import clsx from 'clsx'
+
 import IconValidationCheck from 'assets/img/iconValidationCheck.svg?react'
 import IconWarning from 'assets/img/iconWarning.svg?react'
+import Button from 'components/Button'
 import { Card } from 'components/Card/Card'
 import {
   AppliedInfoTooltipProps,
@@ -17,9 +14,13 @@ import {
 } from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
 import { DelegateInfo } from 'components/ManageAccountCard/ManageAccountCard'
+import ModifyServiceModal from 'components/ModifyServiceModal'
 import RegisterServiceModal from 'components/RegisterServiceModal'
 import useNodeHealth from 'hooks/useNodeHealth'
+import { Address, ServiceType } from 'types'
+import { useModalControls } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
+
 import desktopStyles from './NodeOverview.module.css'
 import mobileStyles from './NodeOverviewMobile.module.css'
 
@@ -68,14 +69,14 @@ const ServiceDetail = ({
   const TooltipComponent = tooltipComponent
   return (
     <div className={styles.descriptor}>
-      <Text variant="heading" size="s">
+      <Text variant='heading' size='s'>
         {value}
       </Text>
-      <Flex inline gap="xs" alignItems="center">
-        <Text variant="body" size="m" strength="strong" color="subdued">
+      <Flex inline gap='xs' alignItems='center'>
+        <Text variant='body' size='m' strength='strong' color='subdued'>
           {label}
         </Text>
-        {TooltipComponent == null ? null : <TooltipComponent color="subdued" />}
+        {TooltipComponent == null ? null : <TooltipComponent color='subdued' />}
       </Flex>
     </div>
   )
@@ -273,22 +274,22 @@ const NodeOverview = ({
   }
 
   return (
-    <Card direction="column" p="xl" w="100%">
+    <Card direction='column' p='xl' w='100%'>
       {isLoading ? (
         <Loading className={styles.loading} />
       ) : (
-        <Flex gap="l" wrap="wrap" css={{ overflow: 'scroll' }}>
-          <Box pv="s" ph="l">
-            <Text variant="heading" size="s">
+        <Flex gap='l' wrap='wrap' css={{ overflow: 'scroll' }}>
+          <Box pv='s' ph='l'>
+            <Text variant='heading' size='s'>
               {isDeregistered
                 ? messages.deregistered
                 : health?.version || version || messages.unknown}
             </Text>
-            <Text variant="body" size="m" strength="strong" color="subdued">
+            <Text variant='body' size='m' strength='strong' color='subdued'>
               {messages.version}
             </Text>
           </Box>
-          <Box pv="s" ph="l">
+          <Box pv='s' ph='l'>
             <ServiceDetail label={messages.endpoint} value={endpoint} />
             {(delegateOwnerWallet || health?.delegateOwnerWallet) && (
               <ServiceDetail
@@ -297,18 +298,18 @@ const NodeOverview = ({
               />
             )}
             {operatorWallet || health?.operatorWallet ? (
-              <Card pv="l" ph="xl" mb="xl">
-                <Flex direction="column" gap="l">
-                  <Flex inline gap="xs" alignItems="center">
+              <Card pv='l' ph='xl' mb='xl'>
+                <Flex direction='column' gap='l'>
+                  <Flex inline gap='xs' alignItems='center'>
                     <Text
-                      variant="body"
-                      size="l"
-                      color="subdued"
-                      strength="strong"
+                      variant='body'
+                      size='l'
+                      color='subdued'
+                      strength='strong'
                     >
                       {messages.operator}
                     </Text>
-                    <NodeOperatorInfoTooltip color="subdued" />
+                    <NodeOperatorInfoTooltip color='subdued' />
                   </Flex>
                   <DelegateInfo
                     longFormat
@@ -320,12 +321,12 @@ const NodeOverview = ({
             {healthDetails}
           </Box>
           <Flex
-            pv="s"
-            ph="l"
-            w="100%"
-            gap="l"
-            direction="column"
-            alignItems="flex-end"
+            pv='s'
+            ph='l'
+            w='100%'
+            gap='l'
+            direction='column'
+            alignItems='flex-end'
           >
             {!isDeregistered && isUnregistered && (
               <Box>
@@ -374,7 +375,7 @@ const NodeOverview = ({
 
 export function RelTime({ date }: { date: Date | string }) {
   if (!date) return null
-  if (typeof date == 'string') {
+  if (typeof date === 'string') {
     date = new Date(date)
   }
   return (
@@ -386,7 +387,7 @@ export function RelTime({ date }: { date: Date | string }) {
 
 export function timeSince(date: Date) {
   if (!date || date.toString() === '0001-01-01T00:00:00Z') return null
-  if (typeof date == 'string') {
+  if (typeof date === 'string') {
     date = new Date(date)
   }
   const now = new Date()
@@ -400,7 +401,7 @@ export function nanosToReadableDuration(nanos: number) {
 }
 
 function secondsToReadableDuration(seconds: number) {
-  var interval = seconds / 31536000
+  let interval = seconds / 31536000
   if (interval >= 1) {
     const val = Math.floor(interval)
     return val + (val > 1 ? ' years' : ' year')

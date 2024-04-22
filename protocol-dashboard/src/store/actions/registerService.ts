@@ -1,16 +1,17 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { Status, ServiceType, BigNumber, Address } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { getAccountWallet } from 'store/account/hooks'
-import { fetchUser } from 'store/cache/user/hooks'
-import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-import { getContentNode } from 'store/cache/contentNode/hooks'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { getAccountWallet } from 'store/account/hooks'
+import { getContentNode } from 'store/cache/contentNode/hooks'
+import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
+import { fetchUser } from 'store/cache/user/hooks'
+import { AppState } from 'store/types'
+import { Status, ServiceType, BigNumber, Address } from 'types'
 
 function registerAudiusService(
   serviceType: ServiceType,
@@ -29,7 +30,7 @@ function registerAudiusService(
     try {
       let spID
       // Register the service on chain (eth)
-      if (!!delegateOwnerWallet) {
+      if (delegateOwnerWallet) {
         const res = await aud.ServiceProviderClient.registerWithDelegate(
           serviceType,
           endpoint,
@@ -49,13 +50,12 @@ function registerAudiusService(
       // Register the service on chain (solana)
       try {
         const senderEthAddress = delegateOwnerWallet || wallet
-        const createSenderPublicReceipt = await aud.libs.Rewards.createSenderPublic(
-          {
+        const createSenderPublicReceipt =
+          await aud.libs.Rewards.createSenderPublic({
             senderEthAddress,
             operatorEthAddress: wallet,
             senderEndpoint: endpoint
-          }
-        )
+          })
         if (createSenderPublicReceipt.error) {
           console.error(
             `Received error with code ${createSenderPublicReceipt.errorCode}`,

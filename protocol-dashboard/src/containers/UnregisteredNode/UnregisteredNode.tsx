@@ -1,10 +1,11 @@
 import { useLocation, useMatch } from 'react-router-dom'
-import { useAccount } from 'store/account/hooks'
 
 import NodeOverview from 'components/NodeOverview'
 import Page from 'components/Page'
+import { useAccount } from 'store/account/hooks'
 import { ServiceType } from 'types'
 import { NODES_UNREGISTERED_DISCOVERY_NODE } from 'utils/routes'
+
 import styles from './UnregisteredNode.module.css'
 
 const messages = {

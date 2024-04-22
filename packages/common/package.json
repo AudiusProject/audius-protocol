@@ -28,7 +28,7 @@
     "lint:fix": "npm run lint -- --fix",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "verify": "concurrently \"npm:lint:fix\""
+    "verify": "concurrently \"npm:lint\""
   },
   "bugs": {
     "url": "https://github.com/AudiusProject/audius-client/issues"
