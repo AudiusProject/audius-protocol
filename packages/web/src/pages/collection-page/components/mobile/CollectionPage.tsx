@@ -176,7 +176,7 @@ const CollectionPage = ({
 
   const {
     isEmpty,
-    lastModified,
+    lastModifiedDate,
     playlistName,
     description,
     isPrivate,
@@ -262,7 +262,7 @@ const CollectionPage = ({
             isAlbum={isAlbum}
             numTracks={numTracks}
             isPlayable={isPlayable}
-            modified={lastModified || Date.now()}
+            modified={lastModifiedDate}
             duration={duration}
             isPublished={!isPrivate}
             isPublishing={isPublishing}

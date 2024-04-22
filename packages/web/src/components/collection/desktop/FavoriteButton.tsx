@@ -12,7 +12,7 @@ import {
   collectionsSocialActions,
   CommonState
 } from '@audius/common/store'
-import { ButtonProps, IconHeart, Button } from '@audius/harmony'
+import { IconHeart, IconButtonProps, IconButton } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
@@ -32,13 +32,13 @@ const messages = {
   unfavorite: 'Unfavorite'
 }
 
-type FavoriteButtonProps = Partial<ButtonProps> & {
+type FavoriteButtonProps = Partial<IconButtonProps> & {
   collectionId?: ID
   isOwner?: boolean
 }
 
 export const FavoriteButton = (props: FavoriteButtonProps) => {
-  const { collectionId, isOwner, variant, ...other } = props
+  const { collectionId, isOwner, color, ...other } = props
 
   const userPlaylists = useSelector(getAccountCollections)
 
@@ -80,14 +80,13 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
       disabled={isOwner || saveCount === 0}
       text={isSaved ? messages.unfavorite : messages.favorite}
     >
-      <Button
-        variant={variant ?? (isSaved ? 'primary' : 'secondary')}
-        iconLeft={IconHeart}
+      <IconButton
+        color={color ?? (isSaved ? 'active' : 'subdued')}
+        icon={IconHeart}
         onClick={handleFavorite}
         {...other}
-      >
-        {isSaved ? messages.favorited : messages.favorite}
-      </Button>
+        aria-label={isSaved ? messages.favorited : messages.favorite}
+      />
     </Tooltip>
   )
 }

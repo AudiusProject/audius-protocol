@@ -2,11 +2,10 @@ import { SmartCollectionVariant, ID } from '@audius/common/models'
 
 import { FavoriteButton } from './FavoriteButton'
 import { ShareButton } from './ShareButton'
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 type SmartCollectionActionButtonsProps = {
   collectionId: SmartCollectionVariant
-  userId: ID
+  userId: ID | null
 }
 
 export const SmartCollectionActionButtons = (
@@ -15,12 +14,8 @@ export const SmartCollectionActionButtons = (
   const { collectionId, userId } = props
 
   return collectionId === SmartCollectionVariant.AUDIO_NFT_PLAYLIST ? (
-    <ShareButton
-      collectionId={collectionId}
-      userId={userId}
-      widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-    />
+    <ShareButton collectionId={collectionId} userId={userId} />
   ) : (
-    <FavoriteButton widthToHideText={BUTTON_COLLAPSE_WIDTHS.second} />
+    <FavoriteButton />
   )
 }

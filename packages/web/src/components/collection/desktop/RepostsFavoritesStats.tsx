@@ -1,17 +1,12 @@
 import { useCallback, MouseEvent } from 'react'
 
 import { formatCount, pluralize } from '@audius/common/utils'
-import { IconHeart as IconFavorite, IconRepost } from '@audius/harmony'
-import cn from 'classnames'
-
-import styles from './RepostFavoritesStats.module.css'
-
-export enum Size {
-  // With text
-  LARGE = 'large',
-  // Just icons
-  SMALL = 'small'
-}
+import {
+  Flex,
+  IconHeart as IconFavorite,
+  IconRepost,
+  PlainButton
+} from '@audius/harmony'
 
 type RepostFavoritesStatsProps = {
   isUnlisted: boolean
@@ -20,7 +15,6 @@ type RepostFavoritesStatsProps = {
   onClickReposts?: () => void
   onClickFavorites?: () => void
   className?: string
-  size?: Size
 }
 
 const messages = {
@@ -28,14 +22,14 @@ const messages = {
   favorites: 'Favorite'
 }
 
-const RepostFavoritesStats = ({
+// NOTE: this is a newer version of the other RepostsFavoritesStats component;
+// unclear if designers want to deprecate the old one just yet so this is a standalone component for CollectionHeader
+export const RepostFavoritesStats = ({
   isUnlisted,
   repostCount,
   saveCount,
   onClickReposts,
-  onClickFavorites,
-  className,
-  size = Size.LARGE
+  onClickFavorites
 }: RepostFavoritesStatsProps) => {
   const handleOnClickReposts = useCallback(
     (e: MouseEvent) => {
@@ -56,29 +50,29 @@ const RepostFavoritesStats = ({
 
   if (isUnlisted) return null
   return !!repostCount || !!saveCount ? (
-    <div
-      className={cn(styles.statsRow, className, {
-        [styles.small]: size === Size.SMALL
-      })}
-    >
+    <Flex alignItems='center'>
       {!!repostCount && (
-        <div className={styles.statItem} onClick={handleOnClickReposts}>
-          <IconRepost />
+        <PlainButton
+          size='large'
+          variant='subdued'
+          iconLeft={IconRepost}
+          onClick={handleOnClickReposts}
+        >
           <span>{formatCount(repostCount)}</span>
-          {size === Size.LARGE && pluralize(messages.reposts, repostCount)}
-        </div>
+          {pluralize(messages.reposts, repostCount)}
+        </PlainButton>
       )}
       {!!saveCount && (
-        <div className={styles.statItem} onClick={handleOnClickFavorites}>
-          <div className={styles.iconFavorite}>
-            <IconFavorite />
-          </div>
+        <PlainButton
+          size='large'
+          variant='subdued'
+          iconLeft={IconFavorite}
+          onClick={handleOnClickFavorites}
+        >
           <span>{formatCount(saveCount)}</span>
-          {size === Size.LARGE && pluralize(messages.favorites, saveCount)}
-        </div>
+          {pluralize(messages.favorites, saveCount)}
+        </PlainButton>
       )}
-    </div>
+    </Flex>
   ) : null
 }
-
-export default RepostFavoritesStats
