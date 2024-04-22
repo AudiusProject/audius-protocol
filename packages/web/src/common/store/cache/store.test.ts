@@ -1,5 +1,4 @@
 import { Kind, Status } from '@audius/common/models'
-import { IntKeys } from '@audius/common/services'
 import { cacheActions as actions, cacheReducer } from '@audius/common/store'
 import { makeKindId } from '@audius/common/utils'
 import { combineReducers } from 'redux'
