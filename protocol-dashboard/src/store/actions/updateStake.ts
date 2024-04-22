@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { Status, BigNumber } from 'types'
+import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
 import Audius from 'services/Audius'
-import { AppState } from 'store/types'
 import { fetchPendingTransactions, getAccountWallet } from 'store/account/hooks'
 import { fetchUser } from 'store/cache/user/hooks'
-import { AnyAction } from '@reduxjs/toolkit'
+import { AppState } from 'store/types'
+import { Status, BigNumber } from 'types'
 
 function increaseAudiusStake(
   stakingAmount: BigNumber,

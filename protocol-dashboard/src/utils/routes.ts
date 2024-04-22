@@ -22,7 +22,7 @@ export const SERVICES = '/services' // deprecated
 export const SERVICES_TITLE = 'Services Overview'
 
 export const NODES_DISCOVERY = '/nodes/discovery-node'
-export const SERVICES_DISCOVERY_PROVIDER = '/services/discovery-node' //deprecated
+export const SERVICES_DISCOVERY_PROVIDER = '/services/discovery-node' // deprecated
 export const SERVICES_DISCOVERY_PROVIDER_TITLE = 'Discovery Nodes'
 
 export const NODES_DISCOVERY_NODE = '/nodes/discovery-node/:spID'

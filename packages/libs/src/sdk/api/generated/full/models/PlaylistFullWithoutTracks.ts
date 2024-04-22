@@ -149,6 +149,12 @@ export interface PlaylistFullWithoutTracks {
     access?: Access;
     /**
      * 
+     * @type {string}
+     * @memberof PlaylistFullWithoutTracks
+     */
+    upc?: string;
+    /**
+     * 
      * @type {number}
      * @memberof PlaylistFullWithoutTracks
      */
@@ -243,6 +249,18 @@ export interface PlaylistFullWithoutTracks {
      * @memberof PlaylistFullWithoutTracks
      */
     trackCount: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof PlaylistFullWithoutTracks
+     */
+    isStreamGated: boolean;
+    /**
+     * 
+     * @type {object}
+     * @memberof PlaylistFullWithoutTracks
+     */
+    streamConditions?: object;
 }
 
 /**
@@ -269,6 +287,7 @@ export function instanceOfPlaylistFullWithoutTracks(value: object): boolean {
     isInstance = isInstance && "addedTimestamps" in value;
     isInstance = isInstance && "userId" in value;
     isInstance = isInstance && "trackCount" in value;
+    isInstance = isInstance && "isStreamGated" in value;
 
     return isInstance;
 }
@@ -297,6 +316,7 @@ export function PlaylistFullWithoutTracksFromJSONTyped(json: any, ignoreDiscrimi
         'user': UserFullFromJSON(json['user']),
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
+        'upc': !exists(json, 'upc') ? undefined : json['upc'],
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -313,6 +333,8 @@ export function PlaylistFullWithoutTracksFromJSONTyped(json: any, ignoreDiscrimi
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : PlaylistArtworkFromJSON(json['cover_art_cids']),
         'trackCount': json['track_count'],
+        'isStreamGated': json['is_stream_gated'],
+        'streamConditions': !exists(json, 'stream_conditions') ? undefined : json['stream_conditions'],
     };
 }
 
@@ -339,6 +361,7 @@ export function PlaylistFullWithoutTracksToJSON(value?: PlaylistFullWithoutTrack
         'user': UserFullToJSON(value.user),
         'ddex_app': value.ddexApp,
         'access': AccessToJSON(value.access),
+        'upc': value.upc,
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
@@ -355,6 +378,8 @@ export function PlaylistFullWithoutTracksToJSON(value?: PlaylistFullWithoutTrack
         'cover_art_sizes': value.coverArtSizes,
         'cover_art_cids': PlaylistArtworkToJSON(value.coverArtCids),
         'track_count': value.trackCount,
+        'is_stream_gated': value.isStreamGated,
+        'stream_conditions': value.streamConditions,
     };
 }
 

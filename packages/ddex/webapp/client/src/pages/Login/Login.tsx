@@ -1,19 +1,44 @@
+import { useCallback, useEffect } from 'react'
+
 import { Button, Flex } from '@audius/harmony'
+import { useSearchParams } from 'react-router-dom'
 
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
+import { useAuth } from 'providers/AuthProvider'
 
 import styles from './Login.module.css'
 
 const Login = () => {
+  const [searchParams] = useSearchParams()
   const { audiusSdk, oauthError } = useAudiusSdk()
+  const { login } = useAuth()
 
-  const handleOauth = () => {
+  const auto = searchParams.get('auto')
+  const token = searchParams.get('token')
+
+  useEffect(() => {
+    if (audiusSdk && auto) {
+      audiusSdk.oauth!.login({
+        scope: 'write',
+        redirectUri: new URL(window.location.href).origin
+      })
+    }
+  }, [audiusSdk, auto])
+
+  useEffect(() => {
+    if (token) {
+      login(token)
+    }
+  }, [token, login])
+
+  const handleOauth = useCallback(() => {
     audiusSdk!.oauth!.login({ scope: 'write' })
-  }
+  }, [audiusSdk])
 
   if (!audiusSdk) {
-    return <>{'Loading...'}</>
+    return null
   }
+
   return (
     <Flex
       p='xl'
@@ -22,7 +47,7 @@ const Login = () => {
       justifyContent='center'
       alignItems='center'
     >
-      <Button onClick={handleOauth}>Login with Audius</Button>
+      {!auto ? <Button onClick={handleOauth}>Login with Audius</Button> : null}
       {oauthError && <div className={styles.errorText}>{oauthError}</div>}
     </Flex>
   )

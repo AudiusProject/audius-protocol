@@ -1,19 +1,4 @@
-import BN from 'bn.js'
-import DisplayAudio from 'components/DisplayAudio'
-import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
-import OperatorCutModal from 'components/OperatorCutModal'
-import UpdateStakeModal from 'components/UpdateStakeModal'
 import { PropsWithChildren, useCallback } from 'react'
-import AudiusClient from 'services/Audius/AudiusClient'
-import {
-  useAccount,
-  useAccountUser,
-  usePendingTransactions
-} from 'store/account/hooks'
-import { usePendingClaim } from 'store/cache/claims/hooks'
-import { Address, Operator, PendingTransactionName, Status } from 'types'
-import { useModalControls } from 'utils/hooks'
-import styles from './ManageService.module.css'
 
 import {
   Box,
@@ -23,6 +8,9 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import BN from 'bn.js'
+import { useSelector } from 'react-redux'
+
 import Button, { ButtonType } from 'components/Button'
 import { Card } from 'components/Card/Card'
 import ConfirmTransactionModal, {
@@ -32,6 +20,7 @@ import ConfirmTransactionModal, {
 } from 'components/ConfirmTransactionModal'
 import DelegateStakeModal from 'components/DelegateStakeModal'
 import DelegatorsModal from 'components/DelegatorsModal'
+import DisplayAudio from 'components/DisplayAudio'
 import {
   AggregateContributionInfoTooltip,
   AppliedInfoTooltipProps,
@@ -45,19 +34,32 @@ import {
   OperatorStakeInfoTooltip
 } from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
+import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
 import MyEstimatedRewards from 'components/MyEstimatedRewards'
+import OperatorCutModal from 'components/OperatorCutModal'
 import { PlainLink } from 'components/PlainLink/PlainLink'
 import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
 import { TransactionStatusContent } from 'components/TransactionStatus/TransactionStatus'
 import { ManageDelegation } from 'components/UpdateDelegationModal/UpdateDelegationModal'
-import { useSelector } from 'react-redux'
+import UpdateStakeModal from 'components/UpdateStakeModal'
+import AudiusClient from 'services/Audius/AudiusClient'
+import {
+  useAccount,
+  useAccountUser,
+  usePendingTransactions
+} from 'store/account/hooks'
 import { useMakeClaim } from 'store/actions/makeClaim'
 import useUndelegateStake from 'store/actions/undelegateStake'
+import { usePendingClaim } from 'store/cache/claims/hooks'
 import { getDelegatorInfo, useEthBlockNumber } from 'store/cache/protocol/hooks'
 import { useUser, useUserDelegates } from 'store/cache/user/hooks'
+import { Address, Operator, PendingTransactionName, Status } from 'types'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import { TICKER } from 'utils/consts'
 import { formatShortWallet } from 'utils/format'
+import { useModalControls } from 'utils/hooks'
+
+import styles from './ManageService.module.css'
 import { RegisterNewServiceBtn } from './RegisterNewServiceBtn'
 
 const messages = {
@@ -190,7 +192,7 @@ const UndelegateSection = ({
       <BasicTooltip
         position={Position.TOP}
         text={cantUndelegateReason}
-        isDisabled={!Boolean(cantUndelegateReason)}
+        isDisabled={!cantUndelegateReason}
       >
         <Button
           className={styles.undelegateButton}
@@ -258,8 +260,8 @@ const ServiceBigStat = ({
   const TooltipComponent = tooltipComponent
   return (
     <Card
-      ph="l"
-      h="100%"
+      ph='l'
+      h='100%'
       aria-role={onClick ? 'button' : undefined}
       aria-label={onClick ? `${messages.open} ${label}` : undefined}
       onClick={onClick}
@@ -273,15 +275,15 @@ const ServiceBigStat = ({
         }
       }}
     >
-      <Flex gap="s" alignItems="center" h="100%">
-        <Text variant="heading" size="s">
+      <Flex gap='s' alignItems='center' h='100%'>
+        <Text variant='heading' size='s'>
           {data}
         </Text>
-        <Flex inline gap="xs" alignItems="center">
-          <Text variant="body" size="l" strength="strong" color="subdued">
+        <Flex inline gap='xs' alignItems='center'>
+          <Text variant='body' size='l' strength='strong' color='subdued'>
             {label}
           </Text>
-          <TooltipComponent color="subdued" />
+          <TooltipComponent color='subdued' />
         </Flex>
       </Flex>
     </Card>
@@ -302,19 +304,19 @@ const ServiceSmallStat = ({
 }: ServiceSmallStatProps) => {
   const TooltipComponent = tooltipComponent
   return (
-    <Flex gap="s">
-      <Text variant="heading" size="s">
+    <Flex gap='s'>
+      <Text variant='heading' size='s'>
         {isAudioAmount ? (
           <DisplayAudio amount={data as BN} />
         ) : (
           (data as number | string)
         )}
       </Text>
-      <Flex inline gap="xs" alignItems="center">
-        <Text variant="body" size="l" strength="strong" color="subdued">
+      <Flex inline gap='xs' alignItems='center'>
+        <Text variant='body' size='l' strength='strong' color='subdued'>
           {label}
         </Text>
-        {TooltipComponent == null ? null : <TooltipComponent color="subdued" />}
+        {TooltipComponent == null ? null : <TooltipComponent color='subdued' />}
       </Flex>
     </Flex>
   )
@@ -332,7 +334,7 @@ const OperatorServiceFee = ({
   const { isOpen, onClick, onClose } = useModalControls()
 
   return (
-    <Flex gap="l" alignItems="baseline">
+    <Flex gap='l' alignItems='baseline'>
       <ServiceSmallStat
         data={`${deployerCut}%`}
         label={messages.operatorServiceFee}
@@ -359,7 +361,7 @@ const MinimumDelegationAmount = ({
 }: MinimumDelegationAmountProps) => {
   const { isOpen, onClick, onClose } = useModalControls()
   return (
-    <Flex gap="l" alignItems="baseline">
+    <Flex gap='l' alignItems='baseline'>
       <ServiceSmallStat
         data={minimumDelegationAmount}
         isAudioAmount
@@ -389,7 +391,7 @@ const Stake = ({ stake, enableChange, disabledReason }: StakeProps) => {
   const { isOpen, onClick, onClose } = useModalControls()
 
   return (
-    <Flex gap="l" alignItems="baseline">
+    <Flex gap='l' alignItems='baseline'>
       <ServiceSmallStat
         data={stake}
         label={messages.operatorStake}
@@ -435,7 +437,7 @@ const ManageService = (props: ManageServiceProps) => {
   const currentUserHasPendingUndelegateRequest =
     currentUserHasPendingTx &&
     pendingTx.transactions.some(
-      tx => tx.name === PendingTransactionName.Undelegate
+      (tx) => tx.name === PendingTransactionName.Undelegate
     )
 
   const isTotalStakeInBounds =
@@ -508,41 +510,41 @@ const ManageService = (props: ManageServiceProps) => {
   const makeClaimBox = <StandaloneBox> {messages.claim} </StandaloneBox>
 
   return (
-    <Card direction="column">
+    <Card direction='column'>
       <Flex
-        pv="l"
-        ph="xl"
-        borderBottom="default"
-        justifyContent="space-between"
-        alignItems="center"
-        w="100%"
+        pv='l'
+        ph='xl'
+        borderBottom='default'
+        justifyContent='space-between'
+        alignItems='center'
+        w='100%'
       >
-        <Flex inline gap="xs" alignItems="center">
-          <Text variant="heading" size="s">
+        <Flex inline gap='xs' alignItems='center'>
+          <Text variant='heading' size='s'>
             {isOwner ? messages.ownerTitle : messages.nonOwnertitle}
           </Text>
           {isOwner ? null : <NodeOperatorInfoTooltip />}
         </Flex>
-        <Flex gap="xl" alignItems="center">
+        <Flex gap='xl' alignItems='center'>
           {isOwner ? (
             <RegisterNewServiceBtn customText={messages.registerNode} />
           ) : null}
           <Box css={{ textAlign: 'end' }}>
-            <Text variant="heading" size="m" color="accent">
+            <Text variant='heading' size='m' color='accent'>
               {AudiusClient.displayShortAud(aggregateContribution)}
             </Text>
 
-            <Flex inline gap="xs" alignItems="center">
-              <Text variant="body" size="m" strength="strong" color="subdued">
+            <Flex inline gap='xs' alignItems='center'>
+              <Text variant='body' size='m' strength='strong' color='subdued'>
                 {messages.aggregateContribution}
               </Text>
-              <AggregateContributionInfoTooltip color="subdued" />
+              <AggregateContributionInfoTooltip color='subdued' />
             </Flex>
           </Box>
         </Flex>
       </Flex>
-      <Flex pv="l" ph="xl" gap="2xl" alignItems="stretch" wrap="wrap">
-        <Flex direction="column" alignItems="stretch" gap="s">
+      <Flex pv='l' ph='xl' gap='2xl' alignItems='stretch' wrap='wrap'>
+        <Flex direction='column' alignItems='stretch' gap='s'>
           {numContentNodes ? (
             <ServiceBigStat
               data={numContentNodes}
@@ -574,20 +576,20 @@ const ManageService = (props: ManageServiceProps) => {
             />
           ) : null}
         </Flex>
-        <Flex direction="column" gap="xl" css={{ flexGrow: 1 }}>
-          <Flex direction="column" gap="l">
-            <Flex inline gap="xs" alignItems="center">
-              <Text variant="body" size="l" strength="strong" color="subdued">
+        <Flex direction='column' gap='xl' css={{ flexGrow: 1 }}>
+          <Flex direction='column' gap='l'>
+            <Flex inline gap='xs' alignItems='center'>
+              <Text variant='body' size='l' strength='strong' color='subdued'>
                 {messages.rewardsPool}
               </Text>
-              <EstimatedAudioRewardsPoolInfoTooltip color="subdued" />
+              <EstimatedAudioRewardsPoolInfoTooltip color='subdued' />
             </Flex>
-            <Flex direction="column" gap="m">
+            <Flex direction='column' gap='m'>
               <MyEstimatedRewards wallet={wallet} />
             </Flex>
           </Flex>
           <Divider css={{ borderColor: color.neutral.n100 }} />
-          <Flex direction="column" gap="m">
+          <Flex direction='column' gap='m'>
             <Stake stake={activeStake} enableChange={isOwner} />
             {deployerCut == null ? (
               <Loading />
@@ -608,8 +610,8 @@ const ManageService = (props: ManageServiceProps) => {
             {pendingClaim.status !== Status.Success ||
             !pendingClaim.hasClaim ? null : (
               <>
-                <Flex gap="l" alignItems="baseline">
-                  <Flex gap="s">
+                <Flex gap='l' alignItems='baseline'>
+                  <Flex gap='s'>
                     <ServiceSmallStat
                       data={messages.unclaimed}
                       label={messages.rewardDistribution}
@@ -648,7 +650,7 @@ const ManageService = (props: ManageServiceProps) => {
       props.showPendingTransactions &&
       currentUserHasPendingTx &&
       isOwner ? (
-        <Box p="xl" borderTop="default">
+        <Box p='xl' borderTop='default'>
           <TransactionStatusContent
             ethBlockNumber={ethBlockNumber}
             transactions={pendingTx.transactions}
@@ -657,14 +659,14 @@ const ManageService = (props: ManageServiceProps) => {
       ) : null}
       {userDelegatesStatus === Status.Success && !delegates.isZero() ? (
         <Flex
-          alignItems="center"
-          justifyContent="space-between"
-          p="xl"
-          borderTop="default"
+          alignItems='center'
+          justifyContent='space-between'
+          p='xl'
+          borderTop='default'
         >
           <Flex
-            gap="l"
-            alignItems="center"
+            gap='l'
+            alignItems='center'
             css={{ flexGrow: 1, maxWidth: 226 }}
           >
             <ManageDelegation
@@ -685,30 +687,30 @@ const ManageService = (props: ManageServiceProps) => {
               />
             ) : null}
           </Flex>
-          <Flex direction="column" alignItems="flex-end">
-            <Text variant="heading" size="m" color="accent">
+          <Flex direction='column' alignItems='flex-end'>
+            <Text variant='heading' size='m' color='accent'>
               {AudiusClient.displayShortAud(delegates)}
             </Text>
-            <Flex inline gap="xs" alignItems="center">
-              <Text variant="body" size="l" color="subdued" strength="strong">
+            <Flex inline gap='xs' alignItems='center'>
+              <Text variant='body' size='l' color='subdued' strength='strong'>
                 {messages.delegatedAudio}
               </Text>
-              <DelegatedAudioInfoTooltip color="subdued" />
+              <DelegatedAudioInfoTooltip color='subdued' />
             </Flex>
           </Flex>
         </Flex>
       ) : null}
       {showDelegate ? (
         <Flex
-          alignItems="center"
-          justifyContent="space-between"
-          p="xl"
-          borderTop="default"
+          alignItems='center'
+          justifyContent='space-between'
+          p='xl'
+          borderTop='default'
         >
           <BasicTooltip
             position={Position.TOP}
             text={cantDelegateReason}
-            isDisabled={!Boolean(cantDelegateReason)}
+            isDisabled={!cantDelegateReason}
           >
             <Button
               text={messages.delegate}

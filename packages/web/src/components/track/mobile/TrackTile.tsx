@@ -37,6 +37,10 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
+import {
+  LockedStatusPill,
+  LockedStatusPillProps
+} from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
@@ -44,7 +48,6 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
-import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
 import { messages } from '../trackTileMessages'
 
 import BottomButtons from './BottomButtons'
@@ -81,12 +84,12 @@ type LockedOrPlaysContentProps = Pick<
   | 'streamConditions'
   | 'listenCount'
 > &
-  Pick<LockedStatusBadgeProps, 'variant'> & {
+  Pick<LockedStatusPillProps, 'variant'> & {
     gatedTrackStatus?: GatedContentStatus
     onClickGatedUnlockPill: (e: MouseEvent) => void
   }
 
-const renderLockedOrPlaysContent = ({
+const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
   fieldVisibility,
   isOwner,
@@ -108,7 +111,7 @@ const renderLockedOrPlaysContent = ({
         />
       )
     }
-    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
+    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility
@@ -477,7 +480,7 @@ const TrackTile = (props: CombinedProps) => {
             className={cn(styles.bottomRight, fadeIn)}
           >
             {!isLoading
-              ? renderLockedOrPlaysContent({
+              ? renderLockedContentOrPlayCount({
                   hasStreamAccess,
                   fieldVisibility,
                   isOwner,

@@ -4,6 +4,7 @@ const models = require('../models')
 const config = require('../config.js')
 const txRelay = require('../relay/txRelay')
 const querystring = require('querystring')
+const { waitForUser } = require('../utils/waitForUser')
 
 const {
   handleResponse,
@@ -147,16 +148,20 @@ module.exports = function (app) {
   app.post(
     '/tiktok/associate',
     handleResponse(async (req, res, next) => {
-      const { uuid, userId, handle } = req.body
+      const { uuid, userId, handle, blockNumber } = req.body
+      req.connection.setTimeout(60 * 1000)
       const audiusLibsInstance = req.app.get('audiusLibs')
 
       try {
         const tikTokObj = await models.TikTokUser.findOne({
           where: { uuid: uuid }
         })
-
-        const user = await models.User.findOne({
-          where: { handle }
+        const user = await waitForUser({
+          userId,
+          handle,
+          blockNumber,
+          audiusLibsInstance,
+          logger: req.logger
         })
 
         const isUnassociated = tikTokObj && !tikTokObj.blockchainUserId

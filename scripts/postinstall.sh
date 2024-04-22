@@ -6,8 +6,13 @@ NC='\033[0m'
 
 
 if [[ -z "${CI}" ]]; then
-  printf "${GREEN}Installing git hooks...\n${NC}"
+  printf "${GREEN}Updating git hooks...\n${NC}"
   npm run install-hooks > /dev/null
+fi
+
+if [[ -z "${CI}" ]]; then
+  printf "${GREEN}Updating git secrets...\n${NC}"
+  npm run install-git-secrets > /dev/null
 fi
 
 printf "${GREEN}Applying patches...\n${NC}"

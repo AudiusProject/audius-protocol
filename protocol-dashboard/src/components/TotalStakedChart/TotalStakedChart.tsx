@@ -1,10 +1,10 @@
-import LineChart from 'components/LineChart'
-import { useTotalStaked as usedLiveTotalStakedAudio } from 'hooks/useTotalStaked'
 import React from 'react'
-import { useTotalStaked } from 'store/cache/analytics/hooks'
 
 import { GlobalStakedInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
+import LineChart from 'components/LineChart'
+import { useTotalStaked as usedLiveTotalStakedAudio } from 'hooks/useTotalStaked'
 import AudiusClient from 'services/Audius'
+import { useTotalStaked } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { Status } from 'types'
 
@@ -21,8 +21,8 @@ const TotalStakedChart: React.FC = () => {
     labels = []
     data = []
   } else {
-    labels = totalStaked?.map(s => s.timestamp) ?? null
-    data = totalStaked?.map(s => s.count) ?? null
+    labels = totalStaked?.map((s) => s.timestamp) ?? null
+    data = totalStaked?.map((s) => s.count) ?? null
   }
 
   const { status: trailingTotalStatus, total } = usedLiveTotalStakedAudio()

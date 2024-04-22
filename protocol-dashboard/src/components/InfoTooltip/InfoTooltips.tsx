@@ -1,4 +1,5 @@
 import { IconColors } from '@audius/harmony'
+
 import { InfoTooltip } from './InfoTooltip'
 
 const messages = {

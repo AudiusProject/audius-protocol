@@ -22,10 +22,10 @@ import { Dispatch } from 'redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import CoSign, { Size } from 'components/co-sign/CoSign'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
-import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -209,12 +209,12 @@ const PlayBar = ({
             <div className={styles.artist}>{name}</div>
             {shouldShowPreviewLock ? (
               <div className={styles.lockPreview}>
-                <LockedStatusBadge
+                <LockedStatusPill
                   locked
                   variant='premium'
                   text={messages.preview}
                   coloredWhenLocked
-                  iconSize='small'
+                  iconSize='2xs'
                 />
               </div>
             ) : null}

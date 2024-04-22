@@ -1,10 +1,12 @@
+import React, { useEffect, useState } from 'react'
+
 import { Flex, Text } from '@audius/harmony'
+import { Line } from 'react-chartjs-2'
+
 import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React, { useEffect, useState } from 'react'
-import { Line } from 'react-chartjs-2'
 import { formatBucketText } from 'store/cache/analytics/hooks'
 import { Bucket } from 'store/cache/analytics/slice'
 import {
@@ -152,7 +154,7 @@ const getOptions = (
     xAlign: 'left',
     yAlign: 'bottom',
     position: 'nearest',
-    custom: function(tooltipModel: any) {
+    custom: function (tooltipModel: any) {
       // Tooltip Element
       let tooltipEl = document.getElementById(`chartjs-tooltip-${id}`)
 
@@ -268,9 +270,6 @@ const LineChart: React.FC<LineChartProps> = ({
     dateFormatter = DateFormatter.DAY_AND_MONTH
   }
 
-  selection === Bucket.ALL_TIME || selection === Bucket.YEAR
-    ? DateFormatter.MONTH
-    : DateFormatter.DAY_AND_MONTH
   const formattedTopNumber = topNumber
     ? typeof topNumber === 'number'
       ? formatNumber(topNumber)
@@ -297,13 +296,13 @@ const LineChart: React.FC<LineChartProps> = ({
             <Text
               variant={size === 'large' ? 'display' : 'heading'}
               size={size === 'large' ? 's' : 'l'}
-              strength="strong"
-              color="accent"
+              strength='strong'
+              color='accent'
             >
               {formattedTopNumber}
             </Text>
           ) : null}
-          <Flex inline gap="xs" alignItems="center">
+          <Flex inline gap='xs' alignItems='center'>
             <div className={styles.title}>{title}</div>
             {TitleTooltipComponent == null ? null : <TitleTooltipComponent />}
           </Flex>

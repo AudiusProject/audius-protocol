@@ -1,6 +1,8 @@
-import styles from './PlainLink.module.css'
 import { PropsWithChildren } from 'react'
+
 import cn from 'classnames'
+
+import styles from './PlainLink.module.css'
 
 type PlainLinkProps = PropsWithChildren<{
   href?: string
@@ -17,8 +19,8 @@ export const PlainLink = ({
   return href ? (
     <a
       href={disabled ? undefined : href}
-      target="_blank"
-      rel="noreferrer"
+      target='_blank'
+      rel='noreferrer'
       className={cn(styles.link, { [styles.disabled]: disabled })}
     >
       {children}

@@ -40,10 +40,11 @@ const TestProviders =
     )
   }
 
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'> & TestOptions
-) => render(ui, { wrapper: TestProviders(options), ...options })
+type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & TestOptions
+
+const customRender = (ui: ReactElement, options?: CustomRenderOptions) =>
+  render(ui, { wrapper: TestProviders(options), ...options })
 
 export * from '@testing-library/react'
+export type { CustomRenderOptions as RenderOptions }
 export { customRender as render }

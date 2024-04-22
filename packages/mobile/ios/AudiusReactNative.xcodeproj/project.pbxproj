@@ -40,6 +40,7 @@
 		83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
 		9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */; };
 		9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */; };
+		9E394FBA2BD1B7A8008DD9D2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9E5B39082BB49198009C765B /* PrivacyInfo.xcprivacy */; };
 		AA7D28012A68C20F008DF4D3 /* library_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FE2A68C20F008DF4D3 /* library_dark.riv */; };
 		AA7D28022A68C20F008DF4D3 /* library_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FF2A68C20F008DF4D3 /* library_matrix.riv */; };
 		AA7D28032A68C20F008DF4D3 /* library_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D28002A68C20F008DF4D3 /* library_default.riv */; };
@@ -343,6 +344,7 @@
 				23C6F64E2977C27A00F66384 /* feed_dark.riv in Resources */,
 				23C6F6492977C27A00F66384 /* trending_default.riv in Resources */,
 				83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */,
+				9E394FBA2BD1B7A8008DD9D2 /* PrivacyInfo.xcprivacy in Resources */,
 				7103C3ED2929C6B5002B9072 /* BootSplash.storyboard in Resources */,
 				23C6F64B2977C27A00F66384 /* favorites_dark.riv in Resources */,
 				838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */,

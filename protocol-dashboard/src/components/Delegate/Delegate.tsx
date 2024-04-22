@@ -1,8 +1,9 @@
-import clsx from 'clsx'
 import React from 'react'
 
 import { IconArrowWhite } from '@audius/stems'
 import BN from 'bn.js'
+import clsx from 'clsx'
+
 import Button, { ButtonType } from 'components/Button'
 import DisplayAudio from 'components/DisplayAudio'
 import Paper from 'components/Paper'
@@ -13,6 +14,7 @@ import { usePendingClaim } from 'store/cache/claims/hooks'
 import { Address, Status } from 'types'
 import { TICKER } from 'utils/consts'
 import { useModalControls } from 'utils/hooks'
+
 import styles from './Delegate.module.css'
 
 const messages = {

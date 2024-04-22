@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
+
 import { ApolloProvider } from '@apollo/client'
+import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { useEffect, useState } from 'react'
+import { useWeb3ModalAccount, useWeb3ModalState } from '@web3modal/ethers/react'
 import { Provider, useSelector } from 'react-redux'
 import {
   Routes,
@@ -12,33 +15,31 @@ import {
   To,
   NavigateProps
 } from 'react-router-dom'
-import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 import Header from 'components/Header'
-import Home from 'containers/Home'
-import Governance from 'containers/Governance'
-import Services from 'containers/Services'
-import Node from 'containers/Node'
-import User from 'containers/User'
-import DiscoveryProviders from 'containers/DiscoveryProviders'
-import ContentNodes from 'containers/ContentNodes'
-import ServiceOperators from 'containers/ServiceOperators'
-import ServiceUsers from 'containers/ServiceUsers'
-import Analytics from 'containers/Analytics'
 import API from 'containers/API'
 import APILeaderboard from 'containers/APILeaderboard'
-import * as routes from 'utils/routes'
-
-import { client, getBackupClient, createStore } from './store'
-import desktopStyles from './App.module.css'
-import mobileStyles from './AppMobile.module.css'
+import Analytics from 'containers/Analytics'
+import ContentNodes from 'containers/ContentNodes'
+import DiscoveryProviders from 'containers/DiscoveryProviders'
+import Governance from 'containers/Governance'
+import Home from 'containers/Home'
+import Node from 'containers/Node'
 import NotFound from 'containers/NotFound'
 import Proposal from 'containers/Proposal'
-import { createStyles } from 'utils/mobile'
-import { getDidGraphError } from 'store/api/hooks'
+import ServiceOperators from 'containers/ServiceOperators'
+import ServiceUsers from 'containers/ServiceUsers'
+import Services from 'containers/Services'
 import UnregisteredNode from 'containers/UnregisteredNode'
+import User from 'containers/User'
+import { getDidGraphError } from 'store/api/hooks'
+import { createStyles } from 'utils/mobile'
+import * as routes from 'utils/routes'
+
+import desktopStyles from './App.module.css'
+import mobileStyles from './AppMobile.module.css'
 import { RouteHistoryProvider } from './providers/RouteHistoryContext'
-import { useWeb3ModalAccount, useWeb3ModalState } from '@web3modal/ethers/react'
+import { client, getBackupClient, createStore } from './store'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 const store = createStore()
@@ -103,7 +104,7 @@ const App = () => {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <HarmonyThemeProvider theme="dark">
+      <HarmonyThemeProvider theme='dark'>
         <HashRouter>
           <RouteHistoryProvider>
             <div className={styles.appContainer}>
@@ -128,7 +129,7 @@ const App = () => {
                     path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
                     element={
                       <NavigateWithParams
-                        to={params =>
+                        to={(params) =>
                           routes.NODES_DISCOVERY_NODE.replace(
                             ':spID',
                             params.spID
@@ -150,7 +151,7 @@ const App = () => {
                     path={routes.SERVICES_CONTENT_NODE}
                     element={
                       <NavigateWithParams
-                        to={params =>
+                        to={(params) =>
                           routes.NODES_CONTENT_NODE.replace(
                             ':spID',
                             params.spID
@@ -169,7 +170,7 @@ const App = () => {
                     path={routes.SERVICES_ACCOUNT_USER}
                     element={
                       <NavigateWithParams
-                        to={params =>
+                        to={(params) =>
                           routes.NODES_ACCOUNT_USER.replace(
                             ':wallet',
                             params.wallet
@@ -186,7 +187,7 @@ const App = () => {
                     path={routes.SERVICES_ACCOUNT_OPERATOR}
                     element={
                       <NavigateWithParams
-                        to={params =>
+                        to={(params) =>
                           routes.NODES_ACCOUNT_OPERATOR.replace(
                             ':wallet',
                             params.wallet
@@ -197,9 +198,10 @@ const App = () => {
                   />
                   {Object.keys(
                     routes.SIMPLE_DEPRECATED_SERVICE_ROUTES_TO_NODES_ROUTES
-                  ).map(old => (
+                  ).map((old) => (
                     <Route
                       path={old}
+                      key={old}
                       element={
                         <Navigate
                           to={
@@ -223,7 +225,7 @@ const App = () => {
                     path={routes.API_LEADERBOARD}
                     element={<APILeaderboard />}
                   />
-                  <Route path="*" element={<NotFound />} />
+                  <Route path='*' element={<NotFound />} />
                 </Routes>
               </div>
             </div>

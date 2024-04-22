@@ -42,6 +42,9 @@ import {
   CollectionTrack,
   CollectionsPageType,
   CollectionPageTrackRecord,
+  PurchaseableContentType,
+  usePremiumContentPurchaseModalActions,
+  PremiumContentPurchaseModalState,
   albumTrackRemoveConfirmationModalActions,
   AlbumTrackRemoveConfirmationModalState
 } from '@audius/common/store'
@@ -492,6 +495,13 @@ class CollectionPage extends Component<
     }
   }
 
+  onClickPurchaseTrack = (record: CollectionPageTrackRecord) => {
+    this.props.openPremiumContentPurchaseModal({
+      contentId: record.track_id,
+      contentType: PurchaseableContentType.TRACK
+    })
+  }
+
   onClickRemove = (
     trackId: number,
     _index: number,
@@ -761,6 +771,7 @@ class CollectionPage extends Component<
       onClickRow: this.onClickRow,
       onClickSave: this.onClickSave,
       onClickRepostTrack: this.onClickRepostTrack,
+      onClickPurchaseTrack: this.onClickPurchaseTrack,
       onSortTracks: this.onSortTracks,
       onReorderTracks: this.onReorderTracks,
       onClickRemove: this.onClickRemove,
@@ -1000,7 +1011,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       ),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
-      dispatch(updatedPlaylistViewed({ playlistId }))
+      dispatch(updatedPlaylistViewed({ playlistId })),
+    openPremiumContentPurchaseModal: (args: PremiumContentPurchaseModalState) =>
+      dispatch(usePremiumContentPurchaseModalActions.open(args))
   }
 }
 

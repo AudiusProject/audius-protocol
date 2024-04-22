@@ -49,6 +49,10 @@
   opacity: 1;
 }
 
+.playlistTrack.lastTrack {
+  border-bottom: none;
+}
+
 .wrapper {
   display: flex;
   align-items: center;
