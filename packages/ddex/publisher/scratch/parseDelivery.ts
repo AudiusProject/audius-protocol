@@ -4,8 +4,7 @@ import decompress from 'decompress'
 import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { publishRelease } from './publishRelease'
-import { matchAudiusUser, upsertRelease } from './db'
+import { ReleaseRow, db, matchAudiusUser, upsertRelease } from './db'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
@@ -25,6 +24,7 @@ export type DDEXRelease = {
   audiusGenre?: Genre
   audiusUser?: string
 
+  problems: string[]
   soundRecordings: DDEXSoundRecording[]
   images: DDEXImage[]
 }
@@ -33,6 +33,7 @@ export type DDEXSoundRecording = {
   ref: string
   isrc?: string
   filePath: string
+  fileName: string
   title: string
   artists: string[]
   releaseDate: string
@@ -45,6 +46,7 @@ export type DDEXSoundRecording = {
 export type DDEXImage = {
   ref: string
   filePath: string
+  fileName: string
 }
 
 export async function parseDelivery(maybeZip: string) {
@@ -58,6 +60,18 @@ export async function parseDelivery(maybeZip: string) {
   }
 }
 
+export async function reParsePastXml() {
+  // loop over db xml and reprocess
+  const releases = db.prepare(`select * from releases`).all() as ReleaseRow[]
+  for (const release of releases) {
+    // skip releases that have already been published
+    if (release.publishedAt) {
+      continue
+    }
+    await parseDdexXml(release.xmlUrl || '', release.xmlText)
+  }
+}
+
 async function processDeliveryDir(dir: string) {
   const files = await readdir(dir, { recursive: true })
 
@@ -66,35 +80,22 @@ async function processDeliveryDir(dir: string) {
     .map((f) => join(dir, f))
 
   // actual publish step...
-  // move this to caller
+  // todo: move this to some poller thing
   for (const xmlFile of xmlFiles) {
-    const releases = await parseDdexXmlFile(xmlFile)
-    for (const release of releases) {
-      // todo: what to do when no image
-      if (!release.images.length) continue
-      await publishRelease(release)
-    }
+    await parseDdexXmlFile(xmlFile)
   }
 }
 
-export async function parseDdexXmlFile(ddexXmlLocation: string) {
-  console.log('processing:', ddexXmlLocation)
-  const xmlText = await readFile(ddexXmlLocation, 'utf8')
-  const $ = cheerio.load(xmlText, { xmlMode: true })
+export async function parseDdexXmlFile(xmlUrl: string) {
+  const xmlText = await readFile(xmlUrl, 'utf8')
+  return parseDdexXml(xmlUrl, xmlText)
+}
 
-  // helpers
+export async function parseDdexXml(xmlUrl: string, xmlText: string) {
+  const $ = cheerio.load(xmlText, { xmlMode: true })
 
   function toTexts($doc: CH) {
     return $doc.map((_, el) => $(el).text()).get()
-  }
-
-  function resolveFile($el: CH) {
-    return resolve(
-      ddexXmlLocation,
-      '..',
-      $el.find('FilePath').text(),
-      $el.find('FileName').text()
-    )
   }
 
   //
@@ -111,7 +112,8 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
       ref: $el.find('ResourceReference').text(),
       isrc: $el.find('ISRC').text(),
 
-      filePath: resolveFile($el),
+      filePath: $el.find('FilePath').text(),
+      fileName: $el.find('FileName').text(),
       title: $el.find('TitleText:first').text(),
       artists: toTexts($el.find('DisplayArtist PartyName FullName')),
       genre: $el.find('GenreText').text(),
@@ -132,13 +134,13 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
 
   $('Image').each((_, el) => {
     const $el = $(el)
+    const ref = $el.find('ResourceReference').text()
 
-    const img = {
-      ref: $el.find('ResourceReference').text(),
-      filePath: resolveFile($el)
+    imageResources[ref] = {
+      ref,
+      filePath: $el.find('FilePath').text(),
+      fileName: $el.find('FileName').text()
     }
-
-    imageResources[img.ref] = img
   })
 
   //
@@ -164,15 +166,21 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
 
         isMainRelease: $el.attr('IsMainRelease') == 'true',
 
+        problems: [],
         soundRecordings: [],
         images: []
       }
 
       release.audiusGenre = resolveAudiusGenre(release.subGenre, release.genre)
+      if (!release.audiusGenre) {
+        release.problems.push(`GenreMatchFailed`)
+      }
 
       // resolve audius user
       release.audiusUser = matchAudiusUser(release.artists)
-      console.log('-----------', release.audiusGenre, release.audiusUser)
+      if (!release.audiusUser) {
+        release.problems.push(`UserMatchFailed`)
+      }
 
       // resolve resources
       $el
@@ -185,18 +193,37 @@ export async function parseDdexXmlFile(ddexXmlLocation: string) {
           } else if (imageResources[ref]) {
             release.images.push(imageResources[ref])
           } else {
-            console.warn('resource not found', ref)
+            release.problems.push(`MissingRef: ${ref}`)
           }
         })
-
-      // create or replace this release
-      upsertRelease(xmlText, release)
 
       return release
     })
 
+  // resolve any missing images to main release if possible
+  const mainRelease = releases.find((r) => r.isMainRelease)
+  for (const release of releases) {
+    if (!release.images.length) {
+      if (mainRelease?.images.length) {
+        release.images = mainRelease.images
+      } else {
+        release.problems.push('NoImage')
+      }
+    }
+  }
+
+  // create or replace this release in db
+  // todo: should have some kind of xml source path thing...
+  for (const release of releases) {
+    upsertRelease(xmlUrl, xmlText, release)
+  }
+
   return releases
 }
+
+//
+// helpers
+//
 
 function resolveAudiusGenre(
   genre: string,
@@ -210,6 +237,11 @@ function resolveAudiusGenre(
         return v
       }
     }
+  }
+
+  // hard code some genre matching??
+  if (subgenre == 'Dance') {
+    return Genre.ELECTRONIC
   }
 
   // maybe try some edit distance magic?

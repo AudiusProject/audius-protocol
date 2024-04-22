@@ -2,20 +2,48 @@ import { UploadTrackRequest, Genre, UploadAlbumRequest } from '@audius/sdk'
 import { createSdkService } from '../src/services/sdkService'
 import { DDEXRelease } from './parseDelivery'
 import { readFile } from 'fs/promises'
-import { basename } from 'path'
+import { basename, resolve } from 'path'
+import { ReleaseRow, db } from './db'
 
-export async function publishRelease(release: DDEXRelease) {
-  if (process.env.SKIP_SDK_PUBLISH) {
-    console.log('skipping sdk publish')
-    return
+export async function publishValidPendingReleases() {
+  const rows = db.prepare(`select * from releases`).all() as ReleaseRow[]
+  for (const row of rows) {
+    const release = JSON.parse(row.json)
+    if (release.problems.length) {
+      console.log(`skipping ${release.ref} due to problems: `, release.problems)
+    }
+    await publishRelease(row)
   }
+}
+
+export async function publishRelease(releaseRow: ReleaseRow) {
   const sdkService = createSdkService()
   const sdk = (await sdkService).getSdk()
 
-  const imageFile = await readFileToBuffer(release.images[0].filePath)
+  const skipSdkPublish = process.env.SKIP_SDK_PUBLISH == 'true'
+
+  const release = JSON.parse(releaseRow.json) as DDEXRelease
+
+  if (!releaseRow.xmlUrl) {
+    throw new Error(`xmlUrl is required to resolve file paths`)
+  }
+
+  // todo: if this is an s3 url... need to sync s3 assets to local disk first
+  // or support s3 urls when opening asset
+  function resolveFile({
+    filePath,
+    fileName
+  }: {
+    filePath: string
+    fileName: string
+  }) {
+    return resolve(releaseRow.xmlUrl!, '..', filePath, fileName)
+  }
+
+  const imageFile = await readFileToBuffer(resolveFile(release.images[0]))
 
   const trackFiles = await Promise.all(
-    release.soundRecordings.map((track) => readFileToBuffer(track.filePath))
+    release.soundRecordings.map((track) => readFileToBuffer(resolveFile(track)))
   )
 
   const trackMetadatas: UploadTrackRequest['metadata'][] =
@@ -52,11 +80,17 @@ export async function publishRelease(release: DDEXRelease) {
       trackMetadatas,
       userId
     }
+
+    if (skipSdkPublish) {
+      console.log('skipping sdk publish')
+      return
+    }
+
     console.log(`Uploading ALBUM ${release.title} to Audius...`)
     const result = await sdk.albums.uploadAlbum(uploadAlbumRequest)
     console.log(result)
 
-    // on succes: update releases set entityId = ${result.albumId} where id = ${someReleaseId}
+    // todo: on success set publishedAt, entityId, blockhash
 
     // return result
   }
@@ -75,6 +109,12 @@ export async function publishRelease(release: DDEXRelease) {
       coverArtFile: imageFile,
       trackFile
     }
+
+    if (skipSdkPublish) {
+      console.log('skipping sdk publish')
+      return
+    }
+
     console.log(`Uploading track ${metadata.title} Audius...`)
     const result = await sdk.tracks.uploadTrack(uploadTrackRequest)
     console.log(result)

@@ -4,6 +4,7 @@ import { program } from 'commander'
 import { parseDdexXmlFile, parseDelivery } from './parseDelivery'
 import { cleanupFiles } from './cleanupFiles'
 import { pollS3 } from './s3poller'
+import { publishValidPendingReleases } from './publishRelease'
 
 program
   .name('ddexer')
@@ -21,16 +22,14 @@ program
   })
 
 program
-  .command('process')
-  .description('Process DDEX delivery on local filesystem')
-  .argument('<path>', 'path to ddex xml or zip file')
-  .action(async (p, options) => {
-    const results = await parseDelivery(p)
-    console.log('ok', results)
+  .command('publish')
+  .description('Publish any valid deliveries')
+  .action(async () => {
+    await publishValidPendingReleases()
   })
 
 program
-  .command('process-s3')
+  .command('poll-s3')
   .description('Pull down assets from S3 and process')
   .action(async () => {
     await pollS3()

@@ -8,7 +8,7 @@ import { html, raw } from 'hono/html'
 import { HtmlEscapedString } from 'hono/utils/html'
 import { decode } from 'hono/jwt'
 import { getSignedCookie, setSignedCookie, deleteCookie } from 'hono/cookie'
-import { DDEXRelease } from './parseDelivery'
+import { DDEXRelease, reParsePastXml } from './parseDelivery'
 
 const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
@@ -39,7 +39,9 @@ app.get('/', async (c) => {
 })
 
 app.get('/auth', (c) => {
-  // const host = NODE_ENV == 'production' ? 'audius.co' : 'staging.audius.co'
+  if (!DDEX_KEY) {
+    return c.text('DDEX_KEY is required', 500)
+  }
   const base = 'https://staging.audius.co/oauth/auth?'
   const params = new URLSearchParams({
     scope: 'write',
@@ -115,14 +117,19 @@ app.get('/releases', (c) => {
     Layout(html`
       <h1>Releases</h1>
 
+      <form method="POST" action="/releases/reparse">
+        <button>rematch</button>
+      </form>
+
       <table>
         <thead>
           <tr>
             <th>Key</th>
             <th>Release Type</th>
             <th>Is Main</th>
-            <th>Audius Genre</th>
             <th>Audius User</th>
+            <th>Audius Genre</th>
+            <th>Problems</th>
             <th>debug</th>
           </tr>
         </thead>
@@ -137,8 +144,11 @@ app.get('/releases', (c) => {
                 </td>
                 <td>${row._json?.releaseType}</td>
                 <td>${row._json?.isMainRelease ? 'Yes' : ''}</td>
-                <td>${row._json?.audiusGenre}</td>
                 <td>${row._json?.audiusUser}</td>
+                <td>${row._json?.audiusGenre}</td>
+                <td>
+                  ${row._json?.problems?.map((p) => html`<mark>${p}</mark>`)}
+                </td>
                 <td>
                   <a
                     href="/releases/${encodeURIComponent(row.key)}/xml"
@@ -157,6 +167,11 @@ app.get('/releases', (c) => {
       </table>
     `)
   )
+})
+
+app.post('/releases/reparse', async (c) => {
+  await reParsePastXml()
+  return c.redirect('/releases')
 })
 
 app.get('/releases/:key', (c) => {
@@ -253,6 +268,9 @@ function Layout(inner: HtmlEscapedString | Promise<HtmlEscapedString>) {
           button {
             --pico-font-weight: 700;
           }
+          mark {
+            margin-right: 1rem;
+          }
         </style>
       </head>
       <body>
@@ -262,7 +280,7 @@ function Layout(inner: HtmlEscapedString | Promise<HtmlEscapedString>) {
           <a href="/releases">releases</a>
           <a href="/users">users</a>
         </div>
-        <div class="container">${inner}</div>
+        <div style="padding: 50px;">${inner}</div>
       </body>
     </html>
   `

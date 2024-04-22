@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import { DDEXRelease } from './parseDelivery'
-export const db = new Database('foobar.db')
+
+export const db = new Database('scratchy.db')
 
 db.pragma('journal_mode = WAL')
 
@@ -18,12 +19,8 @@ create table if not exists releases (
   xmlText text,
   json jsonb,
 
-  audiusGenre text,
-  audiusUser text,
-
-  soundRecordingCount integer,
-  imageCount integer,
-  failureCount integer default 0,
+  xmlUrl text, -- location of the xml file... needed to resolve relative location of resources
+  publishedAt datetime,
 
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME
@@ -41,6 +38,9 @@ export type ReleaseRow = {
   key: string
   xmlText: string
   json: string
+
+  xmlUrl?: string
+  publishedAt?: string
 
   _json?: DDEXRelease
 }
@@ -62,13 +62,21 @@ function lowerAscii(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
-export function upsertRelease(xmlText: string, release: DDEXRelease) {
-  const ok = dbUpsert('releases', {
-    key: release.isrc || release.icpn || 'dunno_' + release.ref,
-    xmlText: xmlText,
+export function upsertRelease(
+  xmlUrl: string,
+  xmlText: string,
+  release: DDEXRelease
+) {
+  const key = release.isrc || release.icpn
+  if (!key) {
+    console.log(`No ID for release`, release)
+    throw new Error('No ID for release')
+  }
+  dbUpsert('releases', {
+    key,
+    xmlUrl,
+    xmlText,
     json: JSON.stringify(release),
-    audiusGenre: release.audiusGenre,
-    audiusUser: release.audiusUser,
     updatedAt: new Date().toISOString()
   })
 }
