@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 
+import styles from '../DashboardPage.module.css'
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
 import { fetchTracks } from '../store/slice'
 
@@ -83,6 +84,7 @@ export const ArtistDashboardTracksTab = ({
         totalRowCount={account.track_count}
         loading={tracksStatus === Status.LOADING}
         isPaginated
+        tableHeaderClassName={styles.tableHeader}
       />
     </Flex>
   )
