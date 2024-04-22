@@ -36,6 +36,7 @@ func createBucket(bucketName, profile string) error {
 
 func main() {
 	args := os.Args[1:]
+	fmt.Println(args)
 	if len(args) != 1 {
 		log.Fatal("Usage: sync s3://bucket/folder")
 	}

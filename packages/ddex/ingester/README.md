@@ -19,7 +19,7 @@ The sync.go script is able to pull remote s3 files into local s3, provided that 
 Usage:
 
 ```bash
-go run sync.go s3://ddex-prod-<provider>-raw/20240305090456555
+go run ./cmd/sync s3://ddex-prod-<provider>-raw/20240305090456555
 
 aws s3 ls s3://ddex-prod-<provider>-raw/20240305090456555 --profile local
 ```
