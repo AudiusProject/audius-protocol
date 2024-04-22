@@ -182,7 +182,9 @@ const CollectionPage = ({
   const isStreamGated =
     metadata && 'is_stream_gated' in metadata && metadata?.is_stream_gated
   const streamConditions =
-    metadata && 'stream_conditions' in metadata && metadata?.stream_conditions
+    metadata && 'stream_conditions' in metadata
+      ? metadata?.stream_conditions
+      : null
 
   const {
     isEmpty,
@@ -200,8 +202,6 @@ const CollectionPage = ({
   const isPlayable = !areAllTracksDeleted && numTracks > 0
   const dogEarType =
     (!collectionLoading &&
-      isStreamGated &&
-      streamConditions &&
       getDogEarType({
         streamConditions,
         isUnlisted: isPrivate
@@ -267,14 +267,14 @@ const CollectionPage = ({
       isNftPlaylist
         ? ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
         : [
-            'playButton',
-            'trackName',
-            'artistName',
-            isAlbum ? 'date' : 'addedDate',
-            'length',
-            'plays',
-            'overflowActions'
-          ],
+          'playButton',
+          'trackName',
+          'artistName',
+          isAlbum ? 'date' : 'addedDate',
+          'length',
+          'plays',
+          'overflowActions'
+        ],
     [isAlbum, isNftPlaylist]
   )
 
@@ -298,8 +298,8 @@ const CollectionPage = ({
           isPremiumAlbumsEnabled
             ? dogEarType
             : isPrivate
-            ? DogEarType.HIDDEN
-            : undefined
+              ? DogEarType.HIDDEN
+              : undefined
         }
       >
         <div className={styles.topSectionWrapper}>{topSection}</div>
@@ -336,9 +336,8 @@ const CollectionPage = ({
                   allowReordering &&
                   (!isAlbum || isEditAlbumsEnabled)
                 }
-                removeText={`${messages.remove} ${
-                  isAlbum ? messages.type.album : messages.type.playlist
-                }`}
+                removeText={`${messages.remove} ${isAlbum ? messages.type.album : messages.type.playlist
+                  }`}
                 isAlbumPage={isAlbum}
               />
             </ClientOnly>
