@@ -35,12 +35,7 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
             : undefined
         }
       />
-      {is_private ? (
-        <PublishButton
-          collectionId={collectionId}
-          widthToHideText={BUTTON_COLLAPSE_WIDTHS.fourth}
-        />
-      ) : null}
+      {is_private ? <PublishButton collectionId={collectionId} /> : null}
 
       {!is_private ? (
         <OverflowMenuButton collectionId={collectionId} isOwner />

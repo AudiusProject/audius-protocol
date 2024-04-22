@@ -4,7 +4,7 @@ import {
   collectionPageSelectors,
   CommonState
 } from '@audius/common/store'
-import { ButtonProps, IconRocket, Button } from '@audius/harmony'
+import { IconButtonProps, IconRocket, IconButton } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -13,7 +13,7 @@ import { Tooltip } from 'components/tooltip'
 import { PublishConfirmationModal } from './PublishConfirmationModal'
 
 const { getCollection } = collectionPageSelectors
-const { getCollecitonHasHiddenTracks } = cacheCollectionsSelectors
+const { getCollectionHasHiddenTracks } = cacheCollectionsSelectors
 
 const messages = {
   publish: 'Make Public',
@@ -23,7 +23,7 @@ const messages = {
     `You cannot make a ${collectionType} with hidden tracks public.`
 }
 
-type PublishButtonProps = Partial<ButtonProps> & {
+type PublishButtonProps = Partial<IconButtonProps> & {
   collectionId: number
 }
 
@@ -33,7 +33,7 @@ export const PublishButton = (props: PublishButtonProps) => {
     (state: CommonState) => getCollection(state, { id: collectionId })
   ) as Collection
   const hasHiddenTracks = useSelector((state: CommonState) =>
-    getCollecitonHasHiddenTracks(state, { id: collectionId })
+    getCollectionHasHiddenTracks(state, { id: collectionId })
   )
 
   const [isConfirming, toggleIsConfirming] = useToggle(false)
@@ -41,20 +41,14 @@ export const PublishButton = (props: PublishButtonProps) => {
   const isDisabled = !track_count || track_count === 0 || hasHiddenTracks
 
   const publishButtonElement = (
-    <Button
-      variant='secondary'
-      iconLeft={IconRocket}
+    <IconButton
+      icon={IconRocket}
+      color='subdued'
+      aria-label={_is_publishing ? messages.publishing : messages.publish}
       onClick={toggleIsConfirming}
-      disabled={isDisabled}
-      isLoading={_is_publishing}
+      disabled={isDisabled || _is_publishing}
       {...other}
-    >
-      {_is_publishing ? (
-        <span>{messages.publishing}&#8230;</span>
-      ) : (
-        messages.publish
-      )}
-    </Button>
+    />
   )
 
   return (
@@ -64,8 +58,8 @@ export const PublishButton = (props: PublishButtonProps) => {
           text={
             hasHiddenTracks
               ? messages.hiddenTracksTooltipText(
-                  is_album ? 'album' : 'playlist'
-                )
+                is_album ? 'album' : 'playlist'
+              )
               : messages.emptyPlaylistTooltipText
           }
         >

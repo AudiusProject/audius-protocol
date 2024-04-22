@@ -1,6 +1,7 @@
 import {
   Collection,
   CollectionMetadata,
+  FieldVisibility,
   ID,
   Kind,
   Name,
@@ -104,8 +105,20 @@ function* combineMetadata(
     metadata.tags = collectionMetadata.trackDetails.tags
   }
 
-  if (collectionMetadata.is_downloadable) {
-    metadata.is_downloadable = true
+  // Set download & hidden status
+  metadata.is_downloadable = !!collectionMetadata.is_downloadable
+
+  metadata.is_unlisted = !!collectionMetadata.is_unlisted
+  if (collectionMetadata.is_unlisted && collectionMetadata.field_visibility) {
+    // Convert any undefined values to booleans
+    const booleanFieldArray = Object.entries(
+      collectionMetadata.field_visibility
+    ).map(([k, v]) => [k, !!v]) as [string, boolean][]
+    const booleanFieldVisibility = booleanFieldArray.reduce(
+      (acc, [k, v]) => ({ [k]: v, ...acc }),
+      {}
+    ) as FieldVisibility
+    metadata.field_visibility = booleanFieldVisibility
   }
 
   // If the tracks were added as part of a premium album, add all the necessary premium track metadata
@@ -779,15 +792,13 @@ export function* uploadCollection(
       `${collectionMetadata.playlist_name}_${Date.now()}`,
       function* () {
         console.debug('Creating playlist')
-        // Uploaded collections are always public
-        const isPrivate = false
         const { blockHash, blockNumber, error } = yield* call(
           audiusBackendInstance.createPlaylist,
           playlistId,
           collectionMetadata as unknown as CollectionMetadata,
           isAlbum,
           trackIds,
-          isPrivate
+          !!collectionMetadata.is_unlisted
         )
 
         if (error) {

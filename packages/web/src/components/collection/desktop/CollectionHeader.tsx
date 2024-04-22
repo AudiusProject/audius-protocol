@@ -179,8 +179,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const renderAlbumDetailsText = () => {
     const releaseAndUpdatedText = lastModifiedDate
       ? `Released ${formatDate(`${releaseDate}`)}, Updated ${formatDate(
-          `${lastModifiedDate}`
-        )}`
+        `${lastModifiedDate}`
+      )}`
       : `Released ${formatDate(`${releaseDate}`)}`
 
     const trackCountText = `${numTracks} tracks`
@@ -203,8 +203,10 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       ) : null}
       <Flex direction='column' justifyContent='space-between'>
         <Flex direction='column' gap='xl'>
-          <Flex className={cn(fadeIn)} gap='s' mt='s'>
-            {!isPublished ? <IconVisibilityHidden /> : null}
+          <Flex className={cn(fadeIn)} gap='s' mt='s' alignItems='center'>
+            {!isPublished ? (
+              <IconVisibilityHidden color='subdued' aria-label='hidden' />
+            ) : null}
             {isPremium ? <IconCart size='s' color='subdued' /> : null}
             <Text
               variant='label'
