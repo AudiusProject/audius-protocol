@@ -105,12 +105,12 @@ const CollectionHeader = ({
   playing = false,
   saves = 0,
   reposts,
-  onPlay = () => { },
+  onPlay = () => {},
   onShare,
   onSave,
   onRepost,
-  onClickFavorites = () => { },
-  onClickReposts = () => { },
+  onClickFavorites = () => {},
+  onClickReposts = () => {},
   onClickMobileOverflow,
   variant,
   gradient,
@@ -132,13 +132,13 @@ const CollectionHeader = ({
       isOwner || !isPublished
         ? null
         : isReposted
-          ? OverflowAction.UNREPOST
-          : OverflowAction.REPOST,
+        ? OverflowAction.UNREPOST
+        : OverflowAction.REPOST,
       isOwner || !isPublished
         ? null
         : isSaved
-          ? OverflowAction.UNFAVORITE
-          : OverflowAction.FAVORITE,
+        ? OverflowAction.UNFAVORITE
+        : OverflowAction.FAVORITE,
       isOwner && (!isAlbum || isEditAlbumsEnabled) && !isPublished
         ? OverflowAction.PUBLISH_PLAYLIST
         : null,
