@@ -26,19 +26,13 @@ export const initSharedData = async (): Promise<SharedData> => {
     (process.env.tcrDryRun || 'true').toLocaleLowerCase() === 'false'
   )
 
-  const oracleEthAddress = process.env.tcrOracleEthAddress
-  const AAOEndpoint = process.env.tcrAAOEndpoint
-  const feePayerOverride = process.env.tcrFeePayerOverride
-  const localEndpoint = process.env.tcrLocalEndpoint
+  const feePayerOverride = process.env.audius_fee_payer_override
+  const AAOEndpoint = process.env.audius_aao_endpoint || "https://antiabuseoracle.audius.co"
+  const oracleEthAddress = process.env.audius_aao_address || "0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6"
+  const localEndpoint = process.env.audius_discprov_url || "http://server:5000"
 
-  const dateToRun = process.env.dateToRun
-
-  if (oracleEthAddress === undefined)
-    throw new Error('oracleEthAddress undefined')
-  if (AAOEndpoint === undefined) throw new Error('AAOEndpoint undefined')
   if (feePayerOverride === undefined)
     throw new Error('feePayerOverride undefined')
-  if (localEndpoint === undefined) throw new Error('localEndpoint undefined')
 
   sharedData = {
     oracleEthAddress,
