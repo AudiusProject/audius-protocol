@@ -15,13 +15,13 @@ const getRedisConnection = async () => {
   return redisClient
 }
 
-const parseStringArray = (json: string | null) => {
+const parseArray = (json: string | null) => {
   try {
     const parsed = JSON.parse(json ?? '[]')
     if (!Array.isArray(parsed)) {
       return []
     }
-    return parsed.filter((value): value is string => typeof value === 'string')
+    return parsed
   } catch {
     return []
   }
@@ -36,16 +36,20 @@ export const cacheTransaction = async (
   await redis.set(key, transaction, { EX: 60 })
 }
 
-export const getCachedDiscoveryNodeEndpoints = async () => {
+type DiscoveryNode = {
+  delegateOwnerWallet: string
+  endpoint: string
+}
+
+export const getCachedDiscoveryNodes = async () => {
   const redis = await getRedisConnection()
   const key = 'all-discovery-nodes'
   const json = await redis.get(key)
-  return parseStringArray(json)
-}
-
-export const getCachedDiscoveryNodeWallets = async () => {
-  const redis = await getRedisConnection()
-  const key = 'all-discovery-nodes-wallets'
-  const json = await redis.get(key)
-  return parseStringArray(json)
+  return parseArray(json).filter(
+    (p): p is DiscoveryNode =>
+      'delegateOwnerWallet' in p &&
+      'endpoint' in p &&
+      typeof p.delegateOwnerWallet === 'string' &&
+      typeof p.endpoint === 'string'
+  )
 }

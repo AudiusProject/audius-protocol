@@ -3,7 +3,7 @@ import { recoverPersonalSignature } from 'eth-sig-util'
 import { Table, Users } from '@pedalboard/storage'
 import { initializeDiscoveryDb } from '@pedalboard/basekit'
 import { config } from '../config'
-import { getCachedDiscoveryNodeWallets } from '../redis'
+import { getCachedDiscoveryNodes } from '../redis'
 
 const discoveryDb = initializeDiscoveryDb(config.discoveryDbConnectionString)
 
@@ -43,9 +43,9 @@ export const discoveryNodeSignerRecoveryMiddleware = async (
     return next()
   }
   const walletAddress = recoverPersonalSignature({ data, sig })
-  const discoveryWallets = await getCachedDiscoveryNodeWallets()
+  const discoveryWallets = await getCachedDiscoveryNodes()
   const isSignedByDiscovery = discoveryWallets
-    .map((wallet) => wallet.toLowerCase())
+    .map(({ delegateOwnerWallet }) => delegateOwnerWallet.toLowerCase())
     .includes(walletAddress)
   res.locals.isSignedByDiscovery = isSignedByDiscovery
   if (!isSignedByDiscovery) {
