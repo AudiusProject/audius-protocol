@@ -6,15 +6,13 @@ import {
   IconTwitter as IconTwitterBird,
   IconInstagram,
   IconDonate,
-  Text
+  Text,
+  Flex
 } from '@audius/harmony'
-import cn from 'classnames'
 
-import { ExternalLink } from 'components/link'
+import { ExternalTextLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserGeneratedText } from 'components/user-generated-text'
-
-import styles from './SocialLink.module.css'
 
 export enum Type {
   TWITTER,
@@ -65,13 +63,7 @@ const SocialLink = (props: SocialLinkProps) => {
 
   const SocialIcon = socialIcons[type]
 
-  let icon = (
-    <SocialIcon
-      color='default'
-      size={iconOnly ? 'l' : 'm'}
-      className={isSingleLink ? styles.icon : undefined}
-    />
-  )
+  let icon = <SocialIcon color='default' size={iconOnly ? 'l' : 'm'} />
   if (type === Type.DONATION) {
     icon = <Tooltip text='Donate'>{icon}</Tooltip>
   }
@@ -98,17 +90,19 @@ const SocialLink = (props: SocialLinkProps) => {
     }
   }
 
-  const Root = href ? ExternalLink : Text
+  if (href) {
+    return (
+      <ExternalTextLink to={href} onClick={onClick} textVariant='body'>
+        {icon} <Text ellipses>{iconOnly ? null : text}</Text>
+      </ExternalTextLink>
+    )
+  }
 
   return (
-    <Root to={href} onClick={onClick} size='s' className={styles.root}>
+    <Flex inline gap='s'>
       {icon}
-      {iconOnly ? null : (
-        <Text className={cn(styles.text, isSingleLink && styles.singleLink)}>
-          {text}
-        </Text>
-      )}
-    </Root>
+      <Text ellipses>{iconOnly ? null : text}</Text>
+    </Flex>
   )
 }
 

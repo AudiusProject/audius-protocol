@@ -16,9 +16,10 @@ import {
   IconTokenGold,
   IconTokenPlatinum,
   IconTokenSilver,
-  IconDiscord
+  IconDiscord,
+  Button,
+  Box
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -40,14 +41,13 @@ const messages = {
   badgeType: (badge: string) => `${badge} Badge`,
   badgeRole: (badge: string) => `${badge} Discord Role`,
   moreSoon: 'More Coming Soon!',
-  updateRole: 'UPDATE ROLE',
+  updateRole: 'Update Role',
   tierNumber: (tier: number) => `TIER ${tier}`,
   currentTier: 'CURRENT TIER',
-  learnMore: 'LEARN MORE',
-  launchDiscord: 'LAUNCH THE VIP DISCORD',
+  learnMore: 'Learn more',
+  launchDiscord: 'Launch the VIP Discord',
   tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+ $AUDIO`,
-  matrixMode: 'Matrix Mode',
-  collectibles: 'NFT Collectibles'
+  matrixMode: 'Matrix Mode'
 }
 
 type AudioTiers = Exclude<BadgeTier, 'none'>
@@ -174,14 +174,6 @@ export const Tier = ({
                 <i className='emoji large white-heavy-check-mark' />
                 {messages.badgeRole(tier)}
               </span>
-              {(tier === 'silver' ||
-                tier === 'gold' ||
-                tier === 'platinum') && (
-                <span>
-                  <i className='emoji large framed-picture' />
-                  {messages.collectibles}
-                </span>
-              )}
               {(tier === 'gold' || tier === 'platinum') && (
                 <span>
                   <i className='emoji large rabbit' />
@@ -190,14 +182,17 @@ export const Tier = ({
                 </span>
               )}
               {isActive && (
-                <Button
-                  text={messages.updateRole}
-                  type={ButtonType.GLASS}
-                  leftIcon={<IconDiscord className={styles.iconDiscord} />}
-                  className={cn(styles.discordButton, styles.updateRole)}
-                  textClassName={styles.discordButtonText}
-                  onClick={onClickDiscord}
-                />
+                <Box mb='s' w='100%'>
+                  <Button
+                    variant='secondary'
+                    size='small'
+                    iconLeft={IconDiscord}
+                    onClick={onClickDiscord}
+                    fullWidth
+                  >
+                    {messages.updateRole}
+                  </Button>
+                </Box>
               )}
               <span className={styles.sparkles}>
                 <i className='emoji large sparkles' />
@@ -254,21 +249,16 @@ const Tiers = () => {
         ))}
       </div>
       <div className={wm(styles.buttonContainer)}>
+        <Button variant='secondary' onClick={onClickExplainMore}>
+          {messages.learnMore}
+        </Button>
         <Button
-          text={messages.learnMore}
-          type={ButtonType.GLASS}
-          className={styles.discordButton}
-          textClassName={styles.discordButtonText}
-          onClick={onClickExplainMore}
-        />
-        <Button
-          text={messages.launchDiscord}
-          type={ButtonType.GLASS}
-          leftIcon={<IconDiscord className={styles.iconDiscord} />}
-          className={styles.discordButton}
-          textClassName={styles.discordButtonText}
+          variant='secondary'
+          iconLeft={IconDiscord}
           onClick={onClickDiscord}
-        />
+        >
+          {messages.launchDiscord}
+        </Button>
       </div>
     </div>
   )

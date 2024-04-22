@@ -1,19 +1,17 @@
 import React from 'react'
 
+import { TextProps } from '@audius/harmony'
+
 import Stat from 'components/Stat'
 import { useTrailingApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { formatNumber } from 'utils/format'
 
-const messages = {
-  label: 'UNIQUE USERS THIS MONTH'
-}
-
 type OwnProps = {}
 
-type UniqueUsersStatProps = OwnProps
+type UniqueUsersStatProps = OwnProps & TextProps
 
-const UniqueUsersStat: React.FC<UniqueUsersStatProps> = () => {
+const UniqueUsersStat: React.FC<UniqueUsersStatProps> = (textProps) => {
   const { apiCalls } = useTrailingApiCalls(Bucket.MONTH)
   let error, stat
   if (apiCalls === MetricError.ERROR) {
@@ -24,9 +22,9 @@ const UniqueUsersStat: React.FC<UniqueUsersStatProps> = () => {
   }
   return (
     <Stat
-      label={messages.label}
       error={error}
       stat={stat !== null ? formatNumber(stat) : null}
+      {...textProps}
     />
   )
 }

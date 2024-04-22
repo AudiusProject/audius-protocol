@@ -200,7 +200,6 @@ export const makeUserlessTrack = (
     user_id: undefined,
     followee_favorites: undefined,
     artwork: undefined,
-    downloadable: undefined,
     favorite_count: undefined
   }
 
@@ -208,7 +207,6 @@ export const makeUserlessTrack = (
   delete marshalled.user_id
   delete marshalled.followee_favorites
   delete marshalled.artwork
-  delete marshalled.downloadable
   delete marshalled.favorite_count
 
   return marshalled
@@ -281,7 +279,6 @@ export const makeTrack = (
     user_id: undefined,
     followee_favorites: undefined,
     artwork: undefined,
-    downloadable: undefined,
     favorite_count: undefined,
     is_streamable: undefined
   }
@@ -290,7 +287,6 @@ export const makeTrack = (
   delete marshalled.user_id
   delete marshalled.followee_favorites
   delete marshalled.artwork
-  delete marshalled.downloadable
   delete marshalled.favorite_count
   delete marshalled.is_streamable
   return marshalled
@@ -337,6 +333,11 @@ export const makePlaylist = (
   const total_play_count =
     'total_play_count' in playlist ? playlist.total_play_count : 0
   const track_count = 'track_count' in playlist ? playlist.track_count : 0
+  const is_stream_gated =
+    'is_stream_gated' in playlist ? playlist.is_stream_gated : false
+  const stream_conditions =
+    'stream_conditions' in playlist ? playlist.stream_conditions : null
+  const access = 'access' in playlist ? playlist.access : null
 
   const playlistContents = {
     track_ids: playlist.added_timestamps
@@ -377,6 +378,9 @@ export const makePlaylist = (
     track_count,
     total_play_count,
     playlist_contents: playlistContents,
+    is_stream_gated,
+    stream_conditions,
+    access,
 
     // Fields to prune
     id: undefined,
@@ -394,7 +398,7 @@ export const makePlaylist = (
   delete marshalled.favorite_count
   delete marshalled.added_timestamps
 
-  return marshalled as UserCollectionMetadata
+  return marshalled as unknown as UserCollectionMetadata
 }
 
 export const makeActivity = (
@@ -441,11 +445,6 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     genre: '',
     has_current_user_reposted: false,
     has_current_user_saved: false,
-    download: {
-      is_downloadable: true,
-      requires_follow: false,
-      cid: stem.cid
-    },
     license: null,
     mood: null,
     play_count: 0,
@@ -475,10 +474,10 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     is_download_gated: false,
     download_conditions: null,
     access: { stream: true, download: true },
-    track_cid: '',
+    track_cid: stem.cid,
     orig_file_cid: '',
     orig_filename: stem.orig_filename,
-    is_downloadable: false,
+    is_downloadable: true,
     is_original_available: false,
     is_playlist_upload: false
   }

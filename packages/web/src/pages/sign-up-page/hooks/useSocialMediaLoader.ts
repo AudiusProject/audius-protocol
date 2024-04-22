@@ -14,8 +14,8 @@ export const useSocialMediaLoader = ({
   page
 }: {
   linkedSocialOnThisPagePreviously: boolean
-  resetAction: () => AnyAction
-  page: 'create-email' | 'pick-handle'
+  resetAction?: () => AnyAction
+  page?: 'create-email' | 'pick-handle'
 }) => {
   const dispatch = useDispatch()
   const [isWaitingForSocialLogin, setIsWaitingForSocialLogin] = useState(false)
@@ -23,7 +23,7 @@ export const useSocialMediaLoader = ({
   useEffect(() => {
     // If the user goes back to this page in the middle of the flow after they linked
     // their social on this page previously, clear the sign on state.
-    if (linkedSocialOnThisPagePreviously) {
+    if (linkedSocialOnThisPagePreviously && resetAction) {
       dispatch(resetAction())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

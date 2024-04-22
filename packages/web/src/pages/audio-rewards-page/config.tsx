@@ -1,22 +1,23 @@
 import { ReactNode } from 'react'
 
 import { ChallengeName, ChallengeRewardID } from '@audius/common/models'
-import { challengeRewardsConfig, Nullable } from '@audius/common/utils'
+import { Nullable, challengeRewardsConfig } from '@audius/common/utils'
 import {
   IconArrowRight,
   IconCheck,
   IconCloudUpload,
-  IconTokenGold
+  IconComponent
 } from '@audius/harmony'
 
+import IconGoldBadge from 'assets/img/tokenBadgeGold48@2x.webp'
 import {
-  profilePage,
+  EXPLORE_PAGE,
+  EXPLORE_PREMIUM_TRACKS_PAGE,
+  LIBRARY_PAGE,
   SETTINGS_PAGE,
   TRENDING_PAGE,
   UPLOAD_PAGE,
-  EXPLORE_PAGE,
-  LIBRARY_PAGE,
-  EXPLORE_PREMIUM_TRACKS_PAGE
+  profilePage
 } from 'utils/route'
 
 type LinkButtonType =
@@ -31,62 +32,68 @@ type LinkButtonType =
 
 type LinkButtonInfo = {
   label: string
-  leftIcon: ReactNode | null
-  rightIcon: ReactNode | null
+  leftIcon: IconComponent | null
+  rightIcon: IconComponent | null
   link: (handle: string | null) => string | null
 }
 
 const GoldBadgeIconImage = () => (
-  <IconTokenGold size='l' aria-label='Gold badge' />
+  <img
+    draggable={false}
+    alt='Gold badge'
+    src={IconGoldBadge}
+    width={24}
+    height={24}
+  />
 )
 
 const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   trackUpload: {
     label: 'Upload Tracks',
     leftIcon: null,
-    rightIcon: <IconCloudUpload />,
+    rightIcon: IconCloudUpload,
     link: () => UPLOAD_PAGE
   },
   profile: {
     label: 'Your Profile',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: (handle: Nullable<string>) => (handle ? profilePage(handle) : null)
   },
   verifyAccount: {
     label: 'Verify Your Account',
     leftIcon: null,
-    rightIcon: <IconCheck />,
+    rightIcon: IconCheck,
     link: () => SETTINGS_PAGE
   },
   trendingTracks: {
     label: 'Trending Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => TRENDING_PAGE
   },
   sendFirstTip: {
     label: 'Send a Tip',
     leftIcon: null,
-    rightIcon: <GoldBadgeIconImage />,
+    rightIcon: GoldBadgeIconImage,
     link: () => LIBRARY_PAGE
   },
   firstPlaylist: {
     label: 'Discover Some Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => EXPLORE_PAGE
   },
   [ChallengeName.AudioMatchingSell]: {
     label: 'View Premium Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   },
   [ChallengeName.AudioMatchingBuy]: {
     label: 'View Premium Tracks',
     leftIcon: null,
-    rightIcon: <IconArrowRight />,
+    rightIcon: IconArrowRight,
     link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   }
 }

@@ -1,12 +1,17 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
+import {
+  formatCooldownChallenges,
+  useChallengeCooldownSchedule,
+  useFeatureFlag
+} from '@audius/common/hooks'
 import {
   Name,
   ChallengeName,
   ChallengeRewardID,
   OptimisticUserChallenge
 } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
+import { FeatureFlags, StringKeys } from '@audius/common/services'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
@@ -18,15 +23,27 @@ import {
   formatNumberCommas,
   removeNullable,
   makeOptimisticChallengeSortComparator,
-  isAudioMatchingChallenge
+  isAudioMatchingChallenge,
+  dayjs
 } from '@audius/common/utils'
-import { IconArrowRight as IconArrow, IconCheck, Text } from '@audius/harmony'
-import { ProgressBar, ButtonType, Button } from '@audius/stems'
+import {
+  Button,
+  Divider,
+  Flex,
+  IconArrowRight as IconArrow,
+  IconCheck,
+  IconTokenGold,
+  Paper,
+  PlainButton,
+  ProgressBar,
+  Text
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useSetVisibility } from 'common/hooks/useModalState'
+import { useModalState, useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { SummaryTableItem } from 'components/summary-table'
 import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -41,14 +58,43 @@ const { fetchUserChallenges, setChallengeRewardsModalType } =
   audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
 
+type ClaimableSummaryTableItem = SummaryTableItem & {
+  claimableDate: dayjs.Dayjs
+  isClose: boolean
+}
+
 const messages = {
   title: 'EARN REWARDS',
   description1: 'Complete tasks to earn $AUDIO tokens!',
   completeLabel: 'COMPLETE',
-  claimReward: 'Claim Your Reward',
+  claimReward: 'Claim This Reward',
+  claimAllRewards: 'Claim All Rewards',
+  moreInfo: 'More Info',
   readyToClaim: 'Ready to Claim',
+  pendingRewards: 'Pending Reward',
+  totalUpcomingRewards: 'Total Upcoming Rewards',
+  totalReadyToClaim: 'Total Ready To Claim',
+  pending: 'Pending',
   viewDetails: 'View Details',
-  new: 'New!'
+  new: 'New!',
+  goldAudioToken: 'Gold $AUDIO token',
+  available: '$AUDIO available',
+  now: 'now!',
+  availableMessage: (summaryItems: ClaimableSummaryTableItem[]) => {
+    const filteredSummaryItems = summaryItems.filter(removeNullable)
+    const summaryItem = filteredSummaryItems.pop()
+    const { value, label, claimableDate, isClose } = (summaryItem ??
+      {}) as ClaimableSummaryTableItem
+    if (isClose) {
+      return `${value} ${messages.available} ${label}`
+    }
+    return (
+      <Text>
+        {value} {messages.available} {label}&nbsp;
+        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
+      </Text>
+    )
+  }
 }
 
 type RewardPanelProps = {
@@ -87,6 +133,9 @@ const RewardPanel = ({
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
   const hasDisbursed = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
+  const pending =
+    challenge?.undisbursedSpecifiers &&
+    challenge?.undisbursedSpecifiers.length > 0
   const shouldShowProgressBar =
     challenge &&
     challenge.max_steps > 1 &&
@@ -96,14 +145,16 @@ const RewardPanel = ({
     isAudioMatchingChallenge(id) && !needsDisbursement
 
   let progressLabelFilled: string
-  if (shouldShowCompleted) {
-    progressLabelFilled = messages.completeLabel
-  } else if (isAudioMatchingChallenge(id)) {
+  if (challenge && challenge?.cooldown_days > 0) {
     if (needsDisbursement) {
       progressLabelFilled = messages.readyToClaim
+    } else if (pending) {
+      progressLabelFilled = messages.pendingRewards
     } else {
       progressLabelFilled = progressLabel ?? ''
     }
+  } else if (shouldShowCompleted) {
+    progressLabelFilled = messages.completeLabel
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
     progressLabelFilled = fillString(
@@ -123,17 +174,9 @@ const RewardPanel = ({
         )
       : ''
   }
-  const buttonMessage = needsDisbursement
-    ? messages.claimReward
-    : hasDisbursed
-    ? messages.viewDetails
-    : panelButtonText
+  const buttonMessage = hasDisbursed ? messages.viewDetails : panelButtonText
 
-  const buttonType = needsDisbursement
-    ? ButtonType.PRIMARY_ALT
-    : hasDisbursed
-    ? ButtonType.COMMON_ALT
-    : ButtonType.COMMON
+  const buttonVariant = 'secondary'
 
   return (
     <div
@@ -143,7 +186,7 @@ const RewardPanel = ({
       onClick={openRewardModal}
     >
       <div className={wm(styles.rewardPanelTop)}>
-        <div className={wm(styles.pillContainer)}>
+        <div className={wm(styles.rewardPillContainer)}>
           {needsDisbursement ? (
             <span className={styles.pillMessage}>{messages.readyToClaim}</span>
           ) : showNewChallengePill ? (
@@ -179,18 +222,88 @@ const RewardPanel = ({
           )}
         </div>
         <Button
-          className={wm(
-            cn(styles.panelButton, hasDisbursed ? styles.disbursed : '')
-          )}
-          type={buttonType}
-          text={buttonMessage}
-          rightIcon={hasDisbursed ? null : <IconArrow />}
-          iconClassName={styles.buttonIcon}
+          variant={buttonVariant}
+          size='small'
+          iconRight={hasDisbursed ? null : IconArrow}
           onClick={openRewardModal}
-          textClassName={styles.panelButtonText}
-        />
+          fullWidth
+        >
+          {buttonMessage}
+        </Button>
       </div>
     </div>
+  )
+}
+
+const ClaimAllPanel = () => {
+  const wm = useWithMobileStyle(styles.mobile)
+  const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
+    useChallengeCooldownSchedule({ multiple: true })
+
+  const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
+  const onClickClaimAllRewards = useCallback(() => {
+    setClaimAllRewardsVisibility(true)
+  }, [setClaimAllRewardsVisibility])
+  const onClickMoreInfo = useCallback(() => {
+    setClaimAllRewardsVisibility(true)
+  }, [setClaimAllRewardsVisibility])
+
+  return (
+    <Paper
+      shadow='flat'
+      border='strong'
+      p='xl'
+      alignItems='center'
+      alignSelf='stretch'
+      justifyContent='space-between'
+      m='s'
+    >
+      <Flex gap='l' alignItems='center'>
+        <IconTokenGold
+          height={48}
+          width={48}
+          aria-label={messages.goldAudioToken}
+        />
+        <Flex direction='column'>
+          <Flex>
+            {isEmpty ? null : (
+              <Text color='accent' size='m' variant='heading'>
+                {claimableAmount > 0
+                  ? messages.totalReadyToClaim
+                  : messages.totalUpcomingRewards}
+              </Text>
+            )}
+            {cooldownAmount > 0 ? (
+              <div className={wm(styles.pendingPillContainer)}>
+                <span className={styles.pillMessage}>
+                  {cooldownAmount} {messages.pending}
+                </span>
+              </div>
+            ) : null}
+          </Flex>
+          <Text variant='body' textAlign='left'>
+            {claimableAmount > 0
+              ? `${claimableAmount} ${messages.available} ${messages.now}`
+              : messages.availableMessage(
+                  formatCooldownChallenges(cooldownChallenges)
+                )}
+          </Text>
+        </Flex>
+      </Flex>
+      {claimableAmount > 0 ? (
+        <Button onClick={onClickClaimAllRewards} iconRight={IconArrow}>
+          {messages.claimAllRewards}
+        </Button>
+      ) : cooldownAmount > 0 ? (
+        <PlainButton
+          size='large'
+          onClick={onClickMoreInfo}
+          iconRight={IconArrow}
+        >
+          {messages.moreInfo}
+        </PlainButton>
+      ) : null}
+    </Paper>
   )
 }
 
@@ -234,6 +347,9 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
+  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
+    FeatureFlags.REWARDS_COOLDOWN
+  )
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
@@ -276,19 +392,31 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
 
   const wm = useWithMobileStyle(styles.mobile)
 
+  const { isEmpty: shouldHideCumulativeRewards } = useChallengeCooldownSchedule(
+    {
+      multiple: true
+    }
+  )
+
   return (
     <Tile className={wm(styles.rewardsTile, className)}>
       <span className={wm(styles.title)}>{messages.title}</span>
       <div className={wm(styles.subtitle)}>
         <span>{messages.description1}</span>
       </div>
-      <div className={styles.rewardsContainer}>
-        {userChallengesLoading && !haveChallengesLoaded ? (
-          <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
-        ) : (
-          rewardsTiles
-        )}
-      </div>
+      {userChallengesLoading && !haveChallengesLoaded ? (
+        <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
+      ) : (
+        <>
+          {isRewardsCooldownEnabled && !shouldHideCumulativeRewards ? (
+            <>
+              <ClaimAllPanel />
+              <Divider className={wm(styles.divider)} />
+            </>
+          ) : null}
+          <div className={styles.rewardsContainer}>{rewardsTiles}</div>
+        </>
+      )}
     </Tile>
   )
 }

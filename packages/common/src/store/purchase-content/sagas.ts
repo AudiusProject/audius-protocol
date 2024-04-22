@@ -1,7 +1,9 @@
 import BN from 'bn.js'
+import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
+import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -10,7 +12,7 @@ import {
   PurchaseVendor,
   PurchaseAccess
 } from '~/models/PurchaseContent'
-import { Track, isContentUSDCPurchaseGated } from '~/models/Track'
+import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import {
@@ -37,6 +39,7 @@ import {
 } from '~/store/buy-usdc/slice'
 import { BuyUSDCError } from '~/store/buy-usdc/types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from '~/store/buy-usdc/utils'
+import { getCollection } from '~/store/cache/collections/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { getUser } from '~/store/cache/users/selectors'
 import { getContext } from '~/store/effects'
@@ -56,8 +59,9 @@ import {
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { pollGatedTrack } from '../gated-content/sagas'
-import { updateGatedTrackStatus } from '../gated-content/slice'
+import { pollGatedContent } from '../gated-content/sagas'
+import { updateGatedContentStatus } from '../gated-content/slice'
+import { saveCollection } from '../social/collections/actions'
 
 import {
   buyUSDC,
@@ -68,7 +72,11 @@ import {
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
-import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
+import {
+  PurchaseableContentType,
+  PurchaseContentError,
+  PurchaseErrorCode
+} from './types'
 import { getBalanceNeeded } from './utils'
 
 const { getUserId, getAccountUser } = accountSelectors
@@ -87,35 +95,46 @@ type RaceStatusResult = {
 
 type GetPurchaseConfigArgs = {
   contentId: ID
-  contentType: ContentType
+  contentType: PurchaseableContentType
 }
 
 function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
-  if (contentType !== ContentType.TRACK) {
-    throw new Error('Only tracks are supported')
-  }
-
-  const trackInfo = yield* select(getTrack, { id: contentId })
+  const metadata =
+    contentType === PurchaseableContentType.ALBUM
+      ? yield* select(getCollection, { id: contentId })
+      : yield* select(getTrack, { id: contentId })
   const purchaseConditions =
-    trackInfo?.stream_conditions ?? trackInfo?.download_conditions
+    metadata?.stream_conditions ??
+    (metadata && 'download_conditions' in metadata
+      ? metadata?.download_conditions
+      : null)
   // Stream access is a superset of download access - purchasing a stream-gated
   // track also gets you download access, but purchasing a download-gated track
   // only gets you download access (because the track was already free to stream).
-  const purchaseAccess = trackInfo?.is_stream_gated
+  const purchaseAccess = metadata?.is_stream_gated
     ? PurchaseAccess.STREAM
     : PurchaseAccess.DOWNLOAD
-  if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
+  if (!metadata || !isContentUSDCPurchaseGated(purchaseConditions)) {
     throw new Error('Content is missing purchase conditions')
   }
-  const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
+  const isAlbum = 'playlist_id' in metadata
+  const artistId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
+  const artistInfo = yield* select(getUser, { id: artistId })
   if (!artistInfo) {
     throw new Error('Failed to retrieve content owner')
   }
 
-  const title = trackInfo.title
+  const title = isAlbum ? metadata.playlist_name : metadata.title
   const price = purchaseConditions.usdc_purchase.price
 
-  return { price, title, artistInfo, purchaseAccess, trackInfo }
+  return {
+    price,
+    title,
+    artistInfo,
+    purchaseAccess,
+    purchaseConditions,
+    metadata
+  }
 }
 
 const getUserPurchaseMetadata = ({
@@ -142,39 +161,66 @@ const getUserPurchaseMetadata = ({
   location
 })
 
-const getTrackPurchaseMetadata = ({
-  created_at,
-  description,
-  duration,
-  genre,
-  is_delete,
-  isrc,
-  iswc,
-  license,
-  owner_id,
-  permalink,
-  release_date,
-  tags,
-  title,
-  track_id,
-  updated_at
-}: Track) => ({
-  created_at,
-  description,
-  duration,
-  genre,
-  is_delete,
-  isrc,
-  iswc,
-  license,
-  owner_id,
-  permalink,
-  release_date,
-  tags,
-  title,
-  track_id,
-  updated_at
-})
+const getPurchaseMetadata = (metadata: PurchaseableContentMetadata) => {
+  const {
+    created_at,
+    description,
+    is_delete,
+    permalink,
+    release_date,
+    updated_at
+  } = metadata
+
+  const commonFields = {
+    created_at,
+    description,
+    is_delete,
+    permalink,
+    release_date,
+    updated_at
+  }
+
+  const isAlbum = isPurchaseableAlbum(metadata)
+  if (isAlbum) {
+    return {
+      ...commonFields,
+      duration: sumBy(metadata.tracks, (track) => track.duration),
+      owner_id: metadata.playlist_owner_id,
+      title: metadata.playlist_name,
+      content_id: metadata.playlist_id
+    }
+  }
+
+  const {
+    duration,
+    genre,
+    isrc,
+    iswc,
+    license,
+    owner_id,
+    tags,
+    title,
+    track_id
+  } = metadata
+
+  return {
+    created_at,
+    description,
+    duration,
+    genre,
+    is_delete,
+    isrc,
+    iswc,
+    license,
+    owner_id,
+    permalink,
+    release_date,
+    tags,
+    title,
+    content_id: track_id,
+    updated_at
+  }
+}
 
 function* getCoinflowPurchaseMetadata({
   contentId,
@@ -182,7 +228,7 @@ function* getCoinflowPurchaseMetadata({
   extraAmount,
   splits
 }: PurchaseWithCoinflowArgs) {
-  const { trackInfo, artistInfo, title, price } = yield* call(getContentInfo, {
+  const { metadata, artistInfo, title, price } = yield* call(getContentInfo, {
     contentId,
     contentType
   })
@@ -198,34 +244,33 @@ function* getCoinflowPurchaseMetadata({
       usdcRecipientSplits: splits,
       artistInfo: getUserPurchaseMetadata(artistInfo),
       purchaserInfo: currentUser ? getUserPurchaseMetadata(currentUser) : null,
-      contentInfo: getTrackPurchaseMetadata(trackInfo)
+      contentInfo: getPurchaseMetadata(metadata as PurchaseableContentMetadata)
     }
   }
   return data
 }
 
 function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
-  if (contentType !== ContentType.TRACK) {
-    throw new Error('Only tracks are supported')
-  }
-
-  const trackInfo = yield* select(getTrack, { id: contentId })
-  const purchaseConditions =
-    trackInfo?.stream_conditions ?? trackInfo?.download_conditions
-  if (!trackInfo || !isContentUSDCPurchaseGated(purchaseConditions)) {
+  const { metadata, artistInfo, purchaseConditions } = yield* call(
+    getContentInfo,
+    {
+      contentId,
+      contentType
+    }
+  )
+  if (!metadata || !isContentUSDCPurchaseGated(purchaseConditions)) {
     throw new Error('Content is missing purchase conditions')
   }
 
-  const user = yield* select(getUser, { id: trackInfo.owner_id })
-  if (!user) {
+  if (!artistInfo) {
     throw new Error('Failed to retrieve content owner')
   }
-  const recipientERCWallet = user.erc_wallet ?? user.wallet
+  const recipientERCWallet = artistInfo.erc_wallet ?? artistInfo.wallet
   if (!recipientERCWallet) {
     throw new Error('Unable to resolve destination wallet')
   }
 
-  const { blocknumber } = trackInfo
+  const { blocknumber } = metadata
   const splits = purchaseConditions.usdc_purchase.splits
 
   return {
@@ -239,24 +284,19 @@ function* pollForPurchaseConfirmation({
   contentType
 }: {
   contentId: ID
-  contentType: ContentType
+  contentType: PurchaseableContentType
 }) {
-  if (contentType !== ContentType.TRACK) {
-    throw new Error('Only tracks are supported')
-  }
-
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) {
     throw new Error(
       'Failed to fetch current user id while polling for purchase confirmation'
     )
   }
-  yield* put(
-    updateGatedTrackStatus({ trackId: contentId, status: 'UNLOCKING' })
-  )
+  yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKING' }))
 
-  yield* pollGatedTrack({
-    trackId: contentId,
+  yield* pollGatedContent({
+    contentId,
+    contentType,
     currentUserId,
     isSourceTrack: true
   })
@@ -267,7 +307,7 @@ type PurchaseWithCoinflowArgs = {
   extraAmount?: number
   splits: Record<number, number>
   contentId: ID
-  contentType: ContentType
+  contentType: PurchaseableContentType
   purchaserUserId: ID
   /** USDC in dollars */
   price: number
@@ -280,6 +320,7 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
     extraAmount,
     splits,
     contentId,
+    contentType,
     purchaserUserId,
     price,
     purchaseAccess
@@ -298,7 +339,7 @@ function* purchaseWithCoinflow(args: PurchaseWithCoinflowArgs) {
     audiusBackendInstance,
     {
       id: contentId,
-      type: 'track',
+      type: contentType,
       splits,
       extraAmount,
       blocknumber,
@@ -404,7 +445,7 @@ function* doStartPurchaseContentFlow({
     purchaseMethod,
     purchaseVendor,
     contentId,
-    contentType = ContentType.TRACK
+    contentType = PurchaseableContentType.TRACK
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -495,7 +536,7 @@ function* doStartPurchaseContentFlow({
           blocknumber,
           extraAmount: extraAmountBN,
           splits,
-          type: 'track',
+          type: contentType,
           purchaserUserId,
           purchaseAccess
         })
@@ -525,7 +566,7 @@ function* doStartPurchaseContentFlow({
               blocknumber,
               extraAmount: extraAmountBN,
               splits,
-              type: 'track',
+              type: contentType,
               purchaserUserId,
               purchaseAccess
             })
@@ -542,14 +583,21 @@ function* doStartPurchaseContentFlow({
     yield* pollForPurchaseConfirmation({ contentId, contentType })
 
     // Auto-favorite the purchased item
-    if (contentType === ContentType.TRACK) {
+    if (contentType === PurchaseableContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
+    }
+    if (contentType === PurchaseableContentType.ALBUM) {
+      yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
     }
 
     // Check if playing the purchased track's preview and if so, stop it
     const isPreviewing = yield* select(getPreviewing)
-    const trackId = yield* select(getTrackId)
-    if (contentId === trackId && isPreviewing) {
+    const nowPlayingTrackId = yield* select(getTrackId)
+    if (
+      contentType === PurchaseableContentType.TRACK &&
+      contentId === nowPlayingTrackId &&
+      isPreviewing
+    ) {
       yield* put(stop({}))
     }
 

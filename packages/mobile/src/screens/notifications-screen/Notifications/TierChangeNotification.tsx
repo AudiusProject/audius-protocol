@@ -52,13 +52,13 @@ const tierInfoMap = {
   gold: {
     icon: IconTokenGold,
     label: 'Gold',
-    amount: 10000,
+    amount: 1000,
     twitterIcon: '🥇'
   },
   platinum: {
     icon: IconTokenPlatinum,
     label: 'Platinum',
-    amount: 100000,
+    amount: 10000,
     twitterIcon: '🥇'
   }
 }

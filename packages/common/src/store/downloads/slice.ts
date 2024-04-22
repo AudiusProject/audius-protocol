@@ -6,7 +6,6 @@ import { Nullable } from '~/utils'
 export type DownloadState = typeof initialState
 
 type State = {
-  downloadedPercentage: number
   fetchCancel: Nullable<() => void>
   trackName: Nullable<string>
   fileName: Nullable<string>
@@ -14,7 +13,6 @@ type State = {
 }
 
 const initialState: State = {
-  downloadedPercentage: 0,
   fetchCancel: null,
   trackName: null,
   fileName: null
@@ -29,10 +27,6 @@ const slice = createSlice({
     },
     setDownloadError: (state, action: PayloadAction<Error>) => {
       state.error = action.payload
-    },
-    // Mobile only
-    setDownloadedPercentage: (state, action: PayloadAction<number>) => {
-      state.downloadedPercentage = action.payload
     },
     // Mobile only
     setFileInfo: (
@@ -52,13 +46,8 @@ const slice = createSlice({
   }
 })
 
-export const {
-  beginDownload,
-  setDownloadedPercentage,
-  setFileInfo,
-  setFetchCancel,
-  setDownloadError
-} = slice.actions
+export const { beginDownload, setFileInfo, setFetchCancel, setDownloadError } =
+  slice.actions
 export const actions = slice.actions
 
 export default slice.reducer

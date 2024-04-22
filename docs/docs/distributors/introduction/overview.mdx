@@ -1,0 +1,54 @@
+---
+id: overview
+title: Distributing Content to Audius
+pagination_label: Distributing Content to Audius
+sidebar_label: Overview
+description: Audius Protocol Documentation
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+:::tip Looking for how to accept deliveries from your label or distributor?
+
+Come back soon and check the [Audius Support Page](https://support.audius.co) for more information.
+
+:::
+
+Audius supports bulk content ingestion via the DDEX standard.
+
+Providers, labels & partners with their own delivery infrastructure should reference the following
+documentation for guidance on how to send and administer content on Audius.
+
+If you're looking to build your own ingestion tooling, get started with the
+[Audius SDK](/developers/sdk/overview).
+
+## What is DDEX
+
+Digital Data Exchange (or "DDEX") is an international standards-setting organization that was formed
+in 2006 to develop standards that enable companies to communicate information along the digital
+supply chain more efficiently by:
+
+- Developing standard message and file formats (XML or flat-file)
+- Developing choreographies for specific business transactions
+- Developing communication protocols (SFTP or based on web services)
+- Working with industry bodies to create a more efficient supply chain
+
+:::info More Information
+
+- Learn more on the official DDEX Website here: [https://ddex.net/](https://ddex.net/)
+- Looking for a deeper technical dive? Checkout the DDEX knowledge base here:
+  [https://kb.ddex.net/](https://kb.ddex.net/)
+
+:::
+
+---
+
+## Open Source
+
+All DDEX ingestion code & libraries are open source and available on
+[GitHub](https://github.com/AudiusProject/audius-protocol/tree/main/packages/ddex).
+
+You may clone and self-operate your own Audius compatible DDEX ingestion server, which provides a
+web interface to deliver files, manage uploads, and track success. Under the hood, DDEX ingestion
+uses the [Audius SDK](/developers/sdk/overview) to process and upload tracks and is available in a
+[self-service](/distributors/self-serve/overview) manner.

@@ -214,11 +214,12 @@ export function useImageSize<
     return url
   }, [getImageSize, handleFetchLargeImage])
 
+  const sizesExist = !!sizes
   useEffect(() => {
-    if (!onDemand && imageType !== undefined) {
+    if (!onDemand && imageType !== undefined && sizesExist) {
       handleFetchLargeImage(imageType)
     }
-  }, [onDemand, handleFetchLargeImage, imageType])
+  }, [onDemand, handleFetchLargeImage, imageType, sizesExist])
 
   if (!onDemand) return imageUrl
   return handleOnDemandImage

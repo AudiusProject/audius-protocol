@@ -1,13 +1,12 @@
 import { useMemo } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
+import { imageCollectiblePlaceholder } from '@audius/common/assets'
 import {
   AccessConditions,
   Chain,
   StreamTrackAvailabilityType,
   isContentCollectibleGated
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { collectiblesSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Box, IconInfo } from '@audius/harmony'
@@ -16,6 +15,7 @@ import { useSelector } from 'react-redux'
 
 import DropdownInput from 'components/ai-attribution-modal/DropdownInput'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import {
   AccessAndSaleFormValues,
@@ -26,14 +26,11 @@ import {
 
 import styles from './CollectibleGatedFields.module.css'
 
-const { getSupportedUserCollections, getHasUnsupportedCollection } =
-  collectiblesSelectors
+const { getSupportedUserCollections } = collectiblesSelectors
 
 const messages = {
+  loading: 'Loading...',
   pickACollection: 'Pick a Collection',
-  compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle:
-    'Unverified Solana NFT Collections are not compatible at this time.',
   premiumDownloads:
     'Setting your track to Collectible Gated will remove the availability you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
@@ -57,14 +54,10 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     )
   const [{ value: downloadConditions }] =
     useField<Nullable<AccessConditions>>(DOWNLOAD_CONDITIONS)
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
 
-  const { ethCollectionMap, solCollectionMap } = useSelector(
+  const { ethCollectionMap, solCollectionMap, isLoading } = useSelector(
     getSupportedUserCollections
   )
-  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
 
   const ethCollectibleItems = useMemo(() => {
     return Object.keys(ethCollectionMap)
@@ -75,12 +68,10 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         text: ethCollectionMap[slug].name,
         el: (
           <div className={styles.dropdownRow}>
-            {ethCollectionMap[slug].img ? (
-              <img
-                src={ethCollectionMap[slug].img!}
-                alt={ethCollectionMap[slug].name}
-              />
-            ) : null}
+            <img
+              src={ethCollectionMap[slug].img || imageCollectiblePlaceholder}
+              alt={ethCollectionMap[slug].name}
+            />
             <span>{ethCollectionMap[slug].name}</span>
           </div>
         ),
@@ -97,12 +88,10 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         text: solCollectionMap[mint].name,
         el: (
           <div className={styles.dropdownRow}>
-            {solCollectionMap[mint].img ? (
-              <img
-                src={solCollectionMap[mint].img!}
-                alt={solCollectionMap[mint].name}
-              />
-            ) : null}
+            <img
+              src={solCollectionMap[mint].img || imageCollectiblePlaceholder}
+              alt={solCollectionMap[mint].name}
+            />
             <span>{solCollectionMap[mint].name}</span>
           </div>
         ),
@@ -110,10 +99,28 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
       }))
   }, [solCollectionMap])
 
-  const menuItems = useMemo(
-    () => [...ethCollectibleItems, ...solCollectibleItems],
-    [ethCollectibleItems, solCollectibleItems]
-  )
+  const menuItems: {
+    text: string
+    el: React.ReactElement
+    value: string
+    disabled?: boolean
+  }[] = useMemo(() => {
+    if (isLoading)
+      return [
+        {
+          text: messages.loading,
+          el: (
+            <div className={styles.dropdownRow}>
+              <LoadingSpinner className={styles.spinner} />
+              <span>{messages.loading}</span>
+            </div>
+          ),
+          value: 'loading',
+          disabled: true
+        }
+      ]
+    return [...ethCollectibleItems, ...solCollectibleItems]
+  }, [ethCollectibleItems, isLoading, solCollectibleItems])
 
   // If no nft collection was previously selected, then the default value is an empty string,
   // which makes the dropdown show the placeholder.
@@ -126,19 +133,6 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
     (item) => item.text === defaultCollectionName
   )
   const value = selectedCollection || defaultCollectionName
-  const renderFooter = () => {
-    return hasUnsupportedCollection ? (
-      <HelpCallout
-        className={styles.helpCallout}
-        content={
-          <div>
-            <div>{messages.compatibilityTitle}</div>
-            <div>{messages.compatibilitySubtitle}</div>
-          </div>
-        }
-      />
-    ) : null
-  }
 
   return (
     <div className={styles.root}>
@@ -177,10 +171,9 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
         size='large'
         dropdownStyle={styles.dropdown}
         dropdownInputStyle={styles.dropdownInput}
-        footer={renderFooter()}
         disabled={disabled}
       />
-      {isLosslessDownloadsEnabled && downloadConditions ? (
+      {downloadConditions ? (
         <Box mt='l'>
           <HelpCallout
             icon={<IconInfo />}

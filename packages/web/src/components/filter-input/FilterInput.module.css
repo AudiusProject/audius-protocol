@@ -6,9 +6,9 @@
 .filterContainer .filterInput {
   border-radius: 6px;
   height: 28px;
-  border: 1px solid var(--neutral-light-6);
-  background-color: var(--neutral-light-9);
+  border: 1px solid var(--harmony-n-200);
+  background-color: var(--harmony-n-50);
 }
 .filterContainer .filterInput:hover {
-  border: 1px solid var(--neutral-light-4);
+  border: 1px solid var(--harmony-n-400);
 }

@@ -1,27 +1,32 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import Modal from 'components/Modal'
+import React, { useCallback, useEffect, useState } from 'react'
+
+import { Box, IconTrash, PlainButton } from '@audius/harmony'
+
 import Button, { ButtonType } from 'components/Button'
-import TextField from 'components/TextField'
-import styles from './ModifyServiceModal.module.css'
-import { ServiceType, Status, Address } from 'types'
-import { useModifyService } from 'store/actions/modifyService'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
 import DeregisterServiceModal from 'components/DeregisterServiceModal'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useModifyService } from 'store/actions/modifyService'
+import { Address, ServiceType, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
+import { sharedMessages } from 'utils/sharedMessages'
+
+import styles from './ModifyServiceModal.module.css'
 
 const messages = {
-  title: 'Modify Service',
-  dpEndpoint: 'Discovery Node Service Endpoint',
+  title: 'Manage Node',
+  dpEndpoint: 'Node Endpoint',
   dpEndpointPlaceholder: 'https://discoveryprovider.audius.co',
   cnEndpoint: 'Content Node Service Endpoint',
   cnEndpointPlaceholder: 'https://contentnode.audius.co',
-  delegate: 'Delegate Owner Wallet',
+  delegate: 'Node Wallet Address',
   delegatePlaceholder: '0xC7EF9651259197aA26544Af724441a46e491c12c',
+  cancel: 'Cancel',
   save: 'Save Changes',
-  deregister: 'DEREGISTER',
-  mutipleUpdated: '2 MetaMask Pop-Ups Will Appear',
+  deregister: 'Deregister Node',
   updateEndpoint: 'Update Service Endpoint',
   updateWallet: 'Update Delegate Owner Wallet'
 }
@@ -117,12 +122,14 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
   ])
 
   let topBox = null
-  let endpointUpdated = oldEndpoint !== endpoint
-  let walletUpdated = oldDelegateOwnerWallet !== delegateOwnerWallet
+  const endpointUpdated = oldEndpoint !== endpoint
+  const walletUpdated = oldDelegateOwnerWallet !== delegateOwnerWallet
   if (endpointUpdated && walletUpdated) {
     topBox = (
       <>
-        <div className={styles.doubleMetaMask}>{messages.mutipleUpdated}</div>
+        <div className={styles.warningContainer}>
+          {sharedMessages.twoPopupsWarning}
+        </div>
         <StandaloneBox className={styles.confirm}>
           <div>{messages.updateEndpoint}</div>
           <div className={styles.subtext}>{endpoint}</div>
@@ -157,6 +164,15 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
       dismissOnClickOutside={!isConfirmModalOpen && !isDeregisterModalOpen}
     >
       <div className={styles.content}>
+        <Box alignSelf='flex-end' mb='xl'>
+          <PlainButton
+            onClick={onOpenDeregister}
+            variant='subdued'
+            iconLeft={IconTrash}
+          >
+            {messages.deregister}
+          </PlainButton>
+        </Box>
         <TextField
           value={endpoint}
           onChange={setEndpoint}
@@ -175,12 +191,6 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
           className={styles.input}
         />
         <div className={styles.btnContainer}>
-          <Button
-            text={messages.deregister}
-            type={ButtonType.RED}
-            className={styles.deregisterBtn}
-            onClick={onOpenDeregister}
-          />
           <Button
             text={messages.save}
             type={ButtonType.PRIMARY}

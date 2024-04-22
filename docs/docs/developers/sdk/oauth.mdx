@@ -49,9 +49,6 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
   The second argument (`encodedJwt`) is for advanced use cases that want to pass the JWT to a
   backend for server-side verification.
 
-  The second argument (`encodedJwt`) is for advanced use cases that want to pass the JWT to a
-  backend for server-side verification.
-
 - errorCallback _optional_ `(errorMessage: string) => void` - function to be called when an error
   occurs during the authentication flow. This function will be called with a string describing the
   error.
@@ -119,7 +116,7 @@ does NOT allow any access to DMs or wallets.
 **Example**
 
 ```js
-audiusSdk.renderButton({
+audiusSdk.oauth.renderButton({
   element: document.getElementById('audiusLogInButton'),
   scope: 'write',
   buttonOptions: {

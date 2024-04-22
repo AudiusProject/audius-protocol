@@ -382,6 +382,14 @@ def extend_track(track):
         "is_deactivated"
     )
 
+    # todo: remove once clients catch up i.e. no longer use this field
+    track["download"] = {
+        "cid": track.get("track_cid"),
+        "is_downloadable": bool(track.get("is_downloadable")),
+        "requires_follow": track.get("download_conditions") is not None
+        and "follow_user_id" in track.get("download_conditions"),
+    }
+
     # TODO: This block is only for legacy tracks that have track_segments instead of duration
     duration = track.get("duration")
     if not duration:
@@ -390,13 +398,6 @@ def extend_track(track):
             # NOTE: Legacy track segments store the duration as a string
             duration += float(segment["duration"])
         track["duration"] = round(duration)
-
-    downloadable = track.get("is_downloadable") or (
-        "download" in track
-        and track["download"]
-        and track["download"]["is_downloadable"]
-    )
-    track["downloadable"] = bool(downloadable)
 
     return track
 
@@ -414,7 +415,7 @@ def stem_from_track(track):
         "id": track_id,
         "parent_id": parent_id,
         "category": category,
-        "cid": track["download"]["cid"],
+        "cid": track["track_cid"],
         "user_id": encode_int_id(track["owner_id"]),
         "orig_filename": orig_filename,
         "blocknumber": track["blocknumber"],
@@ -663,6 +664,21 @@ class DescriptiveArgument(reqparse.Argument):
             return None
         param = super().__schema__
         param["description"] = self.description
+        return param
+
+
+class ListEnumArgument(DescriptiveArgument):
+    """
+    A descriptive argument that's used for a list of enum values.
+    See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
+    """
+
+    @property
+    def __schema__(self):
+        param = super().__schema__
+        if "enum" in param and "items" in param:
+            param["items"]["enum"] = param["enum"]
+            del param["enum"]
         return param
 
 

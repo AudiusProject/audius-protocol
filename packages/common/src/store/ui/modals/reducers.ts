@@ -1,6 +1,8 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
 import { addFundsModalReducer } from './add-funds-modal'
+import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
+import { artistPickModalReducer } from './artist-pick-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { createChatModalReducer } from './create-chat-modal'
@@ -45,7 +47,9 @@ const combinedReducers = combineReducers({
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
   CoinflowOnramp: coinflowOnrampModalReducer,
   CoinflowWithdraw: coinflowWithdrawModalReducer,
-  WaitForDownloadModal: waitForDownloadModalReducer
+  WaitForDownloadModal: waitForDownloadModalReducer,
+  ArtistPick: artistPickModalReducer,
+  AlbumTrackRemoveConfirmation: albumTrackRemoveConfirmationModalReducer
 })
 
 /**

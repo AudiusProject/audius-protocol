@@ -8,7 +8,8 @@ import {
   PURCHASE_METHOD,
   PURCHASE_VENDOR,
   usePurchaseMethod,
-  PurchaseableTrackMetadata
+  PurchaseableContentMetadata,
+  isPurchaseableAlbum
 } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
@@ -34,7 +35,7 @@ type PurchaseContentFormFieldsProps = Pick<
   'purchaseSummaryValues' | 'stage' | 'isUnlocking'
 > & {
   price: number
-  track: PurchaseableTrackMetadata
+  metadata: PurchaseableContentMetadata
 }
 
 export const PurchaseContentFormFields = ({
@@ -42,7 +43,7 @@ export const PurchaseContentFormFields = ({
   purchaseSummaryValues,
   stage,
   isUnlocking,
-  track
+  metadata
 }: PurchaseContentFormFieldsProps) => {
   const payExtraAmountPresetValues = usePayExtraPresets()
   const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
@@ -101,12 +102,18 @@ export const PurchaseContentFormFields = ({
     )
   }
 
-  const stemsPurchaseCount = track.is_download_gated
-    ? track._stems?.length ?? 0
-    : 0
+  const isAlbumPurchase = isPurchaseableAlbum(metadata)
+  const stemsPurchaseCount =
+    'is_download_gated' in metadata && metadata.is_download_gated
+      ? metadata._stems?.length ?? 0
+      : 0
   const downloadPurchaseCount =
-    track.is_download_gated && track.download?.is_downloadable ? 1 : 0
-  const streamPurchaseCount = track.is_stream_gated ? 1 : 0
+    'is_download_gated' in metadata &&
+    metadata.is_download_gated &&
+    metadata.is_downloadable
+      ? 1
+      : 0
+  const streamPurchaseCount = metadata.is_stream_gated ? 1 : 0
 
   return (
     <>
@@ -122,6 +129,7 @@ export const PurchaseContentFormFields = ({
         downloadPurchaseCount={downloadPurchaseCount}
         streamPurchaseCount={streamPurchaseCount}
         totalPriceInCents={totalPriceInCents}
+        isAlbumPurchase={isAlbumPurchase}
       />
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod

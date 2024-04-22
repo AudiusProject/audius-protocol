@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-  useState,
-  RefObject
-} from 'react'
+import { useEffect, useCallback, useRef, ReactNode, useState } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
 import { IconClose } from '@audius/harmony'
@@ -13,6 +6,7 @@ import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated, useTransition } from 'react-spring'
+import { useMeasure } from 'react-use'
 import { useDrag } from 'react-use-gesture'
 
 import { usePortal } from 'hooks/usePortal'
@@ -65,12 +59,6 @@ export type DrawerProps = {
   'aria-labelledby'?: string
 }
 
-const getHeight = (contentRef: RefObject<HTMLDivElement>) => {
-  if (!contentRef.current) return 0
-
-  return contentRef.current.getBoundingClientRect().height
-}
-
 const DraggableDrawer = ({
   isOpen,
   children,
@@ -81,8 +69,6 @@ const DraggableDrawer = ({
 }: DrawerProps) => {
   const Portal = usePortal({})
 
-  const contentRef = useRef<HTMLDivElement>(null)
-
   // Stores the initial translation of the drawer
   const [initialTranslation] = useInstanceVar(0)
   // Stores the last transition
@@ -90,9 +76,11 @@ const DraggableDrawer = ({
   // isBackgroundVisible will be true until the close animation finishes
   const [isBackgroundVisible, setIsBackgroundVisible] = useState(false)
 
+  const [contentRef, { height: contentHeight }] = useMeasure<HTMLDivElement>()
+
   const [drawerSlideProps, setDrawerSlideProps] = useSpring(() => ({
     to: {
-      y: -1 * getHeight(contentRef)
+      y: -1 * contentHeight
     },
     config: wobble,
     onFrame(frame: any) {
@@ -118,7 +106,7 @@ const DraggableDrawer = ({
     setIsBackgroundVisible(true)
     setDrawerSlideProps({
       to: {
-        y: -1 * getHeight(contentRef)
+        y: -1 * contentHeight
       },
       immediate: false,
       config: wobble,
@@ -140,9 +128,9 @@ const DraggableDrawer = ({
     })
   }, [
     setDrawerSlideProps,
+    contentHeight,
     setContentFadeProps,
-    setBackgroundOpacityProps,
-    setIsBackgroundVisible
+    setBackgroundOpacityProps
   ])
 
   const close = useCallback(() => {
@@ -199,7 +187,7 @@ const DraggableDrawer = ({
       movement: [, my],
       memo = currentTranslation()
     }) => {
-      const height = getHeight(contentRef)
+      const height = contentHeight
 
       let newY = memo + my
 

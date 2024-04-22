@@ -50,15 +50,6 @@ stem_parent = ns.model(
     },
 )
 
-download = ns.model(
-    "download_metadata",
-    {
-        "cid": fields.String,
-        "is_downloadable": fields.Boolean(required=True),
-        "requires_follow": fields.Boolean(required=True),
-    },
-)
-
 field_visibility = ns.model(
     "field_visibility",
     {
@@ -69,11 +60,6 @@ field_visibility = ns.model(
         "play_count": fields.Boolean,
         "remixes": fields.Boolean,
     },
-)
-
-premium_content_signature = ns.model(
-    "premium_content_signature",
-    {"data": fields.String, "signature": fields.String},
 )
 
 access = ns.model(
@@ -109,10 +95,7 @@ track = ns.model(
         "user": fields.Nested(user_model, required=True),
         # Total track duration, rounded to the nearest second
         "duration": fields.Integer(required=True),
-        # Whether or not the track is downloadable, see `download`
-        # on `track_full` for more details
         "is_downloadable": fields.Boolean,
-        "downloadable": fields.Boolean,  # todo: remove since we have 'is_downloadable' now
         "play_count": fields.Integer(required=True),
         "permalink": fields.String,
         "is_streamable": fields.Boolean,
@@ -134,6 +117,15 @@ cover_art = ns.model(
     {"150x150": fields.String, "480x480": fields.String, "1000x1000": fields.String},
 )
 
+download = ns.model(
+    "download_metadata",
+    {
+        "cid": fields.String,
+        "is_downloadable": fields.Boolean(required=True),
+        "requires_follow": fields.Boolean(required=True),
+    },
+)
+
 track_full = ns.clone(
     "track_full",
     track,
@@ -144,6 +136,7 @@ track_full = ns.clone(
         "cover_art_cids": fields.Nested(cover_art, allow_null=True),
         "created_at": fields.String,
         "credits_splits": fields.String,
+        # todo: remove once clients catch up i.e. no longer use this field
         "download": fields.Nested(download),
         "isrc": fields.String,
         "license": fields.String,
@@ -165,14 +158,6 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
-        # the following "premium" fields are deprecated and will be removed in the future
-        "is_premium": fields.Boolean(attribute="is_stream_gated"),
-        "premium_conditions": fields.Raw(
-            attribute="stream_conditions", allow_null=True
-        ),
-        "premium_content_signature": fields.Nested(
-            premium_content_signature, allow_null=True
-        ),
         "is_stream_gated": fields.Boolean,
         "stream_conditions": fields.Raw(allow_null=True),
         "is_download_gated": fields.Boolean,
@@ -181,6 +166,14 @@ track_full = ns.clone(
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
+        # DDEX fields
+        "ddex_release_ids": fields.Raw(allow_null=True),
+        "artists": fields.Raw(allow_null=True),
+        "resource_contributors": fields.Raw(allow_null=True),
+        "indirect_resource_contributors": fields.Raw(allow_null=True),
+        "copyright_line": fields.Raw(allow_null=True),
+        "producer_copyright_line": fields.Raw(allow_null=True),
+        "parental_warning_type": fields.String,
     },
 )
 

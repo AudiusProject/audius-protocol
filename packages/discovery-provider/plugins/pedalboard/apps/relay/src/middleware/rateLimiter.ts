@@ -13,8 +13,14 @@ export const rateLimiterMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier } = res.locals.ctx
+  const { validatedRelayRequest, recoveredSigner, signerIsUser, createOrDeactivate, isSenderVerifier, logger } = res.locals.ctx
   const { encodedABI } = validatedRelayRequest
+
+  // don't rate limit on local dev, this can block audius-cmd
+  if (config.environment === 'dev') {
+    next()
+    return
+  }
 
   let signer: string | null
   if (signerIsUser) {
@@ -52,15 +58,17 @@ export const rateLimiterMiddleware = async (
   )
 
   try {
-    const res = await globalRateLimiter.consume({
+    const rateLimitData = await globalRateLimiter.consume({
       operation,
       signer,
       limit
     })
-    insertReplyHeaders(response, res)
+    logger.info({ limit }, "calculated rate limit")
+    insertReplyHeaders(res, rateLimitData)
   } catch (e) {
     if (e instanceof RateLimiterRes) {
-      insertReplyHeaders(response, e as RateLimiterRes)
+      insertReplyHeaders(res, e as RateLimiterRes)
+      logger.info({ limit }, "rate limit hit")
       rateLimitError(next, 'rate limit hit')
       return
     }
@@ -68,7 +76,7 @@ export const rateLimiterMiddleware = async (
   next()
 }
 
-const getEntityManagerActionKey = (encodedABI: string): string => {
+export const getEntityManagerActionKey = (encodedABI: string): string => {
   const decodedABI = AudiusABIDecoder.decodeAbi('EntityManager', encodedABI)
   const action = decodedABI.get('action')
   if (action === undefined) throw new Error('action not defined in encodedABI')

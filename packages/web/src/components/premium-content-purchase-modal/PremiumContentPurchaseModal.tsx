@@ -1,19 +1,24 @@
 import { useCallback, useEffect } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetPlaylistById,
+  useGetTrackById,
+  useGetUserById
+} from '@audius/common/api'
 import {
   useFeatureFlag,
   usePurchaseContentFormConfiguration,
   usePayExtraPresets,
-  isTrackStreamPurchaseable,
+  isStreamPurchaseable,
   isTrackDownloadPurchaseable,
-  PurchaseableTrackMetadata,
-  PURCHASE_METHOD
+  PURCHASE_METHOD,
+  PurchaseableContentMetadata
 } from '@audius/common/hooks'
 import {
+  ID,
   PurchaseMethod,
   PurchaseVendor,
-  Track,
   USDCPurchaseConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -24,7 +29,8 @@ import {
   purchaseContentSelectors,
   PurchaseContentStage,
   PurchaseContentPage,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -42,7 +48,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { ModalForm } from 'components/modal-form/ModalForm'
-import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
+import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
@@ -80,16 +86,18 @@ const pageToPageIndex = (page: PurchaseContentPage) => {
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track,
-  purchaseConditions
+  metadata,
+  purchaseConditions,
+  contentId
 }: {
   onClose: () => void
-  track: PurchaseableTrackMetadata
+  metadata: PurchaseableContentMetadata
   purchaseConditions: USDCPurchaseConditions
+  contentId: ID
 }) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
-  const { permalink } = track
+  const { permalink } = metadata
   const {
     usdc_purchase: { price }
   } = purchaseConditions
@@ -102,7 +110,7 @@ const RenderForm = ({
   const { history } = useHistoryContext()
 
   // Reset form on track change
-  useEffect(() => resetForm, [track.track_id, resetForm])
+  useEffect(() => resetForm, [contentId, resetForm])
 
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
@@ -144,17 +152,17 @@ const RenderForm = ({
           ) : null}
           <Flex p={isMobile ? 'l' : 'xl'}>
             <Flex direction='column' gap='xl' w='100%'>
-              <LockedTrackDetailsTile
+              <LockedContentDetailsTile
                 showLabel={false}
-                track={track as unknown as Track}
-                owner={track.user}
+                metadata={metadata}
+                owner={metadata.user}
               />
               <PurchaseContentFormFields
                 stage={stage}
                 purchaseSummaryValues={purchaseSummaryValues}
                 isUnlocking={isUnlocking}
                 price={price}
-                track={track}
+                metadata={metadata}
               />
             </Flex>
           </Flex>
@@ -170,10 +178,10 @@ const RenderForm = ({
           <PurchaseContentFormFooter
             error={error}
             isUnlocking={isUnlocking}
-            onViewTrackClicked={onClose}
+            onViewContentClicked={onClose}
             purchaseSummaryValues={purchaseSummaryValues}
             stage={stage}
-            track={track}
+            metadata={metadata}
           />
         ) : null}
       </ModalFooter>
@@ -188,7 +196,7 @@ export const PremiumContentPurchaseModal = () => {
     isOpen,
     onClose,
     onClosed,
-    data: { contentId: trackId }
+    data: { contentId, contentType }
   } = usePremiumContentPurchaseModal()
   const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
     useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
@@ -197,27 +205,46 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets()
+  const { data: currentUserId } = useGetCurrentUserId({})
 
+  const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useGetTrackById(
-    { id: trackId! },
-    { disabled: !trackId }
+    { id: contentId! },
+    { disabled: isAlbum || !contentId }
   )
 
-  const isValidStreamGatedTrack = !!track && isTrackStreamPurchaseable(track)
-  const isValidDownloadGatedTrack =
-    !!track && isTrackDownloadPurchaseable(track)
+  const { data: album } = useGetPlaylistById(
+    { playlistId: contentId!, currentUserId },
+    { disabled: !isAlbum || !contentId }
+  )
 
-  const purchaseConditions = isValidStreamGatedTrack
-    ? track.stream_conditions
-    : isValidDownloadGatedTrack
-    ? track.download_conditions
+  const { data: user } = useGetUserById(
+    {
+      id: track?.owner_id ?? album?.playlist_owner_id,
+      currentUserId
+    },
+    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
+  )
+  const metadata = {
+    ...(isAlbum ? album : track),
+    user
+  } as PurchaseableContentMetadata
+
+  const isValidStreamGated = !!metadata && isStreamPurchaseable(metadata)
+  const isValidDownloadGated =
+    !!metadata && isTrackDownloadPurchaseable(metadata)
+
+  const purchaseConditions = isValidStreamGated
+    ? metadata.stream_conditions
+    : isValidDownloadGated
+    ? metadata.download_conditions
     : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
-      track,
+      metadata,
       price,
       presetValues,
       purchaseVendor: isCoinflowEnabled
@@ -244,11 +271,11 @@ export const PremiumContentPurchaseModal = () => {
   }, [onClosed, dispatch])
 
   if (
-    !track ||
+    !metadata ||
     !purchaseConditions ||
-    !(isValidDownloadGatedTrack || isValidStreamGatedTrack)
+    !(isValidDownloadGated || isValidStreamGated)
   ) {
-    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+    console.error('PremiumContentPurchaseModal: Content is not purchasable')
     return null
   }
 
@@ -271,7 +298,8 @@ export const PremiumContentPurchaseModal = () => {
           onSubmit={onSubmit}
         >
           <RenderForm
-            track={track}
+            contentId={contentId}
+            metadata={metadata}
             onClose={handleClose}
             purchaseConditions={purchaseConditions}
           />

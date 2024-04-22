@@ -2,8 +2,6 @@ import IconArtistBadgeSVG from '../assets/icons/ArtistBadge.svg'
 import IconCosignSVG from '../assets/icons/Cosign.svg'
 import IconMultiselectAddSVG from '../assets/icons/MultiselectAdd.svg'
 import IconMultiselectRemoveSVG from '../assets/icons/MultiselectRemove.svg'
-import IconPlaybackPauseSVG from '../assets/icons/PlaybackPause.svg'
-import IconPlaybackPlaySVG from '../assets/icons/PlaybackPlay.svg'
 import IconTokenBronzeSVG from '../assets/icons/TokenBronze.svg'
 import IconTokenGoldSVG from '../assets/icons/TokenGold.svg'
 import IconTokenNoTierSVG from '../assets/icons/TokenNoTier.svg'
@@ -63,8 +61,6 @@ export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
 export const IconCosign = IconCosignSVG as IconComponent
 export const IconMultiselectAdd = IconMultiselectAddSVG as IconComponent
 export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
-export const IconPlaybackPause = IconPlaybackPauseSVG as IconComponent
-export const IconPlaybackPlay = IconPlaybackPlaySVG as IconComponent
 
 // VIP Tier Badges
 export const IconVerified = IconVerifiedSVG as IconComponent

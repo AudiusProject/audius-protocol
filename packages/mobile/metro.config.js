@@ -71,6 +71,7 @@ const config = {
     sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],
     extraNodeModules: {
       ...require('node-libs-react-native'),
+
       // Alias for 'src' to allow for absolute paths
       app: path.resolve(__dirname, 'src'),
       '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
@@ -106,6 +107,14 @@ const config = {
           type: 'sourceFile'
         }
       }
+
+      if (moduleName === '@metaplex-foundation/umi/serializers') {
+        return {
+          filePath: `${resolveModule('@metaplex-foundation/umi')}/dist/cjs/serializers.cjs`,
+          type: 'sourceFile'
+        }
+      }
+
       return context.resolveRequest(context, moduleName, platform)
     }
   },

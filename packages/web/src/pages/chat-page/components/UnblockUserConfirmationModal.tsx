@@ -8,14 +8,13 @@ import {
   ModalHeader,
   ModalTitle,
   ModalFooter,
-  IconMessageUnblock as IconUnblockMessages
+  IconMessageUnblock as IconUnblockMessages,
+  Button,
+  ModalContentText
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-
-import styles from './UnblockUserConfirmationModal.module.css'
 
 const { unblockUser } = chatActions
 
@@ -49,26 +48,20 @@ export const UnblockUserConfirmationModal = ({
   }, [dispatch, onClose, user])
 
   return (
-    <Modal bodyClassName={styles.root} isOpen={isVisible} onClose={onClose}>
+    <Modal isOpen={isVisible} onClose={onClose} size='small'>
       <ModalHeader>
         <ModalTitle title={messages.title} icon={<IconUnblockMessages />} />
       </ModalHeader>
-      <ModalContent className={styles.content}>
-        {messages.content(user)}
+      <ModalContent>
+        <ModalContentText>{messages.content(user)}</ModalContentText>
       </ModalContent>
-      <ModalFooter className={styles.footer}>
-        <Button
-          className={styles.button}
-          type={ButtonType.COMMON_ALT}
-          text={messages.cancel}
-          onClick={onClose}
-        />
-        <Button
-          className={styles.button}
-          type={ButtonType.PRIMARY_ALT}
-          text={messages.confirm}
-          onClick={handleConfirmClicked}
-        />
+      <ModalFooter>
+        <Button variant='secondary' onClick={onClose} fullWidth>
+          {messages.cancel}
+        </Button>
+        <Button variant='primary' onClick={handleConfirmClicked} fullWidth>
+          {messages.confirm}
+        </Button>
       </ModalFooter>
     </Modal>
   )

@@ -1,8 +1,7 @@
 import { ChangeEvent, memo, useMemo } from 'react'
 
 import { ID } from '@audius/common/models'
-import { IconPause, IconPlay } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, IconPause, IconPlay } from '@audius/harmony'
 
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
@@ -40,7 +39,6 @@ const HistoryPage = ({
   title,
   description,
   userId,
-  entries,
   dataSource,
   playingIndex,
   isEmpty,
@@ -61,14 +59,14 @@ const HistoryPage = ({
 
   const playAllButton = !loading ? (
     <Button
-      className={styles.playAllButton}
-      textClassName={styles.playAllButtonText}
-      iconClassName={styles.playAllButtonIcon}
-      type={ButtonType.PRIMARY_ALT}
-      text={queuedAndPlaying ? 'PAUSE' : 'PLAY'}
-      leftIcon={queuedAndPlaying ? <IconPause /> : <IconPlay />}
+      variant='primary'
+      size='small'
+      css={(theme) => ({ marginLeft: theme.spacing.xl })}
+      iconLeft={queuedAndPlaying ? IconPause : IconPlay}
       onClick={onPlay}
-    />
+    >
+      {queuedAndPlaying ? 'Pause' : 'Play'}
+    </Button>
   ) : null
 
   const trackTableActions = loading

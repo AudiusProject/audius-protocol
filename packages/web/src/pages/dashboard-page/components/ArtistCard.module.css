@@ -3,17 +3,18 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  border-radius: var(--unit-3);
-  background: var(--white);
+  border-radius: var(--harmony-unit-3);
+  background: var(--harmony-white);
   overflow: hidden;
-  box-shadow: var(--table-shadow) 0px var(--unit-4) var(--unit-5) 0px;
+  box-shadow: var(--table-shadow) 0px var(--harmony-unit-4)
+    var(--harmony-unit-5) 0px;
   cursor: pointer;
   min-width: 400px;
 }
 
 .coverPhotoWrapper {
   height: 100px;
-  border-bottom: 2px solid var(--border-default);
+  border-bottom: 2px solid var(--harmony-border-default);
 }
 
 .coverPhoto {
@@ -22,7 +23,7 @@
 
 .details {
   display: flex;
-  padding: var(--unit-6);
+  padding: var(--harmony-unit-6);
   align-items: center;
 }
 
@@ -34,20 +35,20 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--harmony-border-default);
   overflow: hidden;
-  margin-right: var(--unit-2);
+  margin-right: var(--harmony-unit-2);
 }
 
 .info {
   display: flex;
   flex-direction: column;
   text-align: left;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
 }
 
 .name {
   display: flex;
   align-items: center;
-  gap: var(--unit);
+  gap: var(--harmony-unit);
 }

@@ -1,6 +1,5 @@
 import { useCallback, memo, MouseEvent } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import {
   CreatePlaylistSource,
   Status,
@@ -16,10 +15,11 @@ import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
   ProfilePageTabs,
-  badgeTiers,
   ProfileUser
 } from '@audius/common/store'
 import {
+  Box,
+  Flex,
   IconAlbum,
   IconCollectible as IconCollectibles,
   IconNote,
@@ -28,6 +28,7 @@ import {
 } from '@audius/harmony'
 
 import Card from 'components/card/desktop/Card'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
 import CardLineup from 'components/lineup/CardLineup'
@@ -42,7 +43,6 @@ import UploadChip from 'components/upload/UploadChip'
 import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
-import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import { collectionPage, profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
@@ -247,10 +247,6 @@ const ProfilePage = ({
     return isOwner ? <ConnectedProfileCompletionHeroCard /> : null
   }
 
-  const { tierNumber } = useSelectTierInfo(userId ?? 0)
-  const profileHasCollectiblesTierRequirement =
-    tierNumber >= badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
-
   const profileHasCollectibles =
     profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
   const profileNeverSetCollectiblesOrder = !profile?.collectibles
@@ -276,6 +272,7 @@ const ProfilePage = ({
         key={index}
         size='medium'
         handle={profile.handle}
+        ddexApp={album.ddex_app}
         playlistName={album.playlist_name}
         playlistId={album.playlist_id}
         id={album.playlist_id}
@@ -329,6 +326,7 @@ const ProfilePage = ({
         key={index}
         size='medium'
         handle={profile.handle}
+        ddexApp={playlist.ddex_app}
         playlistName={playlist.playlist_name}
         playlistId={playlist.playlist_id}
         id={playlist.playlist_id}
@@ -488,12 +486,9 @@ const ProfilePage = ({
 
     if (
       // `has_collectibles` is a shortcut that is only true iff the user has a modified collectibles state
-      (profile?.has_collectibles &&
-        profileHasCollectiblesTierRequirement &&
-        !didCollectiblesLoadAndWasEmpty) ||
-      (profileHasCollectiblesTierRequirement &&
-        (profileHasVisibleImageOrVideoCollectibles ||
-          (profileHasCollectibles && isUserOnTheirProfile)))
+      (profile?.has_collectibles && !didCollectiblesLoadAndWasEmpty) ||
+      profileHasVisibleImageOrVideoCollectibles ||
+      (profileHasCollectibles && isUserOnTheirProfile)
     ) {
       headers.push({
         icon: <IconCollectibles />,
@@ -634,12 +629,9 @@ const ProfilePage = ({
     ]
 
     if (
-      (profile?.has_collectibles &&
-        profileHasCollectiblesTierRequirement &&
-        !didCollectiblesLoadAndWasEmpty) ||
-      (profileHasCollectiblesTierRequirement &&
-        (profileHasVisibleImageOrVideoCollectibles ||
-          (profileHasCollectibles && isUserOnTheirProfile)))
+      (profile?.has_collectibles && !didCollectiblesLoadAndWasEmpty) ||
+      profileHasVisibleImageOrVideoCollectibles ||
+      (profileHasCollectibles && isUserOnTheirProfile)
     ) {
       headers.push({
         icon: <IconCollectibles />,
@@ -684,12 +676,14 @@ const ProfilePage = ({
     elements,
     pathname: profilePage(handle)
   })
+
   const {
     title = '',
     description = '',
     canonicalUrl = '',
     structuredData
   } = getUserPageSEOFields({ handle, userName: name, bio })
+
   return (
     <Page
       title={title}
@@ -699,8 +693,9 @@ const ProfilePage = ({
       variant='flush'
       contentClassName={styles.profilePageWrapper}
       scrollableSearch
+      fromOpacity={1}
     >
-      <div className={styles.headerWrapper}>
+      <Box w='100%'>
         <ProfileWrapping
           userId={userId}
           isDeactivated={!!profile?.is_deactivated}
@@ -769,7 +764,7 @@ const ProfilePage = ({
             onBlock={onBlock}
             onUnblock={onUnblock}
           />
-          <div className={styles.inset}>
+          <Flex direction='column'>
             <NavBanner
               empty={!profile || profile.is_deactivated}
               tabs={tabs}
@@ -781,30 +776,35 @@ const ProfilePage = ({
               onSortByPopular={onSortByPopular}
               shouldMaskContent={shouldMaskContent}
             />
-            <div className={styles.content}>
-              {profile && profile.is_deactivated ? (
-                <DeactivatedProfileTombstone goToRoute={goToRoute} />
-              ) : (
-                body
-              )}
-            </div>
-          </div>
+            <ClientOnly>
+              <div className={styles.content}>
+                {profile && profile.is_deactivated ? (
+                  <DeactivatedProfileTombstone />
+                ) : (
+                  body
+                )}
+              </div>
+            </ClientOnly>
+          </Flex>
         </Mask>
-      </div>
-      {profile ? (
-        <>
-          <BlockUserConfirmationModal
-            user={profile}
-            isVisible={showBlockUserConfirmationModal}
-            onClose={onCloseBlockUserConfirmationModal}
-          />
-          <UnblockUserConfirmationModal
-            user={profile}
-            isVisible={showUnblockUserConfirmationModal}
-            onClose={onCloseUnblockUserConfirmationModal}
-          />
-        </>
-      ) : null}
+      </Box>
+      {/* NOTE: KJ - This ClientOnly might not be necessary, but helps keep server computation down */}
+      <ClientOnly>
+        {profile ? (
+          <>
+            <BlockUserConfirmationModal
+              user={profile}
+              isVisible={showBlockUserConfirmationModal}
+              onClose={onCloseBlockUserConfirmationModal}
+            />
+            <UnblockUserConfirmationModal
+              user={profile}
+              isVisible={showUnblockUserConfirmationModal}
+              onClose={onCloseUnblockUserConfirmationModal}
+            />
+          </>
+        ) : null}
+      </ClientOnly>
     </Page>
   )
 }

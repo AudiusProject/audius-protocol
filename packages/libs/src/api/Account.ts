@@ -273,21 +273,37 @@ export class Account extends Base {
    * Associates a user with a twitter uuid.
    * @param uuid from the Twitter API
    */
-  async associateTwitterUser(uuid: string, userId: number, handle: string) {
+  async associateTwitterUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber: number
+  ) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.associateTwitterUser(uuid, userId, handle)
+    return await this.identityService.associateTwitterUser(
+      uuid,
+      userId,
+      handle,
+      blockNumber
+    )
   }
 
   /**
    * Associates a user with an instagram uuid.
    * @param uuid from the Instagram API
    */
-  async associateInstagramUser(uuid: string, userId: number, handle: string) {
+  async associateInstagramUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber: number
+  ) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return await this.identityService.associateInstagramUser(
       uuid,
       userId,
-      handle
+      handle,
+      blockNumber
     )
   }
 
@@ -295,9 +311,19 @@ export class Account extends Base {
    * Associates a user with an tiktok uuid
    * @param uuid from the TikTok API
    */
-  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+  async associateTikTokUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber: number
+  ) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.associateTikTokUser(uuid, userId, handle)
+    return await this.identityService.associateTikTokUser(
+      uuid,
+      userId,
+      handle,
+      blockNumber
+    )
   }
 
   /**

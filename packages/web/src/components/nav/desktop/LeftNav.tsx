@@ -35,10 +35,11 @@ import {
 } from 'utils/route'
 
 import { AccountDetails } from './AccountDetails'
+import { ConnectInstagram } from './ConnectInstagram'
 import { GroupHeader } from './GroupHeader'
 import styles from './LeftNav.module.css'
+import { LeftNavCTA } from './LeftNavCTA'
 import { LeftNavDroppable, LeftNavLink } from './LeftNavLink'
-import { NavButton } from './NavButton'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import { PlaylistLibrary } from './PlaylistLibrary'
@@ -150,7 +151,18 @@ const LeftNav = (props: NavColumnProps) => {
               }
             >
               <AccountDetails />
+
               <div className={styles.links}>
+                {account?.handle === 'fbtest' ? (
+                  <div className={styles.linkGroup}>
+                    <LeftNavLink to={'/fb/share'}>
+                      Share Profile to Facebook
+                    </LeftNavLink>
+                    <LeftNavLink>
+                      <ConnectInstagram />
+                    </LeftNavLink>
+                  </div>
+                ) : null}
                 <div className={styles.linkGroup}>
                   <GroupHeader>{messages.discover}</GroupHeader>
                   <LeftNavLink
@@ -199,7 +211,7 @@ const LeftNav = (props: NavColumnProps) => {
         </div>
         <div className={styles.navAnchor}>
           {profileCompletionMeter}
-          <NavButton />
+          <LeftNavCTA />
           <NowPlayingArtworkTile />
         </div>
       </ClientOnly>

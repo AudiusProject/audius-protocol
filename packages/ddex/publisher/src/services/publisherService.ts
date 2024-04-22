@@ -1,14 +1,9 @@
 import mongoose from 'mongoose'
-import Deliveries from '../models/deliveries'
 import PendingReleases from '../models/pendingReleases'
-import PublishedReleases, {
-  PublishedRelease,
-} from '../models/publishedReleases'
+import PublishedReleases from '../models/publishedReleases'
 import type {
   TrackMetadata,
-  CollectionMetadata,
-  CreateTrackRelease,
-  CreateAlbumRelease,
+  SDKUploadMetadataSchema,
   PendingRelease,
 } from '../models/pendingReleases'
 import type {
@@ -21,7 +16,7 @@ import type {
 import createS3 from './s3Service'
 
 const formatTrackMetadata = (
-  metadata: TrackMetadata
+  metadata: SDKUploadMetadataSchema | TrackMetadata
 ): UploadTrackRequest['metadata'] => {
   return {
     title: metadata.title,
@@ -30,59 +25,76 @@ const formatTrackMetadata = (
     ...(metadata.mood && { mood: metadata.mood as Mood }),
     tags: metadata.tags || '',
     isrc: metadata.isrc,
+    iswc: metadata.ddex_release_ids?.iswc,
     license: metadata.license,
     releaseDate: new Date(metadata.release_date),
+    ddexReleaseIds: metadata.ddex_release_ids,
     previewStartSeconds: metadata.preview_start_seconds ?? undefined,
+    artists: metadata.artists,
+    resourceContributors: metadata.resource_contributors,
+    indirectResourceContributors: metadata.indirect_resource_contributors,
+    rightsController: metadata.rights_controller?.name
+      ? {
+          ...metadata.rights_controller,
+          roles: metadata.rights_controller?.roles ?? [],
+        }
+      : null,
+    copyrightLine: metadata.copyright_line,
+    producerCopyrightLine: metadata.producer_copyright_line,
+    parentalWarningType: metadata.parental_warning_type,
+    isStreamGated: metadata.is_stream_gated,
+    streamConditions: metadata.stream_conditions,
+    isDownloadGated: metadata.is_download_gated,
+    downloadConditions: metadata.download_conditions,
     // isUnlisted: // TODO: set visibility
-    // iswc:
     // origFilename:
     // isOriginalAvailable:
-    // isStreamGated:
-    // streamConditions:
-    // isDownloadable:
-    // isDownloadGated:
-    // downloadConditions:
     // remixOf:
   }
 }
 
 const formatAlbumMetadata = (
-  metadata: CollectionMetadata
+  metadata: SDKUploadMetadataSchema
 ): UploadAlbumRequest['metadata'] => {
   return {
     genre: metadata.genre as Genre,
     albumName: metadata.playlist_name,
     description: metadata.description || '',
     license: metadata.license || '',
-    mood: (metadata.mood || 'Other') as Mood, // TODO: SDK requires mood, but XML doesn't provide one
+    mood: (metadata.mood || 'Other') as Mood, // SDK requires mood, but XML doesn't provide one
     releaseDate: new Date(metadata.release_date),
+    ddexReleaseIds: metadata.ddex_release_ids,
     tags: metadata.tags || '',
     upc: metadata.upc || '',
+    artists: metadata.artists,
+    copyrightLine: metadata.copyright_line,
+    producerCopyrightLine: metadata.producer_copyright_line,
+    parentalWarningType: metadata.parental_warning_type,
   }
 }
 
 const uploadTrack = async (
   audiusSdk: AudiusSdkType,
-  pendingTrack: CreateTrackRelease,
+  pendingTrack: SDKUploadMetadataSchema,
   s3Service: ReturnType<typeof createS3>
 ) => {
-  const userId = pendingTrack.metadata.artist_id
-  const metadata = formatTrackMetadata(pendingTrack.metadata)
+  const userId = pendingTrack.artist_id
+  const metadata = formatTrackMetadata(pendingTrack)
 
-  const coverArtDownload = await s3Service.downloadFromS3Indexed(
-    pendingTrack.metadata.cover_art_url
+  const coverArtDownload = await s3Service.downloadFromS3Crawled(
+    pendingTrack.cover_art_url
   )
   // TODO: We can hash and verify against the metadata here
   const coverArtFile = {
     buffer: coverArtDownload!,
-    originalname: pendingTrack.metadata.cover_art_url.split('/').pop(),
+    originalname: pendingTrack.cover_art_url.split('/').pop(),
   }
-  const trackDownload = await s3Service.downloadFromS3Indexed(
-    pendingTrack.metadata.audio_file_url
+  const trackDownload = await s3Service.downloadFromS3Crawled(
+    pendingTrack.audio_file_url
   )
   const trackFile = {
     buffer: trackDownload!,
-    originalname: pendingTrack.metadata.audio_file_url.split('/').pop(),
+    originalname: pendingTrack.audio_file_url.split('/').pop(),
   }
 
   const uploadTrackRequest: UploadTrackRequest = {
@@ -93,7 +105,7 @@ const uploadTrack = async (
     trackFile,
   }
   console.log(
-    `Uploading ${pendingTrack.metadata.title} by ${pendingTrack.metadata.artist_name} to Audius...`
+    `Uploading ${pendingTrack.title} by ${pendingTrack.artist_id} to Audius...`
   )
   const result = await audiusSdk.tracks.uploadTrack(uploadTrackRequest)
   console.log(result)
@@ -102,28 +114,28 @@ const uploadTrack = async (
 
 const uploadAlbum = async (
   audiusSdk: AudiusSdkType,
-  pendingAlbum: CreateAlbumRelease,
+  pendingAlbum: SDKUploadMetadataSchema,
   s3Service: ReturnType<typeof createS3>
 ) => {
   // Fetch cover art from S3
-  const coverArtDownload = await s3Service.downloadFromS3Indexed(
-    pendingAlbum.metadata.cover_art_url
+  const coverArtDownload = await s3Service.downloadFromS3Crawled(
+    pendingAlbum.cover_art_url
   )
   // TODO: We can hash and verify against the metadata here
   const coverArtFile = {
     buffer: coverArtDownload!,
-    originalname: pendingAlbum.metadata.cover_art_url.split('/').pop(),
+    originalname: pendingAlbum.cover_art_url.split('/').pop(),
   }
 
   // Fetch track audio files from S3
   const trackFilesPromises = pendingAlbum.tracks.map(async (track) => {
-    const trackDownload = await s3Service.downloadFromS3Indexed(
-      track.audio_file_url
+    const trackDownload = await s3Service.downloadFromS3Crawled(
+      track.audio_file_url!
     )
     // TODO: We can hash and verify against the metadata here
     return {
       buffer: trackDownload!,
-      originalname: track.audio_file_url.split('/').pop(),
+      originalname: track.audio_file_url!.split('/').pop(),
     }
   })
   const trackFiles = await Promise.all(trackFilesPromises)
@@ -134,14 +146,14 @@ const uploadAlbum = async (
 
   const uploadAlbumRequest: UploadAlbumRequest = {
     coverArtFile,
-    metadata: formatAlbumMetadata(pendingAlbum.metadata),
+    metadata: formatAlbumMetadata(pendingAlbum),
     onProgress: (progress: any) => console.log('Progress:', progress),
     trackFiles,
     trackMetadatas,
-    userId: pendingAlbum.metadata.playlist_owner_id,
+    userId: pendingAlbum.playlist_owner_id,
   }
   console.log(
-    `Uploading ${pendingAlbum.metadata.playlist_name} by ${pendingAlbum.metadata.playlist_owner_id} to Audius...`
+    `Uploading ${pendingAlbum.playlist_name} by ${pendingAlbum.playlist_owner_id} to Audius...`
   )
   const result = await audiusSdk.albums.uploadAlbum(uploadAlbumRequest)
   console.log(result)
@@ -155,18 +167,19 @@ async function recordPendingReleaseErr(
 ) {
   let errorMsg = ''
 
+  console.error(error)
+
   if (error instanceof Error) {
     errorMsg = error.message
   } else {
     errorMsg = 'An unknown error occurred'
   }
 
-  console.error(errorMsg)
   try {
     await PendingReleases.updateOne(
       { _id: doc._id },
       {
-        $push: { upload_errors: errorMsg },
+        $push: { publish_errors: errorMsg },
         $inc: { failure_count: 1 },
         $set: { failed_after_upload: failedAfterUpload },
       }
@@ -188,9 +201,23 @@ export const publishReleases = async (
     let documents
     try {
       const currentDate = new Date()
-      documents = await PendingReleases.find({
-        publish_date: { $lte: currentDate },
-      })
+      documents = await PendingReleases.aggregate([
+        {
+          $match: {
+            $expr: {
+              $lte: [
+                {
+                  $max: [
+                    '$release.sdk_upload_metadata.release_date',
+                    '$release.sdk_upload_metadata.validity_start_date',
+                  ],
+                },
+                currentDate,
+              ],
+            },
+          },
+        },
+      ])
     } catch (error) {
       console.error('Failed to fetch pending releases:', error)
       await new Promise((resolve) => setTimeout(resolve, 10_000))
@@ -198,41 +225,39 @@ export const publishReleases = async (
     }
 
     for (const doc of documents) {
+      const releaseId = doc._id
+
       if (doc.failed_after_upload) {
         console.error(
-          `pending_releases doc with delivery_id ${doc.delivery_id} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
+          `pending_releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
+        )
+        continue
+      } else if (doc.failure_count > 3) {
+        console.error(
+          `pending_releases doc with ID ${releaseId} requires manual intervention because we've already retried it 3 times.`
         )
         continue
       }
 
-      const deliveryId = doc.delivery_id
-      let publishedData: PublishedRelease
-
+      let uploadResult: {
+        trackId?: string | null
+        albumId?: string | null
+        blockHash: string
+        blockNumber: number
+      }
       try {
-        if (doc.create_track_release) {
-          const uploadResult = await uploadTrack(
+        if (doc.release?.sdk_upload_metadata?.title) {
+          uploadResult = await uploadTrack(
             audiusSdk,
-            doc.create_track_release,
+            doc.release.sdk_upload_metadata,
             s3
           )
-          publishedData = {
-            track: doc.create_track_release,
-            entity_id: uploadResult.trackId,
-            blockhash: uploadResult.blockHash,
-            blocknumber: uploadResult.blockNumber,
-          }
-        } else if (doc.create_album_release) {
-          const uploadResult = await uploadAlbum(
+        } else if (doc.release?.sdk_upload_metadata?.playlist_name) {
+          uploadResult = await uploadAlbum(
             audiusSdk,
-            doc.create_album_release,
+            doc.release.sdk_upload_metadata,
             s3
           )
-          publishedData = {
-            album: doc.create_album_release,
-            entity_id: uploadResult.albumId,
-            blockhash: uploadResult.blockHash,
-            blocknumber: uploadResult.blockNumber,
-          }
         } else {
           recordPendingReleaseErr(
             doc,
@@ -245,11 +270,15 @@ export const publishReleases = async (
         continue
       }
 
-      publishedData = {
-        ...publishedData,
-        publish_date: doc.publish_date,
-        upload_etag: doc.upload_etag,
-        delivery_id: deliveryId,
+      const publishedData = {
+        _id: releaseId,
+        release: doc.release,
+        entity_id: doc.release.sdk_upload_metadata.title
+          ? uploadResult.trackId
+          : uploadResult.albumId,
+        blockhash: uploadResult.blockHash,
+        blocknumber: uploadResult.blockNumber,
+        delivery_remote_path: doc.delivery_remote_path,
         created_at: new Date(),
       }
       console.log('Published release: ', JSON.stringify(publishedData))
@@ -260,19 +289,8 @@ export const publishReleases = async (
         session.startTransaction()
         const publishedRelease = new PublishedReleases(publishedData)
         await publishedRelease.save({ session })
-        await PendingReleases.deleteOne({ _id: doc._id }).session(session)
+        await PendingReleases.deleteOne({ _id: releaseId }).session(session)
 
-        // Update delivery_status to 'published' once all releases in the delivery are published
-        const remainingCount = await PendingReleases.countDocuments({
-          delivery_id: deliveryId,
-        }).session(session)
-        if (remainingCount === 0) {
-          await Deliveries.updateOne(
-            { _id: deliveryId },
-            { $set: { delivery_status: 'published' } },
-            { session }
-          )
-        }
         await session.commitTransaction()
       } catch (error) {
         await session.abortTransaction()

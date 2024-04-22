@@ -34,7 +34,8 @@ import {
   favoritesUserListActions,
   RepostType,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   Genre,
@@ -74,7 +75,6 @@ import { moodMap } from 'app/utils/moods'
 import { useThemeColors } from 'app/utils/theme'
 
 import { DownloadSection } from './DownloadSection'
-import { TrackScreenDownloadButtons } from './TrackScreenDownloadButtons'
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
@@ -127,7 +127,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
-    paddingTop: spacing(4)
+    padding: spacing(4)
   },
 
   moodEmoji: {
@@ -200,6 +200,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexDirection: 'row',
     width: '100%',
     justifyContent: 'center',
+    alignItems: 'center',
     gap: spacing(2),
     paddingVertical: spacing(2.5),
     borderRadius: spacing(1.5),
@@ -221,9 +222,7 @@ export const TrackScreenDetailsTile = ({
   uid,
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
-  const { hasStreamAccess, hasDownloadAccess } = useGatedContentAccess(
-    track as Track
-  ) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
+  const { hasStreamAccess } = useGatedContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -269,7 +268,9 @@ export const TrackScreenDetailsTile = ({
     save_count,
     tags,
     title,
-    track_id
+    track_id: trackId,
+    stream_conditions: streamConditions,
+    ddex_app: ddexApp
   } = track
 
   const isOwner = owner_id === currentUserId
@@ -281,9 +282,6 @@ export const TrackScreenDetailsTile = ({
   const isScheduledRelease = release_date
     ? moment(release_date).isAfter(moment.now())
     : false
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const hasDownloadableAssets =
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
@@ -291,8 +289,8 @@ export const TrackScreenDetailsTile = ({
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
+    { trackId },
+    { enabled: !!trackId }
   )
 
   const details: DetailsTileDetail[] = [
@@ -332,27 +330,28 @@ export const TrackScreenDetailsTile = ({
     ({ isPreview = false } = {}) => {
       if (isLineupLoading) return
 
-      if (isPlaying && isPreviewing === isPreview) {
+      if (isPlaying && isPlayingId && isPreviewing === isPreview) {
         dispatch(tracksActions.pause())
-        recordPlay(track_id, false, true)
+        recordPlay(trackId, false, true)
       } else if (
         currentQueueItem.uid !== uid &&
         currentQueueItem.track &&
-        currentQueueItem.track.track_id === track_id
+        currentQueueItem.track.track_id === trackId
       ) {
         dispatch(tracksActions.play())
-        recordPlay(track_id)
+        recordPlay(trackId)
       } else {
         dispatch(tracksActions.play(uid, { isPreview }))
-        recordPlay(track_id, true, true)
+        recordPlay(trackId, true, true)
       }
     },
     [
-      track_id,
+      trackId,
       currentQueueItem,
       uid,
       dispatch,
       isPlaying,
+      isPlayingId,
       isPreviewing,
       isLineupLoading
     ]
@@ -365,17 +364,17 @@ export const TrackScreenDetailsTile = ({
   )
 
   const handlePressFavorites = useCallback(() => {
-    dispatch(setFavorite(track_id, FavoriteType.TRACK))
+    dispatch(setFavorite(trackId, FavoriteType.TRACK))
     navigation.push('Favorited', {
-      id: track_id,
+      id: trackId,
       favoriteType: FavoriteType.TRACK
     })
-  }, [dispatch, track_id, navigation])
+  }, [dispatch, trackId, navigation])
 
   const handlePressReposts = useCallback(() => {
-    dispatch(setRepost(track_id, RepostType.TRACK))
-    navigation.push('Reposts', { id: track_id, repostType: RepostType.TRACK })
-  }, [dispatch, track_id, navigation])
+    dispatch(setRepost(trackId, RepostType.TRACK))
+    navigation.push('Reposts', { id: trackId, repostType: RepostType.TRACK })
+  }, [dispatch, trackId, navigation])
 
   const handlePressTag = useCallback(
     (tag: string) => {
@@ -387,9 +386,9 @@ export const TrackScreenDetailsTile = ({
   const handlePressSave = () => {
     if (!isOwner) {
       if (has_current_user_saved) {
-        dispatch(unsaveTrack(track_id, FavoriteSource.TRACK_PAGE))
+        dispatch(unsaveTrack(trackId, FavoriteSource.TRACK_PAGE))
       } else {
-        dispatch(saveTrack(track_id, FavoriteSource.TRACK_PAGE))
+        dispatch(saveTrack(trackId, FavoriteSource.TRACK_PAGE))
       }
     }
   }
@@ -397,9 +396,9 @@ export const TrackScreenDetailsTile = ({
   const handlePressRepost = () => {
     if (!isOwner) {
       if (has_current_user_reposted) {
-        dispatch(undoRepostTrack(track_id, RepostSource.TRACK_PAGE))
+        dispatch(undoRepostTrack(trackId, RepostSource.TRACK_PAGE))
       } else {
-        dispatch(repostTrack(track_id, RepostSource.TRACK_PAGE))
+        dispatch(repostTrack(trackId, RepostSource.TRACK_PAGE))
       }
     }
   }
@@ -408,20 +407,22 @@ export const TrackScreenDetailsTile = ({
     dispatch(
       requestOpenShareModal({
         type: 'track',
-        trackId: track_id,
+        trackId,
         source: ShareSource.PAGE
       })
     )
   }
 
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId: track_id, userId: currentUserId })
+    getTrackPosition(state, { trackId, userId: currentUserId })
   )
   const handlePressOverflow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToAlbumAction =
-      isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
+      isEditAlbumsEnabled && isOwner && !ddexApp
+        ? OverflowAction.ADD_TO_ALBUM
+        : null
     const addToPlaylistAction = !isStreamGated
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
@@ -440,23 +441,23 @@ export const TrackScreenDetailsTile = ({
         : null,
       isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
-      isOwner ? OverflowAction.EDIT_TRACK : null,
+      isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && track?.is_scheduled_release && track?.is_unlisted
         ? OverflowAction.RELEASE_NOW
         : null,
-      isOwner ? OverflowAction.DELETE_TRACK : null
+      isOwner && !ddexApp ? OverflowAction.DELETE_TRACK : null
     ].filter(removeNullable)
 
     dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
-        id: track_id,
+        id: trackId,
         overflowActions
       })
     )
   }
 
-  const downloadStatus = useSelector(getTrackOfflineDownloadStatus(track_id))
+  const downloadStatus = useSelector(getTrackOfflineDownloadStatus(trackId))
   const getDownloadTextColor = () => {
     if (
       downloadStatus === OfflineDownloadStatus.SUCCESS ||
@@ -557,7 +558,7 @@ export const TrackScreenDetailsTile = ({
           <TrackDownloadStatusIndicator
             style={styles.downloadStatusIndicator}
             size={16}
-            trackId={track_id}
+            trackId={trackId}
           />
           {renderHeaderText()}
         </View>
@@ -582,25 +583,11 @@ export const TrackScreenDetailsTile = ({
     ) : null
   }
 
-  const renderDownloadButtons = () => {
-    return (
-      <TrackScreenDownloadButtons
-        following={user.does_current_user_follow}
-        hasDownloadAccess={hasDownloadAccess}
-        isOwner={isOwner}
-        trackId={track_id}
-      />
-    )
-  }
-
   const renderBottomContent = () => {
     return (
       <View style={styles.bottomContent}>
         {renderTags()}
-        {!isLosslessDownloadsEnabled ? renderDownloadButtons() : null}
-        {isLosslessDownloadsEnabled && hasDownloadableAssets ? (
-          <DownloadSection trackId={track_id} />
-        ) : null}
+        {hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null}
       </View>
     )
   }
@@ -613,6 +600,8 @@ export const TrackScreenDetailsTile = ({
       details={details}
       hasReposted={has_current_user_reposted}
       hasSaved={has_current_user_saved}
+      hasStreamAccess={hasStreamAccess}
+      streamConditions={streamConditions}
       user={user}
       renderBottomContent={renderBottomContent}
       renderHeader={is_unlisted || isOfflineEnabled ? renderHeader : undefined}
@@ -644,6 +633,9 @@ export const TrackScreenDetailsTile = ({
       saveCount={save_count}
       title={title}
       track={track}
+      contentId={trackId}
+      contentType={PurchaseableContentType.TRACK}
+      ddexApp={ddexApp}
     />
   )
 }

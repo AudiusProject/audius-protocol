@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { MobileOS, Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   chatActions,
@@ -19,10 +18,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import useAppState from 'app/hooks/useAppState'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
-import { SignOnScreen } from 'app/screens/signon'
 import { SplashScreen } from 'app/screens/splash-screen'
 import {
   UpdateRequiredScreen,
@@ -68,9 +65,6 @@ export const RootScreen = () => {
 
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
-  const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
-    FeatureFlags.SIGN_UP_REDESIGN
-  )
   const { navigate } = useNavigation()
   const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
 
@@ -108,17 +102,14 @@ export const RootScreen = () => {
   }, [])
 
   useEffect(() => {
-    if (isSignUpRedesignEnabled) {
-      if (showHomeStack && startedSignUp && !welcomeModalShown) {
-        openWelcomeDrawer()
-        // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
-        if (navigate) {
-          navigate('HomeStack')
-        }
+    if (showHomeStack && startedSignUp && !welcomeModalShown) {
+      openWelcomeDrawer()
+      // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
+      if (navigate) {
+        navigate('HomeStack')
       }
     }
   }, [
-    isSignUpRedesignEnabled,
     openWelcomeDrawer,
     showHomeStack,
     startedSignUp,
@@ -158,7 +149,7 @@ export const RootScreen = () => {
               // animation: none here is a workaround to prevent "white screen of death" on Android
               options={isAndroid ? { animation: 'none' } : undefined}
             />
-          ) : isSignUpRedesignEnabled ? (
+          ) : (
             <Stack.Screen name='SignOnStackNew'>
               {() => (
                 <SignOnStack
@@ -166,8 +157,6 @@ export const RootScreen = () => {
                 />
               )}
             </Stack.Screen>
-          ) : (
-            <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}
           <Stack.Screen
             name='ResetPassword'

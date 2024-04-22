@@ -1,8 +1,6 @@
-import { useState } from 'react'
+import { ComponentPropsWithoutRef, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { StemCategory, stemCategoryFriendlyNames } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
 import {
   Box,
@@ -76,7 +74,7 @@ const fileTypeIcon = (type: string) => {
   }
 }
 
-type TrackPreviewProps = {
+type TrackPreviewProps = ComponentPropsWithoutRef<'div'> & {
   index: number
   displayIndex: boolean
   onRemove: () => void
@@ -92,10 +90,6 @@ type TrackPreviewProps = {
 }
 
 export const TrackPreview = (props: TrackPreviewProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
-
   const {
     displayIndex = false,
     index,
@@ -108,7 +102,8 @@ export const TrackPreview = (props: TrackPreviewProps) => {
     onEditStemCategory,
     allowCategorySwitch = true,
     allowDelete = true,
-    className
+    className,
+    ...divProps
   } = props
   const {
     name: trackTitle,
@@ -133,14 +128,14 @@ export const TrackPreview = (props: TrackPreviewProps) => {
   )
 
   return (
-    <div className={cn(styles.trackPreviewNew, className)}>
+    <div className={cn(styles.trackPreviewNew, className)} {...divProps}>
       {displayIndex ? (
         <Text variant='body' className={styles.indexText} size='s'>
           {index + 1}
         </Text>
       ) : null}
       <Icon className={styles.trackPreviewImage} style={iconStyle} />
-      {isLosslessDownloadsEnabled && isTitleEditable && onEditTitle ? (
+      {isTitleEditable && onEditTitle ? (
         <EditableLabel
           isEditing={isEditingTitle}
           setIsEditing={setIsEditingTitle}
@@ -153,7 +148,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
         </Text>
       )}
       <Flex alignItems='center'>
-        {isLosslessDownloadsEnabled && isStem && onEditStemCategory ? (
+        {isStem && onEditStemCategory ? (
           <Box mr='xl'>
             <FilterButton
               label={messages.selectType}
@@ -178,39 +173,27 @@ export const TrackPreview = (props: TrackPreviewProps) => {
         >
           {numeral(fileSize).format('0.0 b')}
         </Text>
-        {isLosslessDownloadsEnabled ? (
-          <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
-            {isTitleEditable ? (
-              <IconButton
-                icon={IconCompose}
-                color='subdued'
-                size='s'
-                aria-label={messages.edit}
-                className={styles.editTitleButton}
-                onClick={() => setIsEditingTitle(true)}
-              />
-            ) : null}
+        <Flex gap='xs' alignItems='center' className={styles.iconsContainer}>
+          {isTitleEditable ? (
             <IconButton
-              icon={IconTrash}
-              aria-label={messages.remove}
+              icon={IconCompose}
               color='subdued'
               size='s'
-              onClick={onRemove}
-              disabled={!allowDelete}
-              className={styles.removeButton}
+              aria-label={messages.edit}
+              className={styles.editTitleButton}
+              onClick={() => setIsEditingTitle(true)}
             />
-          </Flex>
-        ) : null}
-        {!isLosslessDownloadsEnabled ? (
+          ) : null}
           <IconButton
             icon={IconTrash}
             aria-label={messages.remove}
             color='subdued'
-            onClick={onRemove}
             size='s'
+            onClick={onRemove}
+            disabled={!allowDelete}
             className={styles.removeButton}
           />
-        ) : null}
+        </Flex>
       </Flex>
     </div>
   )

@@ -4,7 +4,7 @@ import { ID } from '~/models/Identifiers'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 
 import {
-  ContentType,
+  PurchaseableContentType,
   PurchaseContentError,
   PurchaseContentPage,
   PurchaseContentStage
@@ -18,7 +18,7 @@ type OnSuccess = {
 type PurchaseContentState = {
   page: PurchaseContentPage
   stage: PurchaseContentStage
-  contentType: ContentType
+  contentType: PurchaseableContentType
   contentId: ID
   /** Pay extra amount in cents */
   extraAmount?: number
@@ -32,7 +32,7 @@ type PurchaseContentState = {
 
 const initialState: PurchaseContentState = {
   page: PurchaseContentPage.PURCHASE,
-  contentType: ContentType.TRACK,
+  contentType: PurchaseableContentType.TRACK,
   contentId: -1,
   extraAmount: undefined,
   extraAmountPreset: undefined,
@@ -54,7 +54,7 @@ const slice = createSlice({
         purchaseMethod: PurchaseMethod
         purchaseVendor?: PurchaseVendor
         contentId: ID
-        contentType?: ContentType
+        contentType?: PurchaseableContentType
         onSuccess?: OnSuccess
       }>
     ) => {
@@ -64,7 +64,8 @@ const slice = createSlice({
       state.extraAmount = action.payload.extraAmount
       state.extraAmountPreset = action.payload.extraAmountPreset
       state.contentId = action.payload.contentId
-      state.contentType = action.payload.contentType ?? ContentType.TRACK
+      state.contentType =
+        action.payload.contentType ?? PurchaseableContentType.TRACK
       state.onSuccess = action.payload.onSuccess
       state.purchaseMethod = action.payload.purchaseMethod
       state.purchaseVendor = action.payload.purchaseVendor
@@ -87,7 +88,7 @@ const slice = createSlice({
     purchaseConfirmed: (
       state,
       _action: PayloadAction<{
-        contentType: ContentType
+        contentType: PurchaseableContentType
         contentId: ID
       }>
     ) => {

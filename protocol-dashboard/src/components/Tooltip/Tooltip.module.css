@@ -11,6 +11,11 @@
   position: relative;
 }
 
+.increaseHitbox {
+  margin: -30px;
+  padding: 30px;
+}
+
 .tooltipContainerReal {
   position: absolute;
   top: 0px;
@@ -22,14 +27,22 @@
   align-items: center;
 }
 
-
 .tooltipText {
   position: relative;
   color: var(--static-white);
-  font-family: "Avenir Next LT Pro";
+  background-color: var(--secondary);
+  padding: var(--unit-3);
+  border-radius: var(--unit-2);
+  width: inherit;
+}
+
+.basicTooltipText {
+  position: relative;
+  color: var(--static-white);
+  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-xs);
   color: white;
-  background-color: #0A0B19;
+  background-color: #0a0b19;
   padding: 4px 8px;
   border-radius: 4px;
   white-space: nowrap;
@@ -39,17 +52,17 @@
 .tooltipTop .tooltipContainerReal {
   top: -8px;
 }
-.tooltipBottom  .tooltipContainerReal {
+.tooltipBottom .tooltipContainerReal {
   top: 64px;
 }
-.tooltipLeft  .tooltipContainerReal {
+.tooltipLeft .tooltipContainerReal {
   left: -8px;
 }
-.tooltipRight  .tooltipContainerReal {
+.tooltipRight .tooltipContainerReal {
   left: 50px;
 }
 
-/* Arrow */
+/* Basic Tooltip Arrow */
 
 .arrow {
   position: absolute;
@@ -59,30 +72,68 @@
 }
 
 .tooltipTop .arrow {
-  border-top: 4px solid #0A0B19;
+  border-top: 4px solid #0a0b19;
   border-right: 4px solid transparent;
   border-left: 4px solid transparent;
   left: calc(50% - 7px);
   bottom: -3px;
 }
 .tooltipBottom .arrow {
-  border-bottom: 4px solid #0A0B19;
+  border-bottom: 4px solid #0a0b19;
   border-right: 4px solid transparent;
   border-left: 4px solid transparent;
   left: calc(50% - 7px);
   top: -3px;
 }
-.tooltipLeft  .arrow {
-  border-left: 4px solid #0A0B19;
+.tooltipLeft .arrow {
+  border-left: 4px solid #0a0b19;
   border-top: 4px solid transparent;
   border-right: 4px solid transparent;
   top: calc(50% - 7px);
   right: -3px;
 }
-.tooltipRight  .arrow {
-  border-right: 4px solid #0A0B19;
+.tooltipRight .arrow {
+  border-right: 4px solid #0a0b19;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
   top: calc(50% - 7px);
   top: -3px;
+}
+
+/* Descriptive Tooltip Arrow */
+
+.descriptiveArrow {
+  position: absolute;
+  margin: 0 3px;
+  -webkit-transform-origin: 50% 0;
+  transform-origin: 50% 0;
+}
+
+.tooltipTop .descriptiveArrow {
+  border-top: 8px solid var(--secondary);
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+  left: calc(50% - 11px);
+  bottom: -7px;
+}
+.tooltipBottom .descriptiveArrow {
+  border-bottom: 8px solid var(--secondary);
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+  left: calc(50% - 11px);
+  top: -7px;
+}
+.tooltipLeft .descriptiveArrow {
+  border-left: 8px solid var(--secondary);
+  border-top: 8px solid transparent;
+  border-right: 8px solid transparent;
+  top: calc(50% - 11px);
+  right: -7px;
+}
+.tooltipRight .descriptiveArrow {
+  border-right: 8px solid var(--secondary);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  top: calc(50% - 11px);
+  top: -7px;
 }

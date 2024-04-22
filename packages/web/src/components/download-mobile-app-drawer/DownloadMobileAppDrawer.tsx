@@ -7,9 +7,9 @@ import {
   IconCloudUpload as IconUpload,
   IconSpeaker,
   IconListens,
-  IconMessage
+  IconMessage,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 
 import Drawer from 'components/drawer/Drawer'
 import { getMobileOS } from 'utils/clientUtil'
@@ -85,11 +85,9 @@ export const DownloadMobileAppDrawer = (
             <span>{messages.download}</span>
           </li>
         </ul>
-        <Button
-          type={ButtonType.PRIMARY_ALT}
-          text={messages.buttonText}
-          onClick={goToAppStore}
-        />
+        <Button variant='primary' onClick={goToAppStore} fullWidth>
+          {messages.buttonText}
+        </Button>
       </div>
     </Drawer>
   )

@@ -47,21 +47,11 @@
   margin-top: 16px;
 }
 
-.mainButton {
-  border-radius: 32px;
-}
-
-.mainButton span {
-  color: var(--primary) !important;
-  font-size: var(--font-l) !important;
-  font-weight: var(--font-bold) !important;
-}
-
 .notNow {
   margin-top: 15px;
   color: white;
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
   margin-bottom: 40px;
   padding: 10px;
 }

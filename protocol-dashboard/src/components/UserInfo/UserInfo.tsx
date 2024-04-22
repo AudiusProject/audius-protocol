@@ -1,8 +1,13 @@
+import { useCallback, useEffect, useState } from 'react'
+
 import { User as AudiusUser } from '@audius/sdk'
 import { ButtonType } from '@audius/stems'
-import IconSquareArrow from 'assets/img/iconSquareArrow.svg?react'
 import BN from 'bn.js'
 import clsx from 'clsx'
+import { useSelector } from 'react-redux'
+
+import IconSquareArrow from 'assets/img/iconSquareArrow.svg?react'
+import Bounds from 'components/Bounds'
 import Button from 'components/Button'
 import ConfirmTransactionModal, {
   StandaloneBox
@@ -11,23 +16,20 @@ import DelegateStakeModal from 'components/DelegateStakeModal'
 import Loading from 'components/Loading'
 import MyEstimatedRewards from 'components/MyEstimatedRewards'
 import Paper from 'components/Paper'
-import { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { BasicTooltip, Position } from 'components/Tooltip/Tooltip'
+import UserImage from 'components/UserImage'
 import { useAccount } from 'store/account/hooks'
 import { useMakeClaim } from 'store/actions/makeClaim'
 import useUndelegateStake from 'store/actions/undelegateStake'
 import { usePendingClaim } from 'store/cache/claims/hooks'
+import { getDelegatorInfo } from 'store/cache/protocol/hooks'
 import { Operator, Status, User } from 'types'
 import { TICKER } from 'utils/consts'
 import { formatAud } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
-
-import Bounds from 'components/Bounds'
-import Tooltip, { Position } from 'components/Tooltip'
-import UserImage from 'components/UserImage'
-import { getDelegatorInfo } from 'store/cache/protocol/hooks'
 import { createStyles } from 'utils/mobile'
 import { AUDIUS_DAPP_URL } from 'utils/routes'
+
 import UserBadges from './AudiusProfileBadges'
 import desktopStyles from './UserInfo.module.css'
 import mobileStyles from './UserInfoMobile.module.css'
@@ -146,7 +148,7 @@ const UserInfo = ({
     <>
       {showDelegate && (
         <div className={styles.buttonContainer}>
-          <Tooltip
+          <BasicTooltip
             position={Position.TOP}
             text={messages.delegatorLimitReached}
             isDisabled={!isDelegatorLimitReached}
@@ -157,7 +159,7 @@ const UserInfo = ({
               isDisabled={isDelegatorLimitReached}
               onClick={onClick}
             />
-          </Tooltip>
+          </BasicTooltip>
           <DelegateStakeModal
             serviceOperatorWallet={wallet}
             isOpen={isOpen}
@@ -186,7 +188,7 @@ const UserInfo = ({
       )}
       {showClaim && (
         <div className={styles.buttonContainer}>
-          <Tooltip
+          <BasicTooltip
             position={Position.TOP}
             text={messages.claimOutOfBounds}
             isDisabled={!isClaimDisabled}
@@ -206,7 +208,7 @@ const UserInfo = ({
               onConfirm={onConfirmClaim}
               onClose={onClose}
             />
-          </Tooltip>
+          </BasicTooltip>
         </div>
       )}
       {rank && (
@@ -224,8 +226,8 @@ const UserInfo = ({
         {audiusProfile == null ? null : (
           <a
             aria-label="Go to user's Audius profile"
-            target="_blank"
-            rel="noreferrer"
+            target='_blank'
+            rel='noreferrer'
             href={`${AUDIUS_DAPP_URL}/${audiusProfile?.handle}`}
           >
             <IconSquareArrow className={styles.externalLinkIcon} />

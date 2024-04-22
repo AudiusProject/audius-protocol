@@ -100,7 +100,7 @@ export function* retrieveTrackByHandleAndSlug({
     idField: 'track_id',
     // If this is the first fetch after server side rendering the track page,
     // force retrieve from source to ensure we have personalized data
-    forceRetrieveFromSource: forceRetrieveFromSource ?? isInitialFetchAfterSsr,
+    forceRetrieveFromSource: forceRetrieveFromSource || isInitialFetchAfterSsr,
     shouldSetLoading: true,
     deleteExistingEntry: isInitialFetchAfterSsr,
     getEntriesTimestamp: function* (ids: ID[]) {
@@ -169,7 +169,7 @@ export function* retrieveTracks({
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
-  yield* waitForRead()
+  yield* call(waitForRead)
   const currentUserId = yield* select(getUserId)
 
   // In the case of unlisted tracks, trackIds contains metadata used to fetch tracks

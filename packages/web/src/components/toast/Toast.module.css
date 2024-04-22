@@ -15,23 +15,23 @@
 .toast:global(.ant-tooltip-placement-rightBottom .ant-tooltip-arrow) {
   left: 2px;
   border-width: 5px 5px 5px 0;
-  border-right-color: var(--secondary);
+  border-right-color: var(--harmony-secondary);
 }
 
 .toast:global(.ant-tooltip-placement-bottom .ant-tooltip-arrow),
 .toast:global(.ant-tooltip-placement-bottomTop .ant-tooltip-arrow),
 .toast:global(.ant-tooltip-placement-bottomBottom .ant-tooltip-arrow) {
   border-width: 5px 0px 5px 5;
-  border-bottom-color: var(--secondary);
+  border-bottom-color: var(--harmony-secondary);
 }
 
 .toast :global(.ant-tooltip-inner) {
   padding: 8px 14px;
-  color: var(--static-white);
+  color: var(--harmony-static-white);
   font-size: 12px;
   font-weight: 600;
   text-align: center;
-  background-color: var(--secondary);
+  background-color: var(--harmony-secondary);
   border-radius: 8px;
   white-space: nowrap;
 }

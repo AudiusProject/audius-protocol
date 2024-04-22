@@ -36,7 +36,7 @@ class GetTrackArgs(TypedDict):
     limit: int
     offset: int
     handle: str
-    id: int
+    id: List[int]
     current_user_id: int
     authed_user_id: Optional[int]
     min_block_number: int
@@ -49,6 +49,9 @@ class GetTrackArgs(TypedDict):
     exclude_gated: bool
     routes: List[RouteArgs]
     filter_tracks: str
+
+    # If true, skips the filtering of unlisted tracks
+    skip_unlisted_filter: Optional[bool]
 
     # Optional sort method for the returned results
     sort_method: Optional[SortMethod]
@@ -302,12 +305,10 @@ def get_tracks(args: GetTrackArgs):
         # bundle peripheral info into track results
         current_user_id = args.get("current_user_id")
 
-        # remove track segments and download cids from deactivated user tracks and deleted tracks
+        # remove track segments from deactivated user tracks and deleted tracks
         for track in tracks:
             if track["user"][0]["is_deactivated"] or track["is_delete"]:
                 track["track_segments"] = []
-                if track["download"] is not None:
-                    track["download"]["cid"] = None
 
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id, track_has_aggregates=True

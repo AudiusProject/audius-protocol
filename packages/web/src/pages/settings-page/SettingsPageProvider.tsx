@@ -10,7 +10,7 @@ import {
   PushNotificationSetting,
   EmailFrequency,
   signOutActions,
-  makeGetTierAndVerifiedForUser,
+  getTierAndVerifiedForUser,
   themeActions,
   themeSelectors,
   modalsActions,
@@ -228,8 +228,6 @@ class SettingsPage extends PureComponent<
 }
 
 function makeMapStateToProps() {
-  const getTier = makeGetTierAndVerifiedForUser()
-
   return (state: AppState) => {
     const userId = getUserId(state) ?? 0
     return {
@@ -243,7 +241,7 @@ function makeMapStateToProps() {
       emailFrequency: getEmailFrequency(state),
       notificationSettings: getBrowserNotificationSettings(state),
       pushNotificationSettings: getPushNotificationSettings(state),
-      tier: getTier(state, { userId }).tier
+      tier: getTierAndVerifiedForUser(state, { userId }).tier
     }
   }
 }

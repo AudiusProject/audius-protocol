@@ -13,6 +13,7 @@ import {
 import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useWindowSize } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
@@ -27,8 +28,8 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { ForgotPasswordModal } from 'pages/sign-on/components/desktop/ForgotPasswordModal'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
+import { ForgotPasswordModal } from 'pages/sign-up-page/components/ForgotPasswordModal'
 import { Heading, ScrollView } from 'pages/sign-up-page/components/layout'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_CONFIRM_EMAIL_PAGE, SIGN_UP_PAGE } from 'utils/route'
@@ -36,6 +37,8 @@ import { SIGN_IN_CONFIRM_EMAIL_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
 
 const SignInSchema = toFormikValidationSchema(signInSchema)
+
+const smallDesktopWindowHeight = 900
 
 type SignInValues = {
   email: string
@@ -45,6 +48,8 @@ type SignInValues = {
 export const SignInPage = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
+  const { height: windowHeight } = useWindowSize()
+  const isSmallDesktop = windowHeight < smallDesktopWindowHeight
   const navigate = useNavigateToPage()
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const { value: existingEmail } = useSelector(getEmailField)
@@ -94,8 +99,8 @@ export const SignInPage = () => {
           gap='l'
         >
           <Flex as={Form} direction='column' gap='2xl'>
-            <Box alignSelf='center'>
-              {isMobile ? (
+            <Box alignSelf={isSmallDesktop ? 'flex-start' : 'center'}>
+              {isMobile || isSmallDesktop ? (
                 <IconAudiusLogoHorizontalColor />
               ) : (
                 <PreloadImage
@@ -141,7 +146,12 @@ export const SignInPage = () => {
             </Flex>
           </Flex>
           {!isMobile ? (
-            <Button variant='secondary' asChild fullWidth>
+            <Button
+              variant='secondary'
+              asChild
+              fullWidth
+              style={{ flexShrink: 0 }}
+            >
               <Link to={SIGN_UP_PAGE}>{signInPageMessages.createAccount}</Link>
             </Button>
           ) : null}

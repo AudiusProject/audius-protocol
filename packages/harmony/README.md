@@ -22,13 +22,7 @@ Full documentation can be found here: [Harmony Docs](https://harmony.audius.co)
 
 ## Installation
 
-Install `@audius/harmony` required peer dependencies:
-
-```bash
-npm install --save @emotion/react @emotion/styled @radix-ui/react-slot @react-spring/web classnames lodash react-lottie react-merge-refs react-perfect-scrollbar react-use react-use-measure
-```
-
-Then install `@audius/harmony`
+Install `@audius/harmony`:
 
 ```bash
 npm install --save @audius/harmony
@@ -48,18 +42,15 @@ Setup the ThemeProvider exported by Harmony
 import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 const App = () => {
-
-  return (
-    <HarmonyThemeProvider theme='day'>
-        ...
-    </HarmonyThemeProvider>
-  )
+  return <HarmonyThemeProvider theme='day'>...</HarmonyThemeProvider>
 }
 ```
 
 In order use emotion yourself, follow their documentation for [setting up the css-prop](https://emotion.sh/docs/css-prop)
 
-If using typescript add an emotion.d.ts file and include the following for access to harmony's theme type
+If using typescript you will need to:
+
+1. Add an emotion.d.ts file and include the following for access to harmony's theme type
 
 ```ts
 import '@emotion/react'
@@ -70,15 +61,26 @@ declare module '@emotion/react' {
 }
 ```
 
+2. Update your tsconfig to specify the jsxImportLocation:
+
+```ts
+{
+  "compilerOptions": {
+    "jsxImportSource": "@emotion/react",
+    ...
+  }
+}
+```
+
 ## Usage
 
 ```tsx
-import { Button, ButtonType, Flex } from '@audius/harmony'
+import { Button, Flex } from '@audius/harmony'
 
 const App = () => {
   return (
     <Flex gap='m'>
-      <Button variant={ButtonType.SECONDARY}>Click This!</Button>
+      <Button variant='secondary'>Click This!</Button>
       <Button>Click That!</Button>
     </Flex>
   )

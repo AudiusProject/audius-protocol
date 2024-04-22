@@ -8,9 +8,13 @@ export const computeCollectionMetadataProps = (
       ? metadata.playlist_contents.track_ids.length
       : 0
   const isEmpty = metadata && trackCount === 0
-  const lastModified =
+  const lastModifiedDate =
     metadata && metadata.variant !== Variant.SMART
       ? metadata.updated_at || Date.now()
+      : ''
+  const releaseDate =
+    metadata && metadata.variant !== Variant.SMART
+      ? metadata.created_at || Date.now()
       : ''
   const playlistName = metadata ? metadata.playlist_name : ''
   const description =
@@ -39,7 +43,7 @@ export const computeCollectionMetadataProps = (
   return {
     trackCount,
     isEmpty,
-    lastModified,
+    lastModifiedDate,
     playlistName,
     description,
     isPrivate,
@@ -47,6 +51,7 @@ export const computeCollectionMetadataProps = (
     isPublishing,
     playlistSaveCount,
     playlistRepostCount,
-    isReposted
+    isReposted,
+    releaseDate
   }
 }

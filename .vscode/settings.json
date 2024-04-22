@@ -26,7 +26,10 @@
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "editor.find.addExtraSpaceOnTop": false,
-  "eslint.workingDirectories": [{ "pattern": "./packages/*/" }],
+  "eslint.workingDirectories": [
+    { "pattern": "./packages/*/" },
+    { "pattern": "./protocol-dashboard" }
+  ],
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },

@@ -490,9 +490,9 @@ def notifications():
             current = int(entry.current_balance)
             # Check for a tier change and add to tier_change_notification
             tier = None
-            if prev < 100000 <= current:
+            if prev < 10000 <= current:
                 tier = "platinum"
-            elif prev < 10000 <= current:
+            elif prev < 1000 <= current:
                 tier = "gold"
             elif prev < 100 <= current:
                 tier = "silver"

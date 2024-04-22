@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { IconCamera } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { IconCamera, Button } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import ReactDropzone from 'react-dropzone'
@@ -14,7 +13,7 @@ import ImageSelectionPopup from './ImageSelectionPopup'
 import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
 
 const messages = {
-  add: 'Add',
+  add: 'Add Artwork',
   change: 'Change',
   remove: 'Remove'
 }
@@ -25,6 +24,7 @@ const ImageSelectionButton = ({
   buttonClassName,
   hasImage,
   imageName,
+  showImageName = true,
   error,
   includePopup,
   onOpenPopup,
@@ -70,23 +70,27 @@ const ImageSelectionButton = ({
       : hasImage
       ? messages.change
       : messages.add
-  if (imageName) buttonText += ` ${imageName}`
+  const label = `${buttonText} ${imageName}`
+  if (imageName && showImageName) buttonText += ` ${imageName}`
 
   return (
     <div className={cn(styles.wrapper, wrapperClassName)}>
       {includePopup ? (
         <>
           <Button
+            variant='tertiary'
+            size='small'
             ref={anchorRefProp ? undefined : anchorRefInner}
-            className={cn(styles.button, buttonClassName, {
+            className={cn(buttonClassName, {
               [styles.hide]: showModal
             })}
-            text={buttonText}
-            rightIcon={<IconCamera />}
-            type={ButtonType.WHITE}
+            iconRight={IconCamera}
             onClick={handleClick}
-            buttonType='button'
-          />
+            type='button'
+            aria-label={label}
+          >
+            {buttonText}
+          </Button>
           <ImageSelectionPopup
             anchorRef={anchorRefProp ?? anchorRefInner}
             className={styles.popup}
@@ -107,15 +111,18 @@ const ImageSelectionButton = ({
             data-testid='upload-photo-dropzone'
           >
             <Button
-              className={cn(styles.button, styles.noPopup, {
+              variant='tertiary'
+              size='small'
+              className={cn(styles.noPopup, {
                 [styles.hide]: hasImage
               })}
-              text={buttonText}
-              rightIcon={<IconCamera />}
-              type={ButtonType.WHITE}
+              iconRight={IconCamera}
               onClick={handleClick}
-              buttonType='button'
-            />
+              type='button'
+              aria-label={label}
+            >
+              {buttonText}
+            </Button>
           </ReactDropzone>
           {error ? (
             <InvalidFileType className={styles.invalidFileType} />
@@ -133,6 +140,7 @@ ImageSelectionButton.propTypes = {
   hasImage: PropTypes.bool.isRequired,
   // The name of the image (e.g. render the button as Add "Artwork" or Add "Cover Photo")
   imageName: PropTypes.string,
+  showImageName: PropTypes.boolean,
   // Whether or not to show the image selection modal. Otherwise, the
   // button itself is the dropzone.
   includePopup: PropTypes.bool,

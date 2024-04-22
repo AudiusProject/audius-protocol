@@ -1,9 +1,10 @@
-import BN from 'bn.js'
 import { gql } from '@apollo/client'
-import { useUsers } from 'store/cache/user/hooks'
+import BN from 'bn.js'
+
 import { useGraphQuery as useQuery } from 'store/api/hooks'
-import getActiveStake from 'utils/activeStake'
+import { useUsers } from 'store/cache/user/hooks'
 import { Status } from 'types'
+import getActiveStake from 'utils/activeStake'
 
 const GET_TOTAL_CLAIMABLE = gql`
   query totalClaimable($id: String!) {

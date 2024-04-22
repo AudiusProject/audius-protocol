@@ -2,8 +2,6 @@
 
 import { useEffect, Suspense, lazy } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
@@ -25,7 +23,6 @@ import { useHistoryContext } from './HistoryProvider'
 import WebPlayer from './web-player/WebPlayer'
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
-const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
 const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
@@ -46,10 +43,6 @@ export const AppInner = () => {
     initWebVitals(history.location)
   }, [history])
 
-  const { isEnabled: isSignInRedesignEnabled, isLoaded } = useFeatureFlag(
-    FeatureFlags.SIGN_UP_REDESIGN
-  )
-
   return (
     <>
       <SomethingWrong />
@@ -63,11 +56,7 @@ export const AppInner = () => {
             <Redirect key={a} from={a} to={SIGN_IN_PAGE} />
           ))}
           <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
-            {({ location }) => {
-              if (!isLoaded) return null
-              if (isSignInRedesignEnabled) return <SignOnPage />
-              return <SignOn signIn={location.pathname === SIGN_IN_PAGE} />
-            }}
+            <SignOnPage />
           </Route>
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />

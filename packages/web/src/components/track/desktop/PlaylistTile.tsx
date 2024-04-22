@@ -1,6 +1,6 @@
 import { memo, ReactNode, useCallback } from 'react'
 
-import { Scrollbar, IconArrowRight as IconArrow } from '@audius/harmony'
+import { Scrollbar, IconArrowRight as IconArrow, Box } from '@audius/harmony'
 import cn from 'classnames'
 
 import {
@@ -8,6 +8,7 @@ import {
   DesktopPlaylistTileProps as PlaylistTileProps
 } from 'components/track/types'
 
+import { BottomRow } from './BottomRow'
 import styles from './PlaylistTile.module.css'
 import TrackTile from './TrackTile'
 
@@ -24,6 +25,7 @@ const PlaylistTile = ({
   isLoading,
   isActive,
   isDisabled,
+  isUnlisted,
   isDarkMode,
   isMatrixMode,
   isPlaying,
@@ -35,7 +37,7 @@ const PlaylistTile = ({
   duration,
   stats,
   bottomBar,
-  showIconButtons,
+  showIconButtons = true,
   containerClassName,
   tileClassName,
   tracksContainerClassName,
@@ -44,11 +46,14 @@ const PlaylistTile = ({
   onClickFavorite,
   onClickShare,
   onTogglePlay,
+  onClickGatedUnlockPill,
   trackList,
   trackCount,
   isTrending,
   showRankIcon,
   href,
+  hasStreamAccess,
+  streamConditions,
   TileTrackContainer = DefaultTileContainer
 }: PlaylistTileProps) => {
   const renderTracks = useCallback(
@@ -116,10 +121,45 @@ const PlaylistTile = ({
           showRankIcon={showRankIcon}
           isTrending={isTrending}
           permalink={href}
+          isStreamGated={!!streamConditions}
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
         />
       </TileTrackContainer>
-      {renderTracks()}
-      {renderMoreTracks()}
+      <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
+        {renderTracks()}
+        {renderMoreTracks()}
+      </Box>
+      <Box
+        pv='s'
+        ph='m'
+        backgroundColor='white'
+        borderLeft='default'
+        borderRight='default'
+        borderBottom='default'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+      >
+        <BottomRow
+          hasStreamAccess={hasStreamAccess}
+          isDisabled={isDisabled}
+          isLoading={isLoading}
+          isFavorited={isFavorited}
+          isReposted={isReposted}
+          rightActions={rightActions}
+          bottomBar={bottomBar}
+          isUnlisted={isUnlisted}
+          isOwner={isOwner}
+          isDarkMode={isDarkMode}
+          isMatrixMode={isMatrixMode}
+          showIconButtons={showIconButtons}
+          onClickRepost={onClickRepost}
+          onClickFavorite={onClickFavorite}
+          onClickShare={onClickShare}
+          onClickGatedUnlockPill={onClickGatedUnlockPill}
+          streamConditions={streamConditions}
+        />
+      </Box>
     </div>
   )
 }

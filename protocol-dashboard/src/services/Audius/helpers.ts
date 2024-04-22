@@ -1,8 +1,10 @@
-import { formatNumber, formatAudString } from 'utils/format'
-import AudiusClient from './AudiusClient'
-import { Permission, BigNumber, Proposal } from 'types'
-import { fetchWithTimeout } from 'utils/fetch'
 import BN from 'bn.js'
+
+import { BigNumber, Permission, Proposal } from 'types'
+import { fetchWithTimeout } from 'utils/fetch'
+import { formatAudString, formatNumber } from 'utils/format'
+
+import AudiusClient from './AudiusClient'
 
 // Helpers
 export async function hasPermissions(
@@ -16,15 +18,15 @@ export async function hasPermissions(
 }
 
 export function onSetup(this: AudiusClient) {
-  this.isSetupPromise = new Promise(resolve => {
+  this.isSetupPromise = new Promise((resolve) => {
     this._setupPromiseResolve = resolve
   })
-  this.metaMaskAccountLoadedPromise = new Promise(resolve => {
+  this.walletAccountLoadedPromise = new Promise((resolve) => {
     this._metaMaskAccountLoadedResolve = resolve
   })
 }
 
-export function onMetaMaskAccountLoaded(
+export function onWalletAccountLoaded(
   this: AudiusClient,
   account: string | null
 ) {
@@ -37,9 +39,6 @@ export function onMetaMaskAccountLoaded(
 export function onSetupFinished(this: AudiusClient) {
   if (this._setupPromiseResolve) {
     this._setupPromiseResolve()
-  }
-  if (!this.isMetaMaskAccountLoaded) {
-    this.onMetaMaskAccountLoaded(null)
   }
 }
 
@@ -119,7 +118,7 @@ export function getBNPercentage(
 ): number {
   const divisor = Math.pow(10, decimals + 1)
   if (n2.toString() === '0') return 0
-  let num = n1.mul(new BN(divisor.toString())).div(n2)
+  const num = n1.mul(new BN(divisor.toString())).div(n2)
   if (num.gte(new BN(divisor.toString()))) return 1
   return num.toNumber() / divisor
 }
@@ -219,7 +218,7 @@ export function decodeProposalCallData(proposal: Proposal) {
     types,
     proposal.callData
   )
-  delete decoded['__length__']
+  delete decoded.__length__
 
   const parsedCallData = Object.values(decoded)
   if (functionName === 'slash') {

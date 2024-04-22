@@ -4,7 +4,13 @@ import { Repost } from '../models/Repost'
 import { Nullable } from '../utils/typeUtils'
 
 import { Favorite } from './Favorite'
-import { UserTrackMetadata } from './Track'
+import {
+  AccessConditions,
+  UserTrackMetadata,
+  ResourceContributor,
+  Copyright,
+  AccessPermissions
+} from './Track'
 import { User, UserMetadata } from './User'
 
 export enum Variant {
@@ -44,7 +50,7 @@ export type CollectionMetadata = {
   cover_art: CID | null
   cover_art_sizes: Nullable<CID>
   cover_art_cids?: Nullable<CoverArtSizesCids>
-  permalink?: string
+  permalink: string
   playlist_name: string
   playlist_owner_id: ID
   repost_count: number
@@ -59,6 +65,14 @@ export type CollectionMetadata = {
   local?: boolean
   release_date?: string
   ddex_app?: string | null
+  is_stream_gated: boolean
+  stream_conditions: Nullable<AccessConditions>
+  access: AccessPermissions
+  ddex_release_ids?: any | null
+  artists?: [ResourceContributor] | null
+  copyright_line?: Copyright | null
+  producer_copyright_line?: Copyright | null
+  parental_warning_type?: string | null
 }
 
 export type CollectionDownloadReason = { is_from_favorites: boolean }
@@ -102,6 +116,7 @@ export type SmartCollection = {
   incentivized?: boolean // Whether we reward winners with Audio
   cardSensitivity?: number
   customEmptyText?: string
+  ddex_app?: string | null
 }
 
 export type CollectionImage = {

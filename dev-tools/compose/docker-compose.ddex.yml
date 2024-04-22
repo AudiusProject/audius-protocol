@@ -14,9 +14,6 @@ services:
       - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     ports:
       - "9000:9000"
     networks:
@@ -32,32 +29,7 @@ services:
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     entrypoint: ./ingester --service crawler
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-
-  ddex-indexer:
-    container_name: ddex-indexer
-    build:
-      context: ${PROJECT_ROOT}/packages/ddex/ingester
-      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
-    environment:
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
-    env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-    entrypoint: ./ingester --service indexer
     healthcheck:
       test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
       interval: 30s
@@ -76,9 +48,6 @@ services:
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     entrypoint: ./ingester --service parser
     healthcheck:
       test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
@@ -102,9 +71,6 @@ services:
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
     ports:
       - "9001:9001"
     healthcheck:
@@ -190,6 +156,20 @@ services:
     profiles:
       - ddex
 
+  ddex-s3:
+    container_name: ddex-s3
+    env_file: .env
+    image: localstack/localstack:s3-latest
+    ports:
+      - "127.0.0.1:4566:4566"
+    networks:
+      - ddex-network
+    volumes:
+      - "ddex-s3:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    profiles:
+      - ddex
+
   ddex-ingester:
     container_name: ddex-ingester
     env_file: .env
@@ -198,7 +178,7 @@ services:
     build:
       context: ${PROJECT_ROOT}/packages/ddex/ingester
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
-  
+
   ddex-test:
     container_name: ddex-test
     environment:
@@ -213,3 +193,4 @@ networks:
 
 volumes:
   ddex-mongo-db:
+  ddex-s3:

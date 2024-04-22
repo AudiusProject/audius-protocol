@@ -3,6 +3,7 @@
   display: flex;
   margin-left: -8px;
   margin-right: -8px;
+  width: 100%;
 }
 
 .section > * {
@@ -10,6 +11,7 @@
 }
 
 .chart {
+  width: 100%;
   min-height: 340px;
   display: flex;
   flex-direction: column;

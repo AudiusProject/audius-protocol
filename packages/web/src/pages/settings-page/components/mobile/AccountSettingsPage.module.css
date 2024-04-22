@@ -24,14 +24,14 @@
 
 .info {
   text-align: center;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
 }
 
 .name {
-  font-weight: var(--font-bold);
+  font-weight: var(--harmony-font-bold);
   margin-bottom: 8px;
 }
 
 .handle {
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }

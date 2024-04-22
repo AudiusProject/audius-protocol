@@ -69,9 +69,7 @@
         "playlist_id",
         "description",
         "is_album",
-        "is_private",
-        "is_stream_gated",
-        "stream_conditions"
+        "is_private"
       ],
       "title": "Playlist"
     },

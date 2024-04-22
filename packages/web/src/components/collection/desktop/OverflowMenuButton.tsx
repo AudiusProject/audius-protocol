@@ -6,21 +6,19 @@ import {
   usersSocialActions,
   CommonState
 } from '@audius/common/store'
-import { IconKebabHorizontal } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
+import { IconButton, IconKebabHorizontal } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
-
-import styles from './CollectionHeader.module.css'
 
 const { getCollection, getUser } = collectionPageSelectors
 const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
   follow: 'Follow User',
-  unfollow: 'Unfollow User'
+  unfollow: 'Unfollow User',
+  moreOptions: 'More Options'
 }
 
 type OverflowMenuButtonProps = {
@@ -82,13 +80,12 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   return (
     <Menu menu={overflowMenu}>
       {(ref, triggerPopup) => (
-        <Button
+        <IconButton
           ref={ref}
-          leftIcon={<IconKebabHorizontal />}
+          aria-label={messages.moreOptions}
+          icon={IconKebabHorizontal}
           onClick={() => triggerPopup()}
-          text={null}
-          textClassName={styles.buttonTextFormatting}
-          type={ButtonType.COMMON}
+          color='subdued'
         />
       )}
     </Menu>

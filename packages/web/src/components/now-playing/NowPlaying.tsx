@@ -29,11 +29,11 @@ import {
   playerSelectors,
   playbackRateValueMap,
   gatedContentSelectors,
-  OverflowActionCallbacks
+  OverflowActionCallbacks,
+  PurchaseableContentType
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
-import { IconCaretRight as IconCaret } from '@audius/harmony'
-import { Scrubber } from '@audius/stems'
+import { IconCaretRight as IconCaret, Scrubber } from '@audius/harmony'
 import { Location } from 'history'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -43,6 +43,7 @@ import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import PlayButton from 'components/play-bar/PlayButton'
 import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
 import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
@@ -50,7 +51,6 @@ import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButton
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
-import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -80,7 +80,7 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
 const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
-const { getGatedTrackStatusMap } = gatedContentSelectors
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 type OwnProps = {
   onClose: () => void
@@ -405,7 +405,7 @@ const NowPlaying = g(
     const matrix = isMatrix()
     const darkMode = isDarkMode()
 
-    const gatedTrackStatusMap = useSelector(getGatedTrackStatusMap)
+    const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
     const gatedTrackStatus =
       track_id &&
       gatedTrackStatusMap[typeof track_id === 'number' ? track_id : -1]
@@ -414,7 +414,8 @@ const NowPlaying = g(
     const onClickPill = useAuthenticatedClickCallback(() => {
       openPremiumContentPurchaseModal(
         {
-          contentId: typeof track_id === 'number' ? track_id : -1
+          contentId: typeof track_id === 'number' ? track_id : -1,
+          contentType: PurchaseableContentType.TRACK
         },
         { source: ModalSource.NowPlaying }
       )
@@ -486,9 +487,9 @@ const NowPlaying = g(
               {title}
             </div>
             {shouldShowPurchasePreview ? (
-              <LockedStatusBadge
+              <LockedStatusPill
                 locked
-                iconSize='small'
+                iconSize='2xs'
                 coloredWhenLocked
                 variant='premium'
                 text={messages.preview}

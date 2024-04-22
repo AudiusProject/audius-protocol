@@ -11,9 +11,9 @@ import {
   ModalHeader,
   ModalTitle,
   ModalFooter,
-  IconTransaction
+  IconTransaction,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -53,7 +53,7 @@ export const TransactionDetailsModal = () => {
           icon={<IconTransaction />}
         />
       </ModalHeader>
-      <ModalContent className={styles.content}>
+      <ModalContent>
         {transactionDetails.status === Status.SUCCESS ? (
           <TransactionDetailsContent
             transactionDetails={transactionDetails.transactionDetails}
@@ -65,11 +65,9 @@ export const TransactionDetailsModal = () => {
         ) : null}
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <Button
-          type={ButtonType.PRIMARY_ALT}
-          text={messages.done}
-          onClick={handleClose}
-        />
+        <Button variant='primary' onClick={handleClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </Modal>
   )

@@ -29,6 +29,7 @@ export enum Genre {
   LATIN = 'Latin',
   LOFI = 'Lo-Fi',
   HYPERPOP = 'Hyperpop',
+  DANCEHALL = 'Dancehall',
 
   // Electronic Subgenres
   TECHNO = 'Techno',
@@ -118,6 +119,7 @@ export const GENRES = [
   Genre.LATIN,
   Genre.LOFI,
   Genre.HYPERPOP,
+  Genre.DANCEHALL,
   ...Object.values(ELECTRONIC_SUBGENRES)
 ]
 

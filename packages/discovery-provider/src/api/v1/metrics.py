@@ -70,7 +70,7 @@ valid_bucket_sizes = {
 }
 valid_bucket_sizes_with_year = {
     **valid_bucket_sizes,
-    "all_time": ["month", "week"],
+    "year": ["month"],
 }
 
 

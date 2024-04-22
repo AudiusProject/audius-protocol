@@ -225,14 +225,21 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
         results = []
         for playlist in playlists:
             playlist_owner_id = playlist["playlist_owner_id"]
-            track_owner_ids = list(
-                filter(
-                    lambda owner_id: owner_id != playlist_owner_id,
-                    map(lambda track: track["owner_id"], playlist["tracks"]),
-                )
-            )
-            if len(track_owner_ids) < 3:
+            unique_track_owner_ids = set()
+            valid_track_count = 0
+
+            for track in playlist["tracks"]:
+                is_delete = track["is_delete"]
+                if not is_delete:
+                    valid_track_count += 1
+
+                owner_id = track["owner_id"]
+                if playlist_owner_id != owner_id:
+                    unique_track_owner_ids.add(owner_id)
+
+            if len(unique_track_owner_ids) < 3 or valid_track_count < 3:
                 continue
+
             results.append(playlist)
 
         return (results, list(map(lambda playlist: playlist["playlist_id"], results)))

@@ -4,10 +4,11 @@ import {
   ModalContent,
   ModalHeader,
   ModalTitle,
-  Button
+  Button,
+  ModalFooter,
+  ModalContentText,
+  Text
 } from '@audius/harmony'
-
-import styles from './DeleteConfirmationModal.module.css'
 
 export type DeleteConfirmationModalProps = {
   title: string
@@ -35,26 +36,21 @@ const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
         <ModalTitle title={props.title} />
       </ModalHeader>
       <ModalContent>
-        <div className={styles.text}>
-          <div className={styles.header}>{header}</div>
-          <div className={styles.description}>{description}</div>
-        </div>
-
-        <div className={styles.buttons}>
-          <Button
-            className={styles.deleteButton}
-            variant='destructive'
-            onClick={props.onDelete}
-          >{`Delete ${props.entity}`}</Button>
-          <Button
-            className={styles.nevermindButton}
-            variant='secondary'
-            onClick={props.onCancel}
-          >
-            Nevermind
-          </Button>
+        <div css={{ textAlign: 'center' }}>
+          <Text variant='title'>{header}</Text>
+          <ModalContentText>{description}</ModalContentText>
         </div>
       </ModalContent>
+      <ModalFooter>
+        <Button
+          variant='destructive'
+          onClick={props.onDelete}
+          fullWidth
+        >{`Delete ${props.entity}`}</Button>
+        <Button variant='secondary' onClick={props.onCancel} fullWidth>
+          Nevermind
+        </Button>
+      </ModalFooter>
     </Modal>
   )
 }

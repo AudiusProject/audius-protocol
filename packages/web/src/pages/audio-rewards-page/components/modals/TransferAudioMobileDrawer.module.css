@@ -8,7 +8,7 @@
   font-weight: 900;
   font-size: 28px;
   margin-bottom: 24px;
-  background: var(--page-header-gradient);
+  background: var(--harmony-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

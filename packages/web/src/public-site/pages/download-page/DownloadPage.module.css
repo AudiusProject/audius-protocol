@@ -201,7 +201,7 @@
 
 .downloadLink:hover .platformName,
 .downloadLink:active .platformName {
-  color: var(--static-secondary);
+  color: var(--harmony-secondary);
 }
 
 .isMobile .downloadLink:hover .platformName,
@@ -238,6 +238,10 @@
   position: relative;
   top: 4px;
   margin-right: 6px;
+}
+
+.platformIcon path {
+  fill: currentColor;
 }
 
 .isMobile .platformIcon {

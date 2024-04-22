@@ -11,13 +11,13 @@ export const initialState: BasicModalsState = {
   TiersExplainer: { isOpen: false },
   TrendingRewardsExplainer: { isOpen: false },
   ChallengeRewardsExplainer: { isOpen: false },
+  ClaimAllRewards: { isOpen: false },
   LinkSocialRewardsExplainer: { isOpen: false },
   APIRewardsExplainer: { isOpen: false },
   TransferAudioMobileWarning: { isOpen: false },
   MobileConnectWalletsDrawer: { isOpen: false },
   MobileEditCollectiblesDrawer: { isOpen: false },
   Share: { isOpen: false },
-  ShareSoundToTikTok: { isOpen: false },
   HCaptcha: { isOpen: false },
   BrowserPushPermissionConfirmation: { isOpen: false },
   AudioBreakdown: { isOpen: false },
@@ -47,6 +47,7 @@ export const initialState: BasicModalsState = {
   PlaybackRate: { isOpen: false },
   ProfileActions: { isOpen: false },
   PublishPlaylistConfirmation: { isOpen: false },
+  AlbumTrackRemoveConfirmation: { isOpen: false },
   AiAttributionSettings: { isOpen: false },
   PremiumContentPurchaseModal: { isOpen: false },
   CreateChatModal: { isOpen: false },
@@ -62,7 +63,8 @@ export const initialState: BasicModalsState = {
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false },
   CoinflowWithdraw: { isOpen: false },
-  WaitForDownloadModal: { isOpen: false }
+  WaitForDownloadModal: { isOpen: false },
+  ArtistPick: { isOpen: false }
 }
 
 const slice = createSlice({

@@ -23,20 +23,16 @@ import {
   Scrollbar,
   IconClose,
   IconSearch,
-  IconButton
+  IconButton,
+  TextInput,
+  Flex,
+  Box
 } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
-import {
-  InputV2,
-  InputV2Size,
-  InputV2Variant
-} from 'components/data-entry/InputV2'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-
-import styles from './SearchUsersModal.module.css'
 
 const messages = {
   searchUsers: 'Search Users'
@@ -140,23 +136,26 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
   }, [lastSearchQuery, setQuery])
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      onClosed={onClosed}
+      size='small'
+    >
       <ModalHeader onClose={handleCancel}>
         <ModalTitle {...titleProps}></ModalTitle>
       </ModalHeader>
-      <div className={styles.modalContent}>
-        <div className={styles.search}>
-          <InputV2
-            inputRef={(el) => el?.focus()}
-            variant={InputV2Variant.ELEVATED_PLACEHOLDER}
+      <Flex direction='column' h={690}>
+        <Box p='xl'>
+          <TextInput
+            autoFocus
             label={messages.searchUsers}
-            size={InputV2Size.LARGE}
             value={query}
             onChange={handleChange}
-          >
-            {query ? (
+            endAdornment={
               <IconButton
-                icon={IconClose}
+                icon={query ? IconClose : IconSearch}
+                css={{ pointerEvents: query ? 'auto' : 'none' }}
                 color='subdued'
                 size='m'
                 aria-label='Clear Search'
@@ -164,13 +163,11 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
                   setQuery('')
                 }}
               />
-            ) : (
-              <IconSearch className={styles.iconLight} />
-            )}
-          </InputV2>
-        </div>
+            }
+          />
+        </Box>
         <Scrollbar
-          className={styles.results}
+          css={{ flex: 1 }}
           containerRef={(containerRef) => {
             scrollParentRef.current = containerRef
           }}
@@ -181,7 +178,16 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
             initialLoad
             hasMore={hasQuery ? hasMore : defaultUserList.hasMore}
             getScrollParent={() => scrollParentRef.current}
-            loader={<LoadingSpinner className={styles.spinner} />}
+            loader={
+              <LoadingSpinner
+                css={(theme) => ({
+                  width: theme.spacing.unit12,
+                  height: theme.spacing.unit12,
+                  marginBlock: theme.spacing.l,
+                  marginInline: 'auto'
+                })}
+              />
+            }
             threshold={48}
           >
             {!hasQuery &&
@@ -191,7 +197,7 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
               : users.map((user) => renderUser(user, handleClose))}
           </InfiniteScroll>
         </Scrollbar>
-      </div>
+      </Flex>
     </Modal>
   )
 }

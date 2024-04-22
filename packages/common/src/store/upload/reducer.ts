@@ -7,17 +7,21 @@ import {
   UPLOAD_TRACKS_REQUESTED,
   UPLOAD_TRACKS_SUCCEEDED,
   UPLOAD_TRACKS_FAILED,
-  UPLOAD_SINGLE_TRACK_FAILED,
   UPDATE_PROGRESS,
   RESET,
   RESET_STATE,
   UNDO_RESET_STATE,
   uploadTracksRequested,
   uploadTracksSucceeded,
-  updateProgress,
-  uploadSingleTrackFailed
+  updateProgress
 } from './actions'
-import { ProgressStatus, UploadState, UploadTrack } from './types'
+import {
+  ProgressState,
+  ProgressStatus,
+  UploadState,
+  TrackForUpload,
+  UploadType
+} from './types'
 
 const initialState: UploadState = {
   openMultiTrackNotification: true,
@@ -40,7 +44,7 @@ const initialState: UploadState = {
   error: false
 }
 
-const initialUploadState = {
+const initialUploadState: ProgressState = {
   art: {
     status: ProgressStatus.UPLOADING,
     loaded: 0,
@@ -52,13 +56,15 @@ const initialUploadState = {
     loaded: 0,
     total: 0,
     transcode: 0
-  }
+  },
+  stems: []
 }
-const getInitialProgress = (upload: UploadTrack | StemUploadWithFile) => {
+const getInitialProgress = (upload: TrackForUpload | StemUploadWithFile) => {
   const res = cloneDeep(initialUploadState)
   res.art.total =
     'artwork' in upload.metadata ? upload.metadata.artwork?.file?.size ?? 0 : 0
   res.audio.total = upload.file?.size ?? 0
+  res.stems = upload.metadata.stems?.map(getInitialProgress) ?? []
   return res
 }
 
@@ -77,15 +83,18 @@ const actionsMap = {
     action: ReturnType<typeof uploadTracksRequested>
   ) {
     const newState = { ...state }
+    const { tracks, uploadType } = action.payload
     newState.uploading = true
-    newState.tracks = action.tracks
-    newState.uploadProgress = action.tracks
-      .map(getInitialProgress)
-      .concat(action.stems?.map((t) => t.map(getInitialProgress)).flat(1) ?? [])
-    newState.metadata = action.metadata ?? null
-    newState.uploadType = action.uploadType ?? null
-    newState.stems = action.stems ?? newState.stems
+    newState.tracks = tracks ?? null
+    newState.uploadProgress = tracks?.map(getInitialProgress)
+    newState.metadata =
+      action.payload.uploadType === UploadType.ALBUM ||
+      action.payload.uploadType === UploadType.PLAYLIST
+        ? action.payload.metadata
+        : null
+    newState.uploadType = uploadType ?? null
     newState.error = false
+    newState.success = false
     return newState
   },
   [UPLOAD_TRACKS_SUCCEEDED](
@@ -105,9 +114,13 @@ const actionsMap = {
       newState.tracks =
         state.tracks?.map((t, i) => ({
           ...t,
-          metadata: trackMetadatas[i]
+          metadata: {
+            ...t.metadata,
+            ...trackMetadatas[i]
+          }
         })) ?? null
     }
+    newState.completedEntity = action.completedEntity
     return newState
   },
   [UPLOAD_TRACKS_FAILED](state: UploadState) {
@@ -124,19 +137,32 @@ const actionsMap = {
     state: UploadState,
     action: ReturnType<typeof updateProgress>
   ) {
+    const { key, trackIndex, stemIndex, progress } = action.payload
     const newState = { ...state }
-    const key = action.key
     newState.uploadProgress = [...(state.uploadProgress ?? [])]
-    newState.uploadProgress[action.index][key].status = action.progress.status
-    if (action.progress.loaded && action.progress.total) {
-      newState.uploadProgress[action.index][key].loaded = action.progress.loaded
-      newState.uploadProgress[action.index][key].total = action.progress.total
+    if (!newState.uploadProgress[trackIndex]) {
+      newState.uploadProgress[trackIndex] = cloneDeep(initialUploadState)
     }
-    if (action.progress.transcode) {
-      newState.uploadProgress[action.index][key].transcode = Math.max(
-        action.progress.transcode,
-        newState.uploadProgress[action.index][key].transcode ?? 0
+    const prevProgress =
+      stemIndex === null
+        ? newState.uploadProgress[trackIndex]?.[key]
+        : newState.uploadProgress[trackIndex]?.stems[stemIndex][key]
+    const nextProgress = { ...prevProgress }
+    nextProgress.status = progress.status
+    if (progress.loaded && progress.total) {
+      nextProgress.loaded = progress.loaded
+      nextProgress.total = progress.total
+    }
+    if (progress.transcode) {
+      nextProgress.transcode = Math.min(
+        Math.max(progress.transcode, nextProgress.transcode ?? 0),
+        1
       )
+    }
+    if (stemIndex === null) {
+      newState.uploadProgress[trackIndex][key] = nextProgress
+    } else {
+      newState.uploadProgress[trackIndex].stems[stemIndex][key] = nextProgress
     }
     return newState
   },
@@ -156,15 +182,6 @@ const actionsMap = {
     return {
       ...state,
       shouldReset: false
-    }
-  },
-  [UPLOAD_SINGLE_TRACK_FAILED](
-    state: UploadState,
-    action: ReturnType<typeof uploadSingleTrackFailed>
-  ) {
-    return {
-      ...state,
-      failedTrackIndices: [...state.failedTrackIndices, action.index]
     }
   }
 }

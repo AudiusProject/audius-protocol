@@ -9,9 +9,9 @@ import {
   ModalTitle,
   ModalFooter,
   IconMessageBlock,
-  IconInfo
+  IconInfo,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'
@@ -77,18 +77,12 @@ export const BlockUserConfirmationModal = ({
         <HelpCallout icon={<IconInfo />} content={messages.callout} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <Button
-          className={styles.button}
-          type={ButtonType.PRIMARY}
-          text={messages.cancel}
-          onClick={onClose}
-        />
-        <Button
-          className={styles.button}
-          type={ButtonType.DESTRUCTIVE}
-          text={isReportAbuse ? messages.confirmReport : messages.confirmBlock}
-          onClick={handleConfirmClicked}
-        />
+        <Button variant='secondary' onClick={onClose} fullWidth>
+          {messages.cancel}
+        </Button>
+        <Button variant='destructive' onClick={handleConfirmClicked} fullWidth>
+          {isReportAbuse ? messages.confirmReport : messages.confirmBlock}
+        </Button>
       </ModalFooter>
     </Modal>
   )

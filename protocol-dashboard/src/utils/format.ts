@@ -1,10 +1,12 @@
-import numeral from 'numeral'
+import BN from 'bn.js'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
-import { Address } from 'types'
+import numeral from 'numeral'
+
 import AudiusClient from 'services/Audius'
+import { Address } from 'types'
+
 import { TICKER } from './consts'
-import BN from 'bn.js'
 
 dayjs.extend(duration)
 
@@ -70,13 +72,13 @@ export const formatAud = (amount: BN | null) => {
 
 export const formatWeiNumber = (amount: BN | null) => {
   if (!BN.isBN(amount as any)) return ''
-  let aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
+  const aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
   return aud
 }
 
 export const formatWei = (amount: BN | null) => {
   if (!BN.isBN(amount as any)) return ''
-  let aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
+  const aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
   return `${aud} ${TICKER}`
 }
 
@@ -98,29 +100,19 @@ export const leftPadZero = (number: number, desiredLength: number) => {
 
 export const formatShortAud = (amount: BN | null) => {
   if (!amount) return ''
-  let aud = amount.div(new BN('1000000000000000000')).toNumber()
+  const aud = amount.div(new BN('1000000000000000000')).toNumber()
   if (aud >= 1000) {
     const countStr = aud.toString()
     if (countStr.length % 3 === 0) {
-      return numeral(aud)
-        .format('0a')
-        .toUpperCase()
+      return numeral(aud).format('0a').toUpperCase()
     } else if (countStr.length % 3 === 1 && countStr[2] !== '0') {
-      return numeral(aud)
-        .format('0.00a')
-        .toUpperCase()
+      return numeral(aud).format('0.00a').toUpperCase()
     } else if (countStr.length % 3 === 1 && countStr[1] !== '0') {
-      return numeral(aud)
-        .format('0.0a')
-        .toUpperCase()
+      return numeral(aud).format('0.0a').toUpperCase()
     } else if (countStr.length % 3 === 2 && countStr[2] !== '0') {
-      return numeral(aud)
-        .format('0.0a')
-        .toUpperCase()
+      return numeral(aud).format('0.0a').toUpperCase()
     } else {
-      return numeral(aud)
-        .format('0a')
-        .toUpperCase()
+      return numeral(aud).format('0a').toUpperCase()
     }
   } else if (!aud) {
     return '0'
@@ -177,11 +169,18 @@ export const getShortDate = (ms: number) => {
   const date = new Date(ms)
   const month = date.getUTCMonth()
   const day = date.getUTCDate()
-  return `${day} ${months[month]}`
+  return `${months[month]} ${day}`
 }
 
 export const getShortMonth = (ms: number) => {
   const date = new Date(ms)
   const month = date.getUTCMonth()
   return months[month]
+}
+
+export const getShortMonthAndYear = (ms: number) => {
+  const date = new Date(ms)
+  const month = date.getUTCMonth()
+  const year = date.getUTCFullYear()
+  return `${months[month]} ‘${year.toString(10).slice(-2)}`
 }

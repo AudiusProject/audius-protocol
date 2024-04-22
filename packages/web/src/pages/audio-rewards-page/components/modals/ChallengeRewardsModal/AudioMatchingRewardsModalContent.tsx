@@ -1,6 +1,9 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useAudioMatchingChallengeCooldownSchedule } from '@audius/common/hooks'
+import {
+  formatCooldownChallenges,
+  useChallengeCooldownSchedule
+} from '@audius/common/hooks'
 import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
 import { challengesSelectors } from '@audius/common/store'
 import {
@@ -94,11 +97,11 @@ export const AudioMatchingRewardsModalContent = ({
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const {
-    cooldownChallenges,
     claimableAmount,
-    cooldownChallengesSummary,
+    cooldownChallenges,
+    summary,
     isEmpty: isCooldownChallengesEmpty
-  } = useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
+  } = useChallengeCooldownSchedule({ challengeId: challenge?.challenge_id })
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
@@ -140,6 +143,22 @@ export const AudioMatchingRewardsModalContent = ({
     onNavigateAway()
   }, [challengeName, onNavigateAway, navigateToPage])
 
+  const formatLabel = useCallback((item: any) => {
+    const { label, claimableDate, isClose } = item
+    const formattedLabel = isClose ? (
+      label
+    ) : (
+      <Text>
+        {label}&nbsp;
+        <Text color='subdued'>{claimableDate.format('(M/D)')}</Text>
+      </Text>
+    )
+    return {
+      ...item,
+      label: formattedLabel
+    }
+  }, [])
+
   return (
     <div className={wm(cn(styles.container, styles.audioMatchingContainer))}>
       {isMobile ? (
@@ -162,8 +181,10 @@ export const AudioMatchingRewardsModalContent = ({
           {!isCooldownChallengesEmpty ? (
             <SummaryTable
               title={messages.upcomingRewards}
-              items={cooldownChallenges}
-              summaryItem={cooldownChallengesSummary}
+              items={formatCooldownChallenges(cooldownChallenges).map(
+                formatLabel
+              )}
+              summaryItem={summary}
               secondaryTitle={messages.audio}
               summaryLabelColor='accent'
               summaryValueColor='default'

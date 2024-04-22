@@ -108,12 +108,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       '&:hover': secondaryHoverStyles,
       '&:active': secondaryHoverStyles,
 
-      ...((_isHovered || _isPressed) && secondaryHoverStyles),
-      ...(isDisabled && {
-        backgroundColor: themeColors.neutral.n150,
-        color: themeColors.static.white,
-        boxShadow: 'none'
-      })
+      ...((_isHovered || _isPressed) && secondaryHoverStyles)
     }
 
     const tertiaryHoverStyles: CSSObject = {
@@ -138,10 +133,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       '&:active': tertiaryActiveStyles,
 
       ...(_isHovered && tertiaryHoverStyles),
-      ...(_isPressed && tertiaryActiveStyles),
-      ...(isDisabled && {
-        opacity: 0.45
-      })
+      ...(_isPressed && tertiaryActiveStyles)
     }
 
     const destructiveHoverStyles: CSSObject = {
@@ -156,10 +148,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       '&:hover': destructiveHoverStyles,
       '&:active': destructiveHoverStyles,
 
-      ...((_isHovered || _isPressed) && destructiveHoverStyles),
-      ...(isDisabled && {
-        opacity: 0.45
-      })
+      ...((_isHovered || _isPressed) && destructiveHoverStyles)
     }
 
     const hoverStyles: CSSObject = {
@@ -213,6 +202,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ':active': activeStyles,
         ...(_isHovered && hoverStyles),
         ...(_isPressed && activeStyles)
+      }),
+
+      ...(isDisabled && {
+        opacity: 0.45
       })
     }
 

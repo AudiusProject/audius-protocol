@@ -1,5 +1,5 @@
-import { OpenSeaClient, SolanaClient } from '@audius/common/services'
 import type { CommonStoreContext } from '@audius/common/store'
+import { FetchNFTClient } from '@audius/fetch-nft'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Sentry from '@sentry/react-native'
 
@@ -38,9 +38,17 @@ export const storeContext: CommonStoreContext = {
   isElectron: false,
   env,
   explore,
-  solanaClient: new SolanaClient({
-    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: env.METADATA_PROGRAM_ID
+  nftClient: new FetchNFTClient({
+    openSeaConfig: {
+      apiEndpoint: env.OPENSEA_API_URL
+    },
+    heliusConfig: {
+      apiEndpoint: env.HELIUS_DAS_API_URL
+    },
+    solanaConfig: {
+      rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+      metadataProgramId: env.METADATA_PROGRAM_ID
+    }
   }),
   sentry: Sentry,
   reportToSentry,
@@ -50,7 +58,6 @@ export const storeContext: CommonStoreContext = {
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
-  openSeaClient: new OpenSeaClient(env.OPENSEA_API_URL!),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

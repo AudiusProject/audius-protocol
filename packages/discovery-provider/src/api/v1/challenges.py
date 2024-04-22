@@ -256,7 +256,7 @@ class ChallengeInfo(Resource):
                     "step_count": challenge.step_count,
                     "starting_block": challenge.starting_block,
                     "weekly_pool": challenge.weekly_pool,
-                    "weekly_pool_remaining": weekly_pool_remaining,
+                    "weekly_pool_remaining": float(weekly_pool_remaining),
                     "cooldown_days": challenge.cooldown_days,
                 }
                 if (

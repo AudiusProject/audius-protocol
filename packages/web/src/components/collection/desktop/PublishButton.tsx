@@ -4,17 +4,12 @@ import {
   collectionPageSelectors,
   CommonState
 } from '@audius/common/store'
-import { IconRocket } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { ButtonProps, IconRocket, Button } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tooltip } from 'components/tooltip'
 
-import { EntityActionButton } from '../../entity-page/EntityActionButton'
-
-import styles from './CollectionHeader.module.css'
 import { PublishConfirmationModal } from './PublishConfirmationModal'
 
 const { getCollection } = collectionPageSelectors
@@ -46,26 +41,20 @@ export const PublishButton = (props: PublishButtonProps) => {
   const isDisabled = !track_count || track_count === 0 || hasHiddenTracks
 
   const publishButtonElement = (
-    <EntityActionButton
-      type={_is_publishing ? ButtonType.DISABLED : ButtonType.COMMON}
-      text={
-        _is_publishing ? (
-          <span>{messages.publishing}&#8230;</span>
-        ) : (
-          messages.publish
-        )
-      }
-      leftIcon={
-        _is_publishing ? (
-          <LoadingSpinner className={styles.spinner} />
-        ) : (
-          <IconRocket />
-        )
-      }
-      onClick={_is_publishing ? undefined : toggleIsConfirming}
+    <Button
+      variant='secondary'
+      iconLeft={IconRocket}
+      onClick={toggleIsConfirming}
       disabled={isDisabled}
+      isLoading={_is_publishing}
       {...other}
-    />
+    >
+      {_is_publishing ? (
+        <span>{messages.publishing}&#8230;</span>
+      ) : (
+        messages.publish
+      )}
+    </Button>
   )
 
   return (

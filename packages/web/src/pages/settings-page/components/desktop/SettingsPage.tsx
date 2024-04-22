@@ -13,6 +13,7 @@ import {
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import {
+  Button,
   Modal,
   IconAppearance,
   SegmentedControl,
@@ -24,9 +25,13 @@ import {
   IconVerified,
   IconEmailAddress,
   IconKey,
-  IconMessage
+  IconMessage,
+  ModalHeader,
+  ModalTitle,
+  ModalContent,
+  ModalContentText,
+  ModalFooter
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
@@ -34,7 +39,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ChangeEmailModal } from 'components/change-email/ChangeEmailModal'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
-import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import Toast from 'components/toast/Toast'
@@ -55,6 +59,7 @@ import {
 import packageInfo from '../../../../../package.json'
 
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
+import { ManagerModeSettingsCard } from './ManagerMode/ManagerModeSettingsCard'
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
@@ -62,11 +67,6 @@ import VerificationModal from './VerificationModal'
 
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
-
-const SIGN_OUT_MODAL_TEXT = `
-  Are you sure you want to sign out?
-  Double check that you have an account recovery email just in case (resend from your settings).
-`
 
 const EMAIL_TOAST_TIMEOUT = 2000
 
@@ -119,7 +119,11 @@ const messages = {
   changeEmailButtonText: 'Change Email',
   changePasswordButtonText: 'Change Password',
   desktopAppButtonText: 'Get The App',
-  showPrivateKey: 'Show Private Key (Advanced)'
+  showPrivateKey: 'Show Private Key (Advanced)',
+  signOutModalText: `
+  Are you sure you want to sign out?
+  Double check that you have an account recovery email just in case (resend from your settings).
+`
 }
 
 export type SettingsPageProps = {
@@ -305,6 +309,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const { isEnabled: areDeveloperAppsEnabled } = useFlag(
     FeatureFlags.DEVELOPER_APPS_PAGE
   )
+  const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
 
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
@@ -348,12 +353,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
             description={messages.inboxSettingsCardDescription}
           >
             <Button
+              variant='secondary'
               onClick={openInboxSettingsModal}
-              className={styles.cardButton}
-              textClassName={styles.settingButtonText}
-              type={ButtonType.COMMON_ALT}
-              text={messages.inboxSettingsButtonText}
-            />
+              fullWidth
+            >
+              {messages.inboxSettingsButtonText}
+            </Button>
           </SettingsCard>
         ) : null}
         <SettingsCard
@@ -362,12 +367,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
           description={messages.notificationsCardDescription}
         >
           <Button
+            variant='secondary'
             onClick={openNotificationSettings}
-            className={styles.cardButton}
-            textClassName={styles.settingButtonText}
-            type={ButtonType.COMMON_ALT}
-            text={messages.notificationsButtonText}
-          />
+            fullWidth
+          >
+            {messages.notificationsButtonText}
+          </Button>
         </SettingsCard>
         <SettingsCard
           icon={<IconMail />}
@@ -381,13 +386,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
             placement={ComponentPlacement.BOTTOM}
             fillParent={false}
           >
-            <Button
-              onClick={showEmailToast}
-              className={styles.cardButton}
-              textClassName={styles.settingButtonText}
-              type={ButtonType.COMMON_ALT}
-              text={messages.accountRecoveryButtonText}
-            />
+            <Button onClick={showEmailToast} variant='secondary' fullWidth>
+              {messages.accountRecoveryButtonText}
+            </Button>
           </Toast>
         </SettingsCard>
         <SettingsCard
@@ -395,13 +396,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
           title={messages.changeEmailCardTitle}
           description={messages.changeEmailCardDescription}
         >
-          <Button
-            onClick={openChangeEmailModal}
-            className={cn(styles.cardButton, styles.changePasswordButton)}
-            textClassName={styles.settingButtonText}
-            type={ButtonType.COMMON_ALT}
-            text={messages.changeEmailButtonText}
-          />
+          <Button onClick={openChangeEmailModal} variant='secondary' fullWidth>
+            {messages.changeEmailButtonText}
+          </Button>
         </SettingsCard>
         <SettingsCard
           icon={<IconKey />}
@@ -410,11 +407,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
         >
           <Button
             onClick={openChangePasswordModal}
-            className={cn(styles.cardButton, styles.changePasswordButton)}
-            textClassName={styles.settingButtonText}
-            type={ButtonType.COMMON_ALT}
-            text={messages.changePasswordButtonText}
-          />
+            variant='secondary'
+            fullWidth
+          >
+            {messages.changePasswordButtonText}
+          </Button>
         </SettingsCard>
         {isAiAttributionEnabled ? (
           <SettingsCard
@@ -429,11 +426,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
             ) : null}
             <Button
               onClick={openAiAttributionSettingsModal}
-              className={styles.cardButton}
-              textClassName={styles.settingButtonText}
-              type={ButtonType.COMMON_ALT}
-              text={messages.aiGeneratedButtonText}
-            />
+              variant='secondary'
+              fullWidth
+            >
+              {messages.aiGeneratedButtonText}
+            </Button>
           </SettingsCard>
         ) : null}
         <SettingsCard
@@ -461,26 +458,25 @@ export const SettingsPage = (props: SettingsPageProps) => {
           >
             <Button
               onClick={handleDownloadDesktopAppClicked}
-              className={styles.cardButton}
-              textClassName={styles.settingButtonText}
-              type={ButtonType.COMMON_ALT}
-              text={messages.desktopAppButtonText}
-            />
+              variant='secondary'
+              fullWidth
+            >
+              {messages.desktopAppButtonText}
+            </Button>
           </SettingsCard>
         ) : null}
         {areDeveloperAppsEnabled ? <DeveloperAppsSettingsCard /> : null}
+        {isManagerModeEnabled ? <ManagerModeSettingsCard /> : null}
       </div>
       <div className={styles.version}>
         <Button
-          className={styles.signOutButton}
-          textClassName={styles.signOutButtonText}
-          iconClassName={styles.signOutButtonIcon}
-          type={ButtonType.COMMON_ALT}
-          text={messages.signOut}
-          name='sign-out'
-          leftIcon={<IconSignOut />}
+          variant='secondary'
+          iconLeft={IconSignOut}
           onClick={openSignOutModal}
-        />
+          css={(theme) => ({ marginBottom: theme.spacing.l })}
+        >
+          {messages.signOut}
+        </Button>
         <span>{`${messages.version} ${version}`}</span>
         <span>
           {messages.copyright} -{' '}
@@ -511,27 +507,30 @@ export const SettingsPage = (props: SettingsPageProps) => {
         </Link>
       </div>
       <Modal
-        title={
-          <>
-            Hold Up! <i className='emoji waving-hand-sign' />
-          </>
-        }
         isOpen={isSignOutModalVisible}
         onClose={closeSignOutModal}
-        showTitleHeader
-        showDismissButton
-        bodyClassName={styles.modalBody}
-        headerContainerClassName={styles.modalHeader}
-        titleClassName={styles.modalTitle}
+        size='small'
       >
-        <ConfirmationBox
-          text={SIGN_OUT_MODAL_TEXT}
-          rightText='NEVERMIND'
-          leftText='SIGN OUT'
-          leftName='confirm-sign-out'
-          rightClick={closeSignOutModal}
-          leftClick={handleSignOut}
-        />
+        <ModalHeader>
+          <ModalTitle
+            title={
+              <>
+                Hold Up! <i className='emoji waving-hand-sign' />
+              </>
+            }
+          />
+        </ModalHeader>
+        <ModalContent>
+          <ModalContentText>{messages.signOutModalText}</ModalContentText>
+          <ModalFooter>
+            <Button variant='secondary' onClick={closeSignOutModal} fullWidth>
+              Nevermind
+            </Button>
+            <Button variant='primary' onClick={handleSignOut} fullWidth>
+              Sign Out
+            </Button>
+          </ModalFooter>
+        </ModalContent>
       </Modal>
       <ChangePasswordModal
         isOpen={isChangePasswordModalVisible}

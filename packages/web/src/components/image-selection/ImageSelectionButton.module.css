@@ -14,14 +14,6 @@
   margin: 4px auto;
 }
 
-.button {
-  height: 40px !important;
-  box-sizing: content-box;
-  border-radius: 6px;
-  opacity: 1;
-  transition: all 0.07s ease-in-out;
-}
-
 .hide {
   opacity: 0;
   cursor: default;

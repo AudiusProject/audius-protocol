@@ -56,8 +56,14 @@ const {
   error: errorAction
 } = playerActions
 
-const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
-  playerSelectors
+const {
+  getTrackId,
+  getUid,
+  getCounter,
+  getPlaying,
+  getPlaybackRate,
+  getPreviewing
+} = playerSelectors
 
 const { recordListen } = tracksSocialActions
 const { getTrack } = cacheTracksSelectors
@@ -94,7 +100,7 @@ export function* watchPlay() {
         return
       }
 
-      yield* waitForWrite()
+      yield* call(waitForWrite)
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
 
@@ -261,11 +267,14 @@ export function* watchReset() {
     } else {
       const playerUid = yield* select(getUid)
       const playerTrackId = yield* select(getTrackId)
+      const isPreviewing = yield* select(getPreviewing)
       if (playerUid && playerTrackId) {
         yield* put(
           play({
             uid: playerUid,
             trackId: playerTrackId,
+            // NOTE: isPreviewing can be passed as isPreview here bc we are restarting the track
+            isPreview: isPreviewing,
             onEnd: queueActions.next
           })
         )

@@ -37,7 +37,9 @@ import {
   UnsubscribeFromUserSchema,
   UpdateProfileSchema,
   SendTipRequest,
-  SendTipSchema
+  SendTipSchema,
+  SendTipReactionRequest,
+  SendTipReactionRequestSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -339,6 +341,34 @@ export class UsersApi extends GeneratedUsersApi {
       instructions: [secp, transfer]
     })
     return await this.claimableTokens.sendTransaction(transaction)
+  }
+
+  /**
+   * Submits a reaction to a tip being received.
+   * @hidden
+   */
+  async sendTipReaction(
+    params: SendTipReactionRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Parse inputs
+    const { userId, metadata } = await parseParams(
+      'sendTipReaction',
+      SendTipReactionRequestSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TIP,
+      entityId: userId,
+      action: Action.UPDATE,
+      auth: this.auth,
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys(metadata)
+      }),
+      ...advancedOptions
+    })
   }
 
   /**

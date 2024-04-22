@@ -1,14 +1,12 @@
 import React, { useCallback, useRef } from 'react'
 
 import { Name, ShareSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   usersSocialActions,
-  shareModalUISelectors,
-  shareSoundToTiktokModalActions
+  shareModalUISelectors
 } from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Linking } from 'react-native'
@@ -26,7 +24,6 @@ import {
 } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { make, track } from 'app/services/analytics'
@@ -43,7 +40,6 @@ import { useShareToStory } from './useShareToStory'
 import { getContentUrl, getTwitterShareUrl } from './utils'
 
 const { getShareContent, getShareSource } = shareModalUISelectors
-const { requestOpen: requestOpenTikTokModal } = shareSoundToTiktokModalActions
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
@@ -76,9 +72,6 @@ export const ShareDrawer = () => {
   const viewShotRef = useRef() as React.RefObject<ViewShot>
   const navigation = useNavigation<AppTabScreenParamList>()
 
-  const { isEnabled: isShareSoundToTikTokEnabled } = useFeatureFlag(
-    FeatureFlags.SHARE_SOUND_TO_TIKTOK
-  )
   const { onClose } = useDrawerState('Share')
   const { onClose: onCloseNowPlaying } = useDrawer('NowPlaying')
 
@@ -119,12 +112,6 @@ export const ShareDrawer = () => {
       console.error(`Can't open: ${twitterShareUrl}`)
     }
   }, [content])
-
-  const handleShareSoundToTikTok = useCallback(() => {
-    if (content?.type === 'track') {
-      dispatch(requestOpenTikTokModal({ id: content.track.track_id }))
-    }
-  }, [content, dispatch])
 
   const {
     handleShareToStoryStickerLoad,
@@ -170,10 +157,6 @@ export const ShareDrawer = () => {
     !content.track.is_delete &&
     !isStreamGatedTrack
 
-  const shouldIncludeTikTokSoundAction = Boolean(
-    isShareSoundToTikTokEnabled && isOwner && isShareableTrack
-  )
-
   const performActionAndClose = useCallback(
     (action: () => void) => {
       return () => {
@@ -195,12 +178,6 @@ export const ShareDrawer = () => {
       icon: <IconTwitter fill={secondary} height={20} width={26} />,
       text: messages.twitter,
       callback: performActionAndClose(handleShareToTwitter)
-    }
-
-    const shareSoundToTiktokAction = {
-      text: messages.tikTokSound,
-      icon: <IconTikTok height={26} width={26} />,
-      callback: performActionAndClose(handleShareSoundToTikTok)
     }
 
     const shareVideoToTiktokAction = {
@@ -240,10 +217,6 @@ export const ShareDrawer = () => {
       callback: (() => void) | (() => Promise<void>)
     }[] = [shareToChatAction]
 
-    if (shouldIncludeTikTokSoundAction) {
-      result.push(shareSoundToTiktokAction)
-    }
-
     if (isShareableTrack) {
       result.push(shareToTwitterAction)
       result.push(shareToInstagramStoriesAction)
@@ -259,13 +232,11 @@ export const ShareDrawer = () => {
     performActionAndClose,
     handleShareToDirectMessage,
     handleShareToTwitter,
-    handleShareSoundToTikTok,
     handleShareVideoToTiktok,
     handleCopyLink,
     handleOpenShareSheet,
     handleShareToSnapchat,
     handleShareToInstagramStory,
-    shouldIncludeTikTokSoundAction,
     isShareableTrack
   ])
 

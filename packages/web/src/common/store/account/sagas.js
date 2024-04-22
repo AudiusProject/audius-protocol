@@ -192,13 +192,31 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 
 export function* fetchLocalAccountAsync() {
   const localStorage = yield getContext('localStorage')
+  const audiusBackendInstance = yield getContext('audiusBackendInstance')
 
   yield put(accountActions.fetchAccountRequested())
 
+  const audiusLibs = yield call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  const wallet = yield call([
+    audiusLibs.web3Manager,
+    audiusLibs.web3Manager.getWalletAddress
+  ])
   const cachedAccount = yield call([localStorage, 'getAudiusAccount'])
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
   const currentUserExists = yield call([localStorage, 'getCurrentUserExists'])
-  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
+
+  const walletMatches =
+    wallet.toLowerCase() === cachedAccountUser?.wallet.toLowerCase()
+
+  if (
+    cachedAccount &&
+    cachedAccountUser &&
+    !cachedAccountUser.is_deactivated &&
+    walletMatches
+  ) {
     yield call(
       cacheAccount,
       { ...cachedAccountUser, local: true },

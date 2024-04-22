@@ -5,7 +5,7 @@ import {
   BadgeTierInfo
 } from '@audius/common/store'
 
-import { audioTierMapSVG } from 'components/user-badges/UserBadges'
+import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
 import { fullProfilePage } from 'utils/route'
 
@@ -35,8 +35,8 @@ const tierInfoMap = {
   none: { label: 'None', icon: '', amount: 0 },
   bronze: { label: 'Bronze', icon: '🥉', amount: 10 },
   silver: { label: 'Silver', icon: '🥈', amount: 100 },
-  gold: { label: 'Gold', icon: '🥇', amount: 10000 },
-  platinum: { label: 'Platinum', icon: '🥇', amount: 100000 }
+  gold: { label: 'Gold', icon: '🥇', amount: 1000 },
+  platinum: { label: 'Platinum', icon: '🥇', amount: 10000 }
 }
 
 type TierChangeNotificationProps = {
@@ -62,7 +62,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
 
   return (
     <NotificationTile notification={notification}>
-      <NotificationHeader icon={<IconTier>{audioTierMapSVG[tier]}</IconTier>}>
+      <NotificationHeader icon={<IconTier>{audioTierMapPng[tier]}</IconTier>}>
         <NotificationTitle className={styles.title}>
           {tier} {messages.unlocked}
         </NotificationTitle>

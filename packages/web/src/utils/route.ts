@@ -302,6 +302,18 @@ export const staticRoutes = new Set([
   EMPTY_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
+  ...SIGN_ON_ALIASES,
+  SIGN_UP_EMAIL_PAGE,
+  SIGN_UP_PASSWORD_PAGE,
+  SIGN_UP_CREATE_LOGIN_DETAILS,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_REVIEW_HANDLE_PAGE,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_GENRES_PAGE,
+  SIGN_UP_ARTISTS_PAGE,
+  SIGN_UP_APP_CTA_PAGE,
+  SIGN_UP_LOADING_PAGE,
+  SIGN_UP_COMPLETED_REDIRECT,
   NOTIFICATION_PAGE,
   APP_REDIRECT,
   REPOSTING_USERS_ROUTE,
@@ -355,7 +367,7 @@ export const fullAlbumPage = (handle: string, title: string, id: ID) => {
 }
 
 export const collectionPage = (
-  handle: string,
+  handle?: string | null,
   playlistName?: string | null,
   playlistId?: ID | null,
   permalink?: string | null,
@@ -364,7 +376,7 @@ export const collectionPage = (
   // Prioritize permalink if available. If not, default to legacy routing
   if (permalink) {
     return permalink
-  } else if (playlistName && playlistId) {
+  } else if (playlistName && playlistId && handle) {
     const collectionType = isAlbum ? 'album' : 'playlist'
     return `/${encodeUrlName(handle)}/${collectionType}/${encodeUrlName(
       playlistName

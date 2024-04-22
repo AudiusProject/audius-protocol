@@ -8,6 +8,7 @@ setup: true
 orbs:
   continuation: circleci/continuation@0.3.1
   path-filtering: circleci/path-filtering@0.1.1
+  slack: circleci/slack@4.12.0
 
 parameters:
   workflow:
@@ -71,20 +72,21 @@ jobs:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
             - ./node_modules
+            - ./protocol-dashboard/node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
-            - ./packages/probers/node_modules
             - ./packages/embed/node_modules
-            - ./packages/stems/node_modules
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex/node_modules
-            - ./packages/ddex/webapp/node_modules
+            - ./packages/ddex/webapp/client/node_modules
+            - ./packages/ddex/webapp/server/node_modules
             - ./packages/ddex/publisher/node_modules
             - ./packages/trpc-server/node_modules
+            - ./packages/create-audius-app/node_modules
             - ./packages/dotenv-linter/bin
 
   generate-release-branch:
@@ -105,8 +107,6 @@ jobs:
       - run:
           name: Create + push branch
           command: |
-            git checkout main
-
             OLD_VERSION=$(jq -r .version packages/discovery-provider/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
@@ -120,8 +120,17 @@ jobs:
             mv /tmp/.version.json packages/discovery-provider/.version.json
             git add packages/discovery-provider/.version.json
 
+            PROTOCOL_DIRS=$(bash ./scripts/get-release-dirs.sh protocol)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short protocol-v${OLD_VERSION}..HEAD -- ${PROTOCOL_DIRS})
+            MESSAGE="Audius Protocol v${NEW_VERSION}
+
+            ${CHANGELOG}"
+            git commit -m "${MESSAGE}"
+
+            git tag protocol-v${NEW_VERSION}
+            git push origin protocol-v${NEW_VERSION}
+
             # Weird way to push both to main and the new release branch
-            git commit -m "Bump version to $NEW_VERSION"
             git branch "release-v$NEW_VERSION"
             git checkout "release-v$NEW_VERSION"
             git push --set-upstream origin main "release-v$NEW_VERSION"
@@ -321,12 +330,13 @@ jobs:
             git config --global user.email "audius-infra@audius.co"
             git config --global user.name "audius-infra"
             PREV_VERSION=$(jq -r .version ./package.json)
-            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${PREV_VERSION}..HEAD)
+            CLIENT_DIRS=$(bash ./scripts/get-release-dirs.sh client)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short client-v${PREV_VERSION}..HEAD -- ${CLIENT_DIRS})
             npm i --ignore-scripts
-            npm version patch -ws --include-workspace-root --no-git-tag-version
+            npm version patch -w audius-client -w audius-mobile-client --include-workspace-root --no-git-tag-version
             git add .
             VERSION=$(jq -r .version ./package.json)
-            MESSAGE="v${VERSION}
+            MESSAGE="Audius Client (Web and Mobile) v${VERSION}
 
             ${CHANGELOG}"
             git commit -m "${MESSAGE}"
@@ -422,6 +432,23 @@ jobs:
               fi
             ) || handle_error
 
+  notify-pipeline-status:
+    working_directory: ~/audius-protocol
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
+    steps:
+      - checkout
+      - run:
+          name: Wait For Pipeline
+          command: bash .circleci/scripts/wait-for-pipeline.sh
+      - run:
+          name: Generate Slack Template
+          command: bash .circleci/scripts/generate-slack-template.sh
+      - slack/notify:
+          channel: 'C06SP746DA7'
+          template: PIPELINE_STATUS_TEMPLATE
+
 workflows:
   setup:
     when:
@@ -446,6 +473,8 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/webapp/.* run-ddex-e2e-workflow true
+            packages/ddex/ingester/.* run-ddex-e2e-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
@@ -457,13 +486,13 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-ddex-webapp-workflow true
+            .circleci/.* run-ddex-e2e-workflow true
             .circleci/.* run-ddex-publisher-workflow true
             .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
-            .circleci/.* run-stems-workflow true
             .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
             package-lock.json run-sdk-workflow true
@@ -473,18 +502,14 @@ workflows:
             packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
-            packages/probers/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
-            packages/stems/.* run-stems-workflow true
-            packages/stems/.* run-web-workflow true
             packages/harmony/.* run-harmony-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
-            packages/eslint-config-audius/.* run-stems-workflow true
             packages/eslint-config-audius/.* run-harmony-workflow true
             packages/libs/.* run-creator-workflow true
             packages/libs/.* run-identity-workflow true
@@ -495,6 +520,8 @@ workflows:
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
             packages/libs/.* run-embed-workflow true
+            packages/libs/.* run-create-audius-app-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
           requires:
             - generate-config
             - init
@@ -516,9 +543,7 @@ workflows:
             .* run-contracts-workflow true
             .* run-release-workflow false
             .* run-sdk-workflow true
-            .* run-stems-workflow true
             .* run-harmony-workflow true
-            .* run-probers-workflow true
             .* run-ddex-stage-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
@@ -530,13 +555,17 @@ workflows:
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
+            packages/libs/.* run-create-audius-app-workflow true
             packages/harmony/.* run-web-workflow true
             packages/harmony/.* run-mobile-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/web/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             packages/ddex/webapp/.* run-ddex-webapp-workflow true
+            packages/ddex/webapp/.* run-ddex-e2e-workflow true
+            packages/ddex/ingester/.* run-ddex-e2e-workflow true
             packages/ddex/publisher/.* run-ddex-publisher-workflow true
+            packages/create-audius-app/.* run-create-audius-app-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:
@@ -572,14 +601,21 @@ workflows:
           mapping: |
             .* run-web-workflow true
             .* run-mobile-workflow true
-            .* run-stems-workflow true
             .* run-harmony-workflow true
-            .* run-probers-workflow false
             .* run-protocol-dashboard-workflow true
           requires:
             - generate-config
             - init
           workspace_path: ../workspace
+
+      - notify-pipeline-status:
+          context:
+            - slack-secrets
+          requires:
+            - trigger-main-workflows
+          filters:
+            branches:
+              only: /^main$/
 
   release-create-branch:
     when:

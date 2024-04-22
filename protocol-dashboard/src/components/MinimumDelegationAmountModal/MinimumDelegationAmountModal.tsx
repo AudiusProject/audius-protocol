@@ -1,25 +1,28 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+
+import { Box, Flex, Text } from '@audius/harmony'
 import { ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 
-import { useUpdateMinimumDelegationAmount } from 'store/actions/updateMinimumDelegationAmount'
-import Modal from 'components/Modal'
 import Button from 'components/Button'
-import TextField from 'components/TextField'
-import styles from './MinimumDelegationAmountModal.module.css'
-import { Status } from 'types'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
-import { useModalControls } from 'utils/hooks'
 import DisplayAudio from 'components/DisplayAudio'
+import Modal from 'components/Modal'
+import TextField from 'components/TextField'
+import { useUpdateMinimumDelegationAmount } from 'store/actions/updateMinimumDelegationAmount'
+import { Status } from 'types'
 import { TICKER } from 'utils/consts'
+import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 
+import styles from './MinimumDelegationAmountModal.module.css'
+
 const messages = {
-  title: 'Minimum Delegation Amount',
-  textLabel: 'MINIMUM DELEGATION AMOUNT',
-  currentLabel: 'Current: ',
+  title: 'Change Minimum Delegation Amount',
+  textLabel: 'MIN DELEGATION AMOUNT',
+  currentLabel: 'Current ',
   btn: 'Change Minimum',
   confirmChange: 'Confirm Change Minimum'
 }
@@ -32,7 +35,9 @@ type OwnProps = {
 
 type MinimumDelegationAmountModalProps = OwnProps
 
-const MinimumDelegationAmountModal: React.FC<MinimumDelegationAmountModalProps> = ({
+const MinimumDelegationAmountModal: React.FC<
+  MinimumDelegationAmountModalProps
+> = ({
   minimumDelegationAmount,
   isOpen,
   onClose
@@ -89,22 +94,30 @@ const MinimumDelegationAmountModal: React.FC<MinimumDelegationAmountModalProps> 
       isCloseable={true}
       dismissOnClickOutside={!isConfirmModalOpen}
     >
-      <div className={styles.content}>
-        <TextField
-          value={minDelegation}
-          onChange={onUpdateMinimumDelegationAmount}
-          label={messages.textLabel}
-          className={styles.input}
-        />
-        <div className={styles.currentLabel}>
-          {messages.currentLabel}
-          <DisplayAudio
-            className={styles.audioLabel}
-            amount={minimumDelegationAmount}
-            label={TICKER}
+      <Flex
+        gap='l'
+        mt='xl'
+        alignItems='flex-end'
+        w='100%'
+        css={{ maxWidth: 420 }}
+      >
+        <Box css={{ flexGrow: 1 }}>
+          <TextField
+            rightLabel={TICKER}
+            value={minDelegation}
+            onChange={onUpdateMinimumDelegationAmount}
+            label={messages.textLabel}
           />
-        </div>
-      </div>
+        </Box>
+        <Flex direction='column' alignItems='flex-end' pb='xl'>
+          <Text variant='heading' size='s'>
+            <DisplayAudio amount={minimumDelegationAmount} />
+          </Text>
+          <Text variant='body' size='m' strength='strong' color='subdued'>
+            {messages.currentLabel}
+          </Text>
+        </Flex>
+      </Flex>
       <Button
         text={messages.btn}
         type={ButtonType.PRIMARY}

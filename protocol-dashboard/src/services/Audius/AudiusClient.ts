@@ -1,35 +1,33 @@
-import ServiceProviderClient from './service-provider/serviceProviderClient'
-import Staking from './staking/staking'
-import AudiusToken from './token/audiusToken'
+import Claim from './claim/claim'
 import Delegate from './delegate/delegate'
 import Governance from './governance/governance'
-import NodeType from './nodeType'
-import Identity from './identity'
-import Claim from './claim/claim'
-
-import { setup } from './setup'
 import {
-  hasPermissions,
   awaitSetup,
-  getEthBlockNumber,
-  getAverageBlockTime,
-  getBNPercentage,
+  decodeCallData,
   displayAud,
   displayShortAud,
   getAud,
-  getWei,
-  getDiscoveryNodeMetadata,
-  getContentNodeMetadata,
-  getEthWallet,
+  getAverageBlockTime,
+  getBNPercentage,
   getBlock,
   getBlockNearTimestamp,
+  getContentNodeMetadata,
+  getDiscoveryNodeMetadata,
+  getEthBlockNumber,
+  getEthWallet,
+  getWei,
+  hasPermissions,
   isEoa,
-  toChecksumAddress,
   onSetup,
   onSetupFinished,
-  decodeCallData,
-  onMetaMaskAccountLoaded
+  onWalletAccountLoaded,
+  toChecksumAddress
 } from './helpers'
+import NodeType from './nodeType'
+import ServiceProviderClient from './service-provider/serviceProviderClient'
+import { setup } from './setup'
+import Staking from './staking/staking'
+import AudiusToken from './token/audiusToken'
 import { getUserDelegates } from './wrappers'
 
 export class AudiusClient {
@@ -41,7 +39,6 @@ export class AudiusClient {
     this.Staking = new Staking(this)
     this.Governance = new Governance(this)
     this.Claim = new Claim(this)
-    this.Identity = new Identity(this)
     this.onSetup()
   }
 
@@ -52,7 +49,6 @@ export class AudiusClient {
   Staking: Staking
   Governance: Governance
   Claim: Claim
-  Identity: Identity
 
   libs: any = {}
   setup = setup
@@ -60,7 +56,7 @@ export class AudiusClient {
   _setupPromiseResolve: undefined | (() => void)
   isSetupPromise: undefined | Promise<void>
 
-  metaMaskAccountLoadedPromise: undefined | Promise<string>
+  walletAccountLoadedPromise: undefined | Promise<string>
   _metaMaskAccountLoadedResolve: undefined | ((account: string | null) => void)
 
   isSetup = false // If the setup is complete
@@ -76,7 +72,7 @@ export class AudiusClient {
 
   onSetup = onSetup
   onSetupFinished = onSetupFinished
-  onMetaMaskAccountLoaded = onMetaMaskAccountLoaded
+  onWalletAccountLoaded = onWalletAccountLoaded
 
   // Wrapper functions
   getUserDelegates = getUserDelegates

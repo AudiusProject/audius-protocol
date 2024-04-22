@@ -9,12 +9,12 @@
 }
 .tagsTitleText {
   margin-left: 6px;
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
 }
 .tagsLine {
   margin-left: 12px;
-  background: var(--neutral-light-7);
+  background: var(--harmony-n-150);
   width: 106px;
   height: 1px;
 }

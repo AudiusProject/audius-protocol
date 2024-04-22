@@ -147,7 +147,7 @@ export const SignUpFlowTikTokAuth = ({
         )
         handleSuccess(profileData, requiresUserReview)
       } catch (e) {
-        console.error(e)
+        onFailure(e)
       }
     })
   }

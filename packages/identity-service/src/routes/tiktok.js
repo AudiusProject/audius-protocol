@@ -4,6 +4,7 @@ const models = require('../models')
 const config = require('../config.js')
 const txRelay = require('../relay/txRelay')
 const querystring = require('querystring')
+const { waitForUser } = require('../utils/waitForUser')
 
 const {
   handleResponse,
@@ -26,7 +27,7 @@ module.exports = function (app) {
       let url = 'https://www.tiktok.com/v2/auth/authorize/'
 
       url += `?client_key=${config.get('tikTokAPIKey')}`
-      url += '&scope=user.info.basic'
+      url += '&scope=user.info.basic,user.info.profile'
       url += '&response_type=code'
       url += `&redirect_uri=${config.get('tikTokAuthOrigin')}`
       url += '&state=' + csrfState
@@ -134,6 +135,7 @@ module.exports = function (app) {
 
         return successResponse({ data: accessTokenResponse.data })
       } catch (err) {
+        req.logger.error(`TikTok access_token error`, err)
         return errorResponseBadRequest(err)
       }
     })
@@ -146,16 +148,20 @@ module.exports = function (app) {
   app.post(
     '/tiktok/associate',
     handleResponse(async (req, res, next) => {
-      const { uuid, userId, handle } = req.body
+      const { uuid, userId, handle, blockNumber } = req.body
+      req.connection.setTimeout(60 * 1000)
       const audiusLibsInstance = req.app.get('audiusLibs')
 
       try {
         const tikTokObj = await models.TikTokUser.findOne({
           where: { uuid: uuid }
         })
-
-        const user = await models.User.findOne({
-          where: { handle }
+        const user = await waitForUser({
+          userId,
+          handle,
+          blockNumber,
+          audiusLibsInstance,
+          logger: req.logger
         })
 
         const isUnassociated = tikTokObj && !tikTokObj.blockchainUserId

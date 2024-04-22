@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { publishTrackConfirmationModalUISelectors } from '@audius/common/store'
 import {
+  Button,
   Modal,
   ModalContent,
   ModalContentText,
@@ -10,12 +11,9 @@ import {
   ModalFooter,
   IconRocket
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
-
-import styles from '../upload-confirmation-modal/UploadConfirmationModal.module.css'
 
 const { getConfirmCallback } = publishTrackConfirmationModalUISelectors
 
@@ -43,31 +41,18 @@ export const PublishTrackConfirmationModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
-        <ModalTitle
-          icon={<IconRocket className={styles.titleIcon} />}
-          title={messages.title}
-        />
+        <ModalTitle icon={<IconRocket />} title={messages.title} />
       </ModalHeader>
       <ModalContent>
-        <ModalContentText className={styles.modalText}>
-          {messages.description}
-        </ModalContentText>
+        <ModalContentText>{messages.description}</ModalContentText>
       </ModalContent>
-      <ModalFooter className={styles.modalFooter}>
-        <Button
-          textClassName={styles.modalButton}
-          fullWidth
-          text={messages.cancel}
-          type={ButtonType.COMMON}
-          onClick={onClose}
-        />
-        <Button
-          textClassName={styles.modalButton}
-          fullWidth
-          text={messages.release}
-          type={ButtonType.PRIMARY}
-          onClick={handleConfirm}
-        />
+      <ModalFooter>
+        <Button fullWidth variant='secondary' onClick={onClose}>
+          {messages.cancel}
+        </Button>
+        <Button variant='primary' fullWidth onClick={handleConfirm}>
+          {messages.release}
+        </Button>
       </ModalFooter>
     </Modal>
   )

@@ -1,5 +1,5 @@
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
-import { FeatureFlags, QueryParams } from '@audius/common/services'
+import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -53,7 +53,7 @@ export function* watchRepostTrack() {
 export function* repostTrackAsync(
   action: ReturnType<typeof socialActions.repostTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
@@ -61,13 +61,17 @@ export function* repostTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  if (userId === action.trackId) {
-    return
-  }
 
   // Increment the repost count on the user
   const user = yield* select(getUser, { id: userId })
   if (!user) return
+
+  const track = yield* select(getTrack, { id: action.trackId })
+  if (!track) return
+
+  if (track.owner_id === userId) {
+    return
+  }
 
   yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
 
@@ -77,9 +81,6 @@ export function* repostTrackAsync(
     id: action.trackId
   })
   yield* put(event)
-
-  const track = yield* select(getTrack, { id: action.trackId })
-  if (!track) return
 
   const repostMetadata = action.isFeed
     ? // If we're on the feed, and someone i follow has
@@ -211,15 +212,12 @@ export function* watchUndoRepostTrack() {
 export function* undoRepostTrackAsync(
   action: ReturnType<typeof socialActions.undoRepostTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  if (userId === action.trackId) {
     return
   }
 
@@ -327,7 +325,7 @@ export function* watchSaveTrack() {
 export function* saveTrackAsync(
   action: ReturnType<typeof socialActions.saveTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.showRequiresAccountModal())
@@ -335,10 +333,6 @@ export function* saveTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  if (userId === action.trackId) {
-    return
-  }
-
   const tracks = yield* select(getTracks, { ids: [action.trackId] })
   const track = tracks[action.trackId]
 
@@ -347,6 +341,10 @@ export function* saveTrackAsync(
   // Increment the save count on the user
   const user = yield* select(getUser, { id: userId })
   if (!user) return
+
+  if (track.owner_id === userId) {
+    return
+  }
 
   yield* call(adjustUserField, {
     user,
@@ -480,15 +478,12 @@ export function* watchUnsaveTrack() {
 export function* unsaveTrackAsync(
   action: ReturnType<typeof socialActions.unsaveTrack>
 ) {
-  yield* waitForWrite()
+  yield* call(waitForWrite)
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  if (userId === action.trackId) {
     return
   }
 
@@ -600,7 +595,7 @@ export function* watchSetArtistPick() {
   yield* takeEvery(
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
-      yield* waitForWrite()
+      yield* call(waitForWrite)
       const userId: ID | null = yield* select(getUserId)
 
       if (!userId) return
@@ -625,7 +620,7 @@ export function* watchSetArtistPick() {
 
 export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
-    yield* waitForWrite()
+    yield* call(waitForWrite)
     const userId = yield* select(getUserId)
 
     if (!userId) return
@@ -645,88 +640,6 @@ export function* watchUnsetArtistPick() {
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)
   })
-}
-
-/* DOWNLOAD TRACK */
-
-function* downloadTrackV1Helper({
-  track,
-  filename,
-  original
-}: {
-  track: Track
-  filename: string
-  original?: boolean
-}) {
-  try {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const apiClient = yield* getContext('apiClient')
-    const trackDownload = yield* getContext('trackDownload')
-    let queryParams: QueryParams = {}
-
-    const trackId = track.track_id
-    const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const nftAccessSignature = original
-      ? nftAccessSignatureMap[trackId]?.original ?? null
-      : nftAccessSignatureMap[trackId]?.mp3 ?? null
-    queryParams = (yield* call(getQueryParams, {
-      audiusBackendInstance,
-      nftAccessSignature
-    })) as unknown as QueryParams
-    queryParams.filename = filename
-    queryParams.original = original
-
-    const encodedTrackId = encodeHashId(trackId)
-    const url = apiClient.makeUrl(
-      `/tracks/${encodedTrackId}/download`,
-      queryParams
-    )
-    yield* call(trackDownload.downloadTracks, { files: [{ url, filename }] })
-  } catch (e) {
-    console.error(
-      `Could not download track ${track.track_id}: ${
-        (e as Error).message
-      }. Error: ${e}`
-    )
-  }
-}
-
-function* downloadTrackV1(
-  action: ReturnType<typeof socialActions.downloadTrack>
-) {
-  yield* call(waitForRead)
-  const {
-    trackIds: [trackId],
-    original,
-    stemName
-  } = action
-
-  // Check if there is a logged in account and if not,
-  // wait for one so we can trigger the download immediately after
-  // logging in.
-  const accountUserId = yield* select(getUserId)
-  if (!accountUserId) {
-    yield* call(waitForValue, getUserId)
-  }
-
-  const track = yield* select(getTrack, { id: trackId })
-  if (!track) return
-
-  const userId = track.owner_id
-  const user = yield* select(getUser, { id: userId })
-  if (!user) return
-
-  let filename
-  if (track.stem_of?.parent_track_id) {
-    const parentTrack = yield* select(getTrack, {
-      id: track.stem_of.parent_track_id
-    })
-    filename = `${parentTrack?.title} - ${stemName} - ${user.name} (Audius).mp3`
-  } else {
-    filename = `${track.title} - ${user.name} (Audius).mp3`
-  }
-
-  yield* call(downloadTrackV1Helper, { track, filename, original })
 }
 
 const getFilename = ({
@@ -833,16 +746,6 @@ function* watchDownloadTrack() {
         }
 
         yield* call(waitForRead)
-
-        const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-        const isLosslessDownloadsEnabled = yield* call(
-          getFeatureEnabled,
-          FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-        )
-        if (!isLosslessDownloadsEnabled) {
-          yield* call(downloadTrackV1, action)
-          return
-        }
 
         // Check if there is a logged in account and if not,
         // wait for one so we can trigger the download immediately after

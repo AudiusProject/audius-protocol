@@ -16,6 +16,7 @@ import {
   CollectionsPageType
 } from '@audius/common/store'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -175,7 +176,7 @@ const CollectionPage = ({
 
   const {
     isEmpty,
-    lastModified,
+    lastModifiedDate,
     playlistName,
     description,
     isPrivate,
@@ -219,6 +220,7 @@ const CollectionPage = ({
       artistName: entry?.user?.name,
       artistHandle: entry?.user?.handle,
       trackTitle: entry.title,
+      ddexApp: entry.ddex_app,
       permalink: entry.permalink,
       trackId: entry.track_id,
       uid: entry.uid,
@@ -250,6 +252,7 @@ const CollectionPage = ({
             }
             tracksLoading={tracksLoading}
             type={typeTitle}
+            ddexApp={metadata?.ddex_app}
             title={playlistName}
             artistName={playlistOwnerName}
             artistHandle={playlistOwnerHandle}
@@ -259,7 +262,7 @@ const CollectionPage = ({
             isAlbum={isAlbum}
             numTracks={numTracks}
             isPlayable={isPlayable}
-            modified={lastModified || Date.now()}
+            modified={lastModifiedDate}
             duration={duration}
             isPublished={!isPrivate}
             isPublishing={isPublishing}
@@ -284,29 +287,31 @@ const CollectionPage = ({
           />
         </div>
         <div className={styles.collectionTracksContainer}>
-          {!tracksLoading ? (
-            isEmpty ? (
-              <>
-                <div className={styles.divider}></div>
-                <EmptyTrackList
-                  isAlbum={isAlbum}
-                  customEmptyText={customEmptyText}
+          <ClientOnly>
+            {!tracksLoading ? (
+              isEmpty ? (
+                <>
+                  <div className={styles.divider}></div>
+                  <EmptyTrackList
+                    isAlbum={isAlbum}
+                    customEmptyText={customEmptyText}
+                  />
+                </>
+              ) : (
+                <TrackList
+                  containerClassName={''}
+                  itemClassName={''}
+                  tracks={trackList}
+                  showTopDivider
+                  showDivider
+                  togglePlay={togglePlay}
                 />
-              </>
-            ) : (
-              <TrackList
-                containerClassName={''}
-                itemClassName={''}
-                tracks={trackList}
-                showTopDivider
-                showDivider
-                togglePlay={togglePlay}
-              />
-            )
-          ) : null}
-          {collectionLoading && typeTitle === 'Audio NFT Playlist' ? (
-            <LoadingSpinner className={styles.spinner} />
-          ) : null}
+              )
+            ) : null}
+            {collectionLoading && typeTitle === 'Audio NFT Playlist' ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : null}
+          </ClientOnly>
         </div>
       </div>
     </MobilePageContainer>

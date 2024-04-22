@@ -1,4 +1,11 @@
-import { ReactNode, ReactElement, useCallback, useMemo, useEffect } from 'react'
+import {
+  ReactNode,
+  ReactElement,
+  useCallback,
+  useMemo,
+  useEffect,
+  HTMLAttributes
+} from 'react'
 
 import { Nullable } from '@audius/common/utils'
 import {
@@ -8,12 +15,11 @@ import {
   ModalTitle,
   ModalFooter,
   Box,
-  Text as HarmonyText,
-  IconCaretRight,
   Text,
-  IconComponent
+  IconCaretRight,
+  IconComponent,
+  Button
 } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
 import {
   Form,
   Formik,
@@ -91,32 +97,30 @@ const MenuForm = (props: MenuFormProps) => {
       <ModalFooter className={styles.footer}>
         {errorMessage ? (
           <Box pb='l' ph='xl'>
-            <HarmonyText variant='body' color='danger' size='s'>
+            <Text variant='body' color='danger' size='s'>
               {errorMessage}
-            </HarmonyText>
+            </Text>
           </Box>
         ) : null}
-        <Button
-          form={label}
-          type={ButtonType.PRIMARY}
-          text={messages.save}
-          buttonType='submit'
-        />
+        <Button variant='primary' form={label} type='submit'>
+          {messages.save}
+        </Button>
       </ModalFooter>
     </Modal>
   )
 }
 
-type SelectedValueProps = {
+export type SelectedValueProps = {
   label?: string
   icon?: IconComponent
   children?: ReactNode
-}
+  'data-testid'?: string
+} & HTMLAttributes<HTMLSpanElement>
 
 export const SelectedValue = (props: SelectedValueProps) => {
-  const { label, icon: Icon, children } = props
+  const { label, icon: Icon, children, ...rest } = props
   return (
-    <span className={styles.selectedValue}>
+    <span className={styles.selectedValue} {...rest}>
       {Icon ? <Icon size='s' color='default' /> : null}
       {label ? (
         <Text variant='body' strength='strong'>

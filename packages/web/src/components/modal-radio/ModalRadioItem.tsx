@@ -85,7 +85,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
         >
           <div ref={ref} className={cn(layoutStyles.col, layoutStyles.gap4)}>
             {typeof description === 'string' ? (
-              <Text>{description}</Text>
+              <Text variant='body'>{description}</Text>
             ) : (
               description
             )}

@@ -4,9 +4,9 @@ import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
 import { TwitterProfile } from '@audius/common/store'
-import { captureException } from '@sentry/browser'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 const REQUEST_TOKEN_URL = `${audiusBackendInstance.identityServiceUrl}/twitter`
 const LOGIN_URL = `${audiusBackendInstance.identityServiceUrl}/twitter/callback`
@@ -60,6 +60,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
 
   const getRequestToken = () => {
     const popup = openPopup()
+    let authenticationUrl: string
 
     return window
       .fetch(REQUEST_TOKEN_URL, {
@@ -71,7 +72,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
         return response.json()
       })
       .then((data) => {
-        let authenticationUrl = `https://api.twitter.com/oauth/authenticate?oauth_token=${data.oauth_token}&force_login=${forceLogin}`
+        authenticationUrl = `https://api.twitter.com/oauth/authenticate?oauth_token=${data.oauth_token}&force_login=${forceLogin}`
 
         if (screenName) {
           authenticationUrl = `${authenticationUrl}&screen_name=${screenName}`
@@ -84,7 +85,11 @@ const TwitterAuth = (props: TwitterAuthProps) => {
       })
       .catch((error) => {
         popup?.close()
-        captureException(`Twitter getProfile failed with ${error}`)
+        reportToSentry({
+          error: error as Error,
+          additionalInfo: { authenticationUrl, screenName },
+          name: 'Sign Up: Twitter getRequestToken popup failed'
+        })
         return onFailure(error)
       })
   }
@@ -127,13 +132,17 @@ const TwitterAuth = (props: TwitterAuthProps) => {
             return getOauthToken(oauthVerifier, oauthToken)
           } else {
             closeDialog()
-            return onFailure(
-              new Error(
-                'OAuth redirect has occurred but no query or hash parameters were found. ' +
-                  'They were either not set during the redirect, or were removed—typically by a ' +
-                  'routing library—before Twitter react component could read it.'
-              )
+            const error = new Error(
+              'OAuth redirect has occurred but no query or hash parameters were found. ' +
+                'They were either not set during the redirect, or were removed—typically by a ' +
+                'routing library—before Twitter react component could read it.'
             )
+            reportToSentry({
+              error,
+              additionalInfo: { popupLocation: popup.location },
+              name: 'Sign Up: Twitter oauth redirect failed'
+            })
+            return onFailure(error)
           }
         }
       } catch (error) {
@@ -160,6 +169,10 @@ const TwitterAuth = (props: TwitterAuthProps) => {
         response.json().then(({ uuid, profile }) => onSuccess(uuid, profile))
       })
       .catch((error) => {
+        reportToSentry({
+          error: error as Error,
+          name: 'Sign Up: Twitter getOauthToken failed'
+        })
         return onFailure(error)
       })
   }

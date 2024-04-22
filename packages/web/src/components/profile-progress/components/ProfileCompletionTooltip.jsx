@@ -37,7 +37,7 @@ const ProfileCompletionTooltip = ({
 }) => {
   return (
     <Tooltip
-      color={'--secondary'}
+      color='secondary'
       shouldWrapContent={false}
       className={styles.tooltip}
       disabled={isDisabled}

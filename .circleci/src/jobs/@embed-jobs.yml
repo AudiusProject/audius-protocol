@@ -17,8 +17,6 @@ embed-init:
         paths:
           - node_modules
           - packages/embed/node_modules
-          - packages/stems/node_modules
-          - packages/stems/dist
           - packages/harmony/node_modules
           - packages/harmony/dist
           - packages/libs/node_modules

@@ -1,5 +1,6 @@
 import { DeveloperApps, Users } from '@pedalboard/storage'
 import { ValidatedRelayRequest } from '../types/relay'
+import pino from 'pino'
 
 /** Context built by the context injector that can be referenced later in the request (via response object). */
 export interface RequestContext {
@@ -15,6 +16,7 @@ export interface RequestContext {
   signerIsUser: boolean
   createOrDeactivate: boolean
   isSenderVerifier: boolean
+  logger: pino.Logger
 }
 
 declare global {

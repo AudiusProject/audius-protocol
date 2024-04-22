@@ -1,3 +1,4 @@
+import { partition, sum } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID } from '~/models/AudioRewards'
@@ -13,47 +14,33 @@ const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 
 const messages = {
   laterToday: 'Later Today',
-  readyToClaim: 'Ready to Claim!',
-  tomorrow: 'Tomorrow'
+  tomorrow: 'Tomorrow',
+  readyToClaim: 'Ready to claim!'
 }
 
-/**
- * Returns a list of challenges in cooldown period (not claimable yet), and
- * the total currently claimable amount (for challenges past the cooldown period).
- */
-export const useChallengeCooldownSchedule = (
-  challengeId?: ChallengeRewardID
-) => {
-  const challenges = useSelector(getUndisbursedUserChallenges)
-    .filter((c) => c.challenge_id === challengeId)
-    .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
-  // Only challenges past the cooldown period are claimable
-  // Challenges are already ordered by completed_blocknumber ascending.
-  const cooldownChallenges = challenges.filter(
-    (c) => !isCooldownChallengeClaimable(c)
-  )
-  const claimableAmount = challenges
-    .filter(isCooldownChallengeClaimable)
-    .reduce((acc, curr) => acc + curr.amount, 0)
-  return { cooldownChallenges, claimableAmount }
-}
-
-const getAudioMatchingCooldownLabel = (
+const getCooldownChallengeInfo = (
   challenge: UndisbursedUserChallenge,
   now: Dayjs
 ) => {
   const createdAt = utcToLocalTime(challenge.created_at)
   const cooldownDays = challenge.cooldown_days ?? 0
   const diff = now.diff(createdAt, 'day')
+  const claimableDate = createdAt.add(cooldownDays, 'day')
+  const isClose = cooldownDays - diff <= 1
+  let label = claimableDate.format('dddd')
   if (diff === cooldownDays) {
-    return messages.laterToday
+    label = messages.laterToday
   } else if (diff === cooldownDays - 1) {
-    return messages.tomorrow
+    label = messages.tomorrow
   }
-  return createdAt.add(cooldownDays, 'day').format('ddd (M/D)')
+  return {
+    label,
+    claimableDate,
+    isClose
+  }
 }
 
-const formatAudioMatchingChallengesForCooldownSchedule = (
+export const formatCooldownChallenges = (
   challenges: UndisbursedUserChallenge[]
 ) => {
   if (challenges.length === 0) return []
@@ -65,36 +52,55 @@ const formatAudioMatchingChallengesForCooldownSchedule = (
     cooldownChallenges[diff] = {
       ...cooldownChallenges[diff],
       id: c.specifier,
-      label: getAudioMatchingCooldownLabel(c, now),
-      value: (cooldownChallenges[diff]?.value ?? 0) + c.amount
+      value: (cooldownChallenges[diff]?.value ?? 0) + c.amount,
+      ...getCooldownChallengeInfo(c, now)
     }
   })
   return cooldownChallenges
 }
 
-const getAudioMatchingChallengeCooldownSummary = (claimableAmount: number) => ({
-  id: messages.readyToClaim,
-  label: messages.readyToClaim,
-  value: claimableAmount
-})
-
+const TRENDING_CHALLENGE_IDS = new Set(['tt', 'tut', 'tp'])
 /**
- * Custom hook using values specific to $AUDIO matching challenges.
+ * Returns a list of challenges in cooldown period (not claimable yet), and
+ * the total currently claimable amount (for challenges past the cooldown period).
  */
-export const useAudioMatchingChallengeCooldownSchedule = (
+export const useChallengeCooldownSchedule = ({
+  challengeId,
+  multiple
+}: {
   challengeId?: ChallengeRewardID
-) => {
-  const { cooldownChallenges, claimableAmount } =
-    useChallengeCooldownSchedule(challengeId)
+  multiple?: boolean
+}) => {
+  const challenges = useSelector(getUndisbursedUserChallenges)
+    .filter((c) => multiple || c.challenge_id === challengeId)
+    .filter((c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id))
+    .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
+
+  const [claimableChallenges, cooldownChallenges] = partition(
+    challenges,
+    isCooldownChallengeClaimable
+  )
+  const claimableAmount = sum(claimableChallenges.map((c) => c.amount))
+  const cooldownAmount = sum(cooldownChallenges.map((c) => c.amount))
+
+  // Summary for claimable amount if any
+  const summary =
+    claimableAmount > 0
+      ? {
+          id: messages.readyToClaim,
+          label: messages.readyToClaim,
+          value: claimableAmount
+        }
+      : undefined
+
+  const isEmpty = claimableAmount + cooldownAmount === 0
+
   return {
+    claimableChallenges,
     claimableAmount,
-    cooldownChallenges:
-      formatAudioMatchingChallengesForCooldownSchedule(cooldownChallenges),
-    cooldownChallengesSummary:
-      claimableAmount > 0
-        ? getAudioMatchingChallengeCooldownSummary(claimableAmount)
-        : undefined,
-    isEmpty:
-      cooldownChallenges.every((c) => c === undefined) && claimableAmount === 0
+    cooldownChallenges,
+    cooldownAmount,
+    summary,
+    isEmpty
   }
 }

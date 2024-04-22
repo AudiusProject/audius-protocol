@@ -9,13 +9,14 @@ import {
   TextLink,
   useTheme
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
-import { useEffectOnce, useMeasure } from 'react-use'
+import { useEffectOnce, useLocation, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
-import BackgroundWaves from 'components/background-animations/BackgroundWaves'
+import { fetchReferrer } from 'common/store/pages/signon/actions'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
@@ -48,7 +49,7 @@ type RootProps = {
 
 const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
-  const { spacing, motion } = useTheme()
+  const { spacing, motion, color } = useTheme()
 
   const hideCloseButton = useRouteMatch({
     path: [
@@ -77,7 +78,14 @@ const DesktopSignOnRoot = (props: RootProps) => {
   const isExpanded = !collapsedDesktopPageMatch
 
   return (
-    <Flex w='100%' p='unit14' justifyContent='center'>
+    <Flex
+      w='100%'
+      p='unit14'
+      justifyContent='center'
+      css={{
+        background: `radial-gradient(circle at top left, #B749D6 50%, ${color.secondary.s500} 100%)`
+      }}
+    >
       {!hideCloseButton ? (
         <Link
           to={TRENDING_PAGE}
@@ -91,7 +99,6 @@ const DesktopSignOnRoot = (props: RootProps) => {
           <IconCloseAlt color='staticWhite' />
         </Link>
       ) : null}
-      <BackgroundWaves zIndex={0} />
       <Paper
         w='100%'
         css={{
@@ -264,6 +271,16 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
+  const location = useLocation()
+  const dispatch = useDispatch()
+
+  useEffectOnce(() => {
+    // Check for referrals and set them in the store
+    const referrerHandle = new URLSearchParams(location.search).get('ref')
+    if (referrerHandle) {
+      dispatch(fetchReferrer(referrerHandle))
+    }
+  })
 
   const [isLoaded, setIsLoaded] = useState(false)
   const SignOnRoot = isMobile ? MobileSignOnRoot : DesktopSignOnRoot

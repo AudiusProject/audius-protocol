@@ -176,7 +176,7 @@ export const DownloadAvailability = ({
         icon={<IconStars />}
         content={
           <Flex direction='column' gap='m'>
-            <Text>{messages.waitlist}</Text>
+            <Text variant='body'>{messages.waitlist}</Text>
             <TextLink
               onClick={handleClickWaitListLink}
               href={WAITLIST_TYPEFORM}

@@ -29,6 +29,7 @@ import {
   USDCPurchaseSellerNotification,
   USDCPurchaseBuyerNotification
 } from './Notifications'
+import { TrackAddedToPurchasedAlbumNotification } from './Notifications/TrackAddedToPurchasedAlbumNotification'
 
 type NotificationListItemProps = {
   notification: Notification
@@ -93,6 +94,10 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <UserSubscriptionNotification notification={notification} />
       case NotificationType.AddTrackToPlaylist:
         return <AddTrackToPlaylistNotification notification={notification} />
+      case NotificationType.TrackAddedToPurchasedAlbum:
+        return (
+          <TrackAddedToPurchasedAlbumNotification notification={notification} />
+        )
       case NotificationType.SupporterDethroned:
         return <SupporterDethronedNotification notification={notification} />
       case NotificationType.USDCPurchaseSeller:

@@ -60,7 +60,9 @@ export enum Action {
   SUBSCRIBE = 'Subscribe',
   UNSUBSCRIBE = 'Unsubscribe',
   VIEW = 'View',
-  VIEW_PLAYLIST = 'ViewPlaylist'
+  VIEW_PLAYLIST = 'ViewPlaylist',
+  APPROVE = 'Approve',
+  REJECT = 'Reject'
 }
 
 export enum EntityType {
@@ -71,7 +73,8 @@ export enum EntityType {
   NOTIFICATION = 'Notification',
   DEVELOPER_APP = 'DeveloperApp',
   GRANT = 'Grant',
-  DASHBOARD_WALLET_USER = 'DashboardWalletUser'
+  DASHBOARD_WALLET_USER = 'DashboardWalletUser',
+  TIP = 'Tip'
 }
 
 export type AdvancedOptions = {

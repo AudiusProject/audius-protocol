@@ -1,12 +1,12 @@
 import axios from 'axios'
 import { Users } from '@pedalboard/storage'
 import { AntiAbuseConfig } from '../config/antiAbuseConfig'
-import { logger } from '../logger'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '..'
 import { antiAbuseError, internalError } from '../error'
 import { readAAOState, storeAAOState } from '../redis'
-import { StatusCodes } from 'http-status-codes'
+import { unknownToError } from '../utils'
+import pino from 'pino'
 
 type AbuseRule = {
   rule: number
@@ -27,21 +27,23 @@ export const antiAbuseMiddleware = async (
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
-  const { ip, recoveredSigner, signerIsApp, createOrDeactivate, isSenderVerifier } = response.locals.ctx
+  const { ip, recoveredSigner, signerIsApp, createOrDeactivate, isSenderVerifier, requestId, validatedRelayRequest, logger } = response.locals.ctx
 
   // no AAO to check and creates / deactivates should always be allowed
   if (signerIsApp || createOrDeactivate || isSenderVerifier) {
+    logger.info({ createOrDeactivate, isSenderVerifier }, "antiabuse skipped")
     next()
     return
   }
   const user = recoveredSigner as Users
 
   // fire and async update aao cache
-  detectAbuse(aaoConfig, user, ip).catch((e) => {
+  detectAbuse(aaoConfig, logger, user, ip).catch((e) => {
     logger.error({ error: e }, 'AAO uncaught exception')
   })
 
   if (!user.handle) {
+    logger.error({ validatedRelayRequest }, "user found without handle")
     internalError(
       next,
       `user found but without handle, investigate ${JSON.stringify(user)}`
@@ -58,6 +60,7 @@ export const antiAbuseMiddleware = async (
   }
 
   if (userAbuseRules?.blockedFromRelay) {
+    logger.info(`blocked from relay ${user.handle_lc}`)
     antiAbuseError(next, 'blocked from relay')
     return
   }
@@ -69,6 +72,7 @@ export const antiAbuseMiddleware = async (
 // detects abuse for the queried user and stores in cache
 export const detectAbuse = async (
   aaoConfig: AntiAbuseConfig,
+  logger: pino.Logger,
   user: Users,
   reqIp: string
 ) => {
@@ -80,11 +84,10 @@ export const detectAbuse = async (
   try {
     rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
   } catch (e) {
+    const aaoError = unknownToError(e)
     logger.error({
-      name: 'INTERNAL_ERROR',
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-      message: 'error returned from antiabuse oracle'
-    })
+      handle: user.handle_lc, userId: user.user_id, address: user.wallet, error: aaoError.message, errorStackTrace: aaoError.stack
+    }, "error returned from anti abuse oracle")
     return
   }
   const userAbuseRules = determineAbuseRules(aaoConfig, rules)

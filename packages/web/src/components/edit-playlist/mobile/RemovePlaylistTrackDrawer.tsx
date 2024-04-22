@@ -1,4 +1,4 @@
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 
 import Drawer from 'components/drawer/Drawer'
 
@@ -32,13 +32,9 @@ const RemovePlaylistTrackDrawer = ({
         <div className={styles.description}>
           {messages.description(trackTitle)}
         </div>
-        <Button
-          className={styles.submit}
-          type={ButtonType.PRIMARY_ALT}
-          text={messages.submit}
-          textClassName={styles.submitText}
-          onClick={onConfirm}
-        />
+        <Button variant='destructive' onClick={onConfirm} fullWidth>
+          {messages.submit}
+        </Button>
         <div className={styles.cancel} onClick={onClose}>
           {messages.cancel}
         </div>

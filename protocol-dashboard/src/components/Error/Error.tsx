@@ -1,7 +1,7 @@
-import Tooltip from 'components/Tooltip'
-import React from 'react'
 import clsx from 'clsx'
+
 import IconUhOh from 'assets/img/uhOh.svg?react'
+import { BasicTooltip } from 'components/Tooltip/Tooltip'
 
 import styles from './Error.module.css'
 
@@ -16,9 +16,9 @@ const Error = ({
 }) => {
   return (
     <div className={clsx(styles.error, className)}>
-      <Tooltip text={text}>
+      <BasicTooltip text={text}>
         <IconUhOh className={styles.icon} />
-      </Tooltip>
+      </BasicTooltip>
     </div>
   )
 }

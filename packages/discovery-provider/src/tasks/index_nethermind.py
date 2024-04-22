@@ -354,7 +354,7 @@ def index_next_block(
                 )
                 if should_update:
                     celery.send_task(
-                        "calculate_trending_challenges", kwargs={"date": date}
+                        "calculate_trending_challenges", queue="index_nethermind", kwargs={"date": date}
                     )
         except Exception as e:
             # Do not throw error, as this should not stop indexing

@@ -1,10 +1,14 @@
 import React, { useCallback } from 'react'
+
+import { Flex, Text } from '@audius/harmony'
 import clsx from 'clsx'
-import Paper from 'components/Paper'
+
+import Error from 'components/Error'
+import { AppliedInfoTooltipProps } from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
+import Paper from 'components/Paper'
 
 import styles from './Table.module.css'
-import Error from 'components/Error'
 
 type TableProps = {
   className?: string
@@ -45,6 +49,8 @@ type TableProps = {
 
   // If there was an error fetching data
   error?: boolean
+
+  tooltipComponent?: React.ComponentType<AppliedInfoTooltipProps>
 }
 
 type RowProps = {
@@ -76,15 +82,22 @@ const Table: React.FC<TableProps> = ({
   moreText,
   onRowClick = () => {},
   onClickMore,
-  error
+  error,
+  tooltipComponent
 }: TableProps) => {
   const rowLimit = limit || data.length
   const showMore = data.length > rowLimit || alwaysShowMore
+  const TooltipComponent = tooltipComponent
   return (
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       {title && (
         <div className={styles.titleContainer}>
-          <h3 className={styles.title}>{title}</h3>
+          <Flex inline gap='xs' alignItems='center'>
+            <Text variant='heading' size='s' strength='default' tag='span'>
+              {title}
+            </Text>
+            {tooltipComponent == null ? null : <TooltipComponent />}
+          </Flex>
           {label && <p className={styles.label}>{label}</p>}
         </div>
       )}
@@ -97,7 +110,7 @@ const Table: React.FC<TableProps> = ({
       ) : (
         <>
           <div className={styles.headers}>
-            {columns.map(c => (
+            {columns.map((c) => (
               <div
                 key={c.title}
                 className={clsx(styles.columnTitle, c.className)}

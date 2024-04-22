@@ -157,11 +157,6 @@ def test_valid_parse_metadata(app):
                         "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
                     }
                 ],
-                "download": {
-                    "cid": None,
-                    "is_downloadable": False,
-                    "requires_follow": False,
-                },
                 "remix_of": {"tracks": [{"parent_track_id": 75808}]},
                 "is_scheduled_release": False,
                 "is_unlisted": False,
@@ -188,8 +183,16 @@ def test_valid_parse_metadata(app):
                 "preview_start_seconds": None,
                 "audio_upload_id": None,
                 "placement_hosts": None,
-                "ddex_app": None,
                 "playlists_containing_track": None,
+                "ddex_app": None,
+                "ddex_release_ids": None,
+                "artists": None,
+                "resource_contributors": None,
+                "indirect_resource_contributors": None,
+                "rights_controller": None,
+                "copyright_line": None,
+                "producer_copyright_line": None,
+                "parental_warning_type": None
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,
@@ -303,11 +306,6 @@ def test_invalid_parse_metadata(app):
                     "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
                 }
             ],
-            "download": {
-                "cid": None,
-                "is_downloadable": False,
-                "requires_follow": False,
-            },
             "remix_of": {"tracks": [{"parent_track_id": 75808}]},
             "is_scheduled_release": False,
             "is_unlisted": False,

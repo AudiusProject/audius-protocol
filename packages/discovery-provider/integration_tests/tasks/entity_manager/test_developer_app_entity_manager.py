@@ -166,7 +166,9 @@ def test_index_app(app, mocker):
         "users": [
             {"user_id": user_id, "wallet": f"user{user_id}wallet"}
             for user_id in range(1, 6)
-        ],
+            # Private key: fcacb6c31a5b6bfd506a277ea34efcc44465476457385220fc252d7e58d6f2e7
+        ]
+        + [{"user_id": 99, "wallet": "0xE2975eF7594353238Cc68ECCf5d444c47BC17058"}],
         "developer_apps": [
             {
                 "user_id": 5,
@@ -371,6 +373,21 @@ def test_index_app(app, mocker):
                         "_userId": 2,
                         "_action": Action.CREATE,
                         "_metadata": '{"app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}, "name": "My really long app name this is really long we will rock you"}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx12": [
+            {
+                # Address is a user's wallet
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"app_signature": {"signature": "20e5b1d95cc5d942571a097b5d7cb30cfcf355bbb5a51df498914dc42f4472d53c0d5ee9d2d89a00b56d19c912fade6760daa7f4c62437c5251776bd34cc4f3c1c", "message": "Creating Audius developer app at 1686252026"}, "name": "My app name"}',
                         "_signer": "user2wallet",
                     }
                 )

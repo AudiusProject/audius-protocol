@@ -120,6 +120,7 @@ challenge_response = ns.model(
         "challenge_type": fields.String(required=True),
         "amount": fields.String(required=True),
         "disbursed_amount": fields.Integer(required=True),
+        "cooldown_days": fields.Integer(),
         "metadata": fields.Raw(required=True),
     },
 )

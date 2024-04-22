@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, GatedTrackStatus, NFTAccessSignature } from '~/models'
+import { ID, GatedContentStatus, NFTAccessSignature } from '~/models'
 import { Nullable } from '~/utils'
 
 type GatedContentState = {
   nftAccessSignatureMap: { [id: ID]: Nullable<NFTAccessSignature> }
-  statusMap: { [id: ID]: GatedTrackStatus }
+  statusMap: { [id: ID]: GatedContentStatus }
   lockedContentId: Nullable<ID>
   followeeIds: ID[]
   tippedUserIds: ID[]
@@ -27,13 +27,13 @@ type RevokeAccessPayload = {
   revokeAccessMap: { [id: ID]: 'stream' | 'download' }
 }
 
-type UpdateGatedTrackStatusPayload = {
-  trackId: ID
-  status: GatedTrackStatus
+type UpdateGatedContentStatusPayload = {
+  contentId: ID
+  status: GatedContentStatus
 }
 
-type UpdateGatedTrackStatusesPayload = {
-  [id: ID]: GatedTrackStatus
+type UpdateGatedContentStatusesPayload = {
+  [id: ID]: GatedContentStatus
 }
 
 type IdPayload = {
@@ -56,15 +56,15 @@ const slice = createSlice({
     revokeAccess: (_state, __action: PayloadAction<RevokeAccessPayload>) => {
       // triggers saga
     },
-    updateGatedTrackStatus: (
+    updateGatedContentStatus: (
       state,
-      action: PayloadAction<UpdateGatedTrackStatusPayload>
+      action: PayloadAction<UpdateGatedContentStatusPayload>
     ) => {
-      state.statusMap[action.payload.trackId] = action.payload.status
+      state.statusMap[action.payload.contentId] = action.payload.status
     },
-    updateGatedTrackStatuses: (
+    updateGatedContentStatuses: (
       state,
-      action: PayloadAction<UpdateGatedTrackStatusesPayload>
+      action: PayloadAction<UpdateGatedContentStatusesPayload>
     ) => {
       state.statusMap = {
         ...state.statusMap,
@@ -99,8 +99,8 @@ const slice = createSlice({
 export const {
   updateNftAccessSignatures,
   revokeAccess,
-  updateGatedTrackStatus,
-  updateGatedTrackStatuses,
+  updateGatedContentStatus,
+  updateGatedContentStatuses,
   setLockedContentId,
   resetLockedContentId,
   addFolloweeId,

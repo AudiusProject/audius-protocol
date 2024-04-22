@@ -1,9 +1,11 @@
+import React from 'react'
+
+import { Radar } from 'react-chartjs-2'
+
 import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import React from 'react'
-import { Radar } from 'react-chartjs-2'
 import { formatBucketText } from 'store/cache/analytics/hooks'
 import { createStyles } from 'utils/mobile'
 

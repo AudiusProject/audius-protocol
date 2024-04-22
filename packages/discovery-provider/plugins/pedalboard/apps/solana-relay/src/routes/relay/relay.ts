@@ -1,6 +1,9 @@
 import {
+  Commitment,
   Connection,
   PublicKey,
+  SendOptions,
+  TransactionConfirmationStrategy,
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
@@ -15,7 +18,30 @@ import base58 from 'bs58'
 import { personalSign } from 'eth-sig-util'
 import type { RelayRequestBody } from '@audius/sdk'
 
-const connection = new Connection(config.solanaEndpoint)
+const RETRY_DELAY_MS = 2 * 1000
+const RETRY_TIMEOUT_MS = 60 * 1000
+
+const connections = config.solanaEndpoints.map(
+  (endpoint) => new Connection(endpoint)
+)
+
+const delay = async (ms: number, options?: { signal: AbortSignal }) => {
+  const signal = options?.signal
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject()
+    }
+    const listener = () => {
+      clearTimeout(timer)
+      reject()
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', listener)
+      resolve()
+    }, ms)
+    signal?.addEventListener('abort', listener)
+  })
+}
 
 const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   if (!feePayerPublicKey) {
@@ -28,6 +54,10 @@ const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   )
 }
 
+/**
+ * Forwards the transaction response to other Solana Relays on other discovery
+ * nodes so that they can cache it to lighten the RPC load on indexing.
+ */
 const forwardTransaction = async (logger: Logger, transaction: string) => {
   const endpoints = await getCachedDiscoveryNodeEndpoints()
   logger.info(`Forwarding to ${endpoints.length} endpoints...`)
@@ -69,6 +99,96 @@ const forwardTransaction = async (logger: Logger, transaction: string) => {
   )
 }
 
+/**
+ * Sends the transaction repeatedly to all configured RPCs until
+ * it's been confirmed with the given commitment level, expires,
+ * or times out.
+ */
+const sendTransactionWithRetries = async ({
+  transaction,
+  commitment,
+  confirmationStrategy,
+  sendOptions,
+  logger
+}: {
+  transaction: VersionedTransaction
+  commitment: Commitment
+  confirmationStrategy: TransactionConfirmationStrategy
+  sendOptions?: SendOptions
+  logger: Logger
+}) => {
+  const serializedTx = transaction.serialize()
+
+  let retryCount = 0
+  const createRetryPromise = async (signal: AbortSignal): Promise<void> => {
+    while (!signal.aborted) {
+      Promise.any(
+        connections.map((connection) =>
+          connection.sendRawTransaction(serializedTx, {
+            skipPreflight: true,
+            maxRetries: 0,
+            ...sendOptions
+          })
+        )
+      ).catch((error) => {
+        logger.warn({ error, retryCount }, `Failed retry...`)
+      })
+      await delay(RETRY_DELAY_MS)
+      retryCount++
+    }
+  }
+
+  const createTimeoutPromise = async (signal: AbortSignal) => {
+    await delay(RETRY_TIMEOUT_MS)
+    if (!signal.aborted) {
+      logger.error('Timed out sending transaction')
+    }
+  }
+
+  const start = Date.now()
+  const connection = connections[0]
+  const abortController = new AbortController()
+  try {
+    if (!sendOptions?.skipPreflight) {
+      const simulatedRes = await connection.simulateTransaction(transaction)
+      if (simulatedRes.value.err) {
+        logger.error(
+          { error: simulatedRes.value.err },
+          'Transaction simulation failed'
+        )
+        throw simulatedRes.value.err
+      }
+    }
+
+    const res = await Promise.race([
+      createRetryPromise(abortController.signal),
+      connection.confirmTransaction(
+        { ...confirmationStrategy, abortSignal: abortController.signal },
+        commitment
+      ),
+      createTimeoutPromise(abortController.signal)
+    ])
+
+    if (!res || res.value.err) {
+      throw res?.value.err ?? 'Transaction polling timed out.'
+    }
+    logger.info({ commitment }, 'Transaction sent successfully')
+    return confirmationStrategy.signature
+  } catch (error) {
+    logger.error({ error }, 'Transaction failed to send')
+    throw error
+  } finally {
+    // Stop the other operations
+    abortController.abort()
+    const end = Date.now()
+    const elapsedMs = end - start
+    logger.info(
+      { elapsedMs, retryCount },
+      'sendTransactionWithRetries completed.'
+    )
+  }
+}
+
 export const relay = async (
   req: Request<unknown, unknown, RelayRequestBody>,
   res: Response,
@@ -80,9 +200,10 @@ export const relay = async (
       confirmationOptions,
       sendOptions
     } = req.body
-    const { strategy, commitment } = confirmationOptions ?? {}
-    const confirmationStrategy =
-      strategy ?? (await connection.getLatestBlockhash())
+    const commitment = confirmationOptions?.commitment ?? 'processed'
+    const connection = connections[0]
+    const strategy =
+      confirmationOptions?.strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')
     const transaction = VersionedTransaction.deserialize(decoded)
     const decompiled = TransactionMessage.decompile(transaction.message)
@@ -99,46 +220,29 @@ export const relay = async (
     })
 
     transaction.sign([feePayerKeyPair])
+    const signature = base58.encode(transaction.signatures[0])
 
-    const logger = res.locals.logger.child({
-      signature: base58.encode(transaction.signatures[0])
-    })
-    logger.info('Sending transaction...')
-    const serializedTx = transaction.serialize()
-    logger.info(`Serialized: ${Buffer.from(serializedTx).toString('base64')}`)
-
-    const signature = await connection.sendRawTransaction(
-      serializedTx,
-      sendOptions
+    const logger = res.locals.logger.child({ signature })
+    logger.info(
+      { rpcEndpoints: connections.map((c) => c.rpcEndpoint) },
+      'Sending transaction...'
     )
-    if (commitment) {
-      logger.info(`Waiting for transaction to be ${commitment}...`)
-      await connection.confirmTransaction(
-        {
-          ...confirmationStrategy,
-          signature
-        },
-        commitment
-      )
-    }
+    const confirmationStrategy = { ...strategy, signature }
+    await sendTransactionWithRetries({
+      transaction,
+      sendOptions,
+      commitment,
+      confirmationStrategy,
+      logger
+    })
     res.status(200).send({ signature })
     next()
-    // Confirm, fetch, cache and forward after success response
-    // Only wait for confirmation if we haven't already
-    if (
-      !commitment ||
-      (commitment !== 'confirmed' && commitment !== 'finalized')
-    ) {
-      logger.info(`Confirming transaction...`)
-      await connection.confirmTransaction(
-        {
-          ...confirmationStrategy,
-          signature
-        },
-        'confirmed'
-      )
-    }
-    logger.info('Fetching transaction...')
+    // Confirm, fetch, cache and forward after success response.
+    // The transaction may be confirmed from specifying commitment before,
+    // but that may have been a different RPC. So confirm again.
+    logger.info(`Confirming transaction before fetching...`)
+    await connection.confirmTransaction(confirmationStrategy, 'confirmed')
+    logger.info('Fetching transaction for caching...')
     const rpcResponse = await connection.getTransaction(signature, {
       maxSupportedTransactionVersion: 0,
       commitment: 'confirmed'
@@ -150,9 +254,15 @@ export const relay = async (
     })
     logger.info('Caching transaction...')
     await cacheTransaction(signature, formattedResponse)
-    logger.info('Forwarding transaction...')
+    logger.info('Forwarding transaction to other nodes to cache...')
     await forwardTransaction(logger, formattedResponse)
+    logger.info('Request finished.')
   } catch (e) {
-    next(e)
+    if (!res.writableEnded && e) {
+      res.status(500).send({ error: e })
+      next()
+    } else {
+      next(e)
+    }
   }
 }

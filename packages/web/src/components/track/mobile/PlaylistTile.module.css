@@ -1,8 +1,8 @@
 .container {
   position: relative;
   flex: 1 1 352px;
-  border: 1px solid var(--neutral-light-8);
-  background-color: var(--white);
+  border: 1px solid var(--harmony-n-100);
+  background-color: var(--harmony-white);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   display: flex;
@@ -38,7 +38,7 @@
 }
 
 .container .artworkIcon path {
-  fill: var(--static-white);
+  fill: var(--harmony-static-white);
 }
 
 .mainContent {
@@ -71,22 +71,17 @@
 }
 
 .statItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0px 10px;
-  margin-right: 12px;
   transform: scale(1);
   transition: transform 0.07s ease-in-out;
 }
 
 .statItem:active {
   transform: scale(0.93);
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .statItem:active svg path {
-  fill: var(--primary);
+  fill: var(--harmony-primary);
 }
 
 .readonly .statItem:active {
@@ -102,32 +97,6 @@
 .skeleton {
   position: absolute;
   top: 0;
-}
-
-.stats {
-  display: flex;
-  flex: 0 0 30px;
-  align-items: stretch;
-  margin: 2px 0px;
-}
-
-.statText {
-  font-weight: var(--font-medium);
-  font-size: var(--font-xs);
-  letter-spacing: 0.2px;
-  line-height: 11px;
-  color: var(--neutral-light-4);
-}
-
-.stats svg {
-  width: 14px;
-  height: 14px;
-  position: relative;
-  bottom: 1px;
-}
-
-.stats path {
-  fill: var(--neutral-light-4);
 }
 
 .albumArtContainer {
@@ -147,20 +116,20 @@
   width: 100%;
   height: 28px;
   line-height: normal;
-  font-size: var(--font-xs);
+  font-size: var(--harmony-font-xs);
   overflow: hidden;
   padding: 12px;
-  font-weight: var(--font-medium);
+  font-weight: var(--harmony-font-medium);
 }
 
 .trackItem .index {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   margin-right: 4px;
   flex: 0 0;
 }
 
 .trackItem .trackTitle {
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   max-width: 220px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -169,7 +138,7 @@
 }
 
 .trackItem .byArtist {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -178,17 +147,17 @@
 .trackItem.activeTrackItem .index,
 .trackItem.activeTrackItem .trackTitle,
 .trackItem.activeTrackItem .byArtist {
-  color: var(--primary);
+  color: var(--harmony-primary);
 }
 
 .trackItemDivider {
   margin: 0px 11px;
   width: calc(100% - 22px);
-  border-top: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--harmony-n-100);
 }
 
 .trackItemMore {
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .readonly .favoriteButtonWrapper:hover {

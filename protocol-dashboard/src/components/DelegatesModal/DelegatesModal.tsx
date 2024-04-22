@@ -1,16 +1,18 @@
 import React, { useCallback } from 'react'
+
+import BN from 'bn.js'
 import clsx from 'clsx'
 
-import { useDelegates } from 'store/cache/user/hooks'
-import styles from './DelegatesModal.module.css'
+import DisplayAudio from 'components/DisplayAudio'
 import ModalTable from 'components/ModalTable'
-import BN from 'bn.js'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
+import { useDelegates } from 'store/cache/user/hooks'
 import { Delegate, Address } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { accountPage } from 'utils/routes'
-import DisplayAudio from 'components/DisplayAudio'
-import UserImage from 'components/UserImage'
-import UserName from 'components/UserName'
+
+import styles from './DelegatesModal.module.css'
 
 const messages = {
   title: 'Delegates',
@@ -39,7 +41,7 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
 }: DelegatesModalProps) => {
   const { delegates } = useDelegates({ wallet })
 
-  const data = (delegates as Delegate[]).map(delegate => {
+  const data = (delegates as Delegate[]).map((delegate) => {
     return {
       img: delegate.img,
       name: delegate.name,
@@ -90,7 +92,7 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
     >
-      {data.map(d => (
+      {data.map((d) => (
         <div
           key={d.address}
           onClick={() => onRowClick(d)}

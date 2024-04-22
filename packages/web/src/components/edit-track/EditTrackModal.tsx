@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   StemCategory,
   ID,
   StemUploadWithFile,
-  Track,
-  isContentFollowGated
+  Track
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheTracksActions as cacheTrackActions,
   stemsUploadActions,
@@ -57,9 +54,6 @@ const EditTrackModal = ({
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
-  const { isEnabled: isLosslessDownloadsEnabled } = useFeatureFlag(
-    FeatureFlags.LOSSLESS_DOWNLOADS_ENABLED
-  )
   const dispatch = useDispatch()
   const { isOpen, onClose } = useEditTrackModal()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -84,20 +78,7 @@ const EditTrackModal = ({
       // Update the download json field based on the is_downloadable flag and the download conditions.
       // Note that this only needs to be done temporarily until the backend is updated to remove the download fields redundancy.
       // TODO: Remove this once the backend is updated to remove the download fields redundancy.
-      const is_downloadable = isLosslessDownloadsEnabled
-        ? formFields.is_downloadable
-        : formFields.download?.is_downloadable
-      const requires_follow = isLosslessDownloadsEnabled
-        ? isContentFollowGated(formFields.download_conditions)
-        : formFields.download?.requires_follow
-      const download = {
-        is_downloadable,
-        requires_follow,
-        cid: isLosslessDownloadsEnabled
-          ? formFields.track_cid
-          : formFields.download?.cid ?? null
-      }
-      onEdit(metadata.track_id, { ...formFields, is_downloadable, download })
+      onEdit(metadata.track_id, formFields)
       if (pendingUploads.length) {
         uploadStems(
           metadata.track_id,

@@ -6,7 +6,8 @@ import {
   accountSelectors,
   usePremiumContentPurchaseModal,
   playbackPositionSelectors,
-  CommonState
+  CommonState,
+  PurchaseableContentType
 } from '@audius/common/store'
 import {
   formatCount,
@@ -22,9 +23,8 @@ import {
   IconVisibilityHidden,
   Text,
   Flex,
-  spacing
+  ProgressBar
 } from '@audius/harmony'
-import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
@@ -36,8 +36,11 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
+import {
+  LockedStatusPill,
+  LockedStatusPillProps
+} from '../../locked-status-pill'
 import { GatedContentLabel } from '../GatedContentLabel'
-import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
 import { messages } from '../trackTileMessages'
 import {
   TrackTileSize,
@@ -77,7 +80,7 @@ const RankAndIndexIndicator = ({
   )
 }
 
-const renderLockedOrPlaysContent = ({
+const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
   fieldVisibility,
   isOwner,
@@ -92,9 +95,9 @@ const renderLockedOrPlaysContent = ({
   | 'isStreamGated'
   | 'listenCount'
 > &
-  Pick<LockedStatusBadgeProps, 'variant'>) => {
+  Pick<LockedStatusPillProps, 'variant'>) => {
   if (isStreamGated && !isOwner) {
-    return <LockedStatusBadge locked={!hasStreamAccess} variant={variant} />
+    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
   }
 
   const hidePlays = fieldVisibility
@@ -181,10 +184,10 @@ const TrackTile = ({
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickPill = useAuthenticatedClickCallback(() => {
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
-        { contentId: trackId },
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
         { source: ModalSource.TrackTile }
       )
     } else if (trackId && !hasStreamAccess && onClickLocked) {
@@ -309,15 +312,13 @@ const TrackTile = ({
         </div>
       ) : null}
       <div className={styles.body}>
-        <Flex inline direction='column'>
+        <Flex inline direction='column' h='100%' justifyContent='space-between'>
           {size === TrackTileSize.LARGE ? (
             <Text
               variant='label'
-              size='xs'
-              strength='weak'
+              strength='default'
               textAlign='left'
               color='subdued'
-              css={{ letterSpacing: 2.5, height: spacing.m }}
             >
               {isLoading || !header ? null : header}
             </Text>
@@ -368,7 +369,7 @@ const TrackTile = ({
           </Text>
           <Text variant='body' size='xs' className={styles.bottomRight}>
             {!isLoading
-              ? renderLockedOrPlaysContent({
+              ? renderLockedContentOrPlayCount({
                   hasStreamAccess,
                   fieldVisibility,
                   isOwner,
@@ -379,29 +380,32 @@ const TrackTile = ({
               : null}
           </Text>
         </Flex>
-        <div className={styles.divider} />
-        <BottomRow
-          hasStreamAccess={hasStreamAccess}
-          isDisabled={isDisabled}
-          isLoading={isLoading}
-          isFavorited={isFavorited}
-          isReposted={isReposted}
-          rightActions={rightActions}
-          bottomBar={bottomBar}
-          isUnlisted={isUnlisted}
-          fieldVisibility={fieldVisibility}
-          isOwner={isOwner}
-          isDarkMode={isDarkMode}
-          isMatrixMode={isMatrixMode}
-          showIconButtons={showIconButtons}
-          onClickRepost={onClickRepost}
-          onClickFavorite={onClickFavorite}
-          onClickShare={onClickShare}
-          onClickPill={onClickPill}
-          streamConditions={streamConditions}
-          isTrack={isTrack}
-          trackId={trackId}
-        />
+        {isTrack ? (
+          <>
+            <div className={styles.divider} />
+            <BottomRow
+              hasStreamAccess={hasStreamAccess}
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              isFavorited={isFavorited}
+              isReposted={isReposted}
+              rightActions={rightActions}
+              bottomBar={bottomBar}
+              isUnlisted={isUnlisted}
+              fieldVisibility={fieldVisibility}
+              isOwner={isOwner}
+              isDarkMode={isDarkMode}
+              isMatrixMode={isMatrixMode}
+              showIconButtons={showIconButtons}
+              onClickRepost={onClickRepost}
+              onClickFavorite={onClickFavorite}
+              onClickShare={onClickShare}
+              onClickGatedUnlockPill={onClickGatedUnlockPill}
+              streamConditions={streamConditions}
+              trackId={trackId}
+            />
+          </>
+        ) : null}
       </div>
     </div>
   )

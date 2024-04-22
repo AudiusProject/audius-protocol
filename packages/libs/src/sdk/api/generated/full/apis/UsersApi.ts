@@ -259,7 +259,9 @@ export interface GetTracksByUserHandleRequest {
 
 export interface GetUSDCTransactionCountRequest {
     id: string;
-    type?: GetUSDCTransactionCountTypeEnum;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    type?: Array<GetUSDCTransactionCountTypeEnum>;
     includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionCountMethodEnum;
 }
@@ -270,7 +272,7 @@ export interface GetUSDCTransactionsRequest {
     limit?: number;
     sortMethod?: GetUSDCTransactionsSortMethodEnum;
     sortDirection?: GetUSDCTransactionsSortDirectionEnum;
-    type?: GetUSDCTransactionsTypeEnum;
+    type?: Array<GetUSDCTransactionsTypeEnum>;
     includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionsMethodEnum;
 }
@@ -1413,7 +1415,7 @@ export class UsersApi extends runtime.BaseAPI {
 
         const queryParameters: any = {};
 
-        if (params.type !== undefined) {
+        if (params.type) {
             queryParameters['type'] = params.type;
         }
 
@@ -1472,7 +1474,7 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = params.sortDirection;
         }
 
-        if (params.type !== undefined) {
+        if (params.type) {
             queryParameters['type'] = params.type;
         }
 

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
 import { ConnectedRouter } from 'connected-react-router'
+import { CompatRouter } from 'react-router-dom-v5-compat'
 import { LastLocationProvider } from 'react-router-last-location'
 
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
@@ -8,6 +9,7 @@ import { HeaderContextProvider } from 'components/header/mobile/HeaderContextPro
 import { NavProvider } from 'components/nav/store/context'
 import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
+import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import { MainContentContextProvider } from '../pages/MainContentContext'
 
@@ -24,32 +26,44 @@ type AppContextProps = {
 
 export const AppProviders = ({ children }: AppContextProps) => {
   const { history } = useHistoryContext()
+
+  const initialStoreState = {
+    ui: {
+      theme: {
+        theme: getTheme(),
+        systemPreference: getSystemAppearance()
+      }
+    }
+  }
+
   return (
-    <ReduxProvider>
+    <ReduxProvider initialStoreState={initialStoreState}>
       <ConnectedRouter history={history}>
-        <LastLocationProvider>
-          <TrpcProvider>
-            <AudiusQueryProvider>
-              <AppContextProvider>
-                <ThemeProvider>
-                  <NavProvider>
-                    <ScrollProvider>
-                      <RouterContextProvider>
-                        <MainContentContextProvider>
-                          <HeaderContextProvider>
-                            <ToastContextProvider>
-                              {children}
-                            </ToastContextProvider>
-                          </HeaderContextProvider>
-                        </MainContentContextProvider>
-                      </RouterContextProvider>
-                    </ScrollProvider>
-                  </NavProvider>
-                </ThemeProvider>
-              </AppContextProvider>
-            </AudiusQueryProvider>
-          </TrpcProvider>
-        </LastLocationProvider>
+        <CompatRouter>
+          <LastLocationProvider>
+            <TrpcProvider>
+              <AudiusQueryProvider>
+                <AppContextProvider>
+                  <ThemeProvider>
+                    <NavProvider>
+                      <ScrollProvider>
+                        <RouterContextProvider>
+                          <MainContentContextProvider>
+                            <HeaderContextProvider>
+                              <ToastContextProvider>
+                                {children}
+                              </ToastContextProvider>
+                            </HeaderContextProvider>
+                          </MainContentContextProvider>
+                        </RouterContextProvider>
+                      </ScrollProvider>
+                    </NavProvider>
+                  </ThemeProvider>
+                </AppContextProvider>
+              </AudiusQueryProvider>
+            </TrpcProvider>
+          </LastLocationProvider>
+        </CompatRouter>
       </ConnectedRouter>
     </ReduxProvider>
   )

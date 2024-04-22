@@ -1,15 +1,16 @@
-import styles from './DiscoveryProviders.module.css'
-import Page from 'components/Page'
-import DiscoveryTable from 'components/DiscoveryTable'
-import {
-  SERVICES,
-  SERVICES_DISCOVERY_PROVIDER_NODE,
-  SERVICES_TITLE,
-  SERVICES_UNREGISTERED_DISCOVERY_NODE
-} from 'utils/routes'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
 import { useLocation } from 'react-router-dom'
+
+import DiscoveryTable from 'components/DiscoveryTable'
+import Page from 'components/Page'
 import { useReplaceRoute } from 'utils/effects'
+import {
+  NODES_DISCOVERY_NODE,
+  NODES_UNREGISTERED_DISCOVERY_NODE
+} from 'utils/routes'
+
+import styles from './DiscoveryProviders.module.css'
 
 const messages = {
   title: 'DISCOVERY NODES'
@@ -27,9 +28,10 @@ const DiscoveryProviders = () => {
     const resolveEndpointToSpId = async () => {
       if (!endpoint) return
       try {
-        const spId = await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(
-          endpoint
-        )
+        const spId =
+          await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(
+            endpoint
+          )
         setSpId(spId)
       } catch (error) {
         console.error('Failed to resolve endpoint to spId:', error)
@@ -45,20 +47,15 @@ const DiscoveryProviders = () => {
 
     let path = ''
     if (spId === 0) {
-      path = `${SERVICES_UNREGISTERED_DISCOVERY_NODE}?endpoint=${endpoint}`
+      path = `${NODES_UNREGISTERED_DISCOVERY_NODE}?endpoint=${endpoint}`
     } else {
-      path = SERVICES_DISCOVERY_PROVIDER_NODE.replace(':spID', spId.toString())
+      path = NODES_DISCOVERY_NODE.replace(':spID', spId.toString())
     }
     replaceRoute(path)
   }, [spId, endpoint, replaceRoute])
 
   return (
-    <Page
-      title={messages.title}
-      className={styles.container}
-      defaultPreviousPage={SERVICES_TITLE}
-      defaultPreviousPageRoute={SERVICES}
-    >
+    <Page title={messages.title} className={styles.container}>
       <DiscoveryTable className={styles.serviceTable} />
     </Page>
   )

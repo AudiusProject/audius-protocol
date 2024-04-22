@@ -1,17 +1,19 @@
 import { useEffect } from 'react'
+
 import clsx from 'clsx'
 
-import styles from './Timeline.module.css'
+import Loading from 'components/Loading'
 import Paper from 'components/Paper'
-import TimelineEvent from './TimelineEvent'
 import { TimelineType, useTimeline } from 'store/cache/timeline/hooks'
 import { Address } from 'types'
-import Loading from 'components/Loading'
 import { useModalControls } from 'utils/hooks'
+
+import styles from './Timeline.module.css'
+import TimelineEvent from './TimelineEvent'
 import TimelineModal from './TimelineModal'
 
 const messages = {
-  title: 'Timeline',
+  title: 'Transaction Timeline',
   emptyTimeline: 'No Events',
   viewAll: 'View All Timeline Events'
 }

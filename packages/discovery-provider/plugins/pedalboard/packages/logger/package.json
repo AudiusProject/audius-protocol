@@ -1,6 +1,6 @@
 {
   "name": "@pedalboard/logger",
-  "version": "0.0.23",
+  "version": "0.0.30",
   "private": true,
   "main": "./dist/index.js",
   "source": "./src/index.ts",
@@ -13,7 +13,7 @@
     "clean": "rm -rf dist",
     "dev": "tsc -w",
     "lint": "eslint \"src/**/*.ts*\"",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "jest": {
     "preset": "jest-presets/jest/node"

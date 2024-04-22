@@ -1,22 +1,24 @@
 import React, { useCallback } from 'react'
-import clsx from 'clsx'
-import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 
-import styles from './TopOperatorsTable.module.css'
-import Table from 'components/Table'
-
-import { useUsers } from 'store/cache/user/hooks'
-import { Address, Operator, SortUser, Status } from 'types'
-import { usePushRoute } from 'utils/effects'
-import { useIsMobile } from 'utils/hooks'
-import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import BN from 'bn.js'
+import clsx from 'clsx'
+
 import DisplayAudio from 'components/DisplayAudio'
+import { NodeOperatorInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
+import Table from 'components/Table'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
+import { useUsers } from 'store/cache/user/hooks'
+import { Address, Operator, SortUser, Status } from 'types'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
+import { usePushRoute } from 'utils/effects'
+import { useIsMobile } from 'utils/hooks'
+import { NODES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
+
+import styles from './TopOperatorsTable.module.css'
 
 const messages = {
-  topAddresses: 'Top Service Operators by Active Stake',
+  topAddresses: 'Top Node Operators',
   viewMoreAddress: 'View Leaderboard'
 }
 
@@ -46,7 +48,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   const isMobile = useIsMobile()
   const pushRoute = usePushRoute()
   const onClickMore = useCallback(() => {
-    pushRoute(SERVICES_SERVICE_PROVIDERS)
+    pushRoute(NODES_SERVICE_PROVIDERS)
   }, [pushRoute])
 
   const onRowClick = useCallback(
@@ -70,7 +72,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   }
 
   const data = (users as Operator[])
-    .map(user => {
+    .map((user) => {
       const activeStake = getActiveStake(user)
       const totalActiveDelegated = getTotalActiveDelegatedStake(user)
       const totalCurrentStake = activeStake.add(totalActiveDelegated)
@@ -122,6 +124,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   return (
     <Table
       title={messages.topAddresses}
+      tooltipComponent={NodeOperatorInfoTooltip}
       isLoading={!status || status === Status.Loading}
       className={clsx(styles.topAddressesTable, {
         [className!]: !!className

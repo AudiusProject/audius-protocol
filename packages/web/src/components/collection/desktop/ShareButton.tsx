@@ -2,13 +2,10 @@ import { useCallback } from 'react'
 
 import { ShareSource, SmartCollectionVariant, ID } from '@audius/common/models'
 import { shareModalUIActions } from '@audius/common/store'
-import { IconShare } from '@audius/harmony'
-import { ButtonProps, ButtonType } from '@audius/stems'
+import { IconShare, IconButton, IconButtonProps } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
-
-import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
@@ -16,14 +13,14 @@ const messages = {
   share: 'Share'
 }
 
-type ShareButtonProps = Partial<ButtonProps> & {
+type ShareButtonProps = Partial<IconButtonProps> & {
   collectionId: SmartCollectionVariant | ID
-  userId?: ID
+  userId?: ID | null
   tooltipText?: string
 }
 
 export const ShareButton = (props: ShareButtonProps) => {
-  const { collectionId, type, userId, tooltipText, ...other } = props
+  const { collectionId, userId, tooltipText, ...other } = props
   const dispatch = useDispatch()
 
   const handleShare = useCallback(() => {
@@ -51,21 +48,22 @@ export const ShareButton = (props: ShareButtonProps) => {
     }
   }, [dispatch, collectionId, userId])
 
-  const shareButtonElement = (
-    <EntityActionButton
-      type={type ?? ButtonType.COMMON}
-      text={messages.share}
-      leftIcon={<IconShare />}
+  const buttonRender = (
+    <IconButton
+      icon={IconShare}
       onClick={handleShare}
+      size='l'
+      color='subdued'
+      aria-label={messages.share}
       {...other}
     />
   )
 
   return tooltipText ? (
     <Tooltip text={tooltipText}>
-      <span>{shareButtonElement}</span>
+      <span>{buttonRender}</span>
     </Tooltip>
   ) : (
-    shareButtonElement
+    buttonRender
   )
 }

@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { Access } from './Access';
+import {
+    AccessFromJSON,
+    AccessFromJSONTyped,
+    AccessToJSON,
+} from './Access';
 import type { PlaylistAddedTimestamp } from './PlaylistAddedTimestamp';
 import {
     PlaylistAddedTimestampFromJSON,
@@ -117,6 +123,18 @@ export interface Playlist {
      * @memberof Playlist
      */
     ddexApp?: string;
+    /**
+     * 
+     * @type {Access}
+     * @memberof Playlist
+     */
+    access?: Access;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    upc?: string;
 }
 
 /**
@@ -160,6 +178,8 @@ export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'totalPlayCount': json['total_play_count'],
         'user': UserFromJSON(json['user']),
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
+        'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
+        'upc': !exists(json, 'upc') ? undefined : json['upc'],
     };
 }
 
@@ -185,6 +205,8 @@ export function PlaylistToJSON(value?: Playlist | null): any {
         'total_play_count': value.totalPlayCount,
         'user': UserToJSON(value.user),
         'ddex_app': value.ddexApp,
+        'access': AccessToJSON(value.access),
+        'upc': value.upc,
     };
 }
 

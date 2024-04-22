@@ -1,6 +1,4 @@
 import { SsrPageProps } from '@audius/common/models'
-import createCache from '@emotion/cache'
-import { CacheProvider } from '@emotion/react'
 import createEmotionServer from '@emotion/server/create-instance'
 import { createMemoryHistory } from 'history'
 import { renderToString } from 'react-dom/server'
@@ -10,14 +8,13 @@ import type { PageContextServer } from 'vike/types'
 
 import { isMobileUserAgent } from 'utils/clientUtil'
 
-import { Root } from '../Root'
+import { harmonyCache } from '../HarmonyCacheProvider'
 
-import { SsrContextProvider } from './SsrContext'
+import RootWithProviders from './RootWithProviders'
 import { getIndexHtml } from './getIndexHtml'
 
-const cache = createCache({ key: 'harmony', prepend: true })
 const { extractCriticalToChunks, constructStyleTagsFromChunks } =
-  createEmotionServer(cache)
+  createEmotionServer(harmonyCache)
 
 export default function render(
   pageContext: PageContextServer & {
@@ -34,20 +31,17 @@ export default function render(
   })
 
   const pageHtml = renderToString(
-    <CacheProvider value={cache}>
-      <SsrContextProvider
-        value={{
-          isServerSide: true,
-          isSsrEnabled: true,
-          pageProps,
-          history,
-          isMobile
-        }}
-      >
-        <Root />
-      </SsrContextProvider>
-    </CacheProvider>
+    <RootWithProviders
+      ssrContextValue={{
+        isServerSide: true,
+        isSsrEnabled: true,
+        pageProps,
+        history,
+        isMobile
+      }}
+    />
   )
+
   const helmet = Helmet.renderStatic()
   const chunks = extractCriticalToChunks(pageHtml)
   const styles = constructStyleTagsFromChunks(chunks)

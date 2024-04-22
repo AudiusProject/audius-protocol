@@ -1,11 +1,10 @@
 import React, { useCallback } from 'react'
-import { usePushRoute } from 'utils/effects'
-
-import { ContentNode, Address, Status } from 'types'
-import { SERVICES_CONTENT, contentNodePage } from 'utils/routes'
 
 import ServiceTable from 'components/ServiceTable'
 import { useContentNodes } from 'store/cache/contentNode/hooks'
+import { Address, ContentNode, Status } from 'types'
+import { usePushRoute } from 'utils/effects'
+import { NODES_CONTENT, contentNodePage } from 'utils/routes'
 
 const messages = {
   title: 'Content Nodes',
@@ -30,7 +29,7 @@ const ContentTable: React.FC<ContentTableProps> = ({
   const pushRoute = usePushRoute()
 
   const onClickMore = useCallback(() => {
-    pushRoute(SERVICES_CONTENT)
+    pushRoute(NODES_CONTENT)
   }, [pushRoute])
 
   const onRowClick = useCallback(

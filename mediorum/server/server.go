@@ -277,10 +277,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes := echoServer.Group(apiBasePath)
 
 	routes.GET("", func(c echo.Context) error {
-		return c.Redirect(http.StatusFound, "/dashboard/#/services/content-node?endpoint="+config.Self.Host)
+		return c.Redirect(http.StatusFound, "/dashboard/#/nodes/content-node?endpoint="+config.Self.Host)
 	})
 	routes.GET("/", func(c echo.Context) error {
-		return c.Redirect(http.StatusFound, "/dashboard/#/services/content-node?endpoint="+config.Self.Host)
+		return c.Redirect(http.StatusFound, "/dashboard/#/nodes/content-node?endpoint="+config.Self.Host)
 	})
 
 	// public: uploads

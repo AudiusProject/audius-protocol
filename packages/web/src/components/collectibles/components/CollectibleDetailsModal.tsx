@@ -7,16 +7,19 @@ import {
   useState
 } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import { Chain, CollectibleMediaType, Collectible } from '@audius/common/models'
 import {
-  accountSelectors,
-  badgeTiers,
   collectibleDetailsUISelectors,
   collectibleDetailsUIActions
 } from '@audius/common/store'
 import { formatDateWithTimezoneOffset } from '@audius/common/utils'
 import {
+  Button,
+  ModalContent,
+  ModalContentText,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
   Modal,
   IconVolumeLevel2 as IconVolume,
   IconVolumeLevel0 as IconMute,
@@ -25,9 +28,9 @@ import {
   IconLink,
   IconShare,
   IconLogoCircleSOL,
-  IconLogoCircleETH
+  IconLogoCircleETH,
+  Flex
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -38,7 +41,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import zIndex from 'utils/zIndex'
 
@@ -53,7 +55,6 @@ const Collectible3D = lazy(() =>
 
 const { setCollectible } = collectibleDetailsUIActions
 const { getCollectibleDetails, getCollectible } = collectibleDetailsUISelectors
-const getAccountUser = accountSelectors.getAccountUser
 
 type CollectibleMediaProps = {
   collectible: Collectible
@@ -65,7 +66,8 @@ type CollectibleMediaProps = {
 const CollectibleMedia = (props: CollectibleMediaProps) => {
   const { collectible, isMuted, toggleMute, isMobile } = props
 
-  const { mediaType, imageUrl, videoUrl, gifUrl, threeDUrl } = collectible
+  const { mediaType, frameUrl, imageUrl, videoUrl, gifUrl, threeDUrl } =
+    collectible
 
   const [isSvg, setIsSvg] = useState(false)
 
@@ -92,13 +94,21 @@ const CollectibleMedia = (props: CollectibleMediaProps) => {
         </Suspense>
       ) : null}
     </div>
-  ) : mediaType === CollectibleMediaType.GIF ? (
+  ) : mediaType === CollectibleMediaType.GIF ||
+    mediaType === CollectibleMediaType.ANIMATED_WEBP ? (
     <div className={styles.detailsMediaWrapper}>
       <img src={gifUrl!} alt='Collectible' />
     </div>
   ) : mediaType === CollectibleMediaType.VIDEO ? (
     <div className={styles.detailsMediaWrapper} onClick={toggleMute}>
-      <video muted={isMuted} autoPlay loop playsInline src={videoUrl!}>
+      <video
+        src={videoUrl!}
+        poster={frameUrl ?? undefined}
+        muted={isMuted}
+        autoPlay
+        loop
+        playsInline
+      >
         {collectibleMessages.videoNotSupported}
       </video>
       {isMuted ? (
@@ -147,13 +157,6 @@ const CollectibleDetailsModal = ({
 
   const [isPicConfirmModalOpen, setIsPicConfirmaModalOpen] =
     useState<boolean>(false)
-
-  const accountUser = useSelector(getAccountUser)
-  const userId = accountUser?.user_id ?? 0
-  const { tierNumber } = useSelectTierInfo(userId)
-
-  const isCollectibleOptionEnabled =
-    tierNumber >= badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
 
   const handleClose = useCallback(() => {
     dispatch(setCollectible({ collectible: null }))
@@ -283,7 +286,7 @@ const CollectibleDetailsModal = ({
               </a>
             )}
 
-            <div className={styles.detailsButtonContainer}>
+            <Flex gap='m' wrap='wrap'>
               <Toast
                 text={collectibleMessages.copied}
                 fillParent={false}
@@ -293,84 +296,71 @@ const CollectibleDetailsModal = ({
                 tooltipClassName={styles.shareTooltip}
               >
                 <Button
-                  className={styles.detailsButton}
-                  textClassName={styles.detailsButtonText}
-                  iconClassName={styles.detailsButtonIcon}
+                  variant='secondary'
+                  size='small'
                   onClick={() => copyToClipboard(shareUrl)}
-                  text='Share'
-                  type={ButtonType.COMMON_ALT}
-                  size={ButtonSize.SMALL}
-                  leftIcon={<IconShare />}
-                />
+                  iconLeft={IconShare}
+                >
+                  Share
+                </Button>
               </Toast>
 
               <Button
-                className={styles.detailsButton}
-                textClassName={styles.detailsButtonText}
-                iconClassName={styles.detailsButtonIcon}
+                variant='secondary'
+                size='small'
                 onClick={() => setIsEmbedModalOpen?.(true)}
-                text='Embed'
-                type={ButtonType.COMMON_ALT}
-                size={ButtonSize.SMALL}
-                leftIcon={<IconEmbed />}
-              />
+                iconLeft={IconEmbed}
+              >
+                Embed
+              </Button>
 
-              {isCollectibleOptionEnabled &&
-                isUserOnTheirProfile &&
+              {isUserOnTheirProfile &&
                 collectible.mediaType === CollectibleMediaType.IMAGE && (
                   <Button
-                    className={styles.detailsButton}
-                    textClassName={styles.detailsButtonText}
-                    iconClassName={styles.detailsButtonIcon}
+                    variant='secondary'
+                    size='small'
                     onClick={() => {
                       setIsModalOpen(false)
                       setIsPicConfirmaModalOpen(true)
                     }}
-                    text='Set As Profile Pic'
-                    type={ButtonType.COMMON_ALT}
-                    size={ButtonSize.SMALL}
-                    leftIcon={<IconImage />}
-                  />
+                    iconLeft={IconImage}
+                  >
+                    Set As Profile Pic
+                  </Button>
                 )}
-            </div>
+            </Flex>
           </div>
         </div>
       </Modal>
 
       <Modal
-        showTitleHeader
-        showDismissButton
-        headerContainerClassName={styles.modalHeader}
         isOpen={isPicConfirmModalOpen}
         onClose={() => setIsPicConfirmaModalOpen(false)}
-        titleClassName={styles.confirmModalTitle}
-        title={
-          <>
-            <IconImage />
-            <span>Set as Profile Pic</span>
-          </>
-        }
       >
-        <div className={styles.confirmModalContainer}>
-          <p className={styles.confirmModalText}>
-            Are you sure you want to change your profile picture?
-          </p>
+        <ModalHeader>
+          <ModalTitle
+            title={collectibleMessages.setAsProfilePic}
+            icon={<IconImage />}
+          />
+        </ModalHeader>
+        <ModalContent>
+          <ModalContentText>
+            {collectibleMessages.setAsProfilePicDescription}
+          </ModalContentText>
+        </ModalContent>
 
-          <div className={styles.confirmButtonContainer}>
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={() => setIsPicConfirmaModalOpen(false)}
-              text='Nevermind'
-              type={ButtonType.COMMON_ALT}
-            />
-            <Button
-              className={styles.profPicConfirmButton}
-              onClick={onClickProfPicUpload}
-              text='Yes'
-              type={ButtonType.PRIMARY_ALT}
-            />
-          </div>
-        </div>
+        <ModalFooter>
+          <Button
+            variant='secondary'
+            onClick={() => setIsPicConfirmaModalOpen(false)}
+            fullWidth
+          >
+            {collectibleMessages.setAsProfilePickCancel}
+          </Button>
+          <Button variant='primary' onClick={onClickProfPicUpload} fullWidth>
+            {collectibleMessages.setAsProfilePickConfirm}
+          </Button>
+        </ModalFooter>
       </Modal>
 
       <Drawer
@@ -454,15 +444,13 @@ const CollectibleDetailsModal = ({
             )}
 
             <Button
-              className={cn(styles.detailsButton, styles.mobileDetailsButton)}
-              textClassName={styles.detailsButtonText}
-              iconClassName={styles.detailsButtonIcon}
+              variant='secondary'
+              size='small'
               onClick={handleMobileShareClick}
-              text='Share'
-              type={ButtonType.COMMON_ALT}
-              size={ButtonSize.SMALL}
-              leftIcon={<IconShare />}
-            />
+              iconLeft={IconShare}
+            >
+              Share
+            </Button>
           </div>
         </div>
       </Drawer>

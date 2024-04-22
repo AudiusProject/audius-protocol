@@ -26,21 +26,22 @@ import {
 } from '@audius/common/utils'
 import {
   IconQuestionCircle,
-  IconTokenNoTier,
   IconArrowRight as IconArrow,
   IconTrophy,
   TokenAmountInput,
-  TokenAmountInputChangeHandler
+  TokenAmountInputChangeHandler,
+  Button,
+  IconComponent
 } from '@audius/harmony'
-import { ButtonType, Button } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconNoTierBadge from 'assets/img/tokenBadgePurple16@2x.webp'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { audioTierMapSVG } from 'components/user-badges/UserBadges'
+import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -69,12 +70,20 @@ const messages = {
   buyAudioPrefix: 'Buy $AUDIO using '
 }
 
-const TopBanner = ({ icon, text }: { icon?: ReactNode; text: ReactNode }) => (
-  <div className={styles.topBanner}>
-    {icon ? <span className={styles.topBannerIcon}>{icon}</span> : null}
-    <span className={styles.topBannerText}>{text}</span>
-  </div>
-)
+type TopBannerProps = {
+  icon?: IconComponent
+  text: ReactNode
+}
+
+const TopBanner = (props: TopBannerProps) => {
+  const { icon: Icon, text } = props
+  return (
+    <div className={styles.topBanner}>
+      {Icon ? <Icon color='staticWhite' /> : null}
+      <span className={styles.topBannerText}>{text}</span>
+    </div>
+  )
+}
 
 export const SendTip = () => {
   const dispatch = useDispatch()
@@ -89,7 +98,7 @@ export const SendTip = () => {
   const { tier } = getTierAndNumberForBalance(
     weiToString(accountBalance ?? (new BN('0') as BNWei))
   )
-  const audioBadge = audioTierMapSVG[tier as BadgeTier]
+  const audioBadge = audioTierMapPng[tier as BadgeTier]
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -176,7 +185,7 @@ export const SendTip = () => {
             width: 16
           })
         ) : (
-          <IconTokenNoTier size='s' />
+          <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
         )}
         <span className={styles.amountAvailable}>
           {isNullOrUndefined(accountBalance) ? (
@@ -192,10 +201,10 @@ export const SendTip = () => {
   const topBanner = audioFeaturesDegradedText ? (
     <TopBanner text={audioFeaturesDegradedText} />
   ) : !hasInsufficientBalance && isFirstSupporter ? (
-    <TopBanner icon={<IconTrophy />} text={messages.becomeFirstSupporter} />
+    <TopBanner icon={IconTrophy} text={messages.becomeFirstSupporter} />
   ) : !hasInsufficientBalance && amountToTipToBecomeTopSupporter ? (
     <TopBanner
-      icon={<IconTrophy />}
+      icon={IconTrophy}
       text={
         <>
           {messages.becomeTopSupporterPrefix}
@@ -211,8 +220,9 @@ export const SendTip = () => {
       <OnRampButton
         buttonPrefix={messages.buyAudioPrefix}
         provider={OnRampProvider.STRIPE}
-        className={styles.buyAudioButton}
-        textClassName={styles.buyAudioButtonText}
+        css={(theme) => ({
+          paddingVertical: theme.spacing.s
+        })}
         onClick={handleBuyWithStripeClicked}
       />
     </div>
@@ -247,15 +257,13 @@ export const SendTip = () => {
       {renderAvailableAmount()}
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
-          text={messages.sendATip}
-          type={ButtonType.PRIMARY_ALT}
+          variant='primary'
           onClick={handleSendClick}
-          rightIcon={<IconArrow />}
-          textClassName={styles.buttonText}
-          className={cn(styles.buttonText, { [styles.disabled]: isDisabled })}
+          iconRight={IconArrow}
           disabled={isDisabled}
-          iconClassName={styles.buttonIcon}
-        />
+        >
+          {messages.sendATip}
+        </Button>
       </div>
       {hasInsufficientBalance && (
         <div className={cn(styles.flexCenter, styles.error)}>

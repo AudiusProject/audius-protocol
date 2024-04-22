@@ -66,6 +66,7 @@ export type CardProps = {
   secondaryText: ReactNode
   cardCoverImageSizes?: CoverArtSizes
   playlistName?: string
+  ddexApp?: string | null
   isUser: boolean
   isPlaylist: boolean // playlist or album
   isPublic?: boolean // only for playlist or album
@@ -155,6 +156,7 @@ const Card = ({
   playlistId,
   isPublic = true,
   playlistName,
+  ddexApp,
   primaryText,
   secondaryText,
   size,
@@ -215,6 +217,7 @@ const Card = ({
           variant={isPlaylist ? 'playlist' : 'album'}
           playlistId={playlistId}
           playlistName={playlistName}
+          ddexApp={ddexApp}
           permalink={href}
           containerStyles={styles.actionContainer}
           currentUserReposted={isReposted}
@@ -231,7 +234,7 @@ const Card = ({
           {(ref, triggerPopup: () => void) => (
             <div className={styles.iconContainer} onClick={triggerPopup}>
               <div ref={ref}>
-                <IconKebabHorizontal className={styles.iconKebabHorizontal} />
+                <IconKebabHorizontal color='subdued' size='s' />
               </div>
             </div>
           )}

@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+
 import AudiusClient from 'services/Audius'
 import { User, Operator, Address } from 'types'
 
@@ -142,16 +143,15 @@ export const getRewardForClaimBlock = async ({
   blockNumber: number
   aud: AudiusClient
 }) => {
-  const user = users.find(u => u.wallet === wallet)
+  const user = users.find((u) => u.wallet === wallet)
   let totalRewards = new BN('0')
 
   // If the user is a service provider, retrieve their expected rewards for staking
   if ('serviceProvider' in user!) {
     const lockedPendingDecrease =
       (user as Operator).pendingDecreaseStakeRequest?.amount ?? new BN('0')
-    const lockedDelegation = await aud.Delegate.getTotalLockedDelegationForServiceProvider(
-      wallet
-    )
+    const lockedDelegation =
+      await aud.Delegate.getTotalLockedDelegationForServiceProvider(wallet)
     const totalLocked = lockedPendingDecrease.add(lockedDelegation)
     const mintedRewards = await getMintedAmountAtBlock({
       aud,
@@ -168,8 +168,11 @@ export const getRewardForClaimBlock = async ({
   }
 
   // For each service operator the user delegates to, calculate the expected rewards for delegating
-  for (let delegate of (user as User).delegates) {
-    const operator = users.find(u => u.wallet === delegate.wallet) as Operator
+
+  const delegateToUserRewards: { [address: string]: BN } = {}
+
+  for (const delegate of (user as User).delegates) {
+    const operator = users.find((u) => u.wallet === delegate.wallet) as Operator
     const deployerCut = new BN(operator.serviceProvider.deployerCut.toString())
     const operatorActiveStake = getOperatorTotalActiveStake(operator)
     const operatorTotalLocked = getOperatorTotalLocked(operator)
@@ -186,7 +189,8 @@ export const getRewardForClaimBlock = async ({
       totalActive: operatorActiveStake,
       deployerCut
     })
+    delegateToUserRewards[delegate.wallet] = delegateRewards.delegatorCut
     totalRewards = totalRewards.add(delegateRewards.delegatorCut)
   }
-  return totalRewards
+  return { totalRewards, delegateToUserRewards }
 }

@@ -5,7 +5,7 @@ export const fetchWithTimeout = async (
   url: string,
   timeout: number = DEFAULT_TIMEOUT_MS
 ) => {
-  const timeoutPromise = new Promise((_, reject) => {
+  const timeoutPromise = new Promise((_resolve, reject) => {
     setTimeout(() => reject(new Error(`${TIMED_OUT_ERROR}:${url}`)), timeout)
   })
 
@@ -20,7 +20,7 @@ export const withTimeout = async (
   asyncCall: () => Promise<any>,
   timeout: number = DEFAULT_TIMEOUT_MS
 ) => {
-  const timeoutPromise = new Promise((_, reject) => {
+  const timeoutPromise = new Promise((_resolve, reject) => {
     setTimeout(() => reject(new Error(`${TIMED_OUT_ERROR}`)), timeout)
   })
 
@@ -37,7 +37,7 @@ export const fetchWithLibs = async (req: {
   const data = await window.audiusLibs.discoveryProvider._makeRequest(req)
 
   // if all nodes are unhealthy and unavailable
-  if (!data) return Promise.reject()
+  if (!data) return Promise.reject(new Error())
 
   return data
 }

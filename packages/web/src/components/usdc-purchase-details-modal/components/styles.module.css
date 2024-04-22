@@ -2,31 +2,40 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--unit-4);
+  gap: var(--harmony-unit-6);
 }
 
 .trackRow {
   align-items: center∂;
   display: flex;
   justify-content: space-between;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   width: 100%;
 }
 
 .detailSection {
-  padding: var(--unit-2) 0;
+  padding: var(--harmony-unit-2) 0;
   display: flex;
   flex-direction: column;
-  gap: var(--unit-2);
+  gap: var(--harmony-unit-2);
   width: 100%;
 }
 
 .footer {
   display: flex;
-  gap: var(--unit-2);
-  padding: 0 var(--unit-6) var(--unit-6);
+  gap: var(--harmony-unit-2);
+  padding: 0 var(--harmony-unit-6) var(--harmony-unit-6);
 }
 
 .button {
   flex: 1;
+}
+
+.artworkContainer {
+  border-radius: var(--harmony-unit-1);
+  border: 1px solid var(--harmony-border-default);
+  overflow: hidden;
+  width: var(--harmony-unit-24);
+  height: var(--harmony-unit-24);
+  flex: 0 0 var(--harmony-unit-24);
 }

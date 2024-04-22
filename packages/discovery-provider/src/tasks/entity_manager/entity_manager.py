@@ -43,7 +43,12 @@ from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
 )
-from src.tasks.entity_manager.entities.grant import create_grant, revoke_grant
+from src.tasks.entity_manager.entities.grant import (
+    approve_grant,
+    create_grant,
+    reject_grant,
+    revoke_grant,
+)
 from src.tasks.entity_manager.entities.notification import (
     create_notification,
     view_notification,
@@ -61,6 +66,7 @@ from src.tasks.entity_manager.entities.social_features import (
     delete_social_action_types,
     delete_social_record,
 )
+from src.tasks.entity_manager.entities.tip_reactions import tip_reaction
 from src.tasks.entity_manager.entities.track import (
     create_track,
     delete_track,
@@ -305,6 +311,16 @@ def entity_manager_update(
                     ):
                         revoke_grant(params)
                     elif (
+                        params.action == Action.APPROVE
+                        and params.entity_type == EntityType.GRANT
+                    ):
+                        approve_grant(params)
+                    elif (
+                        params.action == Action.REJECT
+                        and params.entity_type == EntityType.GRANT
+                    ):
+                        reject_grant(params)
+                    elif (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.DASHBOARD_WALLET_USER
                     ):
@@ -314,6 +330,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.DASHBOARD_WALLET_USER
                     ):
                         delete_dashboard_wallet_user(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.TIP
+                    ):
+                        tip_reaction(params)
 
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -483,7 +504,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             if signer:
                 entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
                 entities_to_fetch[EntityType.DEVELOPER_APP].add(signer.lower())
-
+                entities_to_fetch[EntityType.USER_WALLET].add(signer.lower())
             if entity_type == EntityType.DEVELOPER_APP:
                 try:
                     json_metadata = json.loads(metadata)
@@ -499,11 +520,16 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
                 else:
                     try:
-                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            get_address_from_signature(
-                                json_metadata.get("app_signature", {})
-                            )
+                        address_from_signature = get_address_from_signature(
+                            json_metadata.get("app_signature", {})
                         )
+                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                            address_from_signature
+                        )
+                        if action == Action.CREATE:
+                            entities_to_fetch[EntityType.USER_WALLET].add(
+                                address_from_signature
+                            )
                     except:
                         logger.error(
                             "tasks | entity_manager.py | Missing address or valid app signature in metadata required for add developer app tx"
@@ -526,10 +552,14 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.DEVELOPER_APP].add(
                         raw_grantee_address.lower()
                     )
-                else:
-                    logger.error(
-                        "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
+                    entities_to_fetch[EntityType.USER_WALLET].add(
+                        raw_grantee_address.lower()
                     )
+                raw_grantor_user_id = json_metadata.get("grantor_user_id", None)
+                if raw_grantor_user_id and signer:
+                    entities_to_fetch[EntityType.GRANT].add(
+                        (signer.lower(), raw_grantor_user_id)
+                    )  # TODO - Look for grant from user's wallet to grantor user id instead, since signer might not be the user
 
             if entity_type == EntityType.DASHBOARD_WALLET_USER:
                 try:
@@ -918,7 +948,19 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         }
         for grant, _ in grants:
             entities_to_fetch["DeveloperApp"].add(grant.grantee_address.lower())
-
+    # USERS BY WALLET
+    if entities_to_fetch["UserWallet"]:
+        users_by_wallet: List[User] = (
+            session.query(User)
+            .filter(
+                func.lower(User.wallet).in_(entities_to_fetch["UserWallet"]),
+                User.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.USER_WALLET] = {
+            (cast(str, user.wallet)).lower(): user for user in users_by_wallet
+        }
     # APP DEVELOPER APPS
     if entities_to_fetch["DeveloperApp"]:
         developer_apps: List[Tuple[DeveloperApp, dict]] = (

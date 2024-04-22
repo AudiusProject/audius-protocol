@@ -17,12 +17,15 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import Skeleton from 'components/skeleton/Skeleton'
 import { preload } from 'utils/image'
 
-import { getFrameFromGif } from '../ethCollectibleHelpers'
+import {
+  getFrameFromAnimatedWebp,
+  getFrameFromGif
+} from '../ethCollectibleHelpers'
 
 import styles from './CollectiblesPage.module.css'
 const { setCollectible } = collectibleDetailsUIActions
@@ -30,7 +33,7 @@ const { getProfileUserHandle } = profilePageSelectors
 
 type CollectibleDetailsProps = {
   collectible: Collectible
-  onClick: () => void
+  onClick: (hash: string) => void
 }
 
 const CollectibleDetails = (props: CollectibleDetailsProps) => {
@@ -53,13 +56,10 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
   useEffect(() => {
     const load = async () => {
       let f = frameUrl
-      if (
-        !f &&
-        [CollectibleMediaType.GIF, CollectibleMediaType.THREE_D].includes(
-          mediaType
-        )
-      ) {
-        f = await getFrameFromGif(gifUrl!, name || '')
+      if (!f && mediaType === CollectibleMediaType.GIF) {
+        f = await getFrameFromGif(gifUrl!)
+      } else if (!f && mediaType === CollectibleMediaType.ANIMATED_WEBP) {
+        f = await getFrameFromAnimatedWebp(gifUrl!)
       } else if (!f && mediaType === CollectibleMediaType.VIDEO) {
         setIsLoading(false)
       }
@@ -71,8 +71,9 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
         setIsLoading(false)
       }
     }
+
     load()
-  }, [mediaType, frameUrl, gifUrl, name, setFrame, setIsLoading])
+  }, [isLoading, mediaType, frameUrl, gifUrl, name, setFrame, setIsLoading])
 
   const handle = useSelector(getProfileUserHandle)
   const handleItemClick = useCallback(() => {
@@ -83,7 +84,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
     window.history.pushState('', '', url)
     dispatch(setCollectible({ collectible }))
     setIsModalOpen(true)
-    onClick()
+    onClick(getHash(collectible.id))
   }, [collectible, handle, dispatch, setIsModalOpen, onClick])
 
   const { spacing } = useTheme()
@@ -109,21 +110,18 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
       >
         <>
           {isLoading ? (
-            <div className={styles.media}>
-              {showSpinner && (
-                <LoadingSpinner className={styles.loadingSpinner} />
-              )}
-            </div>
+            <div className={styles.media}>{showSpinner && <Skeleton />}</div>
           ) : (
             <>
               {(mediaType === CollectibleMediaType.GIF ||
+                mediaType === CollectibleMediaType.ANIMATED_WEBP ||
                 (mediaType === CollectibleMediaType.VIDEO && frame)) && (
                 <div className={styles.imageWrapper}>
                   <PreloadImage
-                    asBackground
                     src={frame!}
                     preloaded={true}
                     className={styles.media}
+                    asBackground
                   />
                   <IconPlay className={styles.playIcon} />
                   {collectibleChainElement}
@@ -145,10 +143,10 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                 mediaType === CollectibleMediaType.THREE_D) && (
                 <div className={styles.imageWrapper}>
                   <PreloadImage
-                    asBackground
                     src={frame!}
                     preloaded={true}
                     className={styles.media}
+                    asBackground
                   />
                   {collectibleChainElement}
                 </div>

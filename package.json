@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.69",
+  "version": "1.5.77",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -9,18 +9,21 @@
     "packages/ddex/webapp/server",
     "packages/ddex/webapp/client",
     "packages/ddex/publisher",
+    "packages/ddex/entrypoint",
     "packages/es-indexer"
   ],
   "private": true,
   "scripts": {
     "build": "turbo run build",
+    "changeset": "changeset",
     "check-secrets": "sh ./scripts/check_secrets.sh",
-    "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
+    "clean:modules": "rm -rf node_modules && rm -rf protocol-dashboard/node_modules && rm -rf packages/*/node_modules",
     "clean:dist": "rm -rf packages/*/dist",
+    "install-git-secrets": "sh ./scripts/install-git-secrets.sh",
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
-    "patch-package": "patch-package && patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
+    "patch-package": "bash ./scripts/patch-package.sh",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
     "turbo-link": "turbo login && turbo link",
@@ -30,7 +33,8 @@
     "web:dev": "npm run start:dev -w audius-client",
     "web:prod": "npm run start:prod -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
-    "web:e2e": "concurrently -k 'npm run start:stage -w audius-client' 'npm run cypress:open -w probers' ",
+    "web:e2e": "npm run e2e -w audius-client",
+    "web:test": "turbo run test --filter=audius-client",
     "DESKTOP====================================": "",
     "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://0.0.0.0:3000 && npm run electron:localhost -w audius-client -- 3000'",
     "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://0.0.0.0:3002 && npm run electron:localhost -w audius-client -- 3002'",
@@ -49,8 +53,6 @@
     "embed:prod": "npm run start:prod -w embed",
     "embed:stage": "npm run start:stage -w embed",
     "embed:dev": "npm run start:dev -w embed",
-    "STEMS======================================": "",
-    "stems": "turbo run start --filter=@audius/stems",
     "HARMONY====================================": "",
     "harmony": "turbo run start --filter=@audius/harmony",
     "harmony:dev": "npm run storybook -w @audius/harmony",
@@ -94,13 +96,15 @@
     "prettier-config-standard": "6.0.0",
     "standard": "17.0.0",
     "turbo": "1.10.14",
-    "vike": "^0.4.150",
     "typescript": "5.0.4",
+    "vike": "^0.4.150",
     "wait-on": "7.2.0"
   },
   "dependencies": {
+    "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
+    "@web3modal/ethers": "4.1.0",
     "pg": "8.8.0"
   },
   "overrides": {

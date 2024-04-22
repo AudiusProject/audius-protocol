@@ -15,6 +15,7 @@ import {
 } from '@solana/web3.js'
 import * as solanaWeb3 from '@solana/web3.js'
 import BN from 'bn.js'
+import { sample } from 'lodash'
 
 import { AUDIO_DECIMALS, USDC_DECIMALS, WAUDIO_DECIMALS } from '../../constants'
 import { Logger, Nullable, Utils } from '../../utils'
@@ -86,10 +87,6 @@ const SOL_PER_LAMPORT = 0.000000001
 // Generous default connection confirmation timeout to better cope with RPC congestion
 const DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS = 180 * 1000
 
-const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice({
-  microLamports: 100000 // micro lamports
-})
-
 export type SolanaWeb3Config = {
   //  the RPC endpoint to make requests against
   solanaClusterEndpoint: string
@@ -137,7 +134,7 @@ export class SolanaWeb3Manager {
   splToken: typeof splToken
   solanaClusterEndpoint!: string
   transactionHandler!: TransactionHandler
-  connection!: Connection
+  connections!: Connection[]
   mints!: Record<MintName, PublicKey>
   claimableTokenPDAs!: Record<MintName, PublicKey>
   solanaTokenAddress!: string
@@ -163,6 +160,14 @@ export class SolanaWeb3Manager {
     this.splToken = splToken
   }
 
+  getConnection() {
+    const connection = sample(this.connections)
+    if (!connection) {
+      throw new Error('No connections')
+    }
+    return connection
+  }
+
   async init() {
     const {
       solanaClusterEndpoint,
@@ -181,16 +186,23 @@ export class SolanaWeb3Manager {
     } = this.solanaWeb3Config
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
-    this.connection = new Connection(this.solanaClusterEndpoint, {
-      confirmTransactionInitialTimeout:
-        confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
-    })
+
+    this.connections = []
+    for (const endpoint of this.solanaClusterEndpoint.split(',')) {
+      this.connections.push(
+        new Connection(endpoint, {
+          confirmTransactionInitialTimeout:
+            confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
+        })
+      )
+    }
 
     this.transactionHandler = new TransactionHandler({
-      connection: this.connection,
+      connection: this.getConnection(),
       useRelay,
       identityService: this.identityService,
-      feePayerKeypairs
+      feePayerKeypairs,
+      fallbackConnections: this.connections
     })
 
     this.mints = {
@@ -346,7 +358,7 @@ export class SolanaWeb3Manager {
       solanaWalletKey: new PublicKey(solanaAddress),
       mintKey: this.mints[mint],
       solanaTokenProgramKey: this.solanaTokenKey,
-      connection: this.connection,
+      connection: this.getConnection(),
       identityService: this.identityService
     })
   }
@@ -401,7 +413,7 @@ export class SolanaWeb3Manager {
     try {
       const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
-        connection: this.connection
+        connection: this.getConnection()
       })
       return res
     } catch (e) {
@@ -506,7 +518,7 @@ export class SolanaWeb3Manager {
       claimableTokenPDA: this.claimableTokenPDAs.audio,
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
-      connection: this.connection,
+      connection: this.getConnection(),
       mintKey: this.mints.audio,
       transactionHandler: this.transactionHandler
     })
@@ -573,7 +585,7 @@ export class SolanaWeb3Manager {
       claimableTokenPDA: this.claimableTokenPDAs.usdc,
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
-      connection: this.connection,
+      connection: this.getConnection(),
       mintKey: this.mints.usdc
     })
 
@@ -592,7 +604,13 @@ export class SolanaWeb3Manager {
     })
 
     return await this.transactionHandler.handleTransaction({
-      instructions: [...instructions, memoInstruction, priorityFeeInstruction],
+      instructions: [
+        ...instructions,
+        memoInstruction,
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: 100000
+        })
+      ],
       skipPreflight: true,
       feePayerOverride: this.feePayerKey
     })
@@ -718,7 +736,9 @@ export class SolanaWeb3Manager {
       transferInstruction,
       paymentRouterInstruction,
       memoInstruction,
-      priorityFeeInstruction
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
     ]
     return instructions
   }
@@ -755,7 +775,7 @@ export class SolanaWeb3Manager {
         senderAccount: senderKeypair.publicKey,
         purchaseAccess
       })
-    const recentBlockhash = (await this.connection.getLatestBlockhash())
+    const recentBlockhash = (await this.getConnection().getLatestBlockhash())
       .blockhash
 
     const transaction = new Transaction({
@@ -870,7 +890,7 @@ export class SolanaWeb3Manager {
    * Gets the balance of a PublicKey, in SOL
    */
   async getBalance({ publicKey }: { publicKey: PublicKey }) {
-    const lamports = await this.connection.getBalance(publicKey)
+    const lamports = await this.getConnection().getBalance(publicKey)
     return lamports * SOL_PER_LAMPORT
   }
 
@@ -896,7 +916,7 @@ export class SolanaWeb3Manager {
   }
 
   async getSlot() {
-    return await this.connection.getSlot('processed')
+    return await this.getConnection().getSlot('processed')
   }
 
   async getRandomFeePayer() {
@@ -913,7 +933,9 @@ export class SolanaWeb3Manager {
       this.rewardManagerProgramPDA
     )
 
-    const res = await this.connection.getAccountInfo(derivedSenderSolanaAddress)
+    const res = await this.getConnection().getAccountInfo(
+      derivedSenderSolanaAddress
+    )
     return !!res
   }
 
@@ -1012,10 +1034,15 @@ export class SolanaWeb3Manager {
       claimableTokenPDA: this.claimableTokenPDAs[mint],
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
-      connection: this.connection,
+      connection: this.getConnection(),
       mintKey: this.mints[mint],
       instructionIndex
     })
-    return instructions
+    return [
+      ...instructions,
+      ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000
+      })
+    ]
   }
 }

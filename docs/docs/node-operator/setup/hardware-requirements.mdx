@@ -23,6 +23,13 @@ The minimum resource requirements per registered node are as follows.
 - 16 GiB of RAM
 - 2000 GiB (2 TiB) SSD
 
+:::warning Port Configuration
+
+Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` for Content
+Nodes.
+
+:::
+
 ---
 
 ## Discovery Node
@@ -30,3 +37,10 @@ The minimum resource requirements per registered node are as follows.
 - 8 vCPU
 - 16 GiB of RAM
 - 256 GiB SSD
+
+:::warning Port Configuration
+
+Firewalls should be configured to only allow `0.0.0.0/0` ingress on ports `80` + `443` + `30300` for
+Discovery Nodes.
+
+:::

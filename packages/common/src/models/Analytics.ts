@@ -91,7 +91,6 @@ export enum Name {
   CREATE_ACCOUNT_WELCOME_MODAL = 'Create Account: Welcome Modal',
   // When the user clicks the "Upload Track" CTA in the welcome modal
   CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
-
   // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
   SIGN_IN_FINISH = 'Sign In: Finish',
@@ -115,9 +114,6 @@ export enum Name {
   TIKTOK_START_OAUTH = 'TikTok: Start TikTok OAuth',
   TIKTOK_COMPLETE_OAUTH = 'TikTok: Complete TikTok OAuth',
   TIKTOK_OAUTH_ERROR = 'TikTok: TikTok OAuth Error',
-  TIKTOK_START_SHARE_SOUND = 'TikTok: Start Share Sound',
-  TIKTOK_COMPLETE_SHARE_SOUND = 'TikTok: Complete Share Sound',
-  TIKTOK_SHARE_SOUND_ERROR = 'TikTok: Share Sound Error',
 
   // Audius OAuth Login Page
   AUDIUS_OAUTH_START = 'Audius Oauth: Open Login (authenticate)',
@@ -189,7 +185,6 @@ export enum Name {
   TRACK_UPLOAD_COMPLETE_UPLOAD = 'Track Upload: Complete Upload',
   TRACK_UPLOAD_COPY_LINK = 'Track Upload: Copy Link',
   TRACK_UPLOAD_SHARE_WITH_FANS = 'Track Upload: Share with your fans',
-  TRACK_UPLOAD_SHARE_SOUND_TO_TIKTOK = 'Track Upload: Share sound to TikTok',
   TRACK_UPLOAD_VIEW_TRACK_PAGE = 'Track Upload: View Track page',
   TWEET_FIRST_UPLOAD = 'Tweet First Upload',
 
@@ -636,8 +631,8 @@ type CreateAccountSelectGenre = {
 }
 type CreateAccountFollowArtist = {
   eventName: Name.CREATE_ACCOUNT_FOLLOW_ARTIST
-  emailAddress: string
-  handle: string
+  emailAddress?: string
+  handle?: string
   artistID: number
   artistName: string
 }
@@ -751,19 +746,6 @@ type TikTokCompleteOAuth = {
 
 type TikTokOAuthError = {
   eventName: Name.TIKTOK_OAUTH_ERROR
-  error: string
-}
-
-type TikTokStartShareSound = {
-  eventName: Name.TIKTOK_START_SHARE_SOUND
-}
-
-type TikTokCompleteShareSound = {
-  eventName: Name.TIKTOK_COMPLETE_SHARE_SOUND
-}
-
-type TikTokShareSoundError = {
-  eventName: Name.TIKTOK_SHARE_SOUND_ERROR
   error: string
 }
 
@@ -1059,9 +1041,6 @@ type TrackUploadShareWithFans = {
   eventName: Name.TRACK_UPLOAD_SHARE_WITH_FANS
   uploadType: string
   text: string
-}
-type TrackUploadShareSoundToTikTok = {
-  eventName: Name.TRACK_UPLOAD_SHARE_SOUND_TO_TIKTOK
 }
 type TrackUploadViewTrackPage = {
   eventName: Name.TRACK_UPLOAD_VIEW_TRACK_PAGE
@@ -2386,9 +2365,6 @@ export type AllTrackingEvents =
   | TikTokStartOAuth
   | TikTokCompleteOAuth
   | TikTokOAuthError
-  | TikTokStartShareSound
-  | TikTokCompleteShareSound
-  | TikTokShareSoundError
   | VisualizerOpen
   | VisualizerClose
   | AccountHealthMeterFull
@@ -2436,7 +2412,6 @@ export type AllTrackingEvents =
   | TrackUploadRejected
   | TrackUploadCopyLink
   | TrackUploadShareWithFans
-  | TrackUploadShareSoundToTikTok
   | TrackUploadViewTrackPage
   | USDCGatedTrackUnlocked
   | CollectibleGatedTrackUnlocked

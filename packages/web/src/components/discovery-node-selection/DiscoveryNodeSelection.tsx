@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Button, ButtonType } from '@audius/stems'
+import { Button } from '@audius/harmony'
 
 import Input from 'components/data-entry/Input'
 import { useDevModeHotkey } from 'hooks/useDevModeHotkey'
@@ -57,12 +57,9 @@ const DiscoveryNodeSelection = () => {
           onChange={(value: string) => setEndpoint(value.trim())}
         />
 
-        <Button
-          // not using messages variable because this is not intended for end user
-          text='Apply'
-          type={ButtonType.PRIMARY_ALT}
-          onClick={handleDiscoveryNodeSelection}
-        />
+        <Button variant='primary' onClick={handleDiscoveryNodeSelection}>
+          Apply
+        </Button>
       </div>
 
       {success && (

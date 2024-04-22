@@ -1,32 +1,21 @@
 import { useState, useCallback, useEffect } from 'react'
 
 import {
+  Button,
   IconNotificationOn as IconNotification,
   IconNotificationOff
 } from '@audius/harmony'
-import cn from 'classnames'
-
-import { useIsMobile } from 'hooks/useIsMobile'
-import { isMatrix } from 'utils/theme/theme'
-
-import styles from './SubscribeButton.module.css'
 
 type SubscribeButtonProps = {
-  className?: string
   isSubscribed: boolean
   isFollowing: boolean
   onToggleSubscribe: () => void
 }
 
-const SubscribeButton = ({
-  className,
-  isFollowing,
-  isSubscribed,
-  onToggleSubscribe
-}: SubscribeButtonProps) => {
+const SubscribeButton = (props: SubscribeButtonProps) => {
+  const { isFollowing, isSubscribed, onToggleSubscribe } = props
   const [isHovering, setIsHovering] = useState(false)
   const [isHoveringClicked, setIsHoveringClicked] = useState(false)
-  const isMobile = useIsMobile()
   const onClick = useCallback(() => {
     onToggleSubscribe()
     setIsHoveringClicked(true)
@@ -36,26 +25,21 @@ const SubscribeButton = ({
     if (!isHovering && isHoveringClicked) setIsHoveringClicked(false)
   }, [isHovering, isHoveringClicked, setIsHoveringClicked])
 
+  if (!isFollowing) return null
+
+  const showNotificationOff =
+    (isHovering && isSubscribed && !isHoveringClicked) ||
+    (isHovering && !isSubscribed && isHoveringClicked)
+
   return (
-    <div
-      className={cn(styles.container, {
-        [className as string]: !!className,
-        [styles.notFollowing]: !isFollowing,
-        [styles.isSubscribed]: isSubscribed,
-        [styles.isMobile]: isMobile,
-        [styles.isMatrix]: isMatrix()
-      })}
+    <Button
+      variant={isSubscribed ? 'primary' : 'secondary'}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      size='small'
+      iconLeft={showNotificationOff ? IconNotificationOff : IconNotification}
       onClick={onClick}
-    >
-      {(isHovering && isSubscribed && !isHoveringClicked) ||
-      (isHovering && !isSubscribed && isHoveringClicked) ? (
-        <IconNotificationOff className={styles.icon} />
-      ) : (
-        <IconNotification className={styles.icon} />
-      )}
-    </div>
+    />
   )
 }
 

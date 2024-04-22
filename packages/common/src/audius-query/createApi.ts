@@ -35,6 +35,7 @@ import {
   AudiusQueryContext,
   AudiusQueryContextType
 } from './AudiusQueryContext'
+import { RemoteDataNotFoundError } from './errors'
 import { apiResponseSchema } from './schema'
 import {
   Api,
@@ -329,7 +330,7 @@ const fetchData = async <Args, Data>(
         )
       : await endpoint.fetch(fetchArgs, context)
     if (apiData == null) {
-      throw new Error('Remote data not found')
+      throw new RemoteDataNotFoundError('Remote data not found')
     }
 
     let data: Data
@@ -370,14 +371,16 @@ const fetchData = async <Args, Data>(
     endpoint.onQuerySuccess?.(data, fetchArgs, { dispatch })
     return apiData
   } catch (e) {
-    context.reportToSentry({
-      error: e as Error,
-      level: ErrorLevel.Error,
-      additionalInfo: { fetchArgs, endpoint },
-      name: `${
-        endpoint.options?.type === 'mutation' ? 'Mutate' : 'Query'
-      } ${capitalize(endpointName)} error`
-    })
+    if (!(e instanceof RemoteDataNotFoundError)) {
+      context.reportToSentry({
+        error: e as Error,
+        level: ErrorLevel.Error,
+        additionalInfo: { fetchArgs, endpoint },
+        name: `${
+          endpoint.options?.type === 'mutation' ? 'Mutate' : 'Query'
+        } ${capitalize(endpointName)} error`
+      })
+    }
     dispatch(
       // @ts-ignore
       actions[`fetch${capitalize(endpointName)}Error`]({

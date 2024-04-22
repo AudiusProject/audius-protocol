@@ -31,7 +31,7 @@ COPY --from=turbo-builder /app/out/json/ .
 COPY --from=turbo-builder /app/out/package-lock.json ./package-lock.json
 COPY --from=turbo-builder /app/scripts ./scripts
 
-RUN CI=true npm i
+RUN CI=true npm i --maxsockets 1
 
 # Build the app and its dependencies
 COPY --from=turbo-builder /app/out/full/ .
@@ -59,4 +59,4 @@ COPY --from=app-builder --chown=nodejs:nodejs /app .
 WORKDIR /app/packages/ddex/webapp/server
 
 EXPOSE 9000
-CMD ["node", "dist/index.js"]
+CMD ["npm", "run", "start:prod"]

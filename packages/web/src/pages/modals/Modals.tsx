@@ -5,7 +5,9 @@ import { Modals as ModalTypes } from '@audius/common/store'
 import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
+import { AlbumTrackRemoveConfirmationModal } from 'components/album-track-remove-confirmation-modal/AlbumTrackRemoveConfirmationModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
+import { ArtistPickModal } from 'components/artist-pick-modal/ArtistPickModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
@@ -25,12 +27,11 @@ import { LockedContentModal } from 'components/locked-content-modal/LockedConten
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishTrackConfirmationModal } from 'components/publish-track-confirmation-modal/PublishTrackConfirmationModal'
-import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
-import UnloadDialog from 'components/unload-dialog/UnloadDialog'
+import { UnloadDialog } from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
@@ -43,6 +44,7 @@ import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components
 import { useIsMobile } from 'hooks/useIsMobile'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal'
+import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal/ClaimAllRewardsModal'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
@@ -87,6 +89,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   PublishTrackConfirmation: PublishTrackConfirmationModal,
+  AlbumTrackRemoveConfirmation: AlbumTrackRemoveConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
@@ -96,9 +99,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
   ChallengeRewardsExplainer: ChallengeRewardsModal,
+  ClaimAllRewards: ClaimAllRewardsModal,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
-  ShareSoundToTikTok: ShareSoundToTikTokModal,
   AiAttributionSettings: AiAttributionSettingsModal,
   Welcome: WelcomeModal,
   PremiumContentPurchaseModal,
@@ -112,7 +115,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   USDCTransactionDetailsModal,
   AddFundsModal,
   CoinflowWithdraw: CoinflowWithdrawModal,
-  WaitForDownloadModal
+  WaitForDownloadModal,
+  ArtistPick: ArtistPickModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

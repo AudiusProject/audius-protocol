@@ -36,7 +36,7 @@
 .divider {
   flex-shrink: 0;
   width: 100%;
-  border-bottom: 1px solid var(--static-neutral-light-6);
+  border-bottom: 1px solid var(--harmony-n-200);
   margin: 30px 0px 32px;
 }
 
@@ -67,15 +67,15 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
-  color: var(--neutral-light-4);
+  color: var(--harmony-n-400);
 }
 
 .siteLink {
-  color: var(--static-neutral) !important;
+  color: var(--harmony-neutral) !important;
   font-weight: 600;
-  font-size: var(--font-m);
+  font-size: var(--harmony-font-m);
   line-height: 20px;
-  text-decoration-color: var(--static-neutral) !important;
+  text-decoration-color: var(--harmony-neutral) !important;
 }
 
 /* Copyright */
@@ -87,8 +87,8 @@
   align-self: baseline;
   margin-left: 16px;
   margin-right: 16px;
-  color: var(--static-neutral);
-  font-size: var(--font-s);
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-s);
   line-height: 20px;
   font-weight: 500;
   text-align: center;
@@ -98,18 +98,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--neutral);
+  color: var(--harmony-neutral);
   font-size: 16px;
   line-height: 20px;
   font-weight: 600;
 }
 
 .socialIconLinkContainer:hover {
-  color: var(--secondary) !important;
+  color: var(--harmony-secondary) !important;
 }
 
 .socialIconLinkContainer:hover .socialIconLink path {
-  fill: var(--secondary) !important;
+  fill: var(--harmony-secondary) !important;
 }
 
 .socialIconLink {
@@ -135,7 +135,7 @@
 }
 
 .socialIconLink path {
-  fill: var(--static-neutral);
+  fill: var(--harmony-neutral);
 }
 
 /* Bottom Links */
@@ -145,8 +145,8 @@
 }
 
 .bottomLink {
-  color: var(--neutral-light-4) !important;
-  font-size: var(--font-s);
+  color: var(--harmony-n-400) !important;
+  font-size: var(--harmony-font-s);
 }
 
 .bottomLink:first-child {
@@ -154,7 +154,7 @@
 }
 
 .bottomLink:hover {
-  text-decoration: underline var(--neutral-light-4) !important;
+  text-decoration: underline var(--harmony-n-400) !important;
 }
 
 .link {
@@ -163,7 +163,7 @@
 
 .link:hover {
   text-decoration: none;
-  color: var(--secondary) !important;
+  color: var(--harmony-secondary) !important;
 }
 
 /* Mobile */

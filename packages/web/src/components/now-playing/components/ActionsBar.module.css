@@ -3,7 +3,7 @@
   display: flex;
   align-items: stretch;
   justify-content: space-evenly;
-  background: var(--neutral-light-8);
+  background: var(--harmony-n-100);
 
   height: 48px;
   border-radius: 10px;
@@ -28,5 +28,5 @@
 }
 
 .icon path {
-  fill: var(--neutral);
+  fill: var(--harmony-neutral);
 }

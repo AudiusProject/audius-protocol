@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+
 import { GetPendingUndelegateRequestResponse } from './services/Audius/delegate/types'
 import { GetPendingDecreaseStakeRequestResponse } from './services/Audius/service-provider/types'
 
@@ -92,12 +93,12 @@ export type Operator = {
 
 export type TxReceipt = {
   blockHash: string // "0xf44d07e763348730f96c3f18d799f3d656efbccf901525eea2277177559b6f8a"
-  blockNumber: number //236
+  blockNumber: number // 236
   contractAddress: null | any // null
   cumulativeGasUsed: number
   events: any // {Approval: {…}}
   from: string // "0x610011d6b4c3b4abc35fa11061e63104fcfecc2a"
-  gasUsed: number //46721
+  gasUsed: number // 46721
   logsBloom: string // "0x00000000000010000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000200000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000400000000000000000000200000000000000000000000000000000000000000000000028000000000000010000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000"
   status: boolean // true
   to: string // "0xcdbe3ec8fd92a995fc5c3aefea85122f63807083"
@@ -126,7 +127,7 @@ export type VoteEvent = {
 export enum Outcome {
   InProgress = 'InProgress', // Proposal is active and can be voted on.
   InProgressExecutionDelay = 'InProgressExecutionDelay', // Proposal is active but cannot be voted on because it's in execution delay
-  InProgressAwaitingExecution = 'InProgressAwaitingExecution', //Proposal has passed execution delay and can be executed
+  InProgressAwaitingExecution = 'InProgressAwaitingExecution', // Proposal has passed execution delay and can be executed
   Rejected = 'Rejected', // Proposal votingPeriod has closed and vote failed to pass. Proposal will not be executed.
   ApprovedExecuted = 'ApprovedExecuted', // Proposal votingPeriod has closed and vote passed. Proposal was successfully executed.
   QuorumNotMet = 'QuorumNotMet', // Proposal votingPeriod has closed and votingQuorumPercent was not met. Proposal will not be executed.

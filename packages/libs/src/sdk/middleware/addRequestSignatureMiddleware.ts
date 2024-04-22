@@ -32,10 +32,10 @@ export const addRequestSignatureMiddleware = ({
           !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
 
         if (!message || !signature || isExpired) {
-          message = `signature:${currentTimestamp}`
+          const m = `signature:${currentTimestamp}`
           // Add Ethereum-specific prefixes
-          const prefix = `\x19Ethereum Signed Message:\n${message.length}`
-          const prefixedMessage = prefix + message
+          const prefix = `\x19Ethereum Signed Message:\n${m.length}`
+          const prefixedMessage = prefix + m
 
           const [sig, recid] = await auth.sign(
             Buffer.from(prefixedMessage, 'utf-8')
@@ -45,6 +45,7 @@ export const addRequestSignatureMiddleware = ({
           // Add Ethereum Recovery ID offset
           const v = (recid + 27).toString(16)
 
+          message = m
           signature = `0x${r}${s}${v}`
           timestamp = currentTimestamp
         }

@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import { accountSelectors, gatedContentActions } from '@audius/common/store'
+import {
+  PurchaseableContentType,
+  accountSelectors,
+  gatedContentActions
+} from '@audius/common/store'
 import { Genre, getDogEarType } from '@audius/common/utils'
 import moment from 'moment'
 import { View } from 'react-native'
@@ -63,11 +67,12 @@ export const LineupTile = ({
   const currentUserId = useSelector(getUserId)
   const isOwner = user_id === currentUserId
   const isCollection = 'playlist_id' in item
+  const isAlbum = 'is_album' in item && item.is_album
   const isTrack = 'track_id' in item
-  const trackId = isTrack ? item.track_id : undefined
-  const streamConditions = isTrack ? item.stream_conditions : null
+  const contentId = isTrack ? item.track_id : item.playlist_id
+  const streamConditions = item.stream_conditions ?? null
   const isArtistPick = artist_pick_track_id === id
-  const { hasStreamAccess } = useGatedContentAccess(isTrack ? item : null)
+  const { hasStreamAccess } = useGatedContentAccess(item)
   const isScheduledRelease = item.release_date
     ? moment(item.release_date).isAfter(moment())
     : false
@@ -81,13 +86,13 @@ export const LineupTile = ({
   })
 
   const handlePress = useCallback(() => {
-    if (trackId && !hasStreamAccess && !hasPreview) {
-      dispatch(setLockedContentId({ id: trackId }))
+    if (contentId && !hasStreamAccess && !hasPreview) {
+      dispatch(setLockedContentId({ id: contentId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     } else {
       onPress?.()
     }
-  }, [trackId, hasStreamAccess, hasPreview, dispatch, onPress])
+  }, [contentId, hasStreamAccess, hasPreview, dispatch, onPress])
 
   const isLongFormContent =
     isTrack &&
@@ -118,6 +123,7 @@ export const LineupTile = ({
           title={title}
           user={user}
           isPlayingUid={isPlayingUid}
+          type={isTrack ? 'track' : isAlbum ? 'album' : 'playlist'}
         />
         {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
         <LineupTileStats
@@ -144,21 +150,28 @@ export const LineupTile = ({
       </View>
       {children}
 
-      <LineupTileActionButtons
-        hasReposted={has_current_user_reposted}
-        hasSaved={has_current_user_saved}
-        isOwner={isOwner}
-        isShareHidden={hideShare}
-        isUnlisted={isUnlisted}
-        readonly={isReadonly}
-        trackId={trackId}
-        streamConditions={streamConditions}
-        hasStreamAccess={hasStreamAccess}
-        onPressOverflow={onPressOverflow}
-        onPressRepost={onPressRepost}
-        onPressSave={onPressSave}
-        onPressShare={onPressShare}
-      />
+      {isReadonly ? null : (
+        <LineupTileActionButtons
+          hasReposted={has_current_user_reposted}
+          hasSaved={has_current_user_saved}
+          isOwner={isOwner}
+          isShareHidden={hideShare}
+          isUnlisted={isUnlisted}
+          readonly={isReadonly}
+          contentId={contentId}
+          contentType={
+            isTrack
+              ? PurchaseableContentType.TRACK
+              : PurchaseableContentType.ALBUM
+          }
+          streamConditions={streamConditions}
+          hasStreamAccess={hasStreamAccess}
+          onPressOverflow={onPressOverflow}
+          onPressRepost={onPressRepost}
+          onPressSave={onPressSave}
+          onPressShare={onPressShare}
+        />
+      )}
     </LineupTileRoot>
   )
 }

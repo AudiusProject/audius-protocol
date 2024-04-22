@@ -102,6 +102,7 @@ export const SignUpPage = () => {
         <SignUpRoute exact path={SIGN_UP_COMPLETED_REDIRECT}>
           <Redirect to={FEED_PAGE} />
         </SignUpRoute>
+        <SignUpRoute path='*' />
       </Switch>
     </RouteContextProvider>
   )

@@ -1,9 +1,6 @@
-import {
-  FeatureFlags,
-  OpenSeaClient,
-  SolanaClient
-} from '@audius/common/services'
+import { FeatureFlags } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
+import { FetchNFTClient } from '@audius/fetch-nft'
 import { setTag, configureScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
@@ -56,9 +53,17 @@ export const buildStoreContext = ({
   // @ts-ignore js file
   getLineupSelectorForRoute,
   audioPlayer: audioPlayer!,
-  solanaClient: new SolanaClient({
-    solanaClusterEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: env.METADATA_PROGRAM_ID
+  nftClient: new FetchNFTClient({
+    openSeaConfig: {
+      apiEndpoint: env.OPENSEA_API_URL
+    },
+    heliusConfig: {
+      apiEndpoint: env.HELIUS_DAS_API_URL
+    },
+    solanaConfig: {
+      rpcEndpoint: env.SOLANA_CLUSTER_ENDPOINT,
+      metadataProgramId: env.METADATA_PROGRAM_ID
+    }
   }),
   sentry: { setTag, configureScope },
   reportToSentry,
@@ -66,7 +71,6 @@ export const buildStoreContext = ({
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
-  openSeaClient: new OpenSeaClient(env.OPENSEA_API_URL as string),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

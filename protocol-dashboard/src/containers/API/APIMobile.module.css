@@ -10,7 +10,7 @@
   opacity: 1;
   height: 210px;
   z-index: -1;
-  background: url(../../assets/img/apiBanner@2x.png);
+  background: url(../../assets/img/apiBanner.webp);
   background-position: center;
   background-size: cover;
   background-blend-mode: hard-light, multiply, overlay, normal;

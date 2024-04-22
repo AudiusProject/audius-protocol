@@ -1,6 +1,4 @@
-import { Modal } from '@audius/harmony'
-import { Button, ButtonType } from '@audius/stems'
-import cn from 'classnames'
+import { Button, Modal } from '@audius/harmony'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 
@@ -38,22 +36,15 @@ export const DeactivateAccountConfirmationModal = ({
         )}
         <div className={styles.buttons}>
           <Button
-            className={cn(styles.button, {
-              [styles.buttonDanger]: !isLoading
-            })}
-            isDisabled={isLoading}
+            variant='destructive'
+            isLoading={isLoading}
             onClick={onConfirm}
-            textClassName={styles.deleteButtonText}
-            text={messages.buttonDeactivate}
-            type={isLoading ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
-          />
-          <Button
-            className={styles.button}
-            isDisabled={isLoading}
-            onClick={onClose}
-            text={messages.buttonGoBack}
-            type={isLoading ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
-          />
+          >
+            {messages.buttonDeactivate}
+          </Button>
+          <Button isLoading={isLoading} onClick={onClose}>
+            {messages.buttonGoBack}
+          </Button>
         </div>
       </div>
     </Modal>

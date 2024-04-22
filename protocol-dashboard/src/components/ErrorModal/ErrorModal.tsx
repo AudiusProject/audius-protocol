@@ -1,13 +1,17 @@
 import React from 'react'
-import SimpleBar from 'simplebar-react'
-import { ButtonType } from '@audius/stems'
 
-import Modal from 'components/Modal'
+import { ButtonType } from '@audius/stems'
+import SimpleBar from 'simplebar-react'
+
 import Button from 'components/Button'
+import Modal from 'components/Modal'
+
 import styles from './ErrorModal.module.css'
 
 const messages = {
   title: 'An Error Has Occured',
+  defaultHeader:
+    'There was an error in executing the transaction. Please try again.',
   header:
     'Actions cannot be taken until pending transactions are completed. Please try again.',
   okay: 'OKAY'
@@ -17,6 +21,7 @@ type OwnProps = {
   isOpen: boolean
   onClose: () => void
   message: string
+  header?: string
 }
 
 type ErrorModalProps = OwnProps
@@ -24,7 +29,8 @@ type ErrorModalProps = OwnProps
 const ErrorModal: React.FC<ErrorModalProps> = ({
   isOpen,
   onClose,
-  message
+  message,
+  header = messages.defaultHeader
 }: ErrorModalProps) => {
   return (
     <Modal
@@ -36,7 +42,7 @@ const ErrorModal: React.FC<ErrorModalProps> = ({
       isCloseable={true}
       dismissOnClickOutside={false}
     >
-      <div className={styles.header}>{messages.header}</div>
+      <div className={styles.header}>{header}</div>
 
       <SimpleBar className={styles.scrollableMessage}>{message}</SimpleBar>
       <Button

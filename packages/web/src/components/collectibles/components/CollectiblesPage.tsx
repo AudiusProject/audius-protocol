@@ -16,15 +16,19 @@ import {
 } from '@audius/common/store'
 import { getHash } from '@audius/common/utils'
 import {
+  Button as HarmonyButton,
   Modal,
   IconKebabHorizontal,
   IconPencil,
   IconShare,
   PopupMenu,
-  PopupMenuItem
+  PopupMenuItem,
+  Button,
+  Flex,
+  Box
 } from '@audius/harmony'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import cn from 'classnames'
+import { chunk } from 'lodash'
 import {
   DragDropContext,
   Draggable,
@@ -32,6 +36,7 @@ import {
   DropResult
 } from 'react-beautiful-dnd'
 import { useDispatch, useSelector } from 'react-redux'
+import { AutoSizer, ColumnSizer, Grid, WindowScroller } from 'react-virtualized'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import IconGradientCollectibles from 'assets/img/iconGradientCollectibles.svg'
@@ -48,6 +53,7 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { MainContentContext } from 'pages/MainContentContext'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import {
   BASE_GA_URL,
@@ -89,7 +95,13 @@ export const collectibleMessages = {
   videoNotSupported: 'Your browser does not support the video tag.',
   clickCopy: 'Click To Copy',
   copied: 'Copied to Clipboard',
-  done: 'Done'
+  done: 'Done',
+  setAsProfilePic: 'Set As Profile Pic',
+  setAsProfilePicDescription:
+    'Are you sure you want to change your profile picture?',
+  setAsProfilePickCancel: 'Nevermind',
+  setAsProfilePickConfirm: 'Yes',
+  collectibleOptions: 'Collectible Options'
 }
 
 const dedupe = (list: any[]) => {
@@ -549,11 +561,13 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     }
   ]
 
-  if (isUserOnTheirProfile)
+  if (isUserOnTheirProfile) {
     overflowMenuItems.unshift({
       text: 'Edit',
       onClick: handleEditClick
     })
+  }
+  const { mainContentRef } = useContext(MainContentContext)
 
   return (
     <div
@@ -576,42 +590,40 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
           </div>
 
           {isMobile ? (
-            <div className={styles.mobileButtonContainer}>
+            <Flex gap='s' w='100%'>
               {isUserOnTheirProfile && (
                 <Button
-                  className={styles.detailsButton}
-                  textClassName={styles.detailsButtonText}
-                  iconClassName={styles.detailsButtonIcon}
+                  variant='secondary'
+                  size='small'
                   onClick={handleEditClick}
-                  text='Edit'
-                  type={ButtonType.COMMON_ALT}
-                  size={ButtonSize.SMALL}
-                  leftIcon={<IconPencil />}
-                />
+                  iconLeft={IconPencil}
+                  fullWidth
+                >
+                  Edit
+                </Button>
               )}
               <Button
-                className={styles.detailsButton}
-                textClassName={styles.detailsButtonText}
-                iconClassName={styles.detailsButtonIcon}
+                variant='secondary'
+                size='small'
                 onClick={handleShareClick}
-                text='Share'
-                type={ButtonType.COMMON_ALT}
-                size={ButtonSize.SMALL}
-                leftIcon={<IconShare />}
-              />
-            </div>
+                iconLeft={IconShare}
+                fullWidth
+              >
+                Share
+              </Button>
+            </Flex>
           ) : (
             <PopupMenu
               items={overflowMenuItems}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
               renderTrigger={(anchorRef, triggerPopup) => (
                 <Button
-                  leftIcon={<IconKebabHorizontal />}
+                  variant='secondary'
+                  size='small'
+                  iconLeft={IconKebabHorizontal}
+                  aria-label={collectibleMessages.collectibleOptions}
                   ref={anchorRef}
                   onClick={() => triggerPopup()}
-                  text={null}
-                  size={ButtonSize.SMALL}
-                  type={ButtonType.COMMON}
                 />
               )}
               zIndex={zIndex.NAVIGATOR_POPUP}
@@ -630,15 +642,64 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           ) : (
             <div className={styles.container}>
-              {getVisibleCollectibles().map((collectible) => (
-                <CollectibleDetails
-                  key={collectible.id}
-                  collectible={collectible}
-                  onClick={() =>
-                    setEmbedCollectibleHash(getHash(collectible.id))
-                  }
-                />
-              ))}
+              <WindowScroller scrollElement={mainContentRef.current}>
+                {({ height, isScrolling, onChildScroll, scrollTop }) => {
+                  const collectibles = chunk(getVisibleCollectibles(), 3)
+                  return (
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <ColumnSizer
+                          width={width}
+                          columnCount={
+                            collectibles[0] ? collectibles[0].length : 0
+                          }
+                        >
+                          {({
+                            adjustedWidth,
+                            getColumnWidth,
+                            registerChild
+                          }) => (
+                            <Grid
+                              ref={registerChild}
+                              autoHeight
+                              width={adjustedWidth}
+                              height={height}
+                              isScrolling={isScrolling}
+                              onScroll={onChildScroll}
+                              scrollTop={scrollTop}
+                              rowCount={collectibles.length}
+                              columnCount={
+                                collectibles[0] ? collectibles[0].length : 0
+                              }
+                              rowHeight={274}
+                              columnWidth={getColumnWidth}
+                              cellRenderer={({
+                                key,
+                                rowIndex,
+                                columnIndex,
+                                style
+                              }) => {
+                                const collectible =
+                                  collectibles[rowIndex][columnIndex]
+                                return (
+                                  <div key={key} style={style}>
+                                    {collectible ? (
+                                      <CollectibleDetails
+                                        collectible={collectible}
+                                        onClick={setEmbedCollectibleHash}
+                                      />
+                                    ) : null}
+                                  </div>
+                                )
+                              }}
+                            />
+                          )}
+                        </ColumnSizer>
+                      )}
+                    </AutoSizer>
+                  )
+                }}
+              </WindowScroller>
             </div>
           )}
         </div>
@@ -733,14 +794,11 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
               </div>
             </div>
           )}
-
-          <Button
-            className={styles.editDoneButton}
-            type={ButtonType.PRIMARY_ALT}
-            size={ButtonSize.SMALL}
-            text='Done'
-            onClick={handleDoneClick}
-          />
+          <Box m='l'>
+            <HarmonyButton variant='primary' onClick={handleDoneClick}>
+              Done
+            </HarmonyButton>
+          </Box>
         </div>
       </Modal>
 
@@ -784,13 +842,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   </div>
                 </div>
               </Toast>
-              <Button
-                type={ButtonType.PRIMARY_ALT}
-                onClick={closeEmbedModal}
-                text={collectibleMessages.done}
-                textClassName={styles.embedButtonText}
-                className={styles.embedButton}
-              />
+              <HarmonyButton variant='primary' onClick={closeEmbedModal}>
+                {collectibleMessages.done}
+              </HarmonyButton>
             </div>
           </div>
         </div>

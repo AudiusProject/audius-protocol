@@ -58,7 +58,7 @@ export type TextInputProps = Omit<
    */
   hideLabel?: boolean
   /**
-   * Label Text. Required to provide due to accessibility. If the hideLabel is true, the label used via aria-label
+   * Label Text. Required due to accessibility. If hideLabel is true, the label is set via aria-label
    */
   label: string
   /**
