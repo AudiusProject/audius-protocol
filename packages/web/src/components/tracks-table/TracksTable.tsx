@@ -277,7 +277,7 @@ export const TracksTable = ({
 
   const renderSavesCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
-    return track.save_count
+    return formatCount(track.save_count)
   }, [])
 
   const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
