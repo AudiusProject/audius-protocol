@@ -48,7 +48,7 @@ export const CollectionsTableOverflowMenuButton = (
       <Menu menu={overflowMenu}>
         {(ref, triggerPopup) => (
           <Flex
-            onClick={(e: MouseEvent) => {
+            onClick={(e) => {
               e.stopPropagation()
               triggerPopup()
             }}
