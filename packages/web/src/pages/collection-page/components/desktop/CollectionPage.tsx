@@ -237,7 +237,6 @@ const CollectionPage = ({
       onPlay={onPlay}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
-      onClickPurchase={onClickPurchaseTrack}
       // Smart collection
       variant={variant}
       gradient={gradient}
