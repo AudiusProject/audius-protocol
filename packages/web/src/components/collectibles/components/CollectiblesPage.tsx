@@ -650,7 +650,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                       {({ width }) => (
                         <ColumnSizer
                           width={width}
-                          columnCount={collectibles[0].length}
+                          columnCount={
+                            collectibles[0] ? collectibles[0].length : 0
+                          }
                         >
                           {({
                             adjustedWidth,
@@ -666,7 +668,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                               onScroll={onChildScroll}
                               scrollTop={scrollTop}
                               rowCount={collectibles.length}
-                              columnCount={collectibles[0].length}
+                              columnCount={
+                                collectibles[0] ? collectibles[0].length : 0
+                              }
                               rowHeight={274}
                               columnWidth={getColumnWidth}
                               cellRenderer={({

@@ -248,9 +248,9 @@ export class Web3Manager {
 
       // contractRegistryKey should be "EntityManager"
       if (this.useDiscoveryRelay()) {
-        contractRegistryKey = contractRegistryKey || "EntityManager"
+        contractRegistryKey = contractRegistryKey || 'EntityManager'
         const response = await this.discoveryProvider?.relay({
-          contractRegistryKey: contractRegistryKey,
+          contractRegistryKey,
           contractAddress,
           senderAddress: this.ownerWallet!.getAddressString(),
           encodedABI,
@@ -309,34 +309,37 @@ export class Web3Manager {
     }
   }
 
-  parseLogs(response:  { receipt: TransactionReceipt } | undefined, contractRegistryKey: string): TransactionReceipt {
-      // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
-      // above) parses the event log into an 'events' key on the transaction receipt and
-      // blows away the 'logs' key. However, using sendRawTransaction as our
-      // relayer does, returns only the logs. Here, we replicate the part of the 'events'
-      // key that our code consumes, but we may want to change our functions to consume
-      // this data in a different way in future (this parsing is messy).
-      // More on Metamask's / Web3.js' behavior here:
-      // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
-      const receipt = response!.receipt
-      if (receipt.logs) {
-        const events: TransactionReceipt['events'] = {}
-        // TODO: decodeLogs appears to return DecodedLog, not DecodedLog[] so maybe a type/version issue
-        const decoded = this.AudiusABIDecoder.decodeLogs(
-          contractRegistryKey as string,
-          receipt.logs
-        ) as unknown as DecodedLog[]
-        decoded.forEach((evt) => {
-          const returnValues: Record<string, string> = {}
-          evt.events.forEach((arg: { name: string; value: string }) => {
-            returnValues[arg.name] = arg.value
-          })
-          const eventLog = { returnValues }
-          events[evt.name] = eventLog as EventLog
+  parseLogs(
+    response: { receipt: TransactionReceipt } | undefined,
+    contractRegistryKey: string
+  ): TransactionReceipt {
+    // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
+    // above) parses the event log into an 'events' key on the transaction receipt and
+    // blows away the 'logs' key. However, using sendRawTransaction as our
+    // relayer does, returns only the logs. Here, we replicate the part of the 'events'
+    // key that our code consumes, but we may want to change our functions to consume
+    // this data in a different way in future (this parsing is messy).
+    // More on Metamask's / Web3.js' behavior here:
+    // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
+    const receipt = response!.receipt
+    if (receipt.logs) {
+      const events: TransactionReceipt['events'] = {}
+      // TODO: decodeLogs appears to return DecodedLog, not DecodedLog[] so maybe a type/version issue
+      const decoded = this.AudiusABIDecoder.decodeLogs(
+        contractRegistryKey as string,
+        receipt.logs
+      ) as unknown as DecodedLog[]
+      decoded.forEach((evt) => {
+        const returnValues: Record<string, string> = {}
+        evt.events.forEach((arg: { name: string; value: string }) => {
+          returnValues[arg.name] = arg.value
         })
-        receipt.events = events
-      }
-      return response!.receipt
+        const eventLog = { returnValues }
+        events[evt.name] = eventLog as EventLog
+      })
+      receipt.events = events
+    }
+    return response!.receipt
   }
 
   // TODO - Remove this. Adapted from https://github.com/raiden-network/webui/pull/51/files

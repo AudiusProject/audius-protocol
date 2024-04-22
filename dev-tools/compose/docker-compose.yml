@@ -209,7 +209,7 @@ services:
       service: ddex-ingester
     <<: *common
     profiles:
-      - ddex
+      - ddex-build-only
 
   ddex-web:
     extends:
@@ -218,15 +218,12 @@ services:
     container_name: ddex-web
     <<: *common
     environment:
-      AWS_ENDPOINT: 'http://ingress:4566'
       DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
     profiles:
       - ddex
-    extra_hosts:
-      - 'ingress:host-gateway'
 
   ddex-publisher:
     extends:
@@ -235,7 +232,6 @@ services:
     container_name: ddex-publisher
     <<: *common
     environment:
-      AWS_ENDPOINT: 'http://ingress:4566'
       DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
     depends_on:
       ddex-mongo-init:
@@ -244,8 +240,6 @@ services:
         condition: service_healthy
     profiles:
       - ddex
-    extra_hosts:
-      - 'ingress:host-gateway'
   
   ddex-crawler:
     extends:
@@ -254,7 +248,6 @@ services:
     container_name: ddex-crawler
     <<: *common
     environment:
-      AWS_ENDPOINT: 'http://ingress:4566'
       DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
       IS_DEV: 'true' # Speed up crawling interval for local dev
     depends_on:
@@ -264,8 +257,6 @@ services:
         condition: service_healthy
     profiles:
       - ddex
-    extra_hosts:
-      - 'ingress:host-gateway'
   
   ddex-parser:
     extends:
@@ -274,7 +265,6 @@ services:
     container_name: ddex-parser
     <<: *common
     environment:
-      AWS_ENDPOINT: 'http://ingress:4566'
       DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
     depends_on:
       ddex-mongo-init:
@@ -283,8 +273,6 @@ services:
         condition: service_healthy
     profiles:
       - ddex
-    extra_hosts:
-      - 'ingress:host-gateway'
 
   ddex-s3:
     extends:

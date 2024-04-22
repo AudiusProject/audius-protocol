@@ -169,8 +169,8 @@ const Table = ({
                   {item.release?.sdk_upload_metadata?.title
                     ? 'track'
                     : item.release?.sdk_upload_metadata?.playlist_name
-                      ? 'album'
-                      : 'unknown'}
+                    ? 'album'
+                    : 'unknown'}
                 </td>
                 <td>{item.release?.sdk_upload_metadata?.release_date}</td>
                 <td>{item.created_at}</td>
@@ -208,8 +208,8 @@ const Table = ({
                   {item.release?.sdk_upload_metadata?.title
                     ? 'track'
                     : item.release?.sdk_upload_metadata?.playlist_name
-                      ? 'album'
-                      : 'unknown'}
+                    ? 'album'
+                    : 'unknown'}
                 </td>
                 <td>{item.entity_id}</td>
                 <td>{item.blockhash}</td>

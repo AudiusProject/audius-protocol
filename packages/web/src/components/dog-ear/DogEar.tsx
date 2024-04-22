@@ -5,15 +5,13 @@ import {
   IconSpecialAccess,
   IconCart,
   IconCollectible,
-  IconLock
+  IconLock,
+  useTheme,
+  ColorTheme,
+  Box
 } from '@audius/harmony'
-import cn from 'classnames'
 
 import Rectangle from 'assets/img/dogEarRectangle.svg'
-import { useIsMobile } from 'hooks/useIsMobile'
-import { isMatrix } from 'utils/theme/theme'
-
-import styles from './DogEar.module.css'
 
 export type DogEarProps = {
   type: DogEarType
@@ -38,32 +36,56 @@ const getIcon = (type: DogEarType) => {
   }
 }
 
+const getColor = (type: DogEarType, color: ColorTheme['day']) => {
+  switch (type) {
+    case DogEarType.COLLECTIBLE_GATED:
+    case DogEarType.SPECIAL_ACCESS:
+    case DogEarType.LOCKED:
+      return color.special.blue
+    case DogEarType.USDC_PURCHASE:
+      return color.special.lightGreen
+    case DogEarType.STAR:
+      return color.secondary.secondary
+    case DogEarType.HIDDEN:
+      return color.neutral.neutral
+  }
+}
+
 export const DogEar = (props: DogEarProps) => {
   const { type, className } = props
-  const isMatrixMode = isMatrix()
-  const isMobile = useIsMobile()
   const Icon = getIcon(type)
+  const { spacing, color } = useTheme()
+  const tagColor = getColor(type, color)
 
   return (
-    <div
-      className={cn(styles.container, className, {
-        [styles.isMobile]: isMobile,
-        [styles.matrix]: isMatrixMode
-      })}
+    <Box
+      css={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        zIndex: 10,
+        overflow: 'hidden'
+      }}
+      borderTopLeftRadius='m'
+      h='3xl'
+      w='3xl'
+      className={className}
     >
       <Rectangle
-        className={cn(styles.rectangle, {
-          [styles.gated]: [
-            DogEarType.COLLECTIBLE_GATED,
-            DogEarType.SPECIAL_ACCESS,
-            DogEarType.LOCKED
-          ].includes(type),
-          [styles.purchase]: type === DogEarType.USDC_PURCHASE,
-          [styles.artistPick]: type === DogEarType.STAR,
-          [styles.hidden]: type === DogEarType.HIDDEN
-        })}
+        css={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          color: tagColor
+        }}
       />
-      <Icon className={styles.icon} />
-    </div>
+      <Icon
+        size='s'
+        color='staticWhite'
+        css={{ position: 'absolute', top: spacing.unit1, left: spacing.unit1 }}
+      />
+    </Box>
   )
 }

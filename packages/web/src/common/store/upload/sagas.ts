@@ -85,10 +85,10 @@ const toUploadTrackMetadata = (
  * Combines the metadata for a track and a collection (playlist or album),
  * taking the metadata from the playlist when the track is missing it.
  */
-const combineMetadata = (
+function* combineMetadata(
   trackMetadata: TrackMetadataForUpload,
   collectionMetadata: CollectionValues
-) => {
+) {
   const metadata = trackMetadata
 
   metadata.artwork = collectionMetadata.artwork
@@ -112,13 +112,11 @@ const combineMetadata = (
   const albumTrackPrice =
     collectionMetadata.stream_conditions?.usdc_purchase?.albumTrackPrice
   if (albumTrackPrice !== undefined && albumTrackPrice > 0) {
-    if (collectionMetadata.is_downloadable) {
-      metadata.is_download_gated = true
-      metadata.download_conditions = {
-        usdc_purchase: {
-          price: albumTrackPrice,
-          splits: { 0: 0 }
-        }
+    metadata.is_download_gated = !!collectionMetadata.is_downloadable
+    metadata.download_conditions = {
+      usdc_purchase: {
+        price: albumTrackPrice,
+        splits: { 0: 0 }
       }
     }
     // Set up initial stream gating values
@@ -128,9 +126,9 @@ const combineMetadata = (
       usdc_purchase: { price: albumTrackPrice, splits: { 0: 0 } }
     }
     // Add splits to stream & download conditions
-    addPremiumMetadata(trackMetadata)
+    yield* call(addPremiumMetadata, metadata)
   }
-  return trackMetadata
+  return metadata
 }
 
 /**
@@ -750,23 +748,24 @@ export function* uploadCollection(
   )
 
   // Propagate the collection metadata to the tracks
-  const tracksWithMetadata = tracks.map((track) => {
-    const metadata = combineMetadata(track.metadata, collectionMetadata)
-    return {
-      ...track,
-      metadata
-    }
-  })
+  for (const track of tracks) {
+    combineMetadata(track.metadata, collectionMetadata)
+    track.metadata = yield* call(
+      combineMetadata,
+      track.metadata,
+      collectionMetadata
+    )
+  }
 
   // Upload the tracks
   const trackIds = yield* call(handleUploads, {
-    tracks: tracksWithMetadata,
+    tracks,
     kind: isAlbum ? 'album' : 'playlist'
   })
 
   yield* call(
     recordGatedTracks,
-    tracksWithMetadata.map((t) => t.metadata)
+    tracks.map((t) => t.metadata)
   )
 
   const playlistId = yield* call(getUnclaimedPlaylistId)

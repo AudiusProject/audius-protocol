@@ -26,5 +26,6 @@ const premiumContentPurchaseModal =
 
 export const {
   hook: usePremiumContentPurchaseModal,
+  actions: usePremiumContentPurchaseModalActions,
   reducer: premiumContentPurchaseModalReducer
 } = premiumContentPurchaseModal
