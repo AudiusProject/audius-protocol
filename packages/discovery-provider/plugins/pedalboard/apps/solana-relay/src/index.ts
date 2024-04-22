@@ -15,6 +15,7 @@ import {
 } from './middleware/signerRecovery'
 import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
+import { health } from './routes/health/health'
 
 const main = async () => {
   const { serverHost, serverPort } = config
@@ -22,6 +23,7 @@ const main = async () => {
   app.use(json())
   app.use(cors())
   app.use(incomingRequestLogger)
+  app.get('/solana/health_check', health)
   app.use(userSignerRecoveryMiddleware)
   app.use(discoveryNodeSignerRecoveryMiddleware)
   app.post('/solana/relay', relay)

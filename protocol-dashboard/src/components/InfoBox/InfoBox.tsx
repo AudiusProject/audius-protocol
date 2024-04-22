@@ -1,4 +1,5 @@
 import { Box, Flex, IconQuestionCircle, Text } from '@audius/harmony'
+
 import { Card } from 'components/Card/Card'
 import { PlainLink } from 'components/PlainLink/PlainLink'
 
@@ -17,17 +18,17 @@ export const InfoBox = ({
 }: InfoBoxProps) => {
   return (
     <Card
-      backgroundColor="surface2"
-      pv="m"
-      ph="l"
-      gap="l"
+      backgroundColor='surface2'
+      pv='m'
+      ph='l'
+      gap='l'
       w={fullWidth ? '100%' : undefined}
     >
       <Box>
-        <IconQuestionCircle size="2xl" color="default" />
+        <IconQuestionCircle size='2xl' color='default' />
       </Box>
-      <Flex direction="column" gap="m">
-        <Text variant="body" size="m" strength="default">
+      <Flex direction='column' gap='m'>
+        <Text variant='body' size='m' strength='default'>
           {description}
         </Text>
         <PlainLink href={ctaHref}>{ctaText}</PlainLink>

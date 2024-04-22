@@ -24,6 +24,7 @@ class ChallengeResponse(TypedDict):
     challenge_type: str
     amount: str
     disbursed_amount: int
+    cooldown_days: Optional[int]
     metadata: Dict
 
 
@@ -72,6 +73,7 @@ def rollup_aggregates(
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
         "amount": parent_challenge.amount,
         "disbursed_amount": get_disbursed_amount(disbursements),
+        "cooldown_days": parent_challenge.cooldown_days or 0,
         "metadata": {},
     }
     return response_dict
@@ -95,6 +97,7 @@ def to_challenge_response(
         "is_disbursed": disbursements is not None and len(disbursements) > 0,
         "amount": challenge.amount,
         "disbursed_amount": get_disbursed_amount(disbursements),
+        "cooldown_days": challenge.cooldown_days or 0,
         "metadata": metadata,
     }
 
@@ -116,6 +119,7 @@ def create_empty_user_challenges(
             "is_disbursed": False,
             "amount": challenge.amount,
             "disbursed_amount": 0,
+            "cooldown_days": challenge.cooldown_days or 0,
             "metadata": metadatas[i],
         }
         user_challenges.append(user_challenge)

@@ -18,17 +18,14 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
-  const { is_private, is_album, playlist_contents } = collection ?? {}
+  const { is_private, is_album, playlist_contents, ddex_app } = collection ?? {}
   const track_count = playlist_contents.track_ids.length
 
   const isDisabled = !track_count || track_count === 0
 
   return collection ? (
     <>
-      <EditButton
-        collectionId={collectionId}
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-      />
+      {!ddex_app && <EditButton collectionId={collectionId} />}
       <ShareButton
         collectionId={collectionId}
         disabled={isDisabled}
@@ -37,7 +34,6 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
             ? `You can’t share an empty ${is_album ? 'album' : 'playlist'}.`
             : undefined
         }
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
       {is_private ? (
         <PublishButton

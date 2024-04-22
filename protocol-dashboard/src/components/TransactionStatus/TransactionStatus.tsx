@@ -1,8 +1,9 @@
-import { Box, Flex, Text } from '@audius/harmony'
-import clsx from 'clsx'
 import React, { ReactNode, useCallback, useEffect } from 'react'
 
+import { Box, Flex, Text } from '@audius/harmony'
 import { IconCheck, IconRemove } from '@audius/stems'
+import clsx from 'clsx'
+
 import Button, { ButtonType } from 'components/Button'
 import { Card } from 'components/Card/Card'
 import ConfirmTransactionModal, {
@@ -24,6 +25,7 @@ import {
 import { TICKER } from 'utils/consts'
 import { getHumanReadableTime } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
+
 import styles from './TransactionStatus.module.css'
 
 const messages = {
@@ -76,15 +78,10 @@ type WaitingTransactionProps = {
   ethBlockNumber: number
 } & DelayedPendingTransaction
 
-const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
+const WaitingTransaction: React.FC<WaitingTransactionProps> = (props) => {
   const { isOpen, onClick, onClose } = useModalControls()
-  const {
-    status,
-    error,
-    setError,
-    setStatus,
-    cancelTransaction
-  } = useCancelTransaction(props.name, !isOpen)
+  const { status, error, setError, setStatus, cancelTransaction } =
+    useCancelTransaction(props.name, !isOpen)
 
   const onCloseModal = useCallback(() => {
     setStatus(undefined)
@@ -165,7 +162,7 @@ type ReadyTransactionProps = {
   className?: string
 } & DelayedPendingTransaction
 
-const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
+const ReadyTransaction: React.FC<ReadyTransactionProps> = (props) => {
   const {
     isOpen: isCancelOpen,
     onClick: onClickCancel,
@@ -238,7 +235,7 @@ const ReadyTransaction: React.FC<ReadyTransactionProps> = props => {
         <div className={styles.primaryText}>{props.name}</div>
         <div className={styles.secondaryText}>{messages.ready}</div>
       </div>
-      <Flex gap="l">
+      <Flex gap='l'>
         <Button
           leftIcon={<IconRemove />}
           text={messages.cancel}
@@ -301,7 +298,7 @@ export const TransactionStatusContent = ({
 }: TransactionStatusContentProps) => {
   return (
     <>
-      <Text variant="heading" size="s">
+      <Text variant='heading' size='s'>
         {messages.pendingTransactions}
       </Text>
       <div className={styles.container}>
@@ -324,7 +321,7 @@ export const TransactionStatusContent = ({
   )
 }
 
-export const TransactionStatus: React.FC<TransactionStatusProps> = props => {
+export const TransactionStatus: React.FC<TransactionStatusProps> = (props) => {
   const pendingTx = usePendingTransactions()
   const ethBlockNumber = useEthBlockNumber()
   if (
@@ -336,7 +333,7 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = props => {
     return null
   }
   return (
-    <Card direction="column" gap="l" p="xl">
+    <Card direction='column' gap='l' p='xl'>
       <TransactionStatusContent
         transactions={pendingTx.transactions}
         ethBlockNumber={ethBlockNumber}

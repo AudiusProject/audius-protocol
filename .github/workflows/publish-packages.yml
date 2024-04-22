@@ -1,0 +1,68 @@
+name: Publish Packages
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  changes:
+    name: Check for changes to public packages
+    runs-on: ubuntu-latest
+    outputs:
+      public-packages: ${{ steps.filter.outputs.public-packages }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            public-packages:
+              - 'packages/create-audius-app/**'
+              - 'packages/fixed-decimal/**'
+              - 'packages/harmony/**'
+              - 'packages/libs/**'
+              - 'packages/spl/**'
+
+  publish-packages:
+    name: Publish Packages to NPM
+    needs: changes
+    if: ${{ needs.changes.outputs.public-packages == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('packages/*/patches/*.patch') }}
+
+      - name: Install Dependencies
+        run: npm i
+
+      - name: Update .npmrc
+        run: |
+          cat << EOF > "$HOME/.npmrc"
+            //registry.npmjs.org/:_authToken=$NPM_TOKEN
+          EOF
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: bash ./scripts/publish-packages.sh
+          version: bash ./scripts/version-packages.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true

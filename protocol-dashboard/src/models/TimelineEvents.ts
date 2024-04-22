@@ -1,31 +1,35 @@
-import { Address, ProposalEvent, VoteEvent } from 'types'
 import BN from 'bn.js'
+
+import { GetClaimProcessedResponse } from 'services/Audius/claim/types'
+import {
+  GetIncreaseDelegateStakeEventsResponse,
+  GetClaimEventsResponse,
+  GetDelegatorRemovedEventsResponse,
+  GetSlashEventsResponse
+} from 'services/Audius/delegate/types'
 import {
   GetRegisteredServiceProviderEventsResponse,
   GetDeregisteredServiceProviderEventsResponse,
   GetIncreasedStakeEventResponse
 } from 'services/Audius/service-provider/types'
-import { GetIncreaseDelegateStakeEventsResponse } from 'services/Audius/delegate/types'
-import {
-  GetClaimEventsResponse,
-  GetDelegatorRemovedEventsResponse,
-  GetSlashEventsResponse
-} from 'services/Audius/delegate/types'
-import { GetClaimProcessedResponse } from 'services/Audius/claim/types'
+import { Address, ProposalEvent, VoteEvent } from 'types'
 
 /* ServiceProvider Events */
 
-export type ServiceProviderRegisteredEvent = GetRegisteredServiceProviderEventsResponse & {
-  _type: 'ServiceProviderRegistered'
-}
+export type ServiceProviderRegisteredEvent =
+  GetRegisteredServiceProviderEventsResponse & {
+    _type: 'ServiceProviderRegistered'
+  }
 
-export type ServiceProviderDeregisteredEvent = GetDeregisteredServiceProviderEventsResponse & {
-  _type: 'ServiceProviderDeregistered'
-}
+export type ServiceProviderDeregisteredEvent =
+  GetDeregisteredServiceProviderEventsResponse & {
+    _type: 'ServiceProviderDeregistered'
+  }
 
-export type ServiceProviderIncreaseStakeEvent = GetIncreasedStakeEventResponse & {
-  _type: 'ServiceProviderIncreaseStake'
-}
+export type ServiceProviderIncreaseStakeEvent =
+  GetIncreasedStakeEventResponse & {
+    _type: 'ServiceProviderIncreaseStake'
+  }
 
 /** Decrease Stake Event, in requested | cancelled | evaluated phases */
 export type ServiceProviderDecreaseStakeEvent = {
@@ -51,10 +55,11 @@ export type ServiceProviderDecreaseStakeEvent = {
 /* Delegate Client events */
 
 /** Increase Delegation Event, from Received and Sent directions */
-export type DelegateIncreaseStakeEvent = GetIncreaseDelegateStakeEventsResponse & {
-  _type: 'DelegateIncreaseStake'
-  direction: 'Received' | 'Sent'
-}
+export type DelegateIncreaseStakeEvent =
+  GetIncreaseDelegateStakeEventsResponse & {
+    _type: 'DelegateIncreaseStake'
+    direction: 'Received' | 'Sent'
+  }
 
 export type DelegateDecreaseStakeEvent = {
   _type: 'DelegateDecreaseStake'

@@ -1,7 +1,10 @@
 import React, { PropsWithChildren } from 'react'
+
 import SimpleBar from 'simplebar-react'
-import styles from './ModalTable.module.css'
+
 import Modal from 'components/Modal'
+
+import styles from './ModalTable.module.css'
 
 type OwnProps = PropsWithChildren<{
   title: string

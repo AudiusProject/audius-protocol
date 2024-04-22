@@ -29,6 +29,8 @@ export const TOGGLE_PLAY = 'TOGGLE_PLAY'
 export const RESET = 'RESET'
 export const RESET_SUCCEEDED = 'RESET_SUCCEEDED'
 
+export const SET_MAX_ENTRIES = 'SET_MAX_ENTRIES'
+
 export const SET_IN_VIEW = 'SET_IN_VIEW'
 export const REFRESH_IN_VIEW = 'REFRESH_IN_VIEW'
 
@@ -238,6 +240,13 @@ export class LineupActions {
       kind,
       uid,
       handle
+    }
+  }
+
+  setMaxEntries(maxEntries: number | null) {
+    return {
+      type: addPrefix(this.prefix, SET_MAX_ENTRIES),
+      maxEntries
     }
   }
 

@@ -1,11 +1,9 @@
+import React, { useCallback, useEffect, useState } from 'react'
+
 import BN from 'bn.js'
 import clsx from 'clsx'
-import React, { useCallback, useEffect, useState } from 'react'
-import { useModalControls } from 'utils/hooks'
 
 import TrashIcon from 'assets/img/iconTrash.svg?react'
-import { useDelegators } from 'store/cache/user/hooks'
-
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'
@@ -19,9 +17,12 @@ import {
 } from 'store/account/hooks'
 import { useRemoveDelegator } from 'store/actions/removeDelegator'
 import { useUndelegateStake } from 'store/actions/undelegateStake'
+import { useDelegators } from 'store/cache/user/hooks'
 import { Address, Delegate, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
+import { useModalControls } from 'utils/hooks'
 import { accountPage } from 'utils/routes'
+
 import styles from './DelegatorsModal.module.css'
 
 const messages = {
@@ -102,7 +103,7 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
 
   const isOwner = accountWallet === wallet
 
-  const data = (delegators as Delegate[]).map(delegator => {
+  const data = (delegators as Delegate[]).map((delegator) => {
     return {
       img: delegator.img,
       name: delegator.name,
@@ -149,7 +150,7 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
 
   const onConfirmRemoveDelegator = useCallback(() => {
     if (delegatorToRemove === accountWallet) {
-      const delegator = delegators.find(d => d.wallet === accountWallet)
+      const delegator = delegators.find((d) => d.wallet === accountWallet)
       const amount = delegator?.amount
       if (amount) undelegateStake(wallet, amount)
     } else {
@@ -211,7 +212,7 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
       onClose={onClose}
       dismissOnClickOutside={!removeDelegatorOpen}
     >
-      {data.map(d => (
+      {data.map((d) => (
         <div
           onClick={() => onRowClick(d)}
           key={d.address}

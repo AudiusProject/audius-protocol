@@ -181,6 +181,7 @@ type ReleaseIDs struct {
 type TrackMetadata struct {
 	Title                        string                `bson:"title"`
 	ReleaseDate                  time.Time             `bson:"release_date"`
+	ValidityStartDate            time.Time             `bson:"validity_start_date"`
 	Genre                        Genre                 `bson:"genre"`
 	Duration                     int                   `bson:"duration"`
 	PreviewStartSeconds          NullableInt           `bson:"preview_start_seconds,omitempty"`
@@ -193,6 +194,10 @@ type TrackMetadata struct {
 	CopyrightLine                *Copyright            `bson:"copyright_line,omitempty"`
 	ProducerCopyrightLine        *Copyright            `bson:"producer_copyright_line,omitempty"`
 	ParentalWarningType          NullableString        `bson:"parental_warning_type,omitempty"`
+	IsStreamGated                bool                  `bson:"is_stream_gated,omitempty"`
+	StreamConditions             *AccessConditions     `bson:"stream_conditions,omitempty"`
+	IsDownloadGated              bool                  `bson:"is_download_gated,omitempty"`
+	DownloadConditions           *AccessConditions     `bson:"download_conditions,omitempty"`
 
 	// TODO: Handle License from PLineText?
 	License NullableString `bson:"license,omitempty"`
@@ -214,14 +219,19 @@ type TrackMetadata struct {
 	CoverArtURL                 string `bson:"cover_art_url"`
 	CoverArtURLHash             string `bson:"cover_art_url_hash"`
 	CoverArtURLHashAlgo         string `bson:"cover_art_url_hash_algo"`
+	IsStreamFollowGated         bool   `bson:"is_stream_follow_gated"`
+	IsStreamTipGated            bool   `bson:"is_stream_tip_gated"`
+	IsDownloadFollowGated       bool   `bson:"is_download_follow_gated"`
+	HasDeal                     bool   `bson:"has_deal"`
 }
 
 // SDKUploadMetadata represents the metadata required to upload a track or album to Audius
 type SDKUploadMetadata struct {
 	// Required for both tracks and albums
-	ReleaseDate time.Time `bson:"release_date"`
-	Genre       Genre     `bson:"genre"`
-	CoverArtURL string    `bson:"cover_art_url"`
+	ReleaseDate       time.Time `bson:"release_date"`
+	ValidityStartDate time.Time `bson:"validity_start_date"`
+	Genre             Genre     `bson:"genre"`
+	CoverArtURL       string    `bson:"cover_art_url"`
 
 	// Optional for both tracks and albums
 	CoverArtURLHash       NullableString        `bson:"cover_art_url_hash,omitempty"`
@@ -235,6 +245,7 @@ type SDKUploadMetadata struct {
 	ProducerCopyrightLine *Copyright            `bson:"producer_copyright_line,omitempty"`
 	ParentalWarningType   NullableString        `bson:"parental_warning_type,omitempty"`
 	License               NullableString        `bson:"license,omitempty"`
+	HasDeal               bool                  `bson:"has_deal"`
 
 	// Only for tracks
 	Title                        NullableString        `bson:"title,omitempty"`
@@ -251,6 +262,13 @@ type SDKUploadMetadata struct {
 	AudioFileURL                 NullableString        `bson:"audio_file_url,omitempty"`
 	AudioFileURLHash             NullableString        `bson:"audio_file_url_hash,omitempty"`
 	AudioFileURLHashAlgo         NullableString        `bson:"audio_file_url_hash_algo,omitempty"`
+	IsStreamGated                bool                  `bson:"is_stream_gated,omitempty"`
+	StreamConditions             *AccessConditions     `bson:"stream_conditions,omitempty"`
+	IsDownloadGated              bool                  `bson:"is_download_gated,omitempty"`
+	DownloadConditions           *AccessConditions     `bson:"download_conditions,omitempty"`
+	IsStreamFollowGated          bool                  `bson:"is_stream_follow_gated"`
+	IsStreamTipGated             bool                  `bson:"is_stream_tip_gated"`
+	IsDownloadFollowGated        bool                  `bson:"is_download_follow_gated"`
 
 	// Only for albums
 	Tracks            []TrackMetadata `bson:"tracks,omitempty"`

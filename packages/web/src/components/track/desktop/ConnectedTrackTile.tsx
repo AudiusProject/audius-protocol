@@ -206,6 +206,7 @@ const ConnectedTrackTile = ({
       includeAddToAlbum: !isStreamGated,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
+      ddexApp: track?.ddex_app,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeFavorite: false,
       includeRepost: false,

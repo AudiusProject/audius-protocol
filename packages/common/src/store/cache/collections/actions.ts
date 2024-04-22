@@ -122,8 +122,8 @@ export function addTrackToPlaylistFailed(
 }
 
 export function removeTrackFromPlaylist(
-  trackId: number,
-  playlistId: number,
+  trackId: ID,
+  playlistId: ID,
   timestamp: number
 ) {
   return { type: REMOVE_TRACK_FROM_PLAYLIST, trackId, playlistId, timestamp }

@@ -27,6 +27,7 @@ type HandleTransactionParams = {
   signatures?: Nullable<Array<{ publicKey: string; signature: Buffer }>>
   lookupTableAddresses?: string[]
   retry?: boolean
+  useCoinflowRelay?: boolean
 }
 
 /**
@@ -92,7 +93,8 @@ export class TransactionHandler {
     sendBlockhash = false,
     signatures = null,
     lookupTableAddresses = [],
-    retry = true
+    retry = true,
+    useCoinflowRelay
   }: HandleTransactionParams) {
     let result: {
       res: string | null
@@ -108,7 +110,8 @@ export class TransactionHandler {
         sendBlockhash,
         signatures,
         lookupTableAddresses,
-        retry
+        retry,
+        useCoinflowRelay
       )
     } else {
       result = await this._locallyConfirmTransaction(
@@ -135,7 +138,8 @@ export class TransactionHandler {
     sendBlockhash: boolean,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null,
     lookupTableAddresses: string[],
-    retry: boolean
+    retry: boolean,
+    useCoinflowRelay?: boolean
   ) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
 
@@ -146,7 +150,8 @@ export class TransactionHandler {
         skipPreflight === null ? this.skipPreflight : skipPreflight,
       feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null,
       lookupTableAddresses,
-      retry
+      retry,
+      useCoinflowRelay
     }
 
     if (sendBlockhash || Array.isArray(signatures)) {

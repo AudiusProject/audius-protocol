@@ -1,18 +1,20 @@
-import clsx from 'clsx'
-import Dropdown from 'components/Dropdown'
-import Loading from 'components/Loading'
-import Paper from 'components/Paper'
 import React from 'react'
-import { HorizontalBar } from 'react-chartjs-2'
-import { formatShortNumber } from 'utils/format'
-// Custom draw fn
-import './draw'
 
 import { Flex } from '@audius/harmony'
+import clsx from 'clsx'
+import { HorizontalBar } from 'react-chartjs-2'
+
+import Dropdown from 'components/Dropdown'
 import Error from 'components/Error'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
 import { formatBucketText } from 'store/cache/analytics/hooks'
+import { formatShortNumber } from 'utils/format'
 import { useIsMobile } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
+
+// Custom draw fn
+import './draw'
 import desktopStyles from './BarChart.module.css'
 import mobileStyles from './BarChartMobile.module.css'
 
@@ -31,7 +33,7 @@ const colors = [
 ]
 
 const getData = (data: number[], isMobile: boolean) => ({
-  labels: data.map(d => formatShortNumber(d).toUpperCase()),
+  labels: data.map((d) => formatShortNumber(d).toUpperCase()),
   datasets: [
     {
       backgroundColor: colors,
@@ -164,7 +166,7 @@ const BarChart: React.FC<BarChartProps> = ({
       onClick={onClick}
     >
       <div className={styles.header}>
-        <Flex inline gap="xs" alignItems="center">
+        <Flex inline gap='xs' alignItems='center'>
           <div className={styles.title}>{title}</div>
           {TitleTooltipComponent == null ? null : <TitleTooltipComponent />}
         </Flex>

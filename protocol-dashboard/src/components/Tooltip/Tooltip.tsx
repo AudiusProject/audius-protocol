@@ -1,5 +1,3 @@
-import { Box, Text } from '@audius/harmony'
-import clsx from 'clsx'
 import React, {
   PropsWithChildren,
   useEffect,
@@ -7,7 +5,11 @@ import React, {
   useRef,
   useState
 } from 'react'
+
+import { Box, Text } from '@audius/harmony'
+import clsx from 'clsx'
 import ReactDOM from 'react-dom'
+
 import styles from './Tooltip.module.css'
 
 export enum Position {
@@ -47,21 +49,21 @@ const DescriptiveTooltipText: React.FC<{
           <Box w={250}>
             <div className={styles.tooltipText} ref={targetRef}>
               {title == null ? null : (
-                <Box mb="m">
-                  <Text variant="title" size="m" color="staticWhite">
+                <Box mb='m'>
+                  <Text variant='title' size='m' color='staticWhite'>
                     {title}
                   </Text>
                 </Box>
               )}
-              <Text variant="body" size="s" color="staticWhite">
+              <Text variant='body' size='s' color='staticWhite'>
                 {text}
               </Text>
-              <Box mt="s">
+              <Box mt='s'>
                 {ctaText == null ? null : (
                   <a
                     href={ctaHref}
-                    target="_blank"
-                    rel="noreferrer"
+                    target='_blank'
+                    rel='noreferrer'
                     css={{
                       all: 'unset',
                       fontWeight: 500,

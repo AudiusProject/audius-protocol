@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { PendingTransactionName, Status, Address } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { fetchPendingTransactions } from 'store/account/hooks'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { fetchPendingTransactions } from 'store/account/hooks'
+import { AppState } from 'store/types'
+import { PendingTransactionName, Status, Address } from 'types'
 
 function cancelDecreaseStake(
   setStatus: (status: Status) => void,

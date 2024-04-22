@@ -4,7 +4,8 @@ import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { FavoriteType, ID, AccessConditions } from '@audius/common/models'
 import {
   repostsUserListActions,
-  favoritesUserListActions
+  favoritesUserListActions,
+  PurchaseableContentType
 } from '@audius/common/store'
 import type { RepostType } from '@audius/common/store'
 import { dayjs, formatCount } from '@audius/common/utils'
@@ -28,6 +29,7 @@ import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
+import { LineupTileAccessStatus } from './LineupTileAccessStatus'
 import { LineupTileGatedContentTypeTag } from './LineupTilePremiumContentTypeTag'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
@@ -139,6 +141,7 @@ export const LineupTileStats = ({
   const navigation = useNavigation()
 
   const hasEngagement = Boolean(repostCount || saveCount)
+  const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
   const handlePressFavorites = useCallback(() => {
     dispatch(setFavorite(id, favoriteType))
@@ -158,6 +161,41 @@ export const LineupTileStats = ({
 
   const isReadonly = variant === 'readonly'
   const isScheduledRelease = isUnlisted && moment(releaseDate).isAfter(moment())
+
+  const renderLockedContentOrPlayCount = () => {
+    if (streamConditions && !isOwner) {
+      if (isPurchase && isReadonly) {
+        return (
+          <LineupTileAccessStatus
+            contentId={id}
+            contentType={
+              isCollection
+                ? PurchaseableContentType.ALBUM
+                : PurchaseableContentType.TRACK
+            }
+            streamConditions={streamConditions}
+          />
+        )
+      }
+      return (
+        <LockedStatusBadge
+          locked={!hasStreamAccess}
+          variant={isPurchase ? 'purchase' : 'gated'}
+        />
+      )
+    }
+
+    return (
+      !hidePlays &&
+      playCount !== undefined &&
+      playCount > 0 && (
+        <Text style={[trackTileStyles.statText, styles.listenCount]}>
+          {formatPlayCount(playCount)}
+        </Text>
+      )
+    )
+  }
+
   return (
     <View style={styles.root}>
       <View style={styles.stats}>
@@ -259,18 +297,7 @@ export const LineupTileStats = ({
           ) : null}
         </View>
       </View>
-      {streamConditions && !isOwner ? (
-        <LockedStatusBadge
-          locked={!hasStreamAccess}
-          variant={
-            isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
-          }
-        />
-      ) : !hidePlays ? (
-        <Text style={[trackTileStyles.statText, styles.listenCount]}>
-          {formatPlayCount(playCount)}
-        </Text>
-      ) : null}
+      {renderLockedContentOrPlayCount()}
     </View>
   )
 }

@@ -42,6 +42,7 @@ export type OwnProps = {
   onShare?: () => void
   playlistId: PlaylistId
   playlistName: string
+  ddexApp?: string | null
   type: 'album' | 'playlist'
   permalink: string
 }
@@ -62,6 +63,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
       type,
       handle,
       playlistName,
+      ddexApp,
       playlistId,
       isOwner,
       isFavorited,
@@ -170,7 +172,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
     if (includeEmbed && isPublic) {
       menu.items.push(embedMenuItem)
     }
-    if (includeEdit && isOwner) {
+    if (includeEdit && isOwner && !ddexApp) {
       menu.items.push(editCollectionMenuItem)
     }
 

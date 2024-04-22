@@ -1,14 +1,17 @@
+import { useEffect } from 'react'
+
+import { AnyAction } from '@reduxjs/toolkit'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
-import { useEffect } from 'react'
-import { setVotes, setUserVote } from './slice'
 import { Vote, VoteEvent } from 'types'
+
 import { useDispatchBasedOnBlockNumber } from '../protocol/hooks'
-import { AnyAction } from '@reduxjs/toolkit'
+
+import { setVotes, setUserVote } from './slice'
 
 // -------------------------------- Selectors  --------------------------------
 
@@ -19,11 +22,11 @@ export const getVotes = (
 export const getVotesFor = (
   state: AppState,
   { proposalId }: { proposalId: number }
-) => getVotes(state, { proposalId })?.filter(v => v.vote === Vote.Yes)
+) => getVotes(state, { proposalId })?.filter((v) => v.vote === Vote.Yes)
 export const getVotesAgainst = (
   state: AppState,
   { proposalId }: { proposalId: number }
-) => getVotes(state, { proposalId })?.filter(v => v.vote === Vote.No)
+) => getVotes(state, { proposalId })?.filter((v) => v.vote === Vote.No)
 
 export const getUserVote = (
   state: AppState,
@@ -49,7 +52,7 @@ export function fetchVotes(
       updatedVoteMap[vote.voter] = vote
     }
 
-    const votes = originalVotes.map(vote =>
+    const votes = originalVotes.map((vote) =>
       vote.voter in updatedVoteMap ? updatedVoteMap[vote.voter] : vote
     )
 
@@ -71,13 +74,13 @@ export function fetchUserVote(
 // -------------------------------- Hooks  --------------------------------
 
 export const useVotes = (proposalId: number) => {
-  const votes = useSelector(state =>
+  const votes = useSelector((state) =>
     getVotes(state as AppState, { proposalId })
   )
-  const votesFor = useSelector(state =>
+  const votesFor = useSelector((state) =>
     getVotesFor(state as AppState, { proposalId })
   )
-  const votesAgainst = useSelector(state =>
+  const votesAgainst = useSelector((state) =>
     getVotesAgainst(state as AppState, { proposalId })
   )
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
@@ -93,7 +96,7 @@ export const useVotes = (proposalId: number) => {
 }
 
 export const useUserVote = (proposalId: number) => {
-  const userVote = useSelector(state =>
+  const userVote = useSelector((state) =>
     getUserVote(state as AppState, { proposalId })
   )
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()

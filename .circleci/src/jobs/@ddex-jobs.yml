@@ -24,8 +24,8 @@ ddex-webapp-init:
         root: ./
         paths:
           - node_modules
-          - packages/ddex/node_modules
-          - packages/ddex/webapp/node_modules
+          - packages/ddex/webapp/client/node_modules
+          - packages/ddex/webapp/server/node_modules
 
 ddex-publisher-init:
   working_directory: ~/audius-protocol

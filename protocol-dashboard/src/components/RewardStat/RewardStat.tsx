@@ -1,8 +1,10 @@
 import React, { ReactNode } from 'react'
 
 import { Flex, Text } from '@audius/harmony'
+
 import Error from 'components/Error'
 import Loading from 'components/Loading'
+
 import styles from './RewardStat.module.css'
 
 type OwnProps = {
@@ -16,7 +18,7 @@ type RewardStatProps = OwnProps
 
 const RewardStat: React.FC<RewardStatProps> = ({ stat, label, error }) => {
   return (
-    <Flex gap="s">
+    <Flex gap='s'>
       {error ? (
         <div className={styles.stat}>
           <Error />
@@ -24,10 +26,10 @@ const RewardStat: React.FC<RewardStatProps> = ({ stat, label, error }) => {
       ) : stat !== null ? (
         <Text
           css={{ display: 'inline' }}
-          variant="heading"
-          size="s"
-          strength="default"
-          tag="span"
+          variant='heading'
+          size='s'
+          strength='default'
+          tag='span'
         >
           {stat}
         </Text>
@@ -38,11 +40,11 @@ const RewardStat: React.FC<RewardStatProps> = ({ stat, label, error }) => {
       )}
       <Text
         css={{ display: 'inline' }}
-        variant="heading"
-        size="s"
-        color="subdued"
-        strength="default"
-        tag="span"
+        variant='heading'
+        size='s'
+        color='subdued'
+        strength='default'
+        tag='span'
       >
         {label}
       </Text>

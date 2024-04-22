@@ -1,16 +1,8 @@
-import { Box, Flex, Text } from '@audius/harmony'
-import { Card } from 'components/Card/Card'
-import UserImage from 'components/UserImage'
-import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useCallback } from 'react'
-import { useAccount } from 'store/account/hooks'
-import { useUser, useUserDelegates } from 'store/cache/user/hooks'
-import { Address, Status } from 'types'
-import { TICKER } from 'utils/consts'
-import { usePushRoute } from 'utils/effects'
-import { formatShortWallet } from 'utils/format'
-import { accountPage } from 'utils/routes'
 
+import { Box, Flex, Text } from '@audius/harmony'
+
+import { Card } from 'components/Card/Card'
 import {
   DelegatedAudioInfoTooltip,
   DelegatingToInfoTooltip,
@@ -18,11 +10,21 @@ import {
 } from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
 import { ManageDelegation } from 'components/UpdateDelegationModal/UpdateDelegationModal'
+import UserImage from 'components/UserImage'
+import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import AudiusClient from 'services/Audius/AudiusClient'
+import { useAccount } from 'store/account/hooks'
 import {
   useUserAnnualRewardRate,
   useUserWeeklyRewards
 } from 'store/cache/rewards/hooks'
+import { useUser, useUserDelegates } from 'store/cache/user/hooks'
+import { Address, Status } from 'types'
+import { TICKER } from 'utils/consts'
+import { usePushRoute } from 'utils/effects'
+import { formatShortWallet } from 'utils/format'
+import { accountPage } from 'utils/routes'
+
 import styles from './ManageAccountCard.module.css'
 
 const messages = {
@@ -58,11 +60,11 @@ export const DelegateInfo = ({
 
   return (
     <Flex
-      gap="s"
+      gap='s'
       onClick={clickable ? onClickUser : undefined}
       css={{ cursor: clickable ? 'pointer' : 'default' }}
     >
-      <Flex gap="s" alignItems="center">
+      <Flex gap='s' alignItems='center'>
         <UserImage
           wallet={wallet}
           imgClassName={styles.snippetImg}
@@ -70,24 +72,24 @@ export const DelegateInfo = ({
           useSkeleton={false}
         />
         {audiusProfile != null ? null : (
-          <Text variant="body" size="m" strength="strong">
+          <Text variant='body' size='m' strength='strong'>
             {formatShortWallet(user.wallet)}
           </Text>
         )}
       </Flex>
       {audiusProfile == null ? null : (
-        <Flex direction="column" gap="xs">
-          <Flex gap="xs" alignItems="center">
-            <Text variant="heading" size="s" strength="default" tag="span">
+        <Flex direction='column' gap='xs'>
+          <Flex gap='xs' alignItems='center'>
+            <Text variant='heading' size='s' strength='default' tag='span'>
               {audiusProfile.name}
             </Text>
             <UserBadges inline audiusProfile={audiusProfile} badgeSize={14} />
           </Flex>
           <Box>
             <Text
-              variant="body"
-              size="m"
-              strength="strong"
+              variant='body'
+              size='m'
+              strength='strong'
               color={longFormat ? 'subdued' : 'default'}
             >
               {longFormat ? user.wallet : formatShortWallet(user.wallet)}
@@ -138,20 +140,20 @@ const UserAudioRewardEstimate = ({
   }
 
   return (
-    <Flex mt="l" direction="column" gap="s">
-      <Flex gap="s">
-        <Text variant="heading" size="s" strength="default" tag="span">
+    <Flex mt='l' direction='column' gap='s'>
+      <Flex gap='s'>
+        <Text variant='heading' size='s' strength='default' tag='span'>
           {weeklyFormatted}
         </Text>
-        <Text variant="heading" color="subdued" size="s" strength="default">
+        <Text variant='heading' color='subdued' size='s' strength='default'>
           {messages.weekly}
         </Text>
       </Flex>
-      <Flex gap="s">
-        <Text variant="heading" size="s" strength="default" tag="span">
+      <Flex gap='s'>
+        <Text variant='heading' size='s' strength='default' tag='span'>
           {annualFormatted}
         </Text>
-        <Text variant="heading" color="subdued" size="s" strength="default">
+        <Text variant='heading' color='subdued' size='s' strength='default'>
           {messages.annual}
         </Text>
       </Flex>
@@ -190,45 +192,46 @@ export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
 
   return (
     <>
-      {user?.delegates?.map(d => {
+      {user?.delegates?.map((d) => {
         return (
           <Card
-            pv="l"
-            ph="xl"
-            justifyContent="space-between"
-            alignItems="center"
-            gap="2xl"
-            wrap="wrap"
+            key={d.wallet}
+            pv='l'
+            ph='xl'
+            justifyContent='space-between'
+            alignItems='center'
+            gap='2xl'
+            wrap='wrap'
           >
-            <Card direction="column" pv="l" ph="xl">
-              <Flex inline gap="xs" alignItems="center">
+            <Card direction='column' pv='l' ph='xl'>
+              <Flex inline gap='xs' alignItems='center'>
                 <Text
-                  variant="heading"
-                  color="subdued"
-                  size="s"
-                  strength="default"
+                  variant='heading'
+                  color='subdued'
+                  size='s'
+                  strength='default'
                 >
                   {messages.delegatingTo}
                 </Text>
-                <DelegatingToInfoTooltip color="subdued" />
+                <DelegatingToInfoTooltip color='subdued' />
               </Flex>
-              <Box mt="l">
+              <Box mt='l'>
                 <DelegateInfo wallet={d.wallet} />
               </Box>
             </Card>
             <Box css={{ flexGrow: 1 }}>
-              <Flex inline gap="xs" alignItems="center">
+              <Flex inline gap='xs' alignItems='center'>
                 <Text
-                  variant="heading"
-                  color="subdued"
-                  size="s"
-                  strength="default"
+                  variant='heading'
+                  color='subdued'
+                  size='s'
+                  strength='default'
                 >
                   {messages.estimatedReward}
                 </Text>
-                <EstimatedAudioRewardInfoTooltip color="subdued" />
+                <EstimatedAudioRewardInfoTooltip color='subdued' />
               </Flex>
-              <Box mt="l">
+              <Box mt='l'>
                 <UserAudioRewardEstimate
                   wallet={wallet}
                   delegateAddress={d.wallet}
@@ -236,29 +239,29 @@ export const ManageAccountCard = ({ wallet }: ManageAccountCardProps) => {
               </Box>
             </Box>
             <Box css={{ maxWidth: 226, flexGrow: 1 }}>
-              <Flex direction="column" alignItems="flex-end">
+              <Flex direction='column' alignItems='flex-end'>
                 <Text
-                  variant="heading"
-                  size="m"
-                  strength="default"
-                  color="accent"
+                  variant='heading'
+                  size='m'
+                  strength='default'
+                  color='accent'
                 >
                   {AudiusClient.displayShortAud(d.amount)}
                 </Text>
-                <Flex inline gap="xs" alignItems="center">
+                <Flex inline gap='xs' alignItems='center'>
                   <Text
-                    variant="heading"
-                    color="subdued"
-                    size="s"
-                    strength="default"
+                    variant='heading'
+                    color='subdued'
+                    size='s'
+                    strength='default'
                   >
                     {messages.delegatedToken}
                   </Text>
-                  <DelegatedAudioInfoTooltip color="subdued" />
+                  <DelegatedAudioInfoTooltip color='subdued' />
                 </Flex>
               </Flex>
               {isOwner ? (
-                <Box mt="unit5">
+                <Box mt='unit5'>
                   <ManageDelegationContainer nodeWallet={d.wallet} />
                 </Box>
               ) : null}

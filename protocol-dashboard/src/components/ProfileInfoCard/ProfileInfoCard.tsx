@@ -7,31 +7,31 @@ import {
   useTheme
 } from '@audius/harmony'
 import { User as AudiusUser } from '@audius/sdk'
-import { Card } from 'components/Card/Card'
-import Loading from 'components/Loading'
-import { Operator, Status, User } from 'types'
 
+import { Card } from 'components/Card/Card'
+import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
+import Loading from 'components/Loading'
+import { PlainLink } from 'components/PlainLink/PlainLink'
 import UserImage from 'components/UserImage'
 import UserBadges from 'components/UserInfo/AudiusProfileBadges'
+import { Operator, Status, User } from 'types'
 import { useModalControls } from 'utils/hooks'
-import { AUDIUS_DAPP_URL } from 'utils/routes'
-import styles from './ProfileInfoCard.module.css'
-
-import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
-import { PlainLink } from 'components/PlainLink/PlainLink'
 import { isMobile as getIsMobile } from 'utils/mobile'
+import { AUDIUS_DAPP_URL } from 'utils/routes'
+
+import styles from './ProfileInfoCard.module.css'
 
 const messages = {
   viewOnAudius: 'View On Audius',
   unlinkAudiusProfile: 'Unlink'
 }
 
-type DisconnectAudiusProfileButton = {
+type DisconnectAudiusProfileButtonProps = {
   wallet: string
 }
 export const DisconnectAudiusProfileButton = ({
   wallet
-}: DisconnectAudiusProfileButton) => {
+}: DisconnectAudiusProfileButtonProps) => {
   const { isOpen, onClick, onClose } = useModalControls()
 
   return (
@@ -41,7 +41,7 @@ export const DisconnectAudiusProfileButton = ({
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
-        action="disconnect"
+        action='disconnect'
       />
     </>
   )
@@ -78,8 +78,8 @@ const ProfileInfo = ({
             >
               <a
                 aria-label="Go to user's Audius profile"
-                target="_blank"
-                rel="noreferrer"
+                target='_blank'
+                rel='noreferrer'
                 href={`${AUDIUS_DAPP_URL}/${audiusProfile?.handle}`}
               >
                 {messages.viewOnAudius}
@@ -87,7 +87,7 @@ const ProfileInfo = ({
             </PlainButton>
           )}
           {audiusProfile && isOwner ? (
-            <Box className={styles.disconnectLink} mt="xs">
+            <Box className={styles.disconnectLink} mt='xs'>
               <DisconnectAudiusProfileButton wallet={wallet} />
             </Box>
           ) : null}
@@ -109,7 +109,7 @@ const ProfileInfo = ({
           justifyContent: 'center'
         }}
       >
-        <Text variant="title" size="l">
+        <Text variant='title' size='l'>
           {audiusProfileName ?? (name !== wallet && name)}
         </Text>
         {audiusProfile ? (
@@ -117,8 +117,8 @@ const ProfileInfo = ({
         ) : null}
       </div>
       <Text
-        variant="body"
-        size="m"
+        variant='body'
+        size='m'
         css={{ wordWrap: 'break-word', maxWidth: '100%', textAlign: 'center' }}
       >
         {wallet}
@@ -129,7 +129,7 @@ const ProfileInfo = ({
 
 const ProfileInfoCard = (props: ProfileInfoCardProps) => {
   return (
-    <Card direction="column" alignItems="center" p="xl">
+    <Card direction='column' alignItems='center' p='xl'>
       {props.status !== Status.Success ? (
         <Loading />
       ) : (

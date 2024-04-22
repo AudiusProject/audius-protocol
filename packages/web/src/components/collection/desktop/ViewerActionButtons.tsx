@@ -8,7 +8,6 @@ import { FavoriteButton } from './FavoriteButton'
 import { OverflowMenuButton } from './OverflowMenuButton'
 import { RepostButton } from './RepostButton'
 import { ShareButton } from './ShareButton'
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { getCollection } = collectionPageSelectors
 
@@ -26,21 +25,10 @@ export const ViewerActionButtons = (props: ViewerActionButtonsProps) => {
 
   return (
     <>
-      <ShareButton
-        disabled={isDisabled}
-        collectionId={collectionId}
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-      />
-      <RepostButton
-        disabled={isDisabled}
-        collectionId={collectionId}
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
-      />
-      <FavoriteButton
-        disabled={isDisabled}
-        collectionId={collectionId}
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.fourth}
-      />
+      <RepostButton disabled={isDisabled} collectionId={collectionId} />
+      <FavoriteButton disabled={isDisabled} collectionId={collectionId} />
+
+      <ShareButton disabled={isDisabled} collectionId={collectionId} />
       <ClientOnly>
         <OverflowMenuButton collectionId={collectionId} />
       </ClientOnly>

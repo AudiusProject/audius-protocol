@@ -71,7 +71,7 @@ export const USDCPurchaseBuyerNotification = ({
       )
       return { shareText: content ? shareText : '', analytics }
     },
-    [content]
+    [content, entityType]
   )
 
   const handlePress = useCallback(() => {

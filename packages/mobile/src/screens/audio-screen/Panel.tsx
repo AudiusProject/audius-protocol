@@ -18,7 +18,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
   completeLabel: 'COMPLETE',
-  claimReward: 'Claim Your Reward',
+  claimReward: 'Claim This Reward',
   readyToClaim: 'Ready to Claim',
   viewDetails: 'View Details',
   new: 'New!'
