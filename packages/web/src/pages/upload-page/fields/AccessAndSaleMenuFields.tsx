@@ -163,7 +163,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
               ? messages.hiddenHint
               : ''
           }
-          checkedContent={<HiddenAvailabilityFields />}
+          checkedContent={isAlbum ? null : <HiddenAvailabilityFields />}
         />
       </RadioGroup>
     </div>
