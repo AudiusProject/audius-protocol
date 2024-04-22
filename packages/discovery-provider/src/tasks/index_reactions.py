@@ -51,13 +51,11 @@ def reaction_dict_to_model(reaction: ReactionResponse) -> Union[Reaction, None]:
 
     try:
         reaction_model = Reaction(
-            slot=reaction["slot"],
             reaction_value=reaction["reactionValue"],
             sender_wallet=reaction["senderWallet"],
             reaction_type=reaction["reactionType"],
             reacted_to=reaction["reactedTo"],
             timestamp=cast(datetime, reaction["createdAt"]),
-            tx_signature=None,  # no tx_signature for now
         )
         return reaction_model
     except Exception as e:

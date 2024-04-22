@@ -93,7 +93,6 @@ def tip_reaction(params: ManageEntityParameters):
         reaction = Reaction(
             reacted_to=reacted_to,
             reaction_value=reaction_value,
-            slot=slot,
             sender_wallet=sender_wallet,
             reaction_type=reaction_type,
             timestamp=datetime.now(),
