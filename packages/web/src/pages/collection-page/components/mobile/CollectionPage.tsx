@@ -82,7 +82,7 @@ export type CollectionPageProps = {
   onClickRow: (record: any) => void
   onClickMobileOverflow?: (
     collectionId: ID,
-    overflowActions: (OverflowAction | null)[]
+    overflowActions: OverflowAction[]
   ) => void
   onClickFavorites?: () => void
   onClickReposts?: () => void
@@ -178,7 +178,8 @@ const CollectionPage = ({
 
   const {
     isEmpty,
-    lastModified,
+    lastModifiedDate,
+    releaseDate,
     playlistName,
     description,
     isPrivate,
@@ -265,7 +266,8 @@ const CollectionPage = ({
             isAlbum={isAlbum}
             numTracks={numTracks}
             isPlayable={isPlayable}
-            modified={lastModified || Date.now()}
+            lastModifiedDate={lastModifiedDate}
+            releaseDate={releaseDate}
             duration={duration}
             isPublished={!isPrivate}
             isPublishing={isPublishing}
