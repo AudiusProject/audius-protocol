@@ -9,7 +9,8 @@
     "id": "track-upload",
     "active": true,
     "starting_block": 0,
-    "amount": 1
+    "amount": 1,
+    "cooldown_days": 7
   },
   {
     "id": "referrals",
@@ -33,13 +34,15 @@
     "id": "connect-verified",
     "active": true,
     "starting_block": 0,
-    "amount": 5
+    "amount": 5,
+    "cooldown_days": 7
   },
   {
     "id": "mobile-install",
     "active": true,
     "starting_block": 0,
-    "amount": 1
+    "amount": 1,
+    "cooldown_days": 7
   },
   {
     "id": "tt",
@@ -64,14 +67,16 @@
     "type": "boolean",
     "amount": 2,
     "active": true,
-    "starting_block": 0
+    "starting_block": 0,
+    "cooldown_days": 7
   },
   {
     "id": "first-playlist",
     "type": "boolean",
     "amount": 2,
     "active": true,
-    "starting_block": 0
+    "starting_block": 0,
+    "cooldown_days": 7
   },
   {
     "id": "b",
