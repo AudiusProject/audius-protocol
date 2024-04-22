@@ -171,7 +171,7 @@ type TwitterShareButtonProps = {
   inviteLink: string
 }
 
-export const TwitterShareButton = ({
+const TwitterShareButton = ({
   modalType,
   inviteLink
 }: TwitterShareButtonProps) => {
@@ -190,7 +190,7 @@ export const TwitterShareButton = ({
   )
 }
 
-export const ProfileChecks = () => {
+const ProfileChecks = () => {
   const completionStages = useSelector(getCompletionStages)
   const wm = useWithMobileStyle(styles.mobile)
 
@@ -415,7 +415,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }, [])
 
   const renderCooldownSummaryTable = () => {
-    if (isCooldownChallenge && !isCooldownChallengesEmpty) {
+    if (
+      isRewardsCooldownEnabled &&
+      isCooldownChallenge &&
+      !isCooldownChallengesEmpty
+    ) {
       return (
         <SummaryTable
           title={messages.upcomingRewards}
