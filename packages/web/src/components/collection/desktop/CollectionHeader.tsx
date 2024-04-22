@@ -15,7 +15,7 @@ import {
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { formatSecondsAsText, formatDate } from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -44,7 +44,6 @@ import { RepostFavoritesStats } from '../components/RepostsFavoritesStats'
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
 import styles from './CollectionHeader.module.css'
-import { RepostFavoritesStats } from './RepostsFavoritesStats'
 
 const messages = {
   filterPlaylist: 'Search in playlist...',
@@ -176,11 +175,12 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     [styles.hide]: isLoading
   }
 
-  const TitleComponent = isOwner ? 'button' : 'span'
+  const isPremium =
+    isStreamGated && isContentUSDCPurchaseGated(streamConditions)
 
-  return (
-    <Flex className={styles.collectionHeader} direction='column' gap='m'>
-      <div className={styles.topSection}>
+  const topSection = (
+    <Flex gap='xl' p='l' backgroundColor='white'>
+      {coverArtSizes ? (
         <Artwork
           collectionId={collectionId}
           coverArtSizes={coverArtSizes}
@@ -191,107 +191,107 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           isOwner={isOwner}
         />
       ) : null}
-        <Flex direction='column' justifyContent='space-between'>
-          <Flex direction='column' gap='xl'>
-            <Flex className={cn(fadeIn)} gap='s' mt='s'>
-              {!isPublished ? <IconVisibilityHidden /> : null}
-              {isPremium ? <IconCart size='s' color='subdued' /> : null}
+      <Flex direction='column' justifyContent='space-between'>
+        <Flex direction='column' gap='xl'>
+          <Flex className={cn(fadeIn)} gap='s' mt='s'>
+            {!isPublished ? <IconVisibilityHidden /> : null}
+            {isPremium ? <IconCart size='s' color='subdued' /> : null}
+            <Text
+              variant='label'
+              color='subdued'
+              css={{ letterSpacing: '2px' }}
+            >
+              {isPremium ? messages.premiumLabel : ''}
+              {type === 'playlist' && !isPublished
+                ? messages.hiddenPlaylistLabel
+                : type}
+            </Text>
+          </Flex>
+          <Flex direction='column' gap='s'>
+            <Flex
+              as={isOwner ? 'button' : 'span'}
+              css={{ background: 0, border: 0, padding: 0, margin: 0 }}
+              gap='s'
+              alignItems='center'
+              className={cn(styles.title, {
+                [styles.editableTitle]: isOwner
+              })}
+              onClick={isOwner ? handleClickEditTitle : undefined}
+            >
               <Text
-                variant='label'
-                color='subdued'
-                css={{ letterSpacing: '2px' }}
+                variant='heading'
+                size='xl'
+                className={cn(styles.titleHeader, fadeIn)}
               >
-                {isPremium ? messages.premiumLabel : ''}
-                {type === 'playlist' && !isPublished
-                  ? messages.hiddenPlaylistLabel
-                  : type}
+                {title}
               </Text>
-            </Flex>
-            <Flex direction='column' gap='s'>
-              <Flex
-                as={isOwner ? 'button' : 'span'}
-                css={{ background: 0, border: 0, padding: 0, margin: 0 }}
-                gap='s'
-                alignItems='center'
-                className={cn(styles.title, {
-                  [styles.editableTitle]: isOwner
-                })}
-                onClick={isOwner ? handleClickEditTitle : undefined}
-              >
-                <Text
-                  variant='heading'
-                  size='xl'
-                  className={cn(styles.titleHeader, fadeIn)}
-                >
-                  {title}
-                </Text>
-                <ClientOnly>
-                  {isOwner ? (
-                    <IconPencil className={styles.editIcon} color='subdued' />
-                  ) : null}
-                </ClientOnly>
-                {isLoading ? (
-                  <Skeleton css={{ position: 'absolute', top: 0 }} />
+              <ClientOnly>
+                {isOwner ? (
+                  <IconPencil className={styles.editIcon} color='subdued' />
                 ) : null}
-              </Flex>
-              {artistName ? (
-                <Text
-                  variant='title'
-                  strength='weak'
-                  tag='h2'
-                  className={cn(fadeIn)}
-                  textAlign='left'
-                >
-                  <Text color='subdued'>{messages.by}</Text>
-                  {userId !== null ? (
-                    <UserLink userId={userId} popover variant='visible' />
-                  ) : null}
-                </Text>
+              </ClientOnly>
+              {isLoading ? (
+                <Skeleton css={{ position: 'absolute', top: 0 }} />
               ) : null}
             </Flex>
-            {isLoading ? (
-              <Skeleton css={{ position: 'absolute', top: 0 }} width='60%' />
+            {artistName ? (
+              <Text
+                variant='title'
+                strength='weak'
+                tag='h2'
+                className={cn(fadeIn)}
+                textAlign='left'
+              >
+                <Text color='subdued'>{messages.by}</Text>
+                {userId !== null ? (
+                  <UserLink userId={userId} popover variant='visible' />
+                ) : null}
+              </Text>
             ) : null}
-            <div>{renderStatsRow(isLoading)}</div>
           </Flex>
-          <ClientOnly>
-            <CollectionActionButtons
-              variant={variant}
-              userId={userId}
-              collectionId={collectionId}
-              isPlayable={isPlayable}
-              isPlaying={playing}
-              isPremium={isPremium}
-              isOwner={isOwner}
-              tracksLoading={tracksLoading}
-              onPlay={onPlay}
-            />
-          </ClientOnly>
+          {isLoading ? (
+            <Skeleton css={{ position: 'absolute', top: 0 }} width='60%' />
+          ) : null}
+          <div>{renderStatsRow(isLoading)}</div>
         </Flex>
-        {onFilterChange ? (
-          <Flex
-            w='240px'
-            css={{
-              position: 'absolute',
-              top: spacing.l,
-              right: spacing.l
-            }}
-          >
-            <TextInput
-              label={
-                type === 'album' ? messages.filterAlbum : messages.filterPlaylist
-              }
-              placeholder={
-                type === 'album' ? messages.filterAlbum : messages.filterPlaylist
-              }
-              startIcon={IconSearch}
-              onChange={handleFilterChange}
-              value={filterText}
-              size={TextInputSize.SMALL}
-              className={styles.searchInput}
-            />
-          </Flex>
-        ) : null}
+        <ClientOnly>
+          <CollectionActionButtons
+            variant={variant}
+            userId={userId}
+            collectionId={collectionId}
+            isPlayable={isPlayable}
+            isPlaying={playing}
+            isPremium={isPremium}
+            isOwner={isOwner}
+            tracksLoading={tracksLoading}
+            onPlay={onPlay}
+          />
+        </ClientOnly>
+      </Flex>
+      {onFilterChange ? (
+        <Flex
+          w='240px'
+          css={{
+            position: 'absolute',
+            top: spacing.l,
+            right: spacing.l
+          }}
+        >
+          <TextInput
+            label={
+              type === 'album' ? messages.filterAlbum : messages.filterPlaylist
+            }
+            placeholder={
+              type === 'album' ? messages.filterAlbum : messages.filterPlaylist
+            }
+            startIcon={IconSearch}
+            onChange={handleFilterChange}
+            value={filterText}
+            size={TextInputSize.SMALL}
+            className={styles.searchInput}
+          />
+        </Flex>
+      ) : null}
     </Flex>
   )
 
@@ -315,6 +315,31 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           ownerId={ownerId}
         />
       ) : null}
+
+      <Flex className={cn(fadeIn)} gap='l' direction='column'>
+        {description ? (
+          <UserGeneratedText
+            size='xs'
+            className={cn(fadeIn)}
+            linkSource='collection page'
+            css={{ textAlign: 'left' }}
+          >
+            {description}
+          </UserGeneratedText>
+        ) : null}
+        <AlbumDetailsText
+          duration={duration}
+          lastModifiedDate={lastModifiedDate}
+          numTracks={numTracks}
+          releaseDate={releaseDate}
+        />
+      </Flex>
+    </Flex>
+  )
+  return (
+    <Flex direction='column'>
+      {topSection}
+      {descriptionSection}
     </Flex>
   )
 }
