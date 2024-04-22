@@ -53,13 +53,22 @@ const formatTrackMetadata = (metadata: Track, i: number): DataSourceTrack => {
   }
 }
 
+/** Returns the logged-in user's tracks, formatted for Artist Dashboard tracks table */
 export const useFormattedTrackData = () => {
   const { tracks } = useSelector(makeGetDashboard())
-  return tracks
-    .map((track: Track, i: number) => formatTrackMetadata(track, i))
-    .filter((meta) => !meta.is_invalid)
+  const tracksFormatted = useMemo(() => {
+    return tracks
+      .map((track: Track, i: number) => formatTrackMetadata(track, i))
+      .filter((meta) => !meta.is_invalid)
+  }, [tracks])
+  return tracksFormatted
 }
 
+/**
+ * Returns a set of arrays that contain the logged-in user's tracks filtered by
+ * whether the tracks are public, special access, hidden, premium, or collectible gated.
+ * Also returns a boolean indicating whether the user has only one type of track.
+ */
 const useSegregatedTrackData = () => {
   const tracks = useFormattedTrackData()
   const {
@@ -121,6 +130,9 @@ const useSegregatedTrackData = () => {
   }
 }
 
+/**
+ * Returns the logged-in user's tracks, filtered by the selected filter and search text.
+ */
 export const useFilteredTrackData = ({
   selectedFilter,
   filterText
@@ -181,6 +193,10 @@ export const useFilteredTrackData = ({
   return filteredData
 }
 
+/**
+ * Returns a list of filter options for the logged-in user's tracks, eg.
+ * the "hidden" option will only be available if the user has hidden tracks.
+ */
 export const useArtistDashboardTrackFilters = () => {
   const {
     specialAccessTracks,
@@ -250,9 +266,13 @@ const formatAlbumMetadata = (album: Collection): DataSourceAlbum => {
   }
 }
 
+/** Returns the logged-in user's albums, formatted for Artist Dashboard albums table */
 export const useFormattedAlbumData = () => {
-  const albums = useSelector(getAccountAlbums) ?? []
-  return albums?.map((album) => formatAlbumMetadata(album))
+  const albums = useSelector(getAccountAlbums)
+  const albumsFormatted = useMemo(() => {
+    return albums?.map((album) => formatAlbumMetadata(album))
+  }, [albums])
+  return albumsFormatted ?? []
 }
 
 const useSegregatedAlbumData = () => {
@@ -285,6 +305,9 @@ const useSegregatedAlbumData = () => {
   return { hasOnlyOneSection, publicAlbums, hiddenAlbums, premiumAlbums }
 }
 
+/**
+ * Returns the logged-in user's albums, filtered by the selected filter and search text.
+ */
 export const useFilteredAlbumData = ({
   selectedFilter,
   filterText
@@ -331,6 +354,10 @@ export const useFilteredAlbumData = ({
   return filteredData
 }
 
+/**
+ * Returns a list of filter options for the logged-in user's albums, eg.
+ * the "hidden" option will only be available if the user has hidden albums.
+ */
 export const useArtistDashboardAlbumFilters = () => {
   const { hiddenAlbums, premiumAlbums, hasOnlyOneSection } =
     useSegregatedAlbumData()
