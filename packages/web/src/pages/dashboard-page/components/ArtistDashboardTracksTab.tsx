@@ -5,11 +5,12 @@ import { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { getDashboardTracksStatus, makeGetDashboard } from '../store/selectors'
 import { fetchTracks } from '../store/slice'
 
-import { showMoreLimit, tablePageSize } from './constants'
+import { SHOW_MORE_LIMIT, TABLE_PAGE_SIZE } from './constants'
 import { useFilteredTrackData } from './hooks'
 import { TrackFilters } from './types'
 
@@ -27,31 +28,37 @@ const tracksTableColumns: TracksTableColumn[] = [
 type ArtistDashboardTracksTabProps = {
   selectedFilter: Nullable<TrackFilters>
   filterText: string
-  onClickRow: (record: any) => void
 }
 
 export const ArtistDashboardTracksTab = ({
   selectedFilter,
-  filterText,
-  onClickRow
+  filterText
 }: ArtistDashboardTracksTabProps) => {
   const dispatch = useDispatch()
+  const goToRoute = useGoToRoute()
   const tracksStatus = useSelector(getDashboardTracksStatus)
   const { account } = useSelector(makeGetDashboard())
+  const filteredData = useFilteredTrackData({
+    selectedFilter,
+    filterText
+  })
 
   const handleFetchPage = useCallback(
     (page: number) => {
       dispatch(
-        fetchTracks({ offset: page * tablePageSize, limit: tablePageSize })
+        fetchTracks({ offset: page * TABLE_PAGE_SIZE, limit: TABLE_PAGE_SIZE })
       )
     },
     [dispatch]
   )
 
-  const filteredData = useFilteredTrackData({
-    selectedFilter,
-    filterText
-  })
+  const onClickRow = useCallback(
+    (track: any) => {
+      if (!account) return
+      goToRoute(track.permalink)
+    },
+    [account, goToRoute]
+  )
 
   if (!filteredData.length || !account) return null
 
@@ -62,9 +69,9 @@ export const ArtistDashboardTracksTab = ({
       columns={tracksTableColumns}
       onClickRow={onClickRow}
       fetchPage={handleFetchPage}
-      pageSize={tablePageSize}
+      pageSize={TABLE_PAGE_SIZE}
       userId={account.user_id}
-      showMoreLimit={showMoreLimit}
+      showMoreLimit={SHOW_MORE_LIMIT}
       totalRowCount={account.track_count}
       loading={tracksStatus === Status.LOADING}
       isPaginated
