@@ -1,6 +1,7 @@
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
 import { Status, Track } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { themeSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
@@ -12,15 +13,17 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useFlag } from 'hooks/useRemoteConfig'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
 import styles from './DashboardPage.module.css'
 import { ArtistCard } from './components/ArtistCard'
+import { ArtistContentSection } from './components/ArtistContentSection'
 import {
   TracksTableContainer,
-  DataSourceTrack,
-  tablePageSize
+  DataSourceTrack
 } from './components/TracksTableContainer'
+import { TABLE_PAGE_SIZE } from './components/constants'
 import {
   getDashboardListenData,
   getDashboardStatus,
@@ -67,6 +70,9 @@ const StatTile = (props: { title: string; value: any }) => {
 export const DashboardPage = () => {
   const goToRoute = useGoToRoute()
   const dispatch = useDispatch()
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
   const [selectedTrack, setSelectedTrack] = useState(-1)
   const { account, tracks, stats } = useSelector(makeGetDashboard())
   const listenData = useSelector(getDashboardListenData)
@@ -76,7 +82,7 @@ export const DashboardPage = () => {
   const header = <Header primary={messages.title} />
 
   useEffect(() => {
-    dispatch(fetch({ offset: 0, limit: tablePageSize }))
+    dispatch(fetch({ offset: 0, limit: TABLE_PAGE_SIZE }))
     TotalPlaysChart.preload()
     return () => {
       dispatch(reset({}))
@@ -194,7 +200,7 @@ export const DashboardPage = () => {
           <div className={styles.sectionContainer}>
             {renderChart()}
             {renderStats()}
-            {renderTable()}
+            {isPremiumAlbumsEnabled ? <ArtistContentSection /> : renderTable()}
           </div>
         </>
       )}
