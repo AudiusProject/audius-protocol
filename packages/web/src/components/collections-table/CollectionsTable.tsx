@@ -84,11 +84,11 @@ export const CollectionsTable = ({
     return (
       <Flex
         gap='xs'
+        w='100%'
         css={{
           overflow: 'hidden',
           position: 'relative',
-          display: 'inline-flex',
-          'max-width': '100%'
+          display: 'inline-flex'
         }}
       >
         <TextLink
@@ -114,7 +114,7 @@ export const CollectionsTable = ({
 
   const renderSavesCell = useCallback((cellInfo: CollectionCell) => {
     const collection = cellInfo.row.original
-    return collection.save_count
+    return formatCount(collection.save_count)
   }, [])
 
   const renderReleaseDateCell = useCallback((cellInfo: CollectionCell) => {

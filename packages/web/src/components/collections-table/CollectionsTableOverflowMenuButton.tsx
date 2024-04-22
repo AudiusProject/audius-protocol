@@ -28,7 +28,7 @@ export const CollectionsTableOverflowMenuButton = (
   ) as Collection) ?? {}
 
   const overflowMenu = {
-    type: isAlbum ? ('album' as const) : ('playlist' as const),
+    type: isAlbum ? 'album' : 'playlist',
     playlistId: collectionId,
     includeEmbed: true,
     includeVisitArtistPage: false,
@@ -48,7 +48,7 @@ export const CollectionsTableOverflowMenuButton = (
       <Menu menu={overflowMenu}>
         {(ref, triggerPopup) => (
           <Flex
-            onClick={(e) => {
+            onClick={(e: MouseEvent) => {
               e.stopPropagation()
               triggerPopup()
             }}
