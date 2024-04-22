@@ -55,7 +55,7 @@ const defaultColumns: WithdrawalsTableColumn[] = [
 
 // Cell Render Functions
 const renderDestinationCell = (cellInfo: TransactionCell) => {
-  const { metadata, transactionType } = cellInfo.row.original
+  const { transactionType } = cellInfo.row.original
   let destination = ''
   switch (transactionType) {
     case USDCTransactionType.WITHDRAWAL:
