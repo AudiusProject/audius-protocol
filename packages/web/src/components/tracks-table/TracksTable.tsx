@@ -99,6 +99,7 @@ type TracksTableProps = {
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   showMoreLimit?: number
   tableClassName?: string
+  tableHeaderClassName?: string
   totalRowCount?: number
   useLocalSort?: boolean
   userId?: number | null
@@ -147,6 +148,7 @@ export const TracksTable = ({
   scrollRef,
   showMoreLimit,
   tableClassName,
+  tableHeaderClassName,
   totalRowCount,
   useLocalSort = false,
   userId,
@@ -717,6 +719,7 @@ export const TracksTable = ({
       scrollRef={scrollRef}
       showMoreLimit={showMoreLimit}
       tableClassName={tableClassName}
+      tableHeaderClassName={tableHeaderClassName}
       totalRowCount={totalRowCount}
       useLocalSort={useLocalSort}
       wrapperClassName={wrapperClassName}

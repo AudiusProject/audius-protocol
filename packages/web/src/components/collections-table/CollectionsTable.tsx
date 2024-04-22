@@ -48,6 +48,7 @@ type CollectionsTableProps = {
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   showMoreLimit?: number
   totalRowCount?: number
+  tableHeaderClassName?: string
 }
 
 const defaultColumns: CollectionsTableColumn[] = [
@@ -74,7 +75,8 @@ export const CollectionsTable = ({
   onClickRow,
   scrollRef,
   showMoreLimit,
-  totalRowCount
+  totalRowCount,
+  tableHeaderClassName
 }: CollectionsTableProps) => {
   // Cell Render Functions
   const renderNameCell = useCallback((cellInfo: CollectionCell) => {
@@ -258,6 +260,7 @@ export const CollectionsTable = ({
       scrollRef={scrollRef}
       showMoreLimit={showMoreLimit}
       totalRowCount={totalRowCount}
+      tableHeaderClassName={tableHeaderClassName}
     />
   )
 }
