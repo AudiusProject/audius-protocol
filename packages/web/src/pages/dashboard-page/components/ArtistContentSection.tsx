@@ -57,10 +57,9 @@ export const ArtistContentSection = () => {
   const filterButtonOptions = isTracks
     ? filterButtonTrackOptions
     : filterButtonAlbumOptions
-  const shouldShowFilterButton =
-    (isTracks && !hasOnlyOneTrackSection) ||
-    (!isTracks && !hasOnlyOneAlbumSection)
-  const shouldShowPills = tracks.length && albums.length
+  const isFilterButtonDisabled =
+    (isTracks && hasOnlyOneTrackSection) ||
+    (!isTracks && hasOnlyOneAlbumSection)
 
   const onClickPill = useCallback(
     (pill: Pills) => {
@@ -96,35 +95,29 @@ export const ArtistContentSection = () => {
     <Paper w='100%' direction='column' mt='xl'>
       <Flex ph='2xl' pv='l' justifyContent='space-between'>
         <Flex gap='2xl'>
-          {shouldShowPills ? (
-            <Flex gap='s'>
-              <SelectablePill
-                isSelected={selectedPill === Pills.TRACKS}
-                label={messages.tracks}
-                size='large'
-                onClick={() => onClickPill(Pills.TRACKS)}
-              />
-              <SelectablePill
-                isSelected={selectedPill === Pills.ALBUMS}
-                label={messages.albums}
-                size='large'
-                onClick={() => onClickPill(Pills.ALBUMS)}
-              />
-            </Flex>
-          ) : null}
-          {
-            // Only show filter button if there are multiple sections for the selected content type
-            shouldShowFilterButton ? (
-              <FilterButton
-                onSelect={handleSelectFilter}
-                selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
-                label={messages.allReleases}
-                options={filterButtonOptions}
-                popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-              />
-            ) : null
-          }
+          <Flex gap='s'>
+            <SelectablePill
+              isSelected={selectedPill === Pills.TRACKS}
+              label={messages.tracks}
+              size='large'
+              onClick={() => onClickPill(Pills.TRACKS)}
+            />
+            <SelectablePill
+              isSelected={selectedPill === Pills.ALBUMS}
+              label={messages.albums}
+              size='large'
+              onClick={() => onClickPill(Pills.ALBUMS)}
+            />
+          </Flex>
+          <FilterButton
+            onSelect={handleSelectFilter}
+            selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}
+            label={messages.allReleases}
+            options={filterButtonOptions}
+            popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            isDisabled={isFilterButtonDisabled}
+          />
         </Flex>
         <Flex>
           <TextInput

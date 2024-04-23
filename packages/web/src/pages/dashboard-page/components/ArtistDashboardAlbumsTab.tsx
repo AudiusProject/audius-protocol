@@ -13,6 +13,8 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 import styles from '../DashboardPage.module.css'
 import { makeGetDashboard } from '../store/selectors'
 
+import { EmptySearchResults } from './EmptySearchResults'
+import { EmptyTabState } from './EmptyTabState'
 import { SHOW_MORE_LIMIT } from './constants'
 import { useFilteredAlbumData } from './hooks'
 import { AlbumFilters } from './types'
@@ -50,9 +52,13 @@ export const ArtistDashboardAlbumsTab = ({
     [account, goToRoute]
   )
 
-  if (!filteredData.length || !account) return null
-
-  return (
+  return !filteredData.length || !account ? (
+    filterText ? (
+      <EmptySearchResults />
+    ) : (
+      <EmptyTabState type='album' />
+    )
+  ) : (
     <Flex w='100%' direction='column' borderTop='default'>
       <CollectionsTable
         data={filteredData}
