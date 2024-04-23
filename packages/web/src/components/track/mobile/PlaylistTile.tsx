@@ -182,12 +182,16 @@ type CombinedProps = PlaylistTileProps & ExtraProps
 
 type LockedOrPlaysContentProps = Pick<
   CombinedProps,
-  'hasStreamAccess' | 'isOwner' | 'isStreamGated' | 'streamConditions'
-> &
-  Pick<LockedStatusPillProps, 'variant'> & {
-    gatedTrackStatus?: GatedContentStatus
-    onClickGatedUnlockPill: (e: MouseEvent) => void
-  }
+  | 'hasStreamAccess'
+  | 'isOwner'
+  | 'isStreamGated'
+  | 'streamConditions'
+  | 'variant'
+> & {
+  lockedContentType: 'premium' | 'gated'
+  gatedTrackStatus?: GatedContentStatus
+  onClickGatedUnlockPill: (e: MouseEvent) => void
+}
 
 const renderLockedContent = ({
   hasStreamAccess,
@@ -196,10 +200,11 @@ const renderLockedContent = ({
   streamConditions,
   gatedTrackStatus,
   onClickGatedUnlockPill,
+  lockedContentType,
   variant
 }: LockedOrPlaysContentProps) => {
   if (isStreamGated && streamConditions && !isOwner) {
-    if (variant === 'premium') {
+    if (lockedContentType === 'premium' && variant === 'readonly') {
       return (
         <GatedConditionsPill
           streamConditions={streamConditions}
@@ -209,7 +214,9 @@ const renderLockedContent = ({
         />
       )
     }
-    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
+    return (
+      <LockedStatusPill locked={!hasStreamAccess} variant={lockedContentType} />
+    )
   }
 }
 
@@ -321,9 +328,19 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
         className={styles.mainContent}
         onClick={props.togglePlay}
       >
-        <div className={cn(styles.duration, styles.statText, fadeIn)}>
-          {formatLineupTileDuration(props.duration)}
-        </div>
+        <Text
+          className={cn(styles.duration, fadeIn)}
+          variant='body'
+          size='xs'
+          strength='default'
+          color='subdued'
+        >
+          {formatLineupTileDuration(
+            props.duration,
+            false,
+            /* isCollection */ true
+          )}
+        </Text>
 
         <div className={styles.metadata}>
           <TrackTileArt
@@ -424,24 +441,23 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 </>
               )}
             </Flex>
-            {isReadonly ? (
-              <Text
-                variant='body'
-                size='xs'
-                color='staticWhite'
-                className={cn(styles.bottomRight, fadeIn)}
-              >
-                {renderLockedContent({
-                  hasStreamAccess,
-                  isOwner,
-                  isStreamGated,
-                  streamConditions,
-                  gatedTrackStatus: gatedContentStatus,
-                  variant: isPurchase ? 'premium' : 'gated',
-                  onClickGatedUnlockPill
-                })}
-              </Text>
-            ) : null}
+            <Text
+              variant='body'
+              size='xs'
+              color='staticWhite'
+              className={cn(styles.bottomRight, fadeIn)}
+            >
+              {renderLockedContent({
+                hasStreamAccess,
+                isOwner,
+                isStreamGated,
+                streamConditions,
+                gatedTrackStatus: gatedContentStatus,
+                lockedContentType: isPurchase ? 'premium' : 'gated',
+                variant,
+                onClickGatedUnlockPill
+              })}
+            </Text>
           </Flex>
         </Text>
         <TrackList

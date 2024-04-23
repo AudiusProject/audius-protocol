@@ -63,10 +63,10 @@ const BottomButtons = (props: BottomButtonsProps) => {
   if (!props.isLoading && props.streamConditions && !props.hasStreamAccess) {
     return (
       <Flex
-        ph='s'
-        p='xs'
+        ph={props.isTrack ? undefined : 's'}
+        pb={props.isTrack ? undefined : 'xs'}
         direction='row'
-        alignItems='center'
+        alignItems='flex-end'
         justifyContent='space-between'
         borderTop='default'
       >

@@ -53,6 +53,7 @@ import { messages } from '../trackTileMessages'
 import BottomButtons from './BottomButtons'
 import styles from './TrackTile.module.css'
 import TrackTileArt from './TrackTileArt'
+import { render } from '@testing-library/react'
 
 const { setLockedContentId } = gatedContentActions
 const { getGatedContentStatusMap } = gatedContentSelectors
@@ -83,11 +84,12 @@ type LockedOrPlaysContentProps = Pick<
   | 'isStreamGated'
   | 'streamConditions'
   | 'listenCount'
-> &
-  Pick<LockedStatusPillProps, 'variant'> & {
-    gatedTrackStatus?: GatedContentStatus
-    onClickGatedUnlockPill: (e: MouseEvent) => void
-  }
+  | 'variant'
+> & {
+  lockedContentType: 'gated' | 'premium'
+  gatedTrackStatus?: GatedContentStatus
+  onClickGatedUnlockPill: (e: MouseEvent) => void
+}
 
 const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
@@ -98,10 +100,11 @@ const renderLockedContentOrPlayCount = ({
   gatedTrackStatus,
   listenCount,
   onClickGatedUnlockPill,
-  variant
+  variant,
+  lockedContentType
 }: LockedOrPlaysContentProps) => {
   if (isStreamGated && streamConditions && !isOwner) {
-    if (variant === 'premium') {
+    if (lockedContentType === 'premium' && variant === 'readonly') {
       return (
         <GatedConditionsPill
           streamConditions={streamConditions}
@@ -111,7 +114,9 @@ const renderLockedContentOrPlayCount = ({
         />
       )
     }
-    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
+    return (
+      <LockedStatusPill locked={!hasStreamAccess} variant={lockedContentType} />
+    )
   }
 
   const hidePlays = fieldVisibility
@@ -488,7 +493,8 @@ const TrackTile = (props: CombinedProps) => {
                   streamConditions,
                   listenCount,
                   gatedTrackStatus,
-                  variant: isPurchase ? 'premium' : 'gated',
+                  variant,
+                  lockedContentType: isPurchase ? 'premium' : 'gated',
                   onClickGatedUnlockPill: onClickPill
                 })
               : null}
