@@ -232,7 +232,7 @@ def test_index_app(app, mocker):
             expected_image_url = expected_app.get("image_url", None)
             assert (
                 res.image_url == expected_image_url
-                if expected_image_url.startswith("http")
+                if expected_image_url and expected_image_url.startswith("http")
                 else None
             )
             assert res.is_personal_access == expected_app.get(
