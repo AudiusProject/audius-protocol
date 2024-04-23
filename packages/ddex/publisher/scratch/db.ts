@@ -14,17 +14,25 @@ create table if not exists users (
   name text not null
 );
 
-
 create table if not exists releases (
   key text primary key,
   xmlText text,
   json jsonb,
 
   xmlUrl text, -- location of the xml file... needed to resolve relative location of resources
+
+  entityId text, -- should maybe be explicit albumId, trackId?
+  blockHash text,
+  blockNumber integer,
   publishedAt datetime,
 
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME
+);
+
+create table if not exists s3markers (
+  bucket text primary key,
+  marker text not null
 );
 
 `)
@@ -41,9 +49,18 @@ export type ReleaseRow = {
   json: string
 
   xmlUrl?: string
+
+  entityId?: string
+  blockHash?: string
+  blockNumber?: number
   publishedAt?: string
 
   _json?: DDEXRelease
+}
+
+export type S3MarkerRow = {
+  bucket: string
+  marker: string
 }
 
 export function matchAudiusUser(artistNames: string[]) {
@@ -87,7 +104,12 @@ export function dbUpsert(table: string, data: Record<string, any>) {
   const qs = Object.keys(data)
     .map((f) => '?')
     .join(',')
-  const stmt = `replace into ${table} (${fields}) values (${qs})`
+  const excludes = Object.keys(data)
+    .map((f) => `${f} = excluded.${f}`)
+    .join(',')
+  const stmt = `
+    insert into ${table} (${fields}) values (${qs})
+    on conflict do update set ${excludes}`
   return db
     .prepare(stmt)
     .bind(...Object.values(data))

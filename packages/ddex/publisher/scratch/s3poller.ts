@@ -4,13 +4,11 @@ import {
   S3Client,
   S3ClientConfig
 } from '@aws-sdk/client-s3'
-import { mkdir, stat } from 'fs/promises'
-import { dirname, join } from 'path'
-import { createWriteStream } from 'node:fs'
-import { Readable } from 'node:stream'
-import { parseDelivery } from './parseDelivery'
+import { join } from 'path'
+import { parseDdexXml } from './parseDelivery'
+import { S3MarkerRow, db } from './db'
 
-function dialS3() {
+export function dialS3() {
   const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env
   if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
     throw new Error(`AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY required`)
@@ -39,38 +37,51 @@ export async function startPoller() {
 
 export async function pollS3() {
   const client = dialS3()
+
   const bucket = process.env.AWS_BUCKET_RAW
   if (!bucket) {
     throw new Error(`process.env.AWS_BUCKET_RAW is required`)
   }
 
+  // load prior marker
+  const markerRow = db
+    .prepare(`select marker from s3markers where bucket = ?`)
+    .bind(bucket)
+    .get() as S3MarkerRow
+
+  let Marker = markerRow ? markerRow.marker : ''
+
   // list top level prefixes
   const result = await client.send(
     new ListObjectsCommand({
       Bucket: bucket,
-      Delimiter: '/'
+      Delimiter: '/',
+      Marker
     })
   )
   const prefixes = result.CommonPrefixes?.map((p) => p.Prefix) as string[]
+  if (!prefixes) {
+    return
+  }
 
   for (const prefix of prefixes) {
-    // todo: skip dir if we did it already (track state in the sqlite)
-    const key = join(bucket, prefix)
+    await scanS3Prefix(client, bucket, prefix)
+    Marker = prefix
+  }
 
-    const localDir = await syncToLocalFs(client, prefix)
-    if (localDir) {
-      console.log('........ processing', localDir)
-      await parseDelivery(localDir)
-    }
+  // save marker
+  if (Marker) {
+    console.log('update marker', { bucket, Marker })
+    db.prepare('replace into s3markers values (?, ?)')
+      .bind(bucket, Marker)
+      .run()
   }
 }
 
-async function syncToLocalFs(client: S3Client, prefix: string) {
-  const localDirectory = 's3stuff'
-
+async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
   const result = await client.send(
     new ListObjectsCommand({
-      Bucket: process.env.AWS_BUCKET_RAW,
+      Bucket: bucket,
       Prefix: prefix
     })
   )
@@ -78,49 +89,27 @@ async function syncToLocalFs(client: S3Client, prefix: string) {
     return
   }
 
-  // for each key under prefix, download to local dir
   await Promise.all(
     result.Contents.map(async (c) => {
       if (!c.Key) return
 
-      const destinationPath = join(localDirectory, c.Key)
-
-      // skip if already have
-      const exists = await fileExists(destinationPath)
-      if (exists) {
-        console.log('exists locally...', destinationPath)
-        return
+      if (c.Key.toLowerCase().endsWith('.xml')) {
+        const xmlUrl = `s3://` + join(bucket, c.Key)
+        const { Body } = await client.send(
+          new GetObjectCommand({
+            Bucket: process.env.AWS_BUCKET_RAW,
+            Key: c.Key
+          })
+        )
+        const xml = await Body?.transformToString()
+        if (xml) {
+          await parseDdexXml(xmlUrl, xml)
+        }
       }
-
-      // ensure parent dir
-      await mkdir(dirname(destinationPath), { recursive: true })
-
-      // get it
-      const { Body } = await client.send(
-        new GetObjectCommand({
-          Bucket: process.env.AWS_BUCKET_RAW,
-          Key: c.Key
-        })
-      )
-      const fileStream = createWriteStream(destinationPath)
-      const readableStream = Readable.from(Body as any)
-      readableStream.pipe(fileStream)
-      console.log('downloaded to', destinationPath)
     })
   )
-
-  return join(localDirectory, prefix)
 }
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function fileExists(path: string) {
-  try {
-    await stat(path)
-    return true
-  } catch {
-    return false
-  }
 }

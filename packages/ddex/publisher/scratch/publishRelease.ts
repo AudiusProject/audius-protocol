@@ -2,23 +2,29 @@ import { UploadTrackRequest, Genre, UploadAlbumRequest } from '@audius/sdk'
 import { createSdkService } from '../src/services/sdkService'
 import { DDEXRelease } from './parseDelivery'
 import { readFile } from 'fs/promises'
-import { basename, resolve } from 'path'
-import { ReleaseRow, db } from './db'
+import { basename, join, resolve } from 'path'
+import { ReleaseRow, db, upsertRelease } from './db'
+import { dialS3 } from './s3poller'
+import { GetObjectCommand } from '@aws-sdk/client-s3'
 
 export async function publishValidPendingReleases() {
   const rows = db.prepare(`select * from releases`).all() as ReleaseRow[]
   for (const row of rows) {
-    const release = JSON.parse(row.json)
-    if (release.problems.length) {
-      console.log(`skipping ${release.ref} due to problems: `, release.problems)
+    const parsed = JSON.parse(row.json)
+    if (parsed.problems.length) {
+      console.log(`skipping ${row.key} due to problems: `, parsed.problems)
+    } else if (row.entityId) {
+      console.log(`skipping ${row.key} already published`)
+    } else {
+      await publishRelease(row)
     }
-    await publishRelease(row)
   }
 }
 
 export async function publishRelease(releaseRow: ReleaseRow) {
   const sdkService = createSdkService()
   const sdk = (await sdkService).getSdk()
+  const s3 = dialS3()
 
   const skipSdkPublish = process.env.SKIP_SDK_PUBLISH == 'true'
 
@@ -28,22 +34,40 @@ export async function publishRelease(releaseRow: ReleaseRow) {
     throw new Error(`xmlUrl is required to resolve file paths`)
   }
 
-  // todo: if this is an s3 url... need to sync s3 assets to local disk first
-  // or support s3 urls when opening asset
-  function resolveFile({
-    filePath,
-    fileName
-  }: {
+  // read asset file from disk or s3
+  // depending on source xml location.
+  // todo: for s3 would be nice to save to local fs
+  //   since assets are reused between releases (image, audio)
+  //   would be nice to not download it every time
+  type hasFile = {
     filePath: string
     fileName: string
-  }) {
-    return resolve(releaseRow.xmlUrl!, '..', filePath, fileName)
+  }
+  async function resolveFile({ filePath, fileName }: hasFile) {
+    if (releaseRow.xmlUrl?.startsWith('s3:')) {
+      const s3url = new URL(`${filePath}${fileName}`, releaseRow.xmlUrl)
+      const { Body } = await s3.send(
+        new GetObjectCommand({
+          Bucket: s3url.host,
+          Key: s3url.pathname.substring(1)
+        })
+      )
+      const byteArr = await Body!.transformToByteArray()
+      const buffer = Buffer.from(byteArr)
+      return {
+        name: fileName,
+        buffer
+      }
+    }
+
+    const fileUrl = resolve(releaseRow.xmlUrl!, '..', filePath, fileName)
+    return readFileToBuffer(fileUrl)
   }
 
-  const imageFile = await readFileToBuffer(resolveFile(release.images[0]))
+  const imageFile = await resolveFile(release.images[0])
 
   const trackFiles = await Promise.all(
-    release.soundRecordings.map((track) => readFileToBuffer(resolveFile(track)))
+    release.soundRecordings.map((track) => resolveFile(track))
   )
 
   const trackMetadatas: UploadTrackRequest['metadata'][] =
@@ -90,7 +114,19 @@ export async function publishRelease(releaseRow: ReleaseRow) {
     const result = await sdk.albums.uploadAlbum(uploadAlbumRequest)
     console.log(result)
 
-    // todo: on success set publishedAt, entityId, blockhash
+    // on success set publishedAt, entityId, blockhash
+    db.prepare(
+      `update releases set entityId=?, blockNumber=?, blockHash=?, publishedAt=?
+       where key=?`
+    )
+      .bind(
+        result.albumId,
+        result.blockNumber,
+        result.blockHash,
+        new Date().toISOString(),
+        releaseRow.key
+      )
+      .run()
 
     // return result
   }
@@ -119,7 +155,19 @@ export async function publishRelease(releaseRow: ReleaseRow) {
     const result = await sdk.tracks.uploadTrack(uploadTrackRequest)
     console.log(result)
 
-    // on succes: update releases set entityId = ${result.trackId} where id = ${someReleaseId}
+    // on succes: update releases
+    db.prepare(
+      `update releases set entityId=?, blockNumber=?, blockHash=?, publishedAt=?
+       where key=?`
+    )
+      .bind(
+        result.trackId,
+        result.blockNumber,
+        result.blockHash,
+        new Date().toISOString(),
+        releaseRow.key
+      )
+      .run()
   }
 }
 
