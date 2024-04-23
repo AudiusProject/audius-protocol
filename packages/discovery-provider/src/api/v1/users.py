@@ -343,8 +343,8 @@ class TrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_tracks_route_parser)
+    @auth_middleware(user_tracks_route_parser)
     @ns.marshal_with(tracks_response)
-    @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, ns)
@@ -401,8 +401,8 @@ class FullTrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_tracks_route_parser)
+    @auth_middleware(user_tracks_route_parser)
     @full_ns.marshal_with(full_tracks_response)
-    @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, ns)
@@ -481,7 +481,6 @@ class HandleFullTrackList(Resource):
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
-    @auth_middleware()
     @full_ns.doc(
         id="""Get Tracks by User Handle""",
         description="""Gets the tracks created by a user using the user's handle""",
@@ -491,6 +490,7 @@ class HandleFullTrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_tracks_route_parser)
+    @auth_middleware(user_tracks_route_parser)
     @full_ns.marshal_with(full_tracks_response)
     def get(self, handle, authed_user_id=None):
         return self._get(handle, authed_user_id)
@@ -498,7 +498,6 @@ class HandleFullTrackList(Resource):
 
 @ns.route(USER_HANDLE_TRACKS, doc=False)
 class HandleTrackList(HandleFullTrackList):
-    @auth_middleware()
     @ns.doc(
         id="""Get Tracks by User Handle""",
         description="""Gets the tracks created by a user using the user's handle""",
@@ -508,6 +507,7 @@ class HandleTrackList(HandleFullTrackList):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_tracks_route_parser)
+    @auth_middleware(user_tracks_route_parser)
     @ns.marshal_with(tracks_response)
     def get(self, handle, authed_user_id):
         return super()._get(handle, authed_user_id)
@@ -550,7 +550,6 @@ class HandleFullAITrackList(Resource):
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
-    @auth_middleware()
     @full_ns.doc(
         id="""Get AI Attributed Tracks by User Handle""",
         description="""Gets the AI generated tracks attributed to a user using the user's handle""",
@@ -560,6 +559,7 @@ class HandleFullAITrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_tracks_route_parser)
+    @auth_middleware(user_tracks_route_parser)
     @full_ns.marshal_with(full_tracks_response)
     def get(self, handle, authed_user_id=None):
         return self._get(handle, authed_user_id)
@@ -567,7 +567,6 @@ class HandleFullAITrackList(Resource):
 
 @ns.route(USER_AI_ATTRIBUTED_TRACKS)
 class HandleAITrackList(HandleFullAITrackList):
-    @auth_middleware()
     @ns.doc(
         id="""Get AI Attributed Tracks by User Handle""",
         description="""Gets the AI generated tracks attributed to a user using the user's handle""",
@@ -577,6 +576,7 @@ class HandleAITrackList(HandleFullAITrackList):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_tracks_route_parser)
+    @auth_middleware(user_tracks_route_parser)
     @ns.marshal_with(tracks_response)
     def get(self, handle, authed_user_id):
         return super()._get(handle, authed_user_id)
@@ -808,8 +808,8 @@ class UserTracksLibraryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_tracks_library_parser)
+    @auth_middleware(user_tracks_library_parser)
     @full_ns.marshal_with(track_library_full_response)
-    @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id: str, authed_user_id: Optional[int] = None):
         """Fetch a user's full library tracks."""
@@ -883,8 +883,8 @@ class UserPlaylistsLibraryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_collections_library_parser)
+    @auth_middleware(user_collections_library_parser)
     @full_ns.marshal_with(collection_library_full_response)
-    @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id: str, authed_user_id: Optional[int] = None):
         """Fetch a user's full library playlists."""
@@ -901,8 +901,8 @@ class UserAlbumsLibraryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_collections_library_parser)
+    @auth_middleware(user_collections_library_parser)
     @full_ns.marshal_with(collection_library_full_response)
-    @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id: str, authed_user_id: Optional[int] = None):
         """Fetch a user's full library playlists."""
@@ -1005,7 +1005,6 @@ USER_HISTORY_TRACKS_ROUTE = "/<string:id>/history/tracks"
 @full_ns.route(USER_HISTORY_TRACKS_ROUTE)
 class TrackHistoryFull(Resource):
     @record_metrics
-    @auth_middleware()
     @cache(ttl_sec=5)
     def _get(self, id, authed_user_id):
         args = track_history_parser.parse_args()
@@ -1038,6 +1037,7 @@ class TrackHistoryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(track_history_parser)
+    @auth_middleware(track_history_parser)
     @full_ns.marshal_with(history_response_full)
     def get(self, id):
         return self._get(id)
@@ -1052,8 +1052,8 @@ class TrackHistory(TrackHistoryFull):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(track_history_parser)
+    @auth_middleware(track_history_parser)
     @ns.marshal_with(history_response)
-    @auth_middleware()
     def get(self, id, authed_user_id):
         return super()._get(id, authed_user_id)
 
@@ -2122,9 +2122,6 @@ purchases_and_sales_parser.add_argument(
 )
 
 
-purchases_and_sales_count_parser = current_user_parser.copy()
-
-
 purchases_response = make_full_response(
     "purchases_response", full_ns, fields.List(fields.Nested(purchase))
 )
@@ -2143,8 +2140,8 @@ class FullPurchases(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_parser)
+    @auth_middleware(purchases_and_sales_parser)
     @full_ns.marshal_with(purchases_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
@@ -2165,6 +2162,9 @@ class FullPurchases(Resource):
         return success_response(list(map(extend_purchase, purchases)))
 
 
+purchases_and_sales_count_parser = current_user_parser.copy()
+
+
 @full_ns.route("/<string:id>/purchases/count")
 class FullPurchasesCount(Resource):
     @full_ns.doc(
@@ -2173,8 +2173,8 @@ class FullPurchasesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
+    @auth_middleware(purchases_and_sales_count_parser)
     @full_ns.marshal_with(purchases_count_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
@@ -2195,8 +2195,8 @@ class FullSales(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_parser)
+    @auth_middleware(purchases_and_sales_parser)
     @full_ns.marshal_with(purchases_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
@@ -2225,8 +2225,8 @@ class FullSalesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
+    @auth_middleware(purchases_and_sales_count_parser)
     @full_ns.marshal_with(purchases_count_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
@@ -2239,19 +2239,19 @@ class FullSalesCount(Resource):
         return success_response(count)
 
 
-csv_download_parser = current_user_parser.copy()
+purchases_download_parser = current_user_parser.copy()
 
 
 @ns.route("/<string:id>/purchases/download")
-class FullPurchasesDownload(Resource):
+class PurchasesDownload(Resource):
     @ns.doc(
         id="Download Purchases as CSV",
         description="Downloads the purchases the user has made as a CSV file",
         params={"id": "A User ID"},
     )
     @ns.produces(["text/csv"])
-    @ns.expect(csv_download_parser)
-    @auth_middleware()
+    @ns.expect(purchases_download_parser)
+    @auth_middleware(purchases_download_parser)
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, ns)
         if decoded_id != authed_user_id:
@@ -2263,16 +2263,19 @@ class FullPurchasesDownload(Resource):
         return response
 
 
+sales_download_parser = current_user_parser.copy()
+
+
 @ns.route("/<string:id>/sales/download")
-class FullSalesDownload(Resource):
+class SalesDownload(Resource):
     @ns.doc(
         id="Download Sales as CSV",
         description="Downloads the sales the user has made as a CSV file",
         params={"id": "A User ID"},
     )
     @ns.produces(["text/csv"])
-    @ns.expect(csv_download_parser)
-    @auth_middleware()
+    @ns.expect(sales_download_parser)
+    @auth_middleware(sales_download_parser)
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, ns)
         if decoded_id != authed_user_id:
@@ -2284,16 +2287,19 @@ class FullSalesDownload(Resource):
         return response
 
 
+withdrawals_download_parser = current_user_parser.copy()
+
+
 @ns.route("/<string:id>/withdrawals/download")
-class FullWithdrawalsDownload(Resource):
+class WithdrawalsDownload(Resource):
     @ns.doc(
         id="""Download USDC Withdrawals as CSV""",
         description="""Downloads the USDC withdrawals the user has made as a CSV file""",
         params={"id": "A User ID"},
     )
     @ns.produces(["text/csv"])
-    @ns.expect(csv_download_parser)
-    @auth_middleware()
+    @ns.expect(withdrawals_download_parser)
+    @auth_middleware(withdrawals_download_parser)
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, ns)
         if decoded_id != authed_user_id:

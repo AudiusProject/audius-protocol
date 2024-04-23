@@ -74,16 +74,22 @@ import {
 export interface DownloadPurchasesAsCSVRequest {
     id: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface DownloadSalesAsCSVRequest {
     id: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface DownloadUSDCWithdrawalsAsCSVRequest {
     id: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAIAttributedTracksByUserHandleRequest {
@@ -96,6 +102,8 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
     sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAuthorizedAppsRequest {
@@ -177,6 +185,8 @@ export interface GetTracksByUserRequest {
     sortMethod?: GetTracksByUserSortMethodEnum;
     sortDirection?: GetTracksByUserSortDirectionEnum;
     filterTracks?: GetTracksByUserFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserRequest {
@@ -222,6 +232,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/purchases/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -256,6 +274,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/sales/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -289,6 +315,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/withdrawals/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -351,6 +385,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/handle/{handle}/tracks/ai_attributed`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
@@ -872,6 +914,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),

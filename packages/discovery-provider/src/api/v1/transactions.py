@@ -72,8 +72,8 @@ class GetTransactionHistory(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(transaction_history_parser)
+    @auth_middleware(transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_user_ns)
         return self._get(user_id, authed_user_id)
@@ -103,8 +103,8 @@ class LegacyGetTransactionHistory(GetTransactionHistory):
         deprecated=True,
     )
     @full_ns.expect(transaction_history_parser)
+    @auth_middleware(transaction_history_parser)
     @full_ns.marshal_with(transaction_history_response)
-    @auth_middleware()
     def get(self, authed_user_id=None):
         """Gets the user's $AUDIO transaction history within the App
 
@@ -130,8 +130,8 @@ class GetTransactionHistoryCount(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(transaction_history_count_parser)
+    @auth_middleware(transaction_history_count_parser)
     @full_user_ns.marshal_with(transaction_history_count_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
         if authed_user_id is None:
@@ -150,8 +150,8 @@ class LegacyGetTransactionHistoryCount(Resource):
         deprecated=True,
     )
     @full_ns.expect(transaction_history_count_parser)
+    @auth_middleware(transaction_history_count_parser)
     @full_ns.marshal_with(transaction_history_count_response)
-    @auth_middleware()
     def get(self, authed_user_id=None):
         """Gets the count of the user's $AUDIO transaction history within the App.
 
@@ -204,8 +204,8 @@ class GetUSDCTransactionHistory(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(usdc_transaction_history_parser)
+    @auth_middleware(usdc_transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
         if authed_user_id is None:
@@ -244,8 +244,8 @@ class GetUSDCTransactionHistoryCount(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(usdc_transaction_history_count_parser)
+    @auth_middleware(usdc_transaction_history_count_parser)
     @full_user_ns.marshal_with(transaction_history_count_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
         if authed_user_id is None:

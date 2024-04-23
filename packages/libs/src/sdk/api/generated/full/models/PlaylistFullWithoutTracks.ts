@@ -315,11 +315,8 @@ export function PlaylistFullWithoutTracksFromJSONTyped(json: any, ignoreDiscrimi
         'totalPlayCount': json['total_play_count'],
         'user': UserFullFromJSON(json['user']),
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
-<<<<<<< HEAD
-=======
         'access': !exists(json, 'access') ? undefined : AccessFromJSON(json['access']),
         'upc': !exists(json, 'upc') ? undefined : json['upc'],
->>>>>>> origin/main
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -363,11 +360,8 @@ export function PlaylistFullWithoutTracksToJSON(value?: PlaylistFullWithoutTrack
         'total_play_count': value.totalPlayCount,
         'user': UserFullToJSON(value.user),
         'ddex_app': value.ddexApp,
-<<<<<<< HEAD
-=======
         'access': AccessToJSON(value.access),
         'upc': value.upc,
->>>>>>> origin/main
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),

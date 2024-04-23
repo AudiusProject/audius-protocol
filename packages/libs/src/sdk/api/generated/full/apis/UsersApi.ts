@@ -101,10 +101,14 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
     sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAudioTransactionCountRequest {
     id: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAudioTransactionsRequest {
@@ -113,6 +117,8 @@ export interface GetAudioTransactionsRequest {
     limit?: number;
     sortMethod?: GetAudioTransactionsSortMethodEnum;
     sortDirection?: GetAudioTransactionsSortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetFavoritesRequest {
@@ -146,11 +152,15 @@ export interface GetPurchasesRequest {
     userId?: string;
     sortMethod?: GetPurchasesSortMethodEnum;
     sortDirection?: GetPurchasesSortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetPurchasesCountRequest {
     id: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetRelatedUsersRequest {
@@ -181,11 +191,15 @@ export interface GetSalesRequest {
     userId?: string;
     sortMethod?: GetSalesSortMethodEnum;
     sortDirection?: GetSalesSortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetSalesCountRequest {
     id: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetSubscribersRequest {
@@ -243,6 +257,8 @@ export interface GetTracksByUserRequest {
     sortMethod?: GetTracksByUserSortMethodEnum;
     sortDirection?: GetTracksByUserSortDirectionEnum;
     filterTracks?: GetTracksByUserFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -255,15 +271,17 @@ export interface GetTracksByUserHandleRequest {
     sortMethod?: GetTracksByUserHandleSortMethodEnum;
     sortDirection?: GetTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUSDCTransactionCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     type?: Array<GetUSDCTransactionCountTypeEnum>;
     includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionCountMethodEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUSDCTransactionsRequest {
@@ -272,6 +290,8 @@ export interface GetUSDCTransactionsRequest {
     limit?: number;
     sortMethod?: GetUSDCTransactionsSortMethodEnum;
     sortDirection?: GetUSDCTransactionsSortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
     type?: Array<GetUSDCTransactionsTypeEnum>;
     includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionsMethodEnum;
@@ -296,6 +316,8 @@ export interface GetUserLibraryAlbumsRequest {
     sortDirection?: GetUserLibraryAlbumsSortDirectionEnum;
     type?: GetUserLibraryAlbumsTypeEnum;
     sortMethod?: GetUserLibraryAlbumsSortMethodEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserLibraryPlaylistsRequest {
@@ -307,6 +329,8 @@ export interface GetUserLibraryPlaylistsRequest {
     sortDirection?: GetUserLibraryPlaylistsSortDirectionEnum;
     type?: GetUserLibraryPlaylistsTypeEnum;
     sortMethod?: GetUserLibraryPlaylistsSortMethodEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserLibraryTracksRequest {
@@ -318,6 +342,8 @@ export interface GetUserLibraryTracksRequest {
     sortMethod?: GetUserLibraryTracksSortMethodEnum;
     sortDirection?: GetUserLibraryTracksSortDirectionEnum;
     type?: GetUserLibraryTracksTypeEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserReplicaSetRequest {
@@ -333,6 +359,8 @@ export interface GetUsersTrackHistoryRequest {
     query?: string;
     sortMethod?: GetUsersTrackHistorySortMethodEnum;
     sortDirection?: GetUsersTrackHistorySortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 /**
@@ -455,6 +483,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/handle/{handle}/tracks/ai_attributed`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
@@ -485,6 +521,14 @@ export class UsersApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/audio/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -532,6 +576,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/audio`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -725,6 +777,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/purchases`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -759,6 +819,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/purchases/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -940,6 +1008,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/sales`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -974,6 +1050,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/sales/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1323,6 +1407,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -1386,6 +1478,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/handle/{handle}/tracks`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
@@ -1428,6 +1528,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/usdc/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1487,6 +1595,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/transactions/usdc`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1618,6 +1734,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/library/albums`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -1679,6 +1803,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/library/playlists`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -1739,6 +1871,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/library/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
@@ -1830,6 +1970,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/history/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),

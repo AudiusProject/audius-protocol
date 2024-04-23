@@ -31,6 +31,13 @@ export interface GetAudioTransactionHistoryRequest {
     limit?: number;
     sortMethod?: GetAudioTransactionHistorySortMethodEnum;
     sortDirection?: GetAudioTransactionHistorySortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
+export interface GetAudioTransactionHistoryCountRequest {
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 /**
@@ -65,6 +72,14 @@ export class TransactionsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/transactions`,
             method: 'GET',
@@ -91,10 +106,18 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionCount()` instead.
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
+    async getAudioTransactionHistoryCountRaw(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/transactions/count`,
@@ -111,8 +134,8 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionCount()` instead.
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
-        const response = await this.getAudioTransactionHistoryCountRaw(initOverrides);
+    async getAudioTransactionHistoryCount(params: GetAudioTransactionHistoryCountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+        const response = await this.getAudioTransactionHistoryCountRaw(params, initOverrides);
         return await response.value();
     }
 
