@@ -62,3 +62,25 @@ test-discovery-api:
           set +e
           newman run ./packages/discovery-provider/api-tests/Discovery\ API\ Tests.postman_collection.json --environment ./packages/discovery-provider/api-tests/Test\ Sandbox.postman_environment.json
           set -e
+
+verify-sdk-types:
+  machine: true
+  resource_class: audiusproject/gcp-n2-standard-4
+  working_directory: ~/audius-protocol
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
+    - run:
+        name: Verify types
+        command: |
+          . ~/.profile
+          audius-compose up discovery-provider
+          npm run verify-sdk-types -w @audius/sdk
+    - run:
+        name: cleanup
+        no_output_timeout: 5m
+        command: . ~/.profile; audius-compose down
+        when: always
+    - docker-prune
