@@ -1,4 +1,4 @@
-npm run gen:prod
+npm run gen:dev
 cd ./src/sdk/api/generated
 
 # Check if there are any changes generated
