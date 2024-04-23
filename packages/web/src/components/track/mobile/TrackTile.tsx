@@ -37,10 +37,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
-import {
-  LockedStatusPill,
-  LockedStatusPillProps
-} from 'components/locked-status-pill'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
@@ -53,7 +50,6 @@ import { messages } from '../trackTileMessages'
 import BottomButtons from './BottomButtons'
 import styles from './TrackTile.module.css'
 import TrackTileArt from './TrackTileArt'
-import { render } from '@testing-library/react'
 
 const { setLockedContentId } = gatedContentActions
 const { getGatedContentStatusMap } = gatedContentSelectors

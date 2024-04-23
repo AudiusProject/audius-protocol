@@ -36,10 +36,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
-import {
-  LockedStatusPill,
-  LockedStatusPillProps
-} from 'components/locked-status-pill'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
 import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'

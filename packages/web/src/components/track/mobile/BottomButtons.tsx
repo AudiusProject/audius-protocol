@@ -64,7 +64,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
     return (
       <Flex
         ph={props.isTrack ? undefined : 's'}
-        pb={props.isTrack ? undefined : 'xs'}
+        pb={props.isTrack ? undefined : 's'}
         direction='row'
         alignItems='flex-end'
         justifyContent='space-between'
@@ -97,7 +97,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
     return (
       <Flex
         ph='s'
-        pv='xs'
+        pv='s'
         direction='row'
         alignItems='center'
         justifyContent='flex-end'
@@ -111,7 +111,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
   return (
     <Flex
       ph={props.isTrack ? undefined : 's'}
-      pb={props.isTrack ? undefined : 'xs'}
+      pb={props.isTrack ? undefined : 's'}
       direction='row'
       alignItems='center'
       justifyContent='space-between'
