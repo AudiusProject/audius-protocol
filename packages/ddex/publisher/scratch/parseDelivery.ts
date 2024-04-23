@@ -28,6 +28,17 @@ export type DDEXRelease = {
   soundRecordings: DDEXSoundRecording[]
   images: DDEXImage[]
   deal?: AudiusSupportedDeal
+} & ReleaseAndSoundRecordingSharedFields
+
+type ReleaseAndSoundRecordingSharedFields = {
+  copyrightLine?: CopyrightPair
+  producerCopyrightLine?: CopyrightPair
+  parentalWarningType?: string
+}
+
+type CopyrightPair = {
+  text: string
+  year: string
 }
 
 export type DDEXSoundRecording = {
@@ -40,9 +51,14 @@ export type DDEXSoundRecording = {
   releaseDate: string
   genre: string
   subGenre: string
+  rightsController?: {
+    name: string
+    roles: string[]
+    // rightShareUnknown: string
+  }
 
   audiusGenre?: Genre
-}
+} & ReleaseAndSoundRecordingSharedFields
 
 export type DDEXImage = {
   ref: string
@@ -150,6 +166,24 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
   function toTexts($doc: CH) {
     return $doc.map((_, el) => $(el).text()).get()
   }
+
+  function toText($el: CH) {
+    return $el.first().text().trim()
+  }
+
+  function cline($el: CH) {
+    const year = toText($el.find('CLine > Year'))
+    const text = toText($el.find('CLine > CLineText'))
+    if (year && text) return { year, text }
+  }
+
+  function pline($el: CH) {
+    const year = toText($el.find('PLine > Year'))
+    const text = toText($el.find('PLine > PLineText'))
+    if (year && text) return { year, text }
+  }
+
+  // function
 
   //
   // parse deals
@@ -274,7 +308,20 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
       releaseDate: $el
         .find('OriginalResourceReleaseDate, ResourceReleaseDate')
         .first()
-        .text()
+        .text(),
+
+      copyrightLine: cline($el),
+      producerCopyrightLine: pline($el),
+      parentalWarningType: toText($el.find('ParentalWarningType'))
+    }
+
+    const rightsController = $el.find('RightsController').first()
+    if (rightsController.length) {
+      recording.rightsController = {
+        name: toText(rightsController.find('PartyName FullName')),
+        roles: toTexts(rightsController.find('RightsControllerRole'))
+        // rightShareUnknown: toText(rightsController.find('RightShareUnknown'))
+      }
     }
 
     recording.audiusGenre = resolveAudiusGenre(
@@ -306,6 +353,13 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
       const $el = $(el)
 
       const ref = $el.find('ReleaseReference').text()
+      const deal = releaseDeals[ref]
+
+      const releaseDate =
+        deal?.validityStartDate ||
+        $el.find('ReleaseDate').text() ||
+        $el.find('GlobalOriginalReleaseDate').text()
+
       const release: DDEXRelease = {
         ref,
         isrc: $el.find('ISRC').text(),
@@ -315,15 +369,19 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
         artists: toTexts($el.find('DisplayArtist PartyName FullName')),
         genre: $el.find('GenreText').text(),
         subGenre: $el.find('SubGenre').text(),
-        releaseDate: $el.find('ReleaseDate').text(),
+        releaseDate,
         releaseType: $el.find('ReleaseType').text(),
+
+        copyrightLine: cline($el),
+        producerCopyrightLine: pline($el),
+        parentalWarningType: toText($el.find('ParentalWarningType')),
 
         isMainRelease: $el.attr('IsMainRelease') == 'true',
 
         problems: [],
         soundRecordings: [],
         images: [],
-        deal: releaseDeals[ref]
+        deal
       }
 
       // resolve audius genre

@@ -27,6 +27,9 @@ create table if not exists releases (
   blockNumber integer,
   publishedAt datetime,
 
+  publishErrorCount integer default 0,
+  lastPublishError text,
+
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME
 );
@@ -56,6 +59,9 @@ export type ReleaseRow = {
   blockHash?: string
   blockNumber?: number
   publishedAt?: string
+
+  publishErrorCount: number
+  lastPublishError: string
 
   _json?: DDEXRelease
 }

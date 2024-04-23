@@ -33,4 +33,11 @@ test('deal types', async () => {
     isDownloadable: false,
     chain: 'sol'
   })
+
+  // cline
+  expect(releases[1].copyrightLine).toMatchObject({
+    text: '(C) 2010 Iron Crown Music',
+    year: '2010'
+  })
+  expect(releases[1].soundRecordings[0].copyrightLine).toBeUndefined()
 })

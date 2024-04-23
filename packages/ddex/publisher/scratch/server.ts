@@ -15,8 +15,8 @@ const COOKIE_NAME = 'audiusUser'
 
 const API_HOST =
   NODE_ENV == 'production'
-    ? 'https://discoveryprovider2.audius.co/'
-    : 'https://discoveryprovider2.staging.audius.co/'
+    ? 'https://discoveryprovider2.audius.co'
+    : 'https://discoveryprovider2.staging.audius.co'
 
 const app = new Hono()
 app.use(prettyJSON({ space: 4 }))
@@ -135,6 +135,7 @@ app.get('/releases', (c) => {
             <th>Audius User</th>
             <th>Audius Genre</th>
             <th>Problems</th>
+            <th>Publish Errors</th>
             <th>Published?</th>
             <th>debug</th>
           </tr>
@@ -156,12 +157,18 @@ app.get('/releases', (c) => {
                   ${row._json?.problems?.map((p) => html`<mark>${p}</mark>`)}
                 </td>
                 <td>
+                  ${row.publishErrorCount > 0 &&
+                  html`<a href="/releases/${encodeURIComponent(row.key)}/error"
+                    >${row.publishErrorCount}</a
+                  >`}
+                </td>
+                <td>
                   ${row.entityType == 'track' &&
-                  html` <a href="${API_HOST}/v1/tracks/${row.entityId}">
+                  html` <a href="${API_HOST}/v1/full/tracks/${row.entityId}">
                     ${row.entityId}
                   </a>`}
                   ${row.entityType == 'album' &&
-                  html` <a href="${API_HOST}/v1/playlists/${row.entityId}">
+                  html` <a href="${API_HOST}/v1/full/playlists/${row.entityId}">
                     ${row.entityId}
                   </a>`}
                 </td>
@@ -185,7 +192,12 @@ app.post('/releases/reparse', async (c) => {
 })
 
 app.get('/releases/:key', (c) => {
-  return c.html(html`release detail for ${c.req.param('key')}`)
+  // return c.html(html`release detail for ${c.req.param('key')}`)
+  const row = db
+    .prepare('select * from releases where key = ?')
+    .bind(c.req.param('key'))
+    .get() as any
+  return c.json(row)
 })
 
 app.get('/releases/:key/xml', (c) => {
@@ -204,6 +216,14 @@ app.get('/releases/:key/json', (c) => {
     .get() as any
   c.header('Content-Type', 'application/json')
   return c.body(row.json)
+})
+
+app.get('/releases/:key/error', (c) => {
+  const row = db
+    .prepare('select lastPublishError from releases where key = ?')
+    .bind(c.req.param('key'))
+    .get() as any
+  return c.text(row.lastPublishError)
 })
 
 app.get('/users', (c) => {

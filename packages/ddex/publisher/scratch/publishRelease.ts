@@ -14,13 +14,19 @@ export async function publishValidPendingReleases() {
     if (parsed.problems.length) {
       console.log(`skipping ${row.key} due to problems: `, parsed.problems)
     } else if (row.entityId) {
-      console.log(`skipping ${row.key} already published`)
+      console.log('already published, skipping', row.key)
     } else {
+      // publish new release
       try {
         await publishRelease(row)
-      } catch (e) {
+      } catch (e: any) {
         console.log('failed to publish', row.key, e)
-        // todo: record error, increment publishFailureCount
+        // record error, increment publishFailureCount
+        db.prepare(
+          `update releases set lastPublishError=?, publishErrorCount=publishErrorCount+1 where key = ?`
+        )
+          .bind(e.toString(), row.key)
+          .run()
       }
     }
   }
@@ -84,12 +90,22 @@ export async function publishRelease(releaseRow: ReleaseRow) {
         new Date(release.releaseDate) ||
         new Date()
 
+      // use sound copyright, fallback to release copyright
+      const copyrightLine = sound.copyrightLine || release.copyrightLine
+      const producerCopyrightLine =
+        sound.producerCopyrightLine || release.producerCopyrightLine
+      const parentalWarningType =
+        sound.parentalWarningType || release.parentalWarningType
+
       return {
         genre: audiusGenre,
         title: sound.title,
         isrc: release.isrc,
-        releaseDate
-        // todo: more track fields
+        releaseDate,
+        copyrightLine,
+        producerCopyrightLine,
+        parentalWarningType,
+        rightsController: sound.rightsController
       }
     })
 
