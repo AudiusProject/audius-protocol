@@ -7,7 +7,7 @@ import {
   getPasswordField,
   getRequiresOtp,
   getStatus
-} from 'audius-client/src/common/store/pages/signon/selectors'
+} from '@audius/web/src/common/store/pages/signon/selectors'
 import { setValueField, signIn } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'

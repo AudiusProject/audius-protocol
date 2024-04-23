@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { fetchSearch } from 'audius-client/src/common/store/search-bar/actions'
+import { fetchSearch } from '@audius/web/src/common/store/search-bar/actions'
 import { View } from 'react-native'
 import { TouchableHighlight } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'

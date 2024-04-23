@@ -78,13 +78,13 @@ const config = {
       '~': path.resolve(__dirname, '../common/src'),
 
       // The following imports are needed for @audius/common
-      // and audius-client to compile correctly
+      // and @audius/web to compile correctly
       'react-redux': resolveModule('react-redux'),
       'react-native-svg': resolveModule('react-native-svg'),
       'react-native': resolveModule('react-native'),
       react: resolveModule('react'),
 
-      // Aliases for 'audius-client' to allow for absolute paths
+      // Aliases for '@audius/web' to allow for absolute paths
       ...getClientAliases(),
 
       // Various polyfills to enable @audius/sdk to run in react-native
@@ -110,7 +110,9 @@ const config = {
 
       if (moduleName === '@metaplex-foundation/umi/serializers') {
         return {
-          filePath: `${resolveModule('@metaplex-foundation/umi')}/dist/cjs/serializers.cjs`,
+          filePath: `${resolveModule(
+            '@metaplex-foundation/umi'
+          )}/dist/cjs/serializers.cjs`,
           type: 'sourceFile'
         }
       }

@@ -24,8 +24,8 @@ module.exports = {
       alias: {
         map: [
           ['app', './src'],
-          ['utils', 'audius-client/src/utils'],
-          ['common', 'audius-client/src/common']
+          ['utils', '@audius/web/src/utils'],
+          ['common', '@audius/web/src/common']
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
       }
