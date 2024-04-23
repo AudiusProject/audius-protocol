@@ -1,4 +1,4 @@
-import { seq, struct, u8 } from '@solana/buffer-layout'
+import { blob, seq, struct, u8 } from '@solana/buffer-layout'
 import { publicKey, u64 } from '@solana/buffer-layout-utils'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -80,11 +80,16 @@ export class RewardManagerProgram {
     attestationsAccountData: struct<AttestationsAccountData>([
       u8('version'),
       publicKey('rewardManagerState'),
+      u8('count'),
       seq(
         struct<VerifiedMessage>([
-          u8('index'),
           ethAddress('senderEthAddress'),
-          attestationLayout('attestation'),
+          attestationLayout('message'),
+          // Though the actual attestation message is only 83 bytes, we allocate
+          // 128 bytes for each element of this array on the program side.
+          // Thus we add 45 bytes of padding here to be consistent.
+          // See: https://github.com/AudiusProject/audius-protocol/blob/dde78ad7e26d9f6fb358fef5d240c5c7e2d25c66/solana-programs/reward-manager/program/src/state/verified_messages.rs#L99
+          blob(45),
           ethAddress('operator')
         ]),
         3,
@@ -593,9 +598,9 @@ export class RewardManagerProgram {
     const strippedSignature = signature
       .substring(0, signature.length - 2)
       .replace('0x', '')
+      .padStart(128, '0')
+      .substring(0, 128)
     const signatureBuffer = Buffer.from(strippedSignature, 'hex')
-    const fixedBuf = Buffer.alloc(64, 0)
-    signatureBuffer.copy(fixedBuf, 64 - signatureBuffer.length)
     return {
       signature: signatureBuffer,
       recoveryId: recoveryIdBuffer.readInt8()

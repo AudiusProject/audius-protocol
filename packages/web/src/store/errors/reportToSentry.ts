@@ -1,5 +1,6 @@
 import { ErrorLevel, ReportToSentryArgs } from '@audius/common/models'
 import { getErrorMessage } from '@audius/common/utils'
+import { ResponseError } from '@audius/sdk'
 import { withScope, captureException } from '@sentry/browser'
 import type { SeverityLevel } from '@sentry/types'
 
@@ -26,6 +27,9 @@ const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
   Log: 'log'
 }
 
+const isResponseError = (error: Error): error is ResponseError =>
+  'response' in error && error.response instanceof Response
+
 /**
  * Helper fn that reports to sentry while creating a localized scope to contain additional data
  * Also logs to console with the appropriate level (console.log, console.warn, console.error, etc)
@@ -38,10 +42,20 @@ export const reportToSentry = async ({
   tags
 }: ReportToSentryArgs) => {
   try {
-    withScope((scope) => {
+    withScope(async (scope) => {
       if (level) {
         const sentryLevel = Levels[level]
         scope.setLevel(sentryLevel)
+      }
+      if (isResponseError(error)) {
+        const responseBody =
+          (await error.response.json().catch()) ??
+          (await error.response.text().catch())
+        additionalInfo = {
+          ...additionalInfo,
+          response: error.response,
+          responseBody
+        }
       }
       if (additionalInfo) {
         scope.setContext('additionalInfo', additionalInfo)
