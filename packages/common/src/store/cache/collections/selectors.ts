@@ -122,7 +122,7 @@ export const getIsCollectionEmpty = (
   return Object.values(collectionTracks).length === 0
 }
 
-export const getCollecitonHasHiddenTracks = (
+export const getCollectionHasHiddenTracks = (
   state: CommonState,
   { id }: { id?: ID }
 ) => {
