@@ -22,6 +22,7 @@ export const makeEntityManagerInstance = (
     contractAddress: servicesConfig.entityManagerContractAddress,
     web3ProviderUrl: servicesConfig.web3ProviderUrl,
     identityServiceUrl: servicesConfig.identityServiceUrl,
+    useDiscoveryRelay: true,
     discoveryNodeSelector
   })
 }

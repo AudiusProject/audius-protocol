@@ -12,6 +12,7 @@ from src.tasks.entity_manager.utils import (
     get_address_from_signature,
     validate_signer,
 )
+from src.utils.helpers import is_fqdn
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.structured_logger import StructuredLogger
@@ -27,6 +28,7 @@ class AppSignature(TypedDict):
 class CreateDeveloperAppMetadata(TypedDict):
     name: Union[str, None]
     description: Union[str, None]
+    image_url: Union[str, None]
     is_personal_access: Union[bool, None]
     app_signature: Union[AppSignature, None]
 
@@ -50,6 +52,7 @@ def get_create_developer_app_metadata_from_raw(
         "is_personal_access": None,
         "description": None,
         "app_signature": None,
+        "image_url": None,
     }
 
     if raw_metadata:
@@ -58,6 +61,9 @@ def get_create_developer_app_metadata_from_raw(
 
             metadata["name"] = json_metadata.get("name", None)
             metadata["description"] = json_metadata.get("description", None)
+            image_url_raw = json_metadata.get("image_url", None)
+            if image_url_raw and is_fqdn(image_url_raw):
+                metadata["image_url"] = image_url_raw
             metadata["is_personal_access"] = json_metadata.get(
                 "is_personal_access", None
             )
@@ -189,6 +195,13 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, description must be under 161 characters"
             )
+        if metadata["image_url"] != None and (
+            not isinstance(metadata["image_url"], str)
+            or len((metadata["image_url"])) > 2000
+        ):
+            raise IndexingValidationError(
+                "Invalid Create Developer App Transaction, image_url must be under 2000 characters"
+            )
 
         num_existing_apps_from_user = (
             session.query(DeveloperApp)
@@ -237,6 +250,7 @@ def create_developer_app(params: ManageEntityParameters):
             str, address
         ),  # cast to assert non null (since we validated above)
         description=(metadata["description"] or None),
+        image_url=(metadata["image_url"] or None),
         is_personal_access=(metadata["is_personal_access"] or False),
         txhash=params.txhash,
         blockhash=params.event_blockhash,

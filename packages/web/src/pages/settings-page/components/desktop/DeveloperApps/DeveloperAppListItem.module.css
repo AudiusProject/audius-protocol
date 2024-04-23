@@ -4,19 +4,22 @@
   background-color: var(--harmony-n-25);
   border-radius: var(--harmony-unit-1);
   border: 1px solid var(--harmony-n-100);
-  gap: var(--harmony-unit-6);
-  padding: var(--harmony-unit-4) var(--harmony-unit-6);
+  padding: 0 var(--harmony-unit-6) 0 0;
+  overflow: hidden;
 }
 
-.listItemIndex {
+.listItemImage {
   flex-grow: 0;
-  font-size: var(--harmony-font-m);
-  font-weight: var(--harmony-font-bold);
-  color: var(--harmony-n-600);
+  height: 56px;
+  width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--harmony-n-100);
 }
 
 .listItemDivider {
-  margin: calc(var(--harmony-unit-4) * -1) 0;
+  margin: 0;
   flex-grow: 0;
   border-width: 0px thin 0px 0px;
   border-style: solid;
@@ -26,10 +29,15 @@
 }
 
 .listItemAppName {
+  padding: var(--harmony-unit-4) 0 var(--harmony-unit-4) var(--harmony-unit-6);
   flex-grow: 1;
   font-size: var(--harmony-font-m);
   font-weight: var(--harmony-font-medium);
   color: var(--harmony-neutral);
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.listItemOptions {
+  padding: 0 0 0 var(--harmony-unit-6);
 }
