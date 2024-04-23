@@ -270,7 +270,7 @@ function* claimChallengeRewardAsync(
             })
             // Handle the individual specifier failures here to let the other
             // ones continue to claim and not reject the all() call.
-            .catch((error) => {
+            .catch((error: unknown) => {
               return {
                 ...specifierWithAmount,
                 error
@@ -296,7 +296,7 @@ function* claimChallengeRewardAsync(
         const error =
           res.error instanceof Error ? res.error : new Error(String(res.error))
         console.error(
-          `Failed to claim specifier: ${res.specifier} for amount: ${res.amount} with error:`,
+          `Failed to claim challenge: ${challengeId} specifier: ${res.specifier} for amount: ${res.amount} with error:`,
           error
         )
         yield* call(reportToSentry, {

@@ -105,7 +105,7 @@ def create_new_challenges(session, allowed_challenge_types=None):
         challenges.append(challenge)
     session.add_all(challenges)
 
-    # Update any challenges whose active state / amount / step count / starting block changed
+    # Update any challenges whose active state / amount / step count / starting block / weekly pool / cooldown days changed
     existing_challenge_map = {
         challenge.id: challenge for challenge in existing_challenges
     }

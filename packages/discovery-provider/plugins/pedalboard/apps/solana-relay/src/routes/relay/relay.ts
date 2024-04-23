@@ -11,7 +11,7 @@ import { Request, Response, NextFunction } from 'express'
 import { config } from '../../config'
 import { BadRequestError } from '../../errors'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import { cacheTransaction, getCachedDiscoveryNodeEndpoints } from '../../redis'
+import { cacheTransaction, getCachedDiscoveryNodes } from '../../redis'
 import fetch from 'cross-fetch'
 import { Logger } from 'pino'
 import base58 from 'bs58'
@@ -59,13 +59,13 @@ const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
  * nodes so that they can cache it to lighten the RPC load on indexing.
  */
 const forwardTransaction = async (logger: Logger, transaction: string) => {
-  const endpoints = await getCachedDiscoveryNodeEndpoints()
+  const endpoints = await getCachedDiscoveryNodes()
   logger.info(`Forwarding to ${endpoints.length} endpoints...`)
   const body = JSON.stringify({ transaction })
   await Promise.all(
     endpoints
-      .filter((endpoint) => endpoint !== config.endpoint)
-      .map((endpoint) =>
+      .filter((p) => p.endpoint !== config.endpoint)
+      .map(({ endpoint }) =>
         fetch(`${endpoint}/solana/cache`, {
           method: 'POST',
           body,

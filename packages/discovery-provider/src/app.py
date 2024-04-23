@@ -520,6 +520,10 @@ def configure_celery(celery, test_config=None):
 
     celery.finalize()
 
+    # Clear out old celery tasks on app startup
+    # Initialize with beat or initial message
+    celery.control.purge()
+
     # Start tasks that should fire upon startup
     celery.send_task("cache_current_nodes")
     celery.send_task("cache_entity_counts")

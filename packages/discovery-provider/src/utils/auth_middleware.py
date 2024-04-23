@@ -3,6 +3,7 @@ import logging
 
 from eth_account.messages import encode_defunct
 from flask.globals import request
+from flask_restx import reqparse
 
 from src.models.users.user import User
 from src.utils import db_session, web3_provider
@@ -13,28 +14,50 @@ MESSAGE_HEADER = "Encoded-Data-Message"
 SIGNATURE_HEADER = "Encoded-Data-Signature"
 
 
-def auth_middleware(**kwargs):
+def auth_middleware(parser: reqparse.RequestParser = None):
     """
     Auth middleware decorator.
 
     Should decorate a route and be used to supply an authed user to
     the query behind a route.
 
-    Example:
+    e.g.
 
-    @auth_middleware
+    @auth_middleware()
+    def get(self, authed_user_id):
+        print(authed_user_id)
+
+    If a flask restx RequestParser is passed, header arguments
+    Encoded-Data-Message and Encoded-Data-Signature are expected on the parser.
+
+    e.g.
+
+    @ns.expect(request_parser)
+    @auth_middleware(request_parser)
     def get(self):
-        args = track_slug_parser.parse_args()
-        slug, handle = (args.get("slug"), args.get("handle"))
-        routes = args.get("route")
+        request.headers.get("Encoded-Data-Message")
 
-    @functools.wraps simply ensures that if Python introspects `inner_wrap`, it refers to
-    `func` rather than `inner_wrap`.
     """
 
-    def outer_wrap(func):
+    def decorator(func):
+        if parser:
+            parser.add_argument(
+                MESSAGE_HEADER,
+                required=False,
+                description="The data that was signed by the user for signature recovery",
+                location="headers",
+            )
+            parser.add_argument(
+                SIGNATURE_HEADER,
+                required=False,
+                description="The signature of data, used for signature recovery",
+                location="headers",
+            )
+
+        # @functools.wraps simply ensures that if Python introspects `wrapper`, it refers to
+        # `func` rather than `wrapper`.
         @functools.wraps(func)
-        def inner_wrap(*args, **kwargs):
+        def wrapper(*args, **kwargs):
             message = request.headers.get(MESSAGE_HEADER)
             signature = request.headers.get(SIGNATURE_HEADER)
 
@@ -66,6 +89,6 @@ def auth_middleware(**kwargs):
                         )
             return func(*args, **kwargs, authed_user_id=authed_user_id)
 
-        return inner_wrap
+        return wrapper
 
-    return outer_wrap
+    return decorator

@@ -147,9 +147,7 @@ export const usePurchases = () => {
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
     const blob = await sdk.users.downloadPurchasesAsCSVBlob({
-      id: Id.parse(userId!),
-      encodedDataMessage: '', // TODO: remove, handled by sdk
-      encodedDataSignature: '' // TODO: remove, handled by sdk
+      id: Id.parse(userId!)
     })
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')

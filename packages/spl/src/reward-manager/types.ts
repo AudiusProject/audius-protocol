@@ -284,14 +284,17 @@ export type Attestation = {
 }
 
 export type VerifiedMessage = {
-  index: number
   senderEthAddress: string
   attestation: Attestation
+  // Hint to make types not complain when adding empty padding for
+  // the array of verified messages in the account data.
+  _: Uint8Array
   operator: string
 }
 
 export type AttestationsAccountData = {
   version: number
   rewardManagerState: PublicKey
+  count: number
   messages: VerifiedMessage[]
 }
