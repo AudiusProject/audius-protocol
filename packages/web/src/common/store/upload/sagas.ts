@@ -34,6 +34,7 @@ import {
 import { EntityManagerAction } from '@audius/sdk'
 import type { ProgressCB } from '@audius/sdk/dist/services/creatorNode'
 import type { TrackMetadata, UploadTrackMetadata } from '@audius/sdk/dist/utils'
+import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
   all,
@@ -111,12 +112,9 @@ function* combineMetadata(
   metadata.is_unlisted = !!collectionMetadata.is_unlisted
   if (collectionMetadata.is_unlisted && collectionMetadata.field_visibility) {
     // Convert any undefined values to booleans
-    const booleanFieldArray = Object.entries(
-      collectionMetadata.field_visibility
-    ).map(([k, v]) => [k, !!v]) as [string, boolean][]
-    const booleanFieldVisibility = booleanFieldArray.reduce(
-      (acc, [k, v]) => ({ [k]: v, ...acc }),
-      {}
+    const booleanFieldVisibility = mapValues(
+      collectionMetadata.field_visibility,
+      Boolean
     ) as FieldVisibility
     metadata.field_visibility = booleanFieldVisibility
   }
