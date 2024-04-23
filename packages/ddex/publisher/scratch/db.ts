@@ -1,7 +1,8 @@
 import Database from 'better-sqlite3'
 import { DDEXRelease } from './parseDelivery'
 
-export const db = new Database('scratchy.db')
+const dbLocation = process.env.SQLITE_URL || 'scratchy.db'
+export const db = new Database(dbLocation)
 
 db.pragma('journal_mode = WAL')
 

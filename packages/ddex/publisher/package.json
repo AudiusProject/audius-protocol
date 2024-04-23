@@ -13,7 +13,9 @@
     "dev:prod": "NETWORK=prod turbo run start --filter=@audius/ddex-publisher",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "verify": "concurrently \"npm:build\" \"npm:lint\""
+    "verify": "concurrently \"npm:build\" \"npm:lint\"",
+    "test": "SQLITE_URL=:memory: vitest run",
+    "test:watch": "SQLITE_URL=:memory: vitest"
   },
   "keywords": [],
   "author": "Audius",
@@ -40,6 +42,7 @@
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.1.2",
     "prettier": "3.1.1",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "vitest": "^1.5.0"
   }
 }

@@ -17,7 +17,7 @@ program
   .description('Parse DDEX xml and print results')
   .argument('<path>', 'path to ddex xml file')
   .action(async (p, options) => {
-    const releases = await parseDdexXmlFile(p)
+    const releases = await parseDelivery(p)
     console.log(JSON.stringify(releases, undefined, 2))
   })
 
