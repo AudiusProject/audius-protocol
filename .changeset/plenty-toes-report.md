@@ -1,6 +1,5 @@
 ---
 '@audius/spl': patch
-'@audius/sdk': patch
 ---
 
-Fix RewardManagerClient attestation signatures when signature is less than 64 bytes
+Fixes RewardManagerProgram signature parsing when service attestation signature is less than 64 bytes
