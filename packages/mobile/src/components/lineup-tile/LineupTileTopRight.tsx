@@ -51,7 +51,7 @@ type Props = {
    */
   trackId?: number
   /**
-   * Whether or not the track is a collection
+   * Whether or not the tile is for a collection
    */
   isCollection?: boolean
   /**

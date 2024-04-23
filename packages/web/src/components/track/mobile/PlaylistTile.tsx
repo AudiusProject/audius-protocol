@@ -390,7 +390,11 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 isVisible={isTrending && shouldShow}
                 showCrown={showRankIcon}
               />
-              {isReadonly ? specialContentLabel : null}
+              {isReadonly ? (
+                <Text variant='body' size='xs' strength='default'>
+                  {specialContentLabel}
+                </Text>
+              ) : null}
               {!!(props.repostCount || props.saveCount) && (
                 <>
                   <Flex
