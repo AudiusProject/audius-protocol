@@ -8,7 +8,9 @@ import {
   PlainButton
 } from '@audius/harmony'
 
-type RepostFavoritesStatsProps = {
+import { useIsMobile } from 'hooks/useIsMobile'
+
+type RepostsFavoritesStatsProps = {
   isUnlisted: boolean
   repostCount: number
   saveCount: number
@@ -24,13 +26,14 @@ const messages = {
 
 // NOTE: this is a newer version of the other RepostsFavoritesStats component;
 // unclear if designers want to deprecate the old one just yet so this is a standalone component for CollectionHeader
-export const RepostFavoritesStats = ({
+export const RepostsFavoritesStats = ({
   isUnlisted,
   repostCount,
   saveCount,
   onClickReposts,
   onClickFavorites
-}: RepostFavoritesStatsProps) => {
+}: RepostsFavoritesStatsProps) => {
+  const isMobile = useIsMobile()
   const handleOnClickReposts = useCallback(
     (e: MouseEvent) => {
       e.preventDefault()
@@ -50,13 +53,14 @@ export const RepostFavoritesStats = ({
 
   if (isUnlisted) return null
   return !!repostCount || !!saveCount ? (
-    <Flex alignItems='center'>
+    <Flex alignItems='center' gap={isMobile ? 'xl' : 'l'}>
       {!!repostCount && (
         <PlainButton
-          size='large'
-          variant='subdued'
+          size={isMobile ? 'default' : 'large'}
+          variant={isMobile ? 'default' : 'subdued'}
           iconLeft={IconRepost}
           onClick={handleOnClickReposts}
+          css={{ padding: 0 }}
         >
           <span>{formatCount(repostCount)}</span>
           {pluralize(messages.reposts, repostCount)}
@@ -64,10 +68,11 @@ export const RepostFavoritesStats = ({
       )}
       {!!saveCount && (
         <PlainButton
-          size='large'
-          variant='subdued'
+          size={isMobile ? 'default' : 'large'}
+          variant={isMobile ? 'default' : 'subdued'}
           iconLeft={IconFavorite}
           onClick={handleOnClickFavorites}
+          css={{ padding: 0 }}
         >
           <span>{formatCount(saveCount)}</span>
           {pluralize(messages.favorites, saveCount)}

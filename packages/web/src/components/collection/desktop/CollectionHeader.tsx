@@ -15,7 +15,7 @@ import {
   PurchaseableContentType,
   useEditPlaylistModal
 } from '@audius/common/store'
-import { formatSecondsAsText, formatDate, Nullable } from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -38,10 +38,12 @@ import { UserGeneratedText } from 'components/user-generated-text'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useSsrContext } from 'ssr/SsrContext'
 
+import { AlbumDetailsText } from '../components/AlbumDetailsText'
+import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
+
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
 import styles from './CollectionHeader.module.css'
-import { RepostFavoritesStats } from './RepostsFavoritesStats'
 
 const messages = {
   filterPlaylist: 'Search in playlist...',
@@ -156,7 +158,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const renderStatsRow = (isLoading: boolean) => {
     if (isLoading) return null
     return (
-      <RepostFavoritesStats
+      <RepostsFavoritesStats
         isUnlisted={false}
         repostCount={reposts}
         saveCount={saves}
@@ -175,18 +177,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const isPremium =
     isStreamGated && isContentUSDCPurchaseGated(streamConditions)
-
-  const renderAlbumDetailsText = () => {
-    const releaseAndUpdatedText = lastModifiedDate
-      ? `Released ${formatDate(`${releaseDate}`)}, Updated ${formatDate(
-          `${lastModifiedDate}`
-        )}`
-      : `Released ${formatDate(`${releaseDate}`)}`
-
-    const trackCountText = `${numTracks} tracks`
-    const durationText = duration ? `, ${formatSecondsAsText(duration)}` : ''
-    return `${releaseAndUpdatedText} • ${trackCountText}${durationText}`
-  }
 
   const topSection = (
     <Flex gap='xl' p='l' backgroundColor='white'>
@@ -211,7 +201,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               color='subdued'
               css={{ letterSpacing: '2px' }}
             >
-              {isPremium ? messages.premiumLabel : ''}
+              {isPremium ? `${messages.premiumLabel} ` : ''}
               {type === 'playlist' && !isPublished
                 ? messages.hiddenPlaylistLabel
                 : type}
@@ -337,15 +327,12 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             {description}
           </UserGeneratedText>
         ) : null}
-        <Text
-          variant='body'
-          size='s'
-          strength='strong'
-          textAlign='left'
-          color='default'
-        >
-          {renderAlbumDetailsText()}
-        </Text>
+        <AlbumDetailsText
+          duration={duration}
+          lastModifiedDate={lastModifiedDate}
+          numTracks={numTracks}
+          releaseDate={releaseDate}
+        />
       </Flex>
     </Flex>
   )
