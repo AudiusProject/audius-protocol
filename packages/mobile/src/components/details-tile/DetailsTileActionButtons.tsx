@@ -188,8 +188,8 @@ export const DetailsTileActionButtons = ({
           ? editButton
           : null
         : hideRepost
-          ? null
-          : repostButton}
+        ? null
+        : repostButton}
       {isCollectionOwner || hideFavorite ? null : favoriteButton}
       {hideShare ? null : shareButton}
       {isCollectionOwner && !isPublished && (!isAlbum || isEditAlbumsEnabled)
