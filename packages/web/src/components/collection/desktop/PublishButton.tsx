@@ -64,8 +64,8 @@ export const PublishButton = (props: PublishButtonProps) => {
           text={
             hasHiddenTracks
               ? messages.hiddenTracksTooltipText(
-                is_album ? 'album' : 'playlist'
-              )
+                  is_album ? 'album' : 'playlist'
+                )
               : messages.emptyPlaylistTooltipText
           }
         >
