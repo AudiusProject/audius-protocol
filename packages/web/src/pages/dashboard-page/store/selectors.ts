@@ -21,14 +21,12 @@ export const makeGetDashboard = () => {
         // Artist stats
         stats = {
           tracks: account ? account.track_count : 0,
-          playlists: account ? account.playlist_count : 0,
-          // albums: account ? account.album_count : 0,
+          albums: account ? account.album_count : 0,
           plays: tracks.reduce(
             (totalPlays, track) => totalPlays + (track.play_count || 0),
             0
           ),
           reposts: account ? account.repost_count : 0,
-          // saves: account ? 0,
           followers: account ? account.follower_count : 0
         }
       } else {
