@@ -219,6 +219,22 @@ services:
     profiles:
       - ddex
 
+  ddex-publisher:
+    extends:
+      file: docker-compose.ddex.yml
+      service: ddex-publisher
+    container_name: ddex-publisher
+    <<: *common
+    environment:
+      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
+    depends_on:
+      ddex-mongo-init:
+        condition: service_completed_successfully
+      ddex-s3:
+        condition: service_healthy
+    profiles:
+      - ddex
+
   ddex-ingester:
     extends:
       file: docker-compose.ddex.yml

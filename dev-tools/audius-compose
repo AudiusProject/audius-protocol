@@ -691,19 +691,18 @@ def test_run(protocol_dir, service, args):
     )
 
     if result.returncode != 0 and service.startswith("ddex"):
-        for container in ["ddex-crawler", "ddex-parser"]:
-            logs_result = subprocess.run(
-                f"docker logs {container}",
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            if logs_result.returncode == 0:
-                print(f"\nLogs for {container}:\n")
-                print(logs_result.stdout.decode("utf-8"))
-            else:
-                print(f"\nFailed to retrieve logs for {container}\n")
-                print(logs_result.stderr.decode("utf-8"))
+        logs_result = subprocess.run(
+            f"docker logs ddex-ingester",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if logs_result.returncode == 0:
+            print(f"\nLogs for ddex-ingester':\n")
+            print(logs_result.stdout.decode("utf-8"))
+        else:
+            print(f"\nFailed to retrieve logs for ddex-ingester\n")
+            print(logs_result.stderr.decode("utf-8"))
 
     sys.exit(result.returncode)
 
