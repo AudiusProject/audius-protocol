@@ -230,8 +230,8 @@ def test_index_app(app, mocker):
                 expected_app.get("description", None) or None
             )  # If description value is empty in metadata, the description value should be null in the table row.
             expected_image_url = expected_app.get("image_url", None)
-            assert (
-                res.image_url == expected_image_url
+            assert res.image_url == (
+                expected_image_url
                 if expected_image_url and expected_image_url.startswith("http")
                 else None
             )
