@@ -164,7 +164,7 @@ export const LineupTileStats = ({
 
   const renderLockedContentOrPlayCount = () => {
     if (streamConditions && !isOwner) {
-      if (isPurchase) {
+      if (isPurchase && isReadonly) {
         return (
           <LineupTileAccessStatus
             contentId={id}

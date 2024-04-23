@@ -6,16 +6,27 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+
 import IconHouse from 'assets/img/iconHouse.svg?react'
 import ApiCallsStat from 'components/ApiCallsStat'
 import Button, { ButtonType } from 'components/Button'
+import { Card } from 'components/Card/Card'
 import EstimatedAnnualStat from 'components/EstimatedAnnualStat'
 import EstimatedWeeklyStat from 'components/EstimatedWeeklyStat'
+import {
+  APICallsInfoTooltip,
+  EstimatedRewardRateInfoTooltip,
+  GlobalStakedInfoTooltip,
+  UniqueUsersInfoTooltip
+} from 'components/InfoTooltip/InfoTooltips'
 import Loading from 'components/Loading'
+import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
 import Page from 'components/Page'
 import Paper from 'components/Paper'
 import Proposal from 'components/Proposal'
 import { NoProposals } from 'components/Proposals'
+import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCard'
+import { StatLabel } from 'components/StatLabel/StatLabel'
 import TopAddressesTable from 'components/TopAddressesTable'
 import TotalStakedStat from 'components/TotalStakedStat'
 import UniqueUsersStat from 'components/UniqueUsersStat'
@@ -23,6 +34,7 @@ import { useAccount } from 'store/account/hooks'
 import { useProposals } from 'store/cache/proposals/hooks'
 import { TICKER } from 'utils/consts'
 import { usePushRoute } from 'utils/effects'
+import { createStyles, isMobile } from 'utils/mobile'
 import {
   AUDIUS_DAPP_URL,
   DOCS_URL,
@@ -31,17 +43,6 @@ import {
   WHITEPAPER_URL
 } from 'utils/routes'
 
-import { Card } from 'components/Card/Card'
-import {
-  APICallsInfoTooltip,
-  EstimatedRewardRateInfoTooltip,
-  GlobalStakedInfoTooltip,
-  UniqueUsersInfoTooltip
-} from 'components/InfoTooltip/InfoTooltips'
-import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
-import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCard'
-import { StatLabel } from 'components/StatLabel/StatLabel'
-import { createStyles, isMobile } from 'utils/mobile'
 import desktopStyles from './Home.module.css'
 import mobileStyles from './HomeMobile.module.css'
 import { InfoCard } from './InfoCard'
@@ -58,8 +59,7 @@ const messages = {
   noProposals: 'No Recent Proposals',
   viewAllProposals: 'View All Proposals',
   wtfIsAudius: 'What is Audius?',
-  wtf1:
-    "Audius is not just a digital streaming platform; it's a revolution that connects fans and artists, bringing exclusive new music to your fingertips.",
+  wtf1: "Audius is not just a digital streaming platform; it's a revolution that connects fans and artists, bringing exclusive new music to your fingertips.",
   launchAudius: 'Launch Audius',
   trustedNameTitle: 'Trusted Name in Music Innovation',
   trustedNameDescription:
@@ -84,24 +84,24 @@ const Home = () => {
 
   return (
     <Page icon={IconHouse} title={messages.title}>
-      <Flex direction="column" gap="l">
-        <Card direction="column" gap="xl" p="xl">
+      <Flex direction='column' gap='l'>
+        <Card direction='column' gap='xl' p='xl'>
           <Flex
-            w="100%"
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
+            w='100%'
+            direction='column'
+            alignItems='center'
+            justifyContent='center'
           >
             <UniqueUsersStat
-              color="heading"
-              variant="display"
-              strength="strong"
+              color='heading'
+              variant='display'
+              strength='strong'
               size={mobile ? 's' : 'l'}
             />
-            <Flex inline gap="xs" alignItems="center">
+            <Flex inline gap='xs' alignItems='center'>
               <StatLabel
-                variant="heading"
-                strength="default"
+                variant='heading'
+                strength='default'
                 size={mobile ? 'm' : 's'}
               >
                 {messages.uniqueMonthlyUsers}
@@ -109,23 +109,23 @@ const Home = () => {
               <UniqueUsersInfoTooltip />
             </Flex>
           </Flex>
-          <Flex gap="s" w="100%" justifyContent="space-around" wrap="wrap">
+          <Flex gap='s' w='100%' justifyContent='space-around' wrap='wrap'>
             <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
+              direction='column'
+              alignItems='center'
+              justifyContent='center'
             >
               <TotalStakedStat
-                color="heading"
-                variant="display"
-                strength="strong"
-                size="s"
+                color='heading'
+                variant='display'
+                strength='strong'
+                size='s'
               />
-              <Flex inline gap="xs" alignItems="center">
+              <Flex inline gap='xs' alignItems='center'>
                 <StatLabel
-                  variant="title"
+                  variant='title'
                   size={mobile ? 'm' : 'l'}
-                  strength="default"
+                  strength='default'
                 >
                   {messages.globalStakedAudio}
                 </StatLabel>
@@ -133,21 +133,21 @@ const Home = () => {
               </Flex>
             </Flex>
             <Flex
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
+              direction='column'
+              alignItems='center'
+              justifyContent='center'
             >
               <ApiCallsStat
-                variant="display"
-                strength="strong"
-                size="s"
-                color="heading"
+                variant='display'
+                strength='strong'
+                size='s'
+                color='heading'
               />
-              <Flex inline gap="xs" alignItems="center">
+              <Flex inline gap='xs' alignItems='center'>
                 <StatLabel
-                  variant="title"
+                  variant='title'
                   size={mobile ? 'm' : 'l'}
-                  strength="default"
+                  strength='default'
                 >
                   {messages.apiCalls}
                 </StatLabel>
@@ -157,23 +157,23 @@ const Home = () => {
           </Flex>
         </Card>
         <Card
-          pv="l"
-          ph="xl"
+          pv='l'
+          ph='xl'
           justifyContent={mobile ? 'space-between' : 'space-around'}
-          alignItems="center"
-          wrap="wrap"
+          alignItems='center'
+          wrap='wrap'
         >
           <Box mb={mobile ? 'm' : undefined}>
-            <Flex inline gap="xs" alignItems="center">
+            <Flex inline gap='xs' alignItems='center'>
               <Text
-                variant="heading"
-                color="subdued"
-                size="s"
-                strength="default"
+                variant='heading'
+                color='subdued'
+                size='s'
+                strength='default'
               >
                 {messages.estimatedRewardRate}
               </Text>
-              <EstimatedRewardRateInfoTooltip color="subdued" />
+              <EstimatedRewardRateInfoTooltip color='subdued' />
             </Flex>
           </Box>
           <EstimatedWeeklyStat />
@@ -182,13 +182,13 @@ const Home = () => {
         {isLoggedIn && wallet ? <ManageAccountCard wallet={wallet} /> : null}
         <RewardsTimingCard />
         <Paper className={styles.proposals}>
-          <Box p="xl">
-            <Text variant="heading" size="s" strength="default" tag="span">
+          <Box p='xl'>
+            <Text variant='heading' size='s' strength='default' tag='span'>
               {messages.recentProposals}
             </Text>
           </Box>
           <div className={styles.list}>
-            {!!recentProposals ? (
+            {recentProposals ? (
               recentProposals.length > 0 ? (
                 recentProposals.map((proposal, i) => (
                   <Proposal key={i} proposal={proposal} />
@@ -211,25 +211,25 @@ const Home = () => {
         <Paper className={styles.wtf}>
           <div className={styles.bg} />
           {!mobile ? <div className={styles.bgImage} /> : null}
-          <Flex direction="column" gap="2xl" css={{ maxWidth: 488 }}>
+          <Flex direction='column' gap='2xl' css={{ maxWidth: 488 }}>
             <IconAudiusLogoHorizontal
-              color="staticWhite"
+              color='staticWhite'
               className={styles.logo}
             />
-            <Flex gap="l" direction="column">
+            <Flex gap='l' direction='column'>
               <Text
-                color="staticWhite"
-                variant="heading"
-                size="l"
-                strength="default"
+                color='staticWhite'
+                variant='heading'
+                size='l'
+                strength='default'
               >
                 {messages.wtfIsAudius}
               </Text>
               <Text
-                variant="body"
-                color="staticWhite"
-                size="l"
-                strength="default"
+                variant='body'
+                color='staticWhite'
+                size='l'
+                strength='default'
               >
                 {messages.wtf1}
               </Text>
@@ -252,7 +252,7 @@ const Home = () => {
           ctaLink={OAF_URL}
           ctaText={messages.trustedNameCTA}
         />
-        <Flex gap="l" wrap="wrap">
+        <Flex gap='l' wrap='wrap'>
           <InfoCard
             title={messages.powerOfDecentralizationTitle}
             description={messages.powerOfDecentralizationDescription}

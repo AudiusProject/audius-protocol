@@ -181,6 +181,7 @@ type ReleaseIDs struct {
 type TrackMetadata struct {
 	Title                        string                `bson:"title"`
 	ReleaseDate                  time.Time             `bson:"release_date"`
+	ValidityStartDate            time.Time             `bson:"validity_start_date"`
 	Genre                        Genre                 `bson:"genre"`
 	Duration                     int                   `bson:"duration"`
 	PreviewStartSeconds          NullableInt           `bson:"preview_start_seconds,omitempty"`
@@ -227,9 +228,10 @@ type TrackMetadata struct {
 // SDKUploadMetadata represents the metadata required to upload a track or album to Audius
 type SDKUploadMetadata struct {
 	// Required for both tracks and albums
-	ReleaseDate time.Time `bson:"release_date"`
-	Genre       Genre     `bson:"genre"`
-	CoverArtURL string    `bson:"cover_art_url"`
+	ReleaseDate       time.Time `bson:"release_date"`
+	ValidityStartDate time.Time `bson:"validity_start_date"`
+	Genre             Genre     `bson:"genre"`
+	CoverArtURL       string    `bson:"cover_art_url"`
 
 	// Optional for both tracks and albums
 	CoverArtURLHash       NullableString        `bson:"cover_art_url_hash,omitempty"`

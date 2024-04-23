@@ -1,13 +1,14 @@
-import BN from 'bn.js'
-import clsx from 'clsx'
 import React, { useCallback, useState } from 'react'
 
+import BN from 'bn.js'
+import clsx from 'clsx'
+
 import { Position } from 'components/Tooltip'
+import { BasicTooltip } from 'components/Tooltip/Tooltip'
 import AudiusClient from 'services/Audius'
+import copyToClipboard from 'utils/copyToClipboard'
 import { formatShortAud, formatWei, formatWeiNumber } from 'utils/format'
 
-import { BasicTooltip } from 'components/Tooltip/Tooltip'
-import copyToClipboard from 'utils/copyToClipboard'
 import styles from './DisplayAudio.module.css'
 
 type OwnProps = {
@@ -31,7 +32,7 @@ const DisplayAudio: React.FC<DisplayAudioProps> = ({
   const tooltipText = showCopied ? 'Copied!' : formatWei(amount)
   const formatter = shortFormat ? formatShortAud : AudiusClient.displayShortAud
   const onClick = useCallback(
-    e => {
+    (e) => {
       e.preventDefault()
       e.stopPropagation()
       copyToClipboard(formatWeiNumber(amount))

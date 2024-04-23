@@ -1,11 +1,6 @@
 import Claim from './claim/claim'
 import Delegate from './delegate/delegate'
 import Governance from './governance/governance'
-import NodeType from './nodeType'
-import ServiceProviderClient from './service-provider/serviceProviderClient'
-import Staking from './staking/staking'
-import AudiusToken from './token/audiusToken'
-
 import {
   awaitSetup,
   decodeCallData,
@@ -28,7 +23,11 @@ import {
   onWalletAccountLoaded,
   toChecksumAddress
 } from './helpers'
+import NodeType from './nodeType'
+import ServiceProviderClient from './service-provider/serviceProviderClient'
 import { setup } from './setup'
+import Staking from './staking/staking'
+import AudiusToken from './token/audiusToken'
 import { getUserDelegates } from './wrappers'
 
 export class AudiusClient {

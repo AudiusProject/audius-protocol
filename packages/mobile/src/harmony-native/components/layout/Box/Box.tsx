@@ -20,6 +20,7 @@ const invalidProps = [
   'ml',
   'mr',
   'mb',
+  'backgroundColor',
   'border',
   'borderTop',
   'borderRight',

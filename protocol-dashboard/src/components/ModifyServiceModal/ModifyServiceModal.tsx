@@ -1,4 +1,7 @@
+import React, { useCallback, useEffect, useState } from 'react'
+
 import { Box, IconTrash, PlainButton } from '@audius/harmony'
+
 import Button, { ButtonType } from 'components/Button'
 import ConfirmTransactionModal, {
   StandaloneBox
@@ -6,11 +9,11 @@ import ConfirmTransactionModal, {
 import DeregisterServiceModal from 'components/DeregisterServiceModal'
 import Modal from 'components/Modal'
 import TextField from 'components/TextField'
-import React, { useCallback, useEffect, useState } from 'react'
 import { useModifyService } from 'store/actions/modifyService'
 import { Address, ServiceType, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
 import { sharedMessages } from 'utils/sharedMessages'
+
 import styles from './ModifyServiceModal.module.css'
 
 const messages = {
@@ -119,8 +122,8 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
   ])
 
   let topBox = null
-  let endpointUpdated = oldEndpoint !== endpoint
-  let walletUpdated = oldDelegateOwnerWallet !== delegateOwnerWallet
+  const endpointUpdated = oldEndpoint !== endpoint
+  const walletUpdated = oldDelegateOwnerWallet !== delegateOwnerWallet
   if (endpointUpdated && walletUpdated) {
     topBox = (
       <>
@@ -161,10 +164,10 @@ const ModifyServiceModal: React.FC<ModifyServiceModalProps> = ({
       dismissOnClickOutside={!isConfirmModalOpen && !isDeregisterModalOpen}
     >
       <div className={styles.content}>
-        <Box alignSelf="flex-end" mb="xl">
+        <Box alignSelf='flex-end' mb='xl'>
           <PlainButton
             onClick={onOpenDeregister}
-            variant="subdued"
+            variant='subdued'
             iconLeft={IconTrash}
           >
             {messages.deregister}

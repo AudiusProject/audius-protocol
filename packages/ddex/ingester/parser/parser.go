@@ -219,7 +219,42 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 				return nil, err
 			}
 		}
+		// For albums/EPs without a ValidityStartDate: use the latest ValidityStartDate from the tracks on the album.
+		// This case is possible because deals for tracks are required but a deal for the album release is not required.
+		if parsedRelease.IsMainRelease && parsedRelease.ReleaseType != common.TrackReleaseType && parsedRelease.ValidityStartDate.IsZero() {
+			var maxTrackValidityStartDate time.Time
+			for _, elem := range release.ParsedReleaseElems {
+				if elem.IsMainRelease {
+					continue
+				}
+				if elem.ValidityStartDate.After(maxTrackValidityStartDate) {
+					maxTrackValidityStartDate = elem.ValidityStartDate
+				}
+			}
+			parsedRelease.ValidityStartDate = maxTrackValidityStartDate
+		}
+
+		// Verify release has a nonzero ValidityStartDate
+		if parsedRelease.ValidityStartDate.IsZero() {
+			err = fmt.Errorf("release '%s' (ref %s) does not have valid validity start date", parsedRelease.DisplayTitle, parsedRelease.ReleaseRef)
+			unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
+			return nil, err
+		}
+
+		// Use ValidityStartDate as ReleaseDate if a ReleaseDate is not provided
+		if parsedRelease.ReleaseDate.IsZero() {
+			parsedRelease.ReleaseDate = parsedRelease.ValidityStartDate
+		}
+
 		release.ParsedReleaseElems[i] = parsedRelease
+	}
+
+	sdkErrs := buildSDKMetadataERN38x(release)
+	if len(sdkErrs) != 0 {
+		for _, err := range sdkErrs {
+			unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
+		}
+		return nil, fmt.Errorf("failed to build SDK metadata for release: %v", errs)
 	}
 
 	// Create (but don't yet insert into Mongo) a PendingRelease for each track and album release

@@ -1,6 +1,9 @@
+import React, { useCallback, useRef } from 'react'
+
 import { Flex } from '@audius/harmony'
-import IconNodes from 'assets/img/iconNodes.svg?react'
 import clsx from 'clsx'
+
+import IconNodes from 'assets/img/iconNodes.svg?react'
 import ContentTable from 'components/ContentTable'
 import DiscoveryTable from 'components/DiscoveryTable'
 import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'
@@ -9,10 +12,10 @@ import Page from 'components/Page'
 import { RegisterNodeCard } from 'components/RegisterNodeCard/RegisterNodeCard'
 import { RewardsTimingCard } from 'components/RewardsTimingCard/RewardsTimingCard'
 import TopOperatorsTable from 'components/TopOperatorsTable'
-import React, { useCallback, useRef } from 'react'
 import { useAccount, useAccountUser } from 'store/account/hooks'
 import { Status } from 'types'
 import { createStyles } from 'utils/mobile'
+
 import desktopStyles from './Services.module.css'
 import mobileStyles from './ServicesMobile.module.css'
 
@@ -48,7 +51,7 @@ const Services: React.FC<ServicesProps> = () => {
 
   return (
     <Page title={messages.title} icon={IconNodes}>
-      <Flex direction="column" gap="l">
+      <Flex direction='column' gap='l'>
         {isLoggedIn && accountUser ? (
           <ManageAccountCard wallet={accountUser?.wallet} />
         ) : null}

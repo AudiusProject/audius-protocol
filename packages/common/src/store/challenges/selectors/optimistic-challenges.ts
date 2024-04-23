@@ -111,11 +111,10 @@ const toOptimisticChallenge = (
     claimableAmount = undisbursed
       .filter(isCooldownChallengeClaimable)
       .reduce((acc, val) => acc + val.amount, 0)
-  } else if (
-    challengeOverridden.challenge_type !== 'aggregate' &&
-    state === 'completed'
-  ) {
-    claimableAmount = totalAmount
+  } else if (challenge.challenge_type === 'aggregate') {
+    claimableAmount = undisbursed.reduce((acc, val) => acc + val.amount, 0)
+  } else if (state === 'completed') {
+    claimableAmount = challenge.amount
   }
 
   const undisbursedSpecifiers = undisbursed.reduce(

@@ -1,8 +1,9 @@
-import { ButtonType } from '@audius/stems'
-import BN from 'bn.js'
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { Flex, Text, TokenAmountInput } from '@audius/harmony'
+import { ButtonType } from '@audius/stems'
+import BN from 'bn.js'
+
 import Button from 'components/Button'
 import ConfirmTransactionModal, {
   Delegating,
@@ -25,6 +26,7 @@ import { TICKER } from 'utils/consts'
 import { formatShortWallet, formatWeiNumber } from 'utils/format'
 import { useModalControls } from 'utils/hooks'
 import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+
 import styles from './DelegateStakeModal.module.css'
 
 const messages = {
@@ -166,37 +168,37 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
       isCloseable={true}
       dismissOnClickOutside={!isConfirmationOpen}
     >
-      <Flex pt="xl" w="100%" direction="column" alignItems="center" gap="xl">
+      <Flex pt='xl' w='100%' direction='column' alignItems='center' gap='xl'>
         <InfoBox
           fullWidth
           description={messages.guidance}
           ctaText={messages.helpCenter}
-          ctaHref="https://support.audius.co/help"
+          ctaHref='https://support.audius.co/help'
         />
-        <Flex direction="column" gap="xl" w="100%" css={{ maxWidth: 480 }}>
-          <Flex justifyContent="space-between" w="100%">
-            <Flex gap="s" direction="column">
-              <Flex inline gap="xs" alignItems="center">
-                <Text variant="body" size="m" strength="strong" color="subdued">
+        <Flex direction='column' gap='xl' w='100%' css={{ maxWidth: 480 }}>
+          <Flex justifyContent='space-between' w='100%'>
+            <Flex gap='s' direction='column'>
+              <Flex inline gap='xs' alignItems='center'>
+                <Text variant='body' size='m' strength='strong' color='subdued'>
                   {messages.nodeOperator}
                 </Text>
-                <NodeOperatorInfoTooltip color="subdued" />
+                <NodeOperatorInfoTooltip color='subdued' />
               </Flex>
               <DelegateInfo clickable={false} wallet={serviceOperatorWallet} />
             </Flex>
-            <Flex gap="s" direction="column" alignItems="flex-end">
-              <Flex inline gap="xs" alignItems="center">
-                <Text variant="body" size="m" strength="strong">
+            <Flex gap='s' direction='column' alignItems='flex-end'>
+              <Flex inline gap='xs' alignItems='center'>
+                <Text variant='body' size='m' strength='strong'>
                   {messages.operatorFee}
                 </Text>
-                <NodeServiceFeeInfoTooltip color="subdued" />
+                <NodeServiceFeeInfoTooltip color='subdued' />
               </Flex>
-              <Text variant="heading" size="s">
+              <Text variant='heading' size='s'>
                 {deployerCut}%
               </Text>
             </Flex>
           </Flex>
-          <Flex gap="l" alignItems="center">
+          <Flex gap='l' alignItems='center'>
             <TokenAmountInput
               label={messages.delegateAudio}
               isWhole={false}
@@ -206,7 +208,7 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
               value={stakingAmount}
               error={hasError}
               disabled={isInputDisabled}
-              onChange={stringValue => {
+              onChange={(stringValue) => {
                 onUpdateStaking(stringValue)
               }}
               helperText={helperText}
@@ -222,7 +224,7 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
               type={ButtonType.PRIMARY_ALT}
             />
           </Flex>
-          <Flex justifyContent="center">
+          <Flex justifyContent='center'>
             <Button
               isDisabled={
                 !stakingAmount ||

@@ -12,7 +12,8 @@ import {
   setupTest,
   resetTests,
   setUserEmailAndSettings,
-  createUSDCPurchase
+  createUSDCPurchase,
+  createPlaylists
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -116,21 +117,32 @@ describe('USDC Purchase Buyer', () => {
     })
   })
 
-  test('Render a single email', async () => {
+  test('Render emails', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createPlaylists(processor.discoveryDB, [
+      { playlist_id: 15, playlist_owner_id: 1 }
+    ])
     await createUSDCPurchase(processor.discoveryDB, [
       {
         seller_user_id: 1,
         buyer_user_id: 2,
         content_type: usdc_purchase_content_type.track,
         content_id: 10,
-        amount: '1000',
+        amount: '1000000',
+        extra_amount: '0'
+      },
+      {
+        seller_user_id: 1,
+        buyer_user_id: 2,
+        content_type: usdc_purchase_content_type.album,
+        content_id: 15,
+        amount: '1000000',
         extra_amount: '0'
       }
     ])
 
-    const notifications: AppEmailNotification[] = [
+    const trackNotifications: AppEmailNotification[] = [
       {
         type: 'usdc_purchase_buyer',
         timestamp: new Date(),
@@ -140,22 +152,52 @@ describe('USDC Purchase Buyer', () => {
         data: {
           buyer_user_id: 2,
           seller_user_id: 1,
-          amount: 1000,
+          amount: 1000000,
           extra_amount: 0,
-          content_id: 10
+          content_id: 10,
+          content_type: 'track'
         },
         user_ids: [2],
         receiver_user_id: 2
       }
     ]
-    const notifHtml = await renderEmail({
+    const trackNotificationHtml = await renderEmail({
       userId: 2,
       email: 'joey@audius.co',
       frequency: 'daily',
-      notifications,
+      notifications: trackNotifications,
       dnDb: processor.discoveryDB,
       identityDb: processor.identityDB
     })
-    expect(notifHtml).toMatchSnapshot()
+    expect(trackNotificationHtml).toMatchSnapshot()
+
+    const albumNotifications: AppEmailNotification[] = [
+      {
+        type: 'usdc_purchase_buyer',
+        timestamp: new Date(),
+        specifier: '2',
+        group_id:
+          'usdc_purchase_buyer:seller_user_id:1:buyer_user_id:2:content_id:15:content_type:album',
+        data: {
+          buyer_user_id: 2,
+          seller_user_id: 1,
+          amount: 1000000,
+          extra_amount: 0,
+          content_id: 15,
+          content_type: 'album'
+        },
+        user_ids: [2],
+        receiver_user_id: 2
+      }
+    ]
+    const albumNotificationHtml = await renderEmail({
+      userId: 2,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications: albumNotifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(albumNotificationHtml).toMatchSnapshot()
   })
 })

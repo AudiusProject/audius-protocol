@@ -1,10 +1,11 @@
-import BN from 'bn.js'
-import clsx from 'clsx'
 import React, { ReactNode } from 'react'
-import SimpleBar from 'simplebar-react'
 
 import { Box as HarmonyBox, Text } from '@audius/harmony'
 import { ButtonType, IconArrow } from '@audius/stems'
+import BN from 'bn.js'
+import clsx from 'clsx'
+import SimpleBar from 'simplebar-react'
+
 import Button from 'components/Button'
 import DisplayAudio from 'components/DisplayAudio'
 import Loading from 'components/Loading'
@@ -14,6 +15,7 @@ import AudiusClient from 'services/Audius'
 import { Address, BigNumber, ServiceType, Status } from 'types'
 import { TICKER } from 'utils/consts'
 import { sharedMessages } from 'utils/sharedMessages'
+
 import styles from './ConfirmTransactionModal.module.css'
 
 const messages = {
@@ -46,7 +48,7 @@ type OperatorStakingProps = {
   amount: BigNumber
   wallet: Address
 }
-export const OperatorStaking: React.FC<OperatorStakingProps> = props => {
+export const OperatorStaking: React.FC<OperatorStakingProps> = (props) => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}
@@ -72,7 +74,7 @@ type NewServiceProps = {
   serviceType: ServiceType
   delegateOwnerWallet: string
 }
-export const NewService: React.FC<NewServiceProps> = props => {
+export const NewService: React.FC<NewServiceProps> = (props) => {
   return (
     <Box
       className={clsx(styles.bottomBox, {
@@ -100,7 +102,7 @@ type OldStakeProps = {
   stakeDiff: BigNumber | null
   isIncrease: boolean
 }
-export const OldStake: React.FC<OldStakeProps> = props => {
+export const OldStake: React.FC<OldStakeProps> = (props) => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}
@@ -128,7 +130,7 @@ type NewStakeProps = {
   title: string
   stakeAmount: BigNumber
 }
-export const NewStake: React.FC<NewStakeProps> = props => {
+export const NewStake: React.FC<NewStakeProps> = (props) => {
   return (
     <Box
       className={clsx(styles.bottomBox, {
@@ -148,7 +150,7 @@ type DelegatingProps = {
   amount: BigNumber
   isUndelegating?: boolean
 }
-export const Delegating: React.FC<DelegatingProps> = props => {
+export const Delegating: React.FC<DelegatingProps> = (props) => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}
@@ -194,7 +196,7 @@ export const ToOperator = (props: ToOperatorProps) => {
         [props.className!]: !!props.className
       })}
     >
-      <HarmonyBox mb="m" css={{ textTransform: 'uppercase' }}>
+      <HarmonyBox mb='m' css={{ textTransform: 'uppercase' }}>
         {props.isFrom ? messages.from : messages.to} {messages.operator}
       </HarmonyBox>
       <UserImage
@@ -261,8 +263,8 @@ const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
       {status !== Status.Failure ? (
         <>
           {!showTwoPopupsWarning ? null : (
-            <HarmonyBox mt="xl">
-              <Text variant="heading" size="s" color="warning">
+            <HarmonyBox mt='xl'>
+              <Text variant='heading' size='s' color='warning'>
                 {sharedMessages.twoPopupsWarning}
               </Text>
             </HarmonyBox>

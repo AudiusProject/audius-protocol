@@ -1,26 +1,33 @@
+import { MouseEventHandler } from 'react'
+
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
+import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './CollectionHeader.module.css'
 import { OwnerActionButtons } from './OwnerActionButtons'
-import { PlayButton } from './PlayButton'
 import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
+import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const messages = {
-  actionGroupLabel: 'collection actions'
+  actionGroupLabel: 'collection actions',
+  play: 'Play',
+  preview: 'Preview',
+  pause: 'Pause'
 }
 
 type CollectionActionButtonProps = {
   collectionId: ID | SmartCollectionVariant
-  variant?: Variant
+  variant?: Nullable<Variant>
   isOwner?: boolean
-  onPlay: () => void
-  playing: boolean
-  isPlayable: boolean
-  userId: ID
+  isPlaying: boolean
   tracksLoading: boolean
+  isPlayable: boolean
+  isPremium?: Nullable<boolean>
+  userId: Nullable<ID>
+  onPlay: MouseEventHandler<HTMLButtonElement>
 }
 
 export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
@@ -29,10 +36,11 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isOwner,
     collectionId,
     onPlay,
-    playing,
+    isPlaying,
     isPlayable,
     userId,
-    tracksLoading
+    tracksLoading,
+    isPremium
   } = props
 
   let actionButtons: Nullable<JSX.Element> = null
@@ -52,17 +60,34 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     actionButtons = <ViewerActionButtons collectionId={collectionId} />
   }
 
+  const playButton = (
+    <Button
+      variant={isPremium ? 'secondary' : 'primary'}
+      iconLeft={isPlaying ? IconPause : IconPlay}
+      onClick={onPlay}
+      widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+    >
+      {isPlaying
+        ? messages.pause
+        : isPremium
+        ? messages.preview
+        : messages.play}
+    </Button>
+  )
+
   return (
-    <div
-      className={cn(styles.actionButtons, {
+    <Flex
+      className={cn({
         [styles.show]: !tracksLoading,
         [styles.hide]: tracksLoading
       })}
       role='group'
       aria-label={messages.actionGroupLabel}
+      gap='2xl'
+      alignItems='center'
     >
-      {!isPlayable ? null : <PlayButton onPlay={onPlay} playing={playing} />}
+      {!isPlayable ? null : playButton}
       {actionButtons}
-    </div>
+    </Flex>
   )
 }

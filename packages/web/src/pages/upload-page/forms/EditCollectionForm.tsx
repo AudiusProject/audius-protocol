@@ -37,7 +37,8 @@ const messages = {
   description: 'Description',
   trackDetails: {
     title: 'Track Details',
-    description: 'Set defaults for all tracks in this collection. You can edit your track details after upload.'
+    description:
+      'Set defaults for all tracks in this collection. You can edit your track details after upload.'
   },
   completeButton: 'Complete Upload'
 }

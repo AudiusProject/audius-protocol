@@ -1,22 +1,23 @@
+import React, { useCallback } from 'react'
+
 import BN from 'bn.js'
 import clsx from 'clsx'
-import React, { useCallback } from 'react'
-import Audius from 'services/Audius'
-import { NODES_USERS, SERVICES_USERS, accountPage } from 'utils/routes'
-
-import Table from 'components/Table'
-import { formatWeight } from 'utils/format'
-import styles from './TopAddressesTable.module.css'
 
 import DisplayAudio from 'components/DisplayAudio'
 import { TopContributorsInfoTooltip } from 'components/InfoTooltip/InfoTooltips'
+import Table from 'components/Table'
 import UserImage from 'components/UserImage'
 import UserName from 'components/UserName'
+import Audius from 'services/Audius'
 import { useUsers } from 'store/cache/user/hooks'
 import { Address, SortUser, Status } from 'types'
 import getActiveStake from 'utils/activeStake'
 import { usePushRoute } from 'utils/effects'
+import { formatWeight } from 'utils/format'
 import { useIsMobile } from 'utils/hooks'
+import { NODES_USERS, accountPage } from 'utils/routes'
+
+import styles from './TopAddressesTable.module.css'
 
 const messages = {
   topAddresses: 'Top Contributors',
@@ -74,7 +75,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   }, new BN('0'))
 
   let data: TableUser[] = users
-    .map(user => {
+    .map((user) => {
       const activeStake = getActiveStake(user)
       const voteWeight = Audius.getBNPercentage(
         activeStake,

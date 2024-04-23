@@ -1,12 +1,11 @@
-import { Box, Flex } from '@audius/harmony'
-import { Card } from 'components/Card/Card'
-import { useAccountUser } from 'store/account/hooks'
-import { useModalControls } from 'utils/hooks'
+import { Box, Flex, Text } from '@audius/harmony'
 
-import { Text } from '@audius/harmony'
 import Button, { ButtonType } from 'components/Button'
+import { Card } from 'components/Card/Card'
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
+import { useAccountUser } from 'store/account/hooks'
+import { useModalControls } from 'utils/hooks'
 
 const messages = {
   connectAudiusProfile: 'Connect Audius Profile',
@@ -35,7 +34,7 @@ const ConnectAudiusProfileButton = ({
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
-        action="connect"
+        action='connect'
       />
     </>
   )
@@ -43,10 +42,8 @@ const ConnectAudiusProfileButton = ({
 
 export const ConnectAudiusProfileCard = () => {
   const { user: accountUser } = useAccountUser()
-  const {
-    data: audiusProfileData,
-    status: audiusProfileDataStatus
-  } = useDashboardWalletUser(accountUser?.wallet)
+  const { data: audiusProfileData, status: audiusProfileDataStatus } =
+    useDashboardWalletUser(accountUser?.wallet)
 
   const hasConnectedAudiusAccount = audiusProfileData != null
 
@@ -59,12 +56,12 @@ export const ConnectAudiusProfileCard = () => {
   }
 
   return (
-    <Card gap="xl" pv="l" ph="xl">
-      <Flex direction="column" gap="s" css={{ flexGrow: 1 }}>
-        <Text variant="heading" size="s">
+    <Card gap='xl' pv='l' ph='xl'>
+      <Flex direction='column' gap='s' css={{ flexGrow: 1 }}>
+        <Text variant='heading' size='s'>
           {messages.connectAudiusProfile}
         </Text>
-        <Text variant="body" size="m" strength="strong" color="subdued">
+        <Text variant='body' size='m' strength='strong' color='subdued'>
           {messages.connectAudiusProfileDescription}
         </Text>
       </Flex>

@@ -647,6 +647,10 @@ export const audiusBackend = ({
       FeatureFlags.SDK_DISCOVERY_NODE_SELECTOR
     )
 
+    const isManagerModeEnabled = await getFeatureEnabled(
+      FeatureFlags.MANAGER_MODE
+    )
+
     let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
 
     if (useSdkDiscoveryNodeSelector) {
@@ -710,7 +714,8 @@ export const audiusBackend = ({
           unhealthyBlockDiff:
             getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined,
 
-          discoveryNodeSelector
+          discoveryNodeSelector,
+          enableUserIdOverride: isManagerModeEnabled
         },
         identityServiceConfig:
           AudiusLibs.configIdentityService(identityServiceUrl),
@@ -1719,11 +1724,17 @@ export const audiusBackend = ({
   async function associateTwitterAccount(
     twitterId: string,
     userId: ID,
-    handle: string
+    handle: string,
+    blockNumber: number
   ) {
     await waitForLibsInit()
     try {
-      await audiusLibs.Account.associateTwitterUser(twitterId, userId, handle)
+      await audiusLibs.Account.associateTwitterUser(
+        twitterId,
+        userId,
+        handle,
+        blockNumber
+      )
       return { success: true }
     } catch (error) {
       console.error(getErrorMessage(error))
@@ -1734,14 +1745,16 @@ export const audiusBackend = ({
   async function associateInstagramAccount(
     instagramId: string,
     userId: ID,
-    handle: string
+    handle: string,
+    blockNumber: number
   ) {
     await waitForLibsInit()
     try {
       await audiusLibs.Account.associateInstagramUser(
         instagramId,
         userId,
-        handle
+        handle,
+        blockNumber
       )
       return { success: true }
     } catch (error) {
@@ -1753,11 +1766,17 @@ export const audiusBackend = ({
   async function associateTikTokAccount(
     tikTokId: string,
     userId: ID,
-    handle: string
+    handle: string,
+    blockNumber: number
   ) {
     await waitForLibsInit()
     try {
-      await audiusLibs.Account.associateTikTokUser(tikTokId, userId, handle)
+      await audiusLibs.Account.associateTikTokUser(
+        tikTokId,
+        userId,
+        handle,
+        blockNumber
+      )
       return { success: true }
     } catch (error) {
       console.error(getErrorMessage(error))

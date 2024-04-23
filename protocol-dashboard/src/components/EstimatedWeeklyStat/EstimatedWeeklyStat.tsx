@@ -1,9 +1,10 @@
 import React from 'react'
 
-import RewardStat from 'components/RewardStat'
-import { Status } from 'types'
-import { useWeeklyRewardRate } from 'hooks/useRewardRate'
 import { TextProps } from '@audius/harmony'
+
+import RewardStat from 'components/RewardStat'
+import { useWeeklyRewardRate } from 'hooks/useRewardRate'
+import { Status } from 'types'
 
 interface EstimatedWeeklyStatProps extends TextProps {
   className?: string
