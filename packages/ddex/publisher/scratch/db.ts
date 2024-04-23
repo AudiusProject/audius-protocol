@@ -21,7 +21,8 @@ create table if not exists releases (
 
   xmlUrl text, -- location of the xml file... needed to resolve relative location of resources
 
-  entityId text, -- should maybe be explicit albumId, trackId?
+  entityType text,
+  entityId text,
   blockHash text,
   blockNumber integer,
   publishedAt datetime,
@@ -50,6 +51,7 @@ export type ReleaseRow = {
 
   xmlUrl?: string
 
+  entityType?: string
   entityId?: string
   blockHash?: string
   blockNumber?: number

@@ -16,7 +16,12 @@ export async function publishValidPendingReleases() {
     } else if (row.entityId) {
       console.log(`skipping ${row.key} already published`)
     } else {
-      await publishRelease(row)
+      try {
+        await publishRelease(row)
+      } catch (e) {
+        console.log('failed to publish', row.key, e)
+        // todo: record error, increment publishFailureCount
+      }
     }
   }
 }
@@ -116,7 +121,12 @@ export async function publishRelease(releaseRow: ReleaseRow) {
 
     // on success set publishedAt, entityId, blockhash
     db.prepare(
-      `update releases set entityId=?, blockNumber=?, blockHash=?, publishedAt=?
+      `update releases set
+          entityType='album',
+          entityId=?,
+          blockNumber=?,
+          blockHash=?,
+          publishedAt=?
        where key=?`
     )
       .bind(
@@ -129,10 +139,8 @@ export async function publishRelease(releaseRow: ReleaseRow) {
       .run()
 
     // return result
-  }
-
-  // publish track
-  if (trackFiles[0]) {
+  } else if (trackFiles[0]) {
+    // publish track
     // todo: actually find actual userId based on who dun oauthed
     const userId = 'KKa311z'
 
@@ -157,7 +165,12 @@ export async function publishRelease(releaseRow: ReleaseRow) {
 
     // on succes: update releases
     db.prepare(
-      `update releases set entityId=?, blockNumber=?, blockHash=?, publishedAt=?
+      `update releases set
+          entityType='track',
+          entityId=?,
+          blockNumber=?,
+          blockHash=?,
+          publishedAt=?
        where key=?`
     )
       .bind(

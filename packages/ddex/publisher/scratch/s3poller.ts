@@ -51,7 +51,7 @@ export async function pollS3() {
 
   let Marker = markerRow ? markerRow.marker : ''
 
-  // list top level prefixes
+  // list top level prefixes after marker
   const result = await client.send(
     new ListObjectsCommand({
       Bucket: bucket,

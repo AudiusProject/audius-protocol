@@ -13,6 +13,11 @@ import { DDEXRelease, reParsePastXml } from './parseDelivery'
 const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
 
+const API_HOST =
+  NODE_ENV == 'production'
+    ? 'https://discoveryprovider2.audius.co/'
+    : 'https://discoveryprovider2.staging.audius.co/'
+
 const app = new Hono()
 app.use(prettyJSON({ space: 4 }))
 
@@ -130,6 +135,7 @@ app.get('/releases', (c) => {
             <th>Audius User</th>
             <th>Audius Genre</th>
             <th>Problems</th>
+            <th>Published?</th>
             <th>debug</th>
           </tr>
         </thead>
@@ -150,14 +156,18 @@ app.get('/releases', (c) => {
                   ${row._json?.problems?.map((p) => html`<mark>${p}</mark>`)}
                 </td>
                 <td>
-                  <a
-                    href="/releases/${encodeURIComponent(row.key)}/xml"
-                    target="_blank"
-                    >xml</a
-                  >
-                  <a
-                    href="/releases/${encodeURIComponent(row.key)}/json?pretty"
-                    target="_blank"
+                  ${row.entityType == 'track' &&
+                  html` <a href="${API_HOST}/v1/tracks/${row.entityId}">
+                    ${row.entityId}
+                  </a>`}
+                  ${row.entityType == 'album' &&
+                  html` <a href="${API_HOST}/v1/playlists/${row.entityId}">
+                    ${row.entityId}
+                  </a>`}
+                </td>
+                <td>
+                  <a href="/releases/${encodeURIComponent(row.key)}/xml">xml</a>
+                  <a href="/releases/${encodeURIComponent(row.key)}/json?pretty"
                     >json</a
                   >
                 </td>
