@@ -2,7 +2,6 @@ package crawler
 
 import (
 	"archive/zip"
-	"context"
 	"fmt"
 	"ingester/common"
 	"ingester/constants"
@@ -22,15 +21,14 @@ import (
 )
 
 type Crawler struct {
-	*common.BaseIngester
+	*common.Ingester
 }
 
-// RunNewCrawler periodically checks for new ZIP files in the "raw" S3 bucket and crawls them to find releases
-func RunNewCrawler(ctx context.Context) {
+// CrawlThenParse periodically checks for new ZIP files in the "raw" S3 bucket, crawls them to find releases, and then runs parseDelivery on each crawled delivery
+func CrawlThenParse(i *common.Ingester, parseDelivery func(*common.Delivery)) {
 	c := &Crawler{
-		BaseIngester: common.NewBaseIngester(ctx, "crawler"),
+		Ingester: i,
 	}
-	defer c.MongoClient.Disconnect(ctx)
 
 	interval := 3 * time.Minute
 	if os.Getenv("TEST_MODE") == "true" {
@@ -43,7 +41,7 @@ func RunNewCrawler(ctx context.Context) {
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-i.Ctx.Done():
 			return
 		case <-ticker.C:
 			lastPolledStr, err := c.getLastPolledStr()
@@ -52,28 +50,36 @@ func RunNewCrawler(ctx context.Context) {
 				continue
 			}
 
+			// Get all deliveries (ZIP files or folders) uploaded to S3 since the last polled time
 			deliveries, err := c.pollS3Bucket(lastPolledStr)
 			if err != nil {
 				c.Logger.Error("Error polling S3 bucket", "error", err)
 				continue
 			}
 
+			// Parse out releases from each delivery
 			for _, delivery := range deliveries {
-				err = c.crawlDelivery(delivery)
-				if err != nil {
-					c.Logger.Error("Error processing ZIP file", "error", err)
+				err = c.crawlDelivery(&delivery)
+				if err == nil {
+					parseDelivery(&delivery)
+				} else {
+					c.Logger.Error("Error crawling delivery", "error", err)
+					if _, err := c.DeliveriesColl.InsertOne(c.Ctx, delivery); err != nil {
+						c.Logger.Error("Error inserting failed delivery into Mongo", "error", err)
+					}
 				}
 			}
 
+			// Update cursor so we don't reprocess the same deliveries
 			if len(deliveries) > 0 {
 				pathWithoutPrefix := strings.TrimPrefix(deliveries[len(deliveries)-1].RemotePath, "s3://"+c.RawBucket+"/")
-				err = c.updateLastPolledStr(pathWithoutPrefix)
+				err = c.updateLastPolledStr(pathWithoutPrefix + "z") // Add "z" to ensure we don't reprocess the last delivery
 				if err != nil {
 					c.Logger.Error("Failed to update s3 raw bucket's last polled time", "error", err)
 				}
 			}
 
-			if ctx.Err() != nil {
+			if i.Ctx.Err() != nil {
 				return
 			}
 		}
@@ -85,7 +91,7 @@ func (c *Crawler) updateLastPolledStr(lastPolledStr string) error {
 	update := bson.M{"$set": bson.M{"s3_raw_last_polled_str": lastPolledStr}}
 	opts := options.Update().SetUpsert(true)
 
-	_, err := c.CursorsColl.UpdateOne(c.Ctx, filter, update, opts)
+	_, err := c.CrawlerCursorColl.UpdateOne(c.Ctx, filter, update, opts)
 	return err
 }
 
@@ -95,7 +101,7 @@ func (c *Crawler) getLastPolledStr() (string, error) {
 	}
 	filter := bson.M{"service": "crawler"}
 
-	err := c.CursorsColl.FindOne(c.Ctx, filter).Decode(&result)
+	err := c.CrawlerCursorColl.FindOne(c.Ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// No record found, return empty string
@@ -147,9 +153,9 @@ func (c *Crawler) pollS3Bucket(lastPolledString string) ([]common.Delivery, erro
 	return items, nil
 }
 
-// crawlDelivery searches a remote "delivery" (S3 folder or S3 ZIP file that crawDelivery will unzip) for one or more "releases"
-func (c *Crawler) crawlDelivery(delivery common.Delivery) error {
-	// Only insert if a document doesn't already exist with this remotePath
+// crawlDelivery searches a remote "delivery" (S3 folder or S3 ZIP file that crawlDelivery will unzip) for one or more "releases"
+func (c *Crawler) crawlDelivery(delivery *common.Delivery) error {
+	// Only crawl if a document doesn't already exist with this remotePath
 	filter := bson.M{
 		"_id": delivery.RemotePath,
 	}
@@ -216,13 +222,6 @@ func (c *Crawler) crawlDelivery(delivery common.Delivery) error {
 			delivery.DeliveryStatus = constants.DeliveryStatusErrorCrawling
 			c.Logger.Error("Error crawling unzipped batch", "error", err)
 		}
-	}
-
-	// Insert the delivery into Mongo
-	_, err = c.DeliveriesColl.InsertOne(c.Ctx, delivery)
-	if err != nil {
-		c.Logger.Error("Error inserting delivery into Mongo", "error", err)
-		return err
 	}
 
 	return nil

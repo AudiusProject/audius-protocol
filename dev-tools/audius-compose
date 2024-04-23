@@ -488,6 +488,7 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up the pedalboard containers",
 )
+@click.option("--ddex-deps", is_flag=True, help="Bring up only ddex dependency containers (Mongo and S3)")
 @click.option("--ddex-release-by-release", is_flag=True, help="Bring up only ddex containers (release-by-release choreography)")
 @click.option("--ddex-batched", is_flag=True, help="Bring up only ddex containers (batch choreography)")
 @click.option("-a", "--args", type=str, multiple=True)
@@ -509,6 +510,7 @@ def up(
     dashboard,
     notifs,
     pedalboard,
+    ddex_deps,
     ddex_release_by_release,
     ddex_batched,
     args,
@@ -519,9 +521,9 @@ def up(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
-    if ddex_release_by_release or ddex_batched:
+    if ddex_deps or ddex_release_by_release or ddex_batched:
         generate_ddex_mongo_key(protocol_dir)
-        profiles = ["--profile=ddex"]
+        profiles = ["--profile=ddex-deps", *(["--profile=ddex"] if not ddex_deps else [])]
         os.environ["DDEX_CHOREOGRAPHY"] = "ERNReleaseByRelease" if ddex_release_by_release else "ERNBatched"
     else:
         AAO_DIR = pathlib.Path(
