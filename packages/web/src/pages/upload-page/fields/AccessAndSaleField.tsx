@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useMemo } from 'react'
 
 import { USDCPurchaseConfig, useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
@@ -124,31 +124,31 @@ type ZodSchemaValues = {
 
 const refineMinPrice =
   (key: 'price' | 'albumTrackPrice', minContentPriceCents: number) =>
-  (formValues: ZodSchemaValues) => {
-    const streamConditions = formValues[STREAM_CONDITIONS]
-    if (
-      formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-      isContentUSDCPurchaseGated(streamConditions)
-    ) {
-      const price = streamConditions.usdc_purchase[key]
-      return price !== undefined && price > 0 && price >= minContentPriceCents
+    (formValues: ZodSchemaValues) => {
+      const streamConditions = formValues[STREAM_CONDITIONS]
+      if (
+        formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+        isContentUSDCPurchaseGated(streamConditions)
+      ) {
+        const price = streamConditions.usdc_purchase[key]
+        return price !== undefined && price > 0 && price >= minContentPriceCents
+      }
+      return true
     }
-    return true
-  }
 
 const refineMaxPrice =
   (key: 'price' | 'albumTrackPrice', maxContentPriceCents: number) =>
-  (formValues: ZodSchemaValues) => {
-    const streamConditions = formValues[STREAM_CONDITIONS]
-    if (
-      formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-      isContentUSDCPurchaseGated(streamConditions)
-    ) {
-      const price = streamConditions.usdc_purchase[key]
-      return price !== undefined && price <= maxContentPriceCents
+    (formValues: ZodSchemaValues) => {
+      const streamConditions = formValues[STREAM_CONDITIONS]
+      if (
+        formValues[STREAM_AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
+        isContentUSDCPurchaseGated(streamConditions)
+      ) {
+        const price = streamConditions.usdc_purchase[key]
+        return price !== undefined && price <= maxContentPriceCents
+      }
+      return true
     }
-    return true
-  }
 export const AccessAndSaleFormSchema = (
   trackLength: number,
   { minContentPriceCents, maxContentPriceCents }: USDCPurchaseRemoteConfig,
@@ -235,10 +235,17 @@ type AccessAndSaleFieldProps = {
   trackLength?: number
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
+  previewOverride?: (toggleMenu: () => void) => ReactNode | ReactNode[]
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
-  const { isUpload = false, isAlbum = false, forceOpen, setForceOpen } = props
+  const {
+    isUpload = false,
+    isAlbum = false,
+    forceOpen,
+    setForceOpen,
+    previewOverride
+  } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
   const [{ value: trackLength }] = useIndexedField<number>(
@@ -260,8 +267,16 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       : undefined
 
   // Fields from the outer form
-  const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
+  const [{ value: isTrackUnlisted }, , { setValue: setIsTrackUnlistedValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
+
+  const [{ value: isAlbumUnlisted }, , { setValue: setIsAlbumUnlistedValue }] =
+    useField<SingleTrackEditValues[typeof IS_UNLISTED]>('is_private')
+
+  const isUnlisted = isAlbum ? isAlbumUnlisted : isTrackUnlisted
+  const setIsUnlistedValue = isAlbum
+    ? setIsAlbumUnlistedValue
+    : setIsTrackUnlistedValue
   const [{ value: isScheduledRelease }, ,] =
     useTrackField<SingleTrackEditValues[typeof IS_SCHEDULED_RELEASE]>(
       IS_SCHEDULED_RELEASE
@@ -421,7 +436,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsDownloadable(true)
           const downloadableGateKeeper =
             isDownloadable &&
-            lastGateKeeper.downloadable === 'stemsAndDownloads'
+              lastGateKeeper.downloadable === 'stemsAndDownloads'
               ? 'stemsAndDownloads'
               : 'accessAndSale'
           setLastGateKeeper({
@@ -646,6 +661,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       }
       forceOpen={forceOpen}
       setForceOpen={setForceOpen}
+      previewOverride={previewOverride}
     />
   )
 }

@@ -10,6 +10,7 @@ export const useIndexedField = <T>(
   path: string
 ) => {
   const fieldName = index === undefined ? path : getFieldName(base, index, path)
+  console.log({ base, index, path })
   return useField<T>(fieldName)
 }
 
@@ -19,5 +20,6 @@ export const getTrackFieldName = (index: number, path: string) => {
 
 export const useTrackField = <T>(path: string) => {
   const [{ value: index }] = useField('trackMetadatasIndex')
+  console.log({ index })
   return useIndexedField<T>('trackMetadatas', index, path)
 }
