@@ -1,20 +1,18 @@
-import { useCallback } from 'react'
 import {
   ThemeProvider as HarmonyThemeProvider,
-  IconArrowRight,
   IconAudiusLogoHorizontal,
   IconAudiusLogoHorizontalColor,
   Paper,
   Text,
   TextLink
 } from '@audius/harmony'
-import { Button, Flex } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
+import { DistributorList } from './components/DistributorsList'
 
 const messages = {
   connect: 'Connect Distributor',
   access: 'Grant your provider access to publish songs to Audius on your behalf.',
-  choose: 'Please choose your distributor',
-  login: 'Log in with Audius',
+  choose: 'Choose your distributor to login with Audius.',
   questions: 'Got questions',
   learnMore: 'Learn more',
   privacy: 'Privacy',
@@ -30,6 +28,8 @@ const links = {
   audius: 'https://audius.co'
 }
 
+const env = import.meta.env.VITE_ENVIRONMENT as 'dev' | 'stage' | 'prod'
+
 const Footer = () => {
   return (
     <footer>
@@ -38,9 +38,11 @@ const Footer = () => {
         alignItems='center'
         backgroundColor='surface1'
         ph='2xl'
-        h={'unit8'}
+        pv='m'
+        wrap='wrap'
+        columnGap='2xl'
       >
-        <Flex alignItems='center' gap='2xl'>
+        <Flex alignItems='center' columnGap='2xl' wrap='wrap'>
           <Flex alignItems='center' gap='s'>
             <IconAudiusLogoHorizontal width={'80px'} height={'20px'} color='subdued' />
             <Text
@@ -89,10 +91,6 @@ const Footer = () => {
 
 
 export default function App() {
-  const onClickLogin = useCallback(() => {
-    window.open('http://localhost:5174/login?auto=true', '_self')
-  }, [])
-
   return (
     <HarmonyThemeProvider theme='day'>
       <Flex
@@ -107,8 +105,8 @@ export default function App() {
           alignItems='center'
         >
           <Paper
-            h='460px'
-            w='416px'
+            h='620px'
+            w='640px'
             direction='column'
             p='2xl'
             gap='2xl'
@@ -136,16 +134,11 @@ export default function App() {
               variant='body'
               size='m'
               color='default'
+              textAlign='center'
             >
-              {`${messages.choose}:`}
+              {messages.choose}
             </Text>
-            <Button
-              variant='primary'
-              onClick={onClickLogin}
-              iconRight={IconArrowRight}
-            >
-              {messages.login}
-            </Button>
+            <DistributorList environment={env} />
           </Paper>
         </Flex>
         <Footer />
