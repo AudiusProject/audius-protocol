@@ -109,11 +109,7 @@ function* fetchAudioTransactionsAsync() {
           sdk.full.transactions,
           sdk.full.transactions.getAudioTransactionHistory
         ],
-        {
-          encodedDataMessage: '', // TODO: remove, handled by sdk
-          encodedDataSignature: '', // TODO: remove, handled by sdk
-          ...action.payload
-        }
+        action.payload
       )
       if (!response) {
         return
@@ -181,10 +177,7 @@ function* fetchTransactionsCount() {
         sdk.full.transactions,
         sdk.full.transactions.getAudioTransactionHistoryCount
       ],
-      {
-        encodedDataMessage: '', // TODO: remove, handled by sdk
-        encodedDataSignature: '' // TODO: remove, handled by sdk
-      }
+      {}
     )
     if (!response) {
       return

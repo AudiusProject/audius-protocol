@@ -27,17 +27,17 @@ import {
 } from '../models';
 
 export interface GetAudioTransactionHistoryRequest {
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     sortMethod?: GetAudioTransactionHistorySortMethodEnum;
     sortDirection?: GetAudioTransactionHistorySortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAudioTransactionHistoryCountRequest {
-    encodedDataMessage: string;
-    encodedDataSignature: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 /**
@@ -52,14 +52,6 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Gets the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistoryRaw(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionHistory.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionHistory.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -103,7 +95,7 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactions()` instead.
      * Gets the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistory(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
+    async getAudioTransactionHistory(params: GetAudioTransactionHistoryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
         const response = await this.getAudioTransactionHistoryRaw(params, initOverrides);
         return await response.value();
     }
@@ -115,14 +107,6 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistoryCountRaw(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionHistoryCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionHistoryCount.');
-        }
-
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -150,7 +134,7 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionCount()` instead.
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryCount(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+    async getAudioTransactionHistoryCount(params: GetAudioTransactionHistoryCountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
         const response = await this.getAudioTransactionHistoryCountRaw(params, initOverrides);
         return await response.value();
     }
