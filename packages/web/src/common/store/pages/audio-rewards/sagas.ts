@@ -32,7 +32,7 @@ import {
   waitForValue
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { ChallengeId, ResponseError } from '@audius/sdk'
+import { ChallengeId } from '@audius/sdk'
 import {
   call,
   fork,
@@ -290,21 +290,14 @@ function* claimChallengeRewardAsync(
     )
     yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
 
-    const isResponseError = (error: Error): error is ResponseError =>
-      'response' in error
     const errors = results.filter((r): r is ErrorResult => 'error' in r)
     if (errors.length > 0) {
       for (const res of errors) {
         const error =
           res.error instanceof Error ? res.error : new Error(String(res.error))
-        let response, responseBody
-        if (isResponseError(error)) {
-          response = error.response
-          responseBody = yield* call(async () => await error.response.json())
-        }
         console.error(
           `Failed to claim challenge: ${challengeId} specifier: ${res.specifier} for amount: ${res.amount} with error:`,
-          response ?? error
+          error
         )
         yield* call(reportToSentry, {
           error,
@@ -312,9 +305,7 @@ function* claimChallengeRewardAsync(
           additionalInfo: {
             challengeId,
             specifier: res.specifier,
-            amount: res.amount,
-            responseBody,
-            response
+            amount: res.amount
           }
         })
       }
