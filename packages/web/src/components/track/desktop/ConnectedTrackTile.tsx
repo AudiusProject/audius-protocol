@@ -13,7 +13,8 @@ import {
   RepostSource,
   FavoriteSource,
   ID,
-  UID
+  UID,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -202,8 +203,10 @@ const ConnectedTrackTile = ({
     const menu: Omit<TrackMenuProps, 'children'> = {
       extraMenuItems: [],
       handle,
-      includeAddToPlaylist: !isStreamGated,
-      includeAddToAlbum: !isStreamGated,
+      includeAddToPlaylist: true,
+      includeAddToAlbum:
+        !isStreamGated ||
+        (isContentUSDCPurchaseGated(streamConditions) && isOwner),
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
       ddexApp: track?.ddex_app,

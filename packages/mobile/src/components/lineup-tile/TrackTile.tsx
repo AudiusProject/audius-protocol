@@ -118,14 +118,14 @@ export const TrackTileComponent = ({
     track_id,
     genre,
     is_stream_gated: isStreamGated,
-    stream_conditions,
+    stream_conditions: streamConditions,
     preview_cid,
     ddex_app: ddexApp
   } = track
 
   const hasPreview =
     isUSDCEnabled &&
-    isContentUSDCPurchaseGated(stream_conditions) &&
+    isContentUSDCPurchaseGated(streamConditions) &&
     !!preview_cid
 
   const renderImage = useCallback(
@@ -168,7 +168,7 @@ export const TrackTileComponent = ({
       isEditAlbumsEnabled && isOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,

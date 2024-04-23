@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo, useState } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
 import type { Collection, ID, UID, Track, User } from '@audius/common/models'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -236,7 +237,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     track_id,
     owner_id,
     is_stream_gated: isStreamGated,
-    ddex_app: ddexApp
+    ddex_app: ddexApp,
+    stream_conditions: streamConditions
   } = track
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
@@ -324,7 +326,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isEditAlbumsEnabled && isTrackOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
