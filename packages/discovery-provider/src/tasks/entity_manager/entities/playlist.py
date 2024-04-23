@@ -303,14 +303,18 @@ def validate_playlist_tx(params: ManageEntityParameters):
             f"Entity type {params.entity_type} is not a playlist"
         )
 
-    stream_gated_tracks = list(
+    non_usdc_stream_gated_tracks = list(
         filter(
-            lambda track: track.is_stream_gated,
+            lambda track: track.is_stream_gated
+            and USDC_PURCHASE_KEY not in track.stream_conditions,
             params.existing_records["Track"].values(),
         )
     )
-    if stream_gated_tracks and not params.metadata.get("is_album"):
-        raise IndexingValidationError("Can only add stream gated tracks to albums")
+
+    if non_usdc_stream_gated_tracks and not params.metadata.get("is_album"):
+        raise IndexingValidationError(
+            "For stream gated tracks, can only add USDC purchase gated tracks to playlists"
+        )
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records["Playlist"]:
