@@ -593,9 +593,9 @@ export class RewardManagerProgram {
     const strippedSignature = signature
       .substring(0, signature.length - 2)
       .replace('0x', '')
+      .padStart(128, '0')
+      .substring(0, 128)
     const signatureBuffer = Buffer.from(strippedSignature, 'hex')
-    const fixedBuf = Buffer.alloc(64, 0)
-    signatureBuffer.copy(fixedBuf, 64 - signatureBuffer.length)
     return {
       signature: signatureBuffer,
       recoveryId: recoveryIdBuffer.readInt8()
