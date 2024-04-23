@@ -39,7 +39,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { useSsrContext } from 'ssr/SsrContext'
 
 import { AlbumDetailsText } from '../components/AlbumDetailsText'
-import { RepostFavoritesStats } from '../components/RepostsFavoritesStats'
+import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
@@ -158,7 +158,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const renderStatsRow = (isLoading: boolean) => {
     if (isLoading) return null
     return (
-      <RepostFavoritesStats
+      <RepostsFavoritesStats
         isUnlisted={false}
         repostCount={reposts}
         saveCount={saves}
@@ -201,7 +201,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               color='subdued'
               css={{ letterSpacing: '2px' }}
             >
-              {isPremium ? messages.premiumLabel : ''}
+              {isPremium ? `${messages.premiumLabel} ` : ''}
               {type === 'playlist' && !isPublished
                 ? messages.hiddenPlaylistLabel
                 : type}

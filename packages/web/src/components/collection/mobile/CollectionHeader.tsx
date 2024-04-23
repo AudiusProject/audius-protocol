@@ -33,7 +33,7 @@ import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { isDarkMode } from 'utils/theme/theme'
 
 import { AlbumDetailsText } from '../components/AlbumDetailsText'
-import { RepostFavoritesStats } from '../components/RepostsFavoritesStats'
+import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
@@ -266,7 +266,7 @@ const CollectionHeader = ({
         justifyContent='flex-start'
       >
         {isPublished && variant !== Variant.SMART ? (
-          <RepostFavoritesStats
+          <RepostsFavoritesStats
             isUnlisted={false}
             repostCount={reposts}
             saveCount={saves}

@@ -10,7 +10,7 @@ import {
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
-type RepostFavoritesStatsProps = {
+type RepostsFavoritesStatsProps = {
   isUnlisted: boolean
   repostCount: number
   saveCount: number
@@ -26,13 +26,13 @@ const messages = {
 
 // NOTE: this is a newer version of the other RepostsFavoritesStats component;
 // unclear if designers want to deprecate the old one just yet so this is a standalone component for CollectionHeader
-export const RepostFavoritesStats = ({
+export const RepostsFavoritesStats = ({
   isUnlisted,
   repostCount,
   saveCount,
   onClickReposts,
   onClickFavorites
-}: RepostFavoritesStatsProps) => {
+}: RepostsFavoritesStatsProps) => {
   const isMobile = useIsMobile()
   const handleOnClickReposts = useCallback(
     (e: MouseEvent) => {

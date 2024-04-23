@@ -1,5 +1,5 @@
 import { formatDate, formatSecondsAsText } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -27,11 +27,11 @@ export const AlbumDetailsText = ({
     const durationText = duration ? `, ${formatSecondsAsText(duration)}` : ''
     return isMobile ? (
       <Flex direction='column' gap='xs'>
-        <div>{releaseAndUpdatedText}</div>
-        <div>
+        <Box>{releaseAndUpdatedText}</Box>
+        <Box>
           {trackCountText}
           {durationText}
-        </div>
+        </Box>
       </Flex>
     ) : (
       <>{`${releaseAndUpdatedText} • ${trackCountText}${durationText}`}</>
