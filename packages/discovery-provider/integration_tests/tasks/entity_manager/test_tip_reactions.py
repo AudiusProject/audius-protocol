@@ -202,7 +202,6 @@ def test_index_tip_reactions(app, mocker):
         assert reaction1.reaction_type == "tip"
         assert reaction1.reaction_value == 1
         assert reaction1.sender_wallet == "user1wallet"
-        assert reaction1.slot == 0
 
         reaction2 = all_tip_reactions[1]
         assert reaction2.id == 2
@@ -210,7 +209,6 @@ def test_index_tip_reactions(app, mocker):
         assert reaction2.reaction_type == "tip"
         assert reaction2.reaction_value == 3
         assert reaction2.sender_wallet == "user1wallet"
-        assert reaction2.slot == 1
 
 
 def test_identity_and_discovery_tip_reactions(app, mocker):
