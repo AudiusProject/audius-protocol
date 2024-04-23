@@ -28,8 +28,12 @@ export const formatSecondsAsText = (seconds: number): string => {
 
 export const formatLineupTileDuration = (
   seconds: number,
-  isLongFormContent = false
+  isLongFormContent = false,
+  isCollection = false
 ): string => {
+  if (isCollection) {
+    return formatSecondsAsText(seconds)
+  }
   if (!isLongFormContent && seconds < SECONDS_PER_HOUR) {
     return formatSeconds(seconds)
   }

@@ -214,7 +214,7 @@ const TrackTile = ({
         return (
           <div className={styles.progressTextContainer}>
             <p className={styles.progressText}>
-              {`${formatLineupTileDuration(remainingTime, true)} ${
+              {`${formatLineupTileDuration(remainingTime, true, !isTrack)} ${
                 messages.timeLeft
               }`}
             </p>
@@ -233,7 +233,7 @@ const TrackTile = ({
         )
       }
     } else {
-      return formatLineupTileDuration(duration, isLongFormContent)
+      return formatLineupTileDuration(duration, isLongFormContent, !isTrack)
     }
   }
 
