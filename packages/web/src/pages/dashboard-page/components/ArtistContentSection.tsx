@@ -60,7 +60,6 @@ export const ArtistContentSection = () => {
   const isFilterButtonDisabled =
     (isTracks && hasOnlyOneTrackSection) ||
     (!isTracks && hasOnlyOneAlbumSection)
-  const shouldShowPills = tracks.length && albums.length
 
   const onClickPill = useCallback(
     (pill: Pills) => {
@@ -96,22 +95,20 @@ export const ArtistContentSection = () => {
     <Paper w='100%' direction='column' mt='xl'>
       <Flex ph='2xl' pv='l' justifyContent='space-between'>
         <Flex gap='2xl'>
-          {shouldShowPills ? (
-            <Flex gap='s'>
-              <SelectablePill
-                isSelected={selectedPill === Pills.TRACKS}
-                label={messages.tracks}
-                size='large'
-                onClick={() => onClickPill(Pills.TRACKS)}
-              />
-              <SelectablePill
-                isSelected={selectedPill === Pills.ALBUMS}
-                label={messages.albums}
-                size='large'
-                onClick={() => onClickPill(Pills.ALBUMS)}
-              />
-            </Flex>
-          ) : null}
+          <Flex gap='s'>
+            <SelectablePill
+              isSelected={selectedPill === Pills.TRACKS}
+              label={messages.tracks}
+              size='large'
+              onClick={() => onClickPill(Pills.TRACKS)}
+            />
+            <SelectablePill
+              isSelected={selectedPill === Pills.ALBUMS}
+              label={messages.albums}
+              size='large'
+              onClick={() => onClickPill(Pills.ALBUMS)}
+            />
+          </Flex>
           <FilterButton
             onSelect={handleSelectFilter}
             selection={isTracks ? selectedTrackFilter : selectedAlbumFilter}

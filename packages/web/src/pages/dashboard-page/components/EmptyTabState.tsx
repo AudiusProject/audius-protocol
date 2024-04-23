@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { Name } from '@audius/common/models'
-import { Button, Flex, IconCart, Text } from '@audius/harmony'
+import { Button, Flex, IconAlbum, IconNote, Text } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -31,7 +31,11 @@ export const EmptyTabState = ({ type }: { type: 'track' | 'album' }) => {
 
   return (
     <Flex w='100%' direction='column' alignItems='center' p='unit10' gap='2xl'>
-      <IconCart size='3xl' color='subdued' />
+      {type === 'track' ? (
+        <IconNote size='3xl' color='subdued' />
+      ) : (
+        <IconAlbum size='3xl' color='subdued' />
+      )}
       <Flex gap='l' direction='column' alignItems='center'>
         <Text variant='heading' size='s'>
           {messages.header(type)}
