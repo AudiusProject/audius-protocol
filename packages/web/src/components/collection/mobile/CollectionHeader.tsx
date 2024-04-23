@@ -100,6 +100,9 @@ const CollectionHeader = ({
   lastModifiedDate,
   numTracks,
   isPlayable,
+  isStreamGated,
+  streamConditions,
+  access,
   duration,
   isPublished = false,
   isPublishing = false,
@@ -244,7 +247,7 @@ const CollectionHeader = ({
         ) : null}
         {isPremiumAlbumsEnabled &&
         isAlbum &&
-        isPurchaseableAlbum &&
+        streamConditions &&
         collectionId ? (
           <Box mb='xl' w='100%'>
             <GatedContentSection
@@ -252,7 +255,7 @@ const CollectionHeader = ({
               contentId={collectionId}
               contentType={PurchaseableContentType.ALBUM}
               streamConditions={streamConditions}
-              hasStreamAccess={hasStreamAccess}
+              hasStreamAccess={!!access?.stream}
               isOwner={isOwner}
               wrapperClassName={styles.gatedContentSectionWrapper}
               className={styles.gatedContentSection}
