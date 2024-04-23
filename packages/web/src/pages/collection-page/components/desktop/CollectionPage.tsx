@@ -179,10 +179,10 @@ const CollectionPage = ({
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 
-  const isStreamGated =
-    metadata && 'is_stream_gated' in metadata && metadata?.is_stream_gated
   const streamConditions =
-    metadata && 'stream_conditions' in metadata && metadata?.stream_conditions
+    metadata && 'stream_conditions' in metadata
+      ? metadata?.stream_conditions
+      : null
 
   const {
     isEmpty,
@@ -200,8 +200,6 @@ const CollectionPage = ({
   const isPlayable = !areAllTracksDeleted && numTracks > 0
   const dogEarType =
     (!collectionLoading &&
-      isStreamGated &&
-      streamConditions &&
       getDogEarType({
         streamConditions,
         isUnlisted: isPrivate
