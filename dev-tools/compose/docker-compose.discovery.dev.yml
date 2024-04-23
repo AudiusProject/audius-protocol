@@ -45,3 +45,5 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
+      - poa-contracts-abis:/app/packages/discovery-provider/build/contracts
+      - eth-contracts-abis:/app/packages/discovery-provider/build/eth-contracts
