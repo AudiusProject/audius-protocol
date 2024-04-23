@@ -191,6 +191,7 @@ services:
     <<: *common
     profiles:
       - ddex
+      - ddex-deps
 
   ddex-mongo-init:
     extends:
@@ -202,14 +203,7 @@ services:
         condition: service_healthy
     profiles:
       - ddex
-
-  ddex-ingester:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-ingester
-    <<: *common
-    profiles:
-      - ddex-build-only
+      - ddex-deps
 
   ddex-web:
     extends:
@@ -240,32 +234,16 @@ services:
         condition: service_healthy
     profiles:
       - ddex
-  
-  ddex-crawler:
+
+  ddex-ingester:
     extends:
       file: docker-compose.ddex.yml
-      service: ddex-crawler
-    container_name: ddex-crawler
+      service: ddex-ingester
+    container_name: ddex-ingester
     <<: *common
     environment:
       DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
       IS_DEV: 'true' # Speed up crawling interval for local dev
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-    profiles:
-      - ddex
-  
-  ddex-parser:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-parser
-    container_name: ddex-parser
-    <<: *common
-    environment:
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -287,6 +265,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     profiles:
       - ddex
+      - ddex-deps
 
   # Storage (content node)
 
