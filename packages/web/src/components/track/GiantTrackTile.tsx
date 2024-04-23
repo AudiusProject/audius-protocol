@@ -520,7 +520,9 @@ export const GiantTrackTile = ({
       isArtistPick,
       includeEmbed: !(isUnlisted || isStreamGated),
       includeArtistPick: !isUnlisted,
-      includeAddToPlaylist: !isStreamGated,
+      includeAddToPlaylist: isStreamGated
+        ? isContentUSDCPurchaseGated(streamConditions)
+        : true,
       includeAddToAlbum: !isStreamGated,
       extraMenuItems: overflowMenuExtraItems
     }

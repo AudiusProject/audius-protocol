@@ -1,6 +1,6 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { ID, UID } from '@audius/common/models'
+import { ID, isContentUSDCPurchaseGated, UID } from '@audius/common/models'
 import { EnhancedCollectionTrack } from '@audius/common/store'
 import { Genre, formatSeconds } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'
@@ -111,7 +111,9 @@ const TrackListItem = ({
 
   const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
-    includeAddToPlaylist: !track.is_stream_gated,
+    includeAddToPlaylist: track.is_stream_gated
+      ? isContentUSDCPurchaseGated(track.stream_conditions)
+      : true,
     includeArtistPick: false,
     includeEdit: false,
     includeFavorite: true,

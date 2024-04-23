@@ -407,6 +407,11 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
+      const shouldIncludeAddToPlaylist =
+        !isLocked ||
+        (track.is_stream_gated
+          ? isContentUSDCPurchaseGated(track.stream_conditions)
+          : true)
       return (
         <div ref={overflowMenuRef}>
           <OverflowMenuButton
@@ -414,7 +419,7 @@ export const TracksTable = ({
             isDeleted={deleted}
             includeEdit={!disabledTrackEdit}
             includeAlbumPage={!isAlbumPage}
-            includeAddToPlaylist={!isLocked && !track.is_stream_gated}
+            includeAddToPlaylist={shouldIncludeAddToPlaylist}
             includeFavorite={!isLocked}
             onRemove={onClickRemove}
             removeText={removeText}
