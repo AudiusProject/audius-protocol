@@ -20,6 +20,10 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
+MAX_DESCRIPTION_LENGTH = 160
+MAX_IMAGE_URL_LENGTH = 2000
+
+
 class AppSignature(TypedDict):
     message: str
     signature: str
@@ -190,17 +194,17 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             )
         if metadata["description"] != None and (
             not isinstance(metadata["description"], str)
-            or len((metadata["description"])) > 160
+            or len((metadata["description"])) > MAX_DESCRIPTION_LENGTH
         ):
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, description must be under 161 characters"
             )
         if metadata["image_url"] != None and (
             not isinstance(metadata["image_url"], str)
-            or len((metadata["image_url"])) > 2000
+            or len((metadata["image_url"])) > MAX_IMAGE_URL_LENGTH
         ):
             raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, image_url must be under 2000 characters"
+                "Invalid Create Developer App Transaction, image_url must be under 2001 characters"
             )
 
         num_existing_apps_from_user = (

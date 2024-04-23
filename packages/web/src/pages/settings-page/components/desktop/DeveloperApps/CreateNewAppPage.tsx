@@ -87,6 +87,7 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
     userId,
     name: '',
     description: '',
+    // Undefined unless set to pass validation
     imageUrl: undefined
   }
 

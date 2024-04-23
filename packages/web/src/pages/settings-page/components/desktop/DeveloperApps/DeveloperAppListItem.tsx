@@ -59,7 +59,7 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
     <li className={styles.listItem}>
       <span className={styles.listItemImage}>
         {imageUrl ? (
-          <img width='56' src={imageUrl} />
+          <img src={imageUrl} />
         ) : (
           <IconEmbed color='subdued' size='2xl' />
         )}

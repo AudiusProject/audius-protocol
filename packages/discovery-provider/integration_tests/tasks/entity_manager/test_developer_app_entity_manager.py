@@ -39,6 +39,7 @@ first_set_new_apps_data = [
     {
         "user_id": 2,
         "name": "User 2 App",
+        "image_url": "i am not a url lol!",
         "address": "0x1f590ded56a693ee4dd986d820236f82d3659b96",
         "app_signature": {
             "signature": "47944289d41c8c4051987a69cda73f3099064b0a5b2e32e03b620911ead1a37e59daaa5c0323ddc42c9da0c34c1c842a2c302e1e27dae971118e57de255e7db51b",
@@ -228,7 +229,12 @@ def test_index_app(app, mocker):
             assert res.description == (
                 expected_app.get("description", None) or None
             )  # If description value is empty in metadata, the description value should be null in the table row.
-            assert res.image_url == expected_app.get("image_url", None)
+            expected_image_url = expected_app.get("image_url", None)
+            assert (
+                res.image_url == expected_image_url
+                if expected_image_url.startswith("http")
+                else None
+            )
             assert res.is_personal_access == expected_app.get(
                 "is_personal_access", False
             )

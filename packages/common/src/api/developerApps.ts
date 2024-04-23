@@ -8,6 +8,10 @@ export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
 export const DEVELOPER_APP_NAME_MAX_LENGTH = 50
 export const DEVELOPER_APP_IMAGE_URL_MAX_LENGTH = 2000
 
+const messages = {
+  invalidUrl: 'Invalid URL'
+}
+
 export const developerAppSchema = z.object({
   userId: z.number(),
   name: z.string().max(DEVELOPER_APP_NAME_MAX_LENGTH),
@@ -16,7 +20,7 @@ export const developerAppSchema = z.object({
       .string()
       .max(DEVELOPER_APP_IMAGE_URL_MAX_LENGTH)
       .refine((value) => /^(https?):\/\//i.test(value), {
-        message: 'Invalid URL'
+        message: messages.invalidUrl
       })
   ),
   description: z.string().max(DEVELOPER_APP_DESCRIPTION_MAX_LENGTH).optional()
