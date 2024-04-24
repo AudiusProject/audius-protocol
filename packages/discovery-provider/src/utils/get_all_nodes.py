@@ -54,7 +54,7 @@ async def get_async_node(sp_id, sp_factory_instance, service_type):
     return result
 
 
-def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
+def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str], List[str]]:
     num_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(
         service_type
     ).call()
@@ -62,6 +62,7 @@ def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
     ids_list = list(range(1, num_nodes + 1))
     all_nodes = []
     all_wallets = []
+    all_owners = []
 
     # fetch all nodes' info in parallel
     async def fetch_results():
@@ -79,24 +80,27 @@ def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
 
     for node_info in resp:
         try:
+            owner = node_info[0]
             wallet = node_info[3]
             endpoint = node_info[1]
+            logger.info(f"get_all_nodes.py | node_info: {node_info}")
             if is_fqdn(endpoint):
                 all_nodes.append(endpoint)
                 all_wallets.append(wallet)
+                all_owners.append(owner)
         except Exception as e:
             logger.error(
                 f"get_all_nodes.py | ERROR in fetching node info {node_info} generated {e}"
             )
 
-    return all_nodes, all_wallets
+    return all_nodes, all_wallets, all_owners
 
 
-def get_all_discovery_nodes() -> Tuple[List[str], List[str]]:
+def get_all_discovery_nodes() -> Tuple[List[str], List[str], List[str]]:
     return get_all_nodes(DISCOVERY_NODE_SERVICE_TYPE)
 
 
-def get_all_content_nodes() -> Tuple[List[str], List[str]]:
+def get_all_content_nodes() -> Tuple[List[str], List[str], List[str]]:
     return get_all_nodes(CONTENT_NODE_SERVICE_TYPE)
 
 

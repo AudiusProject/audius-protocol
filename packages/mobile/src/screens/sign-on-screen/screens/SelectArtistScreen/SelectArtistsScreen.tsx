@@ -5,8 +5,8 @@ import {
   addFollowArtists,
   finishSignUp,
   completeFollowArtists
-} from 'audius-client/src/common/store/pages/signon/actions'
-import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
+} from '@audius/web/src/common/store/pages/signon/actions'
+import { EditingStatus } from '@audius/web/src/common/store/pages/signon/types'
 import {
   getFollowIds,
   getGenres,

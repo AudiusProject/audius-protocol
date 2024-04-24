@@ -7,7 +7,7 @@ import type {
   NativeStackNavigationProp
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
-import { clearSearch } from 'audius-client/src/common/store/search-bar/actions'
+import { clearSearch } from '@audius/web/src/common/store/search-bar/actions'
 import { Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 

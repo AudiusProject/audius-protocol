@@ -243,15 +243,26 @@ export const relay = async (
     logger.info(`Confirming transaction before fetching...`)
     await connection.confirmTransaction(confirmationStrategy, 'confirmed')
     logger.info('Fetching transaction for caching...')
-    const rpcResponse = await connection.getTransaction(signature, {
-      maxSupportedTransactionVersion: 0,
-      commitment: 'confirmed'
-    })
-    // Need to rewrap so that Solders knows how to parse it
-    const formattedResponse = JSON.stringify({
-      jsonrpc: '2.0',
-      result: rpcResponse
-    })
+    // Dangerously relying on the internals of connection to do the fetch.
+    // Calling connection.getTransaction will result in the library parsing the
+    // results and getting us back our object again, but we need the raw JSON
+    // for Solders to know what we're talking about when indexing.
+    const rpcResponse = await (
+      connection as Connection & {
+        _rpcRequest: (
+          methodName: string,
+          args: Array<unknown>
+        ) => Promise<unknown>
+      }
+    )._rpcRequest('getTransaction', [
+      signature,
+      {
+        maxSupportedTransactionVersion: 0,
+        commitment: 'confirmed',
+        encoding: 'json'
+      }
+    ])
+    const formattedResponse = JSON.stringify(rpcResponse)
     logger.info('Caching transaction...')
     await cacheTransaction(signature, formattedResponse)
     logger.info('Forwarding transaction to other nodes to cache...')

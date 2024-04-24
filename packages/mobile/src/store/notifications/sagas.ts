@@ -5,8 +5,8 @@ import {
 } from '@audius/common/store'
 import commonNotificationsSagas, {
   getPollingIntervalMs
-} from 'audius-client/src/common/store/notifications/sagas'
-import { waitForRead, waitForWrite } from 'audius-client/src/utils/sagaHelpers'
+} from '@audius/web/src/common/store/notifications/sagas'
+import { waitForRead, waitForWrite } from '@audius/web/src/utils/sagaHelpers'
 import { checkForNewNotificationsSaga } from 'common/store/notifications/checkForNewNotificationsSaga'
 import { AppState } from 'react-native'
 import { call, delay, select, takeEvery } from 'typed-redux-saga'

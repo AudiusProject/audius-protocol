@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 
 import { useIsFocused } from '@react-navigation/native'
-import { fetchSearch } from 'audius-client/src/common/store/search-bar/actions'
+import { fetchSearch } from '@audius/web/src/common/store/search-bar/actions'
 import { useDispatch } from 'react-redux'
 
 import { IconNote, IconUser } from '@audius/harmony-native'

@@ -69,7 +69,7 @@ const HCaptchaModal = () => {
     if (hCaptchaStatus === HCaptchaStatus.NONE) {
       return
     }
-    // audius-client handles the updating of the hcaptcha status in the store
+    // @audius/web handles the updating of the hcaptcha status in the store
     // we can close the native mobile drawer
     handleClose()
   }, [hCaptchaStatus, handleClose])

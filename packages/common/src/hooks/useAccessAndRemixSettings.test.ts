@@ -313,7 +313,7 @@ describe('useAccessAndRemixSettings', () => {
     })
   })
   describe('album upload', () => {
-    it('should only allow usdc for album uploads', () => {
+    it('should allow usdc & hidden for album uploads', () => {
       const actual = useAccessAndRemixSettings({
         isUpload: true,
         isRemix: false,
@@ -328,13 +328,13 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableHidden: true
+        disableHidden: false
       }
       expect(actual).toEqual(expected)
     })
   })
   describe('album edit', () => {
-    it('public track - should disable all options', () => {
+    it('public track - should disable all other options', () => {
       const actual = useAccessAndRemixSettings({
         isUpload: false,
         isRemix: false,
@@ -353,7 +353,7 @@ describe('useAccessAndRemixSettings', () => {
       }
       expect(actual).toEqual(expected)
     })
-    it('usdc gated - should disable everything except original option', () => {
+    it('usdc gated - should only allow usdc + public', () => {
       mockedUseSelector.mockImplementation(
         mockUseSelector(reduxStateWithCollectibles)
       )
@@ -393,7 +393,7 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableHidden: true // atm hidden albums are not supported so this is currently disabled
+        disableHidden: false
       }
       expect(actual).toEqual(expected)
     })

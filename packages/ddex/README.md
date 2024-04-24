@@ -111,7 +111,7 @@ audius-cli launch ddex
 ```
 
 ## Local dev
-DDEX requires these services: `ddex-webapp`, `ddex-crawler`, `ddex-parser`, `ddex-publisher`, `ddex-mongo`.
+DDEX requires these services: `ddex-webapp`, `ddex-ingester`, `ddex-publisher`, `ddex-mongo`.
 
 ### Env configuration
 All services read from `packages/ddex/.env`.

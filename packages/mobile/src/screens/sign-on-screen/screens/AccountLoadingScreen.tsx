@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 
-import { getStatus } from 'audius-client/src/common/store/pages/signon/selectors'
-import { EditingStatus } from 'audius-client/src/common/store/pages/signon/types'
+import { getStatus } from '@audius/web/src/common/store/pages/signon/selectors'
+import { EditingStatus } from '@audius/web/src/common/store/pages/signon/types'
 import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'

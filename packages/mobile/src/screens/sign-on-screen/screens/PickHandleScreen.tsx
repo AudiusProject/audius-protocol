@@ -4,7 +4,7 @@ import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { pickHandlePageMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { css } from '@emotion/native'
-import { getIsSocialConnected } from 'audius-client/src/common/store/pages/signon/selectors'
+import { getIsSocialConnected } from '@audius/web/src/common/store/pages/signon/selectors'
 import {
   setValueField,
   unsetSocialProfile

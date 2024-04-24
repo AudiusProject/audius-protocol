@@ -971,6 +971,7 @@ def format_developer_app(developer_app):
         "user_id": encode_int_id(developer_app["user_id"]),
         "name": developer_app["name"],
         "description": developer_app.get("description", None),
+        "image_url": developer_app.get("image_url", None),
     }
 
 
@@ -979,6 +980,7 @@ def format_authorized_app(authorized_app):
         "address": authorized_app["address"],
         "name": authorized_app["name"],
         "description": authorized_app.get("description", None),
+        "image_url": authorized_app.get("image_url", None),
         "grantor_user_id": encode_int_id(authorized_app["grantor_user_id"]),
         "grant_created_at": authorized_app["grant_created_at"],
         "grant_updated_at": authorized_app["grant_updated_at"],
