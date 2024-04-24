@@ -1,21 +1,11 @@
 import { useSelector } from 'react-redux'
 
-import {
-  AccessConditions,
-  isContentCollectibleGated,
-  isContentFollowGated,
-  isContentTipGated,
-  isContentUSDCPurchaseGated
-} from '~/models/Track'
 import { getSupportedUserCollections } from '~/store/collectibles/selectors'
-import { Nullable } from '~/utils/typeUtils'
 
 type UseAccessAndRemixSettingsProps = {
   isUpload: boolean
   isRemix: boolean
   isAlbum?: boolean
-  initialStreamConditions: Nullable<AccessConditions>
-  isInitiallyUnlisted: boolean
   isScheduledRelease?: boolean
 }
 
@@ -45,69 +35,25 @@ export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
   isAlbum = false,
-  initialStreamConditions,
-  isInitiallyUnlisted,
   isScheduledRelease = false
 }: UseAccessAndRemixSettingsProps) => {
-  const isInitiallyPublic =
-    !isInitiallyUnlisted && !isUpload && !initialStreamConditions
+  const disableUsdcGate = isRemix
 
-  const isInitiallyUsdcGated =
-    !isInitiallyUnlisted && // track must be published
-    !isUpload &&
-    isContentUSDCPurchaseGated(initialStreamConditions)
-
-  const isInitiallySpecialAccess =
-    !isInitiallyUnlisted &&
-    !isUpload &&
-    !!(
-      isContentFollowGated(initialStreamConditions) ||
-      isContentTipGated(initialStreamConditions)
-    )
-
-  const isInitiallyCollectibleGated =
-    !isInitiallyUnlisted &&
-    !isUpload &&
-    isContentCollectibleGated(initialStreamConditions)
-
-  const isInitiallyHidden = !isUpload && isInitiallyUnlisted
-
-  const disableUsdcGate =
-    !isInitiallyUsdcGated &&
-    (isRemix ||
-      isInitiallyPublic ||
-      isInitiallySpecialAccess ||
-      isInitiallyCollectibleGated)
-
-  const disableSpecialAccessGate =
-    isAlbum ||
-    isRemix ||
-    isInitiallyPublic ||
-    isInitiallyUsdcGated ||
-    isInitiallyCollectibleGated
+  const disableSpecialAccessGate = isAlbum || isRemix
 
   // This applies when the parent field is active but we still want to disable sub-options
   // used for edit flow to not allow increasing permission strictness
-  const disableSpecialAccessGateFields =
-    disableSpecialAccessGate || (!isUpload && !isInitiallyHidden)
+  const disableSpecialAccessGateFields = disableSpecialAccessGate || !isUpload
 
   const hasNoCollectibles = useHasNoCollectibles()
 
-  const disableCollectibleGate =
-    isAlbum ||
-    isRemix ||
-    isInitiallyPublic ||
-    isInitiallyUsdcGated ||
-    isInitiallySpecialAccess ||
-    hasNoCollectibles
+  const disableCollectibleGate = isAlbum || isRemix || hasNoCollectibles
 
   // This applies when the parent field is active but we still want to disable sub-options
   // used for edit flow to not allow increasing permission strictness
-  const disableCollectibleGateFields =
-    disableCollectibleGate || (!isUpload && !isInitiallyHidden)
+  const disableCollectibleGateFields = disableCollectibleGate || !isUpload
 
-  const disableHidden =
-    isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
+  const disableHidden = isScheduledRelease || !isUpload
 
   return {
     disableUsdcGate,

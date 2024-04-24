@@ -455,8 +455,8 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
 
-        if params.action == Action.UPDATE:
-            validate_update_access_conditions(params)
+        # if params.action == Action.UPDATE:
+        #     validate_update_access_conditions(params)
 
         validate_remixability(params)
         validate_access_conditions(params)

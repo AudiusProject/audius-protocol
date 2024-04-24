@@ -125,6 +125,10 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
 
+  if (trackForEdit.is_stream_gated) {
+    trackForEdit.download_conditions = trackForEdit.stream_conditions
+  }
+
   yield* call(
     confirmEditTrack,
     action.trackId,

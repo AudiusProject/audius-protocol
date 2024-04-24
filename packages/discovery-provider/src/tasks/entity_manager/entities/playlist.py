@@ -349,8 +349,8 @@ def validate_playlist_tx(params: ManageEntityParameters):
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
 
-        if params.action == Action.UPDATE:
-            validate_update_access_conditions(params)
+        # if params.action == Action.UPDATE:
+        #     validate_update_access_conditions(params)
 
         if (
             params.action == Action.UPDATE
