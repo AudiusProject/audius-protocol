@@ -86,6 +86,9 @@ ENV audius_loggly_disable=$audius_loggly_disable
 ENV audius_loggly_token=$audius_loggly_token
 ENV audius_loggly_tags=$audius_loggly_tags
 
+FROM audius/eth-contracts:latest as eth-contracts
+COPY --from=eth-contracts /usr/src/app/build/contracts/ build/eth-contracts/
+
 EXPOSE 5000
 
 CMD ["bash", "scripts/start.sh"]
