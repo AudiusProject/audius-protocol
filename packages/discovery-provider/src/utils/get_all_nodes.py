@@ -54,7 +54,7 @@ async def get_async_node(sp_id, sp_factory_instance, service_type):
     return result
 
 
-def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
+def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str], List[str]]:
     num_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(
         service_type
     ).call()
