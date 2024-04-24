@@ -5,7 +5,8 @@ import {
   ShareSource,
   RepostSource,
   FavoriteSource,
-  ModalSource
+  ModalSource,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -203,7 +204,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
         isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-        !track.is_stream_gated ? OverflowAction.ADD_TO_PLAYLIST : null,
+        !track.isStreamGated ||
+        (track.isStreamGated &&
+          isContentUSDCPurchaseGated(track.streamConditions))
+          ? OverflowAction.ADD_TO_PLAYLIST
+          : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,

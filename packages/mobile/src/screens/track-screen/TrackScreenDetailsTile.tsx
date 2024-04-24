@@ -423,9 +423,11 @@ export const TrackScreenDetailsTile = ({
       isEditAlbumsEnabled && isOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null
-    const addToPlaylistAction = !isStreamGated
-      ? OverflowAction.ADD_TO_PLAYLIST
-      : null
+    const addToPlaylistAction =
+      !isStreamGated ||
+      (isStreamGated && isContentUSDCPurchaseGated(streamConditions))
+        ? OverflowAction.ADD_TO_PLAYLIST
+        : null
     const overflowActions = [
       addToAlbumAction,
       addToPlaylistAction,
