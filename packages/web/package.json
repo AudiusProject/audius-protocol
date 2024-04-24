@@ -1,5 +1,5 @@
 {
-  "name": "audius-client",
+  "name": "@audius/web",
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
@@ -63,7 +63,7 @@
     "electron:localhost": "electron . localhost",
     "electron:prod": "electron . production",
     "electron:stage": "electron . staging",
-    "install-dmg-license": "npm add dmg-license -w audius-client",
+    "install-dmg-license": "npm add dmg-license -w @audius/web",
     "pack": "electron-builder --dir"
   },
   "dependencies": {

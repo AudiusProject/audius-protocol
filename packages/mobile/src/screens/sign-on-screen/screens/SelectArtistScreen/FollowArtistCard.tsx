@@ -7,9 +7,9 @@ import { css } from '@emotion/native'
 import {
   addFollowArtists,
   removeFollowArtists
-} from 'audius-client/src/common/store/pages/signon/actions'
-import { getFollowIds } from 'audius-client/src/common/store/pages/signon/selectors'
-import type { AppState } from 'audius-client/src/store/types'
+} from '@audius/web/src/common/store/pages/signon/actions'
+import { getFollowIds } from '@audius/web/src/common/store/pages/signon/selectors'
+import type { AppState } from '@audius/web/src/store/types'
 import LottieView from 'lottie-react-native'
 import { Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

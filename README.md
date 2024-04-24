@@ -1,7 +1,7 @@
 <p align="center">
   <br/>
-  <img src="./packages/web/src/assets/img/audiusLogoColored.png#gh-light-mode-only" alt="audius-client" width="200">
-  <img src="./packages/web/src/assets/img/audiusLogoWhite.png#gh-dark-mode-only" alt="audius-client" width="200">
+  <img src="./packages/web/src/assets/img/audiusLogoColored.png#gh-light-mode-only" alt="Audius Logo" width="200">
+  <img src="./packages/web/src/assets/img/audiusLogoWhite.png#gh-dark-mode-only" alt="Audius Logo" width="200">
 
   <br/>
 

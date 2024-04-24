@@ -4,7 +4,7 @@
   "description": "Common utilities and store for web and mobile.",
   "private": true,
   "author": "Audius",
-  "homepage": "https://github.com/AudiusProject/audius-client#readme",
+  "homepage": "https://github.com/AudiusProject/audius-protocol/packages/common#readme",
   "license": "",
   "exports": {
     "./api": "./src/api/index.ts",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AudiusProject/audius-client.git"
+    "url": "git+https://github.com/AudiusProject/audius-protocol.git"
   },
   "scripts": {
     "lint": "eslint --cache src",
@@ -31,7 +31,7 @@
     "verify": "concurrently \"npm:lint\""
   },
   "bugs": {
-    "url": "https://github.com/AudiusProject/audius-client/issues"
+    "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
   "dependencies": {
     "@audius/fetch-nft": "0.2.6",

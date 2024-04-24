@@ -7,10 +7,10 @@ import {
   reducers as commonReducers
 } from '@audius/common/store'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import backend from 'audius-client/src/common/store/backend/reducer'
-import type { BackendState } from 'audius-client/src/common/store/backend/types'
-import searchBar from 'audius-client/src/common/store/search-bar/reducer'
-import type { SearchBarState } from 'audius-client/src/common/store/search-bar/types'
+import backend from '@audius/web/src/common/store/backend/reducer'
+import type { BackendState } from '@audius/web/src/common/store/backend/types'
+import searchBar from '@audius/web/src/common/store/search-bar/reducer'
+import type { SearchBarState } from '@audius/web/src/common/store/search-bar/types'
 import signOnReducer from 'common/store/pages/signon/reducer'
 import type {
   SignOnPageState,

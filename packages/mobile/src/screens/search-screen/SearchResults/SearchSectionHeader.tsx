@@ -1,4 +1,4 @@
-import type { SearchResults } from 'audius-client/src/common/store/search-bar/types'
+import type { SearchResults } from '@audius/web/src/common/store/search-bar/types'
 import { View } from 'react-native'
 
 import { Divider, Text } from 'app/components/core'
