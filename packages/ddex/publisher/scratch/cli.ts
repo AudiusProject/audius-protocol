@@ -1,10 +1,11 @@
 import 'dotenv/config'
 
 import { program } from 'commander'
-import { parseDdexXmlFile, parseDelivery } from './parseDelivery'
+import { parseDelivery } from './parseDelivery'
 import { cleanupFiles } from './cleanupFiles'
 import { pollS3 } from './s3poller'
 import { publishValidPendingReleases } from './publishRelease'
+import { sync } from './s3sync'
 
 program
   .name('ddexer')
@@ -16,7 +17,7 @@ program
   .command('parse')
   .description('Parse DDEX xml and print results')
   .argument('<path>', 'path to ddex xml file')
-  .action(async (p, options) => {
+  .action(async (p) => {
     const releases = await parseDelivery(p)
     console.log(JSON.stringify(releases, undefined, 2))
   })
@@ -26,6 +27,14 @@ program
   .description('Publish any valid deliveries')
   .action(async () => {
     await publishValidPendingReleases()
+  })
+
+program
+  .command('sync-s3')
+  .description('Sync target directory from S3')
+  .argument('<path>', 'path after s3:// to sync')
+  .action(async (p) => {
+    await sync(p)
   })
 
 program

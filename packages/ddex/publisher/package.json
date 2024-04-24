@@ -22,6 +22,7 @@
   "dependencies": {
     "@audius/sdk": "*",
     "@aws-sdk/client-s3": "3.504.0",
+    "@aws-sdk/credential-provider-ini": "3.556.0",
     "@hono/node-server": "^1.10.0",
     "better-sqlite3": "^9.5.0",
     "cheerio": "^1.0.0-rc.12",
@@ -42,6 +43,7 @@
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.1.2",
     "prettier": "3.1.1",
+    "tsx": "4.7.2",
     "typescript": "5.3.3",
     "vitest": "^1.5.0"
   }
