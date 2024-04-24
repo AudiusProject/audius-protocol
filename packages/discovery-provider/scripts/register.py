@@ -8,7 +8,7 @@ import urllib.request
 
 import web3
 
-ETH_CONTRACTS_ABI_DIR = pathlib.Path("/audius-discovery-provider/build/eth-contracts")
+ETH_CONTRACTS_ABI_DIR = pathlib.Path(__file__).parent / "../build/eth-contracts"
 
 
 def health_check(discprov_url):
