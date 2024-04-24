@@ -1,9 +1,11 @@
 import { PropsWithChildren } from 'react'
 
 import {
+  Flex,
   IconEmailAddress,
   IconPencil,
-  IconVisibilityPublic
+  IconVisibilityPublic,
+  Text
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -15,7 +17,7 @@ import { WriteOnceParams, WriteOnceTx } from '../utils'
 
 type PermissionTextProps = PropsWithChildren<{}>
 const PermissionText = ({ children }: PermissionTextProps) => {
-  return <span className={styles.permissionText}>{children}</span>
+  return <div className={styles.permissionText}>{children}</div>
 }
 
 type PermissionDetailProps = PropsWithChildren<{
@@ -23,7 +25,7 @@ type PermissionDetailProps = PropsWithChildren<{
 }>
 const PermissionDetail = ({ className, children }: PermissionDetailProps) => {
   return (
-    <div className={cn(styles.permissionDetailTextContainer)}>
+    <div>
       <span
         className={cn(
           styles.permissionText,
@@ -62,9 +64,9 @@ export const PermissionsSection = ({
   return (
     <>
       <div className={styles.permsTitleContainer}>
-        <h3 className={styles.infoSectionTitle}>
+        <Text variant='body' size='m' css={{ color: 'var(--harmony-n-600)' }}>
           {messages.permissionsRequestedHeader}
-        </h3>
+        </Text>
       </div>
       <div className={styles.tile}>
         <div className={styles.permissionContainer}>
@@ -85,27 +87,34 @@ export const PermissionsSection = ({
             )}
           </div>
 
-          <div className={styles.permissionTextContainer}>
-            <PermissionText>
+          <Flex ml='l' gap='s' direction='column'>
+            <Text variant='body' size='m'>
               {scope === 'write'
                 ? messages.writeAccountAccess
                 : scope === 'write_once'
                 ? getWriteOncePermissionTitle(tx)
                 : messages.readOnlyAccountAccess}
-            </PermissionText>
+            </Text>
             {scope === 'write' ? (
-              <PermissionDetail>
-                {messages.doesNotGrantAccessTo}
-                <br />
-                {messages.walletsOrDMs}
-              </PermissionDetail>
+              <PermissionText>
+                <Text variant='body' size='s' color='subdued'>
+                  {messages.writeAccessGrants}
+                </Text>
+              </PermissionText>
             ) : null}
             {scope === 'write_once' ? (
               <PermissionDetail>
                 {txParams?.wallet.slice(0, 6)}...{txParams?.wallet.slice(-4)}
               </PermissionDetail>
             ) : null}
-          </div>
+            {scope === 'read' ? (
+              <PermissionText>
+                <Text variant='body' size='s' color='subdued'>
+                  {messages.readOnlyGrants}
+                </Text>
+              </PermissionText>
+            ) : null}
+          </Flex>
         </div>
         <div
           className={cn(
@@ -121,7 +130,7 @@ export const PermissionsSection = ({
               className={cn(styles.atSignIcon)}
             />
           </div>
-          <div className={styles.permissionTextContainer}>
+          <Flex ml='l' gap='s' direction='column'>
             <PermissionText>{messages.emailAddressAccess}</PermissionText>
             {isLoggedIn ? (
               <PermissionDetail
@@ -141,7 +150,7 @@ export const PermissionsSection = ({
                 )}
               </PermissionDetail>
             ) : null}
-          </div>
+          </Flex>
         </div>
       </div>
     </>
