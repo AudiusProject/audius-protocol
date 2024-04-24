@@ -62,7 +62,9 @@ const devConfig: ServicesConfig = {
     {
       delegateOwnerWallet:
         '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8',
-      endpoint: 'http://audius-protocol-discovery-provider-1'
+      endpoint: 'http://audius-protocol-discovery-provider-1',
+      ownerWallet:
+        '0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8'
     }
   ],
   storageNodes: [
@@ -134,10 +136,13 @@ const generateServicesConfig = async (
   const minVersion = await contracts.getCurrentVersion('discovery-node')
   return {
     minVersion,
-    discoveryNodes: discoveryNodes.map(({ endpoint, delegateOwnerWallet }) => ({
-      endpoint,
-      delegateOwnerWallet
-    })),
+    discoveryNodes: discoveryNodes.map(
+      ({ endpoint, delegateOwnerWallet, owner }) => ({
+        endpoint,
+        delegateOwnerWallet,
+        ownerWallet: owner
+      })
+    ),
     storageNodes: storageNodes.map(({ endpoint, delegateOwnerWallet }) => ({
       endpoint,
       delegateOwnerWallet
