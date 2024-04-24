@@ -96,11 +96,11 @@ def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str], List[str]]
     return all_nodes, all_wallets, all_owners
 
 
-def get_all_discovery_nodes() -> Tuple[List[str], List[str]]:
+def get_all_discovery_nodes() -> Tuple[List[str], List[str], List[str]]:
     return get_all_nodes(DISCOVERY_NODE_SERVICE_TYPE)
 
 
-def get_all_content_nodes() -> Tuple[List[str], List[str]]:
+def get_all_content_nodes() -> Tuple[List[str], List[str], List[str]]:
     return get_all_nodes(CONTENT_NODE_SERVICE_TYPE)
 
 
