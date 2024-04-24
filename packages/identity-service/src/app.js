@@ -30,7 +30,6 @@ const {
 } = require('./rateLimiter.js')
 const cors = require('./corsMiddleware')
 const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
-const { setupRewardsAttester } = require('./utils/configureAttester')
 const { startRegistrationQueue } = require('./solanaNodeRegistration')
 
 class App {
@@ -98,7 +97,6 @@ class App {
 
         const audiusInstance = await this.configureAudiusInstance()
 
-        await this.configureRewardsAttester(audiusInstance)
         await this.configureDiscoveryNodeRegistration(audiusInstance)
         await this.configureReporter()
       } else {
@@ -203,29 +201,6 @@ class App {
     const audiusInstance = audiusLibsWrapper.getAudiusLibs()
     this.express.set('audiusLibs', audiusInstance)
     return audiusInstance
-  }
-
-  async configureRewardsAttester(libs) {
-    // Await for optimizely config so we know
-    // whether rewards attestation is enabled,
-    // returning early if false
-    await this.optimizelyPromise
-    const isEnabled = getFeatureFlag(
-      this.optimizelyClientInstance,
-      FEATURE_FLAGS.REWARDS_ATTESTATION_ENABLED
-    )
-    if (!isEnabled) {
-      logger.info('Attestation disabled!')
-      return
-    }
-
-    const attester = await setupRewardsAttester(
-      libs,
-      this.optimizelyClientInstance,
-      this.redisClient
-    )
-    this.express.set('rewardsAttester', attester)
-    return attester
   }
 
   async runMigrations() {
