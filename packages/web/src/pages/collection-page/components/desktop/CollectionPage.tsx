@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo } from 'react'
+import { ChangeEvent, MouseEventHandler, useMemo } from 'react'
 
 import {
   Variant,
@@ -83,7 +83,7 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onPlay: (record: CollectionPageTrackRecord) => void
+  onPlay: MouseEventHandler<HTMLButtonElement>
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
@@ -163,14 +163,13 @@ const CollectionPage = ({
   const isOwner = userId === playlistOwnerId
 
   const variant = metadata?.variant ?? null
-  const gradient =
-    (metadata?.variant === Variant.SMART && metadata.gradient) ?? ''
+  const gradient = metadata?.variant === Variant.SMART ? metadata.gradient : ''
   const icon =
     metadata?.variant === Variant.SMART
       ? smartCollectionIcons[metadata.playlist_name]
       : null
   const imageOverride =
-    (metadata?.variant === Variant.SMART && metadata.imageOverride) ?? ''
+    metadata?.variant === Variant.SMART ? metadata.imageOverride : ''
   const typeTitle =
     metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
   const customEmptyText =
@@ -180,14 +179,15 @@ const CollectionPage = ({
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 
-  const isStreamGated =
-    metadata && 'is_stream_gated' in metadata && metadata?.is_stream_gated
   const streamConditions =
-    metadata && 'stream_conditions' in metadata && metadata?.stream_conditions
+    metadata && 'stream_conditions' in metadata
+      ? metadata?.stream_conditions
+      : null
 
   const {
     isEmpty,
-    lastModified,
+    lastModifiedDate,
+    releaseDate,
     playlistName,
     description,
     isPrivate,
@@ -200,8 +200,6 @@ const CollectionPage = ({
   const isPlayable = !areAllTracksDeleted && numTracks > 0
   const dogEarType =
     (!collectionLoading &&
-      isStreamGated &&
-      streamConditions &&
       getDogEarType({
         streamConditions,
         isUnlisted: isPrivate
@@ -225,7 +223,8 @@ const CollectionPage = ({
       isAlbum={isAlbum}
       numTracks={numTracks}
       isPlayable={isPlayable}
-      modified={lastModified}
+      lastModifiedDate={lastModifiedDate}
+      releaseDate={releaseDate}
       duration={duration}
       isPublished={!isPrivate}
       reposts={playlistRepostCount}
@@ -236,7 +235,6 @@ const CollectionPage = ({
       onPlay={onPlay}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
-      onClickPurchase={onClickPurchaseTrack}
       // Smart collection
       variant={variant}
       gradient={gradient}

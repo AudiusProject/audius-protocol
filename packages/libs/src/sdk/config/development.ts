@@ -9,7 +9,8 @@ export const servicesConfig: ServicesConfig = {
   "discoveryNodes": [
     {
       "delegateOwnerWallet": "0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8",
-      "endpoint": "http://audius-protocol-discovery-provider-1"
+      "endpoint": "http://audius-protocol-discovery-provider-1",
+      "ownerWallet": "0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8"
     }
   ],
   "storageNodes": [

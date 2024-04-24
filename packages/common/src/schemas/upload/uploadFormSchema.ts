@@ -73,7 +73,7 @@ const DDEXResourceContributor = z
   .object({
     name: z.string(),
     roles: z.array(z.string()),
-    sequence_number: z.number().positive()
+    sequence_number: z.optional(z.number())
   })
   .strict()
 
@@ -117,6 +117,20 @@ const premiumMetadataSchema = z.object({
     .nullable()
 })
 
+const hiddenMetadataSchema = z.object({
+  is_unlisted: z.optional(z.boolean()),
+  field_visibility: z.optional(
+    z.object({
+      mood: z.optional(z.boolean()),
+      tags: z.optional(z.boolean()),
+      genre: z.optional(z.boolean()),
+      share: z.optional(z.boolean()),
+      play_count: z.optional(z.boolean()),
+      remixes: z.optional(z.boolean())
+    })
+  )
+})
+
 // TODO: KJ - Need to update the schema in sdk and then import here
 /**
  * Creates a schema for validating tracks to be uploaded.
@@ -137,24 +151,13 @@ const createSdkSchema = () =>
     .object({
       ai_attribution_user_id: z.optional(z.number()).nullable(),
       description: z.optional(z.string().max(1000)),
-      field_visibility: z.optional(
-        z.object({
-          mood: z.optional(z.boolean()),
-          tags: z.optional(z.boolean()),
-          genre: z.optional(z.boolean()),
-          share: z.optional(z.boolean()),
-          play_count: z.optional(z.boolean()),
-          remixes: z.optional(z.boolean())
-        })
-      ),
+
       genre: GenreSchema,
       isrc: z.optional(z.string().nullable()),
       is_scheduled_release: z.optional(z.boolean()),
-      is_unlisted: z.optional(z.boolean()),
       iswc: z.optional(z.string().nullable()),
       license: z.optional(z.string().nullable()),
       mood: MoodSchema,
-
       release_date: z.optional(z.string()).nullable(),
       remix_of: z.optional(
         z
@@ -190,6 +193,7 @@ const createSdkSchema = () =>
       parentalWarningType: z.optional(z.string().nullable())
     })
     .merge(premiumMetadataSchema)
+    .merge(hiddenMetadataSchema)
 
 /**
  * This is not really used as it is, since we pick out the title only of it
@@ -263,6 +267,7 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
         mood: MoodSchema,
         tags: z.optional(z.string())
       }),
+      is_unlisted: z.optional(z.boolean()),
       is_album: z.literal(collectionType === 'album'),
       tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema })),
       ddex_release_ids: z.optional(z.record(z.string()).nullable()),
@@ -284,8 +289,10 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
             })
           )
           .optional()
+          .nullable()
       })
     )
+    .merge(hiddenMetadataSchema)
 
 /**
  * Extra metadata on the collection that doesn't get validated to

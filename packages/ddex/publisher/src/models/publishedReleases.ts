@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import { releaseSchema } from './pendingReleases'
 
 // DDEX releases that have been published
 const publishedReleasesSchema = new mongoose.Schema({
@@ -8,7 +7,7 @@ const publishedReleasesSchema = new mongoose.Schema({
   entity_id: String,
   blockhash: String,
   blocknumber: Number,
-  release: releaseSchema,
+  release: { type: mongoose.Schema.Types.Mixed, default: null },
   created_at: Date,
 })
 

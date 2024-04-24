@@ -20,7 +20,6 @@ from src.queries.query_helpers import (
     SortMethod,
 )
 from src.queries.reactions import ReactionResponse
-from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
 from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
@@ -668,21 +667,19 @@ class DescriptiveArgument(reqparse.Argument):
         return param
 
 
-# Helper to allow consumer to pass message and signature headers as request params
-def add_auth_headers_to_parser(parser, required=True):
-    parser.add_argument(
-        MESSAGE_HEADER,
-        required=required,
-        description="The data that was signed by the user for signature recovery",
-        location="headers",
-    )
-    parser.add_argument(
-        SIGNATURE_HEADER,
-        required=required,
-        description="The signature of data, used for signature recovery",
-        location="headers",
-    )
-    return parser
+class ListEnumArgument(DescriptiveArgument):
+    """
+    A descriptive argument that's used for a list of enum values.
+    See: https://stackoverflow.com/questions/36888626/defining-enum-for-array-in-swagger-2-0
+    """
+
+    @property
+    def __schema__(self):
+        param = super().__schema__
+        if "enum" in param and "items" in param:
+            param["items"]["enum"] = param["enum"]
+            del param["enum"]
+        return param
 
 
 current_user_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
@@ -727,7 +724,6 @@ track_history_parser.add_argument(
     type=str,
     choices=SortDirection._member_names_,
 )
-add_auth_headers_to_parser(track_history_parser, False)
 
 user_favorited_tracks_parser = pagination_with_current_user_parser.copy()
 user_favorited_tracks_parser.add_argument(
@@ -758,7 +754,6 @@ user_tracks_library_parser.add_argument(
     choices=LibraryFilterType._member_names_,
     default=LibraryFilterType.favorite,
 )
-add_auth_headers_to_parser(user_tracks_library_parser)
 
 user_collections_library_parser = user_tracks_library_parser.copy()
 # Replace just the sort method args with the CollectionLibrarySortMethod version
@@ -976,6 +971,7 @@ def format_developer_app(developer_app):
         "user_id": encode_int_id(developer_app["user_id"]),
         "name": developer_app["name"],
         "description": developer_app.get("description", None),
+        "image_url": developer_app.get("image_url", None),
     }
 
 
@@ -984,6 +980,7 @@ def format_authorized_app(authorized_app):
         "address": authorized_app["address"],
         "name": authorized_app["name"],
         "description": authorized_app.get("description", None),
+        "image_url": authorized_app.get("image_url", None),
         "grantor_user_id": encode_int_id(authorized_app["grantor_user_id"]),
         "grant_created_at": authorized_app["grant_created_at"],
         "grant_updated_at": authorized_app["grant_updated_at"],

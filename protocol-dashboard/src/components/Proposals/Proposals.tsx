@@ -1,9 +1,10 @@
-import BN from 'bn.js'
-import clsx from 'clsx'
 import React, { useCallback, useState } from 'react'
 
-import { IconSave } from '@audius/stems'
 import { Box } from '@audius/harmony'
+import { IconSave } from '@audius/stems'
+import BN from 'bn.js'
+import clsx from 'clsx'
+
 import Button, { ButtonType } from 'components/Button'
 import Loading from 'components/Loading'
 import NewProposalModal from 'components/NewProposalModal'
@@ -13,6 +14,7 @@ import { useAccountUser } from 'store/account/hooks'
 import { useProposals } from 'store/cache/proposals/hooks'
 import { Status } from 'types'
 import getActiveStake from 'utils/activeStake'
+
 import styles from './Proposals.module.css'
 
 const messages = {
@@ -64,7 +66,7 @@ const Proposals: React.FC<ProposalsProps> = () => {
           {isUserStaker && <NewProposalBtn />}
         </div>
         <div className={styles.list}>
-          {!!activeProposals ? (
+          {activeProposals ? (
             activeProposals.length > 0 ? (
               activeProposals.map((proposal, i) => (
                 <Proposal key={i} proposal={proposal} />
@@ -73,7 +75,7 @@ const Proposals: React.FC<ProposalsProps> = () => {
               <NoProposals text={messages.noActiveProposals} />
             )
           ) : (
-            <Box p="xl">
+            <Box p='xl'>
               <Loading className={styles.loading} />
             </Box>
           )}
@@ -82,7 +84,7 @@ const Proposals: React.FC<ProposalsProps> = () => {
       <Paper className={clsx(styles.container, styles.all)}>
         <div className={styles.title}>{messages.allProposals}</div>
         <div className={styles.list}>
-          {!!resolvedProposals ? (
+          {resolvedProposals ? (
             resolvedProposals.length > 0 ? (
               resolvedProposals.map((proposal, i) => (
                 <Proposal key={i} proposal={proposal} />
@@ -91,7 +93,7 @@ const Proposals: React.FC<ProposalsProps> = () => {
               <NoProposals text={messages.noProposals} />
             )
           ) : (
-            <Box p="xl">
+            <Box p='xl'>
               <Loading className={styles.loading} />
             </Box>
           )}

@@ -34,7 +34,11 @@ export const UserLink = (props: UserLinkProps) => {
   const linkElement = (
     <TextLink
       to={url}
-      css={{ columnGap: spacing.xs, alignItems: 'center' }}
+      css={{
+        columnGap: spacing.xs,
+        alignItems: 'center',
+        lineHeight: 'normal'
+      }}
       ellipses={popover}
       {...other}
     >

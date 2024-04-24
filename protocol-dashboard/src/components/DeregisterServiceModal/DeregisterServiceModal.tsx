@@ -9,6 +9,7 @@ import TextField from 'components/TextField'
 import { useDeregisterService } from 'store/actions/deregisterService'
 import { ServiceType, Status } from 'types'
 import { useModalControls } from 'utils/hooks'
+
 import styles from './DeregisterServiceModal.module.css'
 const messages = {
   title: 'Deregister Service',

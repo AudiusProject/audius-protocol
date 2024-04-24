@@ -16,7 +16,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       label,
       options,
       onSelect,
-      isDisabled,
+      disabled,
       variant = 'fillContainer',
       size = 'default',
       iconRight = IconCaretDown,
@@ -90,6 +90,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       fontSize: typography.size.s,
       fontWeight: typography.weight.demiBold,
       lineHeight: typography.lineHeight.s,
+      opacity: disabled ? 0.6 : 1,
 
       '&:hover': {
         border: `1px solid ${color.neutral.n800}`,
@@ -173,7 +174,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
             ? IconCloseAlt
             : iconRight
         }
-        disabled={isDisabled}
+        disabled={disabled}
         aria-haspopup='listbox'
         aria-expanded={isOpen}
       >

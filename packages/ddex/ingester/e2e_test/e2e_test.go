@@ -21,17 +21,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func setupEnv(bi *common.BaseIngester) error {
-	if err := createBucket(bi.S3Client, bi.RawBucket); err != nil {
+func setupEnv(i *common.Ingester) error {
+	if err := createBucket(i.S3Client, i.RawBucket); err != nil {
 		return err
 	}
-	if err := createBucket(bi.S3Client, bi.CrawledBucket); err != nil {
+	if err := createBucket(i.S3Client, i.CrawledBucket); err != nil {
 		return err
 	}
-	fmt.Printf("Created buckets: %s, %s\n", bi.RawBucket, bi.CrawledBucket)
+	fmt.Printf("Created buckets: %s, %s\n", i.RawBucket, i.CrawledBucket)
 
-	users := bi.MongoClient.Database("ddex").Collection("users")
-	_, err := users.InsertOne(bi.Ctx, bson.M{
+	users := i.MongoClient.Database("ddex").Collection("users")
+	_, err := users.InsertOne(i.Ctx, bson.M{
 		"_id":             "Bmv3bJ",
 		"decodedUserId":   "130821286",
 		"handle":          "theo_random",
@@ -45,7 +45,7 @@ func setupEnv(bi *common.BaseIngester) error {
 		return fmt.Errorf("failed to insert user into Mongo: %v", err)
 	}
 
-	_, err = users.InsertOne(bi.Ctx, bson.M{
+	_, err = users.InsertOne(i.Ctx, bson.M{
 		"_id":             "abcdef",
 		"decodedUserId":   "12345",
 		"handle":          "Monkey Claw",
@@ -59,7 +59,7 @@ func setupEnv(bi *common.BaseIngester) error {
 		return fmt.Errorf("failed to insert user into Mongo: %v", err)
 	}
 
-	_, err = users.InsertOne(bi.Ctx, bson.M{
+	_, err = users.InsertOne(i.Ctx, bson.M{
 		"_id":             "zyxwvu",
 		"decodedUserId":   "98765",
 		"handle":          "2pec_shakur",
@@ -73,7 +73,7 @@ func setupEnv(bi *common.BaseIngester) error {
 		return fmt.Errorf("failed to insert user into Mongo: %v", err)
 	}
 
-	_, err = users.InsertOne(bi.Ctx, bson.M{
+	_, err = users.InsertOne(i.Ctx, bson.M{
 		"_id":             "fugarian",
 		"decodedUserId":   "111111",
 		"handle":          "fugarian",
@@ -91,10 +91,10 @@ func setupEnv(bi *common.BaseIngester) error {
 }
 
 func TestRunE2E(t *testing.T) {
-	bi := common.NewBaseIngester(context.Background(), "test_e2e")
-	defer bi.MongoClient.Disconnect(bi.Ctx)
+	i := common.NewIngester(context.Background())
+	defer i.MongoClient.Disconnect(i.Ctx)
 
-	err := setupEnv(bi)
+	err := setupEnv(i)
 	if err != nil {
 		t.Fatalf("Failed to set up test environment: %v", err)
 	}
@@ -128,8 +128,9 @@ func TestRunE2E(t *testing.T) {
 				Release: common.Release{
 					ReleaseProfile: common.UnspecifiedReleaseProfile,
 					SDKUploadMetadata: common.SDKUploadMetadata{
-						ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
-						Genre:       "Hip-Hop/Rap",
+						ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+						ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
+						Genre:             "Hip-Hop/Rap",
 						Artists: []common.ResourceContributor{
 							{
 								Name:           "Theo Random",
@@ -178,14 +179,16 @@ func TestRunE2E(t *testing.T) {
 						HasDeal:           true,
 						Tracks: []common.TrackMetadata{
 							{
-								Title:       "Playing With Fire.",
-								ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
-								Genre:       "Hip-Hop/Rap",
-								Duration:    279,
-								ISRC:        stringPtr("ZAA012300131"),
+								Title:             "Playing With Fire.",
+								ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
+								Genre:             "Hip-Hop/Rap",
+								Duration:          279,
+								ISRC:              stringPtr("ZAA012300131"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "ZAA012300131",
 								},
+								ArtistID: "Bmv3bJ",
 								Artists: []common.ResourceContributor{
 									{
 										Name:           "Theo Random",
@@ -217,14 +220,16 @@ func TestRunE2E(t *testing.T) {
 								HasDeal:              true,
 							},
 							{
-								Title:       "No Comment.",
-								ReleaseDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
-								Genre:       "Hip-Hop/Rap",
-								Duration:    142,
-								ISRC:        stringPtr("ZAA012300128"),
+								Title:             "No Comment.",
+								ReleaseDate:       time.Date(2023, time.July, 27, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
+								Genre:             "Hip-Hop/Rap",
+								Duration:          142,
+								ISRC:              stringPtr("ZAA012300128"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "ZAA012300128",
 								},
+								ArtistID: "Bmv3bJ",
 								Artists: []common.ResourceContributor{
 									{Name: "Theo Random", Roles: []string{"AssociatedPerformer", "MainArtist"}, SequenceNumber: 1},
 									{Name: "Thato Saul", Roles: []string{"AssociatedPerformer", "MainArtist"}, SequenceNumber: 2},
@@ -291,6 +296,7 @@ func TestRunE2E(t *testing.T) {
 					ReleaseProfile: common.Common14AudioAlbumMusicOnly,
 					SDKUploadMetadata: common.SDKUploadMetadata{
 						ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+						ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
 						PlaylistName:      stringPtr("A Monkey Claw in a Velvet Glove"),
 						PlaylistOwnerID:   stringPtr("abcdef"),
 						PlaylistOwnerName: stringPtr("Monkey Claw"),
@@ -319,12 +325,13 @@ func TestRunE2E(t *testing.T) {
 						CoverArtURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T7_007.jpg",
 						Tracks: []common.TrackMetadata{
 							{
-								Title:       "Can you feel ...the Monkey Claw!",
-								ArtistName:  "Monkey Claw",
-								ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
-								Genre:       "Metal",
-								Duration:    811,
-								ISRC:        stringPtr("CASE00000001"),
+								Title:             "Can you feel ...the Monkey Claw!",
+								ArtistName:        "Monkey Claw",
+								ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
+								Genre:             "Metal",
+								Duration:          811,
+								ISRC:              stringPtr("CASE00000001"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "CASE00000001",
 								},
@@ -351,6 +358,7 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
+								ArtistID: "abcdef",
 								Artists: []common.ResourceContributor{
 									{
 										Name:           "Monkey Claw",
@@ -364,12 +372,13 @@ func TestRunE2E(t *testing.T) {
 								HasDeal:         true,
 							},
 							{
-								Title:       "Red top mountain, blown sky high",
-								ArtistName:  "Monkey Claw",
-								ReleaseDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
-								Genre:       "Metal",
-								Duration:    366,
-								ISRC:        stringPtr("CASE00000002"),
+								Title:             "Red top mountain, blown sky high",
+								ArtistName:        "Monkey Claw",
+								ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
+								ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
+								Genre:             "Metal",
+								Duration:          366,
+								ISRC:              stringPtr("CASE00000002"),
 								DDEXReleaseIDs: common.ReleaseIDs{
 									ISRC: "CASE00000002",
 								},
@@ -396,6 +405,7 @@ func TestRunE2E(t *testing.T) {
 										SequenceNumber: 1,
 									},
 								},
+								ArtistID: "abcdef",
 								Artists: []common.ResourceContributor{
 									{
 										Name:           "Monkey Claw",
@@ -445,11 +455,13 @@ func TestRunE2E(t *testing.T) {
 				Release: common.Release{
 					ReleaseProfile: common.Common13AudioSingle,
 					SDKUploadMetadata: common.SDKUploadMetadata{
-						ReleaseDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
-						Genre:       "Blues",
+						ReleaseDate:       time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
+						ValidityStartDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
+						Genre:             "Blues",
 						DDEXReleaseIDs: &common.ReleaseIDs{
 							ISRC: "NLRD51952976",
 						},
+						ArtistID: stringPtr("fugarian"),
 						Artists: []common.ResourceContributor{
 							{
 								Name:           "FUGARIAN",
@@ -470,7 +482,6 @@ func TestRunE2E(t *testing.T) {
 						CoverArtURLHash:     stringPtr("03a3372963d1567ef98f7229c49538e0"),
 						CoverArtURLHashAlgo: stringPtr("MD5"),
 						Title:               stringPtr("All My Single"),
-						ArtistID:            stringPtr(""), // TODO: Shouldn't be empty
 						Duration:            75,
 						ISRC:                stringPtr("NLRD51952976"),
 						ResourceContributors: []common.ResourceContributor{
@@ -516,10 +527,10 @@ func TestRunE2E(t *testing.T) {
 	}
 
 	for _, st := range subTests {
-		remotePath := uploadFixture(t, bi, st.path)
+		remotePath := uploadFixture(t, i, st.path)
 
 		// Verify the parser (pending_releases collection)
-		doc, err := wait2MinsForDoc(bi.Ctx, bi.PendingReleasesColl, bson.M{"delivery_remote_path": remotePath})
+		doc, err := wait2MinsForDoc(i.Ctx, i.PendingReleasesColl, bson.M{"delivery_remote_path": remotePath})
 		if err != nil {
 			t.Fatalf("Error finding pending release for '%s' in Mongo: %v", remotePath, err)
 		}
@@ -546,7 +557,7 @@ func TestRunE2E(t *testing.T) {
 		assert.Equal(t, expectedTracks, actualTracks)
 
 		// Verify the crawler (deliveries collection)
-		doc, err = wait2MinsForDoc(bi.Ctx, bi.DeliveriesColl, bson.M{"_id": remotePath})
+		doc, err = wait2MinsForDoc(i.Ctx, i.DeliveriesColl, bson.M{"_id": remotePath})
 		if err != nil {
 			t.Fatalf("Error finding delivery in Mongo: %v", err)
 		}
@@ -582,7 +593,7 @@ func TestRunE2E(t *testing.T) {
 		}
 		assert.Equal(t, st.expectedD, delivery)
 
-		// TODO: Leaving the publisher untested for now
+		// TODO: Leaving the publisher untested for now. No need to do this anymore (at least not fully)
 	}
 }
 
@@ -610,7 +621,7 @@ func createBucket(s3Client *s3.S3, bucket string) error {
 }
 
 // uploadFixture uploads a test fixture (i.e., folder or ZIP file) to the S3 "raw" bucket
-func uploadFixture(t *testing.T, bi *common.BaseIngester, path string) string {
+func uploadFixture(t *testing.T, i *common.Ingester, path string) string {
 	fullPath := filepath.Join("fixtures", path)
 	info, err := os.Stat(fullPath)
 	if err != nil {
@@ -620,22 +631,22 @@ func uploadFixture(t *testing.T, bi *common.BaseIngester, path string) string {
 	var s3Path string
 	if info.IsDir() {
 		baseDir := filepath.Base(path) // Now 'baseDir' is 'someFolder' for 'fixtures/myPath/somepath/someFolder'
-		s3Path, err = uploadDirectory(bi, fullPath, baseDir)
+		s3Path, err = uploadDirectory(i, fullPath, baseDir)
 	} else {
 		// If it's a ZIP file, upload directly to the root of the S3 bucket
 		if strings.HasSuffix(path, ".zip") {
 			_, fileName := filepath.Split(path) // Just the file name
-			s3Path, err = uploadFile(bi, fullPath, "", fileName)
+			s3Path, err = uploadFile(i, fullPath, "", fileName)
 		}
 	}
 	if err != nil {
 		t.Fatalf("Error uploading file or dir '%s': %v", fullPath, err)
 	}
 
-	return fmt.Sprintf("s3://%s/%s", bi.RawBucket, s3Path)
+	return fmt.Sprintf("s3://%s/%s", i.RawBucket, s3Path)
 }
 
-func uploadDirectory(bi *common.BaseIngester, dirPath, baseDir string) (string, error) {
+func uploadDirectory(i *common.Ingester, dirPath, baseDir string) (string, error) {
 	entries, err := os.ReadDir(dirPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
@@ -648,9 +659,9 @@ func uploadDirectory(bi *common.BaseIngester, dirPath, baseDir string) (string, 
 
 		fullPath := filepath.Join(dirPath, entry.Name())
 		if entry.IsDir() {
-			_, err = uploadDirectory(bi, fullPath, filepath.Join(baseDir, entry.Name()))
+			_, err = uploadDirectory(i, fullPath, filepath.Join(baseDir, entry.Name()))
 		} else {
-			_, err = uploadFile(bi, fullPath, baseDir, entry.Name())
+			_, err = uploadFile(i, fullPath, baseDir, entry.Name())
 		}
 		if err != nil {
 			return "", err
@@ -660,7 +671,7 @@ func uploadDirectory(bi *common.BaseIngester, dirPath, baseDir string) (string, 
 	return baseDir, nil
 }
 
-func uploadFile(bi *common.BaseIngester, filePath, baseDir, fileName string) (string, error) {
+func uploadFile(i *common.Ingester, filePath, baseDir, fileName string) (string, error) {
 	if fileName == ".DS_Store" {
 		return "", nil
 	}
@@ -673,8 +684,8 @@ func uploadFile(bi *common.BaseIngester, filePath, baseDir, fileName string) (st
 
 	s3Key := filepath.Join(baseDir, fileName) // Construct S3 key from baseDir and fileName
 
-	_, err = bi.S3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(bi.RawBucket),
+	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(i.RawBucket),
 		Key:    aws.String(s3Key),
 		Body:   file,
 	})

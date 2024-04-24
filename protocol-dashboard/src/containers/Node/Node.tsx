@@ -1,19 +1,20 @@
-import NodeOverview from 'components/NodeOverview'
-import { useMatch, useParams } from 'react-router-dom'
-import { useAccount } from 'store/account/hooks'
-import { useContentNode } from 'store/cache/contentNode/hooks'
-import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-
 import { IconEmbed } from '@audius/harmony'
 import clsx from 'clsx'
+import { useMatch, useParams } from 'react-router-dom'
+
 import IndividualNodeUptimeChart from 'components/IndividualNodeUptimeChart'
 import IndividualServiceApiCallsChart from 'components/IndividualServiceApiCallsChart'
 import IndividualServiceUniqueUsersChart from 'components/IndividualServiceUniqueUsersChart'
+import NodeOverview from 'components/NodeOverview'
 import Page from 'components/Page'
+import { useAccount } from 'store/account/hooks'
+import { useContentNode } from 'store/cache/contentNode/hooks'
+import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
 import { Address, ServiceType, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { createStyles } from 'utils/mobile'
 import { NODES_DISCOVERY_NODE, NOT_FOUND } from 'utils/routes'
+
 import desktopStyles from './Node.module.css'
 import mobileStyles from './NodeMobile.module.css'
 
@@ -35,7 +36,7 @@ const ContentNode: React.FC<ContentNodeProps> = ({
     return null
   }
 
-  const isOwner = accountWallet === contentNode?.owner ?? false
+  const isOwner = accountWallet === contentNode?.owner
 
   return (
     <>
@@ -80,7 +81,7 @@ const DiscoveryNode: React.FC<DiscoveryNodeProps> = ({
     return null
   }
 
-  const isOwner = accountWallet === discoveryNode?.owner ?? false
+  const isOwner = accountWallet === discoveryNode?.owner
 
   return (
     <>

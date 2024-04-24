@@ -4,10 +4,10 @@ from flask_restx import Namespace, Resource, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
+    ListEnumArgument,
     abort_bad_request_param,
     abort_forbidden,
     abort_unauthorized,
-    add_auth_headers_to_parser,
     decode_with_abort,
     extend_transaction_details,
     make_full_response,
@@ -63,8 +63,6 @@ transaction_history_parser.add_argument(
     default=SortDirection.desc,
 )
 
-add_auth_headers_to_parser(transaction_history_parser)
-
 
 @full_user_ns.route("/<string:id>/transactions/audio")
 class GetTransactionHistory(Resource):
@@ -74,8 +72,8 @@ class GetTransactionHistory(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(transaction_history_parser)
+    @auth_middleware(transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_user_ns)
         return self._get(user_id, authed_user_id)
@@ -105,8 +103,8 @@ class LegacyGetTransactionHistory(GetTransactionHistory):
         deprecated=True,
     )
     @full_ns.expect(transaction_history_parser)
+    @auth_middleware(transaction_history_parser)
     @full_ns.marshal_with(transaction_history_response)
-    @auth_middleware()
     def get(self, authed_user_id=None):
         """Gets the user's $AUDIO transaction history within the App
 
@@ -122,7 +120,6 @@ transaction_history_count_response = make_full_response(
 transaction_history_count_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
-add_auth_headers_to_parser(transaction_history_count_parser)
 
 
 @full_user_ns.route("/<string:id>/transactions/audio/count")
@@ -133,8 +130,8 @@ class GetTransactionHistoryCount(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(transaction_history_count_parser)
+    @auth_middleware(transaction_history_count_parser)
     @full_user_ns.marshal_with(transaction_history_count_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
         if authed_user_id is None:
@@ -153,8 +150,8 @@ class LegacyGetTransactionHistoryCount(Resource):
         deprecated=True,
     )
     @full_ns.expect(transaction_history_count_parser)
+    @auth_middleware(transaction_history_count_parser)
     @full_ns.marshal_with(transaction_history_count_response)
-    @auth_middleware()
     def get(self, authed_user_id=None):
         """Gets the count of the user's $AUDIO transaction history within the App.
 
@@ -169,12 +166,14 @@ class LegacyGetTransactionHistoryCount(Resource):
 
 def add_transaction_history_filters(parser: reqparse.RequestParser):
     parser.add_argument(
-        "type",
-        required=False,
-        description="Filters the type of transactions to show",
-        type=str,
-        choices=USDCTransactionType._member_names_,
-        default=None,
+        ListEnumArgument(
+            "type",
+            required=False,
+            description="Filters the type of transactions to show",
+            choices=USDCTransactionType._member_names_,
+            action="append",
+            default=None,
+        )
     )
     parser.add_argument(
         "include_system_transactions",
@@ -205,8 +204,8 @@ class GetUSDCTransactionHistory(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(usdc_transaction_history_parser)
+    @auth_middleware(usdc_transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
         if authed_user_id is None:
@@ -235,7 +234,6 @@ usdc_transaction_history_count_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
 add_transaction_history_filters(usdc_transaction_history_count_parser)
-add_auth_headers_to_parser(usdc_transaction_history_count_parser)
 
 
 @full_user_ns.route("/<string:id>/transactions/usdc/count")
@@ -246,8 +244,8 @@ class GetUSDCTransactionHistoryCount(Resource):
         params={"id": "A User ID"},
     )
     @full_user_ns.expect(usdc_transaction_history_count_parser)
+    @auth_middleware(usdc_transaction_history_count_parser)
     @full_user_ns.marshal_with(transaction_history_count_response)
-    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
         if authed_user_id is None:

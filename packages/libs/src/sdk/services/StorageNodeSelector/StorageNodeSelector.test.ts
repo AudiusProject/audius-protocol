@@ -52,7 +52,7 @@ const mswHandlers = [
       block_difference: 0,
       network: {
         discovery_nodes_with_owner: [
-          { endpoint: discoveryNode, delegateOwnerWallet: '' }
+          { endpoint: discoveryNode, delegateOwnerWallet: '', ownerWallet: '' }
         ],
         content_nodes: [storageNodeA, storageNodeB]
       }
@@ -154,7 +154,8 @@ describe('StorageNodeSelector', () => {
   it('selects correct storage node when discovery node is selected', async () => {
     const bootstrapDiscoveryNodes = [discoveryNode].map((endpoint) => ({
       endpoint,
-      delegateOwnerWallet: ''
+      delegateOwnerWallet: '',
+      ownerWallet: ''
     }))
     const discoveryNodeSelector = new DiscoveryNodeSelector({
       healthCheckThresholds: {

@@ -5,12 +5,11 @@ Processes and uploads DDEX releases to Audius.
 ## Production setup
 Use audius-docker-compose to run a production DDEX instance. After you've installed audius-docker-compose, set the following required environment variables in override.env (in the audius-docker-compose repository, not here).
 
-### Glossary
+### Creating a bucket in S3
 
 * `env` refers to `dev`, `staging`, or `prod`
 * `provider` refers to the name of the label/distributor/provider
 
-### Creating a bucket in S3
 1. Create a new bucket in the S3 console with the name `ddex-<env>-<provider>-raw`. Use all the defaults, including "ACLs disabled"
 
 2. Do the same for a bucket named `ddex-<env>-<provider>-crawled`. Use all the defaults, including "ACLs disabled"
@@ -112,7 +111,7 @@ audius-cli launch ddex
 ```
 
 ## Local dev
-DDEX requires these services: `ddex-webapp`, `ddex-crawler`, `ddex-parser`, `ddex-publisher`, `ddex-mongo`.
+DDEX requires these services: `ddex-webapp`, `ddex-ingester`, `ddex-publisher`, `ddex-mongo`.
 
 ### Env configuration
 All services read from `packages/ddex/.env`.
@@ -125,37 +124,71 @@ For docker compose to work: `cat packages/ddex/.env >> dev-tools/compose/.env`
 
 ### One-time setup
 1. `audius-compose connect` to update your `/etc/hosts`
-2. Install the AWS cli and configure it for local dev:
-    ```sh
-    pip install awscli && \
-    aws configure set aws_access_key_id test && \
-    aws configure set aws_secret_access_key test && \
-    aws configure set region us-west-2
-    ```
+2. Install the AWS cli and configure a profile for local dev:
+
+```bash
+pip install awscli
+
+aws configure --profile local
+# enter these details
+# AWS Access Key ID [None]: test
+# AWS Secret Access Key [None]: test
+# Default region name [None]: us-west-2
+# Default output format [None]: json
+```
+
+edit `~/.aws/config` and add
+```
+[profile local]
+region = us-west-2
+endpoint_url = http://ingress:4566
+```
+
+To use the created profile, run:
+```bash
+export AWS_PROFILE=local
+```
+You may also pass `--profile local` to all aws commands instead.
+
 3. To use the DDEX webapp as an admin, add your decoded staging user ID to `extra-env.DDEX_ADMIN_ALLOWLIST` in `../../dev-tools/config.json`
   - Find your user ID by going to `https://discoveryprovider.staging.audius.co/v1/full/users/handle/<your staging handle>`, searching for `id`, and then decoding it by pasting it into the "Encoded" textbox [here](https://healthz.audius.co/#/utils/id) and copying the "Integer" value
-  - Note that this requires a restart if the app is already running (`audius-compose down && audius-compose up -ddex-[release-by-release|batched]`)
+  - Note that this requires a restart if the app is already running (`audius-compose down && audius-compose up --ddex-[release-by-release|batched]`)
 
 
 ### Bring up the ddex stack locally
 Run `audius-compose up --ddex-release-by-release` (or `audius-compose up --ddex-batched` -- see "Choreography" in Glossary below), and navigate to `http://localhost:9000` to view the DDEX webapp
 
 To upload a delivery to be processed:
-  1. Create buckets: `aws --endpoint=http://ingress:4566 s3 mb s3://audius-test-raw && aws --endpoint=http://ingress:4566 s3 mb s3://audius-test-crawled`
-  2. Upload your file: `aws --endpoint=http://ingress:4566 s3 cp <file from your computer> s3://audius-test-raw`. Example: `aws --endpoint=http://ingress:4566 s3 cp ./ingester/e2e_test/fixtures/release_by_release/ern381/sony1.zip s3://audius-test-raw`
+  1. Create buckets
+```bash
+aws s3 mb s3://audius-test-raw
+aws s3 mb s3://audius-test-crawled
+```
+
+  2. Upload your file
+```bash
+aws s3 cp <file from your computer> s3://audius-test-raw
+# e.g.
+# aws s3 cp ./ingester/e2e_test/fixtures/release_by_release/ern381/sony1.zip s3://audius-test-raw
+```
+
   3. Watch the UI (localhost:9000) for the delivery to be crawled in a few seconds
 
-To access the ddex db via the mongo shell: `docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin`, and then `use ddex`.  
+To access the ddex db via the mongo shell:
+```bash
+docker exec -it ddex-mongo mongosh -u mongo -p mongo --authenticationDatabase admin
+> use ddex
+```
 
 ### Develop with hot reloading
 Each service can be run independently as long as `ddex-mongo` is up (from `audius-compose up --ddex-[release-by-release|batched]` and then optionally stopping individual services). See the respective subdirectories' READMEs.
 
 ### Running / debugging the e2e test
 * Run `audius-compose test down && audius-compose test run ddex-e2e-release-by-release` to start the ddex stack and run the e2e test for the Release-By-Release choreography. Or run `audius-compose test run ddex-e2e-batched` to run the e2e test for the Batched choreography.
-* To debug S3, follow the onte-time setup instructions above to update your `/etc/hosts` and install the AWS cli. Then you can run `aws --endpoint=http://localhost:4566 s3 ls` and other commands to debug the S3 state.
+* To debug S3, follow the onte-time setup instructions above to update your `/etc/hosts` and install the AWS cli. Then you can run `aws s3 ls` and other commands to debug the S3 state.
 
 ## App architecture and flows
-1. A distributor uploads a ZIP file to the "raw" AWS S3 bucket.
+1. A distributor either uploads a ZIP file to the "raw" AWS S3 bucket or flat files directly.
 2. The Crawler periodically checks this bucket for new uploads. It downloads+unzips the file and crawls it for one or more "releases" (ie, metadata and assets for a track -- or collection of tracks -- to upload to Audius). The assets are uploaded to the "crawled" AWS S3 bucket, and metadata is stored in MongoDB.
 3. The Parser app watches for new releases and processes each one into a format that the Publisher app can use to upload to Audius.
 4. When the release date is reached for a release, the Publisher app uploads the release to Audius.

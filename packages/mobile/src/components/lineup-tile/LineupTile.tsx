@@ -67,6 +67,7 @@ export const LineupTile = ({
   const currentUserId = useSelector(getUserId)
   const isOwner = user_id === currentUserId
   const isCollection = 'playlist_id' in item
+  const isAlbum = 'is_album' in item && item.is_album
   const isTrack = 'track_id' in item
   const contentId = isTrack ? item.track_id : item.playlist_id
   const streamConditions = item.stream_conditions ?? null
@@ -113,6 +114,7 @@ export const LineupTile = ({
           duration={duration}
           trackId={id}
           isLongFormContent={isLongFormContent}
+          isCollection={isCollection}
         />
         <LineupTileMetadata
           artistName={name}
@@ -122,6 +124,7 @@ export const LineupTile = ({
           title={title}
           user={user}
           isPlayingUid={isPlayingUid}
+          type={isTrack ? 'track' : isAlbum ? 'album' : 'playlist'}
         />
         {coSign ? <LineupTileCoSign coSign={coSign} /> : null}
         <LineupTileStats

@@ -41,10 +41,10 @@ export const WEB3_MODAL_METADATA = {
 }
 
 export const ETHERS_CONFIG = defaultConfig({
-  /*Required*/
+  /* Required */
   metadata: WEB3_MODAL_METADATA,
 
-  /*Optional*/
+  /* Optional */
   enableEIP6963: true, // true by default
   enableInjected: true, // true by default
   enableCoinbase: true, // true by default

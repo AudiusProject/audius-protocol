@@ -54,22 +54,22 @@ debian | ubuntu)
     ;;
 *)
     if ! command -v docker &>/dev/null; then
-        echo "Docker is not installed. Please install docker and try again."
+        echo "Docker is not installed. Please install docker and try again." >&2
         exit 1
     fi
 
     if ! command -v python3 &>/dev/null; then
-        echo "Python3 is not installed. Please install python3 and try again."
+        echo "Python3 is not installed. Please install python3 and try again." >&2
         exit 1
     fi
 
     if ! command -v pip3 &>/dev/null; then
-        echo "pip3 is not installed. Please install pip3 and try again."
+        echo "pip3 is not installed. Please install pip3 and try again." >&2
         exit 1
     fi
 
     if ! docker compose version &>/dev/null; then
-        echo "Docker compose v2 is not installed. Please install docker compose v2 and try again."
+        echo "Docker compose v2 is not installed. Please install docker compose v2 and try again." >&2
         exit 1
     fi
     ;;

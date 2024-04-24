@@ -28,6 +28,7 @@ first_set_new_apps_data = [
         "user_id": 1,
         "name": "My Other App",
         "description": "",
+        "image_url": "https://avatars.githubusercontent.com/u/38231615",
         "address": "0x52007fcc1ef9e436be0b0aa8201d1f28b7303b13",
         "app_signature": {
             "signature": "314ff529493c4b85d3a863c9836d2f6e1fccf26692f9c7fbcb6df992aa96610761ab621f89dfdcf3251178b683f3456dc60091e0192ef47912a7a224b609eda01b",
@@ -38,6 +39,7 @@ first_set_new_apps_data = [
     {
         "user_id": 2,
         "name": "User 2 App",
+        "image_url": "i am not a url lol!",
         "address": "0x1f590ded56a693ee4dd986d820236f82d3659b96",
         "app_signature": {
             "signature": "47944289d41c8c4051987a69cda73f3099064b0a5b2e32e03b620911ead1a37e59daaa5c0323ddc42c9da0c34c1c842a2c302e1e27dae971118e57de255e7db51b",
@@ -97,7 +99,13 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": first_set_new_apps_data[0]["user_id"],
-                        "_metadata": f"""{{"name": "{first_set_new_apps_data[0]["name"]}", "description": "{first_set_new_apps_data[0]["description"]}", "app_signature": {{"signature": "{first_set_new_apps_data[0]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[0]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if first_set_new_apps_data[0]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{
+                            "name": "{first_set_new_apps_data[0]["name"]}",
+                            "description": "{first_set_new_apps_data[0]["description"]}",
+                            "app_signature": {{"signature": "{first_set_new_apps_data[0]["app_signature"]["signature"]}",
+                            "message": "{first_set_new_apps_data[0]["app_signature"]["message"]}"}},
+                            "is_personal_access": {'true' if first_set_new_apps_data[0]["is_personal_access"] else 'false' }
+                        }}""",
                         "_action": Action.CREATE,
                         "_signer": "user1wallet",
                     }
@@ -112,7 +120,14 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": first_set_new_apps_data[1]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{first_set_new_apps_data[1]["name"]}", "description": "{first_set_new_apps_data[1]["description"]}", "app_signature": {{"signature": "{first_set_new_apps_data[1]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[1]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if first_set_new_apps_data[1]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{
+                            "name": "{first_set_new_apps_data[1]["name"]}",
+                            "description": "{first_set_new_apps_data[1]["description"]}",
+                            "image_url": "{first_set_new_apps_data[1]["image_url"]}",
+                            "app_signature": {{"signature": "{first_set_new_apps_data[1]["app_signature"]["signature"]}",
+                            "message": "{first_set_new_apps_data[1]["app_signature"]["message"]}"}},
+                            "is_personal_access": {'true' if first_set_new_apps_data[1]["is_personal_access"] else 'false' }
+                        }}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -126,7 +141,11 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": first_set_new_apps_data[2]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{first_set_new_apps_data[2]["name"]}", "app_signature": {{"signature": "{first_set_new_apps_data[2]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[2]["app_signature"]["message"]}"}}}}""",
+                        "_metadata": f"""{{
+                            "name": "{first_set_new_apps_data[2]["name"]}",
+                            "app_signature": {{"signature": "{first_set_new_apps_data[2]["app_signature"]["signature"]}",
+                            "message": "{first_set_new_apps_data[2]["app_signature"]["message"]}"}}
+                        }}""",
                         "_signer": "user2wallet",
                     }
                 )
@@ -140,7 +159,11 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": first_set_new_apps_data[3]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{first_set_new_apps_data[3]["name"]}", "app_signature": {{"signature": "{first_set_new_apps_data[3]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[3]["app_signature"]["message"]}"}}}}""",
+                        "_metadata": f"""{{
+                            "name": "{first_set_new_apps_data[3]["name"]}",
+                            "app_signature": {{"signature": "{first_set_new_apps_data[3]["app_signature"]["signature"]}",
+                            "message": "{first_set_new_apps_data[3]["app_signature"]["message"]}"}}
+                        }}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -166,7 +189,9 @@ def test_index_app(app, mocker):
         "users": [
             {"user_id": user_id, "wallet": f"user{user_id}wallet"}
             for user_id in range(1, 6)
-        ],
+            # Private key: fcacb6c31a5b6bfd506a277ea34efcc44465476457385220fc252d7e58d6f2e7
+        ]
+        + [{"user_id": 99, "wallet": "0xE2975eF7594353238Cc68ECCf5d444c47BC17058"}],
         "developer_apps": [
             {
                 "user_id": 5,
@@ -204,6 +229,12 @@ def test_index_app(app, mocker):
             assert res.description == (
                 expected_app.get("description", None) or None
             )  # If description value is empty in metadata, the description value should be null in the table row.
+            expected_image_url = expected_app.get("image_url", None)
+            assert res.image_url == (
+                expected_image_url
+                if expected_image_url and expected_image_url.startswith("http")
+                else None
+            )
             assert res.is_personal_access == expected_app.get(
                 "is_personal_access", False
             )
@@ -371,6 +402,21 @@ def test_index_app(app, mocker):
                         "_userId": 2,
                         "_action": Action.CREATE,
                         "_metadata": '{"app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}, "name": "My really long app name this is really long we will rock you"}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx12": [
+            {
+                # Address is a user's wallet
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"app_signature": {"signature": "20e5b1d95cc5d942571a097b5d7cb30cfcf355bbb5a51df498914dc42f4472d53c0d5ee9d2d89a00b56d19c912fade6760daa7f4c62437c5251776bd34cc4f3c1c", "message": "Creating Audius developer app at 1686252026"}, "name": "My app name"}',
                         "_signer": "user2wallet",
                     }
                 )

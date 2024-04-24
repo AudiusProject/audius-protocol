@@ -101,22 +101,24 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
     sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAudioTransactionCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAudioTransactionsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     sortMethod?: GetAudioTransactionsSortMethodEnum;
     sortDirection?: GetAudioTransactionsSortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetFavoritesRequest {
@@ -145,20 +147,20 @@ export interface GetFollowingRequest {
 
 export interface GetPurchasesRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
     sortMethod?: GetPurchasesSortMethodEnum;
     sortDirection?: GetPurchasesSortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetPurchasesCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetRelatedUsersRequest {
@@ -184,20 +186,20 @@ export interface GetRepostsByHandleRequest {
 
 export interface GetSalesRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
     sortMethod?: GetSalesSortMethodEnum;
     sortDirection?: GetSalesSortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetSalesCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetSubscribersRequest {
@@ -255,6 +257,8 @@ export interface GetTracksByUserRequest {
     sortMethod?: GetTracksByUserSortMethodEnum;
     sortDirection?: GetTracksByUserSortDirectionEnum;
     filterTracks?: GetTracksByUserFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetTracksByUserHandleRequest {
@@ -267,26 +271,28 @@ export interface GetTracksByUserHandleRequest {
     sortMethod?: GetTracksByUserHandleSortMethodEnum;
     sortDirection?: GetTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUSDCTransactionCountRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
-    type?: GetUSDCTransactionCountTypeEnum;
+    type?: Array<GetUSDCTransactionCountTypeEnum>;
     includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionCountMethodEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUSDCTransactionsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     sortMethod?: GetUSDCTransactionsSortMethodEnum;
     sortDirection?: GetUSDCTransactionsSortDirectionEnum;
-    type?: GetUSDCTransactionsTypeEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+    type?: Array<GetUSDCTransactionsTypeEnum>;
     includeSystemTransactions?: boolean;
     method?: GetUSDCTransactionsMethodEnum;
 }
@@ -303,8 +309,6 @@ export interface GetUserByHandleRequest {
 
 export interface GetUserLibraryAlbumsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -312,12 +316,12 @@ export interface GetUserLibraryAlbumsRequest {
     sortDirection?: GetUserLibraryAlbumsSortDirectionEnum;
     type?: GetUserLibraryAlbumsTypeEnum;
     sortMethod?: GetUserLibraryAlbumsSortMethodEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserLibraryPlaylistsRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -325,12 +329,12 @@ export interface GetUserLibraryPlaylistsRequest {
     sortDirection?: GetUserLibraryPlaylistsSortDirectionEnum;
     type?: GetUserLibraryPlaylistsTypeEnum;
     sortMethod?: GetUserLibraryPlaylistsSortMethodEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserLibraryTracksRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -338,6 +342,8 @@ export interface GetUserLibraryTracksRequest {
     sortMethod?: GetUserLibraryTracksSortMethodEnum;
     sortDirection?: GetUserLibraryTracksSortDirectionEnum;
     type?: GetUserLibraryTracksTypeEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserReplicaSetRequest {
@@ -477,6 +483,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/handle/{handle}/tracks/ai_attributed`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
@@ -502,14 +516,6 @@ export class UsersApi extends runtime.BaseAPI {
     async getAudioTransactionCountRaw(params: GetAudioTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactionCount.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionCount.');
         }
 
         const queryParameters: any = {};
@@ -549,14 +555,6 @@ export class UsersApi extends runtime.BaseAPI {
     async getAudioTransactionsRaw(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactions.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactions.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactions.');
         }
 
         const queryParameters: any = {};
@@ -755,14 +753,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchases.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getPurchases.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getPurchases.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -820,14 +810,6 @@ export class UsersApi extends runtime.BaseAPI {
     async getPurchasesCountRaw(params: GetPurchasesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesCountResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasesCount.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getPurchasesCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getPurchasesCount.');
         }
 
         const queryParameters: any = {};
@@ -1002,14 +984,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSales.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getSales.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getSales.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1067,14 +1041,6 @@ export class UsersApi extends runtime.BaseAPI {
     async getSalesCountRaw(params: GetSalesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesCountResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSalesCount.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getSalesCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getSalesCount.');
         }
 
         const queryParameters: any = {};
@@ -1441,6 +1407,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -1504,6 +1478,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/handle/{handle}/tracks`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
@@ -1531,17 +1513,9 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactionCount.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactionCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactionCount.');
-        }
-
         const queryParameters: any = {};
 
-        if (params.type !== undefined) {
+        if (params.type) {
             queryParameters['type'] = params.type;
         }
 
@@ -1590,14 +1564,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactions.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactions.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactions.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1616,7 +1582,7 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = params.sortDirection;
         }
 
-        if (params.type !== undefined) {
+        if (params.type) {
             queryParameters['type'] = params.type;
         }
 
@@ -1736,14 +1702,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryAlbums.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryAlbums.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryAlbums.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1813,14 +1771,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryPlaylists.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryPlaylists.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryPlaylists.');
-        }
-
         const queryParameters: any = {};
 
         if (params.offset !== undefined) {
@@ -1888,14 +1838,6 @@ export class UsersApi extends runtime.BaseAPI {
     async getUserLibraryTracksRaw(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackLibraryResponseFull>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryTracks.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryTracks.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryTracks.');
         }
 
         const queryParameters: any = {};

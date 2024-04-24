@@ -73,23 +73,23 @@ import {
 
 export interface DownloadPurchasesAsCSVRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface DownloadSalesAsCSVRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface DownloadUSDCWithdrawalsAsCSVRequest {
     id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
     userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAIAttributedTracksByUserHandleRequest {
@@ -102,6 +102,8 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
     sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetAuthorizedAppsRequest {
@@ -183,6 +185,8 @@ export interface GetTracksByUserRequest {
     sortMethod?: GetTracksByUserSortMethodEnum;
     sortDirection?: GetTracksByUserSortDirectionEnum;
     filterTracks?: GetTracksByUserFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface GetUserRequest {
@@ -218,14 +222,6 @@ export class UsersApi extends runtime.BaseAPI {
     async downloadPurchasesAsCSVRaw(params: DownloadPurchasesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadPurchasesAsCSV.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadPurchasesAsCSV.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadPurchasesAsCSV.');
         }
 
         const queryParameters: any = {};
@@ -270,14 +266,6 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadSalesAsCSV.');
         }
 
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadSalesAsCSV.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadSalesAsCSV.');
-        }
-
         const queryParameters: any = {};
 
         if (params.userId !== undefined) {
@@ -318,14 +306,6 @@ export class UsersApi extends runtime.BaseAPI {
     async downloadUSDCWithdrawalsAsCSVRaw(params: DownloadUSDCWithdrawalsAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
         }
 
         const queryParameters: any = {};
@@ -405,6 +385,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/handle/{handle}/tracks/ai_attributed`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
@@ -926,6 +914,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),

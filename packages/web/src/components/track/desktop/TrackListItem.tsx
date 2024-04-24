@@ -26,6 +26,7 @@ const makeStrings = ({ deleted }: { deleted: boolean }) => ({
 type TrackListItemProps = {
   index: number
   isLoading: boolean
+  isAlbum: boolean
   active: boolean
   size: TrackTileSize
   disableActions: boolean
@@ -35,6 +36,7 @@ type TrackListItemProps = {
   artistHandle: string
   track?: EnhancedCollectionTrack
   forceSkeleton?: boolean
+  isLastTrack?: boolean
 }
 
 const TrackListItem = ({
@@ -47,6 +49,8 @@ const TrackListItem = ({
   goToRoute,
   togglePlay,
   isLoading,
+  isAlbum,
+  isLastTrack,
   forceSkeleton = false
 }: TrackListItemProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
@@ -135,7 +139,8 @@ const TrackListItem = ({
         [styles.deleted]: deleted,
         [styles.active]: active,
         [styles.disabled]: disableActions || deleted,
-        [styles.noBorder]: isLoading
+        [styles.noBorder]: isLoading,
+        [styles.lastTrack]: isLastTrack
       })}
       onClick={onPlayTrack}
     >
@@ -161,16 +166,18 @@ const TrackListItem = ({
             {track.title}
             {strings.deleted}
           </div>
-          <div className={styles.artistName} onClick={onClickArtistName}>
-            <div className={styles.by}>{strings.by}</div>
-            {track.user.is_deactivated ? (
-              `${track.user.name} [Deactivated]`
-            ) : (
-              <ArtistPopover handle={track.user.handle}>
-                {track.user.name}
-              </ArtistPopover>
-            )}
-          </div>
+          {!isAlbum ? (
+            <div className={styles.artistName} onClick={onClickArtistName}>
+              <div className={styles.by}>{strings.by}</div>
+              {track.user.is_deactivated ? (
+                `${track.user.name} [Deactivated]`
+              ) : (
+                <ArtistPopover handle={track.user.handle}>
+                  {track.user.name}
+                </ArtistPopover>
+              )}
+            </div>
+          ) : null}
         </div>
         <div className={styles.duration}>
           {track.duration && formatSeconds(track.duration)}

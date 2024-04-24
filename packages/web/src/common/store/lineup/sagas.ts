@@ -74,6 +74,9 @@ function* filterDeletes<T extends Track | Collection>(
   const isUSDCGatedContentEnabled = getFeatureEnabled(
     FeatureFlags.USDC_PURCHASES
   )
+  const isPremiumAlbumsEnabled = getFeatureEnabled(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
 
   const deniedHandles = remoteConfig
     .getRemoteVar(StringKeys.EXPLORE_PREMIUM_DENIED_USERS)
@@ -96,6 +99,14 @@ function* filterDeletes<T extends Track | Collection>(
         'track_id' in metadata &&
         metadata.is_stream_gated &&
         isContentUSDCPurchaseGated(metadata.stream_conditions)
+      ) {
+        return null
+      }
+
+      if (
+        !isPremiumAlbumsEnabled &&
+        'playlist_id' in metadata &&
+        metadata.is_stream_gated
       ) {
         return null
       }

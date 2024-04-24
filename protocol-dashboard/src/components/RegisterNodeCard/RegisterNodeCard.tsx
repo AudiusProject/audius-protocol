@@ -1,4 +1,5 @@
 import { Box, Flex, Text } from '@audius/harmony'
+
 import { Card } from 'components/Card/Card'
 import { InfoBox } from 'components/InfoBox/InfoBox'
 import { RegisterNewServiceBtn } from 'components/ManageService/RegisterNewServiceBtn'
@@ -16,18 +17,18 @@ const messages = {
 export const RegisterNodeCard = () => {
   const { isLoggedIn } = useAccount()
   return (
-    <Card direction="column">
+    <Card direction='column'>
       <Flex
-        pv="xl"
-        ph="xl"
-        borderBottom="default"
-        justifyContent="space-between"
-        alignItems="center"
-        wrap="wrap"
-        gap="l"
+        pv='xl'
+        ph='xl'
+        borderBottom='default'
+        justifyContent='space-between'
+        alignItems='center'
+        wrap='wrap'
+        gap='l'
       >
         <Box>
-          <Text variant="heading" size="s">
+          <Text variant='heading' size='s'>
             {messages.registerNode}
           </Text>
         </Box>
@@ -37,7 +38,7 @@ export const RegisterNodeCard = () => {
           </Box>
         ) : null}
       </Flex>
-      <Flex ph="xl" pv="l" gap="xl">
+      <Flex ph='xl' pv='l' gap='xl'>
         <InfoBox
           description={messages.registerNodeInfo}
           ctaText={messages.registerNodeInfoLink}

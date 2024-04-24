@@ -78,10 +78,6 @@ const {
 const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
 const getUserHandle = accountSelectors.getUserHandle
 
-const messages = {
-  createdBy: 'Created by'
-}
-
 type OwnProps = {
   uid: UID
   ordered: boolean
@@ -326,7 +322,6 @@ const ConnectedPlaylistTile = ({
 
   const userName = (
     <Text variant='body' ellipses css={{ display: 'inline-flex', gap: 4 }}>
-      <Text color='subdued'>{messages.createdBy}</Text>
       <UserLink
         ellipses
         userId={user_id}
@@ -436,6 +431,7 @@ const ConnectedPlaylistTile = ({
           index={i}
           key={i}
           isLoading={true}
+          isAlbum={isAlbum}
           forceSkeleton
           active={false}
           size={size}
@@ -460,6 +456,7 @@ const ConnectedPlaylistTile = ({
           index={i}
           key={`${track.title}+${i}`}
           isLoading={isLoading}
+          isAlbum={isAlbum}
           active={playingUid === track.uid}
           size={size}
           disableActions={disableActions}
@@ -468,12 +465,14 @@ const ConnectedPlaylistTile = ({
           togglePlay={togglePlay}
           goToRoute={goToRoute}
           artistHandle={handle}
+          isLastTrack={i === tracks.length - 1}
         />
       </Draggable>
     ))
   }, [
     tracks,
     isLoading,
+    isAlbum,
     userHandle,
     playingUid,
     size,

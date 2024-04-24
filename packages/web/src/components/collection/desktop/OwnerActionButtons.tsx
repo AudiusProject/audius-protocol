@@ -6,7 +6,6 @@ import { EditButton } from './EditButton'
 import { OverflowMenuButton } from './OverflowMenuButton'
 import { PublishButton } from './PublishButton'
 import { ShareButton } from './ShareButton'
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 const { getCollection } = collectionPageSelectors
 
 type OwnerActionButtonProps = {
@@ -25,12 +24,7 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
 
   return collection ? (
     <>
-      {!ddex_app && (
-        <EditButton
-          collectionId={collectionId}
-          widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-        />
-      )}
+      {!ddex_app && <EditButton collectionId={collectionId} />}
       <ShareButton
         collectionId={collectionId}
         disabled={isDisabled}
@@ -39,14 +33,8 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
             ? `You can’t share an empty ${is_album ? 'album' : 'playlist'}.`
             : undefined
         }
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
-      {is_private ? (
-        <PublishButton
-          collectionId={collectionId}
-          widthToHideText={BUTTON_COLLAPSE_WIDTHS.fourth}
-        />
-      ) : null}
+      {is_private ? <PublishButton collectionId={collectionId} /> : null}
 
       {!is_private ? (
         <OverflowMenuButton collectionId={collectionId} isOwner />

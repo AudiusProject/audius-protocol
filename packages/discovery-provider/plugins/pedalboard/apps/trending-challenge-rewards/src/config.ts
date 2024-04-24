@@ -12,7 +12,6 @@ export type SharedData = {
   libs: AudiusLibs
   localEndpoint: string
   dryRun: boolean
-  dateToRun: string
 }
 
 let sharedData: SharedData | undefined = undefined
@@ -20,29 +19,20 @@ let sharedData: SharedData | undefined = undefined
 export const initSharedData = async (): Promise<SharedData> => {
   if (sharedData !== undefined) return sharedData
 
-  dotenv.config({ path: './tcr.env' })
-
   const libs = await initAudiusLibs()
 
   // default to true if undefined, otherwise explicitly state false to not do dry run
   const dryRun = !(
-    (process.env.dryRun || 'true').toLocaleLowerCase() === 'false'
+    (process.env.tcrDryRun || 'true').toLocaleLowerCase() === 'false'
   )
 
-  const oracleEthAddress = process.env.oracleEthAddress
-  const AAOEndpoint = process.env.AAOEndpoint
-  const feePayerOverride = process.env.feePayerOverride
-  const localEndpoint = process.env.localEndpoint
+  const feePayerOverride = process.env.audius_fee_payer_override
+  const AAOEndpoint = process.env.audius_aao_endpoint || "https://antiabuseoracle.audius.co"
+  const oracleEthAddress = process.env.audius_aao_address || "0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6"
+  const localEndpoint = process.env.audius_discprov_url || "http://server:5000"
 
-  const dateToRun = process.env.dateToRun
-
-  if (oracleEthAddress === undefined)
-    throw new Error('oracleEthAddress undefined')
-  if (AAOEndpoint === undefined) throw new Error('AAOEndpoint undefined')
   if (feePayerOverride === undefined)
     throw new Error('feePayerOverride undefined')
-  if (localEndpoint === undefined) throw new Error('localEndpoint undefined')
-  if (dateToRun === undefined) throw new Error('dateToRun undefined')
 
   sharedData = {
     oracleEthAddress,
@@ -50,19 +40,8 @@ export const initSharedData = async (): Promise<SharedData> => {
     feePayerOverride,
     libs,
     localEndpoint,
-    dryRun,
-    dateToRun
+    dryRun
   }
   // @ts-ignore
   return sharedData
-}
-
-export const condition = (app: App<SharedData>): boolean => {
-  // "Fri 09:43:00 GMT-0600"
-  const { dateToRun } = app.viewAppData()
-  const date = Date.parse(dateToRun)
-  const timeToDisburse = moment(date)
-  const now = moment()
-  if (now.isSame(timeToDisburse, 'seconds')) return true
-  return false
 }

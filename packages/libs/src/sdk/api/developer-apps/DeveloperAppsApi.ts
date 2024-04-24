@@ -40,7 +40,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
     params: CreateDeveloperAppRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    const { name, userId, description } = await parseParams(
+    const { name, userId, description, imageUrl } = await parseParams(
       'createDeveloperApp',
       CreateDeveloperAppSchema
     )(params)
@@ -61,6 +61,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
       metadata: JSON.stringify({
         name,
         description,
+        image_url: imageUrl,
         app_signature: {
           message,
           signature

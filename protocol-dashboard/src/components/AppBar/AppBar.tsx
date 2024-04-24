@@ -1,3 +1,5 @@
+import React, { ReactNode, useCallback, useEffect, useState } from 'react'
+
 import {
   Box,
   Flex,
@@ -9,21 +11,21 @@ import {
   useTheme
 } from '@audius/harmony'
 import { IconLink } from '@audius/stems'
-import { useWeb3Modal, useWeb3ModalState } from '@web3modal/ethers/react'
-import clsx from 'clsx'
-import Button from 'components/Button'
-import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
-
 import {
+  useWeb3Modal,
+  useWeb3ModalState,
   createWeb3Modal,
   useDisconnect,
   useWeb3ModalAccount,
   useWeb3ModalProvider
 } from '@web3modal/ethers/react'
+import clsx from 'clsx'
+
+import Button from 'components/Button'
+import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import UserImage from 'components/UserImage'
 import UserBadges from 'components/UserInfo/AudiusProfileBadges'
 import { useDashboardWalletUser } from 'hooks/useDashboardWalletUsers'
-import React, { ReactNode, useCallback, useEffect, useState } from 'react'
 import { resolveAccountConnected } from 'services/Audius/setup'
 import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
@@ -34,7 +36,9 @@ import { formatShortWallet } from 'utils/format'
 import { useIsMobile, useModalControls } from 'utils/hooks'
 import { createStyles } from 'utils/mobile'
 import { accountPage } from 'utils/routes'
+
 import MisconfiguredModal from '../ConnectMetaMaskModal/MisconfiguredModal'
+
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
 
@@ -74,15 +78,16 @@ const ConnectWallet = ({ isMisconfigured }: ConnectWalletProps) => {
   const { open: openWeb3Modal } = useWeb3Modal()
   const { open: isWeb3ModalOpen } = useWeb3ModalState()
 
-  const [isMisconfiguredModalOpen, setIsMisconfiguredModalOpen] = useState(
-    false
+  const [isMisconfiguredModalOpen, setIsMisconfiguredModalOpen] =
+    useState(false)
+  const onClick = useCallback(
+    () => setIsMisconfiguredModalOpen(true),
+    [setIsMisconfiguredModalOpen]
   )
-  const onClick = useCallback(() => setIsMisconfiguredModalOpen(true), [
-    setIsMisconfiguredModalOpen
-  ])
-  const onClose = useCallback(() => setIsMisconfiguredModalOpen(false), [
-    setIsMisconfiguredModalOpen
-  ])
+  const onClose = useCallback(
+    () => setIsMisconfiguredModalOpen(false),
+    [setIsMisconfiguredModalOpen]
+  )
 
   return isMisconfigured ? (
     <>
@@ -97,8 +102,8 @@ const ConnectWallet = ({ isMisconfigured }: ConnectWalletProps) => {
     </>
   ) : (
     <HarmonyButton
-      variant="tertiary"
-      size="small"
+      variant='tertiary'
+      size='small'
       isLoading={isWeb3ModalOpen}
       onClick={() => openWeb3Modal()}
     >
@@ -128,9 +133,9 @@ const DisconnectButton = () => {
 
   return (
     <PlainButton
-      variant="inverted"
+      variant='inverted'
       css={({ spacing }: HarmonyTheme) => ({
-        marginRight: -spacing['xs']
+        marginRight: -spacing.xs
       })}
       onClick={handleDisconnect}
       disabled={isDisconnecting}
@@ -155,7 +160,7 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   if (!user) return null
 
   return (
-    <Flex direction="column" alignItems="flex-end">
+    <Flex direction='column' alignItems='flex-end'>
       <div className={styles.snippetContainer} onClick={onClickUser}>
         <div className={styles.user}>
           <UserImage
@@ -165,7 +170,7 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
             useSkeleton={false}
           />
           {audiusProfile != null ? null : (
-            <Flex direction="column" alignItems="flex-end" gap="xs">
+            <Flex direction='column' alignItems='flex-end' gap='xs'>
               <div className={styles.walletText}>
                 {formatShortWallet(user.wallet)}
               </div>
@@ -203,7 +208,7 @@ const ConnectAudiusProfileButton = ({ wallet }: { wallet: string }) => {
         iconClassName={styles.launchAppBtnIcon}
       />
       <ConnectAudiusProfileModal
-        action="connect"
+        action='connect'
         wallet={wallet}
         isOpen={isOpen}
         onClose={onClose}
@@ -221,10 +226,8 @@ const AppBar: React.FC<AppBarProps> = () => {
   const [isMisconfigured, setIsMisconfigured] = useState(false)
 
   const [isAccountMisconfigured, setIsAccountMisconfigured] = useState(false)
-  const {
-    data: audiusProfileData,
-    status: audiusProfileDataStatus
-  } = useDashboardWalletUser(wallet)
+  const { data: audiusProfileData, status: audiusProfileDataStatus } =
+    useDashboardWalletUser(wallet)
   const hasConnectedAudiusAccount = audiusProfileData != null
 
   const { isConnected } = useWeb3ModalAccount()
@@ -273,7 +276,7 @@ const AppBar: React.FC<AppBarProps> = () => {
   return (
     <div className={styles.appBar}>
       <div className={styles.left}>
-        <IconAudiusLogoHorizontal color="staticWhite" className={styles.logo} />
+        <IconAudiusLogoHorizontal color='staticWhite' className={styles.logo} />
         {isMobile ? null : (
           <Box
             h={spacing['2xl']}
@@ -285,10 +288,10 @@ const AppBar: React.FC<AppBarProps> = () => {
         )}
         <div className={styles.name}>
           <Text
-            variant="heading"
-            size="s"
-            strength="default"
-            color="staticWhite"
+            variant='heading'
+            size='s'
+            strength='default'
+            color='staticWhite'
           >
             {messages.name}
           </Text>

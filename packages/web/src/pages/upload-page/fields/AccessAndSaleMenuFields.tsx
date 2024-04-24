@@ -42,8 +42,10 @@ const messages = {
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
   hidden: 'Hidden',
-  hiddenSubtitle:
+  hiddenSubtitleTracks:
     "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
+  hiddenSubtitleAlbums:
+    'Hidden albums remain invisible to your followers, visible only to you on your profile. They can be shared and listened to via direct link.',
   hiddenHint: 'Scheduled tracks are hidden by default until release.'
 }
 
@@ -148,7 +150,11 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           icon={<IconVisibilityHidden />}
           label={messages.hidden}
           value={StreamTrackAvailabilityType.HIDDEN}
-          description={messages.hiddenSubtitle}
+          description={
+            isAlbum
+              ? messages.hiddenSubtitleAlbums
+              : messages.hiddenSubtitleTracks
+          }
           disabled={disableHidden}
           // isInitiallyUnlisted is undefined on create
           // show hint on scheduled releases that are in create or already unlisted
@@ -157,7 +163,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
               ? messages.hiddenHint
               : ''
           }
-          checkedContent={<HiddenAvailabilityFields />}
+          checkedContent={isAlbum ? null : <HiddenAvailabilityFields />}
         />
       </RadioGroup>
     </div>

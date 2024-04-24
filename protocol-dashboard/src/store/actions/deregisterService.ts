@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { ThunkAction, ThunkDispatch } from 'redux-thunk'
-import { Action } from 'redux'
 
-import { Status, ServiceType } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-import { getContentNode } from 'store/cache/contentNode/hooks'
 import { AnyAction } from '@reduxjs/toolkit'
+import { useDispatch } from 'react-redux'
+import { Action } from 'redux'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
+
+import Audius from 'services/Audius'
+import { getContentNode } from 'store/cache/contentNode/hooks'
+import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
+import { AppState } from 'store/types'
+import { Status, ServiceType } from 'types'
 
 function deregisterAudiusService(
   serviceType: ServiceType,
