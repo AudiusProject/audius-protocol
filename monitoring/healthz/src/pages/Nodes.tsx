@@ -42,6 +42,7 @@ export default function Nodes() {
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Fast Repair (checked, pulled, deleted)</th>}
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Full Repair (checked, pulled, deleted)</th>}
               {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200" >Relay</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200" >Solana Relay</th>}
               <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">DB Size</th>
               <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Your IP</th>
               {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Health</th>}
@@ -75,7 +76,9 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   )
   const { data: metrics } = useSWR(sp.endpoint + '/internal/metrics', fetcher)
   const { data: relayHealth, error: relayHealthError } = useSWR(sp.endpoint + "/relay/health", fetcher)
+  const { data: solanaRelayHealth, error: solanaRelayHealthError } = useSWR(sp.endpoint + "/solana/health_check", fetcher)
   const relayStatus = relayHealth?.status
+  const solanaRelayStatus = solanaRelayHealth?.isHealthy ? 'up' : 'down'
 
   const health = data?.data
   const yourIp = ipCheck?.data
@@ -109,6 +112,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
         {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
         {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
         {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{relayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Relay */}
+        {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{solanaRelayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Solana Relay */}
         <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* DB Size */}
         <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Your IP */}
         {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Health */}
@@ -316,6 +320,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
         </td>
       )}
       {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{`${relayStatus || "down"}`}</td>}
+      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{`${solanaRelayStatus}`}</td>}
       <td className="whitespace-nowrap px-3 py-5 text-sm">{isDbLocalhost && <span>{'\u2713'} </span>}{`${dbSize} GB`}</td>
       <td className="whitespace-nowrap px-3 py-5 text-sm">{`${yourIp}`}</td>
       {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{health.chain_health?.status}</td>)}
