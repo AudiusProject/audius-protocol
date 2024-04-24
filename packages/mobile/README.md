@@ -60,11 +60,11 @@ To debug the app follow the instructions [here](https://reactnative.dev/docs/deb
 You can also start react and redux devtools with
 
 ```
-npm run react-devtools -w audius-mobile-client
+npm run react-devtools -w @audius/mobile
 ```
 
 ```
-npm run redux-devtools -w audius-mobile-client
+npm run redux-devtools -w @audius/mobile
 ```
 
 On Android, you can use the adb Android Studio tool or

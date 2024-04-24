@@ -40,7 +40,7 @@ declare module '@react-native-masked-view/masked-view' {
   export default class MaskedViewComponent extends React.Component<MaskedViewProps> {}
 }
 
-// Remove everything below when audius-mobile-client is no longer dependent on @audius/web
+// Remove everything below when @audius/mobile is no longer dependent on @audius/web
 // These are needed because we currently have to include @audius/web in the typechecking
 declare module '*.module.css' {
   const value: any
