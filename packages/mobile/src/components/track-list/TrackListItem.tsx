@@ -3,7 +3,6 @@ import { memo, useCallback, useMemo, useState } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
 import type { Collection, ID, UID, Track, User } from '@audius/common/models'
-import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,

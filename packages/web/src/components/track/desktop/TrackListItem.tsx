@@ -1,6 +1,6 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { ID, isContentUSDCPurchaseGated, UID } from '@audius/common/models'
+import { ID, UID } from '@audius/common/models'
 import { EnhancedCollectionTrack } from '@audius/common/store'
 import { Genre, formatSeconds } from '@audius/common/utils'
 import { IconKebabHorizontal } from '@audius/harmony'

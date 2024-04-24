@@ -5,8 +5,7 @@ import {
   ShareSource,
   RepostSource,
   FavoriteSource,
-  ModalSource,
-  isContentUSDCPurchaseGated
+  ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
