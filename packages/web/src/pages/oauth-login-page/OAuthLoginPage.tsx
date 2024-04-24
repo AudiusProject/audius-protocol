@@ -2,10 +2,18 @@ import { FormEvent, useLayoutEffect, useState } from 'react'
 
 import { Name, ErrorLevel } from '@audius/common/models'
 import { accountSelectors, signOutActions } from '@audius/common/store'
-import { IconValidationX } from '@audius/harmony'
+import {
+  Flex,
+  IconEmbed,
+  IconTransaction,
+  IconValidationX,
+  Text,
+  TextLink
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
+import AppIcon from 'assets/img/appIcon.png'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -145,6 +153,7 @@ export const OAuthLoginPage = () => {
     userAlreadyWriteAuthorized,
     apiKey,
     appName,
+    appImage,
     userEmail,
     authorize,
     txParams
@@ -236,15 +245,6 @@ export const OAuthLoginPage = () => {
   const isSubmitDisabled =
     generalSubmitError === messages.disconnectDashboardWalletWrongUserError
 
-  let titleText
-  if (!isLoggedIn) {
-    titleText = messages.signInAndAuthorizePrompt(appName as string)
-  } else if (userAlreadyWriteAuthorized) {
-    titleText = messages.alreadyAuthorizedContinuePrompt(appName as string)
-  } else {
-    titleText = messages.alreadyLoggedInAuthorizePrompt(appName as string)
-  }
-
   if (queryParamsError) {
     return (
       <ContentWrapper>
@@ -272,9 +272,36 @@ export const OAuthLoginPage = () => {
 
   return (
     <ContentWrapper>
-      <div className={cn(styles.centeredContent, styles.titleContainer)}>
-        <h1 className={styles.title}>{titleText}</h1>
-      </div>
+      <Flex alignItems='center' direction='column'>
+        <Flex gap='l' alignItems='center' mb='l'>
+          <Flex h='88px' w='88px'>
+            <img src={AppIcon} alt={'Audius Logo'} />
+          </Flex>
+          <IconTransaction color='default' />
+          <Flex h='88px' w='88px'>
+            {appImage ? (
+              <img src={appImage} alt={`${appName} Image`} />
+            ) : (
+              <Flex
+                w='100%'
+                justifyContent='center'
+                alignItems='center'
+                borderRadius='l'
+                css={{ backgroundColor: 'var(--harmony-n-200)' }}
+              >
+                <IconEmbed
+                  color='subdued'
+                  css={{ width: '48px', height: '48px' }}
+                />
+              </Flex>
+            )}
+          </Flex>
+        </Flex>
+        <Text variant='body' size='l'>{`${messages.allow}:`}</Text>
+        <Text variant='heading' size='s'>
+          {appName}
+        </Text>
+      </Flex>
       {userAlreadyWriteAuthorized ? null : (
         <PermissionsSection
           scope={scope}
@@ -287,7 +314,13 @@ export const OAuthLoginPage = () => {
       <div className={styles.formArea}>
         {isLoggedIn ? (
           <div className={styles.userInfoContainer}>
-            <h3 className={styles.infoSectionTitle}>{messages.signedInAs}</h3>
+            <Text
+              variant='body'
+              size='m'
+              css={{ color: 'var(--harmony-n-600)' }}
+            >
+              {messages.signedInAs}
+            </Text>
             <div className={styles.tile}>
               <ProfileInfo
                 displayNameClassName={styles.userInfoDisplayName}
@@ -299,9 +332,14 @@ export const OAuthLoginPage = () => {
               />
             </div>
             <div className={styles.signOutButtonContainer}>
-              <button className={styles.linkButton} onClick={handleSignOut}>
+              <TextLink
+                variant='visible'
+                textVariant='body'
+                size='s'
+                onClick={handleSignOut}
+              >
                 {messages.signOut}
-              </button>
+              </TextLink>
             </div>
             <CTAButton
               isLoading={isSubmitting}
