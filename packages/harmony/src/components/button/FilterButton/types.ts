@@ -68,7 +68,7 @@ export type FilterButtonProps = {
   /**
    * Whether interaction is disabled
    */
-  isDisabled?: boolean
+  disabled?: boolean
 
   /**
    * Popup anchor origin

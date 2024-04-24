@@ -116,7 +116,7 @@ export const ArtistContentSection = () => {
             options={filterButtonOptions}
             popupAnchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             popupTransformOrigin={{ vertical: 'top', horizontal: 'left' }}
-            isDisabled={isFilterButtonDisabled}
+            disabled={isFilterButtonDisabled}
           />
         </Flex>
         <Flex>
