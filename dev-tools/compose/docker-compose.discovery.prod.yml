@@ -156,8 +156,6 @@ services:
       - ${PROJECT_ROOT}/packages/discovery-provider/alembic:/audius-discovery-provider/alembic
       - ${PROJECT_ROOT}/packages/discovery-provider/src:/audius-discovery-provider/src
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
-      - poa-contracts-abis:/audius-discovery-provider/build/contracts
-      - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
     healthcheck:
       test: [
           "CMD-SHELL",
