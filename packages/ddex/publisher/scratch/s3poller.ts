@@ -2,7 +2,7 @@ import {
   GetObjectCommand,
   ListObjectsCommand,
   S3Client,
-  S3ClientConfig
+  S3ClientConfig,
 } from '@aws-sdk/client-s3'
 import { join } from 'path'
 import { parseDdexXml } from './parseDelivery'
@@ -16,8 +16,8 @@ export function dialS3() {
   const config: S3ClientConfig = {
     credentials: {
       accessKeyId: AWS_ACCESS_KEY_ID,
-      secretAccessKey: AWS_SECRET_ACCESS_KEY
-    }
+      secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    },
     // region: process.env.AWS_REGION
   }
   if (process.env.AWS_ENDPOINT) {
@@ -56,7 +56,7 @@ export async function pollS3() {
     new ListObjectsCommand({
       Bucket: bucket,
       Delimiter: '/',
-      Marker
+      Marker,
     })
   )
   const prefixes = result.CommonPrefixes?.map((p) => p.Prefix) as string[]
@@ -82,7 +82,7 @@ async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
   const result = await client.send(
     new ListObjectsCommand({
       Bucket: bucket,
-      Prefix: prefix
+      Prefix: prefix,
     })
   )
   if (!result.Contents?.length) {
@@ -98,7 +98,7 @@ async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
         const { Body } = await client.send(
           new GetObjectCommand({
             Bucket: process.env.AWS_BUCKET_RAW,
-            Key: c.Key
+            Key: c.Key,
           })
         )
         const xml = await Body?.transformToString()

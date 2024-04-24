@@ -17,8 +17,8 @@ DDEX_KEY = ''
 DDEX_SECRET = ''
 NODE_ENV = 'staging'
 
-AWS_ACCESS_KEY_ID=''
-AWS_SECRET_ACCESS_KEY=''
+AWS_ACCESS_KEY_ID='test'
+AWS_SECRET_ACCESS_KEY='test'
 AWS_REGION='us-west-2'
 AWS_BUCKET_RAW=''
 
@@ -29,7 +29,7 @@ COOKIE_SECRET='openssl rand -hex 16'
 
 Run server:
 
-```
+```bash
 npx tsx watch scratch/server.ts
 ```
 
@@ -39,7 +39,7 @@ npx tsx watch scratch/server.ts
 
 ## simulate rematch
 
-```
+```sql
 sqlite3 scratchy.db
 
 insert into users values ('2fuga', '2FUGA', '2FUGA');
@@ -54,7 +54,7 @@ insert into users values ('FUGARIAN', 'FUGARIAN', 'FUGARIAN');
 
 > This will skip actual SDK writes if you set `SKIP_SDK_PUBLISH='true'` in `.env`
 
-```
+```bash
 npx tsx scratch/cli.ts publish
 ```
 
@@ -64,4 +64,29 @@ npx tsx scratch/cli.ts publish
 ```bash
 # reset sqlite state
 rm scratchy.db*
+```
+
+### set up local s3 cli
+```bash
+aws configure --profile local
+# enter these details
+# AWS Access Key ID [None]: test
+# AWS Secret Access Key [None]: test
+# Default region name [None]: us-west-2
+# Default output format [None]: json
+```
+
+edit `~/.aws/config` and add
+```
+[profile local]
+endpoint_url = http://ingress:4566
+```
+
+Pull remote s3 into local s3
+```bash
+audius-compose up ddex-s3
+
+npx tsx scratch/cli.ts sync-s3 s3://ddex-prod-raw/20240305090456555
+
+aws s3 ls s3://ddex-prod-raw/20240305090456555 --profile local
 ```
