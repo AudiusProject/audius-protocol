@@ -38,6 +38,7 @@ export type Backup = BackupHealthData & {
 export type DiscoveryNode = {
   endpoint: string
   delegateOwnerWallet: string
+  ownerWallet: string
 }
 
 export type DiscoveryNodeSelectorServiceConfigInternal = {
