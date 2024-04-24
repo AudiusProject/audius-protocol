@@ -7,7 +7,8 @@ import {
   Collection,
   SmartCollection,
   ID,
-  User
+  User,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -197,6 +198,11 @@ const CollectionPage = ({
   } = computeCollectionMetadataProps(metadata)
   const numTracks = tracks.entries.length
   const areAllTracksDeleted = tracks.entries.every((track) => track.is_delete)
+  const areAllTracksPremium = tracks.entries.every(
+    (track) =>
+      track.is_stream_gated &&
+      isContentUSDCPurchaseGated(track.stream_conditions)
+  )
   const isPlayable = !areAllTracksDeleted && numTracks > 0
   const dogEarType =
     (!collectionLoading &&
@@ -262,21 +268,29 @@ const CollectionPage = ({
 
   const tracksTableColumns = useMemo<
     (TracksTableColumn | CollectiblesPlaylistTableColumn)[]
-  >(
-    () =>
-      isNftPlaylist
-        ? ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
-        : [
-            'playButton',
-            'trackName',
-            'artistName',
-            isAlbum ? 'date' : 'addedDate',
-            'length',
-            'plays',
-            'overflowActions'
-          ],
-    [isAlbum, isNftPlaylist]
-  )
+  >(() => {
+    if (isNftPlaylist)
+      return ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
+    // Hide play count if all tracks are premium
+    if (areAllTracksPremium)
+      return [
+        'playButton',
+        'trackName',
+        'artistName',
+        isAlbum ? 'date' : 'addedDate',
+        'length',
+        'overflowActions'
+      ]
+    return [
+      'playButton',
+      'trackName',
+      'artistName',
+      isAlbum ? 'date' : 'addedDate',
+      'length',
+      'plays',
+      'overflowActions'
+    ]
+  }, [areAllTracksPremium, isAlbum, isNftPlaylist])
 
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (
