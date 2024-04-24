@@ -4,6 +4,7 @@ import {
   S3Client,
   S3ClientConfig,
 } from '@aws-sdk/client-s3'
+import { fromIni } from '@aws-sdk/credential-provider-ini'
 import { join } from 'path'
 import { parseDdexXml } from './parseDelivery'
 import { S3MarkerRow, db } from './db'
@@ -25,6 +26,14 @@ export function dialS3() {
     config.forcePathStyle = true
   }
   return new S3Client(config)
+}
+
+export function dialS3FromCredentials() {
+  const s3Client = new S3Client({
+    region: 'us-east-1',
+    credentials: fromIni({ profile: 'local' }),
+  })
+  return s3Client
 }
 
 export async function startPoller() {
