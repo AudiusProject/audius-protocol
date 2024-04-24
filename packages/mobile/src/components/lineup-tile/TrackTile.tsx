@@ -117,7 +117,6 @@ export const TrackTileComponent = ({
     title,
     track_id,
     genre,
-    is_stream_gated: isStreamGated,
     stream_conditions: streamConditions,
     preview_cid,
     ddex_app: ddexApp
@@ -199,7 +198,6 @@ export const TrackTileComponent = ({
     isEditAlbumsEnabled,
     isOwner,
     ddexApp,
-    isStreamGated,
     isNewPodcastControlsEnabled,
     albumInfo,
     playbackPositionInfo?.status,
