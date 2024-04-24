@@ -229,7 +229,9 @@ const CollectionPage = ({
       uid: entry.uid,
       isStreamGated: entry.is_stream_gated,
       isDeleted: entry.is_delete || !!entry?.user?.is_deactivated,
-      isLocked
+      isLocked,
+      hasStreamAccess,
+      streamConditions: entry.stream_conditions
     }
   })
   const numTracks = trackList.length

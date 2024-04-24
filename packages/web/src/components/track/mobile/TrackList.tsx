@@ -1,8 +1,9 @@
 import { memo, useCallback } from 'react'
 
-import { ID, CoverArtSizes } from '@audius/common/models'
+import { ID, CoverArtSizes, AccessConditions } from '@audius/common/models'
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import { Nullable } from 'vitest'
 
 import TrackListItem from './ConnectedTrackListItem'
 import styles from './TrackList.module.css'
@@ -29,6 +30,8 @@ type TrackListProps = {
     coverArtSizes?: CoverArtSizes
     isDeleted: boolean
     isLocked: boolean
+    streamConditions?: Nullable<AccessConditions>
+    hasStreamAccess?: boolean
   }>
   showTopDivider?: boolean
   showDivider?: boolean
@@ -96,6 +99,8 @@ const TrackList = ({
           isActive={track.isActive}
           isPlaying={track.isPlaying}
           isStreamGated={track.isStreamGated}
+          hasStreamAccess={track.hasStreamAccess}
+          streamConditions={track.streamConditions}
           artistHandle={track.artistHandle}
           artistName={track.artistName}
           permalink={track.permalink}

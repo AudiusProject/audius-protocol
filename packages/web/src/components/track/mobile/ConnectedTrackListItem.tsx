@@ -1,6 +1,12 @@
 import { memo } from 'react'
 
-import { RepostSource, FavoriteSource, ID } from '@audius/common/models'
+import {
+  RepostSource,
+  FavoriteSource,
+  ID,
+  isContentUSDCPurchaseGated,
+  ModalSource
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -8,17 +14,22 @@ import {
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   OverflowAction,
-  OverflowSource
+  OverflowSource,
+  PurchaseableContentType,
+  gatedContentSelectors
 } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { trpc } from 'utils/trpcClientWeb'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'
+
+const { getGatedContentStatusMap } = gatedContentSelectors
 
 const { open } = mobileOverflowMenuUIActions
 const { getUserFromTrack } = cacheUsersSelectors
@@ -38,6 +49,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     { trackId: props.trackId },
     { enabled: !!props.trackId }
   )
+
   const onClickOverflow = () => {
     const overflowActions = [
       props.isLocked
@@ -63,19 +75,44 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     props.clickOverflow(props.trackId, overflowActions)
   }
 
+  const isPurchase = isContentUSDCPurchaseGated(props.streamConditions)
+  const hasStreamAccess = !props.isStreamGated || props.hasStreamAccess
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
+    if (isPurchase && props.trackId) {
+      openPremiumContentPurchaseModal(
+        {
+          contentId: props.trackId,
+          contentType: PurchaseableContentType.TRACK
+        },
+        { source: ModalSource.TrackTile }
+      )
+    } else if (props.trackId && !hasStreamAccess) {
+      openLockedContentModal()
+    }
+  }, [
+    isPurchase,
+    props.trackId,
+    openPremiumContentPurchaseModal,
+    hasStreamAccess,
+    openLockedContentModal
+  ])
+
   return (
     <TrackListItem
       {...props}
       userId={props.user?.user_id ?? 0}
       onClickOverflow={onClickOverflow}
+      onClickGatedUnlockPill={onClickGatedUnlockPill}
     />
   )
 }
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
+  const id = ownProps.trackId
   return {
     user: getUserFromTrack(state, { id: ownProps.trackId }),
-    currentUserId: getUserId(state)
+    currentUserId: getUserId(state),
+    gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined
   }
 }
 
@@ -101,3 +138,13 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(memo(ConnectedTrackListItem))
+function openPremiumContentPurchaseModal(
+  arg0: { contentId: number; contentType: PurchaseableContentType },
+  arg1: { source: any }
+) {
+  throw new Error('Function not implemented.')
+}
+
+function openLockedContentModal() {
+  throw new Error('Function not implemented.')
+}
