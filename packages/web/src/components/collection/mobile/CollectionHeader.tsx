@@ -6,10 +6,12 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,
+  PurchaseableContentType,
   cacheCollectionsSelectors,
   useEditPlaylistModal
 } from '@audius/common/store'
 import {
+  Box,
   Button,
   ButtonProps,
   Flex,
@@ -24,6 +26,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { StaticImage } from 'components/static-image/StaticImage'
+import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -97,6 +100,9 @@ const CollectionHeader = ({
   lastModifiedDate,
   numTracks,
   isPlayable,
+  isStreamGated,
+  streamConditions,
+  access,
   duration,
   isPublished = false,
   isPublishing = false,
@@ -119,6 +125,9 @@ const CollectionHeader = ({
 }: MobileCollectionHeaderProps) => {
   const { isSsrEnabled } = useSsrContext()
   const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+  const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
+    FeatureFlags.PREMIUM_ALBUMS_ENABLED
+  )
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
@@ -236,6 +245,26 @@ const CollectionHeader = ({
         {isPlayable ? (
           <PlayButton playing={playing} onPlay={onPlay} fullWidth />
         ) : null}
+        {isPremiumAlbumsEnabled &&
+        isAlbum &&
+        streamConditions &&
+        collectionId ? (
+          <Box mb='xl' w='100%'>
+            <GatedContentSection
+              isLoading={isLoading}
+              contentId={collectionId}
+              contentType={PurchaseableContentType.ALBUM}
+              streamConditions={streamConditions}
+              hasStreamAccess={!!access?.stream}
+              isOwner={isOwner}
+              wrapperClassName={styles.gatedContentSectionWrapper}
+              className={styles.gatedContentSection}
+              buttonClassName={styles.gatedContentSectionButton}
+              ownerId={userId}
+            />
+          </Box>
+        ) : null}
+
         <ActionButtonRow
           isOwner={isOwner}
           isSaved={isSaved}
