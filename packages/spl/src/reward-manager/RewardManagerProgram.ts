@@ -508,7 +508,8 @@ export class RewardManagerProgram {
 
   public static decodeAttestationsAccountData(data: Buffer | Uint8Array) {
     const decoded = this.layouts.attestationsAccountData.decode(data)
-    for (let i = 0; i < decoded.count; i++) {
+    decoded.messages = decoded.messages.slice(0, decoded.count)
+    for (let i = 0; i < decoded.messages.length; i++) {
       if (
         decoded.messages[i].attestation.antiAbuseOracleEthAddress ===
         '0x0000000000000000000000000000000000000000'
