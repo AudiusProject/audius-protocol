@@ -104,6 +104,7 @@ type TableProps = {
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   showMoreLimit?: number
   tableClassName?: string
+  tableHeaderClassName?: string
   totalRowCount?: number
   useLocalSort?: boolean
   wrapperClassName?: string
@@ -133,6 +134,7 @@ export const Table = ({
   scrollRef,
   showMoreLimit,
   tableClassName,
+  tableHeaderClassName,
   totalRowCount,
   useLocalSort = false,
   wrapperClassName
@@ -642,7 +644,9 @@ export const Table = ({
           className={cn(styles.table, tableClassName)}
           {...getTableProps()}
         >
-          <thead className={styles.tableHead}>{renderHeaders()}</thead>
+          <thead className={cn(styles.tableHead, tableHeaderClassName)}>
+            {renderHeaders()}
+          </thead>
           <tbody className={styles.tableBody} {...getTableBodyProps()}>
             {loading ? <TableLoadingSpinner /> : renderRows()}
           </tbody>
@@ -660,6 +664,7 @@ export const Table = ({
     renderRows,
     renderShowMoreControl,
     tableClassName,
+    tableHeaderClassName,
     wrapperClassName
   ])
 

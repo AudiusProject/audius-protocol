@@ -16,8 +16,7 @@
     "relay",
     "ddex-publisher",
     "ddex-web",
-    "ddex-parser",
-    "ddex-crawler"
+    "ddex-ingester"
   ]
   exclude_containers = [
     # System containers

@@ -60,6 +60,7 @@ export type TracksTableColumn =
   | 'plays'
   | 'releaseDate'
   | 'reposts'
+  | 'saves'
   | 'savedDate'
   | 'spacer'
   | 'trackName'
@@ -99,6 +100,7 @@ type TracksTableProps = {
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   showMoreLimit?: number
   tableClassName?: string
+  tableHeaderClassName?: string
   totalRowCount?: number
   useLocalSort?: boolean
   userId?: number | null
@@ -147,6 +149,7 @@ export const TracksTable = ({
   scrollRef,
   showMoreLimit,
   tableClassName,
+  tableHeaderClassName,
   totalRowCount,
   useLocalSort = false,
   userId,
@@ -260,8 +263,15 @@ export const TracksTable = ({
   const renderPlaysCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     const { plays } = track
+    const isOwner = track.owner_id === userId
     // negative plays indicates the track is hidden
     if (plays === -1) return '-'
+    if (
+      track.is_stream_gated &&
+      isContentUSDCPurchaseGated(track.stream_conditions) &&
+      !isOwner
+    )
+      return null
     return formatCount(track.plays)
   }, [])
 
@@ -288,6 +298,11 @@ export const TracksTable = ({
   const renderSavedDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     return moment(track.dateSaved).format('M/D/YY')
+  }, [])
+
+  const renderSavesCell = useCallback((cellInfo: TrackCell) => {
+    const track = cellInfo.row.original
+    return formatCount(track.save_count)
   }, [])
 
   const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
@@ -572,6 +587,16 @@ export const TracksTable = ({
         disableResizing: true,
         disableSortBy: true
       },
+      saves: {
+        id: 'saves',
+        Header: 'Favorites',
+        accessor: 'save_count',
+        Cell: renderSavesCell,
+        maxWidth: 160,
+        sortTitle: 'Favorites',
+        sorter: numericSorter('save_count'),
+        align: 'right'
+      },
       overflowActions: {
         id: 'trackActions',
         Cell: renderTrackActions,
@@ -644,7 +669,8 @@ export const TracksTable = ({
       renderReleaseDateCell,
       renderRepostsCell,
       renderTrackActions,
-      renderTrackNameCell
+      renderTrackNameCell,
+      renderSavesCell
     ]
   )
 
@@ -717,6 +743,7 @@ export const TracksTable = ({
       scrollRef={scrollRef}
       showMoreLimit={showMoreLimit}
       tableClassName={tableClassName}
+      tableHeaderClassName={tableHeaderClassName}
       totalRowCount={totalRowCount}
       useLocalSort={useLocalSort}
       wrapperClassName={wrapperClassName}

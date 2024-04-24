@@ -2,55 +2,36 @@ package parser
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"ingester/artistutils"
 	"ingester/common"
 	"ingester/constants"
-	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/antchfx/xmlquery"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Parser struct {
-	*common.BaseIngester
+	*common.Ingester
 }
 
-// RunNewParser continuously listens for new delivery documents in the Mongo "deliveries" collection and turns them into Audius track format
-func RunNewParser(ctx context.Context) {
-	p := &Parser{
-		BaseIngester: common.NewBaseIngester(ctx, "parser"),
-	}
-	defer p.MongoClient.Disconnect(ctx)
-
-	// Run migration to create artist name index
-	if err := artistutils.CreateArtistNameIndex(p.UsersColl, p.Ctx); err != nil {
-		log.Fatal(err)
-	}
-
-	p.ProcessChangeStream(p.DeliveriesColl, p.processDelivery)
+func NewParser(i *common.Ingester) *Parser {
+	return &Parser{i}
 }
 
-func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
-	// Decode the delivery from Mongo
-	var changeDoc struct {
-		FullDocument common.Delivery `bson:"fullDocument"`
-	}
-	if err := changeStream.Decode(&changeDoc); err != nil {
-		log.Fatal(err)
-	}
-	delivery := changeDoc.FullDocument
-	if delivery.DeliveryStatus != constants.DeliveryStatusParsing {
-		p.Logger.Info("Skipping delivery", "_id", delivery.RemotePath, "delivery_status", delivery.DeliveryStatus)
+// ProcessDelivery takes a delivery and processes it into PendingReleases (Audius-ready format)
+func (p *Parser) ProcessDelivery(delivery *common.Delivery) {
+	p.Logger.Info("Parsing releases from delivery", "_id", delivery.RemotePath)
+	defer p.insertDelivery(delivery)
+
+	if len(delivery.Releases) == 0 && len(delivery.Batches) == 0 {
+		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
+		delivery.ValidationErrors = append(delivery.ValidationErrors, "no releases or batches found")
+		p.Logger.Warn("No releases or batches found in delivery", "remotePath", delivery.RemotePath)
 		return
 	}
-	p.Logger.Info("Parsing releases from delivery", "_id", delivery.RemotePath)
-	defer p.replaceDelivery(&delivery)
 
 	// Parse the delivery's releases
 	pendingReleases := []*common.PendingRelease{}
@@ -80,38 +61,21 @@ func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
 		}
 	}
 
-	// Insert the parsed releases into the Mongo PendingReleases collection
-	session, err := p.MongoClient.StartSession()
-	if err != nil {
-		err = fmt.Errorf("failed to start Mongo session: %v", err)
-		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
-		delivery.ValidationErrors = append(delivery.ValidationErrors, err.Error())
-		return
-	}
-	err = mongo.WithSession(p.Ctx, session, func(sessionCtx mongo.SessionContext) error {
-		if err := session.StartTransaction(); err != nil {
-			return err
-		}
-		defer session.EndSession(p.Ctx)
-
-		// Create a PendingRelease doc for each parsed release
-		for _, pendingRelease := range pendingReleases {
-			result, err := p.PendingReleasesColl.InsertOne(sessionCtx, pendingRelease)
-			if err != nil {
-				session.AbortTransaction(sessionCtx)
-				return err
-			}
+	// Insert a PendingRelease doc for each parsed release
+	for _, pendingRelease := range pendingReleases {
+		result, err := p.PendingReleasesColl.InsertOne(p.Ctx, pendingRelease)
+		if err == nil {
 			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
+		} else {
+			err = fmt.Errorf("failed to insert Mongo PendingRelease docs: %v", err)
+			delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
+			delivery.ValidationErrors = append(delivery.ValidationErrors, err.Error())
 		}
+	}
 
+	// Set the delivery to successful if all releases were parsed successfully
+	if delivery.DeliveryStatus == constants.DeliveryStatusParsing {
 		delivery.DeliveryStatus = constants.DeliveryStatusSuccess
-		return session.CommitTransaction(sessionCtx)
-	})
-
-	if err != nil {
-		err = fmt.Errorf("failed to insert Mongo PendingRelease docs: %v", err)
-		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
-		delivery.ValidationErrors = append(delivery.ValidationErrors, err.Error())
 	}
 }
 
@@ -180,7 +144,7 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 		}
 		return nil, fmt.Errorf("failed to parse release: %v", errs)
 	}
-	p.Logger.Info("Parsed release", "release", fmt.Sprintf("%#v", release))
+	p.Logger.Info("Parsed release", "id", unprocessedRelease.ReleaseID)
 
 	// Find an ID for the first OAuthed display artist in the release
 	for i, parsedRelease := range release.ParsedReleaseElems {
@@ -373,7 +337,6 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 		}
 
 		// Find the release with the given releaseID in the batch's Releases
-		// TODO: Should probably make Releases and Batches maps instead of slices
 		var targetRelease *common.UnprocessedRelease
 		for i := range batch.Releases {
 			if batch.Releases[i].ReleaseID == releaseID {
@@ -413,9 +376,9 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 	return pendingReleases, nil
 }
 
-func (p *Parser) replaceDelivery(updatedDelivery *common.Delivery) {
-	_, replaceErr := p.DeliveriesColl.ReplaceOne(p.Ctx, bson.M{"_id": updatedDelivery.RemotePath}, updatedDelivery)
+func (p *Parser) insertDelivery(delivery *common.Delivery) {
+	_, replaceErr := p.DeliveriesColl.InsertOne(p.Ctx, *delivery)
 	if replaceErr != nil {
-		p.Logger.Error("Failed to replace delivery", "_id", updatedDelivery.RemotePath, "error", replaceErr)
+		p.Logger.Error("Failed to insert delivery", "_id", delivery.RemotePath, "error", replaceErr)
 	}
 }

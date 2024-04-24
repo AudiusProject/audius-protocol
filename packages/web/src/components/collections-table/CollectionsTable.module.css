@@ -1,0 +1,38 @@
+.tableRow:hover .tablePlayButton,
+.tableRow:hover .trackActionsContainer .tableActionButton {
+  opacity: 1;
+}
+
+.tableRow:hover .hiddenIcon {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tableRow.disabled {
+  cursor: default;
+  color: var(--harmony-n-400);
+  background-color: var(--harmony-n-50);
+}
+
+.tableRow.disabled * {
+  color: var(--harmony-n-400);
+  background-color: var(--harmony-n-50);
+}
+
+.tableRow.disabled:hover {
+  box-shadow: none;
+  background-color: var(--harmony-n-50);
+}
+
+.tableRow.disabled:hover .tablePlayButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tableRow.disabled:hover .hiddenIcon {
+  opacity: 1;
+}
+
+.tableRow.lockedRow {
+  background-color: var(--harmony-white);
+}

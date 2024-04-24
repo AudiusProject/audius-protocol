@@ -33,7 +33,7 @@ import { coinflowOnrampModalActions } from '~/store/ui/modals/coinflow-onramp-mo
 import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { setUSDCBalance } from '~/store/wallet/slice'
-import { waitForValue } from '~/utils'
+import { waitForRead, waitForValue } from '~/utils'
 
 import {
   buyUSDCFlowFailed,
@@ -395,6 +395,7 @@ function* doBuyUSDC({
 }
 
 function* recoverPurchaseIfNecessary() {
+  yield* waitForRead()
   const user = yield* select(getAccountUser)
   if (!user) return
 
@@ -549,7 +550,7 @@ function* watchRecovery() {
  * Gate on local storage existing for the previous purchase attempt to reduce RPC load.
  */
 function* recoverOnPageLoad() {
-  yield* call(recoverPurchaseIfNecessary)
+  yield* put(startRecoveryIfNecessary())
 }
 
 export default function sagas() {

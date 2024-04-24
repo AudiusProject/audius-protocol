@@ -87,6 +87,9 @@ export class ChallengesApi extends BaseAPI {
   public async claimReward(request: ClaimRewardsRequest) {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
+    const logger = this.logger.createPrefixedLogger(
+      `[${challengeId}:${specifier}]`
+    )
     const { userId } = request
     const amount = wAUDIO(inputAmount).value
     const { data } = await this.usersApi.getUser({
@@ -98,25 +101,25 @@ export class ChallengesApi extends BaseAPI {
     const { ercWallet: recipientEthAddress, handle } = data
     const attestationTransactionSignatures: string[] = []
 
-    this.logger.debug('Creating user bank if necessary...')
+    logger.debug('Creating user bank if necessary...')
     const { userBank: destinationUserBank } =
       await this.claimableTokens.getOrCreateUserBank({
         ethWallet: recipientEthAddress,
         mint: 'wAUDIO'
       })
 
-    this.logger.debug('Getting attestation submission state...')
+    logger.debug('Getting attestation submission state...')
     const submissions = await this.rewardManager.getSubmittedAttestations({
       challengeId,
       specifier
     })
-    this.logger.debug('Submission state:', submissions)
+    logger.debug('Submission state:', submissions)
 
     let antiAbuseOracleEthAddress = submissions?.messages.find(
       (m) => m.attestation.antiAbuseOracleEthAddress === null
     )?.senderEthAddress
     if (!antiAbuseOracleEthAddress) {
-      this.logger.debug('Submitting anti abuse oracle attestation...')
+      logger.debug('Submitting anti abuse oracle attestation...')
       const response = await this.submitAntiAbuseOracleAttestation({
         challengeId,
         specifier,
@@ -135,10 +138,11 @@ export class ChallengesApi extends BaseAPI {
       submissions?.messages
         .filter((m) => !!m.attestation.antiAbuseOracleEthAddress)
         .map((m) => m.operator) ?? []
+    logger.debug('Existing sender owners:', existingSenderOwners)
 
     const state = await this.rewardManager.getRewardManagerState()
     if (existingSenderOwners.length < state.minVotes) {
-      this.logger.debug('Submitting discovery node attestations...')
+      logger.debug('Submitting discovery node attestations...')
       const signatures = await this.submitDiscoveryAttestations({
         userId,
         antiAbuseOracleEthAddress,
@@ -147,18 +151,19 @@ export class ChallengesApi extends BaseAPI {
         amount,
         recipientEthAddress,
         numberOfNodes: state.minVotes - existingSenderOwners.length,
-        excludeOwners: existingSenderOwners
+        excludeOwners: existingSenderOwners,
+        logger
       })
       attestationTransactionSignatures.push(...signatures)
     }
 
-    this.logger.debug('Confirming all attestation submissions...')
+    logger.debug('Confirming all attestation submissions...')
     await this.rewardManager.confirmAllTransactions(
       attestationTransactionSignatures,
       'finalized' // for some reason, only works when finalized...
     )
 
-    this.logger.debug('Disbursing claim...')
+    logger.debug('Disbursing claim...')
     const disbursement = await this.evaluateAttestations({
       challengeId,
       specifier,
@@ -230,7 +235,8 @@ export class ChallengesApi extends BaseAPI {
     amount,
     recipientEthAddress,
     numberOfNodes,
-    excludeOwners = []
+    excludeOwners = [],
+    logger = this.logger
   }: {
     userId: string
     antiAbuseOracleEthAddress: string
@@ -240,12 +246,17 @@ export class ChallengesApi extends BaseAPI {
     recipientEthAddress: string
     numberOfNodes: number
     excludeOwners: string[]
+    logger?: LoggerService
   }) {
     const discoveryNodes =
       await this.discoveryNodeSelector.getUniquelyOwnedEndpoints(
         numberOfNodes,
         excludeOwners
       )
+    logger.debug('Got unique Discovery Nodes', {
+      discoveryNodes,
+      excludeOwners
+    })
     const discoveryAttestations = await Promise.all(
       discoveryNodes.map((endpoint) =>
         new GeneratedChallengesApi(
@@ -258,6 +269,7 @@ export class ChallengesApi extends BaseAPI {
         })
       )
     )
+    logger.debug('Got Discovery Node attestations', discoveryAttestations)
     const transactions = []
     for (const attestation of discoveryAttestations) {
       const senderEthAddress = attestation.data!.ownerWallet

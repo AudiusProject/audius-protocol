@@ -442,31 +442,16 @@ services:
 
   # ddex
 
-  ddex-crawler:
+  ddex-ingester:
     extends:
       file: docker-compose.yml
-      service: ddex-crawler
-    container_name: ddex-crawler
+      service: ddex-ingester
+    container_name: ddex-ingester
     logging: *default-logging
     environment:
       AWS_ENDPOINT: 'http://ddex-s3:4566'
       DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
       TEST_MODE: 'true'
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-
-  ddex-parser:
-    extends:
-      file: docker-compose.yml
-      service: ddex-parser
-    container_name: ddex-parser
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -527,9 +512,7 @@ services:
     networks:
       - ddex-network
     depends_on:
-      ddex-crawler:
-        condition: service_healthy
-      ddex-parser:
+      ddex-ingester:
         condition: service_healthy
       # ddex-publisher:
       #   condition: service_healthy
@@ -549,9 +532,7 @@ services:
     networks:
       - ddex-network
     depends_on:
-      ddex-crawler:
-        condition: service_healthy
-      ddex-parser:
+      ddex-ingester:
         condition: service_healthy
 
   test-ddex-unittests:

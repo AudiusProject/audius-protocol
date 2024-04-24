@@ -114,6 +114,7 @@ export const LineupTile = ({
           duration={duration}
           trackId={id}
           isLongFormContent={isLongFormContent}
+          isCollection={isCollection}
         />
         <LineupTileMetadata
           artistName={name}

@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo } from 'react'
+import { ChangeEvent, MouseEventHandler, useMemo } from 'react'
 
 import {
   Variant,
@@ -7,7 +7,8 @@ import {
   Collection,
   SmartCollection,
   ID,
-  User
+  User,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -83,7 +84,7 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onPlay: (record: CollectionPageTrackRecord) => void
+  onPlay: MouseEventHandler<HTMLButtonElement>
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
@@ -163,14 +164,13 @@ const CollectionPage = ({
   const isOwner = userId === playlistOwnerId
 
   const variant = metadata?.variant ?? null
-  const gradient =
-    (metadata?.variant === Variant.SMART && metadata.gradient) ?? ''
+  const gradient = metadata?.variant === Variant.SMART ? metadata.gradient : ''
   const icon =
     metadata?.variant === Variant.SMART
       ? smartCollectionIcons[metadata.playlist_name]
       : null
   const imageOverride =
-    (metadata?.variant === Variant.SMART && metadata.imageOverride) ?? ''
+    metadata?.variant === Variant.SMART ? metadata.imageOverride : ''
   const typeTitle =
     metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
   const customEmptyText =
@@ -180,14 +180,15 @@ const CollectionPage = ({
 
   const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 
-  const isStreamGated =
-    metadata && 'is_stream_gated' in metadata && metadata?.is_stream_gated
   const streamConditions =
-    metadata && 'stream_conditions' in metadata && metadata?.stream_conditions
+    metadata && 'stream_conditions' in metadata
+      ? metadata?.stream_conditions
+      : null
 
   const {
     isEmpty,
-    lastModified,
+    lastModifiedDate,
+    releaseDate,
     playlistName,
     description,
     isPrivate,
@@ -197,11 +198,14 @@ const CollectionPage = ({
   } = computeCollectionMetadataProps(metadata)
   const numTracks = tracks.entries.length
   const areAllTracksDeleted = tracks.entries.every((track) => track.is_delete)
+  const areAllTracksPremium = tracks.entries.every(
+    (track) =>
+      track.is_stream_gated &&
+      isContentUSDCPurchaseGated(track.stream_conditions)
+  )
   const isPlayable = !areAllTracksDeleted && numTracks > 0
   const dogEarType =
     (!collectionLoading &&
-      isStreamGated &&
-      streamConditions &&
       getDogEarType({
         streamConditions,
         isUnlisted: isPrivate
@@ -225,7 +229,8 @@ const CollectionPage = ({
       isAlbum={isAlbum}
       numTracks={numTracks}
       isPlayable={isPlayable}
-      modified={lastModified}
+      lastModifiedDate={lastModifiedDate}
+      releaseDate={releaseDate}
       duration={duration}
       isPublished={!isPrivate}
       reposts={playlistRepostCount}
@@ -236,7 +241,6 @@ const CollectionPage = ({
       onPlay={onPlay}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
-      onClickPurchase={onClickPurchaseTrack}
       // Smart collection
       variant={variant}
       gradient={gradient}
@@ -262,21 +266,29 @@ const CollectionPage = ({
 
   const tracksTableColumns = useMemo<
     (TracksTableColumn | CollectiblesPlaylistTableColumn)[]
-  >(
-    () =>
-      isNftPlaylist
-        ? ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
-        : [
-            'playButton',
-            'trackName',
-            'artistName',
-            isAlbum ? 'date' : 'addedDate',
-            'length',
-            'plays',
-            'overflowActions'
-          ],
-    [isAlbum, isNftPlaylist]
-  )
+  >(() => {
+    if (isNftPlaylist)
+      return ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
+    // Hide play count if all tracks are premium
+    if (areAllTracksPremium)
+      return [
+        'playButton',
+        'trackName',
+        'artistName',
+        isAlbum ? 'date' : 'addedDate',
+        'length',
+        'overflowActions'
+      ]
+    return [
+      'playButton',
+      'trackName',
+      'artistName',
+      isAlbum ? 'date' : 'addedDate',
+      'length',
+      'plays',
+      'overflowActions'
+    ]
+  }, [areAllTracksPremium, isAlbum, isNftPlaylist])
 
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (

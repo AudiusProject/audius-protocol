@@ -34,11 +34,18 @@ def cache_current_nodes_task(self):
             (
                 discovery_node_endpoints,
                 discovery_nodes_wallets,
+                discovery_node_owners,
             ) = get_all_discovery_nodes()
             discovery_nodes = [
-                {"endpoint": endpoint, "delegateOwnerWallet": delegateOwnerWallet}
-                for endpoint, delegateOwnerWallet in zip(
-                    discovery_node_endpoints, discovery_nodes_wallets
+                {
+                    "endpoint": endpoint,
+                    "delegateOwnerWallet": delegateOwnerWallet,
+                    "ownerWallet": ownerWallet,
+                }
+                for endpoint, delegateOwnerWallet, ownerWallet in zip(
+                    discovery_node_endpoints,
+                    discovery_nodes_wallets,
+                    discovery_node_owners,
                 )
             ]
             set_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY, discovery_nodes)

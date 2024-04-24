@@ -64,9 +64,7 @@ const purchasesApi = createApi({
           sortDirection,
           sortMethod,
           id: Id.parse(userId!),
-          userId: Id.parse(userId!),
-          encodedDataMessage: '', // TODO: remove, handled by sdk
-          encodedDataSignature: ''
+          userId: Id.parse(userId!)
         })
         const purchases = data.map(parsePurchase)
 
@@ -95,9 +93,7 @@ const purchasesApi = createApi({
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getPurchasesCount({
           id: Id.parse(userId!),
-          userId: Id.parse(userId!),
-          encodedDataMessage: '', // TODO: remove, handled by sdk
-          encodedDataSignature: '' // TODO: remove, handled by sdk
+          userId: Id.parse(userId!)
         })
         return data ?? 0
       },
@@ -121,9 +117,7 @@ const purchasesApi = createApi({
           sortDirection,
           sortMethod,
           id: Id.parse(userId!),
-          userId: Id.parse(userId!),
-          encodedDataMessage: '', // TODO: remove, handled by sdk
-          encodedDataSignature: '' // TODO: remove, handled by sdk
+          userId: Id.parse(userId!)
         })
 
         const purchases = data.map(parsePurchase)
@@ -153,9 +147,7 @@ const purchasesApi = createApi({
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getSalesCount({
           id: Id.parse(userId!),
-          userId: Id.parse(userId!),
-          encodedDataMessage: '', // TODO: remove, handled by sdk
-          encodedDataSignature: '' // TODO: remove, handled by sdk
+          userId: Id.parse(userId!)
         })
         return data ?? 0
       },

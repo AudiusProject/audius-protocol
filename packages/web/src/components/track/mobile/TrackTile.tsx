@@ -37,10 +37,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { DogEar } from 'components/dog-ear'
 import { TextLink, UserLink } from 'components/link'
-import {
-  LockedStatusPill,
-  LockedStatusPillProps
-} from 'components/locked-status-pill'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentLabel } from 'components/track/GatedContentLabel'
 import { TrackTileProps } from 'components/track/types'
@@ -83,11 +80,12 @@ type LockedOrPlaysContentProps = Pick<
   | 'isStreamGated'
   | 'streamConditions'
   | 'listenCount'
-> &
-  Pick<LockedStatusPillProps, 'variant'> & {
-    gatedTrackStatus?: GatedContentStatus
-    onClickGatedUnlockPill: (e: MouseEvent) => void
-  }
+  | 'variant'
+> & {
+  lockedContentType: 'gated' | 'premium'
+  gatedTrackStatus?: GatedContentStatus
+  onClickGatedUnlockPill: (e: MouseEvent) => void
+}
 
 const renderLockedContentOrPlayCount = ({
   hasStreamAccess,
@@ -98,10 +96,11 @@ const renderLockedContentOrPlayCount = ({
   gatedTrackStatus,
   listenCount,
   onClickGatedUnlockPill,
-  variant
+  variant,
+  lockedContentType
 }: LockedOrPlaysContentProps) => {
   if (isStreamGated && streamConditions && !isOwner) {
-    if (variant === 'premium') {
+    if (lockedContentType === 'premium' && variant === 'readonly') {
       return (
         <GatedConditionsPill
           streamConditions={streamConditions}
@@ -111,7 +110,9 @@ const renderLockedContentOrPlayCount = ({
         />
       )
     }
-    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
+    return (
+      <LockedStatusPill locked={!hasStreamAccess} variant={lockedContentType} />
+    )
   }
 
   const hidePlays = fieldVisibility
@@ -488,7 +489,8 @@ const TrackTile = (props: CombinedProps) => {
                   streamConditions,
                   listenCount,
                   gatedTrackStatus,
-                  variant: isPurchase ? 'premium' : 'gated',
+                  variant,
+                  lockedContentType: isPurchase ? 'premium' : 'gated',
                   onClickGatedUnlockPill: onClickPill
                 })
               : null}
