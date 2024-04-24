@@ -37,8 +37,6 @@ cov_html/*
 
 *.tar.bz2
 
-build/
-
 # redis dumps
 *_dump
 
