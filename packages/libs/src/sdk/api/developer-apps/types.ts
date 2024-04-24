@@ -6,14 +6,6 @@ import { isApiKeyValid } from '../../utils/apiKey'
 export const CreateDeveloperAppSchema = z.object({
   name: z.string(),
   description: z.optional(z.string().max(128)),
-  imageUrl: z.optional(
-    z
-      .string()
-      .max(2000)
-      .refine((value) => /^(https?):\/\//i.test(value), {
-        message: 'Invalid URL'
-      })
-  ),
   userId: HashId
 })
 

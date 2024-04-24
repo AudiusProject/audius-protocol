@@ -22,7 +22,6 @@ class DeveloperApp(Base, RepresentableMixin):
     user_id = Column(Integer, nullable=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    image_url = Column(String, nullable=True)
     is_personal_access = Column(Boolean, nullable=False, server_default=text("false"))
     is_delete = Column(Boolean, nullable=False, server_default=text("false"))
     is_current = Column(Boolean, nullable=False, primary_key=True)

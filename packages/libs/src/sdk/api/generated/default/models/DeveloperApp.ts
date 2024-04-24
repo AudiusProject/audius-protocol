@@ -44,12 +44,6 @@ export interface DeveloperApp {
      * @memberof DeveloperApp
      */
     description?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DeveloperApp
-     */
-    imageUrl?: string;
 }
 
 /**
@@ -78,7 +72,6 @@ export function DeveloperAppFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'userId': json['user_id'],
         'name': json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
-        'imageUrl': !exists(json, 'image_url') ? undefined : json['image_url'],
     };
 }
 
@@ -95,7 +88,6 @@ export function DeveloperAppToJSON(value?: DeveloperApp | null): any {
         'user_id': value.userId,
         'name': value.name,
         'description': value.description,
-        'image_url': value.imageUrl,
     };
 }
 

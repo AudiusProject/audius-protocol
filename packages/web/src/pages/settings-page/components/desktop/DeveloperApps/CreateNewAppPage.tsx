@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   DEVELOPER_APP_DESCRIPTION_MAX_LENGTH,
-  DEVELOPER_APP_IMAGE_URL_MAX_LENGTH,
   DEVELOPER_APP_NAME_MAX_LENGTH,
   developerAppSchema,
   useAddDeveloperApp
@@ -27,7 +26,6 @@ type DeveloperAppValues = z.input<typeof developerAppSchema>
 const messages = {
   appNameLabel: 'App Name',
   descriptionLabel: 'Short Description',
-  imageUrlLabel: 'App Icon URL',
   cancel: 'Cancel',
   create: 'Create Key',
   creating: 'Creating Key',
@@ -86,9 +84,7 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
   const initialValues: DeveloperAppValues = {
     userId,
     name: '',
-    description: '',
-    // Undefined unless set to pass validation
-    imageUrl: undefined
+    description: ''
   }
 
   const isSubmitting = status !== Status.IDLE && status !== Status.ERROR
@@ -105,12 +101,6 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
             label={messages.appNameLabel}
             disabled={isSubmitting}
             maxLength={DEVELOPER_APP_NAME_MAX_LENGTH}
-          />
-          <TextField
-            name='imageUrl'
-            label={messages.imageUrlLabel}
-            disabled={isSubmitting}
-            maxLength={DEVELOPER_APP_IMAGE_URL_MAX_LENGTH}
           />
           <TextAreaField
             name='description'

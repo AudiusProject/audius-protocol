@@ -6,30 +6,16 @@ import { encodeHashId } from '~/utils/hashIds'
 
 export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
 export const DEVELOPER_APP_NAME_MAX_LENGTH = 50
-export const DEVELOPER_APP_IMAGE_URL_MAX_LENGTH = 2000
-
-const messages = {
-  invalidUrl: 'Invalid URL'
-}
 
 export const developerAppSchema = z.object({
   userId: z.number(),
   name: z.string().max(DEVELOPER_APP_NAME_MAX_LENGTH),
-  imageUrl: z.optional(
-    z
-      .string()
-      .max(DEVELOPER_APP_IMAGE_URL_MAX_LENGTH)
-      .refine((value) => /^(https?):\/\//i.test(value), {
-        message: messages.invalidUrl
-      })
-  ),
   description: z.string().max(DEVELOPER_APP_DESCRIPTION_MAX_LENGTH).optional()
 })
 
 export type DeveloperApp = {
   name: string
   description?: string
-  imageUrl?: string
   apiKey: string
   apiSecret?: string
 }
@@ -56,10 +42,9 @@ const developerAppsApi = createApi({
 
         return {
           apps: data.map(
-            ({ address, name, description, imageUrl }): DeveloperApp => ({
+            ({ address, name, description }): DeveloperApp => ({
               name,
               description,
-              imageUrl,
               apiKey: address.slice(2)
             })
           )
@@ -70,7 +55,7 @@ const developerAppsApi = createApi({
     },
     addDeveloperApp: {
       async fetch(newApp: NewAppPayload, { audiusSdk }) {
-        const { name, description, imageUrl, userId } = newApp
+        const { name, description, userId } = newApp
         const encodedUserId = encodeHashId(userId) as string
         const sdk = await audiusSdk()
 
@@ -78,7 +63,6 @@ const developerAppsApi = createApi({
           await sdk.developerApps.createDeveloperApp({
             name,
             description,
-            imageUrl,
             userId: encodedUserId
           })
 
@@ -87,7 +71,7 @@ const developerAppsApi = createApi({
           appApiKey: apiKey
         })
 
-        return { name, description, imageUrl, apiKey, apiSecret }
+        return { name, description, apiKey, apiSecret }
       },
       options: {
         idArgKey: 'name',
@@ -121,7 +105,6 @@ const developerAppsApi = createApi({
           userId: encodedUserId,
           appApiKey: apiKey
         })
-        return {}
       },
       options: {
         type: 'mutation'
