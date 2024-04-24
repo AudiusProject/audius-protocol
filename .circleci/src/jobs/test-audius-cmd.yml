@@ -9,6 +9,9 @@ steps:
       no_output_timeout: 15m
       command: . ~/.profile; audius-compose up --prod && audius-cmd test
   - run:
+      name: verify sdk types
+      command: npm run verify-sdk-types -w @audius/sdk
+  - run:
       name: cleanup
       no_output_timeout: 5m
       command: . ~/.profile; audius-compose down

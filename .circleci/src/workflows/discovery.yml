@@ -128,8 +128,6 @@ jobs:
       service: discovery-provider-notifications
       requires:
         - lint-discovery-provider
-  - verify-sdk-types:
-      context: Vercel
 
   - push-arm-image:
       name: push-discovery-provider-arm
