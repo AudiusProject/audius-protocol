@@ -11,7 +11,7 @@ import {
   getIsVerified,
   getNameField,
   getProfileImageField
-} from 'audius-client/src/common/store/pages/signon/selectors'
+} from '@audius/web/src/common/store/pages/signon/selectors'
 import {
   setField,
   setValueField,

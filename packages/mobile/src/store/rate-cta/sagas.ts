@@ -1,5 +1,5 @@
 import { Name } from '@audius/common/models'
-import { waitForWrite } from 'audius-client/src/utils/sagaHelpers'
+import { waitForWrite } from '@audius/web/src/utils/sagaHelpers'
 import { make } from 'common/store/analytics/actions'
 import { call, put, takeEvery } from 'typed-redux-saga'
 

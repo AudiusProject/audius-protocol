@@ -3,13 +3,13 @@ import { useCallback, useMemo } from 'react'
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { reviewHandlePageMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
-import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
+import { setValueField } from '@audius/web/src/common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
   getHandleField,
   getLinkedSocialOnFirstPage,
   getProfileImageField
-} from 'audius-client/src/common/store/pages/signon/selectors'
+} from '@audius/web/src/common/store/pages/signon/selectors'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'

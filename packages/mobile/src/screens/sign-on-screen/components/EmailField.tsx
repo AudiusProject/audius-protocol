@@ -1,4 +1,4 @@
-import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
+import { setValueField } from '@audius/web/src/common/store/pages/signon/actions'
 import { useDispatch } from 'react-redux'
 
 import type { TextInputChangeEvent } from '@audius/harmony-native'

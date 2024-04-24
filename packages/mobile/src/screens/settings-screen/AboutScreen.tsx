@@ -1,4 +1,4 @@
-import { COPYRIGHT_TEXT } from 'audius-client/src/utils/copyright'
+import { COPYRIGHT_TEXT } from '@audius/web/src/utils/copyright'
 import {
   AUDIUS_CAREERS_LINK,
   AUDIUS_CONTACT_EMAIL_LINK,
@@ -8,7 +8,7 @@ import {
   AUDIUS_TWITTER_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE
-} from 'audius-client/src/utils/route'
+} from '@audius/web/src/utils/route'
 import { View, Image } from 'react-native'
 import codePush from 'react-native-code-push'
 import { useAsync } from 'react-use'

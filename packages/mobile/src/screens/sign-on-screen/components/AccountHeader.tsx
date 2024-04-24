@@ -6,8 +6,8 @@ import {
   getIsVerified,
   getNameField,
   getProfileImageField
-} from 'audius-client/src/common/store/pages/signon/selectors'
-import type { ImageFieldValue } from 'audius-client/src/pages/sign-up-page/components/ImageField'
+} from '@audius/web/src/common/store/pages/signon/selectors'
+import type { ImageFieldValue } from '@audius/web/src/pages/sign-up-page/components/ImageField'
 import { isEmpty } from 'lodash'
 import { Pressable, Dimensions } from 'react-native'
 import type { ImageSourcePropType } from 'react-native'
