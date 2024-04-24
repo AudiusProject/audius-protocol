@@ -13,8 +13,7 @@ import {
   RepostSource,
   FavoriteSource,
   ID,
-  UID,
-  isContentUSDCPurchaseGated
+  UID
 } from '@audius/common/models'
 import {
   accountSelectors,
