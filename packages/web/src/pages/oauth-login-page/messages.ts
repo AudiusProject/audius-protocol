@@ -1,21 +1,19 @@
 export const messages = {
-  alreadyLoggedInAuthorizePrompt: (appName: string) =>
-    `Authorize ${appName} to use your Audius account?`,
-  signInAndAuthorizePrompt: (appName: string) =>
-    `Sign in to allow ${appName} to use your Audius account?`,
-  alreadyAuthorizedContinuePrompt: (appName: string) => `Sign in to ${appName}`,
+  allow: 'Allow Audius to Connect to',
   permissionsRequestedHeader: 'This application will receive',
-  readOnlyAccountAccess: 'Read-only access to your account',
+  readOnlyAccountAccess: 'Read-only Access',
+  readOnlyGrants:
+    'This app cannot interact with or make changes to your account.',
   connectDashboardWalletAccess:
     'Permission to link this wallet to your account',
   disconnectDashboardWalletAccess:
     'Permission to unlink this wallet from your account',
-  writeAccountAccess: 'Read/Write access to your account',
+  writeAccountAccess: 'Read/Write Access',
   emailLoading: 'Email loading',
   emailAddressAccess: 'Your Email Address',
-  doesNotGrantAccessTo: 'Does not grant access to:',
-  walletsOrDMs: 'Wallets or Direct Messages',
-  signOut: 'Not you? Sign Out & Switch Account',
+  writeAccessGrants:
+    'Grant this app permission to make changes to your account on your behalf.',
+  signOut: 'Sign Out',
   signUp: `Don't have an account? Sign up`,
   authorizeButton: 'Authorize App',
   continueButton: 'Continue',

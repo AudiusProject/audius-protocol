@@ -54,7 +54,8 @@ const generateUnhealthyNodes = (count: number) => {
 
 const addDelegateOwnerWallets = (endpoint: string): DiscoveryNode => ({
   endpoint,
-  delegateOwnerWallet: ''
+  delegateOwnerWallet: '',
+  ownerWallet: ''
 })
 
 const NETWORK_DISCOVERY_NODES = [
@@ -770,11 +771,13 @@ describe('discoveryNodeSelector', () => {
       const bootstrapServices = shuffle([
         ...unhealthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         })),
         ...healthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         }))
       ])
 
@@ -798,11 +801,13 @@ describe('discoveryNodeSelector', () => {
       const bootstrapServices = shuffle([
         ...unhealthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         })),
         ...healthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         }))
       ])
 
@@ -829,11 +834,13 @@ describe('discoveryNodeSelector', () => {
       const bootstrapServices = shuffle([
         ...unhealthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         })),
         ...healthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         }))
       ])
 
@@ -860,11 +867,13 @@ describe('discoveryNodeSelector', () => {
       const bootstrapServices = shuffle([
         ...unhealthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         })),
         ...healthyNodes.map((endpoint, i) => ({
           endpoint,
-          delegateOwnerWallet: operators[i % operators.length]!
+          delegateOwnerWallet: operators[i % operators.length]!,
+          ownerWallet: operators[i % operators.length]!
         }))
       ])
 

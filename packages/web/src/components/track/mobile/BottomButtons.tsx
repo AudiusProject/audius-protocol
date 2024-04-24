@@ -63,10 +63,10 @@ const BottomButtons = (props: BottomButtonsProps) => {
   if (!props.isLoading && props.streamConditions && !props.hasStreamAccess) {
     return (
       <Flex
-        ph='s'
-        p='xs'
+        ph={props.isTrack ? undefined : 's'}
+        pb={props.isTrack ? undefined : 's'}
         direction='row'
-        alignItems='center'
+        alignItems='flex-end'
         justifyContent='space-between'
         borderTop='default'
       >
@@ -97,7 +97,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
     return (
       <Flex
         ph='s'
-        pv='xs'
+        pv='s'
         direction='row'
         alignItems='center'
         justifyContent='flex-end'
@@ -111,7 +111,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
   return (
     <Flex
       ph={props.isTrack ? undefined : 's'}
-      pb={props.isTrack ? undefined : 'xs'}
+      pb={props.isTrack ? undefined : 's'}
       direction='row'
       alignItems='center'
       justifyContent='space-between'

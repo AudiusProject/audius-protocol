@@ -21,44 +21,6 @@ services:
     profiles:
       - ddex
 
-  ddex-crawler:
-    container_name: ddex-crawler
-    build:
-      context: ${PROJECT_ROOT}/packages/ddex/ingester
-      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
-    environment:
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
-    env_file: .env
-    entrypoint: ./ingester --service crawler
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-
-  ddex-parser:
-    container_name: ddex-parser
-    build:
-      context: ${PROJECT_ROOT}/packages/ddex/ingester
-      dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
-    environment:
-      - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
-    env_file: .env
-    entrypoint: ./ingester --service parser
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-
   ddex-publisher:
     container_name: ddex-publisher
     build:
@@ -178,6 +140,16 @@ services:
     build:
       context: ${PROJECT_ROOT}/packages/ddex/ingester
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
+    entrypoint: ./ingester
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ddex-network
+    profiles:
+      - ddex
 
   ddex-test:
     container_name: ddex-test

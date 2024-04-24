@@ -49,6 +49,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     ...flexRowCentered(),
     justifyContent: 'space-between',
     marginHorizontal: spacing(3),
+    marginBottom: spacing(1),
     borderTopWidth: 1,
     borderTopColor: palette.neutralLight8,
     minHeight: spacing(8)

@@ -51,6 +51,10 @@ type Props = {
    */
   trackId?: number
   /**
+   * Whether or not the tile is for a collection
+   */
+  isCollection?: boolean
+  /**
    * Whether or not the track is long-form content (podcast/audiobook/etc)
    */
   isLongFormContent?: boolean
@@ -59,6 +63,7 @@ type Props = {
 export const LineupTileTopRight = ({
   duration,
   trackId,
+  isCollection,
   isLongFormContent
 }: Props) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
@@ -82,9 +87,10 @@ export const LineupTileTopRight = ({
     ? isInProgress
       ? `${formatLineupTileDuration(
           duration - playbackPositionInfo.playbackPosition,
-          isLongFormContent
+          isLongFormContent,
+          isCollection
         )} ${messages.timeLeft}`
-      : formatLineupTileDuration(duration, isLongFormContent)
+      : formatLineupTileDuration(duration, isLongFormContent, isCollection)
     : null
 
   return (

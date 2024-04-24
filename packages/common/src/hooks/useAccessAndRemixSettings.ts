@@ -107,7 +107,7 @@ export const useAccessAndRemixSettings = ({
     disableCollectibleGate || (!isUpload && !isInitiallyHidden)
 
   const disableHidden =
-    isAlbum || isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
+    isScheduledRelease || (!isUpload && !isInitiallyUnlisted)
 
   return {
     disableUsdcGate,
