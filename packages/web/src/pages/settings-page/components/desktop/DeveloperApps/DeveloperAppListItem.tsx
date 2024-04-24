@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { DeveloperApp } from '@audius/common/api'
 import {
   IconButton,
+  IconEmbed,
   IconKebabHorizontal,
   IconTrash,
   IconVisibilityPublic,
@@ -25,8 +26,8 @@ type DeveloperAppListItemProps = Pick<CreateAppPageProps, 'setPage'> & {
 }
 
 export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
-  const { index, app, setPage } = props
-  const { name } = app
+  const { app, setPage } = props
+  const { name, imageUrl } = app
 
   const handleViewDetails = useCallback(() => {
     setPage(CreateAppsPages.APP_DETAILS, app)
@@ -56,25 +57,33 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
 
   return (
     <li className={styles.listItem}>
-      <span className={styles.listItemIndex}>{index}</span>
+      <span className={styles.listItemImage}>
+        {imageUrl ? (
+          <img src={imageUrl} />
+        ) : (
+          <IconEmbed color='subdued' size='2xl' />
+        )}
+      </span>
       {divider}
       <span className={styles.listItemAppName}>{name}</span>
       {divider}
-      <PopupMenu
-        items={menuItems}
-        renderTrigger={(ref, onClick, triggerProps) => (
-          <IconButton
-            // @ts-ignore
-            ref={ref}
-            {...triggerProps}
-            aria-label={messages.appActionsLabel}
-            color='default'
-            size='m'
-            icon={IconKebabHorizontal}
-            onClick={() => onClick()}
-          />
-        )}
-      />
+      <span className={styles.listItemOptions}>
+        <PopupMenu
+          items={menuItems}
+          renderTrigger={(ref, onClick, triggerProps) => (
+            <IconButton
+              // @ts-ignore
+              ref={ref}
+              {...triggerProps}
+              aria-label={messages.appActionsLabel}
+              color='subdued'
+              size='m'
+              icon={IconKebabHorizontal}
+              onClick={() => onClick()}
+            />
+          )}
+        />
+      </span>
     </li>
   )
 }
