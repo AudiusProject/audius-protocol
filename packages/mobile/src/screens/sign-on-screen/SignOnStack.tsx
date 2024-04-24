@@ -2,9 +2,9 @@ import { useCallback, useState } from 'react'
 
 import { MobileOS } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { getSignOn } from '@audius/web/src/common/store/pages/signon/selectors'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { getSignOn } from '@audius/web/src/common/store/pages/signon/selectors'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
