@@ -84,7 +84,7 @@ export class RewardManagerProgram {
       seq(
         struct<VerifiedMessage>([
           ethAddress('senderEthAddress'),
-          attestationLayout('message'),
+          attestationLayout('attestation'),
           // Though the actual attestation message is only 83 bytes, we allocate
           // 128 bytes for each element of this array on the program side.
           // Thus we add 45 bytes of padding here to be consistent.
@@ -508,8 +508,7 @@ export class RewardManagerProgram {
 
   public static decodeAttestationsAccountData(data: Buffer | Uint8Array) {
     const decoded = this.layouts.attestationsAccountData.decode(data)
-    // decoded.messages = decoded.messages.filter((m) => m.index !== 0)
-    for (let i = 0; i < decoded.messages.length; i++) {
+    for (let i = 0; i < decoded.count; i++) {
       if (
         decoded.messages[i].attestation.antiAbuseOracleEthAddress ===
         '0x0000000000000000000000000000000000000000'

@@ -85,7 +85,7 @@ describe('RewardManagerProgram', () => {
     expect(attestation.antiAbuseOracleEthAddress).toBe(null)
   })
 
-  it('decodes the account data', () => {
+  it('decodes the account data of a single attestation', () => {
     const data = Buffer.from([
       1, 182, 193, 28, 253, 102, 169, 6, 208, 160, 135, 219, 13, 183, 183, 115,
       130, 16, 205, 49, 82, 187, 88, 76, 117, 96, 175, 210, 205, 23, 16, 17, 91,
@@ -136,6 +136,106 @@ describe('RewardManagerProgram', () => {
     )
     expect(decoded.messages[0].attestation.antiAbuseOracleEthAddress).toBe(null)
     expect(decoded.messages.length === 1)
+  })
+
+  it('decodes the account data of three attestations', () => {
+    const data = Buffer.from([
+      1, 89, 83, 235, 128, 55, 250, 76, 101, 233, 208, 198, 87, 196, 72, 83,
+      209, 60, 0, 168, 125, 185, 129, 114, 121, 85, 236, 215, 187, 200, 142,
+      245, 203, 3, 242, 137, 121, 147, 149, 29, 83, 167, 227, 235, 34, 66, 214,
+      161, 77, 32, 40, 20, 13, 200, 38, 3, 48, 178, 184, 224, 69, 105, 57, 71,
+      185, 90, 101, 197, 87, 24, 61, 0, 57, 125, 95, 0, 225, 245, 5, 0, 0, 0, 0,
+      95, 98, 58, 49, 48, 54, 56, 55, 57, 61, 62, 49, 48, 48, 52, 54, 53, 48,
+      52, 49, 55, 95, 152, 17, 186, 62, 171, 31, 44, 217, 162, 223, 237, 177,
+      158, 140, 42, 105, 114, 157, 200, 182, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 229, 178, 86,
+      211, 2, 234, 47, 78, 4, 184, 243, 191, 216, 105, 90, 222, 20, 122, 182,
+      141, 152, 17, 186, 62, 171, 31, 44, 217, 162, 223, 237, 177, 158, 140, 42,
+      105, 114, 157, 200, 182, 38, 3, 48, 178, 184, 224, 69, 105, 57, 71, 185,
+      90, 101, 197, 87, 24, 61, 0, 57, 125, 95, 0, 225, 245, 5, 0, 0, 0, 0, 95,
+      98, 58, 49, 48, 54, 56, 55, 57, 61, 62, 49, 48, 48, 52, 54, 53, 48, 52,
+      49, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 152, 17, 186, 62, 171, 31, 44, 217, 162, 223, 237, 177,
+      158, 140, 42, 105, 114, 157, 200, 182, 44, 214, 106, 57, 49, 195, 101,
+      150, 239, 176, 55, 176, 103, 83, 71, 109, 206, 107, 78, 134, 38, 3, 48,
+      178, 184, 224, 69, 105, 57, 71, 185, 90, 101, 197, 87, 24, 61, 0, 57, 125,
+      95, 0, 225, 245, 5, 0, 0, 0, 0, 95, 98, 58, 49, 48, 54, 56, 55, 57, 61,
+      62, 49, 48, 48, 52, 54, 53, 48, 52, 49, 55, 95, 152, 17, 186, 62, 171, 31,
+      44, 217, 162, 223, 237, 177, 158, 140, 42, 105, 114, 157, 200, 182, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 100, 112, 218, 243, 189, 50, 245, 1, 69, 18, 188, 223, 13,
+      2, 35, 47, 86, 64, 165, 189, 152, 17, 186, 62, 171, 31, 44, 217, 162, 223,
+      237, 177, 158, 140, 42, 105, 114, 157, 200, 182, 38, 3, 48, 178, 184, 224,
+      69, 105, 57, 71, 185, 90, 101, 197, 87, 24, 61, 0, 57, 125, 95, 0, 225,
+      245, 5, 0, 0, 0, 0, 95, 98, 58, 49, 48, 54, 56, 55, 57, 61, 62, 49, 48,
+      48, 52, 54, 53, 48, 52, 49, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 152, 17, 186, 62, 171, 31, 44,
+      217, 162, 223, 237, 177, 158, 140, 42, 105, 114, 157, 200, 182
+    ])
+    const decoded = RewardManagerProgram.decodeAttestationsAccountData(data)
+    expect(decoded.version).toBe(1)
+    expect(decoded.rewardManagerState.toBase58()).toBe(
+      '71hWFVYokLaN1PNYzTAWi13EfJ7Xt9VbSWUKsXUT8mxE'
+    )
+    expect(decoded.count).toBe(3)
+
+    // Check message 0: DN Attestation
+    expect(decoded.messages[0].senderEthAddress).toBe(
+      '0xf2897993951d53a7e3eb2242d6a14d2028140dc8'
+    )
+    expect(decoded.messages[0].attestation.recipientEthAddress).toBe(
+      '0x260330b2b8e045693947b95a65c557183d00397d'
+    )
+    expect(decoded.messages[0].attestation.amount).toBe(BigInt(100000000))
+    expect(decoded.messages[0].attestation.disbursementId).toBe(
+      'b:106879=>1004650417'
+    )
+    expect(decoded.messages[0].attestation.antiAbuseOracleEthAddress).toBe(
+      '0x9811ba3eab1f2cd9a2dfedb19e8c2a69729dc8b6'
+    )
+    expect(decoded.messages[0].operator).toBe(
+      '0xe5b256d302ea2f4e04b8f3bfd8695ade147ab68d'
+    )
+
+    // Check message 1: Oracle Attestation
+    expect(decoded.messages[1].senderEthAddress).toBe(
+      '0x9811ba3eab1f2cd9a2dfedb19e8c2a69729dc8b6'
+    )
+    expect(decoded.messages[1].attestation.recipientEthAddress).toBe(
+      '0x260330b2b8e045693947b95a65c557183d00397d'
+    )
+    expect(decoded.messages[1].attestation.amount).toBe(BigInt(100000000))
+    expect(decoded.messages[1].attestation.disbursementId).toBe(
+      'b:106879=>1004650417'
+    )
+    expect(decoded.messages[1].attestation.antiAbuseOracleEthAddress).toBe(null)
+    expect(decoded.messages[1].operator).toBe(
+      '0x9811ba3eab1f2cd9a2dfedb19e8c2a69729dc8b6'
+    )
+
+    // Check message 2: DN Attestation
+    expect(decoded.messages[2].senderEthAddress).toBe(
+      '0x2cd66a3931c36596efb037b06753476dce6b4e86'
+    )
+    expect(decoded.messages[2].attestation.recipientEthAddress).toBe(
+      '0x260330b2b8e045693947b95a65c557183d00397d'
+    )
+    expect(decoded.messages[2].attestation.amount).toBe(BigInt(100000000))
+    expect(decoded.messages[2].attestation.disbursementId).toBe(
+      'b:106879=>1004650417'
+    )
+    expect(decoded.messages[2].attestation.antiAbuseOracleEthAddress).toBe(
+      '0x9811ba3eab1f2cd9a2dfedb19e8c2a69729dc8b6'
+    )
+    expect(decoded.messages[2].operator).toBe(
+      '0x6470daf3bd32f5014512bcdf0d02232f5640a5bd'
+    )
   })
 
   it('encodes the evaluate attestation instruction data', () => {
