@@ -296,7 +296,7 @@ mobile-release-saga-dapp-store:
           pnpm install
     - run:
         name: Build dependencies
-        command: npx turbo run build --filter=@audius/web
+        command: npx turbo run build --filter=@audius/mobile
     - run:
         name: Install solana
         command: |
