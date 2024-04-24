@@ -25,7 +25,6 @@ import {
 } from '@audius/spl'
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 import { describe, it } from 'vitest'
-import { AudiusLibs } from '@audius/sdk'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(config.claimableTokenProgramId)
 
@@ -54,28 +53,6 @@ const audioClaimableTokenAuthority = PublicKey.findProgramAddressSync(
 )[0]
 
 const getRandomPublicKey = () => Keypair.generate().publicKey
-
-const getInittedLibs = async () => {
-  // @ts-ignore
-  const libs = new AudiusLibs({
-    solanaWeb3Config: {
-      solanaClusterEndpoint: config.solanaEndpoint,
-      mintAddress: config.waudioMintAddress,
-      usdcMintAddress: config.usdcMintAddress,
-      solanaTokenAddress: TOKEN_PROGRAM_ID.toBase58(),
-      feePayerAddress: config.solanaFeePayerWallets[0].publicKey,
-      claimableTokenProgramAddress: config.claimableTokenProgramId,
-      rewardsManagerProgramId: config.rewardsManagerProgramId,
-      rewardsManagerProgramPDA: config.rewardsManagerAccountAddress,
-      rewardsManagerTokenPDA: '',
-      useRelay: false,
-      confirmationTimeout: 0,
-      paymentRouterProgramId: config.paymentRouterProgramId
-    }
-  })
-  await libs.init()
-  return libs
-}
 
 describe('Solana Relay', function () {
   describe('Associated Token Account Program', function () {
@@ -216,10 +193,8 @@ describe('Solana Relay', function () {
     it('should allow USDC transfers to userbanks', async function () {
       // Dummy eth address to make the encoder happy
       const wallet = '0xe42b199d864489387bf64262874fc6472bcbc151'
-      const userbank = await (
-        await getInittedLibs()
-      ).solanaWeb3Manager!.deriveUserBank({
-        mint: 'usdc',
+      const userbank = await ClaimableTokensProgram.deriveUserBank({
+        claimableTokensPDA: usdcClaimableTokenAuthority,
         ethAddress: wallet
       })
 
@@ -519,7 +494,8 @@ describe('Solana Relay', function () {
           payer,
           mint,
           authority: usdcClaimableTokenAuthority,
-          userBank
+          userBank,
+          programId: CLAIMABLE_TOKEN_PROGRAM_ID
         }),
         ClaimableTokensProgram.createTransferInstruction({
           payer,
@@ -527,14 +503,16 @@ describe('Solana Relay', function () {
           sourceUserBank: userBank,
           destination,
           nonceAccount,
-          authority: usdcClaimableTokenAuthority
+          authority: usdcClaimableTokenAuthority,
+          programId: CLAIMABLE_TOKEN_PROGRAM_ID
         }),
         ClaimableTokensProgram.createAccountInstruction({
           ethAddress: wallet,
           payer,
           mint,
           authority: audioClaimableTokenAuthority,
-          userBank
+          userBank,
+          programId: CLAIMABLE_TOKEN_PROGRAM_ID
         }),
         ClaimableTokensProgram.createTransferInstruction({
           payer,
@@ -542,7 +520,8 @@ describe('Solana Relay', function () {
           sourceUserBank: userBank,
           destination,
           nonceAccount,
-          authority: audioClaimableTokenAuthority
+          authority: audioClaimableTokenAuthority,
+          programId: CLAIMABLE_TOKEN_PROGRAM_ID
         })
       ]
       await assertRelayAllowedInstructions(instructions)
@@ -917,7 +896,6 @@ describe('Solana Relay', function () {
     })
 
     it('should not allow transfers when not authenticated', async function () {
-      const feePayer = getRandomPublicKey()
       const fromPubkey = getRandomPublicKey()
       const toPubkey = getRandomPublicKey()
       await assert.rejects(async () =>
@@ -975,18 +953,49 @@ describe('Solana Relay', function () {
   })
 
   describe('Other Programs', function () {
-    it('allows memo and SECP instructions', async function () {
+    it('allows memo instructions', async function () {
       await assertRelayAllowedInstructions([
         new TransactionInstruction({ programId: MEMO_PROGRAM_ID, keys: [] }),
-        new TransactionInstruction({ programId: MEMO_V2_PROGRAM_ID, keys: [] }),
+        new TransactionInstruction({ programId: MEMO_V2_PROGRAM_ID, keys: [] })
+      ])
+    })
+
+    it('allows valid secp256k1 instructions', async function () {
+      await assertRelayAllowedInstructions([
         Secp256k1Program.createInstructionWithEthAddress({
           // Dummy eth address to make the encoder happy
-          ethAddress: '0xe42b199d864489387bf64262874fc6472bcbc151',
-          message: Buffer.from('some message', 'utf-8'),
-          signature: Buffer.alloc(64),
+          ethAddress: '0x8fcfa10bd3808570987dbb5b1ef4ab74400fbfda',
+          message: Buffer.from(
+            '68d5397bb16195ea47091010f3abb8fc6b5cdfa65f00e1f505000000005f623a33383639383d3e3530373431303135335f00b6462e955da5841b6d9e1e2529b830f00f31bf',
+            'hex'
+          ),
+          signature: Buffer.from(
+            'f89b2e6f97f95f1306b468b10b1a18df9569b07d9d7b81b241d6fc99d9ec782e4e449f5c3c63836ed52c9344d3de5c3133fead711e421af545822f09bd78cb39',
+            'hex'
+          ),
           recoveryId: 0
         })
       ])
+    })
+
+    it('rejects invalid secp256k1 instructions', async function () {
+      await assert.rejects(async () =>
+        assertRelayAllowedInstructions([
+          Secp256k1Program.createInstructionWithEthAddress({
+            // Dummy eth address to make the encoder happy
+            ethAddress: '0x00b6462e955da5841b6d9e1e2529b830f00f31bf',
+            message: Buffer.from(
+              '81729dc83c157f41de7df4b72fc7e90d8d64d5aa5f00e1f505000000005f72656665727265643a353339343735333137',
+              'hex'
+            ),
+            signature: Buffer.from(
+              '00d405b277dc948f97d7b7db8648cb16590d66084ba49642fedb08380ce5027a95d0a895287a3331332e7ad13daba87eed5c70820a19ca2eb6cc0ea1eb4695ba',
+              'hex'
+            ),
+            recoveryId: 0
+          })
+        ])
+      )
     })
 
     it('does not allow other random programs', async function () {
