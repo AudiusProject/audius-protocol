@@ -76,7 +76,7 @@ verify-sdk-types:
         name: Verify types
         command: |
           . ~/.profile
-          audius-compose up
+          audius-compose up --prod
           npm run verify-sdk-types -w @audius/sdk
     - run:
         name: cleanup
