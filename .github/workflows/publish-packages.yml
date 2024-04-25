@@ -75,8 +75,13 @@ jobs:
         # if: steps.changesets.outputs.published == 'true'
         id: generate-slack-payload
         run: |
+          echo '1'
+          cat ./.github/workflows/test-file.json
           echo "${{ steps.changesets.outputs.packages }}" > /tmp/packages.json
+          echo '2'
+          cat /tmp/packages.json
           bash ./scripts/publish-packages-slack-template.sh
+          echo '3'
           cat /tmp/publish-packages-template.json
           echo "::set-output name=payload::$(cat /tmp/publish-packages-template.json)"
 
