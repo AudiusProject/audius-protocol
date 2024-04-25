@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 echo "Generating Package Statuses..."
 
 for package in $(jq -r -c '.[]' /tmp/packages.json)     
