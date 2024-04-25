@@ -38,7 +38,7 @@ export type DetailsTileProps = {
   descriptionLinkPressSource: 'track page' | 'collection page'
 
   /** Information about the item such as genre, duration, etc */
-  details: DetailsTileDetail[]
+  details?: DetailsTileDetail[]
 
   /** Description of the item */
   description?: string
@@ -132,6 +132,9 @@ export type DetailsTileProps = {
 
   /** Amount of plays on this item */
   playCount?: number
+
+  /** Duration of the item in seconds */
+  duration?: number
 
   /** Render function for content below primary details */
   renderBottomContent?: () => ReactNode

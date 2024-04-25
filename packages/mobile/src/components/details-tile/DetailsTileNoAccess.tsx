@@ -129,7 +129,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     left: -spacing(1.25)
   },
   mainButton: {
-    marginTop: spacing(3),
+    marginTop: spacing(2),
     backgroundColor: palette.accentBlue
   },
   buyButton: {

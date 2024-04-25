@@ -184,30 +184,6 @@ export const CollectionScreenDetailsTile = ({
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   useRefetchLineupOnTrackAdd(collectionId)
-  const details = useMemo(() => {
-    if (!isLineupLoading && trackCount === 0) return []
-    return [
-      {
-        label: 'Tracks',
-        value: isLineupLoading
-          ? messages.detailsPlaceholder
-          : formatCount(trackCount)
-      },
-      {
-        label: 'Duration',
-        value: isLineupLoading
-          ? messages.detailsPlaceholder
-          : formatSecondsAsText(collectionDuration)
-      },
-      ...extraDetails
-    ].filter(({ isHidden, value }) => !isHidden && !!value)
-  }, [
-    isLineupLoading,
-    trackCount,
-    messages.detailsPlaceholder,
-    collectionDuration,
-    extraDetails
-  ])
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {
@@ -292,7 +268,7 @@ export const CollectionScreenDetailsTile = ({
       ddexApp={ddexApp}
       description={description}
       descriptionLinkPressSource='collection page'
-      details={details}
+      duration={collectionDuration}
       hideOverflow={hideOverflow || !isReachable}
       hideListenCount={true}
       hasStreamAccess={hasStreamAccess}
@@ -302,10 +278,11 @@ export const CollectionScreenDetailsTile = ({
       isPublished={!isPrivate || isPublishing}
       isCollection={true}
       renderBottomContent={renderTrackList}
-      renderHeader={renderHeader}
+      headerText={isAlbum ? 'album' : 'playlist'}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
       isPlayable={isPlayable}
+      trackCount={trackCount}
     />
   )
 }
