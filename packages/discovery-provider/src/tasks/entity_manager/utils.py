@@ -78,7 +78,6 @@ class EntityType(str, Enum):
     TRACK = "Track"
     USER = "User"
     DASHBOARD_WALLET_USER = "DashboardWalletUser"
-    USER_REPLICA_SET = "UserReplicaSet"
     USER_WALLET = "UserWallet"
     FOLLOW = "Follow"
     SAVE = "Save"
@@ -505,5 +504,7 @@ def is_ddex_signer(signer):
     # TODO read from a table in the db after implementing UI to register a DDEX node
     ddex_apps = os.getenv("audius_ddex_apps")
     if ddex_apps:
-        return signer.removeprefix("0x").lower() in (address.lower() for address in ddex_apps.split(","))
+        return signer.removeprefix("0x").lower() in (
+            address.lower() for address in ddex_apps.split(",")
+        )
     return False
