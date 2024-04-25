@@ -303,15 +303,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
             f"Entity type {params.entity_type} is not a playlist"
         )
 
-    stream_gated_tracks = list(
-        filter(
-            lambda track: track.is_stream_gated,
-            params.existing_records["Track"].values(),
-        )
-    )
-    if stream_gated_tracks and not params.metadata.get("is_album"):
-        raise IndexingValidationError("Can only add stream gated tracks to albums")
-
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records["Playlist"]:
             raise IndexingValidationError(

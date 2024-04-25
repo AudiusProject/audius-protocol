@@ -1,5 +1,4 @@
 import type { Image } from '@audius/common/store'
-import { css } from '@emotion/native'
 import {
   getCoverPhotoField,
   getHandleField,
@@ -8,6 +7,7 @@ import {
   getProfileImageField
 } from '@audius/web/src/common/store/pages/signon/selectors'
 import type { ImageFieldValue } from '@audius/web/src/pages/sign-up-page/components/ImageField'
+import { css } from '@emotion/native'
 import { isEmpty } from 'lodash'
 import { Pressable, Dimensions } from 'react-native'
 import type { ImageSourcePropType } from 'react-native'

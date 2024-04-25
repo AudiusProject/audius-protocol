@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux'
 
 import { accountApiReducer } from './account'
+import { authorizedAppsApiReducer } from './authorizedApps'
 import { collectionApiReducer } from './collection'
 import { developerAppsApiReducer } from './developerApps'
 import { favoritesApiReducer } from './favorites'
@@ -19,6 +20,7 @@ export default combineReducers({
   trackApi: trackApiReducer,
   userApi: userApiReducer,
   developerAppsApi: developerAppsApiReducer,
+  authorizedAppsApi: authorizedAppsApiReducer,
   favoritesApi: favoritesApiReducer,
   trendingApi: trendingApiReducer,
   libraryApi: libraryApiReducer,

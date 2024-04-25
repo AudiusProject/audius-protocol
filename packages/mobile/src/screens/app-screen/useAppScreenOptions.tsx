@@ -1,13 +1,13 @@
 import { useCallback, useContext } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
+import { clearSearch } from '@audius/web/src/common/store/search-bar/actions'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
 import type {
   NativeStackNavigationOptions,
   NativeStackNavigationProp
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
-import { clearSearch } from '@audius/web/src/common/store/search-bar/actions'
 import { Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 

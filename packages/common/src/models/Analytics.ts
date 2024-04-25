@@ -128,6 +128,10 @@ export enum Name {
   DEVELOPER_APP_DELETE_SUCCESS = 'Developer Apps: Delete app success',
   DEVELOPER_APP_DELETE_ERROR = 'Developer Apps: Delete app error',
 
+  // Authorized app
+  AUTHORIZED_APP_REMOVE_SUCCESS = 'Authorized Apps: Remove app success',
+  AUTHORIZED_APP_REMOVE_ERROR = 'Authorized Apps: Remove app error',
+
   // Visualizer
   VISUALIZER_OPEN = 'Visualizer: Open',
   VISUALIZER_CLOSE = 'Visualizer: Close',
@@ -1831,6 +1835,19 @@ type DeveloperAppDeleteError = {
   error?: string
 }
 
+type AuthorizedAppRemoveSuccess = {
+  eventName: Name.AUTHORIZED_APP_REMOVE_SUCCESS
+  name?: string
+  apiKey?: string
+}
+
+type AuthorizedAppRemoveError = {
+  eventName: Name.AUTHORIZED_APP_REMOVE_ERROR
+  name?: string
+  apiKey?: string
+  error?: string
+}
+
 type BuyAudioOnRampOpened = {
   eventName: Name.BUY_AUDIO_ON_RAMP_OPENED
   provider: string
@@ -2613,6 +2630,8 @@ export type AllTrackingEvents =
   | DeveloperAppCreateError
   | DeveloperAppDeleteSuccess
   | DeveloperAppDeleteError
+  | AuthorizedAppRemoveSuccess
+  | AuthorizedAppRemoveError
   | ChatEntryPoint
   | ChatWebsocketError
   | JupiterQuoteResponse

@@ -3,13 +3,13 @@ import { useCallback, useContext } from 'react'
 
 import { Name, type UserMetadata } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
-import { css } from '@emotion/native'
 import {
   addFollowArtists,
   removeFollowArtists
 } from '@audius/web/src/common/store/pages/signon/actions'
 import { getFollowIds } from '@audius/web/src/common/store/pages/signon/selectors'
 import type { AppState } from '@audius/web/src/store/types'
+import { css } from '@emotion/native'
 import LottieView from 'lottie-react-native'
 import { Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-const isDevelopment = process.env.IS_DEV === 'true'
+const isDevelopment = process.env.VITE_IS_DEV === 'true'
 
 export default defineConfig({
   server: {
