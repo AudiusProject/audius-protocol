@@ -33,6 +33,7 @@ export const AddFundsModal = () => {
   const { isOpen, onClose } = useAddFundsModal()
   const dispatch = useDispatch()
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
+  const isTransferring = buyUSDCStage === BuyUSDCStage.TRANSFERRING
   const isMobile = useIsMobile()
 
   const [page, setPage] = useState<Page>('add-funds')
@@ -81,7 +82,7 @@ export const AddFundsModal = () => {
       onClosed={handleClosed}
       bodyClassName={styles.modal}
       useGradientTitle={false}
-      dismissOnClickOutside
+      dismissOnClickOutside={!isTransferring}
       isFullscreen={false}
     >
       <ModalHeader
