@@ -75,8 +75,9 @@ jobs:
         # if: steps.changesets.outputs.published == 'true'
         id: generate-slack-payload
         run: |
-          ${{ steps.changesets.outputs.packages }} > /tmp/packages.json
+          echo "${{ steps.changesets.outputs.packages }}"" > /tmp/packages.json
           bash ./scripts/publish-packages-slack-template.sh
+          echo "::set-output name=payload::$(cat /tmp/publish-packages-template.json)"
 
       - name: Post to a Slack channel
         id: slack
@@ -84,6 +85,6 @@ jobs:
         # if: steps.changesets.outputs.published == 'true'
         with:
           channel-id: 'C070H8VS0AJ'
-          payload: $(cat tmp/publish-packages-template.json)
+          payload: ${{ steps.generate-slack-payload.outputs.payload }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
