@@ -30,8 +30,6 @@ debian | ubuntu)
         sudo apt-get update
     fi
 
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-
     # Install dependencies
     sudo NEEDRESTART_MODE=l apt-get install -y --allow-downgrades \
         git \
