@@ -7,7 +7,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { formatCount, formatSeconds } from '@audius/common/utils'
-import { IconVisibilityHidden, IconLock, Button, Flex } from '@audius/harmony'
+import { IconVisibilityHidden, Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -27,10 +27,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TracksTable.module.css'
-
-const messages = {
-  locked: 'Locked'
-}
 
 type RowInfo = UserTrack & {
   name: string
