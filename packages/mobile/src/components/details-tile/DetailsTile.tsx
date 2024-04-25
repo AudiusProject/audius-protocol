@@ -227,7 +227,7 @@ export const DetailsTile = ({
   )
 
   return (
-    <Paper>
+    <Paper mb='xl'>
       {renderDogEar()}
       <Flex p='l' gap='l' alignItems='center' w='100%'>
         <Text
@@ -235,6 +235,7 @@ export const DetailsTile = ({
           size='m'
           strength='default'
           textTransform='uppercase'
+          color='subdued'
         >
           {headerText}
         </Text>

@@ -28,7 +28,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   IconExternalLink,
   IconUserFollow,
-  IconTipping
+  IconTipping,
+  Flex
 } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
@@ -66,15 +67,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  root: {
-    padding: spacing(2),
-    backgroundColor: palette.neutralLight10,
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    borderRadius: spacing(2),
-    gap: spacing(2),
-    width: '100%'
-  },
   titleContainer: {
     ...flexRowCentered(),
     justifyContent: 'space-between'
@@ -157,7 +149,14 @@ const DetailsTileNoAccessSection = ({
   const styles = useStyles()
 
   return (
-    <View style={[styles.root, style]}>
+    <Flex
+      p='l'
+      gap='s'
+      backgroundColor='white'
+      border='strong'
+      borderRadius='m'
+      style={style}
+    >
       <View style={styles.titleContainer}>
         <Text style={styles.title}>
           {isUnlocking ? messages.unlocking : messages.howToUnlock}
@@ -176,7 +175,7 @@ const DetailsTileNoAccessSection = ({
         )}
       </View>
       {renderDescription()}
-    </View>
+    </Flex>
   )
 }
 

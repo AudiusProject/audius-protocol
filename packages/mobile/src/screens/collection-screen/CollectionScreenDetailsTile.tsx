@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
 
+import { Box } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type {
@@ -242,9 +243,11 @@ export const CollectionScreenDetailsTile = ({
         uids={uids}
         ListEmptyComponent={
           isLineupLoading ? null : (
-            <Text fontSize='medium' weight='medium' style={styles.empty}>
-              {isOwner ? messages.empty : messages.emptyPublic}
-            </Text>
+            <Box mt='m'>
+              <Text fontSize='medium' weight='medium' style={styles.empty}>
+                {isOwner ? messages.empty : messages.emptyPublic}
+              </Text>
+            </Box>
           )
         }
       />
