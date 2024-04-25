@@ -7,6 +7,9 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
 import styles from './AccountDetails.module.css'
+import { FeatureFlags } from '@audius/common/services'
+import { useFlag } from 'hooks/useRemoteConfig'
+import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { getAccountUser } = accountSelectors
 
@@ -17,6 +20,7 @@ const messages = {
 
 export const AccountDetails = () => {
   const account = useSelector((state) => getAccountUser(state))
+  const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
 
   const profileLink = profilePage(account?.handle ?? '')
 
@@ -57,6 +61,7 @@ export const AccountDetails = () => {
             </>
           )}
         </div>
+        {isManagerModeEnabled && account ? <AccountSwitcher /> : null}
       </div>
     </div>
   )

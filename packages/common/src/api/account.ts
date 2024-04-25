@@ -29,10 +29,21 @@ const accountApi = createApi({
       options: {
         type: 'mutation'
       }
+    },
+    getManagedAccounts: {
+      async fetch(_, context) {
+        const sdk = await context.audiusSdk()
+        const grants = await sdk.users.getUserGrants()
+        return grants.data ?? []
+      },
+      options: {
+        type: 'query'
+      }
     }
   }
 })
 
-export const { useGetCurrentUserId, useResetPassword } = accountApi.hooks
+export const { useGetCurrentUserId, useResetPassword, useGetManagedAccounts } =
+  accountApi.hooks
 
 export const accountApiReducer = accountApi.reducer
