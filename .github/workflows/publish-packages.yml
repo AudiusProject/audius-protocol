@@ -75,7 +75,7 @@ jobs:
         # if: steps.changesets.outputs.published == 'true'
         id: generate-slack-payload
         run: |
-          echo "${{ steps.changesets.outputs.packages }}"" > /tmp/packages.json
+          echo "${{ steps.changesets.outputs.packages }}" > /tmp/packages.json
           bash ./scripts/publish-packages-slack-template.sh
           echo "::set-output name=payload::$(cat /tmp/publish-packages-template.json)"
 
