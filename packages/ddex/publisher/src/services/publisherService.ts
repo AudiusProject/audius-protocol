@@ -1,11 +1,9 @@
-import mongoose from 'mongoose'
-import PendingReleases from '../models/pendingReleases'
-import PublishedReleases from '../models/publishedReleases'
+import Releases, { releaseStatuses } from '../models/releases'
 import type {
   TrackMetadata,
   SDKUploadMetadataSchema,
-  PendingRelease,
-} from '../models/pendingReleases'
+  Release,
+} from '../models/releases'
 import type {
   AudiusSdk as AudiusSdkType,
   UploadTrackRequest,
@@ -161,9 +159,9 @@ const uploadAlbum = async (
 }
 
 async function recordPendingReleaseErr(
-  doc: PendingRelease,
+  doc: Release,
   error: any,
-  failedAfterUpload = false
+  release_status: (typeof releaseStatuses)[number]
 ) {
   let errorMsg = ''
 
@@ -176,19 +174,16 @@ async function recordPendingReleaseErr(
   }
 
   try {
-    await PendingReleases.updateOne(
+    await Releases.updateOne(
       { _id: doc._id },
       {
         $push: { publish_errors: errorMsg },
         $inc: { failure_count: 1 },
-        $set: { failed_after_upload: failedAfterUpload },
+        $set: { release_status },
       }
     )
   } catch (updateError) {
-    console.error(
-      'Failed to update pending_releases doc with error:',
-      updateError
-    )
+    console.error('Failed to update releases doc with error:', updateError)
   }
 }
 
@@ -201,20 +196,25 @@ export const publishReleases = async (
     let documents
     try {
       const currentDate = new Date()
-      documents = await PendingReleases.aggregate([
+      documents = await Releases.aggregate([
         {
           $match: {
-            $expr: {
-              $lte: [
-                {
-                  $max: [
-                    '$release.sdk_upload_metadata.release_date',
-                    '$release.sdk_upload_metadata.validity_start_date',
+            $and: [
+              {
+                $expr: {
+                  $lte: [
+                    {
+                      $max: [
+                        '$sdk_upload_metadata.release_date',
+                        '$sdk_upload_metadata.validity_start_date',
+                      ],
+                    },
+                    currentDate,
                   ],
                 },
-                currentDate,
-              ],
-            },
+              },
+              { release_status: 'awaiting_publish' },
+            ],
           },
         },
       ])
@@ -229,7 +229,7 @@ export const publishReleases = async (
 
       if (doc.failed_after_upload) {
         console.error(
-          `pending_releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to move to published_releases.`
+          `releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to update in Mongo.`
         )
         continue
       } else if (doc.failure_count > 3) {
@@ -246,61 +246,58 @@ export const publishReleases = async (
         blockNumber: number
       }
       try {
-        if (doc.release?.sdk_upload_metadata?.title) {
+        if (doc?.sdk_upload_metadata?.title) {
           uploadResult = await uploadTrack(
             audiusSdk,
-            doc.release.sdk_upload_metadata,
+            doc.sdk_upload_metadata,
             s3
           )
-        } else if (doc.release?.sdk_upload_metadata?.playlist_name) {
+        } else if (doc?.sdk_upload_metadata?.playlist_name) {
           uploadResult = await uploadAlbum(
             audiusSdk,
-            doc.release.sdk_upload_metadata,
+            doc.sdk_upload_metadata,
             s3
           )
         } else {
           recordPendingReleaseErr(
             doc,
-            'Missing track or album in pending release'
+            'Missing track or album in pending release',
+            'failed_during_upload'
           )
           continue
         }
       } catch (error) {
-        recordPendingReleaseErr(doc, error)
+        recordPendingReleaseErr(doc, error, 'failed_during_upload')
         continue
       }
 
-      const publishedData = {
-        _id: releaseId,
-        release: doc.release,
-        entity_id: doc.release.sdk_upload_metadata.title
-          ? uploadResult.trackId
-          : uploadResult.albumId,
-        blockhash: uploadResult.blockHash,
-        blocknumber: uploadResult.blockNumber,
-        delivery_remote_path: doc.delivery_remote_path,
-        created_at: new Date(),
-      }
-      console.log('Published release: ', JSON.stringify(publishedData))
+      console.log('Published release:', releaseId)
 
       // Mark release as published in Mongo
-      const session = await mongoose.startSession()
       try {
-        session.startTransaction()
-        const publishedRelease = new PublishedReleases(publishedData)
-        await publishedRelease.save({ session })
-        await PendingReleases.deleteOne({ _id: releaseId }).session(session)
-
-        await session.commitTransaction()
-      } catch (error) {
-        await session.abortTransaction()
-        recordPendingReleaseErr(doc, error, true)
-      } finally {
-        session.endSession()
+        await Releases.updateOne(
+          { _id: doc._id },
+          {
+            $set: {
+              entity_id: doc.sdk_upload_metadata.title
+                ? uploadResult.trackId
+                : uploadResult.albumId,
+              blockhash: uploadResult.blockHash,
+              blocknumber: uploadResult.blockNumber,
+              release_status: 'published',
+            },
+          }
+        )
+      } catch (updateError) {
+        console.error(
+          'Failed to update release doc with published status:',
+          updateError
+        )
+        recordPendingReleaseErr(doc, updateError, 'failed_after_upload')
       }
     }
 
-    // Wait 10 seconds before checking for new releases
+    // Wait 10 seconds before checking for new pending releases
     await new Promise((resolve) => setTimeout(resolve, 10_000))
   }
 }
