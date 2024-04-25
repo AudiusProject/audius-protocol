@@ -8,7 +8,7 @@ do
   package_name=$(echo $package | jq -r '.name')
   package_version=$(echo $package | jq -r '.version')
   package_url="https://www.npmjs.com/package/$package_name"
-  PACKAGES=$(echo "${PACKAGES} \n <${package_url}|${package_name} ${package_version}>")
+  PACKAGES=$(printf "${PACKAGES} \n <${package_url}|${package_name} ${package_version}>")
 done
 
 echo "Writing template..."
