@@ -3,7 +3,7 @@
   font-weight: var(--harmony-font-bold);
   line-height: 20px;
   text-align: center;
-  margin-bottom: var(--harmony-unit-2);
+  margin-bottom: var(--harmony-spacing-s);
 }
 
 .confirmation {

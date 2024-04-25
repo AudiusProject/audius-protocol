@@ -70,7 +70,7 @@ export const RemoveAppConfirmationPage = (
 
   const { name } = params
 
-  const isDeleting = status !== Status.IDLE
+  const isRemoving = status !== Status.IDLE
 
   return (
     <div>
@@ -80,7 +80,7 @@ export const RemoveAppConfirmationPage = (
         <Button
           variant='secondary'
           onClick={handleCancel}
-          disabled={isDeleting}
+          disabled={isRemoving}
           fullWidth
         >
           {messages.cancel}
@@ -89,9 +89,9 @@ export const RemoveAppConfirmationPage = (
           variant='destructive'
           fullWidth
           onClick={handleRemove}
-          isLoading={isDeleting}
+          isLoading={isRemoving}
         >
-          {isDeleting ? messages.removingApp : messages.removeApp}
+          {isRemoving ? messages.removingApp : messages.removeApp}
         </Button>
       </ModalFooter>
     </div>
