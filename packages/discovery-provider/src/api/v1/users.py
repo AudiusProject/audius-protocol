@@ -28,6 +28,7 @@ from src.api.v1.helpers import (
     format_grant,
     format_library_filter,
     format_limit,
+    format_managed_user,
     format_offset,
     format_query,
     format_sort_direction,
@@ -57,7 +58,7 @@ from src.api.v1.models.activities import (
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
-from src.api.v1.models.grants import grant
+from src.api.v1.models.grants import managed_user
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -102,7 +103,10 @@ from src.queries.get_developer_apps import (
 )
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
-from src.queries.get_grants import GetGrantsArgs, get_grants
+from src.queries.get_managed_users import (
+    GetManagedUsersArgs,
+    get_managed_users_with_grants,
+)
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_saves import get_saves
@@ -2109,33 +2113,44 @@ class AuthorizedApps(Resource):
         return success_response(authorized_apps)
 
 
-grants_response = make_response("grants", ns, fields.List(fields.Nested(grant)))
+managed_users_response = make_response(
+    "managed_users", ns, fields.List(fields.Nested(managed_user))
+)
 
 
-@ns.route("/grants")
-class GrantsForUser(Resource):
+@ns.route("/<string:id>/managed_users")
+class ManagedUsers(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get User Grants""",
-        description="""Get grants """,
-        params={"wallet_address": "Wallet address of the account"},
+        id="""Get Managed Users""",
+        description="""Gets a list of users managed by the given user""",
+        params={"id": "A user id for the manager"},
         responses={
             200: "Success",
             400: "Bad request",
             401: "Unauthorized",
+            403: "Forbidden",
             500: "Server error",
         },
     )
     @auth_middleware(include_wallet=True)
-    @ns.marshal_with(grants_response)
-    def get(self, authed_user_id, authed_user_wallet):
-        if authed_user_wallet is None:
-            abort_unauthorized(ns)
-        args = GetGrantsArgs(grantee_address=authed_user_wallet)
-        grants = get_grants(args)
-        grants = list(map(format_grant, grants))
+    @ns.marshal_with(managed_users_response)
+    def get(self, id, authed_user_id, authed_user_wallet):
+        user_id = decode_with_abort(id, ns)
 
-        return success_response(grants)
+        if authed_user_id is None:
+            abort_unauthorized(ns)
+
+        if authed_user_id != user_id:
+            abort_forbidden(ns)
+
+        args = GetManagedUsersArgs(
+            manager_wallet_address=authed_user_wallet, current_user_id=user_id
+        )
+        users = get_managed_users_with_grants(args)
+        users = list(map(format_managed_user, users))
+
+        return success_response(users)
 
 
 purchases_and_sales_parser = pagination_with_current_user_parser.copy()

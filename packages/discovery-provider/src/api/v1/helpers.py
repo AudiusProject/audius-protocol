@@ -991,8 +991,17 @@ def format_grant(grant):
     return {
         "grantee_address": grant["grantee_address"],
         "user_id": encode_int_id(grant["user_id"]),
+        "is_approved": grant["is_approved"],
+        "is_revoked": grant["is_revoked"],
         "created_at": grant["created_at"],
         "updated_at": grant["updated_at"],
+    }
+
+
+def format_managed_user(managed_user, current_user_id):
+    return {
+        "user": extend_user(managed_user["user"]),
+        "grant": format_grant(managed_user["grant"]),
     }
 
 
