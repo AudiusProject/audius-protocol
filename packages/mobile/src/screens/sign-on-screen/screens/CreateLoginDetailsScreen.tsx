@@ -3,13 +3,13 @@ import { useCallback, useMemo } from 'react'
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createLoginDetailsPageMessages } from '@audius/common/messages'
 import { emailSchema, createLoginDetailsSchema } from '@audius/common/schemas'
-import { css } from '@emotion/native'
-import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
+import { setValueField } from '@audius/web/src/common/store/pages/signon/actions'
 import {
   getEmailField,
   getHandleField,
   getIsVerified
-} from 'audius-client/src/common/store/pages/signon/selectors'
+} from '@audius/web/src/common/store/pages/signon/selectors'
+import { css } from '@emotion/native'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'

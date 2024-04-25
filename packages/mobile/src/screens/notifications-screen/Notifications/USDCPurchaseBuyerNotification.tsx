@@ -9,7 +9,7 @@ import type {
 } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { getEntityTitle, type Nullable } from '@audius/common/utils'
-import { make } from 'audius-client/src/common/store/analytics/actions'
+import { make } from '@audius/web/src/common/store/analytics/actions'
 import { useSelector } from 'react-redux'
 
 import { IconCart } from '@audius/harmony-native'

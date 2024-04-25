@@ -1,6 +1,14 @@
 import { memo, MouseEvent } from 'react'
 
-import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
+import {
+  SquareSizes,
+  ID,
+  CoverArtSizes,
+  AccessConditions,
+  isContentUSDCPurchaseGated,
+  GatedContentStatus
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
 import {
   IconRemove,
   IconPlaybackPause,
@@ -19,6 +27,8 @@ import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { profilePage } from 'utils/route'
+
+import { GatedConditionsPill } from '../GatedConditionsPill'
 
 import styles from './TrackListItem.module.css'
 
@@ -125,7 +135,11 @@ export type TrackListItemProps = {
   onRemove?: (trackId: ID) => void
   togglePlay?: (uid: string, trackId: ID) => void
   onClickOverflow?: () => void
+  onClickGatedUnlockPill?: (e: MouseEvent) => void
+  hasStreamAccess?: boolean
   trackItemAction?: TrackItemAction
+  gatedUnlockStatus?: GatedContentStatus
+  streamConditions?: Nullable<AccessConditions>
 }
 
 const TrackListItem = ({
@@ -149,10 +163,14 @@ const TrackListItem = ({
   togglePlay,
   trackItemAction,
   onClickOverflow,
+  onClickGatedUnlockPill,
+  streamConditions,
+  gatedUnlockStatus,
   isReorderable = false,
   isDragging = false
 }: TrackListItemProps) => {
   const messages = getMessages({ isDeleted })
+  const isUsdcPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const onClickTrack = () => {
     if (uid && !isLocked && !isDeleted && togglePlay) togglePlay(uid, trackId)
@@ -216,10 +234,19 @@ const TrackListItem = ({
         </SeoLink>
       </div>
       {!isDeleted && isLocked ? (
-        <div className={styles.locked}>
-          <IconLock />
-          <span>{messages.locked}</span>
-        </div>
+        isUsdcPurchaseGated ? (
+          <GatedConditionsPill
+            streamConditions={streamConditions}
+            unlocking={gatedUnlockStatus === 'UNLOCKING'}
+            onClick={onClickGatedUnlockPill}
+            buttonSize='small'
+          />
+        ) : (
+          <div className={styles.locked}>
+            <IconLock />
+            <span>{messages.locked}</span>
+          </div>
+        )
       ) : null}
       {onClickOverflow && trackItemAction === TrackItemAction.Overflow && (
         <div className={styles.iconContainer}>

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import type { ID } from '@audius/common/models'
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
+import { getSearchBarText } from '@audius/web/src/common/store/search-bar/selectors'
 import { useSelector } from 'react-redux'
 
 import { make, track } from 'app/services/analytics'

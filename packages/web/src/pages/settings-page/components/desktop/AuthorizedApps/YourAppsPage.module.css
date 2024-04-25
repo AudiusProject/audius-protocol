@@ -1,0 +1,37 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--harmony-spacing-xl);
+}
+
+.appsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appsHeaderText {
+  font-size: var(--harmony-font-m);
+  font-weight: var(--harmony-font-bold);
+}
+
+.noApps {
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-medium);
+}
+
+.spinner {
+  margin: 0 auto;
+  width: 40px;
+  height: 40px;
+}
+
+.divider {
+  margin: var(--harmony-spacing-s) 0;
+}
+
+.appList {
+  row-gap: 8px;
+  display: flex;
+  flex-direction: column;
+}

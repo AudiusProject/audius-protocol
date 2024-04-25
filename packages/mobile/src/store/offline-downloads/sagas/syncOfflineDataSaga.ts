@@ -1,6 +1,6 @@
 import type { CommonState } from '@audius/common/store'
-import { waitForBackendSetup } from 'audius-client/src/common/store/backend/sagas'
-import { waitForRead } from 'audius-client/src/utils/sagaHelpers'
+import { waitForBackendSetup } from '@audius/web/src/common/store/backend/sagas'
+import { waitForRead } from '@audius/web/src/utils/sagaHelpers'
 import { difference, intersection } from 'lodash'
 import { put, select, take } from 'typed-redux-saga'
 

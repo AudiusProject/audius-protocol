@@ -1,7 +1,7 @@
 import {
   getSearch,
   getSearchBarText
-} from 'audius-client/src/common/store/search-bar/selectors'
+} from '@audius/web/src/common/store/search-bar/selectors'
 import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

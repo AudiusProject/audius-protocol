@@ -110,7 +110,7 @@ web-distribute:
         steps:
           - run:
               name: Add dmg-license
-              command: npm run install-dmg-license -w audius-client
+              command: npm run install-dmg-license -w @audius/web
     - run:
         name: setup
         # https://github.com/nvm-sh/nvm#installing-and-updating

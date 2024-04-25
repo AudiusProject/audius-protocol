@@ -4,14 +4,14 @@ import { finishProfilePageMessages } from '@audius/common/messages'
 import { finishProfileSchema } from '@audius/common/schemas'
 import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'
 import type { Image } from '@audius/common/store'
-import { css } from '@emotion/native'
 import {
   getCoverPhotoField,
   getHandleField,
   getIsVerified,
   getNameField,
   getProfileImageField
-} from 'audius-client/src/common/store/pages/signon/selectors'
+} from '@audius/web/src/common/store/pages/signon/selectors'
+import { css } from '@emotion/native'
 import {
   setField,
   setValueField,

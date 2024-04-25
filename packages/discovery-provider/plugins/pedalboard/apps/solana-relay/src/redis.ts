@@ -43,7 +43,7 @@ type DiscoveryNode = {
 
 export const getCachedDiscoveryNodes = async () => {
   const redis = await getRedisConnection()
-  const key = 'all-discovery-nodes'
+  const key = 'all-discovery-nodes-with-wallets'
   const json = await redis.get(key)
   return parseArray(json).filter(
     (p): p is DiscoveryNode =>

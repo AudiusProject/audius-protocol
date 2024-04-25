@@ -478,7 +478,7 @@ const UnlockedGatedContentSection = ({
           </span>
         </div>
       ) : (
-        <Flex direction='row'>
+        <Flex direction='row' wrap='wrap'>
           <span>{messages.purchased}&nbsp;</span>
           {trackOwner ? (
             <>
