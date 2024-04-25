@@ -260,20 +260,23 @@ export const TracksTable = ({
     [playingIndex]
   )
 
-  const renderPlaysCell = useCallback((cellInfo: TrackCell) => {
-    const track = cellInfo.row.original
-    const { plays } = track
-    const isOwner = track.owner_id === userId
-    // negative plays indicates the track is hidden
-    if (plays === -1) return '-'
-    if (
-      track.is_stream_gated &&
-      isContentUSDCPurchaseGated(track.stream_conditions) &&
-      !isOwner
-    )
-      return null
-    return formatCount(track.plays)
-  }, [])
+  const renderPlaysCell = useCallback(
+    (cellInfo: TrackCell) => {
+      const track = cellInfo.row.original
+      const { plays } = track
+      const isOwner = track.owner_id === userId
+      // negative plays indicates the track is hidden
+      if (plays === -1) return '-'
+      if (
+        track.is_stream_gated &&
+        isContentUSDCPurchaseGated(track.stream_conditions) &&
+        !isOwner
+      )
+        return null
+      return formatCount(track.plays)
+    },
+    [userId]
+  )
 
   const renderRepostsCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original

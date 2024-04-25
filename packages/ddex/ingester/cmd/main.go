@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ingester/artistutils"
 	"ingester/common"
+	"ingester/constants"
 	"log"
 	"log/slog"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"ingester/crawler"
 	"ingester/parser"
@@ -53,6 +55,11 @@ func main() {
 
 	// Optionally wipe all state except for OAuthed users
 	if os.Getenv("IS_DEV") == "true" && len(os.Args) > 2 && os.Args[2] == "--wipe" {
+		if ingester.S3Client.Endpoint != "http://ingress:4566" && ingester.S3Client.Endpoint != "http://localhost:4566" {
+			logger.Error("not honoring the --wipe flag because the AWS bucket is not localstack")
+			return
+		}
+
 		if err := wipeBucket(ingester.S3Client, ingester.RawBucket); err != nil {
 			logger.Error("Error creating raw bucket", "err", err)
 		}
@@ -67,19 +74,14 @@ func main() {
 			logger.Error("Error wiping crawler_cursor collection", "err", err)
 		}
 		if result, err := ingester.DeliveriesColl.DeleteMany(ingester.Ctx, filter); err == nil {
-			log.Printf("Deleted %d deliveries\n", result.DeletedCount)
+			log.Printf("Deleted %d deliveries documents\n", result.DeletedCount)
 		} else {
 			logger.Error("Error wiping deliveries collection", "err", err)
 		}
-		if result, err := ingester.PendingReleasesColl.DeleteMany(ingester.Ctx, filter); err == nil {
-			log.Printf("Deleted %d pending_releases\n", result.DeletedCount)
+		if result, err := ingester.ReleasesColl.DeleteMany(ingester.Ctx, filter); err == nil {
+			log.Printf("Deleted %d releases documents\n", result.DeletedCount)
 		} else {
-			logger.Error("Error wiping pending_releases collection", "err", err)
-		}
-		if result, err := ingester.PublishedReleasesColl.DeleteMany(ingester.Ctx, filter); err == nil {
-			log.Printf("Deleted %d published_releases\n", result.DeletedCount)
-		} else {
-			logger.Error("Error wiping published_releases collection", "err", err)
+			logger.Error("Error wiping releases collection", "err", err)
 		}
 	}
 
@@ -88,8 +90,50 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Start the crawler and parser
-	go crawler.CrawlThenParse(ingester, parser.NewParser(ingester).ProcessDelivery)
+	// Crawl and parse each new delivery that gets put into S3
+	p := parser.NewParser(ingester)
+	go crawler.CrawlThenParse(ingester, p.ProcessDelivery)
+
+	// Re-parse releases (UI sets release_status to "awaiting_parse" to re-parse)
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				cursor, err := ingester.ReleasesColl.Find(ingester.Ctx, bson.M{"release_status": constants.ReleaseStatusAwaitingParse})
+				if err != nil {
+					logger.Error("Error querying releases", "err", err)
+					continue
+				}
+
+				for cursor.Next(ingester.Ctx) {
+					var release common.Release
+					err := cursor.Decode(&release)
+					if err != nil {
+						logger.Error("Error unmarshalling release", "err", err)
+						continue
+					}
+
+					logger.Info("Re-parsing release", "release_id", release.ReleaseID)
+					if ok := p.ParseRelease(&release); !ok {
+						logger.Error("Failed to parse release in an unexpected way (couldn't update status)", "release_id", release.ReleaseID)
+					}
+				}
+
+				// Close the cursor and check for errors
+				if err := cursor.Close(ctx); err != nil {
+					logger.Error("Error closing cursor", "err", err)
+				}
+				if err := cursor.Err(); err != nil {
+					logger.Error("Error during cursor iteration", "err", err)
+				}
+			}
+		}
+	}()
 
 	// Test the ingester with a delivery if provided
 	if os.Getenv("IS_DEV") == "true" && len(os.Args) > 1 {
@@ -103,7 +147,7 @@ func main() {
 
 		testDeliveryPath := os.Args[1]
 		testDeliveryURL := uploadTestDelivery(ingester, testDeliveryPath)
-		logger.Info("Uploaded test delivery", "url", testDeliveryURL)
+		logger.Info("Uploaded test delivery", "local path", testDeliveryPath, "url", testDeliveryURL)
 	}
 
 	<-ctx.Done() // Wait until the context is canceled
@@ -134,6 +178,10 @@ func createBucket(s3Client *s3.S3, bucket string) error {
 }
 
 func wipeBucket(s3Client *s3.S3, bucketName string) error {
+	if s3Client.Endpoint != "http://ingress:4566" && s3Client.Endpoint != "http://localhost:4566" {
+		return fmt.Errorf("cannot wipe bucket '%s' because endpoint is not localstack", bucketName)
+	}
+
 	listParams := &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucketName),
 	}

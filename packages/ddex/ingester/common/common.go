@@ -30,20 +30,19 @@ func MustGetChoreography() constants.DDEXChoreography {
 }
 
 type Ingester struct {
-	DDEXChoreography      constants.DDEXChoreography
-	Ctx                   context.Context
-	MongoClient           *mongo.Client
-	S3Client              *s3.S3
-	S3Downloader          *s3manager.Downloader
-	S3Uploader            *s3manager.Uploader
-	RawBucket             string
-	CrawledBucket         string
-	CrawlerCursorColl     *mongo.Collection
-	DeliveriesColl        *mongo.Collection
-	PendingReleasesColl   *mongo.Collection
-	PublishedReleasesColl *mongo.Collection
-	UsersColl             *mongo.Collection
-	Logger                *slog.Logger
+	DDEXChoreography  constants.DDEXChoreography
+	Ctx               context.Context
+	MongoClient       *mongo.Client
+	S3Client          *s3.S3
+	S3Downloader      *s3manager.Downloader
+	S3Uploader        *s3manager.Uploader
+	RawBucket         string
+	CrawledBucket     string
+	CrawlerCursorColl *mongo.Collection
+	DeliveriesColl    *mongo.Collection
+	ReleasesColl      *mongo.Collection
+	UsersColl         *mongo.Collection
+	Logger            *slog.Logger
 }
 
 func NewIngester(ctx context.Context) *Ingester {
@@ -51,20 +50,19 @@ func NewIngester(ctx context.Context) *Ingester {
 	mongoClient := InitMongoClient(ctx, slog.Default())
 
 	return &Ingester{
-		DDEXChoreography:      MustGetChoreography(),
-		S3Client:              s3,
-		S3Downloader:          s3manager.NewDownloader(s3Session),
-		S3Uploader:            s3manager.NewUploader(s3Session),
-		MongoClient:           mongoClient,
-		RawBucket:             MustGetenv("AWS_BUCKET_RAW"),
-		CrawledBucket:         MustGetenv("AWS_BUCKET_CRAWLED"),
-		CrawlerCursorColl:     mongoClient.Database("ddex").Collection("crawler_cursor"),
-		DeliveriesColl:        mongoClient.Database("ddex").Collection("deliveries"),
-		PendingReleasesColl:   mongoClient.Database("ddex").Collection("pending_releases"),
-		PublishedReleasesColl: mongoClient.Database("ddex").Collection("published_releases"),
-		UsersColl:             mongoClient.Database("ddex").Collection("users"),
-		Ctx:                   ctx,
-		Logger:                slog.Default(),
+		DDEXChoreography:  MustGetChoreography(),
+		S3Client:          s3,
+		S3Downloader:      s3manager.NewDownloader(s3Session),
+		S3Uploader:        s3manager.NewUploader(s3Session),
+		MongoClient:       mongoClient,
+		RawBucket:         MustGetenv("AWS_BUCKET_RAW"),
+		CrawledBucket:     MustGetenv("AWS_BUCKET_CRAWLED"),
+		CrawlerCursorColl: mongoClient.Database("ddex").Collection("crawler_cursor"),
+		DeliveriesColl:    mongoClient.Database("ddex").Collection("deliveries"),
+		ReleasesColl:      mongoClient.Database("ddex").Collection("releases"),
+		UsersColl:         mongoClient.Database("ddex").Collection("users"),
+		Ctx:               ctx,
+		Logger:            slog.Default(),
 	}
 }
 

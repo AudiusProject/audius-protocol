@@ -52,7 +52,7 @@ def cache_current_nodes_task(self):
             logger.info("cache_current_nodes.py | set current discovery nodes in redis")
 
             logger.info("cache_current_nodes.py | fetching all other content nodes")
-            content_node_endpoints, content_node_wallets = get_all_content_nodes()
+            content_node_endpoints, content_node_wallets, _ = get_all_content_nodes()
             content_nodes = [
                 {"endpoint": endpoint, "delegateOwnerWallet": delegateOwnerWallet}
                 for endpoint, delegateOwnerWallet in zip(

@@ -5,12 +5,10 @@ import dotenv from 'dotenv'
 
 import createApp from './app'
 import createAppRouter from './routers'
-import collectionRouters from './routers/collectionRouters'
-import makeUploadRouter from './routers/uploadRouter'
 import { dialDb } from './services/dbService'
 import createS3 from './services/s3'
 import createSdkService from './services/sdkService'
-import { createContext, router } from './trpc'
+import { createContext } from './trpc'
 
 // Load env vars from ddex package root
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') })
@@ -44,12 +42,7 @@ const port = process.env.DDEX_PORT || 9000
     const { app, isAuthedAsAdmin } = createApp(dbUrl, sdkService)
 
     const s3 = createS3()
-    const appRouter = router({
-      upload: makeUploadRouter(s3),
-      deliveries: collectionRouters.deliveries,
-      pendingReleases: collectionRouters.pending_releases,
-      publishedReleases: collectionRouters.published_releases
-    })
+    const appRouter = createAppRouter(s3)
 
     app.use(
       '/api/trpc',
