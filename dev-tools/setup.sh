@@ -30,6 +30,8 @@ debian | ubuntu)
         sudo apt-get update
     fi
 
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
     # Install dependencies
     sudo NEEDRESTART_MODE=l apt-get install -y --allow-downgrades \
         git \
@@ -39,7 +41,8 @@ debian | ubuntu)
         docker-ce-cli='5:24.0.5-1~ubuntu.22.04~jammy' \
         containerd.io \
         docker-buildx-plugin \
-        docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy'
+        docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy' \
+        nodejs
 
 
     # Add user to docker group
