@@ -69,7 +69,7 @@ jobs:
 
       - name: Test publish
         id: changesets
-        run: echo "::set-output name=packages::$(cat ./.github/workflows/test-file.json)"
+        run: echo "::set-output name=packages::'$(cat ./.github/workflows/test-file.json)'"
 
       - name: Generate Slack Payload
         # if: steps.changesets.outputs.published == 'true'
