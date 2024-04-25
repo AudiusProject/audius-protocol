@@ -69,7 +69,7 @@ jobs:
 
       - name: Test publish
         id: changesets
-        run: echo "::set-output name=packages::$(cat test-file.json)"
+        run: echo "::set-output name=packages::$(cat ./.github/workflows/test-file.json)"
 
       - name: Generate Slack Payload
         # if: steps.changesets.outputs.published == 'true'
@@ -79,7 +79,7 @@ jobs:
           bash ./scripts/publish-packages-slack-template.sh
           echo "::set-output name=payload::$(cat /tmp/publish-packages-template.json)"
 
-      - name: Post to a Slack channel
+      - name: Notify Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.26.0
         # if: steps.changesets.outputs.published == 'true'
