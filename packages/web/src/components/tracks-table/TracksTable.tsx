@@ -5,7 +5,6 @@ import {
   UID,
   UserTrack,
   isContentCollectibleGated,
-  isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { formatCount, formatSeconds } from '@audius/common/utils'
@@ -419,19 +418,20 @@ export const TracksTable = ({
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
-      const icon = track.is_unlisted ? (
-        <IconVisibilityHidden color='subdued' size='m' />
-      ) : isContentUSDCPurchaseGated(track.stream_conditions) ? (
-        <IconLock color='subdued' size='m' />
-      ) : isContentCollectibleGated(track.stream_conditions) ? (
-        <IconCollectible color='subdued' size='m' />
-      ) : (
-        <IconSpecialAccess color='subdued' size='m' />
-      )
+      const shouldShowIcon = track.is_stream_gated || track.is_unlisted
+      const Icon = track.is_unlisted
+        ? IconVisibilityHidden
+        : isContentUSDCPurchaseGated(track.stream_conditions)
+        ? IconLock
+        : isContentCollectibleGated(track.stream_conditions)
+        ? IconCollectible
+        : IconSpecialAccess
       return (
         <>
-          {track.is_stream_gated || track.is_unlisted ? (
-            <Flex className={styles.typeIcon}>{icon}</Flex>
+          {shouldShowIcon ? (
+            <Flex className={styles.typeIcon}>
+              <Icon color='subdued' size='m' />
+            </Flex>
           ) : null}
           <div ref={overflowMenuRef} className={styles.overflowMenu}>
             <OverflowMenuButton
