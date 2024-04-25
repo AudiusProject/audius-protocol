@@ -165,3 +165,11 @@
 .tableRow:hover .typeIcon {
   opacity: 0;
 }
+
+.tableRow:hover .overflowMenu {
+  opacity: 1;
+}
+
+.tableRow .overflowMenu {
+  opacity: 0;
+}

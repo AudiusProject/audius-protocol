@@ -2,10 +2,11 @@ import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
 import {
   CollectionMetadata,
-  UserCollectionMetadata
+  UserCollectionMetadata,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
-import { Flex } from '@audius/harmony'
+import { Flex, IconLock, IconVisibilityHidden } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -138,12 +139,22 @@ export const CollectionsTable = ({
   const overflowMenuRef = useRef<HTMLDivElement>(null)
   const renderOverflowMenuCell = useCallback((cellInfo: CollectionCell) => {
     const collection = cellInfo.row.original
+    const icon = collection.is_private ? (
+      <IconVisibilityHidden color='subdued' size='m' />
+    ) : (
+      <IconLock color='subdued' size='m' />
+    )
     return (
-      <div ref={overflowMenuRef}>
-        <CollectionsTableOverflowMenuButton
-          collectionId={collection.playlist_id}
-        />
-      </div>
+      <>
+        {collection.is_stream_gated || collection.is_private ? (
+          <Flex className={styles.typeIcon}>{icon}</Flex>
+        ) : null}
+        <div ref={overflowMenuRef} className={styles.overflowMenu}>
+          <CollectionsTableOverflowMenuButton
+            collectionId={collection.playlist_id}
+          />
+        </div>
+      </>
     )
   }, [])
 
