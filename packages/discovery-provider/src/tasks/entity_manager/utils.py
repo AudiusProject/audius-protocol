@@ -431,7 +431,6 @@ def validate_signer(params: ManageEntityParameters, user_override=None):
     signer_matches_user = wallet and wallet.lower() == signer
     if signer_matches_user:
         params.logger.set_context("isApp", "false")
-        return True
     else:
         params.logger.set_context("isApp", "unknown")
         grant_key = (signer, user.user_id)
@@ -483,7 +482,6 @@ def validate_signer(params: ManageEntityParameters, user_override=None):
                 "userHandle",
                 user.handle,
             )
-            return True
         else:
             raise IndexingValidationError(
                 f"Signer does not match user {user.user_id} or an authorized wallet"
