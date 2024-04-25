@@ -20,7 +20,8 @@ const Login = () => {
     if (audiusSdk && auto) {
       audiusSdk.oauth!.login({
         scope: 'write',
-        redirectUri: new URL(window.location.href).origin
+        redirectUri: new URL(window.location.href).origin,
+        display: 'fullScreen'
       })
     }
   }, [audiusSdk, auto])
