@@ -1,10 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
 import { Button, Flex } from '@audius/harmony'
-import { useSearchParams } from 'react-router-dom'
-
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 import { useAuth } from 'providers/AuthProvider'
+import { useSearchParams } from 'react-router-dom'
 
 import styles from './Login.module.css'
 
@@ -20,7 +19,8 @@ const Login = () => {
     if (audiusSdk && auto) {
       audiusSdk.oauth!.login({
         scope: 'write',
-        redirectUri: new URL(window.location.href).origin
+        redirectUri: new URL(window.location.href).origin,
+        display: 'fullScreen'
       })
     }
   }, [audiusSdk, auto])

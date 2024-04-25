@@ -1,4 +1,4 @@
-import { FormEvent, useLayoutEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 
 import { Name, ErrorLevel } from '@audius/common/models'
 import { accountSelectors, signOutActions } from '@audius/common/store'
@@ -35,12 +35,6 @@ const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
 
 export const OAuthLoginPage = () => {
-  useLayoutEffect(() => {
-    document.body.classList.add(styles.bgWhite)
-    return () => {
-      document.body.classList.remove(styles.bgWhite)
-    }
-  }, [])
   const record = useRecord()
   const account = useSelector(getAccountUser)
   const isLoggedIn = Boolean(account)
@@ -156,7 +150,8 @@ export const OAuthLoginPage = () => {
     appImage,
     userEmail,
     authorize,
-    txParams
+    txParams,
+    display
   } = useOAuthSetup({
     onError: handleAuthError,
     onPendingTransactionApproval: handlePendingTransactionApproval,
@@ -247,7 +242,7 @@ export const OAuthLoginPage = () => {
 
   if (queryParamsError) {
     return (
-      <ContentWrapper>
+      <ContentWrapper display={display}>
         <div className={cn(styles.centeredContent, styles.titleContainer)}>
           <span className={styles.errorText}>{queryParamsError}</span>
         </div>
@@ -256,7 +251,7 @@ export const OAuthLoginPage = () => {
   }
   if (loading) {
     return (
-      <ContentWrapper>
+      <ContentWrapper display={display}>
         <div
           className={cn(styles.centeredContent, styles.loadingStateContainer)}
         >
@@ -271,7 +266,7 @@ export const OAuthLoginPage = () => {
   }
 
   return (
-    <ContentWrapper>
+    <ContentWrapper display={display}>
       <Flex alignItems='center' direction='column'>
         <Flex gap='l' alignItems='center' mb='l'>
           <Flex h='88px' w='88px'>

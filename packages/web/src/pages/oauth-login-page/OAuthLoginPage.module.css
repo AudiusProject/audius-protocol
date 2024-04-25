@@ -1,12 +1,15 @@
-.bgWhite {
-  background-color: var(--harmony-static-white);
+.wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  justify-content: center;
+  display: flex;
 }
 
-.wrapper {
-  margin: 0 auto;
-  justify-content: center;
-  width: 375px;
-  display: flex;
+.popup {
+  background-color: var(--harmony-static-white);
 }
 
 .centeredContent {
@@ -29,7 +32,7 @@
   text-overflow: ellipsis;
 }
 
-.loadingStateContainer {
+.popup .loadingStateContainer {
   margin-top: 200px;
 }
 

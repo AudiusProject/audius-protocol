@@ -17,6 +17,7 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { audiusSdk } from 'services/audius-sdk'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { Display } from './types'
 
 import { messages } from './messages'
 import {
@@ -47,6 +48,7 @@ export const useParsedQueryParams = () => {
     api_key: apiKey,
     origin,
     tx,
+    display: displayQueryParam,
     ...rest
   } = queryString.parse(search)
 
@@ -130,6 +132,8 @@ export const useParsedQueryParams = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRedirectValid, parsedOrigin, parsedRedirectUri, search])
 
+  const display: Display = displayQueryParam === 'fullScreen' ? 'fullScreen' : 'popup'
+
   return {
     apiKey,
     appName,
@@ -143,7 +147,8 @@ export const useParsedQueryParams = () => {
     parsedOrigin,
     error,
     tx,
-    txParams
+    txParams,
+    display
   }
 }
 
@@ -181,6 +186,7 @@ export const useOAuthSetup = ({
     parsedOrigin,
     txParams,
     tx,
+    display,
     error: initError
   } = useParsedQueryParams()
   const accountIsLoading = useSelector((state: CommonState) => {
@@ -518,6 +524,7 @@ export const useOAuthSetup = ({
     userEmail,
     authorize,
     tx,
-    txParams: txParams as WriteOnceParams
+    txParams: txParams as WriteOnceParams,
+    display
   }
 }
