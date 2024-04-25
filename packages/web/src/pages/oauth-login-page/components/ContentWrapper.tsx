@@ -23,7 +23,7 @@ export const ContentWrapper = ({
         direction='column'
         pv='3xl'
         ph='xl'
-        mt='3xl'
+        mv='3xl'
         alignSelf='flex-start'
         borderRadius='xl'
       >

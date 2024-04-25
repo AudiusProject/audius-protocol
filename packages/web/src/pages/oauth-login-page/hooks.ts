@@ -17,9 +17,9 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { audiusSdk } from 'services/audius-sdk'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { Display } from './types'
 
 import { messages } from './messages'
+import { Display } from './types'
 import {
   authWrite,
   formOAuthResponse,
@@ -132,7 +132,8 @@ export const useParsedQueryParams = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRedirectValid, parsedOrigin, parsedRedirectUri, search])
 
-  const display: Display = displayQueryParam === 'fullScreen' ? 'fullScreen' : 'popup'
+  const display: Display =
+    displayQueryParam === 'fullScreen' ? 'fullScreen' : 'popup'
 
   return {
     apiKey,
