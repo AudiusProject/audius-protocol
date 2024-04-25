@@ -1,4 +1,1 @@
-[
-  { "name": "@xx/xx", "version": "1.2.0" },
-  { "name": "@xx/xy", "version": "0.8.9" }
-]
+[ { "name": "@xx/xx", "version": "1.2.0" }, { "name": "@xx/xy", "version": "0.8.9" } ]
