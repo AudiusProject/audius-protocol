@@ -48,7 +48,6 @@ const Users = () => {
         {
           onSuccess: () => {
             setUserName('')
-            // trpc.users.getUsers.invalidate() TODO
           },
           onError: (error) => {
             alert(`Error: ${error.message}`)

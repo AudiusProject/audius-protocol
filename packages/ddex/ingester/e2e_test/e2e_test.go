@@ -126,6 +126,7 @@ func TestRunE2E(t *testing.T) {
 				DeliveryRemotePath: "s3://audius-test-raw/sony1.zip",
 				PublishErrors:      []string{},
 				ReleaseProfile:     common.UnspecifiedReleaseProfile,
+				ReleaseStatus:      constants.ReleaseStatusAwaitingPublish,
 				SDKUploadMetadata: common.SDKUploadMetadata{
 					ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
 					ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
@@ -291,6 +292,7 @@ func TestRunE2E(t *testing.T) {
 				DeliveryRemotePath: "s3://audius-test-raw/1_CPD1.zip",
 				PublishErrors:      []string{},
 				ReleaseProfile:     common.Common14AudioAlbumMusicOnly,
+				ReleaseStatus:      constants.ReleaseStatusAwaitingPublish,
 				SDKUploadMetadata: common.SDKUploadMetadata{
 					ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
 					ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
@@ -449,6 +451,7 @@ func TestRunE2E(t *testing.T) {
 				DeliveryRemotePath: "s3://audius-test-raw/20240305090206405",
 				PublishErrors:      []string{},
 				ReleaseProfile:     common.Common13AudioSingle,
+				ReleaseStatus:      constants.ReleaseStatusAwaitingPublish,
 				SDKUploadMetadata: common.SDKUploadMetadata{
 					ReleaseDate:       time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
 					ValidityStartDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
