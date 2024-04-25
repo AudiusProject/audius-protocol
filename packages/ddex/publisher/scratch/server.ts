@@ -9,6 +9,8 @@ import { prettyJSON } from 'hono/pretty-json'
 import { HtmlEscapedString } from 'hono/utils/html'
 import { dbUpsert, releaseRepo, userRepo, xmlRepo } from './db'
 import { reParsePastXml } from './parseDelivery'
+import { readAssetWithCaching } from './publishRelease'
+import { fileTypeFromBuffer } from 'file-type'
 
 const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
@@ -212,7 +214,92 @@ app.post('/releases/reparse', async (c) => {
 app.get('/releases/:key', (c) => {
   const row = releaseRepo.get(c.req.param('key'))
   if (!row) return c.json({ error: 'not found' }, 404)
-  return c.json(row)
+  if (c.req.query('json') != undefined) {
+    return c.json(row)
+  }
+
+  const parsedRelease = row._parsed!
+  return c.html(
+    Layout(html`
+      <div style="display: flex; gap: 20px">
+        <img
+          src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
+          style="width: 200px; height: 200px"
+        />
+
+        <div style="flex-grow: 1">
+          <h3>${parsedRelease.title}</h3>
+          <h4>${parsedRelease.artists.join(', ')}</h4>
+
+          ${parsedRelease.soundRecordings.map(
+            (sr) => html`
+              <article>
+                <button
+                  class="outline contrast"
+                  style="margin-right: 8px"
+                  onClick="play('/release/${row.key}/soundRecordings/${sr.ref}')"
+                >
+                  play
+                </button>
+                <a href="/release/${row.key}/soundRecordings/${sr.ref}">
+                  <b>${sr.title}</b>
+                </a>
+                by ${sr.artists.join(', ')}
+              </article>
+            `
+          )}
+
+          <audio id="playa" controls />
+        </div>
+      </div>
+      <script>
+        function play(url) {
+          playa.onloadstart = () => {
+            console.log('loading...')
+          }
+          playa.oncanplay = () => {
+            console.log('OK')
+          }
+          if (playa.src.includes(url)) {
+            playa.paused ? playa.play() : playa.pause()
+          } else {
+            playa.src = url
+            playa.play()
+          }
+        }
+      </script>
+    `)
+  )
+})
+
+app.get('/release/:key/:type/:ref/:name?', async (c) => {
+  const key = c.req.param('key')!
+  const type = c.req.param('type')
+  const ref = c.req.param('ref')
+  const row = releaseRepo.get(key)
+  if (!row) return c.json({ error: 'not found' }, 404)
+
+  const collection =
+    type == 'images' ? row._parsed?.images : row._parsed?.soundRecordings
+  const asset = collection!.find((i) => i.ref == ref)
+  if (!asset) return c.json({ error: 'not found' }, 404)
+
+  const ok = await readAssetWithCaching(
+    row.xmlUrl,
+    asset.filePath,
+    asset.fileName
+  )
+
+  // some mime stuff
+  if (asset.fileName.endsWith('flac')) {
+    c.header('Content-Type', 'audio/flac')
+  } else {
+    const ft = await fileTypeFromBuffer(ok.buffer)
+    if (ft) {
+      c.header('Content-Type', ft.mime)
+    }
+  }
+  return c.body(ok.buffer)
 })
 
 app.get('/xmls/:xmlUrl', (c) => {
@@ -299,7 +386,7 @@ function Layout(inner: HtmlEscapedString | Promise<HtmlEscapedString>) {
           :root {
             --pico-font-size: 16px;
             --pico-line-height: 1.3;
-            --pico-border-radius: 1rem;
+            // --pico-border-radius: 1rem;
             // --pico-spacing: 0.5rem;
             // --pico-form-element-spacing-vertical: 0.5rem;
           }

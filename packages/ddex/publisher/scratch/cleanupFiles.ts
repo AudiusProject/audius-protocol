@@ -1,15 +1,9 @@
-import { readdir, rm } from 'fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'path'
+import { rm } from 'fs/promises'
 
+// s3 cache is now in /tmp/ddex_cache
+// this will nuke that whole folder
+// in future should make it delete items older than 7 days or something
+// to make retries cheaper
 export async function cleanupFiles() {
-  let dirs = await readdir(tmpdir(), { recursive: false })
-  const work = dirs
-    .filter((dir) => dir.includes('ddex-'))
-    .map((dir) => {
-      dir = join(tmpdir(), dir)
-      console.log('removing', dir)
-      return rm(dir, { recursive: true })
-    })
-  await Promise.all(work)
+  return rm('/tmp/ddex_cache', { recursive: true })
 }

@@ -1,16 +1,16 @@
 import {
-  UploadTrackRequest,
+  AudiusSdk,
   Genre,
   UploadAlbumRequest,
-  AudiusSdk,
+  UploadTrackRequest,
 } from '@audius/sdk'
-import { createSdkService } from '../src/services/sdkService'
-import { DDEXRelease } from './parseDelivery'
-import { readFile } from 'fs/promises'
-import { basename, join, resolve } from 'path'
-import { ReleaseRow, dbUpdate, releaseRepo } from './db'
-import { dialS3 } from './s3poller'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
+import { mkdir, readFile, stat, writeFile } from 'fs/promises'
+import { basename, dirname, join, resolve } from 'path'
+import { createSdkService } from '../src/services/sdkService'
+import { ReleaseRow, dbUpdate, releaseRepo } from './db'
+import { DDEXImage, DDEXRelease, DDEXSoundRecording } from './parseDelivery'
+import { dialS3 } from './s3poller'
 
 export async function publishValidPendingReleases() {
   const sdkService = createSdkService()
@@ -60,42 +60,18 @@ export async function publishRelease(
     return
   }
 
-  const s3 = dialS3()
-
   const skipSdkPublish = process.env.SKIP_SDK_PUBLISH == 'true'
 
   if (!releaseRow.xmlUrl) {
     throw new Error(`xmlUrl is required to resolve file paths`)
   }
 
-  // read asset file from disk or s3
-  // depending on source xml location.
-  // todo: for s3 would be nice to save to local fs
-  //   since assets are reused between releases (image, audio)
-  //   would be nice to not download it every time
-  type hasFile = {
-    filePath: string
-    fileName: string
-  }
-  async function resolveFile({ filePath, fileName }: hasFile) {
-    if (releaseRow.xmlUrl?.startsWith('s3:')) {
-      const s3url = new URL(`${filePath}${fileName}`, releaseRow.xmlUrl)
-      const { Body } = await s3.send(
-        new GetObjectCommand({
-          Bucket: s3url.host,
-          Key: s3url.pathname.substring(1),
-        })
-      )
-      const byteArr = await Body!.transformToByteArray()
-      const buffer = Buffer.from(byteArr)
-      return {
-        name: fileName,
-        buffer,
-      }
-    }
-
-    const fileUrl = resolve(releaseRow.xmlUrl!, '..', filePath, fileName)
-    return readFileToBuffer(fileUrl)
+  // read asset file
+  async function resolveFile({
+    filePath,
+    fileName,
+  }: DDEXImage | DDEXSoundRecording) {
+    return readAssetWithCaching(releaseRow.xmlUrl, filePath, fileName)
   }
 
   const imageFile = await resolveFile(release.images[0])
@@ -227,4 +203,46 @@ async function readFileToBuffer(filePath: string) {
   const buffer = await readFile(filePath)
   const name = basename(filePath)
   return { buffer, name }
+}
+
+//
+// s3 file helper
+//
+export async function readAssetWithCaching(
+  xmlUrl: string,
+  filePath: string,
+  fileName: string
+) {
+  // read from s3 + cache to local disk
+  if (xmlUrl.startsWith('s3:')) {
+    const cacheBaseDir = `/tmp/ddex_cache`
+    const s3url = new URL(`${filePath}${fileName}`, xmlUrl)
+    const Bucket = s3url.host
+    const Key = s3url.pathname.substring(1)
+    const destinationPath = join(cacheBaseDir, Bucket, Key)
+
+    // fetch if needed
+    const exists = await fileExists(destinationPath)
+    if (!exists) {
+      const s3 = dialS3()
+      await mkdir(dirname(destinationPath), { recursive: true })
+      const { Body } = await s3.send(new GetObjectCommand({ Bucket, Key }))
+      await writeFile(destinationPath, Body as any)
+    }
+
+    return readFileToBuffer(destinationPath)
+  }
+
+  // read from local disk
+  const fileUrl = resolve(xmlUrl, '..', filePath, fileName)
+  return readFileToBuffer(fileUrl)
+}
+
+async function fileExists(path: string) {
+  try {
+    await stat(path)
+    return true
+  } catch {
+    return false
+  }
 }
