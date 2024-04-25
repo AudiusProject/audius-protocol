@@ -197,6 +197,7 @@ export const useOAuthSetup = ({
   const [registeredDeveloperAppName, setRegisteredDeveloperAppName] =
     useState<string>()
   const appName = registeredDeveloperAppName ?? queryParamAppName
+  const [appImage, setAppImage] = useState<string>()
 
   const [userAlreadyWriteAuthorized, setUserAlreadyWriteAuthorized] =
     useState<boolean>()
@@ -250,6 +251,7 @@ export const useOAuthSetup = ({
         return
       }
       setRegisteredDeveloperAppName(developerApp.name)
+      setAppImage(developerApp.imageUrl)
     }
     fetchDeveloperAppName()
   }, [apiKey, queryParamAppName, queryParamsError, scope])
@@ -512,6 +514,7 @@ export const useOAuthSetup = ({
     userAlreadyWriteAuthorized,
     apiKey,
     appName,
+    appImage,
     userEmail,
     authorize,
     tx,

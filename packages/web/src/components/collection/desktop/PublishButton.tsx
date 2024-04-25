@@ -13,7 +13,7 @@ import { Tooltip } from 'components/tooltip'
 import { PublishConfirmationModal } from './PublishConfirmationModal'
 
 const { getCollection } = collectionPageSelectors
-const { getCollecitonHasHiddenTracks } = cacheCollectionsSelectors
+const { getCollectionHasHiddenTracks } = cacheCollectionsSelectors
 
 const messages = {
   publish: 'Make Public',
@@ -33,7 +33,7 @@ export const PublishButton = (props: PublishButtonProps) => {
     (state: CommonState) => getCollection(state, { id: collectionId })
   ) as Collection
   const hasHiddenTracks = useSelector((state: CommonState) =>
-    getCollecitonHasHiddenTracks(state, { id: collectionId })
+    getCollectionHasHiddenTracks(state, { id: collectionId })
   )
 
   const [isConfirming, toggleIsConfirming] = useToggle(false)

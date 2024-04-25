@@ -43,6 +43,12 @@ export interface AuthorizedApp {
      * @type {string}
      * @memberof AuthorizedApp
      */
+    imageUrl?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AuthorizedApp
+     */
     grantorUserId: string;
     /**
      * 
@@ -85,6 +91,7 @@ export function AuthorizedAppFromJSONTyped(json: any, ignoreDiscriminator: boole
         'address': json['address'],
         'name': json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
+        'imageUrl': !exists(json, 'image_url') ? undefined : json['image_url'],
         'grantorUserId': json['grantor_user_id'],
         'grantCreatedAt': json['grant_created_at'],
         'grantUpdatedAt': json['grant_updated_at'],
@@ -103,6 +110,7 @@ export function AuthorizedAppToJSON(value?: AuthorizedApp | null): any {
         'address': value.address,
         'name': value.name,
         'description': value.description,
+        'image_url': value.imageUrl,
         'grantor_user_id': value.grantorUserId,
         'grant_created_at': value.grantCreatedAt,
         'grant_updated_at': value.grantUpdatedAt,

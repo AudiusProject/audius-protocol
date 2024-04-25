@@ -19,7 +19,7 @@ import { RepostButton } from 'app/components/repost-button'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
-const { getCollecitonHasHiddenTracks, getIsCollectionEmpty } =
+const { getCollectionHasHiddenTracks, getIsCollectionEmpty } =
   cacheCollectionsSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
@@ -94,7 +94,7 @@ export const DetailsTileActionButtons = ({
     { disabled: !collectionId || !isCollection }
   )
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
-    getCollecitonHasHiddenTracks(state, { id: collectionId })
+    getCollectionHasHiddenTracks(state, { id: collectionId })
   )
   const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(

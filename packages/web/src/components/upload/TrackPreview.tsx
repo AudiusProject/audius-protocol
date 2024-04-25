@@ -161,7 +161,7 @@ export const TrackPreview = (props: TrackPreviewProps) => {
               onSelect={(label) => onEditStemCategory(label as StemCategory)}
               selection={stemCategory?.toString() ?? null}
               popupZIndex={zIndex.STEMS_AND_DOWNLOADS_FILTER_BUTTON_POPUP}
-              isDisabled={!allowCategorySwitch}
+              disabled={!allowCategorySwitch}
             />
           </Box>
         ) : null}

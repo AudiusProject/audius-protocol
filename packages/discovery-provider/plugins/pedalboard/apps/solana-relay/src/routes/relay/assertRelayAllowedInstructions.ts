@@ -10,7 +10,6 @@ import {
 import {
   PublicKey,
   TransactionInstruction,
-  Secp256k1Program,
   SystemProgram,
   SystemInstruction
 } from '@solana/web3.js'
@@ -21,7 +20,8 @@ import {
   ClaimableTokensProgram,
   RewardManagerProgram,
   isCreateAssociatedTokenAccountIdempotentInstruction,
-  isCreateAssociatedTokenAccountInstruction
+  isCreateAssociatedTokenAccountInstruction,
+  Secp256k1Program
 } from '@audius/spl'
 import { config } from '../../config'
 import bs58 from 'bs58'
@@ -196,8 +196,7 @@ const assertAllowedRewardsManagerProgramInstruction = (
  */
 const assertAllowedClaimableTokenProgramInstruction = async (
   instructionIndex: number,
-  instruction: TransactionInstruction,
-  user?: { blockchainUserId?: number; handle?: string | null }
+  instruction: TransactionInstruction
 ) => {
   const decodedInstruction =
     ClaimableTokensProgram.decodeInstruction(instruction)
@@ -324,6 +323,24 @@ const assertAllowedSystemProgramInstruction = (
   }
 }
 
+const assertValidSecp256k1ProgramInstruction = (
+  instructionIndex: number,
+  instruction: TransactionInstruction
+) => {
+  try {
+    if (
+      !Secp256k1Program.verifySignature(Secp256k1Program.decode(instruction))
+    ) {
+      throw new Error('Signer does not match')
+    }
+  } catch (e) {
+    throw new InvalidRelayInstructionError(
+      instructionIndex,
+      'Invalid Secp256k1Program instruction'
+    )
+  }
+}
+
 /**
  * Checks each of the instructions to make sure it's something we want to relay.
  * The main goals of the checks are to ensure the feePayer isn't abused.
@@ -368,11 +385,7 @@ export const assertRelayAllowedInstructions = async (
         assertAllowedRewardsManagerProgramInstruction(i, instruction)
         break
       case CLAIMABLE_TOKEN_PROGRAM_ID:
-        await assertAllowedClaimableTokenProgramInstruction(
-          i,
-          instruction,
-          options?.user
-        )
+        await assertAllowedClaimableTokenProgramInstruction(i, instruction)
         break
       case JUPITER_AGGREGATOR_V6_PROGRAM_ID:
         await assertAllowedJupiterProgramInstruction(
@@ -390,6 +403,8 @@ export const assertRelayAllowedInstructions = async (
         )
         break
       case Secp256k1Program.programId.toBase58():
+        assertValidSecp256k1ProgramInstruction(i, instruction)
+        break
       case MEMO_PROGRAM_ID:
       case MEMO_V2_PROGRAM_ID:
       case TRACK_LISTEN_COUNT_PROGRAM_ID:

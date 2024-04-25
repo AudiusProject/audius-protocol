@@ -1,7 +1,7 @@
 {
   "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
-    // Use react-native's builtin lib when no longer dependent on audius-client
+    // Use react-native's builtin lib when no longer dependent on @audius/web
     "lib": [
       "dom",
       "es2019",
@@ -24,23 +24,23 @@
       "@audius/common/*": ["../common/src/*"],
       "~/*": ["../common/src/*"],
       "app/*": ["./src/*"],
-      // Remove these when no longer dependent on audius-client
-      "audio/*": ["../../node_modules/audius-client/src/audio/*"],
-      "common/*": ["../../node_modules/audius-client/src/common/*"],
-      "components/*": ["../../node_modules/audius-client/src/components/*"],
-      "hooks/*": ["../../node_modules/audius-client/src/hooks/*"],
-      "pages/*": ["../../node_modules/audius-client/src/pages/*"],
-      "models/*": ["../../node_modules/audius-client/src/models/*"],
-      "schemas": ["../../node_modules/audius-client/src/common/schemas"],
-      "services/*": ["../../node_modules/audius-client/src/services/*"],
-      "store/*": ["../../node_modules/audius-client/src/store/*"],
-      "utils/*": ["../../node_modules/audius-client/src/utils/*"],
-      "workers/*": ["../../node_modules/audius-client/src/workers/*"]
+      // Remove these when no longer dependent on @audius/web
+      "audio/*": ["../../node_modules/@audius/web/src/audio/*"],
+      "common/*": ["../../node_modules/@audius/web/src/common/*"],
+      "components/*": ["../../node_modules/@audius/web/src/components/*"],
+      "hooks/*": ["../../node_modules/@audius/web/src/hooks/*"],
+      "pages/*": ["../../node_modules/@audius/web/src/pages/*"],
+      "models/*": ["../../node_modules/@audius/web/src/models/*"],
+      "schemas": ["../../node_modules/@audius/web/src/common/schemas"],
+      "services/*": ["../../node_modules/@audius/web/src/services/*"],
+      "store/*": ["../../node_modules/@audius/web/src/store/*"],
+      "utils/*": ["../../node_modules/@audius/web/src/utils/*"],
+      "workers/*": ["../../node_modules/@audius/web/src/workers/*"]
     },
     "strictNullChecks": true,
     "types": ["vite/client", "jest"],
-    // Update these when no longer dependent on audius-client.
-    // Issue is due to absolute paths into audius-client
+    // Update these when no longer dependent on @audius/web.
+    // Issue is due to absolute paths into @audius/web
     "strict": false
   },
   "exclude": ["node_modules", "harmony"]
