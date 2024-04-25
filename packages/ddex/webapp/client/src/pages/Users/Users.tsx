@@ -36,10 +36,10 @@ const Table = ({ data }: { data: CollectionData }) => {
   )
 }
 
-// TODO: Only show the "Create Test User" button when IS_DEV=true in the environment
 const Users = () => {
   const [userName, setUserName] = useState('')
   const createUser = trpc.users.createUser.useMutation()
+  const isDev = import.meta.env.VITE_IS_DEV // Only allow creating test users in dev
 
   const handleCreateUser = () => {
     if (userName.trim()) {
@@ -60,24 +60,26 @@ const Users = () => {
   }
 
   return (
-    <TableLayout title='Releases'>
-      <Flex
-        direction='row'
-        gap='s'
-        alignItems='center'
-        style={{ maxWidth: '400px' }}
-      >
-        <TextInput
-          label='New Artist Name'
-          placeholder='Enter artist name'
-          value={userName}
-          size={TextInputSize.SMALL}
-          onChange={(e) => setUserName(e.target.value)}
-        />
-        <Button variant='secondary' size='small' onClick={handleCreateUser}>
-          Create Test User
-        </Button>
-      </Flex>
+    <TableLayout title='Users'>
+      {isDev && (
+        <Flex
+          direction='row'
+          gap='s'
+          alignItems='center'
+          style={{ maxWidth: '400px' }}
+        >
+          <TextInput
+            label='New Artist Name'
+            placeholder='Enter artist name'
+            value={userName}
+            size={TextInputSize.SMALL}
+            onChange={(e) => setUserName(e.target.value)}
+          />
+          <Button variant='secondary' size='small' onClick={handleCreateUser}>
+            Create Test User
+          </Button>
+        </Flex>
+      )}
       <PaginatedTable
         queryFunction={trpc.users.getUsers.useQuery}
         TableDisplay={Table}
