@@ -10,7 +10,7 @@ steps:
       command: . ~/.profile; audius-compose up --prod && audius-cmd test
   - run:
       name: verify sdk types
-      command: sh ./scripts/check-generated-types.sh
+      command: sh ./packages/libs/scripts/check-generated-types.sh
   - run:
       name: cleanup
       no_output_timeout: 5m
