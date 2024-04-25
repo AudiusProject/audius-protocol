@@ -77,6 +77,7 @@ jobs:
         run: |
           echo "${{ steps.changesets.outputs.packages }}" > /tmp/packages.json
           bash ./scripts/publish-packages-slack-template.sh
+          cat /tmp/publish-packages-template.json
           echo "::set-output name=payload::$(cat /tmp/publish-packages-template.json)"
 
       - name: Notify Slack channel
