@@ -24,6 +24,7 @@ import type {
   FollowingResponse,
   GetSupporters,
   GetSupporting,
+  Grants,
   RelatedArtistResponse,
   Reposts,
   SubscribersResponse,
@@ -51,6 +52,8 @@ import {
     GetSupportersToJSON,
     GetSupportingFromJSON,
     GetSupportingToJSON,
+    GrantsFromJSON,
+    GrantsToJSON,
     RelatedArtistResponseFromJSON,
     RelatedArtistResponseToJSON,
     RepostsFromJSON,
@@ -196,6 +199,10 @@ export interface GetUserRequest {
 export interface GetUserByHandleRequest {
     handle: string;
     userId?: string;
+}
+
+export interface GetUserGrantsRequest {
+    walletAddress?: string;
 }
 
 export interface GetUserIDFromWalletRequest {
@@ -1004,6 +1011,37 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserByHandle(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserResponse> {
         const response = await this.getUserByHandleRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get grants
+     */
+    async getUserGrantsRaw(params: GetUserGrantsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Grants>> {
+        const queryParameters: any = {};
+
+        if (params.walletAddress !== undefined) {
+            queryParameters['wallet_address'] = params.walletAddress;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/grants`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GrantsFromJSON(jsonValue));
+    }
+
+    /**
+     * Get grants
+     */
+    async getUserGrants(params: GetUserGrantsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Grants> {
+        const response = await this.getUserGrantsRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -22,6 +22,8 @@ export * from './FollowingResponse';
 export * from './GetSupporters';
 export * from './GetSupporting';
 export * from './GetTipsResponse';
+export * from './Grant';
+export * from './Grants';
 export * from './Playlist';
 export * from './PlaylistAddedTimestamp';
 export * from './PlaylistArtwork';

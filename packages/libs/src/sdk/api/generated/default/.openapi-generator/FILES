@@ -29,6 +29,8 @@ models/FollowingResponse.ts
 models/GetSupporters.ts
 models/GetSupporting.ts
 models/GetTipsResponse.ts
+models/Grant.ts
+models/Grants.ts
 models/Playlist.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts

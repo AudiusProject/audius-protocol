@@ -987,6 +987,15 @@ def format_authorized_app(authorized_app):
     }
 
 
+def format_grant(grant):
+    return {
+        "grantee_address": grant["grantee_address"],
+        "user_id": encode_int_id(grant["user_id"]),
+        "created_at": grant["created_at"],
+        "updated_at": grant["updated_at"],
+    }
+
+
 def format_dashboard_wallet_user(dashboard_wallet_user):
     return {
         "wallet": dashboard_wallet_user["wallet"],

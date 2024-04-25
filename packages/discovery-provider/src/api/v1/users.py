@@ -11,6 +11,7 @@ from src.api.v1.helpers import (
     abort_bad_request_param,
     abort_forbidden,
     abort_not_found,
+    abort_unauthorized,
     current_user_parser,
     decode_with_abort,
     extend_activity,
@@ -24,6 +25,7 @@ from src.api.v1.helpers import (
     format_aggregate_monthly_plays_for_user,
     format_authorized_app,
     format_developer_app,
+    format_grant,
     format_library_filter,
     format_limit,
     format_offset,
@@ -55,6 +57,7 @@ from src.api.v1.models.activities import (
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
+from src.api.v1.models.grants import grant
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -99,6 +102,7 @@ from src.queries.get_developer_apps import (
 )
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
+from src.queries.get_grants import GetGrantsArgs, get_grants
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_saves import get_saves
@@ -2103,6 +2107,35 @@ class AuthorizedApps(Resource):
         authorized_apps = get_developer_apps_with_grant_for_user(decoded_id)
         authorized_apps = list(map(format_authorized_app, authorized_apps))
         return success_response(authorized_apps)
+
+
+grants_response = make_response("grants", ns, fields.List(fields.Nested(grant)))
+
+
+@ns.route("/grants")
+class GrantsForUser(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Grants""",
+        description="""Get grants """,
+        params={"wallet_address": "Wallet address of the account"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            500: "Server error",
+        },
+    )
+    @auth_middleware(include_wallet=True)
+    @ns.marshal_with(grants_response)
+    def get(self, authed_user_id, authed_user_wallet):
+        if authed_user_wallet is None:
+            abort_unauthorized(ns)
+        args = GetGrantsArgs(grantee_address=authed_user_wallet)
+        grants = get_grants(args)
+        grants = list(map(format_grant, grants))
+
+        return success_response(grants)
 
 
 purchases_and_sales_parser = pagination_with_current_user_parser.copy()
