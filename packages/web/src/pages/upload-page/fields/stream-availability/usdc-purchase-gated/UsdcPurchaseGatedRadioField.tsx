@@ -94,6 +94,7 @@ export const UsdcPurchaseGatedRadioField = (
           disabled={disabled}
           isAlbum={isAlbum}
           isUpload={isUpload}
+          isInitiallyUnlisted={isInitiallyUnlisted}
         />
       }
     />

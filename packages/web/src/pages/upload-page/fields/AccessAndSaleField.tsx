@@ -55,6 +55,7 @@ import {
   GateKeeper,
   IS_DOWNLOADABLE,
   IS_DOWNLOAD_GATED,
+  IS_PRIVATE,
   IS_SCHEDULED_RELEASE,
   IS_STREAM_GATED,
   IS_UNLISTED,
@@ -236,6 +237,7 @@ type AccessAndSaleFieldProps = {
   forceOpen?: boolean
   setForceOpen?: (value: boolean) => void
   previewOverride?: (toggleMenu: () => void) => ReactNode | ReactNode[]
+  onMenuSubmit?: (values: AccessAndSaleFormValues) => void
 }
 
 export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
@@ -244,7 +246,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     isAlbum = false,
     forceOpen,
     setForceOpen,
-    previewOverride
+    previewOverride,
+    onMenuSubmit
   } = props
 
   const [{ value: index }] = useField('trackMetadatasIndex')
@@ -271,8 +274,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
 
   const [{ value: isAlbumUnlisted }, , { setValue: setIsAlbumUnlistedValue }] =
-    useField<SingleTrackEditValues[typeof IS_UNLISTED]>('is_private')
+    useField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_PRIVATE)
 
+  // Unfortunately albums and tracks use different fields for "hidden" visibility (is_private for albums, is_unlisted for tracks)
   const isUnlisted = isAlbum ? isAlbumUnlisted : isTrackUnlisted
   const setIsUnlistedValue = isAlbum
     ? setIsAlbumUnlistedValue
@@ -431,9 +435,10 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           setIsStreamGated(true)
           setStreamConditionsValue(conditions)
           setPreviewValue(preview ?? 0)
+          setIsDownloadable(true)
           setIsDownloadGated(true)
           setDownloadConditionsValue(conditions)
-          setIsDownloadable(true)
+          setIsUnlistedValue(false)
           const downloadableGateKeeper =
             isDownloadable &&
               lastGateKeeper.downloadable === 'stemsAndDownloads'
@@ -504,6 +509,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           break
         }
       }
+      onMenuSubmit?.(values)
     },
     [
       setFieldVisibilityValue,
@@ -512,6 +518,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       setIsStreamGated,
       setStreamConditionsValue,
       setPreviewValue,
+      onMenuSubmit,
       setIsDownloadGated,
       setDownloadConditionsValue,
       setIsDownloadable,
@@ -656,6 +663,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           initialStreamConditions={
             parentFormInitialStreamConditions ?? undefined
           }
+          isInitiallyUnlisted={initialValues[IS_UNLISTED]}
           isScheduledRelease={isScheduledRelease}
         />
       }

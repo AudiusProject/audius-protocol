@@ -155,7 +155,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
               ? messages.hiddenSubtitleAlbums
               : messages.hiddenSubtitleTracks
           }
-          disabled={disableHidden}
+          disabled={disableHidden && !isPremiumAlbumsEnabled}
           // isInitiallyUnlisted is undefined on create
           // show hint on scheduled releases that are in create or already unlisted
           hintContent={

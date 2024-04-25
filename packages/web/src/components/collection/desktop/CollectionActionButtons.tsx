@@ -28,6 +28,7 @@ type CollectionActionButtonProps = {
   isPremium?: Nullable<boolean>
   userId: Nullable<ID>
   onPlay: MouseEventHandler<HTMLButtonElement>
+  isAlbum?: boolean
 }
 
 export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
@@ -40,7 +41,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isPlayable,
     userId,
     tracksLoading,
-    isPremium
+    isPremium,
+    isAlbum
   } = props
 
   let actionButtons: Nullable<JSX.Element> = null
@@ -55,7 +57,9 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       )
     }
   } else if (isOwner) {
-    actionButtons = <OwnerActionButtons collectionId={collectionId} />
+    actionButtons = (
+      <OwnerActionButtons collectionId={collectionId} isAlbum={isAlbum} />
+    )
   } else {
     actionButtons = <ViewerActionButtons collectionId={collectionId} />
   }
@@ -70,8 +74,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       {isPlaying
         ? messages.pause
         : isPremium
-        ? messages.preview
-        : messages.play}
+          ? messages.preview
+          : messages.play}
     </Button>
   )
 

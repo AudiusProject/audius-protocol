@@ -121,7 +121,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     onClickReposts,
     onClickFavorites,
     isStreamGated,
-    streamConditions
+    streamConditions,
+    isAlbum
   } = props
 
   const { isEnabled: isPremiumAlbumsEnabled } = useFlag(
@@ -267,6 +268,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             isOwner={isOwner}
             tracksLoading={tracksLoading}
             onPlay={onPlay}
+            isAlbum={isAlbum}
           />
         </ClientOnly>
       </Flex>

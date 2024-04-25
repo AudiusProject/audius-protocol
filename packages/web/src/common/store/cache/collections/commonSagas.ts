@@ -55,6 +55,7 @@ import {
   addPlaylistsNotInLibrary,
   removePlaylistFromLibrary
 } from 'common/store/playlist-library/sagas'
+import { addPremiumMetadata } from 'common/store/upload/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -117,7 +118,7 @@ function* editPlaylistAsync(
       name: formFields.playlist_name
     })
   )
-
+  yield* call(addPremiumMetadata, formFields)
   let playlist: Collection = { ...formFields }
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
   const updatedTracks = yield* select((state) => {

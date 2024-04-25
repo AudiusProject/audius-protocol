@@ -76,6 +76,7 @@ export type TrackAvailabilityFieldsProps = {
   disabled?: boolean
   isAlbum?: boolean
   isUpload?: boolean
+  isInitiallyUnlisted?: boolean
 }
 
 type PriceMessages = typeof messages.price

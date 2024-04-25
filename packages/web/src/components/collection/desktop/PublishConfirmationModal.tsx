@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
-import { Collection } from '@audius/common/models'
 import {
-  cacheCollectionsActions,
-  collectionPageSelectors,
-  CommonState
+  EditPlaylistValues,
+  cacheCollectionsActions
 } from '@audius/common/store'
 import {
   Modal,
@@ -17,40 +15,50 @@ import {
   IconRocket,
   Button
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import styles from './PublishConfirmationModal.module.css'
-const { getCollection } = collectionPageSelectors
 
-const { publishPlaylist } = cacheCollectionsActions
+const { editPlaylist } = cacheCollectionsActions
 
 const messages = {
-  title: 'Make Public',
+  title: 'Release Now',
   description: (collectionType: 'album' | 'playlist') =>
-    `Are you sure you want to make this ${collectionType} public? It will be shared to your feed and your subscribed followers will be notified.`,
+    `Are you sure you want to release this ${collectionType}? It will be shared to your feed and your subscribed followers will be notified.`,
+  descriptionHiddenAlbum:
+    'Are you sure you want to release this album? Any hidden track in the album will become public. It will be shared to your feed and your subscribed followers will be notified.',
   cancel: 'Cancel',
-  publish: 'Make Public'
+  publish: 'Release Now'
 }
 
 type PublishConfirmationModalProps = Omit<ModalProps, 'children'> & {
-  collectionId: number
+  isAlbum?: boolean
+  isPrivate?: boolean
+  collectionFormValues: EditPlaylistValues
+  onSubmit: () => void
 }
 
 export const PublishConfirmationModal = (
   props: PublishConfirmationModalProps
 ) => {
-  const { collectionId, ...other } = props
-  const { onClose } = other
+  const { isAlbum, collectionFormValues, ...other } = props
+  const { is_private } = collectionFormValues
+  const { onClose, onSubmit } = other
   const dispatch = useDispatch()
 
-  const { is_album } = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
-  ) as Collection
-
   const handlePublish = useCallback(() => {
-    dispatch(publishPlaylist(collectionId))
-    onClose()
-  }, [dispatch, collectionId, onClose])
+    console.log({
+      streamConditions: collectionFormValues.stream_conditions,
+      // downloadConditions: collectionFormValues.download_conditions,
+      is_stream_gated: collectionFormValues.is_stream_gated,
+      is_private: collectionFormValues.is_private,
+      form: collectionFormValues
+    })
+    dispatch(
+      editPlaylist(collectionFormValues.playlist_id, collectionFormValues)
+    )
+    onSubmit()
+  }, [collectionFormValues, dispatch, onSubmit])
 
   return (
     <Modal {...other} size='small'>
@@ -59,7 +67,9 @@ export const PublishConfirmationModal = (
       </ModalHeader>
       <ModalContent>
         <ModalContentText>
-          {messages.description(is_album ? 'album' : 'playlist')}
+          {isAlbum && is_private
+            ? messages.descriptionHiddenAlbum
+            : messages.description(isAlbum ? 'album' : 'playlist')}
         </ModalContentText>
       </ModalContent>
       <ModalFooter className={styles.footer}>
