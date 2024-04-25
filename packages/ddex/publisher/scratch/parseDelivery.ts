@@ -1,10 +1,10 @@
-import * as cheerio from 'cheerio'
 import { Genre } from '@audius/sdk'
+import * as cheerio from 'cheerio'
 import decompress from 'decompress'
 import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
-import { ReleaseRow, db, matchAudiusUser, upsertRelease } from './db'
+import { join } from 'node:path'
+import { releaseRepo, userRepo, xmlRepo } from './db'
 
 type CH = cheerio.Cheerio<cheerio.Element>
 
@@ -131,13 +131,9 @@ export async function parseDelivery(maybeZip: string) {
 
 export async function reParsePastXml() {
   // loop over db xml and reprocess
-  const releases = db.prepare(`select * from releases`).all() as ReleaseRow[]
-  for (const release of releases) {
-    // skip releases that have already been published
-    if (release.publishedAt) {
-      continue
-    }
-    await parseDdexXml(release.xmlUrl || '', release.xmlText)
+  const rows = xmlRepo.all()
+  for (const row of rows) {
+    await parseDdexXml(row.xmlUrl, row.xmlText)
   }
 }
 
@@ -161,6 +157,9 @@ export async function parseDdexXmlFile(xmlUrl: string) {
 
 // actually parse ddex xml
 export async function parseDdexXml(xmlUrl: string, xmlText: string) {
+  // todo: would be nice to skip this on reParse
+  xmlRepo.upsert(xmlUrl, xmlText)
+
   const $ = cheerio.load(xmlText, { xmlMode: true })
 
   function toTexts($doc: CH) {
@@ -208,14 +207,14 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
 
       const common: DealFields = {
         isDownloadable: usageTypes.includes('PermanentDownload'),
-        validityStartDate: $el.find('ValidityPeriod > StartDate').text()
+        validityStartDate: $el.find('ValidityPeriod > StartDate').text(),
       }
 
       switch (commercialModelType) {
         case 'FreeOfChargeModel':
           releaseDeals[ref] = {
             ...common,
-            audiusDealType: 'Free'
+            audiusDealType: 'Free',
           }
           break
         case 'PayAsYouGoModel':
@@ -226,20 +225,20 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
             releaseDeals[ref] = {
               ...common,
               audiusDealType: 'PayGated',
-              priceUsd
+              priceUsd,
             }
           }
           break
         case 'FollowGated':
           releaseDeals[ref] = {
             ...common,
-            audiusDealType: 'FollowGated'
+            audiusDealType: 'FollowGated',
           }
           break
         case 'TipGated':
           releaseDeals[ref] = {
             ...common,
-            audiusDealType: 'TipGated'
+            audiusDealType: 'TipGated',
           }
           break
         case 'NFTGated':
@@ -264,7 +263,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
                 imageUrl,
                 externalLink,
                 standard,
-                slug
+                slug,
               }
               break
             case 'sol':
@@ -275,7 +274,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
                 address,
                 name,
                 imageUrl,
-                externalLink
+                externalLink,
               }
               break
           }
@@ -312,14 +311,14 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
 
       copyrightLine: cline($el),
       producerCopyrightLine: pline($el),
-      parentalWarningType: toText($el.find('ParentalWarningType'))
+      parentalWarningType: toText($el.find('ParentalWarningType')),
     }
 
     const rightsController = $el.find('RightsController').first()
     if (rightsController.length) {
       recording.rightsController = {
         name: toText(rightsController.find('PartyName FullName')),
-        roles: toTexts(rightsController.find('RightsControllerRole'))
+        roles: toTexts(rightsController.find('RightsControllerRole')),
         // rightShareUnknown: toText(rightsController.find('RightShareUnknown'))
       }
     }
@@ -339,7 +338,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
     imageResources[ref] = {
       ref,
       filePath: $el.find('FilePath').text(),
-      fileName: $el.find('FileName').text()
+      fileName: $el.find('FileName').text(),
     }
   })
 
@@ -381,7 +380,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
         problems: [],
         soundRecordings: [],
         images: [],
-        deal
+        deal,
       }
 
       // resolve audius genre
@@ -391,7 +390,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
       }
 
       // resolve audius user
-      release.audiusUser = matchAudiusUser(release.artists)
+      release.audiusUser = userRepo.match(release.artists)
       if (!release.audiusUser) {
         release.problems.push(`NoUser`)
       }
@@ -428,7 +427,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
 
   // create or replace this release in db
   for (const release of releases) {
-    upsertRelease(xmlUrl, xmlText, release)
+    releaseRepo.upsert(xmlUrl, release)
   }
 
   return releases

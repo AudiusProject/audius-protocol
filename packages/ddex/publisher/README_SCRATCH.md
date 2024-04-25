@@ -42,8 +42,8 @@ npx tsx watch scratch/server.ts
 ```sql
 sqlite3 scratchy.db
 
-insert into users values ('2fuga', '2FUGA', '2FUGA');
-insert into users values ('FUGARIAN', 'FUGARIAN', 'FUGARIAN');
+insert into users values ('2fuga', '2FUGA', '2FUGA') on conflict do nothing;
+insert into users values ('FUGARIAN', 'FUGARIAN', 'FUGARIAN') on conflict do nothing;
 ```
 
 * visit http://localhost:8989/releases

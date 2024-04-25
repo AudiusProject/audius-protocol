@@ -40,8 +40,9 @@ program
 program
   .command('poll-s3')
   .description('Pull down assets from S3 and process')
-  .action(async () => {
-    await pollS3()
+  .option('--reset', 'reset cursor, start from beginning')
+  .action(async (opts) => {
+    await pollS3(opts.reset)
   })
 
 program.command('cleanup').description('remove temp files').action(cleanupFiles)

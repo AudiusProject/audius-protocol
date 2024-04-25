@@ -6,14 +6,15 @@ import {
 } from '@aws-sdk/client-s3'
 import { fromIni } from '@aws-sdk/credential-provider-ini'
 import { join } from 'path'
+import { s3markerRepo } from './db'
 import { parseDdexXml } from './parseDelivery'
-import { S3MarkerRow, db } from './db'
 
 export function dialS3() {
   const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env
   if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
     throw new Error(`AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY required`)
   }
+
   const config: S3ClientConfig = {
     credentials: {
       accessKeyId: AWS_ACCESS_KEY_ID,
@@ -44,7 +45,7 @@ export async function startPoller() {
   }
 }
 
-export async function pollS3() {
+export async function pollS3(reset?: boolean) {
   const client = dialS3()
 
   const bucket = process.env.AWS_BUCKET_RAW
@@ -52,13 +53,12 @@ export async function pollS3() {
     throw new Error(`process.env.AWS_BUCKET_RAW is required`)
   }
 
-  // load prior marker
-  const markerRow = db
-    .prepare(`select marker from s3markers where bucket = ?`)
-    .bind(bucket)
-    .get() as S3MarkerRow
+  let Marker = ''
 
-  let Marker = markerRow ? markerRow.marker : ''
+  // load prior marker
+  if (!reset) {
+    Marker = s3markerRepo.get(bucket)
+  }
 
   // list top level prefixes after marker
   const result = await client.send(
@@ -81,9 +81,7 @@ export async function pollS3() {
   // save marker
   if (Marker) {
     console.log('update marker', { bucket, Marker })
-    db.prepare('replace into s3markers values (?, ?)')
-      .bind(bucket, Marker)
-      .run()
+    s3markerRepo.upsert(bucket, Marker)
   }
 }
 
@@ -112,6 +110,7 @@ async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
         )
         const xml = await Body?.transformToString()
         if (xml) {
+          console.log('parsing', xmlUrl)
           await parseDdexXml(xmlUrl, xml)
         }
       }

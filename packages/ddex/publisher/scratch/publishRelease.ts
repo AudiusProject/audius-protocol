@@ -2,23 +2,23 @@ import {
   UploadTrackRequest,
   Genre,
   UploadAlbumRequest,
-  AudiusSdk
+  AudiusSdk,
 } from '@audius/sdk'
 import { createSdkService } from '../src/services/sdkService'
 import { DDEXRelease } from './parseDelivery'
 import { readFile } from 'fs/promises'
 import { basename, join, resolve } from 'path'
-import { ReleaseRow, db, upsertRelease } from './db'
+import { ReleaseRow, dbUpdate, releaseRepo } from './db'
 import { dialS3 } from './s3poller'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 
 export async function publishValidPendingReleases() {
   const sdkService = createSdkService()
   const sdk = (await sdkService).getSdk()
-  const rows = db.prepare(`select * from releases`).all() as ReleaseRow[]
+  const rows = releaseRepo.all()
 
   for (const row of rows) {
-    const parsed = JSON.parse(row.json)
+    const parsed = row._parsed!
 
     // todo: hardcoding to my staging user ID to make e2e publish easier
     // todo: remove
@@ -42,12 +42,7 @@ export async function publishValidPendingReleases() {
         await publishRelease(sdk, row, parsed)
       } catch (e: any) {
         console.log('failed to publish', row.key, e)
-        // record error, increment publishFailureCount
-        db.prepare(
-          `update releases set lastPublishError=?, publishErrorCount=publishErrorCount+1 where key = ?`
-        )
-          .bind(e.toString(), row.key)
-          .run()
+        releaseRepo.addPublishError(row.key, e)
       }
     }
   }
@@ -88,14 +83,14 @@ export async function publishRelease(
       const { Body } = await s3.send(
         new GetObjectCommand({
           Bucket: s3url.host,
-          Key: s3url.pathname.substring(1)
+          Key: s3url.pathname.substring(1),
         })
       )
       const byteArr = await Body!.transformToByteArray()
       const buffer = Buffer.from(byteArr)
       return {
         name: fileName,
-        buffer
+        buffer,
       }
     }
 
@@ -117,12 +112,12 @@ export async function publishRelease(
       coverArtFile: imageFile,
       metadata: {
         genre: release.audiusGenre || Genre.ALL,
-        albumName: release.title
+        albumName: release.title,
         // todo: more album fields
       },
       trackFiles,
       trackMetadatas,
-      userId: release.audiusUser!
+      userId: release.audiusUser!,
     }
 
     if (skipSdkPublish) {
@@ -135,23 +130,14 @@ export async function publishRelease(
     console.log(result)
 
     // on success set publishedAt, entityId, blockhash
-    db.prepare(
-      `update releases set
-          entityType='album',
-          entityId=?,
-          blockNumber=?,
-          blockHash=?,
-          publishedAt=?
-       where key=?`
-    )
-      .bind(
-        result.albumId,
-        result.blockNumber,
-        result.blockHash,
-        new Date().toISOString(),
-        releaseRow.key
-      )
-      .run()
+    dbUpdate('releases', 'key', {
+      key: releaseRow.key,
+      entityType: 'album',
+      entityId: result.albumId,
+      blockNumber: result.blockNumber,
+      blockHash: result.blockHash,
+      publishedAt: new Date().toISOString(),
+    })
 
     // return result
   } else if (trackFiles[0]) {
@@ -164,7 +150,7 @@ export async function publishRelease(
       userId: release.audiusUser!,
       metadata,
       coverArtFile: imageFile,
-      trackFile
+      trackFile,
     }
 
     if (skipSdkPublish) {
@@ -177,23 +163,14 @@ export async function publishRelease(
     console.log(result)
 
     // on succes: update releases
-    db.prepare(
-      `update releases set
-          entityType='track',
-          entityId=?,
-          blockNumber=?,
-          blockHash=?,
-          publishedAt=?
-       where key=?`
-    )
-      .bind(
-        result.trackId,
-        result.blockNumber,
-        result.blockHash,
-        new Date().toISOString(),
-        releaseRow.key
-      )
-      .run()
+    dbUpdate('releases', 'key', {
+      key: releaseRow.key,
+      entityType: 'track',
+      entityId: result.trackId,
+      blockNumber: result.blockNumber,
+      blockHash: result.blockHash,
+      publishedAt: new Date().toISOString(),
+    })
   }
 }
 
@@ -207,7 +184,7 @@ async function updateTrack(
   const result = await sdk.tracks.updateTrack({
     userId: release.audiusUser!,
     trackId: row.entityId!,
-    metadata: metas[0]
+    metadata: metas[0],
   })
 
   console.log('UPDATE', result)
@@ -238,7 +215,7 @@ function prepareTrackMetadatas(release: DDEXRelease) {
         copyrightLine,
         producerCopyrightLine,
         parentalWarningType,
-        rightsController: sound.rightsController
+        rightsController: sound.rightsController,
       }
     })
 
