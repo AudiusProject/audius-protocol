@@ -1,4 +1,3 @@
-import type { PropsWithChildren } from 'react'
 import { useCallback } from 'react'
 
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
@@ -13,14 +12,10 @@ import {
   dayjs,
   squashNewLines,
   getDogEarType,
-  formatSecondsAsText,
-  formatDate,
-  Genre,
-  removeNullable,
-  pluralize
+  Genre
 } from '@audius/common/utils'
 import moment from 'moment'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import {
@@ -43,6 +38,7 @@ import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
+import { moodMap } from 'app/utils/moods'
 
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -65,7 +61,9 @@ const messages = {
   trackCount: 'track',
   playCount: 'play',
   released: 'Released',
-  updated: 'Updated'
+  updated: 'Updated',
+  genre: 'Genre',
+  mood: 'Mood'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -85,6 +83,10 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   link: {
     color: palette.primary
+  },
+  emoji: {
+    height: spacing(4),
+    width: spacing(4)
   }
 }))
 
@@ -363,7 +365,31 @@ export const DetailsTile = ({
           />
         ) : null}
 
-        {/* TODO: Genre goes here */}
+        {track?.genre || track?.mood ? (
+          <Flex w='100%' direction='row' gap='l'>
+            {track?.genre ? (
+              <Flex direction='row' gap='xs' alignItems='center'>
+                <Text variant='label' textTransform='uppercase' color='subdued'>
+                  {messages.genre}
+                </Text>
+                <Text variant='body' size='s' strength='strong'>
+                  {track.genre}
+                </Text>
+              </Flex>
+            ) : null}
+            {track?.mood ? (
+              <Flex direction='row' gap='xs' alignItems='center'>
+                <Text variant='label' textTransform='uppercase' color='subdued'>
+                  {messages.mood}
+                </Text>
+                <Text variant='body' size='s' strength='strong'>
+                  {track.mood}
+                </Text>
+                <Image source={moodMap[track.mood]} style={styles.emoji} />
+              </Flex>
+            ) : null}
+          </Flex>
+        ) : null}
         <SecondaryStats
           playCount={playCount}
           duration={duration}
