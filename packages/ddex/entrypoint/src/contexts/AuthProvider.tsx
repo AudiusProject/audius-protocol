@@ -1,13 +1,7 @@
 import { User } from '@audius/sdk'
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useSdk } from './AudiusSdkProvider'
-
-export enum Status {
-  IDLE = 'IDLE',
-  LOADING = 'LOADING',
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR'
-}
+import { Status } from './types'
 
 type AuthContext = {
   user?: User,
@@ -23,40 +17,51 @@ const AuthContext = createContext<AuthContext>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode}) => {
-  const sdk = useSdk()
+  const { sdk } = useSdk()
   const [user, setUser] = useState<User | undefined>(undefined)
   const [status, setStatus] = useState(Status.IDLE)
 
   useEffect(() => {
-    const e = async () => {
-      const urlParams = new URLSearchParams(window.location.search)
-      let token = localStorage.getItem(tokenLocalStorageKey)
-      if (!token) {
-        token = urlParams.get('token')
+    if (sdk) {
+      const fn = async () => {
+        try {
+          const urlParams = new URLSearchParams(window.location.search)
+          let token = localStorage.getItem(tokenLocalStorageKey)
+          if (!token) {
+            token = urlParams.get('token')
+          }
+          if (!token) {
+            return
+          }
+          const tokenRes = await sdk?.users.verifyIDToken({ token })
+          if (!tokenRes?.data?.userId) {
+            return
+          }
+    
+          const id = tokenRes.data.userId
+          const userRes = await sdk?.users.getUser({ id })
+          if (!userRes?.data) {
+            return
+          }
+    
+          const user = userRes.data
+          setUser(user)
+          localStorage.setItem(tokenLocalStorageKey, token)
+          setStatus(Status.SUCCESS)
+        } catch (e) {
+          console.error(e)
+          localStorage.removeItem(tokenLocalStorageKey)
+          setStatus(Status.ERROR)
+        }
       }
-      if (!token) {
-        return
-      }
-      const tokenRes = await sdk?.users.verifyIDToken({ token })
-      if (!tokenRes?.data?.userId) {
-        return
-      }
-
-      const id = tokenRes.data.userId
-      const userRes = await sdk?.users.getUser({ id })
-      if (!userRes?.data) {
-        return
-      }
-
-      const user = userRes.data
-      setUser(user)
-      setStatus(Status.SUCCESS)
+      fn()
     }
-    e()
   }, [sdk])
 
   const logout = useCallback(() => {
     localStorage.removeItem(tokenLocalStorageKey)
+    // Reload without query params
+    window.location.href = window.location.pathname
   }, [])
 
   return (

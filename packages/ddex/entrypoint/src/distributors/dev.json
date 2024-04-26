@@ -1,8 +1,8 @@
 {
   "distributors": [
     {
-      "appKey": "0x123",
-      "url": "http://localhost:9000"
+      "appKey": "5108cffaee971c6bdd3a6e082a01dae1a757e3aa",
+      "url": "http://localhost:8989"
     }
   ]
 }

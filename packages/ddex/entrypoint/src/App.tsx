@@ -14,7 +14,7 @@ import { Flex } from '@audius/harmony'
 import { Footer } from './components/Footer'
 import { AudiusSdkProvider } from './contexts/AudiusSdkProvider'
 import { ConnectDistributor } from './components/ConnectDistributor'
-import { AuthProvider, useAuth } from './contexts/AuthProvider'
+import { AuthProvider, Status, useAuth } from './contexts/AuthProvider'
 import { Success } from './components/Success'
 
 const queryClient = new QueryClient()
@@ -28,6 +28,11 @@ const messages = {
 }
 
 const Support = () => {
+  const { user } = useAuth()
+  if (!user) {
+    return null
+  }
+
   return (
     <Text
       variant='body'
@@ -52,9 +57,15 @@ const Nav = () => {
   }
 
   return (
-    <Flex ph='2xl' pv='l' justifyContent='space-between'>
-      <Text variant='body' size='l'>
-        {`${messages.loggedIn} ${user.handle}`}
+    <Flex
+      ph='2xl'
+      pv='l'
+      justifyContent='space-between'
+      alignItems='cener'
+      backgroundColor='white'
+    >
+      <Text variant='body' size='l' color='default'>
+        {`${messages.loggedIn} @${user.handle}`}
       </Text>
       <Button variant='secondary' size='small' onClick={logout}>
         {messages.signOut}
@@ -64,6 +75,7 @@ const Nav = () => {
 }
 
 const Page = () => {
+  const { user } = useAuth()
   return (
     <Flex
       direction='column'
@@ -92,8 +104,11 @@ const Page = () => {
             <Flex justifyContent='center'>
               <IconAudiusLogoHorizontalColor />
             </Flex>
-            <ConnectDistributor />
-            {/* <Success /> */}
+              {
+                user
+                  ? <Success />
+                  : <ConnectDistributor />
+              }
           </Paper>
           <Support />
         </Flex>

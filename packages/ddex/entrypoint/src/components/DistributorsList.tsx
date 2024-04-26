@@ -25,9 +25,10 @@ export const DistributorList = ({
       break
   }
   return (
-    <Flex gap='s'>
+    <Flex gap='m'>
       {distributors.map(({appKey, url}) =>
         <DistributorCard
+          key={appKey}
           appKey={appKey}
           url={url}
         />
