@@ -16,7 +16,6 @@ type DetailsTileStatsProps = {
   hideRepostCount?: boolean
   onPressFavorites?: GestureResponderHandler
   onPressReposts?: GestureResponderHandler
-  playCount?: number
   repostCount?: number
 }
 
@@ -30,7 +29,6 @@ export const DetailsTileStats = ({
   hideRepostCount,
   onPressFavorites,
   onPressReposts,
-  playCount = 0,
   repostCount
 }: DetailsTileStatsProps) => {
   if (hideListenCount && hideFavoriteCount && hideRepostCount) {
@@ -44,13 +42,6 @@ export const DetailsTileStats = ({
       alignItems='center'
       justifyContent='flex-start'
     >
-      {hideListenCount ? null : (
-        <DetailsTileStat
-          count={playCount}
-          icon={IconRepost}
-          label={messages.plays}
-        />
-      )}
       {hideRepostCount ? null : (
         <DetailsTileStat
           count={repostCount ?? 0}

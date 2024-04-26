@@ -15,7 +15,9 @@ import {
   getDogEarType,
   formatSecondsAsText,
   formatDate,
-  Genre
+  Genre,
+  removeNullable,
+  pluralize
 } from '@audius/common/utils'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native'
@@ -48,6 +50,7 @@ import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
+import { SecondaryStats } from './SecondaryStats'
 import type { DetailsTileProps } from './types'
 
 const { getTrackId } = playerSelectors
@@ -59,7 +62,8 @@ const messages = {
   resume: 'resume',
   replay: 'replay',
   preview: 'preview',
-  trackCount: 'tracks',
+  trackCount: 'track',
+  playCount: 'play',
   released: 'Released',
   updated: 'Updated'
 }
@@ -83,14 +87,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     color: palette.primary
   }
 }))
-
-const SecondaryStat = ({ children }: PropsWithChildren) => {
-  return (
-    <Text variant='body' size='s' strength='strong'>
-      {children}
-    </Text>
-  )
-}
 
 /**
  * The details shown at the top of the Track Screen and Collection Screen
@@ -340,7 +336,6 @@ export const DetailsTile = ({
             hideRepostCount={hideRepostCount}
             onPressFavorites={onPressFavorites}
             onPressReposts={onPressReposts}
-            playCount={playCount}
             repostCount={repostCount}
           />
         )}
@@ -369,29 +364,14 @@ export const DetailsTile = ({
         ) : null}
 
         {/* TODO: Genre goes here */}
-        <Flex gap='xs' w='100%'>
-          <Flex direction='row' gap='xs'>
-            {releaseDate ? (
-              <SecondaryStat>
-                {messages.released} {formatDate(releaseDate)}
-                {releaseDate && updatedAt ? ', ' : ''}
-              </SecondaryStat>
-            ) : null}
-            {updatedAt ? (
-              <SecondaryStat>
-                {messages.updated} {formatDate(updatedAt)}
-              </SecondaryStat>
-            ) : null}
-          </Flex>
-          <Flex direction='row' gap='xs'>
-            {isCollection ? (
-              <SecondaryStat>
-                {trackCount} {messages.trackCount},
-              </SecondaryStat>
-            ) : null}
-            <SecondaryStat>{formatSecondsAsText(duration ?? 0)}</SecondaryStat>
-          </Flex>
-        </Flex>
+        <SecondaryStats
+          playCount={playCount}
+          duration={duration}
+          trackCount={trackCount}
+          releaseDate={releaseDate}
+          updatedAt={updatedAt}
+        />
+
         {/* TODO: tags go here for tracks */}
         {/* TODO: offline mode status */}
       </Flex>

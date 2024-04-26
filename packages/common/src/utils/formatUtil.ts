@@ -129,7 +129,7 @@ export const pluralize = (
   count: number | null,
   suffix = 's',
   pluralizeAnyway = false
-) => `${message}${(count ?? 0) > 1 || pluralizeAnyway ? suffix : ''}`
+) => `${message}${(count ?? 0) !== 1 || pluralizeAnyway ? suffix : ''}`
 
 /**
  * Format a $AUDIO string with commas and decimals
