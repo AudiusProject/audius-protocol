@@ -8,7 +8,7 @@ import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join, resolve } from 'path'
 import { ReleaseRow, dbUpdate, releaseRepo } from './db'
-import { DDEXImage, DDEXRelease, DDEXSoundRecording } from './parseDelivery'
+import { DDEXResource, DDEXRelease, DDEXSoundRecording } from './parseDelivery'
 import { dialS3 } from './s3poller'
 import { createSdkService } from './sdk'
 
@@ -78,10 +78,7 @@ export async function publishRelease(
   }
 
   // read asset file
-  async function resolveFile({
-    filePath,
-    fileName,
-  }: DDEXImage | DDEXSoundRecording) {
+  async function resolveFile({ filePath, fileName }: DDEXResource) {
     return readAssetWithCaching(releaseRow.xmlUrl, filePath, fileName)
   }
 

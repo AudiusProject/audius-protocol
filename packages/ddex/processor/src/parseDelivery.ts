@@ -26,7 +26,7 @@ export type DDEXRelease = {
 
   problems: string[]
   soundRecordings: DDEXSoundRecording[]
-  images: DDEXImage[]
+  images: DDEXResource[]
   deal?: AudiusSupportedDeal
 } & ReleaseAndSoundRecordingSharedFields
 
@@ -41,11 +41,14 @@ type CopyrightPair = {
   year: string
 }
 
-export type DDEXSoundRecording = {
+export type DDEXResource = {
   ref: string
-  isrc?: string
   filePath: string
   fileName: string
+}
+
+export type DDEXSoundRecording = {
+  isrc?: string
   title: string
   artists: string[]
   releaseDate: string
@@ -58,13 +61,8 @@ export type DDEXSoundRecording = {
   }
 
   audiusGenre?: Genre
-} & ReleaseAndSoundRecordingSharedFields
-
-export type DDEXImage = {
-  ref: string
-  filePath: string
-  fileName: string
-}
+} & DDEXResource &
+  ReleaseAndSoundRecordingSharedFields
 
 type DealFields = {
   validityStartDate: string
@@ -280,9 +278,10 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
   //
 
   const soundResources: Record<string, DDEXSoundRecording> = {}
-  const imageResources: Record<string, DDEXImage> = {}
+  const imageResources: Record<string, DDEXResource> = {}
+  const textResources: Record<string, DDEXResource> = {}
 
-  $('SoundRecording').each((_, el) => {
+  $('ResourceList > SoundRecording').each((_, el) => {
     const $el = $(el)
 
     const recording: DDEXSoundRecording = {
@@ -322,16 +321,21 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
     soundResources[recording.ref] = recording
   })
 
-  $('Image').each((_, el) => {
-    const $el = $(el)
-    const ref = $el.find('ResourceReference').text()
+  function ddexResourceReducer(acc: Record<string, DDEXResource>, el: any) {
+    const [ref, filePath, fileName] = [
+      'ResourceReference',
+      'FilePath',
+      'FileName',
+    ].map((k) => $(el).find(k).text())
+    acc[ref] = { ref, filePath, fileName }
+    return acc
+  }
 
-    imageResources[ref] = {
-      ref,
-      filePath: $el.find('FilePath').text(),
-      fileName: $el.find('FileName').text(),
-    }
-  })
+  $('ResourceList > Image')
+    .toArray()
+    .reduce(ddexResourceReducer, imageResources)
+
+  $('ResourceList > Text').toArray().reduce(ddexResourceReducer, textResources)
 
   //
   // parse releases
@@ -396,6 +400,8 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
             release.soundRecordings.push(soundResources[ref])
           } else if (imageResources[ref]) {
             release.images.push(imageResources[ref])
+          } else if (textResources[ref]) {
+            console.log('ignoring text ref', ref)
           } else {
             release.problems.push(`MissingRef: ${ref}`)
           }
