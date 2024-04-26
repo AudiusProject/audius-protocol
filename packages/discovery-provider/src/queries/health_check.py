@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import requests
 from flask import Blueprint, request
 
-from src.api_helpers import success_response
+from src.api_helpers import error_response, success_response
 from src.models.users.audio_transactions_history import AudioTransactionsHistory
 from src.models.users.usdc_purchase import USDCPurchase
 from src.models.users.usdc_transactions_history import USDCTransactionsHistory
@@ -219,6 +219,16 @@ def usdc_transactions_check():
 def ip_check():
     ip = helpers.get_ip(request)
     return success_response(ip, sign_response=False)
+
+
+@bp.route("/ip_check/location", methods=["GET"])
+def ip_check_location():
+    try:
+        res = helpers.get_ip_with_location(request)
+    except Exception as e:
+        logger.warn(f"ip_data | ip location check error {e}")
+        return error_response({}, error_code=400)
+    return success_response(res, sign_response=False)
 
 
 @bp.route("/es_health", methods=["GET"])

@@ -14,7 +14,7 @@ from typing import List, Optional, TypedDict, cast
 import base58
 import psutil
 import requests
-from flask import g, request
+from flask import Request, g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
 from solders.instruction import CompiledInstruction
@@ -32,12 +32,27 @@ from . import multihash
 logger = logging.getLogger(__name__)
 
 
-def get_ip(request_obj):
+def get_ip(request_obj: Request) -> str:
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
     if not ip:
         return ""
     return ip.split(",")[0].strip()
+
+
+def get_ip_with_location(request_obj: Request):
+    """Gets the IP address along with location from a request using the X-Forwarded-For header if present"""
+    ip = validate_ip_location_request(request_obj)
+
+    api_key = os.getenv("audius_ipdata_api_key")
+    if not api_key:
+        raise Exception("ip_data | ip location data requested from unconfigured node")
+
+    url = f"https://api.ipdata.co/{ip}"
+    response = requests.get(url, params={"api-key": api_key})
+    data = response.json()
+
+    return data
 
 
 def get_openresty_public_key():
@@ -142,6 +157,19 @@ def model_to_dictionary(model, exclude_keys=None):
                 model_dict[key] = model_to_dictionary(attr)
 
     return model_dict
+
+
+# checks for a valid ip location request
+# validates that request came from a registered node
+def validate_ip_location_request(request_obj) -> str:
+    ip = get_ip(request_obj)
+
+    if not ip:
+        raise Exception("ip_check | expected ip but got none")
+
+    # TODO: check signature header
+
+    return ip
 
 
 # Convert a tuple of model format into the proper model itself represented as a dictionary.
