@@ -12,10 +12,13 @@ import { ReleaseRow, dbUpdate, releaseRepo } from './db'
 import { DDEXImage, DDEXRelease, DDEXSoundRecording } from './parseDelivery'
 import { dialS3 } from './s3poller'
 
+const sdkService = createSdkService()
+
 export async function publishValidPendingReleases() {
-  const sdkService = createSdkService()
+  const rows = releaseRepo.all({ pendingPublish: true })
+  if (!rows.length) return
+
   const sdk = (await sdkService).getSdk()
-  const rows = releaseRepo.all()
 
   for (const row of rows) {
     const parsed = row._parsed!
@@ -24,17 +27,26 @@ export async function publishValidPendingReleases() {
     // todo: remove
     parsed.audiusUser = 'KKa311z'
 
-    if (parsed.problems.length) {
-      console.log(`skipping ${row.key} due to problems: `, parsed.problems)
-    } else if (row.entityId) {
-      // this will issue a SDK track update every time you run `publish`
-      // which is not what we want really, but is useful if you are adding new fields
-      // and want to verify they come back from the API.
-      // if we did want something like this it'd probably be some `--force` cli thing
-      if (row.entityType == 'track') {
-        await updateTrack(sdk, row, parsed)
-      } else {
-        console.log('already published, skipping', row.key)
+    if (row.entityId) {
+      // this release has already been published, and has an entity ID.
+      // for now just move on:
+      console.log('already published, skipping', row.key)
+      releaseRepo.update({
+        key: row.key,
+        status: 'Published',
+      })
+
+      // todo: updates
+      // simplest way... if parsedJson != publishedJson issue update
+      //    the risk being that this might incite a ton of needless updates if not careful
+      // could do... if xmlUrl != publishedXmlUrl
+      //    but that wouldn't handle code change type of thing
+      if (false) {
+        if (row.entityType == 'track') {
+          await updateTrack(sdk, row, parsed)
+        } else {
+          console.log('already published, skipping', row.key)
+        }
       }
     } else {
       // publish new release
@@ -108,6 +120,7 @@ export async function publishRelease(
     // on success set publishedAt, entityId, blockhash
     dbUpdate('releases', 'key', {
       key: releaseRow.key,
+      status: 'Published',
       entityType: 'album',
       entityId: result.albumId,
       blockNumber: result.blockNumber,
@@ -139,10 +152,11 @@ export async function publishRelease(
     console.log(result)
 
     // on succes: update releases
-    dbUpdate('releases', 'key', {
+    releaseRepo.update({
       key: releaseRow.key,
+      status: 'Published',
       entityType: 'track',
-      entityId: result.trackId,
+      entityId: result.trackId!,
       blockNumber: result.blockNumber,
       blockHash: result.blockHash,
       publishedAt: new Date().toISOString(),

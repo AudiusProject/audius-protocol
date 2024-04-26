@@ -29,7 +29,7 @@ export const createSdkService = async () => {
         initialSelectedNode = 'https://discoveryprovider.audius.co'
       } else if (env === 'staging') {
         config = stagingConfig as ServicesConfig
-        initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
+        initialSelectedNode = 'https://discoveryprovider2.staging.audius.co'
       } else {
         let useStaging = true
         try {
@@ -45,7 +45,7 @@ export const createSdkService = async () => {
             'Falling back to staging config in dev environment because dev Discovery Node is down'
           )
           config = stagingConfig as ServicesConfig
-          initialSelectedNode = 'https://discoveryprovider.staging.audius.co'
+          initialSelectedNode = 'https://discoveryprovider2.staging.audius.co'
         }
       }
 

@@ -30,7 +30,7 @@ COOKIE_SECRET='openssl rand -hex 16'
 Run server:
 
 ```bash
-npx tsx watch scratch/server.ts
+npx tsx watch scratch/cli.ts server
 ```
 
 * Visit http://localhost:8989/
@@ -42,8 +42,8 @@ npx tsx watch scratch/server.ts
 ```sql
 sqlite3 scratchy.db
 
-insert into users values ('2fuga', '2FUGA', '2FUGA') on conflict do nothing;
-insert into users values ('FUGARIAN', 'FUGARIAN', 'FUGARIAN') on conflict do nothing;
+insert into users (id, handle, name) values ('2fuga', '2FUGA', '2FUGA') on conflict do nothing;
+insert into users (id, handle, name) values ('FUGARIAN', 'FUGARIAN', 'FUGARIAN') on conflict do nothing;
 ```
 
 * visit http://localhost:8989/releases

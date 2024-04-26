@@ -37,14 +37,6 @@ export function dialS3FromCredentials() {
   return s3Client
 }
 
-export async function startPoller() {
-  while (true) {
-    console.log('polling s3...')
-    await pollS3()
-    await sleep(5_000)
-  }
-}
-
 export async function pollS3(reset?: boolean) {
   const client = dialS3()
 
@@ -116,8 +108,4 @@ async function scanS3Prefix(client: S3Client, bucket: string, prefix: string) {
       }
     })
   )
-}
-
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }

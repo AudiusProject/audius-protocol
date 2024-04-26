@@ -166,6 +166,7 @@ app.get('/releases', (c) => {
                   <td>${row._parsed?.audiusUser}</td>
                   <td>${row._parsed?.audiusGenre}</td>
                   <td>
+                    <mark><b>${row.status}</b></mark>
                     ${row._parsed?.problems?.map(
                       (p) => html`<mark>${p}</mark>`
                     )}
@@ -403,6 +404,7 @@ function Layout(inner: HtmlEscapedString | Promise<HtmlEscapedString>) {
       </head>
       <body>
         <div style="display: flex; gap: 15px; padding: 10px;">
+          <b>ddex</b>
           <a href="/">home</a>
           <a href="/auth/whoami">whoami</a>
           <a href="/releases">releases</a>
@@ -423,5 +425,3 @@ export function startServer() {
     port,
   })
 }
-
-startServer()

@@ -6,6 +6,8 @@ import { cleanupFiles } from './cleanupFiles'
 import { pollS3 } from './s3poller'
 import { publishValidPendingReleases } from './publishRelease'
 import { sync } from './s3sync'
+import { startServer } from './server'
+import { sleep } from './util'
 
 program
   .name('ddexer')
@@ -45,7 +47,39 @@ program
     await pollS3(opts.reset)
   })
 
+program
+  .command('server')
+  .description('start server without background processes, useful for dev')
+  .action(async (opts) => {
+    startServer()
+  })
+
+program
+  .command('worker')
+  .description('start background processes, useful for dev')
+  .action(async (opts) => {
+    startWorker()
+  })
+
+program
+  .command('start')
+  .description('Start both server + background processes')
+  .action(async (opts) => {
+    startServer()
+    startWorker()
+  })
+
 program.command('cleanup').description('remove temp files').action(cleanupFiles)
 
 program.parse()
 const globalOptions = program.opts()
+
+async function startWorker() {
+  while (true) {
+    await sleep(1_000)
+    console.log('polling...')
+    await pollS3()
+    await publishValidPendingReleases()
+    await sleep(10_000)
+  }
+}

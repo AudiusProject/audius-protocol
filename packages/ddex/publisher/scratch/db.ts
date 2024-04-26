@@ -26,6 +26,7 @@ create table if not exists releases (
   ref text,
   xmlUrl text,
   json jsonb,
+  status text not null,
 
   entityType text,
   entityId text,
@@ -39,6 +40,8 @@ create table if not exists releases (
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME
 );
+
+create index if not exists releasesStatusIndex on releases(status);
 
 create table if not exists s3markers (
   bucket text primary key,
@@ -64,6 +67,7 @@ export type ReleaseRow = {
   key: string
   xmlUrl: string
   json: string
+  status: 'Parsed' | 'Blocked' | 'Published' | 'Failed'
 
   entityType?: string
   entityId?: string
@@ -156,11 +160,18 @@ export const xmlRepo = {
 // release repo
 //
 
+type FindReleaseParams = {
+  pendingPublish: boolean
+}
+
 export const releaseRepo = {
-  all() {
-    const rows = db
-      .prepare(`select * from releases order by xmlUrl, ref`)
-      .all() as ReleaseRow[]
+  all(params?: FindReleaseParams) {
+    let sql = ` select * from releases `
+    if (params?.pendingPublish) {
+      sql += ` where status in ('Parsed', 'Failed') `
+    }
+    sql += ` order by xmlUrl, ref `
+    const rows = db.prepare(sql).all() as ReleaseRow[]
     for (const row of rows) {
       if (row.json) row._parsed = JSON.parse(row.json)
     }
@@ -177,26 +188,37 @@ export const releaseRepo = {
     return row
   },
 
+  update(r: Partial<ReleaseRow>) {
+    dbUpdate('releases', 'key', r)
+  },
+
   upsert(xmlUrl: string, release: DDEXRelease) {
     const key = release.isrc || release.icpn
     if (!key) {
       console.log(`No ID for release`, release)
       throw new Error('No ID for release')
     }
+
+    const status: ReleaseRow['status'] = release.problems.length
+      ? 'Blocked'
+      : 'Parsed'
+
     dbUpsert('releases', {
       key,
+      status,
       ref: release.ref,
       xmlUrl,
       json: JSON.stringify(release),
       updatedAt: new Date().toISOString(),
-    })
+    } as Partial<ReleaseRow>)
   },
 
   addPublishError(key: string, err: Error) {
+    const status: ReleaseRow['status'] = 'Failed'
     db.prepare(
-      `update releases set lastPublishError=?, publishErrorCount=publishErrorCount+1 where key = ?`
+      `update releases set status=?, lastPublishError=?, publishErrorCount=publishErrorCount+1 where key = ?`
     )
-      .bind(err.toString(), key)
+      .bind(status, err.toString(), key)
       .run()
   },
 }
@@ -219,10 +241,11 @@ export function dbUpdate(
 
   // if everything used integer pks, we could just use rowid
   // ... if we wanted compound pks, pkField should be an array
-  const stmt = `update ${table} set ${qs} where ${pkField} = ${data[pkField]}`
+  const stmt = `update ${table} set ${qs} where ${pkField} = ?`
+  console.log(stmt)
   return db
     .prepare(stmt)
-    .bind(...Object.values(data))
+    .bind(...Object.values(data), data[pkField])
     .run()
 }
 
