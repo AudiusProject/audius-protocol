@@ -1,4 +1,4 @@
-import { Flex, Text, IconHeart, IconRepost, Box } from '@audius/harmony-native'
+import { Flex, IconHeart, IconRepost } from '@audius/harmony-native'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import { DetailsTileStat } from './DetailsStat'

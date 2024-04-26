@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { Name, PlaybackSource, Status } from '@audius/common/models'
 import type {
@@ -16,7 +16,7 @@ import {
   cacheTracksSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import { formatSecondsAsText, removeNullable } from '@audius/common/utils'
+import { removeNullable } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
@@ -33,9 +33,7 @@ import { TrackList } from 'app/components/track-list'
 import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
-import { formatCount } from 'app/utils/format'
 
-import { CollectionHeader } from './CollectionHeader'
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
@@ -215,10 +213,11 @@ export const CollectionScreenDetailsTile = ({
     [dispatch, isPlaying, playingUid]
   )
 
-  const renderHeader = useCallback(
-    () => <CollectionHeader collectionId={collectionId} />,
-    [collectionId]
-  )
+  // TODO: move offline logic to the new location
+  // const renderHeader = useCallback(
+  //   () => <CollectionHeader collectionId={collectionId} />,
+  //   [collectionId]
+  // )
 
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined

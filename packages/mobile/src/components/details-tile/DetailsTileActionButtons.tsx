@@ -176,7 +176,7 @@ export const DetailsTileActionButtons = ({
   const isCollectionOwner = isCollection && isOwner
 
   return (
-    <Flex direction='row' justifyContent='center' gap='xl' pb='l'>
+    <Flex direction='row' justifyContent='center' gap='xl'>
       {isCollectionOwner && !ddexApp
         ? !isAlbum || isEditAlbumsEnabled
           ? editButton

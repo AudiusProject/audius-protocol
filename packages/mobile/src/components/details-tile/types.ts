@@ -165,4 +165,10 @@ export type DetailsTileProps = {
 
   /** The key of the DDEX app that owns this track/collection */
   ddexApp?: string | null
+
+  /** The release date of the item */
+  releaseDate?: string
+
+  /** The last updated time for the item */
+  updatedAt?: string
 }

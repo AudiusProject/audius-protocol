@@ -87,6 +87,7 @@ type HasAccessProps = {
 
 const DetailsTileOwnerSection = ({
   streamConditions,
+  style,
   handlePressCollection
 }: HasAccessProps) => {
   const styles = useStyles()
@@ -94,7 +95,14 @@ const DetailsTileOwnerSection = ({
 
   if (isContentCollectibleGated(streamConditions)) {
     return (
-      <View style={styles.root}>
+      <Flex
+        p='l'
+        gap='s'
+        backgroundColor='white'
+        border='strong'
+        borderRadius='m'
+        style={style}
+      >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconCollectible fill={neutral} width={16} height={16} />
           <Text style={styles.title}>{messages.collectibleGated}</Text>
@@ -112,7 +120,7 @@ const DetailsTileOwnerSection = ({
             </Text>
           </Text>
         </View>
-      </View>
+      </Flex>
     )
   }
   if (
@@ -120,7 +128,14 @@ const DetailsTileOwnerSection = ({
     isContentTipGated(streamConditions)
   ) {
     return (
-      <View style={styles.root}>
+      <Flex
+        p='l'
+        gap='s'
+        backgroundColor='white'
+        border='strong'
+        borderRadius='m'
+        style={style}
+      >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconSpecialAccess fill={neutral} width={16} height={16} />
           <Text style={styles.title}>{messages.specialAccess}</Text>
@@ -134,12 +149,19 @@ const DetailsTileOwnerSection = ({
             </Text>
           </Text>
         </View>
-      </View>
+      </Flex>
     )
   }
   if (isContentUSDCPurchaseGated(streamConditions)) {
     return (
-      <View style={styles.root}>
+      <Flex
+        p='l'
+        gap='s'
+        backgroundColor='white'
+        border='strong'
+        borderRadius='m'
+        style={style}
+      >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconCart fill={neutral} width={16} height={16} />
           <Text style={styles.title}>{messages.payToUnlock}</Text>
@@ -153,7 +175,7 @@ const DetailsTileOwnerSection = ({
             </Text>
           </Text>
         </View>
-      </View>
+      </Flex>
     )
   }
   return null

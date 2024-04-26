@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from 'react'
 import { useCallback } from 'react'
 
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
@@ -11,11 +12,10 @@ import type { CommonState } from '@audius/common/store'
 import {
   dayjs,
   squashNewLines,
-  Genre,
   getDogEarType,
-  formatLineupTileDuration
+  formatSecondsAsText,
+  formatDate
 } from '@audius/common/utils'
-import { css } from '@emotion/native'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -41,7 +41,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
-import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
@@ -58,7 +57,9 @@ const messages = {
   resume: 'resume',
   replay: 'replay',
   preview: 'preview',
-  trackCount: 'tracks'
+  trackCount: 'tracks',
+  released: 'Released',
+  updated: 'Updated'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -66,21 +67,28 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderWidth: 1,
     borderColor: palette.neutralLight8,
     borderRadius: spacing(2),
-    height: 195,
-    width: 195,
+    height: 224,
+    width: 224,
     alignSelf: 'center'
   },
   description: {
     ...typography.body,
     color: palette.neutralLight2,
     textAlign: 'left',
-    width: '100%',
-    marginBottom: spacing(4)
+    width: '100%'
   },
   link: {
     color: palette.primary
   }
 }))
+
+const SecondaryStat = ({ children }: PropsWithChildren) => {
+  return (
+    <Text variant='body' size='s' strength='strong'>
+      {children}
+    </Text>
+  )
+}
 
 /**
  * The details shown at the top of the Track Screen and Collection Screen
@@ -130,7 +138,9 @@ export const DetailsTile = ({
   title,
   user,
   track,
-  ddexApp
+  ddexApp,
+  releaseDate,
+  updatedAt
 }: DetailsTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -149,8 +159,8 @@ export const DetailsTile = ({
   })
 
   const isOwner = user?.user_id === currentUserId
-  const isLongFormContent =
-    track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+  // const isLongFormContent =
+  //   track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
@@ -226,6 +236,13 @@ export const DetailsTile = ({
     </Button>
   )
 
+  const badges = [
+    isAiGeneratedTracksEnabled && aiAttributionUserId ? (
+      <DetailsTileAiAttribution userId={aiAttributionUserId} />
+    ) : null
+    // TODO: trending badge
+  ].filter((badge) => badge !== null)
+
   return (
     <Paper mb='xl'>
       {renderDogEar()}
@@ -239,6 +256,12 @@ export const DetailsTile = ({
         >
           {headerText}
         </Text>
+
+        {badges.length > 0 ? (
+          <Flex direction='row' gap='s'>
+            <>{badges.map((badge) => badge)}</>
+          </Flex>
+        ) : null}
         {imageElement}
         <Flex gap='xs' alignItems='center'>
           <Text variant='heading' size='s'>
@@ -285,6 +308,17 @@ export const DetailsTile = ({
           onPressShare={onPressShare}
           onPressPublish={onPressPublish}
         />
+        {isUnpublishedScheduledRelease && track?.release_date ? (
+          <Flex gap='xs' direction='row' alignItems='center'>
+            <IconCalendarMonth color='accent' size='m' />
+            <Text variant='body' color='accent' strength='strong' size='m'>
+              Releases
+              {' ' +
+                moment(track.release_date).format('M/D/YY @ h:mm A ') +
+                dayjs().format('z')}
+            </Text>
+          </Flex>
+        ) : null}
       </Flex>
       <Flex
         p='l'
@@ -332,39 +366,34 @@ export const DetailsTile = ({
             trackArtist={user}
           />
         ) : null}
-        {/* TODO: Where does this go in new design? */}
-        {/* {isUnpublishedScheduledRelease && track?.release_date ? (
-          <Flex gap='xs' direction='row' alignItems='center'>
-            <IconCalendarMonth color='accent' size='m' />
-            <Text color='accent' strength='strong' size='m'>
-              Releases
-              {' ' +
-                moment(track.release_date).format('M/D/YY @ h:mm A ') +
-                dayjs().format('z')}
-            </Text>
-          </Flex>
-        ) : null} */}
+
+        {/* TODO: Genre goes here */}
         <Flex gap='xs' w='100%'>
           <Flex direction='row' gap='xs'>
-            {isCollection ? (
-              <Text variant='body' size='s' strength='strong'>
-                {trackCount} {messages.trackCount},
-              </Text>
+            {releaseDate ? (
+              <SecondaryStat>
+                {messages.released} {formatDate(releaseDate)}
+                {releaseDate && updatedAt ? ', ' : ''}
+              </SecondaryStat>
             ) : null}
-            <Text variant='body' size='s' strength='strong'>
-              {formatLineupTileDuration(
-                duration ?? 0,
-                isLongFormContent,
-                isCollection
-              )}
-            </Text>
+            {updatedAt ? (
+              <SecondaryStat>
+                {messages.updated} {formatDate(updatedAt)}
+              </SecondaryStat>
+            ) : null}
+          </Flex>
+          <Flex direction='row' gap='xs'>
+            {isCollection ? (
+              <SecondaryStat>
+                {trackCount} {messages.trackCount},
+              </SecondaryStat>
+            ) : null}
+            <SecondaryStat>{formatSecondsAsText(duration ?? 0)}</SecondaryStat>
           </Flex>
         </Flex>
+        {/* TODO: tags go here for tracks */}
+        {/* TODO: offline mode status */}
       </Flex>
-      {/* TODO: Where does this go in new design? */}
-      {/* {isAiGeneratedTracksEnabled && aiAttributionUserId ? (
-        <DetailsTileAiAttribution userId={aiAttributionUserId} />
-      ) : null} */}
       <Divider />
       {renderBottomContent?.()}
     </Paper>
