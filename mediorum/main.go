@@ -131,6 +131,7 @@ func startStagingOrProd(isProd bool) {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
+		DiscoveryListens:     os.Getenv("discoveryListens") == "true",
 	}
 
 	ss, err := server.New(config)

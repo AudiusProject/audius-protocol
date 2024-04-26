@@ -65,6 +65,7 @@ type MediorumConfig struct {
 	WalletIsRegistered   bool
 	StoreAll             bool
 	VersionJson          VersionJson
+	DiscoveryListens     bool
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -109,6 +110,8 @@ type MediorumServer struct {
 	Config    MediorumConfig
 
 	crudSweepMutex sync.Mutex
+
+	listenableDiscoveryNodes []string
 }
 
 type PeerHealth struct {
@@ -373,6 +376,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
+
+	ss.setListenableDiscoveryProviders()
 
 	return ss, nil
 
