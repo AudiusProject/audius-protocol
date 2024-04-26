@@ -7,7 +7,11 @@ import type {
 import type {
   AudiusSdk as AudiusSdkType,
   UploadTrackRequest,
+  UpdateTrackRequest,
+  DeleteTrackRequest,
   UploadAlbumRequest,
+  UpdateAlbumRequest,
+  DeleteAlbumRequest,
   Genre,
   Mood,
 } from '@audius/sdk'
@@ -110,6 +114,56 @@ const uploadTrack = async (
   return result
 }
 
+const updateTrack = async (
+  audiusSdk: AudiusSdkType,
+  trackId: string,
+  pendingTrack: SDKUploadMetadataSchema,
+  s3Service: ReturnType<typeof createS3>
+) => {
+  const userId = pendingTrack.artist_id
+  const metadata = formatTrackMetadata(pendingTrack)
+
+  const coverArtDownload = await s3Service.downloadFromS3Crawled(
+    pendingTrack.cover_art_url
+  )
+  // TODO: We can hash and verify against the metadata here
+  const coverArtFile = {
+    buffer: coverArtDownload!,
+    originalname: pendingTrack.cover_art_url.split('/').pop(),
+  }
+
+  const updateTrackRequest: UpdateTrackRequest = {
+    trackId,
+    userId,
+    coverArtFile,
+    metadata,
+    onProgress: (progress: any) => console.log('Progress:', progress),
+  }
+  console.log(
+    `Updating ${pendingTrack.title} by ${pendingTrack.artist_id} (track id ${trackId})...`
+  )
+  const result = await audiusSdk.tracks.updateTrack(updateTrackRequest)
+  console.log(result)
+  return result
+}
+
+const deleteTrack = async (
+  audiusSdk: AudiusSdkType,
+  trackId: string,
+  trackMetadata: SDKUploadMetadataSchema
+) => {
+  const deleteTrackRequest: DeleteTrackRequest = {
+    trackId,
+    userId: trackMetadata.artist_id,
+  }
+  console.log(
+    `Deleting ${trackMetadata.title} by ${trackMetadata.artist_id} (track id ${trackId})...`
+  )
+  const result = await audiusSdk.tracks.deleteTrack(deleteTrackRequest)
+  console.log(result)
+  return result
+}
+
 const uploadAlbum = async (
   audiusSdk: AudiusSdkType,
   pendingAlbum: SDKUploadMetadataSchema,
@@ -158,6 +212,55 @@ const uploadAlbum = async (
   return result
 }
 
+const updateAlbum = async (
+  audiusSdk: AudiusSdkType,
+  albumId: string,
+  pendingAlbum: SDKUploadMetadataSchema,
+  s3Service: ReturnType<typeof createS3>
+) => {
+  // Fetch cover art from S3
+  const coverArtDownload = await s3Service.downloadFromS3Crawled(
+    pendingAlbum.cover_art_url
+  )
+  // TODO: We can hash and verify against the metadata here
+  const coverArtFile = {
+    buffer: coverArtDownload!,
+    originalname: pendingAlbum.cover_art_url.split('/').pop(),
+  }
+
+  // TODO we should add support for updating the album tracks' metadatas in the SDK as part of this update
+  const updateAlbumRequest: UpdateAlbumRequest = {
+    albumId,
+    userId: pendingAlbum.playlist_owner_id,
+    coverArtFile,
+    metadata: formatAlbumMetadata(pendingAlbum),
+    onProgress: (progress: any) => console.log('Progress:', progress),
+  }
+  console.log(
+    `Updating ${pendingAlbum.playlist_name} by ${pendingAlbum.playlist_owner_id} (album id ${albumId})...`
+  )
+  const result = await audiusSdk.albums.uploadAlbum(updateAlbumRequest)
+  console.log(result)
+  return result
+}
+
+const deleteAlbum = async (
+  audiusSdk: AudiusSdkType,
+  albumId: string,
+  albumMetadata: SDKUploadMetadataSchema
+) => {
+  const deleteAlbumRequest: DeleteAlbumRequest = {
+    albumId,
+    userId: albumMetadata.playlist_owner_id,
+  }
+  console.log(
+    `Deleting ${albumMetadata.playlist_name} by ${albumMetadata.playlist_owner_id} (album id ${albumId})...`
+  )
+  const result = await audiusSdk.albums.deleteAlbum(deleteAlbumRequest)
+  console.log(result)
+  return result
+}
+
 async function recordPendingReleaseErr(
   doc: Release,
   error: any,
@@ -187,94 +290,123 @@ async function recordPendingReleaseErr(
   }
 }
 
-export const publishReleases = async (
+const publishReleases = async (
   audiusSdk: AudiusSdkType,
   s3: ReturnType<typeof createS3>
 ) => {
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    let documents
-    try {
-      const currentDate = new Date()
-      documents = await Releases.aggregate([
-        {
-          $match: {
-            $and: [
-              {
-                $expr: {
-                  $lte: [
-                    {
-                      $max: [
-                        '$sdk_upload_metadata.release_date',
-                        '$sdk_upload_metadata.validity_start_date',
-                      ],
-                    },
-                    currentDate,
-                  ],
-                },
+  let documents
+  try {
+    const currentDate = new Date()
+    documents = await Releases.aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              $expr: {
+                $lte: [
+                  {
+                    $max: [
+                      '$sdk_upload_metadata.release_date',
+                      '$sdk_upload_metadata.validity_start_date',
+                    ],
+                  },
+                  currentDate,
+                ],
               },
-              { release_status: 'awaiting_publish' },
-            ],
-          },
+            },
+            { release_status: 'awaiting_publish' },
+          ],
         },
-      ])
-    } catch (error) {
-      console.error('Failed to fetch pending releases:', error)
-      await new Promise((resolve) => setTimeout(resolve, 10_000))
+      },
+    ])
+  } catch (error) {
+    console.error('Failed to fetch pending releases:', error)
+    return
+  }
+
+  for (const doc of documents) {
+    const releaseId = doc._id
+
+    if (doc.release_status == 'failed_after_upload') {
+      console.error(
+        `releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to update in Mongo.`
+      )
+      continue
+    } else if (doc.failure_count > 3) {
+      console.error(
+        `Tried to publish release with ID ${releaseId} 3 times. Requires manual intervention`
+      )
       continue
     }
 
-    for (const doc of documents) {
-      const releaseId = doc._id
-
-      if (doc.failed_after_upload) {
-        console.error(
-          `releases doc with ID ${releaseId} requires manual intervention because it's already uploaded to Audius but failed to update in Mongo.`
-        )
-        continue
-      } else if (doc.failure_count > 3) {
-        console.error(
-          `pending_releases doc with ID ${releaseId} requires manual intervention because we've already retried it 3 times.`
-        )
-        continue
+    let uploadResult: {
+      trackId?: string | null
+      albumId?: string | null
+      blockHash: string
+      blockNumber: number
+    }
+    let updateResult: {
+      blockHash: string
+      blockNumber: number
+    }
+    try {
+      if (doc.is_update && !doc.entity_id) {
+        throw new Error('Missing entity id in pending update release')
       }
-
-      let uploadResult: {
-        trackId?: string | null
-        albumId?: string | null
-        blockHash: string
-        blockNumber: number
-      }
-      try {
-        if (doc?.sdk_upload_metadata?.title) {
+      if (doc.sdk_upload_metadata?.title) {
+        if (doc.is_update) {
+          updateResult = await updateTrack(
+            audiusSdk,
+            doc.entity_id,
+            doc.sdk_upload_metadata,
+            s3
+          )
+        } else {
           uploadResult = await uploadTrack(
             audiusSdk,
             doc.sdk_upload_metadata,
             s3
           )
-        } else if (doc?.sdk_upload_metadata?.playlist_name) {
+        }
+      } else if (doc.sdk_upload_metadata?.playlist_name) {
+        if (doc.is_update) {
+          updateResult = await updateAlbum(
+            audiusSdk,
+            doc.entity_id,
+            doc.sdk_upload_metadata,
+            s3
+          )
+        } else {
           uploadResult = await uploadAlbum(
             audiusSdk,
             doc.sdk_upload_metadata,
             s3
           )
-        } else {
-          recordPendingReleaseErr(
-            doc,
-            'Missing track or album in pending release',
-            'failed_during_upload'
-          )
-          continue
         }
-      } catch (error) {
-        recordPendingReleaseErr(doc, error, 'failed_during_upload')
-        continue
+      } else {
+        throw new Error('Missing track or album in pending release')
       }
+    } catch (error) {
+      recordPendingReleaseErr(doc, error, 'failed_during_upload')
+      continue
+    }
 
-      console.log('Published release:', releaseId)
+    console.log('Published release:', releaseId)
 
-      // Mark release as published in Mongo
-      try {
+    // Mark release as published in Mongo
+    try {
+      if (updateResult) {
+        await Releases.updateOne(
+          { _id: doc._id },
+          {
+            $set: {
+              blockhash: updateResult.blockHash,
+              blocknumber: updateResult.blockNumber,
+              release_status: 'published',
+            },
+          }
+        )
+      } else {
         await Releases.updateOne(
           { _id: doc._id },
           {
@@ -288,16 +420,103 @@ export const publishReleases = async (
             },
           }
         )
-      } catch (updateError) {
-        console.error(
-          'Failed to update release doc with published status:',
-          updateError
-        )
-        recordPendingReleaseErr(doc, updateError, 'failed_after_upload')
       }
+    } catch (updateError) {
+      console.error(
+        'Failed to update release doc with published status:',
+        updateError
+      )
+      recordPendingReleaseErr(doc, updateError, 'failed_after_upload')
+    }
+  }
+}
+
+const takedownReleases = async (audiusSdk: AudiusSdkType) => {
+  let documents
+  try {
+    documents = await Releases.find({ release_status: 'awaiting_delete' })
+  } catch (error) {
+    console.error('Failed to fetch pending takedowns:', error)
+    return
+  }
+
+  for (const doc of documents) {
+    const releaseId = doc._id
+
+    if (doc.release_status == 'failed_after_delete') {
+      console.error(
+        `releases doc with ID ${releaseId} requires manual intervention. Release was successfully removed from Audius but failed to update in Mongo.`
+      )
+      continue
+    } else if (doc.failure_count > 3) {
+      console.error(
+        `Tried to takedown release with ID ${releaseId} 3 times. Requires manual intervention`
+      )
+      continue
     }
 
-    // Wait 10 seconds before checking for new pending releases
+    let deleteResult: {
+      blockHash: string
+      blockNumber: number
+    }
+    try {
+      if (!doc.entity_id) {
+        throw new Error('Missing entity id in pending takedown release')
+      }
+
+      if (doc?.sdk_upload_metadata?.title) {
+        deleteResult = await deleteTrack(
+          audiusSdk,
+          doc.entity_id,
+          doc.sdk_upload_metadata
+        )
+      } else if (doc?.sdk_upload_metadata?.playlist_name) {
+        deleteResult = await deleteAlbum(
+          audiusSdk,
+          doc.entity_id,
+          doc.sdk_upload_metadata
+        )
+      } else {
+        throw new Error('Missing track or album in pending takedown release')
+      }
+    } catch (error) {
+      recordPendingReleaseErr(doc, error, 'failed_during_delete')
+      continue
+    }
+
+    console.log('Took down release:', releaseId)
+
+    // Mark release as deleted in Mongo
+    try {
+      await Releases.updateOne(
+        { _id: doc._id },
+        {
+          $set: {
+            blockhash: deleteResult.blockHash,
+            blocknumber: deleteResult.blockNumber,
+            release_status: 'deleted',
+          },
+        }
+      )
+    } catch (updateError) {
+      console.error(
+        'Failed to update release doc with deleted status:',
+        updateError
+      )
+      recordPendingReleaseErr(doc, updateError, 'failed_after_delete')
+    }
+  }
+}
+
+export const processReleases = async (
+  audiusSdk: AudiusSdkType,
+  s3: ReturnType<typeof createS3>
+) => {
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    await publishReleases(audiusSdk, s3)
+    await takedownReleases(audiusSdk)
+    // Wait 10 seconds before checking for new pending releases/takedowns
     await new Promise((resolve) => setTimeout(resolve, 10_000))
   }
 }

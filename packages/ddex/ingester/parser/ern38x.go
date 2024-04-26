@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 	"ingester/common"
+	"ingester/constants"
 	"regexp"
 	"slices"
 	"sort"
@@ -10,6 +12,8 @@ import (
 	"time"
 
 	"github.com/antchfx/xmlquery"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // SoundRecording represents the parsed details of a sound recording
@@ -105,7 +109,7 @@ type ResourceGroupContentItem struct {
 
 // parseERN38x parses the given XML data and returns a release ready to be uploaded to Audius.
 // NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
-func parseERN38x(doc *xmlquery.Node, crawledBucket string, release *common.Release) (errs []error) {
+func parseERN38x(doc *xmlquery.Node, crawledBucket string, release *common.Release, releasesColl *mongo.Collection) (errs []error) {
 	var (
 		soundRecordings []SoundRecording
 		images          []Image
@@ -173,8 +177,30 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket string, release *common.Relea
 	// Parse <ReleaseDeal>s from <DealList>
 	dealNodes := xmlquery.Find(doc, "//DealList/ReleaseDeal")
 	if len(dealNodes) == 0 {
-		errs = append(errs, fmt.Errorf("no <ReleaseDeal> found"))
-		return
+		// Check for an existing release to determine whether this is a takedown request or an invalid NewReleaseMessage
+		var existingRelease common.Release
+		filter := bson.M{"_id": release.ReleaseID}
+		err = releasesColl.FindOne(context.Background(), filter).Decode(&existingRelease)
+		if err == nil {
+			// This is a takedown request. Mark the existing release for deletion
+			switch existingRelease.ReleaseStatus {
+			case constants.ReleaseStatusPublished, constants.ReleaseStatusFailedAfterUpload, constants.ReleaseStatusFailedDuringDelete:
+				// Has been published to Audius. Mark for deletion by the publisher
+				release.ReleaseStatus = constants.ReleaseStatusAwaitingDelete
+				release.EntityID = existingRelease.EntityID
+				release.SDKUploadMetadata = existingRelease.SDKUploadMetadata
+			default:
+				// Has not yet been published to Audius. Mark as deleted
+				release.ReleaseStatus = constants.ReleaseStatusDeleted
+			}
+		} else if err != nil && err != mongo.ErrNoDocuments {
+			errs = append(errs, err)
+			return
+		} else {
+			// This is a NewReleaseMessage that should have a deal
+			errs = append(errs, fmt.Errorf("no <ReleaseDeal> found"))
+			return
+		}
 	}
 	for _, dNode := range dealNodes {
 		err := processDealNode(dNode, release)

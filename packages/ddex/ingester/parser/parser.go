@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/antchfx/xmlquery"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -37,6 +38,18 @@ func (p *Parser) ParseRelease(release *common.Release) (ok bool) {
 
 	// Upsert the release after parsing regardless of success or failure
 	defer func() {
+		filter := bson.M{"_id": release.ReleaseID}
+		var existingRelease common.Release
+
+		// Find the existing document, if any
+		err := p.ReleasesColl.FindOne(p.Ctx, filter).Decode(&existingRelease)
+		if err == nil {
+			if existingRelease.ReleaseStatus == constants.ReleaseStatusPublished || existingRelease.ReleaseStatus == constants.ReleaseStatusFailedAfterUpload {
+				// Set is_update to true if the existing release has already been published to Audius
+				release.IsUpdate = true
+			}
+		}
+
 		if res, err := p.UpsertRelease(release); err == nil {
 			p.Logger.Info("Upserted release", "_id", res.UpsertedID, "modified", res.ModifiedCount)
 			ok = true
@@ -84,7 +97,7 @@ func (p *Parser) ParseRelease(release *common.Release) (ok bool) {
 	// Use local-name() to ignore namespace because sometimes it's "ern" and sometimes it's "ernm"
 	msgVersionElem := xmlquery.FindOne(doc, "//*[local-name()='NewReleaseMessage']")
 	if msgVersionElem == nil {
-		logParsingErr(fmt.Errorf("missing <NewReleaseMessage> element"))
+		logParsingErr(fmt.Errorf("missing <NewReleaseMessage> or <PurgeReleaseMessage> element"))
 		return
 	}
 
@@ -117,9 +130,9 @@ func (p *Parser) ParseRelease(release *common.Release) (ok bool) {
 	switch ernVersion {
 	// Not sure what the difference is between 3.81 and 3.82 because DDEX only provides the most recent version and 1 version behind unless you contact them
 	case "381":
-		errs = parseERN38x(doc, p.Bucket, release)
+		errs = parseERN38x(doc, p.Bucket, release, p.ReleasesColl)
 	case "382":
-		errs = parseERN38x(doc, p.Bucket, release)
+		errs = parseERN38x(doc, p.Bucket, release, p.ReleasesColl)
 	default:
 		logParsingErr(fmt.Errorf("unsupported schema: '%s'. Expected ern/381 or ern/382", msgSchemaVersionId))
 		return
@@ -131,7 +144,13 @@ func (p *Parser) ParseRelease(release *common.Release) (ok bool) {
 		}
 		return
 	}
-	p.Logger.Info("Parsed release", "id", release.ReleaseID)
+
+	if release.ReleaseStatus == constants.ReleaseStatusDeleted || release.ReleaseStatus == constants.ReleaseStatusAwaitingDelete {
+		p.Logger.Info("Parsed takedown request", "id", release.ReleaseID)
+		return
+	} else {
+		p.Logger.Info("Parsed release", "id", release.ReleaseID)
+	}
 
 	// Find an ID for the first OAuthed display artist in the release
 	for i, parsedRelease := range release.ParsedReleaseElems {
