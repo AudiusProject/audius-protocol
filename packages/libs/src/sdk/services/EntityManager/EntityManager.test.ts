@@ -190,16 +190,14 @@ describe('EntityManager', () => {
       })
 
       const discoveryRelayUrl = await discoveryEntityManager.getRelayEndpoint()
-      const identityRelayUrlUndefined =
+      const discoveryRelayUrlUndefined =
         await relayEntityManagerUndefined.getRelayEndpoint()
-      const identityRelayUrlFalse =
-        await relayEntityManagerFalse.getRelayEndpoint()
 
       expect(discoveryRelayUrl).toEqual(discoveryNode)
-      expect(identityRelayUrlUndefined).toEqual(
-        developmentConfig.identityServiceUrl
+      expect(discoveryRelayUrlUndefined).toEqual(
+        discoveryRelayUrl
       )
-      expect(identityRelayUrlUndefined).toEqual(identityRelayUrlFalse)
+      expect(discoveryRelayUrl).toEqual(relayEntityManagerFalse.getRelayEndpoint())
     })
   })
 })
