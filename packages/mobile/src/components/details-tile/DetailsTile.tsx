@@ -14,7 +14,8 @@ import {
   squashNewLines,
   getDogEarType,
   formatSecondsAsText,
-  formatDate
+  formatDate,
+  Genre
 } from '@audius/common/utils'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native'
@@ -41,6 +42,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
+import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
@@ -159,8 +161,8 @@ export const DetailsTile = ({
   })
 
   const isOwner = user?.user_id === currentUserId
-  // const isLongFormContent =
-  //   track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+  const isLongFormContent =
+    track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
@@ -278,6 +280,9 @@ export const DetailsTile = ({
             </TouchableOpacity>
           ) : null}
         </Flex>
+        {isLongFormContent && isNewPodcastControlsEnabled && track ? (
+          <DetailsProgressInfo track={track} />
+        ) : null}
         {hasStreamAccess || isOwner ? (
           <Button
             iconLeft={isPlayingFullAccess ? IconPause : PlayIcon}
@@ -339,10 +344,6 @@ export const DetailsTile = ({
             repostCount={repostCount}
           />
         )}
-        {/* TODO: Where does this go? */}
-        {/* {isLongFormContent && isNewPodcastControlsEnabled ? (
-          <DetailsProgressInfo track={track} />
-        ) : null} */}
         {description ? (
           <Hyperlink
             source={descriptionLinkPressSource}
