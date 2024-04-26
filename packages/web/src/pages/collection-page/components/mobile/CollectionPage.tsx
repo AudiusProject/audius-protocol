@@ -320,7 +320,6 @@ const CollectionPage = ({
                   containerClassName={''}
                   itemClassName={''}
                   tracks={trackList}
-                  showDivider
                   togglePlay={togglePlay}
                 />
               )

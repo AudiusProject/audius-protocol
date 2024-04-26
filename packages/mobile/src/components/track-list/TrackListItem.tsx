@@ -125,19 +125,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   dragIcon: {
     marginRight: spacing(4)
   },
-  divider: {
-    borderBottomColor: palette.neutralLight7,
-    borderBottomWidth: 1,
-    marginVertical: 0,
-    marginHorizontal: spacing(6)
-  },
-  noMarginDivider: {
-    borderBottomColor: palette.neutralLight8,
-    marginHorizontal: 0
-  },
-  hideDivider: {
-    opacity: 0
-  },
   locked: {
     ...flexRowCentered(),
     paddingVertical: spacing(0.5),
@@ -175,11 +162,8 @@ export type TrackListItemProps = {
   index: number
   isReorderable?: boolean
   showViewAlbum?: boolean
-  noDividerMargin?: boolean
   onRemove?: (index: number) => void
   prevUid?: UID
-  showDivider?: boolean
-  showTopDivider?: boolean
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
   uid?: UID
@@ -226,11 +210,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     index,
     isReorderable = false,
     showViewAlbum = false,
-    noDividerMargin,
     onRemove,
     prevUid,
-    showDivider,
-    showTopDivider,
     togglePlay,
     track,
     trackItemAction,
@@ -386,9 +367,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     onRemove?.(index)
   }
 
-  // The dividers above and belove the active track should be hidden
-  const hideDivider = isActive || isPrevItemActive
-
   const renderGatedIcons = useCallback(() => {
     const shouldShowIcon = isStreamGated || isUnlisted
     const Icon = isUnlisted
@@ -407,15 +385,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
   return (
     <View>
-      {showDivider && (showTopDivider || index > 0) ? (
-        <View
-          style={[
-            styles.divider,
-            hideDivider && styles.hideDivider,
-            noDividerMargin && styles.noMarginDivider
-          ]}
-        />
-      ) : null}
       <View
         style={[
           styles.trackContainer,

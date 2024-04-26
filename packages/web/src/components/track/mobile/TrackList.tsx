@@ -33,9 +33,6 @@ type TrackListProps = {
     streamConditions?: Nullable<AccessConditions>
     hasStreamAccess?: boolean
   }>
-  showTopDivider?: boolean
-  showDivider?: boolean
-  noDividerMargin?: boolean
   showBorder?: boolean
   onRemove?: (index: number) => void
   togglePlay?: (uid: string, trackId: ID) => void
@@ -49,9 +46,6 @@ const TrackList = ({
   itemClassName,
   tracks,
   onRemove,
-  showTopDivider,
-  showDivider,
-  noDividerMargin,
   showBorder,
   togglePlay,
   trackItemAction,
@@ -73,22 +67,9 @@ const TrackList = ({
     [onReorder]
   )
 
-  // The dividers above and belove the active track should be hidden
-  const activeIndex = tracks.findIndex((track) => track.isActive)
-  const hideDivider = (idx: number) =>
-    activeIndex >= 0 && (activeIndex === idx || activeIndex === idx - 1)
-
   const renderedTracks = tracks.map((track, idx) => {
     const listItem = (isDragging?: boolean) => (
       <div key={track.uid}>
-        {showDivider && (showTopDivider || idx > 0) ? (
-          <div
-            className={cn(styles.divider, {
-              [styles.hideDivider]: hideDivider(idx),
-              [styles.noMargin]: noDividerMargin
-            })}
-          ></div>
-        ) : null}
         <TrackListItem
           index={idx}
           trackId={track.trackId}
@@ -177,8 +158,6 @@ const TrackList = ({
 }
 
 TrackList.defaultProps = {
-  hasTopDivider: false,
-  showDivider: true,
   showBorder: false
 }
 
