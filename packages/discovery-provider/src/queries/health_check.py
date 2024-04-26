@@ -9,6 +9,7 @@ from src.models.users.audio_transactions_history import AudioTransactionsHistory
 from src.models.users.usdc_purchase import USDCPurchase
 from src.models.users.usdc_transactions_history import USDCTransactionsHistory
 from src.models.users.user_tip import UserTip
+from src.queries import get_ip_location
 from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
 from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
 from src.queries.get_entities_count_check import get_entities_count_check
@@ -224,9 +225,9 @@ def ip_check():
 @bp.route("/ip_check/location", methods=["GET"])
 def ip_check_location():
     try:
-        res = helpers.get_ip_with_location(request)
+        res = get_ip_location.get_ip_with_location(request)
     except Exception as e:
-        logger.warn(f"ip_data | ip location check error {e}")
+        logger.error(f"ip_check | ip location check error {e}")
         return error_response({}, error_code=400)
     return success_response(res, sign_response=False)
 

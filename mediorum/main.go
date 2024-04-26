@@ -158,6 +158,7 @@ func startSandbox() {
 
 	// compute wallet address
 	walletAddress := ethcontracts.ComputeAddressFromPrivateKey(privateKey)
+
 	delegateOwnerWallet := os.Getenv("delegateOwnerWallet")
 	if !strings.EqualFold(walletAddress, delegateOwnerWallet) {
 		slog.Warn("incorrect delegateOwnerWallet env config", "incorrect", delegateOwnerWallet, "computed", walletAddress)

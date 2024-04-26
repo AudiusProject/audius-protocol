@@ -142,25 +142,16 @@ func parseVariantSize(variant string) (w, h int, err error) {
 }
 
 func (ss *MediorumServer) setListenableDiscoveryProviders() {
+	// return dn1 for all envs
+	// TODO: return all foundation and stage nodes
+	// once audius-d supports override.env
 	if ss.Config.Env == "prod" {
-		// return all foundation
-		ss.listenableDiscoveryNodes = []string{
-			"https://discoveryprovider.audius.co",
-			"https://discoveryprovider2.audius.co",
-			"https://discoveryprovider3.audius.co",
-		}
+		ss.listenableDiscoveryNodes = []string{"https://discoveryprovider.audius.co"}
 		return
 	}
 	if ss.Config.Env == "stage" {
-		// return all stage nodes
-		ss.listenableDiscoveryNodes = []string{
-			"https://discoveryprovider.staging.audius.co",
-			"https://discoveryprovider2.staging.audius.co",
-			"https://discoveryprovider3.staging.audius.co",
-			"https://discoveryprovider5.staging.audius.co",
-		}
+		ss.listenableDiscoveryNodes = []string{"https://discoveryprovider.staging.audius.co"}
 		return
 	}
-	// dev, return only the one discovery provider
 	ss.listenableDiscoveryNodes = []string{"http://audius-protocol-discovery-provider-1"}
 }

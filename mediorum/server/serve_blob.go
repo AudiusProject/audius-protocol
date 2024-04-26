@@ -320,7 +320,6 @@ func (ss *MediorumServer) findAndPullBlob(_ context.Context, key string) (string
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
-
 	skipPlayCount, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
 	if skipPlayCount ||
@@ -348,7 +347,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		userId = strconv.Itoa(sig.Data.UserID)
 	}
 
-	doDiscoveryListens := ss.Config.DiscoveryListens
+	doDiscoveryListens := true
 	if doDiscoveryListens {
 		// pick random discovery node
 		node := ss.listenableDiscoveryNodes[rand.Intn(len(ss.listenableDiscoveryNodes))]
@@ -375,7 +374,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			ss.logger.Error("received non-200 status code for ip check: %d", resp.StatusCode)
+			ss.logger.Error("received non-200 status code for ip check", "status", resp.StatusCode)
 			return
 		}
 
