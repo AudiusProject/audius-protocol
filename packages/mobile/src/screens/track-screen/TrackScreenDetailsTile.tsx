@@ -58,7 +58,7 @@ import {
   IconSpecialAccess
 } from '@audius/harmony-native'
 import type { ImageProps } from '@audius/harmony-native'
-import { Tag, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
 import { TrackImage } from 'app/components/image/TrackImage'
@@ -142,10 +142,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginVertical: spacing(4)
   },
 
-  bottomContent: {
-    gap: spacing(4),
-    marginHorizontal: spacing(3)
-  },
   hiddenTrackLabel: {
     marginTop: spacing(1),
     marginLeft: spacing(2),
@@ -266,7 +262,6 @@ export const TrackScreenDetailsTile = ({
     remix_of,
     repost_count,
     save_count,
-    tags,
     title,
     track_id: trackId,
     stream_conditions: streamConditions,
@@ -285,8 +280,6 @@ export const TrackScreenDetailsTile = ({
   const hasDownloadableAssets =
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
-
-  const filteredTags = (tags || '').split(',').filter(Boolean)
 
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId },
@@ -375,13 +368,6 @@ export const TrackScreenDetailsTile = ({
     dispatch(setRepost(trackId, RepostType.TRACK))
     navigation.push('Reposts', { id: trackId, repostType: RepostType.TRACK })
   }, [dispatch, trackId, navigation])
-
-  const handlePressTag = useCallback(
-    (tag: string) => {
-      navigation.push('TagSearch', { query: tag })
-    },
-    [navigation]
-  )
 
   const handlePressSave = () => {
     if (!isOwner) {
@@ -567,29 +553,8 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
-  const renderTags = () => {
-    if (is_unlisted && !field_visibility?.tags) {
-      return null
-    }
-
-    return filteredTags.length > 0 ? (
-      <View style={styles.tags}>
-        {filteredTags.map((tag) => (
-          <Tag key={tag} onPress={() => handlePressTag(tag)}>
-            {tag}
-          </Tag>
-        ))}
-      </View>
-    ) : null
-  }
-
   const renderBottomContent = () => {
-    return (
-      <View style={styles.bottomContent}>
-        {renderTags()}
-        {hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null}
-      </View>
-    )
+    return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
   }
 
   return (

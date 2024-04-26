@@ -32,7 +32,7 @@ import {
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { Hyperlink, DogEar } from 'app/components/core'
+import { Hyperlink, DogEar, Tag } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -243,6 +243,45 @@ export const DetailsTile = ({
     // TODO: trending badge
   ].filter((badge) => badge !== null)
 
+  const handlePressTag = useCallback(
+    (tag: string) => {
+      navigation.push('TagSearch', { query: tag })
+    },
+    [navigation]
+  )
+
+  const renderTags = () => {
+    if (!track || (isUnlisted && !track.field_visibility?.tags)) {
+      return null
+    }
+
+    // const filteredTags = (track.tags || '').split(',').filter(Boolean)
+    const filteredTags = [
+      'tag1',
+      'tag2',
+      'sdjfkajsdkf',
+      'dkfjalskdjfka',
+      'tag5',
+      'tag6'
+    ]
+
+    return filteredTags.length > 0 ? (
+      <Flex
+        direction='row'
+        wrap='wrap'
+        justifyContent='flex-start'
+        // Accounts for the margin on the Tag component
+        m='negativeUnit'
+      >
+        {filteredTags.map((tag) => (
+          <Tag key={tag} onPress={() => handlePressTag(tag)}>
+            {tag}
+          </Tag>
+        ))}
+      </Flex>
+    ) : null
+  }
+
   return (
     <Paper mb='xl'>
       {renderDogEar()}
@@ -349,7 +388,6 @@ export const DetailsTile = ({
             text={squashNewLines(description) ?? ''}
           />
         ) : null}
-
         {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
           <DetailsTileNoAccess
             trackId={contentId}
@@ -364,7 +402,6 @@ export const DetailsTile = ({
             trackArtist={user}
           />
         ) : null}
-
         {track?.genre || track?.mood ? (
           <Flex w='100%' direction='row' gap='l'>
             {track?.genre ? (
@@ -397,8 +434,7 @@ export const DetailsTile = ({
           releaseDate={releaseDate}
           updatedAt={updatedAt}
         />
-
-        {/* TODO: tags go here for tracks */}
+        {renderTags()}
         {/* TODO: offline mode status */}
       </Flex>
       <Divider />
