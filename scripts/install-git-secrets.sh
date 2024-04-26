@@ -73,9 +73,6 @@ git secrets --add "AIza[0-9A-Za-z\\-_]{35}"
 # Google Drive OAuth
 git secrets --add "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com"
 
-# Google (GCP) Service-account
-git secrets --add "\"type\": \"service_account\""
-
 # Google Gmail API Key
 git secrets --add "AIza[0-9A-Za-z\\-_]{35}"
 
