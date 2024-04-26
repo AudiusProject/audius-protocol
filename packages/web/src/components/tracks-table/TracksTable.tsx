@@ -36,10 +36,6 @@ import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TracksTable.module.css'
 
-const messages = {
-  locked: 'Locked'
-}
-
 type RowInfo = UserTrack & {
   name: string
   artist: string
@@ -210,16 +206,6 @@ export const TracksTable = ({
       const active = index === playingIndex
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
-      const isPremium = isContentUSDCPurchaseGated(track.stream_conditions)
-
-      const renderLocked = () => {
-        return (
-          <div className={styles.locked}>
-            <IconLock />
-            <span>{messages.locked}</span>
-          </div>
-        )
-      }
 
       return (
         <div className={styles.textContainer} css={{ overflow: 'hidden' }}>
@@ -236,7 +222,6 @@ export const TracksTable = ({
             {track.name}
             {deleted ? ` [Deleted By Artist]` : ''}
           </TextLink>
-          {!deleted && isLocked && !isPremium ? renderLocked() : null}
         </div>
       )
     },
@@ -738,7 +723,7 @@ export const TracksTable = ({
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isPremium = isContentUSDCPurchaseGated(track.stream_conditions)
       return cn(styles.tableRow, {
-        [styles.disabled]: (isLocked && !isPremium) || deleted,
+        [styles.disabled]: deleted,
         [styles.lockedRow]: isLocked && !deleted && !isPremium
       })
     },
