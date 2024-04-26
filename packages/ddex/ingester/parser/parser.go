@@ -97,7 +97,7 @@ func (p *Parser) ParseRelease(release *common.Release) (ok bool) {
 	// Use local-name() to ignore namespace because sometimes it's "ern" and sometimes it's "ernm"
 	msgVersionElem := xmlquery.FindOne(doc, "//*[local-name()='NewReleaseMessage']")
 	if msgVersionElem == nil {
-		logParsingErr(fmt.Errorf("missing <NewReleaseMessage> or <PurgeReleaseMessage> element"))
+		logParsingErr(fmt.Errorf("missing <NewReleaseMessage> element"))
 		return
 	}
 
@@ -146,7 +146,7 @@ func (p *Parser) ParseRelease(release *common.Release) (ok bool) {
 	}
 
 	if release.ReleaseStatus == constants.ReleaseStatusDeleted || release.ReleaseStatus == constants.ReleaseStatusAwaitingDelete {
-		p.Logger.Info("Parsed takedown request", "id", release.ReleaseID)
+		p.Logger.Info("Parsed takedown release", "id", release.ReleaseID)
 		return
 	} else {
 		p.Logger.Info("Parsed release", "id", release.ReleaseID)

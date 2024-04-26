@@ -416,6 +416,8 @@ const publishReleases = async (
             },
           }
         )
+      } else {
+        throw new Error('No update or upload result returned')
       }
     } catch (updateError) {
       console.error(
