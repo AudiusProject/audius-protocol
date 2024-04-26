@@ -52,27 +52,49 @@ app.get('/auth', (c) => {
   const base = 'https://staging.audius.co/oauth/auth?'
   const params = new URLSearchParams({
     scope: 'write',
-    redirect_uri: 'http://localhost:8989/auth/callback',
+    redirect_uri: 'http://localhost:8989/auth/success',
     api_key: DDEX_KEY!,
+    rseponse_mode: 'query',
   })
   const u = base + params.toString()
   return c.redirect(u)
 })
 
-app.get('/auth/callback', (c) => {
-  // for some reason auth redirects with a hash instead of query param
-  // redirect again with a query param
-  return c.html(
-    html` <h1>redirecting</h1>
-      <script>
-        window.location = '/auth/success?' + window.location.hash.substr(1)
-      </script>`
-  )
+app.get('/auth/redirect', async (c) => {
+  try {
+    const uri = c.req.query('redirect_uri')
+    const token = c.req.query('token')
+    if (!token) {
+      throw new Error('no token')
+    }
+
+    const { payload } = decode(token!)
+    if (!payload.userId) {
+      throw new Error('invalid payload')
+    }
+
+    // upsert user record
+    dbUpsert('users', {
+      id: payload.userId,
+      handle: payload.handle,
+      name: payload.name,
+    })
+
+    const params = new URLSearchParams({ token })
+    return c.redirect(`${uri}/?` + params.toString())
+  } catch (e) {
+    console.log(e)
+    return c.body('invalid jwt', 400)
+  }
 })
 
 app.get('/auth/success', async (c) => {
   try {
     const token = c.req.query('token')
+    if (!token) {
+      throw new Error('no token')
+    }
+
     const { payload } = decode(token!)
     if (!payload.userId) {
       throw new Error('invalid payload')
