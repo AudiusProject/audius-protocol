@@ -2,9 +2,12 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
+	"path/filepath"
+	"slices"
 	"time"
 
 	"ingester/constants"
@@ -14,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -36,10 +40,9 @@ type Ingester struct {
 	S3Client          *s3.S3
 	S3Downloader      *s3manager.Downloader
 	S3Uploader        *s3manager.Uploader
-	RawBucket         string
-	CrawledBucket     string
+	Bucket            string
 	CrawlerCursorColl *mongo.Collection
-	DeliveriesColl    *mongo.Collection
+	BatchesColl       *mongo.Collection
 	ReleasesColl      *mongo.Collection
 	UsersColl         *mongo.Collection
 	Logger            *slog.Logger
@@ -55,15 +58,76 @@ func NewIngester(ctx context.Context) *Ingester {
 		S3Downloader:      s3manager.NewDownloader(s3Session),
 		S3Uploader:        s3manager.NewUploader(s3Session),
 		MongoClient:       mongoClient,
-		RawBucket:         MustGetenv("AWS_BUCKET_RAW"),
-		CrawledBucket:     MustGetenv("AWS_BUCKET_CRAWLED"),
+		Bucket:            MustGetenv("AWS_BUCKET_RAW"),
 		CrawlerCursorColl: mongoClient.Database("ddex").Collection("crawler_cursor"),
-		DeliveriesColl:    mongoClient.Database("ddex").Collection("deliveries"),
+		BatchesColl:       mongoClient.Database("ddex").Collection("batches"),
 		ReleasesColl:      mongoClient.Database("ddex").Collection("releases"),
 		UsersColl:         mongoClient.Database("ddex").Collection("users"),
 		Ctx:               ctx,
 		Logger:            slog.Default(),
 	}
+}
+
+func (i *Ingester) UpsertBatch(r *Batch) (*mongo.UpdateResult, error) {
+	filter := bson.M{"_id": r.BatchID}
+	opts := options.Replace().SetUpsert(true)
+	return i.BatchesColl.ReplaceOne(i.Ctx, filter, r, opts)
+}
+
+func (i *Ingester) UpsertRelease(r *Release) (*mongo.UpdateResult, error) {
+	filter := bson.M{"_id": r.ReleaseID}
+	opts := options.Replace().SetUpsert(true)
+	return i.ReleasesColl.ReplaceOne(i.Ctx, filter, r, opts)
+}
+
+func (i *Ingester) UploadDirectory(dirPath, baseDir string) (string, error) {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
+	}
+
+	for _, entry := range entries {
+		if slices.Contains(constants.SkipFiles, entry.Name()) {
+			continue
+		}
+
+		fullPath := filepath.Join(dirPath, entry.Name())
+		if entry.IsDir() {
+			_, err = i.UploadDirectory(fullPath, filepath.Join(baseDir, entry.Name()))
+		} else {
+			_, err = i.UploadFile(fullPath, baseDir, entry.Name())
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return baseDir, nil
+}
+
+func (i *Ingester) UploadFile(filePath, baseDir, fileName string) (string, error) {
+	if slices.Contains(constants.SkipFiles, fileName) {
+		return "", nil
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open file '%s': %w", filePath, err)
+	}
+	defer file.Close()
+
+	s3Key := filepath.Join(baseDir, fileName)
+
+	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(i.Bucket),
+		Key:    aws.String(s3Key),
+		Body:   file,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to upload '%s' to S3: %w", filePath, err)
+	}
+
+	return s3Key, nil
 }
 
 func InitMongoClient(ctx context.Context, logger *slog.Logger) *mongo.Client {
