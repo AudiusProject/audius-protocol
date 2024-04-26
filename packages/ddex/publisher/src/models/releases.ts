@@ -79,6 +79,15 @@ const moods = [
   'Upbeat',
   'Other',
 ]
+export const releaseStatuses = [
+  'awaiting_parse',
+  'awaiting_publish',
+  'error_user_match',
+  'error_genre_match',
+  'failed_during_upload',
+  'failed_after_upload',
+  'published',
+] as const
 
 interface ResourceContributor {
   name: string
@@ -307,7 +316,9 @@ const parsedReleaseElementSchema = new mongoose.Schema(
   { _id: false }
 ) // _id is set to false because this schema is used as a sub-document
 
-export const releaseSchema = new mongoose.Schema({
+const releasesSchema = new mongoose.Schema({
+  _id: { type: String, required: true },
+  delivery_remote_path: { type: String, required: true },
   release_profile: {
     type: String,
     required: true,
@@ -319,27 +330,26 @@ export const releaseSchema = new mongoose.Schema({
   },
   parsed_release_elems: [parsedReleaseElementSchema],
   sdk_upload_metadata: sdkUploadMetadataSchema,
-})
-
-const pendingReleasesSchema = new mongoose.Schema({
-  _id: { type: String, required: true },
-  delivery_remote_path: { type: String, required: true },
-  release: releaseSchema,
   created_at: { type: Date, required: true },
+  parse_errors: [String],
   publish_errors: [String],
   failure_count: { type: Number, default: 0 },
-  failed_after_upload: { type: Boolean, default: false },
+  release_status: {
+    type: String,
+    enum: releaseStatuses,
+  },
+
+  // Only set if the release was successfully published
+  entity_id: String,
+  blockhash: String,
+  blocknumber: Number,
 })
 
 // Releases awaiting publishing. Releases are parsed from DDEX deliveries
-const PendingReleases = mongoose.model(
-  'PendingReleases',
-  pendingReleasesSchema,
-  'pending_releases'
-)
+const Releases = mongoose.model('Releases', releasesSchema, 'releases')
 
-export type PendingRelease = mongoose.HydratedDocument<
-  mongoose.InferSchemaType<typeof pendingReleasesSchema>
+export type Release = mongoose.HydratedDocument<
+  mongoose.InferSchemaType<typeof releasesSchema>
 >
 
-export default PendingReleases
+export default Releases
