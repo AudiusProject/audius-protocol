@@ -14,21 +14,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func setupEnv(i *common.Ingester) error {
-	if err := createBucket(i.S3Client, i.RawBucket); err != nil {
+	if err := createBucket(i.S3Client, i.Bucket); err != nil && !strings.HasPrefix(err.Error(), "bucket exists") {
 		return err
 	}
-	if err := createBucket(i.S3Client, i.CrawledBucket); err != nil {
-		return err
-	}
-	fmt.Printf("Created buckets: %s, %s\n", i.RawBucket, i.CrawledBucket)
+	fmt.Printf("Created buckets: %s, %s\n", i.Bucket, i.Bucket)
 
 	users := i.MongoClient.Database("ddex").Collection("users")
 	_, err := users.InsertOne(i.Ctx, bson.M{
@@ -100,33 +95,20 @@ func TestRunE2E(t *testing.T) {
 	}
 
 	type subTest struct {
-		path       string
-		expectedD  common.Delivery
-		expectedPR common.Release
+		path            string
+		expectedBatch   *common.Batch
+		expectedRelease common.Release
 	}
 
 	releaseByReleaseTests := []subTest{
 		{
 			path: "release_by_release/ern381/sony1.zip",
-			expectedD: common.Delivery{
-				RemotePath:     "s3://audius-test-raw/sony1.zip",
-				DeliveryStatus: constants.DeliveryStatusSuccess,
-				Batches:        nil,
-				Releases: []common.UnprocessedRelease{
-					{
-						ReleaseID:        "A10301A0005108088N",
-						XmlFilePath:      "A10301A0005108088N/A10301A0005108088N.xml",
-						ValidationErrors: []string{},
-					},
-				},
-				ValidationErrors: []string(nil),
-			},
-			expectedPR: common.Release{
-				ReleaseID:          "A10301A0005108088N",
-				DeliveryRemotePath: "s3://audius-test-raw/sony1.zip",
-				PublishErrors:      []string{},
-				ReleaseProfile:     common.UnspecifiedReleaseProfile,
-				ReleaseStatus:      constants.ReleaseStatusAwaitingPublish,
+			expectedRelease: common.Release{
+				ReleaseID:      "A10301A0005108088N",
+				XMLRemotePath:  "s3://audius-test-raw/A10301A0005108088N/A10301A0005108088N.xml",
+				PublishErrors:  []string{},
+				ReleaseProfile: common.UnspecifiedReleaseProfile,
+				ReleaseStatus:  constants.ReleaseStatusAwaitingPublish,
 				SDKUploadMetadata: common.SDKUploadMetadata{
 					ReleaseDate:       time.Date(2023, time.September, 1, 0, 0, 0, 0, time.UTC),
 					ValidityStartDate: time.Date(2023, time.September, 2, 0, 0, 0, 0, time.UTC),
@@ -153,7 +135,7 @@ func TestRunE2E(t *testing.T) {
 					},
 					ParentalWarningType:          stringPtr("Explicit"),
 					License:                      nil,
-					CoverArtURL:                  "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1027024165547_Image.jpg",
+					CoverArtURL:                  "s3://audius-test-raw/A10301A0005108088N/resources/A10301A0005108088N_T-1027024165547_Image.jpg",
 					CoverArtURLHash:              stringPtr("582fb410615167205e8741580cf77e71"),
 					CoverArtURLHashAlgo:          stringPtr("MD5"),
 					Title:                        nil,
@@ -209,10 +191,10 @@ func TestRunE2E(t *testing.T) {
 								{Name: "Gabe Archibald Horowitz", Roles: []string{"Composer", "Lyricist"}, SequenceNumber: 6},
 							},
 							ParentalWarningType:  stringPtr("Explicit"),
-							AudioFileURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.mp3",
+							AudioFileURL:         "s3://audius-test-raw/A10301A0005108088N/resources/A10301A0005108088N_T-1096524256352_SoundRecording_001-001.mp3",
 							AudioFileURLHash:     "8bb2ce119257314a8fcb215a49f14b33",
 							AudioFileURLHashAlgo: "MD5",
-							PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/", // TODO: This doesn't seem right...
+							PreviewAudioFileURL:  "s3://audius-test-raw/A10301A0005108088N/", // TODO: This doesn't seem right...
 							PreviewStartSeconds:  intPtr(48),
 							ArtistName:           "Theo Random",
 							IsStreamGated:        false,
@@ -246,10 +228,10 @@ func TestRunE2E(t *testing.T) {
 								{Name: "Neo Ndungane", Roles: []string{"Composer", "Lyricist"}, SequenceNumber: 5},
 							},
 							ParentalWarningType:  stringPtr("Explicit"),
-							AudioFileURL:         "s3://audius-test-crawled/A10301A0005108088N/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.mp3",
+							AudioFileURL:         "s3://audius-test-raw/A10301A0005108088N/resources/A10301A0005108088N_T-1096524142976_SoundRecording_001-002.mp3",
 							AudioFileURLHash:     "1e9183898a4f6b45f895e45cd18ba162",
 							AudioFileURLHashAlgo: "MD5",
-							PreviewAudioFileURL:  "s3://audius-test-crawled/A10301A0005108088N/", // TODO: This doesn't seem right...
+							PreviewAudioFileURL:  "s3://audius-test-raw/A10301A0005108088N/", // TODO: This doesn't seem right...
 							PreviewStartSeconds:  intPtr(48),
 							ArtistName:           "Theo Random & Thato Saul",
 							IsStreamGated:        false,
@@ -265,34 +247,18 @@ func TestRunE2E(t *testing.T) {
 	batchedTests := []subTest{
 		{
 			path: "batch/ern382/1_CPD1.zip",
-			expectedD: common.Delivery{
-				RemotePath:     "s3://audius-test-raw/1_CPD1.zip",
-				DeliveryStatus: constants.DeliveryStatusSuccess,
-				Releases:       nil,
-				Batches: []common.UnprocessedBatch{
-					{
-						BatchID:      "20161024145603121",
-						BatchXmlPath: "20161024145603121/BatchComplete_20161024145603121.xml",
-						Releases: []common.UnprocessedRelease{
-							{
-								ReleaseID:        "721620118165",
-								XmlFilePath:      "20161024145603121/721620118165/721620118165.xml",
-								ValidationErrors: []string{},
-							},
-						},
-						ValidationErrors: []string{},
-						DDEXSchema:       "382",
-						NumMessages:      1,
-					},
-				},
-				ValidationErrors: []string(nil),
+			expectedBatch: &common.Batch{
+				BatchID:     "20161024145603121",
+				DDEXSchema:  "382",
+				NumMessages: 1,
 			},
-			expectedPR: common.Release{
-				ReleaseID:          "721620118165",
-				DeliveryRemotePath: "s3://audius-test-raw/1_CPD1.zip",
-				PublishErrors:      []string{},
-				ReleaseProfile:     common.Common14AudioAlbumMusicOnly,
-				ReleaseStatus:      constants.ReleaseStatusAwaitingPublish,
+			expectedRelease: common.Release{
+				ReleaseID:      "721620118165",
+				BatchID:        "20161024145603121",
+				XMLRemotePath:  "s3://audius-test-raw/20161024145603121/721620118165/721620118165.xml",
+				PublishErrors:  []string{},
+				ReleaseProfile: common.Common14AudioAlbumMusicOnly,
+				ReleaseStatus:  constants.ReleaseStatusAwaitingPublish,
 				SDKUploadMetadata: common.SDKUploadMetadata{
 					ReleaseDate:       time.Date(2010, time.January, 1, 0, 0, 0, 0, time.UTC),
 					ValidityStartDate: time.Date(2018, time.January, 10, 0, 0, 0, 0, time.UTC),
@@ -321,7 +287,7 @@ func TestRunE2E(t *testing.T) {
 							SequenceNumber: 1,
 						},
 					},
-					CoverArtURL: "s3://audius-test-crawled/721620118165/resources/721620118165_T7_007.jpg",
+					CoverArtURL: "s3://audius-test-raw/20161024145603121/721620118165/resources/721620118165_T7_007.jpg",
 					Tracks: []common.TrackMetadata{
 						{
 							Title:             "Can you feel ...the Monkey Claw!",
@@ -365,7 +331,7 @@ func TestRunE2E(t *testing.T) {
 									SequenceNumber: 1,
 								},
 							},
-							AudioFileURL:    "s3://audius-test-crawled/721620118165/resources/721620118165_T1_001.wav",
+							AudioFileURL:    "s3://audius-test-raw/20161024145603121/721620118165/resources/721620118165_T1_001.wav",
 							IsStreamGated:   false,
 							IsDownloadGated: false,
 							HasDeal:         true,
@@ -412,7 +378,7 @@ func TestRunE2E(t *testing.T) {
 									SequenceNumber: 1,
 								},
 							},
-							AudioFileURL:    "s3://audius-test-crawled/721620118165/resources/721620118165_T2_002.wav",
+							AudioFileURL:    "s3://audius-test-raw/20161024145603121/721620118165/resources/721620118165_T2_002.wav",
 							IsStreamGated:   false,
 							IsDownloadGated: false,
 							HasDeal:         true,
@@ -423,35 +389,18 @@ func TestRunE2E(t *testing.T) {
 		},
 		{
 			path: "batch/fuga/20240305090206405",
-			expectedD: common.Delivery{
-				RemotePath:     "s3://audius-test-raw/20240305090206405",
-				IsFolder:       true,
-				DeliveryStatus: constants.DeliveryStatusSuccess,
-				Releases:       nil,
-				Batches: []common.UnprocessedBatch{
-					{
-						BatchID:      "20240305090206405",
-						BatchXmlPath: "20240305090206405/BatchComplete_20240305090206405.xml",
-						Releases: []common.UnprocessedRelease{
-							{
-								ReleaseID:        "8718857546047",
-								XmlFilePath:      "20240305090206405/8718857546047/8718857546047.xml",
-								ValidationErrors: []string{},
-							},
-						},
-						ValidationErrors: []string{},
-						DDEXSchema:       "ern/382",
-						NumMessages:      1,
-					},
-				},
-				ValidationErrors: []string(nil),
+			expectedBatch: &common.Batch{
+				BatchID:     "20240305090206405",
+				DDEXSchema:  "ern/382",
+				NumMessages: 1,
 			},
-			expectedPR: common.Release{
-				ReleaseID:          "8718857546047",
-				DeliveryRemotePath: "s3://audius-test-raw/20240305090206405",
-				PublishErrors:      []string{},
-				ReleaseProfile:     common.Common13AudioSingle,
-				ReleaseStatus:      constants.ReleaseStatusAwaitingPublish,
+			expectedRelease: common.Release{
+				ReleaseID:      "8718857546047",
+				BatchID:        "20240305090206405",
+				XMLRemotePath:  "s3://audius-test-raw/20240305090206405/8718857546047/8718857546047.xml",
+				PublishErrors:  []string{},
+				ReleaseProfile: common.Common13AudioSingle,
+				ReleaseStatus:  constants.ReleaseStatusAwaitingPublish,
 				SDKUploadMetadata: common.SDKUploadMetadata{
 					ReleaseDate:       time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
 					ValidityStartDate: time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC),
@@ -476,7 +425,7 @@ func TestRunE2E(t *testing.T) {
 						Text: "FUGA",
 					},
 					ParentalWarningType: stringPtr("NotExplicit"),
-					CoverArtURL:         "s3://audius-test-crawled/8718857546047/resources/8718857546047_T2_Image.jpg",
+					CoverArtURL:         "s3://audius-test-raw/20240305090206405/8718857546047/resources/8718857546047_T2_Image.jpg",
 					CoverArtURLHash:     stringPtr("03a3372963d1567ef98f7229c49538e0"),
 					CoverArtURLHashAlgo: stringPtr("MD5"),
 					Title:               stringPtr("All My Single"),
@@ -499,7 +448,7 @@ func TestRunE2E(t *testing.T) {
 						Roles:              []string{"RightsController"},
 						RightsShareUnknown: "",
 					},
-					AudioFileURL:         stringPtr("s3://audius-test-crawled/8718857546047/resources/8718857546047_T1_0_SoundRecording_001_001.flac"),
+					AudioFileURL:         stringPtr("s3://audius-test-raw/20240305090206405/8718857546047/resources/8718857546047_T1_0_SoundRecording_001_001.flac"),
 					AudioFileURLHash:     stringPtr("5e2994cdd94f14a197283a00387ca451"),
 					AudioFileURLHashAlgo: stringPtr("5e2994cdd94f14a197283a00387ca451"), // TODO: This isn't right
 					Tracks:               nil,
@@ -524,71 +473,50 @@ func TestRunE2E(t *testing.T) {
 	}
 
 	for _, st := range subTests {
-		remotePath := uploadFixture(t, i, st.path)
+		uploadFixture(t, i, st.path)
 
-		// Verify parsing (releases collection)
-		doc, err := wait2MinsForDoc(i.Ctx, i.ReleasesColl, bson.M{"delivery_remote_path": remotePath})
+		// Verify release
+		doc, err := wait2MinsForDoc(i.Ctx, i.ReleasesColl, bson.M{"_id": st.expectedRelease.ReleaseID, "release_status": constants.ReleaseStatusAwaitingPublish})
 		if err != nil {
-			t.Fatalf("Error finding pending release for '%s' in Mongo: %v", remotePath, err)
+			t.Fatalf("Error finding release for '%s' in Mongo: %v", st.expectedRelease.ReleaseID, err)
 		}
 		if doc.Err() == mongo.ErrNoDocuments {
-			t.Fatalf("No pending release was found for '%s' in Mongo: %v", remotePath, doc.Err())
+			t.Fatalf("No release was found for '%s' in Mongo: %v", st.expectedRelease.ReleaseID, doc.Err())
 		}
-		var pendingRelease common.Release
-		if err = doc.Decode(&pendingRelease); err != nil {
-			t.Fatalf("Failed to decode pending release for '%s' from Mongo: %v", remotePath, err)
+		var release common.Release
+		if err = doc.Decode(&release); err != nil {
+			t.Fatalf("Failed to decode release for '%s' from Mongo: %v", st.expectedRelease.ReleaseID, err)
 		}
 
-		assert.Equal(t, st.expectedPR.ReleaseID, pendingRelease.ReleaseID)
-		assert.Equal(t, st.expectedPR.DeliveryRemotePath, pendingRelease.DeliveryRemotePath)
-		assert.Equal(t, st.expectedPR.FailureCount, pendingRelease.FailureCount)
-		assert.Equal(t, st.expectedPR.PublishErrors, pendingRelease.PublishErrors)
-		assert.Equal(t, st.expectedPR.ReleaseStatus, pendingRelease.ReleaseStatus)
-		assert.Equal(t, st.expectedPR.ReleaseProfile, pendingRelease.ReleaseProfile)
+		assert.Equal(t, st.expectedRelease.XMLRemotePath, release.XMLRemotePath, "for release "+release.ReleaseID)
+		assert.Equal(t, st.expectedRelease.FailureCount, release.FailureCount, "for release "+release.ReleaseID)
+		assert.Equal(t, st.expectedRelease.PublishErrors, release.PublishErrors, "for release "+release.ReleaseID)
+		assert.Equal(t, st.expectedRelease.ReleaseStatus, release.ReleaseStatus, "for release "+release.ReleaseID)
+		assert.Equal(t, st.expectedRelease.ReleaseProfile, release.ReleaseProfile, "for release "+release.ReleaseID)
 
 		// Compare SDKUploadMetadata without tracks (for cleaner diffing), and then compare tracks after
-		expectedTracks, actualTracks := st.expectedPR.SDKUploadMetadata.Tracks, pendingRelease.SDKUploadMetadata.Tracks
-		st.expectedPR.SDKUploadMetadata.Tracks = nil
-		pendingRelease.SDKUploadMetadata.Tracks = nil
-		assert.Equal(t, st.expectedPR.SDKUploadMetadata, pendingRelease.SDKUploadMetadata)
+		expectedTracks, actualTracks := st.expectedRelease.SDKUploadMetadata.Tracks, release.SDKUploadMetadata.Tracks
+		st.expectedRelease.SDKUploadMetadata.Tracks = nil
+		release.SDKUploadMetadata.Tracks = nil
+		assert.Equal(t, st.expectedRelease.SDKUploadMetadata, release.SDKUploadMetadata)
 		assert.Equal(t, expectedTracks, actualTracks)
 
-		// Verify the crawler (deliveries collection)
-		doc, err = wait2MinsForDoc(i.Ctx, i.DeliveriesColl, bson.M{"_id": remotePath})
-		if err != nil {
-			t.Fatalf("Error finding delivery in Mongo: %v", err)
-		}
-		if doc.Err() == mongo.ErrNoDocuments {
-			t.Fatalf("No delivery was found in Mongo: %v", doc.Err())
-		}
-		var delivery common.Delivery
-		if err = doc.Decode(&delivery); err != nil {
-			t.Fatalf("Failed to decode delivery from Mongo: %v", err)
-		}
-
-		// Ignore CreatedAt because we can't predict the exact time of a Mongo insert
-		delivery.CreatedAt = time.Time{}
-
-		// Similarly, ignore XMLContent because it's too much to paste
-		for i := 0; i < len(delivery.Releases); i++ {
-			delivery.Releases[i].XmlContent = primitive.Binary{}
-			if len(st.expectedD.Releases) > i {
-				st.expectedD.Releases[i].XmlContent = primitive.Binary{}
+		// Verify batch
+		if st.expectedBatch != nil {
+			batchDoc, err := wait2MinsForDoc(i.Ctx, i.BatchesColl, bson.M{"_id": st.expectedBatch.BatchID})
+			if err != nil {
+				t.Fatalf("Error finding batch for '%s' in Mongo: %v", st.expectedBatch.BatchID, err)
 			}
-		}
-		for i := 0; i < len(delivery.Batches); i++ {
-			delivery.Batches[i].BatchXmlContent = primitive.Binary{}
-			if len(st.expectedD.Batches) > i {
-				st.expectedD.Batches[i].BatchXmlContent = primitive.Binary{}
+			if doc.Err() == mongo.ErrNoDocuments {
+				t.Fatalf("No batch was found for '%s' in Mongo: %v", st.expectedBatch.BatchID, doc.Err())
 			}
-			for j := 0; j < len(delivery.Batches[i].Releases); j++ {
-				delivery.Batches[i].Releases[j].XmlContent = primitive.Binary{}
-				if len(st.expectedD.Batches) > i && len(st.expectedD.Batches[i].Releases) > j {
-					st.expectedD.Batches[i].Releases[j].XmlContent = primitive.Binary{}
-				}
+			var batch common.Batch
+			if err = batchDoc.Decode(&batch); err != nil {
+				t.Fatalf("Failed to decode batch for '%s' from Mongo: %v", st.expectedBatch.BatchID, err)
 			}
+			assert.Equal(t, st.expectedBatch.DDEXSchema, batch.DDEXSchema, "for batch "+batch.BatchID)
+			assert.Equal(t, st.expectedBatch.NumMessages, batch.NumMessages, "for batch "+batch.BatchID)
 		}
-		assert.Equal(t, st.expectedD, delivery)
 
 		// TODO: Leaving the publisher untested for now. No need to do this anymore (at least not fully)
 	}
@@ -628,69 +556,19 @@ func uploadFixture(t *testing.T, i *common.Ingester, path string) string {
 	var s3Path string
 	if info.IsDir() {
 		baseDir := filepath.Base(path) // Now 'baseDir' is 'someFolder' for 'fixtures/myPath/somepath/someFolder'
-		s3Path, err = uploadDirectory(i, fullPath, baseDir)
+		s3Path, err = i.UploadDirectory(fullPath, baseDir)
 	} else {
 		// If it's a ZIP file, upload directly to the root of the S3 bucket
 		if strings.HasSuffix(path, ".zip") {
 			_, fileName := filepath.Split(path) // Just the file name
-			s3Path, err = uploadFile(i, fullPath, "", fileName)
+			s3Path, err = i.UploadFile(fullPath, "", fileName)
 		}
 	}
 	if err != nil {
 		t.Fatalf("Error uploading file or dir '%s': %v", fullPath, err)
 	}
 
-	return fmt.Sprintf("s3://%s/%s", i.RawBucket, s3Path)
-}
-
-func uploadDirectory(i *common.Ingester, dirPath, baseDir string) (string, error) {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
-	}
-
-	for _, entry := range entries {
-		if entry.Name() == ".DS_Store" {
-			continue
-		}
-
-		fullPath := filepath.Join(dirPath, entry.Name())
-		if entry.IsDir() {
-			_, err = uploadDirectory(i, fullPath, filepath.Join(baseDir, entry.Name()))
-		} else {
-			_, err = uploadFile(i, fullPath, baseDir, entry.Name())
-		}
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return baseDir, nil
-}
-
-func uploadFile(i *common.Ingester, filePath, baseDir, fileName string) (string, error) {
-	if fileName == ".DS_Store" {
-		return "", nil
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open file '%s': %w", filePath, err)
-	}
-	defer file.Close()
-
-	s3Key := filepath.Join(baseDir, fileName) // Construct S3 key from baseDir and fileName
-
-	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(i.RawBucket),
-		Key:    aws.String(s3Key),
-		Body:   file,
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to upload '%s' to S3: %w", filePath, err)
-	}
-
-	return s3Key, nil
+	return fmt.Sprintf("s3://%s/%s", i.Bucket, s3Path)
 }
 
 func wait2MinsForDoc(ctx context.Context, collection *mongo.Collection, filter bson.M) (*mongo.SingleResult, error) {

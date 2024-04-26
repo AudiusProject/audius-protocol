@@ -54,7 +54,7 @@ export const CollectionsTableOverflowMenuButton = (
             }}
           >
             <Flex ref={ref}>
-              <IconKebabHorizontal color='subdued' size='xs' />
+              <IconKebabHorizontal color='subdued' size='m' />
             </Flex>
           </Flex>
         )}

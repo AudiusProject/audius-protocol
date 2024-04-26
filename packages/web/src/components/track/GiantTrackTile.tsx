@@ -650,7 +650,7 @@ export const GiantTrackTile = ({
 
       <ClientOnly>
         {isStreamGated && streamConditions ? (
-          <Box mb='xl' mh='xl' w='100%'>
+          <Box mb='xl' ph='xl' w='100%'>
             <GatedContentSection
               isLoading={isLoading}
               contentId={trackId}

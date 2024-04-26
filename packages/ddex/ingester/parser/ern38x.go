@@ -152,7 +152,7 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket string, release *common.Relea
 		return
 	}
 	for _, releaseNode := range releaseNodes {
-		if parsedReleaseElem, err := processReleaseNode(releaseNode, &soundRecordings, &images, crawledBucket, release.ReleaseID); err == nil {
+		if parsedReleaseElem, err := processReleaseNode(releaseNode, &soundRecordings, &images, crawledBucket, release); err == nil {
 			release.ParsedReleaseElems = append(release.ParsedReleaseElems, *parsedReleaseElem)
 		} else {
 			errs = append(errs, err)
@@ -440,7 +440,7 @@ func buildSupportingTracks(release *common.Release) (tracks []common.TrackMetada
 }
 
 // processReleaseNode parses a <Release> into a CreateTrackRelease or CreateAlbumRelease struct.
-func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image, crawledBucket, releaseID string) (r *common.ParsedReleaseElement, err error) {
+func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording, images *[]Image, crawledBucket string, release *common.Release) (r *common.ParsedReleaseElement, err error) {
 	releaseRef := safeInnerText(rNode.SelectElement("ReleaseReference"))
 	globalOriginalReleaseDateStr := safeInnerText(rNode.SelectElement("GlobalOriginalReleaseDate")) // Some suppliers (not Fuga) use this
 	durationISOStr := safeInnerText(rNode.SelectElement("Duration"))                                // Only the Sony example uses this. Other suppliers use it in the SoundRecording
@@ -581,7 +581,7 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 	for _, ci := range contentItems {
 		if ci.ResourceType == ResourceTypeSoundRecording {
 			var trackMetadata *common.TrackMetadata
-			trackMetadata, err = parseTrackMetadata(ci, crawledBucket, releaseID)
+			trackMetadata, err = parseTrackMetadata(ci, crawledBucket, release)
 			if err != nil {
 				return
 			}
@@ -596,8 +596,12 @@ func processReleaseNode(rNode *xmlquery.Node, soundRecordings *[]SoundRecording,
 					fmt.Printf("Skipping unsupported preview for Image %s\n", ci.Reference)
 					continue
 				}
+				localURL := fmt.Sprintf("%s/%s%s", release.ReleaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				if release.BatchID != "" {
+					localURL = fmt.Sprintf("%s/%s", release.BatchID, localURL)
+				}
 				resources.Images = append(resources.Images, common.ImageMetadata{
-					URL:         fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName),
+					URL:         fmt.Sprintf("s3://%s/%s", crawledBucket, localURL),
 					URLHash:     d.FileDetails.HashSum,
 					URLHashAlgo: d.FileDetails.HashSumAlgorithmType,
 				})
@@ -926,7 +930,7 @@ func addDownloadConditionsToReleaseElem(dealTerms *xmlquery.Node, commercialMode
 }
 
 // parseTrackMetadata parses the metadata for a sound recording from a ResourceGroupContentItem
-func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID string) (metadata *common.TrackMetadata, err error) {
+func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket string, release *common.Release) (metadata *common.TrackMetadata, err error) {
 	if ci.SoundRecording == nil {
 		err = fmt.Errorf("no <SoundRecording> found for <ResourceReference>%s</ResourceReference>", ci.Reference)
 		return
@@ -956,7 +960,11 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 	for _, d := range ci.SoundRecording.TechnicalDetails {
 		if d.IsPreview {
 			if metadata.PreviewAudioFileURL == "" {
-				metadata.PreviewAudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				localURL := fmt.Sprintf("%s/%s%s", release.ReleaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				if release.BatchID != "" {
+					localURL = fmt.Sprintf("%s/%s", release.BatchID, localURL)
+				}
+				metadata.PreviewAudioFileURL = fmt.Sprintf("s3://%s/%s", crawledBucket, localURL)
 				metadata.PreviewAudioFileURLHash = d.FileDetails.HashSum
 				metadata.PreviewAudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 				metadata.PreviewStartSeconds = d.PreviewDetails.StartPoint
@@ -965,7 +973,11 @@ func parseTrackMetadata(ci ResourceGroupContentItem, crawledBucket, releaseID st
 			}
 		} else {
 			if metadata.AudioFileURL == "" {
-				metadata.AudioFileURL = fmt.Sprintf("s3://%s/%s/%s%s", crawledBucket, releaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				localURL := fmt.Sprintf("%s/%s%s", release.ReleaseID, d.FileDetails.FilePath, d.FileDetails.FileName)
+				if release.BatchID != "" {
+					localURL = fmt.Sprintf("%s/%s", release.BatchID, localURL)
+				}
+				metadata.AudioFileURL = fmt.Sprintf("s3://%s/%s", crawledBucket, localURL)
 				metadata.AudioFileURLHash = d.FileDetails.HashSum
 				metadata.AudioFileURLHashAlgo = d.FileDetails.HashSumAlgorithmType
 			} else {
