@@ -1,5 +1,6 @@
 import { memo, MouseEvent, useRef } from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
 import { ID, UID } from '@audius/common/models'
 import { EnhancedCollectionTrack } from '@audius/common/store'
 import { Genre, formatSeconds } from '@audius/common/utils'
@@ -54,6 +55,8 @@ const TrackListItem = ({
   forceSkeleton = false
 }: TrackListItemProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const isOwner = track?.owner_id === currentUserId
 
   if (forceSkeleton) {
     return (
@@ -112,6 +115,7 @@ const TrackListItem = ({
   const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
     includeAddToPlaylist: true,
+    includeAddToAlbum: isOwner,
     includeArtistPick: false,
     includeEdit: false,
     includeFavorite: true,
