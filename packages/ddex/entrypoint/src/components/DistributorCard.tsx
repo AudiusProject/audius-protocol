@@ -1,19 +1,45 @@
+import {
+  useQuery,
+} from '@tanstack/react-query'
+import { sdk } from '@audius/sdk'
 import { Flex, Text } from "@audius/harmony"
+import { useSdk } from '../contexts/AudiusSdkProvider'
+import { useCallback } from 'react'
 
 type DistributorCardProps = {
-  name: string
-  imageUrl: string
-  onClick: () => void
+  appKey: string
+  url: string
 }
 
 export const DistributorCard = ({
-  name,
-  imageUrl,
-  onClick
+  appKey,
+  url
 }: DistributorCardProps) => {
+  const audiusSdk = useSdk()
+
+  const { data } = useQuery({
+    queryKey: ['todos'],
+    queryFn: () => audiusSdk?.developerApps.getDeveloperApp({ address: appKey }).then(res => res.data)
+  })
+
+  const handleClick = useCallback(() => {
+    // Initialize an sdk for the distributor and use that to auth the user.
+    const distroSdk = sdk({
+      apiKey: appKey
+    })
+    distroSdk.oauth!.init({
+      successCallback: () => undefined,
+    })
+    distroSdk.oauth!.login({
+      scope: 'write',
+      redirectUri: url,
+      display: 'fullScreen'
+    })
+  }, [appKey, url])
+
   return (
     <Flex
-      onClick={onClick}
+      onClick={handleClick}
       borderRadius='m'
       border='default'
       backgroundColor='white'
@@ -32,9 +58,9 @@ export const DistributorCard = ({
         borderRadius='m'
         css={{ overflow: 'hidden '}}
       >
-        <img height={56} width={56} src={imageUrl} />
+        <img height={56} width={56} src={data?.imageUrl} />
       </Flex>
-      <Text variant='body' size='s' color='default'>{name}</Text>
+      <Text variant='body' size='s' color='default'>{data?.name}</Text>
     </Flex>
   )
 }

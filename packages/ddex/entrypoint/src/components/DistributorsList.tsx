@@ -1,32 +1,9 @@
 import { Flex } from "@audius/harmony"
 import { DistributorCard } from "./DistributorCard"
-import audiusLogo from '../assets/audius.png'
 import { RequestCard } from "./RequestCard"
-
-type Distributor = {
-  name: string
-  imageUrl: string
-  link: string
-}
-
-const devDistributors: Distributor[] = [
-  {
-    name: 'Test Distributor',
-    imageUrl: audiusLogo,
-    link: 'https://ddex.staging.audius.co'
-  }
-]
-
-const stageDistributors: Distributor[] = [
-  {
-    name: 'Test Distributor',
-    imageUrl: audiusLogo,
-    link: 'https://ddex.staging.audius.co'
-  }
-]
-
-const prodDistributors: Distributor[] = []
-
+import devDistributors from '../distributors/dev.json'
+import stageDistributors from '../distributors/stage.json'
+import prodDistributors from '../distributors/prod.json'
 
 type DistributorListProps = {
   environment: 'dev' | 'stage' | 'prod'
@@ -38,22 +15,22 @@ export const DistributorList = ({
   let distributors
   switch (environment) {
     case 'dev':
-      distributors = devDistributors
+      distributors = devDistributors.distributors
       break
     case 'stage':
-      distributors = stageDistributors
+      distributors = stageDistributors.distributors
       break
     case 'prod':
-      distributors = prodDistributors
+      distributors = prodDistributors.distributors
       break
   }
   return (
     <Flex gap='s'>
-      {distributors.map(d =>
+      {distributors.map(({appKey, url}) =>
         <DistributorCard
-          name={d.name}
-          imageUrl={d.imageUrl}
-          onClick={() => window.open(d.link, '_blank')} />
+          appKey={appKey}
+          url={url}
+        />
       )}
       <RequestCard />
     </Flex>

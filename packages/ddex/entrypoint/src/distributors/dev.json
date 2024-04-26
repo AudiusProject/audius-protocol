@@ -1,0 +1,8 @@
+{
+  "distributors": [
+    {
+      "appKey": "0x123",
+      "url": "http://localhost:9000"
+    }
+  ]
+}
