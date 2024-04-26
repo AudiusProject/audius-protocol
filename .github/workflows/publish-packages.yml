@@ -69,3 +69,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
+
+      - name: Generate Slack Payload
+        if: steps.changesets.outputs.published == 'true'
+        id: generate-slack-payload
+        run: |
+          echo ${{ steps.changesets.outputs.packages }} > /tmp/packages.json
+          bash ./scripts/publish-packages-slack-template.sh
+          echo "::set-output name=payload::$(cat /tmp/publish-packages-template.json)"
+
+      - name: Notify Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        if: steps.changesets.outputs.published == 'true'
+        with:
+          channel-id: 'C03EK0C69QD'
+          payload: ${{ steps.generate-slack-payload.outputs.payload }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}

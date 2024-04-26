@@ -59,6 +59,9 @@ const slice = createSlice({
     onrampSucceeded: (state) => {
       state.stage = BuyUSDCStage.CONFIRMING_PURCHASE
     },
+    transferStarted: (state) => {
+      state.stage = BuyUSDCStage.TRANSFERRING
+    },
     onrampFailed: (
       _state,
       _action: PayloadAction<{ error: StripeSessionCreationError }>
@@ -101,6 +104,7 @@ export const {
   onrampSucceeded,
   onrampCanceled,
   onrampFailed,
+  transferStarted,
   stripeSessionStatusChanged,
   startRecoveryIfNecessary,
   recoveryStatusChanged,
