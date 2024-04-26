@@ -56,15 +56,12 @@ func main() {
 	// Optionally wipe all state except for OAuthed users
 	if os.Getenv("IS_DEV") == "true" && len(os.Args) > 2 && os.Args[2] == "--wipe" {
 		if ingester.S3Client.Endpoint != "http://ingress:4566" && ingester.S3Client.Endpoint != "http://localhost:4566" {
-			logger.Error("not honoring the --wipe flag because the AWS bucket is not localstack")
+			logger.Error("ignoring the --wipe flag because the AWS bucket is not localstack")
 			return
 		}
 
-		if err := wipeBucket(ingester.S3Client, ingester.RawBucket); err != nil {
-			logger.Error("Error creating raw bucket", "err", err)
-		}
-		if err := wipeBucket(ingester.S3Client, ingester.CrawledBucket); err != nil {
-			logger.Error("Error creating raw bucket", "err", err)
+		if err := wipeBucket(ingester.S3Client, ingester.Bucket); err != nil {
+			logger.Error("Error wiping bucket", "err", err)
 		}
 
 		filter := bson.M{}
@@ -73,10 +70,10 @@ func main() {
 		} else {
 			logger.Error("Error wiping crawler_cursor collection", "err", err)
 		}
-		if result, err := ingester.DeliveriesColl.DeleteMany(ingester.Ctx, filter); err == nil {
-			log.Printf("Deleted %d deliveries documents\n", result.DeletedCount)
+		if result, err := ingester.BatchesColl.DeleteMany(ingester.Ctx, filter); err == nil {
+			log.Printf("Deleted %d batches documents\n", result.DeletedCount)
 		} else {
-			logger.Error("Error wiping deliveries collection", "err", err)
+			logger.Error("Error wiping batches collection", "err", err)
 		}
 		if result, err := ingester.ReleasesColl.DeleteMany(ingester.Ctx, filter); err == nil {
 			log.Printf("Deleted %d releases documents\n", result.DeletedCount)
@@ -92,7 +89,7 @@ func main() {
 
 	// Crawl and parse each new delivery that gets put into S3
 	p := parser.NewParser(ingester)
-	go crawler.CrawlThenParse(ingester, p.ProcessDelivery)
+	go crawler.CrawlThenParse(ingester)
 
 	// Re-parse releases (UI sets release_status to "awaiting_parse" to re-parse)
 	go func() {
@@ -118,7 +115,7 @@ func main() {
 						continue
 					}
 
-					logger.Info("Re-parsing release", "release_id", release.ReleaseID)
+					logger.Info("(Re-)parsing release", "release_id", release.ReleaseID)
 					if ok := p.ParseRelease(&release); !ok {
 						logger.Error("Failed to parse release in an unexpected way (couldn't update status)", "release_id", release.ReleaseID)
 					}
@@ -136,18 +133,17 @@ func main() {
 	}()
 
 	// Test the ingester with a delivery if provided
-	if os.Getenv("IS_DEV") == "true" && len(os.Args) > 1 {
-		if err := createBucket(ingester.S3Client, ingester.RawBucket); err != nil {
+	if os.Getenv("IS_DEV") == "true" {
+		if err := createBucket(ingester.S3Client, ingester.Bucket); err != nil {
 			logger.Error("Error creating raw bucket", "err", err)
 		}
-		if err := createBucket(ingester.S3Client, ingester.CrawledBucket); err != nil {
-			logger.Error("Error creating raw bucket", "err", err)
-		}
-		fmt.Printf("Created buckets: %s, %s\n", ingester.RawBucket, ingester.CrawledBucket)
+		fmt.Printf("Created bucket: %s\n", ingester.Bucket)
 
-		testDeliveryPath := os.Args[1]
-		testDeliveryURL := uploadTestDelivery(ingester, testDeliveryPath)
-		logger.Info("Uploaded test delivery", "local path", testDeliveryPath, "url", testDeliveryURL)
+		if len(os.Args) > 1 {
+			testDeliveryPath := os.Args[1]
+			testDeliveryURL := uploadTestDelivery(ingester, testDeliveryPath)
+			logger.Info("Uploaded test delivery", "local path", testDeliveryPath, "url", testDeliveryURL)
+		}
 	}
 
 	<-ctx.Done() // Wait until the context is canceled
@@ -229,7 +225,7 @@ func uploadTestDelivery(bi *common.Ingester, path string) string {
 		log.Fatalf("Error uploading file or dir '%s': %v", path, err)
 	}
 
-	return fmt.Sprintf("s3://%s/%s", bi.RawBucket, s3Path)
+	return fmt.Sprintf("s3://%s/%s", bi.Bucket, s3Path)
 }
 
 func uploadDirectory(i *common.Ingester, dirPath, baseDir string) (string, error) {
@@ -271,7 +267,7 @@ func uploadFile(i *common.Ingester, filePath, baseDir, fileName string) (string,
 	s3Key := filepath.Join(baseDir, fileName)
 
 	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(i.RawBucket),
+		Bucket: aws.String(i.Bucket),
 		Key:    aws.String(s3Key),
 		Body:   file,
 	})

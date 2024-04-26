@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -36,10 +37,9 @@ type Ingester struct {
 	S3Client          *s3.S3
 	S3Downloader      *s3manager.Downloader
 	S3Uploader        *s3manager.Uploader
-	RawBucket         string
-	CrawledBucket     string
+	Bucket            string
 	CrawlerCursorColl *mongo.Collection
-	DeliveriesColl    *mongo.Collection
+	BatchesColl       *mongo.Collection
 	ReleasesColl      *mongo.Collection
 	UsersColl         *mongo.Collection
 	Logger            *slog.Logger
@@ -55,15 +55,26 @@ func NewIngester(ctx context.Context) *Ingester {
 		S3Downloader:      s3manager.NewDownloader(s3Session),
 		S3Uploader:        s3manager.NewUploader(s3Session),
 		MongoClient:       mongoClient,
-		RawBucket:         MustGetenv("AWS_BUCKET_RAW"),
-		CrawledBucket:     MustGetenv("AWS_BUCKET_CRAWLED"),
+		Bucket:            MustGetenv("AWS_BUCKET_RAW"),
 		CrawlerCursorColl: mongoClient.Database("ddex").Collection("crawler_cursor"),
-		DeliveriesColl:    mongoClient.Database("ddex").Collection("deliveries"),
+		BatchesColl:       mongoClient.Database("ddex").Collection("batches"),
 		ReleasesColl:      mongoClient.Database("ddex").Collection("releases"),
 		UsersColl:         mongoClient.Database("ddex").Collection("users"),
 		Ctx:               ctx,
 		Logger:            slog.Default(),
 	}
+}
+
+func (i *Ingester) UpsertBatch(r *Batch) (*mongo.UpdateResult, error) {
+	filter := bson.M{"_id": r.BatchID}
+	trueVar := true
+	return i.BatchesColl.ReplaceOne(i.Ctx, filter, r, &options.ReplaceOptions{Upsert: &trueVar})
+}
+
+func (i *Ingester) UpsertRelease(r *Release) (*mongo.UpdateResult, error) {
+	filter := bson.M{"_id": r.ReleaseID}
+	trueVar := true
+	return i.ReleasesColl.ReplaceOne(i.Ctx, filter, r, &options.ReplaceOptions{Upsert: &trueVar})
 }
 
 func InitMongoClient(ctx context.Context, logger *slog.Logger) *mongo.Client {
