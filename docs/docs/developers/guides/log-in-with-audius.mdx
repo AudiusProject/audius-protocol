@@ -348,6 +348,8 @@ You must open this page with the required URL parameters, described below.
   whether the auth flow response parameters will be encoded in the query string or the fragment
   component of the redirect_uri when redirecting back to your app. Default behavior is equivalent to
   "fragment". We recommend NOT changing this if possible.
+- `display` _optional_ `"popup" | "fullScreen"` - determines whether the auth flow expects to be
+  rendered in a popup or a full screen view. Defaulted to `"popup"` if unspecified.
 
 **Example**
 

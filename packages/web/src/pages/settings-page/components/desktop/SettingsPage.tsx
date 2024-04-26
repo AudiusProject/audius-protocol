@@ -11,7 +11,6 @@ import {
   TikTokProfile,
   Notifications
 } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
 import {
   Button,
   Modal,
@@ -58,6 +57,7 @@ import {
 
 import packageInfo from '../../../../../package.json'
 
+import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
 import { ManagerModeSettingsCard } from './ManagerMode/ManagerModeSettingsCard'
 import NotificationSettings from './NotificationSettings'
@@ -306,19 +306,10 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const { isEnabled: isAiAttributionEnabled } = useFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
-  const { isEnabled: areDeveloperAppsEnabled } = useFlag(
-    FeatureFlags.DEVELOPER_APPS_PAGE
-  )
   const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
 
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
-
-  const hasOddCardCount = Boolean(
-    [isChatEnabled, isAiAttributionEnabled, areDeveloperAppsEnabled].filter(
-      removeNullable
-    ).length % 2
-  )
 
   const header = <Header primary={messages.pageTitle} />
 
@@ -332,7 +323,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
     >
       <div className={styles.settings}>
         <SettingsCard
-          className={cn({ [styles.cardFull]: hasOddCardCount })}
           icon={<IconAppearance />}
           title={messages.appearanceCardTitle}
           description={messages.appearanceCardDescription}
@@ -465,7 +455,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Button>
           </SettingsCard>
         ) : null}
-        {areDeveloperAppsEnabled ? <DeveloperAppsSettingsCard /> : null}
+        <AuthorizedAppsSettingsCard />
+        <DeveloperAppsSettingsCard />
         {isManagerModeEnabled ? <ManagerModeSettingsCard /> : null}
       </div>
       <div className={styles.version}>
