@@ -40,7 +40,7 @@ export const DistributorCard = ({
     })
     distroSdk.oauth!.login({
       scope: 'write',
-      redirectUri: `${url}/auth/redirect?redirect_uri=${window.location.origin}`,
+      redirectUri: `${url}/auth/redirect?redirect_uri=${encodeURIComponent(window.location.origin)}`,
       display: 'fullScreen',
       responseMode: 'query'
     })
