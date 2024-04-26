@@ -197,10 +197,6 @@ export class EntityManager implements EntityManagerService {
   }
 
   public async getRelayEndpoint(): Promise<string> {
-    const useDiscoveryRelay = this.config.useDiscoveryRelay
-    if (useDiscoveryRelay === undefined || !useDiscoveryRelay) {
-      return this.config.identityServiceUrl
-    }
     const discoveryEndpoint =
       await this.discoveryNodeSelector.getSelectedEndpoint()
     if (discoveryEndpoint === null) {
