@@ -1,9 +1,5 @@
 import Releases, { releaseStatuses } from '../models/releases'
-import type {
-  TrackMetadata,
-  SDKUploadMetadataSchema,
-  Release,
-} from '../models/releases'
+import type { Release } from '../models/releases'
 import type {
   AudiusSdk as AudiusSdkType,
   UploadTrackRequest,
@@ -17,9 +13,7 @@ import type {
 } from '@audius/sdk'
 import createS3 from './s3Service'
 
-const formatTrackMetadata = (
-  metadata: SDKUploadMetadataSchema | TrackMetadata
-): UploadTrackRequest['metadata'] => {
+const formatTrackMetadata = (metadata: any): UploadTrackRequest['metadata'] => {
   return {
     title: metadata.title,
     description: metadata.description || '',
@@ -55,9 +49,7 @@ const formatTrackMetadata = (
   }
 }
 
-const formatAlbumMetadata = (
-  metadata: SDKUploadMetadataSchema
-): UploadAlbumRequest['metadata'] => {
+const formatAlbumMetadata = (metadata: any): UploadAlbumRequest['metadata'] => {
   return {
     genre: metadata.genre as Genre,
     albumName: metadata.playlist_name,
@@ -77,7 +69,7 @@ const formatAlbumMetadata = (
 
 const uploadTrack = async (
   audiusSdk: AudiusSdkType,
-  pendingTrack: SDKUploadMetadataSchema,
+  pendingTrack: any,
   s3Service: ReturnType<typeof createS3>
 ) => {
   const userId = pendingTrack.artist_id
@@ -117,7 +109,7 @@ const uploadTrack = async (
 const updateTrack = async (
   audiusSdk: AudiusSdkType,
   trackId: string,
-  pendingTrack: SDKUploadMetadataSchema,
+  pendingTrack: any,
   s3Service: ReturnType<typeof createS3>
 ) => {
   const userId = pendingTrack.artist_id
@@ -150,7 +142,7 @@ const updateTrack = async (
 const deleteTrack = async (
   audiusSdk: AudiusSdkType,
   trackId: string,
-  trackMetadata: SDKUploadMetadataSchema
+  trackMetadata: any
 ) => {
   const deleteTrackRequest: DeleteTrackRequest = {
     trackId,
@@ -166,7 +158,7 @@ const deleteTrack = async (
 
 const uploadAlbum = async (
   audiusSdk: AudiusSdkType,
-  pendingAlbum: SDKUploadMetadataSchema,
+  pendingAlbum: any,
   s3Service: ReturnType<typeof createS3>
 ) => {
   // Fetch cover art from S3
@@ -180,7 +172,7 @@ const uploadAlbum = async (
   }
 
   // Fetch track audio files from S3
-  const trackFilesPromises = pendingAlbum.tracks.map(async (track) => {
+  const trackFilesPromises = pendingAlbum.tracks.map(async (track: any) => {
     const trackDownload = await s3Service.downloadFromS3Crawled(
       track.audio_file_url!
     )
@@ -192,8 +184,8 @@ const uploadAlbum = async (
   })
   const trackFiles = await Promise.all(trackFilesPromises)
 
-  const trackMetadatas = pendingAlbum.tracks.map(
-    (trackMetadata: TrackMetadata) => formatTrackMetadata(trackMetadata)
+  const trackMetadatas = pendingAlbum.tracks.map((trackMetadata: any) =>
+    formatTrackMetadata(trackMetadata)
   )
 
   const uploadAlbumRequest: UploadAlbumRequest = {
@@ -215,7 +207,7 @@ const uploadAlbum = async (
 const updateAlbum = async (
   audiusSdk: AudiusSdkType,
   albumId: string,
-  pendingAlbum: SDKUploadMetadataSchema,
+  pendingAlbum: any,
   s3Service: ReturnType<typeof createS3>
 ) => {
   // Fetch cover art from S3
@@ -239,7 +231,7 @@ const updateAlbum = async (
   console.log(
     `Updating ${pendingAlbum.playlist_name} by ${pendingAlbum.playlist_owner_id} (album id ${albumId})...`
   )
-  const result = await audiusSdk.albums.uploadAlbum(updateAlbumRequest)
+  const result = await audiusSdk.albums.updateAlbum(updateAlbumRequest)
   console.log(result)
   return result
 }
@@ -247,7 +239,7 @@ const updateAlbum = async (
 const deleteAlbum = async (
   audiusSdk: AudiusSdkType,
   albumId: string,
-  albumMetadata: SDKUploadMetadataSchema
+  albumMetadata: any
 ) => {
   const deleteAlbumRequest: DeleteAlbumRequest = {
     albumId,
@@ -339,16 +331,20 @@ const publishReleases = async (
       continue
     }
 
-    let uploadResult: {
-      trackId?: string | null
-      albumId?: string | null
-      blockHash: string
-      blockNumber: number
-    }
-    let updateResult: {
-      blockHash: string
-      blockNumber: number
-    }
+    let uploadResult:
+      | {
+          trackId?: string | null
+          albumId?: string | null
+          blockHash: string
+          blockNumber: number
+        }
+      | undefined
+    let updateResult:
+      | {
+          blockHash: string
+          blockNumber: number
+        }
+      | undefined
     try {
       if (doc.is_update && !doc.entity_id) {
         throw new Error('Missing entity id in pending update release')
@@ -406,7 +402,7 @@ const publishReleases = async (
             },
           }
         )
-      } else {
+      } else if (uploadResult) {
         await Releases.updateOne(
           { _id: doc._id },
           {
