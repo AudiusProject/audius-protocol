@@ -1,4 +1,5 @@
 import { createApi } from '~/audius-query'
+import { Id } from './utils'
 
 type ResetPasswordArgs = {
   email: string
@@ -31,10 +32,13 @@ const accountApi = createApi({
       }
     },
     getManagedAccounts: {
-      async fetch(_, context) {
-        const sdk = await context.audiusSdk()
-        const grants = await sdk.users.getUserGrants()
-        return grants.data ?? []
+      async fetch(_, { audiusSdk, audiusBackend }) {
+        const sdk = await audiusSdk()
+        const currentUserId = (await audiusBackend.getAccount())?.user_id
+        const managedUsers = await sdk.users.getManagedUsers({
+          id: Id.parse(currentUserId)
+        })
+        return managedUsers.data ?? []
       },
       options: {
         type: 'query'
