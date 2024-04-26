@@ -1,5 +1,4 @@
 import copy
-from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.queries.get_managed_users import get_managed_users_with_grants
@@ -74,10 +73,7 @@ def test_get_managed_users_grants_without_users(app):
         db = get_db()
 
         entities = copy.deepcopy(test_entities)
-        # Record for a user which is in an invalid state
-        entities["users"].append(
-            {"user_id": 70, "wallet": None, "name": "f", "wallet": "0x60"}
-        )
+        # Record for a user which won't be found
         entities["grants"].append(
             {
                 "user_id": 70,
@@ -105,7 +101,7 @@ def test_get_managed_users_invalid_parameters(app):
         populate_mock_db(db, test_entities)
 
         try:
-            managed_users = get_managed_users_with_grants(
+            get_managed_users_with_grants(
                 {"manager_wallet_address": None, "current_user_id": 10}
             )
             assert False, "Should have thrown an error for missing wallet address"
@@ -113,7 +109,7 @@ def test_get_managed_users_invalid_parameters(app):
             assert str(e) == "manager_wallet_address is required"
 
         try:
-            managed_users = get_managed_users_with_grants(
+            get_managed_users_with_grants(
                 {"manager_wallet_address": "0x10", "current_user_id": None}
             )
             assert False, "Should have thrown an error for missing current user id"

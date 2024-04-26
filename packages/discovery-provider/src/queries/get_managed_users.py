@@ -1,12 +1,11 @@
 import logging
-from functools import reduce
 from typing import Dict, List, Optional, TypedDict
 
 from src.models.grants.grant import Grant
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import populate_user_metadata
 from src.utils import db_session
-from src.utils.helpers import query_result_to_list
+from src.utils.helpers import model_to_dictionary, query_result_to_list
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +15,25 @@ class GetManagedUsersArgs(TypedDict):
     current_user_id: int
     is_approved: Optional[bool]
     is_revoked: Optional[bool]
+
+
+def make_managed_users_list(users: List[Dict], grants: List[Dict]) -> List[Dict]:
+    managed_users = []
+    grants_map = {grant.get("user_id"): grant for grant in grants}
+
+    for user in users:
+        grant = grants_map.get(user.get("user_id"))
+        if grant is None:
+            continue
+
+        managed_users.append(
+            {
+                "user": user,
+                "grant": grant,
+            }
+        )
+
+    return managed_users
 
 
 def get_managed_users_with_grants(args: GetManagedUsersArgs) -> List[Dict]:
@@ -41,18 +59,16 @@ def get_managed_users_with_grants(args: GetManagedUsersArgs) -> List[Dict]:
 
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        base_query = (
-            session.query(Grant)
-            .filter(Grant.grantee_address == grantee_address)
-            .filter(Grant.is_current == True)
+        query = session.query(Grant).filter(
+            Grant.grantee_address == grantee_address, Grant.is_current == True
         )
 
         if is_approved is not None:
-            base_query.filter(Grant.is_approved == is_approved)
+            query = query.filter(Grant.is_approved == is_approved)
         if is_revoked is not None:
-            base_query.filter(Grant.is_revoked == is_revoked)
+            query = query.filter(Grant.is_revoked == is_revoked)
 
-        grants = base_query.all()
+        grants = query.all()
         if len(grants) == 0:
             return []
 
@@ -60,10 +76,6 @@ def get_managed_users_with_grants(args: GetManagedUsersArgs) -> List[Dict]:
         users = get_unpopulated_users(session, user_ids)
         users = populate_user_metadata(session, user_ids, users, current_user_id)
 
-        grants_map = {grant.user_id: grant for grant in grants}
+        grants = query_result_to_list(grants)
 
-        managed_users = [
-            {"user": user, "grant": grants_map.get(user.user_id)} for user in users
-        ]
-
-        return query_result_to_list(managed_users)
+        return make_managed_users_list(users, grants)
