@@ -24,7 +24,7 @@ import type {
   FollowingResponse,
   GetSupporters,
   GetSupporting,
-  Grants,
+  ManagedUsers,
   RelatedArtistResponse,
   Reposts,
   SubscribersResponse,
@@ -52,8 +52,8 @@ import {
     GetSupportersToJSON,
     GetSupportingFromJSON,
     GetSupportingToJSON,
-    GrantsFromJSON,
-    GrantsToJSON,
+    ManagedUsersFromJSON,
+    ManagedUsersToJSON,
     RelatedArtistResponseFromJSON,
     RelatedArtistResponseToJSON,
     RepostsFromJSON,
@@ -139,6 +139,10 @@ export interface GetFollowingRequest {
     userId?: string;
 }
 
+export interface GetManagedUsersRequest {
+    id: string;
+}
+
 export interface GetRelatedUsersRequest {
     id: string;
     offset?: number;
@@ -199,10 +203,6 @@ export interface GetUserRequest {
 export interface GetUserByHandleRequest {
     handle: string;
     userId?: string;
-}
-
-export interface GetUserGrantsRequest {
-    walletAddress?: string;
 }
 
 export interface GetUserIDFromWalletRequest {
@@ -631,6 +631,37 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets a list of users managed by the given user
+     */
+    async getManagedUsersRaw(params: GetManagedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ManagedUsers>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getManagedUsers.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/managed_users`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ManagedUsersFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of users managed by the given user
+     */
+    async getManagedUsers(params: GetManagedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ManagedUsers> {
+        const response = await this.getManagedUsersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
     async getRelatedUsersRaw(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponse>> {
@@ -1011,37 +1042,6 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserByHandle(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserResponse> {
         const response = await this.getUserByHandleRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Get grants
-     */
-    async getUserGrantsRaw(params: GetUserGrantsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Grants>> {
-        const queryParameters: any = {};
-
-        if (params.walletAddress !== undefined) {
-            queryParameters['wallet_address'] = params.walletAddress;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/users/grants`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => GrantsFromJSON(jsonValue));
-    }
-
-    /**
-     * Get grants
-     */
-    async getUserGrants(params: GetUserGrantsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Grants> {
-        const response = await this.getUserGrantsRaw(params, initOverrides);
         return await response.value();
     }
 

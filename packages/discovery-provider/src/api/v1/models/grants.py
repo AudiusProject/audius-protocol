@@ -1,7 +1,7 @@
 from flask_restx import fields
 
 from .common import ns
-from .users import user_model_full
+from .users import user_model
 
 # Describes a grant made from user to another user
 grant = ns.model(
@@ -19,7 +19,7 @@ grant = ns.model(
 managed_user = ns.model(
     "managed_user",
     {
-        "user": fields.Nested(user_model_full, required=True),
+        "user": fields.Nested(user_model, required=True),
         "grant": fields.Nested(grant, required=True),
     },
 )

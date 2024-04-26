@@ -998,9 +998,9 @@ def format_grant(grant):
     }
 
 
-def format_managed_user(managed_user, current_user_id):
+def format_managed_user(managed_user):
     return {
-        "user": extend_user(managed_user["user"]),
+        "user": managed_user["user"],
         "grant": format_grant(managed_user["grant"]),
     }
 
