@@ -92,6 +92,7 @@ export const DistributorCard = ({
               variant='body'
               size='s'
               color='default'
+              textAlign='center'
             >
               {data?.name ?? ''}
             </Text>
