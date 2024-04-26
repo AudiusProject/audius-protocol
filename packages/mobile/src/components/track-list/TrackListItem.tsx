@@ -2,7 +2,15 @@ import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import type { Collection, ID, UID, Track, User } from '@audius/common/models'
+import {
+  type Collection,
+  type ID,
+  type UID,
+  type Track,
+  type User,
+  isContentUSDCPurchaseGated,
+  isContentCollectibleGated
+} from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -33,7 +41,10 @@ import {
   IconPlaybackPause,
   IconPlaybackPlay,
   useTheme,
-  IconRemove
+  IconRemove,
+  IconVisibilityHidden,
+  IconCollectible,
+  IconSpecialAccess
 } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
@@ -231,11 +242,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_saved,
     has_current_user_reposted,
     is_delete,
-    is_unlisted,
+    is_unlisted: isUnlisted,
     title,
     track_id,
     owner_id,
     is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
     ddex_app: ddexApp
   } = track
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
@@ -245,7 +257,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const { is_deactivated, name } = user
 
   const isDeleted = is_delete || !!is_deactivated
-  const isUnlisted = is_unlisted
 
   const { isFetchingNFTAccess, hasStreamAccess } = useGatedContentAccess(track)
   const isLocked = !isFetchingNFTAccess && !hasStreamAccess
@@ -267,7 +278,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
   const dispatch = useDispatch()
-  const white = useColor('white')
   const { spacing } = useTheme()
   const [titleWidth, setTitleWidth] = useState(0)
 
@@ -379,6 +389,18 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   // The dividers above and belove the active track should be hidden
   const hideDivider = isActive || isPrevItemActive
 
+  const renderGatedIcons = useCallback(() => {
+    const shouldShowIcon = isStreamGated || isUnlisted
+    const Icon = isUnlisted
+      ? IconVisibilityHidden
+      : isContentUSDCPurchaseGated(streamConditions)
+      ? IconLock
+      : isContentCollectibleGated(streamConditions)
+      ? IconCollectible
+      : IconSpecialAccess
+    return shouldShowIcon ? <Icon color='subdued' size='s' /> : null
+  }, [isStreamGated, isUnlisted, streamConditions])
+
   const ListItemView = (
     isReorderable ? View : TouchableOpacity
   ) as ComponentType<TouchableOpacityProps>
@@ -465,17 +487,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               <UserBadges user={user} badgeSize={12} hideName />
             </Text>
           </View>
-          {!isDeleted && isLocked ? (
-            <View style={styles.locked}>
-              <IconLock fill={white} width={10} height={10} />
-              <Text style={styles.lockedText}>{messages.locked}</Text>
-            </View>
-          ) : null}
+          {!isDeleted && isStreamGated ? renderGatedIcons() : null}
           {trackItemAction === 'overflow' ? (
             <IconButton
               icon={IconKebabHorizontal}
               color='subdued'
-              size='m'
+              size='s'
               style={styles.iconContainer}
               onPress={handlePressOverflow}
               aria-label={messages.overflowLabel}

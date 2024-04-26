@@ -1,12 +1,14 @@
-import { memo, MouseEvent } from 'react'
+import { memo, MouseEvent, useCallback } from 'react'
 
+import { useGetTrackById } from '@audius/common/api'
 import {
   SquareSizes,
   ID,
   CoverArtSizes,
   AccessConditions,
   isContentUSDCPurchaseGated,
-  GatedContentStatus
+  GatedContentStatus,
+  isContentCollectibleGated
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -16,7 +18,10 @@ import {
   IconDrag,
   IconKebabHorizontal,
   IconLock,
-  IconButton
+  IconButton,
+  IconVisibilityHidden,
+  IconCollectible,
+  IconSpecialAccess
 } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
@@ -169,8 +174,10 @@ const TrackListItem = ({
   isReorderable = false,
   isDragging = false
 }: TrackListItemProps) => {
+  const { data: track } = useGetTrackById({ id: trackId })
+  const isStreamGated = track?.is_stream_gated
+  const isUnlisted = track?.is_unlisted
   const messages = getMessages({ isDeleted })
-  const isUsdcPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const onClickTrack = () => {
     if (uid && !isLocked && !isDeleted && togglePlay) togglePlay(uid, trackId)
@@ -180,6 +187,18 @@ const TrackListItem = ({
     e.stopPropagation()
     if (onRemove) onRemove(index)
   }
+
+  const renderGatedIcons = useCallback(() => {
+    const shouldShowIcon = !isDeleted && (isStreamGated || isUnlisted)
+    const Icon = isUnlisted
+      ? IconVisibilityHidden
+      : isContentUSDCPurchaseGated(streamConditions)
+      ? IconLock
+      : isContentCollectibleGated(streamConditions)
+      ? IconCollectible
+      : IconSpecialAccess
+    return shouldShowIcon ? <Icon color='subdued' size='s' /> : null
+  }, [isDeleted, isStreamGated, isUnlisted, streamConditions])
 
   return (
     <div
@@ -233,21 +252,7 @@ const TrackListItem = ({
           />
         </SeoLink>
       </div>
-      {!isDeleted && isLocked ? (
-        isUsdcPurchaseGated ? (
-          <GatedConditionsPill
-            streamConditions={streamConditions}
-            unlocking={gatedUnlockStatus === 'UNLOCKING'}
-            onClick={onClickGatedUnlockPill}
-            buttonSize='small'
-          />
-        ) : (
-          <div className={styles.locked}>
-            <IconLock />
-            <span>{messages.locked}</span>
-          </div>
-        )
-      ) : null}
+      {renderGatedIcons()}
       {onClickOverflow && trackItemAction === TrackItemAction.Overflow && (
         <div className={styles.iconContainer}>
           <IconButton
