@@ -5,7 +5,7 @@ from src.models.grants.grant import Grant
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import populate_user_metadata
 from src.utils import db_session
-from src.utils.helpers import model_to_dictionary, query_result_to_list
+from src.utils.helpers import query_result_to_list
 
 logger = logging.getLogger(__name__)
 

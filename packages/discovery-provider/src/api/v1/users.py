@@ -25,7 +25,6 @@ from src.api.v1.helpers import (
     format_aggregate_monthly_plays_for_user,
     format_authorized_app,
     format_developer_app,
-    format_grant,
     format_library_filter,
     format_limit,
     format_managed_user,
