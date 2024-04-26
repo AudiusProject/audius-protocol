@@ -43,6 +43,10 @@
   opacity: 0;
 }
 
+.trackActionsContainer {
+  margin-left: 0px;
+}
+
 .trackActionsContainer .placeholderButton {
   width: 14px;
 }
@@ -152,4 +156,20 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.typeIcon {
+  position: absolute;
+}
+
+.tableRow:hover .typeIcon {
+  opacity: 0;
+}
+
+.tableRow:hover .overflowMenu {
+  opacity: 1;
+}
+
+.tableRow .overflowMenu {
+  opacity: 0;
 }
