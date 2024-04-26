@@ -130,7 +130,6 @@ export const DetailsTile = ({
   duration,
   trackCount,
   renderBottomContent,
-  renderHeader,
   renderImage,
   repostCount,
   saveCount,
@@ -255,16 +254,7 @@ export const DetailsTile = ({
       return null
     }
 
-    // const filteredTags = (track.tags || '').split(',').filter(Boolean)
-    const filteredTags = [
-      'tag1',
-      'tag2',
-      'sdjfkajsdkf',
-      'dkfjalskdjfka',
-      'tag5',
-      'tag6'
-    ]
-
+    const filteredTags = (track.tags || '').split(',').filter(Boolean)
     return filteredTags.length > 0 ? (
       <Flex
         direction='row'

@@ -8,9 +8,7 @@ import {
   FavoriteSource,
   PlaybackSource,
   FavoriteType,
-  SquareSizes,
-  isContentCollectibleGated,
-  isContentUSDCPurchaseGated
+  SquareSizes
 } from '@audius/common/models'
 import type {
   UID,
@@ -37,42 +35,16 @@ import {
   playbackPositionSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import {
-  Genre,
-  getCanonicalName,
-  formatSeconds,
-  formatDate,
-  removeNullable
-} from '@audius/common/utils'
-import moment from 'moment'
-import { Image, View } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
+import { Genre, removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 import { trpc } from 'utils/trpcClientWeb'
 
-import {
-  IconCart,
-  IconCollectible,
-  IconVisibilityHidden,
-  IconRobot,
-  IconSpecialAccess
-} from '@audius/harmony-native'
 import type { ImageProps } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
-import type { DetailsTileDetail } from 'app/components/details-tile/types'
 import { TrackImage } from 'app/components/image/TrackImage'
-import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
-import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
-import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
-import { flexRowCentered, makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
-import { moodMap } from 'app/utils/moods'
-import { useThemeColors } from 'app/utils/theme'
 
 import { DownloadSection } from './DownloadSection'
 const { getPlaying, getTrackId, getPreviewing } = playerSelectors
@@ -119,99 +91,6 @@ const recordPlay = (id, play = true, isPreview = false) => {
   )
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  tags: {
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight7,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    padding: spacing(4)
-  },
-
-  moodEmoji: {
-    marginLeft: spacing(1),
-    width: 20,
-    height: 20
-  },
-
-  hiddenDetailsTileWrapper: {
-    ...flexRowCentered(),
-    justifyContent: 'center',
-    marginVertical: spacing(4)
-  },
-
-  hiddenTrackLabel: {
-    marginTop: spacing(1),
-    marginLeft: spacing(2),
-    fontFamily: typography.fontByWeight.demiBold,
-    fontSize: 14,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: palette.neutralLight4
-  },
-  headerContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing(4)
-  },
-  headerRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  headerText: {
-    marginTop: spacing(4),
-    marginBottom: spacing(4),
-    letterSpacing: 3,
-    lineHeight: 14,
-    textAlign: 'center',
-    textTransform: 'uppercase'
-  },
-  headerView: {
-    ...flexRowCentered(),
-    marginTop: spacing(2),
-    marginBottom: spacing(4)
-  },
-  gatedHeaderText: {
-    letterSpacing: 2,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    fontFamily: typography.fontByWeight.demiBold,
-    fontSize: typography.fontSize.small,
-    color: palette.neutralLight4
-  },
-  gatedIcon: {
-    marginRight: spacing(2.5),
-    fill: palette.accentBlue
-  },
-  downloadStatusIndicator: {
-    marginRight: spacing(2)
-  },
-  aiAttributedHeader: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing(2),
-    paddingVertical: spacing(2.5),
-    borderRadius: spacing(1.5),
-    marginBottom: spacing(4)
-  },
-  aiAttributedText: {
-    textTransform: 'uppercase',
-    fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.bold,
-    lineHeight: typography.fontSize.small * 1.3,
-    letterSpacing: 0.7,
-    color: palette.white
-  }
-}))
-
 export const TrackScreenDetailsTile = ({
   track,
   user,
@@ -223,17 +102,11 @@ export const TrackScreenDetailsTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
-    FeatureFlags.AI_ATTRIBUTION
-  )
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
     FeatureFlags.EDIT_ALBUMS
   )
-  const styles = useStyles()
   const navigation = useNavigation()
-  const { white, aiPrimary, aiSecondary, neutralLight4 } = useThemeColors()
 
-  const isOfflineEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
@@ -244,21 +117,15 @@ export const TrackScreenDetailsTile = ({
 
   const {
     _co_sign,
-    created_at,
-    credits_splits,
     description,
-    duration,
     field_visibility,
     genre,
     has_current_user_reposted,
     has_current_user_saved,
     is_unlisted,
-    is_delete,
     is_stream_gated: isStreamGated,
-    mood,
     owner_id,
     play_count,
-    release_date,
     remix_of,
     repost_count,
     save_count,
@@ -274,9 +141,6 @@ export const TrackScreenDetailsTile = ({
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
-  const isScheduledRelease = release_date
-    ? moment(release_date).isAfter(moment.now())
-    : false
   const hasDownloadableAssets =
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
@@ -285,31 +149,6 @@ export const TrackScreenDetailsTile = ({
     { trackId },
     { enabled: !!trackId }
   )
-
-  const details: DetailsTileDetail[] = [
-    { label: 'Duration', value: formatSeconds(duration) },
-    {
-      isHidden: is_unlisted && !field_visibility?.genre,
-      label: 'Genre',
-      value: getCanonicalName(genre)
-    },
-    {
-      isHidden: is_unlisted,
-      label: 'Released',
-      value: release_date ? formatDate(release_date) : formatDate(created_at)
-    },
-    {
-      icon:
-        mood && mood in moodMap ? (
-          <Image source={moodMap[mood]} style={styles.moodEmoji} />
-        ) : null,
-      isHidden: is_unlisted && !field_visibility?.mood,
-      label: 'Mood',
-      value: mood,
-      valueStyle: { flexShrink: 0, marginTop: -2 }
-    },
-    { label: 'Credit', value: credits_splits }
-  ].filter(({ isHidden, value }) => !isHidden && !!value)
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -443,116 +282,6 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
-  const downloadStatus = useSelector(getTrackOfflineDownloadStatus(trackId))
-  const getDownloadTextColor = () => {
-    if (
-      downloadStatus === OfflineDownloadStatus.SUCCESS ||
-      downloadStatus === OfflineDownloadStatus.LOADING
-    ) {
-      return 'secondary'
-    }
-    return 'neutralLight4'
-  }
-
-  const renderHeaderText = () => {
-    if (isStreamGated && track.stream_conditions != null) {
-      let IconComponent = IconSpecialAccess
-      let text = messages.specialAccess
-      if (isContentCollectibleGated(track.stream_conditions)) {
-        IconComponent = IconCollectible
-        text = messages.collectibleGated
-      } else if (isContentUSDCPurchaseGated(track.stream_conditions)) {
-        IconComponent = IconCart
-        text = messages.usdcPurchase
-      }
-
-      return (
-        <View style={styles.headerView}>
-          <IconComponent
-            style={styles.gatedIcon}
-            fill={neutralLight4}
-            width={spacing(4.5)}
-            height={spacing(4.5)}
-          />
-          <Text style={styles.gatedHeaderText}>{text}</Text>
-        </View>
-      )
-    }
-
-    const isPodcast = genre === Genre.PODCASTS
-
-    return (
-      <Text
-        style={styles.headerText}
-        color={getDownloadTextColor()}
-        weight='medium'
-        fontSize='xs'
-      >
-        {isRemix
-          ? messages.remix
-          : isNewPodcastControlsEnabled && isPodcast
-          ? messages.podcast
-          : messages.track}
-      </Text>
-    )
-  }
-
-  const renderAiHeader = () => {
-    if (!isAiGeneratedTracksEnabled || !track.ai_attribution_user_id) {
-      return null
-    }
-
-    return (
-      <LinearGradient
-        style={styles.aiAttributedHeader}
-        colors={[aiPrimary, aiSecondary]}
-        useAngle
-        angle={180}
-      >
-        <IconRobot fill={white} />
-        <Text style={styles.aiAttributedText}>{messages.generatedWithAi}</Text>
-      </LinearGradient>
-    )
-  }
-
-  const renderHeader = () => {
-    if (is_delete) {
-      return (
-        <View style={styles.headerContainer}>
-          <View style={styles.headerRow}>
-            <Text
-              style={styles.headerText}
-              weight='medium'
-              fontSize='xs'
-              color={getDownloadTextColor()}
-            >
-              {messages.trackDeleted}
-            </Text>
-          </View>
-        </View>
-      )
-    }
-
-    return is_unlisted && !isScheduledRelease ? (
-      <View style={styles.hiddenDetailsTileWrapper}>
-        <IconVisibilityHidden fill={neutralLight4} />
-        <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>
-      </View>
-    ) : (
-      <View style={styles.headerContainer}>
-        <View style={styles.headerRow}>
-          <TrackDownloadStatusIndicator
-            style={styles.downloadStatusIndicator}
-            size={16}
-            trackId={trackId}
-          />
-          {renderHeaderText()}
-        </View>
-        {renderAiHeader()}
-      </View>
-    )
-  }
-
   const renderBottomContent = () => {
     return hasDownloadableAssets ? <DownloadSection trackId={trackId} /> : null
   }
@@ -562,14 +291,12 @@ export const TrackScreenDetailsTile = ({
       descriptionLinkPressSource='track page'
       coSign={_co_sign}
       description={description ?? undefined}
-      details={details}
       hasReposted={has_current_user_reposted}
       hasSaved={has_current_user_saved}
       hasStreamAccess={hasStreamAccess}
       streamConditions={streamConditions}
       user={user}
       renderBottomContent={renderBottomContent}
-      renderHeader={is_unlisted || isOfflineEnabled ? renderHeader : undefined}
       headerText={isRemix ? messages.remix : messages.track}
       hideFavorite={hideFavorite}
       hideRepost={hideRepost}

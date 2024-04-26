@@ -213,12 +213,6 @@ export const CollectionScreenDetailsTile = ({
     [dispatch, isPlaying, playingUid]
   )
 
-  // TODO: move offline logic to the new location
-  // const renderHeader = useCallback(
-  //   () => <CollectionHeader collectionId={collectionId} />,
-  //   [collectionId]
-  // )
-
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined
 
