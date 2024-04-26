@@ -14,7 +14,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -557,12 +556,12 @@ func uploadFixture(t *testing.T, i *common.Ingester, path string) string {
 	var s3Path string
 	if info.IsDir() {
 		baseDir := filepath.Base(path) // Now 'baseDir' is 'someFolder' for 'fixtures/myPath/somepath/someFolder'
-		s3Path, err = uploadDirectory(i, fullPath, baseDir)
+		s3Path, err = i.UploadDirectory(fullPath, baseDir)
 	} else {
 		// If it's a ZIP file, upload directly to the root of the S3 bucket
 		if strings.HasSuffix(path, ".zip") {
 			_, fileName := filepath.Split(path) // Just the file name
-			s3Path, err = uploadFile(i, fullPath, "", fileName)
+			s3Path, err = i.UploadFile(fullPath, "", fileName)
 		}
 	}
 	if err != nil {
@@ -570,56 +569,6 @@ func uploadFixture(t *testing.T, i *common.Ingester, path string) string {
 	}
 
 	return fmt.Sprintf("s3://%s/%s", i.Bucket, s3Path)
-}
-
-func uploadDirectory(i *common.Ingester, dirPath, baseDir string) (string, error) {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
-	}
-
-	for _, entry := range entries {
-		if entry.Name() == ".DS_Store" {
-			continue
-		}
-
-		fullPath := filepath.Join(dirPath, entry.Name())
-		if entry.IsDir() {
-			_, err = uploadDirectory(i, fullPath, filepath.Join(baseDir, entry.Name()))
-		} else {
-			_, err = uploadFile(i, fullPath, baseDir, entry.Name())
-		}
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return baseDir, nil
-}
-
-func uploadFile(i *common.Ingester, filePath, baseDir, fileName string) (string, error) {
-	if fileName == ".DS_Store" {
-		return "", nil
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open file '%s': %w", filePath, err)
-	}
-	defer file.Close()
-
-	s3Key := filepath.Join(baseDir, fileName) // Construct S3 key from baseDir and fileName
-
-	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(i.Bucket),
-		Key:    aws.String(s3Key),
-		Body:   file,
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to upload '%s' to S3: %w", filePath, err)
-	}
-
-	return s3Key, nil
 }
 
 func wait2MinsForDoc(ctx context.Context, collection *mongo.Collection, filter bson.M) (*mongo.SingleResult, error) {

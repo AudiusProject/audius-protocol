@@ -2,9 +2,12 @@ package common
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
+	"path/filepath"
+	"slices"
 	"time"
 
 	"ingester/constants"
@@ -67,14 +70,64 @@ func NewIngester(ctx context.Context) *Ingester {
 
 func (i *Ingester) UpsertBatch(r *Batch) (*mongo.UpdateResult, error) {
 	filter := bson.M{"_id": r.BatchID}
-	trueVar := true
-	return i.BatchesColl.ReplaceOne(i.Ctx, filter, r, &options.ReplaceOptions{Upsert: &trueVar})
+	opts := options.Replace().SetUpsert(true)
+	return i.BatchesColl.ReplaceOne(i.Ctx, filter, r, opts)
 }
 
 func (i *Ingester) UpsertRelease(r *Release) (*mongo.UpdateResult, error) {
 	filter := bson.M{"_id": r.ReleaseID}
-	trueVar := true
-	return i.ReleasesColl.ReplaceOne(i.Ctx, filter, r, &options.ReplaceOptions{Upsert: &trueVar})
+	opts := options.Replace().SetUpsert(true)
+	return i.ReleasesColl.ReplaceOne(i.Ctx, filter, r, opts)
+}
+
+func (i *Ingester) UploadDirectory(dirPath, baseDir string) (string, error) {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
+	}
+
+	for _, entry := range entries {
+		if slices.Contains(constants.SkipFiles, entry.Name()) {
+			continue
+		}
+
+		fullPath := filepath.Join(dirPath, entry.Name())
+		if entry.IsDir() {
+			_, err = i.UploadDirectory(fullPath, filepath.Join(baseDir, entry.Name()))
+		} else {
+			_, err = i.UploadFile(fullPath, baseDir, entry.Name())
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return baseDir, nil
+}
+
+func (i *Ingester) UploadFile(filePath, baseDir, fileName string) (string, error) {
+	if slices.Contains(constants.SkipFiles, fileName) {
+		return "", nil
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open file '%s': %w", filePath, err)
+	}
+	defer file.Close()
+
+	s3Key := filepath.Join(baseDir, fileName)
+
+	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(i.Bucket),
+		Key:    aws.String(s3Key),
+		Body:   file,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to upload '%s' to S3: %w", filePath, err)
+	}
+
+	return s3Key, nil
 }
 
 func InitMongoClient(ctx context.Context, logger *slog.Logger) *mongo.Client {

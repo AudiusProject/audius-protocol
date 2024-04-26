@@ -21,7 +21,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -204,7 +203,7 @@ func wipeBucket(s3Client *s3.S3, bucketName string) error {
 	return nil
 }
 
-func uploadTestDelivery(bi *common.Ingester, path string) string {
+func uploadTestDelivery(i *common.Ingester, path string) string {
 	info, err := os.Stat(path)
 	if err != nil {
 		log.Fatalf("Error getting file info for '%s': %v", path, err)
@@ -213,67 +212,17 @@ func uploadTestDelivery(bi *common.Ingester, path string) string {
 	var s3Path string
 	if info.IsDir() {
 		baseDir := filepath.Base(path)
-		s3Path, err = uploadDirectory(bi, path, baseDir)
+		s3Path, err = i.UploadDirectory(path, baseDir)
 	} else {
 		// If it's a ZIP file, upload directly to the root of the S3 bucket
 		if strings.HasSuffix(path, ".zip") {
 			_, fileName := filepath.Split(path)
-			s3Path, err = uploadFile(bi, path, "", fileName)
+			s3Path, err = i.UploadFile(path, "", fileName)
 		}
 	}
 	if err != nil {
 		log.Fatalf("Error uploading file or dir '%s': %v", path, err)
 	}
 
-	return fmt.Sprintf("s3://%s/%s", bi.Bucket, s3Path)
-}
-
-func uploadDirectory(i *common.Ingester, dirPath, baseDir string) (string, error) {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
-	}
-
-	for _, entry := range entries {
-		if entry.Name() == ".DS_Store" {
-			continue
-		}
-
-		fullPath := filepath.Join(dirPath, entry.Name())
-		if entry.IsDir() {
-			_, err = uploadDirectory(i, fullPath, filepath.Join(baseDir, entry.Name()))
-		} else {
-			_, err = uploadFile(i, fullPath, baseDir, entry.Name())
-		}
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return baseDir, nil
-}
-
-func uploadFile(i *common.Ingester, filePath, baseDir, fileName string) (string, error) {
-	if fileName == ".DS_Store" {
-		return "", nil
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open file '%s': %w", filePath, err)
-	}
-	defer file.Close()
-
-	s3Key := filepath.Join(baseDir, fileName)
-
-	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(i.Bucket),
-		Key:    aws.String(s3Key),
-		Body:   file,
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to upload '%s' to S3: %w", filePath, err)
-	}
-
-	return s3Key, nil
+	return fmt.Sprintf("s3://%s/%s", i.Bucket, s3Path)
 }

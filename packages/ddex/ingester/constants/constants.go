@@ -17,3 +17,5 @@ const (
 	ReleaseStatusErrorAfterUpload  = "error_after_upload"  // The release was published to Audius, but there was an error after publishing
 	ReleaseStatusPublished         = "published"           // The release was successfully published to Audius
 )
+
+var SkipFiles = []string{".DS_STORE", "__MACOSX"}

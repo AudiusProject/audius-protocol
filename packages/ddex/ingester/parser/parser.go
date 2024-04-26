@@ -229,7 +229,7 @@ func (p *Parser) parseBatch(batch *common.Batch) (*xmlquery.Node, error) {
 		return nil, fmt.Errorf("failed to read XML bytes: %v", err)
 	}
 
-	// Parse the batch's DDEX schema version. Some Spotify test deliveries use xmlns:ernm, while Fuga uses xmlns:ern-c
+	// Parse the batch's DDEX schema version. Some test deliveries use xmlns:ernm, while others uses xmlns:ern-c
 	ernmAttr := xmlquery.FindOne(doc, "//@xmlns:ernm")
 	erncAttr := xmlquery.FindOne(doc, "//@xmlns:ern-c")
 	if ernmAttr != nil && strings.HasPrefix(ernmAttr.InnerText(), "http://ddex.net/xml/ern/") {
