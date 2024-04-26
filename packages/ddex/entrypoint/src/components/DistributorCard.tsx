@@ -3,7 +3,7 @@ import {
 } from '@tanstack/react-query'
 import { sdk } from '@audius/sdk'
 import { Flex, IconEmbed, Text } from "@audius/harmony"
-import { useSdk } from '../contexts/AudiusSdkProvider'
+import { useSdk } from '../hooks/useSdk'
 import { useCallback } from 'react'
 import { Status } from '../contexts/types'
 
@@ -18,7 +18,7 @@ export const DistributorCard = ({
   appKey,
   url
 }: DistributorCardProps) => {
-  const {sdk: audiusSdk, status} = useSdk()
+  const {sdk: audiusSdk } = useSdk()
 
   const { data } = useQuery({
     queryKey: ['todos'],
