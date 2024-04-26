@@ -17,12 +17,12 @@ web-init:
     - run:
         name: lint & typecheck
         command: |
-          npx turbo run verify --filter=audius-client
+          npx turbo run verify --filter=@audius/web
 
     - run:
         name: stylelint
         command: |
-          npm run stylelint -w audius-client
+          npm run stylelint -w @audius/web
 
     - persist_to_workspace:
         root: ./
@@ -55,7 +55,7 @@ web-build-demo:
           cd packages/web
           cp ./env/.env.stage ./env/.env.stage.tmp
           echo -e "\nVITE_BASENAME=/${CIRCLE_BRANCH}" >> ./env/.env.stage
-          CI=false npm run build:stage -w audius-client
+          CI=false npm run build:stage -w @audius/web
           mv build-staging build-demo
           cp ./env/.env.stage.tmp ./env/.env.stage
     - persist_to_workspace:

@@ -555,12 +555,21 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.USER_WALLET].add(
                         raw_grantee_address.lower()
                     )
+                    if action == Action.DELETE and signer:
+                        entities_to_fetch[EntityType.GRANT].add(
+                            (signer.lower(), raw_grantee_address.lower())
+                        )
+                        entities_to_fetch[EntityType.GRANT].add(
+                            (signer.lower(), user_id)
+                        )
                 raw_grantor_user_id = json_metadata.get("grantor_user_id", None)
                 if raw_grantor_user_id and signer:
                     entities_to_fetch[EntityType.GRANT].add(
+                        (user_id, raw_grantor_user_id)
+                    )
+                    entities_to_fetch[EntityType.GRANT].add(
                         (signer.lower(), raw_grantor_user_id)
-                    )  # TODO - Look for grant from user's wallet to grantor user id instead, since signer might not be the user
-
+                    )
             if entity_type == EntityType.DASHBOARD_WALLET_USER:
                 try:
                     json_metadata = json.loads(metadata)
@@ -918,14 +927,49 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             (seen_json["user_id"], seen_json["playlist_id"]): seen_json
             for _, seen_json in playlist_seens
         }
-
+    # USERS BY WALLET
+    if entities_to_fetch["UserWallet"]:
+        users_by_wallet: List[User] = (
+            session.query(User)
+            .filter(
+                func.lower(User.wallet).in_(entities_to_fetch["UserWallet"]),
+                User.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.USER_WALLET] = {
+            (cast(str, user.wallet)).lower(): user for user in users_by_wallet
+        }
     # GRANTS
     if entities_to_fetch["Grant"]:
         grants_to_fetch: Set[Tuple] = entities_to_fetch["Grant"]
         and_queries = []
         for grant_key in grants_to_fetch:
-            grantee_address = grant_key[0]
-            grantor_user_id = grant_key[1]
+            grantee_address_or_user_id = grant_key[0]
+            if isinstance(grantee_address_or_user_id, int):
+                try:
+                    grantee_address = existing_entities[EntityType.USER][
+                        grantee_address_or_user_id
+                    ].wallet.lower()
+                    if not grantee_address:
+                        continue
+                except:
+                    continue
+            else:
+                grantee_address = grantee_address_or_user_id
+
+            grantor_address_or_user_id = grant_key[1]
+            if isinstance(grantor_address_or_user_id, str):
+                try:
+                    grantor_user_id = existing_entities[EntityType.USER_WALLET][
+                        grantor_address_or_user_id
+                    ].user_id
+                    if not grantor_user_id:
+                        continue
+                except:
+                    continue
+            else:
+                grantor_user_id = grantor_address_or_user_id
             and_queries.append(
                 and_(
                     Grant.user_id == grantor_user_id,
@@ -948,19 +992,6 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         }
         for grant, _ in grants:
             entities_to_fetch["DeveloperApp"].add(grant.grantee_address.lower())
-    # USERS BY WALLET
-    if entities_to_fetch["UserWallet"]:
-        users_by_wallet: List[User] = (
-            session.query(User)
-            .filter(
-                func.lower(User.wallet).in_(entities_to_fetch["UserWallet"]),
-                User.is_current == True,
-            )
-            .all()
-        )
-        existing_entities[EntityType.USER_WALLET] = {
-            (cast(str, user.wallet)).lower(): user for user in users_by_wallet
-        }
     # APP DEVELOPER APPS
     if entities_to_fetch["DeveloperApp"]:
         developer_apps: List[Tuple[DeveloperApp, dict]] = (

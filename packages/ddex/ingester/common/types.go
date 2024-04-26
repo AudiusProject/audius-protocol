@@ -27,6 +27,7 @@ type UnprocessedBatch struct {
 	NumMessages int    `bson:"num_messages"`
 }
 
+// TODO: Delivery should just store IDs of releases that it inserted into the releases collection
 // Delivery represents crawled upload contents that are ready to be parsed
 type Delivery struct {
 	RemotePath       string    `bson:"_id"`
@@ -35,39 +36,36 @@ type Delivery struct {
 	CreatedAt        time.Time `bson:"created_at"`
 	ValidationErrors []string  `bson:"validation_errors"`
 
-	// Note: these only contain the data to be parsed. They're moved to PendingRelease after parsing
+	// TODO: Don't store releases and batches in the delivery
+	// Note: these only contain the data to be parsed. They're moved to the releases collection after parsing
 	Releases []UnprocessedRelease `bson:"releases"`
 	Batches  []UnprocessedBatch   `bson:"batches"`
 }
 
-// TODO: When processing a release where a ReleaseID already exists, we can update the existing document and have a field with edit history
-
-// PendingRelease represents a fully formed release that waiting to be uploaded to Audius
-type PendingRelease struct {
-	ReleaseID          string    `bson:"_id"`
-	DeliveryRemotePath string    `bson:"delivery_remote_path"` // aka Delivery._id
-	Release            Release   `bson:"release"`
-	CreatedAt          time.Time `bson:"created_at"`
-	PublishErrors      []string  `bson:"publish_errors"`
-	FailureCount       int       `bson:"failure_count"`
-	FailedAfterUpload  bool      `bson:"failed_after_upload"` // If the release failed after uploading to Audius, which means there could be some cleanup to do
-}
-
-// PublishedRelease represents a release that has been successfully uploaded to Audius
-type PublishedRelease struct {
-	ReleaseID          string    `bson:"_id"`
-	DeliveryRemotePath string    `bson:"delivery_remote_path"`
-	EntityID           string    `bson:"entity_id"`
-	Blockhash          string    `bson:"blockhash"`
-	Blocknumber        int64     `bson:"blocknumber"`
-	Release            Release   `bson:"release"`
-	CreatedAt          time.Time `bson:"created_at"`
-}
-
+// Release represents a track or album to be uploaded to Audius
 type Release struct {
-	ReleaseProfile     ReleaseProfile         `bson:"release_profile"`      // "ReleaseProfileVersionId" from the DDEX XML
-	ParsedReleaseElems []ParsedReleaseElement `bson:"parsed_release_elems"` // Releases parsed from XML
-	SDKUploadMetadata  SDKUploadMetadata      `bson:"sdk_upload_metadata"`  // Metadata for the publisher to upload to Audius via SDK
+	ReleaseID          string           `bson:"_id"`
+	DeliveryRemotePath string           `bson:"delivery_remote_path"` // aka Delivery._id (the delivery this release comes from)
+	BatchID            string           `bson:"batch_id,omitempty"`   // If this release is part of a batch
+	RawXML             primitive.Binary `bson:"raw_xml"`              // The raw XML content of the release
+	ParseErrors        []string         `bson:"parse_errors"`
+	PublishErrors      []string         `bson:"publish_errors"`
+	FailureCount       int              `bson:"failure_count"`
+	ReleaseStatus      string           `bson:"release_status"`
+
+	// TODO: Probably want to change this and/or add LastParsed
+	CreatedAt time.Time `bson:"created_at"`
+
+	// Parsed from the release's XML
+	ExpectedERNVersion string                 `bson:"expected_ern_version,omitempty"` // From the batch's XML
+	ReleaseProfile     ReleaseProfile         `bson:"release_profile"`                // "ReleaseProfileVersionId" from the DDEX XML
+	ParsedReleaseElems []ParsedReleaseElement `bson:"parsed_release_elems"`           // Releases parsed from XML
+	SDKUploadMetadata  SDKUploadMetadata      `bson:"sdk_upload_metadata"`            // Metadata for the publisher to upload to Audius via SDK
+
+	// Only set if the release was successfully published
+	EntityID    string `bson:"entity_id"`
+	Blockhash   string `bson:"blockhash"`
+	Blocknumber int64  `bson:"blocknumber"`
 }
 
 // ParsedReleaseElement contains parsed details of a <Release> element

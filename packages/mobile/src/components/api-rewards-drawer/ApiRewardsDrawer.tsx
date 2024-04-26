@@ -1,4 +1,4 @@
-import { AUDIUS_API_LINK } from 'audius-client/src/utils/route'
+import { AUDIUS_API_LINK } from '@audius/web/src/utils/route'
 import type { ImageStyle } from 'react-native'
 import { Image, View } from 'react-native'
 

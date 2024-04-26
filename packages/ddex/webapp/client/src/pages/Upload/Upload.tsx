@@ -3,7 +3,11 @@ import { useState, DragEvent } from 'react'
 import { Text, Button, Box, Flex } from '@audius/harmony'
 import cn from 'classnames'
 
-import { Collection } from 'components/Collection/Collection'
+import {
+  CollectionData,
+  PaginatedTable
+} from 'components/PaginatedTable/PaginatedTable'
+import TableLayout from 'components/PaginatedTable/TableLayout'
 import { useAudiusSdk } from 'providers/AudiusSdkProvider'
 import { useAuth } from 'providers/AuthProvider'
 import { trpc } from 'utils/trpc'
@@ -219,11 +223,44 @@ const ZipImporter = () => {
   }
 }
 
+const DeliveriesTable = ({ data }: { data: CollectionData }) => {
+  return (
+    <>
+      <thead>
+        <tr>
+          {' '}
+          <th>Delivery ID</th>
+          <th>Status</th>
+          <th>Errors</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.items.map((item: any) => (
+          <tr key={item._id} className={styles.delivery}>
+            <td>{item._id}</td>
+            <td>{item.delivery_status}</td>
+            <td>
+              {item.validation_errors && item.validation_errors.length
+                ? item.validation_errors.join(', ')
+                : ''}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </>
+  )
+}
+
 const Upload = () => {
   return (
     <Flex gap='xl' direction='column'>
       <ZipImporter />
-      <Collection collection='deliveries' />
+      <TableLayout title='Deliveries'>
+        <PaginatedTable
+          queryFunction={trpc.deliveries.getDeliveries.useQuery}
+          TableDisplay={DeliveriesTable}
+        />
+      </TableLayout>
     </Flex>
   )
 }

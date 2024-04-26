@@ -1,4 +1,4 @@
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
+import { getSearchBarText } from '@audius/web/src/common/store/search-bar/selectors'
 import type { TextStyle } from 'react-native'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'

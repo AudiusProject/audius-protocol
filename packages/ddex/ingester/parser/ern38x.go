@@ -105,7 +105,7 @@ type ResourceGroupContentItem struct {
 
 // parseERN38x parses the given XML data and returns a release ready to be uploaded to Audius.
 // NOTE: This expects the ERN 3 format. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/
-func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *common.Release) (errs []error) {
+func parseERN38x(doc *xmlquery.Node, crawledBucket string, release *common.Release) (errs []error) {
 	var (
 		soundRecordings []SoundRecording
 		images          []Image
@@ -152,7 +152,7 @@ func parseERN38x(doc *xmlquery.Node, crawledBucket, releaseID string, release *c
 		return
 	}
 	for _, releaseNode := range releaseNodes {
-		if parsedReleaseElem, err := processReleaseNode(releaseNode, &soundRecordings, &images, crawledBucket, releaseID); err == nil {
+		if parsedReleaseElem, err := processReleaseNode(releaseNode, &soundRecordings, &images, crawledBucket, release.ReleaseID); err == nil {
 			release.ParsedReleaseElems = append(release.ParsedReleaseElems, *parsedReleaseElem)
 		} else {
 			errs = append(errs, err)

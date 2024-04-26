@@ -10,19 +10,24 @@ import {
   RouterProvider,
   Await,
   useLoaderData,
-  useOutlet
+  useOutlet,
+  Outlet
 } from 'react-router-dom'
 
 import ArtistHome from 'pages/ArtistHome'
 import Login from 'pages/Login/Login'
+import ReleaseDoc from 'pages/ReleaseDoc/ReleaseDoc'
+import ReleaseXML from 'pages/ReleaseXML/ReleaseXML'
+import Releases from 'pages/Releases/Releases'
 import Upload from 'pages/Upload/Upload'
 import { AudiusSdkProvider } from 'providers/AudiusSdkProvider'
 import { AuthedUser, AuthProvider } from 'providers/AuthProvider'
 import { ThemeProvider } from 'providers/ThemeProvider'
 import { trpc } from 'utils/trpc'
 
+import Users from '../pages/Users/Users'
+
 import AuthedLayout from './AuthedLayout'
-import { Collection } from './Collection/Collection'
 import { LoadingSpinner } from './LoadingSpinner/LoadingSpinner'
 import PublicLayout from './PublicLayout'
 
@@ -66,14 +71,12 @@ const ddexRouter = createBrowserRouter(
       {/* Authed admin routes */}
       <Route path='/admin' element={<AuthedLayout isAdmin />}>
         <Route path='' element={<Upload />} />
-        <Route
-          path='pending-releases'
-          element={<Collection collection='pending_releases' />}
-        />
-        <Route
-          path='published-releases'
-          element={<Collection collection='published_releases' />}
-        />
+        <Route path='releases' element={<Outlet />}>
+          <Route index element={<Releases />} />
+          <Route path=':id/xml' element={<ReleaseXML />} />
+          <Route path=':id/doc' element={<ReleaseDoc />} />
+        </Route>
+        <Route path='users' element={<Users />} />
       </Route>
 
       {/* Authed non-admin routes */}

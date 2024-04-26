@@ -1,7 +1,5 @@
 import type { AudiusLibs } from '@audius/sdk'
 
-import { UndisbursedUserChallenge } from '@audius/common/store'
-
 import {
   ID,
   TimeRange,
@@ -9,6 +7,7 @@ import {
   CollectionMetadata,
   UserChallenge
 } from '../../models'
+import { UndisbursedUserChallenge } from '../../store'
 import { SearchKind } from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
 import { Nullable, removeNullable } from '../../utils/typeUtils'

@@ -19,7 +19,6 @@ const {
 
 const axios = require('axios')
 const moment = require('moment')
-const { REDIS_ATTESTER_STATE } = require('../utils/configureAttester.js')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_ACCOUNTS = new Set(
@@ -465,59 +464,6 @@ module.exports = function (app) {
       return numConnections >= maxConnections
         ? errorResponseServerError(resp)
         : successResponse(resp)
-    })
-  )
-
-  /**
-   * Healthcheck the rewards attester
-   * Accepts optional query params `maxDrift` and `maxSuccessDrift`, which
-   * correspond to the last seen attempted challenge attestation, and the last sucessful
-   * attestation, respectively.
-   */
-  app.get(
-    '/rewards_check',
-    handleResponse(async (req, res) => {
-      const { maxDrift, maxSuccessDrift, maxActionDrift } = req.query
-      const redis = req.app.get('redis')
-      let state = await redis.get(REDIS_ATTESTER_STATE)
-      if (!state) {
-        return errorResponseServerError('No last state')
-      }
-      state = JSON.parse(state)
-
-      const {
-        lastChallengeTime,
-        lastSuccessChallengeTime,
-        phase,
-        lastActionTime
-      } = state
-      const lastChallengeDelta = lastChallengeTime
-        ? (Date.now() - lastChallengeTime) / 1000
-        : Number.POSITIVE_INFINITY
-      const lastSuccessChallengeDelta = lastSuccessChallengeTime
-        ? (Date.now() - lastSuccessChallengeTime) / 1000
-        : Number.POSITIVE_INFINITY
-      const lastActionDelta = lastActionTime
-        ? (Date.now() - lastActionTime) / 1000
-        : Number.POSITIVE_INFINITY
-
-      // Only use the deltas if the corresponding drift parameter exists
-      const healthyMaxDrift = !maxDrift || lastChallengeDelta < maxDrift
-      const healthySuccessDrift =
-        !maxSuccessDrift || lastSuccessChallengeDelta < maxSuccessDrift
-      const healthyActionDrift =
-        !maxActionDrift || lastActionDelta < maxActionDrift
-
-      const isHealthy =
-        healthyMaxDrift && healthySuccessDrift && healthyActionDrift
-
-      const resp = {
-        phase,
-        lastChallengeDelta,
-        lastSuccessChallengeDelta,
-        lastActionDelta
-      }
-      return (isHealthy ? successResponse : errorResponseServerError)(resp)
     })
   )
 }
