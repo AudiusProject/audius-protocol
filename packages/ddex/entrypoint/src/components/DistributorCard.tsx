@@ -63,35 +63,41 @@ export const DistributorCard = ({
         cursor: 'pointer'
       }}
     >
-      <Flex
-        borderRadius='xs'
-        css={{ overflow: 'hidden '}}
-        h={'56px'}
-        w={'56px'}
-      >
-        {data?.imageUrl
-          ? <img src={data?.imageUrl} />
-          : <Flex
-              w='100%'
-              justifyContent='center'
-              alignItems='center'
-              borderRadius='l'
-              css={{ backgroundColor: 'var(--harmony-n-200)' }}
+      {
+        data ?
+          <>
+            <Flex
+              borderRadius='xs'
+              css={{ overflow: 'hidden '}}
+              h={'56px'}
+              w={'56px'}
             >
-              <IconEmbed
-                color='subdued'
-                css={{ width: '32px', height: '32px' }}
-              />
+              {data.imageUrl
+                ? <img src={data?.imageUrl} />
+                : <Flex
+                    w='100%'
+                    justifyContent='center'
+                    alignItems='center'
+                    borderRadius='l'
+                    css={{ backgroundColor: 'var(--harmony-n-200)' }}
+                  >
+                    <IconEmbed
+                      color='subdued'
+                      css={{ width: '32px', height: '32px' }}
+                    />
+                  </Flex>
+              }
             </Flex>
+            <Text
+              variant='body'
+              size='s'
+              color='default'
+            >
+              {data?.name ?? ''}
+            </Text>
+          </>
+          : null
         }
-      </Flex>
-      <Text
-        variant='body'
-        size='s'
-        color='default'
-      >
-        {data?.name ?? ''}
-      </Text>
     </Flex>
   )
 }
