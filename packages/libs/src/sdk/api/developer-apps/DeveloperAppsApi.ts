@@ -16,6 +16,8 @@ import {
 import {
   CreateDeveloperAppRequest,
   CreateDeveloperAppSchema,
+  UpdateDeveloperAppRequest,
+  UpdateDeveloperAppSchema,
   DeleteDeveloperAppRequest,
   DeleteDeveloperAppSchema
 } from './types'
@@ -77,6 +79,36 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
       ...response,
       apiKey,
       apiSecret
+    }
+  }
+
+  /**
+   * Update a developer app
+   */
+  async updateDeveloperApp(
+    params: UpdateDeveloperAppRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const { appApiKey, name, userId, description, imageUrl } =
+      await parseParams('updateDeveloperApp', UpdateDeveloperAppSchema)(params)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.DEVELOPER_APP,
+      entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        address: `0x${appApiKey}`,
+        name,
+        description,
+        image_url: imageUrl
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
+
+    return {
+      ...response
     }
   }
 

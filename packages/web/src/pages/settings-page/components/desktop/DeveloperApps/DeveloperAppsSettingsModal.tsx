@@ -17,6 +17,7 @@ import { DeleteAppConfirmationPage } from './DeleteAppConfirmationPage'
 import styles from './DeveloperAppsSettingsModal.module.css'
 import { YourAppsPage } from './YourAppsPage'
 import { CreateAppsPages } from './types'
+import { EditAppPage } from './EditAppPage'
 
 const messages = {
   title: 'Create Apps',
@@ -35,6 +36,8 @@ const getCurrentPage = (currentPage: CreateAppsPages) => {
       return 2
     case CreateAppsPages.DELETE_APP:
       return 3
+    case CreateAppsPages.EDIT_APP:
+      return 4
   }
 }
 
@@ -97,6 +100,7 @@ export const DeveloperAppsSettingsModal = (
             setPage={handleSetPage}
             params={currentPageParams}
           />
+          <EditAppPage setPage={handleSetPage} params={currentPageParams} />
         </ModalContentPages>
       </Modal>
     </>
