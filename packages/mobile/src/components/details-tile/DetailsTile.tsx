@@ -28,7 +28,8 @@ import {
   Paper,
   spacing,
   Button,
-  Divider
+  Divider,
+  Box
 } from '@audius/harmony-native'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
@@ -39,6 +40,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
+
+import { OfflineStatusRow } from '../offline-downloads'
 
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -371,12 +374,14 @@ export const DetailsTile = ({
           />
         )}
         {description ? (
-          <Hyperlink
-            source={descriptionLinkPressSource}
-            style={styles.description}
-            linkStyle={styles.link}
-            text={squashNewLines(description) ?? ''}
-          />
+          <Box w='100%'>
+            <Hyperlink
+              source={descriptionLinkPressSource}
+              style={styles.description}
+              linkStyle={styles.link}
+              text={squashNewLines(description) ?? ''}
+            />
+          </Box>
         ) : null}
         {!hasStreamAccess && !isOwner && streamConditions && contentId ? (
           <DetailsTileNoAccess
@@ -425,7 +430,7 @@ export const DetailsTile = ({
           updatedAt={updatedAt}
         />
         {renderTags()}
-        {/* TODO: offline mode status */}
+        <OfflineStatusRow contentId={contentId} isCollection={isCollection} />
       </Flex>
       <Divider />
       {renderBottomContent?.()}

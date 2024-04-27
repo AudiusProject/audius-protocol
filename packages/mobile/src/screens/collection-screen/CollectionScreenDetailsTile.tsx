@@ -100,7 +100,9 @@ const useRefetchLineupOnTrackAdd = (
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   empty: `This ${collectionType} is empty. Start adding tracks to share it or make it public.`,
   emptyPublic: `This ${collectionType} is empty`,
-  detailsPlaceholder: '---'
+  detailsPlaceholder: '---',
+  collectionType,
+  hiddenType: `Hidden ${collectionType}`
 })
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -274,7 +276,7 @@ export const CollectionScreenDetailsTile = ({
       isPublished={!isPrivate || isPublishing}
       isCollection={true}
       renderBottomContent={renderTrackList}
-      headerText={isAlbum ? 'album' : 'playlist'}
+      headerText={isPrivate ? messages.hiddenType : messages.collectionType}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
       isPlayable={isPlayable}
