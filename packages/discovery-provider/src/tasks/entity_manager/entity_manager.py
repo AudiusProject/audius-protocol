@@ -42,6 +42,7 @@ from src.tasks.entity_manager.entities.dashboard_wallet_user import (
 from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
+    update_developer_app,
 )
 from src.tasks.entity_manager.entities.grant import (
     approve_grant,
@@ -295,6 +296,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.DEVELOPER_APP
                     ):
                         create_developer_app(params)
+                    elif (
+                        params.action == Action.UPDATE
+                        and params.entity_type == EntityType.DEVELOPER_APP
+                    ):
+                        update_developer_app(params)
                     elif (
                         params.action == Action.DELETE
                         and params.entity_type == EntityType.DEVELOPER_APP

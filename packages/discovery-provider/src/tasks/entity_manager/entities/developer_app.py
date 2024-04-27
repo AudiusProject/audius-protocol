@@ -37,6 +37,12 @@ class CreateDeveloperAppMetadata(TypedDict):
     app_signature: Union[AppSignature, None]
 
 
+class UpdateDeveloperAppMetadata(TypedDict):
+    name: Union[str, None]
+    description: Union[str, None]
+    image_url: Union[str, None]
+
+
 class DeleteDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
 
@@ -75,7 +81,39 @@ def get_create_developer_app_metadata_from_raw(
             return metadata
         except Exception as e:
             logger.error(
-                f"entity_manager | developer_app.py | Unable to parse developer app metadata while indexing: {e}"
+                f"entity_manager | developer_app.py | Unable to parse developer app create while indexing: {e}"
+            )
+            return None
+    return metadata
+
+
+def get_update_developer_app_metadata_from_raw(
+    raw_metadata: Optional[str],
+) -> Optional[UpdateDeveloperAppMetadata]:
+    metadata: UpdateDeveloperAppMetadata = {
+        "name": None,
+        "description": None,
+        "image_url": None,
+    }
+
+    if raw_metadata:
+        try:
+            json_metadata = json.loads(raw_metadata)
+            raw_address = json_metadata.get("address", None)
+            if raw_address:
+                metadata["address"] = raw_address.lower()
+            else:
+                metadata["address"] = None
+
+            metadata["name"] = json_metadata.get("name", None)
+            metadata["description"] = json_metadata.get("description", None)
+            image_url_raw = json_metadata.get("image_url", None)
+            if image_url_raw and is_fqdn(image_url_raw):
+                metadata["image_url"] = image_url_raw
+            return metadata
+        except Exception as e:
+            logger.error(
+                f"entity_manager | developer_app.py | Unable to parse developer app update while indexing: {e}"
             )
             return None
     return metadata
@@ -229,6 +267,43 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, user has too many developer apps"
             )
+    elif params.action == Action.UPDATE:
+        if not address:
+            raise IndexingValidationError(
+                f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
+            )
+
+        if address not in params.existing_records["DeveloperApp"]:
+            raise IndexingValidationError(
+                f"Invalid Update Developer App Transaction, developer app with address {metadata['address']} does not exist"
+            )
+        existing_developer_app = params.existing_records["DeveloperApp"][address]
+        if user_id != existing_developer_app.user_id:
+            raise IndexingValidationError(
+                f"Invalid Update Developer App Transaction, user id {user_id} does not match given developer app address"
+            )
+        if not metadata["name"]:
+            raise IndexingValidationError(
+                "Invalid Update Developer App Transaction, name is required and was not provided"
+            )
+        if not isinstance(metadata["name"], str) or len((metadata["name"])) > 50:
+            raise IndexingValidationError(
+                "Invalid Update Developer App Transaction, name must be under 51 characters"
+            )
+        if metadata["description"] != None and (
+            not isinstance(metadata["description"], str)
+            or len((metadata["description"])) > MAX_DESCRIPTION_LENGTH
+        ):
+            raise IndexingValidationError(
+                "Invalid Update Developer App Transaction, description must be under 161 characters"
+            )
+        if metadata["image_url"] != None and (
+            not isinstance(metadata["image_url"], str)
+            or len((metadata["image_url"])) > MAX_IMAGE_URL_LENGTH
+        ):
+            raise IndexingValidationError(
+                "Invalid Update Developer App Transaction, image_url must be under 2001 characters"
+            )
     else:
         raise IndexingValidationError(
             f"Invalid Developer App Transaction, action {params.action} is not valid"
@@ -240,7 +315,7 @@ def create_developer_app(params: ManageEntityParameters):
     metadata = get_create_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
         raise IndexingValidationError(
-            "Invalid Developer App Transaction, unable to parse metadata"
+            "Invalid Developer App Transaction, unable to parse create metadata"
         )
     address = validate_developer_app_tx(params, metadata)
     user_id = params.user_id
@@ -263,6 +338,32 @@ def create_developer_app(params: ManageEntityParameters):
         updated_at=params.block_datetime,
         created_at=params.block_datetime,
     )
+
+    validate_developer_app_record(developer_app_record)
+    params.add_record(address, developer_app_record)
+    return developer_app_record
+
+
+def update_developer_app(params: ManageEntityParameters):
+    metadata = get_update_developer_app_metadata_from_raw(params.metadata)
+    if not metadata:
+        raise IndexingValidationError(
+            "Invalid Developer App Transaction, unable to parse update metadata"
+        )
+    address = validate_developer_app_tx(params, metadata)
+
+    existing_developer_app = params.existing_records["DeveloperApp"][address]
+    developer_app_record = copy_record(
+        existing_developer_app,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
+    )
+
+    developer_app_record.name = cast(str, metadata["name"])
+    developer_app_record.description = metadata["description"] or None
+    developer_app_record.image_url = metadata["image_url"] or None
 
     validate_developer_app_record(developer_app_record)
     params.add_record(address, developer_app_record)
