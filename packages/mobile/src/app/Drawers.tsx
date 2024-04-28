@@ -57,6 +57,7 @@ import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareT
 import { VipDiscordDrawer } from '../components/vip-discord-drawer'
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
+import { ClaimAllRewardsDrawer } from 'app/components/challenge-rewards-drawer/ClaimAllRewardsDrawer'
 
 type CommonDrawerProps = {
   modal: ComponentType
@@ -96,6 +97,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   TiersExplainer: TiersExplainerDrawer,
   TrendingRewardsExplainer: TrendingRewardsDrawer,
   ChallengeRewardsExplainer: ChallengeRewardsDrawer,
+  ClaimAllRewards: ClaimAllRewardsDrawer,
   APIRewardsExplainer: ApiRewardsDrawer,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   MobileEditCollectiblesDrawer: EditCollectiblesDrawer,
