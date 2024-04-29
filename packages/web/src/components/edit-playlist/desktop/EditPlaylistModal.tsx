@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
 import {
-  EditPlaylistValues,
   accountActions,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -18,7 +17,9 @@ import {
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import PlaylistForm from 'components/create-playlist/PlaylistForm'
+import PlaylistForm, {
+  EditPlaylistValues
+} from 'components/create-playlist/PlaylistForm'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { DeleteCollectionConfirmationModal } from 'components/nav/desktop/PlaylistLibrary/DeleteCollectionConfirmationModal'
 import { track } from 'services/analytics'
@@ -94,9 +95,8 @@ const EditPlaylistModal = () => {
     [playlistId, dispatch, onClose]
   )
 
-  const editPlaylistModalTitle = `${messages.edit} ${
-    isAlbum ? messages.title.album : messages.title.playlist
-  }`
+  const editPlaylistModalTitle = `${messages.edit} ${isAlbum ? messages.title.album : messages.title.playlist
+    }`
 
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(false)

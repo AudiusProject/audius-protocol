@@ -1,8 +1,4 @@
-import {
-  SquareSizes,
-  CollectionMetadata,
-  Collection
-} from '@audius/common/models'
+import { SquareSizes, Collection } from '@audius/common/models'
 import { createCollectionSchema } from '@audius/common/schemas'
 import { Nullable } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
@@ -48,8 +44,8 @@ type PlaylistFormProps = {
   /** Only applies to edit mode */
   onCancel?: () => void
   onSave: (
-    formFields: CollectionMetadata,
-    initialValues: CollectionMetadata
+    formFields: EditPlaylistValues,
+    initialValues: EditPlaylistValues
   ) => void
 }
 
