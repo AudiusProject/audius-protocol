@@ -65,7 +65,7 @@ const accountApi = createApi({
       },
       options: {
         type: 'query',
-        schemaKey: 'managedUsers'
+        schemaKey: 'userManagers'
       }
     }
   }
