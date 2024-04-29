@@ -8,6 +8,7 @@ import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
 // TODO: Get final image assets from Sammie
 
 import { Avatar } from './Avatar'
+import { Avatar2 } from './Avatar2'
 
 const meta: Meta<typeof Avatar> = {
   title: 'Components/Avatar',
@@ -15,11 +16,18 @@ const meta: Meta<typeof Avatar> = {
   parameters: {
     controls: {}
   },
+  args: {
+    size: 'large'
+  },
+
   render: (props) => {
     return (
-      <Box w={80} h={80}>
-        <Avatar {...props} />
-      </Box>
+      <Flex gap='l'>
+        <Box w={80} h={80}>
+          <Avatar {...props} />
+        </Box>
+        <Avatar2 size={props.size} src={props.src} />
+      </Flex>
     )
   }
 }

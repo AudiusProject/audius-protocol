@@ -5,7 +5,8 @@ export const cornerRadius = {
   l: 12,
   xl: 16,
   '2xl': 32,
-  '3xl': 48
+  '3xl': 48,
+  circle: '50%'
 }
 
 export type CornerRadius = typeof cornerRadius
