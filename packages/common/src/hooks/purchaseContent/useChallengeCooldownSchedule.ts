@@ -75,13 +75,11 @@ export const useChallengeCooldownSchedule = ({
     .filter((c) => multiple || c.challenge_id === challengeId)
     .filter((c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id))
     .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
+
   const [claimableChallenges, cooldownChallenges] = partition(
     challenges,
     isCooldownChallengeClaimable
   )
-  console.log('asdf claimableChallenges: ', claimableChallenges)
-  console.log('asdf cooldownChallenges: ', cooldownChallenges)
-
   const claimableAmount = sum(claimableChallenges.map((c) => c.amount))
   const cooldownAmount = sum(cooldownChallenges.map((c) => c.amount))
 

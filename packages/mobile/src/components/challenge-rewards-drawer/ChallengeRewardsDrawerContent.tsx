@@ -4,15 +4,22 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import type { UserChallengeState } from '@audius/common/models'
+import type {
+  ChallengeRewardID,
+  UserChallengeState
+} from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
 import { fillString, formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 
-import { IconCheck, IconVerified } from '@audius/harmony-native'
-import Button, { ButtonType } from 'app/components/button'
-import { Text } from 'app/components/core'
+import {
+  Text,
+  Button,
+  IconArrowRight,
+  IconCheck,
+  IconVerified
+} from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProgressBar } from 'app/components/progress-bar'
 import { useThemePalette } from 'app/utils/theme'
@@ -32,6 +39,7 @@ const messages = {
   complete: 'Complete',
   claim: 'Claim This Reward',
   claimableLabel: '$AUDIO available to claim',
+  claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
   upcomingRewards: 'Upcoming Rewards'
 }
@@ -63,6 +71,10 @@ type ChallengeRewardsDrawerContentProps = {
   /** True if the challenge type is 'aggregate' */
   showProgressBar: boolean
   children?: React.ReactChild
+  /** The identifier for the challenge type */
+  challengeId: ChallengeRewardID
+  /** True if challenge has a cooldown */
+  isCooldownChallenge: boolean
 }
 
 /** Generic drawer content used for most challenges, responsible for rendering the
@@ -174,9 +186,9 @@ export const ChallengeRewardsDrawerContent = ({
             {showProgressBar ? (
               <View style={styles.progressCell}>
                 <Text
-                  color='neutralLight4'
+                  color='subdued'
                   style={[styles.subheader, styles.progressSubheader]}
-                  weight='heavy'
+                  strength='strong'
                   textTransform='uppercase'
                 >
                   {messages.progress}
@@ -197,7 +209,7 @@ export const ChallengeRewardsDrawerContent = ({
                 hasCompleted ? styles.statusTextComplete : null,
                 isInProgress ? styles.statusTextInProgress : null
               ]}
-              weight='heavy'
+              strength='strong'
               textTransform='uppercase'
             >
               {statusText}
@@ -213,55 +225,57 @@ export const ChallengeRewardsDrawerContent = ({
                   <Text
                     key='claimableAmount'
                     style={styles.claimableAmount}
-                    weight='heavy'
+                    strength='strong'
                     textTransform='uppercase'
                   >
                     {claimableAmountText}
                   </Text>,
                   <Button
                     key='claimButton'
-                    containerStyle={styles.claimButtonContainer}
                     style={styles.claimButton}
-                    type={
-                      claimInProgress ? ButtonType.COMMON : ButtonType.PRIMARY
-                    }
+                    variant={claimInProgress ? 'secondary' : 'primary'}
                     disabled={claimInProgress}
-                    title={messages.claim}
                     onPress={onClaim}
-                    renderIcon={(color) =>
+                    iconLeft={(color) =>
                       claimInProgress ? (
                         <LoadingSpinner />
                       ) : (
                         <IconCheck fill={color} />
                       )
                     }
-                    iconPosition='left'
-                  />
+                  >
+                    {messages.claim}
+                  </Button>
                 ]
             : null}
           {claimedAmount > 0 && challengeState !== 'disbursed' ? (
-            <Text style={styles.claimedAmount} weight='heavy'>
+            <Text style={styles.claimedAmount} strength='strong'>
               {claimedAmountText}
             </Text>
           ) : null}
           {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
         </View>
       </ScrollView>
-      <View style={styles.stickyClaimRewardsContainer}>
-        <Button
-          key='claimButton'
-          containerStyle={styles.claimButtonContainer}
-          style={styles.claimButton}
-          type={claimInProgress ? ButtonType.COMMON : ButtonType.PRIMARY}
-          disabled={claimInProgress}
-          title={messages.claim}
-          onPress={onClaim}
-          renderIcon={(color) =>
-            claimInProgress ? <LoadingSpinner /> : <IconCheck fill={color} />
-          }
-          iconPosition='left'
-        />
-      </View>
+      {claimableAmount > 0 && onClaim && isCooldownChallenge ? (
+        <View style={styles.stickyClaimRewardsContainer}>
+          <Button
+            key='claimButton'
+            style={styles.claimButton}
+            variant={claimInProgress ? 'secondary' : 'primary'}
+            disabled={claimInProgress}
+            onPress={onClaim}
+            iconRight={() =>
+              claimInProgress ? (
+                <LoadingSpinner />
+              ) : (
+                <IconArrowRight fill={'white'} />
+              )
+            }
+          >
+            {messages.claimableAmountLabel(claimableAmount)}
+          </Button>
+        </View>
+      ) : null}
     </>
   )
 }

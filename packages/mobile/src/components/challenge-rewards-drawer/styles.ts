@@ -3,7 +3,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   content: {
     padding: spacing(4),
-    paddingTop: 0,
+    paddingTop: spacing(6),
     gap: spacing(6)
     // alignItems: 'center'
   },

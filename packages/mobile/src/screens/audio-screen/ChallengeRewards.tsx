@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import {
+  formatCooldownChallenges,
+  useChallengeCooldownSchedule
+} from '@audius/common/hooks'
 import { Name, ChallengeName } from '@audius/common/models'
 import type { ChallengeRewardID } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
@@ -13,22 +17,15 @@ import type {
   ChallengeRewardsModalType,
   CommonState
 } from '@audius/common/store'
+import type { dayjs } from '@audius/common/utils'
 import {
   removeNullable,
-  makeOptimisticChallengeSortComparator,
-  dayjs
+  makeOptimisticChallengeSortComparator
 } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import LoadingSpinner from 'app/components/loading-spinner'
-import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
-import { make, track } from 'app/services/analytics'
-import { makeStyles } from 'app/styles'
-import { getChallengeConfig } from 'app/utils/challenges'
-
-import { Panel } from './Panel'
 import {
   Flex,
   Text,
@@ -38,11 +35,14 @@ import {
   Divider,
   IconArrowRight
 } from '@audius/harmony-native'
-import {
-  formatCooldownChallenges,
-  useChallengeCooldownSchedule
-} from '@audius/common/hooks'
-import { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
+import LoadingSpinner from 'app/components/loading-spinner'
+import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track } from 'app/services/analytics'
+import { makeStyles } from 'app/styles'
+import { getChallengeConfig } from 'app/utils/challenges'
+
+import { Panel } from './Panel'
 const { setVisibility } = modalsActions
 const { getUserChallenges, getUserChallengesLoading } =
   audioRewardsPageSelectors
@@ -218,7 +218,7 @@ export const ChallengeRewards = () => {
         <LoadingSpinner style={styles.loading} />
       ) : (
         <Flex gap='2xl'>
-          <Paper shadow='flat' border='strong' p='l' gap='l'>
+          <Paper shadow='flat' border='strong' p='l' gap='m'>
             <Flex direction='row' justifyContent='flex-start' gap='s'>
               {claimableAmount > 0 ? (
                 <IconTokenGold height={24} width={24} />

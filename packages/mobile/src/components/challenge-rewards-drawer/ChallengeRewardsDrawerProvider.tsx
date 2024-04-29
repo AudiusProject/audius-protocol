@@ -28,7 +28,6 @@ import { AudioMatchingChallengeDrawerContent } from './AudioMatchingChallengeDra
 import { ChallengeRewardsDrawerContent } from './ChallengeRewardsDrawerContent'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
 import { ReferralRewardContents } from './ReferralRewardContents'
-import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 const {
   getChallengeRewardsModalType,
   getClaimStatus,
@@ -72,12 +71,6 @@ export const ChallengeRewardsDrawerProvider = () => {
   const { toast } = useToast()
 
   const challenge = userChallenges ? userChallenges[modalType] : null
-  const {
-    cooldownChallenges,
-    summary,
-    isEmpty: isCooldownChallengesEmpty
-  } = useChallengeCooldownSchedule({ challengeId: challenge?.challenge_id })
-
   const config = getChallengeConfig(modalType)
   const hasChallengeCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'

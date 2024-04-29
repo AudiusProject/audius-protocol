@@ -2,8 +2,7 @@ import type { ReactNode } from 'react'
 
 import { View } from 'react-native'
 
-import { Flex } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { Flex, Text } from '@audius/harmony-native'
 
 import { useStyles } from './styles'
 const messages = {
@@ -42,10 +41,9 @@ export const ChallengeDescription = ({
       <View style={styles.taskHeader}>
         {taskIcon}
         <Text
-          variant='body'
-          fontSize='medium'
+          variant='label'
           style={styles.subheader}
-          weight='heavy'
+          strength='strong'
           textTransform='uppercase'
         >
           {task}
@@ -56,7 +54,7 @@ export const ChallengeDescription = ({
       ) : (
         <Flex gap='m' mb='l'>
           <Text variant='body'>{description}</Text>
-          <Text variant='body' color='neutralLight4'>
+          <Text variant='body' color='subdued'>
             {messages.cooldownDescription}
           </Text>
         </Flex>
