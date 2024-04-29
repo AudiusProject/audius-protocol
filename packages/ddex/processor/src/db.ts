@@ -1,12 +1,14 @@
-import Database from 'better-sqlite3'
+import sql, { Database } from '@radically-straightforward/sqlite'
 import { DDEXRelease } from './parseDelivery'
+import { Statement } from 'better-sqlite3'
 
 const dbLocation = process.env.SQLITE_URL || 'data/dev.db'
 const db = new Database(dbLocation)
 
 db.pragma('journal_mode = WAL')
 
-db.exec(`
+db.migrate(
+  sql`
 
 create table if not exists xmls (
   xmlUrl text primary key,
@@ -48,7 +50,8 @@ create table if not exists s3markers (
   marker text not null
 );
 
-`)
+`
+)
 
 export type XmlRow = {
   xmlText: string
@@ -63,11 +66,18 @@ export type UserRow = {
   createdAt: string
 }
 
+export enum ReleaseProcessingStatus {
+  Parsed = 'Parsed',
+  Blocked = 'Blocked',
+  Published = 'Published',
+  Failed = 'Failed',
+}
+
 export type ReleaseRow = {
   key: string
   xmlUrl: string
   json: string
-  status: 'Parsed' | 'Blocked' | 'Published' | 'Failed'
+  status: ReleaseProcessingStatus
 
   entityType?: string
   entityId?: string
@@ -91,17 +101,14 @@ export type S3MarkerRow = {
 //
 export const s3markerRepo = {
   get(bucket: string) {
-    const markerRow = db
-      .prepare(`select marker from s3markers where bucket = ?`)
-      .bind(bucket)
-      .get() as S3MarkerRow | undefined
+    const markerRow = db.get<S3MarkerRow>(
+      sql`select marker from s3markers where bucket = ${bucket}`
+    )
     return markerRow?.marker || ''
   },
 
   upsert(bucket: string, marker: string) {
-    db.prepare('replace into s3markers values (?, ?)')
-      .bind(bucket, marker)
-      .run()
+    db.run(sql`replace into s3markers values (${bucket}, ${marker})`)
   },
 }
 
@@ -111,12 +118,12 @@ export const s3markerRepo = {
 
 export const userRepo = {
   all() {
-    return db.prepare(`select * from users`).all() as UserRow[]
+    return db.all<UserRow>(sql`select * from users`)
   },
 
   match(artistNames: string[]) {
     const artistSet = new Set(artistNames.map(lowerAscii))
-    const users = db.prepare('select * from users').all() as UserRow[]
+    const users = db.all<UserRow>(sql`select * from users`)
     for (const u of users) {
       if (
         artistSet.has(lowerAscii(u.name)) ||
@@ -138,14 +145,11 @@ function lowerAscii(text: string) {
 
 export const xmlRepo = {
   all() {
-    return db.prepare(`select * from xmls order by xmlUrl`).all() as XmlRow[]
+    return db.all<XmlRow>(sql`select * from xmls order by xmlUrl`)
   },
 
   get(xmlUrl: string) {
-    return db
-      .prepare(`select * from xmls where xmlUrl = ?`)
-      .bind(xmlUrl)
-      .get() as XmlRow | undefined
+    return db.get<XmlRow>(sql`select * from xmls where xmlUrl = ${xmlUrl}`)
   },
 
   upsert(xmlUrl: string, xmlText: string) {
@@ -161,17 +165,29 @@ export const xmlRepo = {
 //
 
 type FindReleaseParams = {
-  pendingPublish: boolean
+  pendingPublish?: boolean
+  status?: string
 }
 
 export const releaseRepo = {
   all(params?: FindReleaseParams) {
-    let sql = ` select * from releases `
-    if (params?.pendingPublish) {
-      sql += ` where status in ('Parsed', 'Failed') and publishErrorCount < 5 `
-    }
-    sql += ` order by xmlUrl, ref `
-    const rows = db.prepare(sql).all() as ReleaseRow[]
+    params ||= {}
+    const rows = db.all<ReleaseRow>(sql`
+      select * from releases
+      where 1=1
+
+      -- pending publish
+      $${
+        params.pendingPublish
+          ? sql` and status in ('Parsed', 'Failed') and publishErrorCount < 5 `
+          : sql``
+      }
+
+      $${params.status ? sql` and status = ${params.status} ` : sql``}
+
+      order by xmlUrl, ref
+    `)
+
     for (const row of rows) {
       if (row.json) row._parsed = JSON.parse(row.json)
     }
@@ -179,10 +195,9 @@ export const releaseRepo = {
   },
 
   get(key: string) {
-    const row = db
-      .prepare(`select * from releases where key = ?`)
-      .bind(key)
-      .get() as ReleaseRow
+    const row = db.get<ReleaseRow>(
+      sql`select * from releases where key = ${key}`
+    )
     if (!row) return
     if (row.json) row._parsed = JSON.parse(row.json)
     return row
@@ -200,8 +215,8 @@ export const releaseRepo = {
     }
 
     const status: ReleaseRow['status'] = release.problems.length
-      ? 'Blocked'
-      : 'Parsed'
+      ? ReleaseProcessingStatus.Blocked
+      : ReleaseProcessingStatus.Parsed
 
     dbUpsert('releases', {
       key,
@@ -214,18 +229,29 @@ export const releaseRepo = {
   },
 
   addPublishError(key: string, err: Error) {
-    const status: ReleaseRow['status'] = 'Failed'
-    db.prepare(
-      `update releases set status=?, lastPublishError=?, publishErrorCount=publishErrorCount+1 where key = ?`
-    )
-      .bind(status, err.toString(), key)
-      .run()
+    const status = ReleaseProcessingStatus.Failed
+    db.run(sql`
+      update releases set
+        status=${status},
+        lastPublishError=${err.toString()},
+        publishErrorCount=publishErrorCount+1
+      where key = ${key}
+    `)
   },
 }
 
 //
 // db utils
 //
+
+const stmtCache: Record<string, Statement> = {}
+
+function toStmt(rawSql: string) {
+  if (!stmtCache[rawSql]) {
+    stmtCache[rawSql] = db.prepare(rawSql)
+  }
+  return stmtCache[rawSql]
+}
 
 export function dbUpdate(
   table: string,
@@ -241,12 +267,9 @@ export function dbUpdate(
 
   // if everything used integer pks, we could just use rowid
   // ... if we wanted compound pks, pkField should be an array
-  const stmt = `update ${table} set ${qs} where ${pkField} = ?`
-  console.log(stmt)
-  return db
-    .prepare(stmt)
-    .bind(...Object.values(data), data[pkField])
-    .run()
+  const rawSql = `update ${table} set ${qs} where ${pkField} = ?`
+
+  return toStmt(rawSql).run(...Object.values(data), data[pkField])
 }
 
 export function dbUpsert(table: string, data: Record<string, any>) {
@@ -257,11 +280,8 @@ export function dbUpsert(table: string, data: Record<string, any>) {
   const excludes = Object.keys(data)
     .map((f) => `${f} = excluded.${f}`)
     .join(',')
-  const stmt = `
+  const rawSql = `
     insert into ${table} (${fields}) values (${qs})
     on conflict do update set ${excludes}`
-  return db
-    .prepare(stmt)
-    .bind(...Object.values(data))
-    .run()
+  return toStmt(rawSql).run(...Object.values(data))
 }

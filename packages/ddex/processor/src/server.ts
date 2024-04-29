@@ -7,10 +7,17 @@ import { html } from 'hono/html'
 import { decode } from 'hono/jwt'
 import { prettyJSON } from 'hono/pretty-json'
 import { HtmlEscapedString } from 'hono/utils/html'
-import { dbUpsert, releaseRepo, userRepo, xmlRepo } from './db'
+import {
+  ReleaseProcessingStatus,
+  dbUpsert,
+  releaseRepo,
+  userRepo,
+  xmlRepo,
+} from './db'
 import { reParsePastXml } from './parseDelivery'
 import { readAssetWithCaching } from './publishRelease'
 import { fileTypeFromBuffer } from 'file-type'
+import { parseBool } from './util'
 
 const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
@@ -135,7 +142,11 @@ app.get('/auth/logout', async (c) => {
 })
 
 app.get('/releases', (c) => {
-  const rows = releaseRepo.all()
+  const queryStatus = c.req.query('status')
+  const rows = releaseRepo.all({
+    status: queryStatus,
+    pendingPublish: parseBool(c.req.query('pendingPublish')),
+  })
 
   let lastXmlUrl = ''
   const xmlSpacer = (xmlUrl: string) => {
@@ -153,9 +164,31 @@ app.get('/releases', (c) => {
     Layout(html`
       <h1>Releases</h1>
 
-      <form method="POST" action="/releases/reparse">
-        <button>rematch</button>
-      </form>
+      <div style="display: flex; gap: 10px;">
+        <!-- filters -->
+        <form>
+          <select
+            name="status"
+            aria-label="Select"
+            onchange="this.form.submit()"
+          >
+            <option selected value="">All</option>
+            ${Object.values(ReleaseProcessingStatus).map(
+              (s) =>
+                html`<option ${queryStatus == s ? 'selected' : ''}>
+                  ${s}
+                </option>`
+            )}
+          </select>
+        </form>
+
+        <div style="flex-grow: 1"></div>
+
+        <!-- actions -->
+        <form method="POST" action="/releases/reparse">
+          <button class="outline">re-parse</button>
+        </form>
+      </div>
 
       <table class="striped">
         <thead>

@@ -7,8 +7,13 @@ import {
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join, resolve } from 'path'
-import { ReleaseRow, dbUpdate, releaseRepo } from './db'
-import { DDEXResource, DDEXRelease, DDEXSoundRecording } from './parseDelivery'
+import {
+  ReleaseProcessingStatus,
+  ReleaseRow,
+  dbUpdate,
+  releaseRepo,
+} from './db'
+import { DDEXRelease, DDEXResource } from './parseDelivery'
 import { dialS3 } from './s3poller'
 import { createSdkService } from './sdk'
 
@@ -33,7 +38,7 @@ export async function publishValidPendingReleases() {
       console.log('already published, skipping', row.key)
       releaseRepo.update({
         key: row.key,
-        status: 'Published',
+        status: ReleaseProcessingStatus.Published,
       })
 
       // todo: updates
@@ -150,7 +155,7 @@ export async function publishRelease(
     // on succes: update releases
     releaseRepo.update({
       key: releaseRow.key,
-      status: 'Published',
+      status: ReleaseProcessingStatus.Published,
       entityType: 'track',
       entityId: result.trackId!,
       blockNumber: result.blockNumber,
