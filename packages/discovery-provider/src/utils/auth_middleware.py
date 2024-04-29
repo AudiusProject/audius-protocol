@@ -91,16 +91,10 @@ def auth_middleware(
                         logger.info(
                             f"auth_middleware.py | authed_user_id: {authed_user_id}"
                         )
-            return (
-                func(
-                    *args,
-                    **kwargs,
-                    authed_user_id=authed_user_id,
-                    authed_user_wallet=wallet_lower,
-                )
-                if include_wallet
-                else func(*args, **kwargs, authed_user_id=authed_user_id)
-            )
+            kwargs["authed_user_id"] = authed_user_id
+            if include_wallet:
+                kwargs["authed_user_wallet"] = wallet_lower
+            return func(*args, **kwargs)
 
         return wrapper
 

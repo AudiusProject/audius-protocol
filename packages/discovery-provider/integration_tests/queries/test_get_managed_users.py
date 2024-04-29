@@ -68,6 +68,24 @@ def test_get_managed_users_default(app):
         ), "Revoked records returned"
 
 
+def test_get_managed_users_no_filters(app):
+    with app.app_context():
+        db = get_db()
+        populate_mock_db(db, test_entities)
+
+        managed_users = get_managed_users_with_grants(
+            {
+                "manager_wallet_address": "0x10",
+                "current_user_id": 10,
+                "is_approved": None,
+                "is_revoked": None,
+            }
+        )
+
+        # return all records which map to users
+        assert len(managed_users) == 5, "Expected exactly 5 records"
+
+
 def test_get_managed_users_grants_without_users(app):
     with app.app_context():
         db = get_db()
