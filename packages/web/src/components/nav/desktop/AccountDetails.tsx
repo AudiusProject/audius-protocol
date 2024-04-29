@@ -1,14 +1,14 @@
+import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { TextLink, UserLink } from 'components/link'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
 import styles from './AccountDetails.module.css'
-import { FeatureFlags } from '@audius/common/services'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { getAccountUser } = accountSelectors

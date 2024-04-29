@@ -1,4 +1,4 @@
-import { Grant as SDKGrant } from '@audius/sdk'
+import { full } from '@audius/sdk'
 import { Nullable, decodeHashId } from '~/utils'
 import { ID } from './Identifiers'
 
@@ -11,7 +11,7 @@ export type Grant = {
   updated_at: string
 }
 
-export const grantFromSDK = (input: SDKGrant): Grant => {
+export const grantFromSDK = (input: full.Grant): Grant => {
   return {
     grantee_address: input.granteeAddress,
     user_id: decodeHashId(input.userId) ?? null,
