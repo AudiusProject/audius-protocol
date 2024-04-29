@@ -34,6 +34,11 @@ logger = logging.getLogger(__name__)
 
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
+    # If Cloudflare proxy is present, it should have knowledge of the connecting IP
+    if request_obj.headers.get("CF-Connecting-IP"):
+        return request_obj.headers.get("CF-Connecting-IP")
+
+    # Use the X-Forwraded-For header
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
     if not ip:
         return ""
