@@ -91,6 +91,11 @@ export type ManagedUserMetadata = {
   user: UserMetadata
 }
 
+export type UserManagerMetadata = {
+  grant: Grant
+  manager: UserMetadata
+}
+
 export type ComputedUserProperties = {
   _profile_picture_sizes: ProfilePictureSizes
   _cover_photo_sizes: CoverPhotoSizes
@@ -173,9 +178,32 @@ export const userMetadataListFromSDK = (input?: full.UserFull[]) =>
 
 export const managedUserFromSDK = (
   input: full.ManagedUser
-): ManagedUserMetadata => {
+): ManagedUserMetadata | undefined => {
+  const user = userMetadataFromSDK(input.user)
+  if (!user) {
+    return undefined
+  }
   return {
-    grant: grantFromSDK(input.grant),
-    user: userMetadataFromSDK(input.user) as UserMetadata
+    user,
+    grant: grantFromSDK(input.grant)
   }
 }
+
+export const managedUserListFromSDK = (input?: full.ManagedUser[]) =>
+  input ? input.map((d) => managedUserFromSDK(d)).filter(removeNullable) : []
+
+export const userManagerFromSDK = (
+  input: full.UserManager
+): UserManagerMetadata | undefined => {
+  const manager = userMetadataFromSDK(input.manager)
+  if (!manager) {
+    return undefined
+  }
+  return {
+    manager,
+    grant: grantFromSDK(input.grant)
+  }
+}
+
+export const userManagerListFromSDK = (input?: full.UserManager[]) =>
+  input ? input.map((d) => userManagerFromSDK(d)).filter(removeNullable) : []
