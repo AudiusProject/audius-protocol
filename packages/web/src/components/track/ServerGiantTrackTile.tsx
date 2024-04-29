@@ -17,27 +17,13 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { moodMap } from 'utils/Moods'
-import dayjs from 'utils/dayjs'
+import { formatDate, formatSeconds } from 'utils/dateUtils'
 
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
 import styles from './GiantTrackTile.module.css'
 import InfoLabel from './InfoLabel'
 import { ServerGiantArtwork } from './ServerGiantArtwork'
-
-const formatDate = (date: string, format?: string): string => {
-  const dayjsFormat = format || 'M/D/YY'
-  return dayjs(date).format(dayjsFormat)
-}
-
-const formatSeconds = (seconds: number): string => {
-  const time = dayjs.duration(seconds, 'seconds')
-  if (seconds >= 60 * 60) {
-    return time.format('H:mm:ss')
-  } else {
-    return time.format('m:ss')
-  }
-}
 
 const messages = {
   makePublic: 'MAKE PUBLIC',
@@ -245,6 +231,7 @@ export const ServerGiantTrackTile = ({
         <ServerGiantArtwork
           overrideArtwork={overrideArtwork}
           coSign={coSign}
+          // @ts-ignore
           cid={track?.cover_art_sizes ?? null}
         />
         <div className={styles.infoSection}>

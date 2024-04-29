@@ -13,22 +13,8 @@ import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
 import { ServerExternalTextLink } from 'components/link/ServerExternalTextLink'
 import { TextLink } from 'components/link/TextLink'
-
-/**
- * Reduces multiple sequential newlines (> 3) into max `\n\n` and
- * trims both leading and trailing newlines
- */
-const squashNewLines = (str: string | null) => {
-  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : str
-}
-
-const audiusUrlRegex =
-  // eslint-disable-next-line no-useless-escape
-  /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?(staging\.)?(audius\.co)(\/.+)?/gim
-
-const isAudiusUrl = (url: string) => new RegExp(audiusUrlRegex).test(url)
-const getPathFromAudiusUrl = (url: string) =>
-  new RegExp(audiusUrlRegex).exec(url)?.[3] ?? null
+import { squashNewLines } from 'utils/stringUtils'
+import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
 
 type LinkifyTextProps = TextProps<any> & {
   innerRef?: Ref<any>

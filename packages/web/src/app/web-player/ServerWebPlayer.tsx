@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { PropsWithChildren, ReactNode, useRef } from 'react'
 
 import '@audius/harmony/dist/harmony.css'
 import cn from 'classnames'
@@ -22,13 +22,11 @@ import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
 
-type ServerWebPlayerProps = {
+type ServerWebPlayerProps = PropsWithChildren<{
   ssrContextValue: SsrContextType
-  // TODO: Add children prop
-  children: any
-}
+}>
 
-const InnerProviderContainer = ({ children }: { children: any }) => {
+const InnerProviderContainer = ({ children }: { children: ReactNode }) => {
   const { history } = useHistoryContext()
 
   const initialStoreState = {

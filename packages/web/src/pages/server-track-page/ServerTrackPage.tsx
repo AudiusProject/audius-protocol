@@ -11,5 +11,6 @@ export const ServerTrackPage = ({
   ...other
 }: ServerTrackPageProps) => {
   // return isMobile ? <MobilePage {...other} /> : <DesktopPage {...other} />
+  // @ts-ignore
   return <DesktopPage {...other} />
 }

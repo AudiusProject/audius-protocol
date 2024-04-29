@@ -1,13 +1,14 @@
 import { ID } from '@audius/common/models'
-import { Env } from '@audius/common/services/env'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
 
+import { encodeUrlName } from './urlUtils'
+
 // TODO: Move routing to @audius/common with an injected env
 // so that it can properly handle routing to the correct environment.
 // These values are defaulted to the production context.
-const env: Partial<Env> = {
+const env = {
   BASENAME: '',
   USE_HASH_ROUTING: false,
   PUBLIC_PROTOCOL: 'https:',
@@ -332,34 +333,6 @@ export const staticRoutes = new Set([
 ])
 
 /**
- * Formats a URL name for routing.
- *  Removes reserved URL characters
- *  Replaces white space with -
- *  Lower cases
- */
-const formatUrlName = (name: string) => {
-  if (!name) return ''
-  return (
-    name
-      .replace(/!|%|#|\$|&|'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/g, '')
-      .replace(/\s+/g, '-')
-      // Reduce repeated `-` to a single `-`
-      .replace(/-+/g, '-')
-      .toLowerCase()
-  )
-}
-
-/**
- * Encodes a formatted URL name for routing.
- * Using window.location will automatically decode
- * the encoded component, so using the above formatUrlName(string) can
- * be used to compare results with the window.location directly.
- */
-const encodeUrlName = (name: string) => {
-  return encodeURIComponent(formatUrlName(name))
-}
-
-/**
  * Generate a short base36 hash for a given string.
  * Used to generate short hashes for for queries and urls.
  */
@@ -511,7 +484,7 @@ export const getPathname = (location: Location) => {
 
 export const recordGoToSignup = (callback: () => void) => {
   if ((window as any).analytics) {
-    ; (window as any).analytics.track(
+    ;(window as any).analytics.track(
       'Create Account: Open',
       { source: 'landing page' },
       null,

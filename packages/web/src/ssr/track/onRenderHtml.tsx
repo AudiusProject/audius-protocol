@@ -32,7 +32,6 @@ export default function render(
     initialEntries: [urlPathname]
   })
 
-  // TODO: Fix this, this pulls in libs through the routes
   const {
     title = '',
     description = '',
@@ -57,6 +56,7 @@ export default function render(
     >
       <ServerTrackPage
         isMobile={isMobile}
+        // @ts-ignore
         title={title}
         description={description}
         canonicalUrl={canonicalUrl}

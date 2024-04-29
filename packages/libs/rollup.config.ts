@@ -110,29 +110,6 @@ export const outputConfigs = {
   },
 
   /**
-   * SDK Node Package (ES Module)
-   */
-  sdkConfigNodeEs: {
-    input: 'src/sdk/index.ts',
-    output: [
-      {
-        dir: 'dist',
-        format: 'es',
-        sourcemap: true,
-        entryFileNames: '[name].node.js'
-      }
-    ],
-    plugins: [
-      resolve({ extensions, preferBuiltins: true }),
-      commonjs({ extensions }),
-      babel({ babelHelpers: 'bundled', extensions }),
-      json(),
-      pluginTypescript
-    ],
-    external
-  },
-
-  /**
    * SDK React Native Package
    * Used by the Audius React Native client
    */

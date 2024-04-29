@@ -43,6 +43,7 @@ export const ServerReduxProvider = ({
 
     // Mount store to window for easy access
     if (typeof window !== 'undefined') {
+      // @ts-ignore
       window.store = store
     }
 

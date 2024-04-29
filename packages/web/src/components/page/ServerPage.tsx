@@ -12,6 +12,7 @@ import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useSpring } from 'react-spring'
+// @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'

@@ -10,7 +10,7 @@ import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 import { AppState } from 'store/types'
 import { decodeHashId } from 'utils/hashIds'
 
-import styles from './ServerTrackPage.module.css'
+import styles from '../../track-page/components/desktop/TrackPage.module.css'
 
 export type OwnProps = {
   title: string
@@ -38,10 +38,12 @@ export const ServerTrackPage = ({
   userId,
   badge
 }: OwnProps) => {
+  // @ts-ignore
   const trackId = decodeHashId(heroTrack.id)
   const track = useSelector(
     (state: AppState) => state.tracks.entries[trackId as ID].metadata
   )
+  // @ts-ignore
   const trackOwner = track?.user
 
   const isOwner = track?.owner_id === userId
@@ -62,6 +64,7 @@ export const ServerTrackPage = ({
       userId={trackOwner?.user_id ?? 0}
       artistHandle={emptyStringGuard(trackOwner?.handle)}
       coverArtSizes={defaults.coverArtSizes}
+      // @ts-ignore
       overrideArtwork={heroTrack.artwork['1000x1000']}
       tags={defaults.tags}
       description={defaults.description}

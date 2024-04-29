@@ -18,6 +18,7 @@ import { AppState } from './types'
 
 declare global {
   interface Window {
+    // @ts-ignore
     store: Store<RootState>
   }
 }
