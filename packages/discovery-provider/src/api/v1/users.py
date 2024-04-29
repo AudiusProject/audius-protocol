@@ -75,7 +75,6 @@ from src.api.v1.models.users import (
     purchase,
     user_model,
     user_model_full,
-    user_replica_set,
     user_subscribers,
 )
 from src.api.v1.models.wildcard_model import WildcardModel
@@ -141,10 +140,8 @@ from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
 )
-from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
-from src.queries.get_users_cnode import ReplicaType, get_users_cnode
 from src.queries.query_helpers import (
     CollectionLibrarySortMethod,
     PurchaseSortMethod,
@@ -1605,71 +1602,6 @@ class ConnectedWallets(Resource):
         )
 
 
-users_by_content_node_route_parser = reqparse.RequestParser(
-    argument_class=DescriptiveArgument
-)
-users_by_content_node_route_parser.add_argument(
-    "creator_node_endpoint",
-    required=True,
-    type=str,
-    description="Get users who have this Content Node endpoint as their primary/secondary",
-)
-users_by_content_node_route_parser.add_argument(
-    "prev_user_id",
-    required=False,
-    type=int,
-    description="Minimum user_id to return. Used for pagination as the offset after sorting in ascending order by user_id",
-)
-users_by_content_node_route_parser.add_argument(
-    "max_users",
-    required=False,
-    type=int,
-    description="Maximum number of users to return (SQL LIMIT)",
-)
-users_by_content_node_response = make_full_response(
-    "users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set))
-)
-
-
-@full_ns.route("/content_node/<string:replica_type>", doc=False)
-class UsersByContentNode(Resource):
-    @ns.doc(
-        id="""Get Users By Replica Type for Content Node""",
-        description="""
-        (Only consumed by Content Node) Gets users that have a given Content Node endpoint as
-        their primary, secondary, or either (depending on the replica_type passed).
-        Response = array of objects of schema {
-            user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID
-        }
-        """,
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @full_ns.marshal_with(users_by_content_node_response)
-    @cache(ttl_sec=GET_USERS_CNODE_TTL_SEC)
-    def get(self, replica_type):
-        args = users_by_content_node_route_parser.parse_args()
-
-        # Endpoint that a user's primary/secondary/either must be set to for them to be included in the results
-        cnode_url = args.get("creator_node_endpoint")
-        # Used for pagination with ">" comparison in SQL query. See https://ivopereira.net/efficient-pagination-dont-use-offset-limit
-        prev_user_id = args.get("prev_user_id")
-        # LIMIT used in SQL query
-        max_users = args.get("max_users")
-
-        if replica_type == "primary":
-            users = get_users_cnode(
-                cnode_url, ReplicaType.PRIMARY, prev_user_id, max_users
-            )
-        elif replica_type == "secondary":
-            users = get_users_cnode(
-                cnode_url, ReplicaType.SECONDARY, prev_user_id, max_users
-            )
-        else:
-            users = get_users_cnode(cnode_url, ReplicaType.ALL, prev_user_id, max_users)
-
-        return success_response(users)
-
-
 get_challenges_route_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 get_challenges_route_parser.add_argument(
     "show_historical",
@@ -2012,52 +1944,6 @@ class GetTokenVerification(Resource):
 
         # 5. Send back the decoded payload
         return success_response(payload)
-
-
-GET_REPLICA_SET = "/<string:id>/replica_set"
-user_replica_set_full_response = make_full_response(
-    "users_by_content_node", full_ns, fields.Nested(user_replica_set)
-)
-user_replica_set_response = make_response(
-    "users_by_content_node", ns, fields.Nested(user_replica_set)
-)
-
-
-@full_ns.route(GET_REPLICA_SET)
-class FullGetReplicaSet(Resource):
-    @record_metrics
-    @cache(ttl_sec=5)
-    def _get(self, id: str):
-        decoded_id = decode_with_abort(id, full_ns)
-        args = {"user_id": decoded_id}
-        replica_set = get_user_replica_set(args)
-        return success_response(replica_set)
-
-    @full_ns.doc(
-        id="""Get User Replica Set""",
-        description="""Gets the user's replica set""",
-        params={
-            "id": "A User ID",
-        },
-    )
-    @full_ns.expect(current_user_parser)
-    @full_ns.marshal_with(user_replica_set_full_response)
-    def get(self, id: str):
-        return self._get(id)
-
-
-@ns.route(GET_REPLICA_SET, doc=False)
-class GetReplicaSet(FullGetReplicaSet):
-    @ns.doc(
-        id="""Get User Replica Set""",
-        description="""Gets the user's replica set""",
-        params={
-            "id": "A User ID",
-        },
-    )
-    @ns.marshal_with(user_replica_set_response)
-    def get(self, id: str):
-        return super()._get(id)
 
 
 @ns.route("/unclaimed_id", doc=False)
