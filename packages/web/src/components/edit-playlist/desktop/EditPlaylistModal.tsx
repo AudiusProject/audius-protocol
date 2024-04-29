@@ -99,8 +99,9 @@ const EditPlaylistModal = () => {
     [playlistId, dispatch, onClose]
   )
 
-  const editPlaylistModalTitle = `${messages.edit} ${isAlbum ? messages.title.album : messages.title.playlist
-    }`
+  const editPlaylistModalTitle = `${messages.edit} ${
+    isAlbum ? messages.title.album : messages.title.playlist
+  }`
 
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(false)
