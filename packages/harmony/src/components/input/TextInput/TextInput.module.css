@@ -32,6 +32,7 @@
 
 /* small input size */
 .contentContainer.small {
+  padding: 0 var(--harmony-spacing-m);
   /* gap between icons & content */
   gap: var(--harmony-spacing-s);
   font-size: var(--harmony-font-s);
