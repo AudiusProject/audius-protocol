@@ -132,7 +132,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
   // Clear the query if something else resets our search state
   useEffect(() => {
     if (!lastSearchQuery) {
-      // onChange('')
+      onChange('')
     }
   }, [lastSearchQuery, onChange])
 

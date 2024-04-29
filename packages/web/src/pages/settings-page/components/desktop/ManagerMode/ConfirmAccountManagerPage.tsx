@@ -108,7 +108,6 @@ export const ConfirmAccountManagerPage = (
             isLoading={submitting}
             fullWidth
             variant='secondary'
-            onClick={() => {}}
           >
             {messages.confirm}
           </Button>
