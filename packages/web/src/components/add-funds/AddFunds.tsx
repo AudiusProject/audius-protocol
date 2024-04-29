@@ -50,7 +50,7 @@ export const AddFunds = ({
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
   const inProgress = [
     BuyUSDCStage.PURCHASING,
-    BuyUSDCStage.TRANSFERRING
+    BuyUSDCStage.CONFIRMING_PURCHASE
   ].includes(buyUSDCStage)
 
   return (
