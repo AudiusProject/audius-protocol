@@ -1,3 +1,8 @@
 {
-  "distributors": []
+  "distributors": [
+    {
+      "appKey": "0x49d5e13d355709b615b7cce7369174fb240b6b39",
+      "url": "https://audius-ddex.staging.audius.co"
+    }
+  ]
 }

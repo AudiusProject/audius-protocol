@@ -9,6 +9,7 @@
     "packages/ddex/webapp/server",
     "packages/ddex/webapp/client",
     "packages/ddex/publisher",
+    "packages/ddex/processor",
     "packages/ddex/entrypoint",
     "packages/es-indexer"
   ],
