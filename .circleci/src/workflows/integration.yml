@@ -4,3 +4,5 @@ jobs:
       context: Vercel
   - integration-test:
       context: Vercel
+      requires:
+        - integration-init
