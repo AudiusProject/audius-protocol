@@ -4,12 +4,11 @@ import {
   notificationsSelectors,
   NotificationType,
   walletActions,
+  getContext,
   Notification
 } from '@audius/common/store'
 import { Dictionary } from '@reduxjs/toolkit'
-import { call, getContext, put, select } from 'typed-redux-saga'
-
-import { reportToSentry } from 'store/errors/reportToSentry'
+import { call, put, select } from 'typed-redux-saga'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'
 import { fetchNotifications } from './fetchNotifications'
