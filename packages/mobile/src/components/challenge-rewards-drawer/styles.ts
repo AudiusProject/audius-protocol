@@ -5,14 +5,13 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     padding: spacing(4),
     paddingTop: spacing(6),
     gap: spacing(6)
-    // alignItems: 'center'
   },
   scrollViewContainer: {
     flex: 1
   },
   scrollViewContent: {
     padding: spacing(4),
-    paddingTop: 0,
+    paddingTop: spacing(6),
     gap: spacing(6)
   },
   subheader: {

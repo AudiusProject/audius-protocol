@@ -67,7 +67,7 @@ const messages = {
   receive: 'Receive $AUDIO',
   externalWallets: 'External Wallets',
   rewards: 'Earn Rewards',
-  rewardsBody1: 'Complete tasks to earn $AUDIO tokenss!',
+  rewardsBody1: 'Complete tasks to earn $AUDIO tokens!',
   trending: 'Trending Competitions',
   trendingBody1: 'Win contests to earn $AUDIO tokens!',
   vipTiers: '$AUDIO VIP Tiers',

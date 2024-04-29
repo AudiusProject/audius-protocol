@@ -63,8 +63,7 @@ export const Button = (props: ButtonProps) => {
   const defaultTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.l,
-    lineHeight: typography.lineHeight.l,
-    textTransform: 'capitalize'
+    lineHeight: typography.lineHeight.l
   }
 
   const largeStyles: ReactNativeStyle = {

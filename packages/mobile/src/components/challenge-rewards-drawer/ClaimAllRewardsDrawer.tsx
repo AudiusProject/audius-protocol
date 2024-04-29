@@ -14,10 +14,8 @@ import { getClaimableChallengeSpecifiers } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex, Text, Button } from '@audius/harmony-native'
-import { useNavigation } from 'app/hooks/useNavigation'
+import { Flex, Text, Button, IconArrowRight } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
-import type { ChallengesParamList } from 'app/utils/challenges'
 
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 import { SummaryTable } from '../summary-table'
@@ -32,6 +30,7 @@ const messages = {
   // Claim success toast
   claimSuccessMessage: 'Reward successfully claimed!',
   pending: (amount) => `${amount} Pending`,
+  claimAudio: (amount) => `Claim ${amount} $AUDIO`,
   done: 'Done'
 }
 
@@ -53,12 +52,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 const config = {
   id: 'rewards',
   title: 'Rewards',
-  description: () => `You can check and claim all your upcoming rewards here.`,
-  fullDescription: () =>
-    `You can check and claim all your upcoming rewards here.`,
-  progressLabel: '%0/%1 Invites Accepted',
-  remainingLabel: '%0/%1 Invites Remain',
-  panelButtonText: 'Invite Your Friends'
+  description: 'You can check and claim all your upcoming rewards here.'
 }
 
 export const ClaimAllRewardsDrawer = () => {
@@ -80,7 +74,6 @@ export const ClaimAllRewardsDrawer = () => {
   }, [dispatch, onClose])
 
   const challenge = userChallenges ? userChallenges[modalType] : null
-  const { navigate } = useNavigation<ChallengesParamList>()
 
   // Claim rewards button config
   const formatLabel = useCallback((item: any) => {
@@ -133,7 +126,7 @@ export const ClaimAllRewardsDrawer = () => {
       <ScrollView>
         <Flex pv='xl' ph='l' gap='xl'>
           <Text variant='body' size='m'>
-            You can check and claim all your upcoming rewards here.
+            {config.description}
           </Text>
           <SummaryTable
             title={'Rewards'}
@@ -148,9 +141,20 @@ export const ClaimAllRewardsDrawer = () => {
         </Flex>
       </ScrollView>
       <View style={styles.stickyClaimRewardsContainer}>
-        <Button variant='primary' onPress={onClaim} fullWidth>
-          {messages.done}
-        </Button>
+        {summary && summary?.value > 0 ? (
+          <Button
+            variant='primary'
+            onPress={onClaim}
+            iconRight={IconArrowRight}
+            fullWidth
+          >
+            {messages.claimAudio(summary?.value)}
+          </Button>
+        ) : (
+          <Button variant='primary' onPress={handleClose} fullWidth>
+            {messages.done}
+          </Button>
+        )}
       </View>
     </AppDrawer>
   )

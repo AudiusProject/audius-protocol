@@ -168,12 +168,6 @@ export const Panel = ({
     }
   }
 
-  const buttonType = needsDisbursement
-    ? 'primary'
-    : hasDisbursed
-    ? 'commonAlt'
-    : 'common'
-
   const buttonMessage = needsDisbursement
     ? messages.claimReward
     : hasDisbursed
@@ -241,7 +235,7 @@ export const Panel = ({
           <Button
             fullWidth
             title={buttonMessage}
-            variant={buttonType}
+            variant={'common'}
             iconPosition='right'
             size='medium'
             icon={hasDisbursed ? undefined : IconArrowRight}

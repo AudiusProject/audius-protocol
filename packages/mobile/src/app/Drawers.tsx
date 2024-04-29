@@ -9,6 +9,7 @@ import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { BlockMessagesDrawer } from 'app/components/block-messages-drawer'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
+import { ClaimAllRewardsDrawer } from 'app/components/challenge-rewards-drawer/ClaimAllRewardsDrawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CoinflowOnrampDrawer } from 'app/components/coinflow-onramp-drawer/CoinflowOnrampDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
@@ -57,7 +58,6 @@ import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareT
 import { VipDiscordDrawer } from '../components/vip-discord-drawer'
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
-import { ClaimAllRewardsDrawer } from 'app/components/challenge-rewards-drawer/ClaimAllRewardsDrawer'
 
 type CommonDrawerProps = {
   modal: ComponentType

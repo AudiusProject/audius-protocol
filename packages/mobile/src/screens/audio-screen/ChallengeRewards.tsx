@@ -76,7 +76,7 @@ const messages = {
   moreInfo: 'More Info',
   available: '$AUDIO available',
   now: 'now!',
-
+  totalReadyToClaim: 'Total Ready to Claim',
   availableMessage: (summaryItems: ClaimableSummaryTableItem[]) => {
     const filteredSummaryItems = summaryItems.filter(removeNullable)
     const summaryItem = filteredSummaryItems.pop()
@@ -144,10 +144,12 @@ export const ChallengeRewards = () => {
   const { isEnabled: isAudioMatchingChallengesEnabled } = useFeatureFlag(
     FeatureFlags.AUDIO_MATCHING_CHALLENGES
   )
-  const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
+  const { cooldownChallenges, cooldownAmount, claimableAmount } =
     useChallengeCooldownSchedule({ multiple: true })
-  console.log('asdf ')
-  console.log('asdf cooldownAmount: ', cooldownAmount)
+  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
+    FeatureFlags.REWARDS_COOLDOWN
+  )
+
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
   const optimisticUserChallenges = useSelector((state: CommonState) =>
@@ -218,41 +220,43 @@ export const ChallengeRewards = () => {
         <LoadingSpinner style={styles.loading} />
       ) : (
         <Flex gap='2xl'>
-          <Paper shadow='flat' border='strong' p='l' gap='m'>
-            <Flex direction='row' justifyContent='flex-start' gap='s'>
+          {isRewardsCooldownEnabled ? (
+            <Paper shadow='flat' border='strong' p='l' gap='m'>
+              <Flex direction='row' justifyContent='flex-start' gap='s'>
+                {claimableAmount > 0 ? (
+                  <IconTokenGold height={24} width={24} />
+                ) : null}
+                <Text variant='heading' color='accent' size='s'>
+                  {messages.totalReadyToClaim}
+                </Text>
+              </Flex>
+              <View style={styles.pillContainer}>
+                <Text style={[styles.pillMessage, styles.readyToClaimPill]}>
+                  {cooldownAmount} {messages.pending}
+                </Text>
+              </View>
+              <Text size='s' variant='body'>
+                {claimableAmount > 0
+                  ? `${claimableAmount} ${messages.available} ${messages.now}`
+                  : messages.availableMessage(
+                      formatCooldownChallenges(cooldownChallenges)
+                    )}
+              </Text>
               {claimableAmount > 0 ? (
-                <IconTokenGold height={24} width={24} />
+                <Button onPress={openClaimAllModal} iconRight={IconArrowRight}>
+                  {messages.claimAllRewards}
+                </Button>
+              ) : cooldownAmount > 0 ? (
+                <Button
+                  variant='secondary'
+                  onPress={openClaimAllModal}
+                  iconRight={IconArrowRight}
+                >
+                  {messages.moreInfo}
+                </Button>
               ) : null}
-              <Text variant='heading' color='accent' size='s'>
-                Total Ready to Claim
-              </Text>
-            </Flex>
-            <View style={styles.pillContainer}>
-              <Text style={[styles.pillMessage, styles.readyToClaimPill]}>
-                {cooldownAmount} {messages.pending}
-              </Text>
-            </View>
-            <Text size='s' variant='body'>
-              {claimableAmount > 0
-                ? `${claimableAmount} ${messages.available} ${messages.now}`
-                : messages.availableMessage(
-                    formatCooldownChallenges(cooldownChallenges)
-                  )}
-            </Text>
-            {claimableAmount > 0 ? (
-              <Button onPress={openClaimAllModal} iconRight={IconArrowRight}>
-                {messages.claimAllRewards}
-              </Button>
-            ) : cooldownAmount > 0 ? (
-              <Button
-                variant='secondary'
-                onPress={openClaimAllModal}
-                iconRight={IconArrowRight}
-              >
-                {messages.moreInfo}
-              </Button>
-            ) : null}
-          </Paper>
+            </Paper>
+          ) : null}
           <Divider orientation='horizontal' />
           <Flex>{rewardsPanels}</Flex>
         </Flex>

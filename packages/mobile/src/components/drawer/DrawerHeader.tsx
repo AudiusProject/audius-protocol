@@ -63,8 +63,6 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
       ) : null}
       {title ? (
         <Flex gap='s' alignItems='center' direction='row'>
-          {/* <IconClose size='m' fill={iconRemoveColor} /> */}
-
           {TitleIcon ? <TitleIcon size='m' fill={titleIconColor} /> : null}
           {titleImage ? (
             <Image style={styles.titleImage} source={titleImage} />

@@ -2,12 +2,14 @@ import React, { useCallback } from 'react'
 
 import {
   formatCooldownChallenges,
-  useChallengeCooldownSchedule
+  useChallengeCooldownSchedule,
+  useFeatureFlag
 } from '@audius/common/hooks'
 import type {
   ChallengeRewardID,
   UserChallengeState
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { ClaimStatus } from '@audius/common/store'
 import { fillString, formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
@@ -106,6 +108,9 @@ export const ChallengeRewardsDrawerContent = ({
     summary,
     isEmpty: isCooldownChallengesEmpty
   } = useChallengeCooldownSchedule({ challengeId })
+  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
+    FeatureFlags.REWARDS_COOLDOWN
+  )
 
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
@@ -190,6 +195,8 @@ export const ChallengeRewardsDrawerContent = ({
                   style={[styles.subheader, styles.progressSubheader]}
                   strength='strong'
                   textTransform='uppercase'
+                  variant='label'
+                  size='l'
                 >
                   {messages.progress}
                 </Text>
@@ -211,6 +218,7 @@ export const ChallengeRewardsDrawerContent = ({
               ]}
               strength='strong'
               textTransform='uppercase'
+              variant='label'
             >
               {statusText}
             </Text>
@@ -219,12 +227,13 @@ export const ChallengeRewardsDrawerContent = ({
         {children}
         <View style={styles.claimRewardsContainer}>
           {claimableAmount > 0 && onClaim
-            ? isCooldownChallenge
+            ? isCooldownChallenge && isRewardsCooldownEnabled
               ? [renderCooldownSummaryTable()]
               : [
                   <Text
                     key='claimableAmount'
                     style={styles.claimableAmount}
+                    variant='label'
                     strength='strong'
                     textTransform='uppercase'
                   >
@@ -236,11 +245,11 @@ export const ChallengeRewardsDrawerContent = ({
                     variant={claimInProgress ? 'secondary' : 'primary'}
                     disabled={claimInProgress}
                     onPress={onClaim}
-                    iconLeft={(color) =>
+                    iconLeft={() =>
                       claimInProgress ? (
                         <LoadingSpinner />
                       ) : (
-                        <IconCheck fill={color} />
+                        <IconCheck fill={'white'} />
                       )
                     }
                   >
@@ -256,7 +265,10 @@ export const ChallengeRewardsDrawerContent = ({
           {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
         </View>
       </ScrollView>
-      {claimableAmount > 0 && onClaim && isCooldownChallenge ? (
+      {claimableAmount > 0 &&
+      onClaim &&
+      isCooldownChallenge &&
+      isRewardsCooldownEnabled ? (
         <View style={styles.stickyClaimRewardsContainer}>
           <Button
             key='claimButton'
