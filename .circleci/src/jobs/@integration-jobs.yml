@@ -56,7 +56,7 @@ integration-test:
         command: |
           cd ./packages/libs
           sh ./scripts/check-generated-types.sh
-    - run: npx playwright install --with-deps
+    - run: NEEDRESTART_MODE=l npx playwright install --with-deps
     - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
     - store_test_results:
         path: packages/web/report.xml
