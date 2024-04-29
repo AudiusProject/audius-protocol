@@ -7,7 +7,9 @@ import {
   Notification
 } from '@audius/common/store'
 import { Dictionary } from '@reduxjs/toolkit'
-import { call, put, select } from 'typed-redux-saga'
+import { call, getContext, put, select } from 'typed-redux-saga'
+
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'
 import { fetchNotifications } from './fetchNotifications'
@@ -105,8 +107,8 @@ export function* checkForNewNotificationsSaga() {
       )
       yield* handleNewNotifications(notifications)
     }
-  } catch (e) {
-    console.error(e)
-    throw e
+  } catch (error: Error | unknown) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({ error: error as Error, name: 'Notifications' })
   }
 }
