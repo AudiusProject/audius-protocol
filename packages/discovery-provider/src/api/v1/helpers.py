@@ -1005,6 +1005,13 @@ def format_managed_user(managed_user):
     }
 
 
+def format_user_manager(user_manager):
+    return {
+        "manager": extend_user(user_manager["manager"]),
+        "grant": format_grant(user_manager["grant"]),
+    }
+
+
 def format_dashboard_wallet_user(dashboard_wallet_user):
     return {
         "wallet": dashboard_wallet_user["wallet"],

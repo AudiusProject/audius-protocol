@@ -23,3 +23,11 @@ managed_user = ns.model(
         "grant": fields.Nested(grant, required=True),
     },
 )
+
+user_manager = ns.model(
+    "user_manager",
+    {
+        "manager": fields.Nested(user_model_full, required=True),
+        "grant": fields.Nested(grant, required=True),
+    },
+)

@@ -32,6 +32,7 @@ from src.api.v1.helpers import (
     format_query,
     format_sort_direction,
     format_sort_method,
+    format_user_manager,
     get_current_user_id,
     get_default_max,
     make_full_response,
@@ -57,7 +58,7 @@ from src.api.v1.models.activities import (
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
-from src.api.v1.models.grants import managed_user
+from src.api.v1.models.grants import managed_user, user_manager
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -104,7 +105,9 @@ from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_managed_users import (
     GetManagedUsersArgs,
+    GetUserManagersArgs,
     get_managed_users_with_grants,
+    get_user_managers_with_grants,
 )
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -2150,6 +2153,49 @@ class ManagedUsers(Resource):
         users = list(map(format_managed_user, users))
 
         return success_response(users)
+
+
+managers_response = make_response(
+    "managers_response", full_ns, fields.List(fields.Nested(user_manager))
+)
+
+
+@full_ns.route("/<string:id>/managers")
+class Managers(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Managers""",
+        description="""Gets a list of users managing the given user""",
+        params={"id": "An id for the managed user"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
+    )
+    @auth_middleware(include_wallet=True)
+    @full_ns.marshal_with(managers_response)
+    def get(self, id, authed_user_id, authed_user_wallet):
+        user_id = decode_with_abort(id, full_ns)
+
+        if authed_user_id is None:
+            abort_unauthorized(full_ns)
+
+        # TODO: If accessing this endpoint as a manager, this check will not
+        # work correctly.
+        # https://linear.app/audius/issue/PAY-2780/support-getting-target-user-in-auth-middleware
+        if authed_user_id != user_id:
+            abort_forbidden(full_ns)
+
+        args = GetUserManagersArgs(
+            manager_wallet_address=authed_user_wallet, user_id=user_id
+        )
+        managers = get_user_managers_with_grants(args)
+        managers = list(map(format_user_manager, managers))
+
+        return success_response(managers)
 
 
 purchases_and_sales_parser = pagination_with_current_user_parser.copy()

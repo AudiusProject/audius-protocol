@@ -2,7 +2,10 @@ import logging
 from typing import Dict, List, Optional, TypedDict
 
 from src.models.grants.grant import Grant
-from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.get_unpopulated_users import (
+    get_unpopulated_users,
+    get_unpopulated_users_by_wallet,
+)
 from src.queries.query_helpers import populate_user_metadata
 from src.utils import db_session
 from src.utils.helpers import query_result_to_list
@@ -15,6 +18,77 @@ class GetManagedUsersArgs(TypedDict):
     current_user_id: int
     is_approved: Optional[bool]
     is_revoked: Optional[bool]
+
+
+class GetUserManagersArgs(TypedDict):
+    user_id: int
+    is_approved: Optional[bool]
+    is_revoked: Optional[bool]
+
+
+def make_user_managers_list(managers: List[Dict], grants: List[Dict]) -> List[Dict]:
+    user_managers = []
+    grants_map = {grant.get("grantee_address"): grant for grant in grants}
+
+    for user in managers:
+        grant = grants_map.get(user.get("wallet"))
+        if grant is None:
+            continue
+
+        user_managers.append(
+            {
+                "manager": user,
+                "grant": grant,
+            }
+        )
+
+    return user_managers
+
+
+def get_user_managers_with_grants(args: GetUserManagersArgs) -> List[Dict]:
+    """
+    Returns users which manage the given user
+
+    Args:
+        user_id: id of the managed user
+        is_approved: Optional[bool] If set, filters by approval status
+        is_revoked: Optional[bool] If set, filters by revocation status, defaults to False
+
+    Returns:
+        List of Users with grant information
+    """
+    is_approved = args.get("is_approved", None)
+    is_revoked = args.get("is_revoked", False)
+    user_id = args.get("user_id")
+
+    if user_id is None:
+        raise ValueError("user_id is required")
+
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        query = session.query(Grant).filter(
+            Grant.user_id == user_id, Grant.is_current == True
+        )
+
+        if is_approved is not None:
+            query = query.filter(Grant.is_approved == is_approved)
+        if is_revoked is not None:
+            query = query.filter(Grant.is_revoked == is_revoked)
+
+        grants = query.all()
+        if len(grants) == 0:
+            return []
+
+        wallet_addresses = [grant.grantee_address for grant in grants]
+        users = get_unpopulated_users_by_wallet(session, wallet_addresses)
+        user_ids = [user.get("user_id") for user in users]
+        managers = populate_user_metadata(
+            session, user_ids, users, current_user_id=user_id
+        )
+
+        grants = query_result_to_list(grants)
+
+        return make_user_managers_list(managers, grants)
 
 
 def make_managed_users_list(users: List[Dict], grants: List[Dict]) -> List[Dict]:
