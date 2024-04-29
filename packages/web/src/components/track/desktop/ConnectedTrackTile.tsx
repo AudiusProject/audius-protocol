@@ -202,8 +202,8 @@ const ConnectedTrackTile = ({
     const menu: Omit<TrackMenuProps, 'children'> = {
       extraMenuItems: [],
       handle,
-      includeAddToPlaylist: !isStreamGated,
-      includeAddToAlbum: !isStreamGated,
+      includeAddToPlaylist: true,
+      includeAddToAlbum: true,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
       ddexApp: track?.ddex_app,

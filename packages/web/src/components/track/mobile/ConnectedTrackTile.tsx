@@ -204,14 +204,11 @@ const ConnectedTrackTile = ({
         : null
     const addToAlbumAction =
       isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null
-    const addToPlaylistAction = !isStreamGated
-      ? OverflowAction.ADD_TO_PLAYLIST
-      : null
     const overflowActions = [
       repostAction,
       favoriteAction,
       addToAlbumAction,
-      addToPlaylistAction,
+      OverflowAction.ADD_TO_PLAYLIST,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
