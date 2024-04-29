@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Name } from '@audius/common/models'
 import {
+  EditPlaylistValues,
   accountActions,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -19,6 +21,7 @@ import { useDispatch } from 'react-redux'
 import PlaylistForm from 'components/create-playlist/PlaylistForm'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { DeleteCollectionConfirmationModal } from 'components/nav/desktop/PlaylistLibrary/DeleteCollectionConfirmationModal'
+import { track } from 'services/analytics'
 import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 import zIndex from 'utils/zIndex'
@@ -62,8 +65,28 @@ const EditPlaylistModal = () => {
   const onCancelDelete = () => setShowDeleteConfirmation(false)
 
   const handleSubmit = useCallback(
-    (formFields: any) => {
+    (formFields: EditPlaylistValues, initialValues: EditPlaylistValues) => {
       if (playlistId) {
+        // Track any edits
+        track({
+          eventName: Name.COLLECTION_EDIT,
+          properties: {
+            id: playlistId,
+            from: initialValues,
+            to: formFields
+          }
+        })
+        // We want to pay special attention to access condition changes
+        if (initialValues.stream_conditions !== formFields.stream_conditions) {
+          track({
+            eventName: Name.COLLECTION_EDIT_ACCESS_CHANGED,
+            properties: {
+              id: playlistId,
+              from: initialValues.stream_conditions,
+              to: formFields.stream_conditions
+            }
+          })
+        }
         dispatch(editPlaylist(playlistId, formFields))
       }
       onClose()

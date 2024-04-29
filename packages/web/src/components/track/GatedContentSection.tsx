@@ -105,6 +105,7 @@ type GatedContentAccessSectionProps = {
   isOwner: boolean
   className?: string
   buttonClassName?: string
+  source?: ModalSource
 }
 
 const LockedGatedContentSection = ({
@@ -116,7 +117,9 @@ const LockedGatedContentSection = ({
   goToCollection,
   renderArtist,
   className,
-  buttonClassName
+  buttonClassName,
+  source: premiumModalSource,
+  ...other
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
   const dispatch = useDispatch()
@@ -124,7 +127,7 @@ const LockedGatedContentSection = ({
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const source = lockedContentModalVisibility
+  const tipSource = lockedContentModalVisibility
     ? 'howToUnlockModal'
     : 'howToUnlockTrackPage'
   const followSource = lockedContentModalVisibility
@@ -139,18 +142,21 @@ const LockedGatedContentSection = ({
     }
     openPremiumContentPurchaseModal(
       { contentId, contentType },
-      { source: ModalSource.TrackDetails }
+      { source: premiumModalSource ?? ModalSource.TrackDetails }
     )
   }, [
     contentId,
     contentType,
     lockedContentModalVisibility,
     openPremiumContentPurchaseModal,
-    setLockedContentModalVisibility
+    setLockedContentModalVisibility,
+    premiumModalSource
   ])
 
   const handleSendTip = useAuthenticatedCallback(() => {
-    dispatch(beginTip({ user: tippedUser, source, trackId: contentId }))
+    dispatch(
+      beginTip({ user: tippedUser, source: tipSource, trackId: contentId })
+    )
 
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
@@ -158,7 +164,7 @@ const LockedGatedContentSection = ({
   }, [
     dispatch,
     tippedUser,
-    source,
+    tipSource,
     contentId,
     lockedContentModalVisibility,
     setLockedContentModalVisibility
@@ -554,6 +560,8 @@ type GatedContentSectionProps = {
   className?: string
   buttonClassName?: string
   ownerId: ID | null
+  /** More context for analytics to know about where purchases are being triggered from */
+  source?: ModalSource
 }
 
 export const GatedContentSection = ({
@@ -566,7 +574,8 @@ export const GatedContentSection = ({
   wrapperClassName,
   className,
   buttonClassName,
-  ownerId
+  ownerId,
+  source
 }: GatedContentSectionProps) => {
   const dispatch = useDispatch()
   const gatedContentStatusMap = useSelector(getGatedContentStatusMap)
@@ -699,6 +708,7 @@ export const GatedContentSection = ({
         isOwner={isOwner}
         className={cn(styles.gatedContentSectionLocked, className)}
         buttonClassName={buttonClassName}
+        source={source}
       />
     </div>
   )

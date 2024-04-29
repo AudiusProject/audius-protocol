@@ -108,7 +108,8 @@ const ConnectedTrackTile = ({
   variant,
   containerClassName,
   releaseDate,
-  isFeed = false
+  isFeed = false,
+  source
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -283,6 +284,7 @@ const ConnectedTrackTile = ({
       showRankIcon={showRankIcon}
       variant={variant}
       releaseDate={releaseDate}
+      source={source}
     />
   )
 }

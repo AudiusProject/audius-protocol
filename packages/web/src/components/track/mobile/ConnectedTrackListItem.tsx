@@ -106,7 +106,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
           contentId: trackId,
           contentType: PurchaseableContentType.TRACK
         },
-        { source: ModalSource.TrackTile }
+        { source: ModalSource.TrackListItem }
       )
     } else if (trackId && !hasStreamAccess) {
       openLockedContentModal()

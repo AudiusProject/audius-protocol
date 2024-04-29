@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 
 import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
-import { SquareSizes, Collection, ID } from '@audius/common/models'
+import { SquareSizes, Collection, ID, Name } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { RandomImage } from '@audius/common/services'
 import {
@@ -29,6 +29,7 @@ import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
+import { track } from 'services/analytics'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { useSelector } from 'utils/reducer'
@@ -237,6 +238,14 @@ const EditPlaylistPage = g(
         }
 
         editPlaylist(metadata.playlist_id, editPlaylistData)
+
+        track({
+          eventName: Name.COLLECTION_EDIT,
+          properties: {
+            id: metadata.playlist_id,
+            to: formFields
+          }
+        })
 
         onClose()
       }

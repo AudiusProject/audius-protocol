@@ -47,7 +47,10 @@ type PlaylistFormProps = {
   onDelete?: () => void
   /** Only applies to edit mode */
   onCancel?: () => void
-  onSave: (formFields: CollectionMetadata) => void
+  onSave: (
+    formFields: CollectionMetadata,
+    initialValues: CollectionMetadata
+  ) => void
 }
 
 const createCollectionFormSchema = (collectionType: 'album' | 'playlist') => {
@@ -72,14 +75,16 @@ const PlaylistForm = ({
     SquareSizes.SIZE_1000_BY_1000
   )
 
+  const initialValues = {
+    ...metadata,
+    artwork: coverArtUrl ? { url: coverArtUrl } : null,
+    description: metadata.description ?? ''
+  }
+
   return (
     <Formik<EditPlaylistValues>
-      initialValues={{
-        ...metadata,
-        artwork: coverArtUrl ? { url: coverArtUrl } : null,
-        description: metadata.description ?? ''
-      }}
-      onSubmit={onSave}
+      initialValues={initialValues}
+      onSubmit={(values) => onSave(values, initialValues)}
       validationSchema={toFormikValidationSchema(
         createCollectionFormSchema(isAlbum ? 'album' : 'playlist')
       )}
