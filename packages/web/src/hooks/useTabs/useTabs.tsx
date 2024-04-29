@@ -474,6 +474,7 @@ const GestureSupportingBodyContainer = memo(
     const onRest = useCallback(() => {
       if (getGestureInProgress()) return
       const { from, to } = getTransitionInfo()
+      if (from === to) return
       onChangeComplete(from, to)
       setInternalIndex((i) => i + getIndexDelta())
       setIndexDelta(0)

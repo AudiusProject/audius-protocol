@@ -1,6 +1,6 @@
 import { User } from '@audius/sdk'
-import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useSdk } from './AudiusSdkProvider'
+import { ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { useSdk } from '../hooks/useSdk'
 import { Status } from './types'
 
 type AuthContext = {
@@ -25,12 +25,14 @@ export const AuthProvider = ({ children }: { children: ReactNode}) => {
     if (sdk) {
       const fn = async () => {
         try {
+          setStatus(Status.LOADING)
           const urlParams = new URLSearchParams(window.location.search)
           let token = localStorage.getItem(tokenLocalStorageKey)
           if (!token) {
             token = urlParams.get('token')
           }
           if (!token) {
+            setStatus(Status.SUCCESS)
             return
           }
           const tokenRes = await sdk?.users.verifyIDToken({ token })

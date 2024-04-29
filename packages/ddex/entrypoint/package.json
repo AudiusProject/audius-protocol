@@ -9,9 +9,13 @@
     "start:stage": "env-cmd -f .env.stage turbo run start --filter=@audius/ddex-entrypoint",
     "start:prod": "env-cmd -f .env.prod turbo run start --filter=@audius/ddex-entrypoint",
     "build": "tsc && vite build",
+    "build:dev": "env-cmd -f .env.dev turbo run build --filter=@audius/ddex-entrypoint",
+    "build:stage": "env-cmd -f .env.stage turbo run build --filter=@audius/ddex-entrypoint",
+    "build:prod": "env-cmd -f .env.prod turbo run build --filter=@audius/ddex-entrypoint",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy ./dist"
+    "deploy:stage": "npm run build:stage && wrangler pages deploy --branch=stage ./dist",
+    "deploy:prod": "npm run build:prod && wrangler pages deploy ./dist"
   },
   "dependencies": {
     "@audius/harmony": "*",

@@ -216,7 +216,7 @@ export const TracksTable = ({
             textVariant='title'
             size='s'
             strength='weak'
-            css={{ display: 'block' }}
+            css={{ display: 'block', 'line-height': '125%' }}
             ellipses
           >
             {track.name}
