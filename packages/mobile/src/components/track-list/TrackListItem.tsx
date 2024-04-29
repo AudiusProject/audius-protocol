@@ -235,7 +235,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     title,
     track_id,
     owner_id,
-    is_stream_gated: isStreamGated,
     ddex_app: ddexApp
   } = track
   const { isEnabled: isEditAlbumsEnabled } = useFeatureFlag(
@@ -324,7 +323,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isEditAlbumsEnabled && isTrackOwner && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -355,7 +354,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     has_current_user_reposted,
     isEditAlbumsEnabled,
     ddexApp,
-    isStreamGated,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     showViewAlbum,
