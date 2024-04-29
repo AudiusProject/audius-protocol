@@ -17,6 +17,7 @@
     "./schemas": "./src/schemas/index.ts",
     "./services": "./src/services/index.ts",
     "./store": "./src/store/index.ts",
+    "./serverStore": "./src/serverStore/index.ts",
     "./utils": "./src/utils/index.ts"
   },
   "repository": {

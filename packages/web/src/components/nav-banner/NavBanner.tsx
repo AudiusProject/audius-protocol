@@ -1,12 +1,17 @@
 import { ReactElement } from 'react'
 
-import { removeNullable } from '@audius/common/utils'
 import { Flex, Button, PopupMenu, IconSort as SortIcon } from '@audius/harmony'
 import cn from 'classnames'
 
 import { ClientOnly } from 'components/client-only/ClientOnly'
 
 import styles from './NavBanner.module.css'
+
+function removeNullable<T>(
+  value: T
+): value is Exclude<T, false | null | undefined | '' | 0> {
+  return Boolean(value)
+}
 
 const messages = {
   sortByRecent: 'Sort by Recent',

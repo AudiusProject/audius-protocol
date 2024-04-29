@@ -1,5 +1,5 @@
 import { LineupEntry, Track, UserTrackMetadata } from '@audius/common/models'
-import { responseAdapter } from '@audius/common/services'
+import { makeActivity } from '@audius/common/services'
 import {
   accountSelectors,
   getContext,
@@ -39,7 +39,7 @@ function* getHistoryTracks() {
     if (!activityData) return []
 
     const tracks = activityData
-      .map(responseAdapter.makeActivity)
+      .map(makeActivity)
       .filter(removeNullable) as UserTrackMetadata[]
 
     const processedTracks = yield* call(processAndCacheTracks, tracks)

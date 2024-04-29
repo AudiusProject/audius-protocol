@@ -6,12 +6,13 @@ import { Helmet } from 'react-helmet'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import type { PageContextServer } from 'vike/types'
 
+import { ServerWebPlayer } from 'app/web-player/ServerWebPlayer'
+import { ServerTrackPage } from 'pages/server-track-page/ServerTrackPage'
 import { isMobileUserAgent } from 'utils/clientUtil'
+import { getTrackPageSEOFields } from 'utils/seo'
 
-import { harmonyCache } from '../HarmonyCacheProvider'
-
-import RootWithProviders from './RootWithProviders'
-import { getIndexHtml } from './getIndexHtml'
+import { harmonyCache } from '../../HarmonyCacheProvider'
+import { getIndexHtml } from '../getIndexHtml'
 
 const { extractCriticalToChunks, constructStyleTagsFromChunks } =
   createEmotionServer(harmonyCache)
@@ -23,6 +24,7 @@ export default function render(
   }
 ) {
   const { pageProps, urlPathname } = pageContext
+  const { track } = pageProps
 
   const isMobile = isMobileUserAgent(pageContext.userAgent)
 
@@ -30,8 +32,21 @@ export default function render(
     initialEntries: [urlPathname]
   })
 
+  // TODO: Fix this, this pulls in libs through the routes
+  const {
+    title = '',
+    description = '',
+    canonicalUrl = '',
+    structuredData
+  } = getTrackPageSEOFields({
+    title: track.title,
+    userName: track.user.name,
+    permalink: track.permalink,
+    releaseDate: track.release_date ?? track.created_at ?? ''
+  })
+
   const pageHtml = renderToString(
-    <RootWithProviders
+    <ServerWebPlayer
       ssrContextValue={{
         isServerSide: true,
         isSsrEnabled: true,
@@ -39,7 +54,23 @@ export default function render(
         history,
         isMobile
       }}
-    />
+    >
+      <ServerTrackPage
+        isMobile={isMobile}
+        title={title}
+        description={description}
+        canonicalUrl={canonicalUrl}
+        structuredData={structuredData}
+        heroTrack={track}
+        user={track.user}
+        userId={track.user.id}
+        // TODO: Check these
+        hasValidRemixParent={false}
+        heroPlaying={false}
+        previewing={false}
+        badge={null}
+      />
+    </ServerWebPlayer>
   )
 
   const helmet = Helmet.renderStatic()

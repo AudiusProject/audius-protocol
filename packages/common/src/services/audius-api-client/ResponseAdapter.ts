@@ -1,5 +1,3 @@
-import { full } from '@audius/sdk'
-
 import dayjs from '~/utils/dayjs'
 
 import {
@@ -19,7 +17,6 @@ import { decodeHashId } from '../../utils/hashIds'
 import { removeNullable } from '../../utils/typeUtils'
 
 import {
-  APIActivity,
   APIFavorite,
   APIRemix,
   APIRepost,
@@ -32,9 +29,7 @@ import {
   APISearch,
   APISearchTrack,
   APISearchAutocomplete,
-  APISearchPlaylist,
-  APIActivityV2,
-  isApiActivityV2
+  APISearchPlaylist
 } from './types'
 
 export const makeUser = (
@@ -399,30 +394,6 @@ export const makePlaylist = (
   delete marshalled.added_timestamps
 
   return marshalled as unknown as UserCollectionMetadata
-}
-
-export const makeActivity = (
-  activity: APIActivity | APIActivityV2
-): UserTrackMetadata | UserCollectionMetadata | undefined => {
-  if (isApiActivityV2(activity)) {
-    if (!activity.item) {
-      return undefined
-    }
-    if (activity.itemType === 'track') {
-      return makeTrack(full.TrackFullToJSON(activity.item as full.TrackFull))
-    } else if (activity.itemType === 'playlist') {
-      return makePlaylist(
-        full.PlaylistFullWithoutTracksToJSON(
-          activity.item as full.PlaylistFullWithoutTracks
-        )
-      )
-    }
-    return undefined
-  } else {
-    return activity.item_type === 'track'
-      ? makeTrack(activity.item)
-      : makePlaylist(activity.item)
-  }
 }
 
 export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {

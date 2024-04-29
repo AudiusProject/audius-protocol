@@ -1,6 +1,5 @@
 import { ID } from '@audius/common/models'
-import { Env } from '@audius/common/services'
-import { encodeUrlName, getHash } from '@audius/common/utils'
+import { Env } from '@audius/common/services/env'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { matchPath } from 'react-router'
@@ -332,6 +331,46 @@ export const staticRoutes = new Set([
   WITHDRAWALS_PAGE
 ])
 
+/**
+ * Formats a URL name for routing.
+ *  Removes reserved URL characters
+ *  Replaces white space with -
+ *  Lower cases
+ */
+const formatUrlName = (name: string) => {
+  if (!name) return ''
+  return (
+    name
+      .replace(/!|%|#|\$|&|'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/g, '')
+      .replace(/\s+/g, '-')
+      // Reduce repeated `-` to a single `-`
+      .replace(/-+/g, '-')
+      .toLowerCase()
+  )
+}
+
+/**
+ * Encodes a formatted URL name for routing.
+ * Using window.location will automatically decode
+ * the encoded component, so using the above formatUrlName(string) can
+ * be used to compare results with the window.location directly.
+ */
+const encodeUrlName = (name: string) => {
+  return encodeURIComponent(formatUrlName(name))
+}
+
+/**
+ * Generate a short base36 hash for a given string.
+ * Used to generate short hashes for for queries and urls.
+ */
+const getHash = (str: string) =>
+  Math.abs(
+    str.split('').reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0)
+      return a & a
+    }, 0)
+  ).toString(36)
+
 /** Given a pathname, finds a matching route */
 export const findRoute = (pathname: string) => {
   for (const route of orderedRoutes) {
@@ -472,7 +511,7 @@ export const getPathname = (location: Location) => {
 
 export const recordGoToSignup = (callback: () => void) => {
   if ((window as any).analytics) {
-    ;(window as any).analytics.track(
+    ; (window as any).analytics.track(
       'Create Account: Open',
       { source: 'landing page' },
       null,

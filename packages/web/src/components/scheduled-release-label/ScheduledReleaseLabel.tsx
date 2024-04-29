@@ -1,11 +1,16 @@
-import { getLocalTimezone } from '@audius/common/utils'
 import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
+import dayjs from 'utils/dayjs'
+
 import gatedContentLabelStyles from '../track/GatedContentLabel.module.css'
 
 import styles from './ScheduledReleaseLabel.module.css'
+
+const getLocalTimezone = () => {
+  return dayjs().format('z')
+}
 
 export type ScheduledReleaseLabelProps = {
   released?: string | null

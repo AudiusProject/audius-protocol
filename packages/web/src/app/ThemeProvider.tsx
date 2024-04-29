@@ -1,13 +1,20 @@
 import { ReactNode } from 'react'
 
 import { Theme, SystemAppearance } from '@audius/common/models'
-import { themeSelectors } from '@audius/common/store'
 import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 import { AppState } from 'store/types'
 import { useSelector } from 'utils/reducer'
 
-const { getTheme, getSystemAppearance } = themeSelectors
+const getBaseState = (state: AppState) => state.ui.theme
+
+const getTheme = (state: AppState) => {
+  return getBaseState(state).theme
+}
+
+const getSystemAppearance = (state: AppState) => {
+  return getBaseState(state).systemAppearance
+}
 
 const selectHarmonyTheme = (state: AppState) => {
   const theme = getTheme(state)

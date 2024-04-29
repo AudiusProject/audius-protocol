@@ -1,21 +1,24 @@
 import { useRef } from 'react'
 
+import '@audius/harmony/dist/harmony.css'
 import cn from 'classnames'
+import { ConnectedRouter } from 'connected-react-router'
 
 import { AppErrorBoundary } from 'app/AppErrorBoundary'
-import { AppProviders } from 'app/AppProviders'
-import { HistoryContextProvider } from 'app/HistoryProvider'
-import Navigator from 'components/nav/Navigator'
-import TopLevelPage from 'components/nav/mobile/TopLevelPage'
-// import PlayBarProvider from 'components/play-bar/PlayBarProvider'
+import { HistoryContextProvider, useHistoryContext } from 'app/HistoryProvider'
+import { ServerReduxProvider } from 'app/ServerReduxProvider'
+import { ThemeProvider } from 'app/ThemeProvider'
+// import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
+// import TopLevelPage from 'components/nav/mobile/TopLevelPage'
+import ServerNavigator from 'components/nav/ServerNavigator'
+import { ServerPlayBar } from 'components/play-bar/desktop/ServerPlayBar'
 import { MAIN_CONTENT_ID } from 'pages/MainContentContext'
 import {
   SsrContextProvider,
   SsrContextType,
   useSsrContext
 } from 'ssr/SsrContext'
-
-import { HarmonyCacheProvider } from '../../HarmonyCacheProvider'
+import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
 
@@ -25,19 +28,42 @@ type ServerWebPlayerProps = {
   children: any
 }
 
+const InnerProviderContainer = ({ children }: { children: any }) => {
+  const { history } = useHistoryContext()
+
+  const initialStoreState = {
+    ui: {
+      theme: {
+        theme: getTheme(),
+        systemPreference: getSystemAppearance()
+      }
+    }
+  }
+
+  return (
+    <>
+      <ServerReduxProvider initialStoreState={initialStoreState}>
+        <ConnectedRouter history={history}>
+          <ThemeProvider>{children}</ThemeProvider>
+        </ConnectedRouter>
+      </ServerReduxProvider>
+    </>
+  )
+}
+
 const ProviderContainer = ({
   ssrContextValue,
   children
 }: ServerWebPlayerProps) => (
-  <HarmonyCacheProvider>
+  <>
     <SsrContextProvider value={ssrContextValue}>
       <HistoryContextProvider>
-        <AppProviders>
+        <InnerProviderContainer>
           <AppErrorBoundary>{children}</AppErrorBoundary>
-        </AppProviders>
+        </InnerProviderContainer>
       </HistoryContextProvider>
     </SsrContextProvider>
-  </HarmonyCacheProvider>
+  </>
 )
 
 export const ServerWebPlayer = ({
@@ -46,13 +72,12 @@ export const ServerWebPlayer = ({
 }: ServerWebPlayerProps) => {
   const { isMobile } = useSsrContext()
   const mainContentRef = useRef(null)
-  console.log('IN THE SERVER_WEB_PLAYER')
 
   return (
     <ProviderContainer ssrContextValue={ssrContextValue}>
       <div className={styles.root}>
         <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
-          <Navigator />
+          <ServerNavigator />
           <div
             ref={mainContentRef}
             id={MAIN_CONTENT_ID}
@@ -61,12 +86,12 @@ export const ServerWebPlayer = ({
               [styles.mainContentWrapperMobile]: isMobile
             })}
           >
-            {isMobile && <TopLevelPage />}
+            {/* {isMobile && <TopLevelPage />} */}
             {/* {isMobile && <HeaderContextConsumer />} */}
             {children}
           </div>
 
-          {/* <PlayBarProvider isMobile={isMobile} /> */}
+          <ServerPlayBar isMobile={isMobile} />
         </div>
       </div>
     </ProviderContainer>

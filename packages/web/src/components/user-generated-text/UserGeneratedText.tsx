@@ -7,16 +7,28 @@ import {
   ElementType
 } from 'react'
 
-import {
-  squashNewLines,
-  isAudiusUrl,
-  getPathFromAudiusUrl
-} from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
-import { ExternalTextLink, TextLink } from 'components/link'
+import { ServerExternalTextLink } from 'components/link/ServerExternalTextLink'
+import { TextLink } from 'components/link/TextLink'
+
+/**
+ * Reduces multiple sequential newlines (> 3) into max `\n\n` and
+ * trims both leading and trailing newlines
+ */
+const squashNewLines = (str: string | null) => {
+  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : str
+}
+
+const audiusUrlRegex =
+  // eslint-disable-next-line no-useless-escape
+  /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?(staging\.)?(audius\.co)(\/.+)?/gim
+
+const isAudiusUrl = (url: string) => new RegExp(audiusUrlRegex).test(url)
+const getPathFromAudiusUrl = (url: string) =>
+  new RegExp(audiusUrlRegex).exec(url)?.[3] ?? null
 
 type LinkifyTextProps = TextProps<any> & {
   innerRef?: Ref<any>
@@ -47,7 +59,7 @@ const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const isExternalLink = !isAudiusUrl(href)
   const to = isExternalLink ? formatExternalLink(href) : formatAudiusUrl(href)
 
-  const LinkComponent = isExternalLink ? ExternalTextLink : TextLink
+  const LinkComponent = isExternalLink ? ServerExternalTextLink : TextLink
 
   return (
     <LinkComponent to={to} variant='visible' {...props}>
