@@ -38,10 +38,13 @@ const accountApi = createApi({
         const managedUsers = await sdk.users.getManagedUsers({
           id: Id.parse(currentUserId)
         })
-        return managedUsers.data ?? []
+
+        const { data = [] } = managedUsers
+        return
       },
       options: {
-        type: 'query'
+        type: 'query',
+        schemaKey: 'managedUsers'
       }
     }
   }

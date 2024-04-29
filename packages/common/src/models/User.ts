@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import { full, ManagedUser } from '@audius/sdk'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
@@ -23,6 +23,7 @@ import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
+import { Grant, grantFromSDK } from './Grant'
 
 export type UserMetadata = {
   album_count: number
@@ -84,6 +85,11 @@ export type UserMetadata = {
   local?: boolean
   events?: UserEvent
 } & Timestamped
+
+export type ManagedUserMetadata = {
+  grant: Grant
+  user: UserMetadata
+}
 
 export type ComputedUserProperties = {
   _profile_picture_sizes: ProfilePictureSizes
@@ -164,3 +170,10 @@ export const userMetadataFromSDK = (
 
 export const userMetadataListFromSDK = (input?: full.UserFull[]) =>
   input ? input.map((d) => userMetadataFromSDK(d)).filter(removeNullable) : []
+
+export const managedUserFromSDK = (input: ManagedUser): ManagedUserMetadata => {
+  return {
+    grant: grantFromSDK(input.grant),
+    user: userMetadataFromSDK(input.user) as UserMetadata
+  }
+}
