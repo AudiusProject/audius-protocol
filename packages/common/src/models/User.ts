@@ -1,4 +1,4 @@
-import { full, ManagedUser } from '@audius/sdk'
+import { full } from '@audius/sdk'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
@@ -171,7 +171,9 @@ export const userMetadataFromSDK = (
 export const userMetadataListFromSDK = (input?: full.UserFull[]) =>
   input ? input.map((d) => userMetadataFromSDK(d)).filter(removeNullable) : []
 
-export const managedUserFromSDK = (input: ManagedUser): ManagedUserMetadata => {
+export const managedUserFromSDK = (
+  input: full.ManagedUser
+): ManagedUserMetadata => {
   return {
     grant: grantFromSDK(input.grant),
     user: userMetadataFromSDK(input.user) as UserMetadata
