@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ingester/artistutils"
 	"ingester/common"
+	"ingester/constants"
 	"log"
 	"log/slog"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"ingester/crawler"
 	"ingester/parser"
@@ -19,7 +21,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -53,11 +54,13 @@ func main() {
 
 	// Optionally wipe all state except for OAuthed users
 	if os.Getenv("IS_DEV") == "true" && len(os.Args) > 2 && os.Args[2] == "--wipe" {
-		if err := wipeBucket(ingester.S3Client, ingester.RawBucket); err != nil {
-			logger.Error("Error creating raw bucket", "err", err)
+		if ingester.S3Client.Endpoint != "http://ingress:4566" && ingester.S3Client.Endpoint != "http://localhost:4566" {
+			logger.Error("ignoring the --wipe flag because the AWS bucket is not localstack")
+			return
 		}
-		if err := wipeBucket(ingester.S3Client, ingester.CrawledBucket); err != nil {
-			logger.Error("Error creating raw bucket", "err", err)
+
+		if err := wipeBucket(ingester.S3Client, ingester.Bucket); err != nil {
+			logger.Error("Error wiping bucket", "err", err)
 		}
 
 		filter := bson.M{}
@@ -66,20 +69,15 @@ func main() {
 		} else {
 			logger.Error("Error wiping crawler_cursor collection", "err", err)
 		}
-		if result, err := ingester.DeliveriesColl.DeleteMany(ingester.Ctx, filter); err == nil {
-			log.Printf("Deleted %d deliveries\n", result.DeletedCount)
+		if result, err := ingester.BatchesColl.DeleteMany(ingester.Ctx, filter); err == nil {
+			log.Printf("Deleted %d batches documents\n", result.DeletedCount)
 		} else {
-			logger.Error("Error wiping deliveries collection", "err", err)
+			logger.Error("Error wiping batches collection", "err", err)
 		}
-		if result, err := ingester.PendingReleasesColl.DeleteMany(ingester.Ctx, filter); err == nil {
-			log.Printf("Deleted %d pending_releases\n", result.DeletedCount)
+		if result, err := ingester.ReleasesColl.DeleteMany(ingester.Ctx, filter); err == nil {
+			log.Printf("Deleted %d releases documents\n", result.DeletedCount)
 		} else {
-			logger.Error("Error wiping pending_releases collection", "err", err)
-		}
-		if result, err := ingester.PublishedReleasesColl.DeleteMany(ingester.Ctx, filter); err == nil {
-			log.Printf("Deleted %d published_releases\n", result.DeletedCount)
-		} else {
-			logger.Error("Error wiping published_releases collection", "err", err)
+			logger.Error("Error wiping releases collection", "err", err)
 		}
 	}
 
@@ -88,22 +86,63 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Start the crawler and parser
-	go crawler.CrawlThenParse(ingester, parser.NewParser(ingester).ProcessDelivery)
+	// Crawl and parse each new delivery that gets put into S3
+	p := parser.NewParser(ingester)
+	go crawler.CrawlThenParse(ingester)
+
+	// Re-parse releases (UI sets release_status to "awaiting_parse" to re-parse)
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				cursor, err := ingester.ReleasesColl.Find(ingester.Ctx, bson.M{"release_status": constants.ReleaseStatusAwaitingParse})
+				if err != nil {
+					logger.Error("Error querying releases", "err", err)
+					continue
+				}
+
+				for cursor.Next(ingester.Ctx) {
+					var release common.Release
+					err := cursor.Decode(&release)
+					if err != nil {
+						logger.Error("Error unmarshalling release", "err", err)
+						continue
+					}
+
+					logger.Info("(Re-)parsing release", "release_id", release.ReleaseID)
+					if ok := p.ParseRelease(&release); !ok {
+						logger.Error("Failed to parse release in an unexpected way (couldn't update status)", "release_id", release.ReleaseID)
+					}
+				}
+
+				// Close the cursor and check for errors
+				if err := cursor.Close(ctx); err != nil {
+					logger.Error("Error closing cursor", "err", err)
+				}
+				if err := cursor.Err(); err != nil {
+					logger.Error("Error during cursor iteration", "err", err)
+				}
+			}
+		}
+	}()
 
 	// Test the ingester with a delivery if provided
-	if os.Getenv("IS_DEV") == "true" && len(os.Args) > 1 {
-		if err := createBucket(ingester.S3Client, ingester.RawBucket); err != nil {
+	if os.Getenv("IS_DEV") == "true" {
+		if err := createBucket(ingester.S3Client, ingester.Bucket); err != nil {
 			logger.Error("Error creating raw bucket", "err", err)
 		}
-		if err := createBucket(ingester.S3Client, ingester.CrawledBucket); err != nil {
-			logger.Error("Error creating raw bucket", "err", err)
-		}
-		fmt.Printf("Created buckets: %s, %s\n", ingester.RawBucket, ingester.CrawledBucket)
+		fmt.Printf("Created bucket: %s\n", ingester.Bucket)
 
-		testDeliveryPath := os.Args[1]
-		testDeliveryURL := uploadTestDelivery(ingester, testDeliveryPath)
-		logger.Info("Uploaded test delivery", "url", testDeliveryURL)
+		if len(os.Args) > 1 {
+			testDeliveryPath := os.Args[1]
+			testDeliveryURL := uploadTestDelivery(ingester, testDeliveryPath)
+			logger.Info("Uploaded test delivery", "local path", testDeliveryPath, "url", testDeliveryURL)
+		}
 	}
 
 	<-ctx.Done() // Wait until the context is canceled
@@ -134,6 +173,10 @@ func createBucket(s3Client *s3.S3, bucket string) error {
 }
 
 func wipeBucket(s3Client *s3.S3, bucketName string) error {
+	if s3Client.Endpoint != "http://ingress:4566" && s3Client.Endpoint != "http://localhost:4566" {
+		return fmt.Errorf("cannot wipe bucket '%s' because endpoint is not localstack", bucketName)
+	}
+
 	listParams := &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucketName),
 	}
@@ -160,7 +203,7 @@ func wipeBucket(s3Client *s3.S3, bucketName string) error {
 	return nil
 }
 
-func uploadTestDelivery(bi *common.Ingester, path string) string {
+func uploadTestDelivery(i *common.Ingester, path string) string {
 	info, err := os.Stat(path)
 	if err != nil {
 		log.Fatalf("Error getting file info for '%s': %v", path, err)
@@ -169,67 +212,17 @@ func uploadTestDelivery(bi *common.Ingester, path string) string {
 	var s3Path string
 	if info.IsDir() {
 		baseDir := filepath.Base(path)
-		s3Path, err = uploadDirectory(bi, path, baseDir)
+		s3Path, err = i.UploadDirectory(path, baseDir)
 	} else {
 		// If it's a ZIP file, upload directly to the root of the S3 bucket
 		if strings.HasSuffix(path, ".zip") {
 			_, fileName := filepath.Split(path)
-			s3Path, err = uploadFile(bi, path, "", fileName)
+			s3Path, err = i.UploadFile(path, "", fileName)
 		}
 	}
 	if err != nil {
 		log.Fatalf("Error uploading file or dir '%s': %v", path, err)
 	}
 
-	return fmt.Sprintf("s3://%s/%s", bi.RawBucket, s3Path)
-}
-
-func uploadDirectory(i *common.Ingester, dirPath, baseDir string) (string, error) {
-	entries, err := os.ReadDir(dirPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read directory '%s': %w", dirPath, err)
-	}
-
-	for _, entry := range entries {
-		if entry.Name() == ".DS_Store" {
-			continue
-		}
-
-		fullPath := filepath.Join(dirPath, entry.Name())
-		if entry.IsDir() {
-			_, err = uploadDirectory(i, fullPath, filepath.Join(baseDir, entry.Name()))
-		} else {
-			_, err = uploadFile(i, fullPath, baseDir, entry.Name())
-		}
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return baseDir, nil
-}
-
-func uploadFile(i *common.Ingester, filePath, baseDir, fileName string) (string, error) {
-	if fileName == ".DS_Store" {
-		return "", nil
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open file '%s': %w", filePath, err)
-	}
-	defer file.Close()
-
-	s3Key := filepath.Join(baseDir, fileName)
-
-	_, err = i.S3Uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(i.RawBucket),
-		Key:    aws.String(s3Key),
-		Body:   file,
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to upload '%s' to S3: %w", filePath, err)
-	}
-
-	return s3Key, nil
+	return fmt.Sprintf("s3://%s/%s", i.Bucket, s3Path)
 }

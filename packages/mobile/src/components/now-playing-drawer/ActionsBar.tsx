@@ -203,7 +203,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
         isEditAlbumsEnabled && isOwner ? OverflowAction.ADD_TO_ALBUM : null,
-        !track.is_stream_gated ? OverflowAction.ADD_TO_PLAYLIST : null,
+        OverflowAction.ADD_TO_PLAYLIST,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,

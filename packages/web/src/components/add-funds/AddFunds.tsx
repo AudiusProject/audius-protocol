@@ -2,10 +2,12 @@ import { useState } from 'react'
 
 import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
+import { BuyUSDCStage, buyUSDCSelectors } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { Box, Button, Flex, Text, IconLogoCircleUSDC } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -14,8 +16,11 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 
 import styles from './AddFunds.module.css'
 
+const { getBuyUSDCFlowStage } = buyUSDCSelectors
+
 const messages = {
   usdcBalance: 'USDC Balance',
+  transferring: 'Transferring funds to your wallet...',
   continue: 'Continue'
 }
 
@@ -41,6 +46,9 @@ export const AddFunds = ({
   const isMobile = useIsMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
   const balance = USDC(balanceBN ?? new BN(0)).value
+
+  const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
+  const isTransferring = buyUSDCStage === BuyUSDCStage.TRANSFERRING
 
   return (
     <div className={styles.root}>
@@ -82,8 +90,10 @@ export const AddFunds = ({
             onClick={() =>
               onContinue(selectedPurchaseMethod, selectedPurchaseVendor)
             }
+            isLoading={isTransferring}
+            disabled={isTransferring}
           >
-            {messages.continue}
+            {isTransferring ? messages.transferring : messages.continue}
           </Button>
         </Flex>
       </div>

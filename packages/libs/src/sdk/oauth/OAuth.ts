@@ -191,11 +191,15 @@ export class OAuth {
   login({
     scope = 'read',
     params,
-    redirectUri = 'postMessage'
+    redirectUri = 'postMessage',
+    display = 'popup',
+    responseMode = 'fragment'
   }: {
     scope?: OAuthScope
     params?: WriteOnceParams
     redirectUri?: string
+    display?: 'popup' | 'fullScreen'
+    responseMode?: 'fragment' | 'query'
   }) {
     const scopeFormatted = typeof scope === 'string' ? [scope] : scope
     if (!this.config.appName && !this.apiKey) {
@@ -246,10 +250,12 @@ export class OAuth {
     const appIdURIParam = `${
       this.apiKey ? 'api_key' : 'app_name'
     }=${appIdURISafe}`
+    const responseModeParam = `response_mode=${responseMode}`
 
     const fullOauthUrl = `${
       OAUTH_URL[this.env]
-    }?scope=${effectiveScope}&state=${csrfToken}&redirect_uri=${redirectUri}&origin=${originURISafe}&${appIdURIParam}${writeOnceParams}`
+    }?scope=${effectiveScope}&state=${csrfToken}&redirect_uri=${redirectUri}&origin=${originURISafe}&${responseModeParam}&${appIdURIParam}${writeOnceParams}&display=${display}`
+
     if (redirectUri === 'postMessage') {
       this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
       this._clearPopupCheckInterval()

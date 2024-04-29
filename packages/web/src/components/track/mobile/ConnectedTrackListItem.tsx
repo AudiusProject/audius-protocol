@@ -56,7 +56,6 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     isLocked,
     isReposted,
     isSaved,
-    isStreamGated,
     streamConditions,
     trackId,
     user
@@ -90,7 +89,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       isEditAlbumsEnabled && user?.user_id === currentUserId && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,
-      !isStreamGated ? OverflowAction.ADD_TO_PLAYLIST : null,
+      OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
       isEditAlbumsEnabled && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
