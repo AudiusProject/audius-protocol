@@ -107,9 +107,8 @@ export const UsersSearch = (props: UsersSearchProps) => {
   )
 
   const handleClose = useCallback(() => {
-    onChange('')
     onClose?.()
-  }, [onClose, onChange])
+  }, [onClose])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -135,7 +134,6 @@ export const UsersSearch = (props: UsersSearchProps) => {
       onChange('')
     }
   }, [lastSearchQuery, onChange])
-
   return (
     <Flex direction='column' h={690}>
       <Box p='xl'>
@@ -196,11 +194,12 @@ export const UsersSearch = (props: UsersSearchProps) => {
 export const SearchUsersModal = ({
   titleProps,
   onClosed,
+  onClose,
   isOpen,
   ...rest
 }: SearchUsersModalProps) => {
   const [query, setQuery] = useState('')
-  const { onClose, onCancel } = rest
+  const { onCancel } = rest
   const handleClose = useCallback(() => {
     setQuery('')
     onClose()
@@ -221,7 +220,12 @@ export const SearchUsersModal = ({
       <ModalHeader onClose={handleCancel}>
         <ModalTitle {...titleProps}></ModalTitle>
       </ModalHeader>
-      <UsersSearch query={query} onChange={setQuery} {...rest} />
+      <UsersSearch
+        query={query}
+        onChange={setQuery}
+        onClose={handleClose}
+        {...rest}
+      />
     </Modal>
   )
 }

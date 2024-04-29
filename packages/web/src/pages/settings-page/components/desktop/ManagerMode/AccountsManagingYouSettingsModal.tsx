@@ -69,6 +69,7 @@ export const AccountsManagingYouSettingsModal = (
   useEffect(() => {
     if (!isOpen) {
       setCurrentPage(AccountsManagingYouPages.HOME)
+      setCurrentPageParams(undefined)
     }
   }, [isOpen])
 
@@ -86,7 +87,10 @@ export const AccountsManagingYouSettingsModal = (
           currentPage={getCurrentPage(currentPage)}
         >
           <AccountsManagingYouHomePage setPage={handleSetPage} />
-          <FindAccountManagerPage setPage={handleSetPage} />
+          <FindAccountManagerPage
+            setPage={handleSetPage}
+            params={currentPageParams}
+          />
           <ConfirmAccountManagerPage
             setPage={handleSetPage}
             params={currentPageParams}
