@@ -2,11 +2,14 @@ import type { ReactNode } from 'react'
 
 import { View } from 'react-native'
 
+import { Flex } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 
 import { useStyles } from './styles'
 const messages = {
-  task: 'Task Details'
+  task: 'Task Details',
+  cooldownDescription:
+    'Note: There is a 7 day waiting period from completion until you can claim your reward.'
 }
 
 type DescriptionContent =
@@ -39,7 +42,7 @@ export const ChallengeDescription = ({
       <View style={styles.taskHeader}>
         {taskIcon}
         <Text
-          variant='label'
+          variant='body'
           fontSize='medium'
           style={styles.subheader}
           weight='heavy'
@@ -51,7 +54,12 @@ export const ChallengeDescription = ({
       {renderDescription ? (
         renderDescription()
       ) : (
-        <Text variant='body'>{description}</Text>
+        <Flex gap='m' mb='l'>
+          <Text variant='body'>{description}</Text>
+          <Text variant='body' color='neutralLight4'>
+            {messages.cooldownDescription}
+          </Text>
+        </Flex>
       )}
     </View>
   )
