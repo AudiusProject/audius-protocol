@@ -10,10 +10,9 @@ import {
   Button,
   IconExternalLink,
   IconInfo,
-  Text
+  Text,
+  Hint
 } from '@audius/harmony'
-
-import { HelpCallout } from '../help-callout/HelpCallout'
 
 import styles from './LeavingAudiusModal.module.css'
 
@@ -44,12 +43,7 @@ export const LeavingAudiusModal = () => {
       </ModalHeader>
       <ModalContent className={styles.content}>
         <Text>{messages.body}</Text>
-        <HelpCallout
-          className={styles.hint}
-          contentClassName={styles.hintContent}
-          icon={<IconExternalLink />}
-          content={link}
-        />
+        <Hint icon={IconExternalLink}>{link}</Hint>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <Button className={styles.button} variant='secondary' onClick={onClose}>
