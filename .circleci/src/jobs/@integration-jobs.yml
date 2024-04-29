@@ -1,0 +1,71 @@
+integration-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/web/node_modules
+          - packages/harmony/node_modules
+          - packages/harmony/dist
+          - packages/common/node_modules
+          - packages/libs/node_modules
+          - packages/libs/dist
+          - packages/trpc-server/node_modules
+          - packages/trpc-server/dist
+
+integration-test:
+  machine: true
+  resource_class: audiusproject/gcp-n2-standard-4
+  working_directory: ~/audius-protocol
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: setup
+        command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
+    - run:
+        name: audius-compose up
+        command: . ~/.profile; audius-compose up --prod
+    # - run:
+    #     name: audius-cmd test
+    #     no_output_timeout: 15m
+    #     command: |
+    #       audius-cmd test
+    # - run:
+    #     name: verify sdk types
+    #     command: |
+    #       cd ./packages/libs
+    #       sh ./scripts/check-generated-types.sh
+    - run:
+        name: run web e2e tests
+        command: |
+          cd ./packages/libs
+          sh ./scripts/check-generated-types.sh
+    - run: npx playwright install --with-deps
+    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
+    - store_test_results:
+        path: packages/web/report.xml
+        when: always
+    - store_artifacts:
+        path: packages/web/blob-report
+    - run:
+        name: cleanup
+        no_output_timeout: 5m
+        command: . ~/.profile; audius-compose down
+        when: always
+    - docker-prune
