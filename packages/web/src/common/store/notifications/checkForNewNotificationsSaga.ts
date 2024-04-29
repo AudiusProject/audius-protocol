@@ -4,6 +4,7 @@ import {
   notificationsSelectors,
   NotificationType,
   walletActions,
+  getContext,
   Notification
 } from '@audius/common/store'
 import { Dictionary } from '@reduxjs/toolkit'
@@ -70,36 +71,43 @@ export function* checkForNewNotificationsSaga() {
 
   const limit = NOTIFICATION_LIMIT_DEFAULT
 
-  const notificationsResponse = yield* call(fetchNotifications, {
-    limit
-  })
+  try {
+    const notificationsResponse = yield* call(fetchNotifications, {
+      limit
+    })
 
-  if ('error' in notificationsResponse) {
-    return
-  }
+    if ('error' in notificationsResponse) {
+      throw new Error(
+        `Error in notifications response: ${notificationsResponse.error}`
+      )
+    }
 
-  const { notifications, totalUnviewed } = notificationsResponse
-  const currNotifs = yield* select(selectNotificationEntities)
+    const { notifications, totalUnviewed } = notificationsResponse
+    const currNotifs = yield* select(selectNotificationEntities)
 
-  const hasNewNotifications = checkIfNotificationsChanged(
-    currNotifs,
-    notifications
-  )
-
-  if (hasNewNotifications) {
-    const processedNotifications = yield* parseAndProcessNotifications(
+    const hasNewNotifications = checkIfNotificationsChanged(
+      currNotifs,
       notifications
     )
 
-    const hasMore = notifications.length >= limit
+    if (hasNewNotifications) {
+      const processedNotifications = yield* parseAndProcessNotifications(
+        notifications
+      )
 
-    yield* put(
-      updateNotifications({
-        notifications: processedNotifications,
-        totalUnviewed,
-        hasMore
-      })
-    )
-    yield* handleNewNotifications(notifications)
+      const hasMore = notifications.length >= limit
+
+      yield* put(
+        updateNotifications({
+          notifications: processedNotifications,
+          totalUnviewed,
+          hasMore
+        })
+      )
+      yield* handleNewNotifications(notifications)
+    }
+  } catch (error: Error | unknown) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({ error: error as Error, name: 'Notifications' })
   }
 }
