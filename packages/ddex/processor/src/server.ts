@@ -199,7 +199,7 @@ app.get('/releases', (c) => {
             <th>Is Main</th>
             <th>Audius User</th>
             <th>Audius Genre</th>
-            <th>Problems</th>
+            <th>Status</th>
             <th>Publish Errors</th>
             <th>Published?</th>
             <th>debug</th>
@@ -490,7 +490,7 @@ function Layout(inner: HtmlEscapedString | Promise<HtmlEscapedString>) {
             --pico-font-weight: 700;
           }
           mark {
-            margin-right: 1rem;
+            margin-right: 5px;
           }
         </style>
       </head>

@@ -49,7 +49,6 @@ create table if not exists s3markers (
   bucket text primary key,
   marker text not null
 );
-
 `
 )
 
@@ -230,10 +229,11 @@ export const releaseRepo = {
 
   addPublishError(key: string, err: Error) {
     const status = ReleaseProcessingStatus.Failed
+    const errText = err.stack || err.toString()
     db.run(sql`
       update releases set
         status=${status},
-        lastPublishError=${err.toString()},
+        lastPublishError=${errText},
         publishErrorCount=publishErrorCount+1
       where key = ${key}
     `)
