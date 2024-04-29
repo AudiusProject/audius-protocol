@@ -109,7 +109,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
 
   const handleClose = useCallback(() => {
     onClose?.()
-  }, [onClose, onChange])
+  }, [onClose])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
