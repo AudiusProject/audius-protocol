@@ -14,7 +14,6 @@ export type DDEXRelease = {
   icpn?: string
   title: string
   subTitle?: string
-  artists: DDEXArtist[]
   genre: string
   subGenre: string
   releaseDate: string
@@ -34,6 +33,9 @@ type ReleaseAndSoundRecordingSharedFields = {
   copyrightLine?: CopyrightPair
   producerCopyrightLine?: CopyrightPair
   parentalWarningType?: string
+  artists: DDEXContributor[]
+  contributors: DDEXContributor[]
+  indirectContributors: DDEXContributor[]
 }
 
 type CopyrightPair = {
@@ -41,9 +43,9 @@ type CopyrightPair = {
   year: string
 }
 
-type DDEXArtist = {
+export type DDEXContributor = {
   name: string
-  role?: string
+  role: string
 }
 
 export type DDEXResource = {
@@ -55,7 +57,6 @@ export type DDEXResource = {
 export type DDEXSoundRecording = {
   isrc?: string
   title: string
-  artists: DDEXArtist[]
   releaseDate: string
   genre: string
   subGenre: string
@@ -185,14 +186,24 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
     if (year && text) return { year, text }
   }
 
-  function parseArtists($el: CH): DDEXArtist[] {
+  function parseContributor(
+    tagName:
+      | 'DisplayArtist'
+      | 'ResourceContributor'
+      | 'IndirectResourceContributor',
+    $el: CH
+  ): DDEXContributor[] {
+    const roleTagName =
+      tagName == 'DisplayArtist' ? 'ArtistRole' : `${tagName}Role`
+
     return $el
-      .find('DisplayArtist')
+      .find(tagName)
       .toArray()
       .map((el) => {
+        const roleTag = $(el).find(roleTagName).first()
         return {
           name: toText($(el).find('FullName')),
-          role: toText($(el).find('ArtistRole')),
+          role: roleTag.attr('UserDefinedValue') || roleTag.text(),
         }
       })
   }
@@ -306,7 +317,12 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
       filePath: $el.find('FilePath').text(),
       fileName: $el.find('FileName').text(),
       title: $el.find('TitleText:first').text(),
-      artists: parseArtists($el),
+      artists: parseContributor('DisplayArtist', $el),
+      contributors: parseContributor('ResourceContributor', $el),
+      indirectContributors: parseContributor(
+        'IndirectResourceContributor',
+        $el
+      ),
       genre: $el.find('GenreText').text(),
       subGenre: $el.find('SubGenre').text(),
       releaseDate: $el
@@ -375,7 +391,12 @@ export function parseDdexXml(xmlUrl: string, xmlText: string) {
         icpn: $el.find('ICPN').text(),
         title: $el.find('ReferenceTitle TitleText').text(),
         subTitle: $el.find('ReferenceTitle SubTitle').text(),
-        artists: parseArtists($el),
+        artists: parseContributor('DisplayArtist', $el),
+        contributors: parseContributor('ResourceContributor', $el),
+        indirectContributors: parseContributor(
+          'IndirectResourceContributor',
+          $el
+        ),
         genre: $el.find('GenreText').text(),
         subGenre: $el.find('SubGenre').text(),
         releaseDate,

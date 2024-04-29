@@ -13,7 +13,7 @@ import {
   dbUpdate,
   releaseRepo,
 } from './db'
-import { DDEXRelease, DDEXResource } from './parseDelivery'
+import { DDEXContributor, DDEXRelease, DDEXResource } from './parseDelivery'
 import { dialS3 } from './s3poller'
 import { createSdkService } from './sdk'
 
@@ -198,7 +198,12 @@ function prepareTrackMetadatas(release: DDEXRelease) {
       const parentalWarningType =
         sound.parentalWarningType || release.parentalWarningType
 
-      return {
+      const mapContributor = (c: DDEXContributor) => ({
+        name: c.name,
+        roles: [c.role!], // todo: does ddex xml have multiple roles for a contributor?
+      })
+
+      const meta: UploadTrackRequest['metadata'] = {
         genre: audiusGenre,
         title: sound.title,
         isrc: release.isrc,
@@ -207,7 +212,12 @@ function prepareTrackMetadatas(release: DDEXRelease) {
         producerCopyrightLine,
         parentalWarningType,
         rightsController: sound.rightsController,
+        resourceContributors: sound.contributors.map(mapContributor),
+        indirectResourceContributors:
+          sound.indirectContributors.map(mapContributor),
       }
+
+      return meta
     })
 
   return trackMetas

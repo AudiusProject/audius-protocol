@@ -15,7 +15,7 @@ import {
   userRepo,
   xmlRepo,
 } from './db'
-import { parseDdexXml, reParsePastXml } from './parseDelivery'
+import { DDEXContributor, parseDdexXml, reParsePastXml } from './parseDelivery'
 import { readAssetWithCaching } from './publishRelease'
 import { parseBool } from './util'
 
@@ -275,32 +275,64 @@ app.get('/releases/:key', (c) => {
   }
 
   const parsedRelease = row._parsed!
+
+  const mapArtist = (c: DDEXContributor) =>
+    html`<li><span>${c.name}</span>: <em>${c.role}</em></li>`
+
   return c.html(
     Layout(html`
       <div style="display: flex; gap: 20px">
-        <img
-          src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
-          style="width: 200px; height: 200px"
-        />
+        <div style="text-align: center">
+          <img
+            src="/release/${row.key}/images/${parsedRelease.images[0].ref}"
+            style="width: 200px; height: 200px; display: block; margin-bottom: 10px"
+          />
+          <mark>${parsedRelease.parentalWarningType}</mark>
+        </div>
 
         <div style="flex-grow: 1">
           <h3>${parsedRelease.title}</h3>
-          <h4>${parsedRelease.artists.join(', ')}</h4>
-
+          <h5>
+            ${parsedRelease.artists.map(
+              (a) =>
+                html`<em style="margin-right: 5px" data-tooltip="${a.role}"
+                  >${a.name}</em
+                >`
+            )}
+          </h5>
           ${parsedRelease.soundRecordings.map(
             (sr) => html`
-              <article>
-                <button
-                  class="outline contrast"
-                  style="margin-right: 8px"
-                  onClick="play('/release/${row.key}/soundRecordings/${sr.ref}')"
-                >
-                  play
-                </button>
-                <a href="/release/${row.key}/soundRecordings/${sr.ref}">
-                  <b>${sr.title}</b>
-                </a>
-                by ${sr.artists.join(', ')}
+              <article style="display: flex; gap: 20px">
+                <div>
+                  <button
+                    class="outline contrast"
+                    onClick="play('/release/${row.key}/soundRecordings/${sr.ref}')"
+                  >
+                    play
+                  </button>
+                </div>
+                <div style="flex-grow: 1">
+                  <div>
+                    <a href="/release/${row.key}/soundRecordings/${sr.ref}">
+                      <h4 style="margin-top: 10px">${sr.title}</h4>
+                    </a>
+                  </div>
+
+                  <div style="margin-left: 10px">
+                    <h6>Artists</h6>
+                    <ul>
+                      ${sr.artists.map(mapArtist)}
+                    </ul>
+                    <h6>Contributors</h6>
+                    <ul>
+                      ${sr.contributors.map(mapArtist)}
+                    </ul>
+                    <h6>Indirect Contributors</h6>
+                    <ul>
+                      ${sr.indirectContributors.map(mapArtist)}
+                    </ul>
+                  </div>
+                </div>
               </article>
             `
           )}
