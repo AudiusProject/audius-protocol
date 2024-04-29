@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
 import { serve } from '@hono/node-server'
+import { fileTypeFromBuffer } from 'file-type'
 import { Context, Hono } from 'hono'
 import { deleteCookie, getSignedCookie, setSignedCookie } from 'hono/cookie'
 import { html } from 'hono/html'
@@ -14,9 +15,8 @@ import {
   userRepo,
   xmlRepo,
 } from './db'
-import { reParsePastXml } from './parseDelivery'
+import { parseDdexXml, reParsePastXml } from './parseDelivery'
 import { readAssetWithCaching } from './publishRelease'
-import { fileTypeFromBuffer } from 'file-type'
 import { parseBool } from './util'
 
 const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
@@ -359,8 +359,13 @@ app.get('/release/:key/:type/:ref/:name?', async (c) => {
 })
 
 app.get('/xmls/:xmlUrl', (c) => {
-  const row = xmlRepo.get(c.req.param('xmlUrl'))
+  const xmlUrl = c.req.param('xmlUrl')
+  const row = xmlRepo.get(xmlUrl)
   if (!row) return c.json({ error: 'not found' }, 404)
+  if (parseBool(c.req.query('parse'))) {
+    const parsed = parseDdexXml(xmlUrl, row.xmlText)
+    return c.json(parsed)
+  }
   c.header('Content-Type', 'text/xml')
   return c.body(row.xmlText)
 })

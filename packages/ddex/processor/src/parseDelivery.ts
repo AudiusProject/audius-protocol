@@ -14,7 +14,7 @@ export type DDEXRelease = {
   icpn?: string
   title: string
   subTitle?: string
-  artists: string[]
+  artists: DDEXArtist[]
   genre: string
   subGenre: string
   releaseDate: string
@@ -41,6 +41,11 @@ type CopyrightPair = {
   year: string
 }
 
+type DDEXArtist = {
+  name: string
+  role?: string
+}
+
 export type DDEXResource = {
   ref: string
   filePath: string
@@ -50,7 +55,7 @@ export type DDEXResource = {
 export type DDEXSoundRecording = {
   isrc?: string
   title: string
-  artists: string[]
+  artists: DDEXArtist[]
   releaseDate: string
   genre: string
   subGenre: string
@@ -131,7 +136,7 @@ export async function reParsePastXml() {
   // loop over db xml and reprocess
   const rows = xmlRepo.all()
   for (const row of rows) {
-    await parseDdexXml(row.xmlUrl, row.xmlText)
+    parseDdexXml(row.xmlUrl, row.xmlText)
   }
 }
 
@@ -154,7 +159,7 @@ export async function parseDdexXmlFile(xmlUrl: string) {
 }
 
 // actually parse ddex xml
-export async function parseDdexXml(xmlUrl: string, xmlText: string) {
+export function parseDdexXml(xmlUrl: string, xmlText: string) {
   // todo: would be nice to skip this on reParse
   xmlRepo.upsert(xmlUrl, xmlText)
 
@@ -180,7 +185,17 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
     if (year && text) return { year, text }
   }
 
-  // function
+  function parseArtists($el: CH): DDEXArtist[] {
+    return $el
+      .find('DisplayArtist')
+      .toArray()
+      .map((el) => {
+        return {
+          name: toText($(el).find('FullName')),
+          role: toText($(el).find('ArtistRole')),
+        }
+      })
+  }
 
   //
   // parse deals
@@ -291,7 +306,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
       filePath: $el.find('FilePath').text(),
       fileName: $el.find('FileName').text(),
       title: $el.find('TitleText:first').text(),
-      artists: toTexts($el.find('DisplayArtist PartyName FullName')),
+      artists: parseArtists($el),
       genre: $el.find('GenreText').text(),
       subGenre: $el.find('SubGenre').text(),
       releaseDate: $el
@@ -360,7 +375,7 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
         icpn: $el.find('ICPN').text(),
         title: $el.find('ReferenceTitle TitleText').text(),
         subTitle: $el.find('ReferenceTitle SubTitle').text(),
-        artists: toTexts($el.find('DisplayArtist PartyName FullName')),
+        artists: parseArtists($el),
         genre: $el.find('GenreText').text(),
         subGenre: $el.find('SubGenre').text(),
         releaseDate,
@@ -385,7 +400,8 @@ export async function parseDdexXml(xmlUrl: string, xmlText: string) {
       }
 
       // resolve audius user
-      release.audiusUser = userRepo.match(release.artists)
+      const artistNames = release.artists.map((a) => a.name)
+      release.audiusUser = userRepo.match(artistNames)
       if (!release.audiusUser) {
         release.problems.push(`NoUser`)
       }
