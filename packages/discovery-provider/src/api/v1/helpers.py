@@ -1000,7 +1000,7 @@ def format_grant(grant):
 
 def format_managed_user(managed_user):
     return {
-        "user": managed_user["user"],
+        "user": extend_user(managed_user["user"]),
         "grant": format_grant(managed_user["grant"]),
     }
 

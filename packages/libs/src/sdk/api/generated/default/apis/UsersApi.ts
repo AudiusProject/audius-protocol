@@ -24,7 +24,6 @@ import type {
   FollowingResponse,
   GetSupporters,
   GetSupporting,
-  ManagedUsers,
   RelatedArtistResponse,
   Reposts,
   SubscribersResponse,
@@ -52,8 +51,6 @@ import {
     GetSupportersToJSON,
     GetSupportingFromJSON,
     GetSupportingToJSON,
-    ManagedUsersFromJSON,
-    ManagedUsersToJSON,
     RelatedArtistResponseFromJSON,
     RelatedArtistResponseToJSON,
     RepostsFromJSON,
@@ -137,10 +134,6 @@ export interface GetFollowingRequest {
     offset?: number;
     limit?: number;
     userId?: string;
-}
-
-export interface GetManagedUsersRequest {
-    id: string;
 }
 
 export interface GetRelatedUsersRequest {
@@ -626,37 +619,6 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getFollowing(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
         const response = await this.getFollowingRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets a list of users managed by the given user
-     */
-    async getManagedUsersRaw(params: GetManagedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ManagedUsers>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getManagedUsers.');
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/users/{id}/managed_users`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => ManagedUsersFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets a list of users managed by the given user
-     */
-    async getManagedUsers(params: GetManagedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ManagedUsers> {
-        const response = await this.getManagedUsersRaw(params, initOverrides);
         return await response.value();
     }
 

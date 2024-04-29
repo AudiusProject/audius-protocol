@@ -2113,14 +2113,14 @@ class AuthorizedApps(Resource):
 
 
 managed_users_response = make_response(
-    "managed_users", ns, fields.List(fields.Nested(managed_user))
+    "managed_users_response", full_ns, fields.List(fields.Nested(managed_user))
 )
 
 
-@ns.route("/<string:id>/managed_users")
+@full_ns.route("/<string:id>/managed_users")
 class ManagedUsers(Resource):
     @record_metrics
-    @ns.doc(
+    @full_ns.doc(
         id="""Get Managed Users""",
         description="""Gets a list of users managed by the given user""",
         params={"id": "A user id for the manager"},
@@ -2133,15 +2133,15 @@ class ManagedUsers(Resource):
         },
     )
     @auth_middleware(include_wallet=True)
-    @ns.marshal_with(managed_users_response)
+    @full_ns.marshal_with(managed_users_response)
     def get(self, id, authed_user_id, authed_user_wallet):
-        user_id = decode_with_abort(id, ns)
+        user_id = decode_with_abort(id, full_ns)
 
         if authed_user_id is None:
-            abort_unauthorized(ns)
+            abort_unauthorized(full_ns)
 
         if authed_user_id != user_id:
-            abort_forbidden(ns)
+            abort_forbidden(full_ns)
 
         args = GetManagedUsersArgs(
             manager_wallet_address=authed_user_wallet, current_user_id=user_id

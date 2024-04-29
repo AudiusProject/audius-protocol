@@ -42,7 +42,10 @@ models/FullTracksResponse.ts
 models/FullTrendingPlaylistsResponse.ts
 models/FullUserResponse.ts
 models/GetTipsResponse.ts
+models/Grant.ts
 models/HistoryResponseFull.ts
+models/ManagedUser.ts
+models/ManagedUsersResponse.ts
 models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
 models/PlaylistFull.ts
