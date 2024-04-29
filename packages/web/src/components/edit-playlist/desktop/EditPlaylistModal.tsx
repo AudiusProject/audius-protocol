@@ -70,19 +70,19 @@ const EditPlaylistModal = () => {
   const handleSubmit = useCallback(
     (formFields: PlaylistFormValues, initialValues: PlaylistFormValues) => {
       if (playlistId) {
-        // Track what things changed
-        const edits = omitBy(formFields, (value, key) =>
+        // Make what things changed
+        const metadataChanges = omitBy(formFields, (value, key) =>
           isEqual(value, initialValues[key])
-        )
+        ) as Partial<PlaylistFormValues>
         track({
           eventName: Name.COLLECTION_EDIT,
           properties: {
             id: playlistId,
-            edits
+            edits: metadataChanges
           }
         })
         // We want to pay special attention to access condition changes
-        if (initialValues.stream_conditions !== formFields.stream_conditions) {
+        if (metadataChanges.stream_conditions) {
           track({
             eventName: Name.COLLECTION_EDIT_ACCESS_CHANGED,
             properties: {
@@ -99,9 +99,8 @@ const EditPlaylistModal = () => {
     [playlistId, dispatch, onClose]
   )
 
-  const editPlaylistModalTitle = `${messages.edit} ${
-    isAlbum ? messages.title.album : messages.title.playlist
-  }`
+  const editPlaylistModalTitle = `${messages.edit} ${isAlbum ? messages.title.album : messages.title.playlist
+    }`
 
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(false)

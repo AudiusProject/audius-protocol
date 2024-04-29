@@ -242,8 +242,7 @@ const EditPlaylistPage = g(
         track({
           eventName: Name.COLLECTION_EDIT,
           properties: {
-            id: metadata.playlist_id,
-            to: formFields
+            id: metadata.playlist_id
           }
         })
 
