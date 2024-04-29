@@ -40,8 +40,7 @@ debian | ubuntu)
         containerd.io \
         docker-buildx-plugin \
         docker-compose-plugin='2.21.0-1~ubuntu.22.04~jammy' \
-        nodejs \
-        npm
+        nodejs
 
 
     # Add user to docker group
