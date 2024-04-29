@@ -10,13 +10,13 @@ import {
 } from '@audius/harmony'
 
 import { AccountsManagingYouHomePage } from './AccountsManagingYouHomePage'
+import styles from './AccountsManagingYouSettingsModal.module.css'
+import { ConfirmAccountManagerPage } from './ConfirmAccountManagerPage'
+import { FindAccountManagerPage } from './FindAccountManagerPage'
 import {
   AccountsManagingYouPages,
   AccountsManagingYouPagesParams
 } from './types'
-import { FindAccountManagerPage } from './FindAccountManagerPage'
-import { ConfirmAccountManagerPage } from './ConfirmAccountManagerPage'
-import styles from './AccountsManagingYouSettingsModal.module.css'
 
 const messages = {
   accountsManagingYou: 'Accounts Managing You',

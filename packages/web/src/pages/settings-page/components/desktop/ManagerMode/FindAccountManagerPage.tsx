@@ -1,9 +1,11 @@
+import { useCallback, useState } from 'react'
+
 import { User } from '@audius/common/models'
 import { Box, Flex, IconShieldUser, Text, TextLink } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
 import { UsersSearch } from 'components/search-users-modal/SearchUsersModal'
-import { useCallback, useState } from 'react'
+
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPages, FindAccountManagerPageProps } from './types'
 
@@ -32,32 +34,35 @@ export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
     )
   }, [])
 
-  const renderUser = useCallback((user: User) => {
-    return (
-      <Box
-        pv='l'
-        borderTop='default'
-        ph='xl'
-        css={(theme) => ({
-          '&:hover': {
-            cursor: 'pointer',
-            backgroundColor: theme.color.background.surface1
-          }
-        })}
-      >
-        <ArtistChip
-          user={user as any}
-          showPopover={false}
-          onClickArtistName={() => {
-            setPage(AccountsManagingYouPages.CONFIRM_NEW_MANAGER, {
-              user,
-              query
-            })
-          }}
-        />
-      </Box>
-    )
-  }, [])
+  const renderUser = useCallback(
+    (user: User) => {
+      return (
+        <Box
+          pv='l'
+          borderTop='default'
+          ph='xl'
+          css={(theme) => ({
+            '&:hover': {
+              cursor: 'pointer',
+              backgroundColor: theme.color.background.surface1
+            }
+          })}
+        >
+          <ArtistChip
+            user={user as any}
+            showPopover={false}
+            onClickArtistName={() => {
+              setPage(AccountsManagingYouPages.CONFIRM_NEW_MANAGER, {
+                user,
+                query
+              })
+            }}
+          />
+        </Box>
+      )
+    },
+    [query, setPage]
+  )
 
   return (
     <Flex direction='column' gap='xl'>

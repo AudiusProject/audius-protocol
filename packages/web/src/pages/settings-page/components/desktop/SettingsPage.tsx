@@ -23,7 +23,6 @@ import {
   IconNotificationOn as IconNotification,
   IconRobot,
   IconSignOut,
-  IconUserArrowRotate,
   IconVerified,
   Modal,
   ModalContent,

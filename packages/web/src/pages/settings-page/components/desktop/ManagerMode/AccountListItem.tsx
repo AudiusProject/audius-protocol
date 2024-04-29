@@ -1,9 +1,12 @@
+import { useCallback, useEffect } from 'react'
+
 import {
   accountSelectors,
   cacheUsersActions,
   cacheUsersSelectors,
   chatSelectors
 } from '@audius/common/store'
+import { encodeHashId } from '@audius/common/utils'
 import {
   Flex,
   IconButton,
@@ -14,16 +17,15 @@ import {
   PopupMenu,
   Text
 } from '@audius/harmony'
-import { audiusSdk } from 'services/audius-sdk'
+import { useDispatch } from 'react-redux'
+
 import ArtistChip from 'components/artist/ArtistChip'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
-import { useCallback, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { audiusSdk } from 'services/audius-sdk'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
-import { encodeHashId } from '@audius/common/utils'
 
 const { getUserId } = accountSelectors
 const { getUser } = cacheUsersSelectors
@@ -77,12 +79,12 @@ export const AccountListItem = () => {
         userId: encodeHashId(currentUserId),
         managerUserId: encodeHashId(user!.user_id)
       })
+      // eslint-disable-next-line no-console
       console.log('Successfully removed manager')
     } catch (e) {
       console.error(e)
-      return
     }
-  }, [currentUserId, user?.user_id])
+  }, [currentUserId, user])
 
   const popupMenuItems = [
     {

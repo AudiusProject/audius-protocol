@@ -1,14 +1,15 @@
-import { accountSelectors } from '@audius/common/store'
+import {
+  Button,
+  Divider,
+  Flex,
+  IconPlus,
+  Text,
+  TextLink
+} from '@audius/harmony'
 
-import { Button, Flex, IconPlus, Text, TextLink } from '@audius/harmony'
-
-import { Divider } from '@audius/harmony'
-
-import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
 import { AccountListItem } from './AccountListItem'
 import { sharedMessages } from './sharedMessages'
-
-const { getUserId } = accountSelectors
+import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
 
 export const messages = {
   accountManagers: 'Account Managers',

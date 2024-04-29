@@ -1,4 +1,7 @@
+import { useCallback, useState } from 'react'
+
 import { accountSelectors } from '@audius/common/store'
+import { encodeHashId } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -6,22 +9,20 @@ import {
   IconCaretLeft,
   IconError,
   Text,
-  TextLink
+  TextLink,
+  Box
 } from '@audius/harmony'
-import { audiusSdk } from 'services/audius-sdk'
-
-import { Box } from '@audius/harmony'
-import { useSelector } from 'utils/reducer'
 
 import ArtistChip from 'components/artist/ArtistChip'
-import { useCallback, useState } from 'react'
+import { audiusSdk } from 'services/audius-sdk'
+import { reportToSentry } from 'store/errors/reportToSentry'
+import { useSelector } from 'utils/reducer'
+
 import { sharedMessages } from './sharedMessages'
 import {
   AccountsManagingYouPages,
   ConfirmAccountManagerPageProps
 } from './types'
-import { encodeHashId } from '@audius/common/utils'
-import { reportToSentry } from 'store/errors/reportToSentry'
 
 const { getUserId } = accountSelectors
 
@@ -64,7 +65,7 @@ export const ConfirmAccountManagerPage = (
     }
     setIsSubmitting(false)
     setPage(AccountsManagingYouPages.HOME)
-  }, [manager, userId])
+  }, [manager, userId, setPage])
 
   if (!manager) {
     return null

@@ -52,7 +52,7 @@ const { getUserId } = accountSelectors
 const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
 
 const { fetchSupportersForUser } = tippingActions
-const { createChat, blockUser, unblockUser, fetchPermissions } = chatActions
+const { blockUser, unblockUser, fetchPermissions } = chatActions
 const { getBlockees, getCanCreateChat } = chatSelectors
 
 const renderTrigger = (

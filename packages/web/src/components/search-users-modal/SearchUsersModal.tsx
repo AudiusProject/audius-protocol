@@ -109,7 +109,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
   const handleClose = useCallback(() => {
     onChange('')
     onClose?.()
-  }, [onClose])
+  }, [onClose, onChange])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +140,7 @@ export const UsersSearch = (props: UsersSearchProps) => {
     <Flex direction='column' h={690}>
       <Box p='xl'>
         <TextInput
-          autoFocus={!Boolean(disableAutofocus)}
+          autoFocus={!disableAutofocus}
           label={messages.searchUsers}
           value={query}
           onChange={handleChange}
