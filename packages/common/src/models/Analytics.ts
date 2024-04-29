@@ -10,12 +10,12 @@ import {
   WalletAddress
 } from '~/models/Wallet'
 import { MintName } from '~/services/index'
-import { Prettify } from '~/utils/typeUtils'
+import { Nullable, Prettify } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
 import { PurchaseMethod } from './PurchaseContent'
-import { TrackAccessType } from './Track'
+import { AccessConditions, TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -221,7 +221,7 @@ export enum Name {
 
   // Collection Edits
   COLLECTION_EDIT_ACCESS_CHANGED = 'Collection Edit: Access Changed',
-  COLLECTION_EDIT = 'Collection Edit: Edits',
+  COLLECTION_EDIT = 'Collection Edit: General Edits',
 
   // Gated Track Listen
   LISTEN_GATED = 'Listen: Gated',
@@ -1153,14 +1153,14 @@ type TrackEditAccessChanged = {
 
 // Collection Edits
 type CollectionEditAccessChanged = {
-  eventName: Name.TRACK_EDIT_ACCESS_CHANGED
+  eventName: Name.COLLECTION_EDIT_ACCESS_CHANGED
   id: number
-  from: TrackAccessType
-  to: TrackAccessType
+  from: Nullable<AccessConditions>
+  to: Nullable<AccessConditions>
 }
 
 type CollectionEdit = {
-  eventName: Name.TRACK_EDIT_ACCESS_CHANGED
+  eventName: Name.COLLECTION_EDIT
   id: number
   from: TrackAccessType
   to: TrackAccessType

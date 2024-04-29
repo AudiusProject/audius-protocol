@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
 import {
+  EditPlaylistValues,
   accountActions,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -15,10 +16,11 @@ import {
   IconPlaylists
 } from '@audius/harmony'
 import { push as pushRoute } from 'connected-react-router'
+import { isEqual, omitBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import PlaylistForm, {
-  EditPlaylistValues
+  EditPlaylistValues as PlaylistFormValues
 } from 'components/create-playlist/PlaylistForm'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { DeleteCollectionConfirmationModal } from 'components/nav/desktop/PlaylistLibrary/DeleteCollectionConfirmationModal'
@@ -66,15 +68,17 @@ const EditPlaylistModal = () => {
   const onCancelDelete = () => setShowDeleteConfirmation(false)
 
   const handleSubmit = useCallback(
-    (formFields: EditPlaylistValues, initialValues: EditPlaylistValues) => {
+    (formFields: PlaylistFormValues, initialValues: PlaylistFormValues) => {
       if (playlistId) {
-        // Track any edits
+        // Track what things changed
+        const edits = omitBy(formFields, (value, key) =>
+          isEqual(value, initialValues[key])
+        )
         track({
           eventName: Name.COLLECTION_EDIT,
           properties: {
             id: playlistId,
-            from: initialValues,
-            to: formFields
+            edits
           }
         })
         // We want to pay special attention to access condition changes
@@ -88,7 +92,7 @@ const EditPlaylistModal = () => {
             }
           })
         }
-        dispatch(editPlaylist(playlistId, formFields))
+        dispatch(editPlaylist(playlistId, formFields as EditPlaylistValues))
       }
       onClose()
     },
