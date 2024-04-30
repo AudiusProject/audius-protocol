@@ -52,7 +52,7 @@ integration-test:
     #       cd ./packages/libs
     #       sh ./scripts/check-generated-types.sh
     - run: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright npx playwright install --with-deps
-    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))" PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright; cd packages/web; npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
+    - run: SHARD="$((${CIRCLE_NODE_INDEX}+1))"; cd packages/web; PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright npx playwright test --shard=${SHARD}/${CIRCLE_NODE_TOTAL}
     - store_test_results:
         path: packages/web/report.xml
         when: always
