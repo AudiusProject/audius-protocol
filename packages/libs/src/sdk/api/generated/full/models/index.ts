@@ -77,7 +77,5 @@ export * from './TrendingIdsResponse';
 export * from './TrendingTimesIds';
 export * from './UserFull';
 export * from './UserManager';
-export * from './UserReplicaSet';
 export * from './UserSubscribers';
-export * from './UsersByContentNode';
 export * from './VersionMetadata';
