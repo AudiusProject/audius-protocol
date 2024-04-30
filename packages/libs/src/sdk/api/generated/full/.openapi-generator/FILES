@@ -85,9 +85,7 @@ models/TrendingIdsResponse.ts
 models/TrendingTimesIds.ts
 models/UserFull.ts
 models/UserManager.ts
-models/UserReplicaSet.ts
 models/UserSubscribers.ts
-models/UsersByContentNode.ts
 models/VersionMetadata.ts
 models/index.ts
 runtime.ts
