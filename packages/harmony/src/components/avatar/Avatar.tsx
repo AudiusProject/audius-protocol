@@ -9,7 +9,7 @@ export type AvatarProps = ArtworkInnerProps & {
 }
 
 const sizeMap = {
-  auto: '100%',
+  auto: undefined,
   small: 24,
   medium: 40,
   large: 72,

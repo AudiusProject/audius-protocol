@@ -117,16 +117,18 @@ export const CollectionCard = forwardRef(
             size={cardSizeToCoverArtSizeMap[size]}
             data-testid={`${id}-cover-art`}
           />
-          <Text variant='title' color='default' ellipses asChild>
-            <Link to={permalink} css={{ pointerEvents: 'none' }}>
-              {playlist_name}
-            </Link>
-          </Text>
-          <UserLink
-            userId={playlist_owner_id}
-            textVariant='body'
-            css={{ justifyContent: 'center' }}
-          />
+          <Flex direction='column' gap='xs'>
+            <Text variant='title' color='default' ellipses asChild>
+              <Link to={permalink} css={{ pointerEvents: 'none' }}>
+                {playlist_name}
+              </Link>
+            </Text>
+            <UserLink
+              userId={playlist_owner_id}
+              textVariant='body'
+              css={{ justifyContent: 'center' }}
+            />
+          </Flex>
         </Flex>
       </Card>
     )

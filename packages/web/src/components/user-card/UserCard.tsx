@@ -49,7 +49,7 @@ export const UserCard = (props: UserCardProps) => {
 
   return (
     <Card size={size} footer={footer} onClick={handleClick} {...other}>
-      <Avatar userId={id} aria-hidden alignSelf='center' p='l' pb='s' />
+      <Avatar userId={id} aria-hidden p='l' pb='s' />
       <Flex direction='column' p='s' pt={0} gap='xs'>
         <UserLink
           userId={id}

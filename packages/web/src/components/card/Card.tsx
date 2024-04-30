@@ -31,7 +31,7 @@ export const Card = forwardRef((props: CardProps, ref: Ref<HTMLDivElement>) => {
       <Divider orientation='horizontal' />
       <Flex
         gap='l'
-        p='s'
+        pv='s'
         justifyContent='center'
         backgroundColor='surface1'
         borderBottomLeftRadius='m'
