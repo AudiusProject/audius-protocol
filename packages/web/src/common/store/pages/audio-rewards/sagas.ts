@@ -3,7 +3,8 @@ import {
   UserChallenge,
   StringAudio,
   ChallengeRewardID,
-  StringWei
+  StringWei,
+  SpecifierWithAmount
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -32,7 +33,7 @@ import {
   waitForValue
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { ChallengeId } from '@audius/sdk'
+import { AudiusSdk, ChallengeId } from '@audius/sdk'
 import {
   call,
   fork,
@@ -68,8 +69,10 @@ const {
 const {
   resetAndCancelClaimReward,
   claimChallengeReward,
+  claimAllChallengeRewards,
   claimChallengeRewardFailed,
   claimChallengeRewardSucceeded,
+  claimAllChallengeRewardsSucceeded,
   claimChallengeRewardWaitForRetry,
   fetchUserChallenges,
   fetchUserChallengesFailed,
@@ -220,13 +223,46 @@ function* waitForOptimisticChallengeToComplete({
   }
 }
 
-type ErrorResult = {
+type ErrorResult = SpecifierWithAmount & {
   error: unknown
-  specifier: string
-  amount: number
 }
 
-function* claimChallengeRewardAsync(
+async function claimRewardsForChallenge({
+  sdk,
+  userId,
+  challengeId,
+  specifiers
+}: {
+  sdk: AudiusSdk
+  userId: string
+  challengeId: ChallengeId
+  specifiers: SpecifierWithAmount[]
+}): Promise<(SpecifierWithAmount | ErrorResult)[]> {
+  return await Promise.all(
+    specifiers.map(async (specifierWithAmount) =>
+      sdk.challenges
+        .claimReward({
+          challengeId,
+          specifier: specifierWithAmount.specifier,
+          amount: specifierWithAmount.amount,
+          userId
+        })
+        .then(() => {
+          return specifierWithAmount
+        })
+        // Handle the individual specifier failures here to let the other
+        // ones continue to claim and not reject the all() call.
+        .catch((error: unknown) => {
+          return {
+            ...specifierWithAmount,
+            error
+          }
+        })
+    )
+  )
+}
+
+function* claimSingleChallengeRewardAsync(
   action: ReturnType<typeof claimChallengeReward>
 ) {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
@@ -255,30 +291,12 @@ function* claimChallengeRewardAsync(
   const userId = encodeHashId(decodedUserId)
 
   try {
-    const results = yield* all(
-      specifiers.map((specifierWithAmount) =>
-        call(async () => {
-          return await sdk.challenges
-            .claimReward({
-              challengeId: challengeId as ChallengeId,
-              specifier: specifierWithAmount.specifier,
-              amount: specifierWithAmount.amount,
-              userId
-            })
-            .then(() => {
-              return specifierWithAmount
-            })
-            // Handle the individual specifier failures here to let the other
-            // ones continue to claim and not reject the all() call.
-            .catch((error: unknown) => {
-              return {
-                ...specifierWithAmount,
-                error
-              }
-            })
-        })
-      )
-    )
+    const results = yield* call(claimRewardsForChallenge, {
+      sdk,
+      userId,
+      challengeId: challengeId as ChallengeId,
+      specifiers
+    })
     const claimed = results.filter((r) => !('error' in r))
     const claimedAmount = results.reduce((sum, { amount }) => {
       return sum + amount
@@ -312,10 +330,10 @@ function* claimChallengeRewardAsync(
       throw new Error('Some specifiers failed to claim')
     }
 
-    yield* put(claimChallengeRewardSucceeded())
+    return { res: results, error: null }
   } catch (e) {
     console.error(e)
-    yield* put(claimChallengeRewardFailed())
+    return { res: null, error: e }
   }
 }
 
@@ -516,6 +534,46 @@ function* claimChallengeRewardAsyncOld(
   }
 }
 
+function* claimChallengeRewardAsync(
+  action: ReturnType<typeof claimChallengeReward>
+) {
+  try {
+    const { error } = yield* call(claimSingleChallengeRewardAsync, action)
+    if (error) {
+      yield* put(claimChallengeRewardFailed())
+    } else {
+      yield* put(claimChallengeRewardSucceeded())
+    }
+  } catch (e) {
+    yield* put(claimChallengeRewardFailed())
+  }
+}
+
+function* claimAllChallengeRewardsAsync(
+  action: ReturnType<typeof claimAllChallengeRewards>
+) {
+  const { claims } = action.payload
+  try {
+    const results = yield* all(
+      claims.map((claim) =>
+        call(claimSingleChallengeRewardAsync, {
+          type: claimChallengeReward.type,
+          payload: { claim, retryOnFailure: false }
+        })
+      )
+    )
+    const resultsWithError = results.filter((r) => r.error)
+    if (resultsWithError.length > 0) {
+      yield* put(claimChallengeRewardFailed())
+    } else {
+      yield* put(claimAllChallengeRewardsSucceeded())
+    }
+  } catch (e) {
+    console.error(e)
+    yield* put(claimChallengeRewardFailed())
+  }
+}
+
 function* watchSetHCaptchaStatus() {
   yield* takeLatest(
     setHCaptchaStatus.type,
@@ -552,6 +610,13 @@ function* watchClaimChallengeReward() {
         })
       }
     }
+  )
+}
+
+function* watchClaimAllChallengeRewards() {
+  yield* takeLatest(
+    claimAllChallengeRewards.type,
+    claimAllChallengeRewardsAsync
   )
 }
 
@@ -759,6 +824,7 @@ const sagas = () => {
     watchFetchUserChallenges,
     watchFetchUserChallengesSucceeded,
     watchClaimChallengeReward,
+    watchClaimAllChallengeRewards,
     watchSetHCaptchaStatus,
     watchUpdateHCaptchaScore,
     userChallengePollingDaemon,

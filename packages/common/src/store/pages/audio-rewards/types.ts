@@ -13,6 +13,7 @@ export type ClaimState =
   | { status: ClaimStatus.WAITING_FOR_RETRY }
   | { status: ClaimStatus.ALREADY_CLAIMED }
   | { status: ClaimStatus.SUCCESS }
+  | { status: ClaimStatus.CUMULATIVE_SUCCESS }
   | { status: ClaimStatus.ERROR; aaoErrorCode: number | undefined }
 
 export type AudioRewardsClaim = {
@@ -45,5 +46,6 @@ export enum ClaimStatus {
   WAITING_FOR_RETRY = 'waiting for retry',
   ALREADY_CLAIMED = 'already claimed',
   SUCCESS = 'success',
+  CUMULATIVE_SUCCESS = 'cumulative success',
   ERROR = 'error'
 }
