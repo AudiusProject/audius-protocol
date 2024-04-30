@@ -376,9 +376,9 @@ function* doBuyCryptoViaSol({
         amount: (lamportsToPurchase / LAMPORTS_PER_SOL).toString(),
         destinationCurrency: 'sol',
         destinationWallet: wallet.publicKey.toBase58(),
-        onrampCanceled,
-        onrampFailed,
-        onrampSucceeded
+        onrampCanceled: onrampCanceled(),
+        onrampFailed: onrampFailed({}),
+        onrampSucceeded: onrampSucceeded()
       })
     )
     yield* put(setVisibility({ modal: 'StripeOnRamp', visible: true }))
