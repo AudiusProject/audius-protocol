@@ -46,12 +46,15 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   } = props
 
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: typeof collectionId === 'number' ? collectionId : -1,
-    currentUserId
-  })
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: typeof collectionId === 'number' ? collectionId : -1,
+      currentUserId
+    },
+    { disabled: typeof collectionId !== 'number' }
+  )
   const { hasStreamAccess } = useGatedContentAccess(collection)
-  const shouldShowPreview = isPremium && hasStreamAccess
+  const shouldShowPreview = isPremium && !hasStreamAccess
 
   let actionButtons: Nullable<JSX.Element> = null
 
