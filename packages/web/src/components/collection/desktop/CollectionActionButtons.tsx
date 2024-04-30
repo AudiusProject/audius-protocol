@@ -54,8 +54,11 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     { disabled: typeof collectionId !== 'number' }
   )
   const { hasStreamAccess } = useGatedContentAccess(collection)
-  const shouldShowPlayButton = isPlayable && hasStreamAccess
-  const shouldShowOwnerPreview =
+
+  // If user doesn't have access, show preview only. If user has access, show play only.
+  // If user is owner, show both.
+  const shouldShowPlay = isPlayable && hasStreamAccess
+  const shouldShowPreview =
     (isPlayable && isOwner && isPremium) || (isPremium && !hasStreamAccess)
 
   let actionButtons: Nullable<JSX.Element> = null
@@ -108,8 +111,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       gap='2xl'
       alignItems='center'
     >
-      {shouldShowPlayButton ? playButton : null}
-      {shouldShowOwnerPreview ? previewButton : null}
+      {shouldShowPlay ? playButton : null}
+      {shouldShowPreview ? previewButton : null}
       {actionButtons}
     </Flex>
   )
