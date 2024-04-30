@@ -12,7 +12,7 @@ import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
-import { Card, CardProps } from 'components/card'
+import { Card, CardProps, CardFooter } from 'components/card'
 import { DogEar } from 'components/dog-ear'
 import { UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
@@ -28,7 +28,7 @@ const messages = {
   hidden: 'Hidden'
 }
 
-type CollectionCardProps = Omit<CardProps, 'footer' | 'id'> & {
+type CollectionCardProps = Omit<CardProps, 'id'> & {
   id: ID
 }
 
@@ -77,38 +77,8 @@ export const CollectionCard = forwardRef(
       ? DogEarType.USDC_PURCHASE
       : null
 
-    const footer = is_private ? (
-      <Text variant='body' size='s' strength='strong' color='subdued'>
-        {messages.hidden}
-      </Text>
-    ) : (
-      <>
-        <Flex gap='xs' alignItems='center'>
-          <IconRepost size='s' color='subdued' title={messages.repost} />
-          <Text variant='label' color='subdued'>
-            {repost_count}
-          </Text>
-        </Flex>
-        <Flex gap='xs' alignItems='center'>
-          <IconHeart size='s' color='subdued' title={messages.favorites} />
-          <Text variant='label' color='subdued'>
-            {save_count}
-          </Text>
-        </Flex>
-        {isPurchase ? (
-          <LockedStatusPill variant='premium' locked={!access.stream} />
-        ) : null}
-      </>
-    )
-
     return (
-      <Card
-        ref={ref}
-        onClick={handleClick}
-        size={size}
-        footer={footer}
-        {...other}
-      >
+      <Card ref={ref} onClick={handleClick} size={size} {...other}>
         {dogEarType ? (
           <DogEar type={dogEarType} css={{ top: -1, left: -1 }} />
         ) : null}
@@ -131,6 +101,35 @@ export const CollectionCard = forwardRef(
             />
           </Flex>
         </Flex>
+        <CardFooter>
+          {is_private ? (
+            <Text variant='body' size='s' strength='strong' color='subdued'>
+              {messages.hidden}
+            </Text>
+          ) : (
+            <>
+              <Flex gap='xs' alignItems='center'>
+                <IconRepost size='s' color='subdued' title={messages.repost} />
+                <Text variant='label' color='subdued'>
+                  {repost_count}
+                </Text>
+              </Flex>
+              <Flex gap='xs' alignItems='center'>
+                <IconHeart
+                  size='s'
+                  color='subdued'
+                  title={messages.favorites}
+                />
+                <Text variant='label' color='subdued'>
+                  {save_count}
+                </Text>
+              </Flex>
+              {isPurchase ? (
+                <LockedStatusPill variant='premium' locked={!access.stream} />
+              ) : null}
+            </>
+          )}
+        </CardFooter>
       </Card>
     )
   }

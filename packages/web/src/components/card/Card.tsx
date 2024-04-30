@@ -12,11 +12,10 @@ const cardSizes = {
 
 export type CardProps = PaperProps & {
   size: CardSize
-  footer: ReactNode
 }
 
 export const Card = forwardRef((props: CardProps, ref: Ref<HTMLDivElement>) => {
-  const { size, children, footer, ...other } = props
+  const { size, children, ...other } = props
   return (
     <Paper
       ref={ref}
@@ -29,6 +28,18 @@ export const Card = forwardRef((props: CardProps, ref: Ref<HTMLDivElement>) => {
       {...other}
     >
       {children}
+    </Paper>
+  )
+})
+
+export type CardFooterProps = {
+  children: ReactNode
+}
+
+export const CardFooter = (props: CardFooterProps) => {
+  const { children } = props
+  return (
+    <>
       <Divider orientation='horizontal' />
       <Flex
         gap='l'
@@ -38,8 +49,8 @@ export const Card = forwardRef((props: CardProps, ref: Ref<HTMLDivElement>) => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {footer}
+        {children}
       </Flex>
-    </Paper>
+    </>
   )
-})
+}
