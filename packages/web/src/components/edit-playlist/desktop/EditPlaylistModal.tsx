@@ -69,6 +69,12 @@ const EditPlaylistModal = () => {
   const handleSubmit = useCallback(
     (formFields: PlaylistFormValues, initialValues: PlaylistFormValues) => {
       if (playlistId) {
+        track({
+          eventName: Name.COLLECTION_EDIT,
+          properties: {
+            id: playlistId
+          }
+        })
         // We want to pay special attention to access condition changes
         if (formFields.stream_conditions !== initialValues.stream_conditions) {
           track({
@@ -87,8 +93,9 @@ const EditPlaylistModal = () => {
     [playlistId, dispatch, onClose]
   )
 
-  const editPlaylistModalTitle = `${messages.edit} ${isAlbum ? messages.title.album : messages.title.playlist
-    }`
+  const editPlaylistModalTitle = `${messages.edit} ${
+    isAlbum ? messages.title.album : messages.title.playlist
+  }`
 
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(false)
