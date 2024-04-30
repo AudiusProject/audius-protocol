@@ -5,7 +5,6 @@ const AdminNavSidebar = () => {
   return (
     <aside
       style={{
-        flexGrow: '1',
         height: '100%'
       }}
     >
@@ -19,13 +18,13 @@ const AdminNavSidebar = () => {
                 </Link>
               </li>
               <li>
-                <Link to='/admin/pending-releases'>
-                  <PlainButton size='large'>Pending Releases</PlainButton>
+                <Link to='/admin/releases'>
+                  <PlainButton size='large'>Releases</PlainButton>
                 </Link>
               </li>
               <li>
-                <Link to='/admin/published-releases'>
-                  <PlainButton size='large'>Published Releases</PlainButton>
+                <Link to='/admin/users'>
+                  <PlainButton size='large'>Users</PlainButton>
                 </Link>
               </li>
             </Flex>

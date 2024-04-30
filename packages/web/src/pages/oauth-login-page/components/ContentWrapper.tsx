@@ -1,18 +1,34 @@
 import { ReactNode } from 'react'
 
-import { IconAudiusLogoHorizontalColor } from '@audius/harmony'
+import { Paper } from '@audius/harmony'
+import cn from 'classnames'
 
 import styles from '../OAuthLoginPage.module.css'
+import { Display } from '../types'
 
-export const ContentWrapper = ({ children }: { children: ReactNode }) => (
-  <div className={styles.wrapper}>
-    <div className={styles.container}>
-      <div className={styles.centeredContent}>
-        <div className={styles.logoContainer}>
-          <IconAudiusLogoHorizontalColor width='194' height='auto' />
-        </div>
-      </div>
-      {children}
-    </div>
+export const ContentWrapper = ({
+  display,
+  children
+}: {
+  display: Display
+  children: ReactNode
+}) => (
+  <div className={cn(styles.wrapper, { [styles.popup]: display === 'popup' })}>
+    {display === 'popup' ? (
+      <div className={styles.container}>{children}</div>
+    ) : (
+      <Paper
+        shadow='mid'
+        w='375px'
+        direction='column'
+        pv='3xl'
+        ph='xl'
+        mv='3xl'
+        alignSelf='flex-start'
+        borderRadius='xl'
+      >
+        {children}
+      </Paper>
+    )}
   </div>
 )

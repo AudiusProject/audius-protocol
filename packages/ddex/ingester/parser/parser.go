@@ -2,147 +2,145 @@ package parser
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"ingester/artistutils"
 	"ingester/common"
 	"ingester/constants"
-	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/antchfx/xmlquery"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Parser struct {
-	*common.BaseIngester
+	*common.Ingester
 }
 
-// RunNewParser continuously listens for new delivery documents in the Mongo "deliveries" collection and turns them into Audius track format
-func RunNewParser(ctx context.Context) {
-	p := &Parser{
-		BaseIngester: common.NewBaseIngester(ctx, "parser"),
-	}
-	defer p.MongoClient.Disconnect(ctx)
-
-	// Run migration to create artist name index
-	if err := artistutils.CreateArtistNameIndex(p.UsersColl, p.Ctx); err != nil {
-		log.Fatal(err)
-	}
-
-	p.ProcessChangeStream(p.DeliveriesColl, p.processDelivery)
+func NewParser(i *common.Ingester) *Parser {
+	return &Parser{i}
 }
 
-func (p *Parser) processDelivery(changeStream *mongo.ChangeStream) {
-	// Decode the delivery from Mongo
-	var changeDoc struct {
-		FullDocument common.Delivery `bson:"fullDocument"`
-	}
-	if err := changeStream.Decode(&changeDoc); err != nil {
-		log.Fatal(err)
-	}
-	delivery := changeDoc.FullDocument
-	if delivery.DeliveryStatus != constants.DeliveryStatusParsing {
-		p.Logger.Info("Skipping delivery", "_id", delivery.RemotePath, "delivery_status", delivery.DeliveryStatus)
+// ProcessDelivery takes a Delivery and processes it into Releases (Audius-ready format)
+func (p *Parser) ProcessDelivery(delivery *common.Delivery) {
+	p.Logger.Info("Parsing releases from delivery", "_id", delivery.RemotePath)
+	defer p.insertDelivery(delivery)
+
+	if len(delivery.Releases) == 0 && len(delivery.Batches) == 0 {
+		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
+		delivery.ValidationErrors = append(delivery.ValidationErrors, "no releases or batches found")
+		p.Logger.Warn("No releases or batches found in delivery", "remotePath", delivery.RemotePath)
 		return
 	}
-	p.Logger.Info("Parsing releases from delivery", "_id", delivery.RemotePath)
-	defer p.replaceDelivery(&delivery)
 
-	// Parse the delivery's releases
-	pendingReleases := []*common.PendingRelease{}
+	// Create Release documents for each release in the delivery
+	releases := []common.Release{}
 	if p.DDEXChoreography == constants.ERNReleaseByRelease {
-		for i := range delivery.Releases {
-			release := &delivery.Releases[i]
-			morePendingReleases, err := p.parseRelease(release, delivery.RemotePath, "")
-			if err == nil {
-				pendingReleases = append(pendingReleases, morePendingReleases...)
-			} else {
-				delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
-				p.Logger.Error("Failed to process release", "error", err)
-				return
-			}
+		for _, unprocessed := range delivery.Releases {
+			releases = append(releases, common.Release{
+				ReleaseID:          unprocessed.ReleaseID,
+				DeliveryRemotePath: delivery.RemotePath,
+				RawXML:             unprocessed.XmlContent,
+				CreatedAt:          time.Now(),
+				ParseErrors:        []string{},
+				PublishErrors:      []string{},
+				FailureCount:       0,
+				ReleaseStatus:      constants.ReleaseStatusAwaitingParse,
+			})
 		}
-	} else {
+	} else if p.DDEXChoreography == constants.ERNBatched {
 		for i := range delivery.Batches {
 			batch := &delivery.Batches[i]
-			morePendingReleases, err := p.parseBatch(batch, delivery.RemotePath)
+			idToXML, ernVersion, err := p.parseBatch(batch)
 			if err == nil {
-				pendingReleases = append(pendingReleases, morePendingReleases...)
+				for releaseID, rawXML := range idToXML {
+					releases = append(releases, common.Release{
+						ReleaseID:          releaseID,
+						DeliveryRemotePath: delivery.RemotePath,
+						BatchID:            batch.BatchID,
+						RawXML:             rawXML,
+						ExpectedERNVersion: ernVersion,
+						CreatedAt:          time.Now(),
+						ParseErrors:        []string{},
+						PublishErrors:      []string{},
+						FailureCount:       0,
+						ReleaseStatus:      constants.ReleaseStatusAwaitingParse,
+					})
+				}
 			} else {
-				delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
 				p.Logger.Error("Failed to process batch", "error", err)
-				return
 			}
 		}
 	}
 
-	// Insert the parsed releases into the Mongo PendingReleases collection
-	session, err := p.MongoClient.StartSession()
-	if err != nil {
-		err = fmt.Errorf("failed to start Mongo session: %v", err)
-		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
-		delivery.ValidationErrors = append(delivery.ValidationErrors, err.Error())
-		return
+	for i := range releases {
+		release := &releases[i]
+		if ok := p.ParseRelease(release); !ok {
+			// Mongo release document wasn't created, so there's no release that can be retried
+			delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing // TODO: Error should be more like "failed to extract all releases from delivery"
+			delivery.ValidationErrors = append(delivery.ValidationErrors, "one or more releases ran into a non-retryable error during parsing")
+		}
 	}
-	err = mongo.WithSession(p.Ctx, session, func(sessionCtx mongo.SessionContext) error {
-		if err := session.StartTransaction(); err != nil {
-			return err
-		}
-		defer session.EndSession(p.Ctx)
 
-		// Create a PendingRelease doc for each parsed release
-		for _, pendingRelease := range pendingReleases {
-			result, err := p.PendingReleasesColl.InsertOne(sessionCtx, pendingRelease)
-			if err != nil {
-				session.AbortTransaction(sessionCtx)
-				return err
-			}
-			p.Logger.Info("Inserted pending release", "_id", result.InsertedID)
-		}
-
+	// Set the delivery to successful if all batches/releases were parsed (even if some had errors)
+	if delivery.DeliveryStatus == constants.DeliveryStatusParsing {
 		delivery.DeliveryStatus = constants.DeliveryStatusSuccess
-		return session.CommitTransaction(sessionCtx)
-	})
-
-	if err != nil {
-		err = fmt.Errorf("failed to insert Mongo PendingRelease docs: %v", err)
-		delivery.DeliveryStatus = constants.DeliveryStatusErrorParsing
-		delivery.ValidationErrors = append(delivery.ValidationErrors, err.Error())
 	}
 }
 
-// parseRelease takes an unprocessed release and turns it into PendingReleases (doesn't insert into Mongo)
-func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, deliveryRemotePath, expectedERNVersion string) ([]*common.PendingRelease, error) {
-	xmlData := unprocessedRelease.XmlContent.Data
+// ParseRelease processes the raw XML of a release to (re-)populate the release document's other fields
+func (p *Parser) ParseRelease(release *common.Release) (ok bool) {
+	// Reset fields that we're about to parse in case this is a retry
+	release.ExpectedERNVersion = ""
+	release.ReleaseProfile = ""
+	release.ParsedReleaseElems = []common.ParsedReleaseElement{}
+	release.SDKUploadMetadata = common.SDKUploadMetadata{}
+	release.ParseErrors = []string{}
+
+	logParsingErr := func(e error) {
+		release.ParseErrors = append(release.ParseErrors, e.Error())
+		release.ReleaseStatus = constants.ReleaseStatusErrorParsing
+	}
+
+	// Upsert the release after parsing regardless of success or failure
+	defer func() {
+		if res, err := p.upsertPendingRelease(release); err == nil {
+			p.Logger.Info("Upserted pending release", "_id", res.UpsertedID, "modified", res.ModifiedCount)
+			ok = true
+		} else {
+			p.Logger.Error("failed to upsert Mongo PendingRelease doc", "err", err)
+			ok = false
+		}
+	}()
+
+	xmlData := release.RawXML.Data
 	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
-		err = fmt.Errorf("failed to read XML bytes: %v", err)
-		unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-		return nil, err
+		logParsingErr(fmt.Errorf("failed to read XML bytes: %v", err))
+		return
 	}
 
 	// Use local-name() to ignore namespace because sometimes it's "ern" and sometimes it's "ernm"
 	msgVersionElem := xmlquery.FindOne(doc, "//*[local-name()='NewReleaseMessage']")
 	if msgVersionElem == nil {
-		err = fmt.Errorf("missing <NewReleaseMessage> element")
-		unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-		return nil, err
+		logParsingErr(fmt.Errorf("missing <NewReleaseMessage> element"))
+		return
 	}
 
 	// Extract the ERN Version in the form of 'ern/xxx' or '/ern/xxx'
 	msgSchemaVersionId := msgVersionElem.SelectAttr("MessageSchemaVersionId")
 	ernVersion := strings.TrimPrefix(msgSchemaVersionId, "/")
 	ernVersion = strings.TrimPrefix(ernVersion, "ern/")
-	expectedERNVersion = strings.TrimPrefix(expectedERNVersion, "ern/")
+	expectedERNVersion := strings.TrimPrefix(release.ExpectedERNVersion, "ern/")
 
 	if expectedERNVersion != "" && ernVersion != expectedERNVersion {
 		err = fmt.Errorf("expected ERN version '%s' but got '%s'", expectedERNVersion, ernVersion)
-		unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-		return nil, err
+		logParsingErr(fmt.Errorf("expected ERN version '%s' but got '%s'", expectedERNVersion, ernVersion))
+		return
 	}
 
 	// Extract the release profile. See https://kb.ddex.net/implementing-each-standard/electronic-release-notification-message-suite-(ern)/ern-3-explained/ern-3-profiles/release-profiles-in-ern-3/
@@ -157,30 +155,27 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 		releaseProfile = common.UnspecifiedReleaseProfile
 	}
 
-	release := &common.Release{
-		ReleaseProfile:     releaseProfile,
-		ParsedReleaseElems: []common.ParsedReleaseElement{},
-	}
+	release.ReleaseProfile = releaseProfile
+	release.ParsedReleaseElems = []common.ParsedReleaseElement{}
 	var errs []error
 	switch ernVersion {
 	// Not sure what the difference is between 3.81 and 3.82 because DDEX only provides the most recent version and 1 version behind unless you contact them
 	case "381":
-		errs = parseERN38x(doc, p.CrawledBucket, unprocessedRelease.ReleaseID, release)
+		errs = parseERN38x(doc, p.CrawledBucket, release)
 	case "382":
-		errs = parseERN38x(doc, p.CrawledBucket, unprocessedRelease.ReleaseID, release)
+		errs = parseERN38x(doc, p.CrawledBucket, release)
 	default:
-		err = fmt.Errorf("unsupported schema: '%s'. Expected ern/381 or ern/382", msgSchemaVersionId)
-		unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-		return nil, err
+		logParsingErr(fmt.Errorf("unsupported schema: '%s'. Expected ern/381 or ern/382", msgSchemaVersionId))
+		return
 	}
 
 	if len(errs) != 0 {
 		for _, err := range errs {
-			unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
+			logParsingErr(err)
 		}
-		return nil, fmt.Errorf("failed to parse release: %v", errs)
+		return
 	}
-	p.Logger.Info("Parsed release", "release", fmt.Sprintf("%#v", release))
+	p.Logger.Info("Parsed release", "id", release.ReleaseID)
 
 	// Find an ID for the first OAuthed display artist in the release
 	for i, parsedRelease := range release.ParsedReleaseElems {
@@ -189,9 +184,9 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 			p.Logger.Info("Warnings while finding an artist ID for release", "display title", parsedRelease.DisplayTitle, "display artists", parsedRelease.Artists, "warnings", fmt.Sprintf("%+v", warnings))
 		}
 		if err != nil {
-			err = fmt.Errorf("release '%s' failed to find an artist ID from display artists %+v: %v", parsedRelease.DisplayTitle, parsedRelease.Artists, err)
-			unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-			return nil, err
+			logParsingErr(fmt.Errorf("release '%s' failed to find an artist ID from display artists %+v: %v", parsedRelease.DisplayTitle, parsedRelease.Artists, err))
+			release.ReleaseStatus = constants.ReleaseStatusErrorUserMatch
+			return
 		}
 		p.Logger.Info("Found artist ID for release", "artistID", artistID, "artistName", artistName, "display title", parsedRelease.DisplayTitle, "display artists", parsedRelease.Artists)
 		parsedRelease.ArtistID = artistID
@@ -214,9 +209,8 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 		// Verify release element has a corresponding deal (only required for tracks for now)
 		if parsedRelease.ReleaseType == common.TrackReleaseType {
 			if !parsedRelease.HasDeal {
-				err = fmt.Errorf("release '%s' (ref %s) does not have a corresponding deal", parsedRelease.DisplayTitle, parsedRelease.ReleaseRef)
-				unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-				return nil, err
+				logParsingErr(fmt.Errorf("release '%s' (ref %s) does not have a corresponding deal", parsedRelease.DisplayTitle, parsedRelease.ReleaseRef))
+				return
 			}
 		}
 		// For albums/EPs without a ValidityStartDate: use the latest ValidityStartDate from the tracks on the album.
@@ -236,9 +230,8 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 
 		// Verify release has a nonzero ValidityStartDate
 		if parsedRelease.ValidityStartDate.IsZero() {
-			err = fmt.Errorf("release '%s' (ref %s) does not have valid validity start date", parsedRelease.DisplayTitle, parsedRelease.ReleaseRef)
-			unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
-			return nil, err
+			logParsingErr(fmt.Errorf("release '%s' (ref %s) does not have valid validity start date", parsedRelease.DisplayTitle, parsedRelease.ReleaseRef))
+			return
 		}
 
 		// Use ValidityStartDate as ReleaseDate if a ReleaseDate is not provided
@@ -252,40 +245,29 @@ func (p *Parser) parseRelease(unprocessedRelease *common.UnprocessedRelease, del
 	sdkErrs := buildSDKMetadataERN38x(release)
 	if len(sdkErrs) != 0 {
 		for _, err := range sdkErrs {
-			unprocessedRelease.ValidationErrors = append(unprocessedRelease.ValidationErrors, err.Error())
+			logParsingErr(err)
 		}
-		return nil, fmt.Errorf("failed to build SDK metadata for release: %v", errs)
+		return
 	}
 
-	// Create (but don't yet insert into Mongo) a PendingRelease for each track and album release
-	pendingReleases := []*common.PendingRelease{}
-	pendingReleases = append(pendingReleases, &common.PendingRelease{
-		ReleaseID:          unprocessedRelease.ReleaseID,
-		DeliveryRemotePath: deliveryRemotePath,
-		Release:            *release,
-		CreatedAt:          time.Now(),
-		PublishErrors:      []string{},
-		FailureCount:       0,
-		FailedAfterUpload:  false,
-	})
-
-	return pendingReleases, nil
+	release.ReleaseStatus = constants.ReleaseStatusAwaitingPublish
+	return
 }
 
-// parseBatch takes an unprocessed batch and turns it into PendingReleases (doesn't insert into Mongo)
-func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath string) ([]*common.PendingRelease, error) {
+// parseBatch takes an unprocessed batch and turns it into Releases (doesn't insert into Mongo)
+func (p *Parser) parseBatch(batch *common.UnprocessedBatch) (idToXML map[string]primitive.Binary, ernVersion string, err error) {
 	xmlData := batch.BatchXmlContent.Data
-	doc, err := xmlquery.Parse(bytes.NewReader(xmlData))
+	var doc *xmlquery.Node
+	doc, err = xmlquery.Parse(bytes.NewReader(xmlData))
 	if err != nil {
 		err = fmt.Errorf("failed to read XML bytes: %v", err)
 		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-		return nil, err
+		return
 	}
 
 	// Parse the batch's DDEX schema version
 	ernmAttr := xmlquery.FindOne(doc, "//@xmlns:ernm")
 	erncAttr := xmlquery.FindOne(doc, "//@xmlns:ern-c")
-	var ernVersion string
 	var ok bool
 
 	// Some Spotify test deliveries use xmlns:ernm, while Fuga uses xmlns:ern-c
@@ -294,7 +276,7 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 		if !ok {
 			err = fmt.Errorf("unexpected xmlns:ernm value: %s", ernmAttr.InnerText())
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 	} else if erncAttr != nil {
 		if erncAttr.InnerText() == "http://ddex.net/xml/ern-c/15" {
@@ -302,60 +284,60 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 		} else {
 			err = fmt.Errorf("unexpected xmlns:ern-c value: %s", erncAttr.InnerText())
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 	} else {
 		err = fmt.Errorf("no xmlns:ernm or xmlns:ern-c attribute found")
 		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-		return nil, err
+		return
 	}
 
 	// Parse NumberOfMessages
 	numMessagesNode := xmlquery.FindOne(doc, "//NumberOfMessages")
 	if numMessagesNode == nil {
-		err := fmt.Errorf("NumberOfMessages element not found")
+		err = fmt.Errorf("NumberOfMessages element not found")
 		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-		return nil, err
+		return
 	}
 	numMessages, err := strconv.Atoi(numMessagesNode.InnerText())
 	if err != nil {
-		err := fmt.Errorf("failed to parse NumberOfMessages value: %v", err)
+		err = fmt.Errorf("failed to parse NumberOfMessages value: %v", err)
 		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-		return nil, err
+		return
 	}
 
 	batch.DDEXSchema = ernVersion
 	batch.NumMessages = numMessages
 
 	if numMessages != len(batch.Releases) {
-		err := fmt.Errorf("NumberOfMessages value %d does not match the number of releases %d", numMessages, len(batch.Releases))
+		err = fmt.Errorf("NumberOfMessages value %d does not match the number of releases %d", numMessages, len(batch.Releases))
 		batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-		return nil, err
+		return
 	}
 
 	// Parse each MessageInBatch
-	var pendingReleases []*common.PendingRelease
+	idToXML = make(map[string]primitive.Binary)
 	for i := 1; i <= numMessages; i++ {
 		messageInBatch := xmlquery.FindOne(doc, fmt.Sprintf("//MessageInBatch[%d]", i))
 		if messageInBatch == nil {
-			err := fmt.Errorf("MessageInBatch %d not found", i)
+			err = fmt.Errorf("MessageInBatch %d not found", i)
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 
 		// TODO: Handle updates and deletes
 		deliveryType := safeInnerText(messageInBatch.SelectElement("DeliveryType"))
 		if deliveryType != "NewReleaseDelivery" {
-			err := fmt.Errorf("DeliveryType %s not supported", deliveryType)
+			err = fmt.Errorf("DeliveryType %s not supported", deliveryType)
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 
 		productType := safeInnerText(messageInBatch.SelectElement("ProductType"))
 		if productType != "AudioProduct" {
-			err := fmt.Errorf("ProductType %s not supported", productType)
+			err = fmt.Errorf("ProductType %s not supported", productType)
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 
 		// TODO: Support more ID types (GRid is preferred) as we get more examples
@@ -367,13 +349,12 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 		} else if releaseGRid != "" {
 			releaseID = releaseGRid
 		} else {
-			err := fmt.Errorf("no valid IncludedReleaseId found")
+			err = fmt.Errorf("no valid IncludedReleaseId found")
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 
 		// Find the release with the given releaseID in the batch's Releases
-		// TODO: Should probably make Releases and Batches maps instead of slices
 		var targetRelease *common.UnprocessedRelease
 		for i := range batch.Releases {
 			if batch.Releases[i].ReleaseID == releaseID {
@@ -382,9 +363,9 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 			}
 		}
 		if targetRelease == nil {
-			err := fmt.Errorf("release with ID '%s' not found in batch's Releases", releaseID)
+			err = fmt.Errorf("release with ID '%s' not found in batch's Releases", releaseID)
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 
 		// Validate the URL without the prefix "/"
@@ -397,25 +378,26 @@ func (p *Parser) parseBatch(batch *common.UnprocessedBatch, deliveryRemotePath s
 		}
 
 		if releaseURL != targetRelease.XmlFilePath {
-			err := fmt.Errorf("URL '%s' does not match expected value: '%s'", releaseURL, targetRelease.XmlFilePath)
+			err = fmt.Errorf("URL '%s' does not match expected value: '%s'", releaseURL, targetRelease.XmlFilePath)
 			batch.ValidationErrors = append(batch.ValidationErrors, err.Error())
-			return nil, err
+			return
 		}
 
-		// Parse the release using parseRelease function
-		pendingRelease, err := p.parseRelease(targetRelease, deliveryRemotePath, ernVersion)
-		if err != nil {
-			return nil, err
-		}
-		pendingReleases = append(pendingReleases, pendingRelease...)
+		idToXML[releaseID] = targetRelease.XmlContent
 	}
 
-	return pendingReleases, nil
+	return
 }
 
-func (p *Parser) replaceDelivery(updatedDelivery *common.Delivery) {
-	_, replaceErr := p.DeliveriesColl.ReplaceOne(p.Ctx, bson.M{"_id": updatedDelivery.RemotePath}, updatedDelivery)
+func (p *Parser) insertDelivery(delivery *common.Delivery) {
+	_, replaceErr := p.DeliveriesColl.InsertOne(p.Ctx, *delivery)
 	if replaceErr != nil {
-		p.Logger.Error("Failed to replace delivery", "_id", updatedDelivery.RemotePath, "error", replaceErr)
+		p.Logger.Error("Failed to insert delivery", "_id", delivery.RemotePath, "error", replaceErr)
 	}
+}
+
+func (p *Parser) upsertPendingRelease(pr *common.Release) (*mongo.UpdateResult, error) {
+	filter := bson.M{"_id": pr.ReleaseID}
+	trueVar := true
+	return p.ReleasesColl.ReplaceOne(p.Ctx, filter, pr, &options.ReplaceOptions{Upsert: &trueVar})
 }

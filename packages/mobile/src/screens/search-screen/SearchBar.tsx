@@ -5,11 +5,11 @@ import { Status } from '@audius/common/models'
 import {
   fetchSearch,
   clearSearch
-} from 'audius-client/src/common/store/search-bar/actions'
+} from '@audius/web/src/common/store/search-bar/actions'
 import {
   getSearchBarStatus,
   getSearchBarText
-} from 'audius-client/src/common/store/search-bar/selectors'
+} from '@audius/web/src/common/store/search-bar/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTimeoutFn } from 'react-use'
 

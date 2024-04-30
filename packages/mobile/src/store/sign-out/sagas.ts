@@ -7,9 +7,9 @@ import {
   themeActions
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
-import { setupBackend } from 'audius-client/src/common/store/backend/actions'
-import { getIsSettingUp } from 'audius-client/src/common/store/backend/selectors'
-import { resetSignOn } from 'audius-client/src/common/store/pages/signon/actions'
+import { setupBackend } from '@audius/web/src/common/store/backend/actions'
+import { getIsSettingUp } from '@audius/web/src/common/store/backend/selectors'
+import { resetSignOn } from '@audius/web/src/common/store/pages/signon/actions'
 import { make } from 'common/store/analytics/actions'
 import { takeLatest, put, call } from 'typed-redux-saga'
 

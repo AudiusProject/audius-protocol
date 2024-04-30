@@ -19,6 +19,7 @@ import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { messages } from './messages'
+import { Display } from './types'
 import {
   authWrite,
   formOAuthResponse,
@@ -47,6 +48,7 @@ export const useParsedQueryParams = () => {
     api_key: apiKey,
     origin,
     tx,
+    display: displayQueryParam,
     ...rest
   } = queryString.parse(search)
 
@@ -130,6 +132,9 @@ export const useParsedQueryParams = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRedirectValid, parsedOrigin, parsedRedirectUri, search])
 
+  const display: Display =
+    displayQueryParam === 'fullScreen' ? 'fullScreen' : 'popup'
+
   return {
     apiKey,
     appName,
@@ -143,7 +148,8 @@ export const useParsedQueryParams = () => {
     parsedOrigin,
     error,
     tx,
-    txParams
+    txParams,
+    display
   }
 }
 
@@ -181,6 +187,7 @@ export const useOAuthSetup = ({
     parsedOrigin,
     txParams,
     tx,
+    display,
     error: initError
   } = useParsedQueryParams()
   const accountIsLoading = useSelector((state: CommonState) => {
@@ -197,6 +204,7 @@ export const useOAuthSetup = ({
   const [registeredDeveloperAppName, setRegisteredDeveloperAppName] =
     useState<string>()
   const appName = registeredDeveloperAppName ?? queryParamAppName
+  const [appImage, setAppImage] = useState<string>()
 
   const [userAlreadyWriteAuthorized, setUserAlreadyWriteAuthorized] =
     useState<boolean>()
@@ -250,6 +258,7 @@ export const useOAuthSetup = ({
         return
       }
       setRegisteredDeveloperAppName(developerApp.name)
+      setAppImage(developerApp.imageUrl)
     }
     fetchDeveloperAppName()
   }, [apiKey, queryParamAppName, queryParamsError, scope])
@@ -512,9 +521,11 @@ export const useOAuthSetup = ({
     userAlreadyWriteAuthorized,
     apiKey,
     appName,
+    appImage,
     userEmail,
     authorize,
     tx,
-    txParams: txParams as WriteOnceParams
+    txParams: txParams as WriteOnceParams,
+    display
   }
 }

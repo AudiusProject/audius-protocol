@@ -417,20 +417,25 @@ def reset_entity_manager_event_tx_context(logger: StructuredLogger, eventArgs: d
     logger.reset_context_key("userHandle")
 
 
-def validate_signer(params: ManageEntityParameters):
+def validate_signer(params: ManageEntityParameters, user_override=None):
     # Ensure the signer is either the user or authorized to perform action for the user
-    if params.user_id not in params.existing_records["User"]:
+    user = user_override or (
+        params.existing_records["User"][params.user_id]
+        if params.user_id in params.existing_records["User"]
+        else None
+    )
+    if not user:
         raise IndexingValidationError(f"User {params.user_id} does not exist")
-    wallet = params.existing_records["User"][params.user_id].wallet
+    wallet = user.wallet
     signer = params.signer.lower()
     signer_matches_user = wallet and wallet.lower() == signer
     if signer_matches_user:
         params.logger.set_context("isApp", "false")
     else:
         params.logger.set_context("isApp", "unknown")
-        grant_key = (signer, params.user_id)
-        is_signer_authorized = grant_key in params.existing_records["Grant"]
-        if is_signer_authorized:
+        grant_key = (signer, user.user_id)
+        grant_exists = grant_key in params.existing_records["Grant"]
+        if grant_exists:
             grant = params.existing_records["Grant"][grant_key]
             developer_app = (
                 None
@@ -458,7 +463,7 @@ def validate_signer(params: ManageEntityParameters):
                 or not is_grant_approved
             ):
                 raise IndexingValidationError(
-                    f"Signer is not authorized to perform action for user {params.user_id}"
+                    f"Signer is not authorized to perform action for user {user.user_id}"
                 )
             if (
                 is_valid_developer_app and developer_app
@@ -475,11 +480,11 @@ def validate_signer(params: ManageEntityParameters):
                 params.logger.set_context("appName", user_grantee.handle)
             params.logger.set_context(
                 "userHandle",
-                params.existing_records["User"][params.user_id].handle,
+                user.handle,
             )
         else:
             raise IndexingValidationError(
-                f"Signer does not match user {params.user_id} or an authorized wallet"
+                f"Signer does not match user {user.user_id} or an authorized wallet"
             )
 
 
@@ -505,5 +510,7 @@ def is_ddex_signer(signer):
     # TODO read from a table in the db after implementing UI to register a DDEX node
     ddex_apps = os.getenv("audius_ddex_apps")
     if ddex_apps:
-        return signer.removeprefix("0x").lower() in (address.lower() for address in ddex_apps.split(","))
+        return signer.removeprefix("0x").lower() in (
+            address.lower() for address in ddex_apps.split(",")
+        )
     return False

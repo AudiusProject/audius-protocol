@@ -3,7 +3,7 @@ import {
   BASE_URL,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE
-} from 'audius-client/src/utils/route'
+} from '@audius/web/src/utils/route'
 
 import { Text, TextLink } from '@audius/harmony-native'
 

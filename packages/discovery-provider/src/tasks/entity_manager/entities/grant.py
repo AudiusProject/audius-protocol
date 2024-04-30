@@ -79,7 +79,6 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
             "Programming error while indexing Grant transaction, user wallet missing"
         )
     userWallet = (params.existing_records["User"][user_id].wallet).lower()
-    signer = params.signer.lower()
     if params.action == Action.APPROVE or params.action == Action.REJECT:
         grant_key = (userWallet, metadata["grantor_user_id"])
     else:
@@ -153,15 +152,20 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
                 f"Invalid Update Grant Transaction, grant from {grantor} to {grantee} is already revoked."
             )
         if params.action == Action.DELETE:
-            # Signer can be either the user in the grant or the grantee (developer app/manager).
-            # TODO (C-4041) - Allow signer to be a grantee of either the user in the grant or the grantee in the grant.
-            if (
-                userWallet != signer
-                and signer != existing_grant.grantee_address.lower()
-            ):
-                raise IndexingValidationError(
-                    "Invalid Delete Grant transaction, user does not match signer"
-                )
+            # Signer can be either the user in the grant or the grantee (developer app/manager) in the grant, or a grantee (parent) of either.
+            is_user_to_user_grant = (
+                grantee in params.existing_records[EntityType.USER_WALLET]
+            )
+            signer_is_grantee = False
+            if is_user_to_user_grant:
+                grantee_user = params.existing_records[EntityType.USER_WALLET][grantee]
+                try:
+                    validate_signer(params, user_override=grantee_user)
+                    signer_is_grantee = True
+                except IndexingValidationError:
+                    pass
+            if not signer_is_grantee:
+                validate_signer(params)
         else:  # Action == Action.APPROVE or Action.REJECT
             validate_signer(params)
             if existing_grant.is_approved == True:

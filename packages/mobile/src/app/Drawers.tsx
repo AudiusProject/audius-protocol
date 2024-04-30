@@ -64,7 +64,7 @@ type CommonDrawerProps = {
 }
 
 /*
- * Conditionally renders the drawers hooked up to audius-client/src/common/ui/modal slice
+ * Conditionally renders the drawers hooked up to @audius/web/src/common/ui/modal slice
  */
 const CommonDrawer = (props: CommonDrawerProps) => {
   const { modal: Modal, modalName } = props

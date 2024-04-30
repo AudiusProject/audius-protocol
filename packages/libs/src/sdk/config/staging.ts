@@ -5,26 +5,42 @@
 /* eslint-disable prettier/prettier */
 import type { ServicesConfig } from './types'
 export const servicesConfig: ServicesConfig = {
-  "minVersion": "0.4.4",
+  "minVersion": "0.6.0",
   "discoveryNodes": [
     {
+      "endpoint": "https://discoveryprovider.staging.audius.co",
+      "delegateOwnerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA",
+      "ownerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA"
+    },
+    {
       "endpoint": "https://discoveryprovider2.staging.audius.co",
-      "delegateOwnerWallet": "0x5E98cBEEAA2aCEDEc0833AC3D1634E2A7aE0f3c2"
+      "delegateOwnerWallet": "0x5E98cBEEAA2aCEDEc0833AC3D1634E2A7aE0f3c2",
+      "ownerWallet": "0x5E98cBEEAA2aCEDEc0833AC3D1634E2A7aE0f3c2"
     },
     {
       "endpoint": "https://discoveryprovider3.staging.audius.co",
-      "delegateOwnerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056"
-    },
-    {
-      "endpoint": "https://discoveryprovider.staging.audius.co",
-      "delegateOwnerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA"
+      "delegateOwnerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056",
+      "ownerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056"
     },
     {
       "endpoint": "https://discoveryprovider5.staging.audius.co",
-      "delegateOwnerWallet": "0x8311f59B72522e728231dC60226359A51878F9A1"
+      "delegateOwnerWallet": "0x8311f59B72522e728231dC60226359A51878F9A1",
+      "ownerWallet": "0x8311f59B72522e728231dC60226359A51878F9A1"
     }
   ],
   "storageNodes": [
+    {
+      "endpoint": "https://creatornode10.staging.audius.co",
+      "delegateOwnerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056"
+    },
+    {
+      "endpoint": "https://creatornode8.staging.audius.co",
+      "delegateOwnerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA"
+    },
+    {
+      "endpoint": "https://creatornode12.staging.audius.co",
+      "delegateOwnerWallet": "0x6b52969934076318863243fb92E9C4b3A08267b5"
+    },
     {
       "endpoint": "https://creatornode5.staging.audius.co",
       "delegateOwnerWallet": "0xDC2BDF1F23381CA2eC9e9c70D4FD96CD8645D090"
@@ -38,24 +54,12 @@ export const servicesConfig: ServicesConfig = {
       "delegateOwnerWallet": "0x1F8e7aF58086992Ef4c4fc0371446974BBbC0D9F"
     },
     {
-      "endpoint": "https://creatornode8.staging.audius.co",
-      "delegateOwnerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA"
-    },
-    {
       "endpoint": "https://creatornode9.staging.audius.co",
       "delegateOwnerWallet": "0x140eD283b33be2145ed7d9d15f1fE7bF1E0B2Ac3"
     },
     {
-      "endpoint": "https://creatornode10.staging.audius.co",
-      "delegateOwnerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056"
-    },
-    {
       "endpoint": "https://creatornode11.staging.audius.co",
       "delegateOwnerWallet": "0x4c88d2c0f4c4586b41621aD6e98882ae904B98f6"
-    },
-    {
-      "endpoint": "https://creatornode12.staging.audius.co",
-      "delegateOwnerWallet": "0x6b52969934076318863243fb92E9C4b3A08267b5"
     }
   ],
   "antiAbuseOracleNodes": {

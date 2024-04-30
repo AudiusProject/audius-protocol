@@ -1,12 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  IconCopy,
-  IconError,
-  IconCaretRight,
-  IconButton,
-  Hint
-} from '@audius/harmony'
+import { IconCopy, IconError, IconButton, Hint, Button } from '@audius/harmony'
 
 import { Divider } from 'components/divider'
 import { ExternalTextLink } from 'components/link'
@@ -113,10 +107,9 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
           </span>
         </div>
       )}
-      <button className={styles.goBack} onClick={handleGoBack}>
-        <IconCaretRight className={styles.goBackIcon} />
-        <span className={styles.goBackText}>{messages.goBack}</span>
-      </button>
+      <Button variant='secondary' onClick={handleGoBack}>
+        {messages.goBack}
+      </Button>
     </div>
   )
 }

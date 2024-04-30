@@ -11,7 +11,7 @@ import { Request, Response, NextFunction } from 'express'
 import { config } from '../../config'
 import { BadRequestError } from '../../errors'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import { cacheTransaction, getCachedDiscoveryNodeEndpoints } from '../../redis'
+import { cacheTransaction, getCachedDiscoveryNodes } from '../../redis'
 import fetch from 'cross-fetch'
 import { Logger } from 'pino'
 import base58 from 'bs58'
@@ -59,13 +59,13 @@ const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
  * nodes so that they can cache it to lighten the RPC load on indexing.
  */
 const forwardTransaction = async (logger: Logger, transaction: string) => {
-  const endpoints = await getCachedDiscoveryNodeEndpoints()
+  const endpoints = await getCachedDiscoveryNodes()
   logger.info(`Forwarding to ${endpoints.length} endpoints...`)
   const body = JSON.stringify({ transaction })
   await Promise.all(
     endpoints
-      .filter((endpoint) => endpoint !== config.endpoint)
-      .map((endpoint) =>
+      .filter((p) => p.endpoint !== config.endpoint)
+      .map(({ endpoint }) =>
         fetch(`${endpoint}/solana/cache`, {
           method: 'POST',
           body,
@@ -243,15 +243,26 @@ export const relay = async (
     logger.info(`Confirming transaction before fetching...`)
     await connection.confirmTransaction(confirmationStrategy, 'confirmed')
     logger.info('Fetching transaction for caching...')
-    const rpcResponse = await connection.getTransaction(signature, {
-      maxSupportedTransactionVersion: 0,
-      commitment: 'confirmed'
-    })
-    // Need to rewrap so that Solders knows how to parse it
-    const formattedResponse = JSON.stringify({
-      jsonrpc: '2.0',
-      result: rpcResponse
-    })
+    // Dangerously relying on the internals of connection to do the fetch.
+    // Calling connection.getTransaction will result in the library parsing the
+    // results and getting us back our object again, but we need the raw JSON
+    // for Solders to know what we're talking about when indexing.
+    const rpcResponse = await (
+      connection as Connection & {
+        _rpcRequest: (
+          methodName: string,
+          args: Array<unknown>
+        ) => Promise<unknown>
+      }
+    )._rpcRequest('getTransaction', [
+      signature,
+      {
+        maxSupportedTransactionVersion: 0,
+        commitment: 'confirmed',
+        encoding: 'json'
+      }
+    ])
+    const formattedResponse = JSON.stringify(rpcResponse)
     logger.info('Caching transaction...')
     await cacheTransaction(signature, formattedResponse)
     logger.info('Forwarding transaction to other nodes to cache...')

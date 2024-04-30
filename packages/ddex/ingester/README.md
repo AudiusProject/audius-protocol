@@ -3,13 +3,10 @@
 Crawls and parses new DDEX uploads.
 
 ### Local Dev
-`crawler` and `parser` are independent ingester services. Each handles a stage in the DDEX ingestion pipeline.
-
-The easiest way to test DDEX locally is via `audius-compose up --ddex-[release-by-release|batched]`. If you want to enable hot reloading for an ingester service:
-
-1. Make sure the DDEX stack is running. See `packages/ddex/README.md` for instructions on how to bring up the DDEX stack locally.
-2. `docker stop ddex-crawler` or `docker stop ddex-parser` (assuming it's running as part of the whole DDEX stack)
-3. `IS_DEV=true AWS_ENDPOINT=http://ingress:4566 DDEX_CHOREOGRAPHY=ERNReleaseByRelease air -c .air.toml -- --service [crawler|parser]`
+1. Make sure the DDEX dependencies are running: `audius-compose up --ddex-deps`
+2. (Optional) See the webapp README to start that server and go through the OAuth flow with a staging user
+3. Parse a file: `IS_DEV=true AWS_ENDPOINT=http://ingress:4566 DDEX_CHOREOGRAPHY=ERNBatched go run cmd/main.go ./e2e_test/fixtures/batch/fuga/20240305090456555 --wipe`
+4. Alternatively, run `IS_DEV=true AWS_ENDPOINT=http://ingress:4566 DDEX_CHOREOGRAPHY=ERNBatched air` to run the server with hot reloading. Then, run the webapp (see its README) to use its "Re-process All" button to test code changes against files you sync using the below instructions
 
 
 ### Getting files

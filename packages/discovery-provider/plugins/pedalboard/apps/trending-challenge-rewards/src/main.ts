@@ -14,7 +14,7 @@ export const main = async () => {
 }
 
 // Friday at 12:01 pm PST, extra five minutes for trending to calculate
-cron.schedule('1 12 * * 5', () => {
+cron.schedule('5 12 * * 5', () => {
   initSharedData().then((data) => {
     // make new appdata instance to satisfy types
     const appData = new App<SharedData>({ appData: data })

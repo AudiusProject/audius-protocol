@@ -59,7 +59,7 @@ export type CollectionPageProps = {
   description: string
   canonicalUrl: string
   structuredData?: Object
-  playlistId: ID | SmartCollectionVariant
+  playlistId: ID
   playing: boolean
   getPlayingUid: () => string | null
   type: CollectionsPageType
@@ -159,6 +159,8 @@ const CollectionPage = ({
     metadata && metadata?.variant !== Variant.SMART
       ? metadata._is_publishing
       : false
+  const access =
+    metadata !== null && 'access' in metadata ? metadata?.access : null
 
   const variant = metadata?.variant ?? null
   const gradient =
@@ -177,6 +179,7 @@ const CollectionPage = ({
   const {
     isEmpty,
     lastModifiedDate,
+    releaseDate,
     playlistName,
     description,
     isPrivate,
@@ -187,7 +190,7 @@ const CollectionPage = ({
   } = computeCollectionMetadataProps(metadata)
 
   const togglePlay = (uid: string, trackId: ID) => {
-    if (playlistId === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {
+    if (playlistName === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {
       const track = tracks.entries.find((track) => track.uid === uid)
 
       if (track?.collectible) {
@@ -226,7 +229,9 @@ const CollectionPage = ({
       uid: entry.uid,
       isStreamGated: entry.is_stream_gated,
       isDeleted: entry.is_delete || !!entry?.user?.is_deactivated,
-      isLocked
+      isLocked,
+      hasStreamAccess,
+      streamConditions: entry.stream_conditions
     }
   })
   const numTracks = trackList.length
@@ -243,6 +248,7 @@ const CollectionPage = ({
       <div className={styles.collectionContent}>
         <div>
           <CollectionHeader
+            access={access}
             collectionId={playlistId}
             userId={user?.user_id ?? 0}
             loading={
@@ -262,15 +268,27 @@ const CollectionPage = ({
             isAlbum={isAlbum}
             numTracks={numTracks}
             isPlayable={isPlayable}
-            modified={lastModifiedDate}
+            lastModifiedDate={lastModifiedDate}
+            releaseDate={releaseDate}
             duration={duration}
             isPublished={!isPrivate}
             isPublishing={isPublishing}
             isSaved={isSaved}
             saves={playlistSaveCount}
             playing={queuedAndPlaying}
-            repostCount={playlistRepostCount}
+            reposts={playlistRepostCount}
             isReposted={isReposted}
+            isStreamGated={
+              metadata?.variant === Variant.USER_GENERATED
+                ? metadata?.is_stream_gated
+                : null
+            }
+            streamConditions={
+              metadata?.variant === Variant.USER_GENERATED
+                ? metadata?.stream_conditions
+                : null
+            }
+            ownerId={playlistOwnerId}
             // Actions
             onPlay={onPlay}
             onShare={onHeroTrackShare}
@@ -302,7 +320,6 @@ const CollectionPage = ({
                   containerClassName={''}
                   itemClassName={''}
                   tracks={trackList}
-                  showTopDivider
                   showDivider
                   togglePlay={togglePlay}
                 />

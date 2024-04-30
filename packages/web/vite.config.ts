@@ -186,7 +186,8 @@ export default defineConfig(async ({ mode }) => {
           }
         }
       },
-      exclude: ['e2e', 'node_modules'],
+      exclude: ['e2e', 'node_modules', 'dist'],
+      threads: false,
       minWorkers: 1,
       maxWorkers: 1 // Segfaults if multithreaded
     }

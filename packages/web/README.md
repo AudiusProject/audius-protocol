@@ -1,7 +1,7 @@
 <p align="center">
   <br/>
   <a target="_blank" href="https://audius.co">
-    <img src="https://user-images.githubusercontent.com/2731362/90302695-e5ae8a00-de5c-11ea-88b5-24c1408affc6.png" alt="audius-client" width="300">
+    <img src="https://user-images.githubusercontent.com/2731362/90302695-e5ae8a00-de5c-11ea-88b5-24c1408affc6.png" alt="Audius Logo" width="300">
   </a>
   <br/>
 
@@ -15,7 +15,7 @@
 <br/>
 <br/>
 
-[![CircleCI](https://circleci.com/gh/AudiusProject/audius-client.svg?style=svg)](https://circleci.com/gh/AudiusProject/audius-client)
+[![CircleCI](https://circleci.com/gh/AudiusProject/audius-protocol.svg?style=svg)](https://circleci.com/gh/AudiusProject/audius-protocol)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 

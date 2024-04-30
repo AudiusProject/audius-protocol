@@ -12,7 +12,7 @@ import {
   waitForValue,
   waitForAccount
 } from '@audius/common/utils'
-import { waitForRead } from 'audius-client/src/utils/sagaHelpers'
+import { waitForRead } from '@audius/web/src/utils/sagaHelpers'
 import commonSettingsSagas from 'common/store/pages/settings/sagas'
 import { mapValues } from 'lodash'
 import { RESULTS, checkNotifications } from 'react-native-permissions'

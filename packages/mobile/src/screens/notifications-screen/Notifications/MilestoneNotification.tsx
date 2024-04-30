@@ -8,7 +8,7 @@ import type {
 } from '@audius/common/store'
 import { notificationsSelectors, Achievement } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
-import { fullProfilePage } from 'audius-client/src/utils/route'
+import { fullProfilePage } from '@audius/web/src/utils/route'
 import { useSelector } from 'react-redux'
 
 import { IconTrophy } from '@audius/harmony-native'

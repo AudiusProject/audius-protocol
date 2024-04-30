@@ -1,5 +1,5 @@
-import { setHidePreviewHint } from 'audius-client/src/common/store/pages/signon/actions'
-import { getHidePreviewHint } from 'audius-client/src/common/store/pages/signon/selectors'
+import { setHidePreviewHint } from '@audius/web/src/common/store/pages/signon/actions'
+import { getHidePreviewHint } from '@audius/web/src/common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
+import { getSearchBarText } from '@audius/web/src/common/store/search-bar/selectors'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

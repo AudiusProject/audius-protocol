@@ -268,7 +268,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
     if (excludeOwners) {
       services = services.filter(
-        (s) => !excludeOwners.includes(s.delegateOwnerWallet)
+        (s) => !excludeOwners.includes(s.ownerWallet.toLowerCase())
       )
       decisionTree.push({
         stage: DECISION_TREE_STATE.EXCLUDE_OWNERS,
@@ -306,10 +306,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     // Group services by owner
     const endpointsByOwner = filteredServices.reduce<Record<string, string[]>>(
       (acc, cur) => {
-        if (cur.delegateOwnerWallet in acc) {
-          acc[cur.delegateOwnerWallet]!.push(cur.endpoint)
+        if (cur.ownerWallet in acc) {
+          acc[cur.ownerWallet]!.push(cur.endpoint)
         } else {
-          acc[cur.delegateOwnerWallet] = [cur.endpoint]
+          acc[cur.ownerWallet] = [cur.endpoint]
         }
         return acc
       },
