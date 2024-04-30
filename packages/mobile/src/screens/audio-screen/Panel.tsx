@@ -235,7 +235,7 @@ export const Panel = ({
           <Button
             fullWidth
             title={buttonMessage}
-            variant={'common'}
+            variant='common'
             iconPosition='right'
             size='medium'
             icon={hasDisbursed ? undefined : IconArrowRight}
