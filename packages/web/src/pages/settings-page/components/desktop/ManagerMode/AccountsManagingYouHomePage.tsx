@@ -1,3 +1,4 @@
+import { useGetManagers } from '@audius/common/api'
 import {
   Button,
   Divider,
@@ -23,7 +24,8 @@ export const AccountsManagingYouHomePage = (
   props: AccountsManagingYouHomePageProps
 ) => {
   const { setPage } = props
-
+  const bleh = useGetManagers({})
+  console.log('managers', bleh)
   return (
     <Flex direction='column' gap='xl' ph='xl'>
       <Text variant='body' size='l'>

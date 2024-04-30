@@ -90,7 +90,8 @@ export const {
   useGetCurrentUserId,
   useGetCurrentWeb3User,
   useResetPassword,
-  useGetManagedAccounts
+  useGetManagedAccounts,
+  useGetManagers
 } = accountApi.hooks
 
 export const accountApiReducer = accountApi.reducer
