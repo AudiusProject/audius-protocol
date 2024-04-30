@@ -63,7 +63,7 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
 
 const mswHandlers = [
   rest.post(
-    `${developmentConfig.identityServiceUrl}/relay`,
+    `${discoveryNode}/relay`,
     (_req, res, ctx) => {
       return res(
         ctx.status(200),
@@ -190,14 +190,16 @@ describe('EntityManager', () => {
       })
 
       const discoveryRelayUrl = await discoveryEntityManager.getRelayEndpoint()
-      const discoveryRelayUrlUndefined =
+      const identityRelayUrlUndefined =
         await relayEntityManagerUndefined.getRelayEndpoint()
+        const identityRelayUrlFalse =
+        await relayEntityManagerFalse.getRelayEndpoint()
 
       expect(discoveryRelayUrl).toEqual(discoveryNode)
-      expect(discoveryRelayUrlUndefined).toEqual(
+      expect(identityRelayUrlUndefined).toEqual(
         discoveryRelayUrl
       )
-      expect(discoveryRelayUrl).toEqual(relayEntityManagerFalse.getRelayEndpoint())
+      expect(discoveryRelayUrl).toEqual(identityRelayUrlFalse)
     })
   })
 })
