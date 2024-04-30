@@ -76,6 +76,7 @@ export const Artwork = (props: ArtworkProps) => {
             css={{
               position: 'absolute',
               top: 0,
+              left: 0,
               objectFit: 'cover',
               opacity: isLoading ? 0 : 1,
               transition: `opacity ${motion.calm}`
@@ -92,6 +93,7 @@ export const Artwork = (props: ArtworkProps) => {
             css={{
               position: 'absolute',
               top: 0,
+              left: 0,
               backgroundColor: src ? color.static.black : undefined,
               opacity: src ? 0.4 : undefined
             }}
