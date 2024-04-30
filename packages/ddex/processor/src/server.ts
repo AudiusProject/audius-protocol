@@ -62,7 +62,7 @@ app.get('/auth', (c) => {
     scope: 'write',
     redirect_uri: 'http://localhost:8989/auth/success',
     api_key: DDEX_KEY!,
-    rseponse_mode: 'query',
+    response_mode: 'query',
   })
   const u = base + params.toString()
   return c.redirect(u)
