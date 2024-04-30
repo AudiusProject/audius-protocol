@@ -5,10 +5,11 @@ import { useTheme } from '@emotion/react'
 import { Box, BoxProps, Flex } from 'components/layout'
 import { Skeleton } from 'components/skeleton'
 
-export type ArtworkProps = { isLoading?: boolean; borderWidth?: number } & Pick<
-  ComponentProps<'img'>,
-  'src'
-> &
+export type ArtworkProps = {
+  isLoading?: boolean
+  borderWidth?: number
+  'data-testid'?: string
+} & Pick<ComponentProps<'img'>, 'src'> &
   BoxProps
 
 /**
@@ -26,6 +27,7 @@ export const Artwork = (props: ArtworkProps) => {
     borderWidth,
     shadow,
     children,
+    'data-testid': testId,
     ...other
   } = props
   const [isLoadingState, setIsLoadingState] = useState(!!src)
@@ -73,9 +75,11 @@ export const Artwork = (props: ArtworkProps) => {
             }}
             // @ts-ignore
             src={src}
+            data-testid={testId}
             css={{
               position: 'absolute',
               top: 0,
+              left: 0,
               objectFit: 'cover',
               opacity: isLoading ? 0 : 1,
               transition: `opacity ${motion.calm}`
@@ -92,6 +96,7 @@ export const Artwork = (props: ArtworkProps) => {
             css={{
               position: 'absolute',
               top: 0,
+              left: 0,
               backgroundColor: src ? color.static.black : undefined,
               opacity: src ? 0.4 : undefined
             }}

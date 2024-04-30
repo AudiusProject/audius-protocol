@@ -10,7 +10,7 @@ import { IconSearch as IconBigSearch } from '@audius/harmony'
 import { Redirect } from 'react-router'
 
 import { make } from 'common/store/analytics/actions'
-import Card from 'components/card/desktop/Card'
+import Card from 'components/card-legacy/desktop/Card'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
