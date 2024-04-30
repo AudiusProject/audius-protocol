@@ -82,7 +82,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     <Button
       variant='primary'
       iconLeft={isPlaying && !isPreviewing ? IconPause : IconPlay}
-      onClick={onPlay}
+      onClick={() => onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
     >
       {isPlaying && !isPreviewing ? messages.pause : messages.play}
