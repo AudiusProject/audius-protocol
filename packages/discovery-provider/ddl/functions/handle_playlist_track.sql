@@ -1,5 +1,3 @@
--- drop trigger on_playlist_track; -- DO NOT MERGE!!!!
-
 create or replace function handle_playlist_track() returns trigger as $$
 declare
   playlist_record RECORD;
