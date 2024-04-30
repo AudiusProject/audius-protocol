@@ -89,6 +89,7 @@ def tip_reaction(params: ManageEntityParameters):
             sender_wallet=sender_wallet,
             reaction_type=reaction_type,
             timestamp=datetime.now(),
+            blocknumber=params.block_number,
         )
 
         params.add_record(reacted_to, reaction)

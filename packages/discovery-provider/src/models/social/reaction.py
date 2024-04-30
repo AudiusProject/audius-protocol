@@ -19,3 +19,4 @@ class Reaction(Base, RepresentableMixin):
     reaction_type = Column(String, nullable=False)
     reacted_to = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
