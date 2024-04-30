@@ -114,6 +114,7 @@ const CollectionPage = ({
   playlistId,
   allowReordering,
   playing,
+  previewing,
   type,
   collection,
   tracks,
@@ -145,6 +146,7 @@ const CollectionPage = ({
       : [[], -1]
   const collectionLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
+  const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading = tracks.status === Status.LOADING
 
   const coverArtSizes =
@@ -236,6 +238,7 @@ const CollectionPage = ({
       reposts={playlistRepostCount}
       saves={playlistSaveCount}
       playing={queuedAndPlaying}
+      previewing={queuedAndPreviewing}
       // Actions
       onFilterChange={onFilterChange}
       onPlay={onPlay}

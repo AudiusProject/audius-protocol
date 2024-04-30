@@ -1,5 +1,3 @@
-import { MouseEventHandler } from 'react'
-
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
@@ -25,11 +23,12 @@ type CollectionActionButtonProps = {
   variant?: Nullable<Variant>
   isOwner?: boolean
   isPlaying: boolean
+  isPreviewing: boolean
   tracksLoading: boolean
   isPlayable: boolean
   isPremium?: Nullable<boolean>
   userId: Nullable<ID>
-  onPlay: MouseEventHandler<HTMLButtonElement>
+  onPlay: ({ isPreview }: { isPreview?: boolean }) => void
 }
 
 export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
@@ -40,6 +39,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     onPlay,
     isPlaying,
     isPlayable,
+    isPreviewing,
     userId,
     tracksLoading,
     isPremium
@@ -81,22 +81,22 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   const playButton = (
     <Button
       variant='primary'
-      iconLeft={isPlaying ? IconPause : IconPlay}
+      iconLeft={isPlaying && !isPreviewing ? IconPause : IconPlay}
       onClick={onPlay}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
     >
-      {isPlaying ? messages.pause : messages.play}
+      {isPlaying && !isPreviewing ? messages.pause : messages.play}
     </Button>
   )
 
   const previewButton = (
     <Button
       variant='secondary'
-      iconLeft={isPlaying ? IconPause : IconPlay}
-      onClick={onPlay}
+      iconLeft={isPlaying && isPreviewing ? IconPause : IconPlay}
+      onClick={() => onPlay({ isPreview: true })}
       widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
     >
-      {isPlaying ? messages.pause : messages.preview}
+      {isPlaying && isPreviewing ? messages.pause : messages.preview}
     </Button>
   )
 
