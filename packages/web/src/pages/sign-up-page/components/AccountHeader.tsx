@@ -61,9 +61,6 @@ const ProfileImageAvatar = ({
       src={imageUrl}
       size={isSmallSize ? 'large' : 'xxl'}
       css={{
-        // display: 'flex',
-        // alignItems: 'center',
-        // justifyContent: 'center',
         ...(isEditing && { cursor: 'pointer' }),
         ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}

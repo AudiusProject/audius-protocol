@@ -6,7 +6,6 @@ export type AvatarProps = ArtworkInnerProps & {
   variant?: 'default' | 'strong'
   size?: 'auto' | 'small' | 'medium' | 'large' | 'xl' | 'xxl'
   borderWidth?: 'thin' | 'default'
-  // onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 const sizeMap = {
