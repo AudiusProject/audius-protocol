@@ -1,5 +1,7 @@
 import { MouseEventHandler } from 'react'
 
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
@@ -43,6 +45,13 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isPremium
   } = props
 
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById({
+    playlistId: typeof collectionId === 'number' ? collectionId : -1,
+    currentUserId
+  })
+  const { hasStreamAccess } = useGatedContentAccess(collection)
+
   let actionButtons: Nullable<JSX.Element> = null
 
   if (typeof collectionId !== 'number') {
@@ -69,7 +78,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     >
       {isPlaying
         ? messages.pause
-        : isPremium
+        : isPremium && !hasStreamAccess
         ? messages.preview
         : messages.play}
     </Button>

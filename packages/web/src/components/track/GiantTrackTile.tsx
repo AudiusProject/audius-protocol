@@ -221,6 +221,7 @@ export const GiantTrackTile = ({
   // Preview button is shown for USDC-gated tracks if user does not have access
   // or is the owner
   const showPreview = isUSDCPurchaseGated && (isOwner || !hasStreamAccess)
+  console.log('REED', { showPreview, hasStreamAccess })
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
