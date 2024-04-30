@@ -104,7 +104,7 @@ const Page = () => {
                 flex={1}
                 direction='column'
                 alignItems='center'
-                p='56px'
+                p='unit14'
               >
                 <Flex
                   w='640px'
