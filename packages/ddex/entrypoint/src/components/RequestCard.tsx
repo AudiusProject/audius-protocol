@@ -18,9 +18,6 @@ export const RequestCard = () => {
       p='s'
       w='136px'
       h='136px'
-      css={{
-        cursor: 'pointer'
-      }}
     >
       <Text
         variant='body'

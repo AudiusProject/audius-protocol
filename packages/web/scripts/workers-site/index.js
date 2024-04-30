@@ -58,7 +58,7 @@ function checkIsCrawler(val) {
     return false
   }
   const crawlerTest =
-    /forcessr|ahrefs(bot|siteaudit)|altavista|baiduspider|bingbot|duckduckbot|googlebot|msnbot|nextgensearchbot|yahoo|yandex/i
+    /forcessr|ahrefs(bot|siteaudit)|altavista|baiduspider|bingbot|duckduckbot|googlebot|google-inspectiontool|msnbot|nextgensearchbot|yahoo|yandex/i
   return crawlerTest.test(val)
 }
 

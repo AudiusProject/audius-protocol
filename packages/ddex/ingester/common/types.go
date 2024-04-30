@@ -6,61 +6,33 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// UnprocessedRelease contains data needed to parse a release from within a crawled delivery
-type UnprocessedRelease struct {
-	ReleaseID        string           `bson:"release_id"` // Same as the XmlFilePath's file name without the ".xml" extension
-	XmlFilePath      string           `bson:"xml_file_path"`
-	XmlContent       primitive.Binary `bson:"xml_content"`
-	ValidationErrors []string         `bson:"validation_errors"`
-}
-
-// UnprocessedBatch contains data needed to parse a batch from within a crawled delivery
-type UnprocessedBatch struct {
-	BatchID          string               `bson:"batch_id"`
-	BatchXmlPath     string               `bson:"batch_xml_path"`
-	BatchXmlContent  primitive.Binary     `bson:"batch_xml_content"`
-	Releases         []UnprocessedRelease `bson:"releases"`
-	ValidationErrors []string             `bson:"validation_errors"`
+// Batch stores XML for a batch of releases
+type Batch struct {
+	BatchID   string           `bson:"_id"`
+	BatchXML  primitive.Binary `bson:"batch_xml"`
+	CreatedAt time.Time        `bson:"created_at"`
 
 	// Unknown until parsing time
-	DDEXSchema  string `bson:"ddex_schema"` // Example: "ern/382"
-	NumMessages int    `bson:"num_messages"`
-}
-
-// TODO: Delivery should just store IDs of releases that it inserted into the releases collection
-// Delivery represents crawled upload contents that are ready to be parsed
-type Delivery struct {
-	RemotePath       string    `bson:"_id"`
-	IsFolder         bool      `bson:"is_folder"`
-	DeliveryStatus   string    `bson:"delivery_status"`
-	CreatedAt        time.Time `bson:"created_at"`
-	ValidationErrors []string  `bson:"validation_errors"`
-
-	// TODO: Don't store releases and batches in the delivery
-	// Note: these only contain the data to be parsed. They're moved to the releases collection after parsing
-	Releases []UnprocessedRelease `bson:"releases"`
-	Batches  []UnprocessedBatch   `bson:"batches"`
+	DDEXSchema  string `bson:"ddex_schema"`  // Example: "ern/382"
+	NumMessages int    `bson:"num_messages"` // The number of releases that this batch says it has
 }
 
 // Release represents a track or album to be uploaded to Audius
 type Release struct {
-	ReleaseID          string           `bson:"_id"`
-	DeliveryRemotePath string           `bson:"delivery_remote_path"` // aka Delivery._id (the delivery this release comes from)
-	BatchID            string           `bson:"batch_id,omitempty"`   // If this release is part of a batch
-	RawXML             primitive.Binary `bson:"raw_xml"`              // The raw XML content of the release
-	ParseErrors        []string         `bson:"parse_errors"`
-	PublishErrors      []string         `bson:"publish_errors"`
-	FailureCount       int              `bson:"failure_count"`
-	ReleaseStatus      string           `bson:"release_status"`
-
-	// TODO: Probably want to change this and/or add LastParsed
-	CreatedAt time.Time `bson:"created_at"`
+	ReleaseID     string           `bson:"_id"`
+	BatchID       string           `bson:"batch_id,omitempty"` // Only if this release is part of a batch. Matches Batch.BatchID (aka Batch._id)
+	XMLRemotePath string           `bson:"xml_remote_path"`    // If it was a ZIP file, it would've been re-uploaded as a folder
+	RawXML        primitive.Binary `bson:"raw_xml"`
+	ParseErrors   []string         `bson:"parse_errors"`
+	PublishErrors []string         `bson:"publish_errors"`
+	FailureCount  int              `bson:"failure_count"`
+	ReleaseStatus string           `bson:"release_status"`
+	CreatedAt     time.Time        `bson:"created_at"`
 
 	// Parsed from the release's XML
-	ExpectedERNVersion string                 `bson:"expected_ern_version,omitempty"` // From the batch's XML
-	ReleaseProfile     ReleaseProfile         `bson:"release_profile"`                // "ReleaseProfileVersionId" from the DDEX XML
-	ParsedReleaseElems []ParsedReleaseElement `bson:"parsed_release_elems"`           // Releases parsed from XML
-	SDKUploadMetadata  SDKUploadMetadata      `bson:"sdk_upload_metadata"`            // Metadata for the publisher to upload to Audius via SDK
+	ReleaseProfile     ReleaseProfile         `bson:"release_profile"`      // "ReleaseProfileVersionId" from the DDEX XML
+	ParsedReleaseElems []ParsedReleaseElement `bson:"parsed_release_elems"` // Releases parsed from XML
+	SDKUploadMetadata  SDKUploadMetadata      `bson:"sdk_upload_metadata"`  // Metadata for the publisher to upload to Audius via SDK
 
 	// Only set if the release was successfully published
 	EntityID    string `bson:"entity_id"`
