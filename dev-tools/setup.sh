@@ -7,7 +7,7 @@ case "$ID" in
 debian | ubuntu)
     # Uninstall old versions of docker
     set +e
-    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc nodejs; do sudo apt-get remove $pkg; done
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc nodejs; do sudo apt-get remove -y $pkg; done
     set -e
 
     # Install packages to allow apt to use a repository over HTTPS
