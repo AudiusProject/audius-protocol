@@ -1,4 +1,3 @@
-import { wAUDIO } from '@audius/fixed-decimal'
 import { ClaimableTokensProgram } from '@audius/spl'
 import {
   TransactionMessage,
@@ -9,6 +8,7 @@ import {
 
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { parseParams } from '../../../../utils/parseParams'
+import { toMintAmount } from '../../toMintAmount'
 import type { Mint } from '../../types'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
 
@@ -166,7 +166,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
     }
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
-      amount: wAUDIO(amount).value,
+      amount: toMintAmount(amount, mint).value,
       nonce
     })
     const [signature, recoveryId] = await auth.sign(data)

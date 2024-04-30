@@ -267,3 +267,14 @@ export const UnrepostTrackSchema = z
   .strict()
 
 export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>
+
+export const PurchaseStreamAccessSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type PurchaseStreamAccessRequest = z.input<
+  typeof PurchaseStreamAccessSchema
+>
