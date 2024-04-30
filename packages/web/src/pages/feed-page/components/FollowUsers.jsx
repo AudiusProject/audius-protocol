@@ -4,7 +4,7 @@ import { Button, IconUserFollow as IconFollow } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import UserCard from 'components/card/UserCard'
+import UserCard from 'components/card-legacy/UserCard'
 
 import styles from './FollowUsers.module.css'
 

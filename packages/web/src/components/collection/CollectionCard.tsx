@@ -5,7 +5,7 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { cacheCollectionsSelectors } from '@audius/common/store'
-import { Divider, Flex, Paper, Text } from '@audius/harmony'
+import { Divider, Flex, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
@@ -16,6 +16,9 @@ import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 
 import { CollectionImage } from './CollectionImage'
+import { Card, CardProps } from 'components/card'
+import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
+
 const { getCollection } = cacheCollectionsSelectors
 
 const messages = {
@@ -24,11 +27,8 @@ const messages = {
   hidden: 'Hidden'
 }
 
-type CardSize = 's' | 'm' | 'l'
-
-type CollectionCardProps = {
+type CollectionCardProps = Omit<CardProps, 'footer' | 'id'> & {
   id: ID
-  size: CardSize
 }
 
 const cardSizeToCoverArtSizeMap = {
@@ -37,123 +37,98 @@ const cardSizeToCoverArtSizeMap = {
   l: SquareSizes.SIZE_480_BY_480
 }
 
-const cardSizes = {
-  s: 200,
-  m: 224,
-  l: 320
-}
+export const CollectionCard = forwardRef(
+  (props: CollectionCardProps, ref: Ref<HTMLDivElement>) => {
+    const { id, size, onClick, ...other } = props
 
-export const CollectionCard = (props: CollectionCardProps) => {
-  const { id, size } = props
+    const collection = useSelector((state) => getCollection(state, { id }))
 
-  const collection = useSelector((state) => getCollection(state, { id }))
+    const handleNavigate = useLinkClickHandler<HTMLDivElement>(
+      collection?.permalink ?? ''
+    )
 
-  const handleClick = useLinkClickHandler<HTMLDivElement>(
-    collection?.permalink ?? ''
-  )
+    const handleClick = useCallback(
+      (e: MouseEvent<HTMLDivElement>) => {
+        onClick?.(e)
+        handleNavigate(e)
+      },
+      [handleNavigate, onClick]
+    )
 
-  if (!collection) return null
+    if (!collection) return null
 
-  const {
-    playlist_name,
-    permalink,
-    playlist_owner_id,
-    repost_count,
-    save_count,
-    is_private,
-    access,
-    stream_conditions
-  } = collection
+    const {
+      playlist_name,
+      permalink,
+      playlist_owner_id,
+      repost_count,
+      save_count,
+      is_private,
+      access,
+      stream_conditions
+    } = collection
 
-  const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
+    const isPurchase = isContentUSDCPurchaseGated(stream_conditions)
 
-  const dogEarType = is_private
-    ? DogEarType.HIDDEN
-    : isPurchase && !access.stream
-    ? DogEarType.USDC_PURCHASE
-    : null
+    const dogEarType = is_private
+      ? DogEarType.HIDDEN
+      : isPurchase && !access.stream
+      ? DogEarType.USDC_PURCHASE
+      : null
 
-  return (
-    <Paper
-      role='button'
-      tabIndex={0}
-      onClick={handleClick}
-      aria-labelledby={`${id}-title ${id}-artist ${id}-repost ${id}-favorite ${id}-condition`}
-      direction='column'
-      border='default'
-      w={cardSizes[size]}
-      css={{ cursor: 'pointer', overflow: 'unset' }}
-    >
-      {dogEarType ? (
-        <DogEar type={dogEarType} css={{ top: -1, left: -1 }} />
-      ) : null}
-      <Flex direction='column' p='s' gap='s'>
-        <CollectionImage
-          collectionId={id}
-          size={cardSizeToCoverArtSizeMap[size]}
-          data-testid={`${id}-cover-art`}
-        />
-        <Text
-          id={`${id}-title`}
-          variant='title'
-          color='default'
-          ellipses
-          asChild
-        >
-          <Link to={permalink} css={{ pointerEvents: 'none' }}>
-            {playlist_name}
-          </Link>
-        </Text>
-        <UserLink
-          id={`${id}-artist`}
-          userId={playlist_owner_id}
-          textVariant='body'
-          css={{ justifyContent: 'center' }}
-        />
-      </Flex>
-      <Divider orientation='horizontal' />
-      <Flex
-        gap='l'
-        p='s'
-        justifyContent='center'
-        backgroundColor='surface1'
-        borderBottomLeftRadius='m'
-        borderBottomRightRadius='m'
-      >
-        {is_private ? (
-          <Text
-            variant='body'
-            size='s'
-            strength='strong'
-            color='subdued'
-            id={`${id}-condition`}
-          >
-            {messages.hidden}
+    const footer = is_private ? (
+      <Text variant='body' size='s' strength='strong' color='subdued'>
+        {messages.hidden}
+      </Text>
+    ) : (
+      <>
+        <Flex gap='xs' alignItems='center'>
+          <IconRepost size='s' color='subdued' title={messages.repost} />
+          <Text variant='label' color='subdued'>
+            {repost_count}
           </Text>
-        ) : (
-          <>
-            <Flex gap='xs' alignItems='center' id={`${id}-repost`}>
-              <IconRepost size='s' color='subdued' title={messages.repost} />
-              <Text variant='label' color='subdued'>
-                {repost_count}
-              </Text>
-            </Flex>
-            <Flex gap='xs' alignItems='center' id={`${id}-favorite`}>
-              <IconHeart size='s' color='subdued' title={messages.favorites} />
-              <Text variant='label' color='subdued'>
-                {save_count}
-              </Text>
-            </Flex>
-            {isPurchase ? (
-              <LockedStatusPill
-                variant='premium'
-                locked={!access.stream}
-                id={`${id}-condition`}
-              />
-            ) : null}
-          </>
-        )}
-      </Flex>
-    </Paper>
-  )
-}
+        </Flex>
+        <Flex gap='xs' alignItems='center'>
+          <IconHeart size='s' color='subdued' title={messages.favorites} />
+          <Text variant='label' color='subdued'>
+            {save_count}
+          </Text>
+        </Flex>
+        {isPurchase ? (
+          <LockedStatusPill variant='premium' locked={!access.stream} />
+        ) : null}
+      </>
+    )
+
+    return (
+      <Card
+        ref={ref}
+        onClick={handleClick}
+        size={size}
+        footer={footer}
+        {...other}
+      >
+        {dogEarType ? (
+          <DogEar type={dogEarType} css={{ top: -1, left: -1 }} />
+        ) : null}
+        <Flex direction='column' p='s' gap='s'>
+          <CollectionImage
+            collectionId={id}
+            size={cardSizeToCoverArtSizeMap[size]}
+            data-testid={`${id}-cover-art`}
+          />
+          <Text variant='title' color='default' ellipses asChild>
+            <Link to={permalink} css={{ pointerEvents: 'none' }}>
+              {playlist_name}
+            </Link>
+          </Text>
+          <UserLink
+            userId={playlist_owner_id}
+            textVariant='body'
+            css={{ justifyContent: 'center' }}
+          />
+        </Flex>
+      </Card>
+    )
+  }
+)
