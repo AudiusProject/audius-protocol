@@ -17,9 +17,9 @@ import {
 } from '@solana/web3.js'
 
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
+import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseParams } from '../../../../utils/parseParams'
 import { Prettify } from '../../../../utils/prettify'
-import { toMintAmount } from '../../toMintAmount'
 import { Mint } from '../../types'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
 
@@ -85,7 +85,7 @@ export class PaymentRouterClient extends BaseSolanaProgram {
       throw Error('Connected wallet not found.')
     }
     const sourceTokenAccount = getAssociatedTokenAddressSync(mint, owner, false)
-    const amount = toMintAmount(args.amount, args.mint)
+    const amount = mintFixedDecimalMap[args.mint](args.amount)
     return createTransferCheckedInstruction(
       sourceTokenAccount,
       mint,
@@ -110,7 +110,7 @@ export class PaymentRouterClient extends BaseSolanaProgram {
       recipients.push(new PublicKey(key))
       amounts.push(value)
     }
-    const totalAmount = toMintAmount(args.total, args.mint).value
+    const totalAmount = mintFixedDecimalMap[args.mint](args.total).value
     return PaymentRouterProgram.createRouteInstruction({
       sender: programTokenAccount.address,
       senderOwner: this.programAccount,

@@ -7,8 +7,8 @@ import {
 } from '@solana/web3.js'
 
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
+import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseParams } from '../../../../utils/parseParams'
-import { toMintAmount } from '../../toMintAmount'
 import type { Mint } from '../../types'
 import { BaseSolanaProgram } from '../BaseSolanaProgram'
 
@@ -166,7 +166,7 @@ export class ClaimableTokensClient extends BaseSolanaProgram {
     }
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
-      amount: toMintAmount(amount, mint).value,
+      amount: mintFixedDecimalMap[mint](amount).value,
       nonce
     })
     const [signature, recoveryId] = await auth.sign(data)
