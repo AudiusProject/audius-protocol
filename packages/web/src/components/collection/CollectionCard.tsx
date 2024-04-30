@@ -1,3 +1,5 @@
+import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
+
 import {
   DogEarType,
   ID,
@@ -5,19 +7,18 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { cacheCollectionsSelectors } from '@audius/common/store'
-import { Divider, Flex, Text } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
 import { Link, useLinkClickHandler } from 'react-router-dom-v5-compat'
 
+import { Card, CardProps } from 'components/card'
 import { DogEar } from 'components/dog-ear'
 import { UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 
 import { CollectionImage } from './CollectionImage'
-import { Card, CardProps } from 'components/card'
-import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
 const { getCollection } = cacheCollectionsSelectors
 

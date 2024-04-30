@@ -1,12 +1,14 @@
+import { useCallback, MouseEvent } from 'react'
+
 import { ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
+import { useLinkClickHandler } from 'react-router-dom-v5-compat'
+
 import { Avatar } from 'components/avatar'
 import { Card, CardProps } from 'components/card'
 import { UserLink } from 'components/link'
-import { useCallback, MouseEvent } from 'react'
-import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 import { useSelector } from 'utils/reducer'
 import { profilePage } from 'utils/route'
 

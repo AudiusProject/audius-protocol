@@ -1,5 +1,6 @@
-import { Divider, Flex, Paper, PaperProps } from '@audius/harmony'
 import { ReactNode, Ref, forwardRef } from 'react'
+
+import { Divider, Flex, Paper, PaperProps } from '@audius/harmony'
 
 type CardSize = 's' | 'm' | 'l'
 

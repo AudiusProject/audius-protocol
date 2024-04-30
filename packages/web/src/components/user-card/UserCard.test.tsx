@@ -2,11 +2,11 @@ import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
 import { merge } from 'lodash'
 import { Route, Routes } from 'react-router-dom-v5-compat'
+import { describe, expect, it } from 'vitest'
 
 import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
-import { describe, expect, it } from 'vitest'
 
 function renderUserCard(options?: RenderOptions) {
   return render(
