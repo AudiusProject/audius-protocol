@@ -62,11 +62,24 @@ const Nav = () => {
       pv='l'
       justifyContent='space-between'
       alignItems='cener'
-      backgroundColor='white'
+      backgroundColor='surface1'
     >
-      <Text variant='body' size='l' color='default'>
-        {`${messages.loggedIn} @${user.handle}`}
-      </Text>
+      <Flex alignItems='center' gap='s'>
+        <Flex
+          h='32px'
+          w='32px'
+          border='strong'
+          css={{
+            overflow: 'hidden',
+            borderRadius: '50%'
+          }}
+        >
+          <img src={user.profilePicture?._150x150} />
+        </Flex>
+        <Text variant='body' size='l' color='default'>
+          {`${messages.loggedIn} @${user.handle}`}
+        </Text>
+      </Flex>
       <Button variant='secondary' size='small' onClick={logout}>
         {messages.signOut}
       </Button>
@@ -90,8 +103,8 @@ const Page = () => {
               <Flex
                 flex={1}
                 direction='column'
-                justifyContent='center'
                 alignItems='center'
+                p='unit14'
               >
                 <Flex
                   w='640px'
