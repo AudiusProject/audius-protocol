@@ -18,6 +18,7 @@ const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
 const invalidPaths = new Set(['undefined'])
 
 const nonSsrPaths = [
+  // TODO: Need to update the check to route the profile subroutes to the profile page
   PROFILE_PAGE_TRACKS,
   PROFILE_PAGE_ALBUMS,
   PROFILE_PAGE_PLAYLISTS,

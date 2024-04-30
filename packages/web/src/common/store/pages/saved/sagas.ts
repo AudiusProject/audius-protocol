@@ -4,7 +4,7 @@ import {
   UserTrackMetadata,
   User
 } from '@audius/common/models'
-import { responseAdapter, APIActivityV2 } from '@audius/common/services'
+import { makeActivity, APIActivityV2 } from '@audius/common/services'
 import {
   accountSelectors,
   savedPageTracksLineupActions as tracksActions,
@@ -79,7 +79,7 @@ function* sendLibraryRequest({
   )) as any
   const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]
   const tracks = savedTracksResponse.data
-    ?.map(responseAdapter.makeActivity)
+    ?.map(makeActivity)
     .filter(removeNullable) as UserTrackMetadata[]
   if (!tracks) {
     throw new Error('Something went wrong with library tracks request.')

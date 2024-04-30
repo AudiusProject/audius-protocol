@@ -7,16 +7,14 @@ import {
   ElementType
 } from 'react'
 
-import {
-  squashNewLines,
-  isAudiusUrl,
-  getPathFromAudiusUrl
-} from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import Linkify from 'linkify-react'
 import { IntermediateRepresentation, Opts } from 'linkifyjs'
 
-import { ExternalTextLink, TextLink } from 'components/link'
+import { ServerExternalTextLink } from 'components/link/ServerExternalTextLink'
+import { TextLink } from 'components/link/TextLink'
+import { squashNewLines } from 'utils/stringUtils'
+import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
 
 type LinkifyTextProps = TextProps<any> & {
   innerRef?: Ref<any>
@@ -47,7 +45,7 @@ const renderLink = ({ attributes, content }: IntermediateRepresentation) => {
   const isExternalLink = !isAudiusUrl(href)
   const to = isExternalLink ? formatExternalLink(href) : formatAudiusUrl(href)
 
-  const LinkComponent = isExternalLink ? ExternalTextLink : TextLink
+  const LinkComponent = isExternalLink ? ServerExternalTextLink : TextLink
 
   return (
     <LinkComponent to={to} variant='visible' {...props}>

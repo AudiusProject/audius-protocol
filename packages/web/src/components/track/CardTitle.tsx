@@ -3,7 +3,6 @@ import {
   isContentUSDCPurchaseGated,
   AccessConditions
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { Nullable } from '@audius/common/utils'
 import {
   Text,
@@ -14,7 +13,6 @@ import {
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'
-import { useFlag } from 'hooks/useRemoteConfig'
 import HiddenTrackHeader from 'pages/track-page/components/HiddenTrackHeader'
 
 import styles from './GiantTrackTile.module.css'
@@ -48,10 +46,6 @@ export const CardTitle = ({
   isPodcast,
   streamConditions
 }: CardTitleProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   let content
   const extraStyles = []
 
@@ -91,7 +85,7 @@ export const CardTitle = ({
         <div className={styles.typeLabel}>
           {isRemix
             ? messages.remixTitle
-            : isPodcast && isNewPodcastControlsEnabled
+            : isPodcast
             ? messages.podcastTitle
             : messages.trackTitle}
         </div>

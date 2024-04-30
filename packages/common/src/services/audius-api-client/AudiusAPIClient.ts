@@ -20,6 +20,7 @@ import { IntKeys, StringKeys, RemoteConfigInstance } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
+import { makeActivity } from './makeActivity'
 import {
   APIActivity,
   APIBlockConfirmation,
@@ -1239,9 +1240,7 @@ export class AudiusAPIClient {
 
     if (!response) return []
 
-    const adapted = response.data
-      .map(adapter.makeActivity)
-      .filter(removeNullable)
+    const adapted = response.data.map(makeActivity).filter(removeNullable)
     return adapted
   }
 
