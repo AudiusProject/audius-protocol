@@ -755,7 +755,7 @@ export class SolanaWeb3Manager {
     purchaseAccess
   }: {
     id: number
-    type: 'track'
+    type: PurchaseContentType
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
