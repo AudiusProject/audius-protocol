@@ -20,13 +20,13 @@ import { prepareAlbumMetadata, prepareTrackMetadatas } from './publishRelease'
 import { parseBool } from './util'
 import { readAssetWithCaching } from './s3poller'
 
-const { NODE_ENV, DDEX_KEY, COOKIE_SECRET } = process.env
+const { NODE_ENV, DDEX_KEY, DDEX_URL, COOKIE_SECRET } = process.env
 const COOKIE_NAME = 'audiusUser'
 
-const API_HOST =
-  NODE_ENV == 'production'
-    ? 'https://discoveryprovider2.audius.co'
-    : 'https://discoveryprovider2.staging.audius.co'
+const IS_PROD = NODE_ENV == 'production'
+const API_HOST = IS_PROD
+  ? 'https://discoveryprovider2.audius.co'
+  : 'https://discoveryprovider2.staging.audius.co'
 
 const app = new Hono()
 app.use(prettyJSON({ space: 4 }))
@@ -57,10 +57,13 @@ app.get('/auth', (c) => {
   if (!DDEX_KEY) {
     return c.text('DDEX_KEY is required', 500)
   }
-  const base = 'https://staging.audius.co/oauth/auth?'
+  const myUrl = DDEX_URL || 'http://localhost:8989'
+  const base = IS_PROD
+    ? 'https://audius.co/oauth/auth?'
+    : 'https://staging.audius.co/oauth/auth?'
   const params = new URLSearchParams({
     scope: 'write',
-    redirect_uri: 'http://localhost:8989/auth/success',
+    redirect_uri: `${myUrl}/auth/success`,
     api_key: DDEX_KEY!,
     response_mode: 'query',
   })
